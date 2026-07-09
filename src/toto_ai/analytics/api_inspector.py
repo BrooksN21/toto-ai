@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +45,7 @@ class DrawingReference:
     number: int | None
     community: str | None
     status: str | None
+    ended_at: str | None = None
 
 
 def resolve_drawing_reference(
@@ -51,16 +53,19 @@ def resolve_drawing_reference(
     *,
     drawing_id: int | None = None,
     number: int | None = None,
-    latest: bool = False,
-    active: bool = False,
+    latest_finished: bool = False,
+    live: bool = False,
+    open: bool = False,
+    now: datetime | str | None = None,
     community: str = "baltbet-main",
 ) -> DrawingReference:
     selected_options = sum(
-        (drawing_id is not None, number is not None, latest, active)
+        (drawing_id is not None, number is not None, latest_finished, live, open)
     )
     if selected_options != 1:
         raise ValueError(
-            "Use exactly one of --drawing-id, --number, --latest, or --active."
+            "Use exactly one of --drawing-id, --number, --latest-finished, "
+            "--live, or --open."
         )
 
     if drawing_id is not None:
@@ -84,15 +89,35 @@ def resolve_drawing_reference(
             raise ValueError(f"Drawing number {number} was not found in the database.")
         return _reference_from_drawing(drawing)
 
-    status = "active" if active else "finished"
-    drawing = session.scalar(
+    if latest_finished:
+        drawing = session.scalar(
+            select(Drawing)
+            .where(Drawing.name == community)
+            .where(Drawing.status == "finished")
+            .order_by(Drawing.number.desc(), Drawing.id.desc())
+        )
+        if drawing is None:
+            raise ValueError(
+                f"No finished {community} drawing was found in the database."
+            )
+        return _reference_from_drawing(drawing)
+
+    current_time = _coerce_datetime(now)
+    candidates = session.scalars(
         select(Drawing)
         .where(Drawing.name == community)
-        .where(Drawing.status == status)
+        .where(Drawing.status.in_(("active", "expected")))
+        .where(Drawing.ended_at.is_not(None))
         .order_by(Drawing.number.desc(), Drawing.id.desc())
+    ).all()
+    drawing = _select_time_based_drawing(
+        candidates,
+        now=current_time,
+        require_future=open,
     )
     if drawing is None:
-        raise ValueError(f"No {status} {community} drawing was found in the database.")
+        mode = "open" if open else "live"
+        raise ValueError(f"No {mode} {community} drawing was found in the database.")
     return _reference_from_drawing(drawing)
 
 
@@ -187,6 +212,7 @@ def _reference_from_id(
             number=None,
             community=None,
             status=None,
+            ended_at=None,
         )
     return _reference_from_drawing(drawing)
 
@@ -197,7 +223,67 @@ def _reference_from_drawing(drawing: Drawing) -> DrawingReference:
         number=drawing.number,
         community=drawing.name,
         status=drawing.status,
+        ended_at=drawing.ended_at,
     )
+
+
+def _select_time_based_drawing(
+    drawings: list[Drawing],
+    *,
+    now: datetime,
+    require_future: bool,
+) -> Drawing | None:
+    parsed = [
+        (drawing, _parse_datetime(drawing.ended_at))
+        for drawing in drawings
+    ]
+    valid = [
+        (drawing, ended_at)
+        for drawing, ended_at in parsed
+        if ended_at is not None
+    ]
+    if require_future:
+        future = [
+            (drawing, ended_at)
+            for drawing, ended_at in valid
+            if ended_at > now
+        ]
+        if not future:
+            return None
+        return min(future, key=lambda item: (item[1], item[0].id))[0]
+
+    locked = [
+        (drawing, ended_at)
+        for drawing, ended_at in valid
+        if ended_at <= now
+    ]
+    if not locked:
+        return None
+    return max(locked, key=lambda item: (item[1], item[0].id))[0]
+
+
+def _coerce_datetime(value: datetime | str | None) -> datetime:
+    if value is None:
+        return datetime.now(timezone.utc)
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    parsed = _parse_datetime(value)
+    if parsed is None:
+        raise ValueError(f"Invalid datetime: {value}")
+    return parsed
+
+
+def _parse_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    normalized = value.strip()
+    if normalized.endswith("Z"):
+        normalized = f"{normalized[:-1]}+00:00"
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
 def _stored_db_fields() -> list[str]:

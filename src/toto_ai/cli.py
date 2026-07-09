@@ -166,17 +166,21 @@ def inspect_api(
         None,
         help="Public drawing number to resolve from the local database.",
     ),
-    latest: bool = typer.Option(
+    latest_finished: bool = typer.Option(
         False,
         help="Inspect latest finished baltbet-main drawing from the local database.",
     ),
-    active: bool = typer.Option(
+    live: bool = typer.Option(
         False,
-        help="Inspect latest active baltbet-main drawing from the local database.",
+        help="Inspect active/expected drawing whose ended_at is in the past.",
+    ),
+    open: bool = typer.Option(
+        False,
+        help="Inspect next playable active/expected drawing ending in the future.",
     ),
     db: str = typer.Option(
         "data/toto.db",
-        help="SQLite database used for --number, --latest, and --active resolution.",
+        help="SQLite database used for drawing resolution.",
     ),
     pretty: bool = typer.Option(False, help="Print formatted raw JSON."),
     diff_db: bool = typer.Option(False, help="Compare raw JSON paths with DB fields."),
@@ -190,8 +194,9 @@ def inspect_api(
                 session,
                 drawing_id=drawing_id,
                 number=number,
-                latest=latest,
-                active=active,
+                latest_finished=latest_finished,
+                live=live,
+                open=open,
             )
         except ValueError as error:
             raise typer.BadParameter(str(error)) from error
@@ -211,21 +216,21 @@ def inspect_api(
 
 @app.command()
 def predict(
-    active: bool = typer.Option(
+    open: bool = typer.Option(
         False,
-        help="Resolve latest active baltbet-main drawing for future prediction.",
+        help="Resolve next playable baltbet-main drawing for future prediction.",
     ),
     db: str = "data/toto.db",
 ) -> None:
     """Placeholder for the future prediction engine."""
-    if not active:
-        raise typer.BadParameter("Only --active is supported for now.")
+    if not open:
+        raise typer.BadParameter("Only --open is supported for now.")
 
     engine = init_db(db)
     session_factory = get_session_factory(engine)
     with session_factory() as session:
         try:
-            reference = resolve_drawing_reference(session, active=True)
+            reference = resolve_drawing_reference(session, open=True)
         except ValueError as error:
             raise typer.BadParameter(str(error)) from error
 

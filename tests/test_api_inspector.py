@@ -32,12 +32,28 @@ def session():
                     number=4939,
                     name="baltbet-main",
                     status="active",
+                    ended_at="2026-07-09T10:00:00Z",
                 ),
                 Drawing(
                     id=11937,
                     number=4940,
                     name="baltbet-main",
                     status="active",
+                    ended_at="2026-07-09T11:00:00Z",
+                ),
+                Drawing(
+                    id=11938,
+                    number=4941,
+                    name="baltbet-main",
+                    status="expected",
+                    ended_at="2026-07-09T13:00:00Z",
+                ),
+                Drawing(
+                    id=11939,
+                    number=4942,
+                    name="baltbet-main",
+                    status="active",
+                    ended_at="2026-07-09T14:00:00Z",
                 ),
                 Drawing(
                     id=11934,
@@ -147,8 +163,10 @@ def test_resolve_drawing_reference_by_number_uses_local_database(session):
     assert reference.status == "finished"
 
 
-def test_resolve_drawing_reference_latest_uses_latest_finished_baltbet(session):
-    reference = resolve_drawing_reference(session, latest=True)
+def test_resolve_drawing_reference_latest_finished_uses_latest_finished_baltbet(
+    session,
+):
+    reference = resolve_drawing_reference(session, latest_finished=True)
 
     assert reference.drawing_id == 11935
     assert reference.number == 4938
@@ -156,8 +174,12 @@ def test_resolve_drawing_reference_latest_uses_latest_finished_baltbet(session):
     assert reference.status == "finished"
 
 
-def test_resolve_drawing_reference_active_uses_latest_active_baltbet(session):
-    reference = resolve_drawing_reference(session, active=True)
+def test_resolve_drawing_reference_live_uses_locked_active_or_expected_baltbet(session):
+    reference = resolve_drawing_reference(
+        session,
+        live=True,
+        now="2026-07-09T12:00:00Z",
+    )
 
     assert reference.drawing_id == 11937
     assert reference.number == 4940
@@ -165,9 +187,33 @@ def test_resolve_drawing_reference_active_uses_latest_active_baltbet(session):
     assert reference.status == "active"
 
 
+def test_resolve_drawing_reference_open_uses_future_ended_playable_baltbet(session):
+    reference = resolve_drawing_reference(
+        session,
+        open=True,
+        now="2026-07-09T12:00:00Z",
+    )
+
+    assert reference.drawing_id == 11938
+    assert reference.number == 4941
+    assert reference.community == "baltbet-main"
+    assert reference.status == "expected"
+
+
+def test_resolve_drawing_reference_open_never_uses_past_ended_drawing(session):
+    reference = resolve_drawing_reference(
+        session,
+        open=True,
+        now="2026-07-09T13:30:00Z",
+    )
+
+    assert reference.drawing_id == 11939
+    assert reference.ended_at == "2026-07-09T14:00:00Z"
+
+
 def test_resolve_drawing_reference_requires_one_selector(session):
     with pytest.raises(ValueError, match="Use exactly one"):
-        resolve_drawing_reference(session, latest=True, active=True)
+        resolve_drawing_reference(session, live=True, open=True)
 
 
 def test_resolve_drawing_reference_keeps_drawing_id_for_debugging(session):
