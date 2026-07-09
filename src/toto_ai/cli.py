@@ -5,8 +5,10 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.table import Table
 
 from toto_ai.analytics.api_inspector import (
+    DrawingReference,
     compare_raw_json_to_db_model,
     inspect_json_paths,
+    resolve_drawing_reference,
     save_raw_response,
 )
 from toto_ai.analytics.audit import get_database_audit
@@ -151,14 +153,43 @@ def audit(db: str = "data/toto.db") -> None:
 
 @app.command()
 def inspect_api(
-    drawing_id: int = typer.Option(..., help="TotoBrief drawing id to inspect."),
+    drawing_id: int | None = typer.Option(
+        None,
+        help="Internal TotoBrief API drawing id for debugging.",
+    ),
+    number: int | None = typer.Option(
+        None,
+        help="Public drawing number to resolve from the local database.",
+    ),
+    latest: bool = typer.Option(
+        False,
+        help="Inspect latest finished baltbet-main drawing from the local database.",
+    ),
+    db: str = typer.Option(
+        "data/toto.db",
+        help="SQLite database used for --number and --latest resolution.",
+    ),
     pretty: bool = typer.Option(False, help="Print formatted raw JSON."),
     diff_db: bool = typer.Option(False, help="Compare raw JSON paths with DB fields."),
 ) -> None:
     """Fetch and inspect raw TotoBrief drawing-info JSON."""
-    payload = TotoBriefClient().drawing_info(drawing_id)
-    output_path = save_raw_response(payload, drawing_id=drawing_id)
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+    with session_factory() as session:
+        try:
+            reference = resolve_drawing_reference(
+                session,
+                drawing_id=drawing_id,
+                number=number,
+                latest=latest,
+            )
+        except ValueError as error:
+            raise typer.BadParameter(str(error)) from error
 
+    payload = TotoBriefClient().drawing_info(reference.drawing_id)
+    output_path = save_raw_response(payload, drawing_id=reference.drawing_id)
+
+    print(_drawing_reference_table(reference))
     print(f"Saved raw response to {output_path}")
     if pretty:
         print(JSON.from_data(payload))
@@ -363,6 +394,17 @@ def _api_paths_table(rows: list[dict[str, object]]) -> Table:
             _format_value(row["type"]),
             _format_value(row["sample"]),
         )
+    return table
+
+
+def _drawing_reference_table(reference: DrawingReference) -> Table:
+    table = Table(title="Drawing")
+    table.add_column("Field")
+    table.add_column("Value", justify="right")
+    table.add_row("Drawing number", _format_value(reference.number))
+    table.add_row("Internal id", _format_value(reference.drawing_id))
+    table.add_row("Community", _format_value(reference.community))
+    table.add_row("Status", _format_value(reference.status))
     return table
 
 

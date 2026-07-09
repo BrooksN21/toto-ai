@@ -1,10 +1,50 @@
 import json
 
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+
 from toto_ai.analytics.api_inspector import (
     compare_raw_json_to_db_model,
     inspect_json_paths,
+    resolve_drawing_reference,
     save_raw_response,
 )
+from toto_ai.db.models import Base, Drawing
+
+
+@pytest.fixture()
+def session():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        session.add_all(
+            [
+                Drawing(
+                    id=11935,
+                    number=4938,
+                    name="baltbet-main",
+                    status="finished",
+                ),
+                Drawing(
+                    id=11936,
+                    number=4939,
+                    name="baltbet-main",
+                    status="active",
+                ),
+                Drawing(
+                    id=11934,
+                    number=4937,
+                    name="baltbet-main",
+                    status="finished",
+                ),
+            ]
+        )
+        session.commit()
+        yield session
+
+    engine.dispose()
 
 
 def sample_payload():
@@ -90,3 +130,30 @@ def test_compare_raw_json_to_db_model_reports_unstored_and_missing_paths():
     assert "quotes.pool_win_1" in diff["stored_fields"]
     assert "data.status" in diff["missing_mappings"]
     assert "data.events[].sport" in diff["missing_mappings"]
+
+
+def test_resolve_drawing_reference_by_number_uses_local_database(session):
+    reference = resolve_drawing_reference(session, number=4938)
+
+    assert reference.drawing_id == 11935
+    assert reference.number == 4938
+    assert reference.community == "baltbet-main"
+    assert reference.status == "finished"
+
+
+def test_resolve_drawing_reference_latest_uses_latest_finished_baltbet(session):
+    reference = resolve_drawing_reference(session, latest=True)
+
+    assert reference.drawing_id == 11935
+    assert reference.number == 4938
+    assert reference.community == "baltbet-main"
+    assert reference.status == "finished"
+
+
+def test_resolve_drawing_reference_keeps_drawing_id_for_debugging(session):
+    reference = resolve_drawing_reference(session, drawing_id=99999)
+
+    assert reference.drawing_id == 99999
+    assert reference.number is None
+    assert reference.community is None
+    assert reference.status is None

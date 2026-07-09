@@ -1,6 +1,10 @@
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from toto_ai.db.models import Drawing, Event, Quote
 
@@ -29,6 +33,60 @@ RAW_TO_DB_MAPPINGS = {
     "data.events[].quotes.pin_draw": "quotes.pin_draw",
     "data.events[].quotes.pin_win_2": "quotes.pin_win_2",
 }
+
+
+@dataclass(frozen=True)
+class DrawingReference:
+    drawing_id: int
+    number: int | None
+    community: str | None
+    status: str | None
+
+
+def resolve_drawing_reference(
+    session: Session,
+    *,
+    drawing_id: int | None = None,
+    number: int | None = None,
+    latest: bool = False,
+    community: str = "baltbet-main",
+) -> DrawingReference:
+    selected_options = sum(
+        (drawing_id is not None, number is not None, latest)
+    )
+    if selected_options != 1:
+        raise ValueError("Use exactly one of --drawing-id, --number, or --latest.")
+
+    if drawing_id is not None:
+        drawing = session.get(Drawing, drawing_id)
+        return _reference_from_id(drawing_id, drawing)
+
+    if number is not None:
+        drawing = session.scalar(
+            select(Drawing)
+            .where(Drawing.number == number)
+            .where(Drawing.name == community)
+            .order_by(Drawing.id.desc())
+        )
+        if drawing is None:
+            drawing = session.scalar(
+                select(Drawing)
+                .where(Drawing.number == number)
+                .order_by(Drawing.id.desc())
+            )
+        if drawing is None:
+            raise ValueError(f"Drawing number {number} was not found in the database.")
+        return _reference_from_drawing(drawing)
+
+    drawing = session.scalar(
+        select(Drawing)
+        .where(Drawing.name == community)
+        .where(Drawing.status == "finished")
+        .order_by(Drawing.number.desc(), Drawing.id.desc())
+    )
+    if drawing is None:
+        raise ValueError(f"No finished {community} drawing was found in the database.")
+    return _reference_from_drawing(drawing)
 
 
 def inspect_json_paths(payload: Any) -> list[dict[str, Any]]:
@@ -110,6 +168,29 @@ def _json_type(value: Any) -> str:
     if isinstance(value, str):
         return "str"
     return type(value).__name__
+
+
+def _reference_from_id(
+    drawing_id: int,
+    drawing: Drawing | None,
+) -> DrawingReference:
+    if drawing is None:
+        return DrawingReference(
+            drawing_id=drawing_id,
+            number=None,
+            community=None,
+            status=None,
+        )
+    return _reference_from_drawing(drawing)
+
+
+def _reference_from_drawing(drawing: Drawing) -> DrawingReference:
+    return DrawingReference(
+        drawing_id=drawing.id,
+        number=drawing.number,
+        community=drawing.name,
+        status=drawing.status,
+    )
 
 
 def _stored_db_fields() -> list[str]:
