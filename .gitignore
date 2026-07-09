@@ -11,3 +11,4 @@ dist/
 .env
 data/*.db
 data/*.sqlite
+data/raw/*.json

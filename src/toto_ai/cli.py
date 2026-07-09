@@ -1,8 +1,14 @@
 import typer
 from rich import print
+from rich.json import JSON
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.table import Table
 
+from toto_ai.analytics.api_inspector import (
+    compare_raw_json_to_db_model,
+    inspect_json_paths,
+    save_raw_response,
+)
 from toto_ai.analytics.audit import get_database_audit
 from toto_ai.analytics.history import (
     get_crowd_accuracy,
@@ -141,6 +147,25 @@ def audit(db: str = "data/toto.db") -> None:
     print(_probability_validation_table(audit_result["probability_validation"]))
     print(_duplicates_table(audit_result["duplicates"]))
     print(_quality_score_table(audit_result["quality_score"]))
+
+
+@app.command()
+def inspect_api(
+    drawing_id: int = typer.Option(..., help="TotoBrief drawing id to inspect."),
+    pretty: bool = typer.Option(False, help="Print formatted raw JSON."),
+    diff_db: bool = typer.Option(False, help="Compare raw JSON paths with DB fields."),
+) -> None:
+    """Fetch and inspect raw TotoBrief drawing-info JSON."""
+    payload = TotoBriefClient().drawing_info(drawing_id)
+    output_path = save_raw_response(payload, drawing_id=drawing_id)
+
+    print(f"Saved raw response to {output_path}")
+    if pretty:
+        print(JSON.from_data(payload))
+
+    print(_api_paths_table(inspect_json_paths(payload)))
+    if diff_db:
+        print(_api_db_diff_table(compare_raw_json_to_db_model(payload)))
 
 
 def _summary_table(summary: dict[str, object]) -> Table:
@@ -324,6 +349,36 @@ def _quality_score_table(score: float) -> Table:
     table.add_column("Metric")
     table.add_column("Value", justify="right")
     table.add_row("score", f"{score:.2f}/100")
+    return table
+
+
+def _api_paths_table(rows: list[dict[str, object]]) -> Table:
+    table = Table(title="API JSON Paths")
+    table.add_column("Path")
+    table.add_column("Type")
+    table.add_column("Sample")
+    for row in rows:
+        table.add_row(
+            _format_value(row["path"]),
+            _format_value(row["type"]),
+            _format_value(row["sample"]),
+        )
+    return table
+
+
+def _api_db_diff_table(diff: dict[str, list[str]]) -> Table:
+    table = Table(title="API JSON vs Database Model")
+    table.add_column("Category")
+    table.add_column("Field")
+    labels = {
+        "json_not_stored": "JSON present, not stored",
+        "stored_fields": "Stored in DB",
+        "missing_mappings": "Mapped DB field missing in JSON",
+    }
+    for key in ("json_not_stored", "stored_fields", "missing_mappings"):
+        values = diff[key] or [""]
+        for value in values:
+            table.add_row(labels[key], value)
     return table
 
 
