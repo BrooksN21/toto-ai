@@ -52,13 +52,16 @@ def resolve_drawing_reference(
     drawing_id: int | None = None,
     number: int | None = None,
     latest: bool = False,
+    active: bool = False,
     community: str = "baltbet-main",
 ) -> DrawingReference:
     selected_options = sum(
-        (drawing_id is not None, number is not None, latest)
+        (drawing_id is not None, number is not None, latest, active)
     )
     if selected_options != 1:
-        raise ValueError("Use exactly one of --drawing-id, --number, or --latest.")
+        raise ValueError(
+            "Use exactly one of --drawing-id, --number, --latest, or --active."
+        )
 
     if drawing_id is not None:
         drawing = session.get(Drawing, drawing_id)
@@ -81,14 +84,15 @@ def resolve_drawing_reference(
             raise ValueError(f"Drawing number {number} was not found in the database.")
         return _reference_from_drawing(drawing)
 
+    status = "active" if active else "finished"
     drawing = session.scalar(
         select(Drawing)
         .where(Drawing.name == community)
-        .where(Drawing.status == "finished")
+        .where(Drawing.status == status)
         .order_by(Drawing.number.desc(), Drawing.id.desc())
     )
     if drawing is None:
-        raise ValueError(f"No finished {community} drawing was found in the database.")
+        raise ValueError(f"No {status} {community} drawing was found in the database.")
     return _reference_from_drawing(drawing)
 
 

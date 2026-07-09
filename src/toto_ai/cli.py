@@ -170,9 +170,13 @@ def inspect_api(
         False,
         help="Inspect latest finished baltbet-main drawing from the local database.",
     ),
+    active: bool = typer.Option(
+        False,
+        help="Inspect latest active baltbet-main drawing from the local database.",
+    ),
     db: str = typer.Option(
         "data/toto.db",
-        help="SQLite database used for --number and --latest resolution.",
+        help="SQLite database used for --number, --latest, and --active resolution.",
     ),
     pretty: bool = typer.Option(False, help="Print formatted raw JSON."),
     diff_db: bool = typer.Option(False, help="Compare raw JSON paths with DB fields."),
@@ -187,6 +191,7 @@ def inspect_api(
                 drawing_id=drawing_id,
                 number=number,
                 latest=latest,
+                active=active,
             )
         except ValueError as error:
             raise typer.BadParameter(str(error)) from error
@@ -202,6 +207,30 @@ def inspect_api(
     print(_api_paths_table(inspect_json_paths(payload)))
     if diff_db:
         print(_api_db_diff_table(compare_raw_json_to_db_model(payload)))
+
+
+@app.command()
+def predict(
+    active: bool = typer.Option(
+        False,
+        help="Resolve latest active baltbet-main drawing for future prediction.",
+    ),
+    db: str = "data/toto.db",
+) -> None:
+    """Placeholder for the future prediction engine."""
+    if not active:
+        raise typer.BadParameter("Only --active is supported for now.")
+
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+    with session_factory() as session:
+        try:
+            reference = resolve_drawing_reference(session, active=True)
+        except ValueError as error:
+            raise typer.BadParameter(str(error)) from error
+
+    print(_drawing_reference_table(reference))
+    print("Prediction engine placeholder. No predictions are generated yet.")
 
 
 @app.command()
