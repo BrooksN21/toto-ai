@@ -27,6 +27,7 @@ from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db
+from toto_ai.package.mvp import generate_mvp_package
 
 app = typer.Typer(help="TotoBrief API commands.")
 
@@ -276,6 +277,33 @@ def study_bk(db: str = "data/toto.db") -> None:
     print(_bk_vs_norm_examples_table(result["examples"]))
     print(result["conclusion"])
     print(f"Report written to {report_path}")
+
+
+@app.command()
+def package_mvp(
+    brief: str = typer.Option(
+        ...,
+        help="15-position brief, comma-separated for doubles/triples.",
+    ),
+    bank: int = typer.Option(..., help="Any positive integer budget."),
+    stake: int = typer.Option(30, help="Stake per coupon."),
+    category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+) -> None:
+    """Generate an MVP covering approximation package."""
+    try:
+        result = generate_mvp_package(
+            brief=brief,
+            bank=bank,
+            stake=stake,
+            category=category,
+        )
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(result.label)
+    print("Not an official TotoBrief guarantee.")
+    print(_package_mvp_summary_table(result))
+    print(_package_mvp_coupons_table(result.selected_coupons))
 
 
 def _summary_table(summary: dict[str, object]) -> Table:
@@ -560,6 +588,34 @@ def _bk_vs_norm_examples_table(rows: list[dict[str, object]]) -> Table:
             _format_value(row["calculated"]),
             _format_value(row["difference"]),
         )
+    return table
+
+
+def _package_mvp_summary_table(result: object) -> Table:
+    table = Table(title="MVP Covering Approximation")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("bank", _format_value(result.bank))
+    table.add_row("stake", _format_value(result.stake))
+    table.add_row("category", _format_value(result.category))
+    table.add_row("max_errors", _format_value(result.max_errors))
+    table.add_row("full brief size", _format_value(result.full_brief_size))
+    table.add_row("selected coupons", _format_value(len(result.selected_coupons)))
+    table.add_row("cost", _format_value(result.cost))
+    table.add_row(
+        "estimated coverage",
+        f"{result.covered_variants} / {result.full_brief_variants} "
+        f"({result.estimated_coverage:.2%})",
+    )
+    return table
+
+
+def _package_mvp_coupons_table(coupons: list[str]) -> Table:
+    table = Table(title="Selected Coupons")
+    table.add_column("#", justify="right")
+    table.add_column("Coupon")
+    for index, coupon in enumerate(coupons, start=1):
+        table.add_row(str(index), coupon)
     return table
 
 
