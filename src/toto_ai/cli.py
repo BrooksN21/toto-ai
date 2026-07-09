@@ -3,6 +3,7 @@ from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.table import Table
 
+from toto_ai.analytics.audit import get_database_audit
 from toto_ai.analytics.history import (
     get_crowd_accuracy,
     get_drawings_summary,
@@ -116,6 +117,32 @@ def inspect_events(db: str = "data/toto.db", limit: int = 20) -> None:
     print(_event_diagnostics_table(rows))
 
 
+@app.command()
+def audit(db: str = "data/toto.db") -> None:
+    """Audit completeness and quality of a collected SQLite database."""
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+
+    with session_factory() as session:
+        audit_result = get_database_audit(session)
+
+    print(_drawings_audit_table(audit_result["drawings"]))
+    print(_dimension_table("Sports", "Sport", audit_result["sports"]))
+    print(
+        _dimension_table(
+            "Top Championships",
+            "Championship",
+            audit_result["championships"],
+        )
+    )
+    print(_dimension_table("Result Values", "Result", audit_result["result_values"]))
+    print(_score_audit_table(audit_result["score"]))
+    print(_quote_completeness_table(audit_result["quote_completeness"]))
+    print(_probability_validation_table(audit_result["probability_validation"]))
+    print(_duplicates_table(audit_result["duplicates"]))
+    print(_quality_score_table(audit_result["quality_score"]))
+
+
 def _summary_table(summary: dict[str, object]) -> Table:
     table = Table(title="Database Summary")
     table.add_column("Metric")
@@ -204,6 +231,99 @@ def _event_diagnostics_table(rows: list[dict[str, object]]) -> Table:
             _format_value(row["pool_hit"]),
             _format_value(row["bk_hit"]),
         )
+    return table
+
+
+def _drawings_audit_table(drawings: dict[str, object]) -> Table:
+    table = Table(title="Drawings")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("total", _format_value(drawings["total"]))
+    table.add_row("finished", _format_value(drawings["finished"]))
+    table.add_row("active", _format_value(drawings["active"]))
+
+    other_statuses = drawings["other_statuses"]
+    if isinstance(other_statuses, dict):
+        for status, count in other_statuses.items():
+            table.add_row(f"other: {status}", _format_value(count))
+    return table
+
+
+def _dimension_table(
+    title: str,
+    label: str,
+    rows: list[dict[str, object]],
+) -> Table:
+    key = label.lower()
+    table = Table(title=title)
+    table.add_column(label)
+    table.add_column("Count", justify="right")
+    for row in rows:
+        table.add_row(_format_value(row[key]), _format_value(row["count"]))
+    return table
+
+
+def _score_audit_table(score: dict[str, int]) -> Table:
+    table = Table(title="Score")
+    table.add_column("Metric")
+    table.add_column("Count", justify="right")
+    table.add_row("filled", _format_value(score["filled"]))
+    table.add_row("empty", _format_value(score["empty"]))
+    return table
+
+
+def _quote_completeness_table(completeness: dict[str, dict[str, int]]) -> Table:
+    table = Table(title="Quote Completeness")
+    table.add_column("Field")
+    table.add_column("Filled", justify="right")
+    table.add_column("Missing", justify="right")
+    for field, stats in completeness.items():
+        table.add_row(
+            field,
+            _format_value(stats["filled"]),
+            _format_value(stats["missing"]),
+        )
+    return table
+
+
+def _probability_validation_table(
+    validation: dict[str, dict[str, float | int]],
+) -> Table:
+    table = Table(title="Probability Validation")
+    table.add_column("Provider")
+    table.add_column("Min", justify="right")
+    table.add_column("Max", justify="right")
+    table.add_column("Average", justify="right")
+    table.add_column(">0.001", justify="right")
+    table.add_column(">0.01", justify="right")
+    table.add_column(">0.05", justify="right")
+    for provider, stats in validation.items():
+        table.add_row(
+            provider,
+            _format_value(stats["min"]),
+            _format_value(stats["max"]),
+            _format_value(stats["average"]),
+            _format_value(stats["diff_gt_0_001"]),
+            _format_value(stats["diff_gt_0_01"]),
+            _format_value(stats["diff_gt_0_05"]),
+        )
+    return table
+
+
+def _duplicates_table(duplicates: dict[str, int]) -> Table:
+    table = Table(title="Duplicate Detection")
+    table.add_column("Entity")
+    table.add_column("Duplicate Groups", justify="right")
+    table.add_row("drawings", _format_value(duplicates["drawings"]))
+    table.add_row("events", _format_value(duplicates["events"]))
+    return table
+
+
+def _quality_score_table(score: float) -> Table:
+    table = Table(title="Overall Data Quality Score")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("score", f"{score:.2f}/100")
     return table
 
 
