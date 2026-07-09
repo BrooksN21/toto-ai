@@ -5,9 +5,11 @@ from sqlalchemy.orm import Session
 from toto_ai.analytics.history import (
     get_crowd_accuracy,
     get_drawings_summary,
+    get_event_diagnostics,
     get_outcome_distribution,
     get_position_distribution,
     get_value_buckets,
+    normalize_result,
 )
 from toto_ai.db.models import Base, Drawing, Event, Quote
 
@@ -199,9 +201,50 @@ def test_get_crowd_accuracy(session):
 def test_get_value_buckets(session):
     buckets = get_value_buckets(session)
 
-    assert buckets["<= -20%"] == {"count": 1, "hit_rate": 0.0}
+    assert buckets["<= -20%"] == {"count": 2, "hit_rate": 50.0}
     assert buckets["-20%..-10%"] == {"count": 1, "hit_rate": 100.0}
     assert buckets["-10%..0"] == {"count": 0, "hit_rate": 0.0}
-    assert buckets["0..10%"] == {"count": 0, "hit_rate": 0.0}
-    assert buckets["10%..20%"] == {"count": 1, "hit_rate": 100.0}
+    assert buckets["0..10%"] == {"count": 2, "hit_rate": 0.0}
+    assert buckets["10%..20%"] == {"count": 4, "hit_rate": 25.0}
     assert buckets[">20%"] == {"count": 0, "hit_rate": 0.0}
+
+
+def test_normalize_result_accepts_common_outcome_labels():
+    assert normalize_result("win_1") == "1"
+    assert normalize_result("1") == "1"
+    assert normalize_result("draw") == "X"
+    assert normalize_result("X") == "X"
+    assert normalize_result("win_2") == "2"
+    assert normalize_result("2") == "2"
+    assert normalize_result("unknown") is None
+    assert normalize_result(None) is None
+
+
+def test_get_event_diagnostics_reports_pool_and_bookmaker_hits(session):
+    rows = get_event_diagnostics(session, limit=20)
+
+    assert rows[0] == {
+        "drawing_id": 1,
+        "event_order": 1,
+        "event_name": "A",
+        "score": "2:1",
+        "result": "1",
+        "pool_1": 0.70,
+        "pool_x": 0.20,
+        "pool_2": 0.10,
+        "bk_1": 0.60,
+        "bk_x": 0.25,
+        "bk_2": 0.15,
+        "pool_top": "1",
+        "bk_top": "1",
+        "pool_hit": True,
+        "bk_hit": True,
+    }
+    assert rows[1]["pool_top"] == "1"
+    assert rows[1]["bk_top"] == "X"
+    assert rows[1]["pool_hit"] is False
+    assert rows[1]["bk_hit"] is True
+    assert rows[2]["pool_top"] == "2"
+    assert rows[2]["bk_top"] == "1"
+    assert rows[2]["pool_hit"] is True
+    assert rows[2]["bk_hit"] is False

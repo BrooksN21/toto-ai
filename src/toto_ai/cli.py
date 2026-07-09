@@ -6,6 +6,7 @@ from rich.table import Table
 from toto_ai.analytics.history import (
     get_crowd_accuracy,
     get_drawings_summary,
+    get_event_diagnostics,
     get_outcome_distribution,
     get_value_buckets,
 )
@@ -103,6 +104,18 @@ def research(db: str = "data/toto.db") -> None:
     print(_value_buckets_table(value_buckets))
 
 
+@app.command()
+def inspect_events(db: str = "data/toto.db", limit: int = 20) -> None:
+    """Inspect event-level result and quote diagnostics."""
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+
+    with session_factory() as session:
+        rows = get_event_diagnostics(session, limit=limit)
+
+    print(_event_diagnostics_table(rows))
+
+
 def _summary_table(summary: dict[str, object]) -> Table:
     table = Table(title="Database Summary")
     table.add_column("Metric")
@@ -150,7 +163,53 @@ def _value_buckets_table(buckets: dict[str, dict[str, float | int]]) -> Table:
     return table
 
 
+def _event_diagnostics_table(rows: list[dict[str, object]]) -> Table:
+    table = Table(title="Event Diagnostics")
+    columns = [
+        "drawing_id",
+        "event_order",
+        "event name",
+        "score",
+        "result",
+        "pool_1",
+        "pool_x",
+        "pool_2",
+        "bk_1",
+        "bk_x",
+        "bk_2",
+        "pool_top",
+        "bk_top",
+        "pool_hit",
+        "bk_hit",
+    ]
+    for column in columns:
+        justify = "right" if column not in {"event name", "score"} else "left"
+        table.add_column(column, justify=justify)
+
+    for row in rows:
+        table.add_row(
+            _format_value(row["drawing_id"]),
+            _format_value(row["event_order"]),
+            _format_value(row["event_name"]),
+            _format_value(row["score"]),
+            _format_value(row["result"]),
+            _format_value(row["pool_1"]),
+            _format_value(row["pool_x"]),
+            _format_value(row["pool_2"]),
+            _format_value(row["bk_1"]),
+            _format_value(row["bk_x"]),
+            _format_value(row["bk_2"]),
+            _format_value(row["pool_top"]),
+            _format_value(row["bk_top"]),
+            _format_value(row["pool_hit"]),
+            _format_value(row["bk_hit"]),
+        )
+    return table
+
+
 def _format_value(value: object, percent: bool = False) -> str:
+    if value is None:
+        return ""
     if isinstance(value, float):
         suffix = "%" if percent else ""
         return f"{value:.2f}{suffix}"

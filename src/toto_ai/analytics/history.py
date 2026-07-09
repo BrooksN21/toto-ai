@@ -125,15 +125,15 @@ def get_value_buckets(session: Session) -> dict[str, dict[str, float | int]]:
         if result is None or pool is None or bookmaker is None:
             continue
 
-        pool_probability = pool[result]
-        bookmaker_probability = bookmaker[result]
-        if pool_probability is None or bookmaker_probability is None:
-            continue
+        for outcome in OUTCOMES:
+            pool_probability = pool[outcome]
+            bookmaker_probability = bookmaker[outcome]
+            if pool_probability is None or bookmaker_probability is None:
+                continue
 
-        bucket = _value_bucket(bookmaker_probability - pool_probability)
-        top_outcome = _top_outcome(bookmaker)
-        bucket_counts[bucket] += 1
-        bucket_hits[bucket] += int(top_outcome == result)
+            bucket = _value_bucket(bookmaker_probability - pool_probability)
+            bucket_counts[bucket] += 1
+            bucket_hits[bucket] += int(outcome == result)
 
     return {
         bucket: {
@@ -142,6 +142,54 @@ def get_value_buckets(session: Session) -> dict[str, dict[str, float | int]]:
         }
         for bucket in VALUE_BUCKETS
     }
+
+
+def get_event_diagnostics(
+    session: Session,
+    limit: int = 20,
+) -> list[dict[str, Any]]:
+    rows = session.execute(
+        select(Event, Quote)
+        .join(
+            Quote,
+            (Quote.drawing_id == Event.drawing_id)
+            & (Quote.event_order == Event.event_order),
+        )
+        .order_by(Event.drawing_id, Event.event_order)
+        .limit(limit)
+    ).all()
+    diagnostics = []
+
+    for event, quote in rows:
+        result = normalize_result(event.result)
+        pool = _outcome_probabilities(quote, "pool")
+        bookmaker = _outcome_probabilities(quote, "bk")
+        pool_top = _top_outcome(pool) if pool is not None else None
+        bookmaker_top = _top_outcome(bookmaker) if bookmaker is not None else None
+
+        diagnostics.append(
+            {
+                "drawing_id": event.drawing_id,
+                "event_order": event.event_order + 1
+                if event.event_order is not None
+                else None,
+                "event_name": event.name,
+                "score": event.score,
+                "result": result,
+                "pool_1": pool["1"] if pool else None,
+                "pool_x": pool["X"] if pool else None,
+                "pool_2": pool["2"] if pool else None,
+                "bk_1": bookmaker["1"] if bookmaker else None,
+                "bk_x": bookmaker["X"] if bookmaker else None,
+                "bk_2": bookmaker["2"] if bookmaker else None,
+                "pool_top": pool_top,
+                "bk_top": bookmaker_top,
+                "pool_hit": pool_top == result if result and pool_top else None,
+                "bk_hit": bookmaker_top == result if result and bookmaker_top else None,
+            }
+        )
+
+    return diagnostics
 
 
 def normalize_result(result: str | None) -> str | None:
