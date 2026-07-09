@@ -154,6 +154,9 @@ class Collector:
                             pin_win_1=quotes.get("pin_win_1"),
                             pin_draw=quotes.get("pin_draw"),
                             pin_win_2=quotes.get("pin_win_2"),
+                            norm_win_1=quotes.get("norm_win_1"),
+                            norm_draw=quotes.get("norm_draw"),
+                            norm_win_2=quotes.get("norm_win_2"),
                         )
                     )
                     quotes_saved += 1

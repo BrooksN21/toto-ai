@@ -19,6 +19,11 @@ from toto_ai.analytics.history import (
     get_outcome_distribution,
     get_value_buckets,
 )
+from toto_ai.analytics.research_bk_vs_norm import (
+    run_bk_vs_norm_study,
+    write_bk_vs_norm_report,
+)
+from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db
@@ -197,6 +202,46 @@ def inspect_api(
     print(_api_paths_table(inspect_json_paths(payload)))
     if diff_db:
         print(_api_db_diff_table(compare_raw_json_to_db_model(payload)))
+
+
+@app.command()
+def validate(
+    number: int = typer.Option(..., help="Public drawing number to validate."),
+    db: str = "data/toto.db",
+) -> None:
+    """Validate raw API data, SQLite data, and analytics for a drawing number."""
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+
+    with session_factory() as session:
+        try:
+            reference = resolve_drawing_reference(session, number=number)
+        except ValueError as error:
+            raise typer.BadParameter(str(error)) from error
+        payload = TotoBriefClient().drawing_info(reference.drawing_id)
+        result = run_validation(session, payload, number=number)
+
+    report_path = write_validation_report(result)
+    print(f"Validation: {result['overall_status']}")
+    print(_validation_checks_table(result))
+    print(_validation_quote_totals_table(result["quote_totals"]))
+    print(f"Report written to {report_path}")
+
+
+@app.command()
+def study_bk(db: str = "data/toto.db") -> None:
+    """Study whether BK probabilities are derived from normalized odds."""
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+
+    with session_factory() as session:
+        result = run_bk_vs_norm_study(session)
+
+    report_path = write_bk_vs_norm_report(result)
+    print(_bk_vs_norm_metrics_table(result))
+    print(_bk_vs_norm_examples_table(result["examples"]))
+    print(result["conclusion"])
+    print(f"Report written to {report_path}")
 
 
 def _summary_table(summary: dict[str, object]) -> Table:
@@ -421,6 +466,66 @@ def _api_db_diff_table(diff: dict[str, list[str]]) -> Table:
         values = diff[key] or [""]
         for value in values:
             table.add_row(labels[key], value)
+    return table
+
+
+def _validation_checks_table(result: dict[str, object]) -> Table:
+    table = Table(title="Validation Checks")
+    table.add_column("Check")
+    table.add_column("Status", justify="right")
+    table.add_row("RAW JSON vs SQLite", result["raw_vs_sqlite"]["status"])
+    table.add_row("Analytics manual SQL comparison", result["analytics"]["status"])
+    table.add_row("Result mapping", result["result_mapping"]["status"])
+    table.add_row("Score mapping", result["score_mapping"]["status"])
+    return table
+
+
+def _validation_quote_totals_table(rows: list[dict[str, object]]) -> Table:
+    table = Table(title="Quote Totals")
+    table.add_column("Event", justify="right")
+    table.add_column("pool1", justify="right")
+    table.add_column("poolX", justify="right")
+    table.add_column("pool2", justify="right")
+    table.add_column("sum", justify="right")
+    for row in rows:
+        table.add_row(
+            _format_value(row["event_order"]),
+            _format_value(row["pool1"]),
+            _format_value(row["poolX"]),
+            _format_value(row["pool2"]),
+            _format_value(row["sum"]),
+        )
+    return table
+
+
+def _bk_vs_norm_metrics_table(result: dict[str, object]) -> Table:
+    table = Table(title="BK vs Normalized Odds")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("Events analyzed", _format_value(result["event_count"]))
+    table.add_row("Comparisons", _format_value(result["comparison_count"]))
+    table.add_row(
+        "Average absolute error",
+        f"{result['average_absolute_error']:.4f}%",
+    )
+    table.add_row("Maximum error", f"{result['maximum_error']:.4f}%")
+    table.add_row("Correlation", f"{result['correlation']:.4f}")
+    return table
+
+
+def _bk_vs_norm_examples_table(rows: list[dict[str, object]]) -> Table:
+    table = Table(title="Random Examples")
+    table.add_column("Event")
+    table.add_column("BK")
+    table.add_column("Calculated")
+    table.add_column("Difference")
+    for row in rows:
+        table.add_row(
+            _format_value(row["event"]),
+            _format_value(row["bk"]),
+            _format_value(row["calculated"]),
+            _format_value(row["difference"]),
+        )
     return table
 
 

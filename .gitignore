@@ -12,3 +12,5 @@ dist/
 data/*.db
 data/*.sqlite
 data/raw/*.json
+reports/validation_*.md
+reports/bk_vs_norm.md

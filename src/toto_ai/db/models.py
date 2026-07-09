@@ -53,3 +53,6 @@ class Quote(Base):
     pin_win_1: Mapped[float | None] = mapped_column(Float)
     pin_draw: Mapped[float | None] = mapped_column(Float)
     pin_win_2: Mapped[float | None] = mapped_column(Float)
+    norm_win_1: Mapped[float | None] = mapped_column(Float)
+    norm_draw: Mapped[float | None] = mapped_column(Float)
+    norm_win_2: Mapped[float | None] = mapped_column(Float)

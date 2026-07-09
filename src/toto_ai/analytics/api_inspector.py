@@ -32,6 +32,9 @@ RAW_TO_DB_MAPPINGS = {
     "data.events[].quotes.pin_win_1": "quotes.pin_win_1",
     "data.events[].quotes.pin_draw": "quotes.pin_draw",
     "data.events[].quotes.pin_win_2": "quotes.pin_win_2",
+    "data.events[].quotes.norm_win_1": "quotes.norm_win_1",
+    "data.events[].quotes.norm_draw": "quotes.norm_draw",
+    "data.events[].quotes.norm_win_2": "quotes.norm_win_2",
 }
 
 
