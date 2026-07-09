@@ -27,6 +27,7 @@ from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db
+from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
 
 app = typer.Typer(help="TotoBrief API commands.")
@@ -304,6 +305,35 @@ def package_mvp(
     print("Not an official TotoBrief guarantee.")
     print(_package_mvp_summary_table(result))
     print(_package_mvp_coupons_table(result.selected_coupons))
+
+
+@app.command()
+def backtest(
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+    last: int = typer.Option(100, help="Number of latest complete drawings to test."),
+    bank: int = typer.Option(..., help="Any positive integer budget."),
+    stake: int = typer.Option(30, help="Stake per coupon."),
+    category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+) -> None:
+    """Backtest the MVP package generator on finished drawings."""
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+
+    with session_factory() as session:
+        try:
+            result = run_mvp_backtest(
+                session,
+                last=last,
+                bank=bank,
+                stake=stake,
+                category=category,
+            )
+        except ValueError as error:
+            raise typer.BadParameter(str(error)) from error
+
+    csv_path, markdown_path = write_backtest_reports(result, last=last)
+    print(_backtest_summary_table(result.summary))
+    print(f"Reports written to {csv_path} and {markdown_path}")
 
 
 def _summary_table(summary: dict[str, object]) -> Table:
@@ -616,6 +646,31 @@ def _package_mvp_coupons_table(coupons: list[str]) -> Table:
     table.add_column("Coupon")
     for index, coupon in enumerate(coupons, start=1):
         table.add_row(str(index), coupon)
+    return table
+
+
+def _backtest_summary_table(summary: dict[str, object]) -> Table:
+    table = Table(title="MVP Backtest Summary")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("drawings tested", _format_value(summary["drawings_tested"]))
+    table.add_row("avg coupons", _format_value(summary["avg_coupons"]))
+    table.add_row("avg cost", _format_value(summary["avg_cost"]))
+    table.add_row(
+        "hit_13 count/rate",
+        f"{summary['hit_13_count']} / {summary['hit_13_rate']:.2f}%",
+    )
+    table.add_row(
+        "hit_14 count/rate",
+        f"{summary['hit_14_count']} / {summary['hit_14_rate']:.2f}%",
+    )
+    table.add_row(
+        "hit_15 count/rate",
+        f"{summary['hit_15_count']} / {summary['hit_15_rate']:.2f}%",
+    )
+    table.add_row("total cost", _format_value(summary["total_cost"]))
+    table.add_row("total payout", _format_value(summary["total_payout"]))
+    table.add_row("ROI", _format_value(summary["roi"], percent=True))
     return table
 
 

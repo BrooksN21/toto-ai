@@ -14,3 +14,5 @@ data/*.sqlite
 data/raw/*.json
 reports/validation_*.md
 reports/bk_vs_norm.md
+reports/backtest_mvp_last_*.csv
+reports/backtest_mvp_last_*.md
