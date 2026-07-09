@@ -1,7 +1,10 @@
 import typer
 from rich import print
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
 from toto_ai.api.client import TotoBriefClient
+from toto_ai.collector.sync import Collector
+from toto_ai.db.session import get_session_factory, init_db
 
 app = typer.Typer(help="TotoBrief API commands.")
 
@@ -52,6 +55,27 @@ def info(drawing_id: int) -> None:
             f"bk=({quotes.get('bk_win_1')}, "
             f"{quotes.get('bk_draw')}, {quotes.get('bk_win_2')})"
         )
+
+
+@app.command()
+def collect(name: str = "baltbet-main", db: str = "data/toto.db") -> None:
+    """Collect historical drawings into a SQLite database."""
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+    collector = Collector(client=TotoBriefClient(), session_factory=session_factory)
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        TimeElapsedColumn(),
+    ) as progress:
+        result = collector.sync(name=name, progress=progress)
+
+    print(
+        f"Collected {result.drawings_saved} new drawings "
+        f"from {result.drawings_seen} seen across {result.pages_fetched} pages. "
+        f"Saved {result.events_saved} events and {result.quotes_saved} quotes."
+    )
 
 
 if __name__ == "__main__":

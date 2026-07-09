@@ -9,3 +9,5 @@ build/
 dist/
 .DS_Store
 .env
+data/*.db
+data/*.sqlite
