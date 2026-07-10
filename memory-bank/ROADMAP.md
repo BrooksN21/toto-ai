@@ -29,11 +29,14 @@
 - Compare category 13 vs 14.
 - Compare different budgets.
 - Compare against simple baselines.
+- Use `budget-oracle` to estimate the gap between baseline generation and an
+  oracle package under the same budget.
 
 ## Phase 4: Research
 
 - Bookmaker calibration
 - Brief oracle research
+- Budget-constrained brief oracle
 - Pool calibration
 - Crowd calibration
 - Pool vs BK bias

@@ -16,6 +16,10 @@ from toto_ai.analytics.brief_oracle import (
     run_brief_oracle_research,
     write_brief_oracle_reports,
 )
+from toto_ai.analytics.budget_oracle import (
+    run_budget_oracle,
+    write_budget_oracle_reports,
+)
 from toto_ai.analytics.calibration import (
     run_calibration_study,
     write_calibration_reports,
@@ -339,6 +343,35 @@ def brief_oracle(
     print(_brief_oracle_rank_table(result.summary["bk_rank_frequency"]))
     print(_brief_oracle_entropy_table(result.summary["entropy_by_cover_size"]))
     print(f"Reports written to {csv_path}, {markdown_path}, and {event_csv_path}")
+
+
+@app.command()
+def budget_oracle(
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+    last: int = typer.Option(500, help="Number of latest complete drawings to test."),
+    bank: int = typer.Option(..., help="Any positive integer budget."),
+    stake: int = typer.Option(30, help="Stake per coupon."),
+    category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+) -> None:
+    """Run a budget-constrained oracle benchmark against baseline briefs."""
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+
+    with session_factory() as session:
+        try:
+            result = run_budget_oracle(
+                session,
+                last=last,
+                bank=bank,
+                stake=stake,
+                category=category,
+            )
+        except ValueError as error:
+            raise typer.BadParameter(str(error)) from error
+
+    csv_path, markdown_path = write_budget_oracle_reports(result, last=last)
+    print(_budget_oracle_summary_table(result.summary))
+    print(f"Reports written to {csv_path} and {markdown_path}")
 
 
 @app.command()
@@ -947,6 +980,31 @@ def _brief_oracle_entropy_table(
             _format_value(stats["event_count"]),
             _format_value(stats["average_entropy"]),
         )
+    return table
+
+
+def _budget_oracle_summary_table(summary: dict[str, object]) -> Table:
+    table = Table(title="Budget-Constrained Brief Oracle")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    for key in (
+        "drawings_tested",
+        "oracle_average_best_hits",
+        "oracle_hit13_count",
+        "oracle_hit13_rate",
+        "oracle_hit14_count",
+        "oracle_hit14_rate",
+        "oracle_hit15_count",
+        "oracle_hit15_rate",
+        "average_singles",
+        "average_doubles",
+        "average_triples",
+        "average_package_size",
+        "average_package_cost",
+        "baseline_average_best_hits",
+        "average_oracle_baseline_gap",
+    ):
+        table.add_row(key.replace("_", " "), _format_value(summary[key]))
     return table
 
 

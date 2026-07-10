@@ -19,4 +19,5 @@ Requirements:
 
 Related:
 - [../skills/backtesting.md](../skills/backtesting.md)
+- [../knowledge/oracle_benchmarks.md](../knowledge/oracle_benchmarks.md)
 - [../memory-bank/ROADMAP.md](../memory-bank/ROADMAP.md)

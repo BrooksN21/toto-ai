@@ -27,3 +27,5 @@ reports/reliability.csv
 reports/brief_oracle.csv
 reports/brief_oracle.md
 reports/brief_oracle_by_event.csv
+reports/budget_oracle_last_*.csv
+reports/budget_oracle_last_*.md

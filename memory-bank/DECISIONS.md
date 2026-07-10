@@ -14,6 +14,8 @@
 - Every hypothesis must be backtested.
 - Never claim guaranteed profit.
 - Separate prediction quality from cover quality.
+- Budget-constrained oracle commands may use actual results only as benchmark
+  upper bounds; they must not be treated as playable prediction methods.
 - Category 13 means maximum Hamming distance 2.
 - Category 14 means maximum Hamming distance 1.
 - Category 15 means exact match.

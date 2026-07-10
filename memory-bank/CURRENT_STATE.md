@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 89
+- Tests currently passed: 93
 - Ruff passed
 
 ## Exact Cover Example
@@ -35,6 +35,34 @@ task commits listed above.
 - Worst minimum Hamming distance 2
 
 ## Latest Completed Task
+
+Implemented Budget-Constrained Brief Oracle.
+
+The `budget-oracle` command uses actual results only as an oracle benchmark. It
+searches BK-ranked candidate briefs that include the actual outcome, runs the
+Cover Engine under the same budget/stake/category constraints, and compares the
+best oracle package hits against the baseline brief generator.
+
+Command:
+- `python -m toto_ai.cli budget-oracle --db data/toto.db --last 500 --bank 10000 --stake 30 --category 13`
+
+Exports:
+- `reports/budget_oracle_last_<N>.csv`
+- `reports/budget_oracle_last_<N>.md`
+
+Metrics:
+- Oracle average best hits
+- Oracle hit13/hit14/hit15
+- Average singles, doubles, triples
+- Average oracle package size and cost
+- Baseline generator average best hits
+- Oracle vs baseline gap
+
+Local smoke result on `data/toto.db`:
+- `budget-oracle --last 1 --bank 10000 --stake 30 --category 13` completed in
+  about 9 seconds.
+
+## Previous Completed Task
 
 Created the persistent project knowledge base.
 
@@ -50,7 +78,7 @@ New repository-local project knowledge areas:
 The project rule is now explicit: after every completed feature, update the
 project knowledge base first.
 
-## Previous Completed Task
+## Earlier Completed Task: Brief Oracle Research
 
 Implemented Brief Oracle Research.
 
