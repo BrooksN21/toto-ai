@@ -4,6 +4,12 @@
 - This memory bank is project-local to TotoAI and must never be mixed with
   local skills, personal knowledge bases, team knowledge bases, or unrelated
   external memory stores.
+- Project knowledge is stored in repository directories:
+  - `memory-bank/` for project state and durable decisions.
+  - `knowledge/` for domain notes grounded in implemented repository state.
+  - `skills/` for project-local workflow checklists.
+  - `prompts/` for reusable project prompt templates.
+- After every completed feature, update the project knowledge base first.
 - One task, one commit, one verification cycle.
 - Every hypothesis must be backtested.
 - Never claim guaranteed profit.

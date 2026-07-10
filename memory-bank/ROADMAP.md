@@ -8,6 +8,7 @@
 - Audit
 - API inspector
 - Validation suite
+- Persistent project knowledge base
 
 ## Phase 2: MVP - completed
 

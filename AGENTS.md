@@ -11,6 +11,8 @@ Before making changes:
   project memory for TotoAI.
 
 Maintenance rules:
+- After every completed feature, update the project knowledge base first:
+  `memory-bank/`, `knowledge/`, `skills/`, or `prompts/` as relevant.
 - Update `memory-bank/CURRENT_STATE.md` after every meaningful commit.
 - Update `memory-bank/DECISIONS.md` when architecture or mathematical
   definitions change.

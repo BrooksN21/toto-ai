@@ -36,6 +36,22 @@ task commits listed above.
 
 ## Latest Completed Task
 
+Created the persistent project knowledge base.
+
+New repository-local project knowledge areas:
+- `memory-bank/`: current state, roadmap, architecture, philosophy, decisions.
+- `knowledge/`: concise domain notes for TotoBrief, bookmaker calibration,
+  crowd bias, closing line, and Pinnacle integration status.
+- `skills/`: project-local workflow checklists for algorithm review, research,
+  and backtesting.
+- `prompts/`: reusable project prompt templates for feature, research, and
+  backtest tasks.
+
+The project rule is now explicit: after every completed feature, update the
+project knowledge base first.
+
+## Previous Completed Task
+
 Implemented Brief Oracle Research.
 
 The `brief-oracle` command finds the smallest oracle brief that contains the
@@ -63,7 +79,7 @@ Aggregate metrics include:
 - BK rank frequency for actual outcomes
 - entropy by required cover size
 
-## Previous Completed Task
+## Earlier Completed Task
 
 Implemented bookmaker calibration research.
 
@@ -83,7 +99,7 @@ Exports:
 - `reports/calibration.csv`
 - `reports/reliability.csv`
 
-## Earlier Completed Task
+## Earlier Completed Task: Backtest Optimization
 
 Optimized the Baseline Brief Generator backtest.
 
