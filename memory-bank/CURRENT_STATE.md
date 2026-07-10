@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 78
+- Tests currently passed: 82
 - Ruff passed
 
 ## Exact Cover Example
@@ -35,6 +35,26 @@ task commits listed above.
 - Worst minimum Hamming distance 2
 
 ## Latest Completed Task
+
+Implemented bookmaker calibration research.
+
+The `calibration` command measures:
+- Bookmaker reliability by 5 percentage-point bins for outcomes 1/X/2
+- Pool reliability by the same bins
+- Overall Brier score
+- Log loss
+- Expected Calibration Error
+- Pool vs bookmaker bias
+- Draw calibration
+- Favorite calibration for BK >= 60%
+- Underdog calibration for BK <= 25%
+
+Exports:
+- `reports/calibration.md`
+- `reports/calibration.csv`
+- `reports/reliability.csv`
+
+## Previous Completed Task
 
 Optimized the Baseline Brief Generator backtest.
 

@@ -31,6 +31,8 @@
 
 ## Phase 4: Research
 
+- Bookmaker calibration
+- Pool calibration
 - Crowd calibration
 - Pool vs BK bias
 - Draw underestimation

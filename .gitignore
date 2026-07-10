@@ -21,3 +21,6 @@ reports/brief_*.csv
 reports/package_*.csv
 reports/backtest_brief_last_*.csv
 reports/backtest_brief_last_*.md
+reports/calibration.md
+reports/calibration.csv
+reports/reliability.csv

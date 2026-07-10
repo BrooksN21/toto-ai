@@ -12,6 +12,10 @@ from toto_ai.analytics.api_inspector import (
     save_raw_response,
 )
 from toto_ai.analytics.audit import get_database_audit
+from toto_ai.analytics.calibration import (
+    run_calibration_study,
+    write_calibration_reports,
+)
 from toto_ai.analytics.history import (
     get_crowd_accuracy,
     get_drawings_summary,
@@ -290,6 +294,25 @@ def study_bk(db: str = "data/toto.db") -> None:
     print(_bk_vs_norm_examples_table(result["examples"]))
     print(result["conclusion"])
     print(f"Report written to {report_path}")
+
+
+@app.command()
+def calibration(db: str = "data/toto.db") -> None:
+    """Measure bookmaker and pool probability calibration."""
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+
+    with session_factory() as session:
+        result = run_calibration_study(session)
+
+    markdown_path, calibration_csv, reliability_csv = write_calibration_reports(result)
+    print(_calibration_overall_table(result["overall"]))
+    print(_calibration_slices_table(result))
+    print(_reliability_table(result["bookmaker_bins"]))
+    print(
+        "Reports written to "
+        f"{markdown_path}, {calibration_csv}, and {reliability_csv}"
+    )
 
 
 @app.command()
@@ -794,6 +817,60 @@ def _bk_vs_norm_examples_table(rows: list[dict[str, object]]) -> Table:
             _format_value(row["calculated"]),
             _format_value(row["difference"]),
         )
+    return table
+
+
+def _calibration_overall_table(overall: dict[str, object]) -> Table:
+    table = Table(title="Bookmaker Calibration")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    for key, value in overall.items():
+        table.add_row(key.replace("_", " "), _format_value(value))
+    return table
+
+
+def _calibration_slices_table(result: dict[str, object]) -> Table:
+    table = Table(title="Calibration Slices")
+    table.add_column("Slice")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    for section in (
+        "pool_calibration",
+        "pool_vs_bookmaker_bias",
+        "draw_calibration",
+        "favorites",
+        "underdogs",
+    ):
+        values = result[section]
+        if isinstance(values, dict):
+            for key, value in values.items():
+                table.add_row(section, key.replace("_", " "), _format_value(value))
+    return table
+
+
+def _reliability_table(rows: list[dict[str, object]], limit: int = 20) -> Table:
+    table = Table(title="Reliability Table")
+    table.add_column("Outcome")
+    table.add_column("Bin")
+    table.add_column("Count", justify="right")
+    table.add_column("Observed", justify="right")
+    table.add_column("Expected", justify="right")
+    table.add_column("Error", justify="right")
+    printed = 0
+    for row in rows:
+        if row["event_count"] == 0:
+            continue
+        table.add_row(
+            _format_value(row["outcome"]),
+            _format_value(row["bin"]),
+            _format_value(row["event_count"]),
+            _format_value(row["observed_frequency"]),
+            _format_value(row["expected_frequency"]),
+            _format_value(row["calibration_error"]),
+        )
+        printed += 1
+        if printed == limit:
+            break
     return table
 
 
