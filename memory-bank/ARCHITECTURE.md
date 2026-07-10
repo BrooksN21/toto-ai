@@ -1,0 +1,51 @@
+# Architecture
+
+Current pipeline:
+
+```text
+TotoBrief API
+-> Collector
+-> SQLite
+-> Validation/Audit
+-> Baseline Brief Generator
+-> Cover Engine
+-> Exact Cover Verifier
+-> Backtest Engine
+-> Future Research/ML
+-> Package Export
+```
+
+Important modules:
+- `toto_ai.api.client`: TotoBrief API client.
+- `toto_ai.collector.sync`: historical drawing collector.
+- `toto_ai.db.models`: SQLite schema with SQLAlchemy models.
+- `toto_ai.db.session`: database initialization and session helpers.
+- `toto_ai.analytics.history`: historical summary and research metrics.
+- `toto_ai.analytics.audit`: database audit and quality checks.
+- `toto_ai.analytics.api_inspector`: raw API inspection and drawing resolution.
+- `toto_ai.analytics.validation`: raw JSON vs SQLite validation.
+- `toto_ai.analytics.research_bk_vs_norm`: BK vs normalized odds study.
+- `toto_ai.package.mvp`: MVP covering approximation package generator.
+- `toto_ai.package.backtest`: MVP package backtest engine.
+- `toto_ai.optimizer.cover`: Cover Engine and exact cover verification.
+- `toto_ai.optimizer.brief`: baseline brief generator.
+- `toto_ai.cli`: Typer CLI entry point.
+
+Important CLI commands:
+- `supported`: list supported TotoBrief drawing communities.
+- `drawings`: fetch drawing pages from TotoBrief.
+- `info`: fetch one drawing-info payload.
+- `collect`: collect historical drawings into SQLite.
+- `research`: print historical analytics.
+- `inspect-events`: inspect event-level pool/BK/result diagnostics.
+- `audit`: audit database quality and completeness.
+- `inspect-api`: inspect raw API JSON by id, number, latest, live, or open draw.
+- `predict --open`: placeholder for future prediction engine.
+- `validate`: validate raw API data against SQLite and analytics.
+- `study-bk`: study BK probabilities vs normalized odds.
+- `package-mvp`: generate an MVP covering approximation from a manual brief.
+- `backtest`: backtest the older MVP package generator.
+- `cover`: generate a greedy cover package from a manual brief.
+- `verify-cover`: exactly verify cover package coverage against a brief.
+- `build-brief --open`: build a baseline brief and package for the next playable
+  drawing.

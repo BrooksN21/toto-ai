@@ -33,3 +33,9 @@ print(client.drawing_info(12345))
 python -m pytest
 python -m ruff check .
 ```
+
+## Project Memory
+
+TotoAI uses a repository-local memory bank for persistent project context.
+Before making changes, read [AGENTS.md](AGENTS.md) and the files in
+[memory-bank/](memory-bank/).
