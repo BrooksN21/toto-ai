@@ -16,10 +16,20 @@ Current budget-oracle outputs:
 - Average package size and cost.
 - Baseline generator average best hits.
 - Oracle vs baseline hit gap.
+- Progress state for long runs.
+- Per-drawing timing diagnostics.
+- Processed, skipped, and timed-out counts.
 
 Exports:
 - `reports/budget_oracle_last_<N>.csv`
 - `reports/budget_oracle_last_<N>.md`
+
+Operational notes:
+- `--max-candidates` is an explicit limit only; omitted means full search.
+- `--timeout-per-drawing` keeps the best oracle candidate found so far.
+- Partial CSV progress is written every 10 drawings.
+- A timed-out row is usable as partial oracle evidence, not an exhaustive oracle
+  optimum.
 
 Related:
 - [../skills/backtesting.md](../skills/backtesting.md)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import math
+import time
 from dataclasses import dataclass
 from itertools import product
 from pathlib import Path
@@ -50,6 +51,14 @@ class BudgetOracleRow:
     baseline_package_size: int
     baseline_package_cost: int
     oracle_baseline_gap: int
+    timed_out: bool
+    candidate_count: int
+    processed_candidate_count: int
+    skipped_candidate_count: int
+    candidate_generation_time: float
+    cover_generation_time: float
+    verification_time: float
+    total_time: float
 
 
 @dataclass(frozen=True)
@@ -67,6 +76,11 @@ def run_budget_oracle(
     community: str = "baltbet-main",
     cover_func=greedy_cover,
     baseline_func=None,
+    timeout_per_drawing: float | None = 30,
+    max_candidates: int | None = None,
+    progress_callback=None,
+    partial_csv_path: str | Path | None = None,
+    time_func=time.perf_counter,
 ) -> BudgetOracleResult:
     if last <= 0:
         raise ValueError("Last must be a positive integer.")
@@ -76,59 +90,131 @@ def run_budget_oracle(
         raise ValueError("Stake must be a positive integer.")
 
     rows = []
-    for drawing in select_complete_finished_drawings(session, last, community):
-        events, quotes = _drawing_events_and_quotes(session, drawing.id)
-        result_string = build_result_string(events)
-        candidate_briefs = _candidate_oracle_briefs(events, quotes)
-        if not candidate_briefs:
-            continue
+    counts = {"processed": 0, "skipped": 0, "timed_out": 0}
+    started_at = time_func()
+    drawings = select_complete_finished_drawings(session, last, community)
+    drawing_total = len(drawings)
 
-        oracle = choose_budget_oracle_package(
-            candidate_briefs=candidate_briefs,
-            result_string=result_string,
-            category=category,
-            bank=bank,
-            stake=stake,
-            cover_func=cover_func,
-        )
-        baseline = _baseline_result(
-            events=events,
-            quotes=quotes,
-            result_string=result_string,
-            category=category,
-            bank=bank,
-            stake=stake,
-            baseline_func=baseline_func,
-        )
+    for drawing_index, drawing in enumerate(drawings, start=1):
+        drawing_started_at = time_func()
+        try:
+            events, quotes = _drawing_events_and_quotes(session, drawing.id)
+            result_string = build_result_string(events)
+            generation_started_at = time_func()
+            candidate_briefs = _candidate_oracle_briefs(events, quotes)
+            candidate_generation_time = time_func() - generation_started_at
+            if not candidate_briefs:
+                counts["skipped"] += 1
+                _emit_drawing_progress(
+                    progress_callback,
+                    drawing_number=drawing.number,
+                    drawing_index=drawing_index,
+                    drawing_total=drawing_total,
+                    started_at=started_at,
+                    processed_count=counts["processed"],
+                    skipped_count=counts["skipped"],
+                    timed_out_count=counts["timed_out"],
+                    current_best_hits=0,
+                    current_best_cost=0,
+                    time_func=time_func,
+                )
+                continue
 
-        rows.append(
-            BudgetOracleRow(
-                drawing_id=drawing.id,
-                drawing_number=drawing.number,
+            oracle = choose_budget_oracle_package(
+                candidate_briefs=candidate_briefs,
                 result_string=result_string,
-                oracle_brief=",".join(oracle["brief"]),
-                oracle_best_hits=oracle["best_coupon_hits"],
-                oracle_hit_13=oracle["best_coupon_hits"] >= 13,
-                oracle_hit_14=oracle["best_coupon_hits"] >= 14,
-                oracle_hit_15=oracle["best_coupon_hits"] == 15,
-                singles_count=sum(len(pick) == 1 for pick in oracle["brief"]),
-                doubles_count=sum(len(pick) == 2 for pick in oracle["brief"]),
-                triples_count=sum(len(pick) == 3 for pick in oracle["brief"]),
-                oracle_package_size=oracle["package_size"],
-                oracle_package_cost=oracle["package_cost"],
-                oracle_brief_variants=oracle["brief_variants"],
-                baseline_best_hits=baseline["baseline_best_hits"],
-                baseline_package_size=baseline["baseline_package_size"],
-                baseline_package_cost=baseline["baseline_package_cost"],
-                oracle_baseline_gap=(
-                    oracle["best_coupon_hits"] - baseline["baseline_best_hits"]
+                category=category,
+                bank=bank,
+                stake=stake,
+                cover_func=cover_func,
+                timeout_per_drawing=timeout_per_drawing,
+                max_candidates=max_candidates,
+                progress_callback=_drawing_candidate_progress(
+                    progress_callback,
+                    drawing_number=drawing.number,
+                    drawing_index=drawing_index,
+                    drawing_total=drawing_total,
+                    started_at=started_at,
+                    processed_count=lambda counts=counts: counts["processed"],
+                    skipped_count=lambda counts=counts: counts["skipped"],
+                    timed_out_count=lambda counts=counts: counts["timed_out"],
+                    time_func=time_func,
                 ),
+                time_func=time_func,
             )
+            baseline = _baseline_result(
+                events=events,
+                quotes=quotes,
+                result_string=result_string,
+                category=category,
+                bank=bank,
+                stake=stake,
+                baseline_func=baseline_func,
+            )
+            total_time = time_func() - drawing_started_at
+            counts["processed"] += 1
+            counts["timed_out"] += int(oracle["timed_out"])
+
+            rows.append(
+                BudgetOracleRow(
+                    drawing_id=drawing.id,
+                    drawing_number=drawing.number,
+                    result_string=result_string,
+                    oracle_brief=",".join(oracle["brief"]),
+                    oracle_best_hits=oracle["best_coupon_hits"],
+                    oracle_hit_13=oracle["best_coupon_hits"] >= 13,
+                    oracle_hit_14=oracle["best_coupon_hits"] >= 14,
+                    oracle_hit_15=oracle["best_coupon_hits"] == 15,
+                    singles_count=sum(len(pick) == 1 for pick in oracle["brief"]),
+                    doubles_count=sum(len(pick) == 2 for pick in oracle["brief"]),
+                    triples_count=sum(len(pick) == 3 for pick in oracle["brief"]),
+                    oracle_package_size=oracle["package_size"],
+                    oracle_package_cost=oracle["package_cost"],
+                    oracle_brief_variants=oracle["brief_variants"],
+                    baseline_best_hits=baseline["baseline_best_hits"],
+                    baseline_package_size=baseline["baseline_package_size"],
+                    baseline_package_cost=baseline["baseline_package_cost"],
+                    oracle_baseline_gap=(
+                        oracle["best_coupon_hits"] - baseline["baseline_best_hits"]
+                    ),
+                    timed_out=oracle["timed_out"],
+                    candidate_count=oracle["candidate_count"],
+                    processed_candidate_count=oracle["processed_candidate_count"],
+                    skipped_candidate_count=oracle["skipped_candidate_count"],
+                    candidate_generation_time=round(candidate_generation_time, 4),
+                    cover_generation_time=round(oracle["cover_generation_time"], 4),
+                    verification_time=round(oracle["verification_time"], 4),
+                    total_time=round(total_time, 4),
+                )
+            )
+        except Exception:
+            counts["skipped"] += 1
+
+        _emit_drawing_progress(
+            progress_callback,
+            drawing_number=drawing.number,
+            drawing_index=drawing_index,
+            drawing_total=drawing_total,
+            started_at=started_at,
+            processed_count=counts["processed"],
+            skipped_count=counts["skipped"],
+            timed_out_count=counts["timed_out"],
+            current_best_hits=rows[-1].oracle_best_hits if rows else 0,
+            current_best_cost=rows[-1].oracle_package_cost if rows else 0,
+            time_func=time_func,
         )
+        if partial_csv_path is not None and drawing_index % 10 == 0:
+            write_budget_oracle_csv(rows, partial_csv_path)
 
     return BudgetOracleResult(
         rows=rows,
-        summary=summarize_budget_oracle(rows),
+        summary=summarize_budget_oracle(
+            rows,
+            processed_count=counts["processed"],
+            skipped_count=counts["skipped"],
+            timed_out_count=counts["timed_out"],
+            execution_time=time_func() - started_at,
+        ),
     )
 
 
@@ -139,6 +225,10 @@ def choose_budget_oracle_package(
     bank: int,
     stake: int,
     cover_func=greedy_cover,
+    timeout_per_drawing: float | None = None,
+    max_candidates: int | None = None,
+    progress_callback=None,
+    time_func=time.perf_counter,
 ) -> dict[str, Any]:
     if bank <= 0:
         raise ValueError("Bank must be a positive integer.")
@@ -147,20 +237,45 @@ def choose_budget_oracle_package(
 
     max_coupons = bank // stake
     best = None
-    for brief in _deduplicate_briefs(candidate_briefs):
+    started_at = time_func()
+    cover_generation_time = 0.0
+    verification_time = 0.0
+    processed_candidate_count = 0
+    skipped_candidate_count = 0
+    timed_out = False
+    candidates = _deduplicate_briefs(candidate_briefs)
+    if max_candidates is not None:
+        candidates = candidates[:max_candidates]
+
+    for candidate_index, brief in enumerate(candidates, start=1):
+        if processed_candidate_count > 0 and _timed_out(
+            started_at,
+            timeout_per_drawing,
+            time_func,
+        ):
+            timed_out = True
+            break
+
+        cover_started_at = time_func()
         cover = cover_func(
             brief=brief,
             category=category,
             max_coupons=max_coupons,
         )
+        cover_generation_time += time_func() - cover_started_at
+        processed_candidate_count += 1
         coupons = cover["selected_coupons"]
         cost = len(coupons) * stake
         if cost > bank:
+            skipped_candidate_count += 1
             continue
+        verification_started_at = time_func()
+        hits = best_coupon_hits(coupons, result_string)
+        verification_time += time_func() - verification_started_at
         candidate = {
             "brief": brief,
             "selected_coupons": coupons,
-            "best_coupon_hits": best_coupon_hits(coupons, result_string),
+            "best_coupon_hits": hits,
             "package_size": len(coupons),
             "package_cost": cost,
             "brief_variants": _brief_variants(brief),
@@ -168,15 +283,52 @@ def choose_budget_oracle_package(
         if best is None or _oracle_rank_key(candidate) > _oracle_rank_key(best):
             best = candidate
 
+        if progress_callback is not None:
+            progress_callback(
+                {
+                    "candidate_index": candidate_index,
+                    "candidate_total": len(candidates),
+                    "current_best_hits": best["best_coupon_hits"] if best else 0,
+                    "current_best_cost": best["package_cost"] if best else 0,
+                }
+            )
+
+        if _timed_out(started_at, timeout_per_drawing, time_func):
+            timed_out = True
+            break
+
     if best is None:
         raise ValueError("No budget-constrained oracle package could be generated.")
-    return best
+    return {
+        **best,
+        "timed_out": timed_out,
+        "candidate_count": len(candidates),
+        "processed_candidate_count": processed_candidate_count,
+        "skipped_candidate_count": skipped_candidate_count,
+        "cover_generation_time": cover_generation_time,
+        "verification_time": verification_time,
+    }
 
 
-def summarize_budget_oracle(rows: list[BudgetOracleRow]) -> dict[str, Any]:
+def summarize_budget_oracle(
+    rows: list[BudgetOracleRow],
+    processed_count: int | None = None,
+    skipped_count: int = 0,
+    timed_out_count: int | None = None,
+    execution_time: float = 0.0,
+) -> dict[str, Any]:
     tested = len(rows)
+    processed = tested if processed_count is None else processed_count
+    timed_out = (
+        sum(row.timed_out for row in rows)
+        if timed_out_count is None
+        else timed_out_count
+    )
     return {
         "drawings_tested": tested,
+        "processed_count": processed,
+        "skipped_count": skipped_count,
+        "timed_out_count": timed_out,
         "oracle_average_best_hits": _average(
             [row.oracle_best_hits for row in rows]
         ),
@@ -201,6 +353,17 @@ def summarize_budget_oracle(rows: list[BudgetOracleRow]) -> dict[str, Any]:
         "average_oracle_baseline_gap": _average(
             [row.oracle_baseline_gap for row in rows]
         ),
+        "average_candidate_generation_time": _average_float(
+            [row.candidate_generation_time for row in rows]
+        ),
+        "average_cover_generation_time": _average_float(
+            [row.cover_generation_time for row in rows]
+        ),
+        "average_verification_time": _average_float(
+            [row.verification_time for row in rows]
+        ),
+        "average_total_time": _average_float([row.total_time for row in rows]),
+        "execution_time_seconds": round(execution_time, 4),
     }
 
 
@@ -214,20 +377,29 @@ def write_budget_oracle_reports(
     csv_path = output_dir / f"budget_oracle_last_{last}.csv"
     markdown_path = output_dir / f"budget_oracle_last_{last}.md"
 
-    with csv_path.open("w", newline="", encoding="utf-8") as output:
-        writer = csv.DictWriter(
-            output,
-            fieldnames=list(BudgetOracleRow.__dataclass_fields__.keys()),
-        )
-        writer.writeheader()
-        for row in result.rows:
-            writer.writerow(row.__dict__)
-
+    write_budget_oracle_csv(result.rows, csv_path)
     markdown_path.write_text(
         build_budget_oracle_markdown(result),
         encoding="utf-8",
     )
     return csv_path, markdown_path
+
+
+def write_budget_oracle_csv(
+    rows: list[BudgetOracleRow],
+    output_path: str | Path,
+) -> Path:
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8") as output:
+        writer = csv.DictWriter(
+            output,
+            fieldnames=list(BudgetOracleRow.__dataclass_fields__.keys()),
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row.__dict__)
+    return path
 
 
 def build_budget_oracle_markdown(result: BudgetOracleResult) -> str:
@@ -419,3 +591,110 @@ def _rate(count: int, total: int) -> float:
     if total == 0:
         return 0.0
     return round(count / total * 100, 4)
+
+
+def _average_float(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    return round(mean(values), 4)
+
+
+def _timed_out(started_at: float, timeout: float | None, time_func) -> bool:
+    return timeout is not None and time_func() - started_at >= timeout
+
+
+def _drawing_candidate_progress(
+    progress_callback,
+    drawing_number,
+    drawing_index,
+    drawing_total,
+    started_at,
+    processed_count,
+    skipped_count,
+    timed_out_count,
+    time_func,
+):
+    if progress_callback is None:
+        return None
+
+    def callback(update: dict[str, Any]) -> None:
+        progress_callback(
+            {
+                **update,
+                **_run_progress_payload(
+                    drawing_number=drawing_number,
+                    drawing_index=drawing_index,
+                    drawing_total=drawing_total,
+                    started_at=started_at,
+                    processed_count=processed_count(),
+                    skipped_count=skipped_count(),
+                    timed_out_count=timed_out_count(),
+                    current_best_hits=update.get("current_best_hits", 0),
+                    current_best_cost=update.get("current_best_cost", 0),
+                    time_func=time_func,
+                ),
+            }
+        )
+
+    return callback
+
+
+def _emit_drawing_progress(
+    progress_callback,
+    drawing_number,
+    drawing_index,
+    drawing_total,
+    started_at,
+    processed_count,
+    skipped_count,
+    timed_out_count,
+    current_best_hits,
+    current_best_cost,
+    time_func,
+) -> None:
+    if progress_callback is None:
+        return
+    progress_callback(
+        _run_progress_payload(
+            drawing_number=drawing_number,
+            drawing_index=drawing_index,
+            drawing_total=drawing_total,
+            started_at=started_at,
+            processed_count=processed_count,
+            skipped_count=skipped_count,
+            timed_out_count=timed_out_count,
+            current_best_hits=current_best_hits,
+            current_best_cost=current_best_cost,
+            time_func=time_func,
+        )
+    )
+
+
+def _run_progress_payload(
+    drawing_number,
+    drawing_index,
+    drawing_total,
+    started_at,
+    processed_count,
+    skipped_count,
+    timed_out_count,
+    current_best_hits,
+    current_best_cost,
+    time_func,
+) -> dict[str, Any]:
+    elapsed = max(time_func() - started_at, 0.0)
+    average_time = elapsed / drawing_index if drawing_index else 0.0
+    remaining = max(drawing_total - drawing_index, 0)
+    return {
+        "drawing_number": drawing_number,
+        "drawing_index": drawing_index,
+        "drawing_total": drawing_total,
+        "elapsed_time": round(elapsed, 4),
+        "average_time_per_drawing": round(average_time, 4),
+        "eta_seconds": round(average_time * remaining, 4),
+        "current_best_hits": current_best_hits,
+        "current_best_cost": current_best_cost,
+        "processed_count": processed_count,
+        "skipped_count": skipped_count,
+        "timed_out_count": timed_out_count,
+    }

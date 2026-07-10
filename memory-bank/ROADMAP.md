@@ -31,6 +31,8 @@
 - Compare against simple baselines.
 - Use `budget-oracle` to estimate the gap between baseline generation and an
   oracle package under the same budget.
+- Use budget-oracle progress, timeout, and timing diagnostics for longer
+  baseline/oracle comparison runs.
 
 ## Phase 4: Research
 

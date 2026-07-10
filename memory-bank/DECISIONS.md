@@ -16,6 +16,10 @@
 - Separate prediction quality from cover quality.
 - Budget-constrained oracle commands may use actual results only as benchmark
   upper bounds; they must not be treated as playable prediction methods.
+- Budget-oracle must not reduce the candidate search space by default. Candidate
+  limits only apply when explicitly requested.
+- Budget-oracle drawing timeouts keep the best candidate found so far and should
+  not fail the whole run.
 - Category 13 means maximum Hamming distance 2.
 - Category 14 means maximum Hamming distance 1.
 - Category 15 means exact match.

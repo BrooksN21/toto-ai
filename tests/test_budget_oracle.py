@@ -117,6 +117,135 @@ def test_write_budget_oracle_reports_exports_csv_and_markdown(tmp_path):
     assert "Budget-Constrained Brief Oracle" in markdown_path.read_text()
 
 
+def test_choose_budget_oracle_timeout_keeps_best_candidate_found():
+    ticks = iter([0.0, 0.2, 0.4, 0.6, 2.0])
+
+    def clock():
+        try:
+            return next(ticks)
+        except StopIteration:
+            return 2.0
+
+    result = choose_budget_oracle_package(
+        candidate_briefs=[
+            ["1", "1"],
+            ["1X", "1X"],
+        ],
+        result_string="1X",
+        category=13,
+        bank=60,
+        stake=30,
+        cover_func=lambda brief, category, max_coupons: {
+            "selected_coupons": ["11" if brief == ["1", "1"] else "1X"]
+        },
+        timeout_per_drawing=1,
+        time_func=clock,
+    )
+
+    assert result["best_coupon_hits"] == 1
+    assert result["timed_out"] is True
+    assert result["candidate_count"] == 2
+    assert result["processed_candidate_count"] == 1
+
+
+def test_choose_budget_oracle_max_candidates_only_limits_when_passed():
+    calls = []
+    candidate_briefs = [["1"], ["X"], ["2"]]
+
+    choose_budget_oracle_package(
+        candidate_briefs=candidate_briefs,
+        result_string="1",
+        category=13,
+        bank=90,
+        stake=30,
+        cover_func=lambda brief, category, max_coupons: _tracking_cover(
+            calls,
+            brief,
+        ),
+    )
+    assert len(calls) == 3
+
+    calls.clear()
+    choose_budget_oracle_package(
+        candidate_briefs=candidate_briefs,
+        result_string="1",
+        category=13,
+        bank=90,
+        stake=30,
+        cover_func=lambda brief, category, max_coupons: _tracking_cover(
+            calls,
+            brief,
+        ),
+        max_candidates=2,
+    )
+    assert len(calls) == 2
+
+
+def test_run_budget_oracle_reports_progress_and_partial_csv(tmp_path):
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        for drawing_id in range(1, 11):
+            _add_drawing(
+                session,
+                drawing_id=drawing_id,
+                number=1000 + drawing_id,
+                results="1" * 15,
+            )
+
+        updates = []
+        result = run_budget_oracle(
+            session,
+            last=10,
+            bank=60,
+            stake=30,
+            category=13,
+            cover_func=_exact_result_cover,
+            baseline_func=_baseline_stub,
+            progress_callback=updates.append,
+            partial_csv_path=tmp_path / "partial.csv",
+        )
+
+    assert result.summary["drawings_tested"] == 10
+    assert result.summary["processed_count"] == 10
+    assert updates
+    assert updates[-1]["processed_count"] == 10
+    assert updates[-1]["drawing_index"] == 10
+    assert "average_time_per_drawing" in updates[-1]
+    assert "eta_seconds" in updates[-1]
+    assert "candidate_generation_time" in result.rows[0].__dict__
+    assert "cover_generation_time" in result.rows[0].__dict__
+    assert "verification_time" in result.rows[0].__dict__
+    assert "total_time" in result.rows[0].__dict__
+    assert "drawing_number" in (tmp_path / "partial.csv").read_text()
+
+
+def test_run_budget_oracle_skips_failed_drawing_without_failing_run():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        _add_drawing(session, drawing_id=1, number=1001, results="1" * 15)
+        _add_drawing(session, drawing_id=2, number=1002, results="X" * 15)
+
+        def flaky_cover(brief, category, max_coupons):
+            if "X" in brief[0]:
+                raise RuntimeError("cover failed")
+            return _exact_result_cover(brief, category, max_coupons)
+
+        result = run_budget_oracle(
+            session,
+            last=2,
+            bank=60,
+            stake=30,
+            category=13,
+            cover_func=flaky_cover,
+            baseline_func=_baseline_stub,
+        )
+
+    assert result.summary["processed_count"] == 1
+    assert result.summary["skipped_count"] == 1
+
+
 def _add_drawing(
     session: Session,
     drawing_id: int,
@@ -163,6 +292,16 @@ def _exact_result_cover(brief, category, max_coupons):
     coupon = "".join(position[-1] for position in brief)
     return {
         "selected_coupons": [coupon],
+        "full_variants_count": 1,
+        "covered_variants_count": 1,
+        "coverage_rate": 1.0,
+    }
+
+
+def _tracking_cover(calls, brief):
+    calls.append(tuple(brief))
+    return {
+        "selected_coupons": ["1"],
         "full_variants_count": 1,
         "covered_variants_count": 1,
         "coverage_rate": 1.0,

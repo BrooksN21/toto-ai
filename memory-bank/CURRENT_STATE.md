@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 93
+- Tests currently passed: 97
 - Ruff passed
 
 ## Exact Cover Example
@@ -35,6 +35,28 @@ task commits listed above.
 - Worst minimum Hamming distance 2
 
 ## Latest Completed Task
+
+Improved Budget-Constrained Brief Oracle observability and diagnostics.
+
+The `budget-oracle` command now supports:
+- Rich progress updates with drawing number, drawing index, candidate index,
+  elapsed time, average drawing time, ETA, current best hits/cost, and
+  processed/skipped/timed-out counts.
+- `--timeout-per-drawing` to keep the best candidate found so far and mark the
+  row as timed out.
+- `--max-candidates` as an explicit optional candidate limit. Omitted means full
+  search.
+- `--progress/--no-progress`.
+- Partial CSV writes every 10 drawings.
+- Per-drawing profiling timings for candidate generation, cover generation,
+  verification, and total time.
+- Final timing summary.
+
+Local smoke result on `data/toto.db`:
+- `budget-oracle --last 1 --bank 10000 --stake 30 --category 13 --max-candidates 3 --no-progress`
+  completed in about 5 seconds.
+
+## Previous Completed Task
 
 Implemented Budget-Constrained Brief Oracle.
 
@@ -62,7 +84,7 @@ Local smoke result on `data/toto.db`:
 - `budget-oracle --last 1 --bank 10000 --stake 30 --category 13` completed in
   about 9 seconds.
 
-## Previous Completed Task
+## Earlier Completed Task: Project Knowledge Base
 
 Created the persistent project knowledge base.
 

@@ -352,25 +352,75 @@ def budget_oracle(
     bank: int = typer.Option(..., help="Any positive integer budget."),
     stake: int = typer.Option(30, help="Stake per coupon."),
     category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+    timeout_per_drawing: float = typer.Option(
+        30,
+        help="Timeout guard per drawing in seconds.",
+    ),
+    max_candidates: int | None = typer.Option(
+        None,
+        help="Optional candidate limit. Omitted means full search.",
+    ),
+    progress: bool = typer.Option(
+        True,
+        "--progress/--no-progress",
+        help="Show live Rich progress.",
+    ),
 ) -> None:
     """Run a budget-constrained oracle benchmark against baseline briefs."""
     engine = init_db(db)
     session_factory = get_session_factory(engine)
 
-    with session_factory() as session:
-        try:
-            result = run_budget_oracle(
-                session,
-                last=last,
-                bank=bank,
-                stake=stake,
-                category=category,
-            )
-        except ValueError as error:
-            raise typer.BadParameter(str(error)) from error
+    partial_csv_path = f"reports/budget_oracle_last_{last}.csv"
+
+    if progress:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+        ) as rich_progress:
+            task_id = rich_progress.add_task("Preparing budget oracle")
+
+            def update_progress(update: dict[str, object]) -> None:
+                rich_progress.update(
+                    task_id,
+                    description=_budget_oracle_progress_description(update),
+                )
+
+            with session_factory() as session:
+                try:
+                    result = run_budget_oracle(
+                        session,
+                        last=last,
+                        bank=bank,
+                        stake=stake,
+                        category=category,
+                        timeout_per_drawing=timeout_per_drawing,
+                        max_candidates=max_candidates,
+                        progress_callback=update_progress,
+                        partial_csv_path=partial_csv_path,
+                    )
+                except ValueError as error:
+                    raise typer.BadParameter(str(error)) from error
+            rich_progress.update(task_id, description="Budget oracle complete")
+    else:
+        with session_factory() as session:
+            try:
+                result = run_budget_oracle(
+                    session,
+                    last=last,
+                    bank=bank,
+                    stake=stake,
+                    category=category,
+                    timeout_per_drawing=timeout_per_drawing,
+                    max_candidates=max_candidates,
+                    partial_csv_path=partial_csv_path,
+                )
+            except ValueError as error:
+                raise typer.BadParameter(str(error)) from error
 
     csv_path, markdown_path = write_budget_oracle_reports(result, last=last)
     print(_budget_oracle_summary_table(result.summary))
+    print(_budget_oracle_timing_table(result.summary))
     print(f"Reports written to {csv_path} and {markdown_path}")
 
 
@@ -989,6 +1039,9 @@ def _budget_oracle_summary_table(summary: dict[str, object]) -> Table:
     table.add_column("Value", justify="right")
     for key in (
         "drawings_tested",
+        "processed_count",
+        "skipped_count",
+        "timed_out_count",
         "oracle_average_best_hits",
         "oracle_hit13_count",
         "oracle_hit13_rate",
@@ -1006,6 +1059,39 @@ def _budget_oracle_summary_table(summary: dict[str, object]) -> Table:
     ):
         table.add_row(key.replace("_", " "), _format_value(summary[key]))
     return table
+
+
+def _budget_oracle_timing_table(summary: dict[str, object]) -> Table:
+    table = Table(title="Budget Oracle Timing")
+    table.add_column("Metric")
+    table.add_column("Seconds", justify="right")
+    for key in (
+        "average_candidate_generation_time",
+        "average_cover_generation_time",
+        "average_verification_time",
+        "average_total_time",
+        "execution_time_seconds",
+    ):
+        table.add_row(key.replace("_", " "), _format_value(summary[key]))
+    return table
+
+
+def _budget_oracle_progress_description(update: dict[str, object]) -> str:
+    candidate_index = update.get("candidate_index", 0)
+    candidate_total = update.get("candidate_total", 0)
+    return (
+        f"drawing={update.get('drawing_number')} "
+        f"{update.get('drawing_index')}/{update.get('drawing_total')} "
+        f"candidate={candidate_index}/{candidate_total} "
+        f"elapsed={float(update.get('elapsed_time', 0)):.1f}s "
+        f"avg={float(update.get('average_time_per_drawing', 0)):.1f}s "
+        f"eta={float(update.get('eta_seconds', 0)):.1f}s "
+        f"best_hits={update.get('current_best_hits', 0)} "
+        f"best_cost={update.get('current_best_cost', 0)} "
+        f"processed={update.get('processed_count', 0)} "
+        f"skipped={update.get('skipped_count', 0)} "
+        f"timed_out={update.get('timed_out_count', 0)}"
+    )
 
 
 def _package_mvp_summary_table(result: object) -> Table:

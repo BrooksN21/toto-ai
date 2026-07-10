@@ -7,6 +7,8 @@ Checklist:
 - Use only information available before the drawing when testing generators.
 - Report tested drawings, hit rates, package size, cost, and execution time.
 - Separate brief containment from coupon/package hits.
+- For long-running searches, expose progress, timeouts, partial exports, and
+  per-drawing timing diagnostics.
 - Export CSV and Markdown reports.
 - Compare categories and budgets before drawing conclusions.
 
