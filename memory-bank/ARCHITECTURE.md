@@ -23,6 +23,8 @@ Important modules:
 - `toto_ai.analytics.history`: historical summary and research metrics.
 - `toto_ai.analytics.audit`: database audit and quality checks.
 - `toto_ai.analytics.calibration`: bookmaker and pool calibration research.
+- `toto_ai.analytics.brief_oracle`: oracle brief research for completed
+  drawings using BK probabilities and actual results.
 - `toto_ai.analytics.api_inspector`: raw API inspection and drawing resolution.
 - `toto_ai.analytics.validation`: raw JSON vs SQLite validation.
 - `toto_ai.analytics.research_bk_vs_norm`: BK vs normalized odds study.
@@ -46,6 +48,7 @@ Important CLI commands:
 - `validate`: validate raw API data against SQLite and analytics.
 - `study-bk`: study BK probabilities vs normalized odds.
 - `calibration`: measure bookmaker and pool probability calibration.
+- `brief-oracle`: find minimum oracle briefs that contain actual results.
 - `package-mvp`: generate an MVP covering approximation from a manual brief.
 - `backtest`: backtest the older MVP package generator.
 - `cover`: generate a greedy cover package from a manual brief.

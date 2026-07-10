@@ -32,6 +32,7 @@
 ## Phase 4: Research
 
 - Bookmaker calibration
+- Brief oracle research
 - Pool calibration
 - Crowd calibration
 - Pool vs BK bias

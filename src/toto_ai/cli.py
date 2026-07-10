@@ -12,6 +12,10 @@ from toto_ai.analytics.api_inspector import (
     save_raw_response,
 )
 from toto_ai.analytics.audit import get_database_audit
+from toto_ai.analytics.brief_oracle import (
+    run_brief_oracle_research,
+    write_brief_oracle_reports,
+)
 from toto_ai.analytics.calibration import (
     run_calibration_study,
     write_calibration_reports,
@@ -313,6 +317,28 @@ def calibration(db: str = "data/toto.db") -> None:
         "Reports written to "
         f"{markdown_path}, {calibration_csv}, and {reliability_csv}"
     )
+
+
+@app.command()
+def brief_oracle(
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+    last: int = typer.Option(500, help="Number of latest complete drawings to test."),
+) -> None:
+    """Find minimum oracle briefs that contain actual results."""
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+
+    with session_factory() as session:
+        try:
+            result = run_brief_oracle_research(session, last=last)
+        except ValueError as error:
+            raise typer.BadParameter(str(error)) from error
+
+    csv_path, markdown_path, event_csv_path = write_brief_oracle_reports(result)
+    print(_brief_oracle_summary_table(result.summary))
+    print(_brief_oracle_rank_table(result.summary["bk_rank_frequency"]))
+    print(_brief_oracle_entropy_table(result.summary["entropy_by_cover_size"]))
+    print(f"Reports written to {csv_path}, {markdown_path}, and {event_csv_path}")
 
 
 @app.command()
@@ -871,6 +897,56 @@ def _reliability_table(rows: list[dict[str, object]], limit: int = 20) -> Table:
         printed += 1
         if printed == limit:
             break
+    return table
+
+
+def _brief_oracle_summary_table(summary: dict[str, object]) -> Table:
+    table = Table(title="Brief Oracle Summary")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    for key in (
+        "drawings_tested",
+        "average_singles",
+        "average_doubles",
+        "average_triples",
+        "median_full_variant_count",
+        "p25_full_variant_count",
+        "p50_full_variant_count",
+        "p75_full_variant_count",
+        "p90_full_variant_count",
+        "average_actual_result_bk_probability",
+    ):
+        table.add_row(key.replace("_", " "), _format_value(summary[key]))
+    return table
+
+
+def _brief_oracle_rank_table(rank_frequency: dict[int, dict[str, object]]) -> Table:
+    table = Table(title="Actual Result BK Rank")
+    table.add_column("Rank", justify="right")
+    table.add_column("Count", justify="right")
+    table.add_column("Percentage", justify="right")
+    for rank, stats in rank_frequency.items():
+        table.add_row(
+            _format_value(rank),
+            _format_value(stats["count"]),
+            _format_value(stats["percentage"]),
+        )
+    return table
+
+
+def _brief_oracle_entropy_table(
+    entropy_by_cover_size: dict[int, dict[str, object]],
+) -> Table:
+    table = Table(title="Entropy by Required Cover Size")
+    table.add_column("Cover Size", justify="right")
+    table.add_column("Events", justify="right")
+    table.add_column("Average Entropy", justify="right")
+    for cover_size, stats in entropy_by_cover_size.items():
+        table.add_row(
+            _format_value(cover_size),
+            _format_value(stats["event_count"]),
+            _format_value(stats["average_entropy"]),
+        )
     return table
 
 

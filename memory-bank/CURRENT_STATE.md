@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 82
+- Tests currently passed: 89
 - Ruff passed
 
 ## Exact Cover Example
@@ -35,6 +35,35 @@ task commits listed above.
 - Worst minimum Hamming distance 2
 
 ## Latest Completed Task
+
+Implemented Brief Oracle Research.
+
+The `brief-oracle` command finds the smallest oracle brief that contains the
+actual 15-outcome result for completed drawings using BK probabilities only.
+
+Exports:
+- `reports/brief_oracle.csv`
+- `reports/brief_oracle.md`
+- `reports/brief_oracle_by_event.csv`
+
+Per drawing it records:
+- singles, doubles, triples
+- full brief variant count
+- log brief probability
+- actual result string
+- oracle brief string
+- BK rank counts for actual outcomes
+- average BK rank and actual-result BK probability
+- pool/BK top disagreement diagnostics
+
+Aggregate metrics include:
+- average singles, doubles, triples
+- p25/p50/p75/p90 full variant counts
+- doubles and triples distributions
+- BK rank frequency for actual outcomes
+- entropy by required cover size
+
+## Previous Completed Task
 
 Implemented bookmaker calibration research.
 
@@ -54,7 +83,7 @@ Exports:
 - `reports/calibration.csv`
 - `reports/reliability.csv`
 
-## Previous Completed Task
+## Earlier Completed Task
 
 Optimized the Baseline Brief Generator backtest.
 

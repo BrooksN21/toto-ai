@@ -24,3 +24,6 @@ reports/backtest_brief_last_*.md
 reports/calibration.md
 reports/calibration.csv
 reports/reliability.csv
+reports/brief_oracle.csv
+reports/brief_oracle.md
+reports/brief_oracle_by_event.csv
