@@ -28,6 +28,10 @@ from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.optimizer.brief import build_brief_for_drawing
+from toto_ai.optimizer.brief_backtest import (
+    run_brief_backtest,
+    write_brief_backtest_reports,
+)
 from toto_ai.optimizer.cover import (
     greedy_cover,
     load_cover_package_csv,
@@ -440,6 +444,35 @@ def backtest(
 
     csv_path, markdown_path = write_backtest_reports(result, last=last)
     print(_backtest_summary_table(result.summary))
+    print(f"Reports written to {csv_path} and {markdown_path}")
+
+
+@app.command()
+def backtest_brief(
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+    last: int = typer.Option(100, help="Number of latest complete drawings to test."),
+    bank: int = typer.Option(..., help="Any positive integer budget."),
+    stake: int = typer.Option(30, help="Stake per coupon."),
+    category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+) -> None:
+    """Backtest the baseline brief generator on finished drawings."""
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+
+    with session_factory() as session:
+        try:
+            result = run_brief_backtest(
+                session,
+                last=last,
+                bank=bank,
+                stake=stake,
+                category=category,
+            )
+        except ValueError as error:
+            raise typer.BadParameter(str(error)) from error
+
+    csv_path, markdown_path = write_brief_backtest_reports(result, last=last)
+    print(_brief_backtest_summary_table(result.summary))
     print(f"Reports written to {csv_path} and {markdown_path}")
 
 
@@ -882,6 +915,54 @@ def _backtest_summary_table(summary: dict[str, object]) -> Table:
     table.add_row("total cost", _format_value(summary["total_cost"]))
     table.add_row("total payout", _format_value(summary["total_payout"]))
     table.add_row("ROI", _format_value(summary["roi"], percent=True))
+    return table
+
+
+def _brief_backtest_summary_table(summary: dict[str, object]) -> Table:
+    table = Table(title="Baseline Brief Backtest Summary")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("drawings tested", _format_value(summary["drawings_tested"]))
+    table.add_row(
+        "brief containment rate",
+        _format_value(summary["brief_containment_rate"], percent=True),
+    )
+    table.add_row(
+        "average uncovered outcomes",
+        _format_value(summary["average_uncovered_outcomes"]),
+    )
+    table.add_row(
+        "best coupon hits",
+        _format_value(summary["average_best_coupon_hits"]),
+    )
+    table.add_row(
+        "hit13",
+        f"{summary['hit_13_count']} / {summary['hit_13_rate']:.2f}%",
+    )
+    table.add_row(
+        "hit14",
+        f"{summary['hit_14_count']} / {summary['hit_14_rate']:.2f}%",
+    )
+    table.add_row(
+        "hit15",
+        f"{summary['hit_15_count']} / {summary['hit_15_rate']:.2f}%",
+    )
+    table.add_row(
+        "average package size",
+        _format_value(summary["average_package_size"]),
+    )
+    table.add_row(
+        "average package cost",
+        _format_value(summary["average_package_cost"]),
+    )
+    table.add_row(
+        "average brief variants",
+        _format_value(summary["average_brief_variants"]),
+    )
+    table.add_row(
+        "execution time",
+        f"{summary['execution_time_seconds']:.4f}s",
+    )
     return table
 
 

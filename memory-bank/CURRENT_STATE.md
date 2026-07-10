@@ -15,6 +15,7 @@ memory stores.
 - `68cabb9` Add Cover Engine
 - `0f92ee5` Add exact Cover Package verifier
 - `7e95f24` Add baseline brief generator
+- `8b3ed6d` Add persistent project memory bank
 
 Note: the current PR branch was rebased onto an empty remote base for the first
 GitHub pull request, so local branch commit hashes may differ from the original
@@ -22,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 68
+- Tests currently passed: 72
 - Ruff passed
 
 ## Exact Cover Example
@@ -33,10 +34,29 @@ task commits listed above.
 - 100% exact verified coverage
 - Worst minimum Hamming distance 2
 
+## Latest Completed Task
+
+Implemented a backtest specifically for the Baseline Brief Generator.
+
+The `backtest-brief` command measures:
+- Drawings tested
+- Brief containment rate
+- Average uncovered outcomes
+- Average best coupon hits
+- Hit rates for 13, 14, 15
+- Average package size
+- Average package cost
+- Average brief variants
+- Execution time
+
+Exports:
+- `reports/backtest_brief_last_<N>.csv`
+- `reports/backtest_brief_last_<N>.md`
+
 ## Next Task
 
-Implement a backtest specifically for the Baseline Brief Generator, not the old
-placeholder MVP.
+Run baseline evaluation on real collected data for 100/500/1000 completed
+drawings and compare budgets/categories.
 
 Required backtest metrics:
 - Actual result fully inside brief

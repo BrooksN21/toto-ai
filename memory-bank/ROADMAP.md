@@ -17,9 +17,10 @@
 - Current/open drawing selection
 - CSV exports
 
-## Phase 3: Baseline evaluation - next
+## Phase 3: Baseline evaluation - in progress
 
 - Backtest baseline brief generator on 100/500/1000 completed drawings.
+  - Backtest CLI and report export are implemented.
 - Measure brief containment.
 - Measure package best hits.
 - Measure 13/14/15 hit rates.

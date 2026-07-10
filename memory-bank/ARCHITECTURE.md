@@ -29,6 +29,7 @@ Important modules:
 - `toto_ai.package.backtest`: MVP package backtest engine.
 - `toto_ai.optimizer.cover`: Cover Engine and exact cover verification.
 - `toto_ai.optimizer.brief`: baseline brief generator.
+- `toto_ai.optimizer.brief_backtest`: baseline brief generator backtest engine.
 - `toto_ai.cli`: Typer CLI entry point.
 
 Important CLI commands:
@@ -49,3 +50,4 @@ Important CLI commands:
 - `verify-cover`: exactly verify cover package coverage against a brief.
 - `build-brief --open`: build a baseline brief and package for the next playable
   drawing.
+- `backtest-brief`: backtest the baseline brief generator on finished drawings.
