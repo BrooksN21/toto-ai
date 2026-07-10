@@ -27,6 +27,7 @@ from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db
+from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.cover import (
     greedy_cover,
     load_cover_package_csv,
@@ -343,6 +344,44 @@ def cover(
     print(_cover_summary_table(result, stake=stake))
     print(_cover_coupons_table(result["selected_coupons"][:20]))
     print(f"Report written to {report_path}")
+
+
+@app.command()
+def build_brief(
+    open: bool = typer.Option(  # noqa: A002
+        False,
+        help="Resolve the current open baltbet-main drawing.",
+    ),
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+    bank: int = typer.Option(..., help="Any positive integer budget."),
+    stake: int = typer.Option(30, help="Stake per coupon."),
+    category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+) -> None:
+    """Build a baseline brief and cover package for the open drawing."""
+    if not open:
+        raise typer.BadParameter("Only --open is supported for now.")
+
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+    with session_factory() as session:
+        try:
+            reference = resolve_drawing_reference(session, open=True)
+            result = build_brief_for_drawing(
+                session,
+                drawing_id=reference.drawing_id,
+                category=category,
+                bank=bank,
+                stake=stake,
+            )
+        except ValueError as error:
+            raise typer.BadParameter(str(error)) from error
+
+    print(_drawing_reference_table(reference))
+    print(_brief_matches_table(result["matches"], result["brief"]))
+    print(_brief_summary_table(result))
+    print(_cover_coupons_table(result["selected_coupons"][:20]))
+    print(f"Brief report written to {result['brief_path']}")
+    print(f"Package report written to {result['package_path']}")
 
 
 @app.command()
@@ -738,6 +777,48 @@ def _cover_coupons_table(coupons: list[str]) -> Table:
     for index, coupon in enumerate(coupons, start=1):
         table.add_row(str(index), coupon)
     return table
+
+
+def _brief_matches_table(matches: list[object], brief: list[str]) -> Table:
+    table = Table(title="Baseline Brief Matches")
+    table.add_column("#", justify="right")
+    table.add_column("Match")
+    table.add_column("Pool")
+    table.add_column("BK")
+    table.add_column("Selected cover")
+    table.add_column("Reason")
+    for match, pick in zip(matches, brief, strict=True):
+        table.add_row(
+            _format_value(match.event_order + 1),
+            _format_value(match.name),
+            _probability_triplet(match.pool),
+            _probability_triplet(match.bk),
+            pick,
+            _format_value(match.reason),
+        )
+    return table
+
+
+def _brief_summary_table(result: dict[str, object]) -> Table:
+    table = Table(title="Baseline Brief Summary")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("full brief size", _format_value(result["full_brief_size"]))
+    table.add_row("package coupons", _format_value(len(result["selected_coupons"])))
+    table.add_row("cost", _format_value(result["cost"]))
+    table.add_row("category guarantee", _format_value(result["category_guarantee"]))
+    table.add_row("brief probability", f"{float(result['brief_probability']):.6f}")
+    table.add_row("coverage rate", f"{float(result['coverage_rate']):.2%}")
+    table.add_row("value against crowd", f"{float(result['value_score']):.4f}")
+    return table
+
+
+def _probability_triplet(probabilities: dict[str, float]) -> str:
+    return (
+        f"1={probabilities['1']:.2%} "
+        f"X={probabilities['X']:.2%} "
+        f"2={probabilities['2']:.2%}"
+    )
 
 
 def _cover_verification_table(result: dict[str, object]) -> Table:

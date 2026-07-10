@@ -17,3 +17,5 @@ reports/bk_vs_norm.md
 reports/backtest_mvp_last_*.csv
 reports/backtest_mvp_last_*.md
 reports/cover_package.csv
+reports/brief_*.csv
+reports/package_*.csv
