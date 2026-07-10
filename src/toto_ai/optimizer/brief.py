@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import math
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -35,6 +36,34 @@ class EventBriefAnalysis:
     bk_gap: float
     base_pick: str
     reason: str
+
+
+class CoverEngineCache:
+    def __init__(self, cover_func=greedy_cover):
+        self.cover_func = cover_func
+        self._cache: dict[tuple[tuple[str, ...], int, int], dict[str, Any]] = {}
+        self.hits = 0
+        self.misses = 0
+
+    def get(
+        self,
+        brief: list[str],
+        category: int,
+        max_coupons: int,
+    ) -> dict[str, Any]:
+        key = (tuple(brief), category, max_coupons)
+        if key in self._cache:
+            self.hits += 1
+            return self._cache[key]
+
+        self.misses += 1
+        result = self.cover_func(
+            brief=list(brief),
+            category=category,
+            max_coupons=max_coupons,
+        )
+        self._cache[key] = result
+        return result
 
 
 def build_brief_for_drawing(
@@ -121,46 +150,166 @@ def build_baseline_brief(
     category: int,
     bank: int,
     stake: int = 30,
+    top_candidates: int = 20,
+    max_candidate_briefs: int = 200,
+    timeout_per_drawing: float | None = None,
+    cover_cache: CoverEngineCache | None = None,
+    progress_callback=None,
 ) -> dict[str, Any]:
     if bank <= 0:
         raise ValueError("Bank must be a positive integer.")
     if stake <= 0:
         raise ValueError("Stake must be a positive integer.")
+    if top_candidates <= 0:
+        raise ValueError("top_candidates must be a positive integer.")
+    if max_candidate_briefs <= 0:
+        raise ValueError("max_candidate_briefs must be a positive integer.")
 
+    started_at = time.perf_counter()
     max_coupons = bank // stake
+    cache = cover_cache or CoverEngineCache()
+    timing = {
+        "candidate_generation_time": 0.0,
+        "scoring_time": 0.0,
+        "cover_time": 0.0,
+    }
+
+    generation_started_at = time.perf_counter()
+    candidate_briefs = _candidate_briefs(
+        analyses,
+        max_candidate_briefs=max_candidate_briefs,
+    )
+    timing["candidate_generation_time"] = time.perf_counter() - generation_started_at
+
+    scoring_started_at = time.perf_counter()
+    cheap_candidates = [
+        _cheap_candidate(
+            brief,
+            analyses=analyses,
+            max_coupons=max_coupons,
+            stake=stake,
+        )
+        for brief in candidate_briefs
+    ]
+    affordable_candidates = [
+        candidate
+        for candidate in cheap_candidates
+        if candidate["estimated_cost"] <= bank
+    ]
+    ranked_candidates = sorted(
+        affordable_candidates,
+        key=_cheap_rank_candidate_key,
+        reverse=True,
+    )
+    exact_variant_limit = _exact_variant_limit(max_coupons)
+    exact_candidates = [
+        candidate
+        for candidate in ranked_candidates
+        if candidate["full_brief_size"] <= exact_variant_limit
+    ][:top_candidates]
+    if not exact_candidates and ranked_candidates:
+        exact_candidates = [
+            min(ranked_candidates, key=lambda candidate: candidate["full_brief_size"])
+        ]
+    timing["scoring_time"] = time.perf_counter() - scoring_started_at
+
     candidates = []
-    for brief in _candidate_briefs(analyses):
-        cover = greedy_cover(
-            brief=brief,
+    timed_out = False
+    total_exact = len(exact_candidates)
+    for index, candidate in enumerate(exact_candidates, start=1):
+        if progress_callback is not None:
+            progress_callback(
+                {
+                    "candidate_index": index,
+                    "candidate_total": total_exact,
+                    "elapsed_time": time.perf_counter() - started_at,
+                    "best_score": candidates[-1]["brief_probability"]
+                    if candidates
+                    else candidate["brief_probability"],
+                }
+            )
+
+        cover_started_at = time.perf_counter()
+        cover = cache.get(
+            brief=candidate["brief"],
             category=category,
             max_coupons=max_coupons,
         )
+        timing["cover_time"] += time.perf_counter() - cover_started_at
+
         cost = len(cover["selected_coupons"]) * stake
         if cost > bank:
             continue
         verification = verify_cover_package(
-            brief=brief,
+            brief=candidate["brief"],
             category=category,
             coupons=cover["selected_coupons"],
         )
-        candidate = {
-            "brief": brief,
+        exact_candidate = {
+            **candidate,
             "selected_coupons": cover["selected_coupons"],
             "full_brief_size": cover["full_variants_count"],
             "covered_variants_count": cover["covered_variants_count"],
             "coverage_rate": cover["coverage_rate"],
             "cost": cost,
-            "brief_probability": brief_hit_probability(brief, analyses),
-            "value_score": value_against_crowd(brief, analyses),
             "category_guarantee": "PASS"
             if verification["guarantee_pass"]
             else "FAIL",
         }
-        candidates.append(candidate)
+        candidates.append(exact_candidate)
+        best = max(candidates, key=rank_candidate_key)
+
+        if progress_callback is not None:
+            progress_callback(
+                {
+                    "candidate_index": index,
+                    "candidate_total": total_exact,
+                    "elapsed_time": time.perf_counter() - started_at,
+                    "best_score": best["brief_probability"],
+                }
+            )
+
+        if _timed_out(started_at, timeout_per_drawing):
+            timed_out = True
+            break
 
     if not candidates:
-        raise ValueError("No affordable cover package could be generated.")
-    return max(candidates, key=rank_candidate_key)
+        if not exact_candidates:
+            raise ValueError("No affordable cover package could be generated.")
+        fallback = exact_candidates[0]
+        cover = cache.get(
+            brief=fallback["brief"],
+            category=category,
+            max_coupons=max_coupons,
+        )
+        candidates.append(
+            {
+                **fallback,
+                "selected_coupons": cover["selected_coupons"],
+                "full_brief_size": cover["full_variants_count"],
+                "covered_variants_count": cover["covered_variants_count"],
+                "coverage_rate": cover["coverage_rate"],
+                "cost": len(cover["selected_coupons"]) * stake,
+                "category_guarantee": "UNKNOWN",
+            }
+        )
+        timed_out = True
+
+    result = max(candidates, key=rank_candidate_key)
+    total_time = time.perf_counter() - started_at
+    return {
+        **result,
+        "timed_out": timed_out,
+        "candidate_generation_time": round(timing["candidate_generation_time"], 4),
+        "scoring_time": round(timing["scoring_time"], 4),
+        "cover_time": round(timing["cover_time"], 4),
+        "total_time": round(total_time, 4),
+        "candidate_count": len(candidate_briefs),
+        "exact_candidate_count": len(candidates),
+        "skipped_exact_candidate_count": len(ranked_candidates) - total_exact,
+        "cache_hits": cache.hits,
+        "cache_misses": cache.misses,
+    }
 
 
 def brief_hit_probability(
@@ -203,6 +352,17 @@ def rank_candidate_key(candidate: dict[str, Any]) -> tuple[float, float, float, 
         float(candidate["value_score"]) * 0.01,
         -int(candidate["cost"]),
     )
+
+
+def deduplicate_briefs(briefs: list[list[str]]) -> list[list[str]]:
+    deduped = []
+    seen = set()
+    for brief in briefs:
+        key = tuple(brief)
+        if key not in seen:
+            seen.add(key)
+            deduped.append(brief)
+    return deduped
 
 
 def write_brief_reports(
@@ -275,7 +435,10 @@ def _load_events_and_quotes(
     return events, quotes
 
 
-def _candidate_briefs(analyses: list[EventBriefAnalysis]) -> list[list[str]]:
+def _candidate_briefs(
+    analyses: list[EventBriefAnalysis],
+    max_candidate_briefs: int | None = None,
+) -> list[list[str]]:
     candidates = []
     base = [analysis.base_pick for analysis in analyses]
     candidates.append(base)
@@ -294,20 +457,70 @@ def _candidate_briefs(analyses: list[EventBriefAnalysis]) -> list[list[str]]:
         analyses,
         key=lambda analysis: (analysis.entropy, -analysis.bk_gap, analysis.event_order),
     )
-    for count in range(1, min(5, len(ranked_clear)) + 1):
+    for count in range(1, len(ranked_clear) + 1):
         brief = base.copy()
         for analysis in ranked_clear[:count]:
             brief[analysis.event_order] = _top_pick(analysis)
         candidates.append(brief)
 
-    deduped = []
-    seen = set()
-    for brief in candidates:
-        key = tuple(brief)
-        if key not in seen:
-            seen.add(key)
-            deduped.append(brief)
-    return deduped
+    deduped = deduplicate_briefs(candidates)
+    if max_candidate_briefs is None:
+        return deduped
+    return deduped[:max_candidate_briefs]
+
+
+def _cheap_candidate(
+    brief: list[str],
+    analyses: list[EventBriefAnalysis],
+    max_coupons: int,
+    stake: int,
+) -> dict[str, Any]:
+    full_brief_size = _brief_variant_count(brief)
+    estimated_package_size = min(full_brief_size, max_coupons)
+    estimated_coverage = (
+        estimated_package_size / full_brief_size
+        if full_brief_size
+        else 0.0
+    )
+    return {
+        "brief": brief,
+        "full_brief_size": full_brief_size,
+        "covered_variants_count": 0,
+        "coverage_rate": estimated_coverage,
+        "cost": estimated_package_size * stake,
+        "estimated_package_size": estimated_package_size,
+        "estimated_cost": estimated_package_size * stake,
+        "brief_probability": brief_hit_probability(brief, analyses),
+        "value_score": value_against_crowd(brief, analyses),
+    }
+
+
+def _brief_variant_count(brief: list[str]) -> int:
+    total = 1
+    for pick in brief:
+        total *= len(pick)
+    return total
+
+
+def _cheap_rank_candidate_key(
+    candidate: dict[str, Any],
+) -> tuple[float, float, float, int]:
+    return (
+        float(candidate["brief_probability"]) * float(candidate["coverage_rate"]),
+        float(candidate["coverage_rate"]),
+        float(candidate["value_score"]) * 0.01,
+        -int(candidate["estimated_cost"]),
+    )
+
+
+def _exact_variant_limit(max_coupons: int) -> int:
+    return max(1000, min(5000, max_coupons * 10))
+
+
+def _timed_out(started_at: float, timeout_per_drawing: float | None) -> bool:
+    if timeout_per_drawing is None:
+        return False
+    return time.perf_counter() - started_at >= timeout_per_drawing
 
 
 def _top_pick(analysis: EventBriefAnalysis) -> str:

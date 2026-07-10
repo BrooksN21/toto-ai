@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 72
+- Tests currently passed: 78
 - Ruff passed
 
 ## Exact Cover Example
@@ -36,22 +36,30 @@ task commits listed above.
 
 ## Latest Completed Task
 
-Implemented a backtest specifically for the Baseline Brief Generator.
+Optimized the Baseline Brief Generator backtest.
 
-The `backtest-brief` command measures:
-- Drawings tested
-- Brief containment rate
-- Average uncovered outcomes
-- Average best coupon hits
-- Hit rates for 13, 14, 15
-- Average package size
-- Average package cost
-- Average brief variants
-- Execution time
+The `backtest-brief` command now includes:
+- Rich progress for drawing number, candidate index, elapsed time, and best
+  score.
+- Cover Engine cache keyed by brief tuple, category, and max coupon count.
+- Candidate brief deduplication.
+- Cheap candidate scoring before exact cover.
+- Exact cover/verifier only for top candidates.
+- Per-drawing timeout fallback.
+- Per-drawing timing metrics.
+- `--top-candidates`, `--max-candidate-briefs`, and
+  `--timeout-per-drawing` options.
 
 Exports:
 - `reports/backtest_brief_last_<N>.csv`
 - `reports/backtest_brief_last_<N>.md`
+
+Local smoke results on `data/toto.db`:
+- `backtest-brief --last 1 --bank 10000 --stake 30 --category 13` completed
+  in about 4.7 seconds.
+- `backtest-brief --last 10 --bank 10000 --stake 30 --category 13` showed
+  progress and completed in about 41 seconds, testing 9 drawings with one
+  skipped due to missing pre-match BK/pool probabilities.
 
 ## Next Task
 

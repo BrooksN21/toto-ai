@@ -47,6 +47,10 @@ def greedy_cover(
         variant: _variant_weight(variant, weights)
         for variant in variants
     }
+    cover_sets = {
+        coupon: coverage_set(coupon, variants, max_errors)
+        for coupon in variants
+    }
     selected = []
     covered: set[int] = set()
 
@@ -60,7 +64,7 @@ def greedy_cover(
             if coupon in selected:
                 continue
 
-            new_coverage = coverage_set(coupon, variants, max_errors) - covered
+            new_coverage = cover_sets[coupon] - covered
             weighted_coverage = sum(
                 variant_weights[variants[index]]
                 for index in new_coverage

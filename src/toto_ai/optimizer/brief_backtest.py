@@ -12,7 +12,11 @@ from sqlalchemy.orm import Session
 
 from toto_ai.analytics.history import normalize_result
 from toto_ai.db.models import Drawing, Event, Quote
-from toto_ai.optimizer.brief import analyze_event, build_baseline_brief
+from toto_ai.optimizer.brief import (
+    CoverEngineCache,
+    analyze_event,
+    build_baseline_brief,
+)
 
 
 @dataclass(frozen=True)
@@ -31,6 +35,11 @@ class BriefBacktestRow:
     package_cost: int
     brief_full_variants: int
     category_guarantee: str
+    timed_out: bool
+    candidate_generation_time: float
+    scoring_time: float
+    cover_time: float
+    total_time: float
 
 
 @dataclass(frozen=True)
@@ -46,20 +55,29 @@ def run_brief_backtest(
     stake: int = 30,
     category: int = 13,
     community: str = "baltbet-main",
+    top_candidates: int = 20,
+    max_candidate_briefs: int = 200,
+    timeout_per_drawing: float | None = 30,
+    cover_cache: CoverEngineCache | None = None,
+    progress_callback=None,
 ) -> BriefBacktestResult:
     if last <= 0:
         raise ValueError("Last must be a positive integer.")
 
     started_at = time.perf_counter()
     rows = []
+    cache = cover_cache or CoverEngineCache()
     for drawing in select_complete_finished_drawings(session, last, community):
         events, quotes = _drawing_events_and_quotes(session, drawing.id)
         result_string = build_result_string(events)
-        analyses = [
-            analyze_event(event, quotes[event.event_order])
-            for event in events
-            if event.event_order is not None and event.event_order in quotes
-        ]
+        try:
+            analyses = [
+                analyze_event(event, quotes[event.event_order])
+                for event in events
+                if event.event_order is not None and event.event_order in quotes
+            ]
+        except ValueError:
+            continue
         if len(analyses) != 15:
             continue
 
@@ -68,6 +86,14 @@ def run_brief_backtest(
             category=category,
             bank=bank,
             stake=stake,
+            top_candidates=top_candidates,
+            max_candidate_briefs=max_candidate_briefs,
+            timeout_per_drawing=timeout_per_drawing,
+            cover_cache=cache,
+            progress_callback=_drawing_progress_callback(
+                progress_callback,
+                drawing.number,
+            ),
         )
         brief = package["brief"]
         uncovered = count_uncovered_outcomes(brief, result_string)
@@ -89,6 +115,11 @@ def run_brief_backtest(
                 package_cost=package["cost"],
                 brief_full_variants=package["full_brief_size"],
                 category_guarantee=package["category_guarantee"],
+                timed_out=package["timed_out"],
+                candidate_generation_time=package["candidate_generation_time"],
+                scoring_time=package["scoring_time"],
+                cover_time=package["cover_time"],
+                total_time=package["total_time"],
             )
         )
 
@@ -178,6 +209,15 @@ def summarize_brief_backtest(
         "average_brief_variants": _average(
             [row.brief_full_variants for row in rows]
         ),
+        "timed_out_count": sum(row.timed_out for row in rows),
+        "average_candidate_generation_time": _average_float(
+            [row.candidate_generation_time for row in rows]
+        ),
+        "average_scoring_time": _average_float([row.scoring_time for row in rows]),
+        "average_cover_time": _average_float([row.cover_time for row in rows]),
+        "average_total_time_per_drawing": _average_float(
+            [row.total_time for row in rows]
+        ),
         "execution_time_seconds": round(execution_time, 4),
     }
 
@@ -210,6 +250,11 @@ def write_brief_backtest_reports(
                 "package_cost",
                 "brief_full_variants",
                 "category_guarantee",
+                "timed_out",
+                "candidate_generation_time",
+                "scoring_time",
+                "cover_time",
+                "total_time",
             ],
         )
         writer.writeheader()
@@ -245,8 +290,9 @@ def build_brief_backtest_markdown(result: BriefBacktestResult) -> str:
             "",
             "## Drawings",
             "",
-            "| Drawing | Inside Brief | Uncovered | Best Hits | 13 | 14 | 15 | Cost |",
-            "| ---: | --- | ---: | ---: | --- | --- | --- | ---: |",
+            "| Drawing | Inside Brief | Uncovered | Best Hits | 13 | 14 | 15 | "
+            "Cost | Timed Out |",
+            "| ---: | --- | ---: | ---: | --- | --- | --- | ---: | --- |",
         ]
     )
     for row in result.rows:
@@ -259,7 +305,8 @@ def build_brief_backtest_markdown(result: BriefBacktestResult) -> str:
             f"{_yes_no(row.hit_13)} | "
             f"{_yes_no(row.hit_14)} | "
             f"{_yes_no(row.hit_15)} | "
-            f"{row.package_cost} |"
+            f"{row.package_cost} | "
+            f"{_yes_no(row.timed_out)} |"
         )
     lines.append("")
     return "\n".join(lines)
@@ -313,6 +360,12 @@ def _average(values: list[int]) -> float:
     return round(mean(values), 4)
 
 
+def _average_float(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    return round(mean(values), 4)
+
+
 def _rate(count: int, total: int) -> float:
     if total == 0:
         return 0.0
@@ -321,3 +374,18 @@ def _rate(count: int, total: int) -> float:
 
 def _yes_no(value: bool) -> str:
     return "yes" if value else "no"
+
+
+def _drawing_progress_callback(progress_callback, drawing_number: int | None):
+    if progress_callback is None:
+        return None
+
+    def callback(update: dict[str, Any]) -> None:
+        progress_callback(
+            {
+                **update,
+                "drawing_number": drawing_number,
+            }
+        )
+
+    return callback

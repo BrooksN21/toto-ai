@@ -454,22 +454,58 @@ def backtest_brief(
     bank: int = typer.Option(..., help="Any positive integer budget."),
     stake: int = typer.Option(30, help="Stake per coupon."),
     category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+    top_candidates: int = typer.Option(
+        20,
+        help="Number of top candidate briefs to run through exact cover.",
+    ),
+    max_candidate_briefs: int = typer.Option(
+        200,
+        help="Maximum candidate brief structures to generate per drawing.",
+    ),
+    timeout_per_drawing: float = typer.Option(
+        30,
+        help="Timeout guard per drawing in seconds.",
+    ),
 ) -> None:
     """Backtest the baseline brief generator on finished drawings."""
     engine = init_db(db)
     session_factory = get_session_factory(engine)
 
-    with session_factory() as session:
-        try:
-            result = run_brief_backtest(
-                session,
-                last=last,
-                bank=bank,
-                stake=stake,
-                category=category,
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        TimeElapsedColumn(),
+    ) as progress:
+        task_id = progress.add_task("Preparing baseline brief backtest")
+
+        def update_progress(update: dict[str, object]) -> None:
+            progress.update(
+                task_id,
+                description=(
+                    f"drawing={update.get('drawing_number')} "
+                    f"candidate={update.get('candidate_index')}/"
+                    f"{update.get('candidate_total')} "
+                    f"elapsed={float(update.get('elapsed_time', 0)):.2f}s "
+                    f"best={float(update.get('best_score', 0)):.6f}"
+                ),
             )
-        except ValueError as error:
-            raise typer.BadParameter(str(error)) from error
+
+        with session_factory() as session:
+            try:
+                result = run_brief_backtest(
+                    session,
+                    last=last,
+                    bank=bank,
+                    stake=stake,
+                    category=category,
+                    top_candidates=top_candidates,
+                    max_candidate_briefs=max_candidate_briefs,
+                    timeout_per_drawing=timeout_per_drawing,
+                    progress_callback=update_progress,
+                )
+            except ValueError as error:
+                raise typer.BadParameter(str(error)) from error
+        progress.update(task_id, description="Baseline brief backtest complete")
 
     csv_path, markdown_path = write_brief_backtest_reports(result, last=last)
     print(_brief_backtest_summary_table(result.summary))
@@ -958,6 +994,17 @@ def _brief_backtest_summary_table(summary: dict[str, object]) -> Table:
     table.add_row(
         "average brief variants",
         _format_value(summary["average_brief_variants"]),
+    )
+    table.add_row("timed out", _format_value(summary["timed_out_count"]))
+    table.add_row(
+        "avg candidate generation",
+        f"{summary['average_candidate_generation_time']:.4f}s",
+    )
+    table.add_row("avg scoring", f"{summary['average_scoring_time']:.4f}s")
+    table.add_row("avg cover", f"{summary['average_cover_time']:.4f}s")
+    table.add_row(
+        "avg total per drawing",
+        f"{summary['average_total_time_per_drawing']:.4f}s",
     )
     table.add_row(
         "execution time",
