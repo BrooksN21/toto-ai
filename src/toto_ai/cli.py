@@ -27,7 +27,13 @@ from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db
-from toto_ai.optimizer.cover import greedy_cover, parse_brief, write_cover_package_csv
+from toto_ai.optimizer.cover import (
+    greedy_cover,
+    load_cover_package_csv,
+    parse_brief,
+    verify_cover_package,
+    write_cover_package_csv,
+)
 from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
 
@@ -337,6 +343,36 @@ def cover(
     print(_cover_summary_table(result, stake=stake))
     print(_cover_coupons_table(result["selected_coupons"][:20]))
     print(f"Report written to {report_path}")
+
+
+@app.command()
+def verify_cover(
+    brief: str = typer.Option(
+        ...,
+        help="Comma-separated brief positions, using 1, X, and 2.",
+    ),
+    category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+    package: str = typer.Option(  # noqa: A002
+        ...,
+        "--package",
+        help="CSV package file with a coupon column.",
+    ),
+) -> None:
+    """Verify exact coverage of a cover package against a brief."""
+    try:
+        coupons = load_cover_package_csv(package)
+        result = verify_cover_package(
+            brief=parse_brief(brief),
+            category=category,
+            coupons=coupons,
+        )
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(_cover_verification_table(result))
+    print(_cover_distance_distribution_table(result["distance_distribution"]))
+    if not result["guarantee_pass"]:
+        print(_uncovered_variants_table(result["first_uncovered_variants"]))
 
 
 @app.command()
@@ -701,6 +737,45 @@ def _cover_coupons_table(coupons: list[str]) -> Table:
     table.add_column("Coupon")
     for index, coupon in enumerate(coupons, start=1):
         table.add_row(str(index), coupon)
+    return table
+
+
+def _cover_verification_table(result: dict[str, object]) -> Table:
+    table = Table(title="Cover Verification")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("total variants", _format_value(result["total_variants"]))
+    table.add_row(
+        "fully covered variants",
+        _format_value(result["fully_covered_variants"]),
+    )
+    table.add_row("uncovered variants", _format_value(result["uncovered_variants"]))
+    table.add_row(
+        "worst minimum distance",
+        _format_value(result["worst_minimum_distance"]),
+    )
+    table.add_row(
+        "guarantee",
+        "PASS" if result["guarantee_pass"] else "FAIL",
+    )
+    return table
+
+
+def _cover_distance_distribution_table(distribution: dict[object, int]) -> Table:
+    table = Table(title="Minimum Distance Distribution")
+    table.add_column("Distance")
+    table.add_column("Variants", justify="right")
+    for distance in (0, 1, 2, "3+"):
+        table.add_row(str(distance), _format_value(distribution[distance]))
+    return table
+
+
+def _uncovered_variants_table(variants: list[str]) -> Table:
+    table = Table(title="First 20 Uncovered Variants")
+    table.add_column("#", justify="right")
+    table.add_column("Variant")
+    for index, variant in enumerate(variants, start=1):
+        table.add_row(str(index), variant)
     return table
 
 

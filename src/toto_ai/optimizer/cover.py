@@ -124,6 +124,66 @@ def write_cover_package_csv(
     return path
 
 
+def load_cover_package_csv(package_path: str | Path) -> list[str]:
+    path = Path(package_path)
+    with path.open(newline="", encoding="utf-8") as package_file:
+        reader = csv.DictReader(package_file)
+        if reader.fieldnames and "coupon" in reader.fieldnames:
+            return [
+                row["coupon"].strip().upper()
+                for row in reader
+                if row.get("coupon", "").strip()
+            ]
+
+    with path.open(newline="", encoding="utf-8") as package_file:
+        return [
+            row[0].strip().upper()
+            for row in csv.reader(package_file)
+            if row and row[0].strip()
+        ]
+
+
+def verify_cover_package(
+    brief: list[str],
+    category: int,
+    coupons: list[str],
+) -> dict[str, Any]:
+    variants = expand_brief(brief)
+    max_errors = category_max_errors(category)
+    minimum_distances = [
+        _minimum_distance(variant, coupons)
+        for variant in variants
+    ]
+
+    fully_covered = [
+        variant
+        for variant, distance in zip(variants, minimum_distances, strict=True)
+        if distance is not None and distance <= max_errors
+    ]
+    uncovered = [
+        variant
+        for variant, distance in zip(variants, minimum_distances, strict=True)
+        if distance is None or distance > max_errors
+    ]
+    finite_distances = [
+        distance
+        for distance in minimum_distances
+        if distance is not None
+    ]
+
+    return {
+        "total_variants": len(variants),
+        "fully_covered_variants": len(fully_covered),
+        "uncovered_variants": len(uncovered),
+        "worst_minimum_distance": max(finite_distances)
+        if finite_distances
+        else None,
+        "distance_distribution": _minimum_distance_distribution(minimum_distances),
+        "guarantee_pass": len(uncovered) == 0,
+        "first_uncovered_variants": uncovered[:20],
+    }
+
+
 def _parse_position(position: str) -> tuple[str, ...]:
     normalized = position.strip().upper()
     if not normalized:
@@ -137,3 +197,21 @@ def _variant_weight(variant: str, weights: dict[str, float] | None) -> float:
     if weights is None:
         return 1.0
     return float(weights.get(variant, 1.0))
+
+
+def _minimum_distance(variant: str, coupons: list[str]) -> int | None:
+    if not coupons:
+        return None
+    return min(hamming(variant, coupon) for coupon in coupons)
+
+
+def _minimum_distance_distribution(
+    minimum_distances: list[int | None],
+) -> dict[int | str, int]:
+    distribution: dict[int | str, int] = {0: 0, 1: 0, 2: 0, "3+": 0}
+    for distance in minimum_distances:
+        if distance is None or distance >= 3:
+            distribution["3+"] += 1
+        else:
+            distribution[distance] += 1
+    return distribution
