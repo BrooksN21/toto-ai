@@ -27,6 +27,7 @@ from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db
+from toto_ai.optimizer.cover import greedy_cover, parse_brief, write_cover_package_csv
 from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
 
@@ -305,6 +306,37 @@ def package_mvp(
     print("Not an official TotoBrief guarantee.")
     print(_package_mvp_summary_table(result))
     print(_package_mvp_coupons_table(result.selected_coupons))
+
+
+@app.command()
+def cover(
+    brief: str = typer.Option(
+        ...,
+        help="Comma-separated brief positions, using 1, X, and 2.",
+    ),
+    category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+    bank: int = typer.Option(..., help="Any positive integer budget."),
+    stake: int = typer.Option(30, help="Stake per coupon."),
+) -> None:
+    """Generate a greedy covering package from a brief."""
+    if bank <= 0:
+        raise typer.BadParameter("Bank must be a positive integer.")
+    if stake <= 0:
+        raise typer.BadParameter("Stake must be a positive integer.")
+
+    try:
+        result = greedy_cover(
+            brief=parse_brief(brief),
+            category=category,
+            max_coupons=bank // stake,
+        )
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+
+    report_path = write_cover_package_csv(result["selected_coupons"])
+    print(_cover_summary_table(result, stake=stake))
+    print(_cover_coupons_table(result["selected_coupons"][:20]))
+    print(f"Report written to {report_path}")
 
 
 @app.command()
@@ -642,6 +674,29 @@ def _package_mvp_summary_table(result: object) -> Table:
 
 def _package_mvp_coupons_table(coupons: list[str]) -> Table:
     table = Table(title="Selected Coupons")
+    table.add_column("#", justify="right")
+    table.add_column("Coupon")
+    for index, coupon in enumerate(coupons, start=1):
+        table.add_row(str(index), coupon)
+    return table
+
+
+def _cover_summary_table(result: dict[str, object], stake: int) -> Table:
+    selected_coupons = result["selected_coupons"]
+    coupon_count = len(selected_coupons) if isinstance(selected_coupons, list) else 0
+
+    table = Table(title="Cover Package")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("full variants", _format_value(result["full_variants_count"]))
+    table.add_row("selected coupons", _format_value(coupon_count))
+    table.add_row("cost", _format_value(coupon_count * stake))
+    table.add_row("coverage rate", f"{float(result['coverage_rate']):.2%}")
+    return table
+
+
+def _cover_coupons_table(coupons: list[str]) -> Table:
+    table = Table(title="First 20 Coupons")
     table.add_column("#", justify="right")
     table.add_column("Coupon")
     for index, coupon in enumerate(coupons, start=1):
