@@ -51,6 +51,7 @@ from toto_ai.optimizer.cover import (
     verify_cover_package,
     write_cover_package_csv,
 )
+from toto_ai.optimizer.cover_benchmark import benchmark_cover
 from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
 
@@ -480,6 +481,27 @@ def cover(
     print(_cover_summary_table(result, stake=stake))
     print(_cover_coupons_table(result["selected_coupons"][:20]))
     print(f"Report written to {report_path}")
+
+
+@app.command("benchmark-cover")
+def benchmark_cover_command(
+    category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+    max_coupons: int = typer.Option(333, help="Maximum coupons for the benchmark."),
+    profile: bool = typer.Option(True, help="Print cProfile top functions."),
+) -> None:
+    """Benchmark Cover Engine on a representative brief."""
+    try:
+        result = benchmark_cover(
+            category=category,
+            max_coupons=max_coupons,
+            profile=profile,
+        )
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(_cover_benchmark_table(result))
+    if result["profile"]:
+        print(result["profile"])
 
 
 @app.command()
@@ -1142,6 +1164,21 @@ def _cover_coupons_table(coupons: list[str]) -> Table:
     table.add_column("Coupon")
     for index, coupon in enumerate(coupons, start=1):
         table.add_row(str(index), coupon)
+    return table
+
+
+def _cover_benchmark_table(result: dict[str, object]) -> Table:
+    table = Table(title="Cover Engine Benchmark")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    for key in (
+        "elapsed_seconds",
+        "full_variants_count",
+        "selected_coupons",
+        "covered_variants_count",
+        "coverage_rate",
+    ):
+        table.add_row(key.replace("_", " "), _format_value(result[key]))
     return table
 
 

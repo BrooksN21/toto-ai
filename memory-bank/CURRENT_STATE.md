@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 97
+- Tests currently passed: 99
 - Ruff passed
 
 ## Exact Cover Example
@@ -35,6 +35,29 @@ task commits listed above.
 - Worst minimum Hamming distance 2
 
 ## Latest Completed Task
+
+Optimized Cover Engine performance without changing mathematical results.
+
+The Cover Engine now:
+- Caches expanded brief variants.
+- Caches coverage bitsets by `(brief, category)`.
+- Builds coverage via bounded outcome mutation instead of rebuilding all
+  coupon/variant Hamming comparisons.
+- Uses integer bitsets for greedy uncovered coverage tracking.
+- Keeps the same selected coupons, coverage rate, worst minimum distance, and
+  guarantee result on the representative regression case.
+
+Benchmark evidence:
+- Pre-optimization representative cover runtime: about 1.70s for 1024 variants.
+- Post-optimization representative cover runtime: about 0.04-0.05s.
+- Speedup: about 35x on the representative benchmark.
+- `budget-oracle --last 1 --bank 10000 --stake 30 --category 13 --no-progress`
+  completed in about 0.5 seconds without `--max-candidates`.
+
+New command:
+- `python -m toto_ai.cli benchmark-cover`
+
+## Previous Completed Task
 
 Improved Budget-Constrained Brief Oracle observability and diagnostics.
 
@@ -56,7 +79,7 @@ Local smoke result on `data/toto.db`:
 - `budget-oracle --last 1 --bank 10000 --stake 30 --category 13 --max-candidates 3 --no-progress`
   completed in about 5 seconds.
 
-## Previous Completed Task
+## Earlier Completed Task: Budget-Constrained Brief Oracle
 
 Implemented Budget-Constrained Brief Oracle.
 

@@ -59,6 +59,7 @@
 
 ## Phase 6: Package Optimizer
 
+- Cover Engine performance optimization for greedy cover is implemented.
 - Compare greedy cover, MILP, simulated annealing, genetic algorithms.
 - Optimize expected value and probability of 13+/14+/15.
 - Monte Carlo simulation.

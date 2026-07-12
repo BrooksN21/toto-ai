@@ -20,6 +20,7 @@ Current related commands:
 
 Related:
 - [algorithm-review.md](algorithm-review.md)
+- [../knowledge/cover_engine.md](../knowledge/cover_engine.md)
 - [../knowledge/oracle_benchmarks.md](../knowledge/oracle_benchmarks.md)
 - [../memory-bank/ROADMAP.md](../memory-bank/ROADMAP.md)
 - [../prompts/backtest.md](../prompts/backtest.md)

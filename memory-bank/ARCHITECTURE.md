@@ -34,6 +34,8 @@ Important modules:
 - `toto_ai.package.mvp`: MVP covering approximation package generator.
 - `toto_ai.package.backtest`: MVP package backtest engine.
 - `toto_ai.optimizer.cover`: Cover Engine and exact cover verification.
+- `toto_ai.optimizer.cover_benchmark`: representative Cover Engine benchmark
+  with optional cProfile output.
 - `toto_ai.optimizer.brief`: baseline brief generator.
 - `toto_ai.optimizer.brief_backtest`: baseline brief generator backtest engine.
 - `toto_ai.cli`: Typer CLI entry point.
@@ -58,6 +60,7 @@ Important CLI commands:
 - `backtest`: backtest the older MVP package generator.
 - `cover`: generate a greedy cover package from a manual brief.
 - `verify-cover`: exactly verify cover package coverage against a brief.
+- `benchmark-cover`: profile Cover Engine performance on a representative brief.
 - `build-brief --open`: build a baseline brief and package for the next playable
   drawing.
 - `backtest-brief`: backtest the baseline brief generator on finished drawings.

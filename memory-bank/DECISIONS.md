@@ -24,6 +24,10 @@
 - Category 14 means maximum Hamming distance 1.
 - Category 15 means exact match.
 - Cover guarantee only applies if actual outcomes are inside the selected brief.
+- Cover Engine performance optimizations must preserve selected coupons,
+  coverage rate, worst minimum distance, and guarantee results.
+- Cover Engine caches may depend on brief structure and category, but must not
+  change candidate order or greedy tie-break semantics.
 - User bank can be any positive amount.
 - `--open` means next playable drawing with `ended_at` in the future.
 - `--live` means betting is closed and drawing is ongoing.
