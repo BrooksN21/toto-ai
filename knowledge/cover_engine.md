@@ -11,6 +11,8 @@ Definitions preserved:
 
 Current implementation notes:
 - Expanded brief variants are cached.
+- Parsed positions and suffix expansions are cached so related candidate briefs
+  can reuse expansion work.
 - Coverage bitsets are cached by `(brief, category)`.
 - Coverage is built by bounded outcome mutation instead of all-pairs Hamming
   scans.

@@ -12,6 +12,9 @@ Checklist:
 - Before changing an expensive oracle search, inspect candidate workload:
   generated vs unique candidates, Cover Engine calls, cache hits/misses, variant
   sizes, and slowest candidates.
+- When adding pruning, prove that the pruned candidate cannot improve the
+  reported objective and keep regression tests against an unpruned/bruteforce
+  comparison where practical.
 - Export CSV and Markdown reports.
 - Compare categories and budgets before drawing conclusions.
 

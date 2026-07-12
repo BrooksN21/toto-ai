@@ -23,6 +23,13 @@
 - Budget-oracle workload profiling is observational only. It must not change
   oracle candidate generation, candidate order, scoring, or default search
   space.
+- Budget-oracle pruning must be mathematically safe and covered by tests.
+- Budget-oracle incumbent pruning may skip a candidate only when its theoretical
+  best rank cannot beat the current incumbent after hit, cost, brief-size, and
+  original-order tie-breaks.
+- Budget-oracle dominance pruning is limited to the real greedy Cover Engine and
+  requires position-wise subset dominance, preserved actual-result coverage, no
+  larger brief variant count, and no worse bound objective.
 - Category 13 means maximum Hamming distance 2.
 - Category 14 means maximum Hamming distance 1.
 - Category 15 means exact match.

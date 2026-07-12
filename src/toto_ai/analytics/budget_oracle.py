@@ -65,6 +65,10 @@ class BudgetOracleRow:
     cover_engine_calls: int
     cache_hits: int
     cache_misses: int
+    pruned_by_cost_lower_bound: int
+    pruned_by_dominance: int
+    pruned_by_incumbent_bound: int
+    cover_engine_calls_after_pruning: int
     average_brief_variant_count: float
     max_brief_variant_count: int
     average_cover_call_duration: float
@@ -202,6 +206,16 @@ def run_budget_oracle(
                     cover_engine_calls=oracle["workload"]["cover_engine_calls"],
                     cache_hits=oracle["workload"]["cache_hits"],
                     cache_misses=oracle["workload"]["cache_misses"],
+                    pruned_by_cost_lower_bound=oracle["workload"][
+                        "pruned_by_cost_lower_bound"
+                    ],
+                    pruned_by_dominance=oracle["workload"]["pruned_by_dominance"],
+                    pruned_by_incumbent_bound=oracle["workload"][
+                        "pruned_by_incumbent_bound"
+                    ],
+                    cover_engine_calls_after_pruning=oracle["workload"][
+                        "cover_engine_calls_after_pruning"
+                    ],
                     average_brief_variant_count=oracle["workload"][
                         "average_brief_variant_count"
                     ],
@@ -275,12 +289,26 @@ def choose_budget_oracle_package(
     skipped_candidate_count = 0
     timed_out = False
     all_candidates = _deduplicate_briefs(candidate_briefs)
-    candidates = all_candidates
+    profiles = _candidate_profiles(
+        all_candidates,
+        result_string=result_string,
+        category=category,
+        stake=stake,
+    )
+    profiles = _prune_by_cost_lower_bound(profiles, bank=bank)
+    pruned_by_cost_lower_bound = len(all_candidates) - len(profiles)
+    if cover_func is greedy_cover:
+        profiles, pruned_by_dominance = _prune_dominated_candidates(profiles)
+    else:
+        pruned_by_dominance = 0
+    profiles = sorted(profiles, key=_candidate_sort_key)
     if max_candidates is not None:
-        candidates = candidates[:max_candidates]
+        profiles = profiles[:max_candidates]
     cover_call_records = []
+    pruned_by_incumbent_bound = 0
 
-    for candidate_index, brief in enumerate(candidates, start=1):
+    for candidate_index, profile in enumerate(profiles, start=1):
+        brief = profile["brief"]
         if processed_candidate_count > 0 and _timed_out(
             started_at,
             timeout_per_drawing,
@@ -288,6 +316,9 @@ def choose_budget_oracle_package(
         ):
             timed_out = True
             break
+        if best is not None and _cannot_beat_incumbent(profile, best):
+            pruned_by_incumbent_bound += 1
+            continue
 
         cover_started_at = time_func()
         cover = cover_func(
@@ -320,7 +351,8 @@ def choose_budget_oracle_package(
             "best_coupon_hits": hits,
             "package_size": len(coupons),
             "package_cost": cost,
-            "brief_variants": _brief_variants(brief),
+            "brief_variants": profile["brief_variants"],
+            "original_index": profile["original_index"],
         }
         if best is None or _oracle_rank_key(candidate) > _oracle_rank_key(best):
             best = candidate
@@ -329,7 +361,7 @@ def choose_budget_oracle_package(
             progress_callback(
                 {
                     "candidate_index": candidate_index,
-                    "candidate_total": len(candidates),
+                    "candidate_total": len(profiles),
                     "current_best_hits": best["best_coupon_hits"] if best else 0,
                     "current_best_cost": best["package_cost"] if best else 0,
                 }
@@ -344,7 +376,7 @@ def choose_budget_oracle_package(
     return {
         **best,
         "timed_out": timed_out,
-        "candidate_count": len(candidates),
+        "candidate_count": len(all_candidates),
         "processed_candidate_count": processed_candidate_count,
         "skipped_candidate_count": skipped_candidate_count,
         "cover_generation_time": cover_generation_time,
@@ -352,9 +384,12 @@ def choose_budget_oracle_package(
         "workload": _workload_profile(
             generated_candidates=len(candidate_briefs),
             all_candidates=all_candidates,
-            evaluated_candidates=candidates,
+            evaluated_candidates=[profile["brief"] for profile in profiles],
             processed_candidate_count=processed_candidate_count,
             cover_call_records=cover_call_records,
+            pruned_by_cost_lower_bound=pruned_by_cost_lower_bound,
+            pruned_by_dominance=pruned_by_dominance,
+            pruned_by_incumbent_bound=pruned_by_incumbent_bound,
         ),
     }
 
@@ -641,16 +676,167 @@ def _deduplicate_briefs(briefs: list[list[str]]) -> list[list[str]]:
     return deduped
 
 
-def _oracle_rank_key(candidate: dict[str, Any]) -> tuple[int, int, int]:
+def _oracle_rank_key(candidate: dict[str, Any]) -> tuple[int, int, int, int]:
     return (
         int(candidate["best_coupon_hits"]),
         -int(candidate["package_cost"]),
         -int(candidate["brief_variants"]),
+        -int(candidate.get("original_index", 0)),
     )
 
 
 def _brief_variants(brief: list[str]) -> int:
     return math.prod(len(position) for position in brief)
+
+
+def _candidate_profiles(
+    candidates: list[list[str]],
+    result_string: str,
+    category: int,
+    stake: int,
+) -> list[dict[str, Any]]:
+    return [
+        _candidate_profile(
+            brief=brief,
+            result_string=result_string,
+            category=category,
+            stake=stake,
+            original_index=index,
+        )
+        for index, brief in enumerate(candidates)
+    ]
+
+
+def _candidate_profile(
+    brief: list[str],
+    result_string: str,
+    category: int,
+    stake: int,
+    original_index: int,
+) -> dict[str, Any]:
+    brief_variants = _brief_variants(brief)
+    lower_bound_coupons = _minimum_coupon_lower_bound(brief, category)
+    return {
+        "brief": brief,
+        "original_index": original_index,
+        "potential_best_hits": _potential_best_hits(brief, result_string),
+        "brief_variants": brief_variants,
+        "lower_bound_coupons": lower_bound_coupons,
+        "lower_bound_cost": lower_bound_coupons * stake,
+        "actual_covered_positions": frozenset(
+            index
+            for index, (position, result) in enumerate(
+                zip(brief, result_string, strict=False)
+            )
+            if result in position
+        ),
+    }
+
+
+def _minimum_coupon_lower_bound(brief: list[str], category: int) -> int:
+    brief_variants = _brief_variants(brief)
+    if brief_variants == 0:
+        return 0
+    max_coverable = _max_unrestricted_hamming_ball_size(len(brief), category)
+    return max(1, math.ceil(brief_variants / max_coverable))
+
+
+def _max_unrestricted_hamming_ball_size(length: int, category: int) -> int:
+    max_errors = max(0, 15 - category)
+    return sum(
+        math.comb(length, errors) * (len(OUTCOMES) - 1) ** errors
+        for errors in range(min(max_errors, length) + 1)
+    )
+
+
+def _potential_best_hits(brief: list[str], result_string: str) -> int:
+    return sum(
+        result in position
+        for position, result in zip(brief, result_string, strict=False)
+    )
+
+
+def _prune_by_cost_lower_bound(
+    profiles: list[dict[str, Any]],
+    bank: int,
+) -> list[dict[str, Any]]:
+    return [
+        profile
+        for profile in profiles
+        if profile["lower_bound_cost"] <= bank
+    ]
+
+
+def _prune_dominated_candidates(
+    profiles: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], int]:
+    kept = []
+    pruned = 0
+    for candidate in profiles:
+        if any(
+            _dominates_candidate(other, candidate)
+            for other in profiles
+            if other is not candidate
+        ):
+            pruned += 1
+            continue
+        kept.append(candidate)
+    return kept, pruned
+
+
+def _dominates_candidate(
+    left: dict[str, Any],
+    right: dict[str, Any],
+) -> bool:
+    if left["original_index"] == right["original_index"]:
+        return False
+    if not right["actual_covered_positions"].issubset(
+        left["actual_covered_positions"]
+    ):
+        return False
+    if not _brief_is_position_subset(left["brief"], right["brief"]):
+        return False
+    return _candidate_bound_rank(left) >= _candidate_bound_rank(right)
+
+
+def _brief_is_position_subset(left: list[str], right: list[str]) -> bool:
+    if len(left) != len(right):
+        return False
+    return all(
+        set(left_position).issubset(set(right_position))
+        for left_position, right_position in zip(left, right, strict=True)
+    )
+
+
+def _candidate_bound_rank(profile: dict[str, Any]) -> tuple[int, int, int, int]:
+    return (
+        int(profile["potential_best_hits"]),
+        -int(profile["lower_bound_cost"]),
+        -int(profile["brief_variants"]),
+        -int(profile["original_index"]),
+    )
+
+
+def _candidate_sort_key(profile: dict[str, Any]) -> tuple[int, int, int, int]:
+    return (
+        -int(profile["potential_best_hits"]),
+        int(profile["lower_bound_cost"]),
+        int(profile["brief_variants"]),
+        int(profile["original_index"]),
+    )
+
+
+def _cannot_beat_incumbent(
+    profile: dict[str, Any],
+    best: dict[str, Any],
+) -> bool:
+    best_rank = (
+        int(best["best_coupon_hits"]),
+        -int(best["package_cost"]),
+        -int(best["brief_variants"]),
+        -int(best.get("original_index", 0)),
+    )
+    return _candidate_bound_rank(profile) <= best_rank
 
 
 def _workload_profile(
@@ -659,6 +845,9 @@ def _workload_profile(
     evaluated_candidates: list[list[str]],
     processed_candidate_count: int,
     cover_call_records: list[dict[str, Any]],
+    pruned_by_cost_lower_bound: int,
+    pruned_by_dominance: int,
+    pruned_by_incumbent_bound: int,
 ) -> dict[str, Any]:
     variant_counts = [_brief_variants(brief) for brief in evaluated_candidates]
     slowest = sorted(
@@ -672,6 +861,10 @@ def _workload_profile(
         "cover_engine_calls": processed_candidate_count,
         "cache_hits": max(generated_candidates - len(all_candidates), 0),
         "cache_misses": processed_candidate_count,
+        "pruned_by_cost_lower_bound": pruned_by_cost_lower_bound,
+        "pruned_by_dominance": pruned_by_dominance,
+        "pruned_by_incumbent_bound": pruned_by_incumbent_bound,
+        "cover_engine_calls_after_pruning": processed_candidate_count,
         "average_brief_variant_count": _average_float(variant_counts),
         "max_brief_variant_count": max(variant_counts, default=0),
         "average_cover_call_duration": _average_float(
@@ -705,6 +898,16 @@ def _summarize_workload(rows: list[BudgetOracleRow]) -> dict[str, Any]:
         "cover_engine_calls_total": sum(row.cover_engine_calls for row in rows),
         "cache_hits_total": sum(row.cache_hits for row in rows),
         "cache_misses_total": sum(row.cache_misses for row in rows),
+        "pruned_by_cost_lower_bound_total": sum(
+            row.pruned_by_cost_lower_bound for row in rows
+        ),
+        "pruned_by_dominance_total": sum(row.pruned_by_dominance for row in rows),
+        "pruned_by_incumbent_bound_total": sum(
+            row.pruned_by_incumbent_bound for row in rows
+        ),
+        "cover_engine_calls_after_pruning_total": sum(
+            row.cover_engine_calls_after_pruning for row in rows
+        ),
         "average_brief_variant_count": _average_float(
             [row.average_brief_variant_count for row in rows]
         ),

@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 101
+- Tests currently passed: 106
 - Ruff passed
 
 ## Exact Cover Example
@@ -35,6 +35,30 @@ task commits listed above.
 - Worst minimum Hamming distance 2
 
 ## Latest Completed Task
+
+Added exact pruning to Budget Oracle.
+
+The `budget-oracle` command now:
+- Computes full variant count and lower-bound coupon/cost estimates per
+  candidate.
+- Sorts candidates by potential best hits descending, lower-bound cost
+  ascending, brief size ascending, and original order.
+- Applies safe branch-and-bound incumbent pruning.
+- Applies dominance pruning for the real greedy Cover Engine when one candidate
+  is a position-wise subset of another while preserving actual-result coverage
+  and no worse bound objective.
+- Reports candidates pruned by cost lower bound, dominance, and incumbent bound.
+- Reports Cover Engine calls after pruning.
+
+Cover Engine expansion now reuses cached parsed positions and suffix products
+for candidates with shared structure.
+
+Local smoke result on `data/toto.db`:
+- `budget-oracle --last 3 --bank 10000 --stake 30 --category 13 --no-progress --profile-workload`
+  completed in about 0.73 seconds.
+- 2112 unique candidates became 3 Cover Engine calls after pruning.
+
+## Previous Completed Task
 
 Profiled Budget Oracle candidate workload.
 

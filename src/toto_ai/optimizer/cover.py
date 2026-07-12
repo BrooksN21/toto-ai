@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 from functools import lru_cache
-from itertools import product
 from pathlib import Path
 from typing import Any
 
@@ -191,10 +190,34 @@ def _parse_position(position: str) -> tuple[str, ...]:
     return tuple(outcome for outcome in OUTCOMES if outcome in normalized)
 
 
+@lru_cache(maxsize=64)
+def _parse_position_cached(position: str) -> tuple[str, ...]:
+    return _parse_position(position)
+
+
+@lru_cache(maxsize=4096)
+def _parsed_positions_cached(brief: tuple[str, ...]) -> tuple[tuple[str, ...], ...]:
+    return tuple(_parse_position_cached(position) for position in brief)
+
+
 @lru_cache(maxsize=2048)
 def _expand_brief_cached(brief: tuple[str, ...]) -> tuple[str, ...]:
-    positions = [_parse_position(position) for position in brief]
-    return tuple("".join(variant) for variant in product(*positions))
+    return _expand_positions_cached(_parsed_positions_cached(brief))
+
+
+@lru_cache(maxsize=8192)
+def _expand_positions_cached(
+    positions: tuple[tuple[str, ...], ...],
+) -> tuple[str, ...]:
+    if not positions:
+        return ("",)
+    first, *rest = positions
+    suffixes = _expand_positions_cached(tuple(rest))
+    return tuple(
+        outcome + suffix
+        for outcome in first
+        for suffix in suffixes
+    )
 
 
 @lru_cache(maxsize=1024)
@@ -204,7 +227,7 @@ def _coverage_bits_for_brief(
 ) -> tuple[tuple[str, ...], tuple[int, ...]]:
     variants = _expand_brief_cached(brief)
     max_errors = category_max_errors(category)
-    positions = tuple(_parse_position(position) for position in brief)
+    positions = _parsed_positions_cached(brief)
     variant_index = {variant: index for index, variant in enumerate(variants)}
     cover_bits = tuple(
         _coverage_bits_for_coupon(

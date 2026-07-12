@@ -28,13 +28,15 @@ Important modules:
 - `toto_ai.analytics.budget_oracle`: budget-constrained oracle benchmark that
   compares oracle package hits with the baseline brief generator, with progress,
   timeout, partial CSV, per-drawing timing diagnostics, and optional candidate
-  workload profiling.
+  workload profiling. Candidate evaluation includes lower-bound, dominance, and
+  incumbent pruning before Cover Engine calls.
 - `toto_ai.analytics.api_inspector`: raw API inspection and drawing resolution.
 - `toto_ai.analytics.validation`: raw JSON vs SQLite validation.
 - `toto_ai.analytics.research_bk_vs_norm`: BK vs normalized odds study.
 - `toto_ai.package.mvp`: MVP covering approximation package generator.
 - `toto_ai.package.backtest`: MVP package backtest engine.
-- `toto_ai.optimizer.cover`: Cover Engine and exact cover verification.
+- `toto_ai.optimizer.cover`: Cover Engine and exact cover verification, with
+  cached parsed positions, suffix expansion reuse, and cached coverage bitsets.
 - `toto_ai.optimizer.cover_benchmark`: representative Cover Engine benchmark
   with optional cProfile output.
 - `toto_ai.optimizer.brief`: baseline brief generator.

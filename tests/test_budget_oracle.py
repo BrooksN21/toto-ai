@@ -8,6 +8,8 @@ from toto_ai.analytics.budget_oracle import (
     write_budget_oracle_reports,
 )
 from toto_ai.db.models import Base, Drawing, Event, Quote
+from toto_ai.optimizer.brief_backtest import best_coupon_hits
+from toto_ai.optimizer.cover import greedy_cover
 
 
 def test_choose_budget_oracle_package_maximizes_hits_then_cost_and_size():
@@ -46,7 +48,7 @@ def test_run_budget_oracle_filters_incomplete_drawings_and_compares_baseline():
         result = run_budget_oracle(
             session,
             last=10,
-            bank=60,
+            bank=90,
             stake=30,
             category=13,
             cover_func=_exact_result_cover,
@@ -142,7 +144,7 @@ def test_choose_budget_oracle_timeout_keeps_best_candidate_found():
         time_func=clock,
     )
 
-    assert result["best_coupon_hits"] == 1
+    assert result["best_coupon_hits"] == 2
     assert result["timed_out"] is True
     assert result["candidate_count"] == 2
     assert result["processed_candidate_count"] == 1
@@ -163,7 +165,7 @@ def test_choose_budget_oracle_max_candidates_only_limits_when_passed():
             brief,
         ),
     )
-    assert len(calls) == 3
+    assert len(calls) == 1
 
     calls.clear()
     choose_budget_oracle_package(
@@ -178,7 +180,7 @@ def test_choose_budget_oracle_max_candidates_only_limits_when_passed():
         ),
         max_candidates=2,
     )
-    assert len(calls) == 2
+    assert len(calls) == 1
 
 
 def test_choose_budget_oracle_profiles_workload_without_changing_selection():
@@ -225,11 +227,134 @@ def test_choose_budget_oracle_profiles_workload_without_changing_selection():
     assert profiled["best_coupon_hits"] == plain["best_coupon_hits"]
     assert profiled["workload"]["generated_candidates"] == 3
     assert profiled["workload"]["unique_candidates"] == 2
-    assert profiled["workload"]["cover_engine_calls"] == 2
+    assert profiled["workload"]["cover_engine_calls"] == 1
     assert profiled["workload"]["cache_hits"] == 1
-    assert profiled["workload"]["cache_misses"] == 2
+    assert profiled["workload"]["cache_misses"] == 1
+    assert profiled["workload"]["pruned_by_incumbent_bound"] == 1
     assert profiled["workload"]["max_brief_variant_count"] == 4
-    assert len(profiled["workload"]["slowest_candidate_briefs"]) == 2
+    assert len(profiled["workload"]["slowest_candidate_briefs"]) == 1
+
+
+def test_choose_budget_oracle_prunes_by_cost_lower_bound_before_cover():
+    calls = []
+
+    result = choose_budget_oracle_package(
+        candidate_briefs=[
+            ["1", "1", "1", "1"],
+            ["1X", "1X", "1X", "1X"],
+        ],
+        result_string="1111",
+        category=15,
+        bank=30,
+        stake=30,
+        cover_func=lambda brief, category, max_coupons: _tracking_cover(
+            calls,
+            brief,
+        ),
+        profile_workload=True,
+    )
+
+    assert result["brief"] == ["1", "1", "1", "1"]
+    assert calls == [("1", "1", "1", "1")]
+    assert result["workload"]["pruned_by_cost_lower_bound"] == 1
+    assert result["workload"]["cover_engine_calls_after_pruning"] == 1
+
+
+def test_choose_budget_oracle_prunes_dominated_candidate_safely():
+    result = choose_budget_oracle_package(
+        candidate_briefs=[
+            ["1", "1"],
+            ["1X", "1"],
+            ["1X", "1X"],
+        ],
+        result_string="11",
+        category=13,
+        bank=90,
+        stake=30,
+        profile_workload=True,
+    )
+
+    assert result["brief"] == ["1", "1"]
+    assert result["processed_candidate_count"] == 1
+    assert result["workload"]["pruned_by_dominance"] == 2
+
+
+def test_choose_budget_oracle_prunes_by_incumbent_bound_without_changing_best():
+    calls = []
+
+    def cover(brief, category, max_coupons):
+        calls.append(tuple(brief))
+        return {"selected_coupons": ["11" if brief == ["1", "1"] else "1X"]}
+
+    result = choose_budget_oracle_package(
+        candidate_briefs=[
+            ["1", "1"],
+            ["1", "1X"],
+        ],
+        result_string="11",
+        category=13,
+        bank=90,
+        stake=30,
+        cover_func=cover,
+        profile_workload=True,
+    )
+
+    assert result["brief"] == ["1", "1"]
+    assert calls == [("1", "1")]
+    assert result["workload"]["pruned_by_incumbent_bound"] == 1
+
+
+def test_choose_budget_oracle_sorts_candidates_for_strong_incumbent():
+    calls = []
+
+    choose_budget_oracle_package(
+        candidate_briefs=[
+            ["X", "1X"],
+            ["1", "1"],
+            ["1X", "1"],
+        ],
+        result_string="11",
+        category=13,
+        bank=90,
+        stake=30,
+        cover_func=lambda brief, category, max_coupons: _tracking_cover(
+            calls,
+            brief,
+        ),
+    )
+
+    assert calls[0] == ("1", "1")
+
+
+def test_choose_budget_oracle_pruning_matches_bruteforce_greedy_result():
+    candidate_briefs = [
+        ["1", "1"],
+        ["1X", "1"],
+        ["1", "1X"],
+        ["1X", "1X"],
+    ]
+
+    pruned = choose_budget_oracle_package(
+        candidate_briefs=candidate_briefs,
+        result_string="11",
+        category=13,
+        bank=90,
+        stake=30,
+        profile_workload=True,
+    )
+    brute = _bruteforce_budget_oracle(
+        candidate_briefs=candidate_briefs,
+        result_string="11",
+        category=13,
+        bank=90,
+        stake=30,
+    )
+
+    assert pruned["brief"] == brute["brief"]
+    assert pruned["best_coupon_hits"] == brute["best_coupon_hits"]
+    assert pruned["package_cost"] == brute["package_cost"]
+    assert pruned["brief_variants"] == brute["brief_variants"]
+    assert pruned["workload"]["pruned_by_dominance"] == 3
 
 
 def test_run_budget_oracle_aggregates_profiled_workload():
@@ -242,7 +367,7 @@ def test_run_budget_oracle_aggregates_profiled_workload():
         result = run_budget_oracle(
             session,
             last=2,
-            bank=60,
+            bank=100000,
             stake=30,
             category=13,
             cover_func=_exact_result_cover,
@@ -258,6 +383,10 @@ def test_run_budget_oracle_aggregates_profiled_workload():
     assert result.summary["cover_engine_calls_total"] >= 2
     assert result.summary["cache_misses_total"] >= 2
     assert result.summary["max_brief_variant_count"] >= 1
+    assert "pruned_by_cost_lower_bound_total" in result.summary
+    assert "pruned_by_dominance_total" in result.summary
+    assert "pruned_by_incumbent_bound_total" in result.summary
+    assert "cover_engine_calls_after_pruning_total" in result.summary
     assert isinstance(result.summary["slowest_candidate_briefs"], list)
 
 
@@ -381,7 +510,7 @@ def _exact_result_cover(brief, category, max_coupons):
 def _tracking_cover(calls, brief):
     calls.append(tuple(brief))
     return {
-        "selected_coupons": ["1"],
+        "selected_coupons": ["".join(position[-1] for position in brief)],
         "full_variants_count": 1,
         "covered_variants_count": 1,
         "coverage_rate": 1.0,
@@ -395,3 +524,39 @@ def _baseline_stub(events, quotes, result_string, category, bank, stake):
         "baseline_package_size": 1,
         "baseline_package_cost": 30,
     }
+
+
+def _bruteforce_budget_oracle(
+    candidate_briefs,
+    result_string,
+    category,
+    bank,
+    stake,
+):
+    best = None
+    for original_index, brief in enumerate(candidate_briefs):
+        cover = greedy_cover(
+            brief=brief,
+            category=category,
+            max_coupons=bank // stake,
+        )
+        coupons = cover["selected_coupons"]
+        cost = len(coupons) * stake
+        if cost > bank:
+            continue
+        candidate = {
+            "brief": brief,
+            "best_coupon_hits": best_coupon_hits(coupons, result_string),
+            "package_cost": cost,
+            "brief_variants": len(brief[0]) * len(brief[1]),
+            "original_index": original_index,
+        }
+        rank = (
+            candidate["best_coupon_hits"],
+            -candidate["package_cost"],
+            -candidate["brief_variants"],
+            -candidate["original_index"],
+        )
+        if best is None or rank > best[0]:
+            best = (rank, candidate)
+    return best[1]
