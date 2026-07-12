@@ -20,6 +20,9 @@
   limits only apply when explicitly requested.
 - Budget-oracle drawing timeouts keep the best candidate found so far and should
   not fail the whole run.
+- Budget-oracle workload profiling is observational only. It must not change
+  oracle candidate generation, candidate order, scoring, or default search
+  space.
 - Category 13 means maximum Hamming distance 2.
 - Category 14 means maximum Hamming distance 1.
 - Category 15 means exact match.

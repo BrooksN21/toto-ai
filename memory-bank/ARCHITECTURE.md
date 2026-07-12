@@ -27,7 +27,8 @@ Important modules:
   drawings using BK probabilities and actual results.
 - `toto_ai.analytics.budget_oracle`: budget-constrained oracle benchmark that
   compares oracle package hits with the baseline brief generator, with progress,
-  timeout, partial CSV, and per-drawing timing diagnostics.
+  timeout, partial CSV, per-drawing timing diagnostics, and optional candidate
+  workload profiling.
 - `toto_ai.analytics.api_inspector`: raw API inspection and drawing resolution.
 - `toto_ai.analytics.validation`: raw JSON vs SQLite validation.
 - `toto_ai.analytics.research_bk_vs_norm`: BK vs normalized odds study.
@@ -55,7 +56,8 @@ Important CLI commands:
 - `calibration`: measure bookmaker and pool probability calibration.
 - `brief-oracle`: find minimum oracle briefs that contain actual results.
 - `budget-oracle`: benchmark the best oracle package under budget against the
-  baseline generator.
+  baseline generator. Use `--profile-workload` for candidate workload
+  diagnostics.
 - `package-mvp`: generate an MVP covering approximation from a manual brief.
 - `backtest`: backtest the older MVP package generator.
 - `cover`: generate a greedy cover package from a manual brief.

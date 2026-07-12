@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 99
+- Tests currently passed: 101
 - Ruff passed
 
 ## Exact Cover Example
@@ -35,6 +35,25 @@ task commits listed above.
 - Worst minimum Hamming distance 2
 
 ## Latest Completed Task
+
+Profiled Budget Oracle candidate workload.
+
+The `budget-oracle` command now supports:
+- `--profile-workload` to print aggregate candidate workload diagnostics.
+- Per-drawing generated candidate count.
+- Per-drawing unique candidate count.
+- Cover Engine call count.
+- Cache hit/miss counts, where duplicate candidate briefs avoided by
+  deduplication are counted as hits and actual Cover Engine evaluations are
+  counted as misses.
+- Average and maximum brief variant counts.
+- Average Cover Engine call duration.
+- Slowest 10 candidate briefs across the run.
+
+This does not change oracle search logic, candidate scoring, or default search
+space.
+
+## Previous Completed Task
 
 Optimized Cover Engine performance without changing mathematical results.
 

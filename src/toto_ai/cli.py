@@ -366,6 +366,11 @@ def budget_oracle(
         "--progress/--no-progress",
         help="Show live Rich progress.",
     ),
+    profile_workload: bool = typer.Option(
+        False,
+        "--profile-workload",
+        help="Print Budget Oracle candidate workload diagnostics.",
+    ),
 ) -> None:
     """Run a budget-constrained oracle benchmark against baseline briefs."""
     engine = init_db(db)
@@ -399,6 +404,7 @@ def budget_oracle(
                         max_candidates=max_candidates,
                         progress_callback=update_progress,
                         partial_csv_path=partial_csv_path,
+                        profile_workload=profile_workload,
                     )
                 except ValueError as error:
                     raise typer.BadParameter(str(error)) from error
@@ -415,6 +421,7 @@ def budget_oracle(
                     timeout_per_drawing=timeout_per_drawing,
                     max_candidates=max_candidates,
                     partial_csv_path=partial_csv_path,
+                    profile_workload=profile_workload,
                 )
             except ValueError as error:
                 raise typer.BadParameter(str(error)) from error
@@ -422,6 +429,9 @@ def budget_oracle(
     csv_path, markdown_path = write_budget_oracle_reports(result, last=last)
     print(_budget_oracle_summary_table(result.summary))
     print(_budget_oracle_timing_table(result.summary))
+    if profile_workload:
+        print(_budget_oracle_workload_table(result.summary))
+        print(_budget_oracle_slowest_candidates_table(result.summary))
     print(f"Reports written to {csv_path} and {markdown_path}")
 
 
@@ -1095,6 +1105,45 @@ def _budget_oracle_timing_table(summary: dict[str, object]) -> Table:
         "execution_time_seconds",
     ):
         table.add_row(key.replace("_", " "), _format_value(summary[key]))
+    return table
+
+
+def _budget_oracle_workload_table(summary: dict[str, object]) -> Table:
+    table = Table(title="Budget Oracle Workload")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    for key in (
+        "generated_candidates_total",
+        "unique_candidates_total",
+        "cover_engine_calls_total",
+        "cache_hits_total",
+        "cache_misses_total",
+        "average_brief_variant_count",
+        "max_brief_variant_count",
+        "average_cover_engine_call_duration",
+    ):
+        table.add_row(key.replace("_", " "), _format_value(summary[key]))
+    return table
+
+
+def _budget_oracle_slowest_candidates_table(summary: dict[str, object]) -> Table:
+    table = Table(title="Slowest Budget Oracle Candidate Briefs")
+    table.add_column("Drawing", justify="right")
+    table.add_column("Duration", justify="right")
+    table.add_column("Variants", justify="right")
+    table.add_column("Brief")
+    records = summary.get("slowest_candidate_briefs", [])
+    if not isinstance(records, list):
+        return table
+    for record in records[:10]:
+        if not isinstance(record, dict):
+            continue
+        table.add_row(
+            _format_value(record.get("drawing_number", "")),
+            _format_value(record.get("duration", 0)),
+            _format_value(record.get("brief_variants", 0)),
+            str(record.get("brief", "")),
+        )
     return table
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import math
 import time
 from dataclasses import dataclass
@@ -59,6 +60,15 @@ class BudgetOracleRow:
     cover_generation_time: float
     verification_time: float
     total_time: float
+    generated_candidates: int
+    unique_candidates: int
+    cover_engine_calls: int
+    cache_hits: int
+    cache_misses: int
+    average_brief_variant_count: float
+    max_brief_variant_count: int
+    average_cover_call_duration: float
+    slowest_candidate_briefs: str
 
 
 @dataclass(frozen=True)
@@ -80,6 +90,7 @@ def run_budget_oracle(
     max_candidates: int | None = None,
     progress_callback=None,
     partial_csv_path: str | Path | None = None,
+    profile_workload: bool = False,
     time_func=time.perf_counter,
 ) -> BudgetOracleResult:
     if last <= 0:
@@ -140,6 +151,7 @@ def run_budget_oracle(
                     timed_out_count=lambda counts=counts: counts["timed_out"],
                     time_func=time_func,
                 ),
+                profile_workload=profile_workload,
                 time_func=time_func,
             )
             baseline = _baseline_result(
@@ -185,6 +197,24 @@ def run_budget_oracle(
                     cover_generation_time=round(oracle["cover_generation_time"], 4),
                     verification_time=round(oracle["verification_time"], 4),
                     total_time=round(total_time, 4),
+                    generated_candidates=oracle["workload"]["generated_candidates"],
+                    unique_candidates=oracle["workload"]["unique_candidates"],
+                    cover_engine_calls=oracle["workload"]["cover_engine_calls"],
+                    cache_hits=oracle["workload"]["cache_hits"],
+                    cache_misses=oracle["workload"]["cache_misses"],
+                    average_brief_variant_count=oracle["workload"][
+                        "average_brief_variant_count"
+                    ],
+                    max_brief_variant_count=oracle["workload"][
+                        "max_brief_variant_count"
+                    ],
+                    average_cover_call_duration=oracle["workload"][
+                        "average_cover_call_duration"
+                    ],
+                    slowest_candidate_briefs=json.dumps(
+                        oracle["workload"]["slowest_candidate_briefs"],
+                        ensure_ascii=True,
+                    ),
                 )
             )
         except Exception:
@@ -228,6 +258,7 @@ def choose_budget_oracle_package(
     timeout_per_drawing: float | None = None,
     max_candidates: int | None = None,
     progress_callback=None,
+    profile_workload: bool = False,
     time_func=time.perf_counter,
 ) -> dict[str, Any]:
     if bank <= 0:
@@ -243,9 +274,11 @@ def choose_budget_oracle_package(
     processed_candidate_count = 0
     skipped_candidate_count = 0
     timed_out = False
-    candidates = _deduplicate_briefs(candidate_briefs)
+    all_candidates = _deduplicate_briefs(candidate_briefs)
+    candidates = all_candidates
     if max_candidates is not None:
         candidates = candidates[:max_candidates]
+    cover_call_records = []
 
     for candidate_index, brief in enumerate(candidates, start=1):
         if processed_candidate_count > 0 and _timed_out(
@@ -262,8 +295,17 @@ def choose_budget_oracle_package(
             category=category,
             max_coupons=max_coupons,
         )
-        cover_generation_time += time_func() - cover_started_at
+        cover_duration = time_func() - cover_started_at
+        cover_generation_time += cover_duration
         processed_candidate_count += 1
+        if profile_workload:
+            cover_call_records.append(
+                {
+                    "brief": ",".join(brief),
+                    "duration": round(cover_duration, 6),
+                    "brief_variants": _brief_variants(brief),
+                }
+            )
         coupons = cover["selected_coupons"]
         cost = len(coupons) * stake
         if cost > bank:
@@ -307,6 +349,13 @@ def choose_budget_oracle_package(
         "skipped_candidate_count": skipped_candidate_count,
         "cover_generation_time": cover_generation_time,
         "verification_time": verification_time,
+        "workload": _workload_profile(
+            generated_candidates=len(candidate_briefs),
+            all_candidates=all_candidates,
+            evaluated_candidates=candidates,
+            processed_candidate_count=processed_candidate_count,
+            cover_call_records=cover_call_records,
+        ),
     }
 
 
@@ -324,7 +373,7 @@ def summarize_budget_oracle(
         if timed_out_count is None
         else timed_out_count
     )
-    return {
+    summary = {
         "drawings_tested": tested,
         "processed_count": processed,
         "skipped_count": skipped_count,
@@ -365,6 +414,8 @@ def summarize_budget_oracle(
         "average_total_time": _average_float([row.total_time for row in rows]),
         "execution_time_seconds": round(execution_time, 4),
     }
+    summary.update(_summarize_workload(rows))
+    return summary
 
 
 def write_budget_oracle_reports(
@@ -415,7 +466,28 @@ def build_budget_oracle_markdown(result: BudgetOracleResult) -> str:
         "| --- | ---: |",
     ]
     for key, value in result.summary.items():
+        if key == "slowest_candidate_briefs":
+            continue
         lines.append(f"| {key.replace('_', ' ')} | {value} |")
+
+    if result.summary.get("slowest_candidate_briefs"):
+        lines.extend(
+            [
+                "",
+                "## Slowest Candidate Briefs",
+                "",
+                "| Drawing | Duration | Variants | Brief |",
+                "| ---: | ---: | ---: | --- |",
+            ]
+        )
+        for record in result.summary["slowest_candidate_briefs"]:
+            lines.append(
+                "| "
+                f"{record.get('drawing_number') or ''} | "
+                f"{record.get('duration', 0)} | "
+                f"{record.get('brief_variants', 0)} | "
+                f"{record.get('brief', '')} |"
+            )
 
     lines.extend(
         [
@@ -579,6 +651,72 @@ def _oracle_rank_key(candidate: dict[str, Any]) -> tuple[int, int, int]:
 
 def _brief_variants(brief: list[str]) -> int:
     return math.prod(len(position) for position in brief)
+
+
+def _workload_profile(
+    generated_candidates: int,
+    all_candidates: list[list[str]],
+    evaluated_candidates: list[list[str]],
+    processed_candidate_count: int,
+    cover_call_records: list[dict[str, Any]],
+) -> dict[str, Any]:
+    variant_counts = [_brief_variants(brief) for brief in evaluated_candidates]
+    slowest = sorted(
+        cover_call_records,
+        key=lambda record: record["duration"],
+        reverse=True,
+    )[:10]
+    return {
+        "generated_candidates": generated_candidates,
+        "unique_candidates": len(all_candidates),
+        "cover_engine_calls": processed_candidate_count,
+        "cache_hits": max(generated_candidates - len(all_candidates), 0),
+        "cache_misses": processed_candidate_count,
+        "average_brief_variant_count": _average_float(variant_counts),
+        "max_brief_variant_count": max(variant_counts, default=0),
+        "average_cover_call_duration": _average_float(
+            [record["duration"] for record in cover_call_records]
+        ),
+        "slowest_candidate_briefs": slowest,
+    }
+
+
+def _summarize_workload(rows: list[BudgetOracleRow]) -> dict[str, Any]:
+    slowest_records = []
+    for row in rows:
+        try:
+            row_slowest = json.loads(row.slowest_candidate_briefs)
+        except json.JSONDecodeError:
+            row_slowest = []
+        for record in row_slowest:
+            slowest_records.append(
+                {
+                    **record,
+                    "drawing_number": row.drawing_number,
+                }
+            )
+    slowest_records.sort(
+        key=lambda record: record.get("duration", 0),
+        reverse=True,
+    )
+    return {
+        "generated_candidates_total": sum(row.generated_candidates for row in rows),
+        "unique_candidates_total": sum(row.unique_candidates for row in rows),
+        "cover_engine_calls_total": sum(row.cover_engine_calls for row in rows),
+        "cache_hits_total": sum(row.cache_hits for row in rows),
+        "cache_misses_total": sum(row.cache_misses for row in rows),
+        "average_brief_variant_count": _average_float(
+            [row.average_brief_variant_count for row in rows]
+        ),
+        "max_brief_variant_count": max(
+            (row.max_brief_variant_count for row in rows),
+            default=0,
+        ),
+        "average_cover_engine_call_duration": _average_float(
+            [row.average_cover_call_duration for row in rows]
+        ),
+        "slowest_candidate_briefs": slowest_records[:10],
+    }
 
 
 def _average(values: list[int]) -> float:

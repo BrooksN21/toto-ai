@@ -33,6 +33,9 @@
   oracle package under the same budget.
 - Use budget-oracle progress, timeout, and timing diagnostics for longer
   baseline/oracle comparison runs.
+- Use `budget-oracle --profile-workload` to inspect generated/unique candidate
+  counts, Cover Engine calls, cache hits/misses, brief variant sizes, and
+  slowest candidate briefs before changing search strategy.
 
 ## Phase 4: Research
 

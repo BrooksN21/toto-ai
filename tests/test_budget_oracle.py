@@ -181,6 +181,86 @@ def test_choose_budget_oracle_max_candidates_only_limits_when_passed():
     assert len(calls) == 2
 
 
+def test_choose_budget_oracle_profiles_workload_without_changing_selection():
+    calls = []
+
+    def cover(brief, category, max_coupons):
+        calls.append(tuple(brief))
+        return {
+            "selected_coupons": ["1X" if brief == ["1X", "1X"] else "11"],
+            "full_variants_count": 1,
+            "covered_variants_count": 1,
+            "coverage_rate": 1.0,
+        }
+
+    plain = choose_budget_oracle_package(
+        candidate_briefs=[
+            ["1", "1"],
+            ["1", "1"],
+            ["1X", "1X"],
+        ],
+        result_string="1X",
+        category=13,
+        bank=60,
+        stake=30,
+        cover_func=cover,
+    )
+    calls.clear()
+
+    profiled = choose_budget_oracle_package(
+        candidate_briefs=[
+            ["1", "1"],
+            ["1", "1"],
+            ["1X", "1X"],
+        ],
+        result_string="1X",
+        category=13,
+        bank=60,
+        stake=30,
+        cover_func=cover,
+        profile_workload=True,
+    )
+
+    assert profiled["brief"] == plain["brief"]
+    assert profiled["best_coupon_hits"] == plain["best_coupon_hits"]
+    assert profiled["workload"]["generated_candidates"] == 3
+    assert profiled["workload"]["unique_candidates"] == 2
+    assert profiled["workload"]["cover_engine_calls"] == 2
+    assert profiled["workload"]["cache_hits"] == 1
+    assert profiled["workload"]["cache_misses"] == 2
+    assert profiled["workload"]["max_brief_variant_count"] == 4
+    assert len(profiled["workload"]["slowest_candidate_briefs"]) == 2
+
+
+def test_run_budget_oracle_aggregates_profiled_workload():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        _add_drawing(session, drawing_id=1, number=1001, results="1" * 15)
+        _add_drawing(session, drawing_id=2, number=1002, results="X" * 15)
+
+        result = run_budget_oracle(
+            session,
+            last=2,
+            bank=60,
+            stake=30,
+            category=13,
+            cover_func=_exact_result_cover,
+            baseline_func=_baseline_stub,
+            profile_workload=True,
+        )
+
+    assert result.rows[0].generated_candidates > 0
+    assert result.rows[0].unique_candidates > 0
+    assert result.rows[0].cover_engine_calls > 0
+    assert result.summary["generated_candidates_total"] >= 2
+    assert result.summary["unique_candidates_total"] >= 2
+    assert result.summary["cover_engine_calls_total"] >= 2
+    assert result.summary["cache_misses_total"] >= 2
+    assert result.summary["max_brief_variant_count"] >= 1
+    assert isinstance(result.summary["slowest_candidate_briefs"], list)
+
+
 def test_run_budget_oracle_reports_progress_and_partial_csv(tmp_path):
     engine = create_engine("sqlite+pysqlite:///:memory:")
     Base.metadata.create_all(engine)

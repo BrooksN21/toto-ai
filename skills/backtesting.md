@@ -9,6 +9,9 @@ Checklist:
 - Separate brief containment from coupon/package hits.
 - For long-running searches, expose progress, timeouts, partial exports, and
   per-drawing timing diagnostics.
+- Before changing an expensive oracle search, inspect candidate workload:
+  generated vs unique candidates, Cover Engine calls, cache hits/misses, variant
+  sizes, and slowest candidates.
 - Export CSV and Markdown reports.
 - Compare categories and budgets before drawing conclusions.
 

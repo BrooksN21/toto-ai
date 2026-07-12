@@ -19,6 +19,13 @@ Current budget-oracle outputs:
 - Progress state for long runs.
 - Per-drawing timing diagnostics.
 - Processed, skipped, and timed-out counts.
+- Optional workload diagnostics via `--profile-workload`:
+  - generated and unique candidate counts
+  - Cover Engine calls
+  - cache hits and misses
+  - average and maximum brief variant count
+  - average Cover Engine call duration
+  - slowest 10 candidate briefs
 
 Exports:
 - `reports/budget_oracle_last_<N>.csv`
@@ -30,6 +37,8 @@ Operational notes:
 - Partial CSV progress is written every 10 drawings.
 - A timed-out row is usable as partial oracle evidence, not an exhaustive oracle
   optimum.
+- Workload profiling is observational only and must not alter oracle scoring,
+  candidate order, or default search space.
 
 Related:
 - [../skills/backtesting.md](../skills/backtesting.md)
