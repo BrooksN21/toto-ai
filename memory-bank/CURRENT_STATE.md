@@ -87,6 +87,17 @@ Reports:
 Important commits:
 - `ec97679` Add development strategy diagnostics command
 
+## Completed Task: Hybrid Package Selector
+
+Added `select_hybrid_package()` for the approved direct-package experiment.
+It keeps an exact, unique top-probability core sized with `ceil`, fills only
+core-uncovered sampled scenarios through the existing weighted selector, and
+uses a deterministic unique probability fallback when time remains. Timeout
+paths return only work completed so far. Existing top-probability and weighted
+coverage behavior remains unchanged.
+
+Verification: 214 tests passed; Ruff passed.
+
 ## Previous Completed Task: Package Structure Metrics
 
 Added deterministic package diagnostics for coupon log-probability summaries,

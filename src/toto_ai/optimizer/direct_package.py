@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import heapq
+import math
 import time
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -181,6 +182,103 @@ def select_weighted_package(
         total_scenario_weight=total_weight,
         estimated_coverage=covered_weight / total_weight,
         timed_out=timed_out,
+    )
+
+
+def select_hybrid_package(
+    candidates: list[str],
+    scenarios: dict[str, int],
+    probabilities: ProbabilityMatrix,
+    category: int,
+    max_coupons: int,
+    top_coupons: list[str],
+    core_fraction: float,
+    deadline: float | None = None,
+    time_func=time.perf_counter,
+) -> DirectPackageResult:
+    if not 0.0 < core_fraction <= 1.0:
+        raise ValueError("core_fraction must be in (0, 1].")
+    if max_coupons < 0:
+        raise ValueError("max_coupons must be non-negative.")
+    if len(top_coupons) < max_coupons:
+        raise ValueError("top_coupons must contain max_coupons coupons.")
+    if any(len(coupon) != len(probabilities) for coupon in top_coupons):
+        raise ValueError("Top coupon and probability lengths must match.")
+    if any(set(coupon) - set(OUTCOMES) for coupon in top_coupons):
+        raise ValueError("Top coupon outcomes must be 1, X, or 2.")
+
+    core_size = math.ceil(max_coupons * core_fraction)
+    core = list(top_coupons[:core_size])
+    if len(set(core)) != len(core):
+        raise ValueError("Hybrid core coupons must be unique.")
+
+    core_set = set(core)
+    max_errors = category_max_errors(category)
+    uncovered = {}
+    for scenario, weight in scenarios.items():
+        if deadline is not None and time_func() >= deadline:
+            covered_weight = _covered_scenario_weight(core, scenarios, category)
+            total_weight = sum(scenarios.values())
+            return DirectPackageResult(
+                core,
+                covered_weight,
+                total_weight,
+                covered_weight / total_weight if total_weight else 0.0,
+                True,
+            )
+        if not any(
+            neighbor in core_set
+            for neighbor in neighbors_within_distance(scenario, max_errors)
+        ):
+            uncovered[scenario] = weight
+
+    fill = select_weighted_package(
+        candidates=[coupon for coupon in candidates if coupon not in core_set],
+        scenarios=uncovered,
+        probabilities=probabilities,
+        category=category,
+        max_coupons=max_coupons - core_size,
+        deadline=deadline,
+        time_func=time_func,
+    )
+    selected = [*core, *fill.selected_coupons]
+    if not fill.timed_out and len(selected) < max_coupons:
+        selected_set = set(selected)
+        remaining = sorted(
+            (
+                coupon
+                for coupon in dict.fromkeys(candidates)
+                if coupon not in selected_set
+            ),
+            key=lambda coupon: (
+                -coupon_log_probability(coupon, probabilities),
+                coupon,
+            ),
+        )
+        selected.extend(remaining[: max_coupons - len(selected)])
+    covered_weight = _covered_scenario_weight(selected, scenarios, category)
+    total_weight = sum(scenarios.values())
+    return DirectPackageResult(
+        selected_coupons=selected,
+        covered_scenario_weight=covered_weight,
+        total_scenario_weight=total_weight,
+        estimated_coverage=(covered_weight / total_weight if total_weight else 0.0),
+        timed_out=fill.timed_out,
+    )
+
+
+def _covered_scenario_weight(
+    coupons: list[str], scenarios: dict[str, int], category: int
+) -> int:
+    coupon_set = set(coupons)
+    max_errors = category_max_errors(category)
+    return sum(
+        weight
+        for scenario, weight in scenarios.items()
+        if any(
+            neighbor in coupon_set
+            for neighbor in neighbors_within_distance(scenario, max_errors)
+        )
     )
 
 
