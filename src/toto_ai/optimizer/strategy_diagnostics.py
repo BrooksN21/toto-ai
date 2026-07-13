@@ -13,6 +13,7 @@ from toto_ai.db.models import Drawing, Event, Quote
 from toto_ai.optimizer.brief import EventBriefAnalysis, analyze_event
 from toto_ai.optimizer.brief_backtest import best_coupon_hits, build_result_string
 from toto_ai.optimizer.coupon_probabilities import (
+    OUTCOMES,
     ProbabilityMatrix,
     coupon_log_probability,
     normalize_probability_matrix,
@@ -21,6 +22,7 @@ from toto_ai.optimizer.strategy_backtest import (
     StrategyBacktestRow,
     StrategyConfig,
     StrategyPackage,
+    _configuration_hash,
     build_packages_for_probabilities,
 )
 
@@ -203,8 +205,8 @@ def run_strategy_diagnostics(
     package_builder=build_packages_for_probabilities,
 ) -> StrategyDiagnosticsResult:
     development_ids = development_drawing_ids(manifest)
-    frozen_rows = load_frozen_development_rows(frozen_csv_path, manifest)
     config = _config_from_manifest(manifest)
+    frozen_rows = load_frozen_development_rows(frozen_csv_path, manifest)
     rows = []
 
     for drawing_id in development_ids:
@@ -216,7 +218,11 @@ def run_strategy_diagnostics(
             config,
             package_builder,
         )
-        _validate_package_set(packages, max_coupons=config.max_coupons)
+        _validate_package_set(
+            packages,
+            max_coupons=config.max_coupons,
+            coupon_length=len(probabilities),
+        )
         for package in packages:
             frozen = frozen_rows[(drawing_id, package.strategy)]
             actual_hash = sha256(",".join(package.coupons).encode("utf-8")).hexdigest()
@@ -262,10 +268,18 @@ def _config_from_manifest(manifest: dict[str, object]) -> StrategyConfig:
     config = manifest.get("config")
     if not isinstance(config, dict):
         raise ValueError("Frozen strategy manifest must include a config.")
+    expected_fields = set(StrategyConfig.__dataclass_fields__)
+    if set(config) != expected_fields:
+        raise ValueError(
+            "Frozen strategy manifest config fields must match StrategyConfig."
+        )
     try:
-        return StrategyConfig(**config)
+        strategy_config = StrategyConfig(**config)
     except (TypeError, ValueError) as error:
         raise ValueError("Frozen strategy manifest has an invalid config.") from error
+    if manifest.get("configuration_hash") != _configuration_hash(strategy_config):
+        raise ValueError("Frozen strategy manifest configuration hash does not match.")
+    return strategy_config
 
 
 def _load_development_inputs(
@@ -328,6 +342,7 @@ def _build_development_packages(
 def _validate_package_set(
     packages: list[StrategyPackage],
     max_coupons: int,
+    coupon_length: int,
 ) -> None:
     if len(packages) != len(STRATEGIES) or {
         package.strategy for package in packages
@@ -339,6 +354,11 @@ def _validate_package_set(
         if not package.coupons or len(package.coupons) > max_coupons:
             raise ValueError("Invalid development package set.")
         if len(set(package.coupons)) != len(package.coupons):
+            raise ValueError("Invalid development package set.")
+        if any(
+            len(coupon) != coupon_length or set(coupon) - set(OUTCOMES)
+            for coupon in package.coupons
+        ):
             raise ValueError("Invalid development package set.")
 
 

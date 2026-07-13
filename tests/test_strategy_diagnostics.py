@@ -1,8 +1,9 @@
 import csv
 import hashlib
+from contextlib import contextmanager
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session
 
 from toto_ai.db.models import Base, Drawing, Event, Quote
@@ -13,7 +14,9 @@ from toto_ai.optimizer.coupon_probabilities import (
 )
 from toto_ai.optimizer.strategy_backtest import (
     StrategyBacktestRow,
+    StrategyConfig,
     StrategyPackage,
+    _configuration_hash,
 )
 from toto_ai.optimizer.strategy_diagnostics import (
     development_drawing_ids,
@@ -102,19 +105,21 @@ def session():
 
 @pytest.fixture
 def manifest():
+    config = StrategyConfig(
+        bank=90,
+        stake=30,
+        category=13,
+        top_count=3,
+        candidate_samples=3,
+        optimization_samples=3,
+        validation_samples=3,
+    )
     return {
         "last": 3,
         "holdout_size": 1,
         "drawing_ids": [1, 2, 3],
-        "config": {
-            "bank": 90,
-            "stake": 30,
-            "category": 13,
-            "top_count": 3,
-            "candidate_samples": 3,
-            "optimization_samples": 3,
-            "validation_samples": 3,
-        },
+        "config": _config_payload(config),
+        "configuration_hash": _configuration_hash(config),
     }
 
 
@@ -201,6 +206,176 @@ def test_runner_fails_when_recomputed_result_fields_differ(
             frozen_csv,
             package_builder=lambda *args: _packages("1" * 15),
         )
+
+
+@pytest.mark.parametrize(
+    "coupon",
+    ["1" * 14, "1" * 14 + "Z"],
+)
+def test_runner_rejects_malformed_coupons_before_loading_result(
+    monkeypatch,
+    session,
+    manifest,
+    tmp_path,
+    coupon,
+):
+    frozen_csv = write_runner_frozen_rows(
+        tmp_path,
+        drawing_ids=[1, 2],
+        coupon=coupon,
+    )
+    monkeypatch.setattr(
+        diagnostics_module,
+        "_load_development_result",
+        lambda *args: pytest.fail("results must not load for malformed coupons"),
+    )
+
+    with pytest.raises(ValueError, match="Invalid development package set"):
+        run_strategy_diagnostics(
+            session,
+            manifest,
+            frozen_csv,
+            package_builder=lambda *args: _packages(coupon),
+        )
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    tuple(StrategyConfig.__dataclass_fields__),
+)
+def test_runner_requires_every_manifest_config_field(
+    session,
+    manifest,
+    frozen_csv,
+    field_name,
+):
+    manifest["config"].pop(field_name)
+
+    with pytest.raises(ValueError, match="config fields"):
+        run_strategy_diagnostics(
+            session,
+            manifest,
+            frozen_csv,
+            package_builder=lambda *args: _packages("1" * 15),
+        )
+
+
+def test_runner_rejects_extra_manifest_config_fields(session, manifest, frozen_csv):
+    manifest["config"]["future_default"] = 1
+
+    with pytest.raises(ValueError, match="config fields"):
+        run_strategy_diagnostics(
+            session,
+            manifest,
+            frozen_csv,
+            package_builder=lambda *args: _packages("1" * 15),
+        )
+
+
+def test_runner_rejects_noncanonical_manifest_configuration_hash(
+    session,
+    manifest,
+    frozen_csv,
+):
+    manifest["configuration_hash"] = "0" * 64
+
+    with pytest.raises(ValueError, match="configuration hash"):
+        run_strategy_diagnostics(
+            session,
+            manifest,
+            frozen_csv,
+            package_builder=lambda *args: _packages("1" * 15),
+        )
+
+
+def test_real_input_loader_query_defers_event_results(session):
+    with _capture_sql(session) as statements:
+        diagnostics_module._load_development_inputs(session, 1)
+
+    event_queries = _event_queries(statements)
+
+    assert event_queries
+    assert all(
+        "events.result" not in statement.lower()
+        for statement, _ in event_queries
+    )
+
+
+def test_real_loaders_query_results_only_after_package_hash_validation(
+    session,
+    manifest,
+    frozen_csv,
+):
+    calls = []
+    with _capture_sql(session, calls) as statements:
+        run_strategy_diagnostics(
+            session,
+            manifest,
+            frozen_csv,
+            package_builder=lambda *args: calls.append("packages")
+            or _packages("1" * 15),
+        )
+
+    result_queries = [
+        index
+        for index, call in enumerate(calls)
+        if call == "result_sql"
+    ]
+
+    assert result_queries
+    assert all(
+        any(call == "packages" for call in calls[:index])
+        for index in result_queries
+    )
+    assert len(
+        [
+            statement
+            for statement, _ in _event_queries(statements)
+            if "events.result" in statement.lower()
+        ]
+    ) == 2
+
+
+def test_real_loaders_do_not_query_results_for_package_hash_mismatch(
+    session,
+    manifest,
+    frozen_csv,
+):
+    with _capture_sql(session) as statements:
+        with pytest.raises(ValueError, match="package hash"):
+            run_strategy_diagnostics(
+                session,
+                manifest,
+                frozen_csv,
+                package_builder=lambda *args: _packages("X" * 15),
+            )
+
+    assert not [
+        statement
+        for statement, _ in _event_queries(statements)
+        if "events.result" in statement.lower()
+    ]
+
+
+def test_real_loaders_never_query_holdout_events_or_results(
+    session,
+    manifest,
+    frozen_csv,
+):
+    with _capture_sql(session) as statements:
+        run_strategy_diagnostics(
+            session,
+            manifest,
+            frozen_csv,
+            package_builder=lambda *args: _packages("1" * 15),
+        )
+
+    queried_ids = {
+        parameters[0]
+        for _, parameters in _event_queries(statements)
+    }
+
+    assert queried_ids == {1, 2}
 
 
 @pytest.mark.parametrize(
@@ -296,9 +471,9 @@ def write_frozen_rows(tmp_path, drawing_ids, omit=None, segment="development"):
     return path
 
 
-def write_runner_frozen_rows(tmp_path, drawing_ids, best_hits=15):
+def write_runner_frozen_rows(tmp_path, drawing_ids, best_hits=15, coupon=None):
     path = tmp_path / "runner-frozen.csv"
-    coupon = "1" * 15
+    coupon = coupon or "1" * 15
     package_hash = hashlib.sha256(coupon.encode("utf-8")).hexdigest()
     fieldnames = list(StrategyBacktestRow.__dataclass_fields__)
     with path.open("w", newline="", encoding="utf-8") as output:
@@ -344,6 +519,40 @@ def _packages(coupon):
 
 def _fixture_inputs():
     return normalize_probability_matrix([{"1": 60, "X": 30, "2": 10}] * 15), []
+
+
+def _config_payload(config):
+    return {
+        field_name: getattr(config, field_name)
+        for field_name in StrategyConfig.__dataclass_fields__
+    }
+
+
+@contextmanager
+def _capture_sql(session, calls=None):
+    statements = []
+
+    def record(connection, cursor, statement, parameters, context, executemany):
+        statements.append((statement, parameters))
+        if calls is not None and "from events" in statement.lower():
+            calls.append(
+                "result_sql" if "events.result" in statement.lower() else "input_sql"
+            )
+
+    engine = session.get_bind()
+    event.listen(engine, "before_cursor_execute", record)
+    try:
+        yield statements
+    finally:
+        event.remove(engine, "before_cursor_execute", record)
+
+
+def _event_queries(statements):
+    return [
+        (statement, parameters)
+        for statement, parameters in statements
+        if "from events" in statement.lower()
+    ]
 
 
 def _add_drawing(session, drawing_id, results):
