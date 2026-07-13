@@ -40,8 +40,13 @@
   full-cover cost pruning are disabled.
 - Implement the approved Direct Package Optimizer experiment and compare
   `baseline_brief`, `top_probability`, and `weighted_coverage` on a chronological
-  development/holdout split.
+  development/holdout split. Completed for a frozen retrospective 500-drawing
+  experiment with 350 development and 150 holdout drawings.
 - Use 5000 RUB as the primary bank and 3000/10000 RUB as sensitivity checks.
+- Diagnose the weighted-coverage objective on development data: it improved
+  average best hits but did not beat top-probability on holdout hit13.
+- Reserve a new untouched or prospective evaluation window before claiming an
+  improvement from further optimizer tuning.
 
 ## Phase 4: Research
 
@@ -70,7 +75,9 @@
 
 - Cover Engine performance optimization for greedy cover is implemented.
 - Direct Package Optimizer design is approved; v1 targets holdout `13+` rate
-  directly with BK probabilities and a 5000 RUB bank.
+  directly with BK probabilities and a 5000 RUB bank. V1 and its frozen
+  retrospective comparison are implemented; no statistically proven winner was
+  found.
 - Safe Budget Oracle optimization remains open. Any future pruning must match
   exhaustive evaluation in regression tests.
 - Compare greedy cover, MILP, simulated annealing, genetic algorithms.

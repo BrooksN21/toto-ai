@@ -10,6 +10,8 @@ TotoBrief API
 -> Baseline Brief Generator
 -> Cover Engine
 -> Exact Cover Verifier
+-> Direct Package Optimizer
+-> Strategy Backtest / Frozen Experiment Manifest
 -> Backtest Engine
 -> Future Research/ML
 -> Package Export
@@ -41,6 +43,15 @@ Important modules:
   with optional cProfile output.
 - `toto_ai.optimizer.brief`: baseline brief generator.
 - `toto_ai.optimizer.brief_backtest`: baseline brief generator backtest engine.
+- `toto_ai.optimizer.coupon_probabilities`: normalized BK probability matrices,
+  coupon probabilities, and exact deterministic top-k coupon enumeration.
+- `toto_ai.optimizer.coupon_candidates`: deterministic scenario sampling and
+  direct coupon candidate generation.
+- `toto_ai.optimizer.direct_package`: weighted scenario-coverage package
+  optimizer with deterministic budget filling.
+- `toto_ai.optimizer.strategy_backtest`: comparable baseline-brief,
+  top-probability, and weighted-coverage strategies; chronological backtesting;
+  paired holdout evaluation; frozen experiment manifests and report exports.
 - `toto_ai.cli`: Typer CLI entry point.
 
 Important CLI commands:
@@ -68,3 +79,7 @@ Important CLI commands:
 - `build-brief --open`: build a baseline brief and package for the next playable
   drawing.
 - `backtest-brief`: backtest the baseline brief generator on finished drawings.
+- `freeze-strategy-experiment`: freeze exact drawing IDs, protocol/data hashes,
+  and code version before a direct-strategy evaluation.
+- `backtest-strategies`: compare package strategies on a frozen chronological
+  development/holdout experiment.

@@ -23,8 +23,52 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 107
+- Tests currently passed: 165
 - Ruff passed
+
+## Latest Completed Task: Direct Package Optimizer Experiment
+
+Implemented the approved Direct Package Optimizer and its reproducible
+evaluation protocol.
+
+Important commits:
+- `e5c4823` Add coupon probability utilities
+- `c760515` Add deterministic coupon candidates
+- `fd71046` Add weighted direct package optimizer
+- `c82b135` Add comparable package strategies
+- `4cc8987` Add direct strategy backtest
+- `baefa34` Add paired strategy evaluation reports
+- `e5b4953` Add frozen direct package experiment
+- `5beaeae` Ignore generated strategy experiment reports
+
+Frozen retrospective experiment:
+- Code version: `5beaeae4d7801748e82a4ae9a0003be4e0796d81`
+- Manifest: `reports/strategy_experiment_manifest_last_500_exclude_10.json`
+- 500 eligible drawings, 350 development and 150 holdout
+- Latest 10 previously exposed drawings excluded
+- Bank 5000 RUB, stake 30 RUB, category 13, seed 42
+- 500/500 drawings evaluated; no skips, generation errors, invalid packages,
+  or timeouts
+
+Holdout results:
+- `baseline_brief`: hit13 2, hit14 1, hit15 0, average best hits 8.59,
+  average cost 663 RUB
+- `top_probability`: hit13 6, hit14 1, hit15 0, average best hits 8.86,
+  average cost 4980 RUB
+- `weighted_coverage`: hit13 5, hit14 0, hit15 0, average best hits 10.23,
+  average cost 4980 RUB
+- Paired weighted-vs-baseline hit13 difference: +2.00 percentage points
+- 95% paired bootstrap interval: [-0.6667, 5.3333]
+- Status: preliminary; the interval includes zero
+
+Interpretation:
+- Direct strategies outperform the low-cost baseline on raw holdout hit13
+  counts, but superiority is not statistically established.
+- `top_probability` currently has the highest holdout hit13 count.
+- `weighted_coverage` has substantially higher average best hits, but that
+  improvement has not yet converted into more 13+ hits.
+- This is a retrospective benchmark, not independent prospective evidence and
+  not evidence of profitability.
 
 ## Exact Cover Example
 
@@ -34,7 +78,7 @@ task commits listed above.
 - 100% exact verified coverage
 - Worst minimum Hamming distance 2
 
-## Latest Completed Task
+## Previous Completed Task
 
 Fixed unsafe Budget Oracle pruning.
 
@@ -238,26 +282,8 @@ Local smoke results on `data/toto.db`:
 
 ## Next Task
 
-Implement the approved Direct Package Optimizer experiment described in
-`docs/superpowers/specs/2026-07-13-direct-package-optimizer-design.md`.
-Execute the task sequence in
-`docs/superpowers/plans/2026-07-13-direct-package-optimizer.md`.
-
-The first implementation must compare:
-- existing `baseline_brief`
-- simple `top_probability`
-- proposed `weighted_coverage`
-
-Primary configuration:
-- 5000 RUB bank
-- 30 RUB stake
-- category 13
-- chronological development/holdout evaluation
-
-Required backtest metrics:
-- Holdout hit rates for 13, 14, and 15
-- Average best coupon hits
-- Package size and cost
-- Estimated out-of-sample scenario coverage
-- Paired strategy differences with uncertainty
-- Results for 3000, 5000, and 10000 RUB
+Use the 350-drawing development segment to diagnose why weighted coverage
+improves average best hits but trails top-probability coupons on holdout hit13.
+Do not modify or repeatedly inspect the frozen holdout while tuning. Candidate
+changes must be selected on development data, then evaluated in a newly frozen
+future/prospective window or a separately reserved untouched historical window.

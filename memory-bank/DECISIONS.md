@@ -21,6 +21,19 @@
   v1 optimizer.
 - Direct Package Optimizer v1 uses only pre-drawing BK probabilities. External
   providers and payout optimization follow only after a fixed baseline test.
+- Direct strategy experiments require a manifest frozen before evaluation. The
+  manifest records exact drawing IDs, protocol/data hashes, and a clean Git code
+  version; evaluation rejects protocol, data, or code-version mismatch.
+- A frozen strategy manifest may be reused for bank sensitivity only. Other
+  strategy/protocol settings must remain unchanged.
+- Historical result data is included in the experiment data hash but is not
+  available to package generation.
+- The first frozen 500-drawing retrospective experiment found no statistically
+  proven strategy winner. Weighted coverage must not be called superior based
+  on its higher average best-hit count alone.
+- Do not tune against the 150-drawing frozen holdout. Diagnose and select
+  changes on development data, then use a newly frozen prospective or otherwise
+  untouched evaluation window.
 - Budget-constrained oracle commands may use actual results only as benchmark
   upper bounds; they must not be treated as playable prediction methods.
 - Budget-oracle must not reduce the candidate search space by default. Candidate

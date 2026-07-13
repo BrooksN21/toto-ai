@@ -29,5 +29,6 @@ Benchmark:
 
 Related:
 - [../memory-bank/DECISIONS.md](../memory-bank/DECISIONS.md)
+- [direct_package_optimizer.md](direct_package_optimizer.md)
 - [../skills/algorithm-review.md](../skills/algorithm-review.md)
 - [../skills/backtesting.md](../skills/backtesting.md)
