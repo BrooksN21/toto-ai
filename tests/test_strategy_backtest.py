@@ -1,7 +1,11 @@
+import hashlib
 import inspect
 
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
+from toto_ai.db.models import Base, Drawing, Event, Quote
 from toto_ai.optimizer import strategy_backtest as strategy_module
 from toto_ai.optimizer.brief import EventBriefAnalysis
 from toto_ai.optimizer.coupon_probabilities import (
@@ -11,7 +15,10 @@ from toto_ai.optimizer.coupon_probabilities import (
 from toto_ai.optimizer.direct_package import DirectPackageResult
 from toto_ai.optimizer.strategy_backtest import (
     StrategyConfig,
+    StrategyPackage,
     build_packages_for_probabilities,
+    run_strategy_backtest,
+    split_development_holdout,
 )
 
 
@@ -247,3 +254,211 @@ def test_strategy_config_validation(overrides, message):
             config=config,
             baseline_builder=lambda *args, **kwargs: {"selected_coupons": []},
         )
+
+
+def test_split_development_holdout_sorts_oldest_to_newest():
+    drawings = [
+        Drawing(id=3, number=1003),
+        Drawing(id=1, number=1001),
+        Drawing(id=4, number=1004),
+        Drawing(id=2, number=1002),
+    ]
+
+    assert split_development_holdout(drawings, holdout_size=1) == {
+        1: "development",
+        2: "development",
+        3: "development",
+        4: "holdout",
+    }
+
+
+def test_run_strategy_backtest_uses_same_eligible_drawings_for_all_strategies():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        _add_strategy_drawing(session, 1, 1001, "1" * 15, include_bk=True)
+        _add_strategy_drawing(session, 2, 1002, "X" * 15, include_bk=False)
+        result = run_strategy_backtest(
+            session,
+            last=2,
+            holdout_size=0,
+            config=StrategyConfig(
+                bank=90,
+                stake=30,
+                category=15,
+                top_count=3,
+                candidate_samples=10,
+                mutation_limit=5,
+                optimization_samples=20,
+                validation_samples=20,
+            ),
+            package_builder=_package_builder_stub,
+        )
+
+    assert result.summary["eligible_drawings"] == 1
+    assert result.summary["skipped_drawings"] == 1
+    assert len(result.rows) == 3
+    assert {row.drawing_number for row in result.rows} == {1001}
+    expected_hash = hashlib.sha256(("1" * 15).encode("utf-8")).hexdigest()
+    assert {row.package_hash for row in result.rows} == {expected_hash}
+
+
+def test_run_strategy_backtest_builds_packages_before_reading_result(monkeypatch):
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    call_order = []
+    original = strategy_module.build_result_string
+
+    def package_builder(*args, **kwargs):
+        call_order.append("packages")
+        return _package_builder_stub(*args, **kwargs)
+
+    def result_builder(events):
+        call_order.append("result")
+        return original(events)
+
+    monkeypatch.setattr(strategy_module, "build_result_string", result_builder)
+    with Session(engine) as session:
+        _add_strategy_drawing(session, 1, 1001, "1" * 15, include_bk=True)
+        run_strategy_backtest(
+            session,
+            last=1,
+            holdout_size=0,
+            config=StrategyConfig(bank=90, stake=30, category=15, top_count=3),
+            package_builder=package_builder,
+        )
+
+    assert call_order == ["packages", "result"]
+
+
+def test_strategy_eligibility_skips_mismatched_event_quote_orders():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        _add_strategy_drawing(session, 1, 1001, "1" * 15, include_bk=True)
+        _add_strategy_drawing(session, 2, 1002, "1" * 15, include_bk=True)
+        broken_quote = session.query(Quote).filter_by(
+            drawing_id=2,
+            event_order=14,
+        ).one()
+        broken_quote.event_order = 99
+        session.commit()
+
+        result = run_strategy_backtest(
+            session,
+            last=1,
+            holdout_size=0,
+            config=StrategyConfig(bank=90, stake=30, category=15, top_count=3),
+            package_builder=_package_builder_stub,
+        )
+
+    assert result.summary["eligible_drawings"] == 1
+    assert result.summary["skipped_drawings"] == 1
+    assert {row.drawing_number for row in result.rows} == {1001}
+
+
+def test_strategy_progress_emits_for_invalid_package_set():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    updates = []
+    with Session(engine) as session:
+        _add_strategy_drawing(session, 1, 1001, "1" * 15, include_bk=True)
+        result = run_strategy_backtest(
+            session,
+            last=1,
+            holdout_size=0,
+            config=StrategyConfig(bank=90, stake=30, category=15, top_count=3),
+            package_builder=lambda **kwargs: [],
+            progress_callback=updates.append,
+        )
+
+    assert result.rows == []
+    assert len(updates) == 1
+    assert updates[0]["eligible"] == 1
+    assert updates[0]["skipped"] == 1
+
+
+def test_strategy_timeout_excludes_all_strategies_and_marks_holdout():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    updates = []
+
+    def timed_out_builder(probabilities, analyses, drawing_id, config):
+        packages = _package_builder_stub(probabilities, analyses, drawing_id, config)
+        return [
+            StrategyPackage(
+                package.strategy,
+                package.coupons,
+                package.estimated_coverage,
+                package.candidate_count,
+                package.runtime_seconds,
+                package.strategy == "weighted_coverage",
+            )
+            for package in packages
+        ]
+
+    with Session(engine) as session:
+        _add_strategy_drawing(session, 1, 1001, "1" * 15, include_bk=True)
+        result = run_strategy_backtest(
+            session,
+            last=1,
+            holdout_size=1,
+            config=StrategyConfig(bank=90, stake=30, category=15, top_count=3),
+            package_builder=timed_out_builder,
+            progress_callback=updates.append,
+        )
+
+    assert result.rows == []
+    assert result.summary["timed_out_drawings"] == 1
+    assert result.summary["skipped_drawings"] == 1
+    assert result.summary["operationally_inconclusive"] is True
+    assert len(updates) == 1
+
+
+def _package_builder_stub(probabilities, analyses, drawing_id, config):
+    coupon = "1" * len(probabilities)
+    return [
+        StrategyPackage(name, [coupon], 0.5, 1, 0.01, False)
+        for name in ("baseline_brief", "top_probability", "weighted_coverage")
+    ]
+
+
+def _add_strategy_drawing(
+    session,
+    drawing_id,
+    number,
+    results,
+    include_bk,
+):
+    session.add(
+        Drawing(
+            id=drawing_id,
+            number=number,
+            name="baltbet-main",
+            status="finished",
+            ended_at=f"2026-01-{drawing_id:02d}T00:00:00Z",
+        )
+    )
+    for event_order, result in enumerate(results):
+        session.add(
+            Event(
+                drawing_id=drawing_id,
+                event_order=event_order,
+                name=f"Match {event_order + 1}",
+                result=result,
+                score="1:0",
+            )
+        )
+        session.add(
+            Quote(
+                drawing_id=drawing_id,
+                event_order=event_order,
+                pool_win_1=50,
+                pool_draw=30,
+                pool_win_2=20,
+                bk_win_1=60 if include_bk else None,
+                bk_draw=30 if include_bk else None,
+                bk_win_2=10 if include_bk else None,
+            )
+        )
+    session.commit()
