@@ -63,6 +63,11 @@ from toto_ai.optimizer.strategy_backtest import (
     verify_strategy_experiment_manifest_data,
     write_strategy_backtest_reports,
 )
+from toto_ai.optimizer.strategy_diagnostics import (
+    run_strategy_diagnostics,
+    summarize_strategy_diagnostics,
+    write_strategy_diagnostics_reports,
+)
 from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
 
@@ -784,6 +789,68 @@ def backtest_strategies(
     print(_strategy_backtest_overview_table(result.summary))
     print(_strategy_holdout_table(result.summary["holdout"]))
     print(_strategy_decision_table(result.summary))
+    print(f"Reports written to {csv_path} and {markdown_path}")
+
+
+@app.command("diagnose-strategies")
+def diagnose_strategies(
+    manifest: str = typer.Option(
+        ...,
+        help="Frozen strategy experiment manifest.",
+    ),
+    backtest_csv: str = typer.Option(
+        ...,
+        "--backtest-csv",
+        help="Frozen strategy backtest CSV.",
+    ),
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+    report_dir: str = typer.Option("reports", help="Report output directory."),
+) -> None:
+    """Diagnose frozen strategies on the development segment only."""
+    try:
+        frozen_manifest = load_strategy_experiment_manifest(manifest)
+        engine = init_db(db)
+        session_factory = get_session_factory(engine)
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            task_id = progress.add_task("Preparing development diagnostics")
+
+            def update_progress(update: dict[str, object]) -> None:
+                progress.update(
+                    task_id,
+                    description=(
+                        f"drawing_id={update.get('drawing_id')} "
+                        f"{update.get('drawing_index')}/"
+                        f"{update.get('drawing_total')}"
+                    ),
+                )
+
+            with session_factory() as session:
+                result = run_strategy_diagnostics(
+                    session,
+                    frozen_manifest,
+                    backtest_csv,
+                    progress_callback=update_progress,
+                )
+            progress.update(
+                task_id,
+                description="Development strategy diagnostics complete",
+            )
+
+        summary = summarize_strategy_diagnostics(result.rows)
+        csv_path, markdown_path = write_strategy_diagnostics_reports(
+            result,
+            report_dir,
+        )
+    except (OSError, KeyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(_strategy_diagnostics_paired_table(summary))
+    print(_strategy_diagnostics_transitions_table(summary))
     print(f"Reports written to {csv_path} and {markdown_path}")
 
 
@@ -1625,6 +1692,35 @@ def _strategy_decision_table(summary: dict[str, object]) -> Table:
         ),
     )
     table.add_row("strategy status", _format_value(summary["strategy_status"]))
+    return table
+
+
+def _strategy_diagnostics_paired_table(summary: dict[str, object]) -> Table:
+    comparison = summary["weighted_vs_top"]
+    differences = summary["weighted_minus_top_best_hits"]
+    table = Table(title="Development Strategy Diagnostics")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("drawings", _format_value(summary["drawing_count"]))
+    for key in ("wins", "ties", "losses"):
+        table.add_row(f"weighted vs top {key}", _format_value(comparison[key]))
+    for key in ("mean", "p25", "p50", "p75"):
+        table.add_row(
+            f"weighted - top {key}",
+            _format_value(differences[key]),
+        )
+    return table
+
+
+def _strategy_diagnostics_transitions_table(
+    summary: dict[str, object],
+) -> Table:
+    transitions = summary["paired_13_transitions"]
+    table = Table(title="Development 13+ Transitions")
+    table.add_column("Transition")
+    table.add_column("Drawings", justify="right")
+    for key in ("neither", "both", "top_only", "weighted_only"):
+        table.add_row(key, _format_value(transitions[key]))
     return table
 
 

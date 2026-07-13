@@ -5,7 +5,9 @@ from contextlib import contextmanager
 import pytest
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session
+from typer.testing import CliRunner
 
+from toto_ai.cli import app
 from toto_ai.db.models import Base, Drawing, Event, Quote
 from toto_ai.optimizer import strategy_diagnostics as diagnostics_module
 from toto_ai.optimizer.coupon_probabilities import (
@@ -289,6 +291,23 @@ def test_runner_never_loads_holdout_id(monkeypatch, session, manifest, frozen_cs
     assert loaded == [1, 2]
 
 
+def test_runner_reports_development_progress(session, manifest, frozen_csv):
+    updates = []
+
+    run_strategy_diagnostics(
+        session,
+        manifest,
+        frozen_csv,
+        package_builder=lambda *args: _packages("1" * 15),
+        progress_callback=updates.append,
+    )
+
+    assert updates == [
+        {"drawing_id": 1, "drawing_index": 1, "drawing_total": 2},
+        {"drawing_id": 2, "drawing_index": 2, "drawing_total": 2},
+    ]
+
+
 def test_runner_fails_when_recomputed_result_fields_differ(
     session,
     manifest,
@@ -307,6 +326,36 @@ def test_runner_fails_when_recomputed_result_fields_differ(
             frozen_csv,
             package_builder=lambda *args: _packages("1" * 15),
         )
+
+
+def test_diagnose_strategies_help():
+    result = CliRunner().invoke(app, ["diagnose-strategies", "--help"])
+
+    assert result.exit_code == 0
+    assert "--manifest" in result.output
+    assert "--backtest-csv" in result.output
+
+
+def test_diagnose_strategies_rejects_invalid_frozen_data(tmp_path):
+    manifest_path = tmp_path / "bad-manifest.json"
+    manifest_path.write_text("{}", encoding="utf-8")
+    frozen_csv = tmp_path / "bad-backtest.csv"
+    frozen_csv.write_text("drawing_id\n", encoding="utf-8")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "diagnose-strategies",
+            "--db",
+            str(tmp_path / "test.db"),
+            "--manifest",
+            str(manifest_path),
+            "--backtest-csv",
+            str(frozen_csv),
+        ],
+    )
+
+    assert result.exit_code != 0
 
 
 @pytest.mark.parametrize(

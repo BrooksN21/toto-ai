@@ -571,13 +571,22 @@ def run_strategy_diagnostics(
     manifest: dict[str, object],
     frozen_csv_path: str | Path,
     package_builder=build_packages_for_probabilities,
+    progress_callback=None,
 ) -> StrategyDiagnosticsResult:
     development_ids = development_drawing_ids(manifest)
     config = _config_from_manifest(manifest)
     frozen_rows = load_frozen_development_rows(frozen_csv_path, manifest)
     rows = []
 
-    for drawing_id in development_ids:
+    for drawing_index, drawing_id in enumerate(development_ids, start=1):
+        if progress_callback is not None:
+            progress_callback(
+                {
+                    "drawing_id": drawing_id,
+                    "drawing_index": drawing_index,
+                    "drawing_total": len(development_ids),
+                }
+            )
         probabilities, analyses = _load_development_inputs(session, drawing_id)
         packages = _build_development_packages(
             probabilities,
