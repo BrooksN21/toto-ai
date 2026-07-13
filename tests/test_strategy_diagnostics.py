@@ -19,11 +19,15 @@ from toto_ai.optimizer.strategy_backtest import (
     _configuration_hash,
 )
 from toto_ai.optimizer.strategy_diagnostics import (
+    StrategyDiagnosticsResult,
+    StrategyDiagnosticsRow,
     development_drawing_ids,
     load_frozen_development_rows,
     package_overlap_metrics,
     package_structure_metrics,
     run_strategy_diagnostics,
+    summarize_strategy_diagnostics,
+    write_strategy_diagnostics_reports,
 )
 
 probabilities = normalize_probability_matrix([{"1": 60, "X": 30, "2": 10}] * 2)
@@ -90,6 +94,103 @@ def test_overlap_metrics_report_no_unique_coupon_probabilities_for_identical_pac
 
     assert metrics.top_unique_mean_log_probability is None
     assert metrics.weighted_unique_mean_log_probability is None
+
+
+def test_summary_reports_distributions_paired_transitions_and_quantiles():
+    rows = [
+        fixture_diagnostics_row(top_hits=13, weighted_hits=11),
+        fixture_diagnostics_row(top_hits=12, weighted_hits=12),
+        fixture_diagnostics_row(top_hits=10, weighted_hits=15),
+    ]
+
+    summary = summarize_strategy_diagnostics(rows)
+
+    assert summary["best_hit_distributions"]["top_probability"] == {
+        hits: (1 if hits in {10, 12, 13} else 0) for hits in range(16)
+    }
+    assert summary["weighted_vs_top"] == {"wins": 1, "ties": 1, "losses": 1}
+    assert summary["paired_13_transitions"] == {
+        "neither": 1,
+        "both": 0,
+        "top_only": 1,
+        "weighted_only": 1,
+    }
+    assert summary["weighted_minus_top_best_hits"] == {
+        "mean": pytest.approx(1),
+        "p25": -2,
+        "p50": 0,
+        "p75": 5,
+    }
+
+
+def test_summary_reports_structural_averages_and_fixed_coverage_bins():
+    rows = [
+        fixture_diagnostics_row(
+            drawing_id=1,
+            top_hits=12,
+            weighted_hits=13,
+            top_coverage=0.0,
+            weighted_coverage=0.0049,
+        ),
+        fixture_diagnostics_row(
+            drawing_id=2,
+            top_hits=13,
+            weighted_hits=12,
+            top_coverage=0.005,
+            weighted_coverage=0.05,
+        ),
+    ]
+
+    summary = summarize_strategy_diagnostics(rows)
+    top_calibration = summary["coverage_calibration"]["top_probability"]
+    weighted_calibration = summary["coverage_calibration"]["weighted_coverage"]
+
+    assert summary["structural_averages"]["top_probability"]["package_size"] == 2
+    assert summary["structural_averages"]["weighted_coverage"][
+        "mean_pairwise_hamming"
+    ] == 4
+    assert summary["structural_averages"]["top_weighted"]["jaccard"] == 0.5
+    assert summary["strategy_averages"]["weighted_coverage"] == {
+        "best_hits": 12.5,
+        "estimated_coverage": pytest.approx(0.02745),
+        "observed_hit13_frequency": 0.5,
+    }
+    assert len(top_calibration) == 11
+    assert top_calibration[0] == {
+        "label": "0.000-0.005",
+        "count": 1,
+        "mean_estimated_coverage": 0.0,
+        "observed_hit13_frequency": 0.0,
+    }
+    assert top_calibration[1]["count"] == 1
+    assert weighted_calibration[0]["count"] == 1
+    assert weighted_calibration[-1] == {
+        "label": "0.050+",
+        "count": 1,
+        "mean_estimated_coverage": 0.05,
+        "observed_hit13_frequency": 0.0,
+    }
+
+
+def test_report_contains_all_hit_bins_and_is_deterministic(tmp_path):
+    result = StrategyDiagnosticsResult(
+        rows=[fixture_diagnostics_row()],
+        config=StrategyConfig(bank=5000, stake=30, category=13),
+        manifest={"last": 5},
+    )
+
+    first = write_strategy_diagnostics_reports(result, tmp_path)
+    first_text = first[1].read_text(encoding="utf-8")
+    second = write_strategy_diagnostics_reports(result, tmp_path)
+
+    assert first[0].name == "strategy_diagnostics_development_last_5_bank_5000.csv"
+    assert first[1].name == "strategy_diagnostics_development_last_5_bank_5000.md"
+    assert second[1].read_text(encoding="utf-8") == first_text
+    assert list(csv.DictReader(first[0].open(encoding="utf-8")).fieldnames) == list(
+        StrategyDiagnosticsRow.__dataclass_fields__
+    )
+    assert all(f"| {hits} |" in first_text for hits in range(16))
+    assert "development-only; no winner selected" in first_text
 
 
 @pytest.fixture
@@ -519,6 +620,50 @@ def _packages(coupon):
 
 def _fixture_inputs():
     return normalize_probability_matrix([{"1": 60, "X": 30, "2": 10}] * 15), []
+
+
+def fixture_diagnostics_row(
+    drawing_id=1,
+    top_hits=12,
+    weighted_hits=13,
+    top_coverage=0.01,
+    weighted_coverage=0.02,
+):
+    values = {
+        "drawing_id": drawing_id,
+        "drawing_number": 1000 + drawing_id,
+        "result_string": "1" * 15,
+        "weighted_minus_top_best_hits": weighted_hits - top_hits,
+        "top_weighted_intersection_size": 1,
+        "top_weighted_jaccard": 0.5,
+        "top_unique_mean_log_probability": -2.0,
+        "weighted_unique_mean_log_probability": -3.0,
+    }
+    for strategy, hits, coverage, package_size, diversity in (
+        ("baseline_brief", 11, 0.03, 1, 2.0),
+        ("top_probability", top_hits, top_coverage, 2, 3.0),
+        ("weighted_coverage", weighted_hits, weighted_coverage, 3, 4.0),
+    ):
+        values.update(
+            {
+                f"{strategy}_best_hits": hits,
+                f"{strategy}_nearest_hamming": 15 - hits,
+                f"{strategy}_hit_13": hits >= 13,
+                f"{strategy}_hit_14": hits >= 14,
+                f"{strategy}_hit_15": hits == 15,
+                f"{strategy}_package_size": package_size,
+                f"{strategy}_package_cost": package_size * 30,
+                f"{strategy}_estimated_coverage": coverage,
+                f"{strategy}_candidate_count": package_size * 10,
+                f"{strategy}_runtime_seconds": package_size / 10,
+                f"{strategy}_min_log_probability": -4.0,
+                f"{strategy}_median_log_probability": -3.0,
+                f"{strategy}_mean_log_probability": -2.5,
+                f"{strategy}_max_log_probability": -1.0,
+                f"{strategy}_mean_pairwise_hamming": diversity,
+            }
+        )
+    return StrategyDiagnosticsRow(**values)
 
 
 def _config_payload(config):

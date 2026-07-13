@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import csv
-from dataclasses import dataclass
+import math
+from dataclasses import asdict, dataclass
 from hashlib import sha256
 from pathlib import Path
 from statistics import mean, median
@@ -27,6 +28,18 @@ from toto_ai.optimizer.strategy_backtest import (
 )
 
 STRATEGIES = ("baseline_brief", "top_probability", "weighted_coverage")
+_COVERAGE_BOUNDARIES = tuple(index * 0.005 for index in range(11))
+_STRATEGY_STRUCTURAL_FIELDS = (
+    "package_size",
+    "package_cost",
+    "candidate_count",
+    "runtime_seconds",
+    "min_log_probability",
+    "median_log_probability",
+    "mean_log_probability",
+    "max_log_probability",
+    "mean_pairwise_hamming",
+)
 
 
 @dataclass(frozen=True)
@@ -108,6 +121,361 @@ class StrategyDiagnosticsResult:
     rows: list[StrategyDiagnosticsRow]
     config: StrategyConfig
     manifest: dict[str, object]
+
+
+def summarize_strategy_diagnostics(
+    rows: list[StrategyDiagnosticsRow],
+) -> dict[str, object]:
+    differences = [row.weighted_minus_top_best_hits for row in rows]
+    transitions = {"neither": 0, "both": 0, "top_only": 0, "weighted_only": 0}
+    wins = ties = losses = 0
+    for row in rows:
+        if row.weighted_minus_top_best_hits > 0:
+            wins += 1
+        elif row.weighted_minus_top_best_hits < 0:
+            losses += 1
+        else:
+            ties += 1
+        top_hit_13 = row.top_probability_hit_13
+        weighted_hit_13 = row.weighted_coverage_hit_13
+        if top_hit_13 and weighted_hit_13:
+            transitions["both"] += 1
+        elif top_hit_13:
+            transitions["top_only"] += 1
+        elif weighted_hit_13:
+            transitions["weighted_only"] += 1
+        else:
+            transitions["neither"] += 1
+
+    return {
+        "drawing_count": len(rows),
+        "best_hit_distributions": {
+            strategy: _best_hit_distribution(rows, strategy) for strategy in STRATEGIES
+        },
+        "weighted_vs_top": {"wins": wins, "ties": ties, "losses": losses},
+        "paired_13_transitions": transitions,
+        "weighted_minus_top_best_hits": {
+            "mean": mean(differences) if differences else None,
+            "p25": _nearest_rank(differences, 0.25),
+            "p50": _nearest_rank(differences, 0.50),
+            "p75": _nearest_rank(differences, 0.75),
+        },
+        "strategy_averages": {
+            strategy: _strategy_averages(rows, strategy) for strategy in STRATEGIES
+        },
+        "structural_averages": {
+            **{
+                strategy: _structural_averages(rows, strategy)
+                for strategy in STRATEGIES
+            },
+            "top_weighted": _top_weighted_structural_averages(rows),
+        },
+        "coverage_calibration": {
+            strategy: _coverage_calibration(rows, strategy) for strategy in STRATEGIES
+        },
+    }
+
+
+def write_strategy_diagnostics_reports(
+    result: StrategyDiagnosticsResult,
+    report_dir: str | Path = "reports",
+) -> tuple[Path, Path]:
+    output_dir = Path(report_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    last = int(result.manifest["last"])
+    stem = (
+        f"strategy_diagnostics_development_last_{last}_bank_{result.config.bank}"
+    )
+    csv_path = output_dir / f"{stem}.csv"
+    markdown_path = output_dir / f"{stem}.md"
+    fieldnames = list(StrategyDiagnosticsRow.__dataclass_fields__)
+
+    with csv_path.open("w", newline="", encoding="utf-8") as output:
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(
+            asdict(row) for row in sorted(result.rows, key=lambda row: row.drawing_id)
+        )
+
+    summary = summarize_strategy_diagnostics(result.rows)
+    markdown_path.write_text(
+        _strategy_diagnostics_markdown(result, summary), encoding="utf-8"
+    )
+    return csv_path, markdown_path
+
+
+def _best_hit_distribution(
+    rows: list[StrategyDiagnosticsRow],
+    strategy: str,
+) -> dict[int, int]:
+    distribution = {hits: 0 for hits in range(16)}
+    for row in rows:
+        distribution[getattr(row, f"{strategy}_best_hits")] += 1
+    return distribution
+
+
+def _nearest_rank(values: list[int], percentile: float) -> int | None:
+    if not values:
+        return None
+    sorted_values = sorted(values)
+    rank = math.ceil(percentile * len(sorted_values))
+    return sorted_values[max(rank, 1) - 1]
+
+
+def _strategy_averages(
+    rows: list[StrategyDiagnosticsRow],
+    strategy: str,
+) -> dict[str, float | None]:
+    if not rows:
+        return {
+            "best_hits": None,
+            "estimated_coverage": None,
+            "observed_hit13_frequency": None,
+        }
+    return {
+        "best_hits": mean(getattr(row, f"{strategy}_best_hits") for row in rows),
+        "estimated_coverage": mean(
+            getattr(row, f"{strategy}_estimated_coverage") for row in rows
+        ),
+        "observed_hit13_frequency": mean(
+            getattr(row, f"{strategy}_hit_13") for row in rows
+        ),
+    }
+
+
+def _structural_averages(
+    rows: list[StrategyDiagnosticsRow],
+    strategy: str,
+) -> dict[str, float | None]:
+    return {
+        field_name: (
+            mean(getattr(row, f"{strategy}_{field_name}") for row in rows)
+            if rows
+            else None
+        )
+        for field_name in _STRATEGY_STRUCTURAL_FIELDS
+    }
+
+
+def _top_weighted_structural_averages(
+    rows: list[StrategyDiagnosticsRow],
+) -> dict[str, float | None]:
+    fields = {
+        "intersection_size": "top_weighted_intersection_size",
+        "jaccard": "top_weighted_jaccard",
+        "top_unique_mean_log_probability": "top_unique_mean_log_probability",
+        "weighted_unique_mean_log_probability": (
+            "weighted_unique_mean_log_probability"
+        ),
+    }
+    return {
+        summary_name: _mean_optional(
+            [getattr(row, field_name) for row in rows]
+        )
+        for summary_name, field_name in fields.items()
+    }
+
+
+def _mean_optional(values: list[float | int | None]) -> float | None:
+    present = [value for value in values if value is not None]
+    return mean(present) if present else None
+
+
+def _coverage_calibration(
+    rows: list[StrategyDiagnosticsRow],
+    strategy: str,
+) -> list[dict[str, float | int | str | None]]:
+    bins = [
+        {
+            "label": f"{lower:.3f}-{upper:.3f}",
+            "count": 0,
+            "coverages": [],
+            "hit_13s": [],
+        }
+        for lower, upper in zip(
+            _COVERAGE_BOUNDARIES[:-1],
+            _COVERAGE_BOUNDARIES[1:],
+            strict=True,
+        )
+    ]
+    bins.append(
+        {
+            "label": f"{_COVERAGE_BOUNDARIES[-1]:.3f}+",
+            "count": 0,
+            "coverages": [],
+            "hit_13s": [],
+        }
+    )
+    for row in rows:
+        coverage = getattr(row, f"{strategy}_estimated_coverage")
+        index = min(int(coverage / 0.005), len(bins) - 1)
+        bucket = bins[index]
+        bucket["count"] += 1
+        bucket["coverages"].append(coverage)
+        bucket["hit_13s"].append(getattr(row, f"{strategy}_hit_13"))
+    return [
+        {
+            "label": bucket["label"],
+            "count": bucket["count"],
+            "mean_estimated_coverage": (
+                mean(bucket["coverages"]) if bucket["coverages"] else None
+            ),
+            "observed_hit13_frequency": (
+                mean(bucket["hit_13s"]) if bucket["hit_13s"] else None
+            ),
+        }
+        for bucket in bins
+    ]
+
+
+def _strategy_diagnostics_markdown(
+    result: StrategyDiagnosticsResult,
+    summary: dict[str, object],
+) -> str:
+    distributions = summary["best_hit_distributions"]
+    strategy_averages = summary["strategy_averages"]
+    structural_averages = summary["structural_averages"]
+    calibration = summary["coverage_calibration"]
+    lines = [
+        "# Strategy Diagnostics (Development)",
+        "",
+        "**Status:** development-only; no winner selected.",
+        "",
+        f"Development drawings: {summary['drawing_count']}",
+        "",
+        "## Configuration",
+        "",
+        "| Field | Value |",
+        "| --- | --- |",
+    ]
+    lines.extend(
+        f"| {field_name} | {_format_report_value(value)} |"
+        for field_name, value in asdict(result.config).items()
+    )
+    lines.extend(
+        [
+            "",
+            "## Best-Hit Distributions",
+            "",
+            "| Best hits | Baseline brief | Top probability | Weighted coverage |",
+            "| --- | --- | --- | --- |",
+        ]
+    )
+    lines.extend(
+        "| {hits} | {baseline} | {top} | {weighted} |".format(
+            hits=hits,
+            baseline=distributions["baseline_brief"][hits],
+            top=distributions["top_probability"][hits],
+            weighted=distributions["weighted_coverage"][hits],
+        )
+        for hits in range(16)
+    )
+    lines.extend(
+        [
+            "",
+            "## Paired Weighted vs Top",
+            "",
+            "| Outcome | Count |",
+            "| --- | --- |",
+        ]
+    )
+    lines.extend(
+        f"| {outcome} | {count} |"
+        for outcome, count in summary["weighted_vs_top"].items()
+    )
+    lines.extend(
+        [
+            "",
+            "### Paired 13+ Transitions",
+            "",
+            "| Transition | Count |",
+            "| --- | --- |",
+        ]
+    )
+    lines.extend(
+        f"| {transition} | {count} |"
+        for transition, count in summary["paired_13_transitions"].items()
+    )
+    lines.extend(
+        [
+            "",
+            "### Weighted Minus Top Best Hits",
+            "",
+            "| Metric | Value |",
+            "| --- | --- |",
+        ]
+    )
+    lines.extend(
+        f"| {metric} | {_format_report_value(value)} |"
+        for metric, value in summary["weighted_minus_top_best_hits"].items()
+    )
+    lines.extend(
+        [
+            "",
+            "## Strategy Averages",
+            "",
+            (
+                "| Strategy | Average best hits | Average estimated coverage | "
+                "Observed 13+ frequency |"
+            ),
+            "| --- | --- | --- | --- |",
+        ]
+    )
+    lines.extend(
+        "| {strategy} | {best_hits} | {coverage} | {observed} |".format(
+            strategy=strategy,
+            best_hits=_format_report_value(averages["best_hits"]),
+            coverage=_format_report_value(averages["estimated_coverage"]),
+            observed=_format_report_value(averages["observed_hit13_frequency"]),
+        )
+        for strategy, averages in strategy_averages.items()
+    )
+    lines.extend(
+        [
+            "",
+            "## Structural Averages",
+            "",
+            "| Group | Metric | Average |",
+            "| --- | --- | --- |",
+        ]
+    )
+    lines.extend(
+        f"| {group} | {metric} | {_format_report_value(value)} |"
+        for group, averages in structural_averages.items()
+        for metric, value in averages.items()
+    )
+    lines.extend(
+        [
+            "",
+            "## Coverage Calibration",
+            "",
+            (
+                "| Strategy | Coverage bin | Count | Mean estimated coverage | "
+                "Observed 13+ frequency |"
+            ),
+            "| --- | --- | --- | --- | --- |",
+        ]
+    )
+    lines.extend(
+        "| {strategy} | {label} | {count} | {coverage} | {observed} |".format(
+            strategy=strategy,
+            label=bucket["label"],
+            count=bucket["count"],
+            coverage=_format_report_value(bucket["mean_estimated_coverage"]),
+            observed=_format_report_value(bucket["observed_hit13_frequency"]),
+        )
+        for strategy, buckets in calibration.items()
+        for bucket in buckets
+    )
+    return "\n".join(lines) + "\n"
+
+
+def _format_report_value(value: object) -> str:
+    if value is None:
+        return "unavailable"
+    if isinstance(value, float):
+        return f"{value:.6f}"
+    return str(value)
 
 
 def _hamming(left: str, right: str) -> int:
