@@ -71,6 +71,8 @@ def summarize_hybrid_evaluation(rows: list[HybridEvaluationRow]) -> dict[str, ob
             raise ValueError(f"Unsupported hybrid evaluation strategy: {row.strategy}")
         rows_by_strategy[row.strategy].append(row)
 
+    _validate_hybrid_evaluation_rows(rows_by_strategy)
+
     strategies = {
         strategy: _summarize_strategy(strategy_rows)
         for strategy, strategy_rows in rows_by_strategy.items()
@@ -93,6 +95,80 @@ def summarize_hybrid_evaluation(rows: list[HybridEvaluationRow]) -> dict[str, ob
         "failure_count": sum(row.timed_out for row in rows),
         "strategies": strategies,
     }
+
+
+def _validate_hybrid_evaluation_rows(
+    rows_by_strategy: dict[str, list[HybridEvaluationRow]],
+) -> None:
+    expected_fractions = {
+        "top_probability": None,
+        **{
+            f"hybrid_{fraction:.2f}": fraction
+            for fraction in HYBRID_CORE_FRACTIONS
+        },
+    }
+    seen_pairs = set()
+    for strategy, strategy_rows in rows_by_strategy.items():
+        expected_fraction = expected_fractions[strategy]
+        for row in strategy_rows:
+            if row.fold not in range(1, HYBRID_FOLD_COUNT + 1):
+                raise ValueError("Hybrid evaluation fold must be in 1..5.")
+            if expected_fraction is None:
+                if row.core_fraction is not None:
+                    raise ValueError(
+                        "top_probability rows must have core_fraction=None."
+                    )
+            elif row.core_fraction != expected_fraction:
+                raise ValueError(
+                    f"{strategy} rows must have core_fraction={expected_fraction:.2f}."
+                )
+            pair = (strategy, row.drawing_id)
+            if pair in seen_pairs:
+                raise ValueError(
+                    "Hybrid evaluation requires exactly one row per "
+                    "(strategy, drawing_id)."
+                )
+            seen_pairs.add(pair)
+
+    top_rows = rows_by_strategy["top_probability"]
+    top_drawing_ids = {row.drawing_id for row in top_rows}
+    for strategy_rows in rows_by_strategy.values():
+        if {row.drawing_id for row in strategy_rows} != top_drawing_ids:
+            raise ValueError(
+                "All hybrid evaluation strategies must have identical drawing ID sets."
+            )
+
+    expected_folds = assign_chronological_folds(
+        [row.drawing_id for row in top_rows]
+    )
+    expected_fold_size = len(top_drawing_ids) // HYBRID_FOLD_COUNT
+    top_fold_drawing_ids = {
+        fold: {row.drawing_id for row in top_rows if row.fold == fold}
+        for fold in range(1, HYBRID_FOLD_COUNT + 1)
+    }
+    for fold, drawing_ids in top_fold_drawing_ids.items():
+        if not drawing_ids:
+            raise ValueError(f"Hybrid evaluation fold {fold} must not be empty.")
+    for drawing_ids in top_fold_drawing_ids.values():
+        if len(drawing_ids) != expected_fold_size:
+            raise ValueError("Hybrid evaluation folds must be equal-sized.")
+
+    for _strategy, strategy_rows in rows_by_strategy.items():
+        for fold in range(1, HYBRID_FOLD_COUNT + 1):
+            drawing_ids = {
+                row.drawing_id for row in strategy_rows if row.fold == fold
+            }
+            if drawing_ids != top_fold_drawing_ids[fold]:
+                raise ValueError(
+                    "Each fold must contain the same drawing IDs across all "
+                    "hybrid evaluation strategies."
+                )
+        for row in strategy_rows:
+            if row.fold != expected_folds[row.drawing_id]:
+                raise ValueError(
+                    "Hybrid evaluation rows must use the chronological fold "
+                    "assignment."
+                )
 
 
 def decide_hybrid_experiment(summary: dict[str, object]) -> HybridDecision:

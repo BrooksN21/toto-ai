@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 import pytest
 
 from toto_ai.optimizer.hybrid_evaluation import (
@@ -86,6 +88,58 @@ def test_summary_rejects_unsupported_strategy_to_keep_its_shape_stable():
     )
 
     with pytest.raises(ValueError, match="Unsupported hybrid evaluation strategy"):
+        summarize_hybrid_evaluation(rows)
+
+
+@pytest.mark.parametrize(
+    ("case", "error"),
+    [
+        ("duplicate", "exactly one row"),
+        ("missing", "identical drawing ID sets"),
+        ("unpaired", "identical drawing ID sets"),
+        ("out_of_range_fold", "fold must be in 1..5"),
+        ("unequal_folds", "equal-sized"),
+        ("empty_fold", "fold 5 must not be empty"),
+        ("unpaired_fold", "same drawing IDs across all"),
+        ("non_chronological", "chronological fold assignment"),
+        ("top_fraction", "top_probability rows must have core_fraction=None"),
+        ("hybrid_fraction", "core_fraction=0.50"),
+    ],
+)
+def test_summary_rejects_invalid_evaluation_rows_before_aggregation(case, error):
+    rows = valid_evaluation_rows()
+
+    if case == "duplicate":
+        rows.append(rows[0])
+    elif case == "missing":
+        rows = [
+            row
+            for row in rows
+            if not (row.strategy == "hybrid_0.50" and row.drawing_id == 1)
+        ]
+    elif case == "unpaired":
+        rows[0] = replace(rows[0], drawing_id=351)
+    elif case == "out_of_range_fold":
+        rows[0] = replace(rows[0], fold=6)
+    elif case == "unequal_folds":
+        rows[0] = replace(rows[0], fold=2)
+    elif case == "empty_fold":
+        rows = [row for row in rows if row.fold != 5]
+    elif case == "unpaired_fold":
+        hybrid_row = next(row for row in rows if row.strategy == "hybrid_0.50")
+        rows[rows.index(hybrid_row)] = replace(hybrid_row, fold=2)
+    elif case == "non_chronological":
+        rows = [
+            replace(row, fold={1: 2, 71: 1}.get(row.drawing_id, row.fold))
+            for row in rows
+        ]
+    elif case == "top_fraction":
+        rows[0] = replace(rows[0], core_fraction=0.50)
+    else:
+        hybrid_row = next(row for row in rows if row.strategy == "hybrid_0.50")
+        rows[rows.index(hybrid_row)] = replace(hybrid_row, core_fraction=0.75)
+
+    with pytest.raises(ValueError, match=error):
         summarize_hybrid_evaluation(rows)
 
 
@@ -243,6 +297,34 @@ def make_rows(
         )
         for index in range(70)
     ]
+
+
+def valid_evaluation_rows():
+    rows = []
+    for fold in range(1, 6):
+        rows.extend(
+            make_rows(
+                fold=fold,
+                strategy="top_probability",
+                core_fraction=None,
+                hit_13_count=0,
+                best_hits=9.0,
+                mean_log_probability=-13.6,
+            )
+        )
+    for core_fraction in (0.50, 0.75, 0.90):
+        for fold in range(1, 6):
+            rows.extend(
+                make_rows(
+                    fold=fold,
+                    strategy=f"hybrid_{core_fraction:.2f}",
+                    core_fraction=core_fraction,
+                    hit_13_count=0,
+                    best_hits=9.0,
+                    mean_log_probability=-13.7,
+                )
+            )
+    return rows
 
 
 def fixture_summary(top_fold_hits, candidates, timed_out=False):

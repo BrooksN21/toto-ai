@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 216
+- Tests currently passed: 238
 - Ruff passed
 
 ## Active Design: Hybrid Direct Package Experiment
@@ -111,6 +111,11 @@ chronological folds, aggregates stable top and hybrid fold metrics, and applies
 the fixed GO predicate and deterministic fraction ranking. A STOP selects no
 core fraction. This task does not load the database, generate reports, or add
 CLI behavior.
+
+Review follow-up: `summarize_hybrid_evaluation()` now fail-closes before
+aggregation on invalid folds, duplicate or unpaired rows, unequal or empty
+folds, non-chronological fold assignments, and mismatched strategy fractions.
+Verification: 238 tests passed; Ruff passed.
 
 ## Previous Completed Task: Package Structure Metrics
 
