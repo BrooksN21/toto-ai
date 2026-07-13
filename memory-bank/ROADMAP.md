@@ -45,6 +45,8 @@
 - Use 5000 RUB as the primary bank and 3000/10000 RUB as sensitivity checks.
 - Diagnose the weighted-coverage objective on development data: it improved
   average best hits but did not beat top-probability on holdout hit13.
+- Implement deterministic package structure and overlap metrics for development
+  strategy diagnostics.
 - Reserve a new untouched or prospective evaluation window before claiming an
   improvement from further optimizer tuning.
 

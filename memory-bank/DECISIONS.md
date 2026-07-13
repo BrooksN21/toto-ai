@@ -59,6 +59,10 @@
   coverage rate, worst minimum distance, and guarantee results.
 - Cover Engine caches may depend on brief structure and category, but must not
   change candidate order or greedy tie-break semantics.
+- Strategy package diagnostics use sorted coupon log probabilities and exact
+  pairwise Hamming distances for deterministic structural metrics. Package
+  overlap uses set intersection/union; mean unique-coupon log probability is
+  unavailable when its unique set is empty.
 - User bank can be any positive amount.
 - `--open` means next playable drawing with `ended_at` in the future.
 - `--live` means betting is closed and drawing is ongoing.

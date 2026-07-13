@@ -23,8 +23,15 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 165
+- Tests currently passed: 171
 - Ruff passed
+
+## Latest Completed Task: Package Structure Metrics
+
+Added deterministic package diagnostics for coupon log-probability summaries,
+pairwise Hamming diversity, package intersection, Jaccard overlap, and mean
+log probability of coupons unique to each package. Empty unique coupon sets
+are represented as unavailable (`None`).
 
 ## Latest Completed Task: Direct Package Optimizer Experiment
 
@@ -282,7 +289,8 @@ Local smoke results on `data/toto.db`:
 
 ## Next Task
 
-Use the 350-drawing development segment to diagnose why weighted coverage
+Implement the fail-closed development diagnostics runner using the 350-drawing
+development segment to diagnose why weighted coverage
 improves average best hits but trails top-probability coupons on holdout hit13.
 Do not modify or repeatedly inspect the frozen holdout while tuning. Candidate
 changes must be selected on development data, then evaluated in a newly frozen

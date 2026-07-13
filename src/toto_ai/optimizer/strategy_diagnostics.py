@@ -1,11 +1,81 @@
 from __future__ import annotations
 
 import csv
+from dataclasses import dataclass
 from pathlib import Path
+from statistics import mean, median
 
+from toto_ai.optimizer.coupon_probabilities import (
+    ProbabilityMatrix,
+    coupon_log_probability,
+)
 from toto_ai.optimizer.strategy_backtest import StrategyBacktestRow
 
 STRATEGIES = ("baseline_brief", "top_probability", "weighted_coverage")
+
+
+@dataclass(frozen=True)
+class PackageStructureMetrics:
+    min_log_probability: float
+    median_log_probability: float
+    mean_log_probability: float
+    max_log_probability: float
+    mean_pairwise_hamming: float
+
+
+@dataclass(frozen=True)
+class PackageOverlapMetrics:
+    intersection_size: int
+    jaccard: float
+    top_unique_mean_log_probability: float | None
+    weighted_unique_mean_log_probability: float | None
+
+
+def _hamming(left: str, right: str) -> int:
+    return sum(a != b for a, b in zip(left, right, strict=True))
+
+
+def package_structure_metrics(
+    coupons: list[str],
+    probabilities: ProbabilityMatrix,
+) -> PackageStructureMetrics:
+    logs = sorted(coupon_log_probability(coupon, probabilities) for coupon in coupons)
+    distances = [
+        _hamming(left, right)
+        for index, left in enumerate(coupons)
+        for right in coupons[index + 1 :]
+    ]
+    return PackageStructureMetrics(
+        min(logs),
+        median(logs),
+        mean(logs),
+        max(logs),
+        mean(distances) if distances else 0.0,
+    )
+
+
+def package_overlap_metrics(
+    top_coupons: list[str],
+    weighted_coupons: list[str],
+    probabilities: ProbabilityMatrix,
+) -> PackageOverlapMetrics:
+    top = set(top_coupons)
+    weighted = set(weighted_coupons)
+    union = top | weighted
+    top_unique_logs = sorted(
+        coupon_log_probability(coupon, probabilities)
+        for coupon in top - weighted
+    )
+    weighted_unique_logs = sorted(
+        coupon_log_probability(coupon, probabilities)
+        for coupon in weighted - top
+    )
+    return PackageOverlapMetrics(
+        len(top & weighted),
+        len(top & weighted) / len(union) if union else 0.0,
+        mean(top_unique_logs) if top_unique_logs else None,
+        mean(weighted_unique_logs) if weighted_unique_logs else None,
+    )
 
 
 def development_drawing_ids(manifest: dict[str, object]) -> list[int]:

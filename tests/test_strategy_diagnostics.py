@@ -2,11 +2,19 @@ import csv
 
 import pytest
 
+from toto_ai.optimizer.coupon_probabilities import (
+    coupon_log_probability,
+    normalize_probability_matrix,
+)
 from toto_ai.optimizer.strategy_backtest import StrategyBacktestRow
 from toto_ai.optimizer.strategy_diagnostics import (
     development_drawing_ids,
     load_frozen_development_rows,
+    package_overlap_metrics,
+    package_structure_metrics,
 )
+
+probabilities = normalize_probability_matrix([{"1": 60, "X": 30, "2": 10}] * 2)
 
 
 def test_development_ids_exclude_holdout():
@@ -40,6 +48,24 @@ def test_frozen_rows_require_development_segment(tmp_path):
             path,
             {"last": 2, "holdout_size": 1, "drawing_ids": [1, 2]},
         )
+
+
+def test_package_structure_metrics_measure_probability_and_diversity():
+    metrics = package_structure_metrics(["11", "1X", "X1"], probabilities)
+
+    assert metrics.mean_pairwise_hamming == pytest.approx(4 / 3)
+    assert metrics.max_log_probability == coupon_log_probability(
+        "11", probabilities
+    )
+    assert metrics.min_log_probability == coupon_log_probability("X1", probabilities)
+
+
+def test_overlap_metrics_report_unique_coupon_probability():
+    metrics = package_overlap_metrics(["11", "1X"], ["11", "X1"], probabilities)
+
+    assert metrics.intersection_size == 1
+    assert metrics.jaccard == pytest.approx(1 / 3)
+    assert metrics.top_unique_mean_log_probability is not None
 
 
 def write_frozen_rows(tmp_path, drawing_ids, omit=None, segment="development"):
