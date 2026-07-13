@@ -51,6 +51,10 @@ Important modules:
   direct coupon candidate generation.
 - `toto_ai.optimizer.direct_package`: weighted scenario-coverage package
   optimizer with deterministic budget filling.
+- `toto_ai.optimizer.hybrid_evaluation`: fixed five-fold hybrid development
+  evaluation rows, aggregate fold metrics, and deterministic GO/STOP selection
+  for the approved core fractions; evaluation running, reports, and CLI wiring
+  are added separately.
 - `toto_ai.optimizer.strategy_backtest`: comparable baseline-brief,
   top-probability, and weighted-coverage strategies; chronological backtesting;
   paired holdout evaluation; frozen experiment manifests and report exports.

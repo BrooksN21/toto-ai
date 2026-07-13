@@ -103,6 +103,15 @@ each coupon log-probability ranking computation, after sorting, and while
 appending. On expiry it returns the unique partial package with `timed_out=True`.
 Verification: 216 tests passed; Ruff passed.
 
+## Completed Task: Hybrid Fold Metrics and GO/STOP Decision Model
+
+Added the pure `hybrid_evaluation` model for the approved hybrid experiment.
+It defines immutable evaluation rows/results, assigns exactly five contiguous
+chronological folds, aggregates stable top and hybrid fold metrics, and applies
+the fixed GO predicate and deterministic fraction ranking. A STOP selects no
+core fraction. This task does not load the database, generate reports, or add
+CLI behavior.
+
 ## Previous Completed Task: Package Structure Metrics
 
 Added deterministic package diagnostics for coupon log-probability summaries,
