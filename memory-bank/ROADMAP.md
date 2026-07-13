@@ -38,6 +38,10 @@
   slowest candidate briefs before changing search strategy.
 - Budget Oracle retains pruning diagnostics, but unsafe dominance and
   full-cover cost pruning are disabled.
+- Implement the approved Direct Package Optimizer experiment and compare
+  `baseline_brief`, `top_probability`, and `weighted_coverage` on a chronological
+  development/holdout split.
+- Use 5000 RUB as the primary bank and 3000/10000 RUB as sensitivity checks.
 
 ## Phase 4: Research
 
@@ -65,6 +69,8 @@
 ## Phase 6: Package Optimizer
 
 - Cover Engine performance optimization for greedy cover is implemented.
+- Direct Package Optimizer design is approved; v1 targets holdout `13+` rate
+  directly with BK probabilities and a 5000 RUB bank.
 - Safe Budget Oracle optimization remains open. Any future pruning must match
   exhaustive evaluation in regression tests.
 - Compare greedy cover, MILP, simulated annealing, genetic algorithms.

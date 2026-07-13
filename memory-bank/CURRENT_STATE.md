@@ -238,16 +238,24 @@ Local smoke results on `data/toto.db`:
 
 ## Next Task
 
-Run baseline evaluation on real collected data for 100/500/1000 completed
-drawings and compare budgets/categories.
+Implement the approved Direct Package Optimizer experiment described in
+`docs/superpowers/specs/2026-07-13-direct-package-optimizer-design.md`.
+
+The first implementation must compare:
+- existing `baseline_brief`
+- simple `top_probability`
+- proposed `weighted_coverage`
+
+Primary configuration:
+- 5000 RUB bank
+- 30 RUB stake
+- category 13
+- chronological development/holdout evaluation
 
 Required backtest metrics:
-- Actual result fully inside brief
-- Number of uncovered actual outcomes
-- Best coupon hits
-- Hit rates for 13, 14, 15
-- Package size
-- Package cost
-- Brief full variant count
-- Category guarantee verification
-- Results by budget and category
+- Holdout hit rates for 13, 14, and 15
+- Average best coupon hits
+- Package size and cost
+- Estimated out-of-sample scenario coverage
+- Paired strategy differences with uncertainty
+- Results for 3000, 5000, and 10000 RUB

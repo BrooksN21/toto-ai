@@ -14,6 +14,13 @@
 - Every hypothesis must be backtested.
 - Never claim guaranteed profit.
 - Separate prediction quality from cover quality.
+- The primary near-term strategy objective is holdout `13+` hit rate with a
+  5000 RUB bank, 30 RUB stake, and category 13.
+- Direct package optimization is evaluated before further brief-first
+  heuristics. A brief may be derived from a package but does not constrain the
+  v1 optimizer.
+- Direct Package Optimizer v1 uses only pre-drawing BK probabilities. External
+  providers and payout optimization follow only after a fixed baseline test.
 - Budget-constrained oracle commands may use actual results only as benchmark
   upper bounds; they must not be treated as playable prediction methods.
 - Budget-oracle must not reduce the candidate search space by default. Candidate
