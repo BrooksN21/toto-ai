@@ -5,6 +5,7 @@ from rich import print
 from rich.json import JSON
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.table import Table
+from sqlalchemy.exc import SQLAlchemyError
 
 from toto_ai.analytics.api_inspector import (
     DrawingReference,
@@ -903,7 +904,7 @@ def evaluate_hybrid(
             )
 
         csv_path, markdown_path = write_hybrid_evaluation_reports(result, report_dir)
-    except (OSError, KeyError, TypeError, ValueError) as error:
+    except (OSError, SQLAlchemyError, KeyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
 
     print(_hybrid_evaluation_table(result))

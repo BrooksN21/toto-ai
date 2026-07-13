@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import csv
+import os
+import shutil
 import tempfile
 import time
 from dataclasses import asdict, dataclass
@@ -160,6 +162,8 @@ def write_hybrid_evaluation_reports(
     csv_path = output_dir / f"{stem}.csv"
     markdown_path = output_dir / f"{stem}.md"
     temporary_paths: list[Path] = []
+    backup_paths: dict[Path, Path | None] = {}
+    publication_started = False
 
     try:
         with tempfile.NamedTemporaryFile(
@@ -194,14 +198,41 @@ def write_hybrid_evaluation_reports(
             temporary_paths.append(markdown_temp_path)
             markdown_output.write(_render_hybrid_markdown(result, config))
 
+        for final_path in (csv_path, markdown_path):
+            if not final_path.exists():
+                backup_paths[final_path] = None
+                continue
+            with tempfile.NamedTemporaryFile(
+                mode="wb",
+                delete=False,
+                dir=output_dir,
+                prefix=f".{stem}.",
+                suffix=f"{final_path.suffix}.bak.tmp",
+            ) as backup_output:
+                backup_path = Path(backup_output.name)
+            temporary_paths.append(backup_path)
+            shutil.copy2(final_path, backup_path)
+            backup_paths[final_path] = backup_path
+
+        publication_started = True
         csv_temp_path.replace(csv_path)
         temporary_paths.remove(csv_temp_path)
         markdown_temp_path.replace(markdown_path)
         temporary_paths.remove(markdown_temp_path)
     except Exception:
+        if publication_started:
+            for final_path in (csv_path, markdown_path):
+                backup_path = backup_paths[final_path]
+                if backup_path is None:
+                    final_path.unlink(missing_ok=True)
+                else:
+                    os.replace(backup_path, final_path)
         for temporary_path in temporary_paths:
             temporary_path.unlink(missing_ok=True)
         raise
+
+    for temporary_path in temporary_paths:
+        temporary_path.unlink(missing_ok=True)
 
     return csv_path, markdown_path
 

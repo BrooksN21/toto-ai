@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 263
+- Tests currently passed: 266
 - Ruff passed
 
 ## Active Design: Hybrid Direct Package Experiment
@@ -53,7 +53,10 @@ command for the approved hybrid experiment. CSV rows use manifest drawing order
 and the stable strategy order `top_probability`, `hybrid_0.50`,
 `hybrid_0.75`, and `hybrid_0.90`. CSV and Markdown are fully rendered in
 same-directory temporary files and closed before either final report is
-replaced; remaining temporary files are removed if report creation fails.
+replaced. Existing final reports are copied to same-directory backups before
+publication. If either final replacement fails, both previous reports are
+restored byte-for-byte, or both newly published reports are removed when no
+previous pair existed; all temporary and backup files are then removed.
 
 The Markdown report records the frozen configuration, five development folds,
 total and structural metrics, operational failures, every GO predicate, and
@@ -63,13 +66,13 @@ and as no profitability evidence. Generated reports are ignored by Git.
 `evaluate-hybrid` accepts only the database, manifest, frozen backtest CSV, and
 report directory paths. It uses `open_readonly_db()` and Rich progress, does
 not initialize or migrate the database, and converts controlled failures to
-`typer.BadParameter`.
+`typer.BadParameter`, including `SQLAlchemyError` database failures.
 
 No evaluation run has been interpreted as profitability evidence. The frozen
 holdout remains excluded from hybrid selection.
 
-Verification: focused hybrid suite passed (47 tests); full suite passed (263
-tests); Ruff passed; the worktree CLI help shows only the four path options.
+The worktree CLI help shows only the four path options. Current test and Ruff
+verification is recorded once above.
 
 ## Latest Completed Task: Development Strategy Diagnostics
 
@@ -121,12 +124,12 @@ uses a deterministic unique probability fallback when time remains. Timeout
 paths return only work completed so far. Existing top-probability and weighted
 coverage behavior remains unchanged.
 
-Verification: 214 tests passed; Ruff passed.
+Verification at completion: pytest and Ruff passed.
 
 Review follow-up: the hybrid probability fallback now checks the deadline before
 each coupon log-probability ranking computation, after sorting, and while
 appending. On expiry it returns the unique partial package with `timed_out=True`.
-Verification: 216 tests passed; Ruff passed.
+Verification at completion: pytest and Ruff passed.
 
 ## Completed Task: Hybrid Fold Metrics and GO/STOP Decision Model
 
@@ -140,7 +143,7 @@ CLI behavior.
 Review follow-up: `summarize_hybrid_evaluation()` now fail-closes before
 aggregation on invalid folds, duplicate or unpaired rows, unequal or empty
 folds, non-chronological fold assignments, and mismatched strategy fractions.
-Verification: 238 tests passed; Ruff passed.
+Verification at completion: pytest and Ruff passed.
 
 ## Completed Task: Fail-Closed Hybrid Development Evaluator
 
@@ -162,8 +165,7 @@ Review follow-up: integrity-boundary coverage now tags every development drawing
 captures real result-bearing Event SQL, and proves a later top-hash mismatch
 stops before that drawing's result load or any holdout access.
 
-Verification: focused hybrid suite passed (43 tests); full suite passed (259
-tests); Ruff passed.
+Verification at completion: focused and full pytest suites plus Ruff passed.
 
 ## Previous Completed Task: Package Structure Metrics
 
@@ -428,6 +430,6 @@ Local smoke results on `data/toto.db`:
 
 ## Next Task
 
-Task 4 is next: add the approved atomic hybrid evaluation reports and CLI
-surface. Continue to evaluate only the 350 frozen development drawings and do
-not inspect the old holdout while selecting a core fraction.
+Task 5 is next: run the frozen development-only hybrid evaluation and record the
+GO/STOP decision. Continue to evaluate only the 350 frozen development drawings
+and do not inspect the old holdout while selecting a core fraction.

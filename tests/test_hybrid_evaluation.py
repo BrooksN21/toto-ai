@@ -4,10 +4,11 @@ import json
 from contextlib import contextmanager
 from dataclasses import replace
 from itertools import islice, product
+from pathlib import Path
 
 import pytest
 from sqlalchemy import create_engine, event, text
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
@@ -297,6 +298,65 @@ def test_report_failure_leaves_no_temporary_files(monkeypatch, tmp_path):
     assert list(tmp_path.iterdir()) == []
 
 
+def test_second_report_replace_failure_restores_existing_pair(monkeypatch, tmp_path):
+    csv_path = (
+        tmp_path / "hybrid_evaluation_development_last_500_bank_5000.csv"
+    )
+    markdown_path = (
+        tmp_path / "hybrid_evaluation_development_last_500_bank_5000.md"
+    )
+    csv_path.write_bytes(b"old csv\n")
+    markdown_path.write_bytes(b"old markdown\n")
+    original_replace = Path.replace
+    final_replace_count = 0
+
+    def fail_second_final_replace(source, target):
+        nonlocal final_replace_count
+        if Path(target) in {csv_path, markdown_path}:
+            final_replace_count += 1
+            if final_replace_count == 2:
+                raise OSError("second final replace failed")
+        return original_replace(source, target)
+
+    monkeypatch.setattr(Path, "replace", fail_second_final_replace)
+
+    with pytest.raises(OSError, match="second final replace failed"):
+        write_hybrid_evaluation_reports(fixture_evaluation_result(), tmp_path)
+
+    assert csv_path.read_bytes() == b"old csv\n"
+    assert markdown_path.read_bytes() == b"old markdown\n"
+    assert set(tmp_path.iterdir()) == {csv_path, markdown_path}
+
+
+def test_second_report_replace_failure_removes_new_pair_without_old_pair(
+    monkeypatch,
+    tmp_path,
+):
+    csv_path = (
+        tmp_path / "hybrid_evaluation_development_last_500_bank_5000.csv"
+    )
+    markdown_path = (
+        tmp_path / "hybrid_evaluation_development_last_500_bank_5000.md"
+    )
+    original_replace = Path.replace
+    final_replace_count = 0
+
+    def fail_second_final_replace(source, target):
+        nonlocal final_replace_count
+        if Path(target) in {csv_path, markdown_path}:
+            final_replace_count += 1
+            if final_replace_count == 2:
+                raise OSError("second final replace failed")
+        return original_replace(source, target)
+
+    monkeypatch.setattr(Path, "replace", fail_second_final_replace)
+
+    with pytest.raises(OSError, match="second final replace failed"):
+        write_hybrid_evaluation_reports(fixture_evaluation_result(), tmp_path)
+
+    assert list(tmp_path.iterdir()) == []
+
+
 def test_evaluate_hybrid_cli_uses_readonly_db_and_writes_reports(monkeypatch, tmp_path):
     db_path = tmp_path / "hybrid.db"
     engine = create_engine(f"sqlite+pysqlite:///{db_path}")
@@ -373,6 +433,42 @@ def test_evaluate_hybrid_help_exposes_only_fixed_path_options():
         "--timeout",
     ):
         assert option not in result.output
+
+
+def test_evaluate_hybrid_cli_converts_sqlalchemy_error_to_bad_parameter(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        cli_module,
+        "load_strategy_experiment_manifest",
+        lambda _path: fixture_evaluation_result().manifest,
+    )
+    monkeypatch.setattr(
+        cli_module,
+        "open_readonly_db",
+        lambda _path: (_ for _ in ()).throw(SQLAlchemyError("database unavailable")),
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "evaluate-hybrid",
+            "--db",
+            "missing.db",
+            "--manifest",
+            "manifest.json",
+            "--backtest-csv",
+            "backtest.csv",
+            "--report-dir",
+            "reports",
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "Invalid value" in result.output
+    assert "database unavailable" in result.output
+    assert "Traceback" not in result.output
+    assert not isinstance(result.exception, SQLAlchemyError)
 
 
 def candidate(

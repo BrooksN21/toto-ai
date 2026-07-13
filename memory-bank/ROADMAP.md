@@ -51,10 +51,10 @@
 - Add a fail-closed development diagnostics CLI that regenerates packages,
   verifies frozen package hashes/results, and exports deterministic reports.
   Completed.
-- Hybrid Direct Package experiment Tasks 1-3 are completed: the selector,
-  GO/STOP decision model, and fail-closed development evaluator. Task 4,
-  atomic reports and CLI wiring, is next. Do not inspect the frozen holdout
-  during this selection.
+- Hybrid Direct Package experiment Tasks 1-4 are completed: the selector,
+  GO/STOP decision model, fail-closed development evaluator, and rollback-safe
+  atomic reports/CLI wiring. Task 5, the frozen development GO/STOP run, is
+  next. Do not inspect the frozen holdout during this selection.
 - Reserve a new untouched or prospective evaluation window before claiming an
   improvement from further optimizer tuning.
 
