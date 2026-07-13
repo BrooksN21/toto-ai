@@ -65,7 +65,9 @@ def test_overlap_metrics_report_unique_coupon_probability():
 
     assert metrics.intersection_size == 1
     assert metrics.jaccard == pytest.approx(1 / 3)
-    assert metrics.top_unique_mean_log_probability is not None
+    assert metrics.top_unique_mean_log_probability == coupon_log_probability(
+        "1X", probabilities
+    )
     assert metrics.weighted_unique_mean_log_probability == coupon_log_probability(
         "X1", probabilities
     )
