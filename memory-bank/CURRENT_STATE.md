@@ -240,6 +240,8 @@ Local smoke results on `data/toto.db`:
 
 Implement the approved Direct Package Optimizer experiment described in
 `docs/superpowers/specs/2026-07-13-direct-package-optimizer-design.md`.
+Execute the task sequence in
+`docs/superpowers/plans/2026-07-13-direct-package-optimizer.md`.
 
 The first implementation must compare:
 - existing `baseline_brief`
