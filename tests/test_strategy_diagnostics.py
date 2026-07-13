@@ -66,6 +66,16 @@ def test_overlap_metrics_report_unique_coupon_probability():
     assert metrics.intersection_size == 1
     assert metrics.jaccard == pytest.approx(1 / 3)
     assert metrics.top_unique_mean_log_probability is not None
+    assert metrics.weighted_unique_mean_log_probability == coupon_log_probability(
+        "X1", probabilities
+    )
+
+
+def test_overlap_metrics_report_no_unique_coupon_probabilities_for_identical_packages():
+    metrics = package_overlap_metrics(["11", "1X"], ["11", "1X"], probabilities)
+
+    assert metrics.top_unique_mean_log_probability is None
+    assert metrics.weighted_unique_mean_log_probability is None
 
 
 def write_frozen_rows(tmp_path, drawing_ids, omit=None, segment="development"):
