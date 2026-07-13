@@ -12,6 +12,8 @@ def development_drawing_ids(manifest: dict[str, object]) -> list[int]:
     last = int(manifest["last"])
     holdout = int(manifest["holdout_size"])
     drawing_ids = list(manifest["drawing_ids"])
+    if len(set(drawing_ids)) != len(drawing_ids):
+        raise ValueError("Manifest contains duplicate drawing IDs.")
     if len(drawing_ids) != last or holdout < 0 or holdout > last:
         raise ValueError("Invalid frozen development split.")
     return drawing_ids[: last - holdout]
@@ -29,6 +31,10 @@ def load_frozen_development_rows(
             if drawing_id not in development:
                 continue
             row = _parse_strategy_backtest_row(raw)
+            if row.segment != "development":
+                raise ValueError(
+                    "Frozen development rows must use the development segment."
+                )
             key = (drawing_id, row.strategy)
             if key in rows:
                 raise ValueError("Expected exactly one frozen row per strategy.")
