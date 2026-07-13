@@ -9,6 +9,7 @@ build/
 dist/
 .DS_Store
 .worktrees/
+.superpowers/
 .env
 data/*.db
 data/*.sqlite
