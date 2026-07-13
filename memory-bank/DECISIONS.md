@@ -34,6 +34,13 @@
 - Do not tune against the 150-drawing frozen holdout. Diagnose and select
   changes on development data, then use a newly frozen prospective or otherwise
   untouched evaluation window.
+- The Hybrid Direct Package experiment tests only top-core fractions 0.50,
+  0.75, and 0.90 at the frozen 5000 RUB / 30 RUB / category 13 protocol.
+- Hybrid GO requires at least two additional development 13+ hits over
+  top-probability, no worse 13+ results in at least four of five chronological
+  folds, no lower average best hits, and zero operational failures. Otherwise
+  the optimizer direction stops and the project moves to external data and
+  payout/ROI modeling.
 - Budget-constrained oracle commands may use actual results only as benchmark
   upper bounds; they must not be treated as playable prediction methods.
 - Budget-oracle must not reduce the candidate search space by default. Candidate

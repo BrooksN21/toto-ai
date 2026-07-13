@@ -26,6 +26,21 @@ task commits listed above.
 - Tests currently passed: 204
 - Ruff passed
 
+## Active Design: Hybrid Direct Package Experiment
+
+Approved design:
+- Preserve an exact top-probability core of 50%, 75%, or 90% of the package.
+- Fill remaining capacity by marginal weighted coverage after accounting for
+  scenarios already covered by the core.
+- Evaluate only the 350 frozen development drawings in five chronological
+  folds; never reopen the old holdout for selection.
+- Return GO only for at least two additional 13+ hits, non-loss in at least
+  four folds, no lower average best hits, and zero operational failures.
+- Return STOP and end optimizer tuning when no candidate passes.
+
+Design specification:
+- `docs/superpowers/specs/2026-07-13-hybrid-direct-package-experiment-design.md`
+
 ## Latest Completed Task: Development Strategy Diagnostics
 
 Added the fail-closed `diagnose-strategies` command and completed the frozen
@@ -330,9 +345,7 @@ Local smoke results on `data/toto.db`:
 
 ## Next Task
 
-Implement the fail-closed development diagnostics runner using the 350-drawing
-development segment to diagnose why weighted coverage
-improves average best hits but trails top-probability coupons on holdout hit13.
-Do not modify or repeatedly inspect the frozen holdout while tuning. Candidate
-changes must be selected on development data, then evaluated in a newly frozen
-future/prospective window or a separately reserved untouched historical window.
+Implement the approved Hybrid Direct Package experiment from
+`docs/superpowers/specs/2026-07-13-hybrid-direct-package-experiment-design.md`.
+Evaluate only the 350 frozen development drawings. Do not inspect the old
+holdout while selecting a core fraction.
