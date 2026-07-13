@@ -40,7 +40,7 @@ from toto_ai.analytics.research_bk_vs_norm import (
 from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
-from toto_ai.db.session import get_session_factory, init_db
+from toto_ai.db.session import get_session_factory, init_db, open_readonly_db
 from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.brief_backtest import (
     run_brief_backtest,
@@ -809,7 +809,7 @@ def diagnose_strategies(
     """Diagnose frozen strategies on the development segment only."""
     try:
         frozen_manifest = load_strategy_experiment_manifest(manifest)
-        engine = init_db(db)
+        engine = open_readonly_db(db)
         session_factory = get_session_factory(engine)
 
         with Progress(

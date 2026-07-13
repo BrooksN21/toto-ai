@@ -1,13 +1,17 @@
 import csv
 import hashlib
+import json
 from contextlib import contextmanager
 
 import pytest
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
+from toto_ai import cli as cli_module
 from toto_ai.cli import app
+from toto_ai.db import session as db_session_module
 from toto_ai.db.models import Base, Drawing, Event, Quote
 from toto_ai.optimizer import strategy_diagnostics as diagnostics_module
 from toto_ai.optimizer.coupon_probabilities import (
@@ -356,6 +360,83 @@ def test_diagnose_strategies_rejects_invalid_frozen_data(tmp_path):
     )
 
     assert result.exit_code != 0
+
+
+def test_readonly_database_engine_rejects_writes(tmp_path):
+    db_path = tmp_path / "readonly.db"
+    engine = create_engine(f"sqlite+pysqlite:///{db_path}")
+    Base.metadata.create_all(engine)
+
+    readonly_engine = db_session_module.open_readonly_db(db_path)
+
+    with readonly_engine.begin() as connection:
+        with pytest.raises(OperationalError, match="readonly"):
+            connection.execute(text("CREATE TABLE forbidden (id INTEGER)"))
+
+
+def test_diagnose_strategies_success_uses_readonly_db_and_prints_summary(
+    monkeypatch,
+    tmp_path,
+):
+    db_path = tmp_path / "diagnostics.db"
+    engine = create_engine(f"sqlite+pysqlite:///{db_path}")
+    Base.metadata.create_all(engine)
+    config = StrategyConfig(bank=5000, stake=30, category=13)
+    manifest = {
+        "schema_version": 1,
+        "code_version": "frozen",
+        "last": 1,
+        "holdout_size": 0,
+        "drawing_ids": [1],
+        "input_data_hash": "data",
+        "configuration_hash": _configuration_hash(config),
+        "protocol_hash": "protocol",
+        "config": _config_payload(config),
+    }
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    frozen_csv = tmp_path / "backtest.csv"
+    frozen_csv.write_text("drawing_id\n", encoding="utf-8")
+
+    def fake_run(session, frozen_manifest, frozen_path, progress_callback):
+        assert session.execute(text("SELECT 1")).scalar_one() == 1
+        assert frozen_manifest == manifest
+        assert frozen_path == str(frozen_csv)
+        progress_callback(
+            {"drawing_id": 1, "drawing_index": 1, "drawing_total": 1}
+        )
+        return StrategyDiagnosticsResult(
+            rows=[fixture_diagnostics_row()],
+            config=config,
+            manifest=manifest,
+        )
+
+    monkeypatch.setattr(cli_module, "run_strategy_diagnostics", fake_run)
+    monkeypatch.setattr(
+        cli_module,
+        "init_db",
+        lambda *args: pytest.fail("diagnostics must not call init_db"),
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "diagnose-strategies",
+            "--db",
+            str(db_path),
+            "--manifest",
+            str(manifest_path),
+            "--backtest-csv",
+            str(frozen_csv),
+            "--report-dir",
+            str(tmp_path / "reports"),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Development Strategy Diagnostics" in result.output
+    assert "Development 13+ Transitions" in result.output
+    assert "Reports written to" in result.output
 
 
 @pytest.mark.parametrize(

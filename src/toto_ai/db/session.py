@@ -1,3 +1,4 @@
+import sqlite3
 from pathlib import Path
 
 from sqlalchemy import Engine, create_engine, inspect, text
@@ -19,6 +20,17 @@ def init_db(db_path: str | Path = "data/toto.db") -> Engine:
     Base.metadata.create_all(engine)
     _add_missing_columns(engine)
     return engine
+
+
+def open_readonly_db(db_path: str | Path) -> Engine:
+    path = Path(db_path)
+    if not path.is_file():
+        raise ValueError(f"Database does not exist: {path}")
+    uri = f"{path.resolve().as_uri()}?mode=ro"
+    return create_engine(
+        "sqlite+pysqlite://",
+        creator=lambda: sqlite3.connect(uri, uri=True),
+    )
 
 
 def get_session_factory(engine: Engine) -> sessionmaker[Session]:

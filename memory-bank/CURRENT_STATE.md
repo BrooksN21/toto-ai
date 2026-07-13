@@ -23,13 +23,15 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 202
+- Tests currently passed: 204
 - Ruff passed
 
 ## Latest Completed Task: Development Strategy Diagnostics
 
 Added the fail-closed `diagnose-strategies` command and completed the frozen
 development-only diagnostic for the Direct Package Optimizer experiment.
+The command opens the existing SQLite database in enforced read-only mode and
+cannot create tables or run migrations.
 
 Command:
 - `python -m toto_ai.cli diagnose-strategies --db data/toto.db --manifest reports/strategy_experiment_manifest_last_500_exclude_10.json --backtest-csv reports/strategy_backtest_last_500_bank_5000.csv`

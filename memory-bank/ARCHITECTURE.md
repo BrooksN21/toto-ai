@@ -22,6 +22,8 @@ Important modules:
 - `toto_ai.collector.sync`: historical drawing collector.
 - `toto_ai.db.models`: SQLite schema with SQLAlchemy models.
 - `toto_ai.db.session`: database initialization and session helpers.
+  Development diagnostics use its SQLite `mode=ro` engine and never initialize
+  or migrate the selected database.
 - `toto_ai.analytics.history`: historical summary and research metrics.
 - `toto_ai.analytics.audit`: database audit and quality checks.
 - `toto_ai.analytics.calibration`: bookmaker and pool calibration research.
