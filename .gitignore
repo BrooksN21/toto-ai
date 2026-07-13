@@ -36,3 +36,5 @@ reports/strategy_backtest_last_*.md
 reports/strategy_experiment_manifest*.json
 reports/strategy_diagnostics_development_last_*.csv
 reports/strategy_diagnostics_development_last_*.md
+reports/hybrid_evaluation_development_last_*.csv
+reports/hybrid_evaluation_development_last_*.md

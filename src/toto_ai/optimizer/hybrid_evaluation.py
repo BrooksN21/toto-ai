@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import csv
+import tempfile
 import time
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from hashlib import sha256
 from pathlib import Path
 from statistics import mean
@@ -45,6 +47,12 @@ HYBRID_BANK = 5000
 HYBRID_STAKE = 30
 HYBRID_CATEGORY = 13
 HYBRID_MAX_COUPONS = HYBRID_BANK // HYBRID_STAKE
+HYBRID_STRATEGY_ORDER = (
+    "top_probability",
+    "hybrid_0.50",
+    "hybrid_0.75",
+    "hybrid_0.90",
+)
 
 
 @dataclass(frozen=True)
@@ -138,6 +146,305 @@ def run_hybrid_evaluation(
     summary = summarize_hybrid_evaluation(rows)
     decision = decide_hybrid_experiment(summary)
     return HybridEvaluationResult(rows, summary, decision, manifest)
+
+
+def write_hybrid_evaluation_reports(
+    result: HybridEvaluationResult,
+    report_dir: str | Path = "reports",
+) -> tuple[Path, Path]:
+    output_dir = Path(report_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    config = _config_from_manifest(result.manifest)
+    last = int(result.manifest["last"])
+    stem = f"hybrid_evaluation_development_last_{last}_bank_{config.bank}"
+    csv_path = output_dir / f"{stem}.csv"
+    markdown_path = output_dir / f"{stem}.md"
+    temporary_paths: list[Path] = []
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            newline="",
+            encoding="utf-8",
+            delete=False,
+            dir=output_dir,
+            prefix=f".{stem}.",
+            suffix=".csv.tmp",
+        ) as csv_output:
+            csv_temp_path = Path(csv_output.name)
+            temporary_paths.append(csv_temp_path)
+            writer = csv.DictWriter(
+                csv_output,
+                fieldnames=list(HybridEvaluationRow.__dataclass_fields__),
+            )
+            writer.writeheader()
+            writer.writerows(
+                asdict(row) for row in _ordered_hybrid_evaluation_rows(result)
+            )
+
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            delete=False,
+            dir=output_dir,
+            prefix=f".{stem}.",
+            suffix=".md.tmp",
+        ) as markdown_output:
+            markdown_temp_path = Path(markdown_output.name)
+            temporary_paths.append(markdown_temp_path)
+            markdown_output.write(_render_hybrid_markdown(result, config))
+
+        csv_temp_path.replace(csv_path)
+        temporary_paths.remove(csv_temp_path)
+        markdown_temp_path.replace(markdown_path)
+        temporary_paths.remove(markdown_temp_path)
+    except Exception:
+        for temporary_path in temporary_paths:
+            temporary_path.unlink(missing_ok=True)
+        raise
+
+    return csv_path, markdown_path
+
+
+def _ordered_hybrid_evaluation_rows(
+    result: HybridEvaluationResult,
+) -> list[HybridEvaluationRow]:
+    drawing_order = {
+        drawing_id: index
+        for index, drawing_id in enumerate(development_drawing_ids(result.manifest))
+    }
+    strategy_order = {
+        strategy: index for index, strategy in enumerate(HYBRID_STRATEGY_ORDER)
+    }
+    try:
+        return sorted(
+            result.rows,
+            key=lambda row: (
+                drawing_order[row.drawing_id],
+                strategy_order[row.strategy],
+            ),
+        )
+    except KeyError as error:
+        raise ValueError(
+            "Hybrid evaluation rows do not match the frozen manifest."
+        ) from error
+
+
+def _render_hybrid_markdown(
+    result: HybridEvaluationResult,
+    config: StrategyConfig,
+) -> str:
+    summary = result.summary
+    strategies = summary["strategies"]
+    ordered_rows = _ordered_hybrid_evaluation_rows(result)
+    rows_by_strategy = {
+        strategy: [row for row in ordered_rows if row.strategy == strategy]
+        for strategy in HYBRID_STRATEGY_ORDER
+    }
+    top_total = strategies["top_probability"]["total"]
+    failure_count = summary["failure_count"]
+    lines = [
+        "# Hybrid Development Evaluation",
+        "",
+        "## Configuration",
+        "",
+        "| Field | Value |",
+        "| --- | --- |",
+        f"| manifest last | {_format_hybrid_report_value(result.manifest['last'])} |",
+        (
+            "| manifest holdout size | "
+            f"{_format_hybrid_report_value(result.manifest['holdout_size'])} |"
+        ),
+        (
+            "| Development drawings | "
+            f"{_format_hybrid_report_value(summary['drawing_count'])} |"
+        ),
+    ]
+    lines.extend(
+        f"| {field_name} | {_format_hybrid_report_value(value)} |"
+        for field_name, value in asdict(config).items()
+    )
+    lines.extend(
+        [
+            "",
+            f"Development drawings: {summary['drawing_count']}",
+            "",
+            "## Total Strategy Metrics",
+            "",
+            "| Strategy | 13+ | 14+ | 15 | Average best hits |",
+            "| --- | ---: | ---: | ---: | ---: |",
+        ]
+    )
+    lines.extend(
+        _hybrid_metrics_table_rows(strategies, "total")
+    )
+
+    for fold in range(1, HYBRID_FOLD_COUNT + 1):
+        lines.extend(
+            [
+                "",
+                f"## Fold {fold} Metrics",
+                "",
+                "| Strategy | 13+ | 14+ | 15 | Average best hits |",
+                "| --- | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        lines.extend(_hybrid_metrics_table_rows(strategies, "folds", fold))
+
+    lines.extend(
+        [
+            "",
+            "## Structural Metrics",
+            "",
+            (
+                "| Strategy | Average package size | Average package cost | "
+                "Average estimated coverage | Mean log probability | "
+                "Mean pairwise Hamming distance | Top intersection | Top Jaccard | "
+                "Average runtime seconds | Timeouts |"
+            ),
+            "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        ]
+    )
+    for strategy in HYBRID_STRATEGY_ORDER:
+        strategy_rows = rows_by_strategy[strategy]
+        lines.append(
+            "| {strategy} | {package_size} | {package_cost} | {coverage} | "
+            "{log_probability} | {hamming} | {intersection} | {jaccard} | "
+            "{runtime} | {timeouts} |".format(
+                strategy=strategy,
+                package_size=_format_hybrid_report_value(
+                    mean(row.package_size for row in strategy_rows)
+                ),
+                package_cost=_format_hybrid_report_value(
+                    mean(row.package_cost for row in strategy_rows)
+                ),
+                coverage=_format_hybrid_report_value(
+                    mean(row.estimated_coverage for row in strategy_rows)
+                ),
+                log_probability=_format_hybrid_report_value(
+                    mean(row.mean_log_probability for row in strategy_rows)
+                ),
+                hamming=_format_hybrid_report_value(
+                    mean(row.mean_pairwise_hamming for row in strategy_rows)
+                ),
+                intersection=_format_hybrid_report_value(
+                    mean(row.top_intersection_size for row in strategy_rows)
+                ),
+                jaccard=_format_hybrid_report_value(
+                    mean(row.top_jaccard for row in strategy_rows)
+                ),
+                runtime=_format_hybrid_report_value(
+                    mean(row.runtime_seconds for row in strategy_rows)
+                ),
+                timeouts=_format_hybrid_report_value(
+                    sum(row.timed_out for row in strategy_rows)
+                ),
+            )
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Failure Counts",
+            "",
+            f"Operational failures: {failure_count}",
+            "",
+            "## GO Predicate Evaluation",
+            "",
+            (
+                "| Core fraction | Additional 13+ hits (>= 2) | "
+                "Non-losing folds (>= 4) | Average best-hit delta (>= 0) | "
+                "Operational failures (= 0) | All predicates |"
+            ),
+            "| --- | --- | --- | --- | --- | --- |",
+        ]
+    )
+    for fraction in HYBRID_CORE_FRACTIONS:
+        strategy = strategies[f"hybrid_{fraction:.2f}"]
+        total = strategy["total"]
+        additional_hits = total["hit_13"] - top_total["hit_13"]
+        non_losing_folds = strategy["non_losing_folds"]
+        best_hit_delta = total["average_best_hits"] - top_total["average_best_hits"]
+        predicates = (
+            additional_hits >= 2,
+            non_losing_folds >= 4,
+            best_hit_delta >= 0,
+            failure_count == 0,
+        )
+        additional_status = _go_predicate_status(predicates[0])
+        non_losing_status = _go_predicate_status(predicates[1])
+        best_hits_status = _go_predicate_status(predicates[2])
+        failure_status = _go_predicate_status(predicates[3])
+        all_status = _go_predicate_status(all(predicates))
+        lines.append(
+            f"| {fraction:.2f} | {additional_hits} ({additional_status}) | "
+            f"{non_losing_folds} ({non_losing_status}) | "
+            f"{_format_hybrid_report_value(best_hit_delta)} ({best_hits_status}) | "
+            f"{failure_count} ({failure_status}) | {all_status} |"
+        )
+
+    selected_fraction = (
+        "none"
+        if result.decision.selected_core_fraction is None
+        else f"{result.decision.selected_core_fraction:.2f}"
+    )
+    passing_fractions = (
+        "none"
+        if not result.decision.passing_core_fractions
+        else ", ".join(
+            f"{fraction:.2f}" for fraction in result.decision.passing_core_fractions
+        )
+    )
+    lines.extend(
+        [
+            "",
+            "## Decision",
+            "",
+            f"Decision: {result.decision.status}",
+            f"Selected core fraction: {selected_fraction}",
+            f"Passing core fractions: {passing_fractions}",
+            f"Reason: {result.decision.reason}",
+            "",
+            (
+                "Warning: This development-only result is not independent "
+                "evidence and provides no profitability evidence."
+            ),
+        ]
+    )
+    return "\n".join(lines) + "\n"
+
+
+def _hybrid_metrics_table_rows(
+    strategies: dict[str, object],
+    scope: str,
+    fold: int | None = None,
+) -> list[str]:
+    rows = []
+    for strategy in HYBRID_STRATEGY_ORDER:
+        metrics = strategies[strategy][scope]
+        if fold is not None:
+            metrics = metrics[fold]
+        rows.append(
+            f"| {strategy} | {_format_hybrid_report_value(metrics['hit_13'])} | "
+            f"{_format_hybrid_report_value(metrics['hit_14'])} | "
+            f"{_format_hybrid_report_value(metrics['hit_15'])} | "
+            f"{_format_hybrid_report_value(metrics['average_best_hits'])} |"
+        )
+    return rows
+
+
+def _go_predicate_status(passed: bool) -> str:
+    return "pass" if passed else "fail"
+
+
+def _format_hybrid_report_value(value: object) -> str:
+    if value is None:
+        return "none"
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    if isinstance(value, float):
+        return f"{value:.6f}"
+    return str(value)
 
 
 def _validate_hybrid_protocol(config: StrategyConfig) -> None:

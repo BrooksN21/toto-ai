@@ -54,6 +54,10 @@ from toto_ai.optimizer.cover import (
     write_cover_package_csv,
 )
 from toto_ai.optimizer.cover_benchmark import benchmark_cover
+from toto_ai.optimizer.hybrid_evaluation import (
+    run_hybrid_evaluation,
+    write_hybrid_evaluation_reports,
+)
 from toto_ai.optimizer.strategy_backtest import (
     StrategyConfig,
     freeze_strategy_experiment_manifest,
@@ -851,6 +855,58 @@ def diagnose_strategies(
 
     print(_strategy_diagnostics_paired_table(summary))
     print(_strategy_diagnostics_transitions_table(summary))
+    print(f"Reports written to {csv_path} and {markdown_path}")
+
+
+@app.command("evaluate-hybrid")
+def evaluate_hybrid(
+    manifest: str = typer.Option(..., help="Frozen strategy experiment manifest."),
+    backtest_csv: str = typer.Option(
+        ..., "--backtest-csv", help="Frozen strategy backtest CSV."
+    ),
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+    report_dir: str = typer.Option("reports", help="Report output directory."),
+) -> None:
+    """Evaluate fixed hybrid packages on frozen development drawings only."""
+    try:
+        frozen_manifest = load_strategy_experiment_manifest(manifest)
+        engine = open_readonly_db(db)
+        session_factory = get_session_factory(engine)
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            task_id = progress.add_task("Preparing hybrid development evaluation")
+
+            def update_progress(update: dict[str, object]) -> None:
+                progress.update(
+                    task_id,
+                    description=(
+                        f"drawing_id={update.get('drawing_id')} "
+                        f"{update.get('drawing_index')}/"
+                        f"{update.get('drawing_total')}"
+                    ),
+                )
+
+            with session_factory() as session:
+                result = run_hybrid_evaluation(
+                    session,
+                    frozen_manifest,
+                    backtest_csv,
+                    progress_callback=update_progress,
+                )
+            progress.update(
+                task_id,
+                description="Hybrid development evaluation complete",
+            )
+
+        csv_path, markdown_path = write_hybrid_evaluation_reports(result, report_dir)
+    except (OSError, KeyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(_hybrid_evaluation_table(result))
     print(f"Reports written to {csv_path} and {markdown_path}")
 
 
@@ -1721,6 +1777,25 @@ def _strategy_diagnostics_transitions_table(
     table.add_column("Drawings", justify="right")
     for key in ("neither", "both", "top_only", "weighted_only"):
         table.add_row(key, _format_value(transitions[key]))
+    return table
+
+
+def _hybrid_evaluation_table(result) -> Table:
+    summary = result.summary
+    top_total = summary["strategies"]["top_probability"]["total"]
+    selected_fraction = (
+        "none"
+        if result.decision.selected_core_fraction is None
+        else f"{result.decision.selected_core_fraction:.2f}"
+    )
+    table = Table(title="Hybrid Development Evaluation")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("Development drawings", _format_value(summary["drawing_count"]))
+    table.add_row("Top probability 13+", _format_value(top_total["hit_13"]))
+    table.add_row("Operational failures", _format_value(summary["failure_count"]))
+    table.add_row("Decision", result.decision.status)
+    table.add_row("Selected core fraction", selected_fraction)
     return table
 
 

@@ -1,23 +1,31 @@
 import csv
 import hashlib
+import json
 from contextlib import contextmanager
 from dataclasses import replace
 from itertools import islice, product
 
 import pytest
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
+from typer.testing import CliRunner
 
+from toto_ai import cli as cli_module
+from toto_ai.cli import app
 from toto_ai.db.models import Base, Drawing, Event, Quote
 from toto_ai.optimizer import hybrid_evaluation as hybrid_module
 from toto_ai.optimizer.coupon_probabilities import normalize_probability_matrix
 from toto_ai.optimizer.direct_package import DirectPackageResult
 from toto_ai.optimizer.hybrid_evaluation import (
+    HybridDecision,
+    HybridEvaluationResult,
     HybridEvaluationRow,
     assign_chronological_folds,
     decide_hybrid_experiment,
     run_hybrid_evaluation,
     summarize_hybrid_evaluation,
+    write_hybrid_evaluation_reports,
 )
 from toto_ai.optimizer.strategy_backtest import (
     StrategyBacktestRow,
@@ -193,6 +201,178 @@ def test_stop_selects_no_fraction_when_no_candidate_passes():
     assert decision.status == "STOP"
     assert decision.selected_core_fraction is None
     assert decision.passing_core_fractions == ()
+
+
+def fixture_evaluation_result(status="STOP"):
+    config = StrategyConfig(
+        bank=5000,
+        stake=30,
+        category=13,
+        top_count=166,
+        candidate_samples=1,
+        mutation_limit=0,
+        optimization_samples=2,
+        validation_samples=3,
+        timeout_per_drawing=None,
+    )
+    rows = valid_evaluation_rows()
+    return HybridEvaluationResult(
+        rows=rows,
+        summary=summarize_hybrid_evaluation(rows),
+        decision=HybridDecision(
+            status=status,
+            selected_core_fraction=0.50 if status == "GO" else None,
+            passing_core_fractions=(0.50,) if status == "GO" else (),
+            reason="No hybrid core fraction met every GO predicate.",
+        ),
+        manifest={
+            "last": 500,
+            "holdout_size": 150,
+            "drawing_ids": list(range(1, 501)),
+            "config": _config_payload(config),
+            "configuration_hash": _configuration_hash(config),
+        },
+    )
+
+
+def test_reports_are_deterministic_and_include_decision(tmp_path):
+    result = fixture_evaluation_result(status="STOP")
+
+    first_csv_path, first_markdown_path = write_hybrid_evaluation_reports(
+        result,
+        tmp_path,
+    )
+    first_csv = first_csv_path.read_bytes()
+    first_markdown = first_markdown_path.read_bytes()
+    second_csv_path, second_markdown_path = write_hybrid_evaluation_reports(
+        result,
+        tmp_path,
+    )
+
+    assert second_csv_path.read_bytes() == first_csv
+    assert second_markdown_path.read_bytes() == first_markdown
+    assert first_csv_path.name == "hybrid_evaluation_development_last_500_bank_5000.csv"
+    rows = list(csv.DictReader(first_csv_path.open(encoding="utf-8")))
+    assert [(int(row["drawing_id"]), row["strategy"]) for row in rows] == [
+        (drawing_id, strategy)
+        for drawing_id in range(1, 351)
+        for strategy in (
+            "top_probability",
+            "hybrid_0.50",
+            "hybrid_0.75",
+            "hybrid_0.90",
+        )
+    ]
+    markdown = first_markdown_path.read_text(encoding="utf-8")
+    for text_value in (
+        "## Configuration",
+        "Development drawings: 350",
+        "## Total Strategy Metrics",
+        "## Fold 1 Metrics",
+        "## Fold 5 Metrics",
+        "## Structural Metrics",
+        "Mean log probability",
+        "Mean pairwise Hamming distance",
+        "Top intersection",
+        "Top Jaccard",
+        "## GO Predicate Evaluation",
+        "Decision: STOP",
+        "Selected core fraction: none",
+        "development-only",
+        "no profitability",
+    ):
+        assert text_value in markdown
+
+
+def test_report_failure_leaves_no_temporary_files(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        hybrid_module,
+        "_render_hybrid_markdown",
+        lambda *args: (_ for _ in ()).throw(OSError("render failed")),
+    )
+
+    with pytest.raises(OSError, match="render failed"):
+        write_hybrid_evaluation_reports(fixture_evaluation_result(), tmp_path)
+
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_evaluate_hybrid_cli_uses_readonly_db_and_writes_reports(monkeypatch, tmp_path):
+    db_path = tmp_path / "hybrid.db"
+    engine = create_engine(f"sqlite+pysqlite:///{db_path}")
+    Base.metadata.create_all(engine)
+    config = StrategyConfig(bank=5000, stake=30, category=13)
+    manifest = {
+        "schema_version": 1,
+        "code_version": "frozen",
+        "last": 500,
+        "holdout_size": 150,
+        "drawing_ids": list(range(1, 501)),
+        "input_data_hash": "data",
+        "configuration_hash": _configuration_hash(config),
+        "protocol_hash": "protocol",
+        "config": _config_payload(config),
+    }
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    frozen_csv = tmp_path / "backtest.csv"
+    frozen_csv.write_text("drawing_id\\n", encoding="utf-8")
+
+    def fake_run(session, frozen_manifest, frozen_path, progress_callback):
+        assert session.execute(text("SELECT 1")).scalar_one() == 1
+        with pytest.raises(OperationalError, match="readonly"):
+            session.execute(text("CREATE TABLE forbidden (id INTEGER)"))
+        assert frozen_manifest == manifest
+        assert frozen_path == str(frozen_csv)
+        progress_callback(
+            {"drawing_id": 1, "drawing_index": 1, "drawing_total": 350}
+        )
+        return fixture_evaluation_result()
+
+    monkeypatch.setattr(cli_module, "run_hybrid_evaluation", fake_run)
+    monkeypatch.setattr(
+        cli_module,
+        "init_db",
+        lambda *args: pytest.fail("evaluate-hybrid must not call init_db"),
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "evaluate-hybrid",
+            "--db",
+            str(db_path),
+            "--manifest",
+            str(manifest_path),
+            "--backtest-csv",
+            str(frozen_csv),
+            "--report-dir",
+            str(tmp_path / "reports"),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Hybrid Development Evaluation" in result.output
+    assert "Decision" in result.output
+    assert "Reports written to" in result.output
+
+
+def test_evaluate_hybrid_help_exposes_only_fixed_path_options():
+    result = CliRunner().invoke(app, ["evaluate-hybrid", "--help"])
+
+    assert result.exit_code == 0
+    for option in ("--db", "--manifest", "--backtest-csv", "--report-dir"):
+        assert option in result.output
+    for option in (
+        "--bank",
+        "--stake",
+        "--category",
+        "--fraction",
+        "--fold",
+        "--seed",
+        "--timeout",
+    ):
+        assert option not in result.output
 
 
 def candidate(

@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 259
+- Tests currently passed: 263
 - Ruff passed
 
 ## Active Design: Hybrid Direct Package Experiment
@@ -44,7 +44,32 @@ Design specification:
 Implementation plan:
 - `docs/superpowers/plans/2026-07-13-hybrid-direct-package-experiment.md`
 - Five TDD tasks: selector, decision model, fail-closed evaluator, atomic
-  reports/CLI, and the frozen development GO/STOP run.
+  reports/CLI, and the frozen development GO/STOP run. Tasks 1-4 are complete.
+
+## Latest Completed Task: Hybrid Evaluation Reports and CLI
+
+Added `write_hybrid_evaluation_reports()` and the fixed `evaluate-hybrid`
+command for the approved hybrid experiment. CSV rows use manifest drawing order
+and the stable strategy order `top_probability`, `hybrid_0.50`,
+`hybrid_0.75`, and `hybrid_0.90`. CSV and Markdown are fully rendered in
+same-directory temporary files and closed before either final report is
+replaced; remaining temporary files are removed if report creation fails.
+
+The Markdown report records the frozen configuration, five development folds,
+total and structural metrics, operational failures, every GO predicate, and
+the exact GO/STOP decision. It explicitly labels the result development-only
+and as no profitability evidence. Generated reports are ignored by Git.
+
+`evaluate-hybrid` accepts only the database, manifest, frozen backtest CSV, and
+report directory paths. It uses `open_readonly_db()` and Rich progress, does
+not initialize or migrate the database, and converts controlled failures to
+`typer.BadParameter`.
+
+No evaluation run has been interpreted as profitability evidence. The frozen
+holdout remains excluded from hybrid selection.
+
+Verification: focused hybrid suite passed (47 tests); full suite passed (263
+tests); Ruff passed; the worktree CLI help shows only the four path options.
 
 ## Latest Completed Task: Development Strategy Diagnostics
 

@@ -52,9 +52,9 @@ Important modules:
 - `toto_ai.optimizer.direct_package`: weighted scenario-coverage package
   optimizer with deterministic budget filling.
 - `toto_ai.optimizer.hybrid_evaluation`: fixed five-fold hybrid development
-  evaluation rows, aggregate fold metrics, and deterministic GO/STOP selection
-  for the approved core fractions; evaluation running, reports, and CLI wiring
-  are added separately.
+  evaluation rows, aggregate fold metrics, deterministic GO/STOP selection,
+  development-only evaluation runner, and atomic deterministic CSV/Markdown
+  reports for the approved core fractions.
 - `toto_ai.optimizer.strategy_backtest`: comparable baseline-brief,
   top-probability, and weighted-coverage strategies; chronological backtesting;
   paired holdout evaluation; frozen experiment manifests and report exports.
@@ -94,3 +94,6 @@ Important CLI commands:
   development/holdout experiment.
 - `diagnose-strategies`: regenerate and verify frozen packages, then diagnose
   strategy structure and paired 13+ transitions on development drawings only.
+- `evaluate-hybrid`: regenerate and evaluate fixed hybrid packages only on the
+  frozen development segment, write atomic reports, and print the GO/STOP
+  decision from an enforced read-only SQLite database.
