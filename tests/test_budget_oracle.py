@@ -235,7 +235,7 @@ def test_choose_budget_oracle_profiles_workload_without_changing_selection():
     assert len(profiled["workload"]["slowest_candidate_briefs"]) == 1
 
 
-def test_choose_budget_oracle_prunes_by_cost_lower_bound_before_cover():
+def test_choose_budget_oracle_does_not_prune_by_full_cover_cost_bound():
     calls = []
 
     result = choose_budget_oracle_package(
@@ -255,28 +255,39 @@ def test_choose_budget_oracle_prunes_by_cost_lower_bound_before_cover():
     )
 
     assert result["brief"] == ["1", "1", "1", "1"]
-    assert calls == [("1", "1", "1", "1")]
-    assert result["workload"]["pruned_by_cost_lower_bound"] == 1
-    assert result["workload"]["cover_engine_calls_after_pruning"] == 1
+    assert calls == [("1", "1", "1", "1"), ("1X", "1X", "1X", "1X")]
+    assert result["workload"]["pruned_by_cost_lower_bound"] == 0
+    assert result["workload"]["cover_engine_calls_after_pruning"] == 2
 
 
-def test_choose_budget_oracle_prunes_dominated_candidate_safely():
-    result = choose_budget_oracle_package(
+def test_choose_budget_oracle_does_not_apply_unsafe_dominance_pruning():
+    optimized = choose_budget_oracle_package(
         candidate_briefs=[
-            ["1", "1"],
-            ["1X", "1"],
-            ["1X", "1X"],
+            ["1", "1", "1X"],
+            ["1", "1X", "1X"],
         ],
-        result_string="11",
-        category=13,
-        bank=90,
+        result_string="11X",
+        category=14,
+        bank=60,
         stake=30,
         profile_workload=True,
     )
+    exhaustive = choose_budget_oracle_package(
+        candidate_briefs=[
+            ["1", "1", "1X"],
+            ["1", "1X", "1X"],
+        ],
+        result_string="11X",
+        category=14,
+        bank=60,
+        stake=30,
+        disable_pruning=True,
+    )
 
-    assert result["brief"] == ["1", "1"]
-    assert result["processed_candidate_count"] == 1
-    assert result["workload"]["pruned_by_dominance"] == 2
+    assert optimized["brief"] == exhaustive["brief"]
+    assert optimized["best_coupon_hits"] == exhaustive["best_coupon_hits"]
+    assert optimized["package_cost"] == exhaustive["package_cost"]
+    assert optimized["workload"]["pruned_by_dominance"] == 0
 
 
 def test_choose_budget_oracle_prunes_by_incumbent_bound_without_changing_best():
@@ -289,7 +300,7 @@ def test_choose_budget_oracle_prunes_by_incumbent_bound_without_changing_best():
     result = choose_budget_oracle_package(
         candidate_briefs=[
             ["1", "1"],
-            ["1", "1X"],
+            ["X", "1X"],
         ],
         result_string="11",
         category=13,
@@ -354,7 +365,37 @@ def test_choose_budget_oracle_pruning_matches_bruteforce_greedy_result():
     assert pruned["best_coupon_hits"] == brute["best_coupon_hits"]
     assert pruned["package_cost"] == brute["package_cost"]
     assert pruned["brief_variants"] == brute["brief_variants"]
-    assert pruned["workload"]["pruned_by_dominance"] == 3
+    assert pruned["workload"]["pruned_by_dominance"] == 0
+
+
+def test_choose_budget_oracle_optimized_matches_exhaustive_fixture():
+    candidate_briefs = [
+        ["1", "1", "1X"],
+        ["1", "1X", "1X"],
+    ]
+
+    optimized = choose_budget_oracle_package(
+        candidate_briefs=candidate_briefs,
+        result_string="11X",
+        category=14,
+        bank=60,
+        stake=30,
+        profile_workload=True,
+    )
+    exhaustive = choose_budget_oracle_package(
+        candidate_briefs=candidate_briefs,
+        result_string="11X",
+        category=14,
+        bank=60,
+        stake=30,
+        disable_pruning=True,
+    )
+
+    assert optimized["best_coupon_hits"] == exhaustive["best_coupon_hits"]
+    assert _hit_flags(optimized["best_coupon_hits"]) == _hit_flags(
+        exhaustive["best_coupon_hits"]
+    )
+    assert _oracle_score(optimized) == _oracle_score(exhaustive)
 
 
 def test_run_budget_oracle_aggregates_profiled_workload():
@@ -560,3 +601,19 @@ def _bruteforce_budget_oracle(
         if best is None or rank > best[0]:
             best = (rank, candidate)
     return best[1]
+
+
+def _oracle_score(result):
+    return (
+        result["best_coupon_hits"],
+        -result["package_cost"],
+        -result["brief_variants"],
+    )
+
+
+def _hit_flags(best_hits):
+    return {
+        "hit13": best_hits >= 13,
+        "hit14": best_hits >= 14,
+        "hit15": best_hits == 15,
+    }

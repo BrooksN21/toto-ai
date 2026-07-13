@@ -36,8 +36,8 @@
 - Use `budget-oracle --profile-workload` to inspect generated/unique candidate
   counts, Cover Engine calls, cache hits/misses, brief variant sizes, and
   slowest candidate briefs before changing search strategy.
-- Budget Oracle now uses exact pruning diagnostics to reduce Cover Engine calls
-  before long budget/category comparison runs.
+- Budget Oracle retains pruning diagnostics, but unsafe dominance and
+  full-cover cost pruning are disabled.
 
 ## Phase 4: Research
 
@@ -65,8 +65,8 @@
 ## Phase 6: Package Optimizer
 
 - Cover Engine performance optimization for greedy cover is implemented.
-- Budget Oracle branch-and-bound and dominance pruning are implemented for
-  oracle candidate evaluation.
+- Safe Budget Oracle optimization remains open. Any future pruning must match
+  exhaustive evaluation in regression tests.
 - Compare greedy cover, MILP, simulated annealing, genetic algorithms.
 - Optimize expected value and probability of 13+/14+/15.
 - Monte Carlo simulation.

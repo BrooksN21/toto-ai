@@ -26,7 +26,7 @@ Current budget-oracle outputs:
   - average and maximum brief variant count
   - average Cover Engine call duration
   - slowest 10 candidate briefs
-  - candidates pruned by cost lower bound, dominance, and incumbent bound
+  - pruning counters for cost, dominance, and incumbent bounds
   - Cover Engine calls after pruning
 
 Exports:
@@ -43,14 +43,13 @@ Operational notes:
   candidate order, or default search space.
 - Candidate evaluation sorts by potential best hits descending, lower-bound cost
   ascending, brief size ascending, and original order.
-- Incumbent pruning is branch-and-bound over the oracle objective. It uses
-  potential hit count, theoretical lower-bound cost, brief size, and original
-  order to skip candidates that cannot beat the current best.
-- Dominance pruning is applied for the real greedy Cover Engine only. It relies
-  on position-wise subset dominance and preserved actual-result coverage.
-- Local smoke on `data/toto.db`: `budget-oracle --last 3 --bank 10000 --stake 30
-  --category 13 --no-progress --profile-workload` completed in about 0.73s,
-  reducing 2112 unique candidates to 3 Cover Engine calls after pruning.
+- Incumbent pruning only skips a candidate when its maximum possible hit count
+  is strictly below the incumbent's actual hit count.
+- Dominance and full-cover cost pruning are disabled because they changed
+  oracle results. Regression tests compare optimized and exhaustive selection.
+- A July 2026 local smoke on `data/toto.db` evaluated 426 candidates before two
+  drawing timeouts; all pruning counters were zero and all three processed
+  drawings found a 15-hit package. Timed-out rows remain partial oracle evidence.
 
 Related:
 - [../skills/backtesting.md](../skills/backtesting.md)

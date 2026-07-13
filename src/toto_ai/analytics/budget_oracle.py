@@ -95,6 +95,7 @@ def run_budget_oracle(
     progress_callback=None,
     partial_csv_path: str | Path | None = None,
     profile_workload: bool = False,
+    disable_pruning: bool = False,
     time_func=time.perf_counter,
 ) -> BudgetOracleResult:
     if last <= 0:
@@ -156,6 +157,7 @@ def run_budget_oracle(
                     time_func=time_func,
                 ),
                 profile_workload=profile_workload,
+                disable_pruning=disable_pruning,
                 time_func=time_func,
             )
             baseline = _baseline_result(
@@ -273,6 +275,7 @@ def choose_budget_oracle_package(
     max_candidates: int | None = None,
     progress_callback=None,
     profile_workload: bool = False,
+    disable_pruning: bool = False,
     time_func=time.perf_counter,
 ) -> dict[str, Any]:
     if bank <= 0:
@@ -295,12 +298,8 @@ def choose_budget_oracle_package(
         category=category,
         stake=stake,
     )
-    profiles = _prune_by_cost_lower_bound(profiles, bank=bank)
-    pruned_by_cost_lower_bound = len(all_candidates) - len(profiles)
-    if cover_func is greedy_cover:
-        profiles, pruned_by_dominance = _prune_dominated_candidates(profiles)
-    else:
-        pruned_by_dominance = 0
+    pruned_by_cost_lower_bound = 0
+    pruned_by_dominance = 0
     profiles = sorted(profiles, key=_candidate_sort_key)
     if max_candidates is not None:
         profiles = profiles[:max_candidates]
@@ -316,7 +315,11 @@ def choose_budget_oracle_package(
         ):
             timed_out = True
             break
-        if best is not None and _cannot_beat_incumbent(profile, best):
+        if (
+            not disable_pruning
+            and best is not None
+            and _cannot_beat_incumbent(profile, best)
+        ):
             pruned_by_incumbent_bound += 1
             continue
 
@@ -723,13 +726,6 @@ def _candidate_profile(
         "brief_variants": brief_variants,
         "lower_bound_coupons": lower_bound_coupons,
         "lower_bound_cost": lower_bound_coupons * stake,
-        "actual_covered_positions": frozenset(
-            index
-            for index, (position, result) in enumerate(
-                zip(brief, result_string, strict=False)
-            )
-            if result in position
-        ),
     }
 
 
@@ -756,67 +752,6 @@ def _potential_best_hits(brief: list[str], result_string: str) -> int:
     )
 
 
-def _prune_by_cost_lower_bound(
-    profiles: list[dict[str, Any]],
-    bank: int,
-) -> list[dict[str, Any]]:
-    return [
-        profile
-        for profile in profiles
-        if profile["lower_bound_cost"] <= bank
-    ]
-
-
-def _prune_dominated_candidates(
-    profiles: list[dict[str, Any]],
-) -> tuple[list[dict[str, Any]], int]:
-    kept = []
-    pruned = 0
-    for candidate in profiles:
-        if any(
-            _dominates_candidate(other, candidate)
-            for other in profiles
-            if other is not candidate
-        ):
-            pruned += 1
-            continue
-        kept.append(candidate)
-    return kept, pruned
-
-
-def _dominates_candidate(
-    left: dict[str, Any],
-    right: dict[str, Any],
-) -> bool:
-    if left["original_index"] == right["original_index"]:
-        return False
-    if not right["actual_covered_positions"].issubset(
-        left["actual_covered_positions"]
-    ):
-        return False
-    if not _brief_is_position_subset(left["brief"], right["brief"]):
-        return False
-    return _candidate_bound_rank(left) >= _candidate_bound_rank(right)
-
-
-def _brief_is_position_subset(left: list[str], right: list[str]) -> bool:
-    if len(left) != len(right):
-        return False
-    return all(
-        set(left_position).issubset(set(right_position))
-        for left_position, right_position in zip(left, right, strict=True)
-    )
-
-
-def _candidate_bound_rank(profile: dict[str, Any]) -> tuple[int, int, int, int]:
-    return (
-        int(profile["potential_best_hits"]),
-        -int(profile["lower_bound_cost"]),
-        -int(profile["brief_variants"]),
-        -int(profile["original_index"]),
-    )
-
-
 def _candidate_sort_key(profile: dict[str, Any]) -> tuple[int, int, int, int]:
     return (
         -int(profile["potential_best_hits"]),
@@ -830,13 +765,7 @@ def _cannot_beat_incumbent(
     profile: dict[str, Any],
     best: dict[str, Any],
 ) -> bool:
-    best_rank = (
-        int(best["best_coupon_hits"]),
-        -int(best["package_cost"]),
-        -int(best["brief_variants"]),
-        -int(best.get("original_index", 0)),
-    )
-    return _candidate_bound_rank(profile) <= best_rank
+    return int(profile["potential_best_hits"]) < int(best["best_coupon_hits"])
 
 
 def _workload_profile(

@@ -28,8 +28,8 @@ Important modules:
 - `toto_ai.analytics.budget_oracle`: budget-constrained oracle benchmark that
   compares oracle package hits with the baseline brief generator, with progress,
   timeout, partial CSV, per-drawing timing diagnostics, and optional candidate
-  workload profiling. Candidate evaluation includes lower-bound, dominance, and
-  incumbent pruning before Cover Engine calls.
+  workload profiling. Unsafe dominance and full-cover cost pruning are disabled;
+  only strict hit-bound incumbent pruning is allowed.
 - `toto_ai.analytics.api_inspector`: raw API inspection and drawing resolution.
 - `toto_ai.analytics.validation`: raw JSON vs SQLite validation.
 - `toto_ai.analytics.research_bk_vs_norm`: BK vs normalized odds study.
