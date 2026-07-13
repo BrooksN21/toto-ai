@@ -54,7 +54,8 @@
 - On development data, test a hybrid direct package objective that retains a
   high-probability core or explicit probability floor while adding controlled
   diversity. The top-core design and GO/STOP protocol are approved; implementation
-  is next. Do not inspect the frozen holdout during this selection.
+  plan is complete and execution is next. Do not inspect the frozen holdout
+  during this selection.
 - Reserve a new untouched or prospective evaluation window before claiming an
   improvement from further optimizer tuning.
 

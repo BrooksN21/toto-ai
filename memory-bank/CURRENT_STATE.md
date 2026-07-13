@@ -41,6 +41,11 @@ Approved design:
 Design specification:
 - `docs/superpowers/specs/2026-07-13-hybrid-direct-package-experiment-design.md`
 
+Implementation plan:
+- `docs/superpowers/plans/2026-07-13-hybrid-direct-package-experiment.md`
+- Five TDD tasks: selector, decision model, fail-closed evaluator, atomic
+  reports/CLI, and the frozen development GO/STOP run.
+
 ## Latest Completed Task: Development Strategy Diagnostics
 
 Added the fail-closed `diagnose-strategies` command and completed the frozen
