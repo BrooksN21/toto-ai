@@ -242,20 +242,30 @@ def select_hybrid_package(
         time_func=time_func,
     )
     selected = [*core, *fill.selected_coupons]
-    if not fill.timed_out and len(selected) < max_coupons:
-        selected_set = set(selected)
-        remaining = sorted(
-            (
-                coupon
-                for coupon in dict.fromkeys(candidates)
-                if coupon not in selected_set
-            ),
-            key=lambda coupon: (
-                -coupon_log_probability(coupon, probabilities),
-                coupon,
-            ),
-        )
-        selected.extend(remaining[: max_coupons - len(selected)])
+    timed_out = fill.timed_out
+    if not timed_out and len(selected) < max_coupons:
+        if deadline is not None and time_func() >= deadline:
+            timed_out = True
+        else:
+            selected_set = set(selected)
+            remaining = sorted(
+                (
+                    coupon
+                    for coupon in dict.fromkeys(candidates)
+                    if coupon not in selected_set
+                ),
+                key=lambda coupon: (
+                    -coupon_log_probability(coupon, probabilities),
+                    coupon,
+                ),
+            )
+            for coupon in remaining:
+                if len(selected) == max_coupons:
+                    break
+                if deadline is not None and time_func() >= deadline:
+                    timed_out = True
+                    break
+                selected.append(coupon)
     covered_weight = _covered_scenario_weight(selected, scenarios, category)
     total_weight = sum(scenarios.values())
     return DirectPackageResult(
@@ -263,7 +273,7 @@ def select_hybrid_package(
         covered_scenario_weight=covered_weight,
         total_scenario_weight=total_weight,
         estimated_coverage=(covered_weight / total_weight if total_weight else 0.0),
-        timed_out=fill.timed_out,
+        timed_out=timed_out,
     )
 
 

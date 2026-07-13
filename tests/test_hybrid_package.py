@@ -103,11 +103,35 @@ def test_hybrid_probability_fallback_is_unique_when_core_covers_all_scenarios():
         category=15,
         max_coupons=4,
         top_coupons=["11", "1X", "X1", "XX"],
-        core_fraction=0.25,
+        core_fraction=0.50,
     )
 
     assert result.selected_coupons == ["11", "1X", "X1", "XX"]
     assert len(result.selected_coupons) == len(set(result.selected_coupons)) == 4
+
+
+def test_hybrid_timeout_after_core_coverage_retains_core_without_probability_fallback():
+    probabilities = normalize_probability_matrix(
+        [{"1": 50, "X": 30, "2": 20}] * 2
+    )
+    timestamps = iter([0.0, 2.0])
+
+    result = select_hybrid_package(
+        candidates=["11", "1X", "X1", "XX"],
+        scenarios={"11": 10},
+        probabilities=probabilities,
+        category=15,
+        max_coupons=4,
+        top_coupons=["11", "1X", "X1", "XX"],
+        core_fraction=0.50,
+        deadline=1.0,
+        time_func=lambda: next(timestamps),
+    )
+
+    assert result.selected_coupons == ["11", "1X"]
+    assert result.covered_scenario_weight == 10
+    assert result.timed_out is True
+    assert len(result.selected_coupons) < 4
 
 
 def test_hybrid_retains_only_the_core_on_timeout_before_fill():
