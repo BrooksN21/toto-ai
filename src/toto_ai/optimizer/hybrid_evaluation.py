@@ -1,8 +1,50 @@
+from __future__ import annotations
+
+import time
 from dataclasses import dataclass
+from hashlib import sha256
+from pathlib import Path
 from statistics import mean
+
+from sqlalchemy.orm import Session
+
+from toto_ai.db.models import Drawing
+from toto_ai.optimizer.brief_backtest import best_coupon_hits
+from toto_ai.optimizer.coupon_candidates import (
+    generate_candidate_coupons,
+    sample_scenarios,
+)
+from toto_ai.optimizer.coupon_probabilities import (
+    OUTCOMES,
+    ProbabilityMatrix,
+    top_probability_coupons,
+)
+from toto_ai.optimizer.direct_package import (
+    estimate_package_coverage,
+    select_hybrid_package,
+)
+from toto_ai.optimizer.strategy_backtest import (
+    StrategyConfig,
+    StrategyPackage,
+    _validate_strategy_config,
+)
+from toto_ai.optimizer.strategy_diagnostics import (
+    _config_from_manifest,
+    _load_development_inputs,
+    _load_development_result,
+    _validate_frozen_result_fields,
+    development_drawing_ids,
+    load_frozen_development_rows,
+    package_overlap_metrics,
+    package_structure_metrics,
+)
 
 HYBRID_CORE_FRACTIONS = (0.50, 0.75, 0.90)
 HYBRID_FOLD_COUNT = 5
+HYBRID_BANK = 5000
+HYBRID_STAKE = 30
+HYBRID_CATEGORY = 13
+HYBRID_MAX_COUPONS = HYBRID_BANK // HYBRID_STAKE
 
 
 @dataclass(frozen=True)
@@ -42,6 +84,281 @@ class HybridEvaluationResult:
     summary: dict[str, object]
     decision: HybridDecision
     manifest: dict[str, object]
+
+
+def run_hybrid_evaluation(
+    session: Session,
+    manifest: dict[str, object],
+    frozen_csv_path: str | Path,
+    progress_callback=None,
+) -> HybridEvaluationResult:
+    development_ids = development_drawing_ids(manifest)
+    folds = assign_chronological_folds(development_ids)
+    config = _config_from_manifest(manifest)
+    _validate_hybrid_protocol(config)
+    frozen_rows = load_frozen_development_rows(frozen_csv_path, manifest)
+    rows = []
+
+    for drawing_index, drawing_id in enumerate(development_ids, start=1):
+        if progress_callback is not None:
+            progress_callback(
+                {
+                    "drawing_id": drawing_id,
+                    "drawing_index": drawing_index,
+                    "drawing_total": len(development_ids),
+                }
+            )
+        probabilities, _analyses = _load_development_inputs(session, drawing_id)
+        packages = _build_hybrid_packages(probabilities, drawing_id, config)
+        _validate_hybrid_package_set(packages, config, len(probabilities))
+        packages_by_strategy = {package.strategy: package for package in packages}
+        top_package = packages_by_strategy["top_probability"]
+        top_frozen = frozen_rows[(drawing_id, "top_probability")]
+        _verify_top_package_hash(top_package, top_frozen, drawing_id)
+
+        result_string = _load_development_result(session, drawing_id)
+        top_best_hits = best_coupon_hits(top_package.coupons, result_string)
+        _validate_frozen_result_fields(top_frozen, top_best_hits)
+
+        drawing = session.get(Drawing, drawing_id)
+        if drawing is None:
+            raise ValueError(f"Development drawing {drawing_id} was not found.")
+        rows.extend(
+            _build_hybrid_evaluation_rows(
+                drawing_id=drawing_id,
+                drawing_number=drawing.number,
+                fold=folds[drawing_id],
+                packages=packages,
+                probabilities=probabilities,
+                result_string=result_string,
+                stake=config.stake,
+            )
+        )
+
+    summary = summarize_hybrid_evaluation(rows)
+    decision = decide_hybrid_experiment(summary)
+    return HybridEvaluationResult(rows, summary, decision, manifest)
+
+
+def _validate_hybrid_protocol(config: StrategyConfig) -> None:
+    if (
+        config.bank,
+        config.stake,
+        config.category,
+        config.max_coupons,
+    ) != (
+        HYBRID_BANK,
+        HYBRID_STAKE,
+        HYBRID_CATEGORY,
+        HYBRID_MAX_COUPONS,
+    ):
+        raise ValueError(
+            "Hybrid evaluation requires the fixed protocol: bank=5000, "
+            "stake=30, category=13."
+        )
+    _validate_strategy_config(config)
+
+
+def _build_hybrid_packages(
+    probabilities: ProbabilityMatrix,
+    drawing_id: int,
+    config: StrategyConfig,
+) -> list[StrategyPackage]:
+    started = time.perf_counter()
+    deadline = (
+        None
+        if config.timeout_per_drawing is None
+        else started + config.timeout_per_drawing
+    )
+
+    top_started = time.perf_counter()
+    top_coupons = top_probability_coupons(
+        probabilities,
+        limit=config.max_coupons,
+    )
+    top_package = StrategyPackage(
+        strategy="top_probability",
+        coupons=list(top_coupons),
+        estimated_coverage=0.0,
+        candidate_count=len(top_coupons),
+        runtime_seconds=time.perf_counter() - top_started,
+        timed_out=False,
+    )
+    _validate_hybrid_package(top_package, config, len(probabilities))
+
+    candidate_seed = config.seed ^ drawing_id ^ 0xC3C3
+    candidates = generate_candidate_coupons(
+        probabilities,
+        max_coupons=config.max_coupons,
+        top_count=config.top_count,
+        sample_count=config.candidate_samples,
+        mutation_limit=config.mutation_limit,
+        seed=candidate_seed,
+    )
+    optimization_seed = config.seed ^ drawing_id ^ 0xA5A5
+    optimization_scenarios = sample_scenarios(
+        probabilities,
+        count=config.optimization_samples,
+        seed=optimization_seed,
+    )
+    validation_seed = config.seed ^ drawing_id ^ 0x5A5A
+    validation_scenarios = sample_scenarios(
+        probabilities,
+        count=config.validation_samples,
+        seed=validation_seed,
+    )
+    top_package = StrategyPackage(
+        strategy=top_package.strategy,
+        coupons=top_package.coupons,
+        estimated_coverage=estimate_package_coverage(
+            top_coupons,
+            validation_scenarios,
+            config.category,
+        ),
+        candidate_count=top_package.candidate_count,
+        runtime_seconds=top_package.runtime_seconds,
+        timed_out=top_package.timed_out,
+    )
+
+    packages = [top_package]
+    for core_fraction in HYBRID_CORE_FRACTIONS:
+        selection_started = time.perf_counter()
+        selected = select_hybrid_package(
+            candidates=candidates,
+            scenarios=optimization_scenarios,
+            probabilities=probabilities,
+            category=config.category,
+            max_coupons=config.max_coupons,
+            top_coupons=top_coupons,
+            core_fraction=core_fraction,
+            deadline=deadline,
+        )
+        hybrid_package = StrategyPackage(
+            strategy=f"hybrid_{core_fraction:.2f}",
+            coupons=list(selected.selected_coupons),
+            estimated_coverage=0.0,
+            candidate_count=len(candidates),
+            runtime_seconds=time.perf_counter() - selection_started,
+            timed_out=selected.timed_out,
+        )
+        _validate_hybrid_package(hybrid_package, config, len(probabilities))
+        packages.append(
+            StrategyPackage(
+                strategy=hybrid_package.strategy,
+                coupons=hybrid_package.coupons,
+                estimated_coverage=estimate_package_coverage(
+                    hybrid_package.coupons,
+                    validation_scenarios,
+                    config.category,
+                ),
+                candidate_count=hybrid_package.candidate_count,
+                runtime_seconds=hybrid_package.runtime_seconds,
+                timed_out=hybrid_package.timed_out,
+            )
+        )
+    return packages
+
+
+def _validate_hybrid_package_set(
+    packages: list[StrategyPackage],
+    config: StrategyConfig,
+    coupon_length: int,
+) -> None:
+    expected_strategies = (
+        "top_probability",
+        *(f"hybrid_{fraction:.2f}" for fraction in HYBRID_CORE_FRACTIONS),
+    )
+    if len(packages) != len(expected_strategies) or {
+        package.strategy for package in packages
+    } != set(expected_strategies):
+        raise ValueError("Hybrid package strategy identities are invalid.")
+    for package in packages:
+        _validate_hybrid_package(package, config, coupon_length)
+
+
+def _validate_hybrid_package(
+    package: StrategyPackage,
+    config: StrategyConfig,
+    coupon_length: int,
+) -> None:
+    package_cost = len(package.coupons) * config.stake
+    if package_cost > config.bank:
+        raise ValueError("Hybrid package exceeds the configured budget.")
+    if len(package.coupons) != config.max_coupons:
+        raise ValueError(
+            f"Hybrid package must contain exactly {config.max_coupons} coupons."
+        )
+    if len(set(package.coupons)) != len(package.coupons):
+        raise ValueError("Hybrid package must contain unique coupons.")
+    if any(len(coupon) != coupon_length for coupon in package.coupons):
+        raise ValueError("Hybrid package must contain valid coupon shapes.")
+    if any(set(coupon) - set(OUTCOMES) for coupon in package.coupons):
+        raise ValueError("Hybrid package must contain valid coupon outcomes.")
+    if package.timed_out:
+        raise ValueError("Hybrid package generation timed out.")
+
+
+def _verify_top_package_hash(
+    top_package: StrategyPackage,
+    frozen_row,
+    drawing_id: int,
+) -> None:
+    actual_hash = sha256(",".join(top_package.coupons).encode("utf-8")).hexdigest()
+    if actual_hash != frozen_row.package_hash:
+        raise ValueError(f"Development top package hash mismatch for {drawing_id}.")
+
+
+def _build_hybrid_evaluation_rows(
+    drawing_id: int,
+    drawing_number: int | None,
+    fold: int,
+    packages: list[StrategyPackage],
+    probabilities: ProbabilityMatrix,
+    result_string: str,
+    stake: int,
+) -> list[HybridEvaluationRow]:
+    core_fractions = {
+        "top_probability": None,
+        **{
+            f"hybrid_{fraction:.2f}": fraction
+            for fraction in HYBRID_CORE_FRACTIONS
+        },
+    }
+    packages_by_strategy = {package.strategy: package for package in packages}
+    top_coupons = packages_by_strategy["top_probability"].coupons
+    rows = []
+    for package in packages:
+        best_hits = best_coupon_hits(package.coupons, result_string)
+        structure = package_structure_metrics(package.coupons, probabilities)
+        overlap = package_overlap_metrics(
+            top_coupons,
+            package.coupons,
+            probabilities,
+        )
+        rows.append(
+            HybridEvaluationRow(
+                drawing_id=drawing_id,
+                drawing_number=drawing_number,
+                fold=fold,
+                strategy=package.strategy,
+                core_fraction=core_fractions[package.strategy],
+                best_hits=best_hits,
+                hit_13=best_hits >= 13,
+                hit_14=best_hits >= 14,
+                hit_15=best_hits == 15,
+                package_size=len(package.coupons),
+                package_cost=len(package.coupons) * stake,
+                estimated_coverage=package.estimated_coverage,
+                candidate_count=package.candidate_count,
+                runtime_seconds=package.runtime_seconds,
+                timed_out=package.timed_out,
+                mean_log_probability=structure.mean_log_probability,
+                mean_pairwise_hamming=structure.mean_pairwise_hamming,
+                top_intersection_size=overlap.intersection_size,
+                top_jaccard=overlap.jaccard,
+            )
+        )
+    return rows
 
 
 def assign_chronological_folds(drawing_ids: list[int]) -> dict[int, int]:

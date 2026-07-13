@@ -117,6 +117,25 @@ aggregation on invalid folds, duplicate or unpaired rows, unequal or empty
 folds, non-chronological fold assignments, and mismatched strategy fractions.
 Verification: 238 tests passed; Ruff passed.
 
+## Completed Task: Fail-Closed Hybrid Development Evaluator
+
+Added `run_hybrid_evaluation()` for the approved fixed-protocol hybrid
+experiment. It validates the 5000 RUB / 30 RUB / category 13 configuration and
+five equal development folds before database access, then evaluates only the
+manifest development IDs. Per drawing it regenerates and validates the exact
+top package plus all three hybrids, reuses candidate and scenario inputs across
+fractions, verifies the frozen top hash before loading a result, recomputes the
+frozen top fields, and produces four scored rows for the GO/STOP model.
+
+The evaluator fails closed on duplicate/non-divisible development manifests,
+protocol mismatches, malformed/incomplete/over-budget/timed-out packages,
+frozen hash/result mismatches, and invalid package strategy identities. It does
+not add reports or CLI wiring, and never loads the frozen holdout during
+selection.
+
+Verification: focused hybrid suites passed (53 tests); full suite passed (257
+tests); Ruff passed.
+
 ## Previous Completed Task: Package Structure Metrics
 
 Added deterministic package diagnostics for coupon log-probability summaries,

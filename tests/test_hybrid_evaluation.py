@@ -1,12 +1,28 @@
+import csv
+import hashlib
 from dataclasses import replace
+from itertools import islice, product
 
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
+from toto_ai.db.models import Base, Drawing
+from toto_ai.optimizer import hybrid_evaluation as hybrid_module
+from toto_ai.optimizer.coupon_probabilities import normalize_probability_matrix
+from toto_ai.optimizer.direct_package import DirectPackageResult
 from toto_ai.optimizer.hybrid_evaluation import (
     HybridEvaluationRow,
     assign_chronological_folds,
     decide_hybrid_experiment,
+    run_hybrid_evaluation,
     summarize_hybrid_evaluation,
+)
+from toto_ai.optimizer.strategy_backtest import (
+    StrategyBacktestRow,
+    StrategyConfig,
+    StrategyPackage,
+    _configuration_hash,
 )
 
 
@@ -367,4 +383,461 @@ def decision_summary(candidates):
                 for core_fraction, values in candidates.items()
             },
         },
+    }
+
+
+@pytest.fixture
+def session():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine) as database_session:
+        for drawing_id in range(1, 13):
+            database_session.add(
+                Drawing(
+                    id=drawing_id,
+                    number=1000 + drawing_id,
+                    name="baltbet-main",
+                    status="finished",
+                )
+            )
+        database_session.commit()
+        yield database_session
+
+
+@pytest.fixture
+def manifest():
+    config = StrategyConfig(
+        bank=5000,
+        stake=30,
+        category=13,
+        top_count=166,
+        candidate_samples=1,
+        mutation_limit=0,
+        optimization_samples=2,
+        validation_samples=3,
+        timeout_per_drawing=None,
+    )
+    return {
+        "last": 12,
+        "holdout_size": 2,
+        "drawing_ids": list(range(1, 13)),
+        "config": _config_payload(config),
+        "configuration_hash": _configuration_hash(config),
+    }
+
+
+@pytest.fixture
+def coupons():
+    return _valid_coupons(166)
+
+
+@pytest.fixture
+def frozen_csv(tmp_path, manifest, coupons):
+    return _write_frozen_rows(
+        tmp_path,
+        drawing_ids=manifest["drawing_ids"][:10],
+        top_coupons=coupons,
+    )
+
+
+def test_runner_never_loads_holdout_and_loads_results_after_top_hash(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+    coupons,
+):
+    calls = []
+    input_ids = []
+    result_ids = []
+    _patch_valid_generation(monkeypatch, coupons)
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_inputs",
+        lambda database_session, drawing_id: input_ids.append(drawing_id)
+        or _fixture_inputs(),
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "_verify_top_package_hash",
+        lambda *args: calls.append("hash"),
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda database_session, drawing_id: result_ids.append(drawing_id)
+        or calls.append("result")
+        or "1" * 15,
+    )
+
+    result = run_hybrid_evaluation(session, manifest, frozen_csv)
+
+    assert input_ids == manifest["drawing_ids"][:10]
+    assert result_ids == manifest["drawing_ids"][:10]
+    assert calls.index("hash") < calls.index("result")
+    assert len(result.rows) == 40
+    assert {row.strategy for row in result.rows} == {
+        "top_probability",
+        "hybrid_0.50",
+        "hybrid_0.75",
+        "hybrid_0.90",
+    }
+
+
+def test_runner_rejects_top_hash_before_loading_any_result(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+    coupons,
+):
+    _patch_valid_generation(monkeypatch, coupons)
+    monkeypatch.setattr(
+        hybrid_module,
+        "top_probability_coupons",
+        lambda *args, **kwargs: ["2" * 15, *coupons[1:]],
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda *args: pytest.fail("result loader must follow a verified top hash"),
+    )
+
+    with pytest.raises(ValueError, match="top package hash"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+@pytest.mark.parametrize(
+    ("field_name", "value"),
+    [
+        ("best_hits", 14),
+        ("hit_13", False),
+        ("hit_14", False),
+        ("hit_15", False),
+    ],
+)
+def test_runner_rejects_altered_frozen_top_result_fields(
+    monkeypatch,
+    session,
+    manifest,
+    tmp_path,
+    coupons,
+    field_name,
+    value,
+):
+    frozen_csv = _write_frozen_rows(
+        tmp_path,
+        drawing_ids=manifest["drawing_ids"][:10],
+        top_coupons=coupons,
+        top_overrides={field_name: value},
+    )
+    _patch_valid_generation(monkeypatch, coupons)
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda *args: "1" * 15,
+    )
+
+    with pytest.raises(ValueError, match="frozen result fields"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+@pytest.mark.parametrize(
+    ("case", "error"),
+    [
+        ("malformed", "valid coupon outcomes"),
+        ("duplicate", "unique coupons"),
+        ("short_coupon", "valid coupon shape"),
+        ("over_budget", "exceeds the configured budget"),
+        ("incomplete", "exactly 166 coupons"),
+        ("timed_out", "timed out"),
+    ],
+)
+def test_runner_fails_closed_on_invalid_hybrid_package_before_result_loading(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+    coupons,
+    case,
+    error,
+):
+    _patch_valid_generation(monkeypatch, coupons, hybrid_case=case)
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda *args: pytest.fail("invalid packages must not load results"),
+    )
+
+    with pytest.raises(ValueError, match=error):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+def test_runner_rejects_invalid_package_strategy_identity_before_hash(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+    coupons,
+):
+    _patch_valid_generation(monkeypatch, coupons)
+    monkeypatch.setattr(
+        hybrid_module,
+        "_build_hybrid_packages",
+        lambda *args: [
+            StrategyPackage(
+                strategy="top_probability",
+                coupons=list(coupons),
+                estimated_coverage=1.0,
+                candidate_count=166,
+                runtime_seconds=0.01,
+                timed_out=False,
+            ),
+            *[
+                StrategyPackage(
+                    strategy="weighted_coverage",
+                    coupons=list(coupons),
+                    estimated_coverage=1.0,
+                    candidate_count=166,
+                    runtime_seconds=0.01,
+                    timed_out=False,
+                )
+                for _ in range(3)
+            ],
+        ],
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda *args: pytest.fail("invalid package set must not load results"),
+    )
+
+    with pytest.raises(ValueError, match="strategy identities"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+@pytest.mark.parametrize(
+    ("field_name", "value"),
+    [("bank", 4999), ("stake", 29), ("category", 14)],
+)
+def test_runner_rejects_any_non_fixed_protocol_configuration(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+    field_name,
+    value,
+):
+    config = dict(manifest["config"])
+    config[field_name] = value
+    altered = StrategyConfig(**config)
+    manifest["config"] = _config_payload(altered)
+    manifest["configuration_hash"] = _configuration_hash(altered)
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_inputs",
+        lambda *args: pytest.fail("protocol must be validated before database access"),
+    )
+
+    with pytest.raises(ValueError, match="fixed protocol"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+@pytest.mark.parametrize(
+    ("drawing_ids", "last", "holdout_size", "error"),
+    [
+        (list(range(1, 11)) + [10, 12], 12, 2, "duplicate drawing IDs"),
+        (list(range(1, 14)), 13, 2, "five equal chronological folds"),
+    ],
+)
+def test_runner_rejects_invalid_development_manifest_before_database_access(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+    drawing_ids,
+    last,
+    holdout_size,
+    error,
+):
+    manifest["drawing_ids"] = drawing_ids
+    manifest["last"] = last
+    manifest["holdout_size"] = holdout_size
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_inputs",
+        lambda *args: pytest.fail("fold validation must precede database access"),
+    )
+
+    with pytest.raises(ValueError, match=error):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+def test_runner_generates_shared_inputs_once_and_keeps_hybrid_outputs_isolated(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+    coupons,
+):
+    candidate_calls = 0
+    optimization_calls = 0
+    validation_calls = 0
+    observations = []
+    structure_coupon_ids = []
+    shared_outputs = {}
+
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_inputs",
+        lambda *args: _fixture_inputs(),
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "top_probability_coupons",
+        lambda *args, **kwargs: list(coupons),
+    )
+
+    def fake_candidates(*args, **kwargs):
+        nonlocal candidate_calls
+        candidate_calls += 1
+        return list(coupons)
+
+    def fake_scenarios(probabilities, count, seed):
+        nonlocal optimization_calls, validation_calls
+        if count == 2:
+            optimization_calls += 1
+        elif count == 3:
+            validation_calls += 1
+        else:
+            pytest.fail(f"unexpected scenario count: {count}")
+        return {"1" * 15: count}
+
+    def fake_selector(*, candidates, scenarios, top_coupons, core_fraction, **kwargs):
+        observations.append((core_fraction, id(candidates), id(scenarios)))
+        output = shared_outputs.setdefault(id(candidates), list(top_coupons))
+        return DirectPackageResult(output, 1, 1, 1.0, False)
+
+    original_structure = hybrid_module.package_structure_metrics
+
+    def capture_structure(coupon_list, probabilities):
+        structure_coupon_ids.append(id(coupon_list))
+        return original_structure(coupon_list, probabilities)
+
+    monkeypatch.setattr(hybrid_module, "generate_candidate_coupons", fake_candidates)
+    monkeypatch.setattr(hybrid_module, "sample_scenarios", fake_scenarios)
+    monkeypatch.setattr(hybrid_module, "select_hybrid_package", fake_selector)
+    monkeypatch.setattr(hybrid_module, "package_structure_metrics", capture_structure)
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda *args: "1" * 15,
+    )
+
+    run_hybrid_evaluation(session, manifest, frozen_csv)
+
+    assert candidate_calls == 10
+    assert optimization_calls == 10
+    assert validation_calls == 10
+    assert [fraction for fraction, _, _ in observations] == [
+        0.50,
+        0.75,
+        0.90,
+    ] * 10
+    for offset in range(0, len(observations), 3):
+        assert len({value[1] for value in observations[offset : offset + 3]}) == 1
+        assert len({value[2] for value in observations[offset : offset + 3]}) == 1
+    for offset in range(0, len(structure_coupon_ids), 4):
+        assert len(set(structure_coupon_ids[offset : offset + 4])) == 4
+
+
+def _patch_valid_generation(monkeypatch, coupons, hybrid_case=None):
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_inputs",
+        lambda *args: _fixture_inputs(),
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "top_probability_coupons",
+        lambda *args, **kwargs: list(coupons),
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "generate_candidate_coupons",
+        lambda *args, **kwargs: list(coupons),
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "sample_scenarios",
+        lambda probabilities, count, seed: {"1" * 15: count},
+    )
+
+    def fake_selector(*, top_coupons, **kwargs):
+        selected = list(top_coupons)
+        timed_out = False
+        if hybrid_case == "malformed":
+            selected[0] = "Z" * 15
+        elif hybrid_case == "duplicate":
+            selected[-1] = selected[0]
+        elif hybrid_case == "short_coupon":
+            selected[0] = "1" * 14
+        elif hybrid_case == "over_budget":
+            selected.append(_valid_coupons(167)[-1])
+        elif hybrid_case == "incomplete":
+            selected.pop()
+        elif hybrid_case == "timed_out":
+            timed_out = True
+        return DirectPackageResult(selected, 1, 1, 1.0, timed_out)
+
+    monkeypatch.setattr(hybrid_module, "select_hybrid_package", fake_selector)
+
+
+def _fixture_inputs():
+    return normalize_probability_matrix([{"1": 60, "X": 30, "2": 10}] * 15), []
+
+
+def _valid_coupons(count):
+    return [
+        "".join(outcomes)
+        for outcomes in islice(product(("1", "X", "2"), repeat=15), count)
+    ]
+
+
+def _write_frozen_rows(tmp_path, drawing_ids, top_coupons, top_overrides=None):
+    path = tmp_path / "hybrid-frozen.csv"
+    top_overrides = top_overrides or {}
+    fieldnames = list(StrategyBacktestRow.__dataclass_fields__)
+    top_hash = hashlib.sha256(",".join(top_coupons).encode("utf-8")).hexdigest()
+    with path.open("w", newline="", encoding="utf-8") as output:
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        for drawing_id in drawing_ids:
+            for strategy in ("baseline_brief", "top_probability", "weighted_coverage"):
+                values = {
+                    "drawing_id": drawing_id,
+                    "drawing_number": 1000 + drawing_id,
+                    "segment": "development",
+                    "strategy": strategy,
+                    "best_hits": 15,
+                    "hit_13": True,
+                    "hit_14": True,
+                    "hit_15": True,
+                    "package_size": 166,
+                    "package_cost": 4980,
+                    "estimated_coverage": 1.0,
+                    "candidate_count": 166,
+                    "runtime_seconds": 0.01,
+                    "package_hash": top_hash if strategy == "top_probability" else "0",
+                }
+                if strategy == "top_probability":
+                    values.update(top_overrides)
+                writer.writerow(values)
+    return path
+
+
+def _config_payload(config):
+    return {
+        field_name: getattr(config, field_name)
+        for field_name in StrategyConfig.__dataclass_fields__
     }
