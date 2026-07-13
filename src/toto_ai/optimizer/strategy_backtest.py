@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import json
 import math
 import time
 from collections.abc import Callable
@@ -101,6 +102,12 @@ def build_packages_for_probabilities(
 ) -> list[StrategyPackage]:
     _validate_strategy_config(config)
     _validate_analyses_probabilities(analyses, probabilities)
+    drawing_started = time.perf_counter()
+    drawing_deadline = (
+        None
+        if config.timeout_per_drawing is None
+        else drawing_started + config.timeout_per_drawing
+    )
     max_coupons = config.max_coupons
 
     validation_seed = config.seed ^ drawing_id ^ 0x5A5A
@@ -111,12 +118,17 @@ def build_packages_for_probabilities(
     )
 
     baseline_started = time.perf_counter()
+    baseline_timeout = (
+        None
+        if drawing_deadline is None
+        else max(drawing_deadline - baseline_started, 1e-12)
+    )
     baseline_result = baseline_builder(
         analyses,
         category=config.category,
         bank=config.bank,
         stake=config.stake,
-        timeout_per_drawing=config.timeout_per_drawing,
+        timeout_per_drawing=baseline_timeout,
     )
     baseline_coupons = list(baseline_result["selected_coupons"])
     if len(baseline_coupons) > max_coupons:
@@ -167,18 +179,13 @@ def build_packages_for_probabilities(
         count=config.optimization_samples,
         seed=optimization_seed,
     )
-    deadline = (
-        None
-        if config.timeout_per_drawing is None
-        else weighted_started + config.timeout_per_drawing
-    )
     weighted_result = select_weighted_package(
         candidates=candidates,
         scenarios=optimization_scenarios,
         probabilities=probabilities,
         category=config.category,
         max_coupons=max_coupons,
-        deadline=deadline,
+        deadline=drawing_deadline,
     )
     weighted_package = StrategyPackage(
         strategy="weighted_coverage",
@@ -235,24 +242,34 @@ def run_strategy_backtest(
     community: str = "baltbet-main",
     progress_callback=None,
     package_builder=build_packages_for_probabilities,
+    drawing_ids: list[int] | None = None,
 ) -> StrategyBacktestResult:
     if last <= 0:
         raise ValueError("last must be positive.")
     _validate_strategy_config(config)
 
     started_at = time.perf_counter()
-    drawings, eligibility_skipped = _scan_eligible_strategy_drawings(
-        session,
-        last,
-        community,
-    )
+    if drawing_ids is None:
+        drawings, eligibility_skipped = _scan_eligible_strategy_drawings(
+            session,
+            last,
+            community,
+        )
+    else:
+        if len(drawing_ids) != last:
+            raise ValueError("Manifest drawing count must match last.")
+        drawings = _load_exact_strategy_drawings(session, drawing_ids, community)
+        eligibility_skipped = 0
     segments = split_development_holdout(drawings, holdout_size)
+    input_data_hash = _strategy_input_data_hash(session, drawings)
+    configuration_hash = _configuration_hash(config)
     rows = []
     generation_skipped = 0
     generation_errors = 0
     invalid_package_sets = 0
     timed_out_drawings = 0
     holdout_timed_out = False
+    holdout_generation_failed = False
 
     for index, drawing in enumerate(drawings, start=1):
         events, quotes = _load_strategy_events_and_quotes(session, drawing.id)
@@ -275,6 +292,9 @@ def run_strategy_backtest(
         except ValueError:
             generation_skipped += 1
             generation_errors += 1
+            holdout_generation_failed = (
+                holdout_generation_failed or segments[drawing.id] == "holdout"
+            )
             _emit_strategy_progress(
                 progress_callback,
                 drawing,
@@ -293,6 +313,9 @@ def run_strategy_backtest(
         }:
             generation_skipped += 1
             invalid_package_sets += 1
+            holdout_generation_failed = (
+                holdout_generation_failed or segments[drawing.id] == "holdout"
+            )
             _emit_strategy_progress(
                 progress_callback,
                 drawing,
@@ -372,17 +395,23 @@ def run_strategy_backtest(
         "eligible_drawings": len(drawings),
         "evaluated_drawings": len(evaluated_ids),
         "timed_out_drawings": timed_out_drawings,
-        "operationally_inconclusive": holdout_timed_out,
+        "operationally_inconclusive": (
+            holdout_timed_out or holdout_generation_failed
+        ),
         "skip_reasons": {
             "eligibility": eligibility_skipped,
             "generation_error": generation_errors,
             "invalid_package_set": invalid_package_sets,
             "timeout": timed_out_drawings,
         },
+        "selected_drawing_ids": [drawing.id for drawing in drawings],
+        "selected_drawing_numbers": [drawing.number for drawing in drawings],
+        "input_data_hash": input_data_hash,
+        "configuration_hash": configuration_hash,
         "execution_time_seconds": round(time.perf_counter() - started_at, 4),
         }
     )
-    if holdout_timed_out:
+    if holdout_timed_out or holdout_generation_failed:
         summary["strategy_status"] = "operationally_inconclusive"
     return StrategyBacktestResult(rows=rows, summary=summary, config=config)
 
@@ -520,6 +549,124 @@ def write_strategy_backtest_reports(
     return csv_path, markdown_path
 
 
+def write_strategy_experiment_manifest(
+    result: StrategyBacktestResult,
+    last: int,
+    holdout_size: int,
+    code_version: str,
+    output_path: str | Path,
+) -> Path:
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": 1,
+        "code_version": code_version,
+        "last": last,
+        "holdout_size": holdout_size,
+        "drawing_ids": result.summary["selected_drawing_ids"],
+        "drawing_numbers": result.summary["selected_drawing_numbers"],
+        "input_data_hash": result.summary["input_data_hash"],
+        "configuration_hash": result.summary["configuration_hash"],
+        "protocol_hash": strategy_protocol_hash(result.config),
+        "config": asdict(result.config),
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def load_strategy_experiment_manifest(
+    path: str | Path,
+) -> dict[str, object]:
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    required = {
+        "schema_version",
+        "code_version",
+        "last",
+        "holdout_size",
+        "drawing_ids",
+        "input_data_hash",
+        "configuration_hash",
+        "protocol_hash",
+        "config",
+    }
+    if not isinstance(payload, dict) or not required.issubset(payload):
+        raise ValueError("Invalid strategy experiment manifest.")
+    if payload["schema_version"] != 1:
+        raise ValueError("Unsupported strategy experiment manifest version.")
+    if not isinstance(payload["drawing_ids"], list) or not all(
+        isinstance(drawing_id, int) for drawing_id in payload["drawing_ids"]
+    ):
+        raise ValueError("Manifest drawing_ids must be integers.")
+    return payload
+
+
+def verify_strategy_experiment_manifest_data(
+    session: Session,
+    manifest: dict[str, object],
+    community: str = "baltbet-main",
+) -> list[int]:
+    drawing_ids = list(manifest["drawing_ids"])
+    drawings = _load_exact_strategy_drawings(session, drawing_ids, community)
+    actual_hash = _strategy_input_data_hash(session, drawings)
+    if actual_hash != manifest["input_data_hash"]:
+        raise ValueError("Manifest input data hash does not match the database.")
+    return drawing_ids
+
+
+def freeze_strategy_experiment_manifest(
+    session: Session,
+    last: int,
+    holdout_size: int,
+    config: StrategyConfig,
+    code_version: str,
+    output_path: str | Path,
+    community: str = "baltbet-main",
+    exclude_latest: int = 0,
+) -> Path:
+    if exclude_latest < 0:
+        raise ValueError("exclude_latest must be non-negative.")
+    drawings, _ = _scan_eligible_strategy_drawings(
+        session,
+        last,
+        community,
+        skip_eligible=exclude_latest,
+    )
+    if len(drawings) != last:
+        raise ValueError("Not enough eligible drawings to freeze the experiment.")
+    split_development_holdout(drawings, holdout_size)
+    result = StrategyBacktestResult(
+        rows=[],
+        summary={
+            "selected_drawing_ids": [drawing.id for drawing in drawings],
+            "selected_drawing_numbers": [drawing.number for drawing in drawings],
+            "input_data_hash": _strategy_input_data_hash(session, drawings),
+            "configuration_hash": _configuration_hash(config),
+        },
+        config=config,
+    )
+    return write_strategy_experiment_manifest(
+        result,
+        last=last,
+        holdout_size=holdout_size,
+        code_version=code_version,
+        output_path=output_path,
+    )
+
+
+def strategy_protocol_hash(config: StrategyConfig) -> str:
+    protocol = asdict(config)
+    protocol.pop("bank")
+    encoded = json.dumps(
+        protocol,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _summarize_segment(
     rows: list[StrategyBacktestRow],
     segment: str,
@@ -586,8 +733,12 @@ def _strategy_report_markdown(result: StrategyBacktestResult) -> str:
         f"- seed: {config.seed}",
         f"- top_count: {config.top_count}",
         f"- candidate_samples: {config.candidate_samples}",
+        f"- mutation_limit: {config.mutation_limit}",
         f"- optimization_samples: {config.optimization_samples}",
         f"- validation_samples: {config.validation_samples}",
+        f"- timeout_per_drawing: {config.timeout_per_drawing}",
+        f"- configuration_hash: {summary.get('configuration_hash', '')}",
+        f"- input_data_hash: {summary.get('input_data_hash', '')}",
         "",
         "## Eligibility And Split",
         "",
@@ -709,6 +860,7 @@ def _scan_eligible_strategy_drawings(
     session: Session,
     last: int,
     community: str,
+    skip_eligible: int = 0,
 ) -> tuple[list[Drawing], int]:
     if last <= 0:
         raise ValueError("last must be positive.")
@@ -721,6 +873,7 @@ def _scan_eligible_strategy_drawings(
     ).all()
     selected = []
     skipped = 0
+    eligible_seen = 0
     for drawing in candidates:
         events, quotes = _load_strategy_events_and_quotes(session, drawing.id)
         event_orders = {
@@ -745,6 +898,9 @@ def _scan_eligible_strategy_drawings(
         if len(analyses) != 15:
             skipped += 1
             continue
+        if eligible_seen < skip_eligible:
+            eligible_seen += 1
+            continue
         selected.append(drawing)
         if len(selected) == last:
             break
@@ -756,6 +912,97 @@ def _scan_eligible_strategy_drawings(
         )
     )
     return selected, skipped
+
+
+def _load_exact_strategy_drawings(
+    session: Session,
+    drawing_ids: list[int],
+    community: str,
+) -> list[Drawing]:
+    drawings = []
+    for drawing_id in drawing_ids:
+        drawing = session.get(Drawing, drawing_id)
+        if (
+            drawing is None
+            or drawing.name != community
+            or drawing.status != "finished"
+        ):
+            raise ValueError(f"Manifest drawing {drawing_id} is not eligible.")
+        events, quotes = _load_strategy_events_and_quotes(session, drawing_id)
+        event_orders = {
+            event.event_order for event in events if event.event_order is not None
+        }
+        if (
+            not _has_supported_results(events)
+            or event_orders != set(range(15))
+            or set(quotes) != event_orders
+        ):
+            raise ValueError(f"Manifest drawing {drawing_id} is not eligible.")
+        try:
+            for event in events:
+                if event.event_order is not None:
+                    analyze_event(event, quotes[event.event_order])
+        except (KeyError, ValueError) as error:
+            raise ValueError(
+                f"Manifest drawing {drawing_id} is not eligible."
+            ) from error
+        drawings.append(drawing)
+
+    return sorted(
+        drawings,
+        key=lambda drawing: (
+            drawing.number if drawing.number is not None else drawing.id,
+            drawing.id,
+        ),
+    )
+
+
+def _strategy_input_data_hash(
+    session: Session,
+    drawings: list[Drawing],
+) -> str:
+    payload = []
+    for drawing in drawings:
+        events, quotes = _load_strategy_events_and_quotes(session, drawing.id)
+        payload.append(
+            {
+                "drawing_id": drawing.id,
+                "drawing_number": drawing.number,
+                "events": [
+                    {
+                        "event_order": event.event_order,
+                        "result": normalize_result(event.result),
+                        "pool": [
+                            quotes[event.event_order].pool_win_1,
+                            quotes[event.event_order].pool_draw,
+                            quotes[event.event_order].pool_win_2,
+                        ],
+                        "bk": [
+                            quotes[event.event_order].bk_win_1,
+                            quotes[event.event_order].bk_draw,
+                            quotes[event.event_order].bk_win_2,
+                        ],
+                    }
+                    for event in events
+                    if event.event_order is not None
+                ],
+            }
+        )
+    encoded = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _configuration_hash(config: StrategyConfig) -> str:
+    encoded = json.dumps(
+        asdict(config),
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def _load_strategy_events_and_quotes(

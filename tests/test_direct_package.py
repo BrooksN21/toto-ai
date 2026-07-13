@@ -71,6 +71,21 @@ def test_weighted_package_uses_probability_then_lexical_tie_breaks():
     assert result.selected_coupons == ["1X"]
 
 
+def test_weighted_package_fills_budget_after_sample_mass_is_covered():
+    probabilities = normalize_probability_matrix([{"1": 60, "X": 30, "2": 10}])
+
+    result = select_weighted_package(
+        candidates=["2", "X", "1"],
+        scenarios={"1": 10},
+        probabilities=probabilities,
+        category=15,
+        max_coupons=3,
+    )
+
+    assert result.selected_coupons == ["1", "X", "2"]
+    assert result.estimated_coverage == 1.0
+
+
 def test_weighted_package_recalculates_overlapping_marginal_scores():
     probabilities = normalize_probability_matrix(
         [{"1": 50, "X": 30, "2": 20}] * 2

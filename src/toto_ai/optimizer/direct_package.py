@@ -152,6 +152,27 @@ def select_weighted_package(
                     ),
                 )
 
+    if not timed_out and len(selected_indexes) < max_coupons:
+        remaining = sorted(
+            (
+                index
+                for index in range(len(unique_candidates))
+                if index not in selected_indexes
+            ),
+            key=lambda index: (
+                -log_probabilities[index],
+                unique_candidates[index],
+            ),
+        )
+        for index in remaining:
+            if len(selected_indexes) == max_coupons:
+                break
+            if deadline is not None and time_func() >= deadline:
+                timed_out = True
+                break
+            selected_indexes.add(index)
+            selected_order.append(index)
+
     selected = [unique_candidates[index] for index in selected_order]
     covered_weight = sum(weights[index] for index in covered_scenarios)
     return DirectPackageResult(

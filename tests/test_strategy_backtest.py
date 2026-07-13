@@ -4,7 +4,9 @@ import inspect
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from typer.testing import CliRunner
 
+from toto_ai.cli import app
 from toto_ai.db.models import Base, Drawing, Event, Quote
 from toto_ai.optimizer import strategy_backtest as strategy_module
 from toto_ai.optimizer.brief import EventBriefAnalysis
@@ -19,11 +21,16 @@ from toto_ai.optimizer.strategy_backtest import (
     StrategyConfig,
     StrategyPackage,
     build_packages_for_probabilities,
+    freeze_strategy_experiment_manifest,
+    load_strategy_experiment_manifest,
     paired_bootstrap_hit13,
     run_strategy_backtest,
     split_development_holdout,
+    strategy_protocol_hash,
     summarize_strategy_backtest,
+    verify_strategy_experiment_manifest_data,
     write_strategy_backtest_reports,
+    write_strategy_experiment_manifest,
 )
 
 
@@ -197,8 +204,29 @@ def test_strategy_builder_passes_timeout_and_propagates_baseline_timeout():
         baseline_builder=baseline_builder,
     )
 
-    assert received["timeout_per_drawing"] == 1.5
+    assert 0 < received["timeout_per_drawing"] <= 1.5
     assert packages[0].timed_out is True
+
+
+def test_strategy_builder_uses_one_deadline_for_the_whole_drawing():
+    probabilities = normalize_probability_matrix([{"1": 60, "X": 30, "2": 10}])
+    packages = build_packages_for_probabilities(
+        probabilities,
+        analyses=[],
+        drawing_id=7,
+        config=StrategyConfig(
+            bank=30,
+            stake=30,
+            top_count=1,
+            candidate_samples=2,
+            optimization_samples=2,
+            validation_samples=2,
+            timeout_per_drawing=1e-12,
+        ),
+        baseline_builder=lambda *args, **kwargs: {"selected_coupons": ["1"]},
+    )
+
+    assert packages[2].timed_out is True
 
 
 def test_strategy_builder_rejects_analysis_probability_mismatch():
@@ -306,6 +334,8 @@ def test_run_strategy_backtest_uses_same_eligible_drawings_for_all_strategies():
     assert {row.drawing_number for row in result.rows} == {1001}
     expected_hash = hashlib.sha256(("1" * 15).encode("utf-8")).hexdigest()
     assert {row.package_hash for row in result.rows} == {expected_hash}
+    assert result.summary["selected_drawing_ids"] == [1]
+    assert len(result.summary["input_data_hash"]) == 64
 
 
 def test_run_strategy_backtest_builds_packages_before_reading_result(monkeypatch):
@@ -334,6 +364,53 @@ def test_run_strategy_backtest_builds_packages_before_reading_result(monkeypatch
         )
 
     assert call_order == ["packages", "result"]
+
+
+def test_strategy_backtest_can_reuse_exact_manifest_drawing_ids():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        _add_strategy_drawing(session, 1, 1001, "1" * 15, include_bk=True)
+        _add_strategy_drawing(session, 2, 1002, "1" * 15, include_bk=True)
+        result = run_strategy_backtest(
+            session,
+            last=1,
+            holdout_size=0,
+            config=StrategyConfig(bank=90, stake=30, category=15, top_count=3),
+            package_builder=_package_builder_stub,
+            drawing_ids=[1],
+        )
+
+    assert result.summary["selected_drawing_ids"] == [1]
+    assert {row.drawing_number for row in result.rows} == {1001}
+
+
+def test_strategy_input_hash_changes_when_result_changes():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        _add_strategy_drawing(session, 1, 1001, "1" * 15, include_bk=True)
+        config = StrategyConfig(bank=90, stake=30, category=15, top_count=3)
+        first = run_strategy_backtest(
+            session,
+            last=1,
+            holdout_size=0,
+            config=config,
+            package_builder=_package_builder_stub,
+            drawing_ids=[1],
+        )
+        session.query(Event).filter_by(drawing_id=1, event_order=0).one().result = "X"
+        session.commit()
+        second = run_strategy_backtest(
+            session,
+            last=1,
+            holdout_size=0,
+            config=config,
+            package_builder=_package_builder_stub,
+            drawing_ids=[1],
+        )
+
+    assert first.summary["input_data_hash"] != second.summary["input_data_hash"]
 
 
 def test_strategy_eligibility_skips_mismatched_event_quote_orders():
@@ -420,6 +497,29 @@ def test_strategy_timeout_excludes_all_strategies_and_marks_holdout():
     assert result.summary["strategy_status"] == "operationally_inconclusive"
     assert result.summary["skip_reasons"]["timeout"] == 1
     assert len(updates) == 1
+
+
+def test_holdout_generation_error_is_operationally_inconclusive():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+
+    def failing_builder(**kwargs):
+        raise ValueError("generation failed")
+
+    with Session(engine) as session:
+        _add_strategy_drawing(session, 1, 1001, "1" * 15, include_bk=True)
+        result = run_strategy_backtest(
+            session,
+            last=1,
+            holdout_size=1,
+            config=StrategyConfig(bank=90, stake=30, category=15, top_count=3),
+            package_builder=failing_builder,
+        )
+
+    assert result.rows == []
+    assert result.summary["operationally_inconclusive"] is True
+    assert result.summary["strategy_status"] == "operationally_inconclusive"
+    assert result.summary["skip_reasons"]["generation_error"] == 1
 
 
 def test_summary_uses_holdout_paired_hit13_difference_and_status():
@@ -514,6 +614,98 @@ def test_write_strategy_reports_contains_configuration_and_rows(tmp_path):
     assert "Strategy Backtest" in markdown
     assert "holdout" in markdown
     assert "seed" in markdown
+
+
+def test_strategy_experiment_manifest_round_trip(tmp_path):
+    config = StrategyConfig(bank=5000, stake=30, category=13, seed=42)
+    result = StrategyBacktestResult(
+        rows=[],
+        summary={
+            "selected_drawing_ids": [1, 2],
+            "selected_drawing_numbers": [1001, 1002],
+            "input_data_hash": "a" * 64,
+            "configuration_hash": "b" * 64,
+        },
+        config=config,
+    )
+    path = tmp_path / "manifest.json"
+
+    written = write_strategy_experiment_manifest(
+        result,
+        last=2,
+        holdout_size=1,
+        code_version="abc123",
+        output_path=path,
+    )
+    loaded = load_strategy_experiment_manifest(written)
+
+    assert loaded["drawing_ids"] == [1, 2]
+    assert loaded["input_data_hash"] == "a" * 64
+    assert loaded["code_version"] == "abc123"
+    assert loaded["config"]["bank"] == 5000
+
+
+def test_freeze_manifest_excludes_revealed_latest_drawings(tmp_path):
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    path = tmp_path / "frozen.json"
+    with Session(engine) as session:
+        _add_strategy_drawing(session, 1, 1001, "1" * 15, include_bk=True)
+        _add_strategy_drawing(session, 2, 1002, "X" * 15, include_bk=True)
+        freeze_strategy_experiment_manifest(
+            session,
+            last=1,
+            holdout_size=1,
+            config=StrategyConfig(),
+            code_version="abc123",
+            output_path=path,
+            exclude_latest=1,
+        )
+
+    assert load_strategy_experiment_manifest(path)["drawing_ids"] == [1]
+
+
+def test_manifest_data_is_verified_before_evaluation(tmp_path):
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    path = tmp_path / "frozen.json"
+    with Session(engine) as session:
+        _add_strategy_drawing(session, 1, 1001, "1" * 15, include_bk=True)
+        freeze_strategy_experiment_manifest(
+            session,
+            last=1,
+            holdout_size=1,
+            config=StrategyConfig(),
+            code_version="abc123",
+            output_path=path,
+        )
+        session.query(Event).filter_by(drawing_id=1, event_order=0).one().result = "X"
+        session.commit()
+
+        with pytest.raises(ValueError, match="data hash does not match"):
+            verify_strategy_experiment_manifest_data(
+                session,
+                load_strategy_experiment_manifest(path),
+            )
+
+
+def test_strategy_protocol_hash_allows_only_bank_sensitivity():
+    primary = StrategyConfig(bank=5000, seed=42)
+
+    assert strategy_protocol_hash(primary) == strategy_protocol_hash(
+        StrategyConfig(bank=3000, seed=42)
+    )
+    assert strategy_protocol_hash(primary) != strategy_protocol_hash(
+        StrategyConfig(bank=5000, seed=43)
+    )
+
+
+def test_backtest_strategies_cli_is_registered_with_default_bank():
+    result = CliRunner().invoke(app, ["backtest-strategies", "--help"])
+
+    assert result.exit_code == 0
+    assert "--bank" in result.stdout
+    assert "5000" in result.stdout
 
 
 def _package_builder_stub(probabilities, analyses, drawing_id, config):

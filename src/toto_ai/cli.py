@@ -1,3 +1,5 @@
+import subprocess
+
 import typer
 from rich import print
 from rich.json import JSON
@@ -52,6 +54,15 @@ from toto_ai.optimizer.cover import (
     write_cover_package_csv,
 )
 from toto_ai.optimizer.cover_benchmark import benchmark_cover
+from toto_ai.optimizer.strategy_backtest import (
+    StrategyConfig,
+    freeze_strategy_experiment_manifest,
+    load_strategy_experiment_manifest,
+    run_strategy_backtest,
+    strategy_protocol_hash,
+    verify_strategy_experiment_manifest_data,
+    write_strategy_backtest_reports,
+)
 from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
 
@@ -674,6 +685,161 @@ def backtest_brief(
     csv_path, markdown_path = write_brief_backtest_reports(result, last=last)
     print(_brief_backtest_summary_table(result.summary))
     print(f"Reports written to {csv_path} and {markdown_path}")
+
+
+@app.command("backtest-strategies")
+def backtest_strategies(
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+    last: int = typer.Option(500, help="Latest complete drawings to test."),
+    holdout: int = typer.Option(150, help="Newest eligible holdout drawings."),
+    bank: int = typer.Option(5000, help="Positive integer package budget."),
+    stake: int = typer.Option(30, help="Stake per coupon."),
+    category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+    seed: int = typer.Option(42, help="Deterministic base seed."),
+    top_count: int = typer.Option(1000, help="Exact top-probability candidates."),
+    candidate_samples: int = typer.Option(3000, help="Candidate scenario samples."),
+    mutation_limit: int = typer.Option(1000, help="Maximum mutation candidates."),
+    optimization_samples: int = typer.Option(2000, help="Optimization scenarios."),
+    validation_samples: int = typer.Option(5000, help="Validation scenarios."),
+    timeout_per_drawing: float = typer.Option(
+        30.0,
+        help="Cooperative package-generation deadline per drawing.",
+    ),
+    manifest_in: str = typer.Option(
+        ...,
+        help="Required frozen manifest with exact drawing IDs and hashes.",
+    ),
+) -> None:
+    """Compare baseline and direct package strategies on historical drawings."""
+    config = StrategyConfig(
+        bank=bank,
+        stake=stake,
+        category=category,
+        seed=seed,
+        top_count=top_count,
+        candidate_samples=candidate_samples,
+        mutation_limit=mutation_limit,
+        optimization_samples=optimization_samples,
+        validation_samples=validation_samples,
+        timeout_per_drawing=timeout_per_drawing,
+    )
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+    try:
+        frozen_manifest = load_strategy_experiment_manifest(manifest_in)
+        code_version = _git_code_version()
+    except (OSError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    if frozen_manifest["last"] != last:
+        raise typer.BadParameter("Manifest last does not match --last.")
+    if frozen_manifest["holdout_size"] != holdout:
+        raise typer.BadParameter("Manifest holdout does not match --holdout.")
+    if frozen_manifest["code_version"] != code_version:
+        raise typer.BadParameter("Manifest code version does not match checkout.")
+    if frozen_manifest["protocol_hash"] != strategy_protocol_hash(config):
+        raise typer.BadParameter("Manifest protocol does not match configuration.")
+    with session_factory() as session:
+        try:
+            drawing_ids = verify_strategy_experiment_manifest_data(
+                session,
+                frozen_manifest,
+            )
+        except ValueError as error:
+            raise typer.BadParameter(str(error)) from error
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        TimeElapsedColumn(),
+    ) as progress:
+        task_id = progress.add_task("Preparing strategy backtest")
+
+        def update_progress(update: dict[str, object]) -> None:
+            progress.update(
+                task_id,
+                description=(
+                    f"drawing={update.get('drawing_number')} "
+                    f"{update.get('drawing_index')}/{update.get('drawing_total')} "
+                    f"eligible={update.get('eligible')} "
+                    f"skipped={update.get('skipped')} "
+                    f"eta={float(update.get('eta_seconds', 0)):.1f}s"
+                ),
+            )
+
+        with session_factory() as session:
+            try:
+                result = run_strategy_backtest(
+                    session,
+                    last=last,
+                    holdout_size=holdout,
+                    config=config,
+                    progress_callback=update_progress,
+                    drawing_ids=drawing_ids,
+                )
+            except ValueError as error:
+                raise typer.BadParameter(str(error)) from error
+        progress.update(task_id, description="Strategy backtest complete")
+
+    csv_path, markdown_path = write_strategy_backtest_reports(result, last=last)
+    print(_strategy_backtest_overview_table(result.summary))
+    print(_strategy_holdout_table(result.summary["holdout"]))
+    print(_strategy_decision_table(result.summary))
+    print(f"Reports written to {csv_path} and {markdown_path}")
+
+
+@app.command("freeze-strategy-experiment")
+def freeze_strategy_experiment(
+    output: str = typer.Option(..., help="Manifest JSON output path."),
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+    last: int = typer.Option(500, help="Eligible drawings to freeze."),
+    holdout: int = typer.Option(150, help="Newest frozen holdout drawings."),
+    exclude_latest: int = typer.Option(
+        0,
+        help="Exclude this many newest eligible drawings before freezing.",
+    ),
+    bank: int = typer.Option(5000, help="Primary package budget."),
+    stake: int = typer.Option(30, help="Stake per coupon."),
+    category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+    seed: int = typer.Option(42, help="Deterministic base seed."),
+    top_count: int = typer.Option(1000, help="Exact top-probability candidates."),
+    candidate_samples: int = typer.Option(3000, help="Candidate scenario samples."),
+    mutation_limit: int = typer.Option(1000, help="Maximum mutation candidates."),
+    optimization_samples: int = typer.Option(2000, help="Optimization scenarios."),
+    validation_samples: int = typer.Option(5000, help="Validation scenarios."),
+    timeout_per_drawing: float = typer.Option(
+        30.0,
+        help="Cooperative drawing deadline.",
+    ),
+) -> None:
+    """Freeze drawing IDs and hashes before evaluating strategy results."""
+    config = StrategyConfig(
+        bank=bank,
+        stake=stake,
+        category=category,
+        seed=seed,
+        top_count=top_count,
+        candidate_samples=candidate_samples,
+        mutation_limit=mutation_limit,
+        optimization_samples=optimization_samples,
+        validation_samples=validation_samples,
+        timeout_per_drawing=timeout_per_drawing,
+    )
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+    with session_factory() as session:
+        try:
+            path = freeze_strategy_experiment_manifest(
+                session,
+                last=last,
+                holdout_size=holdout,
+                config=config,
+                code_version=_git_code_version(),
+                output_path=output,
+                exclude_latest=exclude_latest,
+            )
+        except ValueError as error:
+            raise typer.BadParameter(str(error)) from error
+    print(f"Manifest written to {path}")
 
 
 def _summary_table(summary: dict[str, object]) -> Table:
@@ -1398,6 +1564,89 @@ def _brief_backtest_summary_table(summary: dict[str, object]) -> Table:
         f"{summary['execution_time_seconds']:.4f}s",
     )
     return table
+
+
+def _strategy_backtest_overview_table(summary: dict[str, object]) -> Table:
+    table = Table(title="Direct Strategy Backtest")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    for key in (
+        "eligible_drawings",
+        "evaluated_drawings",
+        "skipped_drawings",
+        "development_drawings",
+        "holdout_drawings",
+        "timed_out_drawings",
+    ):
+        table.add_row(key.replace("_", " "), _format_value(summary.get(key, 0)))
+    return table
+
+
+def _strategy_holdout_table(
+    holdout: dict[str, dict[str, object]],
+) -> Table:
+    table = Table(title="Holdout Strategies")
+    table.add_column("Strategy")
+    table.add_column("Hit13", justify="right")
+    table.add_column("Hit14", justify="right")
+    table.add_column("Hit15", justify="right")
+    table.add_column("Avg best hits", justify="right")
+    table.add_column("Avg cost", justify="right")
+    for strategy in (
+        "baseline_brief",
+        "top_probability",
+        "weighted_coverage",
+    ):
+        metrics = holdout[strategy]
+        table.add_row(
+            strategy,
+            _format_value(metrics["hit13_count"]),
+            _format_value(metrics["hit14_count"]),
+            _format_value(metrics["hit15_count"]),
+            _format_value(metrics["average_best_hits"]),
+            _format_value(metrics["average_package_cost"]),
+        )
+    return table
+
+
+def _strategy_decision_table(summary: dict[str, object]) -> Table:
+    table = Table(title="Paired Holdout Decision")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row(
+        "hit13 difference (pp)",
+        _format_value(summary["paired_hit13_difference_pp"]),
+    )
+    table.add_row(
+        "95% interval",
+        (
+            f"[{summary['paired_hit13_ci_low_pp']}, "
+            f"{summary['paired_hit13_ci_high_pp']}]"
+        ),
+    )
+    table.add_row("strategy status", _format_value(summary["strategy_status"]))
+    return table
+
+
+def _git_code_version() -> str:
+    try:
+        revision = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        dirty = subprocess.run(
+            ["git", "status", "--porcelain"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise ValueError("Unable to resolve the Git code version.") from error
+    if dirty:
+        raise ValueError("Experiment freeze and evaluation require a clean checkout.")
+    return revision
 
 
 def _format_value(value: object, percent: bool = False) -> str:
