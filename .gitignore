@@ -8,6 +8,7 @@ venv/
 build/
 dist/
 .DS_Store
+.worktrees/
 .env
 data/*.db
 data/*.sqlite
