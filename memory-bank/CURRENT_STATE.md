@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 204
+- Tests currently passed: 216
 - Ruff passed
 
 ## Active Design: Hybrid Direct Package Experiment
@@ -97,6 +97,11 @@ paths return only work completed so far. Existing top-probability and weighted
 coverage behavior remains unchanged.
 
 Verification: 214 tests passed; Ruff passed.
+
+Review follow-up: the hybrid probability fallback now checks the deadline before
+each coupon log-probability ranking computation, after sorting, and while
+appending. On expiry it returns the unique partial package with `timed_out=True`.
+Verification: 216 tests passed; Ruff passed.
 
 ## Previous Completed Task: Package Structure Metrics
 

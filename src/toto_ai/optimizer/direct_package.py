@@ -248,24 +248,28 @@ def select_hybrid_package(
             timed_out = True
         else:
             selected_set = set(selected)
-            remaining = sorted(
-                (
-                    coupon
-                    for coupon in dict.fromkeys(candidates)
-                    if coupon not in selected_set
-                ),
-                key=lambda coupon: (
-                    -coupon_log_probability(coupon, probabilities),
-                    coupon,
-                ),
-            )
-            for coupon in remaining:
-                if len(selected) == max_coupons:
-                    break
+            ranked_remaining = []
+            for coupon in dict.fromkeys(candidates):
+                if coupon in selected_set:
+                    continue
                 if deadline is not None and time_func() >= deadline:
                     timed_out = True
                     break
-                selected.append(coupon)
+                ranked_remaining.append(
+                    (-coupon_log_probability(coupon, probabilities), coupon)
+                )
+            if not timed_out:
+                remaining = [coupon for _, coupon in sorted(ranked_remaining)]
+                if deadline is not None and time_func() >= deadline:
+                    timed_out = True
+                else:
+                    for coupon in remaining:
+                        if len(selected) == max_coupons:
+                            break
+                        if deadline is not None and time_func() >= deadline:
+                            timed_out = True
+                            break
+                        selected.append(coupon)
     covered_weight = _covered_scenario_weight(selected, scenarios, category)
     total_weight = sum(scenarios.values())
     return DirectPackageResult(

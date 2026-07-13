@@ -134,6 +134,29 @@ def test_hybrid_timeout_after_core_coverage_retains_core_without_probability_fal
     assert len(result.selected_coupons) < 4
 
 
+def test_hybrid_timeout_during_probability_fallback_ranking_returns_partial_package():
+    probabilities = normalize_probability_matrix(
+        [{"1": 50, "X": 30, "2": 20}] * 2
+    )
+    timestamps = iter([0.0, 0.0, 0.0, 2.0])
+
+    result = select_hybrid_package(
+        candidates=["11", "1X", "X1", "XX"],
+        scenarios={"11": 10},
+        probabilities=probabilities,
+        category=15,
+        max_coupons=4,
+        top_coupons=["11", "1X", "X1", "XX"],
+        core_fraction=0.50,
+        deadline=1.0,
+        time_func=lambda: next(timestamps),
+    )
+
+    assert result.selected_coupons == ["11", "1X"]
+    assert result.timed_out is True
+    assert len(result.selected_coupons) < 4
+
+
 def test_hybrid_retains_only_the_core_on_timeout_before_fill():
     probabilities = normalize_probability_matrix(
         [{"1": 50, "X": 30, "2": 20}] * 2
