@@ -1,13 +1,14 @@
 import csv
 import hashlib
+from contextlib import contextmanager
 from dataclasses import replace
 from itertools import islice, product
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session
 
-from toto_ai.db.models import Base, Drawing
+from toto_ai.db.models import Base, Drawing, Event, Quote
 from toto_ai.optimizer import hybrid_evaluation as hybrid_module
 from toto_ai.optimizer.coupon_probabilities import normalize_probability_matrix
 from toto_ai.optimizer.direct_package import DirectPackageResult
@@ -400,6 +401,27 @@ def session():
                     status="finished",
                 )
             )
+            for event_order in range(15):
+                database_session.add(
+                    Event(
+                        drawing_id=drawing_id,
+                        event_order=event_order,
+                        name=f"Match {event_order + 1}",
+                        result="1",
+                    )
+                )
+                database_session.add(
+                    Quote(
+                        drawing_id=drawing_id,
+                        event_order=event_order,
+                        pool_win_1=50,
+                        pool_draw=30,
+                        pool_win_2=20,
+                        bk_win_1=60,
+                        bk_draw=30,
+                        bk_win_2=10,
+                    )
+                )
         database_session.commit()
         yield database_session
 
@@ -460,13 +482,13 @@ def test_runner_never_loads_holdout_and_loads_results_after_top_hash(
     monkeypatch.setattr(
         hybrid_module,
         "_verify_top_package_hash",
-        lambda *args: calls.append("hash"),
+        lambda _package, _frozen, drawing_id: calls.append(("hash", drawing_id)),
     )
     monkeypatch.setattr(
         hybrid_module,
         "_load_development_result",
         lambda database_session, drawing_id: result_ids.append(drawing_id)
-        or calls.append("result")
+        or calls.append(("result", drawing_id))
         or "1" * 15,
     )
 
@@ -474,7 +496,8 @@ def test_runner_never_loads_holdout_and_loads_results_after_top_hash(
 
     assert input_ids == manifest["drawing_ids"][:10]
     assert result_ids == manifest["drawing_ids"][:10]
-    assert calls.index("hash") < calls.index("result")
+    for drawing_id in manifest["drawing_ids"][:10]:
+        assert calls.index(("hash", drawing_id)) < calls.index(("result", drawing_id))
     assert len(result.rows) == 40
     assert {row.strategy for row in result.rows} == {
         "top_probability",
@@ -482,6 +505,36 @@ def test_runner_never_loads_holdout_and_loads_results_after_top_hash(
         "hybrid_0.75",
         "hybrid_0.90",
     }
+
+
+def test_runner_real_result_sql_follows_top_hash_for_every_development_drawing(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+    coupons,
+):
+    calls = []
+    original_verify = hybrid_module._verify_top_package_hash
+    _patch_valid_generation(monkeypatch, coupons)
+
+    def record_hash(package, frozen_row, drawing_id):
+        original_verify(package, frozen_row, drawing_id)
+        calls.append(("hash", drawing_id))
+
+    monkeypatch.setattr(hybrid_module, "_verify_top_package_hash", record_hash)
+
+    with _capture_sql(session, calls):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+    development_ids = manifest["drawing_ids"][:10]
+    assert [call for call in calls if call[0] == "result_sql"] == [
+        ("result_sql", drawing_id) for drawing_id in development_ids
+    ]
+    for drawing_id in development_ids:
+        assert calls.index(("hash", drawing_id)) < calls.index(
+            ("result_sql", drawing_id)
+        )
 
 
 def test_runner_rejects_top_hash_before_loading_any_result(
@@ -505,6 +558,43 @@ def test_runner_rejects_top_hash_before_loading_any_result(
 
     with pytest.raises(ValueError, match="top package hash"):
         run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+def test_runner_stops_at_later_top_hash_mismatch_before_result_or_holdout(
+    monkeypatch,
+    session,
+    manifest,
+    tmp_path,
+    coupons,
+):
+    frozen_csv = _write_frozen_rows(
+        tmp_path,
+        drawing_ids=manifest["drawing_ids"][:10],
+        top_coupons=coupons,
+        top_hash_overrides={2: "mismatch"},
+    )
+    input_ids = []
+    result_ids = []
+    _patch_valid_generation(monkeypatch, coupons)
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_inputs",
+        lambda database_session, drawing_id: input_ids.append(drawing_id)
+        or _fixture_inputs(),
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda database_session, drawing_id: result_ids.append(drawing_id)
+        or "1" * 15,
+    )
+
+    with pytest.raises(ValueError, match="top package hash"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+    assert input_ids == [1, 2]
+    assert result_ids == [1]
+    assert not set(manifest["drawing_ids"][-2:]) & set(input_ids + result_ids)
 
 
 @pytest.mark.parametrize(
@@ -804,9 +894,16 @@ def _valid_coupons(count):
     ]
 
 
-def _write_frozen_rows(tmp_path, drawing_ids, top_coupons, top_overrides=None):
+def _write_frozen_rows(
+    tmp_path,
+    drawing_ids,
+    top_coupons,
+    top_overrides=None,
+    top_hash_overrides=None,
+):
     path = tmp_path / "hybrid-frozen.csv"
     top_overrides = top_overrides or {}
+    top_hash_overrides = top_hash_overrides or {}
     fieldnames = list(StrategyBacktestRow.__dataclass_fields__)
     top_hash = hashlib.sha256(",".join(top_coupons).encode("utf-8")).hexdigest()
     with path.open("w", newline="", encoding="utf-8") as output:
@@ -828,7 +925,11 @@ def _write_frozen_rows(tmp_path, drawing_ids, top_coupons, top_overrides=None):
                     "estimated_coverage": 1.0,
                     "candidate_count": 166,
                     "runtime_seconds": 0.01,
-                    "package_hash": top_hash if strategy == "top_probability" else "0",
+                    "package_hash": (
+                        top_hash_overrides.get(drawing_id, top_hash)
+                        if strategy == "top_probability"
+                        else "0"
+                    ),
                 }
                 if strategy == "top_probability":
                     values.update(top_overrides)
@@ -841,3 +942,17 @@ def _config_payload(config):
         field_name: getattr(config, field_name)
         for field_name in StrategyConfig.__dataclass_fields__
     }
+
+
+@contextmanager
+def _capture_sql(session, calls):
+    def record(connection, cursor, statement, parameters, context, executemany):
+        if "from events" in statement.lower() and "events.result" in statement.lower():
+            calls.append(("result_sql", parameters[0]))
+
+    engine = session.get_bind()
+    event.listen(engine, "before_cursor_execute", record)
+    try:
+        yield
+    finally:
+        event.remove(engine, "before_cursor_execute", record)

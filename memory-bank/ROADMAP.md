@@ -51,10 +51,9 @@
 - Add a fail-closed development diagnostics CLI that regenerates packages,
   verifies frozen package hashes/results, and exports deterministic reports.
   Completed.
-- On development data, test a hybrid direct package objective that retains a
-  high-probability core or explicit probability floor while adding controlled
-  diversity. The top-core design and GO/STOP protocol are approved; implementation
-  plan is complete and execution is next. Do not inspect the frozen holdout
+- Hybrid Direct Package experiment Tasks 1-3 are completed: the selector,
+  GO/STOP decision model, and fail-closed development evaluator. Task 4,
+  atomic reports and CLI wiring, is next. Do not inspect the frozen holdout
   during this selection.
 - Reserve a new untouched or prospective evaluation window before claiming an
   improvement from further optimizer tuning.

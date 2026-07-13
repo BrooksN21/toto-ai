@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 238
+- Tests currently passed: 259
 - Ruff passed
 
 ## Active Design: Hybrid Direct Package Experiment
@@ -133,7 +133,11 @@ frozen hash/result mismatches, and invalid package strategy identities. It does
 not add reports or CLI wiring, and never loads the frozen holdout during
 selection.
 
-Verification: focused hybrid suites passed (53 tests); full suite passed (257
+Review follow-up: integrity-boundary coverage now tags every development drawing,
+captures real result-bearing Event SQL, and proves a later top-hash mismatch
+stops before that drawing's result load or any holdout access.
+
+Verification: focused hybrid suite passed (43 tests); full suite passed (259
 tests); Ruff passed.
 
 ## Previous Completed Task: Package Structure Metrics
@@ -399,7 +403,6 @@ Local smoke results on `data/toto.db`:
 
 ## Next Task
 
-Implement the approved Hybrid Direct Package experiment from
-`docs/superpowers/specs/2026-07-13-hybrid-direct-package-experiment-design.md`.
-Evaluate only the 350 frozen development drawings. Do not inspect the old
-holdout while selecting a core fraction.
+Task 4 is next: add the approved atomic hybrid evaluation reports and CLI
+surface. Continue to evaluate only the 350 frozen development drawings and do
+not inspect the old holdout while selecting a core fraction.
