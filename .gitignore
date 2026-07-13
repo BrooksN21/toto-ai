@@ -29,3 +29,6 @@ reports/brief_oracle.md
 reports/brief_oracle_by_event.csv
 reports/budget_oracle_last_*.csv
 reports/budget_oracle_last_*.md
+reports/strategy_backtest_last_*.csv
+reports/strategy_backtest_last_*.md
+reports/strategy_experiment_manifest*.json
