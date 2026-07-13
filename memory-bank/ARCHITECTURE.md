@@ -52,6 +52,9 @@ Important modules:
 - `toto_ai.optimizer.strategy_backtest`: comparable baseline-brief,
   top-probability, and weighted-coverage strategies; chronological backtesting;
   paired holdout evaluation; frozen experiment manifests and report exports.
+- `toto_ai.optimizer.strategy_diagnostics`: fail-closed development-only
+  regeneration, frozen package-hash/result validation, package structure and
+  overlap metrics, paired threshold transitions, and deterministic reports.
 - `toto_ai.cli`: Typer CLI entry point.
 
 Important CLI commands:
@@ -83,3 +86,5 @@ Important CLI commands:
   and code version before a direct-strategy evaluation.
 - `backtest-strategies`: compare package strategies on a frozen chronological
   development/holdout experiment.
+- `diagnose-strategies`: regenerate and verify frozen packages, then diagnose
+  strategy structure and paired 13+ transitions on development drawings only.

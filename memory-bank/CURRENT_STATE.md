@@ -23,10 +23,49 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 171
+- Tests currently passed: 202
 - Ruff passed
 
-## Latest Completed Task: Package Structure Metrics
+## Latest Completed Task: Development Strategy Diagnostics
+
+Added the fail-closed `diagnose-strategies` command and completed the frozen
+development-only diagnostic for the Direct Package Optimizer experiment.
+
+Command:
+- `python -m toto_ai.cli diagnose-strategies --db data/toto.db --manifest reports/strategy_experiment_manifest_last_500_exclude_10.json --backtest-csv reports/strategy_backtest_last_500_bank_5000.csv`
+
+Run evidence:
+- 350 development drawings processed; the 150 holdout drawings were excluded.
+- All regenerated package hashes and recomputed frozen result fields matched.
+- Bank 5000 RUB, stake 30 RUB, category 13.
+- Weighted vs top best hits: 260 wins, 74 ties, 16 losses.
+- Weighted minus top best hits: mean +1.394, median +1.
+- Paired 13+ transitions: neither 343, both 3, top-only 3,
+  weighted-only 1.
+- Average best hits: baseline 8.380, top 8.691, weighted 10.086.
+- Observed 13+ frequency: baseline 0.286%, top 1.714%, weighted 1.143%.
+- Top vs weighted mean pairwise Hamming distance: 3.491 vs 7.496.
+- Top vs weighted mean coupon log probability: -13.682 vs -14.729.
+- Average top/weighted package intersection: 11.36 coupons; average Jaccard
+  overlap 0.0356.
+
+Interpretation:
+- Weighted coverage usually improves the nearest coupon, but its much broader
+  and lower-probability package does not improve the observed 13+ threshold.
+- No strategy was selected. These are development-only diagnostic findings,
+  not holdout evidence and not evidence of profitability.
+- The next optimizer experiment should test a development-selected hybrid that
+  preserves a high-probability core or probability floor while adding measured
+  diversity. It must use a new untouched evaluation window.
+
+Reports:
+- `reports/strategy_diagnostics_development_last_500_bank_5000.csv`
+- `reports/strategy_diagnostics_development_last_500_bank_5000.md`
+
+Important commits:
+- `ec97679` Add development strategy diagnostics command
+
+## Previous Completed Task: Package Structure Metrics
 
 Added deterministic package diagnostics for coupon log-probability summaries,
 pairwise Hamming diversity, package intersection, Jaccard overlap, and mean

@@ -44,9 +44,16 @@
   experiment with 350 development and 150 holdout drawings.
 - Use 5000 RUB as the primary bank and 3000/10000 RUB as sensitivity checks.
 - Diagnose the weighted-coverage objective on development data: it improved
-  average best hits but did not beat top-probability on holdout hit13.
+  average best hits but did not improve development 13+ frequency over
+  top-probability. Completed on all 350 frozen development drawings.
 - Implement deterministic package structure and overlap metrics for development
-  strategy diagnostics.
+  strategy diagnostics. Completed.
+- Add a fail-closed development diagnostics CLI that regenerates packages,
+  verifies frozen package hashes/results, and exports deterministic reports.
+  Completed.
+- On development data, test a hybrid direct package objective that retains a
+  high-probability core or explicit probability floor while adding controlled
+  diversity. Do not inspect the frozen holdout during this selection.
 - Reserve a new untouched or prospective evaluation window before claiming an
   improvement from further optimizer tuning.
 

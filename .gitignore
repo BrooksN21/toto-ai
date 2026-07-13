@@ -32,3 +32,5 @@ reports/budget_oracle_last_*.md
 reports/strategy_backtest_last_*.csv
 reports/strategy_backtest_last_*.md
 reports/strategy_experiment_manifest*.json
+reports/strategy_diagnostics_development_last_*.csv
+reports/strategy_diagnostics_development_last_*.md
