@@ -14,11 +14,16 @@ from toto_ai.optimizer.coupon_probabilities import (
 )
 from toto_ai.optimizer.direct_package import DirectPackageResult
 from toto_ai.optimizer.strategy_backtest import (
+    StrategyBacktestResult,
+    StrategyBacktestRow,
     StrategyConfig,
     StrategyPackage,
     build_packages_for_probabilities,
+    paired_bootstrap_hit13,
     run_strategy_backtest,
     split_development_holdout,
+    summarize_strategy_backtest,
+    write_strategy_backtest_reports,
 )
 
 
@@ -412,7 +417,103 @@ def test_strategy_timeout_excludes_all_strategies_and_marks_holdout():
     assert result.summary["timed_out_drawings"] == 1
     assert result.summary["skipped_drawings"] == 1
     assert result.summary["operationally_inconclusive"] is True
+    assert result.summary["strategy_status"] == "operationally_inconclusive"
+    assert result.summary["skip_reasons"]["timeout"] == 1
     assert len(updates) == 1
+
+
+def test_summary_uses_holdout_paired_hit13_difference_and_status():
+    rows = [
+        _strategy_row(1, "holdout", "baseline_brief", best_hits=12),
+        _strategy_row(1, "holdout", "top_probability", best_hits=12),
+        _strategy_row(1, "holdout", "weighted_coverage", best_hits=13),
+        _strategy_row(2, "holdout", "baseline_brief", best_hits=13),
+        _strategy_row(2, "holdout", "top_probability", best_hits=12),
+        _strategy_row(2, "holdout", "weighted_coverage", best_hits=13),
+    ]
+
+    summary = summarize_strategy_backtest(
+        rows,
+        config=StrategyConfig(bank=5000, stake=30, category=13),
+        development_count=0,
+        holdout_count=2,
+        skipped=0,
+        bootstrap_samples=200,
+        bootstrap_seed=7,
+    )
+
+    assert summary["holdout"]["weighted_coverage"]["hit13_count"] == 2
+    assert summary["holdout"]["baseline_brief"]["hit13_count"] == 1
+    assert summary["paired_hit13_difference_pp"] == 50.0
+    assert summary["strategy_status"] in {"preliminary", "proven"}
+    assert summary["paired_drawing_count"] == 2
+
+
+def test_paired_bootstrap_rejects_incomplete_or_duplicate_holdout_rows():
+    incomplete = [
+        _strategy_row(1, "holdout", "baseline_brief", best_hits=12),
+        _strategy_row(1, "holdout", "weighted_coverage", best_hits=13),
+    ]
+    duplicate = [
+        _strategy_row(1, "holdout", "baseline_brief", best_hits=12),
+        _strategy_row(1, "holdout", "baseline_brief", best_hits=13),
+        _strategy_row(1, "holdout", "top_probability", best_hits=12),
+        _strategy_row(1, "holdout", "weighted_coverage", best_hits=13),
+    ]
+
+    with pytest.raises(ValueError, match="exactly one row per strategy"):
+        paired_bootstrap_hit13(incomplete, samples=20)
+    with pytest.raises(ValueError, match="exactly one row per strategy"):
+        paired_bootstrap_hit13(duplicate, samples=20)
+
+
+def test_summary_with_no_holdout_rows_is_not_evaluated():
+    summary = summarize_strategy_backtest(
+        [],
+        config=StrategyConfig(),
+        development_count=0,
+        holdout_count=2,
+        skipped=2,
+        bootstrap_samples=20,
+    )
+
+    assert summary["strategy_status"] == "not_evaluated"
+    assert summary["paired_drawing_count"] == 0
+
+
+def test_write_strategy_reports_contains_configuration_and_rows(tmp_path):
+    config = StrategyConfig(bank=5000, stake=30, category=13, seed=42)
+    rows = [
+        _strategy_row(1, "holdout", "baseline_brief", best_hits=12),
+        _strategy_row(1, "holdout", "top_probability", best_hits=12),
+        _strategy_row(1, "holdout", "weighted_coverage", best_hits=13),
+    ]
+    result = StrategyBacktestResult(
+        rows=rows,
+        summary=summarize_strategy_backtest(
+            rows,
+            config=config,
+            development_count=0,
+            holdout_count=1,
+            skipped=0,
+            bootstrap_samples=20,
+        ),
+        config=config,
+    )
+
+    csv_path, markdown_path = write_strategy_backtest_reports(
+        result,
+        last=500,
+        report_dir=tmp_path,
+    )
+
+    assert csv_path.name == "strategy_backtest_last_500_bank_5000.csv"
+    assert markdown_path.name == "strategy_backtest_last_500_bank_5000.md"
+    assert "weighted_coverage" in csv_path.read_text()
+    markdown = markdown_path.read_text()
+    assert "Strategy Backtest" in markdown
+    assert "holdout" in markdown
+    assert "seed" in markdown
 
 
 def _package_builder_stub(probabilities, analyses, drawing_id, config):
@@ -421,6 +522,25 @@ def _package_builder_stub(probabilities, analyses, drawing_id, config):
         StrategyPackage(name, [coupon], 0.5, 1, 0.01, False)
         for name in ("baseline_brief", "top_probability", "weighted_coverage")
     ]
+
+
+def _strategy_row(drawing_id, segment, strategy, best_hits):
+    return StrategyBacktestRow(
+        drawing_id=drawing_id,
+        drawing_number=1000 + drawing_id,
+        segment=segment,
+        strategy=strategy,
+        best_hits=best_hits,
+        hit_13=best_hits >= 13,
+        hit_14=best_hits >= 14,
+        hit_15=best_hits == 15,
+        package_size=10,
+        package_cost=300,
+        estimated_coverage=0.5,
+        candidate_count=20,
+        runtime_seconds=0.1,
+        package_hash=f"hash-{drawing_id}-{strategy}",
+    )
 
 
 def _add_strategy_drawing(

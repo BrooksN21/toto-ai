@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import csv
 import hashlib
 import math
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from random import Random
+from statistics import mean
 from typing import Any
 
 from sqlalchemy import select
@@ -245,6 +249,8 @@ def run_strategy_backtest(
     segments = split_development_holdout(drawings, holdout_size)
     rows = []
     generation_skipped = 0
+    generation_errors = 0
+    invalid_package_sets = 0
     timed_out_drawings = 0
     holdout_timed_out = False
 
@@ -268,6 +274,7 @@ def run_strategy_backtest(
             )
         except ValueError:
             generation_skipped += 1
+            generation_errors += 1
             _emit_strategy_progress(
                 progress_callback,
                 drawing,
@@ -285,6 +292,7 @@ def run_strategy_backtest(
             "weighted_coverage",
         }:
             generation_skipped += 1
+            invalid_package_sets += 1
             _emit_strategy_progress(
                 progress_callback,
                 drawing,
@@ -345,22 +353,309 @@ def run_strategy_backtest(
         )
 
     evaluated_ids = {row.drawing_id for row in rows}
-    summary: dict[str, object] = {
+    development_count = len(
+        {row.drawing_id for row in rows if row.segment == "development"}
+    )
+    holdout_count = len(
+        {row.drawing_id for row in rows if row.segment == "holdout"}
+    )
+    summary = summarize_strategy_backtest(
+        rows,
+        config=config,
+        development_count=development_count,
+        holdout_count=holdout_count,
+        skipped=eligibility_skipped + generation_skipped,
+    )
+    summary.update(
+        {
         "requested_drawings": last,
         "eligible_drawings": len(drawings),
         "evaluated_drawings": len(evaluated_ids),
-        "skipped_drawings": eligibility_skipped + generation_skipped,
         "timed_out_drawings": timed_out_drawings,
-        "development_drawings": len(
-            {row.drawing_id for row in rows if row.segment == "development"}
-        ),
-        "holdout_drawings": len(
-            {row.drawing_id for row in rows if row.segment == "holdout"}
-        ),
         "operationally_inconclusive": holdout_timed_out,
+        "skip_reasons": {
+            "eligibility": eligibility_skipped,
+            "generation_error": generation_errors,
+            "invalid_package_set": invalid_package_sets,
+            "timeout": timed_out_drawings,
+        },
         "execution_time_seconds": round(time.perf_counter() - started_at, 4),
-    }
+        }
+    )
+    if holdout_timed_out:
+        summary["strategy_status"] = "operationally_inconclusive"
     return StrategyBacktestResult(rows=rows, summary=summary, config=config)
+
+
+def paired_bootstrap_hit13(
+    rows: list[StrategyBacktestRow],
+    seed: int = 42,
+    samples: int = 10000,
+) -> dict[str, float]:
+    if samples <= 0:
+        raise ValueError("samples must be positive.")
+
+    paired = _paired_holdout_hit13(rows)
+    if not paired:
+        return {"difference_pp": 0.0, "ci_low_pp": 0.0, "ci_high_pp": 0.0}
+
+    rng = Random(seed)
+    differences = []
+    for _ in range(samples):
+        sample = [paired[rng.randrange(len(paired))] for _ in paired]
+        differences.append(
+            100
+            * sum(weighted - baseline for weighted, baseline in sample)
+            / len(sample)
+        )
+    differences.sort()
+    observed = 100 * sum(w - b for w, b in paired) / len(paired)
+    return {
+        "difference_pp": round(observed, 4),
+        "ci_low_pp": round(differences[int(0.025 * (samples - 1))], 4),
+        "ci_high_pp": round(differences[int(0.975 * (samples - 1))], 4),
+    }
+
+
+def _paired_holdout_hit13(
+    rows: list[StrategyBacktestRow],
+) -> list[tuple[int, int]]:
+    holdout = [row for row in rows if row.segment == "holdout"]
+    drawing_ids = sorted({row.drawing_id for row in holdout})
+    paired = []
+    expected = {
+        "baseline_brief",
+        "top_probability",
+        "weighted_coverage",
+    }
+    for drawing_id in drawing_ids:
+        drawing_rows = [row for row in holdout if row.drawing_id == drawing_id]
+        counts = {
+            strategy: sum(row.strategy == strategy for row in drawing_rows)
+            for strategy in expected
+        }
+        if set(row.strategy for row in drawing_rows) != expected or any(
+            count != 1 for count in counts.values()
+        ):
+            raise ValueError(
+                "Holdout drawings must contain exactly one row per strategy."
+            )
+        by_strategy = {row.strategy: row for row in drawing_rows}
+        paired.append(
+            (
+                int(by_strategy["weighted_coverage"].hit_13),
+                int(by_strategy["baseline_brief"].hit_13),
+            )
+        )
+    return paired
+
+
+def summarize_strategy_backtest(
+    rows: list[StrategyBacktestRow],
+    config: StrategyConfig,
+    development_count: int,
+    holdout_count: int,
+    skipped: int,
+    bootstrap_samples: int = 10000,
+    bootstrap_seed: int = 42,
+) -> dict[str, object]:
+    development = _summarize_segment(rows, "development")
+    holdout = _summarize_segment(rows, "holdout")
+    paired = paired_bootstrap_hit13(
+        rows,
+        seed=bootstrap_seed,
+        samples=bootstrap_samples,
+    )
+
+    paired_count = len(_paired_holdout_hit13(rows))
+    if paired_count == 0:
+        status = "not_evaluated"
+    else:
+        baseline = holdout["baseline_brief"]
+        weighted = holdout["weighted_coverage"]
+        point_passes = (
+            weighted["hit13_count"] > baseline["hit13_count"]
+            and weighted["average_best_hits"] >= baseline["average_best_hits"]
+        )
+        if not point_passes:
+            status = "rejected"
+        elif paired["ci_low_pp"] <= 0:
+            status = "preliminary"
+        else:
+            status = "proven"
+
+    return {
+        "configuration": asdict(config),
+        "development_drawings": development_count,
+        "holdout_drawings": holdout_count,
+        "skipped_drawings": skipped,
+        "development": development,
+        "holdout": holdout,
+        "paired_hit13_difference_pp": paired["difference_pp"],
+        "paired_hit13_ci_low_pp": paired["ci_low_pp"],
+        "paired_hit13_ci_high_pp": paired["ci_high_pp"],
+        "paired_drawing_count": paired_count,
+        "strategy_status": status,
+    }
+
+
+def write_strategy_backtest_reports(
+    result: StrategyBacktestResult,
+    last: int,
+    report_dir: str | Path = "reports",
+) -> tuple[Path, Path]:
+    output_dir = Path(report_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stem = f"strategy_backtest_last_{last}_bank_{result.config.bank}"
+    csv_path = output_dir / f"{stem}.csv"
+    markdown_path = output_dir / f"{stem}.md"
+
+    fieldnames = list(StrategyBacktestRow.__dataclass_fields__)
+    with csv_path.open("w", newline="", encoding="utf-8") as output:
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(asdict(row) for row in result.rows)
+
+    markdown_path.write_text(_strategy_report_markdown(result), encoding="utf-8")
+    return csv_path, markdown_path
+
+
+def _summarize_segment(
+    rows: list[StrategyBacktestRow],
+    segment: str,
+) -> dict[str, dict[str, float | int]]:
+    summary = {}
+    for strategy in (
+        "baseline_brief",
+        "top_probability",
+        "weighted_coverage",
+    ):
+        selected = [
+            row for row in rows if row.segment == segment and row.strategy == strategy
+        ]
+        count = len(selected)
+        hit13 = sum(row.hit_13 for row in selected)
+        hit14 = sum(row.hit_14 for row in selected)
+        hit15 = sum(row.hit_15 for row in selected)
+        summary[strategy] = {
+            "drawing_count": count,
+            "hit13_count": hit13,
+            "hit13_rate": _percentage(hit13, count),
+            "hit14_count": hit14,
+            "hit14_rate": _percentage(hit14, count),
+            "hit15_count": hit15,
+            "hit15_rate": _percentage(hit15, count),
+            "average_best_hits": _mean_or_zero(
+                [row.best_hits for row in selected]
+            ),
+            "average_package_size": _mean_or_zero(
+                [row.package_size for row in selected]
+            ),
+            "average_package_cost": _mean_or_zero(
+                [row.package_cost for row in selected]
+            ),
+            "average_estimated_coverage": _mean_or_zero(
+                [row.estimated_coverage for row in selected]
+            ),
+            "average_candidate_count": _mean_or_zero(
+                [row.candidate_count for row in selected]
+            ),
+            "average_runtime_seconds": _mean_or_zero(
+                [row.runtime_seconds for row in selected]
+            ),
+        }
+    return summary
+
+
+def _strategy_report_markdown(result: StrategyBacktestResult) -> str:
+    summary = result.summary
+    config = result.config
+    eligible = summary.get(
+        "eligible_drawings",
+        len({row.drawing_id for row in result.rows}),
+    )
+    skip_reasons = summary.get("skip_reasons", {})
+    lines = [
+        "# Strategy Backtest",
+        "",
+        "## Configuration",
+        "",
+        f"- bank: {config.bank}",
+        f"- stake: {config.stake}",
+        f"- category: {config.category}",
+        f"- seed: {config.seed}",
+        f"- top_count: {config.top_count}",
+        f"- candidate_samples: {config.candidate_samples}",
+        f"- optimization_samples: {config.optimization_samples}",
+        f"- validation_samples: {config.validation_samples}",
+        "",
+        "## Eligibility And Split",
+        "",
+        f"- eligible: {eligible}",
+        f"- skipped: {summary.get('skipped_drawings', 0)}",
+        f"- development: {summary.get('development_drawings', 0)}",
+        f"- holdout: {summary.get('holdout_drawings', 0)}",
+        "",
+    ]
+    for segment in ("development", "holdout"):
+        lines.extend(
+            [
+                f"## {segment.title()}",
+                "",
+                "| Strategy | Drawings | Hit13 | Hit14 | Hit15 | "
+                "Avg Best Hits | Avg Cost |",
+                "|---|---:|---:|---:|---:|---:|---:|",
+            ]
+        )
+        segment_summary = summary[segment]
+        for strategy in (
+            "baseline_brief",
+            "top_probability",
+            "weighted_coverage",
+        ):
+            metrics = segment_summary[strategy]
+            lines.append(
+                f"| {strategy} | {metrics['drawing_count']} | "
+                f"{metrics['hit13_count']} | {metrics['hit14_count']} | "
+                f"{metrics['hit15_count']} | {metrics['average_best_hits']} | "
+                f"{metrics['average_package_cost']} |"
+            )
+        lines.append("")
+
+    lines.extend(
+        [
+            "## Paired Holdout Decision",
+            "",
+            f"- hit13 difference (pp): {summary['paired_hit13_difference_pp']}",
+            f"- 95% interval: [{summary['paired_hit13_ci_low_pp']}, "
+            f"{summary['paired_hit13_ci_high_pp']}]",
+            f"- strategy status: {summary['strategy_status']}",
+            f"- operationally inconclusive: "
+            f"{summary.get('operationally_inconclusive', False)}",
+            "- acceptance: weighted holdout hit13 count must exceed baseline, "
+            "average best hits must not be lower, and the interval lower bound "
+            "must exceed zero for proven status.",
+            "",
+            "## Skips And Timing",
+            "",
+            f"- skipped drawings: {summary.get('skipped_drawings', 0)}",
+            f"- eligibility skips: {skip_reasons.get('eligibility', 0)}",
+            f"- generation errors: {skip_reasons.get('generation_error', 0)}",
+            f"- invalid package sets: {skip_reasons.get('invalid_package_set', 0)}",
+            f"- timed out drawings: {summary.get('timed_out_drawings', 0)}",
+            f"- execution seconds: {summary.get('execution_time_seconds', 0)}",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _mean_or_zero(values: list[float | int]) -> float:
+    return round(mean(values), 4) if values else 0.0
+
+
+def _percentage(count: int, total: int) -> float:
+    return round(100 * count / total, 4) if total else 0.0
 
 
 def _validate_strategy_config(config: StrategyConfig) -> None:
