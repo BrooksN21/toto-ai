@@ -54,10 +54,18 @@ Build a playable package only when the modeled gross-EV threshold is met:
 python -m toto_ai.cli ev-package --open --mode playable --bank 6000 --stake 30 --min-gross-ev 1.0
 ```
 
-Run a chronological modeled-EV backtest outside the frozen holdout:
+`backtest-ev` requires an existing frozen experiment manifest and does not
+create one automatically. Before the first backtest, freeze the drawing IDs,
+protocol, data hashes, and code version into a manifest:
 
 ```bash
-python -m toto_ai.cli backtest-ev --db data/toto.db --last 100 --banks 4800,6000,9600 --thresholds 0.90,0.95,1.00,1.05 --frozen-manifest reports/strategy_experiment_manifest_last_500_exclude_10.json
+python -m toto_ai.cli freeze-strategy-experiment --db data/toto.db --last 500 --holdout 150 --output reports/my_frozen_strategy_manifest.json
+```
+
+Then run the chronological modeled-EV backtest with that exact manifest path:
+
+```bash
+python -m toto_ai.cli backtest-ev --db data/toto.db --last 100 --banks 4800,6000,9600 --thresholds 0.90,0.95,1.00,1.05 --frozen-manifest reports/my_frozen_strategy_manifest.json
 ```
 
 The bank can be any positive multiple of the configured stake. Research mode

@@ -86,6 +86,25 @@ def _run_and_publish(monkeypatch, payload, config, report_dir):
     return run, csv_path, markdown_path
 
 
+def _markdown_table_rows(markdown, heading):
+    lines = markdown.splitlines()
+    start = lines.index(heading) + 1
+    stop = next(
+        (
+            index
+            for index in range(start, len(lines))
+            if lines[index].startswith("## ")
+        ),
+        len(lines),
+    )
+    table_lines = [line for line in lines[start:stop] if line.startswith("|")]
+    assert len(table_lines) >= 2
+    return [
+        tuple(cell.strip() for cell in line.strip("|").split("|"))
+        for line in table_lines[2:]
+    ]
+
+
 def test_playable_pipeline_can_return_honest_no_bet(
     monkeypatch,
     tmp_path,
@@ -149,6 +168,16 @@ def test_research_pipeline_uses_dynamic_bank_and_deterministic_reports(
         "model supported: yes",
     ):
         assert assumption in markdown
+
+    event_rows = _markdown_table_rows(markdown, "## Event Probabilities")
+    assert len(event_rows) == 15
+    assert [row[0] for row in event_rows] == [str(index) for index in range(1, 16)]
+    assert all(len(row) == 8 and row[1] == "totobrief_bk" for row in event_rows)
+
+    sensitivity_rows = _markdown_table_rows(markdown, "## Sensitivity")
+    assert len(sensitivity_rows) == 4
+    assert [row[0] for row in sensitivity_rows] == ["0.70", "0.80", "0.90", "1.00"]
+    assert all(len(row) == 8 for row in sensitivity_rows)
 
 
 def test_interrupted_surface_build_creates_no_play_report(
