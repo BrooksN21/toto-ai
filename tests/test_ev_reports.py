@@ -181,6 +181,35 @@ def test_keyboard_interrupt_during_second_replace_restores_existing_pair(
     assert set(tmp_path.iterdir()) == {csv_path, markdown_path}
 
 
+def test_system_exit_during_second_replace_restores_existing_pair(
+    monkeypatch,
+    tmp_path,
+):
+    run = fixture_run(decision="PLAY")
+    csv_path, markdown_path = ev_package_report_paths(run, tmp_path)
+    csv_path.write_bytes(b"old csv\n")
+    markdown_path.write_bytes(b"old markdown\n")
+    original_replace = Path.replace
+    final_replace_count = 0
+
+    def exit_during_second_final_replace(source, target):
+        nonlocal final_replace_count
+        if Path(target) in {csv_path, markdown_path}:
+            final_replace_count += 1
+            if final_replace_count == 2:
+                raise SystemExit("second final replace exited")
+        return original_replace(source, target)
+
+    monkeypatch.setattr(Path, "replace", exit_during_second_final_replace)
+
+    with pytest.raises(SystemExit, match="second final replace exited"):
+        write_ev_package_reports(run, tmp_path)
+
+    assert csv_path.read_bytes() == b"old csv\n"
+    assert markdown_path.read_bytes() == b"old markdown\n"
+    assert set(tmp_path.iterdir()) == {csv_path, markdown_path}
+
+
 def test_render_failure_leaves_no_artifacts(monkeypatch, tmp_path):
     monkeypatch.setattr(
         reports_module,

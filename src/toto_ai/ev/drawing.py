@@ -139,7 +139,11 @@ def ev_input_from_payload(
             "possible_winnings cannot be combined with a non-default prize_fund_factor"
         )
     resolved_winnings = (
-        pool_sum * factor
+        _finite_number(
+            "possible_winnings",
+            pool_sum * factor,
+            positive=False,
+        )
         if possible_winnings is None
         else _finite_number(
             "possible_winnings",

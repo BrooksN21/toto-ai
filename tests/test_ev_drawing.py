@@ -279,6 +279,33 @@ def test_build_rejects_drawing_info_id_mismatch_before_calculation(
         )
 
 
+def test_build_rejects_overflowed_pool_proxy_before_calculation(
+    monkeypatch,
+    open_drawing_payload,
+):
+    import toto_ai.ev.drawing as drawing_module
+
+    open_drawing_payload["data"]["pool_sum"] = 1e308
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == 9000
+            return open_drawing_payload
+
+    monkeypatch.setattr(
+        drawing_module,
+        "compute_ev_components",
+        lambda *args, **kwargs: pytest.fail("invalid proxy must not be calculated"),
+    )
+
+    with pytest.raises(ValueError, match="possible_winnings"):
+        build_open_ev_package(
+            client=Client(),
+            drawing_id=9000,
+            config=EVConfig(bank=30, prize_fund_factor=2.0),
+        )
+
+
 def _surface(value):
     return EVSurface(
         gross_ev=np.array([value], dtype=np.float64),
