@@ -990,4 +990,10 @@ Design specification:
 - `docs/superpowers/specs/2026-07-14-api-sports-coverage-audit-design.md`
 
 Next action:
-- review the written specification, then create its TDD implementation plan.
+- execute the seven-task TDD implementation plan with independent review gates.
+
+Implementation plan:
+- `docs/superpowers/plans/2026-07-14-api-sports-coverage-audit.md`
+- Tasks: provider-neutral targets, API-Sports transport/cache/quota, fail-closed
+  matching and manual alias suggestions, strict three-way consensus,
+  append-only storage/collection, audit reports/CLI, and end-to-end acceptance.
