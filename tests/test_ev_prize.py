@@ -4,7 +4,15 @@ import numpy as np
 import pytest
 
 from toto_ai.ev import CROWD_JOINT_MODEL
-from toto_ai.ev.models import EVComponents, EVConfig, EVSurface, validate_config_bank
+from toto_ai.ev.models import (
+    EVComponents,
+    EVConfig,
+    EVInput,
+    EVPackage,
+    EVSurface,
+    RankedCoupon,
+    validate_config_bank,
+)
 from toto_ai.ev.prize import (
     category_funds,
     normalize_triplet,
@@ -40,6 +48,12 @@ def test_jeffreys_smoothing_makes_rounded_zero_positive():
     smoothed = smooth_crowd_matrix(((0.0, 0.4, 0.6),), 3_000_000.0, 30)
     assert all(value > 0 for value in smoothed[0])
     assert math.isclose(sum(smoothed[0]), 1.0)
+
+
+@pytest.mark.parametrize("stake", [True, 30.0, 0, -30])
+def test_smooth_crowd_matrix_rejects_invalid_stake_domain(stake):
+    with pytest.raises(ValueError, match="stake must be a positive int"):
+        smooth_crowd_matrix(((0.2, 0.3, 0.5),), 3000.0, stake)
 
 
 def test_ev_config_does_not_force_full_bank_use():
@@ -113,6 +127,78 @@ def test_ev_arrays_are_defensive_copies_and_read_only():
         assert not array.flags.writeable
         with pytest.raises(ValueError):
             array[0] = 100.0
+        with pytest.raises(ValueError):
+            array.setflags(write=True)
+
+
+def test_ev_input_deep_normalizes_collection_inputs():
+    true_probabilities = [[0.2, 0.3, 0.5]]
+    crowd_probabilities = [[0.4, 0.4, 0.2]]
+    probability_sources = ["bk", "pool"]
+    ev_input = EVInput(
+        drawing_id=1,
+        drawing_number=None,
+        true_probabilities=true_probabilities,
+        crowd_probabilities=crowd_probabilities,
+        pool_sum=3000.0,
+        jackpot=1000.0,
+        possible_winnings=500.0,
+        probability_sources=probability_sources,
+        fetched_at="2026-07-14T00:00:00Z",
+    )
+
+    true_probabilities[0][0] = 99.0
+    true_probabilities.append([0.1, 0.2, 0.7])
+    crowd_probabilities[0][0] = 99.0
+    probability_sources[0] = "changed"
+    probability_sources.append("new")
+
+    assert ev_input.true_probabilities == ((0.2, 0.3, 0.5),)
+    assert ev_input.crowd_probabilities == ((0.4, 0.4, 0.2),)
+    assert ev_input.probability_sources == ("bk", "pool")
+
+
+@pytest.mark.parametrize("field", ["true_probabilities", "crowd_probabilities"])
+def test_ev_input_rejects_probability_rows_without_three_outcomes(field):
+    values = {
+        "true_probabilities": ((0.2, 0.3, 0.5),),
+        "crowd_probabilities": ((0.2, 0.3, 0.5),),
+    }
+    values[field] = ((0.2, 0.8),)
+
+    with pytest.raises(ValueError, match="exactly three values"):
+        EVInput(
+            drawing_id=1,
+            drawing_number=None,
+            true_probabilities=values["true_probabilities"],
+            crowd_probabilities=values["crowd_probabilities"],
+            pool_sum=3000.0,
+            jackpot=1000.0,
+            possible_winnings=500.0,
+            probability_sources=("bk",),
+            fetched_at="2026-07-14T00:00:00Z",
+        )
+
+
+def test_ev_package_deep_normalizes_collection_inputs():
+    coupons = [RankedCoupon(1, "111111111111111", 1.2, 0.2)]
+    derived_brief = ["1", "X"]
+    package = EVPackage(
+        decision="PLAY",
+        coupons=coupons,
+        cost=30,
+        unused_bank=0,
+        expected_payout=36.0,
+        modeled_roi=0.2,
+        derived_brief=derived_brief,
+    )
+
+    coupons.clear()
+    derived_brief[0] = "2"
+    derived_brief.append("X")
+
+    assert package.coupons == (RankedCoupon(1, "111111111111111", 1.2, 0.2),)
+    assert package.derived_brief == ("1", "X")
 
 
 @pytest.mark.parametrize("value", [-1.0, float("nan"), float("inf")])

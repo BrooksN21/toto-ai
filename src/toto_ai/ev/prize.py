@@ -56,8 +56,8 @@ def smooth_crowd_matrix(
     ``CROWD_JOINT_MODEL``; this function does not infer event correlations.
     """
     _require_non_negative_finite("pool_sum", pool_sum)
-    if stake <= 0:
-        raise ValueError("stake must be positive")
+    if type(stake) is not int or stake <= 0:
+        raise ValueError("stake must be a positive int")
     observations = pool_sum / stake
     denominator = observations + 1.5
     return tuple(

@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 328
+- Tests currently passed: 336
 - Ruff passed
 
 ## Approved Next Design: Expected-Value Package Engine
@@ -562,6 +562,21 @@ utilization. `EVComponents` and `EVSurface` defensively copy and freeze their
 NumPy arrays. The exported `CROWD_JOINT_MODEL` contract is
 `independent_event_marginals`: later joint coupon probabilities are modeled as
 products of the smoothed event marginals.
+
+## Latest Task 1 Fix Wave: Hardened EV Immutability
+
+The second Task 1 fix wave enforces the same positive-integer stake contract in
+`smooth_crowd_matrix()` as `validate_bank()`, including rejection of booleans,
+floats, zero, and negative values. `EVInput` now deep-normalizes probability
+matrices and probability sources to tuples and rejects probability rows that do
+not contain three outcomes. `EVPackage` deep-normalizes coupons and derived
+brief values to tuples. EV arrays are defensive copies exposed through owned
+immutable byte buffers, so their shapes and dtypes are preserved and callers
+cannot re-enable writes with `setflags(write=True)`.
+
+Verification for this fix wave: focused EV tests `48 passed`, full pytest
+`336 passed`, focused Ruff passed, and full Ruff passed. NumPy remains
+intentionally undeclared in `pyproject.toml` until Task 3.
 
 ## Next Task
 

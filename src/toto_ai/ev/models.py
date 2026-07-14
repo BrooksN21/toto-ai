@@ -10,9 +10,19 @@ EVMode = Literal["research", "playable"]
 
 
 def _immutable_array(value: np.ndarray) -> np.ndarray:
-    array = np.array(value, copy=True)
-    array.setflags(write=False)
-    return array
+    array = np.array(value, copy=True, order="C")
+    backing = array.tobytes(order="C")
+    return np.frombuffer(backing, dtype=array.dtype, count=array.size).reshape(
+        array.shape,
+    )
+
+
+def _immutable_probability_matrix(value: ProbabilityMatrix) -> ProbabilityMatrix:
+    matrix = tuple(tuple(row) for row in value)
+    for row in matrix:
+        if len(row) != 3:
+            raise ValueError("probability rows must contain exactly three values")
+    return matrix
 
 
 def validate_config_bank(bank: int, stake: int) -> int:
@@ -54,6 +64,23 @@ class EVInput:
     possible_winnings: float
     probability_sources: tuple[str, ...]
     fetched_at: str
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "true_probabilities",
+            _immutable_probability_matrix(self.true_probabilities),
+        )
+        object.__setattr__(
+            self,
+            "crowd_probabilities",
+            _immutable_probability_matrix(self.crowd_probabilities),
+        )
+        object.__setattr__(
+            self,
+            "probability_sources",
+            tuple(self.probability_sources),
+        )
 
 
 @dataclass(frozen=True)
@@ -107,3 +134,7 @@ class EVPackage:
     expected_payout: float
     modeled_roi: float | None
     derived_brief: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "coupons", tuple(self.coupons))
+        object.__setattr__(self, "derived_brief", tuple(self.derived_brief))
