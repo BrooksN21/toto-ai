@@ -270,6 +270,18 @@ def test_sql_scope_check_rejects_unscoped_event_and_quote_queries(statement):
         _bound_drawing_id_parameter(statement, (1,))
 
 
+def test_sql_scope_check_rejects_join_without_quote_drawing_relation():
+    statement = (
+        "SELECT events.event_order, quotes.bk_win_1 "
+        "FROM events JOIN quotes "
+        "ON quotes.event_order = events.event_order "
+        "WHERE events.drawing_id = ?"
+    )
+
+    with pytest.raises(AssertionError, match="quotes.drawing_id"):
+        _bound_drawing_id_parameter(statement, (1,))
+
+
 def test_backtest_is_chronological_and_skips_invalid_inputs(session):
     _add_drawing(session, 1, number=1001)
     _add_drawing(session, 2, number=1002)
@@ -1071,19 +1083,35 @@ def _bound_integer_parameters(parameters):
 
 
 def _touches_event_or_quote(statement):
-    return bool(
-        re.search(
-            r'\b(?:from|join)\s+(?:"?\w+"?\.)?"?(?:events|quotes)"?\b',
+    return bool(_referenced_event_or_quote_tables(statement))
+
+
+def _referenced_event_or_quote_tables(statement):
+    return {
+        match.group(1).lower()
+        for match in re.finditer(
+            r'\b(?:from|join)\s+(?:"?\w+"?\.)?"?(events|quotes)"?\b',
             statement,
             flags=re.IGNORECASE,
         )
-    )
+    }
+
+
+def _drawing_id_relation_tables(statement):
+    if not re.search(
+        r"\b(?:events\.drawing_id\s*=\s*quotes\.drawing_id|"
+        r"quotes\.drawing_id\s*=\s*events\.drawing_id)\b",
+        statement,
+        flags=re.IGNORECASE,
+    ):
+        return set()
+    return {"events", "quotes"}
 
 
 def _bound_drawing_id_parameter(statement, parameters):
     matches = tuple(
         re.finditer(
-            r'\b(?:events|quotes)\.drawing_id\s*=\s*\?',
+            r"\b(events|quotes)\.drawing_id\s*=\s*\?",
             statement,
             flags=re.IGNORECASE,
         )
@@ -1091,6 +1119,19 @@ def _bound_drawing_id_parameter(statement, parameters):
     assert len(matches) == 1, (
         "Event/Quote SQL must have exactly one bound events.drawing_id or "
         "quotes.drawing_id predicate"
+    )
+    scoped_tables = {
+        matches[0].group(1).lower(),
+        *_drawing_id_relation_tables(statement),
+    }
+    missing_tables = (
+        _referenced_event_or_quote_tables(statement) - scoped_tables
+    )
+    assert not missing_tables, (
+        "Event/Quote SQL lacks required drawing-ID scope for "
+        + ", ".join(
+            f"{table}.drawing_id" for table in sorted(missing_tables)
+        )
     )
     values = (
         tuple(parameters.values())
