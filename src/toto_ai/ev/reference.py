@@ -9,6 +9,8 @@ import numpy as np
 from toto_ai.ev.models import ProbabilityMatrix
 
 MAX_REFERENCE_EVENTS = 8
+PROBABILITY_SUM_RTOL = 1e-12
+PROBABILITY_SUM_ATOL = 1e-12
 
 
 def _validated_matrix(
@@ -31,8 +33,16 @@ def _validated_matrix(
         values = tuple(float(value) for value in row)
         if any(not math.isfinite(value) or value < 0 for value in values):
             raise ValueError(f"{name} probabilities must be finite and non-negative")
-        if sum(values) <= 0:
-            raise ValueError(f"{name} rows must have positive probability mass")
+        if not math.isclose(
+            sum(values),
+            1.0,
+            rel_tol=PROBABILITY_SUM_RTOL,
+            abs_tol=PROBABILITY_SUM_ATOL,
+        ):
+            raise ValueError(
+                f"{name} rows must sum to 1 within rtol={PROBABILITY_SUM_RTOL} "
+                f"and atol={PROBABILITY_SUM_ATOL}",
+            )
         validated.append(values)
     return tuple(validated)
 
@@ -95,12 +105,21 @@ def coupon_payout(
     """Return a coupon's payout for one actual result."""
     if type(stake) is not int or stake <= 0:
         raise ValueError("stake must be a positive int")
+    event_count = len(actual)
+    funds = _validated_category_funds(
+        category_funds_by_hits,
+        minimum_category=1,
+        event_count=event_count,
+    )
+    validated_stakes: dict[int, float] = {}
+    for category in funds:
+        if category not in qualifying_stake:
+            raise ValueError(f"qualifying stake missing for category {category}")
+        validated_stakes[category] = _positive_denominator(qualifying_stake[category])
     hits = coupon_hits(coupon, actual)
     return sum(
-        category_funds_by_hits[category] * stake / _positive_denominator(
-            qualifying_stake[category],
-        )
-        for category in category_funds_by_hits
+        funds[category] * stake / validated_stakes[category]
+        for category in funds
         if category <= hits
     )
 
@@ -115,17 +134,24 @@ def _positive_denominator(value: float) -> float:
 def _validated_category_funds(
     category_funds_by_hits: Mapping[int, float],
     minimum_category: int,
+    event_count: int,
 ) -> dict[int, float]:
     if type(minimum_category) is not int or minimum_category <= 0:
         raise ValueError("minimum_category must be a positive int")
+    if minimum_category > event_count:
+        raise ValueError("minimum_category must not exceed event_count")
     if not category_funds_by_hits:
         raise ValueError("category_funds_by_hits must not be empty")
 
     validated: dict[int, float] = {}
     for category, fund in category_funds_by_hits.items():
-        if type(category) is not int or category < minimum_category:
+        if (
+            type(category) is not int
+            or category < minimum_category
+            or category > event_count
+        ):
             raise ValueError(
-                "categories must be positive and at least minimum_category",
+                f"category {category} must be in {minimum_category}..{event_count}",
             )
         value = float(fund)
         if not math.isfinite(value) or value < 0:
@@ -149,7 +175,11 @@ def brute_force_gross_ev(
         raise ValueError("true and crowd probabilities must have the same event count")
     if type(stake) is not int or stake <= 0:
         raise ValueError("stake must be a positive int")
-    funds = _validated_category_funds(category_funds_by_hits, minimum_category)
+    funds = _validated_category_funds(
+        category_funds_by_hits,
+        minimum_category,
+        event_count=len(true_matrix),
+    )
 
     states = _states(len(true_matrix))
     true_joint = joint_distribution(true_matrix)

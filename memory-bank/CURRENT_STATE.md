@@ -592,6 +592,20 @@ fail closed before payout division.
 Verification: focused reference tests `11 passed`; full pytest `347 passed`;
 focused Ruff passed; full Ruff passed.
 
+## Latest Task 2 Review Fix: Hardened Reference Validation
+
+The brute-force EV reference now requires every probability row to contain
+exactly three finite non-negative values whose sum is one within
+`rtol=1e-12` and `atol=1e-12`, while preserving valid zero probabilities.
+`coupon_payout()` validates category ranges against the event hit count,
+non-negative finite category funds, positive finite qualifying stakes for
+every funded category, and strict positive integer stakes. Brute-force EV
+rejects out-of-range categories before enumeration, and all public integer
+contracts reject booleans.
+
+Verification: focused reference tests `36 passed`; full pytest `372 passed`;
+focused Ruff passed; full Ruff passed.
+
 ## Next Task
 
 Implement the exact ternary full-space EV engine and its benchmark, consuming
