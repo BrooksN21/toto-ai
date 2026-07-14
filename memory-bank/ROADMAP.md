@@ -52,13 +52,13 @@
   verifies frozen package hashes/results, and exports deterministic reports.
   Completed.
 - Hybrid Direct Package experiment Tasks 1-5 are completed: selector, GO/STOP
-  model, fail-closed evaluator, atomic reports/CLI, and initial development run.
-  The unsealed run returned STOP: no hybrid added the required two 13+ hits over
+  model, fail-closed evaluator, atomic reports/CLI, and sealed development run.
+  The final decision is STOP: no hybrid added the required two 13+ hits over
   top-probability. Total 13+ counts for top/0.50/0.75/0.90 were 6/4/5/6;
   per-fold counts were 0/0/0/0, 0/0/0/0, 1/0/0/1, 1/1/1/1, and 4/3/4/4.
   Average best hits were 8.691429/9.491429/9.288571/9.060000, with zero
-  reported operational failures. A single sealed rerun is required before the
-  decision becomes final.
+  operational failures. The sealed rerun exactly reproduced these metrics with
+  zero holdout-ID overlap and zero timeouts. BK-only optimizer tuning is closed.
 - Harden the hybrid development boundary with a reproducible development-only
   seal and separate canonical CSV, pre-drawing input, result, and protocol
   hashes, plus clean-code binding and rollback-safe artifact publication.

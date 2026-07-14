@@ -66,6 +66,9 @@ Hybrid development result:
 - No operational failures or timeouts occurred.
 - The pre-registered decision was STOP because no hybrid added at least two
   13+ hits over top probability.
+- A development-only sealed rerun at Git revision `a5b1d00` exactly reproduced
+  the same totals and fold metrics across 350 development drawings, with zero
+  timeouts, zero operational failures, and zero holdout-ID overlap.
 
 Current conclusion:
 - Controlled diversity still improves average nearest-coupon quality without

@@ -70,11 +70,12 @@ selection, and validation coverage. A timed-out selector returns without a
 post-deadline exact coverage pass. Deadline overruns therefore fail closed
 instead of being reported as successful zero-timeout drawings.
 
-## Previous Unsealed Run: Frozen Hybrid Development Experiment
+## Latest Completed Task: Sealed Frozen Hybrid Development Experiment
 
 The approved hybrid direct-package experiment completed on all 350 frozen
 development drawings without accessing the 150-drawing holdout during
-selection.
+selection. The final run used the development-only data/code seal at Git
+revision `a5b1d0037e8b3ce38117a54440e7e24c7a883b74`.
 
 Protocol:
 - Bank 5000 RUB, stake 30 RUB, category 13.
@@ -106,7 +107,7 @@ GO predicates by hybrid core fraction:
 - 0.90: additional 13+ 0, non-losing folds 5, average best-hit delta
   +0.368571, operational failures 0; fail.
 
-Initial decision: `STOP`.
+Final decision: `STOP`.
 
 No hybrid fraction met every pre-registered GO predicate. All hybrids improved
 average best hits, but none produced the required two additional 13+ hits over
@@ -114,14 +115,16 @@ average best hits, but none produced the required two additional 13+ hits over
 BK-only protocol. The old holdout remains excluded and unopened for hybrid
 selection. This development-only result is not profitability evidence.
 
-Final review found that the original run did not enforce a development-only
-data/code seal or the full package-generation deadline. The reported metrics
-remain historical evidence but the decision must be regenerated once with the
-new sealed artifacts before it is treated as the final experiment result.
+The sealed rerun completed in 25 minutes 9 seconds and exactly reproduced the
+original strategy hit counts, fold counts, average best-hit metrics, and STOP
+decision. It processed 1400 evaluation rows with zero timeouts, exactly 350
+development IDs, and zero holdout-ID overlap.
 
 Reports:
 - `reports/hybrid_evaluation_development_last_500_bank_5000.csv`
 - `reports/hybrid_evaluation_development_last_500_bank_5000.md`
+- `reports/hybrid_development_manifest_last_500.json`
+- `reports/hybrid_development_rows_last_500.csv`
 
 The CSV was independently checked: 1400 rows, 350 rows per strategy, and 280
 rows per fold.
@@ -510,7 +513,7 @@ Local smoke results on `data/toto.db`:
 
 ## Next Task
 
-Commit the reviewed integrity/deadline fixes, create the development-only seal
-from a clean checkout, and rerun the unchanged frozen hybrid evaluation once.
-If the sealed decision remains STOP, start external probability-provider
-feasibility work beginning with Pinnacle.
+Start external probability-provider feasibility work, beginning with Pinnacle
+availability, access terms, historical/closing-odds availability, event
+matching, and a provider-neutral probability interface. Keep BK-only direct
+optimizer tuning closed.

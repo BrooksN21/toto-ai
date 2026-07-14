@@ -55,16 +55,15 @@
 - The hybrid per-drawing deadline covers every package-generation stage.
   Timed-out selectors do not perform exact coverage after expiry, and any stage
   overrun fails the evaluation before reports are written.
-- The initial unsealed hybrid development run returned STOP: core fractions 0.50,
+- The sealed hybrid development experiment returned STOP: core fractions 0.50,
   0.75, and 0.90 added -2, -1, and 0 observed 13+ hits respectively versus
   top-probability, despite improving average best hits and having zero
-  reported operational failures. This decision must be regenerated once under
-  the development data/code seal and full deadline before it becomes final.
-- If the sealed rerun remains STOP, further tuning of the BK-only direct package
-  optimizer closes. The next research direction is external probability data,
-  starting with Pinnacle feasibility and a provider-neutral interface. Any
-  later optimizer work needs a new hypothesis and a new untouched evaluation
-  window.
+  operational failures. The sealed rerun exactly reproduced the initial
+  metrics, used zero holdout IDs, and is the final decision for this direction.
+- Further tuning of the BK-only direct package optimizer is closed. The next
+  research direction is external probability data, starting with Pinnacle
+  feasibility and a provider-neutral interface. Any later optimizer work needs
+  a new hypothesis and a new untouched evaluation window.
 - Budget-constrained oracle commands may use actual results only as benchmark
   upper bounds; they must not be treated as playable prediction methods.
 - Budget-oracle must not reduce the candidate search space by default. Candidate
