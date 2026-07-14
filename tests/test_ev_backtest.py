@@ -282,6 +282,40 @@ def test_sql_scope_check_rejects_join_without_quote_drawing_relation():
         _bound_drawing_id_parameter(statement, (1,))
 
 
+def test_sql_scope_check_rejects_comma_join_with_only_event_scoped():
+    statement = (
+        "SELECT events.event_order, quotes.bk_win_1 "
+        "FROM events, quotes "
+        "WHERE events.drawing_id = ?"
+    )
+
+    with pytest.raises(AssertionError, match="quotes.drawing_id"):
+        _bound_drawing_id_parameter(statement, (1,))
+
+
+def test_sql_scope_check_rejects_aliased_comma_join_without_quote_scope():
+    statement = (
+        "SELECT e.event_order, q.bk_win_1 "
+        "FROM events AS e, quotes AS q "
+        "WHERE e.drawing_id = ?"
+    )
+
+    with pytest.raises(AssertionError, match="q.drawing_id"):
+        _bound_drawing_id_parameter(statement, (1,))
+
+
+def test_sql_scope_check_accepts_aliased_join_with_drawing_relation():
+    statement = (
+        "SELECT e.event_order, q.bk_win_1 "
+        "FROM events AS e JOIN quotes AS q "
+        "ON q.drawing_id = e.drawing_id "
+        "AND q.event_order = e.event_order "
+        "WHERE e.drawing_id = ?"
+    )
+
+    assert _bound_drawing_id_parameter(statement, (3,)) == 3
+
+
 def test_backtest_is_chronological_and_skips_invalid_inputs(session):
     _add_drawing(session, 1, number=1001)
     _add_drawing(session, 2, number=1002)
@@ -1087,46 +1121,136 @@ def _touches_event_or_quote(statement):
 
 
 def _referenced_event_or_quote_tables(statement):
-    return {
-        match.group(1).lower()
-        for match in re.finditer(
-            r'\b(?:from|join)\s+(?:"?\w+"?\.)?"?(events|quotes)"?\b',
+    tokens = tuple(
+        token[1:-1].lower() if token.startswith('"') else token.lower()
+        for token in re.findall(
+            r'"[^"]+"|[A-Za-z_][A-Za-z0-9_]*|[(),.=?]',
             statement,
-            flags=re.IGNORECASE,
         )
+    )
+    tables = {"events", "quotes"}
+    clause_ends = {
+        "except",
+        "group",
+        "having",
+        "intersect",
+        "limit",
+        "order",
+        "union",
+        "where",
     }
+    alias_stops = clause_ends | {
+        "cross",
+        "full",
+        "inner",
+        "join",
+        "left",
+        "natural",
+        "on",
+        "outer",
+        "right",
+    }
+    references = {}
+    in_from = False
+    in_join_condition = False
+    expect_table = False
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        if token == "from":
+            in_from = True
+            in_join_condition = False
+            expect_table = True
+            index += 1
+            continue
+        if not in_from:
+            index += 1
+            continue
+        if token in clause_ends:
+            in_from = False
+            index += 1
+            continue
+        if token == "join":
+            in_join_condition = False
+            expect_table = True
+            index += 1
+            continue
+        if token == "on":
+            in_join_condition = True
+            index += 1
+            continue
+        if token == "," and not in_join_condition:
+            expect_table = True
+            index += 1
+            continue
+        if not expect_table:
+            index += 1
+            continue
+
+        table = token
+        next_index = index + 1
+        if next_index + 1 < len(tokens) and tokens[next_index] == ".":
+            table = tokens[next_index + 1]
+            next_index += 2
+        if table in tables:
+            qualifier = table
+            if next_index < len(tokens) and tokens[next_index] == "as":
+                qualifier = tokens[next_index + 1]
+                next_index += 2
+            elif (
+                next_index < len(tokens)
+                and re.fullmatch(r"[a-z_][a-z0-9_]*", tokens[next_index])
+                and tokens[next_index] not in alias_stops
+            ):
+                qualifier = tokens[next_index]
+                next_index += 1
+            references[qualifier] = table
+        expect_table = False
+        index = next_index
+    return references
 
 
-def _drawing_id_relation_tables(statement):
-    if not re.search(
-        r"\b(?:events\.drawing_id\s*=\s*quotes\.drawing_id|"
-        r"quotes\.drawing_id\s*=\s*events\.drawing_id)\b",
+def _drawing_id_relation_edges(statement, qualifiers):
+    edges = {qualifier: set() for qualifier in qualifiers}
+    for match in re.finditer(
+        r'"?([A-Za-z_][A-Za-z0-9_]*)"?\s*\.\s*"?drawing_id"?'
+        r'\s*=\s*"?([A-Za-z_][A-Za-z0-9_]*)"?\s*\.\s*'
+        r'"?drawing_id"?',
         statement,
         flags=re.IGNORECASE,
     ):
-        return set()
-    return {"events", "quotes"}
+        left = match.group(1).lower()
+        right = match.group(2).lower()
+        if left in edges and right in edges:
+            edges[left].add(right)
+            edges[right].add(left)
+    return edges
 
 
 def _bound_drawing_id_parameter(statement, parameters):
+    references = _referenced_event_or_quote_tables(statement)
     matches = tuple(
-        re.finditer(
-            r"\b(events|quotes)\.drawing_id\s*=\s*\?",
+        match
+        for match in re.finditer(
+            r'"?([A-Za-z_][A-Za-z0-9_]*)"?\s*\.\s*'
+            r'"?drawing_id"?\s*=\s*\?',
             statement,
             flags=re.IGNORECASE,
         )
+        if match.group(1).lower() in references
     )
     assert len(matches) == 1, (
-        "Event/Quote SQL must have exactly one bound events.drawing_id or "
-        "quotes.drawing_id predicate"
+        "Event/Quote SQL must have exactly one bound drawing_id predicate"
     )
-    scoped_tables = {
-        matches[0].group(1).lower(),
-        *_drawing_id_relation_tables(statement),
-    }
-    missing_tables = (
-        _referenced_event_or_quote_tables(statement) - scoped_tables
-    )
+    scoped_tables = {matches[0].group(1).lower()}
+    relation_edges = _drawing_id_relation_edges(statement, references)
+    pending = list(scoped_tables)
+    while pending:
+        table = pending.pop()
+        for related in relation_edges[table] - scoped_tables:
+            scoped_tables.add(related)
+            pending.append(related)
+    missing_tables = references.keys() - scoped_tables
     assert not missing_tables, (
         "Event/Quote SQL lacks required drawing-ID scope for "
         + ", ".join(
