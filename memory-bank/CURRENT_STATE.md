@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 497
+- Tests currently passed: 506
 - Ruff passed
 
 ## Approved Next Design: Expected-Value Package Engine
@@ -847,6 +847,44 @@ passed`; worktree-local CLI help listed all six options and marked the manifest
 required; repository-wide Ruff passed. No historical EV run was interpreted as
 profitability evidence, and the old frozen holdout was not used for development
 or evaluation.
+
+## Task 6 Review Hardening
+
+`--last N` now means the latest `N` drawings that ultimately have both valid
+pre-result inputs and complete normalized actual results. Candidates are scanned
+newest-first; each package surface, ranking, selection, and hash is completed
+before that candidate's result projection is queried. Incomplete or invalid
+newer candidates are skipped and older candidates are evaluated until `N`
+complete drawings are obtained. Returned rows remain chronological.
+
+Checkpoint skip records are diagnostic only and are re-evaluated on every
+resume. Only completed drawing row groups are reusable. Loading now requires the
+exact unique Cartesian grid of configured bank, threshold, and prize factor for
+each completed drawing, and validates decision, bank cap, selected count, cost,
+unused bank, payout/ROI, self-dilution support, package hash, best hits, and all
+9..15 indicators. Stale skips can become processed drawings and displace older
+checkpoint rows while preserving same-config equivalence with uninterrupted
+execution.
+
+Historical Playable rows now apply the same self-dilution boundary as the live
+command: exactly 1% remains supported, while above 1% is a truly empty `NO BET`
+with zero cost/payout, full unused bank, no modeled ROI, and explicit ratio and
+support fields. Summaries include unsupported counts. Final reports and CLI
+checkpoints include the full configuration hash in their deterministic paths,
+so bank, threshold, or frozen-manifest holdout changes cannot overwrite another
+configuration's artifacts.
+
+Leakage regressions inspect SQL order and projections: the initial `Drawing`
+query contains holdout exclusion before any event/quote query, pre-hash input
+queries omit `Event.result`, and the result projection appears only after the
+`packages_ready` callback carries deterministic hashes. A manageable complete
+`3^3` orchestration regression uses real materialization and the production
+ranker once per factor and confirms all 27 coupons remain available; full
+15-event acceptance remains Task 7.
+
+Review-fix verification: focused backtest/report tests `36 passed`; full pytest
+`506 passed`; CLI help listed all required options; focused and repository-wide
+Ruff passed.
 
 ## Next Task
 

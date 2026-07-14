@@ -46,7 +46,10 @@ from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db, open_readonly_db
 from toto_ai.ev.backtest import (
+    EVBacktestConfig,
     EVBacktestResult,
+    ev_backtest_checkpoint_path,
+    ev_backtest_configuration_hash,
     load_frozen_holdout_ids,
     run_ev_backtest,
 )
@@ -661,13 +664,25 @@ def backtest_ev_command(
     frozen_manifest: str = typer.Option(..., "--frozen-manifest"),
 ) -> None:
     """Backtest exact modeled-EV packages outside a frozen holdout."""
-    checkpoint_path = (
-        Path("reports") / f"ev_backtest_last_{last}_stake_{stake}.partial.csv"
-    )
     try:
         parsed_banks = _parse_csv_ints(banks, "banks")
         parsed_thresholds = _parse_csv_floats(thresholds, "thresholds")
         forbidden_ids = load_frozen_holdout_ids(frozen_manifest)
+        config = EVBacktestConfig(
+            banks=parsed_banks,
+            thresholds=parsed_thresholds,
+            stake=stake,
+        )
+        configuration_hash = ev_backtest_configuration_hash(
+            config,
+            last=last,
+            forbidden_drawing_ids=forbidden_ids,
+        )
+        checkpoint_path = ev_backtest_checkpoint_path(
+            configuration_hash,
+            last=last,
+            stake=stake,
+        )
         engine = open_readonly_db(db)
         session_factory = get_session_factory(engine)
         with Progress(
@@ -1897,6 +1912,7 @@ def _ev_backtest_summary_table(result: EVBacktestResult) -> Table:
     table.add_column("Drawings", justify="right")
     table.add_column("PLAY", justify="right")
     table.add_column("NO BET", justify="right")
+    table.add_column("Unsupported", justify="right")
     table.add_column("Skip", justify="right")
     table.add_column("Avg ROI", justify="right")
     table.add_column("Review")
@@ -1913,6 +1929,7 @@ def _ev_backtest_summary_table(result: EVBacktestResult) -> Table:
             str(row.drawing_count),
             str(row.play_count),
             str(row.no_bet_count),
+            str(row.unsupported_count),
             f"{row.skip_rate:.1%}",
             roi,
             "required" if row.model_review_required else "no",

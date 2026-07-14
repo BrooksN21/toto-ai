@@ -27,12 +27,22 @@ Historical evaluation contract:
   one complete coupon surface and ranking reused across all dynamic banks and
   thresholds; there are no candidate limits or timeout-derived rows.
 - Checkpoints contain completed drawings only and are resumable solely under an
-  exact configuration hash. Interrupted partial work remains diagnostic.
+  exact configuration hash. Skip records and interrupted partial work remain
+  diagnostic and are re-evaluated rather than treated as completed.
+- `last=N` counts the latest `N` drawings with valid inputs and complete actual
+  results. Newer incomplete drawings do not displace older complete drawings,
+  but their result values are still unavailable until packages and hashes exist.
+- Historical Playable evaluation uses the live 1% self-dilution rule: exactly
+  1% is supported and above 1% becomes an empty `NO BET`. Rows disclose the
+  proposed cost ratio and support state.
 - Reports separate modeled expected payout and modeled ROI from realized best
   hits and cumulative 9..15 indicators. A skip rate above 80% requires model
   review rather than automatic threshold reduction.
 - Modeled payout uses expected crowd denominators. It is not observed bookmaker
   payout, and modeled ROI is not observed ROI or profitability evidence.
+- Final and checkpoint artifact names include the full exact-configuration hash,
+  which binds banks, thresholds, factors, stake, requested window, community,
+  and forbidden frozen-manifest IDs.
 
 The next external-data step remains a separate provider-neutral design for
 lawful prospective probability snapshots, event matching, source age and

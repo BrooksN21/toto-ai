@@ -118,6 +118,10 @@
   exclusion before event queries, pre-result package hashing, reusable complete
   factor rankings, dynamic banks/thresholds, resumable exact-config checkpoints,
   realized 9..15 indicators, deterministic reports, and `backtest-ev`.
+- Task 6 integrity hardening is complete: latest-N result-complete backfilling,
+  diagnostic-only skip re-evaluation, exact checkpoint Cartesian grids and row
+  invariants, SQL projection leakage tests, live-compatible 1% self-dilution
+  suppression, and configuration-hash-scoped final/checkpoint artifacts.
 - Evaluate all `3^15` coupons without resource-saving candidate truncation.
 - Test playable gross-EV thresholds 0.90, 0.95, 1.00, and 1.05, including bank
   utilization and `NO BET` skip rate.

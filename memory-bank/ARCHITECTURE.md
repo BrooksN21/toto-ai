@@ -35,13 +35,14 @@ Historical modeled-EV path:
 ```text
 Validated frozen strategy manifest
 -> Holdout IDs excluded in the Drawing query
--> Chronological finished SQLite drawings
+-> Finished SQLite candidates scanned newest-first until N complete results
 -> Strict 15-event BK/pool inputs without result columns
 -> One reusable EVComponents build per drawing
 -> One complete surface/ranking per prize factor
 -> Dynamic-bank and threshold packages plus deterministic hashes
 -> Actual results loaded only after every package hash is complete
--> Completed-drawing checkpoint and modeled CSV/Markdown reports
+-> Completed-row checkpoint; diagnostic skips are always re-evaluated
+-> Configuration-hash-scoped modeled CSV/Markdown reports
 ```
 
 Important modules:
@@ -82,7 +83,10 @@ Important modules:
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
   frozen-holdout exclusion, pre-result package hashing, complete factor
   rankings reused across dynamic banks and thresholds, cumulative realized
-  9..15 indicators, and exact-config completed-drawing checkpoints.
+  9..15 indicators, live-compatible 1% self-dilution suppression, and hardened
+  exact-config completed-drawing checkpoints. Latest-N selection backfills past
+  incomplete or invalid newer candidates without reading result values before
+  package hashes exist. Diagnostic checkpoint skips are never resumable state.
 - `toto_ai.ev.reports`: deterministic EV package CSV/Markdown rendering and
   modeled-backtest reporting with rollback-safe atomic pair publication,
   including rollback for interruptions and other `BaseException` failures

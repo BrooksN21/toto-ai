@@ -58,7 +58,10 @@ def ev_backtest_report_paths(
 ) -> tuple[Path, Path]:
     """Return deterministic final report paths for one backtest config."""
     output_dir = Path(report_dir)
-    stem = f"ev_backtest_last_{last}_stake_{result.config.stake}"
+    stem = (
+        f"ev_backtest_last_{last}_stake_{result.config.stake}_config_"
+        f"{result.configuration_hash}"
+    )
     return output_dir / f"{stem}.csv", output_dir / f"{stem}.md"
 
 
@@ -120,6 +123,7 @@ def _render_ev_backtest_csv(result: EVBacktestResult) -> str:
             if row.package_modeled_roi is None
             else f"{row.package_modeled_roi:.12f}"
         )
+        values["self_dilution_ratio"] = f"{row.self_dilution_ratio:.12f}"
         values["best_hits"] = "" if row.best_hits is None else row.best_hits
         writer.writerow(values)
     return output.getvalue()
@@ -146,16 +150,18 @@ def _render_ev_backtest_markdown(result: EVBacktestResult) -> str:
         "- modeled payout uses expected crowd denominators",
         "- modeled payout is not observed bookmaker payout",
         "- modeled ROI is not observed ROI",
+        "- self-dilution support limit: 0.010000",
+        "- above-boundary packages are suppressed to empty NO BET rows",
         "",
         "## Threshold Summary",
         "",
-        "| Factor | Bank | Threshold | Drawings | PLAY | NO BET | Skip rate | "
-        "Avg selected | Avg utilization | Avg modeled payout | Avg modeled ROI | "
-        "Avg best hits | Hit 9 | Hit 10 | Hit 11 | Hit 12 | Hit 13 | Hit 14 | "
-        "Hit 15 | Review |",
+        "| Factor | Bank | Threshold | Drawings | PLAY | NO BET | Unsupported | "
+        "Skip rate | Avg selected | Avg utilization | Avg modeled payout | "
+        "Avg modeled ROI | Avg best hits | Hit 9 | Hit 10 | Hit 11 | Hit 12 | "
+        "Hit 13 | Hit 14 | Hit 15 | Review |",
         "| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | "
         "---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | "
-        "---: | --- |",
+        "---: | ---: | ---: | --- |",
     ]
     for row in result.summaries:
         roi = (
@@ -174,7 +180,8 @@ def _render_ev_backtest_markdown(result: EVBacktestResult) -> str:
         lines.append(
             f"| {row.prize_fund_factor:.2f} | {row.bank} | "
             f"{row.threshold:.2f} | {row.drawing_count} | {row.play_count} | "
-            f"{row.no_bet_count} | {row.skip_rate:.6f} | "
+            f"{row.no_bet_count} | {row.unsupported_count} | "
+            f"{row.skip_rate:.6f} | "
             f"{row.average_selected_coupons:.6f} | "
             f"{row.average_bank_utilization:.6f} | "
             f"{row.average_package_expected_payout:.6f} | {roi} | {best_hits} | "

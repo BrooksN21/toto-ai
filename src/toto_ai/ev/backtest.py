@@ -10,6 +10,7 @@ import tempfile
 import time
 from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass
+from itertools import product
 from pathlib import Path
 from statistics import fmean
 
@@ -19,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from toto_ai.analytics.history import normalize_result
 from toto_ai.db.models import Drawing, Event, Quote
+from toto_ai.ev.drawing import SELF_DILUTION_LIMIT
 from toto_ai.ev.models import EVComponents, EVInput, EVSurface
 from toto_ai.ev.package import rank_coupon_indices
 from toto_ai.ev.prize import normalize_triplet, smooth_crowd_matrix, validate_bank
@@ -30,6 +32,7 @@ from toto_ai.ev.ternary import (
 from toto_ai.optimizer.strategy_backtest import load_strategy_experiment_manifest
 
 DEFAULT_PRIZE_FUND_FACTORS = (0.7, 0.8, 0.9, 1.0)
+EMPTY_PACKAGE_HASH = hashlib.sha256(b"").hexdigest()
 ProgressCallback = Callable[[dict[str, object]], None]
 SurfaceBuilder = Callable[..., EVComponents | EVSurface]
 
@@ -78,6 +81,8 @@ class EVBacktestRow:
     unused_bank: int
     package_expected_payout: float
     package_modeled_roi: float | None
+    self_dilution_ratio: float
+    model_supported: bool
     best_hits: int | None
     hit_9: bool
     hit_10: bool
@@ -97,6 +102,7 @@ class EVBacktestSummary:
     drawing_count: int
     play_count: int
     no_bet_count: int
+    unsupported_count: int
     skip_rate: float
     average_selected_coupons: float
     average_bank_utilization: float
@@ -153,6 +159,8 @@ class _PendingPackage:
     unused_bank: int
     expected_payout: float
     modeled_roi: float | None
+    self_dilution_ratio: float
+    model_supported: bool
     package_hash: str
 
 
@@ -179,6 +187,52 @@ def load_frozen_holdout_ids(path: str | Path) -> frozenset[int]:
     return frozenset(drawing_ids[-holdout_size:])
 
 
+def ev_backtest_configuration_hash(
+    config: EVBacktestConfig,
+    *,
+    last: int,
+    forbidden_drawing_ids: frozenset[int],
+    community: str = "baltbet-main",
+) -> str:
+    """Hash every setting that determines a resumable backtest window."""
+    if not isinstance(config, EVBacktestConfig):
+        raise ValueError("config must be an EVBacktestConfig")
+    if type(last) is not int or last <= 0:
+        raise ValueError("last must be a positive integer")
+    if not isinstance(community, str) or not community:
+        raise ValueError("community must be a non-empty string")
+    forbidden = frozenset(forbidden_drawing_ids)
+    if not all(type(drawing_id) is int and drawing_id > 0 for drawing_id in forbidden):
+        raise ValueError("forbidden drawing IDs must be positive integers")
+    payload = {
+        "config": asdict(config),
+        "last": last,
+        "community": community,
+        "forbidden_drawing_ids": sorted(forbidden),
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def ev_backtest_checkpoint_path(
+    configuration_hash: str,
+    *,
+    last: int,
+    stake: int,
+    report_dir: str | Path = "reports",
+) -> Path:
+    """Return a deterministic checkpoint path scoped to the exact config."""
+    _validate_sha256(configuration_hash, "configuration_hash")
+    if type(last) is not int or last <= 0:
+        raise ValueError("last must be a positive integer")
+    if type(stake) is not int or stake <= 0:
+        raise ValueError("stake must be a positive integer")
+    return Path(report_dir) / (
+        f"ev_backtest_last_{last}_stake_{stake}_config_"
+        f"{configuration_hash}.partial.csv"
+    )
+
+
 def run_ev_backtest(
     session: Session,
     *,
@@ -193,23 +247,22 @@ def run_ev_backtest(
     surface_builder: SurfaceBuilder = compute_ev_components,
     checkpoint_path: str | Path | None = None,
 ) -> EVBacktestResult:
-    """Evaluate latest eligible drawings without consulting frozen results."""
-    if type(last) is not int or last <= 0:
-        raise ValueError("last must be a positive integer")
-    if not isinstance(community, str) or not community:
-        raise ValueError("community must be a non-empty string")
+    """Evaluate the latest result-complete drawings without result leakage."""
     forbidden = frozenset(forbidden_drawing_ids)
-    if not all(type(drawing_id) is int and drawing_id > 0 for drawing_id in forbidden):
-        raise ValueError("forbidden drawing IDs must be positive integers")
     config = EVBacktestConfig(
         banks=tuple(banks),
         thresholds=tuple(thresholds),
         stake=stake,
         prize_fund_factors=tuple(prize_fund_factors),
     )
-    configuration_hash = _configuration_hash(config, last, community, forbidden)
+    configuration_hash = ev_backtest_configuration_hash(
+        config,
+        last=last,
+        community=community,
+        forbidden_drawing_ids=forbidden,
+    )
     checkpoint = Path(checkpoint_path) if checkpoint_path is not None else None
-    checkpoint_rows, checkpoint_skips = _load_checkpoint(
+    checkpoint_rows, _ = _load_checkpoint(
         checkpoint,
         config,
         configuration_hash,
@@ -217,36 +270,50 @@ def run_ev_backtest(
 
     started_at = time.perf_counter()
     candidates = _load_candidate_drawings(session, community, forbidden)
-    selected: list[tuple[Drawing, EVInput]] = []
-    skipped_ids: list[int] = list(checkpoint_skips)
-    for drawing in candidates:
-        if len(selected) == last:
+    candidate_by_id = {drawing.id: drawing for drawing in candidates}
+    checkpoint_by_id: dict[int, tuple[EVBacktestRow, ...]] = {}
+    for row in checkpoint_rows:
+        checkpoint_by_id.setdefault(row.drawing_id, ())
+        checkpoint_by_id[row.drawing_id] += (row,)
+    if not set(checkpoint_by_id) <= set(candidate_by_id):
+        raise ValueError("Checkpoint drawings do not match the current configuration")
+
+    rows: list[EVBacktestRow] = []
+    processed_ids: list[int] = []
+    skipped_ids: list[int] = []
+    total = len(candidates)
+    for index, drawing in enumerate(candidates, start=1):
+        if len(processed_ids) == last:
             break
+        resumed_rows = checkpoint_by_id.get(drawing.id)
+        if resumed_rows is not None:
+            rows.extend(resumed_rows)
+            processed_ids.append(drawing.id)
+            _notify(
+                progress_callback,
+                _progress_payload("drawing_resumed", drawing, index, total, started_at),
+            )
+            continue
+
         try:
             ev_input = _load_ev_input(session, drawing, stake)
         except (TypeError, ValueError):
             _append_unique(skipped_ids, drawing.id)
-            continue
-        selected.append((drawing, ev_input))
-    selected.sort(key=lambda item: _chronology_key(item[0]))
-
-    selected_ids = {drawing.id for drawing, _ in selected}
-    known_ids = selected_ids | set(skipped_ids)
-    checkpoint_ids = {
-        row.drawing_id for row in checkpoint_rows
-    } | set(checkpoint_skips)
-    if not checkpoint_ids <= known_ids:
-        raise ValueError("Checkpoint drawings do not match the current configuration")
-
-    rows = list(checkpoint_rows)
-    processed_ids = {row.drawing_id for row in rows}
-    completed_ids = processed_ids | set(checkpoint_skips)
-    total = len(selected)
-    for index, (drawing, ev_input) in enumerate(selected, start=1):
-        if drawing.id in completed_ids:
+            _write_checkpoint(
+                checkpoint,
+                rows,
+                skipped_ids,
+                configuration_hash,
+            )
             _notify(
                 progress_callback,
-                _progress_payload("drawing_resumed", drawing, index, total, started_at),
+                _progress_payload(
+                    "drawing_skipped",
+                    drawing,
+                    index,
+                    total,
+                    started_at,
+                ),
             )
             continue
 
@@ -294,7 +361,6 @@ def run_ev_backtest(
         actual_result = _load_actual_result(session, drawing.id)
         if actual_result is None:
             _append_unique(skipped_ids, drawing.id)
-            completed_ids.add(drawing.id)
             _write_checkpoint(
                 checkpoint,
                 rows,
@@ -317,8 +383,7 @@ def run_ev_backtest(
             _realized_row(item, actual_result) for item in pending
         )
         rows.extend(drawing_rows)
-        processed_ids.add(drawing.id)
-        completed_ids.add(drawing.id)
+        processed_ids.append(drawing.id)
         _write_checkpoint(
             checkpoint,
             rows,
@@ -336,20 +401,31 @@ def run_ev_backtest(
             ),
         )
 
+    _write_checkpoint(
+        checkpoint,
+        rows,
+        skipped_ids,
+        configuration_hash,
+    )
+    chronological_drawings = sorted(
+        (candidate_by_id[drawing_id] for drawing_id in processed_ids),
+        key=_chronology_key,
+    )
+    chronological_order = {
+        drawing.id: index for index, drawing in enumerate(chronological_drawings)
+    }
     ordered_rows = tuple(
         sorted(
             rows,
             key=lambda row: (
-                _selected_order(selected).get(row.drawing_id, math.inf),
+                chronological_order[row.drawing_id],
                 config.prize_fund_factors.index(row.prize_fund_factor),
                 config.thresholds.index(row.threshold),
                 config.banks.index(row.bank),
             ),
         )
     )
-    ordered_processed = tuple(
-        drawing.id for drawing, _ in selected if drawing.id in processed_ids
-    )
+    ordered_processed = tuple(drawing.id for drawing in chronological_drawings)
     return EVBacktestResult(
         config=config,
         rows=ordered_rows,
@@ -382,6 +458,7 @@ def summarize_ev_backtest(
                 drawing_count = len(group)
                 play_count = sum(row.decision == "PLAY" for row in group)
                 no_bet_count = sum(row.decision == "NO BET" for row in group)
+                unsupported_count = sum(not row.model_supported for row in group)
                 roi_values = tuple(
                     row.package_modeled_roi
                     for row in group
@@ -399,6 +476,7 @@ def summarize_ev_backtest(
                         drawing_count=drawing_count,
                         play_count=play_count,
                         no_bet_count=no_bet_count,
+                        unsupported_count=unsupported_count,
                         skip_rate=skip_rate,
                         average_selected_coupons=_average(
                             row.selected_coupons for row in group
@@ -516,15 +594,24 @@ def _build_pending_packages(
             for bank in config.banks:
                 maximum = validate_bank(bank, config.stake)
                 selected_indices = order[eligible_positions[:maximum]]
-                coupons = tuple(
+                proposed_coupons = tuple(
                     coupon_from_index(int(index), surface.event_count)
                     for index in selected_indices
                 )
-                cost = len(coupons) * config.stake
-                expected_payout = float(
+                proposed_cost = len(proposed_coupons) * config.stake
+                proposed_payout = float(
                     surface.gross_ev[selected_indices].sum(dtype=np.float64)
                     * config.stake
                 )
+                self_dilution_ratio = proposed_cost / ev_input.pool_sum
+                model_supported = self_dilution_ratio <= SELF_DILUTION_LIMIT
+                coupons = (
+                    proposed_coupons
+                    if model_supported or not proposed_coupons
+                    else ()
+                )
+                cost = proposed_cost if coupons else 0
+                expected_payout = proposed_payout if coupons else 0.0
                 pending.append(
                     _PendingPackage(
                         drawing_id=ev_input.drawing_id,
@@ -540,6 +627,8 @@ def _build_pending_packages(
                         modeled_roi=(
                             expected_payout / cost - 1.0 if cost else None
                         ),
+                        self_dilution_ratio=self_dilution_ratio,
+                        model_supported=model_supported,
                         package_hash=hashlib.sha256(
                             ",".join(coupons).encode("utf-8")
                         ).hexdigest(),
@@ -586,6 +675,8 @@ def _realized_row(pending: _PendingPackage, actual_result: str) -> EVBacktestRow
         unused_bank=pending.unused_bank,
         package_expected_payout=pending.expected_payout,
         package_modeled_roi=pending.modeled_roi,
+        self_dilution_ratio=pending.self_dilution_ratio,
+        model_supported=pending.model_supported,
         best_hits=best_hits,
         hit_9=best_hits is not None and best_hits >= 9,
         hit_10=best_hits is not None and best_hits >= 10,
@@ -666,28 +757,50 @@ def _load_checkpoint(
         records = list(reader)
     if any(row["configuration_hash"] != configuration_hash for row in records):
         raise ValueError("Checkpoint configuration does not match this run")
-    rows = tuple(
-        _checkpoint_row(record)
-        for record in records
-        if record["record_type"] == "row"
-    )
-    skipped = tuple(
-        int(record["drawing_id"])
-        for record in records
-        if record["record_type"] == "skip"
-    )
     if any(record["record_type"] not in {"row", "skip"} for record in records):
         raise ValueError("Invalid EV backtest checkpoint record type")
-    expected_rows = (
-        len(config.banks)
-        * len(config.thresholds)
-        * len(config.prize_fund_factors)
-    )
+    try:
+        rows = tuple(
+            _checkpoint_row(record)
+            for record in records
+            if record["record_type"] == "row"
+        )
+        skipped = tuple(
+            _checkpoint_skip_id(record)
+            for record in records
+            if record["record_type"] == "skip"
+        )
+    except (OverflowError, TypeError, ValueError) as error:
+        raise ValueError(f"Invalid EV backtest checkpoint row: {error}") from error
+    if len(set(skipped)) != len(skipped):
+        raise ValueError("Checkpoint skip records must not contain duplicates")
+    if {row.drawing_id for row in rows} & set(skipped):
+        raise ValueError("Checkpoint drawing cannot be both completed and skipped")
+
     by_drawing: dict[int, list[EVBacktestRow]] = {}
     for row in rows:
         by_drawing.setdefault(row.drawing_id, []).append(row)
-    if any(len(group) != expected_rows for group in by_drawing.values()):
-        raise ValueError("Checkpoint contains a partial drawing")
+        _validate_checkpoint_row(row, config)
+    expected_grid = set(
+        product(
+            config.banks,
+            config.thresholds,
+            config.prize_fund_factors,
+        )
+    )
+    for group in by_drawing.values():
+        actual_grid = {
+            (row.bank, row.threshold, row.prize_fund_factor) for row in group
+        }
+        if len(group) != len(expected_grid) or actual_grid != expected_grid:
+            raise ValueError(
+                "Checkpoint completed drawing must contain the exact unique "
+                "Cartesian grid"
+            )
+        if len({row.drawing_number for row in group}) != 1:
+            raise ValueError(
+                "Checkpoint drawing_number must be stable within a drawing"
+            )
     return rows, skipped
 
 
@@ -710,6 +823,8 @@ def _checkpoint_row(record: dict[str, str]) -> EVBacktestRow:
             if record["package_modeled_roi"]
             else None
         ),
+        self_dilution_ratio=float(record["self_dilution_ratio"]),
+        model_supported=_parse_bool(record["model_supported"]),
         best_hits=int(record["best_hits"]) if record["best_hits"] else None,
         hit_9=_parse_bool(record["hit_9"]),
         hit_10=_parse_bool(record["hit_10"]),
@@ -722,29 +837,102 @@ def _checkpoint_row(record: dict[str, str]) -> EVBacktestRow:
     )
 
 
-def _configuration_hash(
+def _checkpoint_skip_id(record: dict[str, str]) -> int:
+    drawing_id = int(record["drawing_id"])
+    if drawing_id <= 0:
+        raise ValueError("skip drawing_id must be positive")
+    if record["skip_reason"] != "ineligible_or_incomplete":
+        raise ValueError("skip reason is invalid")
+    if any(
+        record[field]
+        for field in _ROW_FIELDS
+        if field != "drawing_id"
+    ):
+        raise ValueError("skip records must not contain completed row fields")
+    return drawing_id
+
+
+def _validate_checkpoint_row(
+    row: EVBacktestRow,
     config: EVBacktestConfig,
-    last: int,
-    community: str,
-    forbidden: frozenset[int],
-) -> str:
-    payload = {
-        "config": asdict(config),
-        "last": last,
-        "community": community,
-        "forbidden_drawing_ids": sorted(forbidden),
-    }
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-    return hashlib.sha256(encoded).hexdigest()
+) -> None:
+    if row.drawing_id <= 0:
+        raise ValueError("Checkpoint drawing_id must be positive")
+    if row.bank not in config.banks:
+        raise ValueError("Checkpoint bank is outside the configuration")
+    if row.threshold not in config.thresholds:
+        raise ValueError("Checkpoint threshold is outside the configuration")
+    if row.prize_fund_factor not in config.prize_fund_factors:
+        raise ValueError("Checkpoint factor is outside the configuration")
+    if row.decision not in {"PLAY", "NO BET"}:
+        raise ValueError("Checkpoint decision must be PLAY or NO BET")
+    maximum = validate_bank(row.bank, config.stake)
+    if not 0 <= row.selected_coupons <= maximum:
+        raise ValueError("Checkpoint selected_coupons exceeds the bank cap")
+    if row.cost != row.selected_coupons * config.stake:
+        raise ValueError("Checkpoint cost does not match selected coupons")
+    if row.unused_bank != row.bank - row.cost:
+        raise ValueError("Checkpoint unused_bank does not match cost")
+    if (
+        not math.isfinite(row.package_expected_payout)
+        or row.package_expected_payout < 0.0
+    ):
+        raise ValueError("Checkpoint package expected payout must be non-negative")
+    if (
+        not math.isfinite(row.self_dilution_ratio)
+        or row.self_dilution_ratio < 0.0
+    ):
+        raise ValueError("Checkpoint self-dilution ratio must be non-negative")
+    if row.model_supported != (
+        row.self_dilution_ratio <= SELF_DILUTION_LIMIT
+    ):
+        raise ValueError("Checkpoint model support contradicts self-dilution")
+    _validate_sha256(row.package_hash, "package_hash")
+
+    expected_hits = tuple(
+        row.best_hits is not None and row.best_hits >= hits
+        for hits in range(9, 16)
+    )
+    actual_hits = tuple(getattr(row, f"hit_{hits}") for hits in range(9, 16))
+    if actual_hits != expected_hits:
+        raise ValueError("Checkpoint hit indicators contradict best_hits")
+
+    if row.decision == "NO BET":
+        if (
+            row.selected_coupons != 0
+            or row.cost != 0
+            or row.unused_bank != row.bank
+            or row.package_expected_payout != 0.0
+            or row.package_modeled_roi is not None
+            or row.best_hits is not None
+            or row.package_hash != EMPTY_PACKAGE_HASH
+        ):
+            raise ValueError("Checkpoint NO BET row invariants are invalid")
+        return
+
+    if not row.model_supported:
+        raise ValueError("Checkpoint PLAY row cannot use an unsupported model")
+    if row.selected_coupons == 0 or row.best_hits is None:
+        raise ValueError("Checkpoint PLAY row must contain coupons and best_hits")
+    if not 0 <= row.best_hits <= 15:
+        raise ValueError("Checkpoint best_hits must be in 0..15")
+    expected_roi = row.package_expected_payout / row.cost - 1.0
+    if (
+        row.package_modeled_roi is None
+        or not math.isfinite(row.package_modeled_roi)
+        or not math.isclose(
+            row.package_modeled_roi,
+            expected_roi,
+            rel_tol=1e-12,
+            abs_tol=1e-12,
+        )
+    ):
+        raise ValueError("Checkpoint modeled ROI contradicts payout and cost")
 
 
 def _chronology_key(drawing: Drawing) -> tuple[str, int, int]:
     number = drawing.number if drawing.number is not None else drawing.id
     return drawing.ended_at or "", number, drawing.id
-
-
-def _selected_order(selected: list[tuple[Drawing, EVInput]]) -> dict[int, int]:
-    return {drawing.id: index for index, (drawing, _) in enumerate(selected)}
 
 
 def _progress_payload(
@@ -830,6 +1018,15 @@ def _parse_bool(value: str) -> bool:
     if value not in {"True", "False"}:
         raise ValueError("Invalid checkpoint boolean")
     return value == "True"
+
+
+def _validate_sha256(value: str, name: str) -> None:
+    if (
+        not isinstance(value, str)
+        or len(value) != 64
+        or any(character not in "0123456789abcdef" for character in value)
+    ):
+        raise ValueError(f"{name} must be a lowercase SHA-256 hex digest")
 
 
 def _notify(callback: ProgressCallback | None, payload: dict[str, object]) -> None:
