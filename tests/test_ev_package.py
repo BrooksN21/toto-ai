@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+import toto_ai.ev.package as package_module
 from toto_ai.ev.models import EVConfig, EVSurface
 from toto_ai.ev.package import derive_brief, rank_coupon_indices, select_ev_package
 from toto_ai.ev.ternary import coupon_from_index
@@ -70,6 +71,62 @@ def test_equal_ev_uses_coupon_base_three_index_order():
 def test_tolerance_ties_use_ascending_coupon_index():
     order = rank_coupon_indices(
         surface([1.0, 1.0 + 0.5e-12, 1.0 - 0.5e-12] + [0.5] * 6),
+    )
+
+    assert order[:3].tolist() == [0, 1, 2]
+
+
+def test_unsigned_ev_ranking_does_not_wrap_zero_to_the_front():
+    ev_surface = EVSurface(
+        gross_ev=np.array([0, 8, 7, 6, 5, 4, 3, 2, 1], dtype=np.uint64),
+        event_count=2,
+        probability_mass=1.0,
+        crowd_mass=1.0,
+        minimum_denominator=1.0,
+    )
+
+    assert rank_coupon_indices(ev_surface).tolist() == [1, 2, 3, 4, 5, 6, 7, 8, 0]
+
+
+def test_tolerance_tie_runs_use_first_value_instead_of_transitive_chaining():
+    order = rank_coupon_indices(
+        surface([1.0, 1.0 + 0.75e-12, 1.0 + 1.5e-12] + [0.5] * 6),
+    )
+
+    assert order[:3].tolist() == [1, 2, 0]
+
+
+def test_rank_is_complete_order_position_after_threshold_filtering():
+    package = select_ev_package(
+        surface([1.0 - 0.5e-12, 1.0] + [0.5] * 7),
+        EVConfig(bank=30, stake=30, mode="playable", min_gross_ev=1.0),
+    )
+
+    assert len(package.coupons) == 1
+    assert package.coupons[0].coupon == "1X"
+    assert package.coupons[0].rank == 2
+
+
+def test_no_tie_surface_does_not_process_singleton_candidate_blocks(monkeypatch):
+    def fail_on_candidate_block(*_args):
+        pytest.fail("no-tie values must not enter candidate-block processing")
+
+    monkeypatch.setattr(
+        package_module,
+        "_process_tie_candidate_block",
+        fail_on_candidate_block,
+    )
+
+    order = rank_coupon_indices(surface([9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0]))
+
+    assert order.tolist() == list(range(9))
+
+
+def test_tie_candidate_scan_preserves_blocks_across_chunk_boundaries(monkeypatch):
+    monkeypatch.setattr(package_module, "_TIE_SCAN_CHUNK_SIZE", 1)
+
+    order = rank_coupon_indices(
+        surface([1.0, 1.0 + 0.5e-12, 1.0 + 1.0e-12] + [0.5] * 6),
     )
 
     assert order[:3].tolist() == [0, 1, 2]

@@ -715,3 +715,25 @@ Modeled ROI remains a model output, not evidence of profitability.
 Verification: focused package tests `19 passed`; full pytest `439 passed`;
 focused and repository-wide Ruff passed. Playable threshold tests cover
 0.90/0.95/1.00/1.05 with monotonic selected-count assertions.
+
+## Task 4 Review Hardening: Full-Surface Ranking
+
+The full-surface ranker now handles every accepted real numeric dtype without
+negating unsigned arrays. It creates one complete ascending index order with
+NumPy quicksort, reverses that order in bounded chunks, and then scans adjacent
+EV values in fixed-size chunks. Only actual tolerance-tie candidate blocks are
+processed; common no-tie surfaces do not enter Python once per coupon. Each
+candidate block is split by the specified run-first `rtol=1e-12`,
+`atol=1e-15` rule and its tie runs are sorted in place by base-three index.
+
+Regressions cover unsigned zero ordering, non-transitive adjacent-close chains,
+candidate blocks crossing scan chunks, no singleton candidate processing, and
+complete-order `RankedCoupon.rank` values when threshold filtering skips an
+earlier tolerance-tied coupon.
+
+Verification: focused package tests `24 passed`; full pytest `444 passed`;
+repository-wide Ruff passed. Synthetic no-tie `uint32` and all-tie `uint8`
+surfaces both ranked all `3**15 = 14,348,907` indices exactly. The combined
+process completed in `1.00 s`; `/usr/bin/time -l` reported a `229,786,488`-byte
+peak memory footprint and `433,176,576`-byte maximum resident set size while
+running both surfaces sequentially.
