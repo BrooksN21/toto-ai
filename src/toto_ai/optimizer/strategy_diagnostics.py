@@ -539,14 +539,35 @@ def development_drawing_ids(manifest: dict[str, object]) -> list[int]:
 def load_frozen_development_rows(
     path: str | Path,
     manifest: dict[str, object],
+    *,
+    stop_after_development_prefix: bool = False,
+    allow_non_development: bool = False,
 ) -> dict[tuple[int, str], StrategyBacktestRow]:
     development = set(development_drawing_ids(manifest))
     rows: dict[tuple[int, str], StrategyBacktestRow] = {}
     with Path(path).open(newline="", encoding="utf-8") as source:
-        for raw in csv.DictReader(source):
+        reader = csv.DictReader(source)
+        expected_row_count = len(development) * len(STRATEGIES)
+        if stop_after_development_prefix:
+            raw_rows = []
+            for _ in range(expected_row_count):
+                try:
+                    raw_rows.append(next(reader))
+                except StopIteration as error:
+                    raise ValueError(
+                        "Expected exactly one frozen row per strategy."
+                    ) from error
+        else:
+            raw_rows = reader
+
+        for raw in raw_rows:
             drawing_id = int(raw["drawing_id"])
             if drawing_id not in development:
-                continue
+                if allow_non_development:
+                    continue
+                raise ValueError(
+                    "Development CSV contains a non-development drawing ID."
+                )
             row = _parse_strategy_backtest_row(raw)
             if row.segment != "development":
                 raise ValueError(
@@ -575,7 +596,11 @@ def run_strategy_diagnostics(
 ) -> StrategyDiagnosticsResult:
     development_ids = development_drawing_ids(manifest)
     config = _config_from_manifest(manifest)
-    frozen_rows = load_frozen_development_rows(frozen_csv_path, manifest)
+    frozen_rows = load_frozen_development_rows(
+        frozen_csv_path,
+        manifest,
+        allow_non_development=True,
+    )
     rows = []
 
     for drawing_index, drawing_id in enumerate(development_ids, start=1):

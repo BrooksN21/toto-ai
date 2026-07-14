@@ -12,6 +12,7 @@ TotoBrief API
 -> Exact Cover Verifier
 -> Direct Package Optimizer
 -> Strategy Backtest / Frozen Experiment Manifest
+-> Hybrid Development Seal
 -> Backtest Engine
 -> Future Research/ML
 -> Package Export
@@ -51,10 +52,13 @@ Important modules:
   direct coupon candidate generation.
 - `toto_ai.optimizer.direct_package`: weighted scenario-coverage package
   optimizer with deterministic budget filling.
-- `toto_ai.optimizer.hybrid_evaluation`: fixed five-fold hybrid development
-  evaluation rows, aggregate fold metrics, deterministic GO/STOP selection,
-  development-only evaluation runner, and atomic deterministic CSV/Markdown
-  reports for the approved core fractions.
+- `toto_ai.optimizer.hybrid_evaluation`: deterministic hybrid development
+  sealing, fixed five-fold evaluation rows, aggregate fold metrics,
+  deterministic GO/STOP selection, development-only evaluation runner, and
+  atomic deterministic CSV/Markdown reports for the approved core fractions.
+  The seal separately binds the canonical development CSV, pre-drawing
+  development inputs, development results, fixed hybrid protocol, and clean Git
+  code version. Its CSV/manifest pair uses rollback-safe atomic publication.
 - `toto_ai.optimizer.strategy_backtest`: comparable baseline-brief,
   top-probability, and weighted-coverage strategies; chronological backtesting;
   paired holdout evaluation; frozen experiment manifests and report exports.
@@ -94,6 +98,9 @@ Important CLI commands:
   development/holdout experiment.
 - `diagnose-strategies`: regenerate and verify frozen packages, then diagnose
   strategy structure and paired 13+ transitions on development drawings only.
+- `seal-hybrid-development`: stream the development prefix of a frozen strategy
+  CSV and write a development-only CSV plus an augmented manifest from a
+  read-only database.
 - `evaluate-hybrid`: regenerate and evaluate fixed hybrid packages only on the
-  frozen development segment, write atomic reports, and print the GO/STOP
+  sealed development segment, write atomic reports, and print the GO/STOP
   decision from an enforced read-only SQLite database.

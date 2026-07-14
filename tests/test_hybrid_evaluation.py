@@ -372,6 +372,7 @@ def test_evaluate_hybrid_cli_uses_readonly_db_and_writes_reports(monkeypatch, tm
         "configuration_hash": _configuration_hash(config),
         "protocol_hash": "protocol",
         "config": _config_payload(config),
+        "hybrid_development_seal": {"hybrid_code_version": "test-code"},
     }
     manifest_path = tmp_path / "manifest.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
@@ -395,6 +396,7 @@ def test_evaluate_hybrid_cli_uses_readonly_db_and_writes_reports(monkeypatch, tm
         "init_db",
         lambda *args: pytest.fail("evaluate-hybrid must not call init_db"),
     )
+    monkeypatch.setattr(cli_module, "_git_code_version", lambda: "test-code")
 
     result = CliRunner().invoke(
         app,
@@ -438,11 +440,14 @@ def test_evaluate_hybrid_help_exposes_only_fixed_path_options():
 def test_evaluate_hybrid_cli_converts_sqlalchemy_error_to_bad_parameter(
     monkeypatch,
 ):
+    manifest = fixture_evaluation_result().manifest
+    manifest["hybrid_development_seal"] = {"hybrid_code_version": "test-code"}
     monkeypatch.setattr(
         cli_module,
         "load_strategy_experiment_manifest",
-        lambda _path: fixture_evaluation_result().manifest,
+        lambda _path: manifest,
     )
+    monkeypatch.setattr(cli_module, "_git_code_version", lambda: "test-code")
     monkeypatch.setattr(
         cli_module,
         "open_readonly_db",
@@ -469,6 +474,206 @@ def test_evaluate_hybrid_cli_converts_sqlalchemy_error_to_bad_parameter(
     assert "database unavailable" in result.output
     assert "Traceback" not in result.output
     assert not isinstance(result.exception, SQLAlchemyError)
+
+
+def test_seal_hybrid_development_cli_uses_readonly_db(monkeypatch, tmp_path):
+    db_path = tmp_path / "hybrid.db"
+    engine = create_engine(f"sqlite+pysqlite:///{db_path}")
+    Base.metadata.create_all(engine)
+    manifest = fixture_evaluation_result().manifest
+    manifest.update(
+        {
+            "schema_version": 1,
+            "code_version": "frozen",
+            "input_data_hash": "data",
+            "protocol_hash": "protocol",
+        }
+    )
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    source_csv = tmp_path / "backtest.csv"
+    source_csv.write_text("drawing_id\n", encoding="utf-8")
+    output_manifest = tmp_path / "development-manifest.json"
+    output_csv = tmp_path / "development.csv"
+    calls = []
+
+    def fake_seal(
+        session,
+        frozen_manifest,
+        frozen_path,
+        manifest_output_path,
+        csv_output_path,
+        *,
+        code_version,
+    ):
+        assert session.execute(text("SELECT 1")).scalar_one() == 1
+        with pytest.raises(OperationalError, match="readonly"):
+            session.execute(text("CREATE TABLE forbidden (id INTEGER)"))
+        calls.append(
+            (
+                frozen_manifest,
+                frozen_path,
+                manifest_output_path,
+                csv_output_path,
+                code_version,
+            )
+        )
+        return Path(manifest_output_path), Path(csv_output_path)
+
+    monkeypatch.setattr(
+        cli_module,
+        "seal_hybrid_development",
+        fake_seal,
+        raising=False,
+    )
+    monkeypatch.setattr(cli_module, "_git_code_version", lambda: "test-code")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "seal-hybrid-development",
+            "--db",
+            str(db_path),
+            "--manifest",
+            str(manifest_path),
+            "--backtest-csv",
+            str(source_csv),
+            "--output-manifest",
+            str(output_manifest),
+            "--output-csv",
+            str(output_csv),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls == [
+        (
+            manifest,
+            str(source_csv),
+            str(output_manifest),
+            str(output_csv),
+            "test-code",
+        )
+    ]
+    assert "Development seal written" in result.output
+
+
+def test_seal_hybrid_development_cli_rejects_input_output_path_collision(
+    monkeypatch,
+    tmp_path,
+):
+    manifest_path = tmp_path / "manifest.json"
+    source_csv = tmp_path / "backtest.csv"
+    db_path = tmp_path / "hybrid.db"
+    for path in (manifest_path, source_csv, db_path):
+        path.write_bytes(b"source evidence\n")
+    monkeypatch.setattr(
+        cli_module,
+        "load_strategy_experiment_manifest",
+        lambda *args: pytest.fail("path collisions must fail before input loading"),
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "seal-hybrid-development",
+            "--db",
+            str(db_path),
+            "--manifest",
+            str(manifest_path),
+            "--backtest-csv",
+            str(source_csv),
+            "--output-manifest",
+            str(manifest_path),
+            "--output-csv",
+            str(tmp_path / "development.csv"),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "distinct" in result.output
+
+
+@pytest.mark.parametrize(
+    "collision",
+    ["manifest_csv", "manifest_db", "csv_db"],
+)
+def test_seal_hybrid_development_cli_rejects_input_path_collisions(
+    monkeypatch,
+    tmp_path,
+    collision,
+):
+    manifest_path = tmp_path / "manifest.json"
+    source_csv = tmp_path / "backtest.csv"
+    db_path = tmp_path / "hybrid.db"
+    for path in (manifest_path, source_csv, db_path):
+        path.write_bytes(b"source evidence\n")
+    if collision == "manifest_csv":
+        source_csv = manifest_path
+    elif collision == "manifest_db":
+        db_path = manifest_path
+    else:
+        db_path = source_csv
+    monkeypatch.setattr(
+        cli_module,
+        "load_strategy_experiment_manifest",
+        lambda *args: pytest.fail("input collisions must fail before loading"),
+    )
+    monkeypatch.setattr(cli_module, "_git_code_version", lambda: "test-code")
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "seal-hybrid-development",
+            "--db",
+            str(db_path),
+            "--manifest",
+            str(manifest_path),
+            "--backtest-csv",
+            str(source_csv),
+            "--output-manifest",
+            str(tmp_path / "sealed-manifest.json"),
+            "--output-csv",
+            str(tmp_path / "development.csv"),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "distinct" in result.output
+
+
+def test_evaluate_hybrid_cli_rejects_hybrid_code_version_mismatch_before_db(
+    monkeypatch,
+):
+    manifest = fixture_evaluation_result().manifest
+    manifest["hybrid_development_seal"] = {"hybrid_code_version": "sealed-code"}
+    monkeypatch.setattr(
+        cli_module,
+        "load_strategy_experiment_manifest",
+        lambda _path: manifest,
+    )
+    monkeypatch.setattr(cli_module, "_git_code_version", lambda: "other-code")
+    monkeypatch.setattr(
+        cli_module,
+        "open_readonly_db",
+        lambda *args: pytest.fail("code mismatch must fail before database access"),
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "evaluate-hybrid",
+            "--db",
+            "data/toto.db",
+            "--manifest",
+            "manifest.json",
+            "--backtest-csv",
+            "development.csv",
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "code version" in result.output
 
 
 def candidate(
@@ -730,12 +935,284 @@ def coupons():
 
 
 @pytest.fixture
-def frozen_csv(tmp_path, manifest, coupons):
-    return _write_frozen_rows(
+def frozen_csv(tmp_path, manifest, coupons, session):
+    source_path = _write_frozen_rows(
         tmp_path,
         drawing_ids=manifest["drawing_ids"][:10],
         top_coupons=coupons,
     )
+    output_manifest = tmp_path / "sealed-manifest.json"
+    output_csv = tmp_path / "sealed-development.csv"
+    hybrid_module.seal_hybrid_development(
+        session,
+        manifest,
+        source_path,
+        output_manifest,
+        output_csv,
+        code_version="test-code",
+    )
+    manifest.update(json.loads(output_manifest.read_text(encoding="utf-8")))
+    return output_csv
+
+
+def test_development_seal_stops_before_holdout_csv_and_is_reproducible(
+    session,
+    manifest,
+    coupons,
+    tmp_path,
+):
+    source_path = _write_frozen_rows(
+        tmp_path,
+        drawing_ids=manifest["drawing_ids"][:10],
+        top_coupons=coupons,
+    )
+    with source_path.open("a", encoding="utf-8") as output:
+        output.write("holdout,row,must,not,be,parsed\n")
+    first_manifest = tmp_path / "first-manifest.json"
+    first_csv = tmp_path / "first-development.csv"
+    second_manifest = tmp_path / "second-manifest.json"
+    second_csv = tmp_path / "second-development.csv"
+
+    hybrid_module.seal_hybrid_development(
+        session,
+        manifest,
+        source_path,
+        first_manifest,
+        first_csv,
+        code_version="test-code",
+    )
+    hybrid_module.seal_hybrid_development(
+        session,
+        manifest,
+        source_path,
+        second_manifest,
+        second_csv,
+        code_version="test-code",
+    )
+
+    assert first_csv.read_bytes() == second_csv.read_bytes()
+    assert first_manifest.read_bytes() == second_manifest.read_bytes()
+    sealed = json.loads(first_manifest.read_text(encoding="utf-8"))
+    assert sealed["hybrid_development_seal"]["development_drawing_count"] == 10
+    assert set(sealed["hybrid_development_seal"]) == {
+        "schema_version",
+        "development_drawing_count",
+        "development_csv_sha256",
+        "development_input_sha256",
+        "development_result_sha256",
+        "hybrid_protocol_sha256",
+        "hybrid_code_version",
+    }
+    assert sealed["hybrid_development_seal"]["hybrid_code_version"] == "test-code"
+    assert {int(row["drawing_id"]) for row in csv.DictReader(first_csv.open())} == set(
+        manifest["drawing_ids"][:10]
+    )
+
+
+@pytest.mark.parametrize("collision", ["source_csv", "same_output"])
+def test_development_seal_rejects_path_collisions_before_overwrite(
+    session,
+    manifest,
+    coupons,
+    tmp_path,
+    collision,
+):
+    source_path = _write_frozen_rows(
+        tmp_path,
+        drawing_ids=manifest["drawing_ids"][:10],
+        top_coupons=coupons,
+    )
+    original_source = source_path.read_bytes()
+    output_manifest = tmp_path / "sealed-manifest.json"
+    output_csv = tmp_path / "sealed-development.csv"
+    if collision == "source_csv":
+        output_csv = source_path
+    else:
+        output_csv = output_manifest
+
+    with pytest.raises(ValueError, match="distinct"):
+        hybrid_module.seal_hybrid_development(
+            session,
+            manifest,
+            source_path,
+            output_manifest,
+            output_csv,
+            code_version="test-code",
+        )
+
+    assert source_path.read_bytes() == original_source
+
+
+def test_development_seal_second_publish_failure_restores_existing_pair(
+    monkeypatch,
+    session,
+    manifest,
+    coupons,
+    tmp_path,
+):
+    source_path = _write_frozen_rows(
+        tmp_path,
+        drawing_ids=manifest["drawing_ids"][:10],
+        top_coupons=coupons,
+    )
+    output_manifest = tmp_path / "sealed-manifest.json"
+    output_csv = tmp_path / "sealed-development.csv"
+    output_manifest.write_bytes(b"old manifest\n")
+    output_csv.write_bytes(b"old csv\n")
+    original_replace = Path.replace
+    final_replace_count = 0
+
+    def fail_second_final_replace(source, target):
+        nonlocal final_replace_count
+        if Path(target) in {output_manifest, output_csv}:
+            final_replace_count += 1
+            if final_replace_count == 2:
+                raise OSError("second seal publish failed")
+        return original_replace(source, target)
+
+    monkeypatch.setattr(Path, "replace", fail_second_final_replace)
+
+    with pytest.raises(OSError, match="second seal publish failed"):
+        hybrid_module.seal_hybrid_development(
+            session,
+            manifest,
+            source_path,
+            output_manifest,
+            output_csv,
+            code_version="test-code",
+        )
+
+    assert output_manifest.read_bytes() == b"old manifest\n"
+    assert output_csv.read_bytes() == b"old csv\n"
+    assert set(tmp_path.iterdir()) == {
+        source_path,
+        output_manifest,
+        output_csv,
+    }
+
+
+def test_runner_rejects_holdout_row_in_development_csv_before_result_load(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+):
+    rows = list(csv.DictReader(frozen_csv.open(encoding="utf-8")))
+    holdout_row = dict(rows[0], drawing_id="11", segment="holdout")
+    with frozen_csv.open("a", newline="", encoding="utf-8") as output:
+        writer = csv.DictWriter(output, fieldnames=rows[0])
+        writer.writerow(holdout_row)
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda *args: pytest.fail("holdout CSV rows must fail before result access"),
+    )
+
+    with pytest.raises(ValueError, match="non-development drawing"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+def test_runner_requires_development_seal_before_result_load(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+):
+    manifest.pop("hybrid_development_seal")
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda *args: pytest.fail("missing seals must fail before result access"),
+    )
+
+    with pytest.raises(ValueError, match="development seal"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+def test_runner_rejects_input_tampering_before_result_load(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+):
+    quote = session.query(Quote).filter_by(drawing_id=1, event_order=0).one()
+    quote.pool_win_1 = 51
+    session.commit()
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda *args: pytest.fail("input seals must be checked before result access"),
+    )
+
+    with pytest.raises(ValueError, match="input hash"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+def test_runner_rejects_csv_tampering_before_result_load(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+):
+    _rewrite_csv_field(frozen_csv, row_index=0, field_name="runtime_seconds", value="9")
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda *args: pytest.fail("CSV seals must be checked before result access"),
+    )
+
+    with pytest.raises(ValueError, match="CSV hash"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+def test_runner_rejects_hybrid_protocol_tampering_before_result_load(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+):
+    manifest["hybrid_development_seal"]["hybrid_protocol_sha256"] = "0" * 64
+    monkeypatch.setattr(
+        hybrid_module,
+        "_load_development_result",
+        lambda *args: pytest.fail(
+            "protocol seals must be checked before result access"
+        ),
+    )
+
+    with pytest.raises(ValueError, match="protocol hash"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+
+def test_runner_checks_result_hash_after_all_top_hashes_before_summary(
+    monkeypatch,
+    session,
+    manifest,
+    frozen_csv,
+    coupons,
+):
+    event_row = session.query(Event).filter_by(drawing_id=10, event_order=14).one()
+    event_row.result = "X"
+    session.commit()
+    verified_ids = []
+    original_verify = hybrid_module._verify_top_package_hash
+    _patch_valid_generation(monkeypatch, coupons)
+
+    def record_verify(package, frozen_row, drawing_id):
+        original_verify(package, frozen_row, drawing_id)
+        verified_ids.append(drawing_id)
+
+    monkeypatch.setattr(hybrid_module, "_verify_top_package_hash", record_verify)
+    monkeypatch.setattr(
+        hybrid_module,
+        "summarize_hybrid_evaluation",
+        lambda rows: pytest.fail("result hash must be checked before summary return"),
+    )
+
+    with pytest.raises(ValueError, match="result hash"):
+        run_hybrid_evaluation(session, manifest, frozen_csv)
+
+    assert verified_ids == manifest["drawing_ids"][:10]
 
 
 def test_runner_never_loads_holdout_and_loads_results_after_top_hash(
@@ -843,12 +1320,23 @@ def test_runner_stops_at_later_top_hash_mismatch_before_result_or_holdout(
     tmp_path,
     coupons,
 ):
-    frozen_csv = _write_frozen_rows(
+    source_csv = _write_frozen_rows(
         tmp_path,
         drawing_ids=manifest["drawing_ids"][:10],
         top_coupons=coupons,
         top_hash_overrides={2: "mismatch"},
     )
+    sealed_manifest = tmp_path / "mismatched-sealed-manifest.json"
+    frozen_csv = tmp_path / "mismatched-sealed-development.csv"
+    hybrid_module.seal_hybrid_development(
+        session,
+        manifest,
+        source_csv,
+        sealed_manifest,
+        frozen_csv,
+        code_version="test-code",
+    )
+    manifest.update(json.loads(sealed_manifest.read_text(encoding="utf-8")))
     input_ids = []
     result_ids = []
     _patch_valid_generation(monkeypatch, coupons)
@@ -891,12 +1379,23 @@ def test_runner_rejects_altered_frozen_top_result_fields(
     field_name,
     value,
 ):
-    frozen_csv = _write_frozen_rows(
+    source_csv = _write_frozen_rows(
         tmp_path,
         drawing_ids=manifest["drawing_ids"][:10],
         top_coupons=coupons,
         top_overrides={field_name: value},
     )
+    sealed_manifest = tmp_path / "altered-result-sealed-manifest.json"
+    frozen_csv = tmp_path / "altered-result-sealed-development.csv"
+    hybrid_module.seal_hybrid_development(
+        session,
+        manifest,
+        source_csv,
+        sealed_manifest,
+        frozen_csv,
+        code_version="test-code",
+    )
+    manifest.update(json.loads(sealed_manifest.read_text(encoding="utf-8")))
     _patch_valid_generation(monkeypatch, coupons)
     monkeypatch.setattr(
         hybrid_module,
@@ -1117,6 +1616,112 @@ def test_runner_generates_shared_inputs_once_and_keeps_hybrid_outputs_isolated(
         assert len(set(structure_coupon_ids[offset : offset + 4])) == 4
 
 
+def test_package_builder_fails_when_candidate_generation_exceeds_deadline(
+    monkeypatch,
+    coupons,
+):
+    clock = [0.0]
+    config = StrategyConfig(
+        bank=5000,
+        stake=30,
+        category=13,
+        top_count=166,
+        candidate_samples=1,
+        mutation_limit=0,
+        optimization_samples=2,
+        validation_samples=3,
+        timeout_per_drawing=30.0,
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "top_probability_coupons",
+        lambda *args, **kwargs: list(coupons),
+    )
+
+    def exceed_deadline(*args, **kwargs):
+        clock[0] = 31.0
+        return list(coupons)
+
+    monkeypatch.setattr(
+        hybrid_module,
+        "generate_candidate_coupons",
+        exceed_deadline,
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "sample_scenarios",
+        lambda *args, **kwargs: pytest.fail(
+            "expired candidate generation must stop before scenario sampling"
+        ),
+    )
+
+    with pytest.raises(ValueError, match="deadline"):
+        hybrid_module._build_hybrid_packages(
+            _fixture_inputs()[0],
+            drawing_id=1,
+            config=config,
+            time_func=lambda: clock[0],
+        )
+
+
+def test_package_builder_fails_when_validation_coverage_exceeds_deadline(
+    monkeypatch,
+    coupons,
+):
+    clock = [0.0]
+    config = StrategyConfig(
+        bank=5000,
+        stake=30,
+        category=13,
+        top_count=166,
+        candidate_samples=1,
+        mutation_limit=0,
+        optimization_samples=2,
+        validation_samples=3,
+        timeout_per_drawing=30.0,
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "top_probability_coupons",
+        lambda *args, **kwargs: list(coupons),
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "generate_candidate_coupons",
+        lambda *args, **kwargs: list(coupons),
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "sample_scenarios",
+        lambda probabilities, count, seed: {"1" * 15: count},
+    )
+
+    def exceed_deadline(*args, **kwargs):
+        clock[0] = 31.0
+        return 1.0
+
+    monkeypatch.setattr(
+        hybrid_module,
+        "estimate_package_coverage",
+        exceed_deadline,
+    )
+    monkeypatch.setattr(
+        hybrid_module,
+        "select_hybrid_package",
+        lambda *args, **kwargs: pytest.fail(
+            "expired validation coverage must stop before hybrid selection"
+        ),
+    )
+
+    with pytest.raises(ValueError, match="deadline"):
+        hybrid_module._build_hybrid_packages(
+            _fixture_inputs()[0],
+            drawing_id=1,
+            config=config,
+            time_func=lambda: clock[0],
+        )
+
+
 def _patch_valid_generation(monkeypatch, coupons, hybrid_case=None):
     monkeypatch.setattr(
         hybrid_module,
@@ -1211,6 +1816,18 @@ def _write_frozen_rows(
                     values.update(top_overrides)
                 writer.writerow(values)
     return path
+
+
+def _rewrite_csv_field(path, row_index, field_name, value):
+    with path.open(newline="", encoding="utf-8") as source:
+        reader = csv.DictReader(source)
+        rows = list(reader)
+        fieldnames = reader.fieldnames
+    rows[row_index][field_name] = value
+    with path.open("w", newline="", encoding="utf-8") as output:
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 def _config_payload(config):

@@ -1,18 +1,21 @@
 from __future__ import annotations
 
 import csv
+import json
 import os
 import shutil
 import tempfile
 import time
 from dataclasses import asdict, dataclass
 from hashlib import sha256
+from io import StringIO
 from pathlib import Path
 from statistics import mean
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from toto_ai.db.models import Drawing
+from toto_ai.db.models import Drawing, Event, Quote
 from toto_ai.optimizer.brief_backtest import best_coupon_hits
 from toto_ai.optimizer.coupon_candidates import (
     generate_candidate_coupons,
@@ -28,11 +31,13 @@ from toto_ai.optimizer.direct_package import (
     select_hybrid_package,
 )
 from toto_ai.optimizer.strategy_backtest import (
+    StrategyBacktestRow,
     StrategyConfig,
     StrategyPackage,
     _validate_strategy_config,
 )
 from toto_ai.optimizer.strategy_diagnostics import (
+    STRATEGIES,
     _config_from_manifest,
     _load_development_inputs,
     _load_development_result,
@@ -49,6 +54,8 @@ HYBRID_BANK = 5000
 HYBRID_STAKE = 30
 HYBRID_CATEGORY = 13
 HYBRID_MAX_COUPONS = HYBRID_BANK // HYBRID_STAKE
+HYBRID_MIN_ADDITIONAL_HIT_13 = 2
+HYBRID_MIN_NON_LOSING_FOLDS = 4
 HYBRID_STRATEGY_ORDER = (
     "top_probability",
     "hybrid_0.50",
@@ -96,6 +103,61 @@ class HybridEvaluationResult:
     manifest: dict[str, object]
 
 
+def seal_hybrid_development(
+    session: Session,
+    manifest: dict[str, object],
+    frozen_csv_path: str | Path,
+    output_manifest_path: str | Path,
+    output_csv_path: str | Path,
+    *,
+    code_version: str,
+) -> tuple[Path, Path]:
+    if not code_version:
+        raise ValueError("Hybrid seal code version is required.")
+    source_csv_path = Path(frozen_csv_path).resolve()
+    manifest_path = Path(output_manifest_path).resolve()
+    csv_path = Path(output_csv_path).resolve()
+    if len({source_csv_path, manifest_path, csv_path}) != 3:
+        raise ValueError("Hybrid seal source and output paths must be distinct.")
+
+    development_ids = development_drawing_ids(manifest)
+    assign_chronological_folds(development_ids)
+    config = _config_from_manifest(manifest)
+    _validate_hybrid_protocol(config)
+    frozen_rows = load_frozen_development_rows(
+        frozen_csv_path,
+        manifest,
+        stop_after_development_prefix=True,
+    )
+    canonical_csv = _canonical_development_csv(frozen_rows, development_ids)
+    input_hash = _development_input_hash(session, development_ids)
+    result_hasher = sha256()
+    for drawing_id in development_ids:
+        _update_result_hash(
+            result_hasher,
+            drawing_id,
+            _load_development_result(session, drawing_id),
+        )
+
+    sealed_manifest = dict(manifest)
+    sealed_manifest["hybrid_development_seal"] = {
+        "schema_version": 1,
+        "development_drawing_count": len(development_ids),
+        "development_csv_sha256": sha256(canonical_csv).hexdigest(),
+        "development_input_sha256": input_hash,
+        "development_result_sha256": result_hasher.hexdigest(),
+        "hybrid_protocol_sha256": _hybrid_protocol_hash(config),
+        "hybrid_code_version": code_version,
+    }
+    manifest_bytes = (
+        json.dumps(sealed_manifest, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    _write_atomic_artifact_pair(
+        ((csv_path, canonical_csv), (manifest_path, manifest_bytes))
+    )
+    return manifest_path, csv_path
+
+
 def run_hybrid_evaluation(
     session: Session,
     manifest: dict[str, object],
@@ -107,7 +169,18 @@ def run_hybrid_evaluation(
     config = _config_from_manifest(manifest)
     _validate_hybrid_protocol(config)
     frozen_rows = load_frozen_development_rows(frozen_csv_path, manifest)
+    seal = _hybrid_development_seal(manifest, len(development_ids))
+    canonical_csv = _canonical_development_csv(frozen_rows, development_ids)
+    if sha256(canonical_csv).hexdigest() != seal["development_csv_sha256"]:
+        raise ValueError("Hybrid development CSV hash does not match.")
+    if _hybrid_protocol_hash(config) != seal["hybrid_protocol_sha256"]:
+        raise ValueError("Hybrid development protocol hash does not match.")
+    if _development_input_hash(session, development_ids) != seal[
+        "development_input_sha256"
+    ]:
+        raise ValueError("Hybrid development input hash does not match.")
     rows = []
+    result_hasher = sha256()
 
     for drawing_index, drawing_id in enumerate(development_ids, start=1):
         if progress_callback is not None:
@@ -127,6 +200,7 @@ def run_hybrid_evaluation(
         _verify_top_package_hash(top_package, top_frozen, drawing_id)
 
         result_string = _load_development_result(session, drawing_id)
+        _update_result_hash(result_hasher, drawing_id, result_string)
         top_best_hits = best_coupon_hits(top_package.coupons, result_string)
         _validate_frozen_result_fields(top_frozen, top_best_hits)
 
@@ -145,6 +219,8 @@ def run_hybrid_evaluation(
             )
         )
 
+    if result_hasher.hexdigest() != seal["development_result_sha256"]:
+        raise ValueError("Hybrid development result hash does not match.")
     summary = summarize_hybrid_evaluation(rows)
     decision = decide_hybrid_experiment(summary)
     return HybridEvaluationResult(rows, summary, decision, manifest)
@@ -397,8 +473,8 @@ def _render_hybrid_markdown(
         non_losing_folds = strategy["non_losing_folds"]
         best_hit_delta = total["average_best_hits"] - top_total["average_best_hits"]
         predicates = (
-            additional_hits >= 2,
-            non_losing_folds >= 4,
+            additional_hits >= HYBRID_MIN_ADDITIONAL_HIT_13,
+            non_losing_folds >= HYBRID_MIN_NON_LOSING_FOLDS,
             best_hit_delta >= 0,
             failure_count == 0,
         )
@@ -478,6 +554,206 @@ def _format_hybrid_report_value(value: object) -> str:
     return str(value)
 
 
+def _canonical_development_csv(
+    frozen_rows: dict[tuple[int, str], StrategyBacktestRow],
+    development_ids: list[int],
+) -> bytes:
+    output = StringIO(newline="")
+    fieldnames = list(StrategyBacktestRow.__dataclass_fields__)
+    writer = csv.DictWriter(output, fieldnames=fieldnames, lineterminator="\n")
+    writer.writeheader()
+    for drawing_id in development_ids:
+        for strategy in STRATEGIES:
+            writer.writerow(asdict(frozen_rows[(drawing_id, strategy)]))
+    return output.getvalue().encode("utf-8")
+
+
+def _hybrid_development_seal(
+    manifest: dict[str, object],
+    development_count: int,
+) -> dict[str, object]:
+    seal = manifest.get("hybrid_development_seal")
+    required = {
+        "schema_version",
+        "development_drawing_count",
+        "development_csv_sha256",
+        "development_input_sha256",
+        "development_result_sha256",
+        "hybrid_protocol_sha256",
+        "hybrid_code_version",
+    }
+    if not isinstance(seal, dict) or set(seal) != required:
+        raise ValueError("A complete hybrid development seal is required.")
+    if seal["schema_version"] != 1:
+        raise ValueError("Unsupported hybrid development seal version.")
+    if seal["development_drawing_count"] != development_count:
+        raise ValueError("Hybrid development seal drawing count does not match.")
+    hash_fields = required - {
+        "schema_version",
+        "development_drawing_count",
+        "hybrid_code_version",
+    }
+    for field_name in hash_fields:
+        value = seal[field_name]
+        if not isinstance(value, str) or len(value) != 64:
+            raise ValueError("A complete hybrid development seal is required.")
+    if not isinstance(seal["hybrid_code_version"], str) or not seal[
+        "hybrid_code_version"
+    ]:
+        raise ValueError("A complete hybrid development seal is required.")
+    return seal
+
+
+def _hybrid_protocol_hash(config: StrategyConfig) -> str:
+    payload = {
+        "config": asdict(config),
+        "core_fractions": list(HYBRID_CORE_FRACTIONS),
+        "fold_count": HYBRID_FOLD_COUNT,
+        "strategy_order": list(HYBRID_STRATEGY_ORDER),
+        "go_criteria": {
+            "minimum_additional_hit_13": HYBRID_MIN_ADDITIONAL_HIT_13,
+            "minimum_non_losing_folds": HYBRID_MIN_NON_LOSING_FOLDS,
+            "require_average_best_hits_not_lower": True,
+            "require_zero_operational_failures": True,
+        },
+    }
+    return sha256(_canonical_json_bytes(payload)).hexdigest()
+
+
+def _development_input_hash(session: Session, development_ids: list[int]) -> str:
+    payload = []
+    for drawing_id in development_ids:
+        drawing = session.execute(
+            select(Drawing.id, Drawing.number).where(Drawing.id == drawing_id)
+        ).one_or_none()
+        if drawing is None:
+            raise ValueError(f"Development drawing {drawing_id} was not found.")
+        events = session.execute(
+            select(Event.id, Event.event_order)
+            .where(Event.drawing_id == drawing_id)
+            .order_by(Event.event_order)
+        ).all()
+        quotes = session.execute(
+            select(
+                Quote.event_order,
+                Quote.pool_win_1,
+                Quote.pool_draw,
+                Quote.pool_win_2,
+                Quote.bk_win_1,
+                Quote.bk_draw,
+                Quote.bk_win_2,
+            )
+            .where(Quote.drawing_id == drawing_id)
+            .order_by(Quote.event_order)
+        ).all()
+        event_orders = [event.event_order for event in events]
+        quote_orders = [quote.event_order for quote in quotes]
+        expected_orders = list(range(15))
+        if event_orders != expected_orders or quote_orders != expected_orders:
+            raise ValueError(f"Development drawing {drawing_id} is not eligible.")
+        payload.append(
+            {
+                "drawing_id": drawing.id,
+                "drawing_number": drawing.number,
+                "events": [
+                    {
+                        "event_id": event.id,
+                        "event_order": event.event_order,
+                        "pool": [
+                            quote.pool_win_1,
+                            quote.pool_draw,
+                            quote.pool_win_2,
+                        ],
+                        "bk": [
+                            quote.bk_win_1,
+                            quote.bk_draw,
+                            quote.bk_win_2,
+                        ],
+                    }
+                    for event, quote in zip(events, quotes, strict=True)
+                ],
+            }
+        )
+    return sha256(_canonical_json_bytes(payload)).hexdigest()
+
+
+def _update_result_hash(hasher, drawing_id: int, result_string: str) -> None:
+    hasher.update(
+        _canonical_json_bytes(
+            {"drawing_id": drawing_id, "result_string": result_string}
+        )
+    )
+    hasher.update(b"\n")
+
+
+def _canonical_json_bytes(value: object) -> bytes:
+    return json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+
+
+def _write_atomic_artifact_pair(
+    artifacts: tuple[tuple[Path, bytes], tuple[Path, bytes]],
+) -> None:
+    temporary_paths: list[Path] = []
+    rendered: list[tuple[Path, Path]] = []
+    backups: dict[Path, Path | None] = {}
+    publication_started = False
+
+    try:
+        for final_path, content in artifacts:
+            final_path.parent.mkdir(parents=True, exist_ok=True)
+            with tempfile.NamedTemporaryFile(
+                mode="wb",
+                delete=False,
+                dir=final_path.parent,
+                prefix=f".{final_path.name}.",
+                suffix=".tmp",
+            ) as output:
+                output.write(content)
+                temporary_path = Path(output.name)
+            temporary_paths.append(temporary_path)
+            rendered.append((temporary_path, final_path))
+
+        for _, final_path in rendered:
+            if not final_path.exists():
+                backups[final_path] = None
+                continue
+            with tempfile.NamedTemporaryFile(
+                mode="wb",
+                delete=False,
+                dir=final_path.parent,
+                prefix=f".{final_path.name}.",
+                suffix=".bak.tmp",
+            ) as backup_output:
+                backup_path = Path(backup_output.name)
+            temporary_paths.append(backup_path)
+            shutil.copy2(final_path, backup_path)
+            backups[final_path] = backup_path
+
+        publication_started = True
+        for temporary_path, final_path in rendered:
+            temporary_path.replace(final_path)
+            temporary_paths.remove(temporary_path)
+    except Exception:
+        if publication_started:
+            for _, final_path in rendered:
+                backup_path = backups.get(final_path)
+                if backup_path is None:
+                    final_path.unlink(missing_ok=True)
+                    continue
+                backup_path.replace(final_path)
+                if backup_path in temporary_paths:
+                    temporary_paths.remove(backup_path)
+        raise
+    finally:
+        for temporary_path in temporary_paths:
+            temporary_path.unlink(missing_ok=True)
+
+
 def _validate_hybrid_protocol(config: StrategyConfig) -> None:
     if (
         config.bank,
@@ -501,25 +777,29 @@ def _build_hybrid_packages(
     probabilities: ProbabilityMatrix,
     drawing_id: int,
     config: StrategyConfig,
+    time_func=None,
 ) -> list[StrategyPackage]:
-    started = time.perf_counter()
+    if time_func is None:
+        time_func = time.perf_counter
+    started = time_func()
     deadline = (
         None
         if config.timeout_per_drawing is None
         else started + config.timeout_per_drawing
     )
 
-    top_started = time.perf_counter()
+    top_started = time_func()
     top_coupons = top_probability_coupons(
         probabilities,
         limit=config.max_coupons,
     )
+    _ensure_hybrid_deadline(deadline, time_func)
     top_package = StrategyPackage(
         strategy="top_probability",
         coupons=list(top_coupons),
         estimated_coverage=0.0,
         candidate_count=len(top_coupons),
-        runtime_seconds=time.perf_counter() - top_started,
+        runtime_seconds=time_func() - top_started,
         timed_out=False,
     )
     _validate_hybrid_package(top_package, config, len(probabilities))
@@ -533,18 +813,21 @@ def _build_hybrid_packages(
         mutation_limit=config.mutation_limit,
         seed=candidate_seed,
     )
+    _ensure_hybrid_deadline(deadline, time_func)
     optimization_seed = config.seed ^ drawing_id ^ 0xA5A5
     optimization_scenarios = sample_scenarios(
         probabilities,
         count=config.optimization_samples,
         seed=optimization_seed,
     )
+    _ensure_hybrid_deadline(deadline, time_func)
     validation_seed = config.seed ^ drawing_id ^ 0x5A5A
     validation_scenarios = sample_scenarios(
         probabilities,
         count=config.validation_samples,
         seed=validation_seed,
     )
+    _ensure_hybrid_deadline(deadline, time_func)
     top_package = StrategyPackage(
         strategy=top_package.strategy,
         coupons=top_package.coupons,
@@ -557,10 +840,12 @@ def _build_hybrid_packages(
         runtime_seconds=top_package.runtime_seconds,
         timed_out=top_package.timed_out,
     )
+    _ensure_hybrid_deadline(deadline, time_func)
 
     packages = [top_package]
     for core_fraction in HYBRID_CORE_FRACTIONS:
-        selection_started = time.perf_counter()
+        _ensure_hybrid_deadline(deadline, time_func)
+        selection_started = time_func()
         selected = select_hybrid_package(
             candidates=candidates,
             scenarios=optimization_scenarios,
@@ -570,13 +855,15 @@ def _build_hybrid_packages(
             top_coupons=top_coupons,
             core_fraction=core_fraction,
             deadline=deadline,
+            time_func=time_func,
         )
+        _ensure_hybrid_deadline(deadline, time_func)
         hybrid_package = StrategyPackage(
             strategy=f"hybrid_{core_fraction:.2f}",
             coupons=list(selected.selected_coupons),
             estimated_coverage=0.0,
             candidate_count=len(candidates),
-            runtime_seconds=time.perf_counter() - selection_started,
+            runtime_seconds=time_func() - selection_started,
             timed_out=selected.timed_out,
         )
         _validate_hybrid_package(hybrid_package, config, len(probabilities))
@@ -594,7 +881,13 @@ def _build_hybrid_packages(
                 timed_out=hybrid_package.timed_out,
             )
         )
+        _ensure_hybrid_deadline(deadline, time_func)
     return packages
+
+
+def _ensure_hybrid_deadline(deadline, time_func) -> None:
+    if deadline is not None and time_func() >= deadline:
+        raise ValueError("Hybrid package generation exceeded its deadline.")
 
 
 def _validate_hybrid_package_set(
@@ -903,8 +1196,8 @@ def _passes_go_predicate(
 ) -> bool:
     total = strategy["total"]
     return (
-        total["hit_13"] >= top_total_13 + 2
-        and strategy["non_losing_folds"] >= 4
+        total["hit_13"] >= top_total_13 + HYBRID_MIN_ADDITIONAL_HIT_13
+        and strategy["non_losing_folds"] >= HYBRID_MIN_NON_LOSING_FOLDS
         and total["average_best_hits"] >= top_average_best_hits
     )
 

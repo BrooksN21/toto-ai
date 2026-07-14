@@ -2,6 +2,7 @@ from math import ceil
 
 import pytest
 
+from toto_ai.optimizer import direct_package as direct_package_module
 from toto_ai.optimizer.coupon_probabilities import normalize_probability_matrix
 from toto_ai.optimizer.direct_package import (
     select_hybrid_package,
@@ -129,7 +130,7 @@ def test_hybrid_timeout_after_core_coverage_retains_core_without_probability_fal
     )
 
     assert result.selected_coupons == ["11", "1X"]
-    assert result.covered_scenario_weight == 10
+    assert result.covered_scenario_weight == 0
     assert result.timed_out is True
     assert len(result.selected_coupons) < 4
 
@@ -175,7 +176,36 @@ def test_hybrid_retains_only_the_core_on_timeout_before_fill():
     )
 
     assert result.selected_coupons == ["11", "1X"]
-    assert result.covered_scenario_weight == 4
+    assert result.covered_scenario_weight == 0
+    assert result.timed_out is True
+
+
+def test_hybrid_timeout_skips_post_deadline_exact_coverage(monkeypatch):
+    probabilities = normalize_probability_matrix(
+        [{"1": 50, "X": 30, "2": 20}] * 2
+    )
+    monkeypatch.setattr(
+        direct_package_module,
+        "_covered_scenario_weight",
+        lambda *args: pytest.fail(
+            "timed-out selection must not run exact coverage"
+        ),
+    )
+
+    result = select_hybrid_package(
+        candidates=["11", "1X", "X1", "XX"],
+        scenarios={"11": 4, "XX": 3},
+        probabilities=probabilities,
+        category=15,
+        max_coupons=4,
+        top_coupons=["11", "1X", "X1", "XX"],
+        core_fraction=0.50,
+        deadline=1.0,
+        time_func=lambda: 2.0,
+    )
+
+    assert result.selected_coupons == ["11", "1X"]
+    assert result.covered_scenario_weight == 0
     assert result.timed_out is True
 
 

@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 
 import typer
 from rich import print
@@ -57,6 +58,7 @@ from toto_ai.optimizer.cover import (
 from toto_ai.optimizer.cover_benchmark import benchmark_cover
 from toto_ai.optimizer.hybrid_evaluation import (
     run_hybrid_evaluation,
+    seal_hybrid_development,
     write_hybrid_evaluation_reports,
 )
 from toto_ai.optimizer.strategy_backtest import (
@@ -859,11 +861,63 @@ def diagnose_strategies(
     print(f"Reports written to {csv_path} and {markdown_path}")
 
 
-@app.command("evaluate-hybrid")
-def evaluate_hybrid(
+@app.command("seal-hybrid-development")
+def seal_hybrid_development_command(
     manifest: str = typer.Option(..., help="Frozen strategy experiment manifest."),
     backtest_csv: str = typer.Option(
-        ..., "--backtest-csv", help="Frozen strategy backtest CSV."
+        ..., "--backtest-csv", help="Full frozen strategy backtest CSV."
+    ),
+    output_manifest: str = typer.Option(
+        ..., "--output-manifest", help="Sealed development manifest output."
+    ),
+    output_csv: str = typer.Option(
+        ..., "--output-csv", help="Development-only CSV output."
+    ),
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+) -> None:
+    """Seal the hybrid development inputs, results, protocol, and CSV."""
+    input_paths = {
+        Path(manifest).resolve(),
+        Path(backtest_csv).resolve(),
+        Path(db).resolve(),
+    }
+    output_paths = {
+        Path(output_manifest).resolve(),
+        Path(output_csv).resolve(),
+    }
+    if (
+        len(input_paths) != 3
+        or len(output_paths) != 2
+        or input_paths & output_paths
+    ):
+        raise typer.BadParameter(
+            "Hybrid seal input and output paths must be distinct."
+        )
+    try:
+        code_version = _git_code_version()
+        frozen_manifest = load_strategy_experiment_manifest(manifest)
+        engine = open_readonly_db(db)
+        session_factory = get_session_factory(engine)
+        with session_factory() as session:
+            manifest_path, csv_path = seal_hybrid_development(
+                session,
+                frozen_manifest,
+                backtest_csv,
+                output_manifest,
+                output_csv,
+                code_version=code_version,
+            )
+    except (OSError, SQLAlchemyError, KeyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(f"Development seal written to {manifest_path} and {csv_path}")
+
+
+@app.command("evaluate-hybrid")
+def evaluate_hybrid(
+    manifest: str = typer.Option(..., help="Sealed development manifest."),
+    backtest_csv: str = typer.Option(
+        ..., "--backtest-csv", help="Sealed development-only backtest CSV."
     ),
     db: str = typer.Option("data/toto.db", help="SQLite database path."),
     report_dir: str = typer.Option("reports", help="Report output directory."),
@@ -871,6 +925,11 @@ def evaluate_hybrid(
     """Evaluate fixed hybrid packages on frozen development drawings only."""
     try:
         frozen_manifest = load_strategy_experiment_manifest(manifest)
+        seal = frozen_manifest.get("hybrid_development_seal")
+        if not isinstance(seal, dict) or seal.get(
+            "hybrid_code_version"
+        ) != _git_code_version():
+            raise ValueError("Hybrid development code version does not match.")
         engine = open_readonly_db(db)
         session_factory = get_session_factory(engine)
 

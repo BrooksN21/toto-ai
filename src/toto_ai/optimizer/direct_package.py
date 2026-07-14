@@ -217,13 +217,12 @@ def select_hybrid_package(
     uncovered = {}
     for scenario, weight in scenarios.items():
         if deadline is not None and time_func() >= deadline:
-            covered_weight = _covered_scenario_weight(core, scenarios, category)
             total_weight = sum(scenarios.values())
             return DirectPackageResult(
                 core,
-                covered_weight,
+                0,
                 total_weight,
-                covered_weight / total_weight if total_weight else 0.0,
+                0.0,
                 True,
             )
         if not any(
@@ -270,8 +269,11 @@ def select_hybrid_package(
                             timed_out = True
                             break
                         selected.append(coupon)
-    covered_weight = _covered_scenario_weight(selected, scenarios, category)
     total_weight = sum(scenarios.values())
+    if timed_out:
+        covered_weight = 0
+    else:
+        covered_weight = _covered_scenario_weight(selected, scenarios, category)
     return DirectPackageResult(
         selected_coupons=selected,
         covered_scenario_weight=covered_weight,

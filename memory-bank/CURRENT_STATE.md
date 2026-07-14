@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 266
+- Tests currently passed: 285
 - Ruff passed
 
 ## Active Design: Hybrid Direct Package Experiment
@@ -46,7 +46,31 @@ Implementation plan:
 - Five TDD tasks: selector, decision model, fail-closed evaluator, atomic
   reports/CLI, and the frozen development GO/STOP run. Tasks 1-5 are complete.
 
-## Latest Completed Task: Frozen Hybrid Development Experiment
+## Latest Review Fix: Hybrid Development Seal
+
+Added `seal-hybrid-development` to derive a development-only CSV and augmented
+manifest from the frozen manifest, the bounded development prefix of the full
+backtest CSV, and a read-only SQLite database. The deterministic seal stores
+separate SHA-256 hashes for canonical development CSV rows, pre-drawing inputs,
+development results, and the fixed hybrid protocol. The seal also records the
+clean Git code version. Input/output path collisions are rejected before any
+source is loaded, and the manifest/CSV pair is published with rollback-safe
+same-directory temporary files.
+
+`evaluate-hybrid` now requires these sealed artifacts. It rejects missing or
+mismatched CSV, protocol, and pre-drawing input hashes before result access,
+rejects any non-development CSV drawing ID, accumulates result hashes only
+after each drawing's top package hash passes, and verifies the final result hash
+before summary, decision, or report return. Strategy definitions, fractions,
+folds, bank, stake, category, and GO/STOP criteria are unchanged.
+
+The shared package-generation deadline is now checked after every major stage,
+including top enumeration, candidate generation, both scenario samples, hybrid
+selection, and validation coverage. A timed-out selector returns without a
+post-deadline exact coverage pass. Deadline overruns therefore fail closed
+instead of being reported as successful zero-timeout drawings.
+
+## Previous Unsealed Run: Frozen Hybrid Development Experiment
 
 The approved hybrid direct-package experiment completed on all 350 frozen
 development drawings without accessing the 150-drawing holdout during
@@ -82,13 +106,18 @@ GO predicates by hybrid core fraction:
 - 0.90: additional 13+ 0, non-losing folds 5, average best-hit delta
   +0.368571, operational failures 0; fail.
 
-Decision: `STOP`.
+Initial decision: `STOP`.
 
 No hybrid fraction met every pre-registered GO predicate. All hybrids improved
 average best hits, but none produced the required two additional 13+ hits over
 `top_probability`. Direct optimizer tuning is closed under the current
 BK-only protocol. The old holdout remains excluded and unopened for hybrid
 selection. This development-only result is not profitability evidence.
+
+Final review found that the original run did not enforce a development-only
+data/code seal or the full package-generation deadline. The reported metrics
+remain historical evidence but the decision must be regenerated once with the
+new sealed artifacts before it is treated as the final experiment result.
 
 Reports:
 - `reports/hybrid_evaluation_development_last_500_bank_5000.csv`
@@ -481,8 +510,7 @@ Local smoke results on `data/toto.db`:
 
 ## Next Task
 
-Start external probability-provider feasibility work, beginning with Pinnacle
-availability, data terms, historical/closing-odds access, event matching, and a
-provider-neutral probability interface. Do not modify package optimization
-until a new probability source can be evaluated against the current BK-only
-baseline on an untouched window.
+Commit the reviewed integrity/deadline fixes, create the development-only seal
+from a clean checkout, and rerun the unchanged frozen hybrid evaluation once.
+If the sealed decision remains STOP, start external probability-provider
+feasibility work beginning with Pinnacle.
