@@ -695,3 +695,23 @@ crowd-tail error. The 15-event benchmark was not run.
 
 Implement dynamic-bank Research and Playable package selection over exact EV
 surfaces.
+
+## Latest Completed Task: Dynamic-Bank EV Package Selection
+
+Task 4 of the Expected-Value Package Engine is complete. The new
+`toto_ai.ev.package` module ranks every validated `3**event_count` EV value
+with a complete deterministic NumPy order: descending gross EV, then ascending
+base-three coupon index for values tied under `rtol=1e-12` and `atol=1e-15`.
+It does not truncate candidates or create a Python object per coupon; only the
+selected package rows become `RankedCoupon` values.
+
+Research mode fills the dynamic bank capacity even where gross EV is below one
+and labels the result `RESEARCH ONLY`. Playable mode selects only coupons at or
+above its configured threshold, can leave bank unused, and returns `NO BET`
+with zero cost when none qualify. Packages report cost, unused bank, expected
+payout, modeled ROI, and an outcome-union brief in `1`, `X`, `2` order.
+Modeled ROI remains a model output, not evidence of profitability.
+
+Verification: focused package tests `19 passed`; full pytest `439 passed`;
+focused and repository-wide Ruff passed. Playable threshold tests cover
+0.90/0.95/1.00/1.05 with monotonic selected-count assertions.
