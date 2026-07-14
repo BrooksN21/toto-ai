@@ -44,9 +44,60 @@ Design specification:
 Implementation plan:
 - `docs/superpowers/plans/2026-07-13-hybrid-direct-package-experiment.md`
 - Five TDD tasks: selector, decision model, fail-closed evaluator, atomic
-  reports/CLI, and the frozen development GO/STOP run. Tasks 1-4 are complete.
+  reports/CLI, and the frozen development GO/STOP run. Tasks 1-5 are complete.
 
-## Latest Completed Task: Hybrid Evaluation Reports and CLI
+## Latest Completed Task: Frozen Hybrid Development Experiment
+
+The approved hybrid direct-package experiment completed on all 350 frozen
+development drawings without accessing the 150-drawing holdout during
+selection.
+
+Protocol:
+- Bank 5000 RUB, stake 30 RUB, category 13.
+- Five chronological development folds of 70 drawings each.
+- Compared `top_probability` with hybrid top-core fractions 0.50, 0.75, and
+  0.90.
+- All four strategies produced 166-coupon packages costing 4980 RUB.
+- Operational failures and timeouts: 0.
+
+Development results:
+- `top_probability`: 13+ 6, 14+ 1, 15 0, average best hits 8.691429.
+- `hybrid_0.50`: 13+ 4, 14+ 1, 15 0, average best hits 9.491429.
+- `hybrid_0.75`: 13+ 5, 14+ 1, 15 0, average best hits 9.288571.
+- `hybrid_0.90`: 13+ 6, 14+ 1, 15 0, average best hits 9.060000.
+
+Per-fold 13+ counts in strategy order `top_probability`, `hybrid_0.50`,
+`hybrid_0.75`, `hybrid_0.90`:
+- Fold 1: 0, 0, 0, 0.
+- Fold 2: 0, 0, 0, 0.
+- Fold 3: 1, 0, 0, 1.
+- Fold 4: 1, 1, 1, 1.
+- Fold 5: 4, 3, 4, 4.
+
+GO predicates by hybrid core fraction:
+- 0.50: additional 13+ -2, non-losing folds 3, average best-hit delta
+  +0.800000, operational failures 0; fail.
+- 0.75: additional 13+ -1, non-losing folds 4, average best-hit delta
+  +0.597143, operational failures 0; fail.
+- 0.90: additional 13+ 0, non-losing folds 5, average best-hit delta
+  +0.368571, operational failures 0; fail.
+
+Decision: `STOP`.
+
+No hybrid fraction met every pre-registered GO predicate. All hybrids improved
+average best hits, but none produced the required two additional 13+ hits over
+`top_probability`. Direct optimizer tuning is closed under the current
+BK-only protocol. The old holdout remains excluded and unopened for hybrid
+selection. This development-only result is not profitability evidence.
+
+Reports:
+- `reports/hybrid_evaluation_development_last_500_bank_5000.csv`
+- `reports/hybrid_evaluation_development_last_500_bank_5000.md`
+
+The CSV was independently checked: 1400 rows, 350 rows per strategy, and 280
+rows per fold.
+
+## Completed Task: Hybrid Evaluation Reports and CLI
 
 Added `write_hybrid_evaluation_reports()` and the fixed `evaluate-hybrid`
 command for the approved hybrid experiment. CSV rows use manifest drawing order
@@ -430,6 +481,8 @@ Local smoke results on `data/toto.db`:
 
 ## Next Task
 
-Task 5 is next: run the frozen development-only hybrid evaluation and record the
-GO/STOP decision. Continue to evaluate only the 350 frozen development drawings
-and do not inspect the old holdout while selecting a core fraction.
+Start external probability-provider feasibility work, beginning with Pinnacle
+availability, data terms, historical/closing-odds access, event matching, and a
+provider-neutral probability interface. Do not modify package optimization
+until a new probability source can be evaluated against the current BK-only
+baseline on an untouched window.

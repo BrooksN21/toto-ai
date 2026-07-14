@@ -51,10 +51,13 @@
 - Add a fail-closed development diagnostics CLI that regenerates packages,
   verifies frozen package hashes/results, and exports deterministic reports.
   Completed.
-- Hybrid Direct Package experiment Tasks 1-4 are completed: the selector,
-  GO/STOP decision model, fail-closed development evaluator, and rollback-safe
-  atomic reports/CLI wiring. Task 5, the frozen development GO/STOP run, is
-  next. Do not inspect the frozen holdout during this selection.
+- Hybrid Direct Package experiment Tasks 1-5 are completed: selector, GO/STOP
+  model, fail-closed evaluator, atomic reports/CLI, and frozen development run.
+  The decision was STOP: no hybrid added the required two 13+ hits over
+  top-probability. Total 13+ counts for top/0.50/0.75/0.90 were 6/4/5/6;
+  per-fold counts were 0/0/0/0, 0/0/0/0, 1/0/0/1, 1/1/1/1, and 4/3/4/4.
+  Average best hits were 8.691429/9.491429/9.288571/9.060000, with zero
+  operational failures. Further BK-only optimizer tuning is closed.
 - Reserve a new untouched or prospective evaluation window before claiming an
   improvement from further optimizer tuning.
 
@@ -75,6 +78,10 @@
 
 ## Phase 5: Probability Model
 
+- Evaluate Pinnacle and other external probability-provider feasibility,
+  licensing/terms, historical or closing-odds availability, and event matching.
+- Add a provider-neutral probability interface only after feasibility is
+  documented.
 - Feature builder
 - Train/validation/test split by time
 - Calibration

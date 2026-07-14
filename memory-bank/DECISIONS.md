@@ -41,6 +41,14 @@
   folds, no lower average best hits, and zero operational failures. Otherwise
   the optimizer direction stops and the project moves to external data and
   payout/ROI modeling.
+- The frozen hybrid development experiment returned STOP: core fractions 0.50,
+  0.75, and 0.90 added -2, -1, and 0 observed 13+ hits respectively versus
+  top-probability, despite improving average best hits and having zero
+  operational failures.
+- Further tuning of the BK-only direct package optimizer is closed. The next
+  research direction is external probability data, starting with Pinnacle
+  feasibility and a provider-neutral interface. Any later optimizer work needs
+  a new hypothesis and a new untouched evaluation window.
 - Budget-constrained oracle commands may use actual results only as benchmark
   upper bounds; they must not be treated as playable prediction methods.
 - Budget-oracle must not reduce the candidate search space by default. Candidate

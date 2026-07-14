@@ -55,10 +55,26 @@ Development-only structural diagnostic:
 Development interpretation:
 - The v1 weighted objective over-trades coupon probability for diversity. This
   improves the nearest coupon without reliably crossing the 13+ threshold.
-- The next candidate should preserve a high-probability core or probability
-  floor and add controlled diversity around it.
-- No strategy is selected from this diagnostic. Any candidate change must be
-  chosen on development data and evaluated on a new untouched window.
+- A fixed follow-up tested high-probability core fractions 0.50, 0.75, and 0.90
+  on the same 350 development drawings in five chronological folds.
+
+Hybrid development result:
+- `top_probability`: 6 observed 13+ hits, average best hits 8.691429.
+- `hybrid_0.50`: 4 observed 13+ hits, average best hits 9.491429.
+- `hybrid_0.75`: 5 observed 13+ hits, average best hits 9.288571.
+- `hybrid_0.90`: 6 observed 13+ hits, average best hits 9.060000.
+- No operational failures or timeouts occurred.
+- The pre-registered decision was STOP because no hybrid added at least two
+  13+ hits over top probability.
+
+Current conclusion:
+- Controlled diversity still improves average nearest-coupon quality without
+  improving the target 13+ count.
+- Further BK-only optimizer tuning is closed. The next direction is external
+  probability-provider feasibility and later comparison against this fixed
+  baseline on a new untouched window.
+- The frozen holdout was not used for hybrid selection, and these results do
+  not establish profitability.
 
 Related:
 - [../memory-bank/CURRENT_STATE.md](../memory-bank/CURRENT_STATE.md)
