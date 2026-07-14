@@ -1,3 +1,4 @@
+import math
 import subprocess
 from pathlib import Path
 
@@ -44,6 +45,11 @@ from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db, open_readonly_db
+from toto_ai.ev.backtest import (
+    EVBacktestResult,
+    load_frozen_holdout_ids,
+    run_ev_backtest,
+)
 from toto_ai.ev.benchmark import benchmark_ev_engine
 from toto_ai.ev.drawing import (
     EVPackageRun,
@@ -51,7 +57,7 @@ from toto_ai.ev.drawing import (
     resolve_open_drawing_from_api,
 )
 from toto_ai.ev.models import EVConfig
-from toto_ai.ev.reports import write_ev_package_reports
+from toto_ai.ev.reports import write_ev_backtest_reports, write_ev_package_reports
 from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.brief_backtest import (
     run_brief_backtest,
@@ -642,6 +648,87 @@ def ev_package_command(
     print(_ev_input_snapshot_table(result))
     print(_ev_package_summary_table(result))
     print(_ev_top_coupons_table(result))
+    print(f"Reports written to {csv_path} and {markdown_path}")
+
+
+@app.command("backtest-ev")
+def backtest_ev_command(
+    db: str = typer.Option("data/toto.db"),
+    last: int = typer.Option(100, min=1),
+    banks: str = typer.Option("4800,6000,9600"),
+    thresholds: str = typer.Option("0.90,0.95,1.00,1.05"),
+    stake: int = typer.Option(30),
+    frozen_manifest: str = typer.Option(..., "--frozen-manifest"),
+) -> None:
+    """Backtest exact modeled-EV packages outside a frozen holdout."""
+    checkpoint_path = (
+        Path("reports") / f"ev_backtest_last_{last}_stake_{stake}.partial.csv"
+    )
+    try:
+        parsed_banks = _parse_csv_ints(banks, "banks")
+        parsed_thresholds = _parse_csv_floats(thresholds, "thresholds")
+        forbidden_ids = load_frozen_holdout_ids(frozen_manifest)
+        engine = open_readonly_db(db)
+        session_factory = get_session_factory(engine)
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            task_id = progress.add_task("Preparing modeled EV backtest")
+
+            def update_progress(update: dict[str, object]) -> None:
+                phase = str(update.get("phase", "drawing"))
+                drawing = update.get("drawing_number") or update.get("drawing_id")
+                position = (
+                    f"{update.get('drawing_index')}/{update.get('drawing_total')}"
+                )
+                eta = float(update.get("eta_seconds", 0.0))
+                if phase == "category":
+                    description = (
+                        f"drawing {drawing} {position}, category "
+                        f"{update.get('category')}, ETA {eta:.1f}s"
+                    )
+                else:
+                    description = (
+                        f"drawing {drawing} {position}, {phase}, ETA {eta:.1f}s"
+                    )
+                progress.update(task_id, description=description)
+
+            with session_factory() as session:
+                result = run_ev_backtest(
+                    session,
+                    last=last,
+                    banks=parsed_banks,
+                    thresholds=parsed_thresholds,
+                    stake=stake,
+                    forbidden_drawing_ids=forbidden_ids,
+                    progress_callback=update_progress,
+                    checkpoint_path=checkpoint_path,
+                )
+            progress.update(task_id, description="Publishing modeled EV reports")
+            csv_path, markdown_path = write_ev_backtest_reports(
+                result,
+                last=last,
+                input_paths=(db, frozen_manifest),
+            )
+            progress.update(task_id, description="Modeled EV backtest complete")
+    except KeyboardInterrupt as error:
+        raise typer.BadParameter(
+            "EV backtest interrupted; the partial checkpoint is diagnostic only"
+        ) from error
+    except (
+        FloatingPointError,
+        KeyError,
+        OSError,
+        OverflowError,
+        SQLAlchemyError,
+        TypeError,
+        ValueError,
+    ) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(_ev_backtest_summary_table(result))
     print(f"Reports written to {csv_path} and {markdown_path}")
 
 
@@ -1802,6 +1889,37 @@ def _ev_benchmark_table(result: dict[str, object]) -> Table:
     return table
 
 
+def _ev_backtest_summary_table(result: EVBacktestResult) -> Table:
+    table = Table(title="Modeled EV Backtest Thresholds")
+    table.add_column("Factor", justify="right")
+    table.add_column("Bank", justify="right")
+    table.add_column("Threshold", justify="right")
+    table.add_column("Drawings", justify="right")
+    table.add_column("PLAY", justify="right")
+    table.add_column("NO BET", justify="right")
+    table.add_column("Skip", justify="right")
+    table.add_column("Avg ROI", justify="right")
+    table.add_column("Review")
+    for row in result.summaries:
+        roi = (
+            "n/a"
+            if row.average_package_modeled_roi is None
+            else f"{row.average_package_modeled_roi:.4f}"
+        )
+        table.add_row(
+            f"{row.prize_fund_factor:.2f}",
+            str(row.bank),
+            f"{row.threshold:.2f}",
+            str(row.drawing_count),
+            str(row.play_count),
+            str(row.no_bet_count),
+            f"{row.skip_rate:.1%}",
+            roi,
+            "required" if row.model_review_required else "no",
+        )
+    return table
+
+
 def _brief_matches_table(matches: list[object], brief: list[str]) -> Table:
     table = Table(title="Baseline Brief Matches")
     table.add_column("#", justify="right")
@@ -2075,6 +2193,39 @@ def _hybrid_evaluation_table(result) -> Table:
     table.add_row("Decision", result.decision.status)
     table.add_row("Selected core fraction", selected_fraction)
     return table
+
+
+def _parse_csv_ints(value: str, name: str) -> tuple[int, ...]:
+    parts = _csv_parts(value, name)
+    try:
+        parsed = tuple(int(part) for part in parts)
+    except ValueError as error:
+        raise ValueError(f"{name} must be comma-separated integers") from error
+    if len(set(parsed)) != len(parsed):
+        raise ValueError(f"{name} must not contain duplicate values")
+    return parsed
+
+
+def _parse_csv_floats(value: str, name: str) -> tuple[float, ...]:
+    parts = _csv_parts(value, name)
+    try:
+        parsed = tuple(float(part) for part in parts)
+    except ValueError as error:
+        raise ValueError(f"{name} must be comma-separated numbers") from error
+    if not all(math.isfinite(item) for item in parsed):
+        raise ValueError(f"{name} must contain finite numbers")
+    if len(set(parsed)) != len(parsed):
+        raise ValueError(f"{name} must not contain duplicate values")
+    return parsed
+
+
+def _csv_parts(value: str, name: str) -> tuple[str, ...]:
+    if not isinstance(value, str):
+        raise ValueError(f"{name} must be comma-separated values")
+    parts = tuple(part.strip() for part in value.split(","))
+    if not parts or any(not part for part in parts):
+        raise ValueError(f"{name} must not contain empty values")
+    return parts
 
 
 def _git_code_version() -> str:

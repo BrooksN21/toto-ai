@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 420
+- Tests currently passed: 497
 - Ruff passed
 
 ## Approved Next Design: Expected-Value Package Engine
@@ -807,7 +807,49 @@ Review-fix verification before documentation: focused EV/API-inspector tests
 `66 passed`; full pytest `476 passed`; CLI help listed all planned options;
 repository-wide Ruff passed.
 
+## Latest Completed Task: Chronological Modeled-EV Backtest
+
+Task 6 of the Expected-Value Package Engine is complete. The new
+`toto_ai.ev.backtest` module exposes immutable config, row, summary, and result
+types. It validates dynamic stake-multiple banks, finite unique thresholds and
+prize factors, and validated frozen holdout IDs from the existing strategy
+manifest loader.
+
+Finished drawing candidates are selected from `Drawing` rows with holdout IDs
+excluded in SQL before any event or quote query. Historical EV inputs query
+only ordered event identifiers and BK/pool quote columns; actual result columns
+are loaded only after all factor/bank/threshold packages and deterministic
+SHA-256 hashes for that drawing are complete. Inputs require exactly orders
+0..14, valid normalized BK rows, Jeffreys-smoothed pool rows, positive pool
+sum, and non-negative jackpot.
+
+Each drawing builds one reusable exact component set. Every prize-fund factor
+materializes and ranks one complete surface, then reuses that ranking across
+all banks and thresholds without candidate limits or timeouts. Selection is
+monotonic by threshold, respects exact bank caps, leaves unused bank, and emits
+honest zero-cost `NO BET` rows. Realized output records best hits and cumulative
+9..15 indicators.
+
+Completed drawings are atomically checkpointed to a diagnostic partial CSV
+bound to the exact normalized run configuration, requested window, community,
+and forbidden IDs. Resume accepts only complete drawing groups and does not
+turn interrupted work into report rows. Final reports include modeled expected
+payout/ROI, bank utilization, hit rates, skip rate, and the over-80% model
+review alert. They state that expected crowd denominators are modeled and that
+modeled payout/ROI are not observed bookmaker payout/ROI.
+
+`backtest-ev` requires `--frozen-manifest`, resolves forbidden IDs before
+opening the read-only database, parses comma-separated banks and thresholds
+deterministically, and shows drawing/category progress with ETA.
+
+Verification: focused backtest/report tests `27 passed`; full pytest `497
+passed`; worktree-local CLI help listed all six options and marked the manifest
+required; repository-wide Ruff passed. No historical EV run was interpreted as
+profitability evidence, and the old frozen holdout was not used for development
+or evaluation.
+
 ## Next Task
 
-Implement the chronological modeled-EV backtest without reopening the frozen
-hybrid holdout.
+Run Task 7 end-to-end mathematical and operational acceptance, including the
+mandatory full 15-event benchmark. External probability collection and event
+matching remain a separate later design.

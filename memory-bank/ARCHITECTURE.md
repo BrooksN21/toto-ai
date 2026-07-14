@@ -30,6 +30,20 @@ TotoBrief API page one
 -> Rollback-safe CSV/Markdown package reports
 ```
 
+Historical modeled-EV path:
+
+```text
+Validated frozen strategy manifest
+-> Holdout IDs excluded in the Drawing query
+-> Chronological finished SQLite drawings
+-> Strict 15-event BK/pool inputs without result columns
+-> One reusable EVComponents build per drawing
+-> One complete surface/ranking per prize factor
+-> Dynamic-bank and threshold packages plus deterministic hashes
+-> Actual results loaded only after every package hash is complete
+-> Completed-drawing checkpoint and modeled CSV/Markdown reports
+```
+
 Important modules:
 - `toto_ai.api.client`: TotoBrief API client.
 - `toto_ai.collector.sync`: historical drawing collector.
@@ -65,9 +79,14 @@ Important modules:
   self-dilution support gate. Sensitivity surfaces are processed sequentially;
   only scalar summaries and the requested main surface/package are retained.
   It does not consult SQLite.
+- `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
+  frozen-holdout exclusion, pre-result package hashing, complete factor
+  rankings reused across dynamic banks and thresholds, cumulative realized
+  9..15 indicators, and exact-config completed-drawing checkpoints.
 - `toto_ai.ev.reports`: deterministic EV package CSV/Markdown rendering and
-  rollback-safe atomic pair publication, including rollback for interruptions
-  and other `BaseException` failures after publication begins.
+  modeled-backtest reporting with rollback-safe atomic pair publication,
+  including rollback for interruptions and other `BaseException` failures
+  after publication begins.
 - `toto_ai.optimizer.cover`: Cover Engine and exact cover verification, with
   cached parsed positions, suffix expansion reuse, and cached coverage bitsets.
 - `toto_ai.optimizer.cover_benchmark`: representative Cover Engine benchmark
@@ -121,6 +140,8 @@ Important CLI commands:
 - `ev-package --open`: resolve and fetch a fresh playable TotoBrief drawing,
   compute exact modeled EV, select a Research or Playable package, and publish
   atomic reports. Unsupported Playable runs return `NO BET`.
+- `backtest-ev`: evaluate dynamic banks, prize factors, and gross-EV thresholds
+  chronologically while requiring and excluding a frozen strategy holdout.
 - `build-brief --open`: build a baseline brief and package for the next playable
   drawing.
 - `backtest-brief`: backtest the baseline brief generator on finished drawings.

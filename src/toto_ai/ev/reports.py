@@ -7,11 +7,14 @@ import io
 import shutil
 import tempfile
 from collections.abc import Iterable
+from dataclasses import asdict
 from pathlib import Path
 
+from toto_ai.ev.backtest import EVBacktestResult, EVBacktestRow
 from toto_ai.ev.drawing import EVPackageRun
 
 CSV_FIELDS = ("rank", "coupon", "gross_ev", "net_ev")
+EV_BACKTEST_CSV_FIELDS = tuple(EVBacktestRow.__dataclass_fields__)
 
 
 def ev_package_report_paths(
@@ -48,6 +51,39 @@ def write_ev_package_reports(
     return csv_path, markdown_path
 
 
+def ev_backtest_report_paths(
+    result: EVBacktestResult,
+    last: int,
+    report_dir: str | Path = "reports",
+) -> tuple[Path, Path]:
+    """Return deterministic final report paths for one backtest config."""
+    output_dir = Path(report_dir)
+    stem = f"ev_backtest_last_{last}_stake_{result.config.stake}"
+    return output_dir / f"{stem}.csv", output_dir / f"{stem}.md"
+
+
+def write_ev_backtest_reports(
+    result: EVBacktestResult,
+    *,
+    last: int,
+    report_dir: str | Path = "reports",
+    input_paths: Iterable[str | Path] = (),
+) -> tuple[Path, Path]:
+    """Render and atomically publish modeled backtest rows and summaries."""
+    csv_path, markdown_path = ev_backtest_report_paths(result, last, report_dir)
+    output_paths = {csv_path.resolve(), markdown_path.resolve()}
+    resolved_inputs = {Path(path).resolve() for path in input_paths}
+    if output_paths & resolved_inputs:
+        raise ValueError("EV backtest report and input paths must be distinct")
+    _write_atomic_pair(
+        (
+            (csv_path, _render_ev_backtest_csv(result).encode("utf-8")),
+            (markdown_path, _render_ev_backtest_markdown(result).encode("utf-8")),
+        )
+    )
+    return csv_path, markdown_path
+
+
 def _render_csv(result: EVPackageRun) -> str:
     output = io.StringIO(newline="")
     writer = csv.DictWriter(output, fieldnames=CSV_FIELDS, lineterminator="\n")
@@ -62,6 +98,102 @@ def _render_csv(result: EVPackageRun) -> str:
             }
         )
     return output.getvalue()
+
+
+def _render_ev_backtest_csv(result: EVBacktestResult) -> str:
+    output = io.StringIO(newline="")
+    writer = csv.DictWriter(
+        output,
+        fieldnames=EV_BACKTEST_CSV_FIELDS,
+        lineterminator="\n",
+    )
+    writer.writeheader()
+    for row in result.rows:
+        values = asdict(row)
+        values["threshold"] = f"{row.threshold:.12f}"
+        values["prize_fund_factor"] = f"{row.prize_fund_factor:.12f}"
+        values["package_expected_payout"] = (
+            f"{row.package_expected_payout:.12f}"
+        )
+        values["package_modeled_roi"] = (
+            ""
+            if row.package_modeled_roi is None
+            else f"{row.package_modeled_roi:.12f}"
+        )
+        values["best_hits"] = "" if row.best_hits is None else row.best_hits
+        writer.writerow(values)
+    return output.getvalue()
+
+
+def _render_ev_backtest_markdown(result: EVBacktestResult) -> str:
+    lines = [
+        "# Modeled EV Backtest",
+        "",
+        "## Scope",
+        "",
+        f"- configuration hash: {result.configuration_hash}",
+        f"- processed drawings: {len(result.processed_drawing_ids)}",
+        f"- skipped drawings: {len(result.skipped_drawing_ids)}",
+        f"- elapsed seconds: {result.elapsed_seconds:.6f}",
+        f"- banks: {','.join(str(value) for value in result.config.banks)}",
+        "- thresholds: "
+        + ",".join(f"{value:.12f}" for value in result.config.thresholds),
+        "- prize fund factors: "
+        + ",".join(
+            f"{value:.12f}" for value in result.config.prize_fund_factors
+        ),
+        f"- stake: {result.config.stake}",
+        "- modeled payout uses expected crowd denominators",
+        "- modeled payout is not observed bookmaker payout",
+        "- modeled ROI is not observed ROI",
+        "",
+        "## Threshold Summary",
+        "",
+        "| Factor | Bank | Threshold | Drawings | PLAY | NO BET | Skip rate | "
+        "Avg selected | Avg utilization | Avg modeled payout | Avg modeled ROI | "
+        "Avg best hits | Hit 9 | Hit 10 | Hit 11 | Hit 12 | Hit 13 | Hit 14 | "
+        "Hit 15 | Review |",
+        "| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | "
+        "---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | "
+        "---: | --- |",
+    ]
+    for row in result.summaries:
+        roi = (
+            "n/a"
+            if row.average_package_modeled_roi is None
+            else f"{row.average_package_modeled_roi:.12f}"
+        )
+        best_hits = (
+            "n/a" if row.average_best_hits is None else f"{row.average_best_hits:.6f}"
+        )
+        review = (
+            "model_review_required=true"
+            if row.model_review_required
+            else "model_review_required=false"
+        )
+        lines.append(
+            f"| {row.prize_fund_factor:.2f} | {row.bank} | "
+            f"{row.threshold:.2f} | {row.drawing_count} | {row.play_count} | "
+            f"{row.no_bet_count} | {row.skip_rate:.6f} | "
+            f"{row.average_selected_coupons:.6f} | "
+            f"{row.average_bank_utilization:.6f} | "
+            f"{row.average_package_expected_payout:.6f} | {roi} | {best_hits} | "
+            f"{row.hit_9_rate:.6f} | {row.hit_10_rate:.6f} | "
+            f"{row.hit_11_rate:.6f} | {row.hit_12_rate:.6f} | "
+            f"{row.hit_13_rate:.6f} | {row.hit_14_rate:.6f} | "
+            f"{row.hit_15_rate:.6f} | {review} |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Decisions",
+            "",
+            f"- PLAY rows: {sum(row.decision == 'PLAY' for row in result.rows)}",
+            f"- NO BET rows: {sum(row.decision == 'NO BET' for row in result.rows)}",
+            "",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def _render_markdown(result: EVPackageRun) -> str:
