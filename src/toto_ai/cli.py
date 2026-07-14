@@ -43,6 +43,7 @@ from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db, open_readonly_db
+from toto_ai.ev.benchmark import benchmark_ev_engine
 from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.brief_backtest import (
     run_brief_backtest,
@@ -536,6 +537,19 @@ def benchmark_cover_command(
     print(_cover_benchmark_table(result))
     if result["profile"]:
         print(result["profile"])
+
+
+@app.command("benchmark-ev")
+def benchmark_ev_command(
+    events: int = typer.Option(15, min=1, max=15),
+    samples: int = typer.Option(20, min=1),
+) -> None:
+    """Benchmark and verify the exact full-space expected-value engine."""
+    try:
+        result = benchmark_ev_engine(event_count=events, sample_count=samples)
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+    print(_ev_benchmark_table(result))
 
 
 @app.command()
@@ -1598,6 +1612,33 @@ def _cover_benchmark_table(result: dict[str, object]) -> Table:
         "coverage_rate",
     ):
         table.add_row(key.replace("_", " "), _format_value(result[key]))
+    return table
+
+
+def _ev_benchmark_table(result: dict[str, object]) -> Table:
+    table = Table(title="Exact EV Engine Benchmark")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    peak_memory = result["peak_memory_bytes"]
+    rows = (
+        ("event count", str(result["event_count"])),
+        ("coupon count", str(result["coupon_count"])),
+        ("elapsed time", f"{float(result['elapsed_seconds']):.6f} s"),
+        (
+            "peak memory",
+            "unavailable"
+            if peak_memory is None
+            else f"{int(peak_memory) / 1024**2:.2f} MiB",
+        ),
+        ("minimum denominator", f"{float(result['minimum_denominator']):.12g}"),
+        (
+            "maximum sampled absolute error",
+            f"{float(result['maximum_sampled_absolute_error']):.3e}",
+        ),
+        ("verification", str(result["verification"])),
+    )
+    for label, value in rows:
+        table.add_row(label, value)
     return table
 
 

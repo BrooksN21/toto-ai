@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 336
+- Tests currently passed: 407
 - Ruff passed
 
 ## Approved Next Design: Expected-Value Package Engine
@@ -606,7 +606,39 @@ contracts reject booleans.
 Verification: focused reference tests `36 passed`; full pytest `372 passed`;
 focused Ruff passed; full Ruff passed.
 
+## Latest Completed Task: Exact Ternary Full-Space EV Engine
+
+Task 3 of the Expected-Value Package Engine is complete. Flat arrays and coupon
+strings preserve C-order base-three indexing with outcome order `1`, `X`, `2`.
+The exact engine builds product probability arrays with repeated Kronecker
+products and processes each Hamming-ball category sequentially through ternary
+FFT convolution. Category denominators must remain finite and positive, and an
+interruption propagates without returning a partial EV surface.
+
+`compute_ev_components(EVInput, progress_callback=None)` uses only the official
+9..15 regular-prize and jackpot coefficients and returns separate immutable
+unit arrays so prize sensitivity can reuse the heavy calculation.
+`materialize_ev_surface()` performs the light regular-prize/jackpot scaling.
+For small-space oracle work, the explicit convenience signature is
+`compute_ev_surface(true_probabilities, crowd_probabilities, pool_sum,
+category_funds_by_hits, stake, minimum_category, progress_callback=None)`;
+this preserves arbitrary category-fund mappings rather than weakening oracle
+equivalence.
+
+The deterministic `benchmark-ev` command records elapsed time, peak resident
+memory when available, probability masses, minimum denominator, exact error,
+fixed sample diagnostics, and normalized SHA-256 array hashes. Event counts up
+to eight compare the complete surface to the independent brute-force oracle;
+larger spaces use fixed coupon indices and explicit ternary direct sums over
+all qualifying actual-result states from the category denominator arrays.
+
+Verification: focused Task 3 tests `35 passed`; full pytest `407 passed`; focused
+and full Ruff passed. The five-event CLI benchmark verified all 243 coupons
+against the oracle with maximum absolute error `1.897e-19` and status `PASS`.
+The mandatory 15-event acceptance benchmark remains deferred to Task 7 and was
+not run for Task 3.
+
 ## Next Task
 
-Implement the exact ternary full-space EV engine and its benchmark, consuming
-the Task 2 reference oracle.
+Implement dynamic-bank Research and Playable package selection over exact EV
+surfaces.
