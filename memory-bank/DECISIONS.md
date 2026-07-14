@@ -35,6 +35,22 @@
 - Direct Pinnacle access and prohibited scraping are out of scope. External
   odds use a provider-neutral, event-level interface with TotoBrief BK fallback
   so missing external matches do not silently drop a drawing.
+- External odds collection starts on API-Sports' free football and hockey plans.
+  A paid plan up to 30 USD/month is a last resort after a prospective audit
+  proves request quota, rather than provider coverage, is the limiting factor.
+- API-Sports event matching is deterministic and fail-closed. Only one exact
+  sport/home/away/team match inside the approved UTC time window is usable;
+  fuzzy matches are diagnostic only and ambiguous matches always fall back.
+- External odds must be complete full-time football or regulation-time hockey
+  `1/X/2` markets. Two-outcome hockey moneylines must never be mapped to Toto
+  three-way outcomes.
+- Initial external consensus requires three eligible bookmakers, applies
+  multiplicative de-vig per bookmaker, then normalizes component-wise median
+  probabilities. The initial maximum odds age is 36 hours and remains visible
+  in provenance and coverage reports.
+- External probabilities cannot affect `PLAY` during the coverage audit. Every
+  one of the 15 events records either an eligible external consensus or an
+  explicit TotoBrief BK fallback reason.
 - Direct package optimization is evaluated before further brief-first
   heuristics. A brief may be derived from a package but does not constrain the
   v1 optimizer.

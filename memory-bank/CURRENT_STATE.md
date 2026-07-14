@@ -966,3 +966,28 @@ The EV engine is mathematically and operationally accepted under its approved
 experimental prize-fund proxy and independent-event crowd model. `PLAY` remains
 model output, not a profit guarantee. External probability collection, event
 matching, and prospective observed-payout validation remain separate work.
+
+## Approved Next Design: API-Sports Coverage Audit
+
+The next isolated subsystem is a prospective, free-tier-first external odds
+coverage audit. API-Sports is the first provider because its football and hockey
+APIs expose pre-match odds on the free plan. This stage does not change
+`ev-package` or any accepted EV definition.
+
+The design requires deterministic fail-closed event matching, strict football
+full-time and hockey regulation-time `1/X/2` semantics, per-bookmaker de-vig,
+a three-bookmaker median consensus, explicit event-level TotoBrief BK fallback,
+quota-aware caching, append-only provenance, and no secret persistence.
+
+The prospective gate requires at least 30 future drawings and 450 events, at
+least 80% unique event matching, at least 70% fresh complete consensus coverage,
+zero consumed ambiguous matches, and an explicit external/fallback disposition
+for every event. A failed gate tests a second free provider before any paid plan.
+Payment up to 30 USD/month is considered only when measured quota limits, rather
+than missing events or markets, are the cause of failure.
+
+Design specification:
+- `docs/superpowers/specs/2026-07-14-api-sports-coverage-audit-design.md`
+
+Next action:
+- review the written specification, then create its TDD implementation plan.
