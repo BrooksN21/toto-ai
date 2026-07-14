@@ -9,12 +9,18 @@ ProbabilityMatrix = tuple[tuple[float, float, float], ...]
 EVMode = Literal["research", "playable"]
 
 
+def _immutable_array(value: np.ndarray) -> np.ndarray:
+    array = np.array(value, copy=True)
+    array.setflags(write=False)
+    return array
+
+
 def validate_config_bank(bank: int, stake: int) -> int:
     """Validate a bank without importing the prize helpers."""
-    if stake <= 0:
-        raise ValueError("stake must be positive")
-    if bank <= 0:
-        raise ValueError("bank must be positive")
+    if type(stake) is not int or stake <= 0:
+        raise ValueError("stake must be a positive int")
+    if type(bank) is not int or bank <= 0:
+        raise ValueError("bank must be a positive int")
     if bank % stake:
         raise ValueError("bank must be divisible by stake")
     return bank // stake
@@ -28,6 +34,9 @@ class EVConfig:
     min_gross_ev: float = 1.0
     prize_fund_factor: float = 1.0
     possible_winnings: float | None = None
+
+    def __post_init__(self) -> None:
+        validate_config_bank(self.bank, self.stake)
 
     @property
     def max_coupons(self) -> int:
@@ -56,6 +65,18 @@ class EVComponents:
     crowd_mass: float
     minimum_denominator: float
 
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "possible_winnings_ev_per_ruble",
+            _immutable_array(self.possible_winnings_ev_per_ruble),
+        )
+        object.__setattr__(
+            self,
+            "jackpot_ev_per_ruble",
+            _immutable_array(self.jackpot_ev_per_ruble),
+        )
+
 
 @dataclass(frozen=True)
 class EVSurface:
@@ -64,6 +85,9 @@ class EVSurface:
     probability_mass: float
     crowd_mass: float
     minimum_denominator: float
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "gross_ev", _immutable_array(self.gross_ev))
 
 
 @dataclass(frozen=True)

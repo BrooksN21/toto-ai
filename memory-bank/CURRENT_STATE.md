@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 288
+- Tests currently passed: 328
 - Ruff passed
 
 ## Approved Next Design: Expected-Value Package Engine
@@ -555,9 +555,13 @@ Task 1 of the Expected-Value Package Engine is complete. The new
 `toto_ai.ev` package exposes immutable `EVConfig`, `EVInput`, `EVComponents`,
 `EVSurface`, `RankedCoupon`, and `EVPackage` models, plus bank validation,
 official cumulative category-fund allocation, triplet normalization, and
-Jeffreys-smoothed crowd marginals. Banks must be positive stake multiples;
-`EVConfig.max_coupons` reports the available coupon count without forcing full
-bank utilization.
+Jeffreys-smoothed crowd marginals. `EVConfig` validates positive integer banks
+and stakes, including divisibility, during construction; its
+`max_coupons` result is always an integer without forcing full bank
+utilization. `EVComponents` and `EVSurface` defensively copy and freeze their
+NumPy arrays. The exported `CROWD_JOINT_MODEL` contract is
+`independent_event_marginals`: later joint coupon probabilities are modeled as
+products of the smoothed event marginals.
 
 ## Next Task
 

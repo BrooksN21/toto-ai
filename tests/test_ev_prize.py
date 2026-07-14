@@ -1,9 +1,16 @@
 import math
 
+import numpy as np
 import pytest
 
-from toto_ai.ev.models import EVConfig
-from toto_ai.ev.prize import category_funds, smooth_crowd_matrix, validate_bank
+from toto_ai.ev import CROWD_JOINT_MODEL
+from toto_ai.ev.models import EVComponents, EVConfig, EVSurface, validate_config_bank
+from toto_ai.ev.prize import (
+    category_funds,
+    normalize_triplet,
+    smooth_crowd_matrix,
+    validate_bank,
+)
 
 
 def test_category_funds_follow_official_cumulative_allocations():
@@ -38,3 +45,99 @@ def test_jeffreys_smoothing_makes_rounded_zero_positive():
 def test_ev_config_does_not_force_full_bank_use():
     config = EVConfig(bank=6000, stake=30, mode="playable", min_gross_ev=1.0)
     assert config.max_coupons == 200
+    assert isinstance(config.max_coupons, int)
+
+
+@pytest.mark.parametrize("bank", [0, -30, True, False, 6000.0, "6000"])
+def test_ev_config_rejects_invalid_bank_at_construction(bank):
+    with pytest.raises(ValueError):
+        EVConfig(bank=bank)
+
+
+@pytest.mark.parametrize("stake", [0, -30, True, False, 30.0, "30"])
+def test_ev_config_rejects_invalid_stake_at_construction(stake):
+    with pytest.raises(ValueError):
+        EVConfig(bank=6000, stake=stake)
+
+
+def test_ev_config_rejects_non_divisible_bank_at_construction():
+    with pytest.raises(ValueError, match="divisible"):
+        EVConfig(bank=5000, stake=30)
+
+
+@pytest.mark.parametrize(
+    ("bank", "stake"),
+    [
+        (0, 30),
+        (-30, 30),
+        (True, 30),
+        (6000.0, 30),
+        (6000, 0),
+        (6000, -30),
+        (6000, True),
+        (6000, 30.0),
+        (5000, 30),
+    ],
+)
+def test_bank_validators_have_matching_domain_rules(bank, stake):
+    for validator in (validate_config_bank, validate_bank):
+        with pytest.raises(ValueError) as error:
+            validator(bank, stake)
+        assert str(error.value) in {
+            "bank must be a positive int",
+            "stake must be a positive int",
+            "bank must be divisible by stake",
+        }
+
+
+def test_ev_arrays_are_defensive_copies_and_read_only():
+    possible_winnings = np.array([1.0, 2.0])
+    jackpot = np.array([3.0, 4.0])
+    gross_ev = np.array([5.0, 6.0])
+    components = EVComponents(possible_winnings, jackpot, 2, 1.0, 1.0, 0.5)
+    surface = EVSurface(gross_ev, 2, 1.0, 1.0, 0.5)
+
+    possible_winnings[0] = 99.0
+    jackpot[0] = 99.0
+    gross_ev[0] = 99.0
+
+    np.testing.assert_array_equal(components.possible_winnings_ev_per_ruble, [1.0, 2.0])
+    np.testing.assert_array_equal(components.jackpot_ev_per_ruble, [3.0, 4.0])
+    np.testing.assert_array_equal(surface.gross_ev, [5.0, 6.0])
+
+    for array in (
+        components.possible_winnings_ev_per_ruble,
+        components.jackpot_ev_per_ruble,
+        surface.gross_ev,
+    ):
+        assert not array.flags.writeable
+        with pytest.raises(ValueError):
+            array[0] = 100.0
+
+
+@pytest.mark.parametrize("value", [-1.0, float("nan"), float("inf")])
+def test_category_funds_reject_non_finite_or_negative_inputs(value):
+    with pytest.raises(ValueError):
+        category_funds(value, 100.0)
+    with pytest.raises(ValueError):
+        category_funds(100.0, value)
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        (1.0, 2.0),
+        (1.0, 2.0, 3.0, 4.0),
+        (0.0, 0.0, 0.0),
+        (-1.0, 1.0, 1.0),
+        (float("nan"), 1.0, 1.0),
+        (float("inf"), 1.0, 1.0),
+    ],
+)
+def test_normalize_triplet_rejects_invalid_or_zero_values(values):
+    with pytest.raises(ValueError):
+        normalize_triplet(values)
+
+
+def test_crowd_joint_model_contract_is_stable():
+    assert CROWD_JOINT_MODEL == "independent_event_marginals"

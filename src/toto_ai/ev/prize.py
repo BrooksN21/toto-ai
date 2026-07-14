@@ -2,7 +2,9 @@
 
 import math
 
-from toto_ai.ev.models import ProbabilityMatrix
+from toto_ai.ev.models import ProbabilityMatrix, validate_config_bank
+
+CROWD_JOINT_MODEL = "independent_event_marginals"
 
 
 def _require_non_negative_finite(name: str, value: float) -> None:
@@ -12,13 +14,7 @@ def _require_non_negative_finite(name: str, value: float) -> None:
 
 def validate_bank(bank: int, stake: int) -> int:
     """Return the number of coupons available for a valid bank."""
-    if stake <= 0:
-        raise ValueError("stake must be positive")
-    if bank <= 0:
-        raise ValueError("bank must be positive")
-    if bank % stake:
-        raise ValueError("bank must be divisible by stake")
-    return bank // stake
+    return validate_config_bank(bank, stake)
 
 
 def category_funds(possible_winnings: float, jackpot: float) -> dict[int, float]:
@@ -53,7 +49,12 @@ def smooth_crowd_matrix(
     pool_sum: float,
     stake: int,
 ) -> ProbabilityMatrix:
-    """Apply Jeffreys smoothing to normalized crowd marginal rows."""
+    """Apply Jeffreys smoothing to normalized crowd marginal rows.
+
+    The returned rows are event marginals. Later joint coupon probabilities are
+    modeled as the product of one marginal from each event, as named by
+    ``CROWD_JOINT_MODEL``; this function does not infer event correlations.
+    """
     _require_non_negative_finite("pool_sum", pool_sum)
     if stake <= 0:
         raise ValueError("stake must be positive")

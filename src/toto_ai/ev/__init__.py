@@ -11,6 +11,7 @@ from toto_ai.ev.models import (
     RankedCoupon,
 )
 from toto_ai.ev.prize import (
+    CROWD_JOINT_MODEL,
     category_funds,
     normalize_triplet,
     smooth_crowd_matrix,
@@ -18,6 +19,7 @@ from toto_ai.ev.prize import (
 )
 
 __all__ = [
+    "CROWD_JOINT_MODEL",
     "EVComponents",
     "EVConfig",
     "EVInput",
