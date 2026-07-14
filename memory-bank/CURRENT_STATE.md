@@ -549,9 +549,17 @@ Local smoke results on `data/toto.db`:
   progress and completed in about 41 seconds, testing 9 drawings with one
   skipped due to missing pre-match BK/pool probabilities.
 
+## Latest Completed Task: Expected-Value Domain Math
+
+Task 1 of the Expected-Value Package Engine is complete. The new
+`toto_ai.ev` package exposes immutable `EVConfig`, `EVInput`, `EVComponents`,
+`EVSurface`, `RankedCoupon`, and `EVPackage` models, plus bank validation,
+official cumulative category-fund allocation, triplet normalization, and
+Jeffreys-smoothed crowd marginals. Banks must be positive stake multiples;
+`EVConfig.max_coupons` reports the available coupon count without forcing full
+bank utilization.
+
 ## Next Task
 
-Start external probability-provider feasibility work, beginning with Pinnacle
-availability, access terms, historical/closing-odds availability, event
-matching, and a provider-neutral probability interface. Keep BK-only direct
-optimizer tuning closed.
+Implement the brute-force expected-value reference oracle for small event
+counts, consuming the Task 1 models and prize math.
