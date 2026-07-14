@@ -57,6 +57,7 @@ from toto_ai.optimizer.cover import (
 )
 from toto_ai.optimizer.cover_benchmark import benchmark_cover
 from toto_ai.optimizer.hybrid_evaluation import (
+    hybrid_evaluation_report_paths,
     run_hybrid_evaluation,
     seal_hybrid_development,
     write_hybrid_evaluation_reports,
@@ -930,6 +931,22 @@ def evaluate_hybrid(
             "hybrid_code_version"
         ) != _git_code_version():
             raise ValueError("Hybrid development code version does not match.")
+        report_paths = {
+            path.resolve()
+            for path in hybrid_evaluation_report_paths(
+                frozen_manifest,
+                report_dir,
+            )
+        }
+        input_paths = {
+            Path(manifest).resolve(),
+            Path(backtest_csv).resolve(),
+            Path(db).resolve(),
+        }
+        if report_paths & input_paths:
+            raise ValueError(
+                "Hybrid report and input paths must be distinct."
+            )
         engine = open_readonly_db(db)
         session_factory = get_session_factory(engine)
 

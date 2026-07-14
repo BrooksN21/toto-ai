@@ -230,13 +230,14 @@ def write_hybrid_evaluation_reports(
     result: HybridEvaluationResult,
     report_dir: str | Path = "reports",
 ) -> tuple[Path, Path]:
-    output_dir = Path(report_dir)
+    csv_path, markdown_path = hybrid_evaluation_report_paths(
+        result.manifest,
+        report_dir,
+    )
+    output_dir = csv_path.parent
     output_dir.mkdir(parents=True, exist_ok=True)
     config = _config_from_manifest(result.manifest)
-    last = int(result.manifest["last"])
-    stem = f"hybrid_evaluation_development_last_{last}_bank_{config.bank}"
-    csv_path = output_dir / f"{stem}.csv"
-    markdown_path = output_dir / f"{stem}.md"
+    stem = csv_path.stem
     temporary_paths: list[Path] = []
     backup_paths: dict[Path, Path | None] = {}
     publication_started = False
@@ -311,6 +312,17 @@ def write_hybrid_evaluation_reports(
         temporary_path.unlink(missing_ok=True)
 
     return csv_path, markdown_path
+
+
+def hybrid_evaluation_report_paths(
+    manifest: dict[str, object],
+    report_dir: str | Path = "reports",
+) -> tuple[Path, Path]:
+    config = _config_from_manifest(manifest)
+    last = int(manifest["last"])
+    stem = f"hybrid_evaluation_development_last_{last}_bank_{config.bank}"
+    output_dir = Path(report_dir)
+    return output_dir / f"{stem}.csv", output_dir / f"{stem}.md"
 
 
 def _ordered_hybrid_evaluation_rows(

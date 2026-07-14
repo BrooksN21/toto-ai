@@ -676,6 +676,59 @@ def test_evaluate_hybrid_cli_rejects_hybrid_code_version_mismatch_before_db(
     assert "code version" in result.output
 
 
+@pytest.mark.parametrize("collision", ["manifest", "backtest_csv", "db"])
+def test_evaluate_hybrid_cli_rejects_report_input_path_collisions_before_db(
+    monkeypatch,
+    tmp_path,
+    collision,
+):
+    manifest = fixture_evaluation_result().manifest
+    manifest["hybrid_development_seal"] = {"hybrid_code_version": "test-code"}
+    report_dir = tmp_path / "reports"
+    report_csv = (
+        report_dir / "hybrid_evaluation_development_last_500_bank_5000.csv"
+    )
+    manifest_path = tmp_path / "manifest.json"
+    backtest_csv = tmp_path / "development.csv"
+    db_path = tmp_path / "toto.db"
+    if collision == "manifest":
+        manifest_path = report_csv
+    elif collision == "backtest_csv":
+        backtest_csv = report_csv
+    else:
+        db_path = report_csv
+    monkeypatch.setattr(
+        cli_module,
+        "load_strategy_experiment_manifest",
+        lambda _path: manifest,
+    )
+    monkeypatch.setattr(cli_module, "_git_code_version", lambda: "test-code")
+    monkeypatch.setattr(
+        cli_module,
+        "open_readonly_db",
+        lambda *args: pytest.fail("report collisions must fail before database access"),
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "evaluate-hybrid",
+            "--db",
+            str(db_path),
+            "--manifest",
+            str(manifest_path),
+            "--backtest-csv",
+            str(backtest_csv),
+            "--report-dir",
+            str(report_dir),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "report" in result.output.lower()
+    assert "distinct" in result.output.lower()
+
+
 def candidate(
     *,
     total_13=8,

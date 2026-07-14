@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 285
+- Tests currently passed: 288
 - Ruff passed
 
 ## Active Design: Hybrid Direct Package Experiment
@@ -69,6 +69,10 @@ including top enumeration, candidate generation, both scenario samples, hybrid
 selection, and validation coverage. A timed-out selector returns without a
 post-deadline exact coverage pass. Deadline overruns therefore fail closed
 instead of being reported as successful zero-timeout drawings.
+
+Both sealing and evaluation reject resolved input/output path collisions before
+loading inputs or opening the database, so generated seal/report artifacts
+cannot replace a manifest, development CSV, or database.
 
 ## Latest Completed Task: Sealed Frozen Hybrid Development Experiment
 

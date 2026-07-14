@@ -52,6 +52,9 @@
 - Hybrid seals require a clean Git code version, reject collisions between
   source/database/output paths, and publish the development CSV and manifest as
   a rollback-safe pair.
+- Hybrid evaluation resolves its deterministic report paths before opening the
+  database and rejects any collision with the sealed manifest, development CSV,
+  or database.
 - The hybrid per-drawing deadline covers every package-generation stage.
   Timed-out selectors do not perform exact coverage after expiry, and any stage
   overrun fails the evaluation before reports are written.
