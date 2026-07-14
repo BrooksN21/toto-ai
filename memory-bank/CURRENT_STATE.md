@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 506
+- Tests currently passed: 526
 - Ruff passed
 
 ## Approved Next Design: Expected-Value Package Engine
@@ -930,8 +930,39 @@ Row-binding verification: focused backtest/report tests `48 passed`; full pytest
 `518 passed`; worktree-local `backtest-ev --help` exited successfully with
 required `--frozen-manifest`; repository-wide Ruff passed.
 
-## Next Task
+## Latest Completed Task: End-to-End EV Acceptance
 
-Run Task 7 end-to-end mathematical and operational acceptance, including the
-mandatory full 15-event benchmark. External probability collection and event
-matching remain a separate later design.
+Task 7 of the Expected-Value Package Engine is complete. Acceptance tests cover
+the fresh 15-event payload boundary with an injected deterministic small-space
+surface, honest zero-cost `NO BET`, dynamic bank capacity, deterministic report
+hashes, complete model assumptions, rollback-safe interruption behavior, and a
+direct regression for the independent reference oracle's eight-event limit.
+No production EV definition or search behavior changed during acceptance.
+
+Fresh acceptance evidence:
+
+- Full pytest: `526 passed in 5.39s`.
+- Repository-wide Ruff: `All checks passed!`.
+- Five-event benchmark: `243` coupons, `PASS`, `0.116127 s`, `62.44 MiB`
+  peak memory, maximum EV error `1.626e-19`, and zero crowd-tail error.
+- `ev-package --help` and `backtest-ev --help` exited successfully and exposed
+  every documented option; the latter retained required `--frozen-manifest`.
+- Because the shared editable virtual environment targets the parent checkout,
+  worktree CLI acceptance used `PYTHONPATH=src` to select this branch's source.
+
+Mandatory full-space benchmark evidence:
+
+- Event count: `15`.
+- Coupon count: `14,348,907` (`3^15`), with no candidate truncation.
+- Independent samples: `20`.
+- Verification: `PASS`.
+- Elapsed time: `61.763504 s`.
+- Peak resident memory: `1958.73 MiB`.
+- Minimum denominator: `0.00550589657572`.
+- Maximum sampled EV absolute error: `7.994e-15`.
+- Maximum sampled crowd-tail absolute error: `2.776e-17`.
+
+The EV engine is mathematically and operationally accepted under its approved
+experimental prize-fund proxy and independent-event crowd model. `PLAY` remains
+model output, not a profit guarantee. External probability collection, event
+matching, and prospective observed-payout validation remain separate work.

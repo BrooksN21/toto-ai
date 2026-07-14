@@ -130,9 +130,12 @@
   explicit Event/Quote predicates, and canonical per-manifest row references
   reject swapped equal-count hashes plus duplicate, missing, extra, or unsorted
   checkpoint contexts.
-- Evaluate all `3^15` coupons without resource-saving candidate truncation.
-- Test playable gross-EV thresholds 0.90, 0.95, 1.00, and 1.05, including bank
-  utilization and `NO BET` skip rate.
+- End-to-end EV acceptance is complete: tests cover honest `NO BET`, dynamic
+  bank caps, deterministic reports, interruption safety, and the small oracle
+  guard. The mandatory benchmark evaluated all `3^15 = 14,348,907` coupons
+  without truncation and independently verified 20 samples with `PASS`.
+- Playable gross-EV thresholds 0.90, 0.95, 1.00, and 1.05 are covered by package
+  and chronological backtest tests, including bank utilization and `NO BET`.
 
 ## Phase 7: Production
 
