@@ -578,7 +578,21 @@ Verification for this fix wave: focused EV tests `48 passed`, full pytest
 `336 passed`, focused Ruff passed, and full Ruff passed. NumPy remains
 intentionally undeclared in `pyproject.toml` until Task 3.
 
+## Latest Completed Task: Independent Brute-Force EV Oracle
+
+Task 2 of the Expected-Value Package Engine is complete. The reference oracle
+enumerates actual results and coupons with `itertools.product(range(3),
+repeat=event_count)`, preserving deterministic C-order base-three indexing.
+It exposes independent joint distributions, Hamming hit counts, crowd
+qualifying stakes, coupon payouts, and exhaustive gross EV for event counts up
+to eight. Zero-valued outcome probabilities are accepted when the modeled
+category denominators remain finite and positive; invalid category denominators
+fail closed before payout division.
+
+Verification: focused reference tests `11 passed`; full pytest `347 passed`;
+focused Ruff passed; full Ruff passed.
+
 ## Next Task
 
-Implement the brute-force expected-value reference oracle for small event
-counts, consuming the Task 1 models and prize math.
+Implement the exact ternary full-space EV engine and its benchmark, consuming
+the Task 2 reference oracle.
