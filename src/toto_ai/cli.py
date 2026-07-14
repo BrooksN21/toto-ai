@@ -1,6 +1,7 @@
 import subprocess
 from pathlib import Path
 
+import requests
 import typer
 from rich import print
 from rich.json import JSON
@@ -44,6 +45,13 @@ from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db, open_readonly_db
 from toto_ai.ev.benchmark import benchmark_ev_engine
+from toto_ai.ev.drawing import (
+    EVPackageRun,
+    build_open_ev_package,
+    resolve_open_drawing_from_api,
+)
+from toto_ai.ev.models import EVConfig
+from toto_ai.ev.reports import write_ev_package_reports
 from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.brief_backtest import (
     run_brief_backtest,
@@ -550,6 +558,90 @@ def benchmark_ev_command(
     except ValueError as error:
         raise typer.BadParameter(str(error)) from error
     print(_ev_benchmark_table(result))
+
+
+@app.command("ev-package")
+def ev_package_command(
+    open: bool = typer.Option(False),  # noqa: A002
+    mode: str = typer.Option("research"),
+    bank: int = typer.Option(...),
+    stake: int = typer.Option(30),
+    min_gross_ev: float = typer.Option(1.0),
+    prize_fund_factor: float = typer.Option(1.0),
+    possible_winnings: float | None = typer.Option(None),
+    jackpot: float | None = typer.Option(None),
+) -> None:
+    """Build a modeled-EV package from a fresh open drawing snapshot."""
+    if not open:
+        raise typer.BadParameter("--open is required")
+
+    try:
+        if mode not in {"research", "playable"}:
+            raise ValueError("mode must be 'research' or 'playable'")
+        config = EVConfig(
+            bank=bank,
+            stake=stake,
+            mode=mode,
+            min_gross_ev=min_gross_ev,
+            prize_fund_factor=prize_fund_factor,
+            possible_winnings=possible_winnings,
+        )
+        client = TotoBriefClient()
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            task_id = progress.add_task("Resolving fresh open drawing")
+            reference = resolve_open_drawing_from_api(client)
+            progress.update(
+                task_id,
+                description=f"Fetching drawing {reference.drawing_id}",
+            )
+
+            def update_progress(update: dict[str, object]) -> None:
+                phase = update.get("phase")
+                if phase == "category":
+                    description = f"Computing EV category {update.get('category')}"
+                elif phase == "sensitivity":
+                    description = (
+                        "Selecting sensitivity factor "
+                        f"{float(update.get('factor', 0.0)):.2f}"
+                    )
+                elif phase == "package":
+                    description = "Selecting exact EV package"
+                else:
+                    description = "Validating fresh drawing snapshot"
+                progress.update(task_id, description=description)
+
+            result = build_open_ev_package(
+                client=client,
+                drawing_id=reference.drawing_id,
+                config=config,
+                jackpot_override=jackpot,
+                progress_callback=update_progress,
+            )
+            progress.update(task_id, description="Publishing EV reports")
+            csv_path, markdown_path = write_ev_package_reports(result)
+            progress.update(task_id, description="EV package complete")
+    except KeyboardInterrupt as error:
+        raise typer.BadParameter(
+            "EV calculation interrupted; no recommendation was produced"
+        ) from error
+    except (
+        FloatingPointError,
+        KeyError,
+        OSError,
+        TypeError,
+        ValueError,
+        requests.RequestException,
+    ) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(_ev_input_snapshot_table(result))
+    print(_ev_package_summary_table(result))
+    print(_ev_top_coupons_table(result))
+    print(f"Reports written to {csv_path} and {markdown_path}")
 
 
 @app.command()
@@ -1612,6 +1704,68 @@ def _cover_benchmark_table(result: dict[str, object]) -> Table:
         "coverage_rate",
     ):
         table.add_row(key.replace("_", " "), _format_value(result[key]))
+    return table
+
+
+def _ev_input_snapshot_table(result: EVPackageRun) -> Table:
+    ev_input = result.ev_input
+    table = Table(title="EV Input Snapshot")
+    table.add_column("Field")
+    table.add_column("Value", justify="right")
+    rows = (
+        ("drawing id", ev_input.drawing_id),
+        ("drawing number", ev_input.drawing_number),
+        ("fetched at", ev_input.fetched_at),
+        ("pool sum", f"{ev_input.pool_sum:.6f}"),
+        ("jackpot", f"{ev_input.jackpot:.6f}"),
+        ("possible winnings", f"{ev_input.possible_winnings:.6f}"),
+        ("possible winnings source", result.possible_winnings_source),
+        ("prize fund factor", f"{result.config.prize_fund_factor:.6f}"),
+        ("probability source", "totobrief_bk (15/15)"),
+        ("crowd joint model", "independent event marginals"),
+    )
+    for label, value in rows:
+        table.add_row(label, str(value))
+    return table
+
+
+def _ev_package_summary_table(result: EVPackageRun) -> Table:
+    package = result.package
+    modeled_roi = "n/a" if package.modeled_roi is None else f"{package.modeled_roi:.6f}"
+    table = Table(title="EV Package Summary")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    rows = (
+        ("decision", package.decision),
+        ("selected coupons", len(package.coupons)),
+        ("cost", package.cost),
+        ("unused bank", package.unused_bank),
+        ("expected payout", f"{package.expected_payout:.6f}"),
+        ("modeled ROI", modeled_roi),
+        ("self-dilution ratio", f"{result.self_dilution_ratio:.6f}"),
+        ("model supported", "yes" if result.model_supported else "no"),
+        ("derived brief", " ".join(value or "-" for value in package.derived_brief)),
+    )
+    for label, value in rows:
+        table.add_row(label, str(value))
+    if result.model_warning is not None:
+        table.add_row("warning", result.model_warning)
+    return table
+
+
+def _ev_top_coupons_table(result: EVPackageRun) -> Table:
+    table = Table(title="Top 20 EV Coupons")
+    table.add_column("Rank", justify="right")
+    table.add_column("Coupon")
+    table.add_column("Gross EV", justify="right")
+    table.add_column("Net EV", justify="right")
+    for row in result.top_coupons:
+        table.add_row(
+            str(row.rank),
+            row.coupon,
+            f"{row.gross_ev:.12f}",
+            f"{row.net_ev:.12f}",
+        )
     return table
 
 

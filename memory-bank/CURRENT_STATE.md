@@ -691,11 +691,6 @@ The five-event benchmark (`243` coupons) passed in `0.121526 s` with `62.00
 MiB` peak resident memory, maximum EV error `1.626e-19`, and zero sampled
 crowd-tail error. The 15-event benchmark was not run.
 
-## Next Task
-
-Implement dynamic-bank Research and Playable package selection over exact EV
-surfaces.
-
 ## Latest Completed Task: Dynamic-Bank EV Package Selection
 
 Task 4 of the Expected-Value Package Engine is complete. The new
@@ -737,3 +732,48 @@ surfaces both ranked all `3**15 = 14,348,907` indices exactly. The combined
 process completed in `1.00 s`; `/usr/bin/time -l` reported a `229,786,488`-byte
 peak memory footprint and `433,176,576`-byte maximum resident set size while
 running both surfaces sequentially.
+
+## Latest Completed Task: Fresh Drawing EV Package Command
+
+Task 5 of the Expected-Value Package Engine is complete. The new
+`toto_ai.ev.drawing` path resolves only page one of the live TotoBrief API,
+chooses the nearest future `active`/`expected` drawing by `(ended_at, id)`, and
+immediately fetches `drawing-info`. It never falls back to SQLite. The fresh
+receipt timestamp is recorded in UTC.
+
+Drawing parsing requires exactly event orders 0 through 14, normalizes every BK
+triplet, applies the approved Jeffreys smoothing to every pool triplet, and
+fails closed on missing or invalid pool, jackpot, quote, and possible-winnings
+inputs. Possible winnings are either an explicit override with the default
+factor or the disclosed `pool_sum * prize_fund_factor` proxy. Event results are
+not consumed.
+
+`build_open_ev_package()` computes the complete reusable category components
+once, materializes and selects the 0.70/0.80/0.90/1.00 sensitivity surfaces,
+and reuses the configured factor's package where applicable. No probability or
+coupon candidate space is truncated. Package cost divided by `pool_sum` is the
+self-dilution ratio: exactly 1% remains supported; above 1% is unsupported.
+Unsupported Playable output suppresses `PLAY` to `NO BET`, while Research output
+retains diagnostics and an explicit warning.
+
+The new rollback-safe report publisher fully renders deterministic exact-package
+CSV and Markdown artifacts before publication and restores both prior files if
+the second final replacement fails. Reports disclose fresh timestamps, sources,
+the independent-event crowd model, prize factor, bank and self-dilution ratios,
+decision, package metrics, derived brief, top-20 diagnostics, sensitivity, and
+that modeled ROI is not observed ROI.
+
+`ev-package` requires `--open`, accepts the exact planned mode, bank, stake,
+threshold, prize-factor, possible-winnings, and jackpot options, and uses Rich
+phase/category progress. API, validation, numerical, interruption, and report
+failures become controlled `BadParameter` errors. An interrupted calculation
+prints no `PLAY` decision.
+
+Verification before documentation: focused Task 5/API-inspector tests `34
+passed`; full pytest `468 passed`; CLI help listed all eight planned options;
+repository-wide Ruff passed.
+
+## Next Task
+
+Implement the chronological modeled-EV backtest without reopening the frozen
+hybrid holdout.

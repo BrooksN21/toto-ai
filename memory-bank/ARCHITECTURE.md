@@ -18,6 +18,18 @@ TotoBrief API
 -> Package Export
 ```
 
+Fresh playable EV path:
+
+```text
+TotoBrief API page one
+-> Nearest future active/expected drawing
+-> Immediate drawing-info snapshot
+-> Strict 15-event BK/pool input
+-> Reusable exact EV components
+-> Prize-factor surfaces and dynamic-bank selection
+-> Rollback-safe CSV/Markdown package reports
+```
+
 Important modules:
 - `toto_ai.api.client`: TotoBrief API client.
 - `toto_ai.collector.sync`: historical drawing collector.
@@ -40,6 +52,18 @@ Important modules:
 - `toto_ai.analytics.research_bk_vs_norm`: BK vs normalized odds study.
 - `toto_ai.package.mvp`: MVP covering approximation package generator.
 - `toto_ai.package.backtest`: MVP package backtest engine.
+- `toto_ai.ev.models`, `toto_ai.ev.prize`, and `toto_ai.ev.reference`:
+  immutable EV domain types, official prize/crowd math, and the independent
+  brute-force oracle.
+- `toto_ai.ev.ternary`: exact complete-space EV components and light prize-fund
+  materialization without coupon truncation.
+- `toto_ai.ev.package`: deterministic complete-surface ranking and Research or
+  Playable dynamic-bank package selection.
+- `toto_ai.ev.drawing`: page-one-only fresh open-drawing resolution, strict
+  drawing-info parsing, reusable sensitivity orchestration, and the 1%
+  self-dilution support gate. It does not consult SQLite.
+- `toto_ai.ev.reports`: deterministic EV package CSV/Markdown rendering and
+  rollback-safe atomic pair publication.
 - `toto_ai.optimizer.cover`: Cover Engine and exact cover verification, with
   cached parsed positions, suffix expansion reuse, and cached coverage bitsets.
 - `toto_ai.optimizer.cover_benchmark`: representative Cover Engine benchmark
@@ -89,6 +113,10 @@ Important CLI commands:
 - `cover`: generate a greedy cover package from a manual brief.
 - `verify-cover`: exactly verify cover package coverage against a brief.
 - `benchmark-cover`: profile Cover Engine performance on a representative brief.
+- `benchmark-ev`: verify and profile the exact EV engine.
+- `ev-package --open`: resolve and fetch a fresh playable TotoBrief drawing,
+  compute exact modeled EV, select a Research or Playable package, and publish
+  atomic reports. Unsupported Playable runs return `NO BET`.
 - `build-brief --open`: build a baseline brief and package for the next playable
   drawing.
 - `backtest-brief`: backtest the baseline brief generator on finished drawings.
