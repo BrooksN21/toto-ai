@@ -1,11 +1,13 @@
+import itertools
 import math
+import weakref
 
 import numpy as np
 import pytest
 
 import toto_ai.ev.ternary as ternary_module
 from toto_ai.ev.models import EVComponents, EVInput
-from toto_ai.ev.reference import brute_force_gross_ev
+from toto_ai.ev.reference import brute_force_gross_ev, joint_distribution
 from toto_ai.ev.ternary import (
     compute_ev_components,
     compute_ev_surface,
@@ -109,6 +111,82 @@ def test_exact_crowd_tail_dp_preserves_all_tiny_positive_states():
 
     assert np.all(tails > 0.0)
     assert tails[-1] == pytest.approx(1e-30, rel=1e-12, abs=0.0)
+
+
+def test_exact_crowd_tail_dp_preserves_supplied_nonmatch_mass_within_tolerance():
+    crowd = (
+        (0.4000000000004, 0.3500000000003, 0.2500000000002),
+        (0.3000000000003, 0.4500000000004, 0.2500000000002),
+        (0.5000000000005, 0.2000000000002, 0.3000000000002),
+    )
+    actual_index = 17
+    actual = tuple(
+        int(digit)
+        for digit in np.unravel_index(actual_index, (3,) * len(crowd), order="C")
+    )
+    expected = sum(
+        probability
+        for probability, ticket in zip(
+            joint_distribution(crowd),
+            itertools.product(range(3), repeat=len(crowd)),
+            strict=True,
+        )
+        if sum(left == right for left, right in zip(ticket, actual, strict=True)) >= 2
+    )
+
+    actual_tail = ternary_module._poisson_binomial_tails_for_indices(
+        crowd,
+        minimum_hits=2,
+        actual_indices=np.array([actual_index], dtype=np.int64),
+    )
+
+    assert actual_tail[0] == pytest.approx(expected, rel=1e-14, abs=0.0)
+
+
+def test_accumulation_materializes_and_releases_full_crowd_joint_before_tail_dp(
+    monkeypatch,
+):
+    true = ((0.5, 0.3, 0.2),) * 3
+    crowd = ((0.4, 0.35, 0.25),) * 3
+    original_joint_distribution = ternary_module._joint_distribution
+    original_crowd_tails = ternary_module._crowd_qualifying_probabilities
+    crowd_joint_ref = None
+    joint_matrices = []
+
+    def track_joint_distribution(matrix):
+        nonlocal crowd_joint_ref
+        joint = original_joint_distribution(matrix)
+        joint_matrices.append(matrix)
+        if matrix == crowd:
+            crowd_joint_ref = weakref.ref(joint)
+        return joint
+
+    def verify_crowd_released(*args, **kwargs):
+        assert crowd_joint_ref is not None
+        assert crowd_joint_ref() is None
+        return original_crowd_tails(*args, **kwargs)
+
+    monkeypatch.setattr(ternary_module, "_joint_distribution", track_joint_distribution)
+    monkeypatch.setattr(
+        ternary_module,
+        "_crowd_qualifying_probabilities",
+        verify_crowd_released,
+    )
+
+    surface = compute_ev_surface(
+        true,
+        crowd,
+        1_000.0,
+        {2: 10.0},
+        30,
+        2,
+    )
+
+    assert joint_matrices == [true, crowd]
+    assert surface.crowd_mass == pytest.approx(
+        joint_distribution(crowd).sum(),
+        abs=1e-15,
+    )
 
 
 def test_selected_state_tail_dp_supports_fifteen_tiny_marginals():

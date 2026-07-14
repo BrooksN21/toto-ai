@@ -1,3 +1,4 @@
+import itertools
 import math
 
 import numpy as np
@@ -8,7 +9,11 @@ import toto_ai.ev.benchmark as benchmark_module
 from toto_ai.cli import app
 from toto_ai.ev.benchmark import benchmark_ev_engine
 from toto_ai.ev.prize import category_funds
-from toto_ai.ev.reference import brute_force_gross_ev
+from toto_ai.ev.reference import brute_force_gross_ev, joint_distribution
+from toto_ai.ev.ternary import (
+    _poisson_binomial_tails_for_indices,
+    compute_ev_surface,
+)
 
 
 def test_small_benchmark_verifies_complete_surface_against_oracle():
@@ -106,6 +111,65 @@ def test_independent_direct_coupon_components_match_small_oracle():
         rtol=1e-12,
         atol=1e-15,
     )
+
+
+def test_non_unit_tolerance_rows_agree_across_evaluators():
+    true = (
+        (0.5000000000001, 0.3000000000001, 0.2),
+        (0.4500000000001, 0.3500000000001, 0.2),
+        (0.4000000000001, 0.2500000000001, 0.35),
+    )
+    crowd = (
+        (0.4000000000001, 0.3500000000001, 0.25),
+        (0.3000000000001, 0.4500000000001, 0.25),
+        (0.5000000000001, 0.2000000000001, 0.3),
+    )
+    funds = {2: 0.5, 3: 0.25}
+    coupon_indices = np.array([0, 7, 17, 26], dtype=np.int64)
+
+    surface = compute_ev_surface(true, crowd, 1_000.0, funds, 30, 2)
+    reference = brute_force_gross_ev(true, crowd, 1_000.0, 30, funds, 2)
+    direct_regular, direct_jackpot = (
+        benchmark_module._independent_direct_coupon_components(
+            true,
+            crowd,
+            pool_sum=1_000.0,
+            coupon_indices=coupon_indices,
+            regular_coefficients=funds,
+            jackpot_coefficients={},
+            chunk_size=11,
+        )
+    )
+    scalar_tail = benchmark_module._scalar_poisson_binomial_tail(
+        crowd,
+        actual_index=17,
+        minimum_hits=2,
+    )
+    production_tail = _poisson_binomial_tails_for_indices(
+        crowd,
+        minimum_hits=2,
+        actual_indices=np.array([17], dtype=np.int64),
+    )[0]
+    actual = (1, 2, 2)
+    reference_tail = sum(
+        probability
+        for probability, ticket in zip(
+            joint_distribution(crowd),
+            itertools.product(range(3), repeat=len(crowd)),
+            strict=True,
+        )
+        if sum(left == right for left, right in zip(ticket, actual, strict=True)) >= 2
+    )
+
+    np.testing.assert_allclose(surface.gross_ev, reference, rtol=1e-13, atol=1e-15)
+    np.testing.assert_allclose(
+        direct_regular + direct_jackpot,
+        reference[coupon_indices],
+        rtol=1e-14,
+        atol=1e-15,
+    )
+    assert scalar_tail == pytest.approx(reference_tail, rel=1e-14, abs=0.0)
+    assert production_tail == pytest.approx(reference_tail, rel=1e-14, abs=0.0)
 
 
 def test_fingerprint_shape_is_not_a_pass_predicate(monkeypatch):

@@ -256,10 +256,13 @@ def _scalar_poisson_binomial_tail(
         zip(crowd_probabilities, actual, strict=True),
     ):
         match_probability = float(row[outcome])
+        nonmatch_probability = (
+            math.fsum(float(value) for value in row) - match_probability
+        )
         next_probabilities = [0.0] * (event_count + 1)
         for hit_count in range(processed_events + 1):
             probability = probabilities[hit_count]
-            next_probabilities[hit_count] += probability * (1.0 - match_probability)
+            next_probabilities[hit_count] += probability * nonmatch_probability
             next_probabilities[hit_count + 1] += probability * match_probability
         probabilities = next_probabilities
     return math.fsum(probabilities[minimum_hits:])
@@ -314,14 +317,18 @@ def _independent_direct_coupon_components(
         ):
             outcomes = actual_digits[:, event_index]
             true_probability *= np.asarray(true_row, dtype=np.float64)[outcomes]
-            match_probability = np.asarray(crowd_row, dtype=np.float64)[outcomes]
+            crowd_values = np.asarray(crowd_row, dtype=np.float64)
+            match_probability = crowd_values[outcomes]
+            nonmatch_probability = (
+                crowd_values.sum(dtype=np.float64) - match_probability
+            )
             for hit_count in range(event_index + 1, 0, -1):
                 match_distribution[:, hit_count] = (
                     match_distribution[:, hit_count]
-                    * (1.0 - match_probability)
+                    * nonmatch_probability
                     + match_distribution[:, hit_count - 1] * match_probability
                 )
-            match_distribution[:, 0] *= 1.0 - match_probability
+            match_distribution[:, 0] *= nonmatch_probability
 
         crowd_tails = {
             category: match_distribution[:, category:].sum(

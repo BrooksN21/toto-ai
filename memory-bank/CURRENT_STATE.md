@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 417
+- Tests currently passed: 420
 - Ruff passed
 
 ## Approved Next Design: Expected-Value Package Engine
@@ -669,6 +669,27 @@ with `62.84 MiB` peak resident memory, minimum denominator `1828.14404892`,
 maximum EV error `1.626e-19`, zero sampled crowd-tail error, and status `PASS`.
 The full 15-event benchmark was not run, as instructed; its runtime and peak
 memory remain Task 7 acceptance concerns.
+
+## Final Task 3 Formula Fix: Exact Crowd Mass Handling
+
+The production accumulation now materializes both C-order Kronecker product
+arrays `Q` and `R`. It validates finite unit mass from `R.sum()` within `1e-12`,
+records that value as `crowd_mass`, and releases `R` before category work. The
+Poisson-binomial denominator DP remains the only denominator path and does not
+consume or truncate `R` states.
+
+For tolerance-accepted rows that are not bit-exact unit mass, production and
+both independent benchmark recurrences now compute non-match probability from
+the supplied row (`row_sum - selected match`) rather than `1 - selected
+match`. This preserves the accepted row mass and agrees with the independent
+brute-force joint reference. Regressions cover production tails, scalar tails,
+direct coupon sums, full EV surfaces, C-order `R` auditing/release, and existing
+tiny-positive behavior.
+
+Verification: focused Task 3 tests `48 passed`; full pytest `420 passed`.
+The five-event benchmark (`243` coupons) passed in `0.121526 s` with `62.00
+MiB` peak resident memory, maximum EV error `1.626e-19`, and zero sampled
+crowd-tail error. The 15-event benchmark was not run.
 
 ## Next Task
 

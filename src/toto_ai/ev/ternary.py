@@ -247,10 +247,13 @@ def _accumulate_categories(
 
     event_count = len(true_matrix)
     probability = _joint_distribution(true_matrix)
+    crowd = _joint_distribution(crowd_matrix)
     probability_mass = float(probability.sum(dtype=np.float64))
-    crowd_mass = math.prod(math.fsum(row) for row in crowd_matrix)
+    crowd_mass = float(crowd.sum(dtype=np.float64))
     _require_unit_mass(probability_mass, "true probability")
     _require_unit_mass(crowd_mass, "crowd probability")
+    # R is required for the C-order crowd mass audit only; DP owns denominators.
+    del crowd
 
     categories = sorted(
         {category for mapping in coefficient_maps for category in mapping},
@@ -367,8 +370,9 @@ def _poisson_binomial_tails_for_validated_indices(
 
     for processed_events, row in enumerate(reversed(crowd_matrix)):
         remainders, outcome_digits = np.divmod(remainders, 3)
-        match_probability = np.asarray(row, dtype=np.float64)[outcome_digits]
-        failure_probability = 1.0 - match_probability
+        row_values = np.asarray(row, dtype=np.float64)
+        match_probability = row_values[outcome_digits]
+        failure_probability = row_values.sum(dtype=np.float64) - match_probability
         highest_error = min(processed_events + 1, maximum_errors)
         for error_count in range(highest_error, 0, -1):
             probabilities[:, error_count] = (
