@@ -773,6 +773,40 @@ Verification before documentation: focused Task 5/API-inspector tests `34
 passed`; full pytest `468 passed`; CLI help listed all eight planned options;
 repository-wide Ruff passed.
 
+## Task 5 Review Hardening
+
+Unsupported Playable runs are now fully non-actionable. When the proposed
+package exceeds the 1% self-dilution limit, the returned package is `NO BET`
+with no coupons, zero cost and expected payout, the full bank unused, no
+modeled ROI, and an empty derived brief. Sensitivity rows apply the same
+suppression, and the exact package CSV contains only its header. Research mode
+still retains diagnostic coupons and the unsupported warning. The exact 1%
+boundary remains supported.
+
+Atomic report publication now rolls back after any `BaseException`, including
+`KeyboardInterrupt` and `SystemExit`, once publication has started. The
+original exception is re-raised after both prior artifacts are restored and
+temporary/backup files are cleaned.
+
+Fresh `drawing-info` payload IDs must exactly match the requested drawing ID
+before EV components are computed. Oversized numeric conversion failures are
+normalized to `ValueError`, CLI overflow failures become controlled
+`BadParameter` output, and parser receipt timestamps must include an explicit
+timezone. Reports now disclose whether jackpot came from the TotoBrief payload
+or an explicit override.
+
+Sensitivity factors are materialized and selected sequentially. The workflow
+retains only scalar sensitivity summaries and the requested main
+surface/package; instrumentation observes at most the main surface plus one
+transient sensitivity surface. Main package selection and bounded top-20
+diagnostics share one complete deterministic ranking. Every `3**15` EV value
+is still ranked for selection; no probability or coupon candidate truncation
+was introduced.
+
+Review-fix verification before documentation: focused EV/API-inspector tests
+`66 passed`; full pytest `476 passed`; CLI help listed all planned options;
+repository-wide Ruff passed.
+
 ## Next Task
 
 Implement the chronological modeled-EV backtest without reopening the frozen

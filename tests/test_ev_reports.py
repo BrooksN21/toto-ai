@@ -10,7 +10,7 @@ from toto_ai.ev.models import EVConfig, EVInput, EVPackage, EVSurface, RankedCou
 from toto_ai.ev.reports import ev_package_report_paths, write_ev_package_reports
 
 
-def fixture_run(*, decision="NO BET"):
+def fixture_run(*, decision="NO BET", unsupported=False):
     ranked = RankedCoupon(rank=1, coupon="1X2" * 5, gross_ev=0.95, net_ev=-0.05)
     return EVPackageRun(
         config=EVConfig(
@@ -56,9 +56,10 @@ def fixture_run(*, decision="NO BET"):
             for factor in (0.70, 0.80, 0.90, 1.00)
         ),
         possible_winnings_source="pool_sum proxy",
-        self_dilution_ratio=0.0,
-        model_supported=True,
-        model_warning=None,
+        jackpot_source="totobrief payload",
+        self_dilution_ratio=0.010001 if unsupported else 0.0,
+        model_supported=not unsupported,
+        model_warning="self-dilution unsupported" if unsupported else None,
     )
 
 
@@ -73,6 +74,7 @@ def test_reports_use_deterministic_paths_and_disclose_model(tmp_path):
     for expected in (
         "crowd joint model: independent event marginals",
         "possible winnings source: pool_sum proxy",
+        "jackpot source: totobrief payload",
         "prize fund factor: 0.900000",
         "modeled ROI is not observed ROI",
         "decision: NO BET",
@@ -81,6 +83,28 @@ def test_reports_use_deterministic_paths_and_disclose_model(tmp_path):
         "model supported: yes",
         "## Sensitivity",
         "## Top 20 diagnostics",
+    ):
+        assert expected in markdown
+
+
+def test_unsupported_no_bet_report_is_non_actionable(tmp_path):
+    run = fixture_run(unsupported=True)
+
+    csv_path, markdown_path = write_ev_package_reports(run, tmp_path)
+
+    assert csv_path.read_text(encoding="utf-8").splitlines() == [
+        "rank,coupon,gross_ev,net_ev"
+    ]
+    markdown = markdown_path.read_text(encoding="utf-8")
+    for expected in (
+        "decision: NO BET",
+        "selected count: 0",
+        "cost: 0",
+        "unused bank: 6000",
+        "expected payout: 0.000000000000",
+        "modeled ROI: n/a",
+        "model supported: no",
+        "| 0.70 | 700000.000000 | NO BET | 0 | 0 | 6000 |",
     ):
         assert expected in markdown
 
@@ -121,6 +145,35 @@ def test_second_report_replace_failure_restores_existing_pair(monkeypatch, tmp_p
     monkeypatch.setattr(Path, "replace", fail_second_final_replace)
 
     with pytest.raises(OSError, match="second final replace failed"):
+        write_ev_package_reports(run, tmp_path)
+
+    assert csv_path.read_bytes() == b"old csv\n"
+    assert markdown_path.read_bytes() == b"old markdown\n"
+    assert set(tmp_path.iterdir()) == {csv_path, markdown_path}
+
+
+def test_keyboard_interrupt_during_second_replace_restores_existing_pair(
+    monkeypatch,
+    tmp_path,
+):
+    run = fixture_run(decision="PLAY")
+    csv_path, markdown_path = ev_package_report_paths(run, tmp_path)
+    csv_path.write_bytes(b"old csv\n")
+    markdown_path.write_bytes(b"old markdown\n")
+    original_replace = Path.replace
+    final_replace_count = 0
+
+    def interrupt_second_final_replace(source, target):
+        nonlocal final_replace_count
+        if Path(target) in {csv_path, markdown_path}:
+            final_replace_count += 1
+            if final_replace_count == 2:
+                raise KeyboardInterrupt("second final replace interrupted")
+        return original_replace(source, target)
+
+    monkeypatch.setattr(Path, "replace", interrupt_second_final_replace)
+
+    with pytest.raises(KeyboardInterrupt, match="second final replace interrupted"):
         write_ev_package_reports(run, tmp_path)
 
     assert csv_path.read_bytes() == b"old csv\n"

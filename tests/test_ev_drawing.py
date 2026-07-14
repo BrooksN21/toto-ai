@@ -1,3 +1,5 @@
+import gc
+import weakref
 from pathlib import Path
 
 import numpy as np
@@ -86,6 +88,44 @@ def test_payload_uses_explicit_winnings_and_jackpot_override(open_drawing_payloa
 
     assert result.possible_winnings == 2_500.0
     assert result.jackpot == 800.0
+
+
+def test_payload_rejects_naive_fetched_at(open_drawing_payload):
+    with pytest.raises(ValueError, match="timezone"):
+        ev_input_from_payload(
+            open_drawing_payload,
+            fetched_at="2026-07-14T12:00:00",
+            stake=30,
+            prize_fund_factor=1.0,
+            possible_winnings=None,
+            jackpot_override=None,
+        )
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda data: data.__setitem__("pool_sum", 10**10_000),
+        lambda data: data["events"][0]["quotes"].__setitem__(
+            "bk_win_1", 10**10_000
+        ),
+    ],
+)
+def test_payload_converts_oversized_numeric_failures_to_value_error(
+    open_drawing_payload,
+    mutate,
+):
+    mutate(open_drawing_payload["data"])
+
+    with pytest.raises(ValueError, match="finite number"):
+        ev_input_from_payload(
+            open_drawing_payload,
+            fetched_at="2026-07-14T12:00:00+00:00",
+            stake=30,
+            prize_fund_factor=1.0,
+            possible_winnings=None,
+            jackpot_override=None,
+        )
 
 
 @pytest.mark.parametrize(
@@ -212,6 +252,33 @@ def test_resolver_fails_without_a_playable_page_one_row():
         )
 
 
+def test_build_rejects_drawing_info_id_mismatch_before_calculation(
+    monkeypatch,
+    open_drawing_payload,
+):
+    import toto_ai.ev.drawing as drawing_module
+
+    open_drawing_payload["data"]["id"] = 9001
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == 9000
+            return open_drawing_payload
+
+    monkeypatch.setattr(
+        drawing_module,
+        "compute_ev_components",
+        lambda *args, **kwargs: pytest.fail("mismatched input must not be calculated"),
+    )
+
+    with pytest.raises(ValueError, match="does not match requested drawing id"):
+        build_open_ev_package(
+            client=Client(),
+            drawing_id=9000,
+            config=EVConfig(bank=30),
+        )
+
+
 def _surface(value):
     return EVSurface(
         gross_ev=np.array([value], dtype=np.float64),
@@ -240,11 +307,18 @@ def _package(config, *, cost, decision=None):
 
 
 @pytest.mark.parametrize(
-    ("mode", "pool_sum", "expected_supported", "expected_decision"),
+    (
+        "mode",
+        "pool_sum",
+        "jackpot_override",
+        "expected_jackpot_source",
+        "expected_supported",
+        "expected_decision",
+    ),
     [
-        ("playable", 3_000.0, True, "PLAY"),
-        ("playable", 2_999.999, False, "NO BET"),
-        ("research", 2_999.999, False, "RESEARCH ONLY"),
+        ("playable", 3_000.0, None, "totobrief payload", True, "PLAY"),
+        ("playable", 2_999.999, 800.0, "explicit override", False, "NO BET"),
+        ("research", 2_999.999, None, "totobrief payload", False, "RESEARCH ONLY"),
     ],
 )
 def test_build_package_enforces_self_dilution_boundary(
@@ -252,6 +326,8 @@ def test_build_package_enforces_self_dilution_boundary(
     open_drawing_payload,
     mode,
     pool_sum,
+    jackpot_override,
+    expected_jackpot_source,
     expected_supported,
     expected_decision,
 ):
@@ -271,6 +347,8 @@ def test_build_package_enforces_self_dilution_boundary(
     component_calls = []
     materialized = []
     selected_configs = []
+    surface_references = []
+    live_surface_counts = []
 
     def fake_components(ev_input, progress_callback=None):
         component_calls.append(ev_input)
@@ -278,22 +356,36 @@ def test_build_package_enforces_self_dilution_boundary(
 
     def fake_materialize(components, possible_winnings, jackpot):
         materialized.append((possible_winnings, jackpot))
-        return _surface(possible_winnings)
+        surface = _surface(possible_winnings)
+        surface_references.append(weakref.ref(surface))
+        return surface
 
     def fake_select(surface, config):
+        gc.collect()
+        live_surface_counts.append(
+            sum(reference() is not None for reference in surface_references)
+        )
         selected_configs.append(config)
         return _package(config, cost=30)
+
+    def fake_select_with_top(surface, config, diagnostic_limit=20):
+        return fake_select(surface, config), ()
 
     monkeypatch.setattr(drawing_module, "compute_ev_components", fake_components)
     monkeypatch.setattr(drawing_module, "materialize_ev_surface", fake_materialize)
     monkeypatch.setattr(drawing_module, "select_ev_package", fake_select)
-    monkeypatch.setattr(drawing_module, "_top_coupons", lambda surface, limit=20: ())
+    monkeypatch.setattr(
+        drawing_module,
+        "select_ev_package_with_top_coupons",
+        fake_select_with_top,
+    )
     monkeypatch.setattr(drawing_module, "_utc_now", lambda: "2026-07-14T12:00:01+00:00")
 
     result = build_open_ev_package(
         client=client,
         drawing_id=9000,
         config=EVConfig(bank=30, stake=30, mode=mode, prize_fund_factor=0.9),
+        jackpot_override=jackpot_override,
     )
 
     assert client.calls == [9000]
@@ -308,8 +400,23 @@ def test_build_package_enforces_self_dilution_boundary(
     assert result.self_dilution_ratio == pytest.approx(30 / pool_sum)
     assert result.model_supported is expected_supported
     assert result.package.decision == expected_decision
+    assert result.jackpot_source == expected_jackpot_source
+    assert result.ev_input.jackpot == (
+        1_200.0 if jackpot_override is None else jackpot_override
+    )
     assert len(materialized) == 4
     assert len(selected_configs) == 4
+    assert max(live_surface_counts) <= 2
+    if mode == "playable" and not expected_supported:
+        assert result.package.coupons == ()
+        assert result.package.cost == 0
+        assert result.package.unused_bank == result.config.bank
+        assert result.package.expected_payout == 0.0
+        assert result.package.modeled_roi is None
+        assert result.package.derived_brief == ("",) * 15
+        assert all(row.selected_count == 0 for row in result.sensitivity)
+        assert all(row.cost == 0 for row in result.sensitivity)
+        assert all(row.unused_bank == result.config.bank for row in result.sensitivity)
 
 
 def test_cli_requires_open():
@@ -357,6 +464,28 @@ def test_cli_interruption_never_prints_play(monkeypatch):
     assert "PLAY" not in result.output
 
 
+def test_cli_converts_numeric_overflow_to_bad_parameter(monkeypatch):
+    monkeypatch.setattr(
+        cli_module,
+        "resolve_open_drawing_from_api",
+        lambda client: type("Reference", (), {"drawing_id": 9000})(),
+    )
+    monkeypatch.setattr(
+        cli_module,
+        "build_open_ev_package",
+        lambda **kwargs: (_ for _ in ()).throw(OverflowError("numeric overflow")),
+    )
+
+    result = CliRunner().invoke(
+        app,
+        ["ev-package", "--open", "--mode", "playable", "--bank", "6000"],
+    )
+
+    assert result.exit_code == 2
+    assert "numeric overflow" in result.stderr
+    assert "PLAY" not in result.output
+
+
 def test_cli_prints_snapshot_package_top_coupons_and_report_paths(
     monkeypatch,
     open_drawing_payload,
@@ -385,6 +514,7 @@ def test_cli_prints_snapshot_package_top_coupons_and_report_paths(
         top_coupons=(top_coupon,),
         sensitivity=(),
         possible_winnings_source="pool_sum proxy",
+        jackpot_source="totobrief payload",
         self_dilution_ratio=0.0,
         model_supported=True,
         model_warning=None,

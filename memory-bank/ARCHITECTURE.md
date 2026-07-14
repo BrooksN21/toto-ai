@@ -58,12 +58,16 @@ Important modules:
 - `toto_ai.ev.ternary`: exact complete-space EV components and light prize-fund
   materialization without coupon truncation.
 - `toto_ai.ev.package`: deterministic complete-surface ranking and Research or
-  Playable dynamic-bank package selection.
+  Playable dynamic-bank package selection. Package selection and bounded top
+  diagnostics can share one complete ranking without truncating the surface.
 - `toto_ai.ev.drawing`: page-one-only fresh open-drawing resolution, strict
   drawing-info parsing, reusable sensitivity orchestration, and the 1%
-  self-dilution support gate. It does not consult SQLite.
+  self-dilution support gate. Sensitivity surfaces are processed sequentially;
+  only scalar summaries and the requested main surface/package are retained.
+  It does not consult SQLite.
 - `toto_ai.ev.reports`: deterministic EV package CSV/Markdown rendering and
-  rollback-safe atomic pair publication.
+  rollback-safe atomic pair publication, including rollback for interruptions
+  and other `BaseException` failures after publication begins.
 - `toto_ai.optimizer.cover`: Cover Engine and exact cover verification, with
   cached parsed positions, suffix expansion reuse, and cached coverage bitsets.
 - `toto_ai.optimizer.cover_benchmark`: representative Cover Engine benchmark

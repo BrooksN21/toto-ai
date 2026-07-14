@@ -94,6 +94,7 @@ def _render_markdown(result: EVPackageRun) -> str:
         f"- fetched at: {ev_input.fetched_at}",
         f"- pool sum: {ev_input.pool_sum:.6f}",
         f"- jackpot: {ev_input.jackpot:.6f}",
+        f"- jackpot source: {result.jackpot_source}",
         f"- possible winnings: {ev_input.possible_winnings:.6f}",
         f"- possible winnings source: {result.possible_winnings_source}",
         f"- prize fund factor: {config.prize_fund_factor:.6f}",
@@ -217,7 +218,7 @@ def _write_atomic_pair(
         for temporary_path, final_path in rendered:
             temporary_path.replace(final_path)
             temporary_paths.remove(temporary_path)
-    except Exception:
+    except BaseException:
         if publication_started:
             for _, final_path in rendered:
                 backup_path = backups.get(final_path)

@@ -17,17 +17,20 @@ from toto_ai.ev.models import (
     EVSurface,
     RankedCoupon,
 )
-from toto_ai.ev.package import rank_coupon_indices, select_ev_package
+from toto_ai.ev.package import (
+    select_ev_package,
+    select_ev_package_with_top_coupons,
+)
 from toto_ai.ev.prize import normalize_triplet, smooth_crowd_matrix
 from toto_ai.ev.ternary import (
     compute_ev_components,
-    coupon_from_index,
     materialize_ev_surface,
 )
 
 SENSITIVITY_FACTORS = (0.70, 0.80, 0.90, 1.00)
 SELF_DILUTION_LIMIT = 0.01
 PossibleWinningsSource = Literal["pool_sum proxy", "explicit override"]
+JackpotSource = Literal["totobrief payload", "explicit override"]
 PhaseCallback = Callable[[dict[str, object]], None]
 
 
@@ -52,6 +55,7 @@ class EVPackageRun:
     top_coupons: tuple[RankedCoupon, ...]
     sensitivity: tuple[EVSensitivitySummary, ...]
     possible_winnings_source: PossibleWinningsSource
+    jackpot_source: JackpotSource
     self_dilution_ratio: float
     model_supported: bool
     model_warning: str | None
@@ -202,6 +206,11 @@ def build_open_ev_package(
         possible_winnings=config.possible_winnings,
         jackpot_override=jackpot_override,
     )
+    if ev_input.drawing_id != drawing_id:
+        raise ValueError(
+            f"drawing-info data.id {ev_input.drawing_id} does not match requested "
+            f"drawing id {drawing_id}"
+        )
 
     def category_progress(update: dict[str, str | int | float]) -> None:
         _notify(progress_callback, dict(update))
@@ -211,21 +220,34 @@ def build_open_ev_package(
         progress_callback=category_progress if progress_callback is not None else None,
     )
 
-    factor_surfaces: dict[float, EVSurface] = {}
-    factor_packages: dict[float, EVPackage] = {}
     sensitivity = []
+    main_surface: EVSurface | None = None
+    main_package: EVPackage | None = None
+    top_coupons: tuple[RankedCoupon, ...] = ()
+    main_factor = (
+        config.prize_fund_factor
+        if config.possible_winnings is None
+        and config.prize_fund_factor in SENSITIVITY_FACTORS
+        else None
+    )
     for factor in SENSITIVITY_FACTORS:
         _notify(progress_callback, {"phase": "sensitivity", "factor": factor})
         winnings = ev_input.pool_sum * factor
         surface = materialize_ev_surface(components, winnings, ev_input.jackpot)
-        factor_surfaces[factor] = surface
         factor_config = replace(
             config,
             prize_fund_factor=factor,
             possible_winnings=None,
         )
-        factor_package = select_ev_package(surface, factor_config)
-        factor_packages[factor] = factor_package
+        if factor == main_factor:
+            factor_package, top_coupons = select_ev_package_with_top_coupons(
+                surface,
+                factor_config,
+            )
+            main_surface = surface
+            main_package = factor_package
+        else:
+            factor_package = select_ev_package(surface, factor_config)
         factor_supported = (
             factor_package.cost / ev_input.pool_sum <= SELF_DILUTION_LIMIT
         )
@@ -233,6 +255,7 @@ def build_open_ev_package(
             factor_package,
             mode=config.mode,
             supported=factor_supported,
+            bank=config.bank,
         )
         sensitivity.append(
             EVSensitivitySummary(
@@ -248,24 +271,24 @@ def build_open_ev_package(
         )
 
     _notify(progress_callback, {"phase": "package"})
-    if config.possible_winnings is None and config.prize_fund_factor in factor_surfaces:
-        surface = factor_surfaces[config.prize_fund_factor]
-        package = factor_packages[config.prize_fund_factor]
-    else:
-        surface = materialize_ev_surface(
+    if main_surface is None or main_package is None:
+        main_surface = materialize_ev_surface(
             components,
             ev_input.possible_winnings,
             ev_input.jackpot,
         )
-        package = select_ev_package(surface, config)
-    self_dilution_ratio = package.cost / ev_input.pool_sum
+        main_package, top_coupons = select_ev_package_with_top_coupons(
+            main_surface,
+            config,
+        )
+    self_dilution_ratio = main_package.cost / ev_input.pool_sum
     model_supported = self_dilution_ratio <= SELF_DILUTION_LIMIT
     package = _suppress_unsupported_play(
-        package,
+        main_package,
         mode=config.mode,
         supported=model_supported,
+        bank=config.bank,
     )
-    top_coupons = _top_coupons(surface)
     warning = None
     if not model_supported:
         warning = (
@@ -276,7 +299,7 @@ def build_open_ev_package(
     return EVPackageRun(
         config=config,
         ev_input=ev_input,
-        surface=surface,
+        surface=main_surface,
         package=package,
         top_coupons=top_coupons,
         sensitivity=tuple(sensitivity),
@@ -285,36 +308,33 @@ def build_open_ev_package(
             if config.possible_winnings is not None
             else "pool_sum proxy"
         ),
+        jackpot_source=(
+            "explicit override"
+            if jackpot_override is not None
+            else "totobrief payload"
+        ),
         self_dilution_ratio=self_dilution_ratio,
         model_supported=model_supported,
         model_warning=warning,
     )
-
-
-def _top_coupons(surface: EVSurface, limit: int = 20) -> tuple[RankedCoupon, ...]:
-    order = rank_coupon_indices(surface)
-    rows = []
-    for rank, index in enumerate(order[:limit], start=1):
-        gross_ev = float(surface.gross_ev[index])
-        rows.append(
-            RankedCoupon(
-                rank=rank,
-                coupon=coupon_from_index(int(index), surface.event_count),
-                gross_ev=gross_ev,
-                net_ev=gross_ev - 1.0,
-            )
-        )
-    return tuple(rows)
-
-
 def _suppress_unsupported_play(
     package: EVPackage,
     *,
     mode: str,
     supported: bool,
+    bank: int,
 ) -> EVPackage:
     if mode == "playable" and not supported and package.decision == "PLAY":
-        return replace(package, decision="NO BET")
+        return replace(
+            package,
+            decision="NO BET",
+            coupons=(),
+            cost=0,
+            unused_bank=bank,
+            expected_payout=0.0,
+            modeled_roi=None,
+            derived_brief=("",) * len(package.derived_brief),
+        )
     return package
 
 
@@ -345,7 +365,10 @@ def _event_order(event: Mapping[str, Any]) -> int:
 def _finite_number(name: str, value: Any, *, positive: bool) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError(f"{name} must be a finite number")
-    converted = float(value)
+    try:
+        converted = float(value)
+    except (OverflowError, TypeError, ValueError) as error:
+        raise ValueError(f"{name} must be a finite number") from error
     if not math.isfinite(converted):
         raise ValueError(f"{name} must be a finite number")
     if (positive and converted <= 0.0) or (not positive and converted < 0.0):
@@ -379,8 +402,18 @@ def _parse_datetime(value: Any) -> datetime | None:
 
 
 def _require_aware_timestamp(value: str) -> None:
-    parsed = _parse_datetime(value)
-    if parsed is None:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("fetched_at must be an ISO datetime with a timezone")
+    normalized = value.strip()
+    if normalized.endswith("Z"):
+        normalized = f"{normalized[:-1]}+00:00"
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as error:
+        raise ValueError(
+            "fetched_at must be an ISO datetime with a timezone"
+        ) from error
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise ValueError("fetched_at must be an ISO datetime with a timezone")
 
 

@@ -166,9 +166,26 @@ def _values_close_to_base(values: np.ndarray, base: float) -> np.ndarray:
 
 def select_ev_package(surface: EVSurface, config: EVConfig) -> EVPackage:
     """Select a deterministic research or playable package from all coupons."""
+    package, _ = select_ev_package_with_top_coupons(
+        surface,
+        config,
+        diagnostic_limit=0,
+    )
+    return package
+
+
+def select_ev_package_with_top_coupons(
+    surface: EVSurface,
+    config: EVConfig,
+    *,
+    diagnostic_limit: int = 20,
+) -> tuple[EVPackage, tuple[RankedCoupon, ...]]:
+    """Select a package and diagnostics from one complete deterministic order."""
     gross_ev, event_count = _validated_surface(surface)
     if not isinstance(config, EVConfig):
         raise ValueError("config must be an EVConfig")
+    if type(diagnostic_limit) is not int or diagnostic_limit < 0:
+        raise ValueError("diagnostic_limit must be a non-negative int")
 
     order = rank_coupon_indices(surface)
     if config.mode == "research":
@@ -185,22 +202,18 @@ def select_ev_package(surface: EVSurface, config: EVConfig) -> EVPackage:
     else:
         raise ValueError("mode must be 'research' or 'playable'")
 
-    selected_indices = order[selected_positions]
-    coupons = tuple(
-        RankedCoupon(
-            rank=int(position) + 1,
-            coupon=coupon_from_index(int(index), event_count),
-            gross_ev=float(gross_ev[index]),
-            net_ev=float(gross_ev[index] - 1.0),
-        )
-        for position, index in zip(selected_positions, selected_indices, strict=True)
+    coupons = _ranked_coupons(
+        gross_ev,
+        event_count,
+        order,
+        selected_positions,
     )
     cost = len(coupons) * config.stake
     expected_payout = float(
         sum((coupon.gross_ev * config.stake for coupon in coupons), start=0.0),
     )
 
-    return EVPackage(
+    package = EVPackage(
         decision=decision,
         coupons=coupons,
         cost=cost,
@@ -211,6 +224,34 @@ def select_ev_package(surface: EVSurface, config: EVConfig) -> EVPackage:
             tuple(coupon.coupon for coupon in coupons),
             event_count=event_count,
         ),
+    )
+    diagnostic_positions = np.arange(
+        min(diagnostic_limit, order.size),
+        dtype=np.int64,
+    )
+    return package, _ranked_coupons(
+        gross_ev,
+        event_count,
+        order,
+        diagnostic_positions,
+    )
+
+
+def _ranked_coupons(
+    gross_ev: np.ndarray,
+    event_count: int,
+    order: np.ndarray,
+    positions: np.ndarray,
+) -> tuple[RankedCoupon, ...]:
+    indices = order[positions]
+    return tuple(
+        RankedCoupon(
+            rank=int(position) + 1,
+            coupon=coupon_from_index(int(index), event_count),
+            gross_ev=float(gross_ev[index]),
+            net_ev=float(gross_ev[index] - 1.0),
+        )
+        for position, index in zip(positions, indices, strict=True)
     )
 
 

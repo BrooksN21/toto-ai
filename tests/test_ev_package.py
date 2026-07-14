@@ -58,6 +58,28 @@ def test_playable_mode_does_not_spend_bank_on_low_ev_coupons():
     assert package.decision == "PLAY"
 
 
+def test_package_and_top_diagnostics_share_one_complete_ranking(monkeypatch):
+    calls = 0
+    original_rank = package_module.rank_coupon_indices
+
+    def counted_rank(ev_surface):
+        nonlocal calls
+        calls += 1
+        return original_rank(ev_surface)
+
+    monkeypatch.setattr(package_module, "rank_coupon_indices", counted_rank)
+
+    package, top_coupons = package_module.select_ev_package_with_top_coupons(
+        surface([1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4]),
+        EVConfig(bank=60, stake=30, mode="playable", min_gross_ev=1.0),
+        diagnostic_limit=3,
+    )
+
+    assert calls == 1
+    assert [row.coupon for row in package.coupons] == ["11", "1X"]
+    assert [row.coupon for row in top_coupons] == ["11", "1X", "12"]
+
+
 def test_equal_ev_uses_coupon_base_three_index_order():
     order = rank_coupon_indices(surface([1.0] * 9))
 
