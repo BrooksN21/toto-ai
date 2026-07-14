@@ -79,7 +79,7 @@ cannot replace a manifest, development CSV, or database.
 The approved hybrid direct-package experiment completed on all 350 frozen
 development drawings without accessing the 150-drawing holdout during
 selection. The final run used the development-only data/code seal at Git
-revision `a5b1d0037e8b3ce38117a54440e7e24c7a883b74`.
+revision `530e1021328bb8436671a273e9ab96b4be03ac06`.
 
 Protocol:
 - Bank 5000 RUB, stake 30 RUB, category 13.
@@ -119,10 +119,12 @@ average best hits, but none produced the required two additional 13+ hits over
 BK-only protocol. The old holdout remains excluded and unopened for hybrid
 selection. This development-only result is not profitability evidence.
 
-The sealed rerun completed in 25 minutes 9 seconds and exactly reproduced the
-original strategy hit counts, fold counts, average best-hit metrics, and STOP
-decision. It processed 1400 evaluation rows with zero timeouts, exactly 350
-development IDs, and zero holdout-ID overlap.
+The final sealed rerun completed in approximately 25 minutes and exactly
+reproduced the original strategy hit counts, fold counts, average best-hit
+metrics, and STOP decision. It processed 1400 evaluation rows with zero
+timeouts, exactly 350 development IDs, and zero holdout-ID overlap. This
+result remains evidence for the sealed evaluator revision above; subsequent
+documentation-only commits do not alter or rerun the experiment.
 
 Reports:
 - `reports/hybrid_evaluation_development_last_500_bank_5000.csv`
