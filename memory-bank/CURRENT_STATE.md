@@ -886,6 +886,27 @@ Review-fix verification: focused backtest/report tests `36 passed`; full pytest
 `506 passed`; CLI help listed all required options; focused and repository-wide
 Ruff passed.
 
+## Final Task 6 Checkpoint Integrity
+
+Checkpoint CSVs now include one deduplicated `package` manifest record per
+referenced package hash. Each record stores the canonical ordered coupon payload;
+loading requires unique 15-character `1`/`X`/`2` coupons, recomputes SHA-256 with
+the production comma-separated encoding, and matches coupon counts against every
+referencing row. Every `PLAY` row must reference a non-empty manifest, while
+`NO BET` references only the empty payload and `EMPTY_PACKAGE_HASH`. Missing,
+duplicate, conflicting, orphan, malformed, or tampered manifests reject resume.
+Coupon payloads remain checkpoint-only and are not added to final report rows.
+
+SQL leakage tests now retain statements and bound parameters. They prove the
+initial `Drawing` query excludes frozen holdout IDs, every Event or Quote query
+is scoped to exactly one allowed drawing ID, no forbidden ID reaches those
+queries, pre-hash projections omit `Event.result`, and actual results are queried
+only after `packages_ready` exposes package hashes.
+
+Final integrity verification: focused backtest/report tests `41 passed`; full
+pytest `511 passed`; worktree-local `backtest-ev --help` exited successfully with
+required `--frozen-manifest`; repository-wide Ruff passed.
+
 ## Next Task
 
 Run Task 7 end-to-end mathematical and operational acceptance, including the

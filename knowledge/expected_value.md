@@ -29,6 +29,12 @@ Historical evaluation contract:
 - Checkpoints contain completed drawings only and are resumable solely under an
   exact configuration hash. Skip records and interrupted partial work remain
   diagnostic and are re-evaluated rather than treated as completed.
+- Checkpoints deduplicate canonical ordered coupon payloads by package hash.
+  Resume recomputes each SHA-256 using the production comma-separated encoding,
+  matches payload counts to referencing rows, requires non-empty manifests for
+  `PLAY` and the exact empty manifest/hash for `NO BET`, and rejects missing,
+  duplicate, orphan, conflicting, malformed, or tampered manifests. Coupon
+  payloads are checkpoint-only and do not expand final report rows.
 - `last=N` counts the latest `N` drawings with valid inputs and complete actual
   results. Newer incomplete drawings do not displace older complete drawings,
   but their result values are still unavailable until packages and hashes exist.

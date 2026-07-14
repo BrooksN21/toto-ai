@@ -122,6 +122,10 @@
   diagnostic-only skip re-evaluation, exact checkpoint Cartesian grids and row
   invariants, SQL projection leakage tests, live-compatible 1% self-dilution
   suppression, and configuration-hash-scoped final/checkpoint artifacts.
+- Task 6 checkpoint package integrity is complete: SQL parameter scoping covers
+  every Event/Quote query, and checkpoint-only canonical coupon manifests make
+  package hashes exactly verifiable while rejecting missing, duplicate, orphan,
+  conflicting, or tampered package records.
 - Evaluate all `3^15` coupons without resource-saving candidate truncation.
 - Test playable gross-EV thresholds 0.90, 0.95, 1.00, and 1.05, including bank
   utilization and `NO BET` skip rate.

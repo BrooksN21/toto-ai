@@ -262,7 +262,7 @@ def run_ev_backtest(
         forbidden_drawing_ids=forbidden,
     )
     checkpoint = Path(checkpoint_path) if checkpoint_path is not None else None
-    checkpoint_rows, _ = _load_checkpoint(
+    checkpoint_rows, _, checkpoint_packages = _load_checkpoint(
         checkpoint,
         config,
         configuration_hash,
@@ -281,6 +281,7 @@ def run_ev_backtest(
     rows: list[EVBacktestRow] = []
     processed_ids: list[int] = []
     skipped_ids: list[int] = []
+    package_manifests: dict[str, tuple[str, ...]] = {}
     total = len(candidates)
     for index, drawing in enumerate(candidates, start=1):
         if len(processed_ids) == last:
@@ -288,6 +289,12 @@ def run_ev_backtest(
         resumed_rows = checkpoint_by_id.get(drawing.id)
         if resumed_rows is not None:
             rows.extend(resumed_rows)
+            for row in resumed_rows:
+                _register_package_manifest(
+                    package_manifests,
+                    row.package_hash,
+                    checkpoint_packages[row.package_hash],
+                )
             processed_ids.append(drawing.id)
             _notify(
                 progress_callback,
@@ -304,6 +311,7 @@ def run_ev_backtest(
                 rows,
                 skipped_ids,
                 configuration_hash,
+                package_manifests,
             )
             _notify(
                 progress_callback,
@@ -366,6 +374,7 @@ def run_ev_backtest(
                 rows,
                 skipped_ids,
                 configuration_hash,
+                package_manifests,
             )
             _notify(
                 progress_callback,
@@ -382,6 +391,12 @@ def run_ev_backtest(
         drawing_rows = tuple(
             _realized_row(item, actual_result) for item in pending
         )
+        for item in pending:
+            _register_package_manifest(
+                package_manifests,
+                item.package_hash,
+                item.coupons,
+            )
         rows.extend(drawing_rows)
         processed_ids.append(drawing.id)
         _write_checkpoint(
@@ -389,6 +404,7 @@ def run_ev_backtest(
             rows,
             skipped_ids,
             configuration_hash,
+            package_manifests,
         )
         _notify(
             progress_callback,
@@ -406,6 +422,7 @@ def run_ev_backtest(
         rows,
         skipped_ids,
         configuration_hash,
+        package_manifests,
     )
     chronological_drawings = sorted(
         (candidate_by_id[drawing_id] for drawing_id in processed_ids),
@@ -629,9 +646,7 @@ def _build_pending_packages(
                         ),
                         self_dilution_ratio=self_dilution_ratio,
                         model_supported=model_supported,
-                        package_hash=hashlib.sha256(
-                            ",".join(coupons).encode("utf-8")
-                        ).hexdigest(),
+                        package_hash=_package_hash(coupons),
                     )
                 )
     return tuple(pending)
@@ -693,6 +708,7 @@ _CHECKPOINT_PREFIX_FIELDS = (
     "record_type",
     "configuration_hash",
     "skip_reason",
+    "coupon_payload",
 )
 _ROW_FIELDS = tuple(EVBacktestRow.__dataclass_fields__)
 _CHECKPOINT_FIELDS = _CHECKPOINT_PREFIX_FIELDS + _ROW_FIELDS
@@ -703,6 +719,7 @@ def _write_checkpoint(
     rows: Iterable[EVBacktestRow],
     skipped_ids: Iterable[int],
     configuration_hash: str,
+    package_manifests: dict[str, tuple[str, ...]],
 ) -> None:
     if path is None:
         return
@@ -725,6 +742,7 @@ def _write_checkpoint(
                     "record_type": "row",
                     "configuration_hash": configuration_hash,
                     "skip_reason": "",
+                    "coupon_payload": "",
                     **asdict(row),
                 }
             )
@@ -734,7 +752,20 @@ def _write_checkpoint(
                     "record_type": "skip",
                     "configuration_hash": configuration_hash,
                     "skip_reason": "ineligible_or_incomplete",
+                    "coupon_payload": "",
                     "drawing_id": drawing_id,
+                }
+            )
+        for package_hash in sorted(package_manifests):
+            writer.writerow(
+                {
+                    "record_type": "package",
+                    "configuration_hash": configuration_hash,
+                    "skip_reason": "",
+                    "coupon_payload": ",".join(
+                        package_manifests[package_hash]
+                    ),
+                    "package_hash": package_hash,
                 }
             )
     try:
@@ -747,9 +778,13 @@ def _load_checkpoint(
     path: Path | None,
     config: EVBacktestConfig,
     configuration_hash: str,
-) -> tuple[tuple[EVBacktestRow, ...], tuple[int, ...]]:
+) -> tuple[
+    tuple[EVBacktestRow, ...],
+    tuple[int, ...],
+    dict[str, tuple[str, ...]],
+]:
     if path is None or not path.exists():
-        return (), ()
+        return (), (), {}
     with path.open(encoding="utf-8", newline="") as source:
         reader = csv.DictReader(source)
         if tuple(reader.fieldnames or ()) != _CHECKPOINT_FIELDS:
@@ -757,7 +792,10 @@ def _load_checkpoint(
         records = list(reader)
     if any(row["configuration_hash"] != configuration_hash for row in records):
         raise ValueError("Checkpoint configuration does not match this run")
-    if any(record["record_type"] not in {"row", "skip"} for record in records):
+    if any(
+        record["record_type"] not in {"row", "skip", "package"}
+        for record in records
+    ):
         raise ValueError("Invalid EV backtest checkpoint record type")
     try:
         rows = tuple(
@@ -770,8 +808,17 @@ def _load_checkpoint(
             for record in records
             if record["record_type"] == "skip"
         )
+        package_records = tuple(
+            _checkpoint_package(record)
+            for record in records
+            if record["record_type"] == "package"
+        )
     except (OverflowError, TypeError, ValueError) as error:
         raise ValueError(f"Invalid EV backtest checkpoint row: {error}") from error
+    package_hashes = tuple(package_hash for package_hash, _ in package_records)
+    if len(set(package_hashes)) != len(package_hashes):
+        raise ValueError("Checkpoint package manifests must not contain duplicates")
+    packages = dict(package_records)
     if len(set(skipped)) != len(skipped):
         raise ValueError("Checkpoint skip records must not contain duplicates")
     if {row.drawing_id for row in rows} & set(skipped):
@@ -801,10 +848,29 @@ def _load_checkpoint(
             raise ValueError(
                 "Checkpoint drawing_number must be stable within a drawing"
             )
-    return rows, skipped
+    referenced_hashes = {row.package_hash for row in rows}
+    missing_hashes = referenced_hashes - packages.keys()
+    if missing_hashes:
+        raise ValueError("Checkpoint row references a missing package manifest")
+    orphan_hashes = packages.keys() - referenced_hashes
+    if orphan_hashes:
+        raise ValueError("Checkpoint contains an orphan package manifest")
+    for row in rows:
+        coupons = packages[row.package_hash]
+        if len(coupons) != row.selected_coupons:
+            raise ValueError(
+                "Checkpoint package coupon count contradicts selected_coupons"
+            )
+        if row.decision == "PLAY" and not coupons:
+            raise ValueError("Checkpoint PLAY row references an empty package")
+        if row.decision == "NO BET" and coupons:
+            raise ValueError("Checkpoint NO BET row references a non-empty package")
+    return rows, skipped, packages
 
 
 def _checkpoint_row(record: dict[str, str]) -> EVBacktestRow:
+    if record["skip_reason"] or record["coupon_payload"]:
+        raise ValueError("completed rows must not contain checkpoint metadata")
     return EVBacktestRow(
         drawing_id=int(record["drawing_id"]),
         drawing_number=(
@@ -843,6 +909,8 @@ def _checkpoint_skip_id(record: dict[str, str]) -> int:
         raise ValueError("skip drawing_id must be positive")
     if record["skip_reason"] != "ineligible_or_incomplete":
         raise ValueError("skip reason is invalid")
+    if record["coupon_payload"]:
+        raise ValueError("skip records must not contain coupon payloads")
     if any(
         record[field]
         for field in _ROW_FIELDS
@@ -850,6 +918,42 @@ def _checkpoint_skip_id(record: dict[str, str]) -> int:
     ):
         raise ValueError("skip records must not contain completed row fields")
     return drawing_id
+
+
+def _checkpoint_package(record: dict[str, str]) -> tuple[str, tuple[str, ...]]:
+    if record["skip_reason"]:
+        raise ValueError("package manifests must not contain a skip reason")
+    if any(record[field] for field in _ROW_FIELDS if field != "package_hash"):
+        raise ValueError("package manifests must not contain completed row fields")
+    payload = record["coupon_payload"]
+    coupons = tuple(payload.split(",")) if payload else ()
+    if len(set(coupons)) != len(coupons):
+        raise ValueError("package manifest coupons must not contain duplicates")
+    if any(
+        len(coupon) != 15 or set(coupon) - {"1", "X", "2"}
+        for coupon in coupons
+    ):
+        raise ValueError("package manifest coupons must be 15 outcomes in 1/X/2")
+    package_hash = record["package_hash"]
+    _validate_sha256(package_hash, "package_hash")
+    if _package_hash(coupons) != package_hash:
+        raise ValueError("Checkpoint package hash does not match coupon payload")
+    return package_hash, coupons
+
+
+def _register_package_manifest(
+    manifests: dict[str, tuple[str, ...]],
+    package_hash: str,
+    coupons: tuple[str, ...],
+) -> None:
+    existing = manifests.get(package_hash)
+    if existing is not None and existing != coupons:
+        raise ValueError("Conflicting coupon payloads share a package hash")
+    manifests[package_hash] = coupons
+
+
+def _package_hash(coupons: tuple[str, ...]) -> str:
+    return hashlib.sha256(",".join(coupons).encode("utf-8")).hexdigest()
 
 
 def _validate_checkpoint_row(

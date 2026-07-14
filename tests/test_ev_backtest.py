@@ -232,10 +232,21 @@ def test_backtest_excludes_holdout_before_any_event_or_quote_query(session):
     assert drawing_query_index < min(event_query_indices)
     drawing_statement = queries[drawing_query_index][1].upper()
     assert "DRAWINGS.ID NOT IN" in drawing_statement
-    assert 4 in queries[drawing_query_index][2]
-    for phase, statement, _ in queries:
+    assert set(_bound_integer_parameters(queries[drawing_query_index][2])) == {4}
+    allowed_drawing_ids = {1, 2, 3}
+    for phase, statement, parameters in queries:
         lowered = statement.lower()
-        if "from events" in lowered and phase != "packages_ready":
+        is_event_or_quote_query = any(
+            marker in lowered
+            for marker in ("from events", "from quotes", "join quotes")
+        )
+        if not is_event_or_quote_query:
+            continue
+        scoped_ids = _bound_integer_parameters(parameters)
+        assert len(scoped_ids) == 1
+        assert scoped_ids[0] in allowed_drawing_ids
+        assert scoped_ids[0] != 4
+        if phase != "packages_ready":
             assert "events.result" not in lowered
     actual_queries = [
         (phase, statement)
@@ -514,7 +525,19 @@ def test_checkpoint_contains_only_completed_drawings_and_resumes_exact_config(
 
     with checkpoint.open(encoding="utf-8", newline="") as source:
         checkpoint_rows = list(csv.DictReader(source))
-    assert {int(row["drawing_id"]) for row in checkpoint_rows} == {2}
+    completed_rows = [
+        row for row in checkpoint_rows if row["record_type"] == "row"
+    ]
+    package_manifests = [
+        row for row in checkpoint_rows if row["record_type"] == "package"
+    ]
+    assert {int(row["drawing_id"]) for row in completed_rows} == {2}
+    assert package_manifests
+    assert {
+        row["package_hash"] for row in completed_rows
+    } == {
+        row["package_hash"] for row in package_manifests
+    }
 
     resumed_calls = []
     result = _run(
@@ -660,6 +683,154 @@ def test_checkpoint_rejects_malformed_row_invariants(session, tmp_path):
         )
 
 
+def test_checkpoint_rejects_play_row_changed_to_empty_package_hash(
+    session,
+    tmp_path,
+):
+    _add_drawing(session, 1)
+    checkpoint = tmp_path / "empty-play-hash.partial.csv"
+    _run(
+        session,
+        banks=(60,),
+        thresholds=(1.0,),
+        checkpoint_path=checkpoint,
+    )
+    records = _read_checkpoint(checkpoint)
+    play_row = next(
+        record
+        for record in records
+        if record["record_type"] == "row" and record["decision"] == "PLAY"
+    )
+    play_row["package_hash"] = backtest_module.EMPTY_PACKAGE_HASH
+    _write_checkpoint_rows(checkpoint, records)
+
+    with pytest.raises(ValueError, match="package"):
+        _run(
+            session,
+            banks=(60,),
+            thresholds=(1.0,),
+            checkpoint_path=checkpoint,
+        )
+
+
+def test_checkpoint_no_bet_references_only_empty_package_manifest(
+    session,
+    tmp_path,
+):
+    _add_drawing(session, 1)
+    checkpoint = tmp_path / "no-bet-package.partial.csv"
+    result = _run(
+        session,
+        banks=(60,),
+        thresholds=(2.0,),
+        checkpoint_path=checkpoint,
+    )
+
+    records = _read_checkpoint(checkpoint)
+    row = next(record for record in records if record["record_type"] == "row")
+    manifests = [
+        record for record in records if record["record_type"] == "package"
+    ]
+
+    assert row["decision"] == "NO BET"
+    assert row["package_hash"] == backtest_module.EMPTY_PACKAGE_HASH
+    assert len(manifests) == 1
+    assert manifests[0]["package_hash"] == backtest_module.EMPTY_PACKAGE_HASH
+    assert manifests[0]["coupon_payload"] == ""
+    resumed = _run(
+        session,
+        banks=(60,),
+        thresholds=(2.0,),
+        checkpoint_path=checkpoint,
+    )
+    assert resumed.rows == result.rows
+
+
+def test_checkpoint_rejects_coupon_payload_changed_without_hash_update(
+    session,
+    tmp_path,
+):
+    _add_drawing(session, 1)
+    checkpoint = tmp_path / "tampered-payload.partial.csv"
+    _run(
+        session,
+        banks=(60,),
+        thresholds=(1.0,),
+        checkpoint_path=checkpoint,
+    )
+    records = _read_checkpoint(checkpoint)
+    manifests = [
+        record for record in records if record["record_type"] == "package"
+    ]
+    assert manifests
+    payload = manifests[0]["coupon_payload"]
+    replacement = "X" if payload[0] != "X" else "1"
+    manifests[0]["coupon_payload"] = replacement + payload[1:]
+    _write_checkpoint_rows(checkpoint, records)
+
+    with pytest.raises(ValueError, match="package hash"):
+        _run(
+            session,
+            banks=(60,),
+            thresholds=(1.0,),
+            checkpoint_path=checkpoint,
+        )
+
+
+def test_checkpoint_rejects_duplicate_package_manifest(session, tmp_path):
+    _add_drawing(session, 1)
+    checkpoint = tmp_path / "duplicate-package.partial.csv"
+    _run(
+        session,
+        banks=(60,),
+        thresholds=(1.0,),
+        checkpoint_path=checkpoint,
+    )
+    records = _read_checkpoint(checkpoint)
+    manifest = next(
+        record for record in records if record["record_type"] == "package"
+    )
+    records.append(dict(manifest))
+    _write_checkpoint_rows(checkpoint, records)
+
+    with pytest.raises(ValueError, match="duplicate"):
+        _run(
+            session,
+            banks=(60,),
+            thresholds=(1.0,),
+            checkpoint_path=checkpoint,
+        )
+
+
+def test_checkpoint_rejects_orphan_package_manifest(session, tmp_path):
+    _add_drawing(session, 1)
+    checkpoint = tmp_path / "orphan-package.partial.csv"
+    _run(
+        session,
+        banks=(60,),
+        thresholds=(1.0,),
+        checkpoint_path=checkpoint,
+    )
+    records = _read_checkpoint(checkpoint)
+    manifest = next(
+        record for record in records if record["record_type"] == "package"
+    )
+    orphan = dict(manifest)
+    orphan_coupons = ("2" * 15,)
+    orphan["coupon_payload"] = ",".join(orphan_coupons)
+    orphan["package_hash"] = backtest_module._package_hash(orphan_coupons)
+    records.append(orphan)
+    _write_checkpoint_rows(checkpoint, records)
+
+    with pytest.raises(ValueError, match="orphan"):
+        _run(
+            session,
+            banks=(60,),
+            thresholds=(1.0,),
+            checkpoint_path=checkpoint,
+        )
+
+
 def test_backtest_reports_are_deterministic_and_disclose_modeled_metrics(
     session,
     tmp_path,
@@ -777,3 +948,13 @@ def _write_checkpoint_rows(path, rows):
         writer = csv.DictWriter(output, fieldnames=rows[0])
         writer.writeheader()
         writer.writerows(rows)
+
+
+def _bound_integer_parameters(parameters):
+    if isinstance(parameters, dict):
+        values = parameters.values()
+    elif isinstance(parameters, (list, tuple)):
+        values = parameters
+    else:
+        values = (parameters,)
+    return tuple(value for value in values if type(value) is int)
