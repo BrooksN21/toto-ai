@@ -1,5 +1,6 @@
 import csv
 import json
+import re
 from dataclasses import FrozenInstanceError
 
 import numpy as np
@@ -224,28 +225,27 @@ def test_backtest_excludes_holdout_before_any_event_or_quote_query(session):
         for index, (_, statement, _) in enumerate(queries)
         if "from drawings" in statement.lower()
     )
-    event_query_indices = [
+    event_or_quote_query_indices = [
         index
         for index, (_, statement, _) in enumerate(queries)
-        if "from events" in statement.lower()
+        if _touches_event_or_quote(statement)
     ]
-    assert drawing_query_index < min(event_query_indices)
+    assert event_or_quote_query_indices
+    assert all(
+        drawing_query_index < query_index
+        for query_index in event_or_quote_query_indices
+    )
     drawing_statement = queries[drawing_query_index][1].upper()
     assert "DRAWINGS.ID NOT IN" in drawing_statement
     assert set(_bound_integer_parameters(queries[drawing_query_index][2])) == {4}
     allowed_drawing_ids = {1, 2, 3}
     for phase, statement, parameters in queries:
         lowered = statement.lower()
-        is_event_or_quote_query = any(
-            marker in lowered
-            for marker in ("from events", "from quotes", "join quotes")
-        )
-        if not is_event_or_quote_query:
+        if not _touches_event_or_quote(statement):
             continue
-        scoped_ids = _bound_integer_parameters(parameters)
-        assert len(scoped_ids) == 1
-        assert scoped_ids[0] in allowed_drawing_ids
-        assert scoped_ids[0] != 4
+        drawing_id = _bound_drawing_id_parameter(statement, parameters)
+        assert drawing_id in allowed_drawing_ids
+        assert drawing_id != 4
         if phase != "packages_ready":
             assert "events.result" not in lowered
     actual_queries = [
@@ -255,6 +255,19 @@ def test_backtest_excludes_holdout_before_any_event_or_quote_query(session):
     ]
     assert actual_queries
     assert all(phase == "packages_ready" for phase, _ in actual_queries)
+
+
+@pytest.mark.parametrize(
+    "statement",
+    (
+        "SELECT events.event_order FROM events WHERE events.event_order = ?",
+        "SELECT quotes.bk_win_1 FROM quotes WHERE quotes.event_order = ?",
+    ),
+)
+def test_sql_scope_check_rejects_unscoped_event_and_quote_queries(statement):
+    assert _touches_event_or_quote(statement)
+    with pytest.raises(AssertionError, match="drawing_id"):
+        _bound_drawing_id_parameter(statement, (1,))
 
 
 def test_backtest_is_chronological_and_skips_invalid_inputs(session):
@@ -777,6 +790,103 @@ def test_checkpoint_rejects_coupon_payload_changed_without_hash_update(
         )
 
 
+def test_checkpoint_rejects_equal_count_play_package_hash_swap(
+    session,
+    tmp_path,
+):
+    _add_drawing(session, 1)
+    _add_drawing(session, 2)
+    checkpoint = tmp_path / "swapped-package-hashes.partial.csv"
+
+    def drawing_specific_surface(ev_input, progress_callback=None):
+        del progress_callback
+        values = (1.20, 0.80) if ev_input.drawing_id == 1 else (0.80, 1.20)
+        return EVSurface(
+            gross_ev=np.asarray(values, dtype=np.float64),
+            event_count=15,
+            probability_mass=1.0,
+            crowd_mass=1.0,
+            minimum_denominator=1.0,
+        )
+
+    _run(
+        session,
+        last=2,
+        banks=(30,),
+        thresholds=(1.0,),
+        surface_builder=drawing_specific_surface,
+        checkpoint_path=checkpoint,
+    )
+    records = _read_checkpoint(checkpoint)
+    play_rows = [
+        record
+        for record in records
+        if record["record_type"] == "row" and record["decision"] == "PLAY"
+    ]
+    assert len(play_rows) == 2
+    assert {row["selected_coupons"] for row in play_rows} == {"1"}
+    first_hash = play_rows[0]["package_hash"]
+    second_hash = play_rows[1]["package_hash"]
+    assert first_hash != second_hash
+    play_rows[0]["package_hash"] = second_hash
+    play_rows[1]["package_hash"] = first_hash
+    _write_checkpoint_rows(checkpoint, records)
+
+    with pytest.raises(ValueError, match="context"):
+        _run(
+            session,
+            last=2,
+            banks=(30,),
+            thresholds=(1.0,),
+            surface_builder=drawing_specific_surface,
+            checkpoint_path=checkpoint,
+        )
+
+
+@pytest.mark.parametrize(
+    "tamper",
+    ("duplicate", "missing", "extra", "unsorted"),
+)
+def test_checkpoint_rejects_noncanonical_or_mismatched_package_contexts(
+    session,
+    tmp_path,
+    tamper,
+):
+    _add_drawing(session, 1)
+    checkpoint = tmp_path / f"{tamper}-package-contexts.partial.csv"
+    _run(
+        session,
+        banks=(30, 60),
+        thresholds=(1.05,),
+        checkpoint_path=checkpoint,
+    )
+    records = _read_checkpoint(checkpoint)
+    manifest = next(
+        record for record in records if record["record_type"] == "package"
+    )
+    contexts = json.loads(manifest["row_contexts"])
+    assert len(contexts) == 2
+    if tamper == "duplicate":
+        contexts.append(contexts[0])
+    elif tamper == "missing":
+        contexts.pop()
+    elif tamper == "extra":
+        contexts.append([999, 30, 1.05, 1.0])
+        contexts.sort()
+    else:
+        contexts.reverse()
+    manifest["row_contexts"] = json.dumps(contexts, separators=(",", ":"))
+    _write_checkpoint_rows(checkpoint, records)
+
+    with pytest.raises(ValueError, match="context"):
+        _run(
+            session,
+            banks=(30, 60),
+            thresholds=(1.05,),
+            checkpoint_path=checkpoint,
+        )
+
+
 def test_checkpoint_rejects_duplicate_package_manifest(session, tmp_path):
     _add_drawing(session, 1)
     checkpoint = tmp_path / "duplicate-package.partial.csv"
@@ -958,3 +1068,35 @@ def _bound_integer_parameters(parameters):
     else:
         values = (parameters,)
     return tuple(value for value in values if type(value) is int)
+
+
+def _touches_event_or_quote(statement):
+    return bool(
+        re.search(
+            r'\b(?:from|join)\s+(?:"?\w+"?\.)?"?(?:events|quotes)"?\b',
+            statement,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _bound_drawing_id_parameter(statement, parameters):
+    matches = tuple(
+        re.finditer(
+            r'\b(?:events|quotes)\.drawing_id\s*=\s*\?',
+            statement,
+            flags=re.IGNORECASE,
+        )
+    )
+    assert len(matches) == 1, (
+        "Event/Quote SQL must have exactly one bound events.drawing_id or "
+        "quotes.drawing_id predicate"
+    )
+    values = (
+        tuple(parameters.values())
+        if isinstance(parameters, dict)
+        else tuple(parameters)
+    )
+    parameter_index = statement[: matches[0].end()].count("?") - 1
+    assert 0 <= parameter_index < len(values)
+    return values[parameter_index]

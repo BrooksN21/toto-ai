@@ -35,6 +35,11 @@ Historical evaluation contract:
   `PLAY` and the exact empty manifest/hash for `NO BET`, and rejects missing,
   duplicate, orphan, conflicting, malformed, or tampered manifests. Coupon
   payloads are checkpoint-only and do not expand final report rows.
+- Each package manifest also stores canonical sorted unique `(drawing_id, bank,
+  threshold, prize_fund_factor)` references. Resume derives those keys from the
+  completed rows and requires exact per-hash equality, preventing valid
+  equal-count package hashes from being swapped between row contexts. These
+  references are checkpoint-only and are not part of the coupon hash.
 - `last=N` counts the latest `N` drawings with valid inputs and complete actual
   results. Newer incomplete drawings do not displace older complete drawings,
   but their result values are still unavailable until packages and hashes exist.

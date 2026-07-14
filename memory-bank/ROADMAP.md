@@ -126,6 +126,10 @@
   every Event/Quote query, and checkpoint-only canonical coupon manifests make
   package hashes exactly verifiable while rejecting missing, duplicate, orphan,
   conflicting, or tampered package records.
+- Task 6 row binding is complete: SQL scope checks derive drawing IDs from
+  explicit Event/Quote predicates, and canonical per-manifest row references
+  reject swapped equal-count hashes plus duplicate, missing, extra, or unsorted
+  checkpoint contexts.
 - Evaluate all `3^15` coupons without resource-saving candidate truncation.
 - Test playable gross-EV thresholds 0.90, 0.95, 1.00, and 1.05, including bank
   utilization and `NO BET` skip rate.

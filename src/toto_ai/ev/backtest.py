@@ -35,6 +35,7 @@ DEFAULT_PRIZE_FUND_FACTORS = (0.7, 0.8, 0.9, 1.0)
 EMPTY_PACKAGE_HASH = hashlib.sha256(b"").hexdigest()
 ProgressCallback = Callable[[dict[str, object]], None]
 SurfaceBuilder = Callable[..., EVComponents | EVSurface]
+PackageContext = tuple[int, int, float, float]
 
 
 @dataclass(frozen=True)
@@ -709,6 +710,7 @@ _CHECKPOINT_PREFIX_FIELDS = (
     "configuration_hash",
     "skip_reason",
     "coupon_payload",
+    "row_contexts",
 )
 _ROW_FIELDS = tuple(EVBacktestRow.__dataclass_fields__)
 _CHECKPOINT_FIELDS = _CHECKPOINT_PREFIX_FIELDS + _ROW_FIELDS
@@ -723,6 +725,14 @@ def _write_checkpoint(
 ) -> None:
     if path is None:
         return
+    completed_rows = tuple(rows)
+    contexts_by_hash: dict[str, list[PackageContext]] = {}
+    for row in completed_rows:
+        contexts_by_hash.setdefault(row.package_hash, []).append(
+            _package_context(row)
+        )
+    if package_manifests.keys() != contexts_by_hash.keys():
+        raise ValueError("Checkpoint packages must match completed row hashes")
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
         mode="w",
@@ -736,13 +746,14 @@ def _write_checkpoint(
         temporary_path = Path(output.name)
         writer = csv.DictWriter(output, fieldnames=_CHECKPOINT_FIELDS)
         writer.writeheader()
-        for row in rows:
+        for row in completed_rows:
             writer.writerow(
                 {
                     "record_type": "row",
                     "configuration_hash": configuration_hash,
                     "skip_reason": "",
                     "coupon_payload": "",
+                    "row_contexts": "",
                     **asdict(row),
                 }
             )
@@ -753,6 +764,7 @@ def _write_checkpoint(
                     "configuration_hash": configuration_hash,
                     "skip_reason": "ineligible_or_incomplete",
                     "coupon_payload": "",
+                    "row_contexts": "",
                     "drawing_id": drawing_id,
                 }
             )
@@ -764,6 +776,9 @@ def _write_checkpoint(
                     "skip_reason": "",
                     "coupon_payload": ",".join(
                         package_manifests[package_hash]
+                    ),
+                    "row_contexts": _encode_package_contexts(
+                        contexts_by_hash[package_hash]
                     ),
                     "package_hash": package_hash,
                 }
@@ -815,10 +830,19 @@ def _load_checkpoint(
         )
     except (OverflowError, TypeError, ValueError) as error:
         raise ValueError(f"Invalid EV backtest checkpoint row: {error}") from error
-    package_hashes = tuple(package_hash for package_hash, _ in package_records)
+    package_hashes = tuple(
+        package_hash for package_hash, _, _ in package_records
+    )
     if len(set(package_hashes)) != len(package_hashes):
         raise ValueError("Checkpoint package manifests must not contain duplicates")
-    packages = dict(package_records)
+    packages = {
+        package_hash: coupons
+        for package_hash, coupons, _ in package_records
+    }
+    package_contexts = {
+        package_hash: contexts
+        for package_hash, _, contexts in package_records
+    }
     if len(set(skipped)) != len(skipped):
         raise ValueError("Checkpoint skip records must not contain duplicates")
     if {row.drawing_id for row in rows} & set(skipped):
@@ -855,6 +879,17 @@ def _load_checkpoint(
     orphan_hashes = packages.keys() - referenced_hashes
     if orphan_hashes:
         raise ValueError("Checkpoint contains an orphan package manifest")
+    expected_contexts: dict[str, list[PackageContext]] = {}
+    for row in rows:
+        expected_contexts.setdefault(row.package_hash, []).append(
+            _package_context(row)
+        )
+    for package_hash, contexts in package_contexts.items():
+        expected = tuple(sorted(expected_contexts[package_hash]))
+        if contexts != expected:
+            raise ValueError(
+                "Checkpoint package context references do not match rows"
+            )
     for row in rows:
         coupons = packages[row.package_hash]
         if len(coupons) != row.selected_coupons:
@@ -869,7 +904,11 @@ def _load_checkpoint(
 
 
 def _checkpoint_row(record: dict[str, str]) -> EVBacktestRow:
-    if record["skip_reason"] or record["coupon_payload"]:
+    if (
+        record["skip_reason"]
+        or record["coupon_payload"]
+        or record["row_contexts"]
+    ):
         raise ValueError("completed rows must not contain checkpoint metadata")
     return EVBacktestRow(
         drawing_id=int(record["drawing_id"]),
@@ -911,6 +950,8 @@ def _checkpoint_skip_id(record: dict[str, str]) -> int:
         raise ValueError("skip reason is invalid")
     if record["coupon_payload"]:
         raise ValueError("skip records must not contain coupon payloads")
+    if record["row_contexts"]:
+        raise ValueError("skip records must not contain package contexts")
     if any(
         record[field]
         for field in _ROW_FIELDS
@@ -920,7 +961,9 @@ def _checkpoint_skip_id(record: dict[str, str]) -> int:
     return drawing_id
 
 
-def _checkpoint_package(record: dict[str, str]) -> tuple[str, tuple[str, ...]]:
+def _checkpoint_package(
+    record: dict[str, str],
+) -> tuple[str, tuple[str, ...], tuple[PackageContext, ...]]:
     if record["skip_reason"]:
         raise ValueError("package manifests must not contain a skip reason")
     if any(record[field] for field in _ROW_FIELDS if field != "package_hash"):
@@ -938,7 +981,63 @@ def _checkpoint_package(record: dict[str, str]) -> tuple[str, tuple[str, ...]]:
     _validate_sha256(package_hash, "package_hash")
     if _package_hash(coupons) != package_hash:
         raise ValueError("Checkpoint package hash does not match coupon payload")
-    return package_hash, coupons
+    contexts = _parse_package_contexts(record["row_contexts"])
+    return package_hash, coupons, contexts
+
+
+def _package_context(row: EVBacktestRow) -> PackageContext:
+    return (
+        row.drawing_id,
+        row.bank,
+        row.threshold,
+        row.prize_fund_factor,
+    )
+
+
+def _encode_package_contexts(contexts: Iterable[PackageContext]) -> str:
+    canonical = tuple(sorted(set(contexts)))
+    return json.dumps(canonical, separators=(",", ":"))
+
+
+def _parse_package_contexts(payload: str) -> tuple[PackageContext, ...]:
+    try:
+        decoded = json.loads(payload)
+    except json.JSONDecodeError as error:
+        raise ValueError("package contexts must be valid JSON") from error
+    if not isinstance(decoded, list) or not decoded:
+        raise ValueError("package contexts must be a non-empty list")
+    contexts: list[PackageContext] = []
+    for value in decoded:
+        if not isinstance(value, list) or len(value) != 4:
+            raise ValueError("package context must contain four values")
+        drawing_id, bank, threshold, prize_fund_factor = value
+        if type(drawing_id) is not int or drawing_id <= 0:
+            raise ValueError("package context drawing_id must be positive")
+        if type(bank) is not int or bank <= 0:
+            raise ValueError("package context bank must be positive")
+        if type(threshold) not in {int, float} or not math.isfinite(threshold):
+            raise ValueError("package context threshold must be finite")
+        if (
+            type(prize_fund_factor) not in {int, float}
+            or not math.isfinite(prize_fund_factor)
+        ):
+            raise ValueError("package context prize factor must be finite")
+        contexts.append(
+            (
+                drawing_id,
+                bank,
+                float(threshold),
+                float(prize_fund_factor),
+            )
+        )
+    parsed = tuple(contexts)
+    if len(set(parsed)) != len(parsed):
+        raise ValueError("package contexts must be unique")
+    if tuple(sorted(parsed)) != parsed:
+        raise ValueError("package contexts must be sorted")
+    if _encode_package_contexts(parsed) != payload:
+        raise ValueError("package contexts must use canonical encoding")
+    return parsed
 
 
 def _register_package_manifest(

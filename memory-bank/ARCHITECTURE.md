@@ -41,7 +41,7 @@ Validated frozen strategy manifest
 -> One complete surface/ranking per prize factor
 -> Dynamic-bank and threshold packages plus deterministic hashes
 -> Actual results loaded only after every package hash is complete
--> Completed-row checkpoint with deduplicated canonical coupon manifests
+-> Completed-row checkpoint with coupon manifests bound to canonical row contexts
 -> Diagnostic skips are always re-evaluated
 -> Configuration-hash-scoped modeled CSV/Markdown reports
 ```
@@ -88,9 +88,10 @@ Important modules:
   exact-config completed-drawing checkpoints. Latest-N selection backfills past
   incomplete or invalid newer candidates without reading result values before
   package hashes exist. Checkpoint-only package manifests bind each hash to its
-  exact canonical 15-outcome coupons and reject missing, duplicate, orphan, or
-  tampered records on resume. Diagnostic checkpoint skips are never resumable
-  state; final report rows remain concise and do not contain coupon payloads.
+  exact canonical 15-outcome coupons and sorted unique `(drawing, bank,
+  threshold, factor)` row contexts. Resume rejects missing, duplicate, orphan,
+  swapped, non-canonical, or tampered records. Diagnostic checkpoint skips are
+  never resumable state; final report rows contain no manifest payloads.
 - `toto_ai.ev.reports`: deterministic EV package CSV/Markdown rendering and
   modeled-backtest reporting with rollback-safe atomic pair publication,
   including rollback for interruptions and other `BaseException` failures

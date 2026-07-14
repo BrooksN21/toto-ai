@@ -907,6 +907,29 @@ Final integrity verification: focused backtest/report tests `41 passed`; full
 pytest `511 passed`; worktree-local `backtest-ev --help` exited successfully with
 required `--frozen-manifest`; repository-wide Ruff passed.
 
+## Final Task 6 Row Binding
+
+Checkpoint package manifests now commit not only to exact coupon payloads but
+also to canonical sorted unique `(drawing_id, bank, threshold,
+prize_fund_factor)` references. The loader derives the expected references from
+completed rows and requires exact per-hash equality, so every row context maps
+to exactly one matching manifest and equal-count valid package hashes cannot be
+swapped between rows. Duplicate, missing, extra, unsorted, or non-canonical
+references reject resume. The coupon hash remains solely a hash of the canonical
+coupon payload, and row contexts remain checkpoint-only metadata.
+
+The SQL leakage regression now identifies Event/Quote access from SQL table
+references, requires every such statement to follow the holdout-filtered
+`Drawing` query, and extracts the drawing-ID bind only from an explicit
+`events.drawing_id = ?` or `quotes.drawing_id = ?` predicate. Synthetic
+Event-only and Quote-only unscoped statements prove unrelated integer binds
+cannot satisfy the regression. Pre-package input projections still omit
+`Event.result`.
+
+Row-binding verification: focused backtest/report tests `48 passed`; full pytest
+`518 passed`; worktree-local `backtest-ev --help` exited successfully with
+required `--frozen-manifest`; repository-wide Ruff passed.
+
 ## Next Task
 
 Run Task 7 end-to-end mathematical and operational acceptance, including the
