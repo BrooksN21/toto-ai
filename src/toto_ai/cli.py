@@ -1635,6 +1635,10 @@ def _ev_benchmark_table(result: dict[str, object]) -> Table:
             "maximum sampled absolute error",
             f"{float(result['maximum_sampled_absolute_error']):.3e}",
         ),
+        (
+            "maximum sampled crowd-tail error",
+            f"{float(result['maximum_sampled_crowd_tail_absolute_error']):.3e}",
+        ),
         ("verification", str(result["verification"])),
     )
     for label, value in rows:

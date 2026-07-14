@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 407
+- Tests currently passed: 417
 - Ruff passed
 
 ## Approved Next Design: Expected-Value Package Engine
@@ -611,8 +611,10 @@ focused Ruff passed; full Ruff passed.
 Task 3 of the Expected-Value Package Engine is complete. Flat arrays and coupon
 strings preserve C-order base-three indexing with outcome order `1`, `X`, `2`.
 The exact engine builds product probability arrays with repeated Kronecker
-products and processes each Hamming-ball category sequentially through ternary
-FFT convolution. Category denominators must remain finite and positive, and an
+products. It computes each crowd qualifying probability over every actual-result
+state with a chunked independent-marginal Poisson-binomial DP, then processes
+the coupon-side Hamming-ball category sequentially through ternary FFT
+convolution. Category denominators must remain finite and positive, and an
 interruption propagates without returning a partial EV surface.
 
 `compute_ev_components(EVInput, progress_callback=None)` uses only the official
@@ -629,14 +631,44 @@ The deterministic `benchmark-ev` command records elapsed time, peak resident
 memory when available, probability masses, minimum denominator, exact error,
 fixed sample diagnostics, and normalized SHA-256 array hashes. Event counts up
 to eight compare the complete surface to the independent brute-force oracle;
-larger spaces use fixed coupon indices and explicit ternary direct sums over
-all qualifying actual-result states from the category denominator arrays.
+larger spaces independently verify sampled crowd tails with scalar
+Poisson-binomial arithmetic and fixed coupon EVs with direct vectorized hit
+comparisons over every actual-result state. Official benchmark expectations are
+literal and do not share the production category-fund map. Array hashes are
+diagnostic fingerprints only and do not affect PASS/FAIL.
 
 Verification: focused Task 3 tests `35 passed`; full pytest `407 passed`; focused
 and full Ruff passed. The five-event CLI benchmark verified all 243 coupons
 against the oracle with maximum absolute error `1.897e-19` and status `PASS`.
 The mandatory 15-event acceptance benchmark remains deferred to Task 7 and was
 not run for Task 3.
+
+## Latest Task 3 Mathematical Review Fix
+
+Removed the absolute FFT cutoff that could erase legitimate positive values.
+`ternary_convolve()` now copies the real inverse result away from its complex
+buffer, preserves every positive value, clips only negative values within a
+scale-aware roundoff tolerance, and raises on material negative output.
+
+Crowd category denominators no longer use FFT recovery. For each category, a
+bounded-memory Poisson-binomial DP evaluates `P(matches >= k | actual result)`
+for all `3^n` actual-result states without state truncation. Regressions cover
+all-positive five-event full spaces and a selected 15-event state with
+`(0.999998, 0.000001, 0.000001)` marginals; the latter remains positive at
+approximately `1e-90` without allocating the full 15-event state space.
+
+The larger-space benchmark verifier no longer reuses production denominators,
+Hamming kernels, or coupon convolution. It compares sampled production tails
+to a scalar independent recurrence and recomputes sampled coupon components by
+direct vectorized hit comparisons over every actual-result state in chunks.
+
+Verification for this fix: focused Task 3 tests `45 passed`; full pytest
+`417 passed`; focused and full Ruff passed. `benchmark-ev --events 5 --samples
+10` verified all 243 coupons against the brute-force oracle in `0.116300 s`,
+with `62.84 MiB` peak resident memory, minimum denominator `1828.14404892`,
+maximum EV error `1.626e-19`, zero sampled crowd-tail error, and status `PASS`.
+The full 15-event benchmark was not run, as instructed; its runtime and peak
+memory remain Task 7 acceptance concerns.
 
 ## Next Task
 

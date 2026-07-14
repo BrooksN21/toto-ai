@@ -3,6 +3,7 @@ import math
 import numpy as np
 import pytest
 
+import toto_ai.ev.ternary as ternary_module
 from toto_ai.ev.models import EVComponents, EVInput
 from toto_ai.ev.reference import brute_force_gross_ev
 from toto_ai.ev.ternary import (
@@ -73,6 +74,73 @@ def test_ternary_convolution_matches_direct_oriented_cyclic_convolution():
             )
             expected[output_index] += left[left_index] * right[right_index]
     assert np.allclose(actual, expected, rtol=1e-12, atol=1e-12)
+
+
+def test_ternary_convolution_preserves_legitimate_tiny_positive_values():
+    left = np.zeros(9, dtype=np.float64)
+    right = np.zeros(9, dtype=np.float64)
+    left[0] = 1e-20
+    right[0] = 1e-20
+
+    actual = ternary_convolve(left, right, event_count=2)
+
+    assert actual[0] > 0.0
+    assert actual[0] == pytest.approx(1e-40, rel=1e-12, abs=0.0)
+
+
+def test_ternary_convolution_rejects_material_negative_results():
+    with pytest.raises(FloatingPointError, match="material negative"):
+        ternary_convolve(
+            np.array([1.0, -1.0, 0.0]),
+            np.array([1.0, 0.0, 0.0]),
+            event_count=1,
+        )
+
+
+def test_exact_crowd_tail_dp_preserves_all_tiny_positive_states():
+    row = (0.999998, 0.000001, 0.000001)
+    crowd = (row,) * 5
+
+    tails = ternary_module._crowd_qualifying_probabilities(
+        crowd,
+        minimum_hits=5,
+        chunk_size=17,
+    )
+
+    assert np.all(tails > 0.0)
+    assert tails[-1] == pytest.approx(1e-30, rel=1e-12, abs=0.0)
+
+
+def test_selected_state_tail_dp_supports_fifteen_tiny_marginals():
+    row = (0.999998, 0.000001, 0.000001)
+    all_twos_index = 3**15 - 1
+
+    tails = ternary_module._poisson_binomial_tails_for_indices(
+        (row,) * 15,
+        minimum_hits=15,
+        actual_indices=np.array([all_twos_index], dtype=np.int64),
+    )
+
+    assert tails[0] > 0.0
+    assert tails[0] == pytest.approx(1e-90, rel=1e-12, abs=0.0)
+
+
+def test_exact_engine_handles_tiny_positive_marginals_on_full_small_space():
+    row = (0.999998, 0.000001, 0.000001)
+    probabilities = (row,) * 5
+
+    surface = compute_ev_surface(
+        probabilities,
+        probabilities,
+        100.0,
+        {5: 10.0},
+        10,
+        5,
+    )
+
+    assert np.all(np.isfinite(surface.gross_ev))
+    assert np.all(surface.gross_ev > 0.0)
+    np.testing.assert_allclose(surface.gross_ev, 0.1, rtol=1e-10, atol=0.0)
 
 
 @pytest.mark.parametrize("event_count", range(1, 5))
@@ -180,6 +248,47 @@ def test_official_components_reject_non_production_event_count():
 
     with pytest.raises(ValueError, match="official categories require 9..15 events"):
         compute_ev_components(ev_input)
+
+
+def test_official_components_success_path_without_full_state_allocation(monkeypatch):
+    captured = {}
+
+    def fake_accumulate_categories(**kwargs):
+        captured.update(kwargs)
+        return ternary_module._AccumulationResult(
+            arrays=(np.array([0.5]), np.array([0.25])),
+            probability_mass=1.0,
+            crowd_mass=1.0,
+            minimum_denominator=2.0,
+            crowd_tail_samples=None,
+        )
+
+    monkeypatch.setattr(
+        ternary_module,
+        "_accumulate_categories",
+        fake_accumulate_categories,
+    )
+    ev_input = EVInput(
+        drawing_id=1,
+        drawing_number=2,
+        true_probabilities=((0.5, 0.3, 0.2),) * 9,
+        crowd_probabilities=((0.4, 0.35, 0.25),) * 9,
+        pool_sum=1_000.0,
+        jackpot=100.0,
+        possible_winnings=500.0,
+        probability_sources=("test",) * 9,
+        fetched_at="2026-07-14T00:00:00Z",
+    )
+
+    components = compute_ev_components(ev_input)
+
+    np.testing.assert_array_equal(
+        components.possible_winnings_ev_per_ruble,
+        [0.5],
+    )
+    np.testing.assert_array_equal(components.jackpot_ev_per_ruble, [0.25])
+    assert captured["coefficient_maps"] == ({9: 8 / 18}, {9: 0.0})
+    assert captured["crowd_sample_indices"] is None
 
 
 @pytest.mark.parametrize(

@@ -1,10 +1,14 @@
 import math
 
+import numpy as np
 import pytest
 from typer.testing import CliRunner
 
+import toto_ai.ev.benchmark as benchmark_module
 from toto_ai.cli import app
 from toto_ai.ev.benchmark import benchmark_ev_engine
+from toto_ai.ev.prize import category_funds
+from toto_ai.ev.reference import brute_force_gross_ev
 
 
 def test_small_benchmark_verifies_complete_surface_against_oracle():
@@ -20,7 +24,101 @@ def test_small_benchmark_verifies_complete_surface_against_oracle():
     assert math.isclose(result["crowd_mass"], 1.0, abs_tol=1e-12)
     assert result["elapsed_seconds"] >= 0
     assert result["peak_memory_bytes"] is None or result["peak_memory_bytes"] > 0
-    assert len(result["surface_sha256"]) == 64
+
+
+def test_official_category_coefficients_match_literal_expectations():
+    assert category_funds(possible_winnings=18.0, jackpot=10.0) == {
+        9: 8.0,
+        10: 4.0,
+        11: 2.0,
+        12: 1.0,
+        13: 1.0,
+        14: 2.0,
+        15: 10.0,
+    }
+
+
+def test_scalar_crowd_tail_preserves_tiny_positive_probability():
+    row = (0.999998, 0.000001, 0.000001)
+
+    tail = benchmark_module._scalar_poisson_binomial_tail(
+        (row,) * 5,
+        actual_index=3**5 - 1,
+        minimum_hits=5,
+    )
+
+    assert tail > 0.0
+    assert tail == pytest.approx(1e-30, rel=1e-12, abs=0.0)
+
+
+def test_independent_direct_coupon_components_match_small_oracle():
+    true = (
+        (0.5, 0.3, 0.2),
+        (0.45, 0.35, 0.2),
+        (0.4, 0.25, 0.35),
+        (0.6, 0.25, 0.15),
+    )
+    crowd = (
+        (0.4, 0.35, 0.25),
+        (0.3, 0.45, 0.25),
+        (0.5, 0.2, 0.3),
+        (0.35, 0.4, 0.25),
+    )
+    regular_coefficients = {2: 0.5, 3: 0.25, 4: 0.125}
+    jackpot_coefficients = {3: 0.1, 4: 0.9}
+    sample_indices = np.array([0, 17, 40, 80], dtype=np.int64)
+
+    regular, jackpot = benchmark_module._independent_direct_coupon_components(
+        true,
+        crowd,
+        pool_sum=1_000.0,
+        coupon_indices=sample_indices,
+        regular_coefficients=regular_coefficients,
+        jackpot_coefficients=jackpot_coefficients,
+        chunk_size=11,
+    )
+
+    expected_regular = brute_force_gross_ev(
+        true,
+        crowd,
+        1_000.0,
+        30,
+        regular_coefficients,
+        2,
+    )
+    expected_jackpot = brute_force_gross_ev(
+        true,
+        crowd,
+        1_000.0,
+        30,
+        jackpot_coefficients,
+        3,
+    )
+    np.testing.assert_allclose(
+        regular,
+        expected_regular[sample_indices],
+        rtol=1e-12,
+        atol=1e-15,
+    )
+    np.testing.assert_allclose(
+        jackpot,
+        expected_jackpot[sample_indices],
+        rtol=1e-12,
+        atol=1e-15,
+    )
+
+
+def test_fingerprint_shape_is_not_a_pass_predicate(monkeypatch):
+    monkeypatch.setattr(
+        benchmark_module,
+        "_deterministic_array_hash",
+        lambda _array: "diagnostic-fingerprint",
+    )
+
+    result = benchmark_ev_engine(event_count=2, sample_count=3)
+
+    assert result["verification"] == "PASS"
+    assert result["surface_sha256"] == "diagnostic-fingerprint"
 
 
 def test_benchmark_diagnostics_are_deterministic_except_resources():

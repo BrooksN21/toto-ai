@@ -15,6 +15,7 @@ from toto_ai.ev.prize import category_funds
 OUTCOMES = ("1", "X", "2")
 MAX_EVENTS = 15
 PROBABILITY_TOLERANCE = 1e-12
+CROWD_TAIL_CHUNK_SIZE = 1 << 17
 
 ProgressPayload = dict[str, str | int | float]
 ProgressCallback = Callable[[ProgressPayload], None]
@@ -26,7 +27,7 @@ class _AccumulationResult:
     probability_mass: float
     crowd_mass: float
     minimum_denominator: float
-    direct_samples: tuple[np.ndarray, ...] | None
+    crowd_tail_samples: dict[int, np.ndarray] | None
 
 
 def coupon_from_index(index: int, event_count: int) -> str:
@@ -91,8 +92,23 @@ def ternary_convolve(
     right_fft = np.fft.fftn(right_array.reshape(shape))
     left_fft *= right_fft
     del right_fft
-    result = np.fft.ifftn(left_fft).real.reshape(-1)
-    result[np.abs(result) < 1e-15] = 0.0
+    inverse = np.fft.ifftn(left_fft)
+    result = inverse.real.reshape(-1).copy()
+    del inverse, left_fft
+
+    convolution_scale = float(
+        np.abs(left_array).sum(dtype=np.float64)
+        * np.abs(right_array).sum(dtype=np.float64),
+    )
+    negative_tolerance = (
+        64.0
+        * np.finfo(np.float64).eps
+        * event_count
+        * convolution_scale
+    )
+    if float(result.min(initial=0.0)) < -negative_tolerance:
+        raise FloatingPointError("FFT convolution produced a material negative value")
+    result[result < 0.0] = 0.0
     return result
 
 
@@ -104,7 +120,7 @@ def compute_ev_components(
     components, _ = _compute_official_components(
         ev_input,
         progress_callback=progress_callback,
-        direct_sample_indices=None,
+        crowd_sample_indices=None,
     )
     return components
 
@@ -161,7 +177,7 @@ def compute_ev_surface(
         pool_sum=pool_sum,
         coefficient_maps=(funds,),
         progress_callback=progress_callback,
-        direct_sample_indices=None,
+        crowd_sample_indices=None,
     )
     return EVSurface(
         gross_ev=result.arrays[0],
@@ -175,8 +191,8 @@ def compute_ev_surface(
 def _compute_official_components(
     ev_input: EVInput,
     progress_callback: ProgressCallback | None,
-    direct_sample_indices: np.ndarray | None,
-) -> tuple[EVComponents, tuple[np.ndarray, np.ndarray] | None]:
+    crowd_sample_indices: np.ndarray | None,
+) -> tuple[EVComponents, dict[int, np.ndarray] | None]:
     true_matrix, crowd_matrix = _validated_matching_matrices(
         ev_input.true_probabilities,
         ev_input.crowd_probabilities,
@@ -201,7 +217,7 @@ def _compute_official_components(
         pool_sum=ev_input.pool_sum,
         coefficient_maps=(regular_coefficients, jackpot_coefficients),
         progress_callback=progress_callback,
-        direct_sample_indices=direct_sample_indices,
+        crowd_sample_indices=crowd_sample_indices,
     )
     components = EVComponents(
         possible_winnings_ev_per_ruble=result.arrays[0],
@@ -211,9 +227,7 @@ def _compute_official_components(
         crowd_mass=result.crowd_mass,
         minimum_denominator=result.minimum_denominator,
     )
-    if result.direct_samples is None:
-        return components, None
-    return components, (result.direct_samples[0], result.direct_samples[1])
+    return components, result.crowd_tail_samples
 
 
 def _accumulate_categories(
@@ -222,7 +236,7 @@ def _accumulate_categories(
     pool_sum: float,
     coefficient_maps: tuple[dict[int, float], ...],
     progress_callback: ProgressCallback | None,
-    direct_sample_indices: np.ndarray | None,
+    crowd_sample_indices: np.ndarray | None,
 ) -> _AccumulationResult:
     try:
         pool_sum = float(pool_sum)
@@ -233,9 +247,8 @@ def _accumulate_categories(
 
     event_count = len(true_matrix)
     probability = _joint_distribution(true_matrix)
-    crowd = _joint_distribution(crowd_matrix)
     probability_mass = float(probability.sum(dtype=np.float64))
-    crowd_mass = float(crowd.sum(dtype=np.float64))
+    crowd_mass = math.prod(math.fsum(row) for row in crowd_matrix)
     _require_unit_mass(probability_mass, "true probability")
     _require_unit_mass(crowd_mass, "crowd probability")
 
@@ -244,20 +257,18 @@ def _accumulate_categories(
     )
     size = probability.size
     accumulators = tuple(np.zeros(size, dtype=np.float64) for _ in coefficient_maps)
-    direct_accumulators = (
-        tuple(
-            np.zeros(len(direct_sample_indices), dtype=np.float64)
-            for _ in coefficient_maps
-        )
-        if direct_sample_indices is not None
+    sample_indices = (
+        _validated_actual_indices(crowd_sample_indices, event_count)
+        if crowd_sample_indices is not None
         else None
     )
+    crowd_tail_samples = {} if sample_indices is not None else None
     minimum_denominator = math.inf
     started_at = time.perf_counter()
 
     for category in categories:
         kernel = hamming_ball_kernel(event_count, category)
-        crowd_tail = ternary_convolve(crowd, kernel, event_count)
+        crowd_tail = _crowd_qualifying_probabilities(crowd_matrix, category)
         denominator = pool_sum * crowd_tail
         if not np.isfinite(denominator).all() or np.any(denominator <= 0):
             raise ValueError(
@@ -269,21 +280,8 @@ def _accumulate_categories(
         )
         weighted_probability = probability / denominator
 
-        if direct_accumulators is not None and direct_sample_indices is not None:
-            kernel_indices = np.flatnonzero(kernel)
-            direct_units = _direct_hamming_sums(
-                weighted_probability,
-                kernel_indices,
-                direct_sample_indices,
-                event_count,
-            )
-            for accumulator, coefficients in zip(
-                direct_accumulators,
-                coefficient_maps,
-                strict=True,
-            ):
-                accumulator += direct_units * coefficients.get(category, 0.0)
-            del kernel_indices, direct_units
+        if crowd_tail_samples is not None and sample_indices is not None:
+            crowd_tail_samples[category] = crowd_tail[sample_indices].copy()
 
         contribution = ternary_convolve(weighted_probability, kernel, event_count)
         for accumulator, coefficients in zip(
@@ -308,32 +306,78 @@ def _accumulate_categories(
         probability_mass=probability_mass,
         crowd_mass=crowd_mass,
         minimum_denominator=minimum_denominator,
-        direct_samples=direct_accumulators,
+        crowd_tail_samples=crowd_tail_samples,
     )
 
 
-def _direct_hamming_sums(
-    weighted_probability: np.ndarray,
-    kernel_indices: np.ndarray,
-    coupon_indices: np.ndarray,
-    event_count: int,
+def _crowd_qualifying_probabilities(
+    crowd_matrix: ProbabilityMatrix,
+    minimum_hits: int,
+    chunk_size: int = CROWD_TAIL_CHUNK_SIZE,
 ) -> np.ndarray:
-    """Directly sum ``f(y) K(c-y)`` using explicit ternary subtraction."""
-    values = np.zeros(len(coupon_indices), dtype=np.float64)
-    for sample_position, coupon_index in enumerate(coupon_indices):
-        offsets = kernel_indices.copy()
-        actual_indices = np.zeros(len(kernel_indices), dtype=np.int64)
-        coupon_remainder = int(coupon_index)
-        place = 1
-        for _ in range(event_count):
-            offsets, offset_digit = np.divmod(offsets, 3)
-            coupon_remainder, coupon_digit = divmod(coupon_remainder, 3)
-            actual_indices += ((coupon_digit - offset_digit) % 3) * place
-            place *= 3
-        values[sample_position] = weighted_probability[actual_indices].sum(
-            dtype=np.float64,
+    """Return exact independent-marginal crowd tails for every actual state."""
+    matrix = _validated_matrix(crowd_matrix, "crowd probabilities")
+    event_count = len(matrix)
+    minimum_hits = _validated_minimum_category(minimum_hits, event_count)
+    if type(chunk_size) is not int or chunk_size <= 0:
+        raise ValueError("chunk_size must be a positive int")
+
+    state_count = 3**event_count
+    tails = np.empty(state_count, dtype=np.float64)
+    for start in range(0, state_count, chunk_size):
+        stop = min(start + chunk_size, state_count)
+        actual_indices = np.arange(start, stop, dtype=np.int64)
+        tails[start:stop] = _poisson_binomial_tails_for_validated_indices(
+            matrix,
+            minimum_hits,
+            actual_indices,
         )
-    return values
+    return tails
+
+
+def _poisson_binomial_tails_for_indices(
+    crowd_matrix: ProbabilityMatrix,
+    minimum_hits: int,
+    actual_indices: Sequence[int] | np.ndarray,
+) -> np.ndarray:
+    """Return exact crowd qualifying probabilities for selected actual states."""
+    matrix = _validated_matrix(crowd_matrix, "crowd probabilities")
+    event_count = len(matrix)
+    minimum_hits = _validated_minimum_category(minimum_hits, event_count)
+    indices = _validated_actual_indices(actual_indices, event_count)
+    return _poisson_binomial_tails_for_validated_indices(
+        matrix,
+        minimum_hits,
+        indices,
+    )
+
+
+def _poisson_binomial_tails_for_validated_indices(
+    crowd_matrix: ProbabilityMatrix,
+    minimum_hits: int,
+    actual_indices: np.ndarray,
+) -> np.ndarray:
+    maximum_errors = len(crowd_matrix) - minimum_hits
+    probabilities = np.zeros(
+        (len(actual_indices), maximum_errors + 1),
+        dtype=np.float64,
+    )
+    probabilities[:, 0] = 1.0
+    remainders = actual_indices.copy()
+
+    for processed_events, row in enumerate(reversed(crowd_matrix)):
+        remainders, outcome_digits = np.divmod(remainders, 3)
+        match_probability = np.asarray(row, dtype=np.float64)[outcome_digits]
+        failure_probability = 1.0 - match_probability
+        highest_error = min(processed_events + 1, maximum_errors)
+        for error_count in range(highest_error, 0, -1):
+            probabilities[:, error_count] = (
+                probabilities[:, error_count] * match_probability
+                + probabilities[:, error_count - 1] * failure_probability
+            )
+        probabilities[:, 0] *= match_probability
+
+    return probabilities.sum(axis=1, dtype=np.float64)
 
 
 def _joint_distribution(matrix: ProbabilityMatrix) -> np.ndarray:
@@ -417,6 +461,20 @@ def _validated_category_funds(
             raise ValueError("category funds must be finite and non-negative")
         validated[category] = value
     return validated
+
+
+def _validated_actual_indices(
+    values: Sequence[int] | np.ndarray,
+    event_count: int,
+) -> np.ndarray:
+    array = np.asarray(values)
+    if array.ndim != 1 or array.dtype.kind not in "iu":
+        raise ValueError("actual indices must be a one-dimensional integer array")
+    indices = array.astype(np.int64, copy=False)
+    state_count = 3**event_count
+    if np.any(indices < 0) or np.any(indices >= state_count):
+        raise ValueError(f"actual indices must be in 0..{state_count - 1}")
+    return indices
 
 
 def _validated_event_count(event_count: int) -> int:
