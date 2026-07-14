@@ -14,8 +14,27 @@
 - Every hypothesis must be backtested.
 - Never claim guaranteed profit.
 - Separate prediction quality from cover quality.
-- The primary near-term strategy objective is holdout `13+` hit rate with a
-  5000 RUB bank, 30 RUB stake, and category 13.
+- The completed BK-only experiments used `13+` hit rate as their fixed primary
+  objective. The next optimizer changes the primary objective to modeled
+  monetary expected value under a dynamic user bank.
+- The bank may be any positive amount exactly divisible by the configurable
+  coupon stake. The optimizer does not force full-bank utilization.
+- The Expected-Value Package Engine evaluates all `3^15` coupons. Performance
+  optimization may not truncate its candidate space or alter exact rankings
+  beyond a documented floating-point tolerance.
+- EV research and playable recommendations are separate modes. Research always
+  shows top coupons; playable mode uses an explicit threshold and returns
+  `NO BET` when no coupon qualifies. It never lowers the threshold merely to
+  force a package.
+- Initial crowd joint probabilities use an explicitly disclosed independence
+  model derived from pool marginals. This is an assumption requiring stress
+  tests, not an observed property of player tickets.
+- Historical modeled ROI is not observed ROI because category payouts and
+  winner counts are not present in the current data. Profitability claims
+  require prospective validation with lawful payout data.
+- Direct Pinnacle access and prohibited scraping are out of scope. External
+  odds use a provider-neutral, event-level interface with TotoBrief BK fallback
+  so missing external matches do not silently drop a drawing.
 - Direct package optimization is evaluated before further brief-first
   heuristics. A brief may be derived from a package but does not constrain the
   v1 optimizer.
@@ -64,9 +83,9 @@
   operational failures. The sealed rerun exactly reproduced the initial
   metrics, used zero holdout IDs, and is the final decision for this direction.
 - Further tuning of the BK-only direct package optimizer is closed. The next
-  research direction is external probability data, starting with Pinnacle
-  feasibility and a provider-neutral interface. Any later optimizer work needs
-  a new hypothesis and a new untouched evaluation window.
+  research direction is the Expected-Value Package Engine plus a
+  provider-neutral external-probability interface. Any later optimizer work
+  needs a new hypothesis and a new untouched evaluation window.
 - Budget-constrained oracle commands may use actual results only as benchmark
   upper bounds; they must not be treated as playable prediction methods.
 - Budget-oracle must not reduce the candidate search space by default. Candidate
@@ -96,7 +115,8 @@
   pairwise Hamming distances for deterministic structural metrics. Package
   overlap uses set intersection/union; mean unique-coupon log probability is
   unavailable when its unique set is empty.
-- User bank can be any positive amount.
+- User bank can be any positive amount exactly divisible by the configured
+  stake.
 - `--open` means next playable drawing with `ended_at` in the future.
 - `--live` means betting is closed and drawing is ongoing.
 - `--latest-finished` is for historical analysis.

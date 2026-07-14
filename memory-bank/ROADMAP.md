@@ -86,10 +86,12 @@
 
 ## Phase 5: Probability Model
 
-- Evaluate Pinnacle and other external probability-provider feasibility,
-  licensing/terms, historical or closing-odds availability, and event matching.
-- Add a provider-neutral probability interface only after feasibility is
-  documented.
+- Direct Pinnacle access is unavailable for this project; prohibited scraping
+  is excluded.
+- Evaluate lawful third-party feeds, starting with API-Sports football/hockey,
+  for coverage, terms, freshness, historical availability, and event matching.
+- Add a provider-neutral, event-level probability interface with explicit
+  TotoBrief BK fallback and prospective odds storage.
 - Feature builder
 - Train/validation/test split by time
 - Calibration
@@ -108,6 +110,13 @@
 - Compare greedy cover, MILP, simulated annealing, genetic algorithms.
 - Optimize expected value and probability of 13+/14+/15.
 - Monte Carlo simulation.
+- Implement the approved Expected-Value Package Engine in the sequence defined
+  by `docs/superpowers/specs/2026-07-14-expected-value-package-engine-design.md`:
+  pure payout/reference math, exact ternary full-space engine, dynamic-bank
+  research/playable selection, reports/CLI, then chronological evaluation.
+- Evaluate all `3^15` coupons without resource-saving candidate truncation.
+- Test playable gross-EV thresholds 0.90, 0.95, 1.00, and 1.05, including bank
+  utilization and `NO BET` skip rate.
 
 ## Phase 7: Production
 

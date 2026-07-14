@@ -26,6 +26,33 @@ task commits listed above.
 - Tests currently passed: 288
 - Ruff passed
 
+## Approved Next Design: Expected-Value Package Engine
+
+The sealed BK-only hybrid experiment is final with `STOP`. The next direction
+does not continue tuning hit-count heuristics. It ranks the complete
+`3^15 = 14,348,907` coupon space by modeled monetary expected value.
+
+Approved requirements:
+
+- dynamic bank: any positive multiple of the configurable stake;
+- no candidate truncation for speed;
+- official cumulative BaltBet category allocation model;
+- explicit prize-fund proxy/override and sensitivity reporting;
+- explicit independent crowd-ticket model from pool marginals;
+- Research mode that always shows top coupons;
+- Playable mode with configurable EV threshold and honest `NO BET`;
+- no automatic threshold reduction to force bank utilization;
+- provider-neutral external probabilities with event-level TotoBrief BK
+  fallback; direct Pinnacle scraping is excluded;
+- modeled ROI is not profitability evidence without prospective payout data.
+
+Design specification:
+- `docs/superpowers/specs/2026-07-14-expected-value-package-engine-design.md`
+
+Next action after user review of the written specification:
+- create the detailed implementation plan; do not start engine code before that
+  review gate.
+
 ## Active Design: Hybrid Direct Package Experiment
 
 Approved design:
