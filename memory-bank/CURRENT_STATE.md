@@ -49,9 +49,14 @@ Approved requirements:
 Design specification:
 - `docs/superpowers/specs/2026-07-14-expected-value-package-engine-design.md`
 
-Next action after user review of the written specification:
-- create the detailed implementation plan; do not start engine code before that
-  review gate.
+Approved implementation plan:
+- `docs/superpowers/plans/2026-07-14-expected-value-package-engine.md`
+- Seven TDD tasks: domain/prize math, brute-force oracle, exact ternary engine,
+  dynamic-bank selection, fresh drawing CLI/reports, chronological modeled-EV
+  backtest, and full-space acceptance.
+
+Next action:
+- execute the implementation plan task by task with independent review gates.
 
 ## Active Design: Hybrid Direct Package Experiment
 
