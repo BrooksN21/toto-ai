@@ -15,6 +15,11 @@ Core definitions:
   to spend the bank.
 - Modeled EV is not observed ROI while historical winner and category-payout
   data are unavailable.
+- External consensus remains prospective-only during the API-Sports coverage
+  audit. It accepts only full-time football `1/X/2` and regulation-time hockey
+  `1/X/2`, requires at least three eligible bookmakers no older than 36 hours,
+  applies multiplicative per-book de-vig, takes the component-wise median, and
+  renormalizes the triplet before any future model integration.
 
 Historical evaluation contract:
 
@@ -55,10 +60,10 @@ Historical evaluation contract:
   which binds banks, thresholds, factors, stake, requested window, community,
   and forbidden frozen-manifest IDs.
 
-The next external-data step remains a separate provider-neutral design for
-lawful prospective probability snapshots, event matching, source age and
-confidence, consensus/de-vig logic, and explicit per-event TotoBrief BK
-fallback. The old frozen hybrid holdout is not available for that development.
+The remaining external-data work is a separate provider-neutral design for
+lawful prospective probability snapshots, explicit per-event TotoBrief BK
+fallback, append-only storage, and deterministic coverage reporting. The old
+frozen hybrid holdout is not available for that development.
 
 The complete design and formulas are in
 [`2026-07-14-expected-value-package-engine-design.md`](../docs/superpowers/specs/2026-07-14-expected-value-package-engine-design.md).

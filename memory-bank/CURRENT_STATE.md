@@ -23,8 +23,27 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 570
+- Tests currently passed: 578
 - Ruff passed
+
+## Latest Completed Task: Strict Market Semantics and Consensus
+
+Added `toto_ai.external_odds.consensus` for Task 4 of the API-Sports coverage
+audit. The new module accepts only explicit full-time football `1/X/2` market
+names and explicit regulation-time hockey `1/X/2` market names from small
+allow-lists. It rejects unknown market names, missing outcomes, prices `<= 1`,
+future timestamps, stale prices older than 36 hours, and duplicate bookmaker
+records for the same accepted market semantics.
+
+Eligible bookmaker prices are de-vigged multiplicatively per book, then the
+component-wise median probabilities are renormalized into one provider-neutral
+consensus triplet. Consensus requires at least three eligible bookmakers;
+otherwise the result is an explicit fallback with per-book rejection reasons.
+This prospective consensus remains an audit-only input and does not change
+playable package decisions.
+
+Task 4 verification completed with focused consensus tests, full pytest
+(`578 passed`), and Ruff (`All checks passed!`).
 
 ## Latest Completed Task: Deterministic External Event Matching
 

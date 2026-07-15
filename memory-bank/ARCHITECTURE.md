@@ -85,6 +85,9 @@ Important modules:
   provider-neutral immutable external-odds records, strict TotoBrief
   drawing-target parsing, explicit sport classification, and preserved
   TotoBrief BK fallback probabilities for the API-Sports coverage audit.
+- `toto_ai.external_odds.consensus`: strict football full-time and hockey
+  regulation-time three-way market validation, duplicate bookmaker rejection,
+  per-book de-vig, median consensus, and explicit minimum-bookmaker fallback.
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
   frozen-holdout exclusion, pre-result package hashing, complete factor
   rankings reused across dynamic banks and thresholds, cumulative realized
