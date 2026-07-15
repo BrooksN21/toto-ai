@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import date, datetime, timezone
 from typing import Any
 
@@ -32,15 +32,29 @@ TOTOBRIEF_BK_FALLBACK = "totobrief_bk_fallback"
 
 
 @dataclass(frozen=True)
+class ExternalMarketProvenanceRecord:
+    updated_at: str
+    fetched_at: str
+    payload_hash: str
+    home_price: float | None
+    draw_price: float | None
+    away_price: float | None
+
+
+@dataclass(frozen=True)
 class ExternalBookmakerQuoteRecord:
     bookmaker_id: str
     market_name: str
     updated_at: str
+    fetched_at: str
+    payload_hash: str
     home_price: float | None
     draw_price: float | None
     away_price: float | None
     eligible: int
     rejection_reason: str | None
+    source_count: int
+    source_provenance: tuple[ExternalMarketProvenanceRecord, ...]
 
 
 @dataclass(frozen=True)
@@ -57,7 +71,11 @@ class ExternalEventDispositionRecord:
     away_team_en: str | None
     match_status: str
     provider_event_id: str | None
+    provider_event_fetched_at: str | None
+    provider_event_payload_hash: str | None
     matcher_version: str
+    match_candidate_ids: tuple[str, ...]
+    match_reason: str
     probability_source: str
     probability_1: float
     probability_x: float
@@ -86,6 +104,12 @@ class ExternalCollectionSnapshot:
     events: tuple[ExternalEventDispositionRecord, ...]
 
 
+@dataclass(frozen=True)
+class _MatchedTarget:
+    decision: MatchDecision
+    provider_event: ProviderEvent | None
+
+
 def build_external_collection(
     target: TargetDrawing,
     provider: ExternalOddsProvider,
@@ -100,12 +124,28 @@ def build_external_collection(
     quota_stopped = False
     rows: list[ExternalEventDispositionRecord] = []
     for event in target.events:
-        decision = decisions[event.event_order]
+        matched_target = decisions[event.event_order]
+        decision = matched_target.decision
+        provider_event = matched_target.provider_event
         if decision.status != "matched" or decision.provider_event_id is None:
-            rows.append(_fallback_disposition(event, decision, decision.reason))
+            rows.append(
+                _fallback_disposition(
+                    event,
+                    decision,
+                    provider_event,
+                    decision.reason,
+                )
+            )
             continue
         if quota_stopped:
-            rows.append(_fallback_disposition(event, decision, "quota reserve reached"))
+            rows.append(
+                _fallback_disposition(
+                    event,
+                    decision,
+                    provider_event,
+                    "quota reserve reached",
+                )
+            )
             continue
 
         market_key = (event.sport, decision.provider_event_id)
@@ -120,7 +160,12 @@ def build_external_collection(
             except QuotaExhausted:
                 quota_stopped = True
                 rows.append(
-                    _fallback_disposition(event, decision, "quota reserve reached")
+                    _fallback_disposition(
+                        event,
+                        decision,
+                        provider_event,
+                        "quota reserve reached",
+                    )
                 )
                 continue
             except APISportsError as error:
@@ -128,6 +173,7 @@ def build_external_collection(
                     _fallback_disposition(
                         event,
                         decision,
+                        provider_event,
                         f"provider odds failure: {error}",
                     )
                 )
@@ -137,6 +183,7 @@ def build_external_collection(
                     _fallback_disposition(
                         event,
                         decision,
+                        provider_event,
                         f"provider odds failure: {error.__class__.__name__}",
                     )
                 )
@@ -150,7 +197,9 @@ def build_external_collection(
             minimum_bookmakers=CONSENSUS_MINIMUM_BOOKMAKERS,
             maximum_age=MAXIMUM_ODDS_AGE,
         )
-        rows.append(_consensus_disposition(event, decision, consensus))
+        rows.append(
+            _consensus_disposition(event, decision, provider_event, consensus)
+        )
 
     ordered_rows = tuple(sorted(rows, key=lambda row: row.event_order))
     status = "complete" if len(ordered_rows) == 15 else "partial"
@@ -273,34 +322,60 @@ def _match_targets(
     schedules: dict[Sport, tuple[ProviderEvent, ...]],
     schedule_failures: dict[Sport, str],
     aliases: dict[str, str],
-) -> dict[int, MatchDecision]:
-    decisions: dict[int, MatchDecision] = {}
+) -> dict[int, _MatchedTarget]:
+    decisions: dict[int, _MatchedTarget] = {}
     for event in target.events:
         if event.sport in schedule_failures:
-            decisions[event.event_order] = MatchDecision(
-                status="provider_failure",
-                provider_event_id=None,
-                matcher_version=MATCHER_VERSION,
-                candidate_ids=(),
-                reason=schedule_failures[event.sport],
+            decisions[event.event_order] = _MatchedTarget(
+                decision=MatchDecision(
+                    status="provider_failure",
+                    provider_event_id=None,
+                    matcher_version=MATCHER_VERSION,
+                    candidate_ids=(),
+                    reason=schedule_failures[event.sport],
+                ),
+                provider_event=None,
             )
             continue
-        decisions[event.event_order] = match_event(
+        decision = match_event(
             event,
             schedules.get(event.sport, ()),
             aliases,
         )
+        provider_event = _matched_provider_event(
+            decision,
+            schedules.get(event.sport, ()),
+        )
+        decisions[event.event_order] = _MatchedTarget(decision, provider_event)
     return decisions
+
+
+def _matched_provider_event(
+    decision: MatchDecision,
+    candidates: tuple[ProviderEvent, ...],
+) -> ProviderEvent | None:
+    if decision.status != "matched" or decision.provider_event_id is None:
+        return None
+    matches = tuple(
+        candidate
+        for candidate in candidates
+        if candidate.provider_event_id == decision.provider_event_id
+    )
+    if len(matches) != 1:
+        raise ValueError("matched provider event id must resolve uniquely")
+    return matches[0]
 
 
 def _fallback_disposition(
     event: TargetEvent,
     decision: MatchDecision,
+    provider_event: ProviderEvent | None,
     reason: str,
 ) -> ExternalEventDispositionRecord:
     payload = _event_payload(
         event=event,
         decision=decision,
+        provider_event=provider_event,
         probability_source=TOTOBRIEF_BK_FALLBACK,
         probabilities=event.bk_probabilities,
         eligible_bookmaker_count=0,
@@ -311,6 +386,7 @@ def _fallback_disposition(
     return _event_record(
         event=event,
         decision=decision,
+        provider_event=provider_event,
         probability_source=TOTOBRIEF_BK_FALLBACK,
         probabilities=event.bk_probabilities,
         eligible_bookmaker_count=0,
@@ -324,21 +400,10 @@ def _fallback_disposition(
 def _consensus_disposition(
     event: TargetEvent,
     decision: MatchDecision,
+    provider_event: ProviderEvent | None,
     consensus: ConsensusResult,
 ) -> ExternalEventDispositionRecord:
-    quotes = tuple(
-        ExternalBookmakerQuoteRecord(
-            bookmaker_id=assessment.market.bookmaker_id,
-            market_name=assessment.market.market_name,
-            updated_at=_iso_datetime(assessment.market.updated_at),
-            home_price=assessment.market.home_price,
-            draw_price=assessment.market.draw_price,
-            away_price=assessment.market.away_price,
-            eligible=1 if assessment.eligible else 0,
-            rejection_reason=assessment.rejection_reason,
-        )
-        for assessment in consensus.assessments
-    )
+    quotes = _assessment_quotes(consensus)
     if consensus.probabilities is None:
         probability_source = TOTOBRIEF_BK_FALLBACK
         probabilities = event.bk_probabilities
@@ -351,6 +416,7 @@ def _consensus_disposition(
     payload = _event_payload(
         event=event,
         decision=decision,
+        provider_event=provider_event,
         probability_source=probability_source,
         probabilities=probabilities,
         eligible_bookmaker_count=consensus.eligible_bookmaker_count,
@@ -361,6 +427,7 @@ def _consensus_disposition(
     return _event_record(
         event=event,
         decision=decision,
+        provider_event=provider_event,
         probability_source=probability_source,
         probabilities=probabilities,
         eligible_bookmaker_count=consensus.eligible_bookmaker_count,
@@ -375,6 +442,7 @@ def _event_record(
     *,
     event: TargetEvent,
     decision: MatchDecision,
+    provider_event: ProviderEvent | None,
     probability_source: str,
     probabilities: OutcomeTriplet,
     eligible_bookmaker_count: int,
@@ -396,7 +464,17 @@ def _event_record(
         away_team_en=event.away_team_en,
         match_status=decision.status,
         provider_event_id=decision.provider_event_id,
+        provider_event_fetched_at=(
+            _iso_datetime(provider_event.fetched_at)
+            if provider_event is not None
+            else None
+        ),
+        provider_event_payload_hash=(
+            provider_event.payload_hash if provider_event is not None else None
+        ),
         matcher_version=decision.matcher_version,
+        match_candidate_ids=decision.candidate_ids,
+        match_reason=decision.reason,
         probability_source=probability_source,
         probability_1=probabilities[0],
         probability_x=probabilities[1],
@@ -438,6 +516,7 @@ def _event_payload(
     *,
     event: TargetEvent,
     decision: MatchDecision,
+    provider_event: ProviderEvent | None,
     probability_source: str,
     probabilities: OutcomeTriplet,
     eligible_bookmaker_count: int,
@@ -454,12 +533,20 @@ def _event_payload(
             "candidate_ids": decision.candidate_ids,
             "reason": decision.reason,
         },
+        "provider_event": (
+            {
+                "fetched_at": _iso_datetime(provider_event.fetched_at),
+                "payload_hash": provider_event.payload_hash,
+            }
+            if provider_event is not None
+            else None
+        ),
         "probability_source": probability_source,
         "probabilities": probabilities,
         "eligible_bookmaker_count": eligible_bookmaker_count,
         "odds_age_hours": odds_age_hours,
         "fallback_reason": fallback_reason,
-        "quotes": tuple(quote.__dict__ for quote in quotes),
+        "quotes": tuple(asdict(quote) for quote in quotes),
     }
 
 
@@ -488,7 +575,8 @@ def _collection_identity_payload(
             }
             | {
                 "bookmaker_quotes": tuple(
-                    quote.__dict__ for quote in event.bookmaker_quotes
+                    asdict(quote)
+                    for quote in _canonical_quotes(event.bookmaker_quotes)
                 )
             }
             for event in events
@@ -527,6 +615,112 @@ def _hash_payload(payload: object) -> str:
             separators=(",", ":"),
         ).encode("utf-8")
     ).hexdigest()
+
+
+def _assessment_quotes(
+    consensus: ConsensusResult,
+) -> tuple[ExternalBookmakerQuoteRecord, ...]:
+    grouped = defaultdict(list)
+    for assessment in consensus.assessments:
+        grouped[
+            (assessment.market.bookmaker_id, assessment.market.market_name)
+        ].append(assessment)
+
+    quotes = []
+    for assessments in grouped.values():
+        provenance = _canonical_market_provenance(
+            tuple(_market_provenance(item.market) for item in assessments)
+        )
+        if len(assessments) == 1:
+            assessment = assessments[0]
+            market = assessment.market
+            quotes.append(
+                ExternalBookmakerQuoteRecord(
+                    bookmaker_id=market.bookmaker_id,
+                    market_name=market.market_name,
+                    updated_at=_iso_datetime(market.updated_at),
+                    fetched_at=_iso_datetime(market.fetched_at),
+                    payload_hash=market.payload_hash,
+                    home_price=market.home_price,
+                    draw_price=market.draw_price,
+                    away_price=market.away_price,
+                    eligible=1 if assessment.eligible else 0,
+                    rejection_reason=assessment.rejection_reason,
+                    source_count=1,
+                    source_provenance=provenance,
+                )
+            )
+            continue
+
+        quotes.append(
+            ExternalBookmakerQuoteRecord(
+                bookmaker_id=assessments[0].market.bookmaker_id,
+                market_name=assessments[0].market.market_name,
+                updated_at=max(source.updated_at for source in provenance),
+                fetched_at=max(source.fetched_at for source in provenance),
+                payload_hash=_hash_payload(
+                    {
+                        "duplicate_market_provenance": tuple(
+                            asdict(source) for source in provenance
+                        )
+                    }
+                ),
+                home_price=None,
+                draw_price=None,
+                away_price=None,
+                eligible=0,
+                rejection_reason="duplicate bookmaker market",
+                source_count=len(provenance),
+                source_provenance=provenance,
+            )
+        )
+    return _canonical_quotes(tuple(quotes))
+
+
+def _market_provenance(market: ProviderMarket) -> ExternalMarketProvenanceRecord:
+    return ExternalMarketProvenanceRecord(
+        updated_at=_iso_datetime(market.updated_at),
+        fetched_at=_iso_datetime(market.fetched_at),
+        payload_hash=market.payload_hash,
+        home_price=market.home_price,
+        draw_price=market.draw_price,
+        away_price=market.away_price,
+    )
+
+
+def _canonical_market_provenance(
+    provenance: tuple[ExternalMarketProvenanceRecord, ...],
+) -> tuple[ExternalMarketProvenanceRecord, ...]:
+    return tuple(
+        sorted(
+            provenance,
+            key=lambda source: json.dumps(
+                asdict(source),
+                sort_keys=True,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ),
+        )
+    )
+
+
+def _canonical_quotes(
+    quotes: tuple[ExternalBookmakerQuoteRecord, ...],
+) -> tuple[ExternalBookmakerQuoteRecord, ...]:
+    return tuple(sorted(quotes, key=_quote_sort_key))
+
+
+def _quote_sort_key(quote: ExternalBookmakerQuoteRecord) -> tuple[str, str, str]:
+    return (
+        quote.bookmaker_id,
+        quote.market_name,
+        json.dumps(
+            asdict(quote),
+            sort_keys=True,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ),
+    )
 
 
 def _iso_datetime(value: datetime) -> str:

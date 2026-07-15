@@ -92,6 +92,12 @@ Important modules:
   deterministic 15-event prospective external-odds collection, explicit
   event-level TotoBrief BK fallback, provider quota/request provenance, and
   append-only SQLAlchemy persistence for immutable collection snapshots.
+  Event dispositions persist matched schedule payload hash/fetch time and the
+  complete matching decision. Quote rows persist market payload hash/fetch
+  time and canonical source provenance. Exact duplicate bookmaker/market keys
+  are consensus-ineligible and coalesced into one deterministic anomaly row so
+  the mandated database uniqueness constraint does not discard the collection.
+  Quote order is canonical before identity, comparison, insertion, and load.
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
   frozen-holdout exclusion, pre-result package hashing, complete factor
   rankings reused across dynamic banks and thresholds, cumulative realized

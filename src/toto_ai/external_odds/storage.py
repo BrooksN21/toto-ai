@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import asdict
+import json
+from dataclasses import asdict, replace
 from typing import Any
 
 from sqlalchemy import func, select
@@ -14,6 +15,7 @@ from toto_ai.external_odds.collection import (
     ExternalBookmakerQuoteRecord,
     ExternalCollectionSnapshot,
     ExternalEventDispositionRecord,
+    ExternalMarketProvenanceRecord,
 )
 
 
@@ -34,7 +36,7 @@ def save_collection(
         session.add(_collection_run_row(collection))
         for event in collection.events:
             session.add(_event_disposition_row(collection.collection_id, event))
-            for quote in event.bookmaker_quotes:
+            for quote in _canonical_quotes(event.bookmaker_quotes):
                 session.add(
                     _bookmaker_quote_row(
                         collection.collection_id,
@@ -126,7 +128,7 @@ def _quote_records_for_event(
             ExternalBookmakerQuote.market_name,
         )
     ).all()
-    return tuple(_quote_record_from_row(row) for row in rows)
+    return _canonical_quotes(tuple(_quote_record_from_row(row) for row in rows))
 
 
 def _collection_run_row(
@@ -166,7 +168,15 @@ def _event_disposition_row(
         away_team_en=event.away_team_en,
         match_status=event.match_status,
         provider_event_id=event.provider_event_id,
+        provider_event_fetched_at=event.provider_event_fetched_at,
+        provider_event_payload_hash=event.provider_event_payload_hash,
         matcher_version=event.matcher_version,
+        match_candidate_ids=json.dumps(
+            event.match_candidate_ids,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ),
+        match_reason=event.match_reason,
         probability_source=event.probability_source,
         probability_1=event.probability_1,
         probability_x=event.probability_x,
@@ -189,11 +199,20 @@ def _bookmaker_quote_row(
         bookmaker_id=quote.bookmaker_id,
         market_name=quote.market_name,
         updated_at=quote.updated_at,
+        fetched_at=quote.fetched_at,
+        payload_hash=quote.payload_hash,
         home_price=quote.home_price,
         draw_price=quote.draw_price,
         away_price=quote.away_price,
         eligible=quote.eligible,
         rejection_reason=quote.rejection_reason,
+        source_count=quote.source_count,
+        source_provenance=json.dumps(
+            tuple(asdict(source) for source in quote.source_provenance),
+            sort_keys=True,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ),
     )
 
 
@@ -214,7 +233,11 @@ def _event_record_from_row(
         away_team_en=row.away_team_en,
         match_status=row.match_status,
         provider_event_id=row.provider_event_id,
+        provider_event_fetched_at=row.provider_event_fetched_at,
+        provider_event_payload_hash=row.provider_event_payload_hash,
         matcher_version=row.matcher_version,
+        match_candidate_ids=tuple(json.loads(row.match_candidate_ids)),
+        match_reason=row.match_reason,
         probability_source=row.probability_source,
         probability_1=row.probability_1,
         probability_x=row.probability_x,
@@ -232,16 +255,53 @@ def _quote_record_from_row(row: ExternalBookmakerQuote) -> ExternalBookmakerQuot
         bookmaker_id=row.bookmaker_id,
         market_name=row.market_name,
         updated_at=row.updated_at,
+        fetched_at=row.fetched_at,
+        payload_hash=row.payload_hash,
         home_price=row.home_price,
         draw_price=row.draw_price,
         away_price=row.away_price,
         eligible=row.eligible,
         rejection_reason=row.rejection_reason,
+        source_count=row.source_count,
+        source_provenance=tuple(
+            ExternalMarketProvenanceRecord(**source)
+            for source in json.loads(row.source_provenance)
+        ),
     )
 
 
 def _canonical_collection(collection: ExternalCollectionSnapshot) -> dict[str, object]:
-    return asdict(collection)
+    normalized = replace(
+        collection,
+        events=tuple(
+            replace(
+                event,
+                bookmaker_quotes=_canonical_quotes(event.bookmaker_quotes),
+            )
+            for event in collection.events
+        ),
+    )
+    return asdict(normalized)
+
+
+def _canonical_quotes(
+    quotes: tuple[ExternalBookmakerQuoteRecord, ...],
+) -> tuple[ExternalBookmakerQuoteRecord, ...]:
+    return tuple(
+        sorted(
+            quotes,
+            key=lambda quote: (
+                quote.bookmaker_id,
+                quote.market_name,
+                json.dumps(
+                    asdict(quote),
+                    sort_keys=True,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                ),
+            ),
+        )
+    )
 
 
 def count_complete_runs(session_factory: Any) -> int:

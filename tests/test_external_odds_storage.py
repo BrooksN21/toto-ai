@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -62,8 +63,15 @@ def target_drawing(*, fetched_at: datetime | None = None) -> TargetDrawing:
 class CompleteProvider:
     provider_name = "api-sports"
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        schedule_hash_suffix: str = "",
+        market_hash_suffix: str = "",
+    ) -> None:
         self.requests_made = 0
+        self.schedule_hash_suffix = schedule_hash_suffix
+        self.market_hash_suffix = market_hash_suffix
         self._quota_state = QuotaState(
             daily_limit=100,
             daily_remaining=88,
@@ -89,7 +97,7 @@ class CompleteProvider:
                 home_team=f"Home {order}",
                 away_team=f"Away {order}",
                 fetched_at=aware_now(),
-                payload_hash=f"schedule-hash-{order}",
+                payload_hash=f"schedule-hash-{order}{self.schedule_hash_suffix}",
             )
             for order in range(15)
         )
@@ -105,13 +113,36 @@ class CompleteProvider:
                 market_name="Match Winner",
                 updated_at=aware_now() - timedelta(hours=index),
                 fetched_at=aware_now(),
-                payload_hash=f"market-hash-{order}-{index}",
+                payload_hash=(
+                    f"market-hash-{order}-{index}{self.market_hash_suffix}"
+                ),
                 home_price=2.0 + index / 10.0,
                 draw_price=4.0 + index / 10.0,
                 away_price=4.5 + index / 10.0,
             )
             for index in range(1, 4)
         )
+
+
+class ReversedProvider(CompleteProvider):
+    def fetch_event_markets(self, sport, provider_event_id):
+        return tuple(reversed(super().fetch_event_markets(sport, provider_event_id)))
+
+
+class DuplicateMarketProvider(CompleteProvider):
+    def fetch_event_markets(self, sport, provider_event_id):
+        markets = super().fetch_event_markets(sport, provider_event_id)
+        duplicate = replace(
+            markets[0],
+            payload_hash=f"{markets[0].payload_hash}-duplicate",
+            home_price=markets[0].home_price + 0.5,
+        )
+        return (duplicate, *reversed(markets))
+
+
+class ReversedDuplicateMarketProvider(DuplicateMarketProvider):
+    def fetch_event_markets(self, sport, provider_event_id):
+        return tuple(reversed(super().fetch_event_markets(sport, provider_event_id)))
 
 
 @pytest.fixture
@@ -158,6 +189,40 @@ def test_same_canonical_inputs_are_idempotent(session_factory):
         assert session.scalar(select(func.count(ExternalBookmakerQuote.id))) == 45
 
 
+def test_quote_order_is_canonical_for_identity_comparison_and_storage(
+    session_factory,
+):
+    canonical = build_external_collection(
+        target_drawing(),
+        CompleteProvider(),
+        aliases={},
+    )
+    provider_reversed = build_external_collection(
+        target_drawing(),
+        ReversedProvider(),
+        aliases={},
+    )
+
+    assert provider_reversed == canonical
+    manually_reversed = replace(
+        canonical,
+        events=(
+            replace(
+                canonical.events[0],
+                bookmaker_quotes=tuple(
+                    reversed(canonical.events[0].bookmaker_quotes)
+                ),
+            ),
+            *canonical.events[1:],
+        ),
+    )
+    save_collection(session_factory, canonical)
+    save_collection(session_factory, manually_reversed)
+
+    stored = load_latest_complete_collections(session_factory, last=1)
+    assert stored == (canonical,)
+
+
 def test_fetched_at_is_part_of_collection_identity(session_factory):
     first = build_external_collection(
         target_drawing(fetched_at=aware_now()),
@@ -179,6 +244,89 @@ def test_fetched_at_is_part_of_collection_identity(session_factory):
             select(func.count(ExternalCollectionRun.collection_id))
         )
         assert run_count == 2
+
+
+def test_provider_provenance_round_trips_and_binds_collection_identity(
+    session_factory,
+):
+    baseline = build_external_collection(
+        target_drawing(),
+        CompleteProvider(),
+        aliases={},
+    )
+    changed_event = build_external_collection(
+        target_drawing(),
+        CompleteProvider(schedule_hash_suffix="-changed"),
+        aliases={},
+    )
+    changed_market = build_external_collection(
+        target_drawing(),
+        CompleteProvider(market_hash_suffix="-changed"),
+        aliases={},
+    )
+
+    assert len(
+        {
+            baseline.collection_id,
+            changed_event.collection_id,
+            changed_market.collection_id,
+        }
+    ) == 3
+
+    save_collection(session_factory, baseline)
+    stored = load_latest_complete_collections(session_factory, last=1)[0]
+    event = stored.events[0]
+    quote = event.bookmaker_quotes[0]
+    assert event.match_candidate_ids == ("provider-0",)
+    assert event.match_reason == "unique exact match"
+    assert event.provider_event_fetched_at == aware_now().isoformat()
+    assert event.provider_event_payload_hash == "schedule-hash-0"
+    assert quote.fetched_at == aware_now().isoformat()
+    assert quote.payload_hash == "market-hash-0-1"
+    assert stored == baseline
+
+
+def test_duplicate_bookmaker_market_is_coalesced_with_aggregate_provenance(
+    session_factory,
+):
+    result = build_external_collection(
+        target_drawing(),
+        DuplicateMarketProvider(),
+        aliases={},
+    )
+    reordered = build_external_collection(
+        target_drawing(),
+        ReversedDuplicateMarketProvider(),
+        aliases={},
+    )
+
+    assert reordered == result
+    event = result.events[0]
+    assert event.probability_source == "totobrief_bk_fallback"
+    assert event.eligible_bookmaker_count == 2
+    assert "duplicate bookmaker market" in event.fallback_reason
+    assert len(event.bookmaker_quotes) == 3
+    duplicate = event.bookmaker_quotes[0]
+    assert duplicate.bookmaker_id == "book-1"
+    assert duplicate.market_name == "Match Winner"
+    assert duplicate.eligible == 0
+    assert duplicate.rejection_reason == "duplicate bookmaker market"
+    assert duplicate.source_count == 2
+    assert tuple(
+        source.payload_hash for source in duplicate.source_provenance
+    ) == ("market-hash-0-1", "market-hash-0-1-duplicate")
+    assert all(
+        source.fetched_at == aware_now().isoformat()
+        for source in duplicate.source_provenance
+    )
+    assert len(duplicate.payload_hash) == 64
+
+    save_collection(session_factory, result)
+    stored = load_latest_complete_collections(session_factory, last=1)
+    assert stored == (result,)
+    with session_factory() as session:
+        assert session.scalar(select(func.count(ExternalEventDisposition.id))) == 15
+        assert session.scalar(select(func.count(ExternalBookmakerQuote.id))) == 45
 
 
 def test_conflicting_existing_collection_id_is_rejected(session_factory):

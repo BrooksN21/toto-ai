@@ -24,3 +24,9 @@
   provider matching/market provenance, consensus configuration, and
   `fetched_at`; repeated identical snapshots are idempotent, while a different
   `fetched_at` creates a distinct immutable collection.
+- Matched event rows retain the provider schedule event `payload_hash` and
+  `fetched_at`, plus candidate IDs and match reason. Quote rows retain provider
+  market `payload_hash` and `fetched_at`. Exact duplicate bookmaker/market
+  keys are represented by one ineligible quote with `source_count`, a
+  deterministic aggregate hash, and canonical JSON provenance containing each
+  source hash, fetch/update time, and price triplet.

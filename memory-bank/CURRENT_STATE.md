@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 591
+- Tests currently passed: 594
 - Ruff passed
 
 ## Latest Completed Task: Append-Only External Odds Storage and Collection
@@ -53,6 +53,32 @@ package decisions.
 
 Verification completed with focused external-odds storage/collection tests
 (`11 passed`), full pytest (`591 passed`), and Ruff (`All checks passed!`).
+
+## Task 5 Review Hardening: Provenance and Canonical Quotes
+
+Matched event dispositions now persist the provider schedule event payload hash
+and fetch time together with candidate IDs and the match reason. Bookmaker quote
+rows persist provider market payload hash and fetch time. The deterministic
+collection ID explicitly binds those fields, the fresh TotoBrief target
+timestamp, matching decisions, and consensus configuration; changing either
+schedule-event or market provenance changes the immutable identity.
+
+Quote records are sorted canonically before collection construction and
+identity, append-only stored-content comparison, insertion, and load. Identical
+provider content therefore remains equal and idempotent regardless of response
+or assessment order.
+
+Consensus continues to reject duplicate bookmaker/market assessments. Multiple
+assessments with the exact database quote key are now coalesced into one
+ineligible row with the explicit `duplicate bookmaker market` reason, source
+count, deterministic aggregate hash, and canonical source provenance retaining
+every source hash, fetch/update time, and price triplet. The mandated unique key
+is unchanged, and the anomaly no longer aborts the one-transaction 15-event
+snapshot.
+
+Review-fix verification: focused external storage/collection tests (`14
+passed`), full pytest (`594 passed`), and repository-wide Ruff (`All checks
+passed!`).
 
 ## Previous Completed Task: Strict Market Semantics and Consensus
 

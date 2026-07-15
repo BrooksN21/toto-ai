@@ -95,7 +95,9 @@
   matching with reviewed alias diagnostics, and strict three-way
   market-semantics consensus with explicit fallback, plus append-only
   prospective storage and deterministic 15-event collection with explicit
-  TotoBrief BK fallback.
+  TotoBrief BK fallback. Task 5 storage is review-hardened with identity-bound
+  schedule/market fetch provenance, canonical quote ordering, and deterministic
+  duplicate-key anomaly coalescing under the unchanged uniqueness constraint.
 - Remaining coverage-audit work: deterministic coverage reports/CLI and
   end-to-end acceptance.
 - Run the free-tier prospective gate on at least 30 future drawings and 450

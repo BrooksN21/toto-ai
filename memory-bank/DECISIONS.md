@@ -60,6 +60,19 @@
   `fetched_at`, provider matching decisions and market payload provenance, and
   consensus configuration. Saving the same canonical collection is idempotent;
   conflicting content under the same identity is rejected.
+- Provider provenance is stored explicitly, not only committed through an
+  opaque event hash. Matched dispositions retain schedule-event fetch time and
+  payload hash plus candidate IDs and match reason; quotes retain market fetch
+  time and payload hash. Collection identity binds all of these fields.
+- Quote records are ordered canonically before collection identity, storage
+  comparison, insertion, and load. Provider response order is not data and
+  cannot create a different immutable collection.
+- The unique quote key remains `(collection_id, event_order, bookmaker_id,
+  market_name)`. Multiple assessments with the same exact key remain rejected
+  by consensus and are coalesced into one ineligible anomaly row. That row
+  stores every source market in canonical provenance and uses a deterministic
+  aggregate payload hash, so duplicates neither disappear nor abort the
+  15-event transaction.
 - Prospective external collection must never silently drop events. Unknown
   sports, missing or ambiguous matches, provider failures, quota exhaustion,
   stale or partial markets, and minimum-bookmaker consensus failures all retain
