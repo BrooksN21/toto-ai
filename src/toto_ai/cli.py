@@ -2032,6 +2032,15 @@ def _external_coverage_table(audit: CoverageAudit) -> Table:
     table.add_row("drawings", _format_value(audit.drawings))
     table.add_row("events", _format_value(audit.total.target_count))
     table.add_row("unique match rate", f"{audit.total.unique_match_rate:.2%}")
+    table.add_row(
+        "reversed exact matches",
+        _format_value(
+            sum(
+                row.match_orientation == "reversed"
+                for row in audit.dispositions
+            )
+        ),
+    )
     table.add_row("consensus rate", f"{audit.total.usable_consensus_rate:.2%}")
     table.add_row("fallback", _format_value(audit.total.fallback_count))
     table.add_row("ambiguous", _format_value(audit.total.ambiguous_count))

@@ -76,6 +76,7 @@ def test_exact_unique_match_is_accepted(target, provider_event):
     assert result.status == "matched"
     assert result.provider_event_id == provider_event.provider_event_id
     assert result.candidate_ids == (provider_event.provider_event_id,)
+    assert result.orientation == "same"
 
 
 def test_ambiguous_and_reversed_matches_are_never_consumed(target):
@@ -118,8 +119,32 @@ def test_ambiguous_and_reversed_matches_are_never_consumed(target):
     assert ambiguous.status == "ambiguous"
     assert ambiguous.provider_event_id is None
     assert ambiguous.candidate_ids == ("evt-a", "evt-b")
-    assert reversed_result.status == "missing"
-    assert reversed_result.provider_event_id is None
+    assert reversed_result.status == "matched"
+    assert reversed_result.provider_event_id == "evt-c"
+    assert reversed_result.orientation == "reversed"
+    assert reversed_result.reason == "unique exact reversed match; outcomes swapped"
+
+
+def test_same_and_reversed_exact_candidates_are_ambiguous(target, provider_event):
+    matching = _matching_module()
+    reversed_candidate = _provider_event(
+        provider_event_id="evt-reversed",
+        sport=target.sport,
+        starts_at=target.starts_at,
+        home_team="ПСЖ",
+        away_team="Бавария",
+    )
+
+    result = matching.match_event(
+        target,
+        [provider_event, reversed_candidate],
+        aliases={},
+    )
+
+    assert result.status == "ambiguous"
+    assert result.provider_event_id is None
+    assert result.orientation is None
+    assert result.candidate_ids == ("evt-1", "evt-reversed")
 
 
 def test_time_outside_three_hours_is_missing(target, provider_event):
@@ -172,6 +197,31 @@ def test_missing_target_time_remains_ambiguous_for_duplicate_exact_names(
     assert result.status == "ambiguous"
     assert result.provider_event_id is None
     assert result.candidate_ids == ("evt-1", "evt-2")
+
+
+def test_missing_target_time_records_reversed_orientation_and_time_gap(
+    target, provider_event
+):
+    matching = _matching_module()
+    target_without_time = dataclasses.replace(target, starts_at=None)
+    reversed_candidate = dataclasses.replace(
+        provider_event,
+        home_team=provider_event.away_team,
+        away_team=provider_event.home_team,
+        starts_at=target.deadline + timedelta(days=1),
+    )
+
+    result = matching.match_event(
+        target_without_time,
+        [reversed_candidate],
+        aliases={},
+    )
+
+    assert result.status == "matched"
+    assert result.orientation == "reversed"
+    assert result.reason == (
+        "unique exact reversed match; target start unavailable; outcomes swapped"
+    )
 
 
 def test_name_en_and_reviewed_aliases_are_accepted_for_exact_matches(target):

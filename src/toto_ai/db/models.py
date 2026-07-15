@@ -100,6 +100,7 @@ class ExternalEventDisposition(Base):
     home_team_en: Mapped[str | None] = mapped_column(String)
     away_team_en: Mapped[str | None] = mapped_column(String)
     match_status: Mapped[str] = mapped_column(String)
+    match_orientation: Mapped[str] = mapped_column(String)
     provider_event_id: Mapped[str | None] = mapped_column(String)
     provider_event_fetched_at: Mapped[str | None] = mapped_column(String)
     provider_event_payload_hash: Mapped[str | None] = mapped_column(String)

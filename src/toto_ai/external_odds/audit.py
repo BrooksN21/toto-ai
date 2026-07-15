@@ -45,6 +45,7 @@ class CoverageDisposition:
     sport: str
     league: str
     match_status: str
+    match_orientation: str
     probability_source: str
     eligible_bookmaker_count: int
     fallback_reason: str
@@ -240,6 +241,7 @@ def _dispositions_for_collection(
                     sport="unknown",
                     league="unknown",
                     match_status="missing_disposition",
+                    match_orientation="none",
                     probability_source="missing_disposition",
                     eligible_bookmaker_count=0,
                     fallback_reason="silent event loss",
@@ -289,6 +291,7 @@ def _disposition_from_event(
         sport=event.sport,
         league=event.championship,
         match_status=event.match_status,
+        match_orientation=event.match_orientation,
         probability_source=event.probability_source,
         eligible_bookmaker_count=event.eligible_bookmaker_count,
         fallback_reason=reason,

@@ -308,8 +308,8 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
         "0.700000000000 | false |"
     ) in markdown
     assert first_hashes == (
-        "e2f21a6ad74286a2eaa6966dc4ce576dd88875043d1267b7bc955935dac71401",
-        "0426d8efc58b4387018b29e47518ea409d635da24779e7bfe81bb3ecdeb19f79",
+        "c282d15f8d0d430529f35ce56c8ec10e86bf296315d5b4f201d620b246998b86",
+        "aac2f6e0abc8f0e1bcb003577aa9ea7b53cd7304837cc1003e18b1dae5dfeef3",
     )
 
 

@@ -117,12 +117,13 @@
   timestamps, numeric non-three-way labels, cache observation timestamps,
   daily/minute quota semantics, stale-cache quota isolation, and TotoBrief
   `start_at=null` matching are covered by regression tests.
-- First prospective baseline snapshot for drawing 4945 is stored: 11/15 unique
-  exact matches and usable consensuses, four explicit fallbacks, zero ambiguous
-  matches. The gate remains `PENDING` below 30 drawings and 450 events.
-- Remaining coverage-audit work: collect the prospective sample and evaluate a
-  reviewed reversed-pair mapping design separately; the operator gate is still
-  pending.
+- Matcher v3 reversed-pair mapping is complete and live-verified on drawing
+  4945: 13/15 unique exact matches and usable consensuses, two explicit
+  fallbacks, two recorded reversed orientations, and zero ambiguous matches.
+  Consensus `1`/`2` is swapped only for reversed pairs; raw prices are retained.
+- Remaining coverage-audit work: collect the prospective sample. The operator
+  gate remains `PENDING` below 30 drawings and 450 events; external consensus
+  still has no `PLAY` impact.
 - Run the free-tier prospective gate on at least 30 future drawings and 450
   events before external probabilities can influence package generation.
 - Test a second free provider when the gate fails for missing coverage; consider

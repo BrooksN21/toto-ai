@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import sqlite3
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import create_engine, func, inspect, select, text
 from sqlalchemy.orm import sessionmaker
 
 from toto_ai.db.models import (
@@ -13,6 +14,7 @@ from toto_ai.db.models import (
     ExternalCollectionRun,
     ExternalEventDisposition,
 )
+from toto_ai.db.session import init_db
 from toto_ai.external_odds.collection import build_external_collection
 from toto_ai.external_odds.domain import (
     ProviderEvent,
@@ -282,11 +284,43 @@ def test_provider_provenance_round_trips_and_binds_collection_identity(
     quote = event.bookmaker_quotes[0]
     assert event.match_candidate_ids == ("provider-0",)
     assert event.match_reason == "unique exact match"
+    assert event.match_orientation == "same"
     assert event.provider_event_fetched_at == aware_now().isoformat()
     assert event.provider_event_payload_hash == "schedule-hash-0"
     assert quote.fetched_at == aware_now().isoformat()
     assert quote.payload_hash == "market-hash-0-1"
     assert stored == baseline
+
+
+def test_init_db_backfills_orientation_for_legacy_external_rows(tmp_path):
+    db_path = tmp_path / "legacy.db"
+    with sqlite3.connect(db_path) as connection:
+        connection.execute(
+            "CREATE TABLE external_event_dispositions ("
+            "id INTEGER PRIMARY KEY, match_status VARCHAR NOT NULL)"
+        )
+        connection.execute(
+            "INSERT INTO external_event_dispositions (id, match_status) "
+            "VALUES (1, 'matched'), (2, 'missing')"
+        )
+
+    engine = init_db(db_path)
+
+    columns = {
+        column["name"]
+        for column in inspect(engine).get_columns("external_event_dispositions")
+    }
+    with engine.connect() as connection:
+        rows = connection.execute(
+            text(
+                "SELECT id, match_orientation "
+                "FROM external_event_dispositions ORDER BY id"
+            )
+        ).all()
+    engine.dispose()
+
+    assert "match_orientation" in columns
+    assert rows == [(1, "same"), (2, "none")]
 
 
 def test_duplicate_bookmaker_market_is_coalesced_with_aggregate_provenance(

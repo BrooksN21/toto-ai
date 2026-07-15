@@ -41,3 +41,10 @@
   and produced 11 three-bookmaker-or-better consensuses (73.33%). Two events
   were absent from the provider window and two exact pairs were present only in
   reversed team order. No ambiguous match was consumed.
+- Matcher v3 re-collected drawing 4945 with 13 of 15 unique exact matches and
+  external consensuses (86.67%): 11 same-orientation and 2 explicitly reversed
+  pairs. The reversed pairs were Lipno Steszew - Unia Swarzedz and Cordoba -
+  Orlando Pirates. Vestmannaeyjar W - Valur W and Locarno - Paradiso remained
+  explicit TotoBrief BK fallbacks because API-Sports returned no exact pair.
+  The audit remains `PENDING` only because fewer than 30 drawings and 450
+  events have been collected.

@@ -39,21 +39,43 @@ def get_session_factory(engine: Engine) -> sessionmaker[Session]:
 
 def _add_missing_columns(engine: Engine) -> None:
     inspector = inspect(engine)
-    if "quotes" not in inspector.get_table_names():
-        return
-
-    existing_columns = {
-        column["name"]
-        for column in inspector.get_columns("quotes")
-    }
-    required_columns = {
-        "norm_win_1": "FLOAT",
-        "norm_draw": "FLOAT",
-        "norm_win_2": "FLOAT",
-    }
+    table_names = set(inspector.get_table_names())
     with engine.begin() as connection:
-        for column_name, column_type in required_columns.items():
-            if column_name not in existing_columns:
+        if "quotes" in table_names:
+            existing_quote_columns = {
+                column["name"] for column in inspector.get_columns("quotes")
+            }
+            required_quote_columns = {
+                "norm_win_1": "FLOAT",
+                "norm_draw": "FLOAT",
+                "norm_win_2": "FLOAT",
+            }
+            for column_name, column_type in required_quote_columns.items():
+                if column_name not in existing_quote_columns:
+                    connection.execute(
+                        text(
+                            f"ALTER TABLE quotes ADD COLUMN "
+                            f"{column_name} {column_type}"
+                        )
+                    )
+
+        if "external_event_dispositions" in table_names:
+            disposition_columns = {
+                column["name"]
+                for column in inspector.get_columns("external_event_dispositions")
+            }
+            if "match_orientation" not in disposition_columns:
                 connection.execute(
-                    text(f"ALTER TABLE quotes ADD COLUMN {column_name} {column_type}")
+                    text(
+                        "ALTER TABLE external_event_dispositions "
+                        "ADD COLUMN match_orientation VARCHAR"
+                    )
+                )
+                connection.execute(
+                    text(
+                        "UPDATE external_event_dispositions "
+                        "SET match_orientation = CASE "
+                        "WHEN match_status = 'matched' THEN 'same' "
+                        "ELSE 'none' END"
+                    )
                 )

@@ -85,6 +85,7 @@ class ExternalEventDispositionRecord:
     odds_age_hours: float | None
     fallback_reason: str | None
     payload_hash: str
+    match_orientation: str = "none"
     bookmaker_quotes: tuple[ExternalBookmakerQuoteRecord, ...] = ()
 
 
@@ -458,7 +459,10 @@ def _consensus_disposition(
         fallback_reason = _consensus_fallback_reason(consensus)
     else:
         probability_source = EXTERNAL_CONSENSUS
-        probabilities = consensus.probabilities
+        probabilities = _target_oriented_probabilities(
+            consensus.probabilities,
+            decision,
+        )
         fallback_reason = None
     odds_age_hours = _odds_age_hours(consensus, observed_at)
     payload = _event_payload(
@@ -531,6 +535,7 @@ def _event_record(
         odds_age_hours=odds_age_hours,
         fallback_reason=fallback_reason,
         payload_hash=payload_hash,
+        match_orientation=decision.orientation or "none",
         bookmaker_quotes=quotes,
     )
 
@@ -547,6 +552,15 @@ def _consensus_fallback_reason(consensus: ConsensusResult) -> str:
     if not reasons:
         return base
     return f"{base}: {', '.join(reasons)}"
+
+
+def _target_oriented_probabilities(
+    probabilities: OutcomeTriplet,
+    decision: MatchDecision,
+) -> OutcomeTriplet:
+    if decision.orientation == "reversed":
+        return probabilities[2], probabilities[1], probabilities[0]
+    return probabilities
 
 
 def _odds_age_hours(
@@ -580,6 +594,7 @@ def _event_payload(
             "matcher_version": decision.matcher_version,
             "candidate_ids": decision.candidate_ids,
             "reason": decision.reason,
+            "orientation": decision.orientation,
         },
         "provider_event": (
             {

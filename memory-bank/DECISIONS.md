@@ -76,10 +76,14 @@
   timestamp. The client records its UTC receipt time in cache schema v2 and
   reuses that exact time on cache hits without mutating the raw provider payload.
 - TotoBrief may return `start_at = null` for every event in an open drawing. In
-  matcher v2, a missing target time permits only one unique exact directional
-  team match inside schedules fetched for the deadline date and next date. A
-  known target time still requires the existing three-hour UTC window. Fuzzy or
-  reversed matches remain diagnostic-only and never authorize consensus.
+  matcher v3, a missing target time permits only one unique exact team pair
+  inside schedules fetched for the deadline date and next date. A known target
+  time still requires the existing three-hour UTC window. The one exact pair
+  may have the same or reversed home/away orientation; reversed consensus swaps
+  `1` and `2` into TotoBrief orientation while raw provider quotes stay in
+  provider orientation. Orientation is persisted and reported. Multiple same
+  or reversed candidates are ambiguous and fail closed. Fuzzy matches remain
+  diagnostic-only.
 - `quota_reserve` protects the API-Sports daily request allowance. The minute
   counter blocks only at zero. Cached historical quota headers are provenance,
   not current operational quota, and must not block a fresh client request.

@@ -23,9 +23,29 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 643
-- Focused final whole-branch review-fix suites passed: 117
+- Tests currently passed: 657
+- Focused matcher v3 suite passed: 44
 - Ruff passed
+
+## Latest Completed Feature: Explicit Reversed Event Orientation
+
+Matcher v3 accepts a reversed home/away provider pair only when it is the sole
+exact same-or-reversed candidate under the existing sport, alias, schedule-date,
+and known-time rules. It records `same` or `reversed` orientation, fails closed
+when both orientations or duplicate candidates exist, and never promotes fuzzy
+similarity suggestions.
+
+For a reversed match, collection swaps only the consensus `1` and `2`
+probabilities into TotoBrief orientation. Raw provider home/draw/away prices
+remain unchanged. Orientation is bound into immutable collection identity,
+persisted in SQLite with a legacy-row backfill, and exported in coverage CSV
+and CLI diagnostics.
+
+The live re-collection of drawing 4945 produced 13/15 external consensuses
+(86.67%), two reversed exact matches, two explicit missing-provider fallbacks,
+and zero ambiguous matches. The gate is `PENDING` solely because the prospective
+sample is below 30 drawings and 450 events. External consensus still has no
+`PLAY` impact.
 
 ## Latest Completed Fix: API-Sports Mixed-Market Parsing
 

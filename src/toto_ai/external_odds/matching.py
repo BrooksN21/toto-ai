@@ -11,9 +11,10 @@ from typing import Literal
 
 from toto_ai.external_odds.domain import ProviderEvent, TargetEvent
 
-MATCHER_VERSION = "api-sports-v2"
+MATCHER_VERSION = "api-sports-v3"
 MAX_START_DELTA = timedelta(hours=3)
 MatchStatus = Literal["matched", "missing", "ambiguous", "unknown_sport"]
+MatchOrientation = Literal["same", "reversed"]
 
 
 @dataclass(frozen=True)
@@ -23,6 +24,7 @@ class MatchDecision:
     matcher_version: str
     candidate_ids: tuple[str, ...]
     reason: str
+    orientation: MatchOrientation | None = None
 
 
 @dataclass(frozen=True)
@@ -131,7 +133,7 @@ def match_event(
 
     home_options = _target_team_options(target.home_team, target.home_team_en, aliases)
     away_options = _target_team_options(target.away_team, target.away_team_en, aliases)
-    matches = tuple(
+    same_matches = tuple(
         candidate
         for candidate in candidates
         if candidate.sport == target.sport
@@ -142,27 +144,58 @@ def match_event(
         and _canonical(candidate.home_team, aliases) in home_options
         and _canonical(candidate.away_team, aliases) in away_options
     )
-    if len(matches) == 1:
-        candidate = matches[0]
+    same_ids = frozenset(candidate.provider_event_id for candidate in same_matches)
+    reversed_matches = tuple(
+        candidate
+        for candidate in candidates
+        if candidate.provider_event_id not in same_ids
+        and candidate.sport == target.sport
+        and (
+            target.starts_at is None
+            or abs(candidate.starts_at - target.starts_at) <= MAX_START_DELTA
+        )
+        and _canonical(candidate.home_team, aliases) in away_options
+        and _canonical(candidate.away_team, aliases) in home_options
+    )
+    oriented_matches = (
+        *((candidate, "same") for candidate in same_matches),
+        *((candidate, "reversed") for candidate in reversed_matches),
+    )
+    if len(oriented_matches) == 1:
+        candidate, orientation = oriented_matches[0]
         return MatchDecision(
             status="matched",
             provider_event_id=candidate.provider_event_id,
             matcher_version=MATCHER_VERSION,
             candidate_ids=(candidate.provider_event_id,),
             reason=(
-                "unique exact match"
-                if target.starts_at is not None
-                else "unique exact match; target start unavailable"
+                (
+                    "unique exact match"
+                    if target.starts_at is not None
+                    else "unique exact match; target start unavailable"
+                )
+                if orientation == "same"
+                else (
+                    "unique exact reversed match; outcomes swapped"
+                    if target.starts_at is not None
+                    else (
+                        "unique exact reversed match; target start unavailable; "
+                        "outcomes swapped"
+                    )
+                )
             ),
+            orientation=orientation,
         )
 
-    candidate_ids = tuple(sorted(candidate.provider_event_id for candidate in matches))
+    candidate_ids = tuple(
+        sorted(candidate.provider_event_id for candidate, _ in oriented_matches)
+    )
     return MatchDecision(
-        status="missing" if not matches else "ambiguous",
+        status="missing" if not oriented_matches else "ambiguous",
         provider_event_id=None,
         matcher_version=MATCHER_VERSION,
         candidate_ids=candidate_ids,
-        reason=f"{len(matches)} exact candidates",
+        reason=f"{len(oriented_matches)} exact candidates",
     )
 
 

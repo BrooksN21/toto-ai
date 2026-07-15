@@ -40,6 +40,7 @@ def test_disposition_csv_contains_all_15_rows_and_required_evidence(tmp_path):
         "sport",
         "league",
         "match_status",
+        "match_orientation",
         "provider_event_id",
         "probability_source",
         "eligible_bookmaker_count",

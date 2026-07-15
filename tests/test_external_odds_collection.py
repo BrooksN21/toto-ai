@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
+import pytest
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import sessionmaker
 
@@ -178,6 +180,44 @@ class FailingProvider(MixedProvider):
         raise APISportsError("sanitized failure")
 
 
+class ReversedFirstProvider(MixedProvider):
+    def fetch_schedule(self, sport, dates):
+        events = super().fetch_schedule(sport, dates)
+        return tuple(
+            replace(
+                event,
+                home_team=event.away_team,
+                away_team=event.home_team,
+            )
+            if event.provider_event_id == "football-0"
+            else event
+            for event in events
+        )
+
+    def fetch_event_markets(self, sport, provider_event_id):
+        self.requests_made += 1
+        self.market_calls.append((sport, provider_event_id))
+        return tuple(
+            ProviderMarket(
+                provider=self.provider_name,
+                provider_event_id=provider_event_id,
+                bookmaker_id=f"book-{index}",
+                market_name=(
+                    "Match Winner"
+                    if sport == "football"
+                    else "Match Winner - Regulation Time"
+                ),
+                updated_at=aware_now() - timedelta(hours=1),
+                fetched_at=aware_now(),
+                payload_hash=f"market-{provider_event_id}-{index}",
+                home_price=2.0,
+                draw_price=4.0,
+                away_price=8.0,
+            )
+            for index in range(3)
+        )
+
+
 class QuotaProvider(MixedProvider):
     def fetch_event_markets(self, sport, provider_event_id):
         self.requests_made += 1
@@ -327,6 +367,26 @@ def test_build_fetches_schedules_before_unique_odds_and_records_every_event():
     assert result.daily_limit == 100
     assert result.daily_remaining == 77
     assert result.minute_remaining == 7
+
+
+def test_reversed_match_swaps_consensus_but_preserves_raw_provider_prices():
+    result = build_external_collection(
+        target_drawing(),
+        ReversedFirstProvider(),
+        aliases={},
+    )
+
+    event = result.events[0]
+    assert event.match_status == "matched"
+    assert event.match_orientation == "reversed"
+    assert event.match_reason == "unique exact reversed match; outcomes swapped"
+    assert (event.probability_1, event.probability_x, event.probability_2) == (
+        pytest.approx(1 / 7),
+        pytest.approx(2 / 7),
+        pytest.approx(4 / 7),
+    )
+    assert all(quote.home_price == 2.0 for quote in event.bookmaker_quotes)
+    assert all(quote.away_price == 8.0 for quote in event.bookmaker_quotes)
 
 
 def test_schedule_request_count_reflects_each_required_sport_date():
