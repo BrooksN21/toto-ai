@@ -52,11 +52,11 @@
 - Produces: `classify_drawing_eligibility(starts) -> DrawingEligibility`
 - Produces: `target_fingerprint(drawing_id, drawing_number, deadline, events) -> str`
 
-- [ ] **Step 1: Write classifier tests**
+- [x] **Step 1: Write classifier tests**
 
 Cover exactly 15 ordered starts, Moscow midnight conversion, a contiguous two-day span, two known dates separated by a gap, a confirmed multi-day subset plus unresolved events, unresolved starts inside a two-day known span, source counts, duplicate/missing orders, naive timestamps, and deterministic fingerprint changes.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run:
 
@@ -66,7 +66,7 @@ Run:
 
 Expected: import failure because the module does not exist.
 
-- [ ] **Step 3: Implement immutable classifier**
+- [x] **Step 3: Implement immutable classifier**
 
 Use `ZoneInfo("Europe/Moscow")`. Classify in this priority order:
 
@@ -83,11 +83,11 @@ else:
 
 Require event orders `0..14`, aware timestamps, and source/time consistency. Canonical fingerprint input binds drawing ID, number, deadline, and ordered event ID/order/home/away/start fields while excluding fetch time.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run the new test file and Ruff on both files.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/toto_ai/external_odds/eligibility.py tests/test_external_odds_eligibility.py
