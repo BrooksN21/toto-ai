@@ -106,7 +106,7 @@ git commit -m "Add drawing timing eligibility classifier"
 - Adds snapshot fields: target fingerprint, horizon, requested/successful/failed schedule dates, eligibility.
 - Adds event fields: `provider_starts_at`, `effective_starts_at`, `effective_start_source`.
 
-- [ ] **Step 1: Write failing collection tests**
+- [x] **Step 1: Write failing collection tests**
 
 Prove:
 
@@ -119,25 +119,25 @@ Prove:
 - a uniquely matched provider start fills effective time but leaves TotoBrief `starts_at` empty;
 - schedule provenance participates in collection identity.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run focused collection tests and confirm missing parameters/fields fail.
 
-- [ ] **Step 3: Implement per-date fetching**
+- [x] **Step 3: Implement per-date fetching**
 
 Call `provider.fetch_schedule(sport, (requested_date,))` once per date in deterministic sport/date order. Aggregate successful events with the existing provider-event dedupe. Preserve sanitized per-date failures instead of assigning one sport-wide failure.
 
 Generate UTC request dates covering the selected Moscow horizon. Keep explicit TotoBrief dates in the request set. Validate `missing_start_horizon_days` as an integer in `1..5`.
 
-- [ ] **Step 4: Build effective starts and eligibility**
+- [x] **Step 4: Build effective starts and eligibility**
 
 Use TotoBrief start first and matched provider start second. Compute the Task 1 eligibility result after all 15 match decisions. Bind schedule metadata and eligibility into collection identity.
 
-- [ ] **Step 5: Verify GREEN**
+- [x] **Step 5: Verify GREEN**
 
 Run all collection, matching, and consensus tests plus Ruff.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/toto_ai/external_odds/collection.py tests/test_external_odds_collection.py
