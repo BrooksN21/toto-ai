@@ -42,9 +42,9 @@
   sport/home/away/team match inside the approved UTC time window is usable.
   Exact team comparison may use the primary TotoBrief names, optional
   `name_en` alternatives, and only reviewed versioned aliases. Alias files are
-  normalized deterministically and must reject normalized-key collisions and
-  cycles. Fuzzy matches are diagnostic only and ambiguous matches always fall
-  back.
+  normalized deterministically and must reject normalized-key collisions,
+  normalized canonical-value collisions, and cycles. Fuzzy matches are
+  diagnostic only and ambiguous matches always fall back.
 - External odds must be complete full-time football or regulation-time hockey
   `1/X/2` markets. Two-outcome hockey moneylines must never be mapped to Toto
   three-way outcomes.

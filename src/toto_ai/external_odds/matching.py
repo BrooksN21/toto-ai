@@ -57,6 +57,7 @@ def load_aliases(path: str | Path) -> dict[str, str]:
         raise ValueError("aliases must be a mapping")
 
     normalized_aliases: dict[str, str] = {}
+    normalized_values: set[str] = set()
     for raw_key, raw_value in raw_aliases.items():
         if not isinstance(raw_key, str) or not isinstance(raw_value, str):
             raise ValueError("aliases must map strings to strings")
@@ -64,7 +65,10 @@ def load_aliases(path: str | Path) -> dict[str, str]:
         value = normalize_team_name(raw_value)
         if key in normalized_aliases:
             raise ValueError("normalized alias key must be unique")
+        if value in normalized_values:
+            raise ValueError("normalized alias value must be unique")
         normalized_aliases[key] = value
+        normalized_values.add(value)
 
     _validate_alias_cycles(normalized_aliases)
     return {key: normalized_aliases[key] for key in sorted(normalized_aliases)}

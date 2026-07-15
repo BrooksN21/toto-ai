@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 568
+- Tests currently passed: 570
 - Ruff passed
 
 ## Latest Completed Task: Deterministic External Event Matching
@@ -37,13 +37,14 @@ the primary TotoBrief team names or the optional `name_en` alternatives.
 
 Added `data/external-odds/team-aliases.json` as the versioned reviewed-alias
 source. `load_aliases()` now enforces the exact schema, normalizes keys and
-values deterministically, rejects normalized-key collisions, and rejects alias
-cycles before a mapping can be used. `suggest_matches()` uses fuzzy similarity
-only after sport/time filtering and reports diagnostics only; it cannot
+values deterministically, rejects normalized-key and normalized canonical-value
+collisions, and rejects alias cycles before a mapping can be used.
+`suggest_matches()` uses fuzzy similarity only after sport/time filtering,
+returns at most five diagnostics in deterministic score/ID order, and cannot
 authorize a match.
 
 Task 3 verification completed with focused matcher tests, full pytest
-(`568 passed`), and Ruff (`All checks passed!`).
+(`570 passed`), and Ruff (`All checks passed!`).
 
 ## Latest Completed Task: API-Sports Transport, Parsing, Cache, and Quota
 

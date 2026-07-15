@@ -193,6 +193,52 @@ def test_fuzzy_suggestion_never_authorizes_a_match(target):
     assert decision.provider_event_id is None
 
 
+def test_suggestions_are_capped_and_sorted_deterministically(target):
+    matching = _matching_module()
+    candidates = [
+        _provider_event(
+            provider_event_id=provider_event_id,
+            sport=target.sport,
+            starts_at=target.starts_at,
+            home_team=home_team,
+            away_team=away_team,
+        )
+        for provider_event_id, home_team, away_team in (
+            ("evt-z", "Bayern Munich", "PSG"),
+            ("evt-a", "Bayern Munich", "PSG"),
+            ("evt-c", "Bayern Munchen", "PSG"),
+            ("evt-d", "Bayern Munich", "Paris SG"),
+            ("evt-e", "Bayern", "Paris"),
+            ("evt-f", "Munich", "Saint Germain"),
+            ("evt-g", "FC Bayern", "Paris Saint Germain"),
+        )
+    ]
+    individual = tuple(
+        matching.suggest_matches(target, [candidate], aliases={})[0]
+        for candidate in candidates
+    )
+    expected = tuple(
+        sorted(individual, key=lambda item: (-item.score, item.provider_event_id))[:5]
+    )
+
+    suggestions = matching.suggest_matches(target, candidates, aliases={})
+    reversed_suggestions = matching.suggest_matches(
+        target, list(reversed(candidates)), aliases={}
+    )
+
+    assert len(suggestions) == 5
+    assert suggestions == expected
+    assert reversed_suggestions == expected
+    assert tuple(item.provider_event_id for item in suggestions[:2]) == (
+        "evt-a",
+        "evt-z",
+    )
+    assert all(
+        item.score == pytest.approx((item.home_score + item.away_score) / 2.0)
+        for item in suggestions
+    )
+
+
 def test_unknown_sport_short_circuits_matching(provider_event):
     matching = _matching_module()
     target = TargetEvent(
@@ -218,7 +264,7 @@ def test_unknown_sport_short_circuits_matching(provider_event):
     assert result.candidate_ids == ()
 
 
-def test_load_aliases_normalizes_and_rejects_invalid_schema(tmp_path):
+def test_load_aliases_normalizes_and_rejects_invalid_input(tmp_path):
     matching = _matching_module()
     valid_path = tmp_path / "team-aliases.json"
     valid_path.write_text(
@@ -249,6 +295,14 @@ def test_load_aliases_normalizes_and_rejects_invalid_schema(tmp_path):
     with pytest.raises(ValueError, match="exact schema"):
         matching.load_aliases(extra_field_path)
 
+    empty_value_path = tmp_path / "empty-value.json"
+    empty_value_path.write_text(
+        json.dumps({"version": 1, "aliases": {"Empty": "!!!"}}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="normalize to a non-empty value"):
+        matching.load_aliases(empty_value_path)
+
 
 def test_load_aliases_rejects_normalized_duplicates_and_cycles(tmp_path):
     matching = _matching_module()
@@ -276,3 +330,23 @@ def test_load_aliases_rejects_normalized_duplicates_and_cycles(tmp_path):
     )
     with pytest.raises(ValueError, match="cycle"):
         matching.load_aliases(cycle_path)
+
+
+def test_load_aliases_rejects_duplicate_normalized_values(tmp_path):
+    matching = _matching_module()
+    duplicate_value_path = tmp_path / "duplicate-value.json"
+    duplicate_value_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "aliases": {
+                    "Bayern": "Bayern Munich",
+                    "FC Bayern": "Bayern-Munich",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="normalized alias value"):
+        matching.load_aliases(duplicate_value_path)
