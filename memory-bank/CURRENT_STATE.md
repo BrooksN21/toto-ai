@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 526
+- Tests currently passed: 534
 - Ruff passed
 
 ## Approved Next Design: Expected-Value Package Engine
@@ -57,6 +57,26 @@ Approved implementation plan:
 
 Next action:
 - execute the implementation plan task by task with independent review gates.
+
+## Latest Completed Task: External Odds Domain and TotoBrief Targets
+
+Added the provider-neutral `toto_ai.external_odds` package for the approved
+API-Sports coverage audit. The new domain layer defines immutable
+`TargetDrawing`, `TargetEvent`, `ProviderEvent`, `ProviderMarket`,
+`QuotaState`, and `ExternalOddsProvider` records with strict validation for
+UTC-aware datetimes, event order, required identifiers, TotoBrief BK
+probability triplets, and optional decimal prices.
+
+Added `parse_target_drawing()` to convert a fresh TotoBrief `drawing-info`
+payload into a strict 15-event fallback target set and `classify_sport()` to
+map explicit or championship-derived football/hockey cases while leaving
+unknown competitions explicit instead of guessed. Target parsing sorts TotoBrief
+events by order, splits localized and optional English team names, and preserves
+normalized BK probabilities for later fallback provenance.
+
+Task 1 verification completed with focused `external_odds` tests, full pytest,
+and Ruff. The added regression accepts any zero-offset UTC-aware datetimes in
+the provider-neutral domain instead of requiring the `timezone.utc` singleton.
 
 ## Active Design: Hybrid Direct Package Experiment
 

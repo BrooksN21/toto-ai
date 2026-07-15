@@ -81,6 +81,10 @@ Important modules:
   self-dilution support gate. Sensitivity surfaces are processed sequentially;
   only scalar summaries and the requested main surface/package are retained.
   It does not consult SQLite.
+- `toto_ai.external_odds.domain` and `toto_ai.external_odds.targets`:
+  provider-neutral immutable external-odds records, strict TotoBrief
+  drawing-target parsing, explicit sport classification, and preserved
+  TotoBrief BK fallback probabilities for the API-Sports coverage audit.
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
   frozen-holdout exclusion, pre-result package hashing, complete factor
   rankings reused across dynamic banks and thresholds, cumulative realized
