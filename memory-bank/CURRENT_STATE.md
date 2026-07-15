@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 554
+- Tests currently passed: 560
 - Ruff passed
 
 ## Latest Completed Task: API-Sports Transport, Parsing, Cache, and Quota
@@ -46,6 +46,14 @@ Recovery hardening added focused regressions for hockey `/games` schedules,
 hockey odds `game` queries, rejection of football fixture-shaped hockey
 payloads, sanitized non-retry HTTP failures, finite timestamp validation, and
 provider-owned price validation before domain object construction.
+
+Review hardening now applies quota headers from every HTTP response before
+retry or failure handling and rechecks the reserve before a retry. Cache reads
+strictly validate the stored envelope, quota fields, and top-level provider
+payload and fail closed with sanitized errors instead of consuming malformed
+or partial files. Cache writes use same-directory temporary files plus atomic
+replacement, clean up failed temporary writes, and retain no secret-bearing
+low-level exception context.
 
 ## Approved Next Design: Expected-Value Package Engine
 

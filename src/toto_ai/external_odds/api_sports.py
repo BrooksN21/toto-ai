@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import tempfile
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -125,12 +126,14 @@ class APISportsClient:
                 self._sleep_before_retry(attempt)
                 continue
 
+            self._quota_state = quota_from_headers(response.headers)
             if response.status_code in _RETRY_STATUSES:
                 last_error = APISportsError(
                     f"API-Sports request failed with status {response.status_code}"
                 )
                 if attempt == self._max_retries:
                     raise APISportsError("API-Sports request failed") from last_error
+                self._ensure_quota_available()
                 self._sleep_before_retry(attempt)
                 continue
             if response.status_code >= 400:
@@ -140,7 +143,6 @@ class APISportsClient:
 
             payload = _json_mapping(response)
             _validate_top_level_payload(payload)
-            self._quota_state = quota_from_headers(response.headers)
             self._write_cache(cache_key, payload, self._quota_state)
             return payload
 
@@ -162,18 +164,35 @@ class APISportsClient:
 
     def _load_cache(self, cache_key: str) -> _CachePayload | None:
         path = self._cache_dir / f"{cache_key}.json"
-        if not path.exists():
-            return None
-        raw = json.loads(path.read_text())
-        return _CachePayload(
-            quota=QuotaState(
-                daily_limit=raw["quota"]["daily_limit"],
-                daily_remaining=raw["quota"]["daily_remaining"],
-                minute_limit=raw["quota"]["minute_limit"],
-                minute_remaining=raw["quota"]["minute_remaining"],
-            ),
-            payload=raw["payload"],
-        )
+        try:
+            if not path.exists():
+                return None
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict) or set(raw) != {"quota", "payload"}:
+                raise ValueError("invalid cache envelope")
+            quota = raw["quota"]
+            payload = raw["payload"]
+            quota_fields = {
+                "daily_limit",
+                "daily_remaining",
+                "minute_limit",
+                "minute_remaining",
+            }
+            if not isinstance(quota, dict) or set(quota) != quota_fields:
+                raise ValueError("invalid cache quota")
+            if not isinstance(payload, dict):
+                raise ValueError("invalid cache payload")
+            _validate_top_level_payload(payload)
+            quota_state = QuotaState(
+                daily_limit=quota["daily_limit"],
+                daily_remaining=quota["daily_remaining"],
+                minute_limit=quota["minute_limit"],
+                minute_remaining=quota["minute_remaining"],
+            )
+            return _CachePayload(quota=quota_state, payload=payload)
+        except (APISportsError, OSError, ValueError, TypeError):
+            pass
+        raise APISportsError("API-Sports cache is invalid")
 
     def _write_cache(
         self,
@@ -181,7 +200,6 @@ class APISportsClient:
         payload: dict[str, Any],
         quota_state: QuotaState,
     ) -> None:
-        self._cache_dir.mkdir(parents=True, exist_ok=True)
         body = {
             "quota": {
                 "daily_limit": quota_state.daily_limit,
@@ -191,9 +209,32 @@ class APISportsClient:
             },
             "payload": payload,
         }
-        (self._cache_dir / f"{cache_key}.json").write_text(
-            json.dumps(body, sort_keys=True)
-        )
+        final_path = self._cache_dir / f"{cache_key}.json"
+        temporary_path: Path | None = None
+        error_message: str | None = None
+        try:
+            self._cache_dir.mkdir(parents=True, exist_ok=True)
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                delete=False,
+                dir=self._cache_dir,
+                prefix=f".{final_path.name}.",
+                suffix=".tmp",
+            ) as output:
+                temporary_path = Path(output.name)
+                output.write(json.dumps(body, sort_keys=True))
+            temporary_path.replace(final_path)
+        except (OSError, ValueError, TypeError):
+            error_message = "API-Sports cache write failed"
+        finally:
+            if temporary_path is not None:
+                try:
+                    temporary_path.unlink(missing_ok=True)
+                except OSError:
+                    error_message = "API-Sports cache cleanup failed"
+        if error_message is not None:
+            raise APISportsError(error_message)
 
 
 def quota_from_headers(headers: Mapping[str, str]) -> QuotaState:

@@ -370,24 +370,99 @@ def test_transient_connection_errors_retry_with_bounded_delays(monkeypatch, tmp_
     assert sleep_calls == [0.05, 0.1]
 
 
-def test_final_provider_failure_is_sanitized_and_does_not_leak_key(tmp_path):
-    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+def test_429_updates_quota_state_before_retry(monkeypatch, tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient
+
+    retry_quota = QuotaState(100, 7, 10, 8)
+    success_quota = QuotaState(100, 6, 10, 9)
+    fake_session = FakeSession(
+        [
+            FakeResponse(
+                payload=football_schedule_payload(),
+                headers=quota_headers(daily_remaining="7", minute_remaining="8"),
+                status_code=429,
+            ),
+            FakeResponse(
+                payload=football_schedule_payload(),
+                headers=quota_headers(daily_remaining="6", minute_remaining="9"),
+            ),
+        ]
+    )
+    client = APISportsClient(
+        "secret-key",
+        session=fake_session,
+        cache_dir=tmp_path,
+        quota_reserve=0,
+        max_retries=1,
+    )
+    quota_at_retry: list[QuotaState] = []
+    monkeypatch.setattr(
+        client,
+        "_sleep_before_retry",
+        lambda attempt: quota_at_retry.append(client.quota_state),
+    )
+
+    client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert quota_at_retry == [retry_quota]
+    assert client.quota_state == success_quota
+
+
+def test_429_exhausted_quota_stops_before_retry(monkeypatch, tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient, QuotaExhausted
 
     fake_session = FakeSession(
         [
             FakeResponse(
                 payload=football_schedule_payload(),
-                headers=quota_headers(),
+                headers=quota_headers(daily_remaining="7", minute_remaining="0"),
+                status_code=429,
+            ),
+            FakeResponse(
+                payload=football_schedule_payload(),
+                headers=quota_headers(daily_remaining="6", minute_remaining="9"),
+            ),
+        ]
+    )
+    sleep_calls: list[float] = []
+    monkeypatch.setattr(
+        "toto_ai.external_odds.api_sports.time.sleep", sleep_calls.append
+    )
+    client = APISportsClient(
+        "secret-key",
+        session=fake_session,
+        cache_dir=tmp_path,
+        quota_reserve=0,
+        max_retries=1,
+    )
+
+    with pytest.raises(QuotaExhausted):
+        client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert client.quota_state == QuotaState(100, 7, 10, 0)
+    assert len(fake_session.calls) == 1
+    assert sleep_calls == []
+
+
+def test_final_provider_failure_is_sanitized_and_does_not_leak_key(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+
+    retry_headers = quota_headers(minute_limit="100", minute_remaining="99")
+    fake_session = FakeSession(
+        [
+            FakeResponse(
+                payload=football_schedule_payload(),
+                headers=retry_headers,
                 status_code=500,
             ),
             FakeResponse(
                 payload=football_schedule_payload(),
-                headers=quota_headers(),
+                headers=retry_headers,
                 status_code=500,
             ),
             FakeResponse(
                 payload=football_schedule_payload(),
-                headers=quota_headers(),
+                headers=retry_headers,
                 status_code=500,
             ),
         ]
@@ -423,7 +498,93 @@ def test_non_retry_http_failure_is_sanitized_and_not_cached(tmp_path):
     with pytest.raises(APISportsError, match="status 401") as excinfo:
         client.fetch_schedule("football", (date(2026, 7, 14),))
 
+    assert client.quota_state == QuotaState(100, 99, 10, 9)
     assert "secret-key" not in str(excinfo.value)
+    assert "v3.football.api-sports.io" not in str(excinfo.value)
+    assert "2026-07-14" not in str(excinfo.value)
+    assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize(
+    "corrupt_cache",
+    [
+        '{"api_key":"secret-key"',
+        json.dumps(
+            {
+                "quota": {"daily_limit": 100},
+                "payload": football_schedule_payload(),
+            }
+        ),
+    ],
+)
+def test_corrupt_cache_fails_closed_without_refetch(corrupt_cache, tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+
+    fake_session = FakeSession(
+        [FakeResponse(payload=football_schedule_payload(), headers=quota_headers())]
+    )
+    client = APISportsClient("secret-key", session=fake_session, cache_dir=tmp_path)
+    client.fetch_schedule("football", (date(2026, 7, 14),))
+    cache_path = next(tmp_path.glob("*.json"))
+    cache_path.write_text(corrupt_cache)
+
+    with pytest.raises(APISportsError, match="cache") as excinfo:
+        client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert len(fake_session.calls) == 1
+    assert "secret-key" not in str(excinfo.value)
+    assert str(cache_path) not in str(excinfo.value)
+    assert excinfo.value.__cause__ is None
+    assert excinfo.value.__context__ is None
+
+
+def test_cache_write_uses_same_directory_atomic_replace(monkeypatch, tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient
+
+    original_replace = Path.replace
+    replacements: list[tuple[Path, Path]] = []
+
+    def observe_replace(source: Path, target: Path) -> Path:
+        target = Path(target)
+        assert source.parent == target.parent == tmp_path
+        assert source.name.startswith(f".{target.name}.")
+        assert source.name.endswith(".tmp")
+        assert not target.exists()
+        replacements.append((source, target))
+        return original_replace(source, target)
+
+    monkeypatch.setattr(Path, "replace", observe_replace)
+    fake_session = FakeSession(
+        [FakeResponse(payload=football_schedule_payload(), headers=quota_headers())]
+    )
+    client = APISportsClient("secret-key", session=fake_session, cache_dir=tmp_path)
+
+    client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert len(replacements) == 1
+    assert sorted(path.suffix for path in tmp_path.iterdir()) == [".json"]
+
+
+def test_cache_write_failure_is_sanitized_and_removes_temporary_file(
+    monkeypatch, tmp_path
+):
+    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+
+    def fail_replace(source: Path, target: Path) -> Path:
+        raise OSError("secret-key raw cache path")
+
+    monkeypatch.setattr(Path, "replace", fail_replace)
+    fake_session = FakeSession(
+        [FakeResponse(payload=football_schedule_payload(), headers=quota_headers())]
+    )
+    client = APISportsClient("secret-key", session=fake_session, cache_dir=tmp_path)
+
+    with pytest.raises(APISportsError, match="cache write") as excinfo:
+        client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert "secret-key" not in str(excinfo.value)
+    assert excinfo.value.__cause__ is None
+    assert excinfo.value.__context__ is None
     assert list(tmp_path.iterdir()) == []
 
 
