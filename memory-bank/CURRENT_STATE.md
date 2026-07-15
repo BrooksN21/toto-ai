@@ -49,6 +49,20 @@ attempts and ten cache hits across the invocation; the final pass produced
 matches, and zero ambiguous matches. The prospective gate remains `PENDING`
 only because the sample is below 30 drawings and 450 events.
 
+## Approved Next Design: Multi-Day Drawing Eligibility
+
+Rare holiday and off-season drawings can span four or five days. The approved
+follow-up preserves the normal two-day API request cost, progressively expands
+missing-start searches through day five only when needed, isolates failures by
+sport/date, and persists provider-derived effective start times. Playable mode
+will require all 15 effective starts within an inclusive two-day Moscow
+calendar span; `multi_day` and `unknown` are mandatory `NO BET`. Historical
+TotoBrief collection and research output remain unchanged, and external
+probabilities remain audit-only.
+
+Design specification:
+- `docs/superpowers/specs/2026-07-15-multiday-drawing-eligibility-design.md`
+
 ## Latest Completed Feature: Explicit Reversed Event Orientation
 
 Matcher v3 accepts a reversed home/away provider pair only when it is the sole

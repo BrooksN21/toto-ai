@@ -182,6 +182,10 @@
 
 ## Phase 7: Production
 
+- Implement the approved multi-day collection and play-eligibility design:
+  progressive two-to-five-day schedule expansion, per-date failure isolation,
+  persisted effective starts, and fail-closed `NO BET` for multi-day or unknown
+  drawings.
 - Automatic T-15 scheduling of the fresh prospective command
 - Open drawing analysis
 - Package generation

@@ -97,6 +97,13 @@
   retries. Only quota reserve, provider schedule failure, and provider odds
   failure are retryable. Shared-cache behavior requires explicit
   `--reuse-cache`; stale cache must never masquerade as a new observation.
+- Rare holiday and off-season drawings may span up to five days. Missing-start
+  external collection will use progressive two-to-five-day schedule expansion
+  rather than querying five days for every normal drawing. A playable drawing
+  must have effective start times for all 15 events and an inclusive
+  Europe/Moscow calendar span of at most two days. `multi_day` and `unknown`
+  eligibility are fail-closed `NO BET`; provider timing metadata may veto PLAY
+  but external probabilities remain audit-only.
 - Provider provenance is stored explicitly, not only committed through an
   opaque event hash. Matched dispositions retain schedule-event fetch time and
   payload hash plus candidate IDs and match reason; quotes retain market fetch
