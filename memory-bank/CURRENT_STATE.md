@@ -23,9 +23,40 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 628
-- Focused Task 7 review-fix suites passed: 34
+- Tests currently passed: 641
+- Focused final whole-branch review-fix suites passed: 115
 - Ruff passed
+
+## Latest Completed Task: API-Sports Coverage Audit Final Review Fixes
+
+Fixed all final whole-branch review findings for the API-Sports coverage audit.
+Consensus now uses an explicit external observation clock that is at least as
+late as all consumed provider market fetch timestamps, while the original
+TotoBrief drawing-info fetch time remains stored as `target_fetched_at`.
+Fresh markets fetched after the TotoBrief target snapshot remain eligible;
+genuinely future and stale market updates still fail closed.
+
+API-Sports parsing now supports official-shaped odds items whose `update` is
+on the response item rather than each bookmaker, while preserving valid
+bookmaker-level overrides. Football and hockey schedules/odds are fetched
+deterministically across every reported page with explicit `page` queries;
+invalid or inconsistent `paging.current`/`paging.total` fails closed. Market
+outcome labels are validated before `ProviderMarket` construction: each market
+must contain exactly one `Home`, `Draw`, and `Away`, with no duplicate or
+unknown extra outcomes.
+
+Request accounting now distinguishes actual HTTP attempts from cache hits and
+logical fetch calls. Retries and additional pages increment actual requests;
+cache hits are persisted and reported separately. Collection reports, CSV, and
+Markdown expose actual request attempts, cache hits, quota counters, target
+fetch provenance, provider schedule provenance, and market fetch/update/hash
+provenance. EV/PLAY behavior, gate thresholds, exact 15-event fallback
+behavior, consensus thresholds, and probability definitions are unchanged.
+
+Verification completed with focused external-odds pytest (`115 passed`), full
+pytest (`641 passed`), Ruff (`All checks passed!`), required CLI help smokes
+for `collect-external-odds`, `audit-external-coverage`, and `ev-package`
+(all exited zero), and `git diff --check` (zero).
 
 ## Latest Completed Task: API-Sports Coverage Audit End-to-End Acceptance
 

@@ -176,6 +176,8 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
     assert loaded.daily_limit == 100
     assert loaded.daily_remaining == 78
     assert loaded.requests_made == 16
+    assert loaded.cache_hits == 0
+    assert loaded.target_fetched_at == FETCHED_AT.isoformat()
     assert all(
         event.provider_event_fetched_at == FETCHED_AT.isoformat()
         for event in loaded.events
@@ -196,6 +198,8 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
         "market_updated_at",
         "market_payload_hashes",
         "requests_made",
+        "cache_hits",
+        "target_fetched_at",
         "daily_limit",
         "daily_remaining",
         "minute_remaining",
@@ -236,6 +240,8 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
     assert {
         (
             row["requests_made"],
+            row["cache_hits"],
+            row["target_fetched_at"],
             row["daily_limit"],
             row["daily_remaining"],
             row["minute_remaining"],
@@ -244,7 +250,19 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
             row["gate_decision"],
         )
         for row in disposition_rows
-    } == {("16", "100", "78", "8", "3", "36.000000", "PENDING")}
+    } == {
+        (
+            "16",
+            "0",
+            FETCHED_AT.isoformat(),
+            "100",
+            "78",
+            "8",
+            "3",
+            "36.000000",
+            "PENDING",
+        )
+    }
     assert [
         (
             row["gate_predicate"],
@@ -282,7 +300,7 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
     assert "- decision: PENDING" in markdown
     assert "- reasons: fewer than 30 drawings, fewer than 450 events" in markdown
     assert "## Collection Run Evidence" in markdown
-    assert "| 16 | 100 | 78 | 8 |" in markdown
+    assert f"| 16 | 0 | {FETCHED_AT.isoformat()} | 100 | 78 | 8 |" in markdown
     assert "## Gate Predicate Outcomes" in markdown
     assert "| minimum_events | 15 | >= | 450 | false |" in markdown
     assert (
@@ -290,8 +308,8 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
         "0.700000000000 | false |"
     ) in markdown
     assert first_hashes == (
-        "9e23e9839248eabfc4750c1ca6bb56795a880e6b5aa55629f842a33066dd8ccf",
-        "6fb0d0ce999955ef41b80821ace54bd020bdf4cc3ab453e493de9448210e2837",
+        "06dddc3fc9fd562433e96e53a94c39aea3497ceb0ded63a2459aaed334f7fba1",
+        "57b54062da7ab5bb5eb9f82297046222093a36ad64f2b6e442fbd9dfd7b375f6",
     )
 
 

@@ -94,9 +94,11 @@ class ExternalCollectionSnapshot:
     drawing_number: int | None
     provider: str
     fetched_at: str
+    target_fetched_at: str
     deadline: str
     event_count: int
     requests_made: int
+    cache_hits: int
     daily_limit: int | None
     daily_remaining: int | None
     minute_remaining: int | None
@@ -108,6 +110,12 @@ class ExternalCollectionSnapshot:
 class _MatchedTarget:
     decision: MatchDecision
     provider_event: ProviderEvent | None
+
+
+@dataclass(frozen=True)
+class _MarketFetchResult:
+    markets: tuple[ProviderMarket, ...]
+    fallback_reason: str | None
 
 
 def build_external_collection(
@@ -122,29 +130,20 @@ def build_external_collection(
 
     market_cache: dict[tuple[Sport, str], tuple[ProviderMarket, ...]] = {}
     quota_stopped = False
-    rows: list[ExternalEventDispositionRecord] = []
+    market_results: dict[int, _MarketFetchResult] = {}
     for event in target.events:
         matched_target = decisions[event.event_order]
         decision = matched_target.decision
-        provider_event = matched_target.provider_event
         if decision.status != "matched" or decision.provider_event_id is None:
-            rows.append(
-                _fallback_disposition(
-                    event,
-                    decision,
-                    provider_event,
-                    decision.reason,
-                )
+            market_results[event.event_order] = _MarketFetchResult(
+                markets=(),
+                fallback_reason=decision.reason,
             )
             continue
         if quota_stopped:
-            rows.append(
-                _fallback_disposition(
-                    event,
-                    decision,
-                    provider_event,
-                    "quota reserve reached",
-                )
+            market_results[event.event_order] = _MarketFetchResult(
+                markets=(),
+                fallback_reason="quota reserve reached",
             )
             continue
 
@@ -159,46 +158,62 @@ def build_external_collection(
                 )
             except QuotaExhausted:
                 quota_stopped = True
-                rows.append(
-                    _fallback_disposition(
-                        event,
-                        decision,
-                        provider_event,
-                        "quota reserve reached",
-                    )
+                market_results[event.event_order] = _MarketFetchResult(
+                    markets=(),
+                    fallback_reason="quota reserve reached",
                 )
                 continue
             except APISportsError as error:
-                rows.append(
-                    _fallback_disposition(
-                        event,
-                        decision,
-                        provider_event,
-                        f"provider odds failure: {error}",
-                    )
+                market_results[event.event_order] = _MarketFetchResult(
+                    markets=(),
+                    fallback_reason=f"provider odds failure: {error}",
                 )
                 continue
             except Exception as error:
-                rows.append(
-                    _fallback_disposition(
-                        event,
-                        decision,
-                        provider_event,
-                        f"provider odds failure: {error.__class__.__name__}",
-                    )
+                reason = f"provider odds failure: {error.__class__.__name__}"
+                market_results[event.event_order] = _MarketFetchResult(
+                    markets=(),
+                    fallback_reason=reason,
                 )
                 continue
             market_cache[market_key] = markets
+        market_results[event.event_order] = _MarketFetchResult(
+            markets=markets,
+            fallback_reason=None,
+        )
 
+    observed_at = _external_observed_at(target, decisions, market_results)
+    rows: list[ExternalEventDispositionRecord] = []
+    for event in target.events:
+        matched_target = decisions[event.event_order]
+        decision = matched_target.decision
+        provider_event = matched_target.provider_event
+        market_result = market_results[event.event_order]
+        if market_result.fallback_reason is not None:
+            rows.append(
+                _fallback_disposition(
+                    event,
+                    decision,
+                    provider_event,
+                    market_result.fallback_reason,
+                )
+            )
+            continue
         consensus = build_consensus(
             event,
-            markets,
-            target.fetched_at,
+            market_result.markets,
+            observed_at,
             minimum_bookmakers=CONSENSUS_MINIMUM_BOOKMAKERS,
             maximum_age=MAXIMUM_ODDS_AGE,
         )
         rows.append(
-            _consensus_disposition(event, decision, provider_event, consensus)
+            _consensus_disposition(
+                event,
+                decision,
+                provider_event,
+                consensus,
+                observed_at,
+            )
         )
 
     ordered_rows = tuple(sorted(rows, key=lambda row: row.event_order))
@@ -207,6 +222,7 @@ def build_external_collection(
     body = _collection_identity_payload(
         target=target,
         provider=provider_name,
+        observed_at=observed_at,
         events=ordered_rows,
     )
     collection_id = _hash_payload(body)
@@ -215,10 +231,12 @@ def build_external_collection(
         drawing_id=target.drawing_id,
         drawing_number=target.drawing_number,
         provider=provider_name,
-        fetched_at=_iso_datetime(target.fetched_at),
+        fetched_at=_iso_datetime(observed_at),
+        target_fetched_at=_iso_datetime(target.fetched_at),
         deadline=_iso_datetime(target.deadline),
         event_count=len(ordered_rows),
         requests_made=request_counter.requests_made,
+        cache_hits=request_counter.cache_hits,
         daily_limit=quota.daily_limit,
         daily_remaining=quota.daily_remaining,
         minute_remaining=quota.minute_remaining,
@@ -252,38 +270,60 @@ class _RequestCounter:
     def __init__(self, provider: ExternalOddsProvider) -> None:
         self.provider = provider
         self.requests_made = 0
+        self.cache_hits = 0
 
     def fetch_schedule(
         self,
         sport: Sport,
         dates: tuple[date, ...],
     ) -> tuple[ProviderEvent, ...]:
-        before = _provider_requests_made(self.provider)
-        expected_requests = max(1, len(dates))
-        self.requests_made += expected_requests
-        result = self.provider.fetch_schedule(sport, dates)
-        self._sync_provider_count(before, expected_requests)
-        return result
+        before_requests = _provider_counter(self.provider, "requests_made")
+        before_cache_hits = _provider_counter(self.provider, "cache_hits")
+        try:
+            return self.provider.fetch_schedule(sport, dates)
+        finally:
+            self._sync_provider_counts(
+                before_requests=before_requests,
+                before_cache_hits=before_cache_hits,
+                fallback_requests=max(1, len(dates)),
+            )
 
     def fetch_event_markets(
         self,
         sport: Sport,
         provider_event_id: str,
     ) -> tuple[ProviderMarket, ...]:
-        before = _provider_requests_made(self.provider)
-        self.requests_made += 1
-        result = self.provider.fetch_event_markets(sport, provider_event_id)
-        self._sync_provider_count(before, 1)
-        return result
+        before_requests = _provider_counter(self.provider, "requests_made")
+        before_cache_hits = _provider_counter(self.provider, "cache_hits")
+        try:
+            return self.provider.fetch_event_markets(sport, provider_event_id)
+        finally:
+            self._sync_provider_counts(
+                before_requests=before_requests,
+                before_cache_hits=before_cache_hits,
+                fallback_requests=1,
+            )
 
-    def _sync_provider_count(self, before: int | None, expected_requests: int) -> None:
-        after = _provider_requests_made(self.provider)
-        if before is not None and after is not None and after > before:
-            self.requests_made += max(0, after - before - expected_requests)
+    def _sync_provider_counts(
+        self,
+        *,
+        before_requests: int | None,
+        before_cache_hits: int | None,
+        fallback_requests: int,
+    ) -> None:
+        after_requests = _provider_counter(self.provider, "requests_made")
+        if before_requests is not None and after_requests is not None:
+            self.requests_made += max(0, after_requests - before_requests)
+        else:
+            self.requests_made += fallback_requests
+
+        after_cache_hits = _provider_counter(self.provider, "cache_hits")
+        if before_cache_hits is not None and after_cache_hits is not None:
+            self.cache_hits += max(0, after_cache_hits - before_cache_hits)
 
 
-def _provider_requests_made(provider: ExternalOddsProvider) -> int | None:
-    value = getattr(provider, "requests_made", None)
+def _provider_counter(provider: ExternalOddsProvider, name: str) -> int | None:
+    value = getattr(provider, name, None)
     return value if isinstance(value, int) and not isinstance(value, bool) else None
 
 
@@ -402,6 +442,7 @@ def _consensus_disposition(
     decision: MatchDecision,
     provider_event: ProviderEvent | None,
     consensus: ConsensusResult,
+    observed_at: datetime,
 ) -> ExternalEventDispositionRecord:
     quotes = _assessment_quotes(consensus)
     if consensus.probabilities is None:
@@ -412,7 +453,7 @@ def _consensus_disposition(
         probability_source = EXTERNAL_CONSENSUS
         probabilities = consensus.probabilities
         fallback_reason = None
-    odds_age_hours = _odds_age_hours(event, consensus)
+    odds_age_hours = _odds_age_hours(consensus, observed_at)
     payload = _event_payload(
         event=event,
         decision=decision,
@@ -502,13 +543,13 @@ def _consensus_fallback_reason(consensus: ConsensusResult) -> str:
 
 
 def _odds_age_hours(
-    event: TargetEvent,
     consensus: ConsensusResult,
+    observed_at: datetime,
 ) -> float | None:
     assessed = tuple(assessment.market for assessment in consensus.assessments)
     if not assessed:
         return None
-    oldest = max(market.fetched_at - market.updated_at for market in assessed)
+    oldest = max(observed_at - market.updated_at for market in assessed)
     return oldest.total_seconds() / 3600.0
 
 
@@ -554,6 +595,7 @@ def _collection_identity_payload(
     *,
     target: TargetDrawing,
     provider: str,
+    observed_at: datetime,
     events: tuple[ExternalEventDispositionRecord, ...],
 ) -> dict[str, object]:
     return {
@@ -561,7 +603,8 @@ def _collection_identity_payload(
             "drawing_id": target.drawing_id,
             "drawing_number": target.drawing_number,
             "deadline": _iso_datetime(target.deadline),
-            "fetched_at": _iso_datetime(target.fetched_at),
+            "target_fetched_at": _iso_datetime(target.fetched_at),
+            "external_observed_at": _iso_datetime(observed_at),
         },
         "provider": provider,
         "target_payload": tuple(
@@ -725,3 +768,22 @@ def _quote_sort_key(quote: ExternalBookmakerQuoteRecord) -> tuple[str, str, str]
 
 def _iso_datetime(value: datetime) -> str:
     return value.astimezone(timezone.utc).isoformat()
+
+
+def _external_observed_at(
+    target: TargetDrawing,
+    decisions: dict[int, _MatchedTarget],
+    market_results: dict[int, _MarketFetchResult],
+) -> datetime:
+    observed = target.fetched_at
+    for matched in decisions.values():
+        if (
+            matched.provider_event is not None
+            and matched.provider_event.fetched_at > observed
+        ):
+            observed = matched.provider_event.fetched_at
+    for result in market_results.values():
+        for market in result.markets:
+            if market.fetched_at > observed:
+                observed = market.fetched_at
+    return observed

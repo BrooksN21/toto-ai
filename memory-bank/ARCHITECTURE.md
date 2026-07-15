@@ -90,8 +90,11 @@ Important modules:
   per-book de-vig, median consensus, and explicit minimum-bookmaker fallback.
 - `toto_ai.external_odds.collection` and `toto_ai.external_odds.storage`:
   deterministic 15-event prospective external-odds collection, explicit
-  event-level TotoBrief BK fallback, provider quota/request provenance, and
-  append-only SQLAlchemy persistence for immutable collection snapshots.
+  event-level TotoBrief BK fallback, provider quota/request/cache provenance,
+  and append-only SQLAlchemy persistence for immutable collection snapshots.
+  Collection run `fetched_at` is the external observation time and is at least
+  as late as every consumed provider market fetch timestamp; the fresh
+  TotoBrief drawing-info timestamp is stored separately as `target_fetched_at`.
   Event dispositions persist matched schedule payload hash/fetch time and the
   complete matching decision. Quote rows persist market payload hash/fetch
   time and canonical source provenance. Exact duplicate bookmaker/market keys
@@ -108,7 +111,8 @@ Important modules:
   including bookmaker availability at thresholds one, two, and three. These
   modules do not call providers and do not affect playable package decisions.
   Disposition CSV rows expose stored schedule and market fetch provenance plus
-  per-run request/quota counters. CSV and Markdown expose the fixed collection
+  per-run actual HTTP request attempts, cache-hit counts, target fetch
+  provenance, and quota counters. CSV and Markdown expose the fixed collection
   consensus configuration and ordered gate actual/threshold/pass evidence.
   End-to-end acceptance covers mixed success/fallback, provider failure, quota
   cutoff, interruption rollback, deterministic report evidence, EV

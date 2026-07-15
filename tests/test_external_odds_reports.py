@@ -45,6 +45,8 @@ def test_disposition_csv_contains_all_15_rows_and_required_evidence(tmp_path):
         "eligible_bookmaker_count",
         "fallback_reason",
         "requests_made",
+        "cache_hits",
+        "target_fetched_at",
     } <= set(reader.fieldnames or ())
     assert [row["fallback_reason"] for row in disposition_rows[:8]] == [
         *FALLBACK_REASONS[:7],
@@ -53,6 +55,10 @@ def test_disposition_csv_contains_all_15_rows_and_required_evidence(tmp_path):
     assert disposition_rows[5]["eligible_bookmaker_count"] == "2"
     assert disposition_rows[8]["provider_event_id"] == "provider-1-8"
     assert {row["requests_made"] for row in disposition_rows} == {"16"}
+    assert {row["cache_hits"] for row in disposition_rows} == {"0"}
+    assert {row["target_fetched_at"] for row in disposition_rows} == {
+        "2026-07-15T12:00:00+00:00"
+    }
 
 
 def test_aggregate_csv_has_complete_metrics_and_deterministic_scope_order(tmp_path):

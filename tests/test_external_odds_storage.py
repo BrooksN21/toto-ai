@@ -70,6 +70,7 @@ class CompleteProvider:
         market_hash_suffix: str = "",
     ) -> None:
         self.requests_made = 0
+        self.cache_hits = 0
         self.schedule_hash_suffix = schedule_hash_suffix
         self.market_hash_suffix = market_hash_suffix
         self._quota_state = QuotaState(
@@ -163,6 +164,8 @@ def test_collection_persists_exactly_fifteen_dispositions(session_factory):
     assert stored[0].status == "complete"
     assert stored[0].event_count == 15
     assert stored[0].requests_made == 16
+    assert stored[0].cache_hits == 0
+    assert stored[0].target_fetched_at == aware_now().isoformat()
     assert stored[0].daily_limit == 100
     assert stored[0].daily_remaining == 88
     assert stored[0].minute_remaining == 8

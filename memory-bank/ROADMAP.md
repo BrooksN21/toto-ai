@@ -106,6 +106,12 @@
   adds end-to-end fail-closed acceptance for success/mixed/failure/quota/
   interruption paths, report evidence, EV non-interference, and API-key absence
   across persistence, cache, CLI, exception chains, and reports.
+- Final whole-branch review fixes are complete for the coverage-audit branch:
+  consensus now uses an external observation clock distinct from TotoBrief
+  target provenance; official item-level API-Sports odds updates are parsed as
+  bookmaker defaults; schedules and odds fetch all pages fail-closed; market
+  outcomes reject duplicate or unknown labels before provider-neutral records;
+  and actual HTTP attempts are reported separately from cache hits.
 - Remaining coverage-audit work: no implementation task remains; the
   prospective operator gate is still pending.
 - Run the free-tier prospective gate on at least 30 future drawings and 450

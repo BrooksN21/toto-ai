@@ -57,9 +57,21 @@
   explicit TotoBrief BK fallback reason.
 - External odds collection snapshots are append-only and immutable. The
   deterministic collection identity includes the canonical drawing target,
+  the fresh TotoBrief target `target_fetched_at`, the external observation
   `fetched_at`, provider matching decisions and market payload provenance, and
   consensus configuration. Saving the same canonical collection is idempotent;
   conflicting content under the same identity is rejected.
+- External odds consensus age and future-update checks use the explicit
+  external observation time, not the earlier TotoBrief target fetch time. The
+  observation time must be at least as late as every consumed provider market
+  fetch timestamp.
+- API-Sports schedule and odds pagination is fail-closed. Every reported page
+  is fetched deterministically with a `page` query, current/total values must
+  remain consistent, exact duplicate provider records may be deduplicated, and
+  conflicting duplicate identifiers remain an error.
+- API-Sports request accounting reports actual HTTP attempts, including retry
+  attempts and additional pages. Cache hits and logical fetch calls are tracked
+  separately and must not be reported as requests.
 - Provider provenance is stored explicitly, not only committed through an
   opaque event hash. Matched dispositions retain schedule-event fetch time and
   payload hash plus candidate IDs and match reason; quotes retain market fetch

@@ -66,10 +66,25 @@ class APISportsClient:
         self._timeout = timeout
         self._max_retries = max_retries
         self._quota_state = QuotaState(None, None, None, None)
+        self._requests_made = 0
+        self._cache_hits = 0
+        self._logical_fetches = 0
 
     @property
     def quota_state(self) -> QuotaState:
         return self._quota_state
+
+    @property
+    def requests_made(self) -> int:
+        return self._requests_made
+
+    @property
+    def cache_hits(self) -> int:
+        return self._cache_hits
+
+    @property
+    def logical_fetches(self) -> int:
+        return self._logical_fetches
 
     def set_quota_for_test(self, quota_state: QuotaState) -> None:
         self._quota_state = quota_state
@@ -77,25 +92,51 @@ class APISportsClient:
     def fetch_schedule(
         self, sport: Sport, dates: tuple[date, ...]
     ) -> tuple[ProviderEvent, ...]:
+        self._logical_fetches += 1
         events: list[ProviderEvent] = []
         for item in dates:
-            payload = self._get_json(
+            payloads = self._get_json_pages(
                 sport,
                 _schedule_path(sport),
                 {"date": item.isoformat()},
             )
-            events.extend(_parse_schedule_payload(sport, payload))
-        return tuple(events)
+            for payload in payloads:
+                events.extend(_parse_schedule_payload(sport, payload))
+        return _dedupe_provider_events(tuple(events))
 
     def fetch_event_markets(
         self, sport: Sport, provider_event_id: str
     ) -> tuple[ProviderMarket, ...]:
-        payload = self._get_json(
+        self._logical_fetches += 1
+        payloads = self._get_json_pages(
             sport,
             "/odds",
             _odds_params(sport, provider_event_id),
         )
-        return _parse_market_payload(sport, provider_event_id, payload)
+        markets: list[ProviderMarket] = []
+        for payload in payloads:
+            markets.extend(_parse_market_payload(sport, provider_event_id, payload))
+        return _dedupe_provider_markets(tuple(markets))
+
+    def _get_json_pages(
+        self,
+        sport: Sport,
+        path: str,
+        params: Mapping[str, object],
+    ) -> tuple[dict[str, Any], ...]:
+        first = self._get_json(sport, path, params | {"page": 1})
+        total = _paging_value(first, "total")
+        if _paging_value(first, "current") != 1:
+            raise APISportsError("API-Sports paging is inconsistent")
+        pages = [first]
+        for page in range(2, total + 1):
+            payload = self._get_json(sport, path, params | {"page": page})
+            if _paging_value(payload, "current") != page:
+                raise APISportsError("API-Sports paging is inconsistent")
+            if _paging_value(payload, "total") != total:
+                raise APISportsError("API-Sports paging is inconsistent")
+            pages.append(payload)
+        return tuple(pages)
 
     def _get_json(
         self,
@@ -107,12 +148,14 @@ class APISportsClient:
         cached = self._load_cache(cache_key)
         if cached is not None:
             self._quota_state = cached.quota
+            self._cache_hits += 1
             return cached.payload
         self._ensure_quota_available()
 
         for attempt in range(self._max_retries + 1):
             connection_failed = False
             try:
+                self._requests_made += 1
                 response = self._session.get(
                     f"{self._base_url(sport)}{path}",
                     headers={"x-apisports-key": self._api_key},
@@ -314,6 +357,16 @@ def _validate_top_level_payload(payload: Mapping[str, Any]) -> None:
         raise APISportsError("API-Sports response must be a list")
 
 
+def _paging_value(payload: Mapping[str, Any], field: str) -> int:
+    paging = payload.get("paging")
+    if not isinstance(paging, Mapping):
+        raise APISportsError("API-Sports paging must be an object")
+    value = paging.get(field)
+    if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+        raise APISportsError("API-Sports paging is invalid")
+    return value
+
+
 def _parse_schedule_payload(
     sport: Sport, payload: Mapping[str, Any]
 ) -> tuple[ProviderEvent, ...]:
@@ -352,6 +405,7 @@ def _parse_market_payload(
         item_event_id, _, _, _, _ = _event_core_fields(item, sport=sport)
         if item_event_id != provider_event_id:
             raise APISportsError("API-Sports returned mismatched event identifier")
+        item_updated_at = _item_updated_at(item)
         bookmakers = item.get("bookmakers")
         if not isinstance(bookmakers, list):
             raise APISportsError("API-Sports bookmakers must be a list")
@@ -361,6 +415,7 @@ def _parse_market_payload(
                     sport=sport,
                     provider_event_id=provider_event_id,
                     fetched_at=fetched_at,
+                    default_updated_at=item_updated_at,
                     bookmaker=bookmaker,
                 )
             )
@@ -372,6 +427,7 @@ def _parse_bookmaker_markets(
     sport: Sport,
     provider_event_id: str,
     fetched_at: datetime,
+    default_updated_at: datetime | None,
     bookmaker: object,
 ) -> tuple[ProviderMarket, ...]:
     if not isinstance(bookmaker, Mapping):
@@ -388,14 +444,17 @@ def _parse_bookmaker_markets(
         values = bet.get("values")
         if not isinstance(values, list):
             raise APISportsError("API-Sports market values must be a list")
-        prices = {item["value"]: item["odd"] for item in _price_entries(values)}
+        prices = _outcome_prices(values)
         provider_markets.append(
             ProviderMarket(
                 provider="api-sports",
                 provider_event_id=provider_event_id,
                 bookmaker_id=bookmaker_id,
                 market_name=market_name,
-                updated_at=_bookmaker_updated_at(bookmaker),
+                updated_at=_bookmaker_updated_at(
+                    bookmaker,
+                    default_updated_at=default_updated_at,
+                ),
                 fetched_at=fetched_at,
                 payload_hash=_payload_hash(
                     {
@@ -415,6 +474,12 @@ def _parse_bookmaker_markets(
 
 def _payload_fetched_at(payload: Mapping[str, Any]) -> datetime:
     return _parse_datetime(payload.get("timestamp"), field_name="timestamp")
+
+
+def _item_updated_at(item: Mapping[str, Any]) -> datetime | None:
+    if "update" not in item:
+        return None
+    return _parse_datetime(item.get("update"), field_name="item update")
 
 
 def _event_core_fields(
@@ -451,7 +516,15 @@ def _event_core_fields(
     return provider_event_id, starts_at, league, home, away
 
 
-def _bookmaker_updated_at(bookmaker: Mapping[str, Any]) -> datetime:
+def _bookmaker_updated_at(
+    bookmaker: Mapping[str, Any],
+    *,
+    default_updated_at: datetime | None,
+) -> datetime:
+    if "update" not in bookmaker:
+        if default_updated_at is None:
+            raise APISportsError("API-Sports bookmaker update is invalid")
+        return default_updated_at
     return _parse_datetime(bookmaker.get("update"), field_name="bookmaker update")
 
 
@@ -508,6 +581,51 @@ def _price_entries(values: list[object]) -> tuple[dict[str, str], ...]:
         odd = _text(item.get("odd"), "price odd")
         entries.append({"value": name, "odd": odd})
     return tuple(entries)
+
+
+def _outcome_prices(values: list[object]) -> dict[str, str]:
+    allowed = {"Home", "Draw", "Away"}
+    prices: dict[str, str] = {}
+    for item in _price_entries(values):
+        label = item["value"]
+        if label not in allowed:
+            raise APISportsError("API-Sports market has unknown outcome")
+        if label in prices:
+            raise APISportsError("API-Sports market has duplicate outcome")
+        prices[label] = item["odd"]
+    if set(prices) != allowed:
+        missing = ", ".join(sorted(allowed - set(prices)))
+        raise APISportsError(f"API-Sports market is missing outcome {missing}")
+    return prices
+
+
+def _dedupe_provider_events(
+    events: tuple[ProviderEvent, ...],
+) -> tuple[ProviderEvent, ...]:
+    by_id: dict[str, ProviderEvent] = {}
+    ordered: list[ProviderEvent] = []
+    for event in events:
+        existing = by_id.get(event.provider_event_id)
+        if existing is None:
+            by_id[event.provider_event_id] = event
+            ordered.append(event)
+            continue
+        if existing != event:
+            raise APISportsError("API-Sports duplicate provider event identifier")
+    return tuple(ordered)
+
+
+def _dedupe_provider_markets(
+    markets: tuple[ProviderMarket, ...],
+) -> tuple[ProviderMarket, ...]:
+    seen: set[ProviderMarket] = set()
+    ordered: list[ProviderMarket] = []
+    for market in markets:
+        if market in seen:
+            continue
+        seen.add(market)
+        ordered.append(market)
+    return tuple(ordered)
 
 
 def _optional_price(value: object) -> float | None:

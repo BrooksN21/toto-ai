@@ -130,7 +130,7 @@ class MixedProvider:
         return self._quota_state
 
     def fetch_schedule(self, sport, dates):
-        self.requests_made += 1
+        self.requests_made += max(1, len(dates))
         self.schedule_calls.append((sport, dates))
         return tuple(
             ProviderEvent(
@@ -191,6 +191,109 @@ class ScheduleQuotaProvider(MixedProvider):
         raise QuotaExhausted("quota reserve reached")
 
 
+class LaterMarketObservationProvider(MixedProvider):
+    def fetch_schedule(self, sport, dates):
+        self.requests_made += max(1, len(dates))
+        self.schedule_calls.append((sport, dates))
+        return tuple(
+            ProviderEvent(
+                provider=self.provider_name,
+                provider_event_id=f"{sport}-{order}",
+                sport=sport,
+                league="League",
+                starts_at=event.starts_at,
+                home_team=event.home_team,
+                away_team=event.away_team,
+                fetched_at=aware_now() + timedelta(minutes=1),
+                payload_hash=f"schedule-{sport}-{order}",
+            )
+            for order, event in enumerate(self.target.events)
+            if event.sport == sport
+        )
+
+    def fetch_event_markets(self, sport, provider_event_id):
+        self.requests_made += 1
+        self.market_calls.append((sport, provider_event_id))
+        order = int(provider_event_id.rsplit("-", 1)[1])
+        fetched_at = aware_now() + timedelta(minutes=2)
+        if order == 0:
+            updated_at = aware_now() + timedelta(minutes=1, seconds=30)
+        elif order == 1:
+            updated_at = fetched_at + timedelta(seconds=1)
+        else:
+            updated_at = fetched_at - timedelta(hours=36, seconds=1)
+        return tuple(
+            ProviderMarket(
+                provider=self.provider_name,
+                provider_event_id=provider_event_id,
+                bookmaker_id=f"book-{index}",
+                market_name=(
+                    "Match Winner"
+                    if sport == "football"
+                    else "Match Winner - Regulation Time"
+                ),
+                updated_at=updated_at,
+                fetched_at=fetched_at,
+                payload_hash=f"market-{provider_event_id}-{index}",
+                home_price=2.0,
+                draw_price=4.0,
+                away_price=4.0,
+            )
+            for index in range(3)
+        )
+
+
+class CacheHitProvider(MixedProvider):
+    def __init__(self) -> None:
+        super().__init__()
+        self.cache_hits = 0
+        self.logical_fetches = 0
+
+    def fetch_schedule(self, sport, dates):
+        self.logical_fetches += 1
+        self.cache_hits += 1
+        self.schedule_calls.append((sport, dates))
+        return tuple(
+            ProviderEvent(
+                provider=self.provider_name,
+                provider_event_id=f"{sport}-{order}",
+                sport=sport,
+                league="League",
+                starts_at=event.starts_at,
+                home_team=event.home_team,
+                away_team=event.away_team,
+                fetched_at=aware_now(),
+                payload_hash=f"schedule-{sport}-{order}",
+            )
+            for order, event in enumerate(self.target.events)
+            if event.sport == sport
+        )
+
+    def fetch_event_markets(self, sport, provider_event_id):
+        self.logical_fetches += 1
+        self.cache_hits += 1
+        self.market_calls.append((sport, provider_event_id))
+        return tuple(
+            ProviderMarket(
+                provider=self.provider_name,
+                provider_event_id=provider_event_id,
+                bookmaker_id=f"book-{index}",
+                market_name=(
+                    "Match Winner"
+                    if sport == "football"
+                    else "Match Winner - Regulation Time"
+                ),
+                updated_at=aware_now() - timedelta(hours=1),
+                fetched_at=aware_now(),
+                payload_hash=f"market-{provider_event_id}-{index}",
+                home_price=2.0,
+                draw_price=4.0,
+                away_price=4.0,
+            )
+            for index in range(3)
+        )
+
+
 def session_factory():
     engine = create_engine("sqlite+pysqlite:///:memory:")
     Base.metadata.create_all(engine)
@@ -237,6 +340,31 @@ def test_schedule_request_count_reflects_each_required_sport_date():
         ("hockey", (aware_now().date(),)),
     ]
     assert result.requests_made == 17
+
+
+def test_collection_observation_clock_allows_markets_fetched_after_target_snapshot():
+    target = target_drawing()
+    provider = LaterMarketObservationProvider(target)
+
+    result = build_external_collection(target, provider, aliases={})
+
+    assert result.fetched_at == (aware_now() + timedelta(minutes=2)).isoformat()
+    assert result.target_fetched_at == aware_now().isoformat()
+    assert result.events[0].probability_source == "external_consensus"
+    assert result.events[1].probability_source == "totobrief_bk_fallback"
+    assert "future update timestamp" in result.events[1].fallback_reason
+    assert result.events[3].probability_source == "totobrief_bk_fallback"
+    assert "stale prices" in result.events[3].fallback_reason
+
+
+def test_collection_uses_actual_provider_network_delta_not_logical_cache_calls():
+    provider = CacheHitProvider()
+
+    result = build_external_collection(target_drawing(), provider, aliases={})
+
+    assert provider.logical_fetches == 16
+    assert result.requests_made == 0
+    assert result.cache_hits == 16
 
 
 def test_provider_failure_falls_back_for_every_remaining_event():

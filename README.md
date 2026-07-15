@@ -100,10 +100,17 @@ python -m toto_ai.cli audit-external-coverage --db data/toto.db --last 30 --min-
 API-Sports free football and hockey APIs each allow 100 requests per day. The
 collector keeps a configurable reserve with `--quota-reserve` (default `10`) so
 collection fails closed before spending the last daily or minute requests.
+Schedule and odds endpoints are fetched page-by-page with explicit `page`
+queries; inconsistent provider paging fails closed. Reported `requests_made`
+counts actual HTTP attempts, including retries and extra pages, while cache
+hits are reported separately and are not counted as requests.
 Every collection stores all 15 event dispositions. Events with unknown sports,
 missing or ambiguous matches, provider failures, quota exhaustion, stale or
 incomplete markets, semantic market rejection, or fewer than three eligible
 bookmakers keep the TotoBrief BK triplet with an explicit fallback reason.
+The collection timestamp is the external observation time and is at least as
+late as every consumed provider market fetch timestamp; the fresh TotoBrief
+snapshot timestamp is preserved separately as target provenance.
 
 The coverage gate is truthfully `PENDING` until at least 30 prospective drawings
 and 450 events have been collected. After that floor, the audit can return
@@ -116,10 +123,11 @@ evaluation; it does not authorize wiring external consensus directly into
 
 The deterministic CSV exposes each matched schedule fetch timestamp/hash,
 aligned market fetch/update timestamps and payload hashes, collection request
-and remaining-quota counters, the three-bookmaker/36-hour consensus settings,
-and every gate predicate with its actual value, threshold, and observed result.
-The Markdown report repeats the collection run, consensus configuration, gate
-decision, and predicate outcomes for operator review.
+attempts, cache hits, TotoBrief target fetch provenance, remaining-quota
+counters, the three-bookmaker/36-hour consensus settings, and every gate
+predicate with its actual value, threshold, and observed result. The Markdown
+report repeats the collection run, consensus configuration, gate decision, and
+predicate outcomes for operator review.
 
 ## Project Memory
 

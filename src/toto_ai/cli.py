@@ -2018,6 +2018,7 @@ def _external_collection_table(result) -> Table:
     table.add_row("external consensus", _format_value(consensus_count))
     table.add_row("fallback", _format_value(fallback_count))
     table.add_row("requests made", _format_value(result.requests_made))
+    table.add_row("cache hits", _format_value(result.cache_hits))
     table.add_row("daily remaining", _format_value(result.daily_remaining))
     table.add_row("minute remaining", _format_value(result.minute_remaining))
     return table

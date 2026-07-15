@@ -29,10 +29,12 @@ CSV_FIELDS = (
     "market_fetched_at",
     "market_updated_at",
     "market_payload_hashes",
+    "target_fetched_at",
     "probability_source",
     "eligible_bookmaker_count",
     "fallback_reason",
     "requests_made",
+    "cache_hits",
     "daily_limit",
     "daily_remaining",
     "minute_remaining",
@@ -120,10 +122,12 @@ def _render_csv(audit: CoverageAudit) -> str:
                 "market_fetched_at": _json_values(row.market_fetched_at),
                 "market_updated_at": _json_values(row.market_updated_at),
                 "market_payload_hashes": _json_values(row.market_payload_hashes),
+                "target_fetched_at": row.target_fetched_at,
                 "probability_source": row.probability_source,
                 "eligible_bookmaker_count": row.eligible_bookmaker_count,
                 "fallback_reason": row.fallback_reason,
                 "requests_made": row.requests_made,
+                "cache_hits": row.cache_hits,
                 "daily_limit": row.daily_limit,
                 "daily_remaining": row.daily_remaining,
                 "minute_remaining": row.minute_remaining,
@@ -294,21 +298,22 @@ def _render_markdown(audit: CoverageAudit) -> str:
 
 def _collection_table(audit: CoverageAudit) -> list[str]:
     lines = [
-        "| Collection | Drawing | Fetched At | Requests | Daily Limit | "
-        "Daily Remaining | Minute Remaining |",
-        "| --- | ---: | --- | ---: | ---: | ---: | ---: |",
+        "| Collection | Drawing | Fetched At | Requests | Cache Hits | "
+        "Target Fetched At | Daily Limit | Daily Remaining | Minute Remaining |",
+        "| --- | ---: | --- | ---: | ---: | --- | ---: | ---: | ---: |",
     ]
     for collection in audit.collections:
         lines.append(
             f"| {collection.collection_id} | "
             f"{collection.drawing_number or collection.drawing_id} | "
             f"{collection.fetched_at} | {collection.requests_made} | "
+            f"{collection.cache_hits} | {collection.target_fetched_at} | "
             f"{_optional_value(collection.daily_limit)} | "
             f"{_optional_value(collection.daily_remaining)} | "
             f"{_optional_value(collection.minute_remaining)} |"
         )
     if not audit.collections:
-        lines.append("| none | 0 | none | 0 | none | none | none |")
+        lines.append("| none | 0 | none | 0 | 0 | none | none | none | none |")
     return lines
 
 

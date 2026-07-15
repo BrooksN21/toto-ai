@@ -54,7 +54,9 @@ class CoverageDisposition:
     market_fetched_at: tuple[str, ...]
     market_updated_at: tuple[str, ...]
     market_payload_hashes: tuple[str, ...]
+    target_fetched_at: str
     requests_made: int
+    cache_hits: int
     daily_limit: int | None
     daily_remaining: int | None
     minute_remaining: int | None
@@ -247,7 +249,9 @@ def _dispositions_for_collection(
                     market_fetched_at=(),
                     market_updated_at=(),
                     market_payload_hashes=(),
+                    target_fetched_at=collection.target_fetched_at,
                     requests_made=collection.requests_made,
+                    cache_hits=collection.cache_hits,
                     daily_limit=collection.daily_limit,
                     daily_remaining=collection.daily_remaining,
                     minute_remaining=collection.minute_remaining,
@@ -294,7 +298,9 @@ def _disposition_from_event(
         market_fetched_at=tuple(quote.fetched_at for quote in quotes),
         market_updated_at=tuple(quote.updated_at for quote in quotes),
         market_payload_hashes=tuple(quote.payload_hash for quote in quotes),
+        target_fetched_at=collection.target_fetched_at,
         requests_made=collection.requests_made,
+        cache_hits=collection.cache_hits,
         daily_limit=collection.daily_limit,
         daily_remaining=collection.daily_remaining,
         minute_remaining=collection.minute_remaining,
