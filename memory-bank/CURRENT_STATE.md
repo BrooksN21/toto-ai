@@ -23,8 +23,24 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 535
+- Tests currently passed: 548
 - Ruff passed
+
+## Latest Completed Task: API-Sports Transport, Parsing, Cache, and Quota
+
+Added `toto_ai.external_odds.api_sports.APISportsClient` for the approved
+coverage audit with separate football and hockey hosts, injected
+`requests.Session`, sanitized API-key-only header authentication, deterministic
+SHA-256 cache files, quota tracking from response headers, bounded retry for
+connection failures and HTTP `408/429/5xx`, and fail-closed sanitized
+`APISportsError` / `QuotaExhausted` exceptions.
+
+The adapter now parses football fixture responses and hockey game responses
+into provider-neutral `ProviderEvent` records, parses bookmaker odds snapshots
+into `ProviderMarket` records without deciding semantic eligibility, and
+rejects invalid top-level provider errors, paging, timestamps, prices, and
+identifier shapes. Repository tests remain synthetic and deterministic with no
+live network dependency, and raw external cache files are ignored by Git.
 
 ## Approved Next Design: Expected-Value Package Engine
 
