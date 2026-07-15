@@ -398,7 +398,8 @@ def test_schedule_request_count_reflects_each_required_sport_date():
     result = build_external_collection(target, provider, aliases={})
 
     assert provider.schedule_calls == [
-        ("football", (aware_now().date(), (aware_now() + timedelta(days=1)).date())),
+        ("football", (aware_now().date(),)),
+        ("football", ((aware_now() + timedelta(days=1)).date(),)),
         ("hockey", (aware_now().date(),)),
     ]
     assert result.requests_made == 17
@@ -443,12 +444,14 @@ def test_missing_target_start_fetches_bounded_dates_from_drawing_deadline():
 
     result = build_external_collection(target, provider, aliases={})
 
-    expected_dates = tuple(
-        (target.deadline + timedelta(days=offset)).date() for offset in range(2)
+    expected_dates = (
+        (target.deadline - timedelta(days=1)).date(),
+        target.deadline.date(),
+        (target.deadline + timedelta(days=1)).date(),
     )
     assert provider.schedule_calls == [
-        ("football", expected_dates),
-        ("hockey", expected_dates),
+        *( ("football", (requested_date,)) for requested_date in expected_dates),
+        *( ("hockey", (requested_date,)) for requested_date in expected_dates),
     ]
     assert all(event.starts_at == "" for event in result.events)
     assert all(event.match_status != "matched" for event in result.events)
@@ -515,6 +518,213 @@ def test_schedule_quota_failure_stops_provider_calls_for_remaining_sports():
         row.probability_source == "totobrief_bk_fallback" for row in result.events
     )
     assert all(row.fallback_reason for row in result.events)
+
+
+def test_schedule_collection_records_one_date_results_and_eligibility():
+    result = build_external_collection(target_drawing(), MixedProvider(), aliases={})
+
+    requested_dates = [
+        (item.sport, item.requested_date.isoformat())
+        for item in result.requested_schedule_dates
+    ]
+    assert requested_dates == [
+        ("football", aware_now().date().isoformat()),
+        ("hockey", aware_now().date().isoformat()),
+    ]
+    assert result.successful_schedule_dates == result.requested_schedule_dates
+    assert result.failed_schedule_dates == ()
+    assert result.target_fingerprint
+    assert result.missing_start_horizon_days == 2
+    assert result.eligibility.status == "playable"
+    assert result.eligibility.totobrief_count == 15
+    assert result.eligibility.provider_count == 0
+
+
+def test_five_day_missing_start_horizon_requests_only_its_utc_coverage():
+    class EmptyProvider:
+        provider_name = "api-sports"
+        quota_state = QuotaState(100, 90, 10, 9)
+
+        def __init__(self):
+            self.schedule_calls = []
+
+        def fetch_schedule(self, sport, dates):
+            self.schedule_calls.append((sport, dates))
+            return ()
+
+        def fetch_event_markets(self, sport, provider_event_id):
+            raise AssertionError("markets must not be fetched without a match")
+
+    original = target_drawing()
+    deadline = datetime(2026, 7, 15, 21, 30, tzinfo=timezone.utc)
+    target = replace(
+        original,
+        deadline=deadline,
+        events=tuple(
+            replace(event, starts_at=None, deadline=deadline)
+            for event in original.events
+        ),
+    )
+    provider = EmptyProvider()
+
+    result = build_external_collection(
+        target,
+        provider,
+        aliases={},
+        missing_start_horizon_days=5,
+    )
+
+    expected_dates = tuple(
+        (deadline + timedelta(days=offset)).date()
+        for offset in range(6)
+    )
+    assert provider.schedule_calls == [
+        *( ("football", (requested_date,)) for requested_date in expected_dates),
+        *( ("hockey", (requested_date,)) for requested_date in expected_dates),
+    ]
+    requested_dates = [
+        (item.sport, item.requested_date)
+        for item in result.requested_schedule_dates
+    ]
+    assert requested_dates == [
+        *( ("football", requested_date) for requested_date in expected_dates),
+        *( ("hockey", requested_date) for requested_date in expected_dates),
+    ]
+
+
+def test_schedule_date_failure_preserves_other_dates_and_only_affects_its_target():
+    class OneDateFailureProvider(MixedProvider):
+        def fetch_schedule(self, sport, dates):
+            requested_date = dates[0]
+            self.requests_made += 1
+            self.schedule_calls.append((sport, dates))
+            if (
+                sport == "football"
+                and requested_date == (aware_now() + timedelta(days=1)).date()
+            ):
+                raise APISportsError("API key must not appear in collection provenance")
+            return tuple(
+                ProviderEvent(
+                    provider=self.provider_name,
+                    provider_event_id=f"{sport}-{order}",
+                    sport=sport,
+                    league="League",
+                    starts_at=event.starts_at,
+                    home_team=event.home_team,
+                    away_team=event.away_team,
+                    fetched_at=aware_now(),
+                    payload_hash=f"schedule-{sport}-{order}",
+                )
+                for order, event in enumerate(self.target.events)
+                if event.sport == sport and event.starts_at.date() == requested_date
+            )
+
+    target = multi_date_target_drawing()
+    result = build_external_collection(
+        target,
+        OneDateFailureProvider(target),
+        aliases={},
+    )
+
+    assert result.events[0].probability_source == "external_consensus"
+    assert result.events[14].match_status == "provider_failure"
+    assert result.events[14].fallback_reason == "provider schedule failure"
+    failed_dates = [
+        (item.sport, item.requested_date.isoformat(), item.error)
+        for item in result.failed_schedule_dates
+    ]
+    assert failed_dates == [
+        (
+            "football",
+            (aware_now() + timedelta(days=1)).date().isoformat(),
+            "provider schedule failure",
+        )
+    ]
+
+
+def test_schedule_quota_failure_marks_current_and_unattempted_dates_without_requests():
+    original = target_drawing()
+    target = replace(
+        original,
+        events=tuple(replace(event, starts_at=None) for event in original.events),
+    )
+    provider = ScheduleQuotaProvider()
+
+    result = build_external_collection(target, provider, aliases={})
+
+    assert provider.schedule_calls == [
+        ("football", (aware_now().date() - timedelta(days=1),))
+    ]
+    assert len(result.requested_schedule_dates) == 6
+    assert result.successful_schedule_dates == ()
+    assert len(result.failed_schedule_dates) == 6
+    assert {item.error for item in result.failed_schedule_dates} == {
+        "quota reserve reached"
+    }
+
+
+def test_unmatched_missing_start_with_failed_schedule_uses_partial_schedule_fallback():
+    original = target_drawing()
+    target = replace(
+        original,
+        events=tuple(replace(event, starts_at=None) for event in original.events),
+    )
+
+    result = build_external_collection(target, FailingProvider(target), aliases={})
+
+    assert result.events[0].match_status == "missing"
+    assert result.events[0].fallback_reason == "partial schedule"
+    assert result.eligibility.status == "unknown"
+
+
+def test_provider_start_becomes_effective_without_overwriting_missing_target_start():
+    original = target_drawing()
+    target = replace(
+        original,
+        events=tuple(
+            replace(event, starts_at=None) if event.event_order == 0 else event
+            for event in original.events
+        ),
+    )
+
+    result = build_external_collection(target, MixedProvider(original), aliases={})
+
+    event = result.events[0]
+    assert event.starts_at == ""
+    assert event.provider_starts_at == original.events[0].starts_at.isoformat()
+    assert event.effective_starts_at == original.events[0].starts_at.isoformat()
+    assert event.effective_start_source == "provider"
+    assert result.eligibility.totobrief_count == 14
+    assert result.eligibility.provider_count == 1
+
+
+def test_schedule_provenance_changes_collection_identity():
+    class FailingSecondDateProvider(MixedProvider):
+        def fetch_schedule(self, sport, dates):
+            requested_date = dates[0]
+            if requested_date == (aware_now() + timedelta(days=1)).date():
+                self.schedule_calls.append((sport, dates))
+                self.requests_made += 1
+                raise APISportsError("not retained")
+            return super().fetch_schedule(sport, dates)
+
+    original = target_drawing()
+    target = replace(
+        original,
+        events=tuple(replace(event, starts_at=None) for event in original.events),
+    )
+    all_successful = build_external_collection(
+        target,
+        MixedProvider(original),
+        aliases={},
+    )
+    with_failed_date = build_external_collection(
+        target,
+        FailingSecondDateProvider(original),
+        aliases={},
+    )
+
+    assert all_successful.collection_id != with_failed_date.collection_id
 
 
 def test_collect_open_external_odds_fetches_resolved_drawing_and_saves(monkeypatch):

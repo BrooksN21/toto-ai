@@ -3,9 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import defaultdict
-from dataclasses import asdict, dataclass
+from dataclasses import InitVar, asdict, dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.external_odds.api_sports import APISportsError, QuotaExhausted
@@ -23,13 +24,28 @@ from toto_ai.external_odds.domain import (
     TargetDrawing,
     TargetEvent,
 )
+from toto_ai.external_odds.eligibility import (
+    DrawingEligibility,
+    EffectiveEventStart,
+    classify_drawing_eligibility,
+    target_fingerprint,
+)
 from toto_ai.external_odds.matching import MATCHER_VERSION, MatchDecision, match_event
 from toto_ai.external_odds.targets import parse_target_drawing
 
 CONSENSUS_MINIMUM_BOOKMAKERS = 3
-MISSING_START_LOOKAHEAD_DAYS = 1
 EXTERNAL_CONSENSUS = "external_consensus"
 TOTOBRIEF_BK_FALLBACK = "totobrief_bk_fallback"
+_MOSCOW = ZoneInfo("Europe/Moscow")
+_UNKNOWN_ELIGIBILITY = DrawingEligibility(
+    status="unknown",
+    earliest_start=None,
+    latest_start=None,
+    span_days=0,
+    missing_event_orders=tuple(range(15)),
+    totobrief_count=0,
+    provider_count=0,
+)
 
 
 @dataclass(frozen=True)
@@ -56,6 +72,14 @@ class ExternalBookmakerQuoteRecord:
     rejection_reason: str | None
     source_count: int
     source_provenance: tuple[ExternalMarketProvenanceRecord, ...]
+
+
+@dataclass(frozen=True)
+class ScheduleDateResult:
+    sport: Sport
+    requested_date: date
+    events: tuple[ProviderEvent, ...]
+    error: str | None
 
 
 @dataclass(frozen=True)
@@ -87,6 +111,23 @@ class ExternalEventDispositionRecord:
     payload_hash: str
     match_orientation: str = "none"
     bookmaker_quotes: tuple[ExternalBookmakerQuoteRecord, ...] = ()
+    provider_starts_at: InitVar[str | None] = None
+    effective_starts_at: InitVar[str | None] = None
+    effective_start_source: InitVar[str] = "unresolved"
+
+    def __post_init__(
+        self,
+        provider_starts_at: str | None,
+        effective_starts_at: str | None,
+        effective_start_source: str,
+    ) -> None:
+        object.__setattr__(self, "provider_starts_at", provider_starts_at)
+        object.__setattr__(self, "effective_starts_at", effective_starts_at)
+        object.__setattr__(
+            self,
+            "effective_start_source",
+            effective_start_source,
+        )
 
 
 @dataclass(frozen=True)
@@ -106,6 +147,44 @@ class ExternalCollectionSnapshot:
     minute_remaining: int | None
     status: str
     events: tuple[ExternalEventDispositionRecord, ...]
+    target_fingerprint: InitVar[str] = ""
+    missing_start_horizon_days: InitVar[int] = 2
+    requested_schedule_dates: InitVar[tuple[ScheduleDateResult, ...]] = ()
+    successful_schedule_dates: InitVar[tuple[ScheduleDateResult, ...]] = ()
+    failed_schedule_dates: InitVar[tuple[ScheduleDateResult, ...]] = ()
+    eligibility: InitVar[DrawingEligibility] = _UNKNOWN_ELIGIBILITY
+
+    def __post_init__(
+        self,
+        target_fingerprint: str,
+        missing_start_horizon_days: int,
+        requested_schedule_dates: tuple[ScheduleDateResult, ...],
+        successful_schedule_dates: tuple[ScheduleDateResult, ...],
+        failed_schedule_dates: tuple[ScheduleDateResult, ...],
+        eligibility: DrawingEligibility,
+    ) -> None:
+        object.__setattr__(self, "target_fingerprint", target_fingerprint)
+        object.__setattr__(
+            self,
+            "missing_start_horizon_days",
+            missing_start_horizon_days,
+        )
+        object.__setattr__(
+            self,
+            "requested_schedule_dates",
+            requested_schedule_dates,
+        )
+        object.__setattr__(
+            self,
+            "successful_schedule_dates",
+            successful_schedule_dates,
+        )
+        object.__setattr__(
+            self,
+            "failed_schedule_dates",
+            failed_schedule_dates,
+        )
+        object.__setattr__(self, "eligibility", eligibility)
 
 
 @dataclass(frozen=True)
@@ -124,11 +203,17 @@ def build_external_collection(
     target: TargetDrawing,
     provider: ExternalOddsProvider,
     aliases: dict[str, str],
+    missing_start_horizon_days: int = 2,
 ) -> ExternalCollectionSnapshot:
+    _validate_missing_start_horizon_days(missing_start_horizon_days)
     request_counter = _RequestCounter(provider)
     provider_name = provider.provider_name
-    schedules, schedule_failures = _fetch_schedules(target, provider, request_counter)
-    decisions = _match_targets(target, schedules, schedule_failures, aliases)
+    schedule_results = _fetch_schedules(
+        target,
+        request_counter,
+        missing_start_horizon_days,
+    )
+    decisions = _match_targets(target, schedule_results, aliases)
 
     market_cache: dict[tuple[Sport, str], tuple[ProviderMarket, ...]] = {}
     quota_stopped = False
@@ -221,11 +306,38 @@ def build_external_collection(
     ordered_rows = tuple(sorted(rows, key=lambda row: row.event_order))
     status = "complete" if len(ordered_rows) == 15 else "partial"
     quota = provider.quota_state
+    target_identity = target_fingerprint(
+        target.drawing_id,
+        target.drawing_number,
+        target.deadline,
+        target.events,
+    )
+    eligibility = classify_drawing_eligibility(
+        tuple(
+            _effective_event_start(
+                event,
+                decisions[event.event_order].provider_event,
+            )
+            for event in target.events
+        )
+    )
+    successful_schedule_dates = tuple(
+        result for result in schedule_results if result.error is None
+    )
+    failed_schedule_dates = tuple(
+        result for result in schedule_results if result.error is not None
+    )
     body = _collection_identity_payload(
         target=target,
         provider=provider_name,
         observed_at=observed_at,
         events=ordered_rows,
+        target_fingerprint_value=target_identity,
+        missing_start_horizon_days=missing_start_horizon_days,
+        requested_schedule_dates=schedule_results,
+        successful_schedule_dates=successful_schedule_dates,
+        failed_schedule_dates=failed_schedule_dates,
+        eligibility=eligibility,
     )
     collection_id = _hash_payload(body)
     return ExternalCollectionSnapshot(
@@ -244,6 +356,12 @@ def build_external_collection(
         minute_remaining=quota.minute_remaining,
         status=status,
         events=ordered_rows,
+        target_fingerprint=target_identity,
+        missing_start_horizon_days=missing_start_horizon_days,
+        requested_schedule_dates=schedule_results,
+        successful_schedule_dates=successful_schedule_dates,
+        failed_schedule_dates=failed_schedule_dates,
+        eligibility=eligibility,
     )
 
 
@@ -353,56 +471,109 @@ def _provider_counter(provider: ExternalOddsProvider, name: str) -> int | None:
 
 def _fetch_schedules(
     target: TargetDrawing,
-    provider: ExternalOddsProvider,
     request_counter: _RequestCounter,
-) -> tuple[dict[Sport, tuple[ProviderEvent, ...]], dict[Sport, str]]:
+    missing_start_horizon_days: int,
+) -> tuple[ScheduleDateResult, ...]:
     required_dates: dict[Sport, set[date]] = defaultdict(set)
     for event in target.events:
         if event.sport in {"football", "hockey"}:
             if event.starts_at is not None:
-                required_dates[event.sport].add(event.starts_at.date())
+                required_dates[event.sport].add(
+                    event.starts_at.astimezone(timezone.utc).date()
+                )
             else:
                 required_dates[event.sport].update(
-                    (target.deadline + timedelta(days=offset)).date()
-                    for offset in range(MISSING_START_LOOKAHEAD_DAYS + 1)
+                    _missing_start_request_dates(
+                        target.deadline,
+                        missing_start_horizon_days,
+                    )
                 )
 
-    schedules: dict[Sport, tuple[ProviderEvent, ...]] = {}
-    failures: dict[Sport, str] = {}
-    sports = tuple(sorted(required_dates))
-    for index, sport in enumerate(sports):
-        dates = tuple(sorted(required_dates[sport]))
-        try:
-            schedules[sport] = request_counter.fetch_schedule(sport, dates)
-        except QuotaExhausted:
-            for remaining_sport in sports[index:]:
-                failures[remaining_sport] = "quota reserve reached"
-            break
-        except APISportsError as error:
-            failures[sport] = f"provider schedule failure: {error}"
-        except Exception as error:
-            failures[sport] = (
-                f"provider schedule failure: {error.__class__.__name__}"
+    requested = tuple(
+        (sport, requested_date)
+        for sport in sorted(required_dates)
+        for requested_date in sorted(required_dates[sport])
+    )
+    results: list[ScheduleDateResult] = []
+    quota_stopped = False
+    for sport, requested_date in requested:
+        if quota_stopped:
+            results.append(
+                ScheduleDateResult(
+                    sport=sport,
+                    requested_date=requested_date,
+                    events=(),
+                    error="quota reserve reached",
+                )
             )
-    return schedules, failures
+            continue
+        try:
+            events = request_counter.fetch_schedule(sport, (requested_date,))
+            results.append(
+                ScheduleDateResult(
+                    sport=sport,
+                    requested_date=requested_date,
+                    events=events,
+                    error=None,
+                )
+            )
+        except QuotaExhausted:
+            quota_stopped = True
+            results.append(
+                ScheduleDateResult(
+                    sport=sport,
+                    requested_date=requested_date,
+                    events=(),
+                    error="quota reserve reached",
+                )
+            )
+        except Exception:
+            results.append(
+                ScheduleDateResult(
+                    sport=sport,
+                    requested_date=requested_date,
+                    events=(),
+                    error="provider schedule failure",
+                )
+            )
+    return tuple(results)
 
 
 def _match_targets(
     target: TargetDrawing,
-    schedules: dict[Sport, tuple[ProviderEvent, ...]],
-    schedule_failures: dict[Sport, str],
+    schedule_results: tuple[ScheduleDateResult, ...],
     aliases: dict[str, str],
 ) -> dict[int, _MatchedTarget]:
+    schedules = _successful_schedule_events(schedule_results)
+    failures = {
+        (result.sport, result.requested_date): result.error
+        for result in schedule_results
+        if result.error is not None
+    }
+    failures_by_sport = {
+        sport
+        for sport, _ in failures
+    }
     decisions: dict[int, _MatchedTarget] = {}
     for event in target.events:
-        if event.sport in schedule_failures:
+        if event.sport not in {"football", "hockey"}:
+            decision = match_event(event, (), aliases)
+            decisions[event.event_order] = _MatchedTarget(decision, None)
+            continue
+        if (
+            event.starts_at is not None
+            and (event.sport, event.starts_at.astimezone(timezone.utc).date())
+            in failures
+        ):
             decisions[event.event_order] = _MatchedTarget(
                 decision=MatchDecision(
                     status="provider_failure",
                     provider_event_id=None,
                     matcher_version=MATCHER_VERSION,
                     candidate_ids=(),
-                    reason=schedule_failures[event.sport],
+                    reason=failures[
+                        (event.sport, event.starts_at.astimezone(timezone.utc).date())
+                    ],
                 ),
                 provider_event=None,
             )
@@ -412,12 +583,43 @@ def _match_targets(
             schedules.get(event.sport, ()),
             aliases,
         )
+        if (
+            event.starts_at is None
+            and decision.status == "missing"
+            and event.sport in failures_by_sport
+        ):
+            decision = MatchDecision(
+                status=decision.status,
+                provider_event_id=decision.provider_event_id,
+                matcher_version=decision.matcher_version,
+                candidate_ids=decision.candidate_ids,
+                reason="partial schedule",
+                orientation=decision.orientation,
+            )
         provider_event = _matched_provider_event(
             decision,
             schedules.get(event.sport, ()),
         )
         decisions[event.event_order] = _MatchedTarget(decision, provider_event)
     return decisions
+
+
+def _successful_schedule_events(
+    schedule_results: tuple[ScheduleDateResult, ...],
+) -> dict[Sport, tuple[ProviderEvent, ...]]:
+    events_by_sport: dict[Sport, dict[str, ProviderEvent]] = defaultdict(dict)
+    for result in schedule_results:
+        if result.error is not None:
+            continue
+        for event in result.events:
+            events_by_sport[result.sport].setdefault(event.provider_event_id, event)
+    return {
+        sport: tuple(
+            events_by_sport[sport][event_id]
+            for event_id in sorted(events_by_sport[sport])
+        )
+        for sport in events_by_sport
+    }
 
 
 def _matched_provider_event(
@@ -525,6 +727,7 @@ def _event_record(
     payload_hash: str,
     quotes: tuple[ExternalBookmakerQuoteRecord, ...],
 ) -> ExternalEventDispositionRecord:
+    effective_start = _effective_event_start(event, provider_event)
     return ExternalEventDispositionRecord(
         drawing_id=event.drawing_id,
         event_order=event.event_order,
@@ -559,6 +762,17 @@ def _event_record(
         payload_hash=payload_hash,
         match_orientation=decision.orientation or "none",
         bookmaker_quotes=quotes,
+        provider_starts_at=(
+            _iso_datetime(provider_event.starts_at)
+            if provider_event is not None
+            else None
+        ),
+        effective_starts_at=(
+            _iso_datetime(effective_start.starts_at)
+            if effective_start.starts_at is not None
+            else None
+        ),
+        effective_start_source=effective_start.source,
     )
 
 
@@ -608,6 +822,7 @@ def _event_payload(
     fallback_reason: str | None,
     quotes: tuple[ExternalBookmakerQuoteRecord, ...],
 ) -> dict[str, object]:
+    effective_start = _effective_event_start(event, provider_event)
     return {
         "target": _target_event_payload(event),
         "match": {
@@ -622,6 +837,7 @@ def _event_payload(
             {
                 "fetched_at": _iso_datetime(provider_event.fetched_at),
                 "payload_hash": provider_event.payload_hash,
+                "starts_at": _iso_datetime(provider_event.starts_at),
             }
             if provider_event is not None
             else None
@@ -632,6 +848,14 @@ def _event_payload(
         "odds_age_hours": odds_age_hours,
         "fallback_reason": fallback_reason,
         "quotes": tuple(asdict(quote) for quote in quotes),
+        "effective_start": {
+            "starts_at": (
+                _iso_datetime(effective_start.starts_at)
+                if effective_start.starts_at is not None
+                else None
+            ),
+            "source": effective_start.source,
+        },
     }
 
 
@@ -641,6 +865,12 @@ def _collection_identity_payload(
     provider: str,
     observed_at: datetime,
     events: tuple[ExternalEventDispositionRecord, ...],
+    target_fingerprint_value: str,
+    missing_start_horizon_days: int,
+    requested_schedule_dates: tuple[ScheduleDateResult, ...],
+    successful_schedule_dates: tuple[ScheduleDateResult, ...],
+    failed_schedule_dates: tuple[ScheduleDateResult, ...],
+    eligibility: DrawingEligibility,
 ) -> dict[str, object]:
     return {
         "drawing": {
@@ -651,6 +881,22 @@ def _collection_identity_payload(
             "external_observed_at": _iso_datetime(observed_at),
         },
         "provider": provider,
+        "target_fingerprint": target_fingerprint_value,
+        "missing_start_horizon_days": missing_start_horizon_days,
+        "schedule_dates": {
+            "requested": _schedule_date_payload(requested_schedule_dates),
+            "successful": _schedule_date_payload(successful_schedule_dates),
+            "failed": _schedule_date_payload(failed_schedule_dates),
+        },
+        "eligibility": {
+            "status": eligibility.status,
+            "earliest_start": _optional_datetime_or_none(eligibility.earliest_start),
+            "latest_start": _optional_datetime_or_none(eligibility.latest_start),
+            "span_days": eligibility.span_days,
+            "missing_event_orders": eligibility.missing_event_orders,
+            "totobrief_count": eligibility.totobrief_count,
+            "provider_count": eligibility.provider_count,
+        },
         "target_payload": tuple(
             _target_event_payload(event) for event in target.events
         ),
@@ -673,6 +919,22 @@ def _collection_identity_payload(
             "maximum_odds_age_seconds": int(MAXIMUM_ODDS_AGE.total_seconds()),
         },
     }
+
+
+def _schedule_date_payload(
+    schedule_dates: tuple[ScheduleDateResult, ...],
+) -> tuple[dict[str, str | None], ...]:
+    return tuple(
+        {
+            "sport": result.sport,
+            "requested_date": result.requested_date.isoformat(),
+            "error": result.error,
+        }
+        for result in sorted(
+            schedule_dates,
+            key=lambda result: (result.sport, result.requested_date),
+        )
+    )
 
 
 def _target_event_payload(event: TargetEvent) -> dict[str, object]:
@@ -816,6 +1078,67 @@ def _iso_datetime(value: datetime) -> str:
 
 def _optional_iso_datetime(value: datetime | None) -> str:
     return "" if value is None else _iso_datetime(value)
+
+
+def _optional_datetime_or_none(value: datetime | None) -> str | None:
+    return None if value is None else _iso_datetime(value)
+
+
+def _validate_missing_start_horizon_days(value: int) -> None:
+    if (
+        not isinstance(value, int)
+        or isinstance(value, bool)
+        or not 1 <= value <= 5
+    ):
+        raise ValueError(
+            "missing_start_horizon_days must be an integer from 1 through 5"
+        )
+
+
+def _missing_start_request_dates(
+    deadline: datetime,
+    missing_start_horizon_days: int,
+) -> tuple[date, ...]:
+    local_deadline_date = deadline.astimezone(_MOSCOW).date()
+    local_horizon_start = datetime.combine(
+        local_deadline_date,
+        datetime.min.time(),
+        tzinfo=_MOSCOW,
+    )
+    local_horizon_end = local_horizon_start + timedelta(
+        days=missing_start_horizon_days
+    )
+    first_utc_date = local_horizon_start.astimezone(timezone.utc).date()
+    last_utc_date = (
+        local_horizon_end - timedelta(microseconds=1)
+    ).astimezone(timezone.utc).date()
+    return tuple(
+        first_utc_date + timedelta(days=offset)
+        for offset in range((last_utc_date - first_utc_date).days + 1)
+    )
+
+
+def _effective_event_start(
+    event: TargetEvent,
+    provider_event: ProviderEvent | None,
+) -> EffectiveEventStart:
+    if event.starts_at is not None:
+        return EffectiveEventStart(
+            event_order=event.event_order,
+            starts_at=event.starts_at,
+            source="totobrief",
+        )
+    if provider_event is not None:
+        return EffectiveEventStart(
+            event_order=event.event_order,
+            starts_at=provider_event.starts_at,
+            source="provider",
+        )
+    return EffectiveEventStart(
+        event_order=event.event_order,
+        starts_at=None,
+        source="unresolved",
+    )
 
 
 def _external_observed_at(
