@@ -1122,6 +1122,42 @@ experimental prize-fund proxy and independent-event crowd model. `PLAY` remains
 model output, not a profit guarantee. External probability collection, event
 matching, and prospective observed-payout validation remain separate work.
 
+## Latest Completed Task: External Odds Coverage Audit Reports and CLI
+
+Task 6 of the API-Sports coverage audit is complete. Added a read-only
+coverage audit over the latest complete stored external-odds snapshot per
+drawing. The audit reports all 15 event dispositions for every audited drawing,
+including explicit silent-loss diagnostics if a stored snapshot is malformed,
+and aggregates overall, per-sport, per-league, and per-drawing metrics for
+unique matches, missing/ambiguous/unknown-sport outcomes, consensus coverage at
+one/two/three bookmakers, fallback reason classes, quota/provider failures,
+fallback events per drawing, and requests consumed per drawing.
+
+The prospective gate returns `PENDING` below 30 drawings or 450 events, `GO`
+only when the registered thresholds pass, and `STOP` otherwise. The registered
+thresholds remain at least 80% unique matching, at least 70% usable consensus,
+zero ambiguous matches, and explicit external/fallback disposition for every
+event. Per-sport and per-league metrics are diagnostic only and add no gate.
+
+Added deterministic rollback-safe external coverage CSV/Markdown reports. The
+CSV contains one row per event disposition followed by stable aggregate rows.
+The Markdown records configuration, provenance/quota summaries, overall/sport/
+league/drawing metrics, fallback reasons, gate predicates, and explicit
+statements that coverage is neither probability quality nor profitability
+evidence.
+
+Added `collect-external-odds --open --provider api-sports --db ...` and
+`audit-external-coverage --db ... --last ... --min-bookmakers ...`.
+Collection requires `--open`, `provider=api-sports`, and `API_SPORTS_KEY`
+before constructing the provider. Audit opens the existing SQLite database in
+read-only mode, performs no migrations or network calls, and writes reports
+from stored snapshots only. This remains audit-only and does not change
+`ev-package` or `PLAY`.
+
+Verification before final commit: focused audit/CLI tests passed (`13 passed`),
+full pytest passed (`607 passed`), both new CLI help commands exited
+successfully, and repository-wide Ruff passed.
+
 ## Approved Next Design: API-Sports Coverage Audit
 
 The next isolated subsystem is a prospective, free-tier-first external odds

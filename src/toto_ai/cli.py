@@ -1,5 +1,7 @@
 import math
+import os
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
@@ -61,6 +63,11 @@ from toto_ai.ev.drawing import (
 )
 from toto_ai.ev.models import EVConfig
 from toto_ai.ev.reports import write_ev_backtest_reports, write_ev_package_reports
+from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+from toto_ai.external_odds.audit import CoverageAudit, audit_external_coverage
+from toto_ai.external_odds.collection import collect_open_external_odds
+from toto_ai.external_odds.matching import load_aliases
+from toto_ai.external_odds.reports import write_external_coverage_reports
 from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.brief_backtest import (
     run_brief_backtest,
@@ -745,6 +752,69 @@ def backtest_ev_command(
 
     print(_ev_backtest_summary_table(result))
     print(f"Reports written to {csv_path} and {markdown_path}")
+
+
+@app.command("collect-external-odds")
+def collect_external_odds_command(
+    open: bool = typer.Option(False),  # noqa: A002
+    provider: str = typer.Option("api-sports"),
+    db: str = typer.Option("data/toto.db"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    quota_reserve: int = typer.Option(10, min=0),
+) -> None:
+    """Collect one prospective external-odds snapshot for the open drawing."""
+    if not open:
+        raise typer.BadParameter("--open is required")
+    if provider != "api-sports":
+        raise typer.BadParameter("provider must be api-sports")
+    api_key = os.environ.get("API_SPORTS_KEY", "")
+    if not api_key.strip():
+        raise typer.BadParameter("API_SPORTS_KEY is required")
+
+    try:
+        engine = init_db(db)
+        session_factory = get_session_factory(engine)
+        provider_client = APISportsClient(
+            api_key,
+            quota_reserve=quota_reserve,
+        )
+        result = collect_open_external_odds(
+            TotoBriefClient(),
+            provider_client,
+            session_factory,
+            load_aliases(aliases),
+            fetched_at=datetime.now(timezone.utc),
+        )
+    except (APISportsError, OSError, SQLAlchemyError, ValueError) as error:
+        raise typer.BadParameter(
+            _external_error_message(error, secret=api_key)
+        ) from error
+
+    print(_external_collection_table(result))
+
+
+@app.command("audit-external-coverage")
+def audit_external_coverage_command(
+    db: str = typer.Option("data/toto.db"),
+    last: int = typer.Option(30, min=1),
+    min_bookmakers: int = typer.Option(3, min=1),
+    report_dir: str = typer.Option("reports"),
+) -> None:
+    """Audit stored external-odds coverage without provider network access."""
+    try:
+        engine = open_readonly_db(db)
+        session_factory = get_session_factory(engine)
+        audit = audit_external_coverage(
+            session_factory,
+            last=last,
+            minimum_bookmakers=min_bookmakers,
+        )
+        paths = write_external_coverage_reports(audit, report_dir=report_dir)
+    except (OSError, SQLAlchemyError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(_external_coverage_table(audit))
+    print(f"Reports written to {paths[0]} and {paths[1]}")
 
 
 @app.command()
@@ -1935,6 +2005,62 @@ def _ev_backtest_summary_table(result: EVBacktestResult) -> Table:
             "required" if row.model_review_required else "no",
         )
     return table
+
+
+def _external_collection_table(result) -> Table:
+    table = Table(title="External Odds Collection")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    fallback_count = sum(
+        row.probability_source == "totobrief_bk_fallback"
+        for row in result.events
+    )
+    consensus_count = sum(
+        row.probability_source == "external_consensus"
+        for row in result.events
+    )
+    table.add_row("collection id", result.collection_id)
+    table.add_row("drawing id", _format_value(result.drawing_id))
+    table.add_row("drawing number", _format_value(result.drawing_number))
+    table.add_row("provider", result.provider)
+    table.add_row("status", result.status)
+    table.add_row("events", _format_value(len(result.events)))
+    table.add_row("external consensus", _format_value(consensus_count))
+    table.add_row("fallback", _format_value(fallback_count))
+    table.add_row("requests made", _format_value(result.requests_made))
+    table.add_row("daily remaining", _format_value(result.daily_remaining))
+    table.add_row("minute remaining", _format_value(result.minute_remaining))
+    return table
+
+
+def _external_coverage_table(audit: CoverageAudit) -> Table:
+    table = Table(title="External Odds Coverage")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("provider", audit.provider)
+    table.add_row("drawings", _format_value(audit.drawings))
+    table.add_row("events", _format_value(audit.total.target_count))
+    table.add_row("unique match rate", f"{audit.total.unique_match_rate:.2%}")
+    table.add_row("consensus rate", f"{audit.total.usable_consensus_rate:.2%}")
+    table.add_row("fallback", _format_value(audit.total.fallback_count))
+    table.add_row("ambiguous", _format_value(audit.total.ambiguous_count))
+    table.add_row(
+        "explicit dispositions",
+        _format_value(audit.total.explicit_dispositions),
+    )
+    table.add_row("decision", audit.gate.decision)
+    table.add_row(
+        "reasons",
+        ", ".join(audit.gate.reasons) if audit.gate.reasons else "none",
+    )
+    return table
+
+
+def _external_error_message(error: Exception, *, secret: str) -> str:
+    message = str(error)
+    if secret:
+        message = message.replace(secret, "[redacted]")
+    return message
 
 
 def _brief_matches_table(matches: list[object], brief: list[str]) -> Table:
