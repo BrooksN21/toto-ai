@@ -100,7 +100,9 @@
   duplicate-key anomaly coalescing under the unchanged uniqueness constraint.
   Task 6 adds read-only stored-snapshot coverage auditing, deterministic atomic
   CSV/Markdown reports, `collect-external-odds`, and
-  `audit-external-coverage`.
+  `audit-external-coverage`. Task 6 review hardening completes the aggregate and
+  per-scope report schema, exact fallback classification, bookmaker-threshold
+  diagnostics, and dedicated report atomicity/determinism coverage.
 - Remaining coverage-audit work: end-to-end acceptance.
 - Run the free-tier prospective gate on at least 30 future drawings and 450
   events before external probabilities can influence package generation.

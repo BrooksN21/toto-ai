@@ -22,9 +22,11 @@ CSV_FIELDS = (
     "sport",
     "league",
     "match_status",
+    "provider_event_id",
     "probability_source",
     "eligible_bookmaker_count",
     "fallback_reason",
+    "requests_made",
     "target_count",
     "explicit_dispositions",
     "unique_match_count",
@@ -43,6 +45,9 @@ CSV_FIELDS = (
     "consensus_3_rate",
     "usable_consensus_count",
     "usable_consensus_rate",
+    "stale_count",
+    "semantic_count",
+    "incomplete_market_count",
     "fallback_count",
     "quota_count",
     "provider_error_count",
@@ -92,9 +97,11 @@ def _render_csv(audit: CoverageAudit) -> str:
                 "sport": row.sport,
                 "league": row.league,
                 "match_status": row.match_status,
+                "provider_event_id": row.provider_event_id,
                 "probability_source": row.probability_source,
                 "eligible_bookmaker_count": row.eligible_bookmaker_count,
                 "fallback_reason": row.fallback_reason,
+                "requests_made": row.requests_made,
             }
         )
     for metric in (
@@ -130,6 +137,9 @@ def _metric_csv_row(metric: CoverageMetrics) -> dict[str, object]:
         "consensus_3_rate": f"{metric.consensus_3_rate:.12f}",
         "usable_consensus_count": metric.usable_consensus_count,
         "usable_consensus_rate": f"{metric.usable_consensus_rate:.12f}",
+        "stale_count": metric.stale_count,
+        "semantic_count": metric.semantic_count,
+        "incomplete_market_count": metric.incomplete_market_count,
         "fallback_count": metric.fallback_count,
         "quota_count": metric.quota_count,
         "provider_error_count": metric.provider_error_count,
@@ -242,21 +252,47 @@ def _metric_bullets(metric: CoverageMetrics) -> str:
 
 def _metric_table(metrics: tuple[CoverageMetrics, ...]) -> list[str]:
     lines = [
-        "| Scope | Target | Unique | Consensus | Missing | Ambiguous | "
-        "Unknown | Fallback |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| Scope | Target | Explicit | Unique Match | Missing | Ambiguous | "
+        "Unknown Sport | Consensus >=1 | Consensus >=2 | Consensus >=3 | "
+        "Usable Consensus | Stale | Semantic | Incomplete Market | Quota | "
+        "Provider Error | Fallback |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | "
+        "---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for metric in metrics:
+        usable_consensus = _count_rate(
+            metric.usable_consensus_count,
+            metric.usable_consensus_rate,
+        )
         lines.append(
             f"| {metric.name} | {metric.target_count} | "
-            f"{metric.unique_match_rate:.6f} | "
-            f"{metric.usable_consensus_rate:.6f} | "
-            f"{metric.missing_count} | {metric.ambiguous_count} | "
-            f"{metric.unknown_sport_count} | {metric.fallback_count} |"
+            f"{metric.explicit_dispositions} | "
+            f"{_count_rate(metric.unique_match_count, metric.unique_match_rate)} | "
+            f"{_count_rate(metric.missing_count, metric.missing_rate)} | "
+            f"{_count_rate(metric.ambiguous_count, metric.ambiguous_rate)} | "
+            f"{_count_rate(metric.unknown_sport_count, metric.unknown_sport_rate)} | "
+            f"{_count_rate(metric.consensus_1_count, metric.consensus_1_rate)} | "
+            f"{_count_rate(metric.consensus_2_count, metric.consensus_2_rate)} | "
+            f"{_count_rate(metric.consensus_3_count, metric.consensus_3_rate)} | "
+            f"{usable_consensus} | "
+            f"{metric.stale_count} | {metric.semantic_count} | "
+            f"{metric.incomplete_market_count} | {metric.quota_count} | "
+            f"{metric.provider_error_count} | {metric.fallback_count} |"
         )
     if not metrics:
-        lines.append("| none | 0 | 0.000000 | 0.000000 | 0 | 0 | 0 | 0 |")
+        values = [
+            "none",
+            "0",
+            "0",
+            *(["0 (0.000000)"] * 8),
+            *(["0"] * 6),
+        ]
+        lines.append(f"| {' | '.join(values)} |")
     return lines
+
+
+def _count_rate(count: int, rate: float) -> str:
+    return f"{count} ({rate:.6f})"
 
 
 def _write_atomic_pair(

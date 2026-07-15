@@ -1158,6 +1158,33 @@ Verification before final commit: focused audit/CLI tests passed (`13 passed`),
 full pytest passed (`607 passed`), both new CLI help commands exited
 successfully, and repository-wide Ruff passed.
 
+## Task 6 Review Hardening: Complete Coverage Report Schema
+
+Coverage reports now expose every `CoverageMetrics` field consistently.
+Aggregate CSV rows include stale, semantic, and incomplete-market counts, while
+event rows also expose provider event IDs and per-collection request counts.
+Sport, league, and drawing Markdown tables include explicit disposition,
+match, missing/ambiguous/unknown-sport, bookmaker availability at one/two/three,
+usable consensus, stale, semantic, incomplete-market, quota, provider-error,
+and fallback metrics in deterministic scope/name order.
+
+Fallback classification now parses only canonical stored consensus-rejection
+tokens. Stale prices, missing outcomes, duplicate bookmaker markets, and
+football/hockey settlement-semantic rejections are counted exactly once per
+event; incidental substrings do not collide with stale, semantic, incomplete,
+quota, or provider-error classes. One- and two-bookmaker availability includes
+matched minimum-bookmaker fallbacks, while usable consensus still requires the
+configured minimum and an external-consensus disposition. The prospective gate
+and its thresholds are unchanged.
+
+Added dedicated report tests for all 15 disposition rows, complete aggregate
+schema/content/order, complete Markdown sections and scope metrics,
+byte-identical repeat writes, and rollback/temporary-file cleanup after a
+`BaseException`. Focused audit/report/CLI verification passed (`28 passed`).
+Full pytest passed (`622 passed`), repository-wide Ruff passed, and both new CLI
+help commands exited successfully with their required options. Exact command
+evidence is also recorded in the ignored Task 6 report.
+
 ## Approved Next Design: API-Sports Coverage Audit
 
 The next isolated subsystem is a prospective, free-tier-first external odds

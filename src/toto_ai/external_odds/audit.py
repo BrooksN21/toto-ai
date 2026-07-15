@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from statistics import median
@@ -17,6 +18,20 @@ from toto_ai.external_odds.storage import (
 )
 
 GateDecision = Literal["PENDING", "GO", "STOP"]
+
+_CONSENSUS_FALLBACK_PATTERN = re.compile(
+    r"^(?:fewer than [1-9][0-9]* eligible bookmakers|"
+    r"external consensus unavailable)(?:: (?P<rejections>.+))?$"
+)
+_STALE_REASONS = frozenset({"stale prices"})
+_SEMANTIC_REASONS = frozenset(
+    {
+        "duplicate bookmaker market",
+        "not full-time three-way",
+        "not regulation three-way",
+    }
+)
+_INCOMPLETE_MARKET_REASONS = frozenset({"missing outcomes"})
 
 
 @dataclass(frozen=True)
@@ -251,10 +266,10 @@ def _metrics(
     missing = sum(row.match_status == "missing" for row in rows)
     ambiguous = sum(row.match_status == "ambiguous" for row in rows)
     unknown_sport = sum(row.match_status == "unknown_sport" for row in rows)
-    consensus_1 = _consensus_count(rows, 1)
-    consensus_2 = _consensus_count(rows, 2)
-    consensus_3 = _consensus_count(rows, 3)
-    usable_consensus = _consensus_count(rows, minimum_bookmakers)
+    consensus_1 = _bookmaker_coverage_count(rows, 1)
+    consensus_2 = _bookmaker_coverage_count(rows, 2)
+    consensus_3 = _bookmaker_coverage_count(rows, 3)
+    usable_consensus = _usable_consensus_count(rows, minimum_bookmakers)
     reasons = tuple(row.fallback_reason for row in rows if row.fallback_reason)
     return CoverageMetrics(
         scope=scope,
@@ -282,8 +297,11 @@ def _metrics(
         incomplete_market_count=sum(
             _is_incomplete_market(reason) for reason in reasons
         ),
-        quota_count=sum("quota" in reason for reason in reasons),
-        provider_error_count=sum("provider" in reason for reason in reasons),
+        quota_count=sum(reason == "quota reserve reached" for reason in reasons),
+        provider_error_count=sum(
+            reason in {"provider schedule failure", "provider odds failure"}
+            for reason in reasons
+        ),
         fallback_count=sum(
             row.probability_source == TOTOBRIEF_BK_FALLBACK
             or row.probability_source == "missing_disposition"
@@ -377,7 +395,21 @@ def _is_explicit_disposition(row: CoverageDisposition) -> bool:
     )
 
 
-def _consensus_count(rows: tuple[CoverageDisposition, ...], minimum: int) -> int:
+def _bookmaker_coverage_count(
+    rows: tuple[CoverageDisposition, ...],
+    minimum: int,
+) -> int:
+    return sum(
+        row.match_status == "matched"
+        and row.eligible_bookmaker_count >= minimum
+        for row in rows
+    )
+
+
+def _usable_consensus_count(
+    rows: tuple[CoverageDisposition, ...],
+    minimum: int,
+) -> int:
     return sum(
         row.probability_source == EXTERNAL_CONSENSUS
         and row.eligible_bookmaker_count >= minimum
@@ -399,23 +431,22 @@ def _normalized_reason(reason: str | None) -> str:
 
 
 def _is_stale(reason: str) -> bool:
-    return "stale" in reason or "age" in reason
+    return bool(_reason_components(reason) & _STALE_REASONS)
 
 
 def _is_semantic(reason: str) -> bool:
-    return (
-        "semantic" in reason
-        or "unknown market" in reason
-        or "unsupported" in reason
-    )
+    return bool(_reason_components(reason) & _SEMANTIC_REASONS)
 
 
 def _is_incomplete_market(reason: str) -> bool:
-    return (
-        "incomplete" in reason
-        or "missing outcome" in reason
-        or "partial market" in reason
-    )
+    return bool(_reason_components(reason) & _INCOMPLETE_MARKET_REASONS)
+
+
+def _reason_components(reason: str) -> frozenset[str]:
+    match = _CONSENSUS_FALLBACK_PATTERN.fullmatch(reason)
+    if match is None or match.group("rejections") is None:
+        return frozenset({reason})
+    return frozenset(match.group("rejections").split(", "))
 
 
 def _rate(count: int, total: int) -> float:

@@ -101,10 +101,12 @@ Important modules:
 - `toto_ai.external_odds.audit` and `toto_ai.external_odds.reports`:
   read-only coverage auditing over the latest complete stored external-odds
   snapshot per drawing, registered prospective GO/PENDING/STOP gate predicates,
-  diagnostic overall/sport/league/drawing metrics, fallback-reason summaries,
-  quota/request summaries, and rollback-safe deterministic CSV/Markdown
-  coverage reports. These modules do not call providers and do not affect
-  playable package decisions.
+  diagnostic overall/sport/league/drawing metrics, exact canonical fallback
+  classification, fallback-reason summaries, quota/request summaries, and
+  rollback-safe deterministic CSV/Markdown coverage reports. Aggregate CSV and
+  every Markdown scope table expose the complete coverage metric schema,
+  including bookmaker availability at thresholds one, two, and three. These
+  modules do not call providers and do not affect playable package decisions.
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
   frozen-holdout exclusion, pre-result package hashing, complete factor
   rankings reused across dynamic banks and thresholds, cumulative realized

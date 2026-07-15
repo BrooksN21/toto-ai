@@ -15,7 +15,6 @@ from toto_ai.external_odds.collection import (
     ExternalEventDispositionRecord,
     ExternalMarketProvenanceRecord,
 )
-from toto_ai.external_odds.reports import write_external_coverage_reports
 from toto_ai.external_odds.storage import save_collection
 
 
@@ -153,25 +152,91 @@ def test_audit_reports_every_disposition_and_fallback_reason():
     assert audit.fallback_reason_counts["quota reserve reached"] == 1
 
 
-def test_reports_are_deterministic_and_atomic(tmp_path):
-    audit = audit_from_counts(
-        drawings=30,
-        events=450,
-        unique_matches=360,
-        usable_consensus=315,
-        consumed_ambiguous=0,
-        explicit_dispositions=450,
-        operational_failures=0,
+@pytest.mark.parametrize(
+    ("reason", "expected"),
+    [
+        ("fewer than 3 eligible bookmakers: stale prices", (1, 0, 0, 0, 0)),
+        ("fewer than 3 eligible bookmakers: missing outcomes", (0, 0, 1, 0, 0)),
+        (
+            "fewer than 3 eligible bookmakers: duplicate bookmaker market",
+            (0, 1, 0, 0, 0),
+        ),
+        (
+            "fewer than 3 eligible bookmakers: not full-time three-way",
+            (0, 1, 0, 0, 0),
+        ),
+        (
+            "fewer than 3 eligible bookmakers: not regulation three-way",
+            (0, 1, 0, 0, 0),
+        ),
+        ("fewer than 3 eligible bookmakers", (0, 0, 0, 0, 0)),
+        ("quota reserve reached", (0, 0, 0, 1, 0)),
+        ("provider odds failure: unavailable", (0, 0, 0, 0, 1)),
+        (
+            "stale prices extended; missing outcomes backup; "
+            "not full-time three-way extra; quota-like; provider-like",
+            (0, 0, 0, 0, 0),
+        ),
+    ],
+)
+def test_fallback_classification_uses_exact_canonical_reasons(reason, expected):
+    audit = audit_external_coverage(
+        _snapshot_session_factory((_collection(1, (reason,)),)),
+        last=1,
+        minimum_bookmakers=3,
     )
 
-    first = write_external_coverage_reports(audit, report_dir=tmp_path)
-    first_bytes = tuple(path.read_bytes() for path in first)
-    second = write_external_coverage_reports(audit, report_dir=tmp_path)
+    assert (
+        audit.total.stale_count,
+        audit.total.semantic_count,
+        audit.total.incomplete_market_count,
+        audit.total.quota_count,
+        audit.total.provider_error_count,
+    ) == expected
 
-    assert tuple(path.read_bytes() for path in second) == first_bytes
-    assert "modeled ROI is not observed ROI" not in second[1].read_text()
-    assert "coverage is not probability quality" in second[1].read_text()
-    assert "coverage is not profitability evidence" in second[1].read_text()
+
+def test_fallback_reason_components_are_classified_once_per_event():
+    audit = audit_external_coverage(
+        _snapshot_session_factory(
+            (
+                _collection(
+                    1,
+                    (
+                        "fewer than 3 eligible bookmakers: "
+                        "duplicate bookmaker market, missing outcomes, "
+                        "not full-time three-way, stale prices",
+                    ),
+                ),
+            )
+        ),
+        last=1,
+        minimum_bookmakers=3,
+    )
+
+    assert audit.total.stale_count == 1
+    assert audit.total.semantic_count == 1
+    assert audit.total.incomplete_market_count == 1
+
+
+def test_bookmaker_threshold_counts_include_matched_minimum_fallbacks():
+    audit = audit_external_coverage(
+        _snapshot_session_factory(
+            (
+                _collection(
+                    1,
+                    ("fewer than 3 eligible bookmakers",),
+                    fallback_bookmaker_counts=(2,),
+                ),
+            )
+        ),
+        last=1,
+        minimum_bookmakers=3,
+    )
+
+    assert audit.total.consensus_1_count == 15
+    assert audit.total.consensus_2_count == 15
+    assert audit.total.consensus_3_count == 14
+    assert audit.total.usable_consensus_count == 14
 
 
 def test_audit_reads_latest_complete_collections_from_storage():
@@ -238,7 +303,12 @@ def _collection(
     fallback_reasons: tuple[str, ...],
     *,
     event_kinds: tuple[str, ...] | None = None,
+    fallback_bookmaker_counts: tuple[int, ...] | None = None,
 ) -> ExternalCollectionSnapshot:
+    if fallback_bookmaker_counts is not None and len(fallback_bookmaker_counts) != len(
+        fallback_reasons
+    ):
+        raise ValueError("fallback bookmaker counts must align with fallback reasons")
     now = aware_now() + timedelta(minutes=drawing_index)
     kinds = event_kinds or (
         *("fallback" for _ in fallback_reasons),
@@ -248,16 +318,30 @@ def _collection(
     for order, kind in enumerate(kinds):
         if kind == "absent":
             continue
-        event = _event(drawing_index, order, kind=kind)
         if kind == "fallback":
+            reason = fallback_reasons[order]
+            status = _status_for_reason(reason)
+            base_kind = {
+                "ambiguous": "ambiguous",
+                "missing": "missing",
+                "provider_failure": "provider_failure",
+                "unknown_sport": "missing",
+            }.get(status, "matched_fallback")
+            event = _event(drawing_index, order, kind=base_kind)
             event = replace(
                 event,
-                match_status=_status_for_reason(fallback_reasons[order]),
-                fallback_reason=fallback_reasons[order],
+                match_status=status,
+                fallback_reason=reason,
                 probability_source="totobrief_bk_fallback",
-                eligible_bookmaker_count=0,
+                eligible_bookmaker_count=(
+                    fallback_bookmaker_counts[order]
+                    if fallback_bookmaker_counts is not None
+                    else 0
+                ),
                 bookmaker_quotes=(),
             )
+        else:
+            event = _event(drawing_index, order, kind=kind)
         events.append(event)
     return ExternalCollectionSnapshot(
         collection_id=f"collection-{drawing_index}",
