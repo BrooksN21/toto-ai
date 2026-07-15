@@ -1,4 +1,31 @@
 {
   "version": 1,
-  "aliases": {}
+  "aliases": {
+    "Англия": "England",
+    "Аргентина": "Argentina",
+    "Аттерт Биссен": "Atert Bissen",
+    "Клаксвик": "KI Klaksvik",
+    "Дечич": "Dečić",
+    "ФК Лиепая": "FK Liepaja",
+    "Майами ФК": "Miami FC",
+    "Инди Элевен": "Indy Eleven",
+    "Готэм(ж)": "NJ/NY Gotham FC W",
+    "Вашингтон Спирит(ж)": "Washington Spirit W",
+    "Полония Варшава": "Polonia Warszawa",
+    "Злин": "Zlin",
+    "Рапид Вена": "Rapid Vienna",
+    "Панатинаикос": "Panathinaikos",
+    "Зальцбург": "Red Bull Salzburg",
+    "Истанбул Башакшехир": "Başakşehir",
+    "Липно Стешев": "Lipno Stęszew",
+    "Уния Сважендз": "Unia Swarzędz",
+    "Кордоба": "Cordoba",
+    "Орландо Пайретс": "Orlando Pirates",
+    "Либертад Лоха": "Libertad",
+    "Текнико Университарио": "Tecnico Universitario",
+    "Леонес дель Норте": "Leones del Norte",
+    "Депортиво Куэнка": "Deportivo Cuenca",
+    "Универсидад Католика Кито": "Universidad Catolica",
+    "ЛДУ Кито": "LDU de Quito"
+  }
 }

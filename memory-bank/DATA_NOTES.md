@@ -34,3 +34,10 @@
 - `external_collection_runs.requests_made` is actual provider HTTP attempts,
   including retries and paginated page fetches. Cache hits are stored
   separately in `cache_hits` and are not requests.
+- Live TotoBrief drawing 4945 (`id=11953`) returned `start_at = null` and
+  `name_en = null` for all 15 events. API-Sports free fixtures access on
+  2026-07-15 covered only 2026-07-14 through 2026-07-16.
+- The first complete current-drawing API-Sports snapshot matched 11 of 15 events
+  and produced 11 three-bookmaker-or-better consensuses (73.33%). Two events
+  were absent from the provider window and two exact pairs were present only in
+  reversed team order. No ambiguous match was consumed.

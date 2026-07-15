@@ -41,3 +41,5 @@ reports/hybrid_evaluation_development_last_*.csv
 reports/hybrid_evaluation_development_last_*.md
 reports/hybrid_development_manifest_*.json
 reports/hybrid_development_rows_*.csv
+reports/external_coverage_last_*.csv
+reports/external_coverage_last_*.md

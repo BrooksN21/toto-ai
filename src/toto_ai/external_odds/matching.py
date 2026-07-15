@@ -11,7 +11,7 @@ from typing import Literal
 
 from toto_ai.external_odds.domain import ProviderEvent, TargetEvent
 
-MATCHER_VERSION = "api-sports-v1"
+MATCHER_VERSION = "api-sports-v2"
 MAX_START_DELTA = timedelta(hours=3)
 MatchStatus = Literal["matched", "missing", "ambiguous", "unknown_sport"]
 
@@ -86,8 +86,12 @@ def suggest_matches(
     for candidate in candidates:
         if candidate.sport != target.sport:
             continue
-        starts_at_delta = abs(candidate.starts_at - target.starts_at)
-        if starts_at_delta > MAX_START_DELTA:
+        starts_at_delta = (
+            abs(candidate.starts_at - target.starts_at)
+            if target.starts_at is not None
+            else None
+        )
+        if starts_at_delta is not None and starts_at_delta > MAX_START_DELTA:
             continue
         home_score = _best_similarity(candidate.home_team, home_options, aliases)
         away_score = _best_similarity(candidate.away_team, away_options, aliases)
@@ -98,7 +102,11 @@ def suggest_matches(
                 score=score,
                 home_score=home_score,
                 away_score=away_score,
-                starts_at_delta_seconds=int(starts_at_delta.total_seconds()),
+                starts_at_delta_seconds=(
+                    int(starts_at_delta.total_seconds())
+                    if starts_at_delta is not None
+                    else -1
+                ),
                 reason="diagnostic similarity only",
             )
         )
@@ -127,7 +135,10 @@ def match_event(
         candidate
         for candidate in candidates
         if candidate.sport == target.sport
-        and abs(candidate.starts_at - target.starts_at) <= MAX_START_DELTA
+        and (
+            target.starts_at is None
+            or abs(candidate.starts_at - target.starts_at) <= MAX_START_DELTA
+        )
         and _canonical(candidate.home_team, aliases) in home_options
         and _canonical(candidate.away_team, aliases) in away_options
     )
@@ -138,7 +149,11 @@ def match_event(
             provider_event_id=candidate.provider_event_id,
             matcher_version=MATCHER_VERSION,
             candidate_ids=(candidate.provider_event_id,),
-            reason="unique exact match",
+            reason=(
+                "unique exact match"
+                if target.starts_at is not None
+                else "unique exact match; target start unavailable"
+            ),
         )
 
     candidate_ids = tuple(sorted(candidate.provider_event_id for candidate in matches))

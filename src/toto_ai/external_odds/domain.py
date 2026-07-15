@@ -18,7 +18,7 @@ class TargetEvent:
     event_order: int
     sport: Sport
     championship: str
-    starts_at: datetime
+    starts_at: datetime | None
     deadline: datetime
     home_team: str
     away_team: str
@@ -34,7 +34,8 @@ class TargetEvent:
             raise ValueError("event_order must be in range 0 through 14")
         _require_sport(self.sport)
         _require_text("championship", self.championship)
-        _require_utc_datetime("starts_at", self.starts_at)
+        if self.starts_at is not None:
+            _require_utc_datetime("starts_at", self.starts_at)
         _require_utc_datetime("deadline", self.deadline)
         _require_text("home_team", self.home_team)
         _require_text("away_team", self.away_team)

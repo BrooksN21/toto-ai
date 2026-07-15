@@ -67,10 +67,22 @@
   external observation time, not the earlier TotoBrief target fetch time. The
   observation time must be at least as late as every consumed provider market
   fetch timestamp.
-- API-Sports schedule and odds pagination is fail-closed. Every reported page
-  is fetched deterministically with a `page` query, current/total values must
-  remain consistent, exact duplicate provider records may be deduplicated, and
-  conflicting duplicate identifiers remain an error.
+- API-Sports schedule endpoints use one unpaged request per date and must report
+  `paging.current = paging.total = 1`; the live fixtures endpoint rejects a
+  `page` parameter. Odds pagination remains explicit and fail-closed. Exact
+  duplicate provider records may be deduplicated, while conflicting duplicate
+  identifiers remain an error.
+- Official API-Sports response envelopes do not provide a top-level observation
+  timestamp. The client records its UTC receipt time in cache schema v2 and
+  reuses that exact time on cache hits without mutating the raw provider payload.
+- TotoBrief may return `start_at = null` for every event in an open drawing. In
+  matcher v2, a missing target time permits only one unique exact directional
+  team match inside schedules fetched for the deadline date and next date. A
+  known target time still requires the existing three-hour UTC window. Fuzzy or
+  reversed matches remain diagnostic-only and never authorize consensus.
+- `quota_reserve` protects the API-Sports daily request allowance. The minute
+  counter blocks only at zero. Cached historical quota headers are provenance,
+  not current operational quota, and must not block a fresh client request.
 - API-Sports request accounting reports actual HTTP attempts, including retry
   attempts and additional pages. Cache hits and logical fetch calls are tracked
   separately and must not be reported as requests.

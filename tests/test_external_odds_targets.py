@@ -55,6 +55,15 @@ def test_fresh_payload_becomes_fifteen_ordered_targets():
     assert drawing.events[1].sport == "hockey"
 
 
+def test_null_event_start_is_preserved_as_missing_target_time():
+    data = payload()
+    data["data"]["events"][0]["start_at"] = None
+
+    drawing = parse_target_drawing(data, fetched_at="2026-07-14T12:00:00Z")
+
+    assert drawing.events[14].starts_at is None
+
+
 def test_non_empty_non_hockey_championship_defaults_to_football():
     assert classify_sport("Неизвестный турнир", None) == "football"
 
@@ -125,6 +134,7 @@ def test_domain_records_reject_invalid_times_orders_probabilities_and_prices():
         TargetEvent(**(valid_event | {"event_order": 15}))
     with pytest.raises(ValueError, match="timezone-aware"):
         TargetEvent(**(valid_event | {"starts_at": datetime(2026, 7, 14)}))
+    assert TargetEvent(**(valid_event | {"starts_at": None})).starts_at is None
     with pytest.raises(ValueError, match="sum to one"):
         TargetEvent(**(valid_event | {"bk_probabilities": (0.5, 0.3, 0.3)}))
 

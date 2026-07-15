@@ -30,6 +30,7 @@ from toto_ai.external_odds.domain import (
 FOOTBALL_BASE_URL = "https://v3.football.api-sports.io"
 HOCKEY_BASE_URL = "https://v1.hockey.api-sports.io"
 _RETRY_STATUSES = frozenset((408, 429, 500, 502, 503, 504))
+_CACHE_SCHEMA_VERSION = 2
 
 
 class APISportsError(RuntimeError):
@@ -44,6 +45,7 @@ class QuotaExhausted(APISportsError):
 class _CachePayload:
     quota: QuotaState
     payload: dict[str, Any]
+    fetched_at: datetime
 
 
 class APISportsClient:
@@ -101,13 +103,18 @@ class APISportsClient:
         self._logical_fetches += 1
         events: list[ProviderEvent] = []
         for item in dates:
-            payloads = self._get_json_pages(
+            cached = self._get_json_single_page(
                 sport,
                 _schedule_path(sport),
                 {"date": item.isoformat()},
             )
-            for payload in payloads:
-                events.extend(_parse_schedule_payload(sport, payload))
+            events.extend(
+                _parse_schedule_payload(
+                    sport,
+                    cached.payload,
+                    fetched_at=cached.fetched_at,
+                )
+            )
         return _dedupe_provider_events(tuple(events))
 
     def fetch_event_markets(
@@ -120,28 +127,49 @@ class APISportsClient:
             _odds_params(sport, provider_event_id),
         )
         markets: list[ProviderMarket] = []
-        for payload in payloads:
-            markets.extend(_parse_market_payload(sport, provider_event_id, payload))
+        for cached in payloads:
+            markets.extend(
+                _parse_market_payload(
+                    sport,
+                    provider_event_id,
+                    cached.payload,
+                    fetched_at=cached.fetched_at,
+                )
+            )
         return _dedupe_provider_markets(tuple(markets))
+
+    def _get_json_single_page(
+        self,
+        sport: Sport,
+        path: str,
+        params: Mapping[str, object],
+    ) -> _CachePayload:
+        cached = self._get_json(sport, path, params)
+        if (
+            _paging_value(cached.payload, "current") != 1
+            or _paging_value(cached.payload, "total") != 1
+        ):
+            raise APISportsError("API-Sports paging is inconsistent")
+        return cached
 
     def _get_json_pages(
         self,
         sport: Sport,
         path: str,
         params: Mapping[str, object],
-    ) -> tuple[dict[str, Any], ...]:
+    ) -> tuple[_CachePayload, ...]:
         first = self._get_json(sport, path, params | {"page": 1})
-        total = _paging_value(first, "total")
-        if _paging_value(first, "current") != 1:
+        total = _paging_value(first.payload, "total")
+        if _paging_value(first.payload, "current") != 1:
             raise APISportsError("API-Sports paging is inconsistent")
         pages = [first]
         for page in range(2, total + 1):
-            payload = self._get_json(sport, path, params | {"page": page})
-            if _paging_value(payload, "current") != page:
+            cached = self._get_json(sport, path, params | {"page": page})
+            if _paging_value(cached.payload, "current") != page:
                 raise APISportsError("API-Sports paging is inconsistent")
-            if _paging_value(payload, "total") != total:
+            if _paging_value(cached.payload, "total") != total:
                 raise APISportsError("API-Sports paging is inconsistent")
-            pages.append(payload)
+            pages.append(cached)
         return tuple(pages)
 
     def _get_json(
@@ -149,13 +177,12 @@ class APISportsClient:
         sport: Sport,
         path: str,
         params: Mapping[str, object],
-    ) -> dict[str, Any]:
+    ) -> _CachePayload:
         cache_key = _cache_key(self._base_url(sport), path, params)
         cached = self._load_cache(cache_key)
         if cached is not None:
-            self._quota_state = cached.quota
             self._cache_hits += 1
-            return cached.payload
+            return cached
         self._ensure_quota_available()
 
         for attempt in range(self._max_retries + 1):
@@ -193,8 +220,18 @@ class APISportsClient:
 
             payload = _json_mapping(response)
             _validate_top_level_payload(payload)
-            self._write_cache(cache_key, payload, self._quota_state)
-            return payload
+            fetched_at = _observed_fetched_at(payload)
+            self._write_cache(
+                cache_key,
+                payload,
+                self._quota_state,
+                fetched_at=fetched_at,
+            )
+            return _CachePayload(
+                quota=self._quota_state,
+                payload=payload,
+                fetched_at=fetched_at,
+            )
 
         raise APISportsError("API-Sports request failed")
 
@@ -218,10 +255,17 @@ class APISportsClient:
             if not path.exists():
                 return None
             raw = json.loads(path.read_text(encoding="utf-8"))
-            if not isinstance(raw, dict) or set(raw) != {"quota", "payload"}:
+            if not isinstance(raw, dict) or set(raw) != {
+                "quota",
+                "payload",
+                "fetched_at",
+            }:
                 raise ValueError("invalid cache envelope")
             quota = raw["quota"]
             payload = raw["payload"]
+            fetched_at = _parse_datetime(
+                raw["fetched_at"], field_name="cache fetched_at"
+            )
             quota_fields = {
                 "daily_limit",
                 "daily_remaining",
@@ -239,7 +283,11 @@ class APISportsClient:
                 minute_limit=quota["minute_limit"],
                 minute_remaining=quota["minute_remaining"],
             )
-            return _CachePayload(quota=quota_state, payload=payload)
+            return _CachePayload(
+                quota=quota_state,
+                payload=payload,
+                fetched_at=fetched_at,
+            )
         except (APISportsError, OSError, ValueError, TypeError):
             pass
         raise APISportsError("API-Sports cache is invalid")
@@ -249,8 +297,11 @@ class APISportsClient:
         cache_key: str,
         payload: dict[str, Any],
         quota_state: QuotaState,
+        *,
+        fetched_at: datetime,
     ) -> None:
         body = {
+            "fetched_at": fetched_at.isoformat(),
             "quota": {
                 "daily_limit": quota_state.daily_limit,
                 "daily_remaining": quota_state.daily_remaining,
@@ -327,6 +378,7 @@ def _optional_int(value: object) -> int | None:
 def _cache_key(base_url: str, path: str, params: Mapping[str, object]) -> str:
     parsed = urlsplit(base_url)
     canonical = {
+        "cache_schema": _CACHE_SCHEMA_VERSION,
         "host": parsed.netloc,
         "path": path,
         "params": [(key, str(value)) for key, value in sorted(params.items())],
@@ -374,9 +426,11 @@ def _paging_value(payload: Mapping[str, Any], field: str) -> int:
 
 
 def _parse_schedule_payload(
-    sport: Sport, payload: Mapping[str, Any]
+    sport: Sport,
+    payload: Mapping[str, Any],
+    *,
+    fetched_at: datetime,
 ) -> tuple[ProviderEvent, ...]:
-    fetched_at = _payload_fetched_at(payload)
     events: list[ProviderEvent] = []
     for item in payload["response"]:
         if not isinstance(item, Mapping):
@@ -401,14 +455,17 @@ def _parse_schedule_payload(
 
 
 def _parse_market_payload(
-    sport: Sport, provider_event_id: str, payload: Mapping[str, Any]
+    sport: Sport,
+    provider_event_id: str,
+    payload: Mapping[str, Any],
+    *,
+    fetched_at: datetime,
 ) -> tuple[ProviderMarket, ...]:
-    fetched_at = _payload_fetched_at(payload)
     markets: list[ProviderMarket] = []
     for item in payload["response"]:
         if not isinstance(item, Mapping):
             raise APISportsError("API-Sports odds event must be an object")
-        item_event_id, _, _, _, _ = _event_core_fields(item, sport=sport)
+        item_event_id = _market_event_id(item, sport=sport)
         if item_event_id != provider_event_id:
             raise APISportsError("API-Sports returned mismatched event identifier")
         item_updated_at = _item_updated_at(item)
@@ -482,8 +539,14 @@ def _parse_bookmaker_markets(
     return tuple(provider_markets)
 
 
-def _payload_fetched_at(payload: Mapping[str, Any]) -> datetime:
-    return _parse_datetime(payload.get("timestamp"), field_name="timestamp")
+def _observed_fetched_at(payload: Mapping[str, Any]) -> datetime:
+    if "timestamp" in payload:
+        return _parse_datetime(payload.get("timestamp"), field_name="timestamp")
+    return _utc_now()
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def _item_updated_at(item: Mapping[str, Any]) -> datetime | None:
@@ -524,6 +587,19 @@ def _event_core_fields(
     home = _text(home_obj.get("name"), "home team")
     away = _text(away_obj.get("name"), "away team")
     return provider_event_id, starts_at, league, home, away
+
+
+def _market_event_id(item: Mapping[str, Any], *, sport: Sport) -> str:
+    if sport == "football":
+        event_label = "fixture"
+    elif sport == "hockey":
+        event_label = "game"
+    else:
+        raise APISportsError("unsupported sport")
+    event_data = item.get(event_label)
+    if not isinstance(event_data, Mapping):
+        raise APISportsError(f"API-Sports {event_label} must be an object")
+    return _identifier(event_data.get("id"), f"{event_label} id")
 
 
 def _bookmaker_updated_at(
@@ -587,10 +663,20 @@ def _price_entries(values: list[object]) -> tuple[dict[str, str], ...]:
     for item in values:
         if not isinstance(item, Mapping):
             raise APISportsError("API-Sports price entry must be an object")
-        name = _text(item.get("value"), "price value")
+        name = _price_label(item.get("value"))
         odd = _text(item.get("odd"), "price odd")
         entries.append({"value": name, "odd": odd})
     return tuple(entries)
+
+
+def _price_label(value: object) -> str:
+    if isinstance(value, bool):
+        raise APISportsError("API-Sports price value is invalid")
+    if isinstance(value, (int, float)):
+        if not isfinite(float(value)):
+            raise APISportsError("API-Sports price value is invalid")
+        return str(value)
+    return _text(value, "price value")
 
 
 def _requires_exact_outcome_validation(sport: Sport, market_name: str) -> bool:
@@ -672,8 +758,7 @@ def _is_quota_exhausted(quota_state: QuotaState, quota_reserve: int) -> bool:
     minute_remaining = quota_state.minute_remaining
     daily_remaining = quota_state.daily_remaining
     return (
-        minute_remaining is not None
-        and minute_remaining <= quota_reserve
-        or daily_remaining is not None
-        and daily_remaining <= quota_reserve
+        minute_remaining is not None and minute_remaining <= 0
+    ) or (
+        daily_remaining is not None and daily_remaining <= quota_reserve
     )

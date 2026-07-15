@@ -4,7 +4,7 @@ import hashlib
 import json
 from collections import defaultdict
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
@@ -27,6 +27,7 @@ from toto_ai.external_odds.matching import MATCHER_VERSION, MatchDecision, match
 from toto_ai.external_odds.targets import parse_target_drawing
 
 CONSENSUS_MINIMUM_BOOKMAKERS = 3
+MISSING_START_LOOKAHEAD_DAYS = 1
 EXTERNAL_CONSENSUS = "external_consensus"
 TOTOBRIEF_BK_FALLBACK = "totobrief_bk_fallback"
 
@@ -335,7 +336,13 @@ def _fetch_schedules(
     required_dates: dict[Sport, set[date]] = defaultdict(set)
     for event in target.events:
         if event.sport in {"football", "hockey"}:
-            required_dates[event.sport].add(event.starts_at.date())
+            if event.starts_at is not None:
+                required_dates[event.sport].add(event.starts_at.date())
+            else:
+                required_dates[event.sport].update(
+                    (target.deadline + timedelta(days=offset)).date()
+                    for offset in range(MISSING_START_LOOKAHEAD_DAYS + 1)
+                )
 
     schedules: dict[Sport, tuple[ProviderEvent, ...]] = {}
     failures: dict[Sport, str] = {}
@@ -498,7 +505,7 @@ def _event_record(
         target_event_id=event.event_id,
         sport=event.sport,
         championship=event.championship,
-        starts_at=_iso_datetime(event.starts_at),
+        starts_at=_optional_iso_datetime(event.starts_at),
         home_team=event.home_team,
         away_team=event.away_team,
         home_team_en=event.home_team_en,
@@ -639,7 +646,7 @@ def _target_event_payload(event: TargetEvent) -> dict[str, object]:
         "event_order": event.event_order,
         "sport": event.sport,
         "championship": event.championship,
-        "starts_at": _iso_datetime(event.starts_at),
+        "starts_at": _optional_iso_datetime(event.starts_at),
         "deadline": _iso_datetime(event.deadline),
         "home_team": event.home_team,
         "away_team": event.away_team,
@@ -768,6 +775,10 @@ def _quote_sort_key(quote: ExternalBookmakerQuoteRecord) -> tuple[str, str, str]
 
 def _iso_datetime(value: datetime) -> str:
     return value.astimezone(timezone.utc).isoformat()
+
+
+def _optional_iso_datetime(value: datetime | None) -> str:
+    return "" if value is None else _iso_datetime(value)
 
 
 def _external_observed_at(

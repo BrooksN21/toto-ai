@@ -135,6 +135,45 @@ def test_time_outside_three_hours_is_missing(target, provider_event):
     assert result.provider_event_id is None
 
 
+def test_missing_target_time_accepts_only_one_exact_name_candidate(
+    target, provider_event
+):
+    matching = _matching_module()
+    target_without_time = dataclasses.replace(target, starts_at=None)
+    candidate = dataclasses.replace(
+        provider_event,
+        starts_at=target.deadline + timedelta(days=2),
+    )
+
+    result = matching.match_event(target_without_time, [candidate], aliases={})
+
+    assert result.status == "matched"
+    assert result.provider_event_id == candidate.provider_event_id
+    assert result.reason == "unique exact match; target start unavailable"
+
+
+def test_missing_target_time_remains_ambiguous_for_duplicate_exact_names(
+    target, provider_event
+):
+    matching = _matching_module()
+    target_without_time = dataclasses.replace(target, starts_at=None)
+    duplicate = dataclasses.replace(
+        provider_event,
+        provider_event_id="evt-2",
+        starts_at=provider_event.starts_at + timedelta(days=1),
+    )
+
+    result = matching.match_event(
+        target_without_time,
+        [provider_event, duplicate],
+        aliases={},
+    )
+
+    assert result.status == "ambiguous"
+    assert result.provider_event_id is None
+    assert result.candidate_ids == ("evt-1", "evt-2")
+
+
 def test_name_en_and_reviewed_aliases_are_accepted_for_exact_matches(target):
     matching = _matching_module()
 

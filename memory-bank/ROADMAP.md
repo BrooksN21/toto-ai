@@ -112,8 +112,17 @@
   bookmaker defaults; schedules and odds fetch all pages fail-closed; market
   outcomes reject duplicate or unknown labels before provider-neutral records;
   and actual HTTP attempts are reported separately from cache hits.
-- Remaining coverage-audit work: no implementation task remains; the
-  prospective operator gate is still pending.
+- Live-contract hardening is complete for the first authorized API-Sports run:
+  unpaged schedule requests, official odds items without teams/top-level
+  timestamps, numeric non-three-way labels, cache observation timestamps,
+  daily/minute quota semantics, stale-cache quota isolation, and TotoBrief
+  `start_at=null` matching are covered by regression tests.
+- First prospective baseline snapshot for drawing 4945 is stored: 11/15 unique
+  exact matches and usable consensuses, four explicit fallbacks, zero ambiguous
+  matches. The gate remains `PENDING` below 30 drawings and 450 events.
+- Remaining coverage-audit work: collect the prospective sample and evaluate a
+  reviewed reversed-pair mapping design separately; the operator gate is still
+  pending.
 - Run the free-tier prospective gate on at least 30 future drawings and 450
   events before external probabilities can influence package generation.
 - Test a second free provider when the gate fails for missing coverage; consider

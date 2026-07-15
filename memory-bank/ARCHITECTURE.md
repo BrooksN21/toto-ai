@@ -83,7 +83,8 @@ Important modules:
   It does not consult SQLite.
 - `toto_ai.external_odds.domain` and `toto_ai.external_odds.targets`:
   provider-neutral immutable external-odds records, strict TotoBrief
-  drawing-target parsing, explicit sport classification, and preserved
+  drawing-target parsing with explicit nullable event start times, explicit
+  sport classification, and preserved
   TotoBrief BK fallback probabilities for the API-Sports coverage audit.
 - `toto_ai.external_odds.consensus`: strict football full-time and hockey
   regulation-time three-way market validation, duplicate bookmaker rejection,

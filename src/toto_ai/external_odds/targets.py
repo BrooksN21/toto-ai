@@ -101,7 +101,9 @@ def _parse_target_event(
         event_order=_require_event_order(raw_event.get("order")),
         sport=classify_sport(championship, raw_event.get("sport")),
         championship=championship,
-        starts_at=_parse_utc_datetime(raw_event.get("start_at"), "start_at"),
+        starts_at=_parse_optional_utc_datetime(
+            raw_event.get("start_at"), "start_at"
+        ),
         deadline=deadline,
         home_team=home_team,
         away_team=away_team,
@@ -193,3 +195,9 @@ def _parse_utc_datetime(value: object, name: str) -> datetime:
     if parsed.tzinfo is None or parsed.utcoffset() != timedelta(0):
         raise ValueError(f"{name} must be timezone-aware UTC")
     return parsed.astimezone(timezone.utc)
+
+
+def _parse_optional_utc_datetime(value: object, name: str) -> datetime | None:
+    if value is None:
+        return None
+    return _parse_utc_datetime(value, name)

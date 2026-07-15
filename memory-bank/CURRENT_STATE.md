@@ -1306,3 +1306,30 @@ Implementation plan:
 - Tasks: provider-neutral targets, API-Sports transport/cache/quota, fail-closed
   matching and manual alias suggestions, strict three-way consensus,
   append-only storage/collection, audit reports/CLI, and end-to-end acceptance.
+
+## Latest Completed Task: Live API-Sports Contract Hardening
+
+Authorized live checks found several assumptions that synthetic fixtures had
+missed. Football `/fixtures` rejects `page`; official response envelopes omit a
+top-level timestamp; odds items omit `teams`; unrelated odds markets may use
+numeric outcome labels; a daily quota reserve must not be applied to the
+per-minute allowance; and cached quota headers must not act as current quota.
+The client now follows those live contracts, stores an explicit receipt time in
+cache schema v2, and preserves raw provider payload hashes.
+
+Open TotoBrief drawing 4945 (`id=11953`) returned `start_at=null` and
+`name_en=null` for all events. Target times are now optional. Matcher v2 keeps
+the three-hour filter when target time exists; otherwise it accepts only one
+unique exact directional team match in the deadline-date/next-date schedule
+window. Reviewed aliases were added only for pairs observed in live API-Sports
+records. Fuzzy and reversed pairs remain unconsumed.
+
+The first complete prospective snapshot contains 15 explicit dispositions,
+11 external consensuses, four TotoBrief BK fallbacks, zero ambiguous matches,
+two actual HTTP requests on the final cache-assisted run, and 11 cache hits.
+Coverage audit result: 73.33% unique matching and consensus, decision `PENDING`
+because the 30-drawing/450-event sample floor is not met.
+
+Verification target after documentation: full pytest and repository-wide Ruff.
+Next isolated task: decide and test exact reversed-pair handling with explicit
+`1`/`2` orientation swapping; do not silently consume reversed provider events.

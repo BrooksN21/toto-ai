@@ -342,6 +342,56 @@ def test_schedule_request_count_reflects_each_required_sport_date():
     assert result.requests_made == 17
 
 
+def test_missing_target_start_fetches_bounded_dates_from_drawing_deadline():
+    class EmptyProvider:
+        provider_name = "api-sports"
+
+        def __init__(self):
+            self.schedule_calls = []
+            self.requests_made = 0
+            self.cache_hits = 0
+            self.quota_state = QuotaState(100, 90, 10, 9)
+
+        def fetch_schedule(self, sport, dates):
+            self.schedule_calls.append((sport, dates))
+            self.requests_made += len(dates)
+            return ()
+
+        def fetch_event_markets(self, sport, provider_event_id):
+            raise AssertionError("markets must not be fetched without a match")
+
+    original = target_drawing()
+    events = tuple(
+        TargetEvent(
+            **{
+                **event.__dict__,
+                "starts_at": None,
+            }
+        )
+        for event in original.events
+    )
+    target = TargetDrawing(
+        drawing_id=original.drawing_id,
+        drawing_number=original.drawing_number,
+        deadline=original.deadline,
+        fetched_at=original.fetched_at,
+        events=events,
+    )
+    provider = EmptyProvider()
+
+    result = build_external_collection(target, provider, aliases={})
+
+    expected_dates = tuple(
+        (target.deadline + timedelta(days=offset)).date() for offset in range(2)
+    )
+    assert provider.schedule_calls == [
+        ("football", expected_dates),
+        ("hockey", expected_dates),
+    ]
+    assert all(event.starts_at == "" for event in result.events)
+    assert all(event.match_status != "matched" for event in result.events)
+
+
 def test_collection_observation_clock_allows_markets_fetched_after_target_snapshot():
     target = target_drawing()
     provider = LaterMarketObservationProvider(target)
