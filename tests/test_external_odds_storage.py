@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
-from dataclasses import replace
+from dataclasses import asdict, replace
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -24,6 +24,8 @@ from toto_ai.external_odds.domain import (
     TargetEvent,
 )
 from toto_ai.external_odds.storage import (
+    _canonical_collection,
+    _legacy_storage_canonical_collection,
     load_latest_complete_collections,
     save_collection,
 )
@@ -194,6 +196,29 @@ def test_same_canonical_inputs_are_idempotent(session_factory):
         assert session.scalar(select(func.count(ExternalBookmakerQuote.id))) == 45
 
 
+def test_new_provenance_participates_in_equality_asdict_and_canonicalization():
+    collection = build_external_collection(
+        target_drawing(),
+        CompleteProvider(),
+        aliases={},
+    )
+    changed = replace(
+        collection,
+        target_fingerprint="different-target-fingerprint",
+        events=(
+            replace(
+                collection.events[0],
+                effective_start_source="provider",
+            ),
+            *collection.events[1:],
+        ),
+    )
+
+    assert changed != collection
+    assert asdict(changed) != asdict(collection)
+    assert _canonical_collection(changed) != _canonical_collection(collection)
+
+
 def test_quote_order_is_canonical_for_identity_comparison_and_storage(
     session_factory,
 ):
@@ -225,7 +250,10 @@ def test_quote_order_is_canonical_for_identity_comparison_and_storage(
     save_collection(session_factory, manually_reversed)
 
     stored = load_latest_complete_collections(session_factory, last=1)
-    assert stored == (canonical,)
+    assert stored != (canonical,)
+    assert _legacy_storage_canonical_collection(stored[0]) == (
+        _legacy_storage_canonical_collection(canonical)
+    )
 
 
 def test_fetched_at_is_part_of_collection_identity(session_factory):
@@ -289,7 +317,10 @@ def test_provider_provenance_round_trips_and_binds_collection_identity(
     assert event.provider_event_payload_hash == "schedule-hash-0"
     assert quote.fetched_at == aware_now().isoformat()
     assert quote.payload_hash == "market-hash-0-1"
-    assert stored == baseline
+    assert stored != baseline
+    assert _legacy_storage_canonical_collection(stored) == (
+        _legacy_storage_canonical_collection(baseline)
+    )
 
 
 def test_init_db_backfills_orientation_for_legacy_external_rows(tmp_path):
@@ -360,7 +391,10 @@ def test_duplicate_bookmaker_market_is_coalesced_with_aggregate_provenance(
 
     save_collection(session_factory, result)
     stored = load_latest_complete_collections(session_factory, last=1)
-    assert stored == (result,)
+    assert stored != (result,)
+    assert _legacy_storage_canonical_collection(stored[0]) == (
+        _legacy_storage_canonical_collection(result)
+    )
     with session_factory() as session:
         assert session.scalar(select(func.count(ExternalEventDisposition.id))) == 15
         assert session.scalar(select(func.count(ExternalBookmakerQuote.id))) == 45

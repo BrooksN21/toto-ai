@@ -23,8 +23,8 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 667
-- Focused fresh external-odds suite passed: 121
+- Tests currently passed: 696
+- Focused Task 2 external-odds suite passed: 61
 - Ruff passed
 
 ## Latest Completed Feature: Fresh Prospective Collection
@@ -75,6 +75,27 @@ probabilities remain audit-only.
 
 Design specification:
 - `docs/superpowers/specs/2026-07-15-multiday-drawing-eligibility-design.md`
+
+## Completed Task: Per-Date Schedule Collection and Provenance
+
+Task 2 of the multi-day drawing eligibility plan now requests schedules one
+sport/date at a time in deterministic order, covers the selected Moscow
+calendar horizon with all required UTC dates, and isolates sanitized failures
+by date. A schedule quota cutoff marks the current and remaining date outcomes
+and prevents every subsequent market request, including for events matched by
+earlier successful schedule responses.
+
+Fresh immutable snapshots carry target fingerprints, horizon and per-date
+schedule provenance, provider/effective start times, and Task 1 eligibility.
+Those fields participate in equality, `asdict`, and full canonical identity.
+Pre-Task-3 SQLite persistence keeps its explicit legacy projection because the
+current schema has no columns for the new data; Task 3 must persist and reload
+the full provenance before it can be considered a storage round trip.
+
+Verification: Task 2 collection/storage/end-to-end/matching/consensus tests
+passed (`61 passed`), full pytest passed (`696 passed`), and repository Ruff
+passed. The external coverage CSV/Markdown frozen hashes were regenerated only
+after two separate byte-deterministic integrity runs.
 
 ## Latest Completed Feature: Explicit Reversed Event Orientation
 

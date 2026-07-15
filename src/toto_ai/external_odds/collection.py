@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import defaultdict
-from dataclasses import InitVar, asdict, dataclass
+from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -111,23 +111,9 @@ class ExternalEventDispositionRecord:
     payload_hash: str
     match_orientation: str = "none"
     bookmaker_quotes: tuple[ExternalBookmakerQuoteRecord, ...] = ()
-    provider_starts_at: InitVar[str | None] = None
-    effective_starts_at: InitVar[str | None] = None
-    effective_start_source: InitVar[str] = "unresolved"
-
-    def __post_init__(
-        self,
-        provider_starts_at: str | None,
-        effective_starts_at: str | None,
-        effective_start_source: str,
-    ) -> None:
-        object.__setattr__(self, "provider_starts_at", provider_starts_at)
-        object.__setattr__(self, "effective_starts_at", effective_starts_at)
-        object.__setattr__(
-            self,
-            "effective_start_source",
-            effective_start_source,
-        )
+    provider_starts_at: str | None = None
+    effective_starts_at: str | None = None
+    effective_start_source: str = "unresolved"
 
 
 @dataclass(frozen=True)
@@ -147,44 +133,12 @@ class ExternalCollectionSnapshot:
     minute_remaining: int | None
     status: str
     events: tuple[ExternalEventDispositionRecord, ...]
-    target_fingerprint: InitVar[str] = ""
-    missing_start_horizon_days: InitVar[int] = 2
-    requested_schedule_dates: InitVar[tuple[ScheduleDateResult, ...]] = ()
-    successful_schedule_dates: InitVar[tuple[ScheduleDateResult, ...]] = ()
-    failed_schedule_dates: InitVar[tuple[ScheduleDateResult, ...]] = ()
-    eligibility: InitVar[DrawingEligibility] = _UNKNOWN_ELIGIBILITY
-
-    def __post_init__(
-        self,
-        target_fingerprint: str,
-        missing_start_horizon_days: int,
-        requested_schedule_dates: tuple[ScheduleDateResult, ...],
-        successful_schedule_dates: tuple[ScheduleDateResult, ...],
-        failed_schedule_dates: tuple[ScheduleDateResult, ...],
-        eligibility: DrawingEligibility,
-    ) -> None:
-        object.__setattr__(self, "target_fingerprint", target_fingerprint)
-        object.__setattr__(
-            self,
-            "missing_start_horizon_days",
-            missing_start_horizon_days,
-        )
-        object.__setattr__(
-            self,
-            "requested_schedule_dates",
-            requested_schedule_dates,
-        )
-        object.__setattr__(
-            self,
-            "successful_schedule_dates",
-            successful_schedule_dates,
-        )
-        object.__setattr__(
-            self,
-            "failed_schedule_dates",
-            failed_schedule_dates,
-        )
-        object.__setattr__(self, "eligibility", eligibility)
+    target_fingerprint: str = ""
+    missing_start_horizon_days: int = 2
+    requested_schedule_dates: tuple[ScheduleDateResult, ...] = ()
+    successful_schedule_dates: tuple[ScheduleDateResult, ...] = ()
+    failed_schedule_dates: tuple[ScheduleDateResult, ...] = ()
+    eligibility: DrawingEligibility = _UNKNOWN_ELIGIBILITY
 
 
 @dataclass(frozen=True)
@@ -199,6 +153,12 @@ class _MarketFetchResult:
     fallback_reason: str | None
 
 
+@dataclass(frozen=True)
+class _ScheduleFetchResult:
+    schedule_dates: tuple[ScheduleDateResult, ...]
+    quota_exhausted: bool
+
+
 def build_external_collection(
     target: TargetDrawing,
     provider: ExternalOddsProvider,
@@ -208,15 +168,16 @@ def build_external_collection(
     _validate_missing_start_horizon_days(missing_start_horizon_days)
     request_counter = _RequestCounter(provider)
     provider_name = provider.provider_name
-    schedule_results = _fetch_schedules(
+    schedule_fetch = _fetch_schedules(
         target,
         request_counter,
         missing_start_horizon_days,
     )
+    schedule_results = schedule_fetch.schedule_dates
     decisions = _match_targets(target, schedule_results, aliases)
 
     market_cache: dict[tuple[Sport, str], tuple[ProviderMarket, ...]] = {}
-    quota_stopped = False
+    quota_stopped = schedule_fetch.quota_exhausted
     market_results: dict[int, _MarketFetchResult] = {}
     for event in target.events:
         matched_target = decisions[event.event_order]
@@ -473,7 +434,7 @@ def _fetch_schedules(
     target: TargetDrawing,
     request_counter: _RequestCounter,
     missing_start_horizon_days: int,
-) -> tuple[ScheduleDateResult, ...]:
+) -> _ScheduleFetchResult:
     required_dates: dict[Sport, set[date]] = defaultdict(set)
     for event in target.events:
         if event.sport in {"football", "hockey"}:
@@ -536,7 +497,10 @@ def _fetch_schedules(
                     error="provider schedule failure",
                 )
             )
-    return tuple(results)
+    return _ScheduleFetchResult(
+        schedule_dates=tuple(results),
+        quota_exhausted=quota_stopped,
+    )
 
 
 def _match_targets(

@@ -520,6 +520,35 @@ def test_schedule_quota_failure_stops_provider_calls_for_remaining_sports():
     assert all(row.fallback_reason for row in result.events)
 
 
+def test_schedule_quota_cutoff_prevents_market_fetches_after_successful_schedule():
+    class ScheduleThenQuotaProvider(MixedProvider):
+        def fetch_schedule(self, sport, dates):
+            if sport == "football" and dates == (
+                (aware_now() + timedelta(days=1)).date(),
+            ):
+                self.schedule_calls.append((sport, dates))
+                self.requests_made += 1
+                raise QuotaExhausted("quota reserve reached")
+            return super().fetch_schedule(sport, dates)
+
+    target = multi_date_target_drawing()
+    provider = ScheduleThenQuotaProvider(target)
+
+    result = build_external_collection(target, provider, aliases={})
+
+    assert provider.schedule_calls == [
+        ("football", (aware_now().date(),)),
+        ("football", ((aware_now() + timedelta(days=1)).date(),)),
+    ]
+    assert provider.market_calls == []
+    assert any(event.match_status == "matched" for event in result.events)
+    assert all(
+        event.fallback_reason == "quota reserve reached"
+        for event in result.events
+        if event.match_status == "matched"
+    )
+
+
 def test_schedule_collection_records_one_date_results_and_eligibility():
     result = build_external_collection(target_drawing(), MixedProvider(), aliases={})
 

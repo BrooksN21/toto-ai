@@ -24,12 +24,12 @@ def save_collection(
     collection: ExternalCollectionSnapshot,
 ) -> None:
     _validate_complete_collection(collection)
-    expected = _canonical_collection(collection)
+    expected = _legacy_storage_canonical_collection(collection)
     with session_factory.begin() as session:
         existing = session.get(ExternalCollectionRun, collection.collection_id)
         if existing is not None:
             stored = _load_collection_by_id(session, collection.collection_id)
-            if _canonical_collection(stored) != expected:
+            if _legacy_storage_canonical_collection(stored) != expected:
                 raise ValueError("conflicting collection content")
             return
 
@@ -288,6 +288,27 @@ def _canonical_collection(collection: ExternalCollectionSnapshot) -> dict[str, o
         ),
     )
     return asdict(normalized)
+
+
+def _legacy_storage_canonical_collection(
+    collection: ExternalCollectionSnapshot,
+) -> dict[str, object]:
+    """Compare only fields available in the pre-Task-3 database schema."""
+    canonical = _canonical_collection(collection)
+    for field in (
+        "target_fingerprint",
+        "missing_start_horizon_days",
+        "requested_schedule_dates",
+        "successful_schedule_dates",
+        "failed_schedule_dates",
+        "eligibility",
+    ):
+        canonical.pop(field)
+    for event in canonical["events"]:
+        event.pop("provider_starts_at")
+        event.pop("effective_starts_at")
+        event.pop("effective_start_source")
+    return canonical
 
 
 def _canonical_quotes(

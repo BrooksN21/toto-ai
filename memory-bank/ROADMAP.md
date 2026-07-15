@@ -185,11 +185,12 @@
 - Task 1 complete: provider-neutral drawing eligibility classifier and
   deterministic target fingerprint, including immutable effective starts,
   Moscow calendar-span classification, and fail-closed invariants.
-- Tasks 2-6 pending: implement the remaining approved multi-day collection and
-  play-eligibility design, including progressive two-to-five-day schedule
-  expansion, per-date failure isolation, persisted effective starts,
-  audit/report changes, and fail-closed `NO BET` for multi-day or unknown
-  drawings.
+- Task 2 complete: deterministic per-date schedule collection/provenance,
+  date-local failure isolation, quota-stop suppression of market requests,
+  effective starts, and immutable eligibility-bound collection identity.
+- Tasks 3-6 pending: persist the Task 2 provenance, add audit/report changes,
+  progressive orchestration through day five, and fail-closed `NO BET` for
+  multi-day or unknown drawings.
 - Automatic T-15 scheduling of the fresh prospective command
 - Open drawing analysis
 - Package generation
