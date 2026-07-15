@@ -107,6 +107,10 @@ Important modules:
   every Markdown scope table expose the complete coverage metric schema,
   including bookmaker availability at thresholds one, two, and three. These
   modules do not call providers and do not affect playable package decisions.
+  End-to-end acceptance covers mixed success/fallback, provider failure, quota
+  cutoff, interruption rollback, deterministic report evidence, EV
+  non-interference, and API-key absence across persisted data, cache artifacts,
+  CLI output, exceptions, and reports.
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
   frozen-holdout exclusion, pre-result package hashing, complete factor
   rankings reused across dynamic banks and thresholds, cumulative realized

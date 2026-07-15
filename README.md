@@ -75,6 +75,45 @@ not a profit guarantee. The prize-fund proxy, independent-event crowd model,
 and resulting modeled ROI remain experimental and require prospective payout
 validation.
 
+## External Odds Coverage Workflow
+
+External odds collection is a prospective coverage audit only. It does not feed
+`ev-package`, does not change `PLAY` decisions, and does not prove probability
+quality or profitability.
+
+Before each future drawing deadline, register one lawful API-Sports free
+account, keep the key local, and collect the next playable drawing:
+
+```bash
+read -s API_SPORTS_KEY
+export API_SPORTS_KEY
+python -m toto_ai.cli collect-external-odds --open --provider api-sports --db data/toto.db
+```
+
+Then audit the latest complete stored collections without provider network
+access:
+
+```bash
+python -m toto_ai.cli audit-external-coverage --db data/toto.db --last 30 --min-bookmakers 3
+```
+
+API-Sports free football and hockey APIs each allow 100 requests per day. The
+collector keeps a configurable reserve with `--quota-reserve` (default `10`) so
+collection fails closed before spending the last daily or minute requests.
+Every collection stores all 15 event dispositions. Events with unknown sports,
+missing or ambiguous matches, provider failures, quota exhaustion, stale or
+incomplete markets, semantic market rejection, or fewer than three eligible
+bookmakers keep the TotoBrief BK triplet with an explicit fallback reason.
+
+The coverage gate is truthfully `PENDING` until at least 30 prospective drawings
+and 450 events have been collected. After that floor, the audit can return
+`GO` only if the registered predicates pass: unique match rate at least 80%,
+usable consensus rate at least 70%, zero consumed ambiguous matches, and one
+explicit external-or-fallback disposition for every event. A coverage `GO`
+authorizes designing a separate calibrated ensemble and untouched prospective
+evaluation; it does not authorize wiring external consensus directly into
+`PLAY`.
+
 ## Project Memory
 
 TotoAI uses a repository-local memory bank for persistent project context.

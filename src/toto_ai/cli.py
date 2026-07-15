@@ -788,7 +788,7 @@ def collect_external_odds_command(
     except (APISportsError, OSError, SQLAlchemyError, ValueError) as error:
         raise typer.BadParameter(
             _external_error_message(error, secret=api_key)
-        ) from error
+        ) from None
 
     print(_external_collection_table(result))
 

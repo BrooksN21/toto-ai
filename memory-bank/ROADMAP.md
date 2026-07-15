@@ -102,8 +102,12 @@
   CSV/Markdown reports, `collect-external-odds`, and
   `audit-external-coverage`. Task 6 review hardening completes the aggregate and
   per-scope report schema, exact fallback classification, bookmaker-threshold
-  diagnostics, and dedicated report atomicity/determinism coverage.
-- Remaining coverage-audit work: end-to-end acceptance.
+  diagnostics, and dedicated report atomicity/determinism coverage. Task 7
+  adds end-to-end fail-closed acceptance for success/mixed/failure/quota/
+  interruption paths, report evidence, EV non-interference, and API-key absence
+  across persistence, cache, CLI, exception chains, and reports.
+- Remaining coverage-audit work: no implementation task remains; the
+  prospective operator gate is still pending.
 - Run the free-tier prospective gate on at least 30 future drawings and 450
   events before external probabilities can influence package generation.
 - Test a second free provider when the gate fails for missing coverage; consider

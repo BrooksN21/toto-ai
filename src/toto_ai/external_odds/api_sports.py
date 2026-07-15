@@ -122,7 +122,7 @@ class APISportsClient:
             except requests.ConnectionError as error:
                 last_error = error
                 if attempt == self._max_retries:
-                    raise APISportsError("API-Sports request failed") from error
+                    raise APISportsError("API-Sports request failed") from None
                 self._sleep_before_retry(attempt)
                 continue
 

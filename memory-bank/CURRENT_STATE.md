@@ -26,7 +26,37 @@ task commits listed above.
 - Tests currently passed: 594
 - Ruff passed
 
-## Latest Completed Task: Append-Only External Odds Storage and Collection
+## Latest Completed Task: API-Sports Coverage Audit End-to-End Acceptance
+
+Task 7 of the API-Sports coverage audit is implemented. Added an end-to-end
+acceptance suite that runs the open collection pipeline through target parsing,
+provider matching, consensus/fallback disposition, append-only SQLite storage,
+latest-complete loading, read-only coverage audit, deterministic report
+publication, and CLI sanitization boundaries.
+
+Acceptance covers mixed success/fallback collections, provider schedule
+failure, quota exhaustion after five successful market events, interruption
+rollback with no complete run published, deterministic report hashes and
+ordered 15-event evidence, provider timestamps, quota counters, consensus gate
+settings, and EV non-interference. The same suite proves the API key is absent
+from stored SQLite text, API-Sports cache files, CLI output, exception chains,
+coverage CSV, and coverage Markdown.
+
+One production bug was fixed: API-Sports connection failures and the
+`collect-external-odds` CLI wrapper no longer retain secret-bearing exception
+causes after producing sanitized errors. Collection, audit, matching,
+consensus, report, and EV probability definitions are unchanged.
+
+The implementation is complete, but the operational external-odds gate remains
+`PENDING` until an operator prospectively collects at least 30 future drawings
+and 450 events. External consensus still has no `PLAY` impact.
+
+Verification completed with focused acceptance pytest (`6 passed`), full pytest
+(`628 passed`), Ruff (`All checks passed!`), and the required CLI help smokes
+for `collect-external-odds`, `audit-external-coverage`, and `ev-package`
+(all exited zero).
+
+## Previous Completed Task: Append-Only External Odds Storage and Collection
 
 Task 5 of the API-Sports coverage audit is complete. Added append-only
 SQLAlchemy tables for external collection runs, event dispositions, and
