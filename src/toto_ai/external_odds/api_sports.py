@@ -6,6 +6,7 @@ import time
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
+from math import isfinite
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -79,7 +80,7 @@ class APISportsClient:
         for item in dates:
             payload = self._get_json(
                 sport,
-                "/fixtures",
+                _schedule_path(sport),
                 {"date": item.isoformat()},
             )
             events.extend(_parse_schedule_payload(sport, payload))
@@ -91,7 +92,7 @@ class APISportsClient:
         payload = self._get_json(
             sport,
             "/odds",
-            {"fixture": provider_event_id},
+            _odds_params(sport, provider_event_id),
         )
         return _parse_market_payload(sport, provider_event_id, payload)
 
@@ -132,6 +133,10 @@ class APISportsClient:
                     raise APISportsError("API-Sports request failed") from last_error
                 self._sleep_before_retry(attempt)
                 continue
+            if response.status_code >= 400:
+                raise APISportsError(
+                    f"API-Sports request failed with status {response.status_code}"
+                )
 
             payload = _json_mapping(response)
             _validate_top_level_payload(payload)
@@ -198,6 +203,22 @@ def quota_from_headers(headers: Mapping[str, str]) -> QuotaState:
         minute_limit=_optional_int(headers.get("x-ratelimit-limit")),
         minute_remaining=_optional_int(headers.get("x-ratelimit-remaining")),
     )
+
+
+def _schedule_path(sport: Sport) -> str:
+    if sport == "football":
+        return "/fixtures"
+    if sport == "hockey":
+        return "/games"
+    raise APISportsError("unsupported sport")
+
+
+def _odds_params(sport: Sport, provider_event_id: str) -> dict[str, str]:
+    if sport == "football":
+        return {"fixture": provider_event_id}
+    if sport == "hockey":
+        return {"game": provider_event_id}
+    raise APISportsError("unsupported sport")
 
 
 def _optional_int(value: object) -> int | None:
@@ -359,11 +380,13 @@ def _event_core_fields(
     *,
     sport: Sport,
 ) -> tuple[str, datetime, str, str, str]:
-    event_data = item.get("fixture")
-    event_label = "fixture"
-    if sport == "hockey" and not isinstance(event_data, Mapping):
-        event_data = item.get("game")
+    if sport == "football":
+        event_label = "fixture"
+    elif sport == "hockey":
         event_label = "game"
+    else:
+        raise APISportsError("unsupported sport")
+    event_data = item.get(event_label)
     if not isinstance(event_data, Mapping):
         raise APISportsError(f"API-Sports {event_label} must be an object")
     provider_event_id = _identifier(event_data.get("id"), f"{event_label} id")
@@ -410,7 +433,12 @@ def _parse_datetime(value: object, *, field_name: str) -> datetime:
     if isinstance(value, bool):
         raise APISportsError(f"API-Sports {field_name} is invalid")
     if isinstance(value, (int, float)):
-        parsed = datetime.fromtimestamp(value, tz=timezone.utc)
+        if not isfinite(float(value)):
+            raise APISportsError(f"API-Sports {field_name} is invalid")
+        try:
+            parsed = datetime.fromtimestamp(value, tz=timezone.utc)
+        except (OverflowError, OSError, ValueError) as error:
+            raise APISportsError(f"API-Sports {field_name} is invalid") from error
     elif isinstance(value, str) and value.strip():
         try:
             parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -453,6 +481,8 @@ def _optional_price(value: object) -> float | None:
     elif isinstance(value, (int, float)):
         price = float(value)
     else:
+        raise APISportsError("API-Sports price is invalid")
+    if not isfinite(price) or price <= 0:
         raise APISportsError("API-Sports price is invalid")
     return price
 

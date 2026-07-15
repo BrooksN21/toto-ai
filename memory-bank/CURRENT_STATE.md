@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 548
+- Tests currently passed: 554
 - Ruff passed
 
 ## Latest Completed Task: API-Sports Transport, Parsing, Cache, and Quota
@@ -41,6 +41,11 @@ into `ProviderMarket` records without deciding semantic eligibility, and
 rejects invalid top-level provider errors, paging, timestamps, prices, and
 identifier shapes. Repository tests remain synthetic and deterministic with no
 live network dependency, and raw external cache files are ignored by Git.
+
+Recovery hardening added focused regressions for hockey `/games` schedules,
+hockey odds `game` queries, rejection of football fixture-shaped hockey
+payloads, sanitized non-retry HTTP failures, finite timestamp validation, and
+provider-owned price validation before domain object construction.
 
 ## Approved Next Design: Expected-Value Package Engine
 

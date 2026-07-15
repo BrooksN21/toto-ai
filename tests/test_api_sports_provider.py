@@ -160,6 +160,44 @@ def odds_payload() -> dict[str, object]:
     }
 
 
+def hockey_odds_payload() -> dict[str, object]:
+    return {
+        "errors": [],
+        "results": 1,
+        "timestamp": 1_784_482_500,
+        "paging": {"current": 1, "total": 1},
+        "response": [
+            {
+                "game": {
+                    "id": 77,
+                    "date": "2026-07-14T19:30:00+00:00",
+                },
+                "league": {"name": "KHL"},
+                "teams": {
+                    "home": {"name": "СКА"},
+                    "away": {"name": "ЦСКА"},
+                },
+                "bookmakers": [
+                    {
+                        "id": "12",
+                        "update": "2026-07-14T11:00:00+00:00",
+                        "bets": [
+                            {
+                                "name": "Home/Draw/Away",
+                                "values": [
+                                    {"value": "Home", "odd": "1.90"},
+                                    {"value": "Draw", "odd": "4.20"},
+                                    {"value": "Away", "odd": "3.10"},
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+
+
 def read_cache_text(cache_dir: Path) -> str:
     return "".join(path.read_text() for path in sorted(cache_dir.iterdir()))
 
@@ -238,6 +276,32 @@ def test_hockey_schedule_uses_game_shape(fake_session, tmp_path):
     )
 
 
+def test_hockey_schedule_uses_hockey_games_endpoint(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient
+
+    fake_session = FakeSession(
+        [FakeResponse(payload=hockey_schedule_payload(), headers=quota_headers())]
+    )
+    client = APISportsClient("secret-key", session=fake_session, cache_dir=tmp_path)
+
+    client.fetch_schedule("hockey", (date(2026, 7, 14),))
+
+    assert fake_session.calls[0]["url"] == "https://v1.hockey.api-sports.io/games"
+    assert fake_session.calls[0]["params"] == {"date": "2026-07-14"}
+
+
+def test_hockey_schedule_rejects_football_fixture_shape(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+
+    fake_session = FakeSession(
+        [FakeResponse(payload=football_schedule_payload(), headers=quota_headers())]
+    )
+    client = APISportsClient("secret-key", session=fake_session, cache_dir=tmp_path)
+
+    with pytest.raises(APISportsError, match="game"):
+        client.fetch_schedule("hockey", (date(2026, 7, 14),))
+
+
 def test_event_markets_preserve_bookmaker_market_and_prices(tmp_path):
     from toto_ai.external_odds.api_sports import APISportsClient
 
@@ -255,6 +319,27 @@ def test_event_markets_preserve_bookmaker_market_and_prices(tmp_path):
     assert markets[0].home_price == pytest.approx(2.10)
     assert markets[0].draw_price == pytest.approx(3.30)
     assert markets[0].away_price == pytest.approx(3.80)
+
+
+def test_hockey_event_markets_use_game_query_and_parse_game_shape(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient
+
+    fake_session = FakeSession(
+        [FakeResponse(payload=hockey_odds_payload(), headers=quota_headers())]
+    )
+    client = APISportsClient("secret-key", session=fake_session, cache_dir=tmp_path)
+
+    markets = client.fetch_event_markets("hockey", "77")
+
+    assert fake_session.calls[0]["url"] == "https://v1.hockey.api-sports.io/odds"
+    assert fake_session.calls[0]["params"] == {"game": "77"}
+    assert len(markets) == 1
+    assert markets[0].provider_event_id == "77"
+    assert markets[0].bookmaker_id == "12"
+    assert markets[0].market_name == "Home/Draw/Away"
+    assert markets[0].home_price == pytest.approx(1.90)
+    assert markets[0].draw_price == pytest.approx(4.20)
+    assert markets[0].away_price == pytest.approx(3.10)
 
 
 def test_transient_connection_errors_retry_with_bounded_delays(monkeypatch, tmp_path):
@@ -321,6 +406,27 @@ def test_final_provider_failure_is_sanitized_and_does_not_leak_key(tmp_path):
     assert list(tmp_path.iterdir()) == []
 
 
+def test_non_retry_http_failure_is_sanitized_and_not_cached(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+
+    fake_session = FakeSession(
+        [
+            FakeResponse(
+                payload=football_schedule_payload(),
+                headers=quota_headers(),
+                status_code=401,
+            )
+        ]
+    )
+    client = APISportsClient("secret-key", session=fake_session, cache_dir=tmp_path)
+
+    with pytest.raises(APISportsError, match="status 401") as excinfo:
+        client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert "secret-key" not in str(excinfo.value)
+    assert list(tmp_path.iterdir()) == []
+
+
 @pytest.mark.parametrize(
     ("payload", "message"),
     [
@@ -333,6 +439,7 @@ def test_final_provider_failure_is_sanitized_and_does_not_leak_key(tmp_path):
             "paging",
         ),
         ({**football_schedule_payload(), "timestamp": "later"}, "timestamp"),
+        ({**football_schedule_payload(), "timestamp": float("inf")}, "timestamp"),
         (
             {
                 **odds_payload(),
@@ -348,6 +455,33 @@ def test_final_provider_failure_is_sanitized_and_does_not_leak_key(tmp_path):
                                         "name": "Match Winner",
                                         "values": [
                                             {"value": "Home", "odd": "bad"},
+                                            {"value": "Draw", "odd": "3.30"},
+                                            {"value": "Away", "odd": "3.80"},
+                                        ],
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            },
+            "price",
+        ),
+        (
+            {
+                **odds_payload(),
+                "response": [
+                    {
+                        **odds_payload()["response"][0],
+                        "bookmakers": [
+                            {
+                                "id": 6,
+                                "update": "2026-07-14T10:00:00+00:00",
+                                "bets": [
+                                    {
+                                        "name": "Match Winner",
+                                        "values": [
+                                            {"value": "Home", "odd": "0"},
                                             {"value": "Draw", "odd": "3.30"},
                                             {"value": "Away", "odd": "3.80"},
                                         ],
