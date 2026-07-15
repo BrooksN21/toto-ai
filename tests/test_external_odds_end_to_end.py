@@ -358,6 +358,11 @@ def test_secret_absent_from_sqlite_cache_cli_exceptions_and_reports(
 
     monkeypatch.setenv("API_SPORTS_KEY", SECRET)
     monkeypatch.setattr(cli_module, "APISportsClient", ExplodingAPISportsClient)
+    monkeypatch.setattr(
+        cli_module,
+        "collect_fresh_open_external_odds",
+        lambda **kwargs: kwargs["provider_factory"](tmp_path / "fresh-cache"),
+    )
     cli_result = CliRunner().invoke(
         app,
         [

@@ -23,9 +23,31 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 657
-- Focused matcher v3 suite passed: 44
+- Tests currently passed: 667
+- Focused fresh external-odds suite passed: 121
 - Ruff passed
+
+## Latest Completed Feature: Fresh Prospective Collection
+
+`collect-external-odds` now defaults to a unique per-invocation cache session
+instead of silently reusing unexpired historical payloads. It pins one open
+TotoBrief target, creates a new API-Sports client for each pass, reuses only the
+successful responses from that invocation, and retries quota, schedule, or odds
+provider failures up to three passes with a 65-second default delay.
+
+The legacy shared cache remains available only through explicit
+`--reuse-cache`. The CLI reports pass count, aggregate HTTP attempts/cache hits,
+elapsed time, and stop reason. Every pass remains an immutable complete
+15-disposition snapshot, and external probabilities remain audit-only.
+
+The first live dry run of the new command on drawing 4945 finished in two
+passes and 68.66 seconds. The final T-15 run resolved the target once at
+17:45:01 MSK and finished its second pass at 17:46:09 MSK, 13 minutes 50
+seconds before the 18:00 deadline. It completed in 69.04 seconds with 15 HTTP
+attempts and ten cache hits across the invocation; the final pass produced
+13/15 consensuses, two explicit missing-provider fallbacks, two reversed exact
+matches, and zero ambiguous matches. The prospective gate remains `PENDING`
+only because the sample is below 30 drawings and 450 events.
 
 ## Latest Completed Feature: Explicit Reversed Event Orientation
 

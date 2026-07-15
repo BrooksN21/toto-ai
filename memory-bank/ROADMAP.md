@@ -121,6 +121,11 @@
   4945: 13/15 unique exact matches and usable consensuses, two explicit
   fallbacks, two recorded reversed orientations, and zero ambiguous matches.
   Consensus `1`/`2` is swapped only for reversed pairs; raw prices are retained.
+- Fresh prospective orchestration is complete: one target is pinned, isolated
+  run caches prevent stale observations, and approved operational fallbacks are
+  retried across the API-Sports minute reset. The final live drawing-4945 T-15
+  run finished in two passes and 69.04 seconds with 13/15 consensuses, leaving
+  13 minutes 50 seconds before the betting deadline.
 - Remaining coverage-audit work: collect the prospective sample. The operator
   gate remains `PENDING` below 30 drawings and 450 events; external consensus
   still has no `PLAY` impact.
@@ -177,7 +182,7 @@
 
 ## Phase 7: Production
 
-- Automatic sync
+- Automatic T-15 scheduling of the fresh prospective command
 - Open drawing analysis
 - Package generation
 - Report export

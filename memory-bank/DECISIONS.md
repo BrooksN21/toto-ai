@@ -90,6 +90,13 @@
 - API-Sports request accounting reports actual HTTP attempts, including retry
   attempts and additional pages. Cache hits and logical fetch calls are tracked
   separately and must not be reported as requests.
+- Prospective API-Sports collection is fresh by default. Each CLI invocation
+  uses a unique cache-session directory, pins one TotoBrief target before any
+  provider pass, and creates a new provider client per pass while reusing that
+  invocation's cache. The defaults are three passes and 65 seconds between
+  retries. Only quota reserve, provider schedule failure, and provider odds
+  failure are retryable. Shared-cache behavior requires explicit
+  `--reuse-cache`; stale cache must never masquerade as a new observation.
 - Provider provenance is stored explicitly, not only committed through an
   opaque event hash. Matched dispositions retain schedule-event fetch time and
   payload hash plus candidate IDs and match reason; quotes retain market fetch

@@ -48,3 +48,17 @@
   explicit TotoBrief BK fallbacks because API-Sports returned no exact pair.
   The audit remains `PENDING` only because fewer than 30 drawings and 450
   events have been collected.
+- A fresh two-pass collection for drawing 4945 completed in 68.66 seconds. The
+  final pass used five provider requests and ten cache hits; the invocation
+  recorded 16 actual HTTP attempts in total because one attempt reached the
+  minute-limit boundary. Daily remaining quota moved from 52 to 37, consistent
+  with 15 successful provider responses. The final snapshot retained 13/15
+  consensuses and two non-retryable missing-provider fallbacks.
+- The final T-15 collection for drawing 4945 pinned the target at
+  `2026-07-15T14:45:01.458409+00:00` and completed its second pass at
+  `2026-07-15T14:46:09.812836+00:00`, 13 minutes 50 seconds before the
+  `2026-07-15T15:00:00+00:00` deadline. It finished in 69.04 seconds with two
+  passes, 15 HTTP attempts, ten cache hits, 13/15 external consensuses, two
+  missing-provider fallbacks, two reversed exact matches, and zero ambiguous
+  matches. Daily quota remaining was 32. This proves the manual T-15 protocol
+  on one live drawing; it does not satisfy the 30-drawing/450-event gate.

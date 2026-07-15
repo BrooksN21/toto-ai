@@ -254,11 +254,33 @@ def collect_open_external_odds(
     aliases: dict[str, str],
     fetched_at: datetime,
 ) -> ExternalCollectionSnapshot:
+    target = resolve_open_target(totobrief_client, fetched_at)
+    return collect_target_external_odds(
+        target,
+        provider,
+        session_factory,
+        aliases,
+    )
+
+
+def resolve_open_target(
+    totobrief_client: Any,
+    fetched_at: datetime,
+) -> TargetDrawing:
     reference = resolve_open_drawing_from_api(totobrief_client)
     payload = totobrief_client.drawing_info(reference.drawing_id)
     target = parse_target_drawing(payload, fetched_at=fetched_at)
     if target.drawing_id != reference.drawing_id:
         raise ValueError("drawing-info id does not match resolved drawing")
+    return target
+
+
+def collect_target_external_odds(
+    target: TargetDrawing,
+    provider: ExternalOddsProvider,
+    session_factory: Any,
+    aliases: dict[str, str],
+) -> ExternalCollectionSnapshot:
     result = build_external_collection(target, provider, aliases)
     if len(result.events) != 15:
         raise ValueError("external collection must contain exactly 15 dispositions")

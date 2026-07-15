@@ -12,6 +12,8 @@ from toto_ai.external_odds.api_sports import APISportsError, QuotaExhausted
 from toto_ai.external_odds.collection import (
     build_external_collection,
     collect_open_external_odds,
+    collect_target_external_odds,
+    resolve_open_target,
 )
 from toto_ai.external_odds.domain import (
     ProviderEvent,
@@ -552,4 +554,65 @@ def test_collect_open_external_odds_fetches_resolved_drawing_and_saves(monkeypat
             select(func.count(ExternalCollectionRun.collection_id))
         )
         assert run_count == 1
+        assert session.scalar(select(func.count(ExternalEventDisposition.id))) == 15
+
+
+def test_resolve_open_target_fetches_one_pinned_drawing(monkeypatch):
+    class FakeTotoBriefClient:
+        def __init__(self) -> None:
+            self.info_calls = []
+
+        def drawing_info(self, drawing_id):
+            self.info_calls.append(drawing_id)
+            return drawing_info_payload(drawing_id)
+
+    resolve_calls = []
+    monkeypatch.setattr(
+        "toto_ai.external_odds.collection.resolve_open_drawing_from_api",
+        lambda client: (
+            resolve_calls.append(client)
+            or type("Reference", (), {"drawing_id": 9000, "number": 5000})()
+        ),
+    )
+    client = FakeTotoBriefClient()
+
+    target = resolve_open_target(client, fetched_at=aware_now())
+
+    assert resolve_calls == [client]
+    assert client.info_calls == [9000]
+    assert target.drawing_id == 9000
+    assert target.fetched_at == aware_now()
+
+
+def test_resolve_open_target_rejects_drawing_info_id_mismatch(monkeypatch):
+    class FakeTotoBriefClient:
+        def drawing_info(self, drawing_id):
+            return drawing_info_payload(drawing_id + 1)
+
+    monkeypatch.setattr(
+        "toto_ai.external_odds.collection.resolve_open_drawing_from_api",
+        lambda _client: type(
+            "Reference", (), {"drawing_id": 9000, "number": 5000}
+        )(),
+    )
+
+    with pytest.raises(ValueError, match="drawing-info id does not match resolved"):
+        resolve_open_target(FakeTotoBriefClient(), fetched_at=aware_now())
+
+
+def test_collect_target_external_odds_saves_supplied_target_without_api_access():
+    factory = session_factory()
+
+    result = collect_target_external_odds(
+        target_drawing(),
+        MixedProvider(),
+        factory,
+        aliases={},
+    )
+
+    assert result.drawing_id == 9000
+    with factory() as session:
+        assert session.scalar(
+            select(func.count(ExternalCollectionRun.collection_id))
+        ) == 1
         assert session.scalar(select(func.count(ExternalEventDisposition.id))) == 15

@@ -106,6 +106,11 @@ Important modules:
   are consensus-ineligible and coalesced into one deterministic anomaly row so
   the mandated database uniqueness constraint does not discard the collection.
   Quote order is canonical before identity, comparison, insertion, and load.
+- `toto_ai.external_odds.prospective`: fresh-by-default multi-pass collection.
+  It resolves one TotoBrief target, creates one isolated cache session, and
+  reuses that session across new provider clients after minute-quota resets.
+  Only quota, provider schedule, and provider odds failures trigger another
+  pass. Every pass remains an immutable stored 15-disposition snapshot.
 - `toto_ai.external_odds.audit` and `toto_ai.external_odds.reports`:
   read-only coverage auditing over the latest complete stored external-odds
   snapshot per drawing, registered prospective GO/PENDING/STOP gate predicates,
@@ -193,8 +198,10 @@ Important CLI commands:
   atomic reports. Unsupported Playable runs return `NO BET`.
 - `backtest-ev`: evaluate dynamic banks, prize factors, and gross-EV thresholds
   chronologically while requiring and excluding a frozen strategy holdout.
-- `collect-external-odds --open`: collect one prospective API-Sports external
-  odds snapshot for the next playable drawing and store all 15 dispositions.
+- `collect-external-odds --open`: collect fresh prospective API-Sports odds for
+  one pinned playable drawing, automatically retry approved operational
+  fallbacks, and store every 15-disposition pass. `--reuse-cache` explicitly
+  enables the old shared-cache diagnostic path.
 - `audit-external-coverage`: audit stored complete external-odds snapshots in
   read-only mode and publish deterministic coverage reports.
 - `build-brief --open`: build a baseline brief and package for the next playable

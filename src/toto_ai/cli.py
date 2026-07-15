@@ -67,6 +67,10 @@ from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
 from toto_ai.external_odds.audit import CoverageAudit, audit_external_coverage
 from toto_ai.external_odds.collection import collect_open_external_odds
 from toto_ai.external_odds.matching import load_aliases
+from toto_ai.external_odds.prospective import (
+    ProspectiveCollectionResult,
+    collect_fresh_open_external_odds,
+)
 from toto_ai.external_odds.reports import write_external_coverage_reports
 from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.brief_backtest import (
@@ -756,6 +760,10 @@ def collect_external_odds_command(
     db: str = typer.Option("data/toto.db"),
     aliases: str = typer.Option("data/external-odds/team-aliases.json"),
     quota_reserve: int = typer.Option(10, min=0),
+    fresh: bool = typer.Option(True, "--fresh/--reuse-cache"),
+    max_passes: int = typer.Option(3, min=1),
+    retry_delay_seconds: float = typer.Option(65.0, min=0.0),
+    cache_root: str = typer.Option("data/external-cache/api-sports"),
 ) -> None:
     """Collect one prospective external-odds snapshot for the open drawing."""
     if not open:
@@ -767,20 +775,39 @@ def collect_external_odds_command(
         raise typer.BadParameter("API_SPORTS_KEY is required")
 
     sanitized_error: typer.BadParameter | None = None
+    prospective_result: ProspectiveCollectionResult | None = None
     try:
         engine = init_db(db)
         session_factory = get_session_factory(engine)
-        provider_client = APISportsClient(
-            api_key,
-            quota_reserve=quota_reserve,
-        )
-        result = collect_open_external_odds(
-            TotoBriefClient(),
-            provider_client,
-            session_factory,
-            load_aliases(aliases),
-            fetched_at=datetime.now(timezone.utc),
-        )
+        reviewed_aliases = load_aliases(aliases)
+        if fresh:
+            prospective_result = collect_fresh_open_external_odds(
+                totobrief_client=TotoBriefClient(),
+                provider_factory=lambda cache_dir: APISportsClient(
+                    api_key,
+                    cache_dir=cache_dir,
+                    quota_reserve=quota_reserve,
+                ),
+                session_factory=session_factory,
+                aliases=reviewed_aliases,
+                cache_root=Path(cache_root),
+                max_passes=max_passes,
+                retry_delay_seconds=retry_delay_seconds,
+            )
+            result = prospective_result.snapshot
+        else:
+            provider_client = APISportsClient(
+                api_key,
+                cache_dir=Path(cache_root),
+                quota_reserve=quota_reserve,
+            )
+            result = collect_open_external_odds(
+                TotoBriefClient(),
+                provider_client,
+                session_factory,
+                reviewed_aliases,
+                fetched_at=datetime.now(timezone.utc),
+            )
     except (APISportsError, OSError, SQLAlchemyError, ValueError) as error:
         sanitized_error = typer.BadParameter(
             _external_error_message(error, secret=api_key)
@@ -789,7 +816,7 @@ def collect_external_odds_command(
     if sanitized_error is not None:
         raise sanitized_error
 
-    print(_external_collection_table(result))
+    print(_external_collection_table(result, prospective_result))
 
 
 @app.command("audit-external-coverage")
@@ -1999,7 +2026,10 @@ def _ev_backtest_summary_table(result: EVBacktestResult) -> Table:
     return table
 
 
-def _external_collection_table(result) -> Table:
+def _external_collection_table(
+    result,
+    prospective_result: ProspectiveCollectionResult | None = None,
+) -> Table:
     table = Table(title="External Odds Collection")
     table.add_column("Metric")
     table.add_column("Value", justify="right")
@@ -2021,6 +2051,21 @@ def _external_collection_table(result) -> Table:
     table.add_row("cache hits", _format_value(result.cache_hits))
     table.add_row("daily remaining", _format_value(result.daily_remaining))
     table.add_row("minute remaining", _format_value(result.minute_remaining))
+    if prospective_result is not None:
+        table.add_row("passes", _format_value(len(prospective_result.passes)))
+        table.add_row(
+            "total requests",
+            _format_value(prospective_result.total_requests),
+        )
+        table.add_row(
+            "total cache hits",
+            _format_value(prospective_result.total_cache_hits),
+        )
+        table.add_row(
+            "elapsed seconds",
+            f"{prospective_result.elapsed_seconds:.2f}",
+        )
+        table.add_row("stop reason", prospective_result.stop_reason)
     return table
 
 
