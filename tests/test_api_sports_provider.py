@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import requests
 
-from toto_ai.external_odds.domain import ProviderEvent, QuotaState
+from toto_ai.external_odds.domain import ProviderEvent, QuotaState, TargetEvent
 
 
 @dataclass
@@ -347,6 +347,84 @@ def test_event_markets_preserve_bookmaker_market_and_prices(tmp_path):
     assert markets[0].away_price == pytest.approx(3.80)
 
 
+def test_unrelated_markets_do_not_abort_eligible_three_way_market(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient
+    from toto_ai.external_odds.consensus import build_consensus
+
+    payload = odds_payload()
+    payload["timestamp"] = int(
+        datetime(2026, 7, 14, 12, 0, tzinfo=timezone.utc).timestamp()
+    )
+    payload["response"][0]["bookmakers"][0]["bets"].extend(
+        [
+            {
+                "name": "Goals Over/Under",
+                "values": [
+                    {"value": "Over 2.5", "odd": "1.90"},
+                    {"value": "Under 2.5", "odd": "1.90"},
+                ],
+            },
+            {
+                "name": "Double Chance",
+                "values": [
+                    {"value": "Home/Draw", "odd": "1.30"},
+                    {"value": "Home/Away", "odd": "1.35"},
+                    {"value": "Draw/Away", "odd": "1.40"},
+                ],
+            },
+            {
+                "name": "Moneyline",
+                "values": [
+                    {"value": "Home", "odd": "1.70"},
+                    {"value": "Away", "odd": "2.10"},
+                ],
+            },
+        ]
+    )
+    fake_session = FakeSession([FakeResponse(payload=payload, headers=quota_headers())])
+    client = APISportsClient("secret-key", session=fake_session, cache_dir=tmp_path)
+
+    markets = client.fetch_event_markets("football", "42")
+    consensus = build_consensus(
+        TargetEvent(
+            drawing_id=1,
+            drawing_number=None,
+            event_id=1,
+            event_order=0,
+            sport="football",
+            championship="Premier League",
+            starts_at=datetime(2026, 7, 14, 18, 0, tzinfo=timezone.utc),
+            deadline=datetime(2026, 7, 14, 17, 0, tzinfo=timezone.utc),
+            home_team="Home FC",
+            away_team="Away FC",
+            home_team_en=None,
+            away_team_en=None,
+            bk_probabilities=(0.4, 0.3, 0.3),
+        ),
+        markets,
+        fetched_at=datetime.fromtimestamp(payload["timestamp"], tz=timezone.utc),
+        minimum_bookmakers=1,
+    )
+
+    assert tuple(market.market_name for market in markets) == (
+        "Match Winner",
+        "Goals Over/Under",
+        "Double Chance",
+        "Moneyline",
+    )
+    assert consensus.eligible_bookmaker_count == 1
+    assert consensus.probabilities is not None
+    assert tuple(assessment.eligible for assessment in consensus.assessments) == (
+        True,
+        False,
+        False,
+        False,
+    )
+    assert tuple(
+        assessment.rejection_reason for assessment in consensus.assessments[1:]
+    ) == ("not full-time three-way",) * 3
+
+
 def test_official_football_odds_item_update_is_default_for_bookmakers(tmp_path):
     from toto_ai.external_odds.api_sports import APISportsClient
 
@@ -451,6 +529,21 @@ def test_unknown_extra_market_outcome_label_fails_closed(tmp_path):
     client = APISportsClient("secret-key", session=fake_session, cache_dir=tmp_path)
 
     with pytest.raises(APISportsError, match="unknown outcome"):
+        client.fetch_event_markets("football", "42")
+
+
+def test_missing_market_outcome_label_fails_closed(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+
+    payload = odds_payload()
+    payload["response"][0]["bookmakers"][0]["bets"][0]["values"] = [
+        {"value": "Home", "odd": "2.10"},
+        {"value": "Away", "odd": "3.80"},
+    ]
+    fake_session = FakeSession([FakeResponse(payload=payload, headers=quota_headers())])
+    client = APISportsClient("secret-key", session=fake_session, cache_dir=tmp_path)
+
+    with pytest.raises(APISportsError, match="missing outcome Draw"):
         client.fetch_event_markets("football", "42")
 
 

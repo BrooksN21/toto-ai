@@ -23,9 +23,29 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 641
-- Focused final whole-branch review-fix suites passed: 115
+- Tests currently passed: 643
+- Focused final whole-branch review-fix suites passed: 117
 - Ruff passed
+
+## Latest Completed Fix: API-Sports Mixed-Market Parsing
+
+Fixed the remaining final-review blocker where exact `Home`/`Draw`/`Away`
+validation was incorrectly applied to every API-Sports bookmaker market. A
+payload containing valid full-time football or regulation-time hockey `1/X/2`
+alongside totals, double chance, or two-way moneyline no longer aborts the
+event. Exact outcome validation now runs only after the market name matches the
+existing semantic allow-list, without adding any eligible market names.
+
+Unrelated markets remain provider-neutral records and consensus assessments.
+They are ineligible, contribute no probabilities, and remain available to the
+existing quote diagnostics/persistence path. Allow-listed candidates still
+fail closed on duplicate, unknown, or missing `Home`/`Draw`/`Away` labels.
+No EV/PLAY, category, bank, probability, consensus, or gate definition changed.
+
+Verification completed with the mixed-market RED/GREEN regression, focused
+external-odds pytest (`117 passed`), full pytest (`643 passed`), Ruff (`All
+checks passed!`), and zero-exit CLI help smokes for `collect-external-odds`,
+`audit-external-coverage`, and `ev-package`.
 
 ## Latest Completed Task: API-Sports Coverage Audit Final Review Fixes
 

@@ -47,7 +47,9 @@
   diagnostic only and ambiguous matches always fall back.
 - External odds must be complete full-time football or regulation-time hockey
   `1/X/2` markets. Two-outcome hockey moneylines must never be mapped to Toto
-  three-way outcomes.
+  three-way outcomes. Exact `Home`/`Draw`/`Away` outcome-label validation is
+  applied only after a market name matches the existing semantic allow-list;
+  unrelated markets remain ineligible diagnostics and do not abort the event.
 - Initial external consensus requires three eligible bookmakers, applies
   multiplicative de-vig per bookmaker, then normalizes component-wise median
   probabilities. The initial maximum odds age is 36 hours and remains visible

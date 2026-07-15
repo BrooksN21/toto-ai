@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import tempfile
 import time
+import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
@@ -14,6 +16,10 @@ from urllib.parse import urlsplit
 
 import requests
 
+from toto_ai.external_odds.consensus import (
+    FOOTBALL_THREE_WAY,
+    HOCKEY_REGULATION_THREE_WAY,
+)
 from toto_ai.external_odds.domain import (
     ProviderEvent,
     ProviderMarket,
@@ -444,7 +450,11 @@ def _parse_bookmaker_markets(
         values = bet.get("values")
         if not isinstance(values, list):
             raise APISportsError("API-Sports market values must be a list")
-        prices = _outcome_prices(values)
+        price_entries = _price_entries(values)
+        if _requires_exact_outcome_validation(sport, market_name):
+            prices = _outcome_prices(price_entries)
+        else:
+            prices = {item["value"]: item["odd"] for item in price_entries}
         provider_markets.append(
             ProviderMarket(
                 provider="api-sports",
@@ -583,10 +593,21 @@ def _price_entries(values: list[object]) -> tuple[dict[str, str], ...]:
     return tuple(entries)
 
 
-def _outcome_prices(values: list[object]) -> dict[str, str]:
+def _requires_exact_outcome_validation(sport: Sport, market_name: str) -> bool:
+    normalized = unicodedata.normalize("NFKC", market_name).casefold()
+    normalized = re.sub(r"[^\w]+", " ", normalized, flags=re.UNICODE)
+    normalized = " ".join(normalized.split())
+    if sport == "football":
+        return normalized in FOOTBALL_THREE_WAY
+    if sport == "hockey":
+        return normalized in HOCKEY_REGULATION_THREE_WAY
+    return False
+
+
+def _outcome_prices(values: tuple[dict[str, str], ...]) -> dict[str, str]:
     allowed = {"Home", "Draw", "Away"}
     prices: dict[str, str] = {}
-    for item in _price_entries(values):
+    for item in values:
         label = item["value"]
         if label not in allowed:
             raise APISportsError("API-Sports market has unknown outcome")
