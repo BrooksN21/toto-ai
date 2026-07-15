@@ -182,9 +182,13 @@
 
 ## Phase 7: Production
 
-- Implement the approved multi-day collection and play-eligibility design:
-  progressive two-to-five-day schedule expansion, per-date failure isolation,
-  persisted effective starts, and fail-closed `NO BET` for multi-day or unknown
+- Task 1 complete: provider-neutral drawing eligibility classifier and
+  deterministic target fingerprint, including immutable effective starts,
+  Moscow calendar-span classification, and fail-closed invariants.
+- Tasks 2-6 pending: implement the remaining approved multi-day collection and
+  play-eligibility design, including progressive two-to-five-day schedule
+  expansion, per-date failure isolation, persisted effective starts,
+  audit/report changes, and fail-closed `NO BET` for multi-day or unknown
   drawings.
 - Automatic T-15 scheduling of the fresh prospective command
 - Open drawing analysis
