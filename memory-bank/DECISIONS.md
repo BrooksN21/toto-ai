@@ -39,8 +39,12 @@
   A paid plan up to 30 USD/month is a last resort after a prospective audit
   proves request quota, rather than provider coverage, is the limiting factor.
 - API-Sports event matching is deterministic and fail-closed. Only one exact
-  sport/home/away/team match inside the approved UTC time window is usable;
-  fuzzy matches are diagnostic only and ambiguous matches always fall back.
+  sport/home/away/team match inside the approved UTC time window is usable.
+  Exact team comparison may use the primary TotoBrief names, optional
+  `name_en` alternatives, and only reviewed versioned aliases. Alias files are
+  normalized deterministically and must reject normalized-key collisions and
+  cycles. Fuzzy matches are diagnostic only and ambiguous matches always fall
+  back.
 - External odds must be complete full-time football or regulation-time hockey
   `1/X/2` markets. Two-outcome hockey moneylines must never be mapped to Toto
   three-way outcomes.
