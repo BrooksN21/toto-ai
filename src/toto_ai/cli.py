@@ -137,11 +137,7 @@ def info(drawing_id: int) -> None:
     client = TotoBriefClient()
     data = client.drawing_info(drawing_id).get("data", {})
 
-    print(
-        f"Drawing {data.get('number')} | "
-        f"{data.get('name')} | "
-        f"{data.get('status')}"
-    )
+    print(f"Drawing {data.get('number')} | {data.get('name')} | {data.get('status')}")
 
     for event in sorted(data.get("events", []), key=lambda item: item.get("order", 0)):
         quotes = event.get("quotes") or {}
@@ -368,8 +364,7 @@ def calibration(db: str = "data/toto.db") -> None:
     print(_calibration_slices_table(result))
     print(_reliability_table(result["bookmaker_bins"]))
     print(
-        "Reports written to "
-        f"{markdown_path}, {calibration_csv}, and {reliability_csv}"
+        f"Reports written to {markdown_path}, {calibration_csv}, and {reliability_csv}"
     )
 
 
@@ -771,6 +766,7 @@ def collect_external_odds_command(
     if not api_key.strip():
         raise typer.BadParameter("API_SPORTS_KEY is required")
 
+    sanitized_error: typer.BadParameter | None = None
     try:
         engine = init_db(db)
         session_factory = get_session_factory(engine)
@@ -786,9 +782,12 @@ def collect_external_odds_command(
             fetched_at=datetime.now(timezone.utc),
         )
     except (APISportsError, OSError, SQLAlchemyError, ValueError) as error:
-        raise typer.BadParameter(
+        sanitized_error = typer.BadParameter(
             _external_error_message(error, secret=api_key)
-        ) from None
+        )
+
+    if sanitized_error is not None:
+        raise sanitized_error
 
     print(_external_collection_table(result))
 
@@ -1165,14 +1164,8 @@ def seal_hybrid_development_command(
         Path(output_manifest).resolve(),
         Path(output_csv).resolve(),
     }
-    if (
-        len(input_paths) != 3
-        or len(output_paths) != 2
-        or input_paths & output_paths
-    ):
-        raise typer.BadParameter(
-            "Hybrid seal input and output paths must be distinct."
-        )
+    if len(input_paths) != 3 or len(output_paths) != 2 or input_paths & output_paths:
+        raise typer.BadParameter("Hybrid seal input and output paths must be distinct.")
     try:
         code_version = _git_code_version()
         frozen_manifest = load_strategy_experiment_manifest(manifest)
@@ -1206,9 +1199,10 @@ def evaluate_hybrid(
     try:
         frozen_manifest = load_strategy_experiment_manifest(manifest)
         seal = frozen_manifest.get("hybrid_development_seal")
-        if not isinstance(seal, dict) or seal.get(
-            "hybrid_code_version"
-        ) != _git_code_version():
+        if (
+            not isinstance(seal, dict)
+            or seal.get("hybrid_code_version") != _git_code_version()
+        ):
             raise ValueError("Hybrid development code version does not match.")
         report_paths = {
             path.resolve()
@@ -1223,9 +1217,7 @@ def evaluate_hybrid(
             Path(db).resolve(),
         }
         if report_paths & input_paths:
-            raise ValueError(
-                "Hybrid report and input paths must be distinct."
-            )
+            raise ValueError("Hybrid report and input paths must be distinct.")
         engine = open_readonly_db(db)
         session_factory = get_session_factory(engine)
 
@@ -2012,12 +2004,10 @@ def _external_collection_table(result) -> Table:
     table.add_column("Metric")
     table.add_column("Value", justify="right")
     fallback_count = sum(
-        row.probability_source == "totobrief_bk_fallback"
-        for row in result.events
+        row.probability_source == "totobrief_bk_fallback" for row in result.events
     )
     consensus_count = sum(
-        row.probability_source == "external_consensus"
-        for row in result.events
+        row.probability_source == "external_consensus" for row in result.events
     )
     table.add_row("collection id", result.collection_id)
     table.add_row("drawing id", _format_value(result.drawing_id))

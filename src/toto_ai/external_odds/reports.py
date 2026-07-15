@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import io
+import json
 import os
 import shutil
 import tempfile
@@ -23,10 +24,26 @@ CSV_FIELDS = (
     "league",
     "match_status",
     "provider_event_id",
+    "provider_schedule_fetched_at",
+    "provider_schedule_payload_hash",
+    "market_fetched_at",
+    "market_updated_at",
+    "market_payload_hashes",
     "probability_source",
     "eligible_bookmaker_count",
     "fallback_reason",
     "requests_made",
+    "daily_limit",
+    "daily_remaining",
+    "minute_remaining",
+    "consensus_minimum_bookmakers",
+    "consensus_maximum_age_hours",
+    "gate_decision",
+    "gate_predicate",
+    "gate_operator",
+    "gate_threshold",
+    "gate_actual",
+    "gate_passed",
     "target_count",
     "explicit_dispositions",
     "unique_match_count",
@@ -98,10 +115,23 @@ def _render_csv(audit: CoverageAudit) -> str:
                 "league": row.league,
                 "match_status": row.match_status,
                 "provider_event_id": row.provider_event_id,
+                "provider_schedule_fetched_at": (row.provider_schedule_fetched_at),
+                "provider_schedule_payload_hash": (row.provider_schedule_payload_hash),
+                "market_fetched_at": _json_values(row.market_fetched_at),
+                "market_updated_at": _json_values(row.market_updated_at),
+                "market_payload_hashes": _json_values(row.market_payload_hashes),
                 "probability_source": row.probability_source,
                 "eligible_bookmaker_count": row.eligible_bookmaker_count,
                 "fallback_reason": row.fallback_reason,
                 "requests_made": row.requests_made,
+                "daily_limit": row.daily_limit,
+                "daily_remaining": row.daily_remaining,
+                "minute_remaining": row.minute_remaining,
+                "consensus_minimum_bookmakers": (audit.consensus_minimum_bookmakers),
+                "consensus_maximum_age_hours": (
+                    f"{audit.consensus_maximum_age_hours:.6f}"
+                ),
+                "gate_decision": audit.gate.decision,
             }
         )
     for metric in (
@@ -111,7 +141,35 @@ def _render_csv(audit: CoverageAudit) -> str:
         *audit.by_drawing,
     ):
         writer.writerow(_metric_csv_row(metric))
+    for predicate in audit.gate.predicates:
+        writer.writerow(
+            {
+                "row_type": "gate_predicate",
+                "scope": "gate",
+                "name": predicate.name,
+                "consensus_minimum_bookmakers": (audit.consensus_minimum_bookmakers),
+                "consensus_maximum_age_hours": (
+                    f"{audit.consensus_maximum_age_hours:.6f}"
+                ),
+                "gate_decision": audit.gate.decision,
+                "gate_predicate": predicate.name,
+                "gate_operator": predicate.operator,
+                "gate_threshold": _gate_value(predicate.threshold),
+                "gate_actual": _gate_value(predicate.actual),
+                "gate_passed": str(predicate.passed).lower(),
+            }
+        )
     return output.getvalue()
+
+
+def _json_values(values: tuple[str, ...]) -> str:
+    return json.dumps(values, ensure_ascii=False, separators=(",", ":"))
+
+
+def _gate_value(value: int | float) -> str:
+    if isinstance(value, float):
+        return f"{value:.12f}"
+    return str(value)
 
 
 def _metric_csv_row(metric: CoverageMetrics) -> dict[str, object]:
@@ -156,6 +214,14 @@ def _render_markdown(audit: CoverageAudit) -> str:
         f"- requested drawings: {audit.requested_last}",
         f"- audited latest complete drawings: {audit.drawings}",
         f"- minimum bookmakers: {audit.minimum_bookmakers}",
+        (
+            "- collection consensus minimum bookmakers: "
+            f"{audit.consensus_minimum_bookmakers}"
+        ),
+        (
+            "- collection consensus maximum odds age hours: "
+            f"{audit.consensus_maximum_age_hours:.6f}"
+        ),
         "- gate sample floor: 30 drawings and 450 events",
         "- unique match threshold: 80%",
         "- usable consensus threshold: 70%",
@@ -174,6 +240,10 @@ def _render_markdown(audit: CoverageAudit) -> str:
         ),
         f"- p90 fallback events per drawing: {audit.fallback_p90_per_drawing:.6f}",
         "",
+        "## Collection Run Evidence",
+        "",
+        *_collection_table(audit),
+        "",
         "## Gate",
         "",
         f"- decision: {audit.gate.decision}",
@@ -185,6 +255,10 @@ def _render_markdown(audit: CoverageAudit) -> str:
         f"- ambiguous matches: {audit.gate.ambiguous_matches}",
         f"- explicit dispositions: {audit.gate.explicit_dispositions}",
         f"- operational failures: {audit.gate.operational_failures}",
+        "",
+        "## Gate Predicate Outcomes",
+        "",
+        *_gate_predicate_table(audit),
         "",
         "## Overall Metrics",
         "",
@@ -216,6 +290,44 @@ def _render_markdown(audit: CoverageAudit) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+def _collection_table(audit: CoverageAudit) -> list[str]:
+    lines = [
+        "| Collection | Drawing | Fetched At | Requests | Daily Limit | "
+        "Daily Remaining | Minute Remaining |",
+        "| --- | ---: | --- | ---: | ---: | ---: | ---: |",
+    ]
+    for collection in audit.collections:
+        lines.append(
+            f"| {collection.collection_id} | "
+            f"{collection.drawing_number or collection.drawing_id} | "
+            f"{collection.fetched_at} | {collection.requests_made} | "
+            f"{_optional_value(collection.daily_limit)} | "
+            f"{_optional_value(collection.daily_remaining)} | "
+            f"{_optional_value(collection.minute_remaining)} |"
+        )
+    if not audit.collections:
+        lines.append("| none | 0 | none | 0 | none | none | none |")
+    return lines
+
+
+def _gate_predicate_table(audit: CoverageAudit) -> list[str]:
+    lines = [
+        "| Predicate | Actual | Operator | Threshold | Passed |",
+        "| --- | ---: | :---: | ---: | :---: |",
+    ]
+    for predicate in audit.gate.predicates:
+        lines.append(
+            f"| {predicate.name} | {_gate_value(predicate.actual)} | "
+            f"{predicate.operator} | {_gate_value(predicate.threshold)} | "
+            f"{str(predicate.passed).lower()} |"
+        )
+    return lines
+
+
+def _optional_value(value: int | None) -> str:
+    return "none" if value is None else str(value)
 
 
 def _metric_bullets(metric: CoverageMetrics) -> str:

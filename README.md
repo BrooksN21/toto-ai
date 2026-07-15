@@ -114,6 +114,13 @@ authorizes designing a separate calibrated ensemble and untouched prospective
 evaluation; it does not authorize wiring external consensus directly into
 `PLAY`.
 
+The deterministic CSV exposes each matched schedule fetch timestamp/hash,
+aligned market fetch/update timestamps and payload hashes, collection request
+and remaining-quota counters, the three-bookmaker/36-hour consensus settings,
+and every gate predicate with its actual value, threshold, and observed result.
+The Markdown report repeats the collection run, consensus configuration, gate
+decision, and predicate outcomes for operator review.
+
 ## Project Memory
 
 TotoAI uses a repository-local memory bank for persistent project context.

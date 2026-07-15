@@ -7,11 +7,13 @@ from statistics import median
 from typing import Any, Literal
 
 from toto_ai.external_odds.collection import (
+    CONSENSUS_MINIMUM_BOOKMAKERS,
     EXTERNAL_CONSENSUS,
     TOTOBRIEF_BK_FALLBACK,
     ExternalCollectionSnapshot,
     ExternalEventDispositionRecord,
 )
+from toto_ai.external_odds.consensus import MAXIMUM_ODDS_AGE
 from toto_ai.external_odds.storage import (
     count_complete_runs,
     load_latest_complete_collections,
@@ -47,7 +49,15 @@ class CoverageDisposition:
     eligible_bookmaker_count: int
     fallback_reason: str
     provider_event_id: str | None
+    provider_schedule_fetched_at: str | None
+    provider_schedule_payload_hash: str | None
+    market_fetched_at: tuple[str, ...]
+    market_updated_at: tuple[str, ...]
+    market_payload_hashes: tuple[str, ...]
     requests_made: int
+    daily_limit: int | None
+    daily_remaining: int | None
+    minute_remaining: int | None
 
 
 @dataclass(frozen=True)
@@ -91,6 +101,16 @@ class CoverageGate:
     ambiguous_matches: int
     explicit_dispositions: int
     operational_failures: int
+    predicates: tuple[CoverageGatePredicate, ...]
+
+
+@dataclass(frozen=True)
+class CoverageGatePredicate:
+    name: str
+    operator: str
+    threshold: int | float
+    actual: int | float
+    passed: bool
 
 
 @dataclass(frozen=True)
@@ -99,6 +119,8 @@ class CoverageAudit:
     requested_last: int
     drawings: int
     minimum_bookmakers: int
+    consensus_minimum_bookmakers: int
+    consensus_maximum_age_hours: float
     collections: tuple[ExternalCollectionSnapshot, ...]
     dispositions: tuple[CoverageDisposition, ...]
     total: CoverageMetrics
@@ -140,9 +162,7 @@ def audit_external_coverage(
     by_league = _grouped_metrics("league", dispositions, minimum_bookmakers)
     by_drawing = _drawing_metrics(dispositions, minimum_bookmakers)
     fallback_counts = _fallback_counts(dispositions)
-    fallback_per_drawing = tuple(
-        metric.fallback_count for metric in by_drawing
-    )
+    fallback_per_drawing = tuple(metric.fallback_count for metric in by_drawing)
     requests = tuple(collection.requests_made for collection in collections)
     gate = _coverage_gate(
         drawings=len(collections),
@@ -154,6 +174,8 @@ def audit_external_coverage(
         requested_last=last,
         drawings=len(collections),
         minimum_bookmakers=minimum_bookmakers,
+        consensus_minimum_bookmakers=CONSENSUS_MINIMUM_BOOKMAKERS,
+        consensus_maximum_age_hours=(MAXIMUM_ODDS_AGE.total_seconds() / 3600.0),
         collections=collections,
         dispositions=dispositions,
         total=total,
@@ -220,7 +242,15 @@ def _dispositions_for_collection(
                     eligible_bookmaker_count=0,
                     fallback_reason="silent event loss",
                     provider_event_id=None,
+                    provider_schedule_fetched_at=None,
+                    provider_schedule_payload_hash=None,
+                    market_fetched_at=(),
+                    market_updated_at=(),
+                    market_payload_hashes=(),
                     requests_made=collection.requests_made,
+                    daily_limit=collection.daily_limit,
+                    daily_remaining=collection.daily_remaining,
+                    minute_remaining=collection.minute_remaining,
                 )
             )
             continue
@@ -235,6 +265,18 @@ def _disposition_from_event(
     reason = _normalized_reason(event.fallback_reason)
     if event.probability_source == TOTOBRIEF_BK_FALLBACK and not reason:
         reason = "silent event loss"
+    quotes = tuple(
+        sorted(
+            event.bookmaker_quotes,
+            key=lambda quote: (
+                quote.bookmaker_id,
+                quote.market_name,
+                quote.updated_at,
+                quote.fetched_at,
+                quote.payload_hash,
+            ),
+        )
+    )
     return CoverageDisposition(
         collection_id=collection.collection_id,
         drawing_id=collection.drawing_id,
@@ -247,7 +289,15 @@ def _disposition_from_event(
         eligible_bookmaker_count=event.eligible_bookmaker_count,
         fallback_reason=reason,
         provider_event_id=event.provider_event_id,
+        provider_schedule_fetched_at=event.provider_event_fetched_at,
+        provider_schedule_payload_hash=event.provider_event_payload_hash,
+        market_fetched_at=tuple(quote.fetched_at for quote in quotes),
+        market_updated_at=tuple(quote.updated_at for quote in quotes),
+        market_payload_hashes=tuple(quote.payload_hash for quote in quotes),
         requests_made=collection.requests_made,
+        daily_limit=collection.daily_limit,
+        daily_remaining=collection.daily_remaining,
+        minute_remaining=collection.minute_remaining,
     )
 
 
@@ -351,20 +401,64 @@ def _coverage_gate(
     total: CoverageMetrics,
     minimum_bookmakers: int,
 ) -> CoverageGate:
+    predicates = (
+        CoverageGatePredicate(
+            name="minimum_drawings",
+            operator=">=",
+            threshold=30,
+            actual=drawings,
+            passed=drawings >= 30,
+        ),
+        CoverageGatePredicate(
+            name="minimum_events",
+            operator=">=",
+            threshold=450,
+            actual=total.target_count,
+            passed=total.target_count >= 450,
+        ),
+        CoverageGatePredicate(
+            name="minimum_unique_match_rate",
+            operator=">=",
+            threshold=0.80,
+            actual=total.unique_match_rate,
+            passed=total.unique_match_rate >= 0.80,
+        ),
+        CoverageGatePredicate(
+            name="minimum_usable_consensus_rate",
+            operator=">=",
+            threshold=0.70,
+            actual=total.usable_consensus_rate,
+            passed=total.usable_consensus_rate >= 0.70,
+        ),
+        CoverageGatePredicate(
+            name="zero_ambiguous_matches",
+            operator="==",
+            threshold=0,
+            actual=total.ambiguous_count,
+            passed=total.ambiguous_count == 0,
+        ),
+        CoverageGatePredicate(
+            name="complete_explicit_dispositions",
+            operator="==",
+            threshold=total.target_count,
+            actual=total.explicit_dispositions,
+            passed=total.explicit_dispositions == total.target_count,
+        ),
+    )
     reasons: list[str] = []
-    if drawings < 30:
+    if not predicates[0].passed:
         reasons.append("fewer than 30 drawings")
-    if total.target_count < 450:
+    if not predicates[1].passed:
         reasons.append("fewer than 450 events")
     pending = bool(reasons)
     if not pending:
-        if total.unique_match_rate < 0.80:
+        if not predicates[2].passed:
             reasons.append("unique match rate below 80%")
-        if total.usable_consensus_rate < 0.70:
+        if not predicates[3].passed:
             reasons.append("consensus coverage below 70%")
-        if total.ambiguous_count:
+        if not predicates[4].passed:
             reasons.append("ambiguous match consumed")
-        if total.explicit_dispositions != total.target_count:
+        if not predicates[5].passed:
             reasons.append("silent event loss")
     return CoverageGate(
         decision="PENDING" if pending else "STOP" if reasons else "GO",
@@ -376,6 +470,7 @@ def _coverage_gate(
         ambiguous_matches=total.ambiguous_count,
         explicit_dispositions=total.explicit_dispositions,
         operational_failures=total.provider_error_count,
+        predicates=predicates,
     )
 
 
@@ -400,8 +495,7 @@ def _bookmaker_coverage_count(
     minimum: int,
 ) -> int:
     return sum(
-        row.match_status == "matched"
-        and row.eligible_bookmaker_count >= minimum
+        row.match_status == "matched" and row.eligible_bookmaker_count >= minimum
         for row in rows
     )
 

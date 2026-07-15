@@ -110,8 +110,8 @@ class APISportsClient:
             return cached.payload
         self._ensure_quota_available()
 
-        last_error: Exception | None = None
         for attempt in range(self._max_retries + 1):
+            connection_failed = False
             try:
                 response = self._session.get(
                     f"{self._base_url(sport)}{path}",
@@ -119,20 +119,21 @@ class APISportsClient:
                     params=dict(sorted(params.items())),
                     timeout=self._timeout,
                 )
-            except requests.ConnectionError as error:
-                last_error = error
+            except requests.ConnectionError:
+                connection_failed = True
+
+            if connection_failed:
                 if attempt == self._max_retries:
-                    raise APISportsError("API-Sports request failed") from None
+                    raise APISportsError("API-Sports transport connection failed")
                 self._sleep_before_retry(attempt)
                 continue
 
             self._quota_state = quota_from_headers(response.headers)
             if response.status_code in _RETRY_STATUSES:
-                last_error = APISportsError(
-                    f"API-Sports request failed with status {response.status_code}"
-                )
                 if attempt == self._max_retries:
-                    raise APISportsError("API-Sports request failed") from last_error
+                    raise APISportsError(
+                        f"API-Sports request failed with status {response.status_code}"
+                    )
                 self._ensure_quota_available()
                 self._sleep_before_retry(attempt)
                 continue
@@ -146,7 +147,7 @@ class APISportsClient:
             self._write_cache(cache_key, payload, self._quota_state)
             return payload
 
-        raise APISportsError("API-Sports request failed") from last_error
+        raise APISportsError("API-Sports request failed")
 
     def _base_url(self, sport: Sport) -> str:
         if sport == "football":

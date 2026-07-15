@@ -42,10 +42,19 @@ settings, and EV non-interference. The same suite proves the API key is absent
 from stored SQLite text, API-Sports cache files, CLI output, exception chains,
 coverage CSV, and coverage Markdown.
 
-One production bug was fixed: API-Sports connection failures and the
-`collect-external-odds` CLI wrapper no longer retain secret-bearing exception
-causes after producing sanitized errors. Collection, audit, matching,
-consensus, report, and EV probability definitions are unchanged.
+Review hardening now raises sanitized API-Sports transport and
+`collect-external-odds` CLI exceptions outside the secret-bearing handler
+context. Recursive acceptance walks both `__cause__` and `__context__` and
+proves the key is absent from `str()` and `repr()` of every reachable exception.
+
+Coverage CSV dispositions now export stored provider schedule fetch/hash and
+aligned market fetch/update/hash provenance, requests made, daily limit and
+remaining quota, and minute remaining quota. CSV and Markdown also disclose
+the fixed three-bookmaker/36-hour collection consensus configuration and all
+six ordered gate predicates with actual values, operators, thresholds, and
+observed pass results. Exact acceptance hashes bind both report artifacts.
+Collection, matching, consensus, gate, report, and EV probability
+definitions are unchanged.
 
 The implementation is complete, but the operational external-odds gate remains
 `PENDING` until an operator prospectively collects at least 30 future drawings

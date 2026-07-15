@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import json
 import sqlite3
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
@@ -186,9 +187,29 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
         for quote in event.bookmaker_quotes
     )
     with first_paths[0].open(newline="") as source:
-        disposition_rows = [
-            row for row in csv.DictReader(source) if row["row_type"] == "disposition"
-        ]
+        reader = csv.DictReader(source)
+        report_rows = list(reader)
+    assert {
+        "provider_schedule_fetched_at",
+        "provider_schedule_payload_hash",
+        "market_fetched_at",
+        "market_updated_at",
+        "market_payload_hashes",
+        "requests_made",
+        "daily_limit",
+        "daily_remaining",
+        "minute_remaining",
+        "consensus_minimum_bookmakers",
+        "consensus_maximum_age_hours",
+        "gate_decision",
+        "gate_predicate",
+        "gate_operator",
+        "gate_threshold",
+        "gate_actual",
+        "gate_passed",
+    } <= set(reader.fieldnames or ())
+    disposition_rows = [row for row in report_rows if row["row_type"] == "disposition"]
+    gate_rows = [row for row in report_rows if row["row_type"] == "gate_predicate"]
     assert len(disposition_rows) == 15
     assert [int(row["event_order"]) for row in disposition_rows] == list(range(15))
     assert [row["probability_source"] for row in disposition_rows[:10]] == [
@@ -196,11 +217,82 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
         "totobrief_bk_fallback",
     ]
     assert disposition_rows[9]["fallback_reason"] == "fewer than 3 eligible bookmakers"
+    first_disposition = disposition_rows[0]
+    assert first_disposition["provider_schedule_fetched_at"] == FETCHED_AT.isoformat()
+    assert first_disposition["provider_schedule_payload_hash"] == "schedule-hash-0"
+    assert (
+        json.loads(first_disposition["market_fetched_at"])
+        == [FETCHED_AT.isoformat()] * 3
+    )
+    assert (
+        json.loads(first_disposition["market_updated_at"])
+        == [(FETCHED_AT - timedelta(hours=1)).isoformat()] * 3
+    )
+    assert json.loads(first_disposition["market_payload_hashes"]) == [
+        "market-hash-0-0",
+        "market-hash-0-1",
+        "market-hash-0-2",
+    ]
+    assert {
+        (
+            row["requests_made"],
+            row["daily_limit"],
+            row["daily_remaining"],
+            row["minute_remaining"],
+            row["consensus_minimum_bookmakers"],
+            row["consensus_maximum_age_hours"],
+            row["gate_decision"],
+        )
+        for row in disposition_rows
+    } == {("16", "100", "78", "8", "3", "36.000000", "PENDING")}
+    assert [
+        (
+            row["gate_predicate"],
+            row["gate_operator"],
+            row["gate_threshold"],
+            row["gate_actual"],
+            row["gate_passed"],
+        )
+        for row in gate_rows
+    ] == [
+        ("minimum_drawings", ">=", "30", "1", "false"),
+        ("minimum_events", ">=", "450", "15", "false"),
+        (
+            "minimum_unique_match_rate",
+            ">=",
+            "0.800000000000",
+            "1.000000000000",
+            "true",
+        ),
+        (
+            "minimum_usable_consensus_rate",
+            ">=",
+            "0.700000000000",
+            "0.600000000000",
+            "false",
+        ),
+        ("zero_ambiguous_matches", "==", "0", "0", "true"),
+        ("complete_explicit_dispositions", "==", "15", "15", "true"),
+    ]
     markdown = first_paths[1].read_text(encoding="utf-8")
     assert "- minimum bookmakers: 3" in markdown
+    assert "- collection consensus minimum bookmakers: 3" in markdown
+    assert "- collection consensus maximum odds age hours: 36.000000" in markdown
     assert "- gate sample floor: 30 drawings and 450 events" in markdown
     assert "- decision: PENDING" in markdown
     assert "- reasons: fewer than 30 drawings, fewer than 450 events" in markdown
+    assert "## Collection Run Evidence" in markdown
+    assert "| 16 | 100 | 78 | 8 |" in markdown
+    assert "## Gate Predicate Outcomes" in markdown
+    assert "| minimum_events | 15 | >= | 450 | false |" in markdown
+    assert (
+        "| minimum_usable_consensus_rate | 0.600000000000 | >= | "
+        "0.700000000000 | false |"
+    ) in markdown
+    assert first_hashes == (
+        "9e23e9839248eabfc4750c1ca6bb56795a880e6b5aa55629f842a33066dd8ccf",
+        "6fb0d0ce999955ef41b80821ace54bd020bdf4cc3ab453e493de9448210e2837",
+    )
 
 
 def test_secret_absent_from_sqlite_cache_cli_exceptions_and_reports(
@@ -263,15 +355,40 @@ def test_secret_absent_from_sqlite_cache_cli_exceptions_and_reports(
     assert SECRET not in "".join(
         path.read_text(encoding="utf-8") for path in cache_dir.iterdir()
     )
-    assert SECRET not in str(excinfo.value)
-    assert SECRET not in repr(excinfo.value.__cause__)
+    transport_chain = recursive_exception_chain(excinfo.value)
+    assert excinfo.value.__cause__ is None
+    assert excinfo.value.__context__ is None
+    assert len(transport_chain) == 1
+    assert_secret_absent_from_exception_chain(excinfo.value)
     assert cli_result.exit_code != 0
     assert SECRET not in cli_result.output
-    assert SECRET not in repr(cli_result.exception.__cause__)
+    assert_secret_absent_from_exception_chain(cli_result.exception)
     assert "[redacted]" in cli_result.output
     assert SECRET not in "".join(
         path.read_text(encoding="utf-8") for path in report_paths
     )
+
+
+def recursive_exception_chain(error: BaseException) -> tuple[BaseException, ...]:
+    pending = [error]
+    seen: set[int] = set()
+    chain: list[BaseException] = []
+    while pending:
+        current = pending.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        chain.append(current)
+        for linked in (current.__cause__, current.__context__):
+            if linked is not None:
+                pending.append(linked)
+    return tuple(chain)
+
+
+def assert_secret_absent_from_exception_chain(error: BaseException) -> None:
+    for reachable in recursive_exception_chain(error):
+        assert SECRET not in str(reachable)
+        assert SECRET not in repr(reachable)
 
 
 def sqlite_factory(tmp_path: Path):
