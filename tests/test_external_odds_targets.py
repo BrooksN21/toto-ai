@@ -55,8 +55,12 @@ def test_fresh_payload_becomes_fifteen_ordered_targets():
     assert drawing.events[1].sport == "hockey"
 
 
-def test_unknown_sport_is_explicit_and_not_guessed():
-    assert classify_sport("Неизвестный турнир", None) == "unknown"
+def test_non_empty_non_hockey_championship_defaults_to_football():
+    assert classify_sport("Неизвестный турнир", None) == "football"
+
+
+def test_empty_championship_has_unknown_sport():
+    assert classify_sport("", None) == "unknown"
 
 
 @pytest.mark.parametrize(

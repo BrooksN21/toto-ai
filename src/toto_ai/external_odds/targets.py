@@ -24,17 +24,6 @@ HOCKEY_CHAMPIONSHIP_TOKENS = (
     "hockey",
     "хоккей",
 )
-FOOTBALL_CHAMPIONSHIP_TOKENS = (
-    "футбол",
-    "football",
-    "soccer",
-    "лига",
-    "league",
-    "liga",
-    "serie",
-    "premier",
-    "bundes",
-)
 _TEAM_SEPARATORS = ("—", "–", " - ")
 
 
@@ -48,7 +37,7 @@ def classify_sport(championship: str, explicit_sport: object) -> Sport:
     normalized = unicodedata.normalize("NFKC", championship).casefold()
     if any(token in normalized for token in HOCKEY_CHAMPIONSHIP_TOKENS):
         return "hockey"
-    if any(token in normalized for token in FOOTBALL_CHAMPIONSHIP_TOKENS):
+    if championship.strip():
         return "football"
     return "unknown"
 

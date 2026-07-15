@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 534
+- Tests currently passed: 535
 - Ruff passed
 
 ## Approved Next Design: Expected-Value Package Engine
@@ -69,10 +69,11 @@ probability triplets, and optional decimal prices.
 
 Added `parse_target_drawing()` to convert a fresh TotoBrief `drawing-info`
 payload into a strict 15-event fallback target set and `classify_sport()` to
-map explicit or championship-derived football/hockey cases while leaving
-unknown competitions explicit instead of guessed. Target parsing sorts TotoBrief
-events by order, splits localized and optional English team names, and preserves
-normalized BK probabilities for later fallback provenance.
+honor explicit football/hockey values, detect hockey championship tokens, and
+default every other non-empty championship to football. Only an empty
+championship classifies as unknown. Target parsing sorts TotoBrief events by
+order, splits localized and optional English team names, and preserves normalized
+BK probabilities for later fallback provenance.
 
 Task 1 verification completed with focused `external_odds` tests, full pytest,
 and Ruff. The added regression accepts any zero-offset UTC-aware datetimes in
