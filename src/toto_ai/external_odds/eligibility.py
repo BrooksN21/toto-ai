@@ -82,6 +82,46 @@ class DrawingEligibility:
             ):
                 raise ValueError(f"{name} must be an integer from 0 through 15")
 
+        known_count = 15 - len(self.missing_event_orders)
+        if self.totobrief_count + self.provider_count != known_count:
+            raise ValueError(
+                "missing_event_orders and source counts are inconsistent"
+            )
+
+        if known_count == 0:
+            if self.earliest_start is not None:
+                raise ValueError("earliest_start must be absent without known starts")
+            if self.latest_start is not None:
+                raise ValueError("latest_start must be absent without known starts")
+            expected_span_days = 0
+        else:
+            if self.earliest_start is None:
+                raise ValueError("earliest_start must be present with known starts")
+            if self.latest_start is None:
+                raise ValueError("latest_start must be present with known starts")
+            if self.earliest_start > self.latest_start:
+                raise ValueError("earliest_start must not be after latest_start")
+            expected_span_days = _calendar_span_days(
+                self.earliest_start, self.latest_start
+            )
+
+        if self.span_days != expected_span_days:
+            raise ValueError(
+                "span_days is inconsistent with earliest_start and latest_start"
+            )
+
+        expected_status: EligibilityStatus
+        if self.span_days > 2:
+            expected_status = "multi_day"
+        elif known_count < 15:
+            expected_status = "unknown"
+        else:
+            expected_status = "playable"
+        if self.status != expected_status:
+            raise ValueError(
+                "status is inconsistent with span_days and missing_event_orders"
+            )
+
 
 def classify_drawing_eligibility(
     starts: Sequence[EffectiveEventStart],
@@ -141,8 +181,16 @@ def target_fingerprint(
     if len(ordered_events) != 15:
         raise ValueError("exactly 15 events are required")
 
+    event_orders = tuple(_event_field(event, "event_order") for event in ordered_events)
+    if set(event_orders) != set(_EVENT_ORDERS):
+        raise ValueError("event orders 0 through 14 are required exactly once")
+
     canonical_events = []
-    for expected_order, event in zip(_EVENT_ORDERS, ordered_events, strict=True):
+    for expected_order, event in zip(
+        _EVENT_ORDERS,
+        sorted(ordered_events, key=lambda item: _event_field(item, "event_order")),
+        strict=True,
+    ):
         event_order = _event_field(event, "event_order")
         if event_order != expected_order:
             raise ValueError("event orders 0 through 14 are required exactly once")
@@ -210,6 +258,13 @@ def _event_start(event: object) -> datetime | None:
 
 def _canonical_datetime(value: datetime | None) -> str | None:
     return None if value is None else value.astimezone(timezone.utc).isoformat()
+
+
+def _calendar_span_days(earliest: datetime, latest: datetime) -> int:
+    return (
+        latest.astimezone(_MOSCOW).date()
+        - earliest.astimezone(_MOSCOW).date()
+    ).days + 1
 
 
 def _require_aware_datetime(name: str, value: object) -> None:

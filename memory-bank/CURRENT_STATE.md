@@ -49,6 +49,19 @@ attempts and ten cache hits across the invocation; the final pass produced
 matches, and zero ambiguous matches. The prospective gate remains `PENDING`
 only because the sample is below 30 drawings and 450 events.
 
+## Completed Task: Provider-Neutral Drawing Eligibility Classifier
+
+Task 1 of the multi-day drawing eligibility plan is complete. The new
+provider-neutral classifier validates immutable effective starts for all 15
+ordered events, applies the inclusive `Europe/Moscow` calendar span, returns
+fail-closed `playable`, `multi_day`, or `unknown` results with source counts,
+and creates deterministic target fingerprints that exclude fetch time.
+Constructor invariants cover status, span, missing orders, source counts, and
+earliest/latest consistency. Focused verification passed with 20 eligibility
+tests and Ruff. Progressive schedule expansion, persistence, audit/report
+changes, and the playable timing gate remain future work under the approved
+multi-day design below.
+
 ## Approved Next Design: Multi-Day Drawing Eligibility
 
 Rare holiday and off-season drawings can span four or five days. The approved

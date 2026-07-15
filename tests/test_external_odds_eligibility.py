@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from toto_ai.external_odds.eligibility import (
+    DrawingEligibility,
     EffectiveEventStart,
     classify_drawing_eligibility,
     target_fingerprint,
@@ -162,6 +163,43 @@ def test_effective_start_rejects_naive_timestamp_and_inconsistent_source():
         )
 
 
+def _playable_eligibility() -> DrawingEligibility:
+    return DrawingEligibility(
+        status="playable",
+        earliest_start=datetime(2026, 1, 1, 21, tzinfo=UTC),
+        latest_start=datetime(2026, 1, 2, 21, tzinfo=UTC),
+        span_days=2,
+        missing_event_orders=(),
+        totobrief_count=15,
+        provider_count=0,
+    )
+
+
+@pytest.mark.parametrize(
+    "changes, message",
+    [
+        ({"status": "unknown"}, "status"),
+        ({"span_days": 1}, "span_days"),
+        ({"missing_event_orders": (14,)}, "missing"),
+        ({"totobrief_count": 14}, "source counts"),
+        ({"earliest_start": None}, "earliest_start"),
+        ({"latest_start": None}, "latest_start"),
+        (
+            {
+                "earliest_start": datetime(2026, 1, 3, 21, tzinfo=UTC),
+                "latest_start": datetime(2026, 1, 2, 21, tzinfo=UTC),
+            },
+            "earliest_start",
+        ),
+    ],
+)
+def test_drawing_eligibility_rejects_contradictory_construction(changes, message):
+    values = _playable_eligibility().__dict__ | changes
+
+    with pytest.raises(ValueError, match=message):
+        DrawingEligibility(**values)
+
+
 def test_fingerprint_is_deterministic_binds_target_fields_and_excludes_fetch_time():
     events = tuple(
         _event(
@@ -188,3 +226,36 @@ def test_fingerprint_is_deterministic_binds_target_fields_and_excludes_fetch_tim
     )
     changed_event = tuple(_event(event_order) for event_order in range(15))
     assert first != target_fingerprint(123, 456, deadline, changed_event)
+
+
+@pytest.mark.parametrize(
+    "field, value",
+    [
+        ("event_id", 9000),
+        ("home_team", "Changed Home"),
+        ("away_team", "Changed Away"),
+    ],
+)
+def test_target_fingerprint_changes_for_each_event_identity_field(field, value):
+    events = tuple(_event(event_order) for event_order in range(15))
+    deadline = datetime(2026, 1, 2, 15, tzinfo=UTC)
+    changed = list(events)
+    changed[0] = SimpleNamespace(
+        **{**events[0].__dict__, field: value}
+    )
+
+    assert target_fingerprint(123, 456, deadline, changed) != target_fingerprint(
+        123, 456, deadline, events
+    )
+
+
+def test_target_fingerprint_changes_when_event_orders_change():
+    events = tuple(_event(event_order) for event_order in range(15))
+    deadline = datetime(2026, 1, 2, 15, tzinfo=UTC)
+    changed = list(events)
+    changed[0] = SimpleNamespace(**{**events[0].__dict__, "event_order": 1})
+    changed[1] = SimpleNamespace(**{**events[1].__dict__, "event_order": 0})
+
+    assert target_fingerprint(123, 456, deadline, changed) != target_fingerprint(
+        123, 456, deadline, events
+    )
