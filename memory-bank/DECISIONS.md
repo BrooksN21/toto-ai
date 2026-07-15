@@ -55,6 +55,16 @@
 - External probabilities cannot affect `PLAY` during the coverage audit. Every
   one of the 15 events records either an eligible external consensus or an
   explicit TotoBrief BK fallback reason.
+- External odds collection snapshots are append-only and immutable. The
+  deterministic collection identity includes the canonical drawing target,
+  `fetched_at`, provider matching decisions and market payload provenance, and
+  consensus configuration. Saving the same canonical collection is idempotent;
+  conflicting content under the same identity is rejected.
+- Prospective external collection must never silently drop events. Unknown
+  sports, missing or ambiguous matches, provider failures, quota exhaustion,
+  stale or partial markets, and minimum-bookmaker consensus failures all retain
+  the TotoBrief BK triplet with an explicit fallback reason in the event
+  disposition.
 - Direct package optimization is evaluated before further brief-first
   heuristics. A brief may be derived from a package but does not constrain the
   v1 optimizer.

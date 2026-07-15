@@ -23,10 +23,38 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 580
+- Tests currently passed: 591
 - Ruff passed
 
-## Latest Completed Task: Strict Market Semantics and Consensus
+## Latest Completed Task: Append-Only External Odds Storage and Collection
+
+Task 5 of the API-Sports coverage audit is complete. Added append-only
+SQLAlchemy tables for external collection runs, event dispositions, and
+bookmaker quote provenance. `save_collection()` writes one complete immutable
+15-event snapshot in a single transaction, is idempotent for identical canonical
+content, and rejects conflicting content under the same deterministic
+collection ID.
+
+Added deterministic external odds orchestration that fetches required
+sport/date schedules before any odds request, matches all 15 TotoBrief targets,
+fetches odds once per unique matched provider event, builds strict consensus
+where possible, and otherwise preserves the TotoBrief BK triplet with an
+explicit event-level fallback reason. Unknown sports, missing/ambiguous matches,
+provider failures, quota exhaustion, stale/partial market paths, and
+minimum-bookmaker failures do not drop events. Run rows persist provider quota
+and request counts; event and quote rows persist matching, probability source,
+fallback, market eligibility, and rejection provenance.
+
+`collect_open_external_odds()` now resolves the nearest open TotoBrief drawing,
+fetches exactly that drawing-info snapshot, parses the 15-event target, builds
+and saves the external collection only after all dispositions exist, and returns
+the immutable snapshot. This remains audit-only and does not change playable EV
+package decisions.
+
+Verification completed with focused external-odds storage/collection tests
+(`11 passed`), full pytest (`591 passed`), and Ruff (`All checks passed!`).
+
+## Previous Completed Task: Strict Market Semantics and Consensus
 
 Added `toto_ai.external_odds.consensus` for Task 4 of the API-Sports coverage
 audit. The new module accepts only explicit full-time football `1/X/2` market

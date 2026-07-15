@@ -124,5 +124,12 @@ def test_init_db_creates_sqlite_database(tmp_path):
     engine = init_db(db_path)
 
     assert db_path.exists()
-    assert set(inspect(engine).get_table_names()) == {"drawings", "events", "quotes"}
+    assert set(inspect(engine).get_table_names()) == {
+        "drawings",
+        "events",
+        "external_bookmaker_quotes",
+        "external_collection_runs",
+        "external_event_dispositions",
+        "quotes",
+    }
     engine.dispose()

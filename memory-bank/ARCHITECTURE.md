@@ -88,6 +88,10 @@ Important modules:
 - `toto_ai.external_odds.consensus`: strict football full-time and hockey
   regulation-time three-way market validation, duplicate bookmaker rejection,
   per-book de-vig, median consensus, and explicit minimum-bookmaker fallback.
+- `toto_ai.external_odds.collection` and `toto_ai.external_odds.storage`:
+  deterministic 15-event prospective external-odds collection, explicit
+  event-level TotoBrief BK fallback, provider quota/request provenance, and
+  append-only SQLAlchemy persistence for immutable collection snapshots.
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
   frozen-holdout exclusion, pre-result package hashing, complete factor
   rankings reused across dynamic banks and thresholds, cumulative realized

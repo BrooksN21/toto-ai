@@ -90,12 +90,14 @@
   is excluded.
 - Evaluate lawful third-party feeds, starting with API-Sports football/hockey,
   for coverage, terms, freshness, historical availability, and event matching.
-- API-Sports coverage-audit Tasks 1-4 are complete: provider-neutral records,
+- API-Sports coverage-audit Tasks 1-5 are complete: provider-neutral records,
   API-Sports transport/cache/quota, strict deterministic fail-closed event
   matching with reviewed alias diagnostics, and strict three-way
-  market-semantics consensus with explicit fallback.
-- Remaining coverage-audit work: prospective storage, explicit TotoBrief
-  fallback, and deterministic coverage reports.
+  market-semantics consensus with explicit fallback, plus append-only
+  prospective storage and deterministic 15-event collection with explicit
+  TotoBrief BK fallback.
+- Remaining coverage-audit work: deterministic coverage reports/CLI and
+  end-to-end acceptance.
 - Run the free-tier prospective gate on at least 30 future drawings and 450
   events before external probabilities can influence package generation.
 - Test a second free provider when the gate fails for missing coverage; consider

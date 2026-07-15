@@ -15,3 +15,12 @@
 - Championship strings require whitespace normalization.
 - Cancelled, void, and missing-result events must be excluded from standard
   backtests.
+- Prospective external odds collections are stored append-only in
+  `external_collection_runs`, `external_event_dispositions`, and
+  `external_bookmaker_quotes`. A complete collection always has 15 ordered
+  event dispositions. Each disposition records either external consensus or an
+  explicit TotoBrief BK fallback reason.
+- External collection identity includes the fresh TotoBrief target snapshot,
+  provider matching/market provenance, consensus configuration, and
+  `fetched_at`; repeated identical snapshots are idempotent, while a different
+  `fetched_at` creates a distinct immutable collection.
