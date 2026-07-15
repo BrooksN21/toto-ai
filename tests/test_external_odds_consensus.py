@@ -198,6 +198,72 @@ def test_three_book_median_consensus_is_normalized(football_target: TargetEvent)
     assert result.fallback_reason is None
 
 
+def test_consensus_devigs_each_book_before_component_median(
+    football_target: TargetEvent,
+):
+    raw_implied_probabilities = (
+        (0.70, 0.25, 0.15),
+        (0.55, 0.40, 0.25),
+        (0.45, 0.20, 0.40),
+    )
+    assert tuple(map(sum, raw_implied_probabilities)) == pytest.approx(
+        (1.10, 1.20, 1.05)
+    )
+    markets = tuple(
+        provider_market(
+            bookmaker_id=f"book-{index}",
+            home_price=1.0 / implied[0],
+            draw_price=1.0 / implied[1],
+            away_price=1.0 / implied[2],
+        )
+        for index, implied in enumerate(raw_implied_probabilities, start=1)
+    )
+
+    result = consensus_module().build_consensus(
+        football_target,
+        markets,
+        aware_now(),
+    )
+
+    expected_devigged = (
+        (7.0 / 11.0, 5.0 / 22.0, 3.0 / 22.0),
+        (11.0 / 24.0, 1.0 / 3.0, 5.0 / 24.0),
+        (3.0 / 7.0, 4.0 / 21.0, 8.0 / 21.0),
+    )
+    for assessment, expected in zip(
+        result.assessments,
+        expected_devigged,
+        strict=True,
+    ):
+        assert assessment.probabilities == pytest.approx(expected)
+
+    per_book_devig_then_median = (121.0 / 236.0, 15.0 / 59.0, 55.0 / 236.0)
+    raw_inverse_median_then_normalize = (11.0 / 21.0, 5.0 / 21.0, 5.0 / 21.0)
+    assert result.probabilities == pytest.approx(per_book_devig_then_median)
+    assert result.probabilities != pytest.approx(raw_inverse_median_then_normalize)
+
+
+def test_hockey_regulation_three_way_builds_consensus(hockey_target: TargetEvent):
+    markets = tuple(
+        provider_market(
+            bookmaker_id=f"book-{index}",
+            name="Match Winner - Regulation Time",
+        )
+        for index in range(1, 4)
+    )
+
+    result = consensus_module().build_consensus(
+        hockey_target,
+        markets,
+        aware_now(),
+    )
+
+    assert result.probabilities == pytest.approx((0.5, 0.25, 0.25))
+    assert result.eligible_bookmaker_count == 3
+    assert all(assessment.eligible for assessment in result.assessments)
+    assert result.fallback_reason is None
+
+
 def test_two_books_produce_explicit_fallback(football_target: TargetEvent):
     result = consensus_module().build_consensus(
         football_target,

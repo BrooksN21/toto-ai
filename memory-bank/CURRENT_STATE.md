@@ -23,7 +23,7 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 578
+- Tests currently passed: 580
 - Ruff passed
 
 ## Latest Completed Task: Strict Market Semantics and Consensus
@@ -44,6 +44,18 @@ playable package decisions.
 
 Task 4 verification completed with focused consensus tests, full pytest
 (`578 passed`), and Ruff (`All checks passed!`).
+
+## Task 4 Review Coverage
+
+Added a deliberately asymmetric overround regression that proves each
+bookmaker is de-vigged before component-wise medians are calculated. A
+raw-inverse-median mutation produces a detectably different consensus and is
+rejected by the test. Added positive coverage for an allow-listed hockey
+regulation-time three-way market producing a three-bookmaker consensus. No
+production behavior or probability definition changed.
+
+Review verification completed with focused consensus tests (`10 passed`), full
+pytest (`580 passed`), and Ruff (`All checks passed!`).
 
 ## Latest Completed Task: Deterministic External Event Matching
 
