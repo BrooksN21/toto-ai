@@ -1516,3 +1516,20 @@ drawings through collection, SQLite reload, audit/report, and playable/research
 output. Focused verification passed: 179 tests. Full-suite and Ruff results are
 green: 746 tests passed, repository-wide Ruff passed, both affected CLI help
 commands succeeded, and `git diff --check` passed.
+
+## Approved Next Design: Safe Drawing Runner
+
+The next production task is a single operator command that performs preflight,
+waits until T-20, revalidates the exact pinned drawing, runs fresh prospective
+collection, timing eligibility, coverage audit, and the existing EV package,
+then publishes a deterministic run manifest. T-5 is a hard fail-closed boundary
+for starting new runner phases. The command never places a bet.
+
+This orchestration does not change probability, EV, category, bank, stake,
+consensus, coverage-gate, or timing definitions. External consensus remains
+audit-only while the prospective gate is below 30 drawings and 450 events.
+
+Design specification:
+- `docs/superpowers/specs/2026-07-16-safe-drawing-runner-design.md`
+
+Next action: write the TDD implementation plan after user review of the spec.
