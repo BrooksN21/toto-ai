@@ -23,9 +23,33 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 746
-- Focused multi-day eligibility acceptance suite passed: 179
+- Tests currently passed: 838
+- Focused runner timing/orchestration suite passed: 83
 - Ruff passed
+
+## Latest Completed Task: Provider-Neutral Runner Orchestration
+
+`run_drawing()` now implements the pure dependency-injected runner state
+machine in the fixed preflight, wait, final resolve, collect, timing, audit,
+and EV order. It compares final targets by drawing ID, visible number,
+deadline, and canonical fingerprint; rechecks the injected UTC wall clock at
+every safety-bound phase; keeps coverage gate output diagnostic; skips EV for
+non-playable timing in Playable mode; and discards every package that finishes
+at or after T-5. Research mode obeys the same cutoff.
+
+`DrawingRunnerResult` lives in `runner/models.py` and validates immutable
+terminal decisions, exact collection/timing/EV target identity, UTC and
+contiguous chronological phase timestamps, matching EV configuration, and
+zero-cost coupon-free attached packages for `NO BET`. Ordinary EV-threshold
+`NO BET` may retain its diagnostic run and top-coupon diagnostics, while a
+late package is removed with `ev_run=None`.
+
+Verification: the required RED import failure, focused runner GREEN (`83
+passed`), focused Ruff, full pytest (`838 passed`), and repository-wide Ruff
+(`All checks passed!`). Tests use only injected clocks, sleepers, resolvers,
+collectors, auditors, and package builders; no real network, filesystem, or
+sleep is used. No category, cover, bank, probability, coverage-gate, timing,
+or EV definition changed.
 
 ## Latest Completed Task: Pinned Prospective Collection and Safety Stop
 
