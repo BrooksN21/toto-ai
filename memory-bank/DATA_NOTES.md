@@ -74,3 +74,7 @@
   are not playable. Exact drawing ID plus target fingerprint is required for a
   stored eligibility verdict; legacy, missing, malformed, or mismatched timing
   provenance fails closed.
+- Safe runner acceptance can persist a base and an expansion snapshot at an
+  identical deterministic observation timestamp. Latest SQLite reads resolve
+  such ties by append order, preserving the final completed pass rather than
+  treating a collection-content hash as chronology.

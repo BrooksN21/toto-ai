@@ -217,3 +217,12 @@
 - Multi-day timing acceptance is deterministic and must forbid real network
   calls and sleeps. A lawful live dry run is optional operational evidence, not
   a prerequisite for accepting the collection-to-eligibility-to-veto boundary.
+- The production `run-drawing --open` workflow preflights and pins one exact
+  target, waits until T-20, revalidates that same target, then runs fresh
+  collection, exact stored timing, diagnostic coverage audit, existing EV, and
+  rollback-safe linked reports. It never submits a bet. T-5 forbids new work
+  and suppresses any package that completes at or after the cutoff.
+- Equal external observation timestamps do not define collection chronology.
+  SQLite latest-snapshot reads use append order as the deterministic tie-break
+  before collection-ID order, preserving a later progressive pass without
+  changing immutable collection identities or timing definitions.

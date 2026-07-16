@@ -24,6 +24,13 @@ Known data notes:
 - Stored timing eligibility is bound to drawing ID and a canonical fingerprint
   of the exact fresh TotoBrief target. A stale or different target cannot reuse
   an earlier playable verdict.
+- `run-drawing --open --bank <RUB>` pins that target at preflight, starts final
+  work at T-20, fails closed at T-5, and writes linked deterministic operator
+  reports. It coordinates collection and timing evidence but never submits a
+  bet; API-Sports consensus remains audit-only.
+- A progressive base and expansion collection may share an observation
+  timestamp under deterministic clocks. SQLite resolves that latest-snapshot
+  tie by append order so the final pass supplies the exact timing verdict.
 
 Related:
 - [../memory-bank/DATA_NOTES.md](../memory-bank/DATA_NOTES.md)

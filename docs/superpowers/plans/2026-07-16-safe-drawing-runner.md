@@ -601,7 +601,7 @@ git commit -m "Add safe run-drawing command"
 **Interfaces:**
 - Proves the full preflight-to-report operator boundary with no real network, sleep, or bet submission.
 
-- [ ] **Step 1: Write end-to-end acceptance**
+- [x] **Step 1: Write end-to-end acceptance**
 
 Build deterministic fake-clock scenarios through real runner orchestration,
 prospective collection, SQLite save/load, audit, timing lookup, EV boundary,
@@ -636,7 +636,7 @@ def test_safe_runner_operator_boundary(
 
 Add separate scenarios for target mutation, day-five expansion, multi-day, unresolved/partial schedule, provider odds fallback with playable TotoBrief timing, external gate `PENDING`, cutoff during retry, cutoff after EV, report rollback, interruption, arbitrary banks such as 4800/6000/9600, and a secret-bearing provider exception. Assert all 15 dispositions, exact fingerprint binding, zero-cost suppressed outputs, no automatic bet callable, deterministic report bytes, and secret absence from SQLite/cache/reports/output/recursive exceptions.
 
-- [ ] **Step 2: Run acceptance to verify GREEN after all feature tasks**
+- [x] **Step 2: Run acceptance to verify GREEN after all feature tasks**
 
 Run:
 
@@ -654,11 +654,11 @@ Run:
 
 Expected: all focused tests pass without real network or real sleep.
 
-- [ ] **Step 3: Update repository memory**
+- [x] **Step 3: Update repository memory**
 
 Record the implemented command, timing protocol, target identity, cutoff semantics, artifacts, associated report links, exact tests, and unchanged model definitions. Mark Phase 7 runner complete. Do not mark the 30-drawing/450-event prospective gate complete.
 
-- [ ] **Step 4: Run full verification**
+- [x] **Step 4: Run full verification**
 
 ```bash
 .venv/bin/python -m pytest -q
@@ -671,11 +671,11 @@ git diff --check
 
 Expected: full suite and Ruff pass; all three help commands exit zero.
 
-- [ ] **Step 5: Independent final review**
+- [x] **Step 5: Independent final review**
 
 Review the complete feature range against the approved design. Required checks: no model-definition change, no external probability entering EV, no post-T-5 coupon publication, no target roll-forward, no real test sleep/network, no secret surfaces, deterministic rollback-safe artifacts, and clean worktree after commit. Fix every critical/important finding and re-run Step 4.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/toto_ai/runner src/toto_ai/external_odds/prospective.py \

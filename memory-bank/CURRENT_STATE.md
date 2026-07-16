@@ -23,9 +23,36 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 885
-- Focused runner orchestration/report/timing suite passed: 115
-- Focused and repository-wide Ruff passed
+- End-to-end runner acceptance: 13 passed.
+- Required focused runner/collection/audit/EV suite: 237 passed.
+- Full pytest: 898 passed.
+- Repository-wide Ruff: `All checks passed!`.
+
+## Latest Completed Task: Safe Drawing Runner End-to-End Acceptance
+
+Task 6 completes the approved Safe Drawing Runner feature. The new deterministic
+acceptance boundary drives real runner orchestration, pinned prospective
+collection, append-only SQLite persistence and read-only timing lookup, latest-30
+diagnostic audit, existing TotoBrief-BK EV generation, and all report writers
+with fake clocks, sleepers, TotoBrief clients, and API-Sports providers.
+
+Acceptance covers T-21 waiting, T-19 immediate final work, T-5 zero-provider
+`NO BET`, target mutation without roll-forward, provider fallbacks with an
+unchanged BK-only EV input, `PENDING` audit non-interference, day-five
+expansion, multi-day and unresolved timing vetoes, cutoff during retry and
+after EV, exact caps for 4800/6000/9600 RUB banks, deterministic bytes,
+rollback/interruption publication, and no configured network, real sleep, or
+automatic bet interface.
+
+The acceptance run exposed and fixed one storage boundary: two immutable passes
+can legitimately have equal fake-clock observation timestamps. Latest SQLite
+reads now use append-order `rowid` before content-hash ordering for timestamp
+ties, so the final day-five snapshot is selected over its earlier base pass.
+This does not change collection identity, timing, probability, EV, bank,
+stake, category, consensus, or coverage-gate definitions.
+
+The prospective external-odds gate remains `PENDING`; no 30-drawing/450-event
+gate is marked complete and external probabilities remain audit-only.
 
 ## Latest Review Fix: Production `run-drawing` CLI
 

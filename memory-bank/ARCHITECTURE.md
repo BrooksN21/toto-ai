@@ -108,6 +108,9 @@ Important modules:
   are consensus-ineligible and coalesced into one deterministic anomaly row so
   the mandated database uniqueness constraint does not discard the collection.
   Quote order is canonical before identity, comparison, insertion, and load.
+  When immutable snapshots have the same external observation timestamp,
+  SQLite latest-snapshot reads use append order before collection-ID order so
+  a completed progressive expansion cannot be superseded by its base pass.
 - `toto_ai.external_odds.prospective`: fresh-by-default multi-pass collection.
   It resolves one TotoBrief target, creates one isolated cache session, and
   reuses that session across new provider clients after minute-quota resets.

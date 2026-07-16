@@ -5,7 +5,7 @@ from dataclasses import asdict, replace
 from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func, literal_column, select
 
 from toto_ai.db.models import (
     ExternalBookmakerQuote,
@@ -69,6 +69,7 @@ def load_latest_complete_collections(
             .where(ExternalCollectionRun.status == "complete")
             .order_by(
                 ExternalCollectionRun.fetched_at.desc(),
+                literal_column("rowid").desc(),
                 ExternalCollectionRun.collection_id.desc(),
             )
         ).all()
@@ -106,6 +107,7 @@ def load_current_drawing_eligibility(
             )
             .order_by(
                 ExternalCollectionRun.fetched_at.desc(),
+                literal_column("rowid").desc(),
                 ExternalCollectionRun.collection_id.desc(),
             )
         ).all()
