@@ -13,6 +13,9 @@ from toto_ai.external_odds.prospective import (
 )
 
 NOW = datetime(2026, 7, 15, 14, 45, tzinfo=timezone.utc)
+DEADLINE = datetime(2026, 7, 16, 15, tzinfo=timezone.utc)
+T_MINUS_6 = DEADLINE - timedelta(minutes=6)
+T_MINUS_5 = DEADLINE - timedelta(minutes=5)
 
 
 def _target(*, missing_orders: tuple[int, ...] = ()):
@@ -207,6 +210,257 @@ def test_fresh_cache_sessions_are_drawing_scoped_and_unique():
     assert first.parent == Path("cache/runs")
     assert first.name.startswith("4945-")
     assert first != second
+
+
+def test_supplied_target_bypasses_open_resolution(monkeypatch, tmp_path):
+    target = _target()
+    snapshot = _snapshot(
+        fallback_reasons=(),
+        requests=1,
+        cache_hits=0,
+        collection_id="pinned-target",
+    )
+    provider_calls = []
+    monotonic = iter((0.0, 1.0, 2.0, 3.0))
+
+    monkeypatch.setattr(
+        "toto_ai.external_odds.prospective.resolve_open_target",
+        lambda *_args, **_kwargs: pytest.fail("must not resolve another target"),
+    )
+    monkeypatch.setattr(
+        "toto_ai.external_odds.prospective._collect_target_pass",
+        lambda *_args, **_kwargs: snapshot,
+    )
+
+    def provider_factory(cache_dir):
+        provider_calls.append(cache_dir)
+        return SimpleNamespace(cache_dir=cache_dir)
+
+    result = collect_fresh_open_external_odds(
+        target=target,
+        totobrief_client="unused",
+        provider_factory=provider_factory,
+        session_factory="session-factory",
+        aliases={},
+        cache_root=tmp_path,
+        now=lambda: NOW,
+        monotonic=lambda: next(monotonic),
+        sleep=lambda _seconds: pytest.fail("must not sleep"),
+    )
+
+    assert result.snapshot.drawing_id == target.drawing_id
+    assert len(provider_calls) == 1
+
+
+def test_existing_path_resolves_open_target_once(monkeypatch, tmp_path):
+    target = _target()
+    snapshot = _snapshot(
+        fallback_reasons=(),
+        requests=1,
+        cache_hits=0,
+        collection_id="resolved-target",
+    )
+    resolved = []
+    monotonic = iter((0.0, 1.0, 2.0, 3.0))
+
+    def resolve(client, *, fetched_at):
+        resolved.append((client, fetched_at))
+        return target
+
+    monkeypatch.setattr(
+        "toto_ai.external_odds.prospective.resolve_open_target",
+        resolve,
+    )
+    monkeypatch.setattr(
+        "toto_ai.external_odds.prospective._collect_target_pass",
+        lambda *_args, **_kwargs: snapshot,
+    )
+
+    collect_fresh_open_external_odds(
+        totobrief_client="totobrief",
+        provider_factory=lambda cache_dir: SimpleNamespace(cache_dir=cache_dir),
+        session_factory="session-factory",
+        aliases={},
+        cache_root=tmp_path,
+        now=lambda: NOW,
+        monotonic=lambda: next(monotonic),
+        sleep=lambda _seconds: pytest.fail("must not sleep"),
+    )
+
+    assert resolved == [("totobrief", NOW)]
+
+
+def test_safety_stop_prevents_retry_after_first_pass(monkeypatch, tmp_path):
+    target = _target()
+    snapshot = _snapshot(
+        fallback_reasons=("quota reserve reached",),
+        requests=1,
+        cache_hits=0,
+        collection_id="retryable",
+    )
+    times = iter((T_MINUS_6, T_MINUS_5))
+    provider_calls = []
+    sleep_calls = []
+    monotonic = iter((0.0, 1.0, 2.0, 3.0))
+
+    monkeypatch.setattr(
+        "toto_ai.external_odds.prospective._collect_target_pass",
+        lambda *_args, **_kwargs: snapshot,
+    )
+
+    def provider_factory(cache_dir):
+        provider_calls.append(cache_dir)
+        return SimpleNamespace(cache_dir=cache_dir)
+
+    result = collect_fresh_open_external_odds(
+        target=target,
+        stop_at=T_MINUS_5,
+        totobrief_client="unused",
+        provider_factory=provider_factory,
+        session_factory="session-factory",
+        aliases={},
+        cache_root=tmp_path,
+        now=lambda: next(times),
+        monotonic=lambda: next(monotonic),
+        sleep=sleep_calls.append,
+        max_passes=3,
+        retry_delay_seconds=65.0,
+    )
+
+    assert result.stop_reason == "safety_stop"
+    assert result.base_pass_count == 1
+    assert len(provider_calls) == 1
+    assert sleep_calls == []
+
+
+def test_retry_sleep_is_limited_to_remaining_safe_duration(monkeypatch, tmp_path):
+    target = _target()
+    snapshot = _snapshot(
+        fallback_reasons=("quota reserve reached",),
+        requests=1,
+        cache_hits=0,
+        collection_id="retryable",
+    )
+    times = iter(
+        (
+            T_MINUS_6,
+            T_MINUS_5 - timedelta(seconds=10),
+            T_MINUS_5 - timedelta(seconds=10),
+            T_MINUS_5,
+        )
+    )
+    provider_calls = []
+    sleep_calls = []
+    monotonic = iter((0.0, 1.0, 2.0, 3.0))
+
+    monkeypatch.setattr(
+        "toto_ai.external_odds.prospective._collect_target_pass",
+        lambda *_args, **_kwargs: snapshot,
+    )
+
+    def provider_factory(cache_dir):
+        provider_calls.append(cache_dir)
+        return SimpleNamespace(cache_dir=cache_dir)
+
+    result = collect_fresh_open_external_odds(
+        target=target,
+        stop_at=T_MINUS_5,
+        totobrief_client="unused",
+        provider_factory=provider_factory,
+        session_factory="session-factory",
+        aliases={},
+        cache_root=tmp_path,
+        now=lambda: next(times),
+        monotonic=lambda: next(monotonic),
+        sleep=sleep_calls.append,
+        max_passes=3,
+        retry_delay_seconds=65.0,
+    )
+
+    assert result.stop_reason == "safety_stop"
+    assert len(provider_calls) == 1
+    assert sleep_calls == [10.0]
+
+
+def test_safety_stop_prevents_expansion_after_completed_base_pass(
+    monkeypatch,
+    tmp_path,
+):
+    target = _target(missing_orders=(0,))
+    snapshot = _snapshot(
+        fallback_reasons=("0 exact candidates",),
+        requests=1,
+        cache_hits=0,
+        collection_id="base-miss",
+    )
+    times = iter((T_MINUS_6, T_MINUS_6, T_MINUS_5))
+    provider_calls = []
+    monotonic = iter((0.0, 1.0, 2.0, 3.0))
+
+    monkeypatch.setattr(
+        "toto_ai.external_odds.prospective._collect_target_pass",
+        lambda *_args, **_kwargs: snapshot,
+    )
+
+    def provider_factory(cache_dir):
+        provider_calls.append(cache_dir)
+        return SimpleNamespace(cache_dir=cache_dir)
+
+    result = collect_fresh_open_external_odds(
+        target=target,
+        stop_at=T_MINUS_5,
+        totobrief_client="unused",
+        provider_factory=provider_factory,
+        session_factory="session-factory",
+        aliases={},
+        cache_root=tmp_path,
+        now=lambda: next(times),
+        monotonic=lambda: next(monotonic),
+        sleep=lambda _seconds: pytest.fail("must not sleep"),
+        max_passes=1,
+    )
+
+    assert result.stop_reason == "safety_stop"
+    assert result.base_pass_count == 1
+    assert result.expansion_pass_count == 0
+    assert len(provider_calls) == 1
+
+
+@pytest.mark.parametrize(
+    "stop_at",
+    (
+        datetime(2026, 7, 16, 15),
+        datetime(2026, 7, 16, 18, tzinfo=timezone(timedelta(hours=3))),
+    ),
+)
+def test_stop_at_must_be_utc_aware(tmp_path, stop_at):
+    with pytest.raises(ValueError, match="stop_at must be timezone-aware UTC"):
+        collect_fresh_open_external_odds(
+            target=_target(),
+            stop_at=stop_at,
+            totobrief_client="unused",
+            provider_factory=lambda _path: pytest.fail("must not collect"),
+            session_factory="unused",
+            aliases={},
+            cache_root=tmp_path,
+        )
+
+
+def test_safety_stop_before_first_pass_raises_stable_error(tmp_path):
+    with pytest.raises(
+        ValueError,
+        match="safety stop reached before first collection pass",
+    ):
+        collect_fresh_open_external_odds(
+            target=_target(),
+            stop_at=T_MINUS_5,
+            totobrief_client="unused",
+            provider_factory=lambda _path: pytest.fail("must not collect"),
+            session_factory="unused",
+            aliases={},
+            cache_root=tmp_path,
+            now=lambda: T_MINUS_5,
+        )
 
 
 def test_clean_two_day_result_does_not_expand(monkeypatch, tmp_path):

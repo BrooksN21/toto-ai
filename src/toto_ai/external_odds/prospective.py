@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from math import isfinite
 from pathlib import Path
 from typing import Any, Literal
@@ -23,6 +23,7 @@ ProspectiveStopReason = Literal[
     "no_retryable_fallbacks",
     "max_passes",
     "max_expansion_passes",
+    "safety_stop",
 ]
 ProviderFactory = Callable[[Path], ExternalOddsProvider]
 _BASE_HORIZON_DAYS = 2
@@ -100,6 +101,8 @@ def collect_fresh_open_external_odds(
     session_factory: Any,
     aliases: dict[str, str],
     cache_root: Path,
+    target: TargetDrawing | None = None,
+    stop_at: datetime | None = None,
     max_passes: int = 3,
     expand_missing_starts: bool = True,
     expansion_horizon_days: int = 5,
@@ -118,15 +121,25 @@ def collect_fresh_open_external_odds(
     )
     started = monotonic()
     started_at = now()
-    target = resolve_open_target(totobrief_client, fetched_at=started_at)
-    cache_dir = fresh_cache_session_dir(cache_root, target, started_at)
+    resolved_target = (
+        resolve_open_target(totobrief_client, fetched_at=started_at)
+        if target is None
+        else target
+    )
+    _validate_stop_at(stop_at)
+    if stop_at is not None and started_at >= stop_at:
+        raise ValueError("safety stop reached before first collection pass")
+    cache_dir = fresh_cache_session_dir(cache_root, resolved_target, started_at)
     base_passes: list[ProspectiveCollectionPass] = []
     expansion_passes: list[ProspectiveCollectionPass] = []
     stop_reason: ProspectiveStopReason = "max_passes"
 
     for pass_index in range(max_passes):
+        if pass_index and _safety_stop_reached(stop_at, now):
+            stop_reason = "safety_stop"
+            break
         item = _run_pass(
-            target,
+            resolved_target,
             cache_dir=cache_dir,
             provider_factory=provider_factory,
             session_factory=session_factory,
@@ -137,11 +150,21 @@ def collect_fresh_open_external_odds(
             monotonic=monotonic,
         )
         base_passes.append(item)
+        if _safety_stop_reached(stop_at, now):
+            stop_reason = "safety_stop"
+            break
         if not is_retryable_snapshot(item.snapshot):
             stop_reason = "no_retryable_fallbacks"
             break
         if pass_index + 1 < max_passes:
-            sleep(retry_delay_seconds)
+            if _sleep_until_retry_or_stop(
+                stop_at,
+                retry_delay_seconds=retry_delay_seconds,
+                now=now,
+                sleep=sleep,
+            ):
+                stop_reason = "safety_stop"
+                break
 
     stable_base_snapshot = (
         base_passes[-1].snapshot
@@ -151,12 +174,15 @@ def collect_fresh_open_external_odds(
     if (
         expand_missing_starts
         and stable_base_snapshot is not None
-        and _is_expansion_eligible(target, stable_base_snapshot)
+        and _is_expansion_eligible(resolved_target, stable_base_snapshot)
     ):
         stop_reason = "max_expansion_passes"
         for pass_index in range(max_expansion_passes):
+            if _safety_stop_reached(stop_at, now):
+                stop_reason = "safety_stop"
+                break
             item = _run_pass(
-                target,
+                resolved_target,
                 cache_dir=cache_dir,
                 provider_factory=provider_factory,
                 session_factory=session_factory,
@@ -167,11 +193,21 @@ def collect_fresh_open_external_odds(
                 monotonic=monotonic,
             )
             expansion_passes.append(item)
+            if _safety_stop_reached(stop_at, now):
+                stop_reason = "safety_stop"
+                break
             if not is_retryable_snapshot(item.snapshot):
                 stop_reason = "no_retryable_fallbacks"
                 break
             if pass_index + 1 < max_expansion_passes:
-                sleep(retry_delay_seconds)
+                if _sleep_until_retry_or_stop(
+                    stop_at,
+                    retry_delay_seconds=retry_delay_seconds,
+                    now=now,
+                    sleep=sleep,
+                ):
+                    stop_reason = "safety_stop"
+                    break
 
     passes = (*base_passes, *expansion_passes)
     final_snapshot = passes[-1].snapshot
@@ -271,6 +307,41 @@ def _is_retryable_reason(reason: str | None) -> bool:
     return reason in _RETRYABLE_EXACT_REASONS or reason.startswith(
         _RETRYABLE_REASON_PREFIXES
     )
+
+
+def _safety_stop_reached(
+    stop_at: datetime | None,
+    now: Callable[[], datetime],
+) -> bool:
+    return stop_at is not None and now() >= stop_at
+
+
+def _sleep_until_retry_or_stop(
+    stop_at: datetime | None,
+    *,
+    retry_delay_seconds: float,
+    now: Callable[[], datetime],
+    sleep: Callable[[float], None],
+) -> bool:
+    if stop_at is None:
+        sleep(retry_delay_seconds)
+        return False
+    remaining = (stop_at - now()).total_seconds()
+    if remaining <= 0:
+        return True
+    sleep(min(retry_delay_seconds, remaining))
+    return now() >= stop_at
+
+
+def _validate_stop_at(stop_at: datetime | None) -> None:
+    if stop_at is None:
+        return
+    if (
+        not isinstance(stop_at, datetime)
+        or stop_at.tzinfo is None
+        or stop_at.utcoffset() != timedelta(0)
+    ):
+        raise ValueError("stop_at must be timezone-aware UTC")
 
 
 def _validate_options(

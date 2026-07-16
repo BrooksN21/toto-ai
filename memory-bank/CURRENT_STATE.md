@@ -27,6 +27,20 @@ task commits listed above.
 - Focused multi-day eligibility acceptance suite passed: 179
 - Ruff passed
 
+## Latest Completed Task: Pinned Prospective Collection and Safety Stop
+
+`collect_fresh_open_external_odds()` now accepts an optional already-pinned
+`TargetDrawing` and UTC `stop_at` boundary. With neither argument, standalone
+collection keeps resolving exactly one open target and retains its previous
+retry behavior. At or after the supplied cutoff, it refuses the first pass or
+stops after an immutable completed pass with `safety_stop`; it never starts a
+later base or expansion pass and caps retry sleeps to the remaining safe time.
+
+Verification: prospective RED/GREEN tests, focused prospective/CLI/end-to-end
+regression tests, focused Ruff, full pytest (`805 passed`), and repository-wide
+Ruff (`All checks passed!`). No external probability, category, cover, budget,
+EV, or probability definition changed.
+
 ## Latest Completed Feature: Fresh Prospective Collection
 
 `collect-external-odds` now defaults to a unique per-invocation cache session
