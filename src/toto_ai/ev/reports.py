@@ -207,6 +207,7 @@ def _render_markdown(result: EVPackageRun) -> str:
     config = result.config
     ev_input = result.ev_input
     package = result.package
+    timing = result.timing_eligibility
     bank_ratio = config.bank / ev_input.pool_sum
     modeled_roi = (
         "n/a" if package.modeled_roi is None else f"{package.modeled_roi:.12f}"
@@ -225,6 +226,13 @@ def _render_markdown(result: EVPackageRun) -> str:
         f"- expected payout: {package.expected_payout:.12f}",
         f"- modeled ROI: {modeled_roi}",
         "- modeled ROI is not observed ROI",
+        "",
+        "## Timing Eligibility",
+        "",
+        f"- status: {timing.status}",
+        f"- fingerprint match: {'yes' if timing.fingerprint_match else 'no'}",
+        f"- target fingerprint: {timing.target_fingerprint or 'n/a'}",
+        f"- reason: {timing.reason}",
         "",
         "## Input Snapshot",
         "",
@@ -282,14 +290,24 @@ def _render_markdown(result: EVPackageRun) -> str:
             "",
             "## Top 20 diagnostics",
             "",
-            "| Rank | Coupon | Gross EV | Net EV |",
-            "| ---: | --- | ---: | ---: |",
         ]
     )
-    for row in result.top_coupons:
+    if result.timing_diagnostics_suppressed:
         lines.append(
-            f"| {row.rank} | {row.coupon} | {row.gross_ev:.12f} | {row.net_ev:.12f} |"
+            "Timing-veto diagnostics are suppressed in playable mode."
         )
+    else:
+        lines.extend(
+            [
+                "| Rank | Coupon | Gross EV | Net EV |",
+                "| ---: | --- | ---: | ---: |",
+            ]
+        )
+        for row in result.top_coupons:
+            lines.append(
+                f"| {row.rank} | {row.coupon} | {row.gross_ev:.12f} | "
+                f"{row.net_ev:.12f} |"
+            )
 
     lines.extend(
         [

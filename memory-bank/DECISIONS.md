@@ -104,6 +104,12 @@
   Europe/Moscow calendar span of at most two days. `multi_day` and `unknown`
   eligibility are fail-closed `NO BET`; provider timing metadata may veto PLAY
   but external probabilities remain audit-only.
+- Playable EV output requires an exact stored eligibility match for the same
+  fresh target fingerprint and status `playable`. `multi_day`, `unknown`,
+  `absent`, and `not_checked` all suppress package and sensitivity output to a
+  zero-cost `NO BET`. Exact diagnostic coupons are not published after this
+  veto. Research preserves EV computation and ranking while reporting timing
+  provenance or a conservative timing warning.
 - Provider provenance is stored explicitly, not only committed through an
   opaque event hash. Matched dispositions retain schedule-event fetch time and
   payload hash plus candidate IDs and match reason; quotes retain market fetch

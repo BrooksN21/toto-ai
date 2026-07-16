@@ -1,5 +1,6 @@
 import gc
 import weakref
+from dataclasses import FrozenInstanceError
 from pathlib import Path
 
 import numpy as np
@@ -19,6 +20,7 @@ from toto_ai.ev.models import (
     EVConfig,
     EVPackage,
     EVSurface,
+    PlayTimingEligibility,
     RankedCoupon,
 )
 
@@ -333,6 +335,324 @@ def _package(config, *, cost, decision=None):
     )
 
 
+def _install_fast_ev_engine(monkeypatch):
+    import toto_ai.ev.drawing as drawing_module
+
+    monkeypatch.setattr(
+        drawing_module,
+        "compute_ev_components",
+        lambda ev_input, progress_callback=None: EVComponents(
+            np.array([1.0]),
+            np.array([0.0]),
+            15,
+            1.0,
+            1.0,
+            1.0,
+        ),
+    )
+    monkeypatch.setattr(
+        drawing_module,
+        "materialize_ev_surface",
+        lambda components, possible_winnings, jackpot: _surface(possible_winnings),
+    )
+    monkeypatch.setattr(
+        drawing_module,
+        "select_ev_package",
+        lambda surface, config: _package(config, cost=30),
+    )
+    monkeypatch.setattr(
+        drawing_module,
+        "select_ev_package_with_top_coupons",
+        lambda surface, config, diagnostic_limit=20: (
+            _package(config, cost=30),
+            (
+                RankedCoupon(
+                    rank=1,
+                    coupon="1" * 15,
+                    gross_ev=1.1,
+                    net_ev=0.1,
+                ),
+            ),
+        ),
+    )
+    monkeypatch.setattr(
+        drawing_module,
+        "_utc_now",
+        lambda: "2026-07-14T12:00:01+00:00",
+    )
+
+
+def _build_fast_run(
+    monkeypatch,
+    payload,
+    *,
+    mode="playable",
+    timing_resolver=None,
+):
+    _install_fast_ev_engine(monkeypatch)
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == 9000
+            return payload
+
+    return build_open_ev_package(
+        client=Client(),
+        drawing_id=9000,
+        config=EVConfig(
+            bank=30,
+            stake=30,
+            mode=mode,
+            prize_fund_factor=0.9,
+        ),
+        timing_eligibility_resolver=timing_resolver,
+    )
+
+
+def test_play_timing_eligibility_is_immutable():
+    timing = PlayTimingEligibility(
+        status="playable",
+        reason="all event starts fit within two Moscow calendar days",
+        target_fingerprint="a" * 64,
+        fingerprint_match=True,
+    )
+
+    with pytest.raises(FrozenInstanceError):
+        timing.status = "unknown"
+
+    unfingerprinted = PlayTimingEligibility(
+        status="absent",
+        reason="fresh timing target could not be parsed or fingerprinted",
+        target_fingerprint=None,
+        fingerprint_match=False,
+    )
+    assert unfingerprinted.target_fingerprint is None
+
+
+def test_timing_resolver_receives_exact_payload_once(
+    monkeypatch,
+    open_drawing_payload,
+):
+    received = []
+
+    def resolver(payload):
+        received.append(payload)
+        return PlayTimingEligibility(
+            status="playable",
+            reason="stored eligibility matches the fresh target",
+            target_fingerprint="b" * 64,
+            fingerprint_match=True,
+        )
+
+    result = _build_fast_run(
+        monkeypatch,
+        open_drawing_payload,
+        timing_resolver=resolver,
+    )
+
+    assert received == [open_drawing_payload]
+    assert received[0] is open_drawing_payload
+    assert result.timing_eligibility.status == "playable"
+
+
+def test_playable_timing_verdict_preserves_selected_package(
+    monkeypatch,
+    open_drawing_payload,
+):
+    playable = _build_fast_run(
+        monkeypatch,
+        open_drawing_payload,
+        timing_resolver=lambda payload: PlayTimingEligibility(
+            status="playable",
+            reason="stored eligibility matches the fresh target",
+            target_fingerprint="c" * 64,
+            fingerprint_match=True,
+        ),
+    )
+
+    assert playable.package == _package(playable.config, cost=30)
+    assert all(row.decision == "PLAY" for row in playable.sensitivity)
+
+
+def test_playable_without_timing_resolver_fails_closed(
+    monkeypatch,
+    open_drawing_payload,
+):
+    result = _build_fast_run(monkeypatch, open_drawing_payload)
+
+    assert result.timing_eligibility.status == "not_checked"
+    assert result.timing_eligibility.target_fingerprint is None
+    assert result.package.decision == "NO BET"
+    assert result.package.coupons == ()
+    assert result.package.cost == 0
+    assert result.package.unused_bank == result.config.bank
+    assert result.package.expected_payout == 0.0
+    assert result.package.modeled_roi is None
+    assert result.package.derived_brief == ("",) * 15
+    assert result.top_coupons
+    assert all(row.decision == "NO BET" for row in result.sensitivity)
+    assert all(row.selected_count == 0 for row in result.sensitivity)
+
+
+@pytest.mark.parametrize(
+    ("status", "fingerprint_match"),
+    [
+        ("multi_day", True),
+        ("unknown", True),
+        ("absent", False),
+    ],
+)
+def test_nonplayable_timing_verdict_suppresses_only_final_playable_output(
+    monkeypatch,
+    open_drawing_payload,
+    status,
+    fingerprint_match,
+):
+    baseline = _build_fast_run(monkeypatch, open_drawing_payload)
+    vetoed = _build_fast_run(
+        monkeypatch,
+        open_drawing_payload,
+        timing_resolver=lambda payload: PlayTimingEligibility(
+            status=status,
+            reason=f"timing status is {status}",
+            target_fingerprint="d" * 64,
+            fingerprint_match=fingerprint_match,
+        ),
+    )
+
+    assert vetoed.package.decision == "NO BET"
+    assert vetoed.package.coupons == ()
+    assert vetoed.package.cost == 0
+    assert vetoed.package.unused_bank == vetoed.config.bank
+    assert vetoed.package.expected_payout == 0.0
+    assert vetoed.package.modeled_roi is None
+    assert vetoed.package.derived_brief == ("",) * 15
+    assert vetoed.ev_input == baseline.ev_input
+    assert vetoed.top_coupons == baseline.top_coupons
+    assert np.array_equal(vetoed.surface.gross_ev, baseline.surface.gross_ev)
+
+
+@pytest.mark.parametrize("status", ["playable", "multi_day", "unknown", "absent"])
+def test_research_retains_package_under_every_timing_status(
+    monkeypatch,
+    open_drawing_payload,
+    status,
+):
+    baseline = _build_fast_run(
+        monkeypatch,
+        open_drawing_payload,
+        mode="research",
+    )
+    resolved = _build_fast_run(
+        monkeypatch,
+        open_drawing_payload,
+        mode="research",
+        timing_resolver=lambda payload: PlayTimingEligibility(
+            status=status,
+            reason=f"timing status is {status}",
+            target_fingerprint="e" * 64,
+            fingerprint_match=status != "absent",
+        ),
+    )
+
+    assert resolved.package == baseline.package
+    assert resolved.package.decision == "RESEARCH ONLY"
+    assert resolved.sensitivity == baseline.sensitivity
+
+
+def test_timing_resolver_cannot_change_ev_inputs_surface_or_ranking(
+    monkeypatch,
+    open_drawing_payload,
+):
+    baseline = _build_fast_run(
+        monkeypatch,
+        open_drawing_payload,
+        mode="research",
+    )
+
+    def resolver(payload):
+        for event in payload["data"]["events"]:
+            event["external_consensus"] = (0.01, 0.01, 0.98)
+            event["fallback_probabilities"] = (0.98, 0.01, 0.01)
+        return PlayTimingEligibility(
+            status="unknown",
+            reason="external timing is unresolved",
+            target_fingerprint="f" * 64,
+            fingerprint_match=True,
+        )
+
+    resolved = _build_fast_run(
+        monkeypatch,
+        open_drawing_payload,
+        mode="research",
+        timing_resolver=resolver,
+    )
+
+    assert resolved.ev_input == baseline.ev_input
+    assert resolved.ev_input.probability_sources == ("totobrief_bk",) * 15
+    assert resolved.top_coupons == baseline.top_coupons
+    assert np.array_equal(resolved.surface.gross_ev, baseline.surface.gross_ev)
+
+
+def test_timing_veto_suppresses_playable_sensitivity_labels(
+    monkeypatch,
+    open_drawing_payload,
+):
+    result = _build_fast_run(
+        monkeypatch,
+        open_drawing_payload,
+        timing_resolver=lambda payload: PlayTimingEligibility(
+            status="multi_day",
+            reason="event span exceeds two Moscow calendar days",
+            target_fingerprint="0" * 64,
+            fingerprint_match=True,
+        ),
+    )
+
+    assert all(row.decision == "NO BET" for row in result.sensitivity)
+    assert all(row.selected_count == 0 for row in result.sensitivity)
+    assert all(row.cost == 0 for row in result.sensitivity)
+    assert all(row.unused_bank == result.config.bank for row in result.sensitivity)
+
+
+@pytest.mark.parametrize(
+    ("mode", "expected_decision"),
+    [("research", "RESEARCH ONLY"), ("playable", "NO BET")],
+)
+def test_timing_parse_failure_is_conservative_without_aborting_ev(
+    monkeypatch,
+    tmp_path,
+    open_drawing_payload,
+    mode,
+    expected_decision,
+):
+    resolver = cli_module._build_timing_eligibility_resolver(
+        str(tmp_path / "missing.sqlite")
+    )
+
+    result = _build_fast_run(
+        monkeypatch,
+        open_drawing_payload,
+        mode=mode,
+        timing_resolver=resolver,
+    )
+
+    assert result.timing_eligibility.status == "absent"
+    assert result.timing_eligibility.target_fingerprint is None
+    assert result.timing_eligibility.fingerprint_match is False
+    assert result.timing_eligibility.reason == (
+        "fresh timing target could not be parsed or fingerprinted"
+    )
+    assert result.package.decision == expected_decision
+    assert result.ev_input.probability_sources == ("totobrief_bk",) * 15
+    if mode == "research":
+        assert result.package.coupons
+        assert result.top_coupons
+    else:
+        assert result.package.coupons == ()
+        assert all(row.decision == "NO BET" for row in result.sensitivity)
+
+
 @pytest.mark.parametrize(
     (
         "mode",
@@ -407,12 +727,22 @@ def test_build_package_enforces_self_dilution_boundary(
         fake_select_with_top,
     )
     monkeypatch.setattr(drawing_module, "_utc_now", lambda: "2026-07-14T12:00:01+00:00")
+    def playable_timing(payload):
+        return PlayTimingEligibility(
+            status="playable",
+            reason="stored eligibility matches the fresh target",
+            target_fingerprint="a" * 64,
+            fingerprint_match=True,
+        )
+
+    timing_resolver = None if mode == "research" else playable_timing
 
     result = build_open_ev_package(
         client=client,
         drawing_id=9000,
         config=EVConfig(bank=30, stake=30, mode=mode, prize_fund_factor=0.9),
         jackpot_override=jackpot_override,
+        timing_eligibility_resolver=timing_resolver,
     )
 
     assert client.calls == [9000]
@@ -545,6 +875,12 @@ def test_cli_prints_snapshot_package_top_coupons_and_report_paths(
         self_dilution_ratio=0.0,
         model_supported=True,
         model_warning=None,
+        timing_eligibility=PlayTimingEligibility(
+            status="multi_day",
+            reason="effective event starts span three Moscow calendar days",
+            target_fingerprint="a" * 64,
+            fingerprint_match=True,
+        ),
     )
     monkeypatch.setattr(
         cli_module,
@@ -552,6 +888,24 @@ def test_cli_prints_snapshot_package_top_coupons_and_report_paths(
         lambda client: type("Reference", (), {"drawing_id": 9000})(),
     )
     monkeypatch.setattr(cli_module, "build_open_ev_package", lambda **kwargs: run)
+    readonly_calls = []
+    readonly_engine = object()
+    session_factory = object()
+    monkeypatch.setattr(
+        cli_module,
+        "open_readonly_db",
+        lambda db: readonly_calls.append(db) or readonly_engine,
+    )
+    monkeypatch.setattr(
+        cli_module,
+        "get_session_factory",
+        lambda engine: session_factory if engine is readonly_engine else None,
+    )
+    monkeypatch.setattr(
+        cli_module,
+        "init_db",
+        lambda *args, **kwargs: pytest.fail("ev-package must never initialize a DB"),
+    )
     monkeypatch.setattr(
         cli_module,
         "write_ev_package_reports",
@@ -560,19 +914,31 @@ def test_cli_prints_snapshot_package_top_coupons_and_report_paths(
 
     result = CliRunner().invoke(
         app,
-        ["ev-package", "--open", "--mode", "playable", "--bank", "30"],
+        [
+            "ev-package",
+            "--open",
+            "--mode",
+            "playable",
+            "--bank",
+            "30",
+            "--db",
+            "readonly.sqlite",
+        ],
     )
 
     assert result.exit_code == 0
+    assert readonly_calls == ["readonly.sqlite"]
     for expected in (
         "EV Input Snapshot",
         "EV Package Summary",
         "Top 20 EV Coupons",
         "NO BET",
+        "Timing-veto diagnostics are suppressed in playable mode.",
         "package.csv",
         "package.md",
     ):
         assert expected in result.stdout
+    assert top_coupon.coupon not in result.stdout
 
 
 def test_cli_help_lists_the_exact_task_options():
@@ -588,5 +954,6 @@ def test_cli_help_lists_the_exact_task_options():
         "--prize-fund-factor",
         "--possible-winnings",
         "--jackpot",
+        "--db",
     ):
         assert option in result.stdout

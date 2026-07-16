@@ -7,6 +7,13 @@ import numpy as np
 
 ProbabilityMatrix = tuple[tuple[float, float, float], ...]
 EVMode = Literal["research", "playable"]
+PlayTimingStatus = Literal[
+    "playable",
+    "multi_day",
+    "unknown",
+    "absent",
+    "not_checked",
+]
 
 
 def _immutable_array(value: np.ndarray) -> np.ndarray:
@@ -51,6 +58,56 @@ class EVConfig:
     @property
     def max_coupons(self) -> int:
         return validate_config_bank(self.bank, self.stake)
+
+
+@dataclass(frozen=True)
+class PlayTimingEligibility:
+    status: PlayTimingStatus
+    reason: str
+    target_fingerprint: str | None
+    fingerprint_match: bool
+
+    def __post_init__(self) -> None:
+        if self.status not in {
+            "playable",
+            "multi_day",
+            "unknown",
+            "absent",
+            "not_checked",
+        }:
+            raise ValueError("invalid play timing eligibility status")
+        if not isinstance(self.reason, str) or not self.reason.strip():
+            raise ValueError("timing eligibility reason must be non-empty")
+        if self.target_fingerprint is not None and (
+            not isinstance(self.target_fingerprint, str)
+            or not self.target_fingerprint.strip()
+        ):
+            raise ValueError("target_fingerprint must be non-empty when present")
+        if not isinstance(self.fingerprint_match, bool):
+            raise ValueError("fingerprint_match must be a bool")
+        if self.status == "not_checked":
+            if self.target_fingerprint is not None or self.fingerprint_match:
+                raise ValueError("not_checked timing cannot have a target match")
+        elif (
+            self.status in {"playable", "multi_day", "unknown"}
+            and self.target_fingerprint is None
+        ):
+            raise ValueError("stored timing must include a target fingerprint")
+        if self.status == "absent" and self.fingerprint_match:
+            raise ValueError("absent timing cannot be an exact fingerprint match")
+        if self.status in {"playable", "multi_day", "unknown"} and not (
+            self.fingerprint_match
+        ):
+            raise ValueError("stored timing must be an exact fingerprint match")
+
+    @classmethod
+    def not_checked(cls) -> "PlayTimingEligibility":
+        return cls(
+            status="not_checked",
+            reason="timing eligibility was not checked",
+            target_fingerprint=None,
+            fingerprint_match=False,
+        )
 
 
 @dataclass(frozen=True)

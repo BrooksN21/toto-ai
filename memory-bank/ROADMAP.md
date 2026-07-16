@@ -194,7 +194,11 @@
   The existing overall coverage gate remains unchanged.
 - Task 4 is complete: fresh collection now uses bounded base retries at a
   two-day horizon and an independent, cache-reusing expansion phase through
-  day five only for stable null-start exact-pair misses. Tasks 5-6 remain.
+  day five only for stable null-start exact-pair misses.
+- Task 5 is complete: playable EV output requires exact fresh-target timing
+  eligibility with status `playable`; all other statuses produce a zero-cost
+  `NO BET`. Research math and ranking remain unchanged. Task 6 acceptance and
+  final documentation remain.
 - Automatic T-15 scheduling of the fresh prospective command
 - Open drawing analysis
 - Package generation

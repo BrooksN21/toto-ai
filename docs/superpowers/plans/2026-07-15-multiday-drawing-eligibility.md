@@ -254,27 +254,27 @@ git commit -m "Expand missing-start collection through day five"
 - Adds optional eligibility resolver to `build_open_ev_package` that receives the exact fresh drawing payload.
 - Adds `--db data/toto.db` to `ev-package` for read-only eligibility lookup.
 
-- [ ] **Step 1: Write failing EV tests**
+- [x] **Step 1: Write failing EV tests**
 
 For playable mode, prove `multi_day`, `unknown`, absent, and fingerprint mismatch return empty zero-cost `NO BET`; `playable` preserves the existing package; research preserves coupons but reports the timing status. Prove an external probability triplet cannot enter EV input or ranking through this resolver.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run focused EV tests and confirm missing eligibility provenance/gate fail.
 
-- [ ] **Step 3: Implement timing veto without changing EV math**
+- [x] **Step 3: Implement timing veto without changing EV math**
 
 Invoke the resolver on the same fresh drawing payload used for `EVInput`. Apply the timing veto after normal package selection through a dedicated suppression helper. Store an explicit reason. Do not replace BK probability rows or crowd rows.
 
-- [ ] **Step 4: Wire read-only CLI lookup and reports**
+- [x] **Step 4: Wire read-only CLI lookup and reports**
 
 Open the selected database read-only for eligibility. Research mode may continue when lookup is absent; playable mode fails closed. Reports and Rich summary disclose status, fingerprint match, and reason.
 
-- [ ] **Step 5: Verify GREEN**
+- [x] **Step 5: Verify GREEN**
 
 Run focused EV/CLI/report tests, `ev-package --help`, and Ruff.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/toto_ai/ev src/toto_ai/cli.py tests/test_ev_drawing.py \

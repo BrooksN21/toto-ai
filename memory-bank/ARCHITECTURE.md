@@ -193,15 +193,18 @@ Important CLI commands:
 - `verify-cover`: exactly verify cover package coverage against a brief.
 - `benchmark-cover`: profile Cover Engine performance on a representative brief.
 - `benchmark-ev`: verify and profile the exact EV engine.
-- `ev-package --open`: resolve and fetch a fresh playable TotoBrief drawing,
-  compute exact modeled EV, select a Research or Playable package, and publish
-  atomic reports. Unsupported Playable runs return `NO BET`.
+- `ev-package --open`: resolve and fetch one fresh TotoBrief payload, compute
+  exact modeled EV, and resolve timing eligibility from SQLite in read-only
+  mode using that same payload fingerprint. Playable output is published only
+  for exact `playable` eligibility; all other timing states return zero-cost
+  `NO BET`. Research retains EV/ranking and reports the timing warning.
 - `backtest-ev`: evaluate dynamic banks, prize factors, and gross-EV thresholds
   chronologically while requiring and excluding a frozen strategy holdout.
 - `collect-external-odds --open`: collect fresh prospective API-Sports odds for
-  one pinned playable drawing, automatically retry approved operational
-  fallbacks, and store every 15-disposition pass. `--reuse-cache` explicitly
-  enables the old shared-cache diagnostic path.
+  one pinned drawing, automatically retry approved operational fallbacks,
+  progressively expand null-start exact misses from two through five days,
+  and store every 15-disposition pass. `--reuse-cache` explicitly enables the
+  old shared-cache diagnostic path.
 - `audit-external-coverage`: audit stored complete external-odds snapshots in
   read-only mode and publish deterministic coverage reports.
 - `build-brief --open`: build a baseline brief and package for the next playable

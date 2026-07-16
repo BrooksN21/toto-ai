@@ -1,6 +1,7 @@
 import math
 import os
 import subprocess
+from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -61,17 +62,20 @@ from toto_ai.ev.drawing import (
     build_open_ev_package,
     resolve_open_drawing_from_api,
 )
-from toto_ai.ev.models import EVConfig
+from toto_ai.ev.models import EVConfig, PlayTimingEligibility
 from toto_ai.ev.reports import write_ev_backtest_reports, write_ev_package_reports
 from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
 from toto_ai.external_odds.audit import CoverageAudit, audit_external_coverage
 from toto_ai.external_odds.collection import collect_open_external_odds
+from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.matching import load_aliases
 from toto_ai.external_odds.prospective import (
     ProspectiveCollectionResult,
     collect_fresh_open_external_odds,
 )
 from toto_ai.external_odds.reports import write_external_coverage_reports
+from toto_ai.external_odds.storage import load_current_drawing_eligibility
+from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.brief_backtest import (
     run_brief_backtest,
@@ -575,6 +579,91 @@ def benchmark_ev_command(
     print(_ev_benchmark_table(result))
 
 
+def _build_timing_eligibility_resolver(
+    db: str,
+) -> Callable[[Mapping[str, object]], PlayTimingEligibility]:
+    session_factory = None
+    database_available = True
+    try:
+        engine = open_readonly_db(db)
+        session_factory = get_session_factory(engine)
+    except (OSError, SQLAlchemyError, ValueError):
+        database_available = False
+
+    def resolve(payload: Mapping[str, object]) -> PlayTimingEligibility:
+        try:
+            target = parse_target_drawing(
+                payload,
+                fetched_at=datetime.now(timezone.utc),
+            )
+            fingerprint = target_fingerprint(
+                target.drawing_id,
+                target.drawing_number,
+                target.deadline,
+                target.events,
+            )
+        except Exception:
+            return PlayTimingEligibility(
+                status="absent",
+                reason="fresh timing target could not be parsed or fingerprinted",
+                target_fingerprint=None,
+                fingerprint_match=False,
+            )
+        if not database_available or session_factory is None:
+            return PlayTimingEligibility(
+                status="absent",
+                reason="timing eligibility database is missing or unreadable",
+                target_fingerprint=fingerprint,
+                fingerprint_match=False,
+            )
+        try:
+            eligibility = load_current_drawing_eligibility(
+                session_factory,
+                target.drawing_id,
+                fingerprint,
+            )
+        except (OSError, SQLAlchemyError, ValueError):
+            return PlayTimingEligibility(
+                status="absent",
+                reason="timing eligibility database is missing or unreadable",
+                target_fingerprint=fingerprint,
+                fingerprint_match=False,
+            )
+        if eligibility is None:
+            return PlayTimingEligibility(
+                status="absent",
+                reason=(
+                    "no complete stored eligibility matches the fresh target "
+                    "fingerprint"
+                ),
+                target_fingerprint=fingerprint,
+                fingerprint_match=False,
+            )
+
+        if eligibility.status == "playable":
+            reason = (
+                "all 15 effective event starts fit within two Moscow calendar days"
+            )
+        elif eligibility.status == "multi_day":
+            reason = (
+                f"effective event starts span {eligibility.span_days} Moscow "
+                "calendar days"
+            )
+        else:
+            missing = ",".join(
+                str(order) for order in eligibility.missing_event_orders
+            )
+            reason = f"effective event timing is unresolved for event orders {missing}"
+        return PlayTimingEligibility(
+            status=eligibility.status,
+            reason=reason,
+            target_fingerprint=fingerprint,
+            fingerprint_match=True,
+        )
+
+    return resolve
+
+
 @app.command("ev-package")
 def ev_package_command(
     open: bool = typer.Option(False),  # noqa: A002
@@ -585,6 +674,7 @@ def ev_package_command(
     prize_fund_factor: float = typer.Option(1.0),
     possible_winnings: float | None = typer.Option(None),
     jackpot: float | None = typer.Option(None),
+    db: str = typer.Option("data/toto.db"),
 ) -> None:
     """Build a modeled-EV package from a fresh open drawing snapshot."""
     if not open:
@@ -601,6 +691,7 @@ def ev_package_command(
             prize_fund_factor=prize_fund_factor,
             possible_winnings=possible_winnings,
         )
+        timing_eligibility_resolver = _build_timing_eligibility_resolver(db)
         client = TotoBriefClient()
         with Progress(
             SpinnerColumn(),
@@ -635,6 +726,7 @@ def ev_package_command(
                 config=config,
                 jackpot_override=jackpot,
                 progress_callback=update_progress,
+                timing_eligibility_resolver=timing_eligibility_resolver,
             )
             progress.update(task_id, description="Publishing EV reports")
             csv_path, markdown_path = write_ev_package_reports(result)
@@ -656,6 +748,8 @@ def ev_package_command(
 
     print(_ev_input_snapshot_table(result))
     print(_ev_package_summary_table(result))
+    if result.timing_diagnostics_suppressed:
+        print("Timing-veto diagnostics are suppressed in playable mode.")
     print(_ev_top_coupons_table(result))
     print(f"Reports written to {csv_path} and {markdown_path}")
 
@@ -1948,6 +2042,7 @@ def _ev_input_snapshot_table(result: EVPackageRun) -> Table:
 
 def _ev_package_summary_table(result: EVPackageRun) -> Table:
     package = result.package
+    timing = result.timing_eligibility
     modeled_roi = "n/a" if package.modeled_roi is None else f"{package.modeled_roi:.6f}"
     table = Table(title="EV Package Summary")
     table.add_column("Metric")
@@ -1961,6 +2056,10 @@ def _ev_package_summary_table(result: EVPackageRun) -> Table:
         ("modeled ROI", modeled_roi),
         ("self-dilution ratio", f"{result.self_dilution_ratio:.6f}"),
         ("model supported", "yes" if result.model_supported else "no"),
+        ("timing status", timing.status),
+        ("fingerprint match", "yes" if timing.fingerprint_match else "no"),
+        ("target fingerprint", timing.target_fingerprint or "n/a"),
+        ("timing reason", timing.reason),
         ("derived brief", " ".join(value or "-" for value in package.derived_brief)),
     )
     for label, value in rows:
@@ -1976,6 +2075,8 @@ def _ev_top_coupons_table(result: EVPackageRun) -> Table:
     table.add_column("Coupon")
     table.add_column("Gross EV", justify="right")
     table.add_column("Net EV", justify="right")
+    if result.timing_diagnostics_suppressed:
+        return table
     for row in result.top_coupons:
         table.add_row(
             str(row.rank),

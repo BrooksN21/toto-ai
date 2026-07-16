@@ -1474,3 +1474,22 @@ totals, eligibility, source counts, and stop reason. New controls are
 passed (`31 passed`), CLI help succeeded, and Ruff passed. Task 5 fail-closed
 playable timing integration is next; probability, EV, bank, stake, and package
 ranking definitions remain unchanged.
+
+## Multi-Day Eligibility Task 5: Playable Timing Gate Complete
+
+`EVPackageRun` now carries immutable timing provenance. The resolver receives
+the exact fresh drawing payload already used for EV input, computes its
+canonical target fingerprint, and performs only a read-only exact lookup in
+the selected SQLite database. No external probability enters EV input,
+surface construction, coupon ranking, or sensitivity math.
+
+Playable output now requires timing status `playable`. `multi_day`, `unknown`,
+`absent`, and `not_checked` suppress the package and all displayed sensitivity
+decisions to zero-cost `NO BET`, and exact top coupons are not published after
+the veto. Research retains coupons and ranking while reporting timing status.
+Missing/unreadable databases and unparseable timing targets become conservative
+warnings rather than Research failures. `ev-package` adds read-only `--db`.
+
+Focused verification passed (`59 passed`), CLI help and Ruff passed, and the
+three independent review findings were re-reviewed as resolved. Task 6
+end-to-end acceptance and final documentation are next.

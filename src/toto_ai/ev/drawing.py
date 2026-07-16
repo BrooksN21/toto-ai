@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from typing import Any, Literal
 
@@ -15,6 +15,7 @@ from toto_ai.ev.models import (
     EVInput,
     EVPackage,
     EVSurface,
+    PlayTimingEligibility,
     RankedCoupon,
 )
 from toto_ai.ev.package import (
@@ -32,6 +33,7 @@ SELF_DILUTION_LIMIT = 0.01
 PossibleWinningsSource = Literal["pool_sum proxy", "explicit override"]
 JackpotSource = Literal["totobrief payload", "explicit override"]
 PhaseCallback = Callable[[dict[str, object]], None]
+TimingEligibilityResolver = Callable[[Mapping[str, Any]], PlayTimingEligibility]
 
 
 @dataclass(frozen=True)
@@ -59,6 +61,16 @@ class EVPackageRun:
     self_dilution_ratio: float
     model_supported: bool
     model_warning: str | None
+    timing_eligibility: PlayTimingEligibility = field(
+        default_factory=PlayTimingEligibility.not_checked
+    )
+
+    @property
+    def timing_diagnostics_suppressed(self) -> bool:
+        return (
+            self.config.mode == "playable"
+            and self.timing_eligibility.status != "playable"
+        )
 
 
 def resolve_open_drawing_from_api(
@@ -197,6 +209,7 @@ def build_open_ev_package(
     config: EVConfig,
     jackpot_override: float | None = None,
     progress_callback: PhaseCallback | None = None,
+    timing_eligibility_resolver: TimingEligibilityResolver | None = None,
 ) -> EVPackageRun:
     """Fetch a fresh snapshot and build one exact open-drawing EV package."""
     payload = client.drawing_info(drawing_id)
@@ -215,6 +228,13 @@ def build_open_ev_package(
             f"drawing-info data.id {ev_input.drawing_id} does not match requested "
             f"drawing id {drawing_id}"
         )
+    timing_eligibility = (
+        PlayTimingEligibility.not_checked()
+        if timing_eligibility_resolver is None
+        else timing_eligibility_resolver(payload)
+    )
+    if not isinstance(timing_eligibility, PlayTimingEligibility):
+        raise TypeError("timing eligibility resolver returned an invalid result")
 
     def category_progress(update: dict[str, str | int | float]) -> None:
         _notify(progress_callback, dict(update))
@@ -261,6 +281,12 @@ def build_open_ev_package(
             supported=factor_supported,
             bank=config.bank,
         )
+        factor_package = _suppress_ineligible_timing(
+            factor_package,
+            mode=config.mode,
+            timing_eligibility=timing_eligibility,
+            bank=config.bank,
+        )
         sensitivity.append(
             EVSensitivitySummary(
                 prize_fund_factor=factor,
@@ -293,6 +319,12 @@ def build_open_ev_package(
         supported=model_supported,
         bank=config.bank,
     )
+    package = _suppress_ineligible_timing(
+        package,
+        mode=config.mode,
+        timing_eligibility=timing_eligibility,
+        bank=config.bank,
+    )
     warning = None
     if not model_supported:
         warning = (
@@ -320,7 +352,10 @@ def build_open_ev_package(
         self_dilution_ratio=self_dilution_ratio,
         model_supported=model_supported,
         model_warning=warning,
+        timing_eligibility=timing_eligibility,
     )
+
+
 def _suppress_unsupported_play(
     package: EVPackage,
     *,
@@ -329,17 +364,37 @@ def _suppress_unsupported_play(
     bank: int,
 ) -> EVPackage:
     if mode == "playable" and not supported and package.decision == "PLAY":
-        return replace(
-            package,
-            decision="NO BET",
-            coupons=(),
-            cost=0,
-            unused_bank=bank,
-            expected_payout=0.0,
-            modeled_roi=None,
-            derived_brief=("",) * len(package.derived_brief),
-        )
+        return _empty_no_bet(package, bank=bank)
     return package
+
+
+def _suppress_ineligible_timing(
+    package: EVPackage,
+    *,
+    mode: str,
+    timing_eligibility: PlayTimingEligibility,
+    bank: int,
+) -> EVPackage:
+    if (
+        mode == "playable"
+        and timing_eligibility.status != "playable"
+        and package.decision == "PLAY"
+    ):
+        return _empty_no_bet(package, bank=bank)
+    return package
+
+
+def _empty_no_bet(package: EVPackage, *, bank: int) -> EVPackage:
+    return replace(
+        package,
+        decision="NO BET",
+        coupons=(),
+        cost=0,
+        unused_bank=bank,
+        expected_payout=0.0,
+        modeled_roi=None,
+        derived_brief=("",) * len(package.derived_brief),
+    )
 
 
 def _normalized_quote_row(

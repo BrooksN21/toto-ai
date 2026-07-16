@@ -6,11 +6,18 @@ import pytest
 
 import toto_ai.ev.reports as reports_module
 from toto_ai.ev.drawing import EVPackageRun, EVSensitivitySummary
-from toto_ai.ev.models import EVConfig, EVInput, EVPackage, EVSurface, RankedCoupon
+from toto_ai.ev.models import (
+    EVConfig,
+    EVInput,
+    EVPackage,
+    EVSurface,
+    PlayTimingEligibility,
+    RankedCoupon,
+)
 from toto_ai.ev.reports import ev_package_report_paths, write_ev_package_reports
 
 
-def fixture_run(*, decision="NO BET", unsupported=False):
+def fixture_run(*, decision="NO BET", unsupported=False, timing=None):
     ranked = RankedCoupon(rank=1, coupon="1X2" * 5, gross_ev=0.95, net_ev=-0.05)
     return EVPackageRun(
         config=EVConfig(
@@ -60,6 +67,7 @@ def fixture_run(*, decision="NO BET", unsupported=False):
         self_dilution_ratio=0.010001 if unsupported else 0.0,
         model_supported=not unsupported,
         model_warning="self-dilution unsupported" if unsupported else None,
+        timing_eligibility=timing or PlayTimingEligibility.not_checked(),
     )
 
 
@@ -116,6 +124,37 @@ def test_reports_are_deterministic(tmp_path):
     second = write_ev_package_reports(fixture_run(decision="PLAY"), tmp_path)
 
     assert tuple(path.read_bytes() for path in second) == first_bytes
+
+
+def test_timing_veto_report_is_deterministic_and_csv_is_header_only(tmp_path):
+    timing = PlayTimingEligibility(
+        status="multi_day",
+        reason="event span exceeds two Moscow calendar days",
+        target_fingerprint="1234abcd" * 8,
+        fingerprint_match=True,
+    )
+    run = fixture_run(timing=timing)
+
+    first_csv, first_markdown = write_ev_package_reports(run, tmp_path)
+    first_bytes = (first_csv.read_bytes(), first_markdown.read_bytes())
+    second_csv, second_markdown = write_ev_package_reports(run, tmp_path)
+
+    assert second_csv.read_text(encoding="utf-8").splitlines() == [
+        "rank,coupon,gross_ev,net_ev"
+    ]
+    markdown = second_markdown.read_text(encoding="utf-8")
+    timing_lines = markdown.split("## Timing Eligibility\n\n", maxsplit=1)[1].split(
+        "\n\n## ", maxsplit=1
+    )[0]
+    assert timing_lines.splitlines() == [
+        "- status: multi_day",
+        "- fingerprint match: yes",
+        f"- target fingerprint: {timing.target_fingerprint}",
+        "- reason: event span exceeds two Moscow calendar days",
+    ]
+    assert "Timing-veto diagnostics are suppressed in playable mode." in markdown
+    assert "1X21X21X21X21X2" not in markdown
+    assert (second_csv.read_bytes(), second_markdown.read_bytes()) == first_bytes
 
 
 def test_reports_reject_input_output_path_collision(tmp_path):
