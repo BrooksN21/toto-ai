@@ -298,7 +298,7 @@ def test_safety_stop_prevents_retry_after_first_pass(monkeypatch, tmp_path):
         cache_hits=0,
         collection_id="retryable",
     )
-    times = iter((T_MINUS_6, T_MINUS_5))
+    times = iter((T_MINUS_6, T_MINUS_6, T_MINUS_5))
     provider_calls = []
     sleep_calls = []
     monotonic = iter((0.0, 1.0, 2.0, 3.0))
@@ -343,6 +343,7 @@ def test_retry_sleep_is_limited_to_remaining_safe_duration(monkeypatch, tmp_path
     )
     times = iter(
         (
+            T_MINUS_6,
             T_MINUS_6,
             T_MINUS_5 - timedelta(seconds=10),
             T_MINUS_5 - timedelta(seconds=10),
@@ -461,6 +462,34 @@ def test_safety_stop_before_first_pass_raises_stable_error(tmp_path):
             cache_root=tmp_path,
             now=lambda: T_MINUS_5,
         )
+
+
+def test_safety_stop_reached_before_first_pass_does_not_call_provider(
+    tmp_path,
+):
+    provider_calls = []
+    times = iter((T_MINUS_6, T_MINUS_5))
+
+    def provider_factory(_cache_dir):
+        provider_calls.append(True)
+        return pytest.fail("provider must not be called")
+
+    with pytest.raises(
+        ValueError,
+        match="safety stop reached before first collection pass",
+    ):
+        collect_fresh_open_external_odds(
+            target=_target(),
+            stop_at=T_MINUS_5,
+            totobrief_client="unused",
+            provider_factory=provider_factory,
+            session_factory="unused",
+            aliases={},
+            cache_root=tmp_path,
+            now=lambda: next(times),
+        )
+
+    assert provider_calls == []
 
 
 def test_clean_two_day_result_does_not_expand(monkeypatch, tmp_path):

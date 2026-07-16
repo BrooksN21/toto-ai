@@ -37,7 +37,7 @@ stops after an immutable completed pass with `safety_stop`; it never starts a
 later base or expansion pass and caps retry sleeps to the remaining safe time.
 
 Verification: prospective RED/GREEN tests, focused prospective/CLI/end-to-end
-regression tests, focused Ruff, full pytest (`805 passed`), and repository-wide
+regression tests, focused Ruff, full pytest (`806 passed`), and repository-wide
 Ruff (`All checks passed!`). No external probability, category, cover, budget,
 EV, or probability definition changed.
 

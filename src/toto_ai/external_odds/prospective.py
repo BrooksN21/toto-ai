@@ -135,7 +135,9 @@ def collect_fresh_open_external_odds(
     stop_reason: ProspectiveStopReason = "max_passes"
 
     for pass_index in range(max_passes):
-        if pass_index and _safety_stop_reached(stop_at, now):
+        if _safety_stop_reached(stop_at, now):
+            if not base_passes:
+                raise ValueError("safety stop reached before first collection pass")
             stop_reason = "safety_stop"
             break
         item = _run_pass(
