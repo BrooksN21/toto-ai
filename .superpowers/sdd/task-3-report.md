@@ -60,3 +60,38 @@ No test uses real network, filesystem, or sleep behavior.
 
 None. CLI, report publication, filesystem, and real provider wiring remain
 intentionally outside Task 3 ownership.
+
+## Review Fix Wave
+
+### RED
+
+Command:
+
+```text
+.venv/bin/python -m pytest -q tests/test_runner_orchestration.py
+```
+
+Result: `8 failed, 34 passed in 2.61s`.
+
+- Five synchronous progress callbacks advanced the injected clock to T-5 after
+  notification and still started final resolve, collection, timing, audit, or
+  EV work.
+- Success and fail-closed invalid terminal records emitted `complete` before
+  `DrawingRunnerResult` validation raised.
+- `PLAY` accepted an attached EV run with matching fingerprint but `unknown`
+  EV timing.
+
+### GREEN And Verification
+
+- Added post-notification cutoff checks immediately before all five bound
+  phases; the matching dependency callback is not invoked at T-5.
+- Constructed and validated terminal results before `complete` for successful
+  and fail-closed exits.
+- `PLAY` now requires the runner timing and attached EV-run timing to be exact
+  `playable`.
+- Coverage non-interference is covered for `GO`, `PENDING`, and `STOP`; early
+  target-mismatch, cutoff, and timing-veto exits assert their progress phases.
+- Focused timing/orchestration pytest: `93 passed in 0.28s`.
+- Focused Ruff: `All checks passed!`.
+- Full pytest: `848 passed`.
+- Full Ruff: `All checks passed!`.

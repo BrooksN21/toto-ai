@@ -557,6 +557,7 @@ def test_immediate_final_window_launch_does_not_sleep():
 def test_already_closed_launch_stops_after_preflight():
     target = _target(fetched_at=T_MINUS_5)
     calls = []
+    updates = []
 
     result = run_drawing(
         config=DrawingRunnerConfig(bank=4980),
@@ -568,12 +569,14 @@ def test_already_closed_launch_stops_after_preflight():
         now=SequenceClock(T_MINUS_5),
         monotonic=SequenceClock(1.0, 1.25),
         sleep=lambda _seconds: pytest.fail("sleep must not run"),
+        progress_callback=updates.append,
     )
 
     assert result.decision == "NO BET"
     assert result.terminal_reason == "safety cutoff reached before final resolve"
     assert result.final_started_at is None
     assert calls == ["preflight"]
+    assert [update["phase"] for update in updates] == ["preflight", "complete"]
 
 
 def _changed_pinned_target(kind: str):
@@ -595,6 +598,7 @@ def test_target_change_fails_closed_before_provider_access(kind):
     preflight = pin_drawing(_target())
     changed_final = _changed_pinned_target(kind)
     calls = []
+    updates = []
 
     result = run_drawing(
         config=DrawingRunnerConfig(bank=4980),
@@ -606,12 +610,18 @@ def test_target_change_fails_closed_before_provider_access(kind):
         now=SequenceClock(T_MINUS_19),
         monotonic=SequenceClock(1.0, 1.25),
         sleep=lambda _seconds: pytest.fail("sleep must not run"),
+        progress_callback=updates.append,
     )
 
     assert result.decision == "NO BET"
     assert result.terminal_reason == "final target does not match preflight"
     assert result.target == preflight
     assert calls == ["preflight", "final"]
+    assert [update["phase"] for update in updates] == [
+        "preflight",
+        "final",
+        "complete",
+    ]
 
 
 @pytest.mark.parametrize("status", ["unknown", "multi_day", "absent", "not_checked"])
@@ -620,6 +630,7 @@ def test_non_playable_timing_runs_audit_but_skips_ev(status):
     pinned = pin_drawing(target)
     collection = _collection(target)
     calls = []
+    updates = []
 
     def collect(resolved_target, stop_at):
         calls.append("collect")
@@ -645,12 +656,21 @@ def test_non_playable_timing_runs_audit_but_skips_ev(status):
         now=SequenceClock(T_MINUS_19),
         monotonic=SequenceClock(1.0, 2.0),
         sleep=lambda _seconds: pytest.fail("sleep must not run"),
+        progress_callback=updates.append,
     )
 
     assert result.decision == "NO BET"
     assert result.terminal_reason == f"timing eligibility is not playable: {status}"
     assert result.ev_run is None
     assert calls == ["preflight", "final", "collect", "timing", "audit"]
+    assert [update["phase"] for update in updates] == [
+        "preflight",
+        "final",
+        "collect",
+        "timing",
+        "audit",
+        "complete",
+    ]
 
 
 def test_research_mode_retains_research_only_package_despite_timing_warning():
@@ -685,7 +705,10 @@ def test_research_mode_retains_research_only_package_despite_timing_warning():
     assert result.timing_eligibility.status == "unknown"
 
 
-def test_pending_coverage_is_diagnostic_and_does_not_change_ev_input_or_decision():
+@pytest.mark.parametrize("coverage_decision", ["GO", "PENDING", "STOP"])
+def test_coverage_is_diagnostic_and_does_not_change_ev_input_or_decision(
+    coverage_decision,
+):
     target = _target(fetched_at=T_MINUS_19)
     pinned = pin_drawing(target)
     collection = _collection(target)
@@ -701,7 +724,7 @@ def test_pending_coverage_is_diagnostic_and_does_not_change_ev_input_or_decision
         calls,
         target,
         collection,
-        _audit(collection, decision="PENDING"),
+        _audit(collection, decision=coverage_decision),
         _timing(target),
         _ev_run(target),
     )
@@ -718,27 +741,40 @@ def test_pending_coverage_is_diagnostic_and_does_not_change_ev_input_or_decision
         sleep=lambda _seconds: pytest.fail("sleep must not run"),
     )
 
-    assert result.audit.gate.decision == "PENDING"
+    assert result.audit.gate.decision == coverage_decision
     assert result.decision == "PLAY"
     assert built_for == [target.drawing_id]
 
 
 @pytest.mark.parametrize(
-    ("cutoff_phase", "expected_calls"),
+    ("cutoff_phase", "expected_calls", "expected_progress"),
     [
-        ("collection", ["preflight", "final"]),
-        ("audit", ["preflight", "final", "collect", "timing"]),
-        ("ev", ["preflight", "final", "collect", "timing", "audit"]),
+        (
+            "collection",
+            ["preflight", "final"],
+            ["preflight", "final", "complete"],
+        ),
+        (
+            "audit",
+            ["preflight", "final", "collect", "timing"],
+            ["preflight", "final", "collect", "timing", "complete"],
+        ),
+        (
+            "ev",
+            ["preflight", "final", "collect", "timing", "audit"],
+            ["preflight", "final", "collect", "timing", "audit", "complete"],
+        ),
     ],
 )
 def test_safety_cutoff_is_rechecked_before_bound_phases(
-    cutoff_phase, expected_calls
+    cutoff_phase, expected_calls, expected_progress
 ):
     target = _target(fetched_at=T_MINUS_19)
     pinned = pin_drawing(target)
     collection = _collection(target)
     clock = MutableClock(T_MINUS_19)
     calls = []
+    updates = []
 
     def resolve(resolved_at):
         phase = "preflight" if not calls else "final"
@@ -773,11 +809,70 @@ def test_safety_cutoff_is_rechecked_before_bound_phases(
         now=clock,
         monotonic=SequenceClock(1.0, 2.0),
         sleep=lambda _seconds: pytest.fail("sleep must not run"),
+        progress_callback=updates.append,
     )
 
     assert result.decision == "NO BET"
     assert result.terminal_reason == f"safety cutoff reached before {cutoff_phase}"
     assert calls == expected_calls
+    assert [update["phase"] for update in updates] == expected_progress
+
+
+@pytest.mark.parametrize(
+    ("cutoff_phase", "terminal_phase", "expected_calls"),
+    [
+        ("final", "final resolve", ["preflight"]),
+        ("collect", "collection", ["preflight", "final"]),
+        ("timing", "timing", ["preflight", "final", "collect"]),
+        ("audit", "audit", ["preflight", "final", "collect", "timing"]),
+        ("ev", "ev", ["preflight", "final", "collect", "timing", "audit"]),
+    ],
+)
+def test_progress_callback_cutoff_skips_the_notified_bound_phase(
+    cutoff_phase, terminal_phase, expected_calls
+):
+    target = _target(fetched_at=T_MINUS_19)
+    pinned = pin_drawing(target)
+    collection = _collection(target)
+    clock = MutableClock(T_MINUS_19)
+    calls = []
+    updates = []
+
+    def progress_callback(update):
+        updates.append(update)
+        if update["phase"] == cutoff_phase:
+            clock.value = T_MINUS_5
+
+    dependencies = _recording_dependencies(
+        calls,
+        target,
+        collection,
+        _audit(collection),
+        _timing(target),
+        _ev_run(target),
+    )
+
+    result = run_drawing(
+        config=DrawingRunnerConfig(bank=4980),
+        resolve_target=_recording_resolver(calls, pinned, pinned),
+        collect_target=dependencies[0],
+        resolve_timing=dependencies[1],
+        audit_coverage=dependencies[2],
+        build_package=dependencies[3],
+        now=clock,
+        monotonic=SequenceClock(1.0, 2.0),
+        sleep=lambda _seconds: pytest.fail("sleep must not run"),
+        progress_callback=progress_callback,
+    )
+
+    assert result.decision == "NO BET"
+    assert result.terminal_reason == f"safety cutoff reached before {terminal_phase}"
+    assert calls == expected_calls
+    assert [update["phase"] for update in updates] == [
+        *expected_calls,
+        cutoff_phase,
+        "complete",
+    ]
 
 
 @pytest.mark.parametrize("mode", ["playable", "research"])
@@ -820,6 +915,88 @@ def test_package_completing_at_cutoff_is_discarded_in_every_mode(mode):
     assert result.ev_run is None
     assert result.ev_finished_at == T_MINUS_5
     assert calls == ["preflight", "final", "collect", "timing", "audit", "ev"]
+
+
+def test_success_validation_failure_does_not_emit_complete_progress():
+    target = _target(fetched_at=T_MINUS_19)
+    pinned = pin_drawing(target)
+    collection = _collection(target)
+    calls = []
+    updates = []
+    bad_ev_run = replace(
+        _ev_run(target),
+        ev_input=replace(_ev_run(target).ev_input, drawing_id=99999),
+    )
+    dependencies = _recording_dependencies(
+        calls,
+        target,
+        collection,
+        _audit(collection),
+        _timing(target),
+        bad_ev_run,
+    )
+
+    with pytest.raises(ValueError, match="EV target"):
+        run_drawing(
+            config=DrawingRunnerConfig(bank=4980),
+            resolve_target=_recording_resolver(calls, pinned, pinned),
+            collect_target=dependencies[0],
+            resolve_timing=dependencies[1],
+            audit_coverage=dependencies[2],
+            build_package=dependencies[3],
+            now=SequenceClock(T_MINUS_19),
+            monotonic=SequenceClock(1.0, 2.0),
+            sleep=lambda _seconds: pytest.fail("sleep must not run"),
+            progress_callback=updates.append,
+        )
+
+    assert [update["phase"] for update in updates] == [
+        "preflight",
+        "final",
+        "collect",
+        "timing",
+        "audit",
+        "ev",
+    ]
+
+
+def test_fail_closed_validation_failure_does_not_emit_complete_progress():
+    target = _target(fetched_at=T_MINUS_19)
+    pinned = pin_drawing(target)
+    collection = _collection(target)
+    mismatched_collection = replace(
+        collection,
+        snapshot=replace(collection.snapshot, drawing_number=9999),
+    )
+    clock = MutableClock(T_MINUS_19)
+    calls = []
+    updates = []
+
+    def collect(_target, _stop_at):
+        calls.append("collect")
+        clock.value = T_MINUS_5
+        return mismatched_collection
+
+    with pytest.raises(ValueError, match="collection target"):
+        run_drawing(
+            config=DrawingRunnerConfig(bank=4980),
+            resolve_target=_recording_resolver(calls, pinned, pinned),
+            collect_target=collect,
+            resolve_timing=lambda _target: pytest.fail("timing must not run"),
+            audit_coverage=lambda: pytest.fail("audit must not run"),
+            build_package=lambda _drawing_id: pytest.fail("EV must not run"),
+            now=clock,
+            monotonic=SequenceClock(1.0, 2.0),
+            sleep=lambda _seconds: pytest.fail("sleep must not run"),
+            progress_callback=updates.append,
+        )
+
+    assert calls == ["preflight", "final", "collect"]
+    assert [update["phase"] for update in updates] == [
+        "preflight",
+        "final",
+        "collect",
+    ]
 
 
 def test_ev_threshold_no_bet_retains_zero_cost_diagnostic_run():
@@ -876,6 +1053,17 @@ def test_result_rejects_play_without_exact_playable_timing():
             target=target,
             timing=_timing(target, "unknown"),
         )
+
+
+def test_result_rejects_play_when_ev_run_timing_is_not_playable():
+    target = _target(fetched_at=T_MINUS_19)
+    ev_run = replace(
+        _ev_run(target),
+        timing_eligibility=_timing(target, "unknown"),
+    )
+
+    with pytest.raises(ValueError, match="EV playable timing"):
+        _complete_result(decision="PLAY", target=target, ev_run=ev_run)
 
 
 def test_result_rejects_research_only_without_a_research_package():

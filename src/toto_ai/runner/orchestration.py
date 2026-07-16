@@ -103,6 +103,26 @@ def run_drawing(
         )
 
     _notify(progress_callback, "final")
+    final_started_at = _read_now(now)
+    if _is_closed(schedule, final_started_at):
+        return _no_bet_result(
+            config=config,
+            target=preflight,
+            preflight_at=preflight_at,
+            final_started_at=None,
+            collection_finished_at=None,
+            timing_finished_at=None,
+            audit_finished_at=None,
+            ev_finished_at=None,
+            finished_at=final_started_at,
+            started_monotonic=started_monotonic,
+            monotonic=monotonic,
+            terminal_reason="safety cutoff reached before final resolve",
+            collection=None,
+            timing_eligibility=PlayTimingEligibility.not_checked(),
+            audit=None,
+            progress_callback=progress_callback,
+        )
     final = resolve_target(final_started_at)
     _require_pinned_target("final", final)
     if not _same_target(preflight, final):
@@ -147,6 +167,26 @@ def run_drawing(
         )
 
     _notify(progress_callback, "collect")
+    collection_started_at = _read_now(now)
+    if _is_closed(schedule, collection_started_at):
+        return _no_bet_result(
+            config=config,
+            target=preflight,
+            preflight_at=preflight_at,
+            final_started_at=final_started_at,
+            collection_finished_at=None,
+            timing_finished_at=None,
+            audit_finished_at=None,
+            ev_finished_at=None,
+            finished_at=collection_started_at,
+            started_monotonic=started_monotonic,
+            monotonic=monotonic,
+            terminal_reason="safety cutoff reached before collection",
+            collection=None,
+            timing_eligibility=PlayTimingEligibility.not_checked(),
+            audit=None,
+            progress_callback=progress_callback,
+        )
     collection = collect_target(final.target, schedule.safety_stops_at)
     if not isinstance(collection, ProspectiveCollectionResult):
         raise ValueError("collect_target must return ProspectiveCollectionResult")
@@ -172,6 +212,26 @@ def run_drawing(
         )
 
     _notify(progress_callback, "timing")
+    timing_started_at = _read_now(now)
+    if _is_closed(schedule, timing_started_at):
+        return _no_bet_result(
+            config=config,
+            target=preflight,
+            preflight_at=preflight_at,
+            final_started_at=final_started_at,
+            collection_finished_at=collection_finished_at,
+            timing_finished_at=None,
+            audit_finished_at=None,
+            ev_finished_at=None,
+            finished_at=timing_started_at,
+            started_monotonic=started_monotonic,
+            monotonic=monotonic,
+            terminal_reason="safety cutoff reached before timing",
+            collection=collection,
+            timing_eligibility=PlayTimingEligibility.not_checked(),
+            audit=None,
+            progress_callback=progress_callback,
+        )
     timing_eligibility = resolve_timing(final)
     if not isinstance(timing_eligibility, PlayTimingEligibility):
         raise ValueError("resolve_timing must return PlayTimingEligibility")
@@ -197,6 +257,26 @@ def run_drawing(
         )
 
     _notify(progress_callback, "audit")
+    audit_started_at = _read_now(now)
+    if _is_closed(schedule, audit_started_at):
+        return _no_bet_result(
+            config=config,
+            target=preflight,
+            preflight_at=preflight_at,
+            final_started_at=final_started_at,
+            collection_finished_at=collection_finished_at,
+            timing_finished_at=timing_finished_at,
+            audit_finished_at=None,
+            ev_finished_at=None,
+            finished_at=audit_started_at,
+            started_monotonic=started_monotonic,
+            monotonic=monotonic,
+            terminal_reason="safety cutoff reached before audit",
+            collection=collection,
+            timing_eligibility=timing_eligibility,
+            audit=None,
+            progress_callback=progress_callback,
+        )
     audit = audit_coverage()
     if not isinstance(audit, CoverageAudit):
         raise ValueError("audit_coverage must return CoverageAudit")
@@ -245,6 +325,26 @@ def run_drawing(
         )
 
     _notify(progress_callback, "ev")
+    ev_started_at = _read_now(now)
+    if _is_closed(schedule, ev_started_at):
+        return _no_bet_result(
+            config=config,
+            target=preflight,
+            preflight_at=preflight_at,
+            final_started_at=final_started_at,
+            collection_finished_at=collection_finished_at,
+            timing_finished_at=timing_finished_at,
+            audit_finished_at=audit_finished_at,
+            ev_finished_at=None,
+            finished_at=ev_started_at,
+            started_monotonic=started_monotonic,
+            monotonic=monotonic,
+            terminal_reason="safety cutoff reached before ev",
+            collection=collection,
+            timing_eligibility=timing_eligibility,
+            audit=audit,
+            progress_callback=progress_callback,
+        )
     ev_run = build_package(final.target.drawing_id)
     if not isinstance(ev_run, EVPackageRun):
         raise ValueError("build_package must return EVPackageRun")
@@ -278,8 +378,7 @@ def run_drawing(
     if terminal_reason is None:
         raise ValueError("EV package returned an invalid decision")
     elapsed_seconds = _elapsed_seconds(started_monotonic, monotonic)
-    _notify(progress_callback, "complete", decision=decision)
-    return DrawingRunnerResult(
+    result = DrawingRunnerResult(
         config=config,
         target=preflight,
         preflight_at=preflight_at,
@@ -297,6 +396,8 @@ def run_drawing(
         audit=audit,
         ev_run=ev_run,
     )
+    _notify(progress_callback, "complete", decision=decision)
+    return result
 
 
 def _same_target(left: PinnedDrawing, right: PinnedDrawing) -> bool:
@@ -328,8 +429,7 @@ def _no_bet_result(
     progress_callback: ProgressCallback | None,
 ) -> DrawingRunnerResult:
     elapsed_seconds = _elapsed_seconds(started_monotonic, monotonic)
-    _notify(progress_callback, "complete", decision="NO BET")
-    return DrawingRunnerResult(
+    result = DrawingRunnerResult(
         config=config,
         target=target,
         preflight_at=preflight_at,
@@ -347,6 +447,8 @@ def _no_bet_result(
         audit=audit,
         ev_run=None,
     )
+    _notify(progress_callback, "complete", decision="NO BET")
+    return result
 
 
 def _require_pinned_target(name: str, value: object) -> None:

@@ -23,9 +23,9 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 838
-- Focused runner timing/orchestration suite passed: 83
-- Ruff passed
+- Tests currently passed: 848
+- Focused runner timing/orchestration suite passed: 93
+- Focused and repository-wide Ruff passed
 
 ## Latest Completed Task: Provider-Neutral Runner Orchestration
 
@@ -44,12 +44,23 @@ zero-cost coupon-free attached packages for `NO BET`. Ordinary EV-threshold
 `NO BET` may retain its diagnostic run and top-coupon diagnostics, while a
 late package is removed with `ev_run=None`.
 
+Task 3 review hardening now rechecks the injected clock immediately after
+every final/collection/timing/audit/EV progress notification, so a synchronous
+callback cannot advance to T-5 and start bound work. It constructs and
+validates every success or fail-closed result before emitting `complete`, and
+requires an attached `PLAY` EV run to have its own exact `playable` timing.
+Coverage `GO`, `PENDING`, and `STOP` remain audit-only. Regression tests cover
+all five callback race boundaries, invalid terminal construction, early-exit
+progress, and coverage non-interference.
+
 Verification: the required RED import failure, focused runner GREEN (`83
 passed`), focused Ruff, full pytest (`838 passed`), and repository-wide Ruff
-(`All checks passed!`). Tests use only injected clocks, sleepers, resolvers,
-collectors, auditors, and package builders; no real network, filesystem, or
-sleep is used. No category, cover, bank, probability, coverage-gate, timing,
-or EV definition changed.
+(`All checks passed!`). Review-fix RED was `8 failed, 34 passed`; focused
+review GREEN was `93 passed in 0.28s`, followed by full pytest (`848 passed`)
+and repository-wide Ruff (`All checks passed!`). Tests use only injected
+clocks, sleepers, resolvers, collectors, auditors, and package builders; no
+real network, filesystem, or sleep is used. No category, cover, bank,
+probability, coverage-gate, timing, or EV definition changed.
 
 ## Latest Completed Task: Pinned Prospective Collection and Safety Stop
 

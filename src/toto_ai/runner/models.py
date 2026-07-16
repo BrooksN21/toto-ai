@@ -210,6 +210,8 @@ class DrawingRunnerResult:
                 or package.decision != "PLAY"
             ):
                 raise ValueError("PLAY requires an EV PLAY package")
+            if self.ev_run.timing_eligibility.status != "playable":
+                raise ValueError("PLAY requires EV playable timing")
             return
         if self.decision == "RESEARCH ONLY":
             if (

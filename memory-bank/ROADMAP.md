@@ -187,6 +187,10 @@
   audit/eligibility/EV orchestration, and atomic run artifacts without automatic
   bet placement. The six-task TDD implementation plan is approved and ready for
   execution.
+- Safe Drawing Runner Task 3 orchestration is complete. The injected state
+  machine rechecks the inclusive T-5 cutoff after each bound-phase progress
+  notification, validates a terminal result before emitting `complete`, and
+  keeps coverage `GO`/`PENDING`/`STOP` diagnostic-only.
 
 - Task 1 complete: provider-neutral drawing eligibility classifier and
   deterministic target fingerprint, including immutable effective starts,
