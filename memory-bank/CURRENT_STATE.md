@@ -1533,3 +1533,14 @@ Design specification:
 - `docs/superpowers/specs/2026-07-16-safe-drawing-runner-design.md`
 
 Next action: write the TDD implementation plan after user review of the spec.
+
+## Approved Implementation Plan: Safe Drawing Runner
+
+The implementation is decomposed into six independently reviewed TDD tasks:
+immutable timing/domain, pinned collection cutoff, provider-neutral
+orchestration, deterministic reports, Typer wiring, and end-to-end acceptance.
+
+Implementation plan:
+- `docs/superpowers/plans/2026-07-16-safe-drawing-runner.md`
+
+Next action: execute the plan task by task with review gates.

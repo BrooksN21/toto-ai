@@ -185,7 +185,8 @@
 - Safe Drawing Runner design approved: immediate preflight, exact target
   binding, T-20 final start, T-5 fail-closed safety boundary, fresh collection,
   audit/eligibility/EV orchestration, and atomic run artifacts without automatic
-  bet placement. Implementation plan is next.
+  bet placement. The six-task TDD implementation plan is approved and ready for
+  execution.
 
 - Task 1 complete: provider-neutral drawing eligibility classifier and
   deterministic target fingerprint, including immutable effective starts,
