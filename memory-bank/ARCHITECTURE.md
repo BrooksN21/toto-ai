@@ -232,4 +232,6 @@ Important CLI commands:
 - `run-drawing --open`: safely preflight and pin one open drawing, wait for the
   T-20 final window, revalidate the target, collect fresh API-Sports odds,
   check exact stored timing, audit the latest 30 snapshots, build the existing
-  EV package, and publish linked runner reports. It never submits a bet.
+  EV package, and publish linked runner reports. Page-one and drawing-info IDs
+  must match before pinning, and controlled provider failures are detached from
+  their sanitized CLI error. It never submits a bet.

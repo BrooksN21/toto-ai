@@ -23,9 +23,28 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 877
+- Tests currently passed: 885
 - Focused runner orchestration/report/timing suite passed: 115
 - Focused and repository-wide Ruff passed
+
+## Latest Review Fix: Production `run-drawing` CLI
+
+Task 5 review hardening now rejects a `drawing-info` payload whose parsed
+internal drawing ID differs from the page-one reference before target pinning.
+Controlled provider failures build a sanitized `BadParameter` inside the
+handler and raise it only after leaving the secret-bearing exception context,
+so the reachable `__cause__`/`__context__` graph contains no API key.
+
+The CLI regression suite now directly covers the target and exact stored-timing
+bridges, corrupt stored state, the exact approved option/default surface,
+PLAY/RESEARCH output, Rich phase and countdown descriptions, recursive secret
+graph traversal, and interruption during real runner-pair publication with no
+successful manifest left behind. Tests use no network or real sleep.
+
+Review RED was `3 failed, 12 passed in 0.71s`. Final focused pytest passed
+(`15 passed in 0.53s`), `run-drawing --help` exited zero with only the approved
+controls, focused Ruff passed, full pytest passed (`885 passed in 7.55s`), and
+repository-wide Ruff reported `All checks passed!`.
 
 ## Latest Completed Task: Production `run-drawing` CLI Wiring
 

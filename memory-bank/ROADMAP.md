@@ -200,7 +200,9 @@
   validates the approved configuration before API-Sports access, uses fresh
   pinned collection, exact timing, latest-30 diagnostic audit, existing EV and
   report writers, and publishes linked runner artifacts without automatic
-  betting.
+  betting. Review hardening rejects page-one/drawing-info ID mismatches,
+  detaches sanitized provider failures from secret-bearing exception graphs,
+  and closes the owned CLI acceptance gaps.
 
 - Task 1 complete: provider-neutral drawing eligibility classifier and
   deterministic target fingerprint, including immutable effective starts,

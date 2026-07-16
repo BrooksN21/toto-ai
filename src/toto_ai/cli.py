@@ -713,6 +713,11 @@ def _resolve_runner_target(
         client.drawing_info(reference.drawing_id),
         fetched_at=resolved_at,
     )
+    if target.drawing_id != reference.drawing_id:
+        raise ValueError(
+            f"drawing-info data.id {target.drawing_id} does not match page-one "
+            f"drawing id {reference.drawing_id}"
+        )
     return pin_drawing(target)
 
 
@@ -729,7 +734,7 @@ def _api_sports_provider_factory(
 
 @app.command("run-drawing")
 def run_drawing_command(
-    open: bool = typer.Option(False),  # noqa: A002
+    open: bool = typer.Option(False, "--open"),  # noqa: A002
     bank: int = typer.Option(...),
     stake: int = typer.Option(30),
     mode: str = typer.Option("playable"),
@@ -764,6 +769,7 @@ def run_drawing_command(
     if not api_key.strip():
         raise typer.BadParameter("API_SPORTS_KEY is required")
 
+    command_error: typer.BadParameter | None = None
     try:
         engine = init_db(db)
         session_factory = get_session_factory(engine)
@@ -859,10 +865,10 @@ def run_drawing_command(
                 ),
                 report_dir=report_dir,
             )
-    except KeyboardInterrupt as error:
-        raise typer.BadParameter(
+    except KeyboardInterrupt:
+        command_error = typer.BadParameter(
             "Drawing runner interrupted; no final manifest was published"
-        ) from error
+        )
     except (
         APISportsError,
         FloatingPointError,
@@ -874,9 +880,12 @@ def run_drawing_command(
         TypeError,
         ValueError,
     ) as error:
-        raise typer.BadParameter(
+        command_error = typer.BadParameter(
             _external_error_message(error, secret=api_key)
-        ) from None
+        )
+
+    if command_error is not None:
+        raise command_error
 
     print(f"Decision: {result.decision}")
     print(f"Reason: {result.terminal_reason}")
