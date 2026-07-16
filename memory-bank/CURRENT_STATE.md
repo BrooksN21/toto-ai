@@ -1423,3 +1423,18 @@ because the 30-drawing/450-event sample floor is not met.
 Verification target after documentation: full pytest and repository-wide Ruff.
 Next isolated task: decide and test exact reversed-pair handling with explicit
 `1`/`2` orientation swapping; do not silently consume reversed provider events.
+
+## Multi-Day Eligibility Task 3A: Persistence Complete
+
+External collection storage now persists the target fingerprint, configured
+missing-start horizon, canonical per-date schedule results, drawing
+eligibility, provider start, effective start, and timing source. Existing
+SQLite databases receive additive columns; legacy runs remain readable only as
+`unknown`, and read-only database opening never performs a migration.
+
+`load_current_drawing_eligibility` returns a verdict only for a complete
+15-event run matching the exact drawing ID and target fingerprint. Malformed
+schedule JSON and inconsistent timing/eligibility provenance fail closed.
+Focused verification passed: 16 storage tests and Ruff on all touched files.
+Task 3 audit/report diagnostics remain next; category, bank, probability, EV,
+and coverage-gate definitions are unchanged.

@@ -161,19 +161,19 @@ git commit -m "Isolate external schedule collection by date"
 - Stores event-level provider/effective start and source.
 - Produces: `load_current_drawing_eligibility(session_factory, drawing_id, target_fingerprint) -> DrawingEligibility | None`.
 
-- [ ] **Step 1: Write failing schema and round-trip tests**
+- [x] **Step 1: Write failing schema and round-trip tests**
 
 Test new database creation, migration from the legacy external tables, full canonical round-trip, changed schedule metadata changing identity, idempotent resave, and exact rejection of malformed JSON or inconsistent eligibility.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run storage/session tests and confirm missing columns/attributes fail.
 
-- [ ] **Step 3: Add schema and migration**
+- [x] **Step 3: Add schema and migration**
 
 Add nullable legacy-compatible columns through `_add_missing_columns`. Backfill legacy run eligibility to `unknown`, legacy event effective source to `unresolved`, and never infer legacy snapshots as playable.
 
-- [ ] **Step 4: Implement storage and current lookup**
+- [x] **Step 4: Implement storage and current lookup**
 
 Canonicalize schedule-date structures before JSON encoding. Current lookup chooses the latest complete run for the exact drawing/fingerprint and returns `None` for absence or mismatch.
 

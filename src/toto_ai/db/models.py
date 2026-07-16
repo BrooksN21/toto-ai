@@ -75,6 +75,36 @@ class ExternalCollectionRun(Base):
     daily_remaining: Mapped[int | None] = mapped_column(Integer)
     minute_remaining: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String)
+    target_fingerprint: Mapped[str | None] = mapped_column(String, nullable=True)
+    missing_start_horizon_days: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    requested_schedule_dates: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    successful_schedule_dates: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    failed_schedule_dates: Mapped[str | None] = mapped_column(String, nullable=True)
+    eligibility_status: Mapped[str | None] = mapped_column(String, nullable=True)
+    eligibility_earliest_start: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    eligibility_latest_start: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    eligibility_span_days: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    eligibility_missing_event_orders: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    eligibility_totobrief_count: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    eligibility_provider_count: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
 
 
 class ExternalEventDisposition(Base):
@@ -115,6 +145,11 @@ class ExternalEventDisposition(Base):
     odds_age_hours: Mapped[float | None] = mapped_column(Float)
     fallback_reason: Mapped[str | None] = mapped_column(String)
     payload_hash: Mapped[str] = mapped_column(String)
+    provider_starts_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    effective_starts_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    effective_start_source: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
 
 
 class ExternalBookmakerQuote(Base):

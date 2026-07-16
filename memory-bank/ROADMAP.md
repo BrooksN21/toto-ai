@@ -188,9 +188,9 @@
 - Task 2 complete: deterministic per-date schedule collection/provenance,
   date-local failure isolation, quota-stop suppression of market requests,
   effective starts, and immutable eligibility-bound collection identity.
-- Tasks 3-6 pending: persist the Task 2 provenance, add audit/report changes,
-  progressive orchestration through day five, and fail-closed `NO BET` for
-  multi-day or unknown drawings.
+- Task 3 persistence is complete: additive legacy-safe schema migration, full
+  schedule/timing provenance round-trip, and exact drawing/fingerprint
+  eligibility lookup. Task 3 audit/report work and Tasks 4-6 remain pending.
 - Automatic T-15 scheduling of the fresh prospective command
 - Open drawing analysis
 - Package generation

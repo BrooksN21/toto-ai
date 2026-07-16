@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sqlite3
 from dataclasses import asdict, replace
 from datetime import datetime, timedelta, timezone
@@ -14,7 +15,8 @@ from toto_ai.db.models import (
     ExternalCollectionRun,
     ExternalEventDisposition,
 )
-from toto_ai.db.session import init_db
+from toto_ai.db.session import init_db, open_readonly_db
+from toto_ai.external_odds import storage
 from toto_ai.external_odds.collection import build_external_collection
 from toto_ai.external_odds.domain import (
     ProviderEvent,
@@ -23,12 +25,32 @@ from toto_ai.external_odds.domain import (
     TargetDrawing,
     TargetEvent,
 )
+from toto_ai.external_odds.eligibility import DrawingEligibility
 from toto_ai.external_odds.storage import (
     _canonical_collection,
-    _legacy_storage_canonical_collection,
     load_latest_complete_collections,
     save_collection,
 )
+
+RUN_PROVENANCE_COLUMNS = {
+    "target_fingerprint",
+    "missing_start_horizon_days",
+    "requested_schedule_dates",
+    "successful_schedule_dates",
+    "failed_schedule_dates",
+    "eligibility_status",
+    "eligibility_earliest_start",
+    "eligibility_latest_start",
+    "eligibility_span_days",
+    "eligibility_missing_event_orders",
+    "eligibility_totobrief_count",
+    "eligibility_provider_count",
+}
+EVENT_TIMING_COLUMNS = {
+    "provider_starts_at",
+    "effective_starts_at",
+    "effective_start_source",
+}
 
 
 def aware_now() -> datetime:
@@ -134,6 +156,15 @@ class ReversedProvider(CompleteProvider):
         return tuple(reversed(super().fetch_event_markets(sport, provider_event_id)))
 
 
+class ScheduleFailureProvider(CompleteProvider):
+    def fetch_schedule(self, sport, dates):
+        self.requests_made += 1
+        raise RuntimeError("provider unavailable")
+
+    def fetch_event_markets(self, sport, provider_event_id):
+        raise AssertionError("markets must not be fetched after schedule failure")
+
+
 class DuplicateMarketProvider(CompleteProvider):
     def fetch_event_markets(self, sport, provider_event_id):
         markets = super().fetch_event_markets(sport, provider_event_id)
@@ -179,6 +210,18 @@ def test_collection_persists_exactly_fifteen_dispositions(session_factory):
         row.probability_source == "external_consensus" for row in stored[0].events
     )
     assert sum(len(row.bookmaker_quotes) for row in stored[0].events) == 45
+    assert _canonical_collection(stored[0]) == _canonical_collection(result)
+    assert stored[0].target_fingerprint == result.target_fingerprint
+    assert stored[0].missing_start_horizon_days == 2
+    assert stored[0].requested_schedule_dates[0].events == ()
+    assert stored[0].eligibility == result.eligibility
+    assert stored[0].events[0].provider_starts_at == (
+        aware_now() + timedelta(hours=6)
+    ).isoformat()
+    assert stored[0].events[0].effective_starts_at == (
+        aware_now() + timedelta(hours=6)
+    ).isoformat()
+    assert stored[0].events[0].effective_start_source == "totobrief"
 
 
 def test_same_canonical_inputs_are_idempotent(session_factory):
@@ -194,6 +237,37 @@ def test_same_canonical_inputs_are_idempotent(session_factory):
         assert run_count == 1
         assert session.scalar(select(func.count(ExternalEventDisposition.id))) == 15
         assert session.scalar(select(func.count(ExternalBookmakerQuote.id))) == 45
+
+
+def test_failed_schedule_date_provenance_round_trips_canonically(session_factory):
+    result = build_external_collection(
+        target_drawing(),
+        ScheduleFailureProvider(),
+        aliases={},
+    )
+
+    save_collection(session_factory, result)
+    stored = load_latest_complete_collections(session_factory, last=1)[0]
+
+    assert _canonical_collection(stored) == _canonical_collection(result)
+    assert stored.successful_schedule_dates == ()
+    assert tuple(
+        (item.sport, item.requested_date, item.error)
+        for item in stored.failed_schedule_dates
+    ) == (("football", aware_now().date(), "provider schedule failure"),)
+    with session_factory() as session:
+        failed_json = session.scalar(
+            select(ExternalCollectionRun.failed_schedule_dates).where(
+                ExternalCollectionRun.collection_id == result.collection_id
+            )
+        )
+    assert json.loads(failed_json) == [
+        {
+            "error": "provider schedule failure",
+            "requested_date": aware_now().date().isoformat(),
+            "sport": "football",
+        }
+    ]
 
 
 def test_new_provenance_participates_in_equality_asdict_and_canonicalization():
@@ -250,10 +324,7 @@ def test_quote_order_is_canonical_for_identity_comparison_and_storage(
     save_collection(session_factory, manually_reversed)
 
     stored = load_latest_complete_collections(session_factory, last=1)
-    assert stored != (canonical,)
-    assert _legacy_storage_canonical_collection(stored[0]) == (
-        _legacy_storage_canonical_collection(canonical)
-    )
+    assert _canonical_collection(stored[0]) == _canonical_collection(canonical)
 
 
 def test_fetched_at_is_part_of_collection_identity(session_factory):
@@ -317,15 +388,170 @@ def test_provider_provenance_round_trips_and_binds_collection_identity(
     assert event.provider_event_payload_hash == "schedule-hash-0"
     assert quote.fetched_at == aware_now().isoformat()
     assert quote.payload_hash == "market-hash-0-1"
-    assert stored != baseline
-    assert _legacy_storage_canonical_collection(stored) == (
-        _legacy_storage_canonical_collection(baseline)
+    assert event.provider_starts_at == (aware_now() + timedelta(hours=6)).isoformat()
+    assert event.effective_starts_at == (aware_now() + timedelta(hours=6)).isoformat()
+    assert event.effective_start_source == "totobrief"
+    assert _canonical_collection(stored) == _canonical_collection(baseline)
+
+
+def test_schedule_metadata_changes_identity_and_is_append_only(session_factory):
+    ordinary = build_external_collection(
+        target_drawing(),
+        CompleteProvider(),
+        aliases={},
+        missing_start_horizon_days=2,
+    )
+    expanded = build_external_collection(
+        target_drawing(),
+        CompleteProvider(),
+        aliases={},
+        missing_start_horizon_days=5,
+    )
+
+    assert ordinary.collection_id != expanded.collection_id
+
+    save_collection(session_factory, ordinary)
+    save_collection(session_factory, expanded)
+    save_collection(session_factory, expanded)
+
+    with session_factory() as session:
+        assert session.scalar(
+            select(func.count(ExternalCollectionRun.collection_id))
+        ) == 2
+
+
+def test_current_eligibility_lookup_requires_exact_target_fingerprint(
+    session_factory,
+):
+    collection = build_external_collection(
+        target_drawing(), CompleteProvider(), aliases={}
+    )
+    save_collection(session_factory, collection)
+
+    assert storage.load_current_drawing_eligibility(
+        session_factory,
+        collection.drawing_id,
+        collection.target_fingerprint,
+    ) == collection.eligibility
+    assert (
+        storage.load_current_drawing_eligibility(
+            session_factory,
+            collection.drawing_id,
+            "0" * 64,
+        )
+        is None
+    )
+    with session_factory.begin() as session:
+        session.execute(
+            text(
+                "UPDATE external_collection_runs SET target_fingerprint = NULL "
+                "WHERE collection_id = :collection_id"
+            ),
+            {"collection_id": collection.collection_id},
+        )
+    assert (
+        storage.load_current_drawing_eligibility(
+            session_factory,
+            collection.drawing_id,
+            collection.target_fingerprint,
+        )
+        is None
+    )
+    assert load_latest_complete_collections(session_factory, last=1)[0].eligibility == (
+        DrawingEligibility(
+            status="unknown",
+            earliest_start=None,
+            latest_start=None,
+            span_days=0,
+            missing_event_orders=tuple(range(15)),
+            totobrief_count=0,
+            provider_count=0,
+        )
+    )
+    assert (
+        storage.load_current_drawing_eligibility(
+            session_factory,
+            collection.drawing_id + 1,
+            collection.target_fingerprint,
+        )
+        is None
     )
 
 
-def test_init_db_backfills_orientation_for_legacy_external_rows(tmp_path):
+def test_save_rejects_event_timing_inconsistent_with_eligibility(session_factory):
+    collection = build_external_collection(
+        target_drawing(), CompleteProvider(), aliases={}
+    )
+    inconsistent = replace(
+        collection,
+        eligibility=DrawingEligibility(
+            status="unknown",
+            earliest_start=None,
+            latest_start=None,
+            span_days=0,
+            missing_event_orders=tuple(range(15)),
+            totobrief_count=0,
+            provider_count=0,
+        ),
+    )
+
+    with pytest.raises(ValueError, match="eligibility.*event timing"):
+        save_collection(session_factory, inconsistent)
+
+
+def test_load_rejects_malformed_schedule_json_and_inconsistent_eligibility(
+    session_factory,
+):
+    collection = build_external_collection(
+        target_drawing(), CompleteProvider(), aliases={}
+    )
+    save_collection(session_factory, collection)
+    with session_factory.begin() as session:
+        original_json = session.scalar(
+            select(ExternalCollectionRun.requested_schedule_dates).where(
+                ExternalCollectionRun.collection_id == collection.collection_id
+            )
+        )
+        session.execute(
+            text(
+                "UPDATE external_collection_runs "
+                "SET requested_schedule_dates = '{' "
+                "WHERE collection_id = :collection_id"
+            ),
+            {"collection_id": collection.collection_id},
+        )
+
+    with pytest.raises(ValueError, match="requested_schedule_dates JSON"):
+        load_latest_complete_collections(session_factory, last=1)
+
+    with session_factory.begin() as session:
+        session.execute(
+            text(
+                "UPDATE external_collection_runs "
+                "SET requested_schedule_dates = :requested_schedule_dates, "
+                "eligibility_status = 'unknown' "
+                "WHERE collection_id = :collection_id"
+            ),
+            {
+                "collection_id": collection.collection_id,
+                "requested_schedule_dates": original_json,
+            },
+        )
+
+    with pytest.raises(ValueError, match="status is inconsistent"):
+        load_latest_complete_collections(session_factory, last=1)
+
+
+def test_init_db_adds_and_backfills_legacy_external_provenance(tmp_path):
     db_path = tmp_path / "legacy.db"
     with sqlite3.connect(db_path) as connection:
+        connection.execute(
+            "CREATE TABLE external_collection_runs ("
+            "collection_id VARCHAR PRIMARY KEY)"
+        )
+        connection.execute(
+            "INSERT INTO external_collection_runs (collection_id) VALUES ('legacy')"
+        )
         connection.execute(
             "CREATE TABLE external_event_dispositions ("
             "id INTEGER PRIMARY KEY, match_status VARCHAR NOT NULL)"
@@ -337,21 +563,77 @@ def test_init_db_backfills_orientation_for_legacy_external_rows(tmp_path):
 
     engine = init_db(db_path)
 
-    columns = {
+    event_columns = {
         column["name"]
         for column in inspect(engine).get_columns("external_event_dispositions")
     }
+    run_columns = {
+        column["name"]
+        for column in inspect(engine).get_columns("external_collection_runs")
+    }
     with engine.connect() as connection:
-        rows = connection.execute(
+        event_rows = connection.execute(
             text(
-                "SELECT id, match_orientation "
+                "SELECT id, match_orientation, provider_starts_at, "
+                "effective_starts_at, effective_start_source "
                 "FROM external_event_dispositions ORDER BY id"
             )
         ).all()
+        run_row = connection.execute(
+            text(
+                "SELECT target_fingerprint, missing_start_horizon_days, "
+                "eligibility_status, eligibility_earliest_start, "
+                "eligibility_latest_start, eligibility_span_days, "
+                "eligibility_missing_event_orders, eligibility_totobrief_count, "
+                "eligibility_provider_count FROM external_collection_runs"
+            )
+        ).one()
     engine.dispose()
 
-    assert "match_orientation" in columns
-    assert rows == [(1, "same"), (2, "none")]
+    assert RUN_PROVENANCE_COLUMNS <= run_columns
+    assert EVENT_TIMING_COLUMNS | {"match_orientation"} <= event_columns
+    assert event_rows == [
+        (1, "same", None, None, "unresolved"),
+        (2, "none", None, None, "unresolved"),
+    ]
+    assert run_row == (
+        None,
+        None,
+        "unknown",
+        None,
+        None,
+        0,
+        "[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]",
+        0,
+        0,
+    )
+
+
+def test_open_readonly_db_never_migrates_legacy_tables(tmp_path):
+    db_path = tmp_path / "readonly-legacy.db"
+    with sqlite3.connect(db_path) as connection:
+        connection.execute(
+            "CREATE TABLE external_collection_runs ("
+            "collection_id VARCHAR PRIMARY KEY)"
+        )
+        connection.execute(
+            "CREATE TABLE external_event_dispositions ("
+            "id INTEGER PRIMARY KEY, match_status VARCHAR NOT NULL)"
+        )
+
+    engine = open_readonly_db(db_path)
+    run_columns = {
+        column["name"]
+        for column in inspect(engine).get_columns("external_collection_runs")
+    }
+    event_columns = {
+        column["name"]
+        for column in inspect(engine).get_columns("external_event_dispositions")
+    }
+    engine.dispose()
+
+    assert RUN_PROVENANCE_COLUMNS.isdisjoint(run_columns)
+    assert EVENT_TIMING_COLUMNS.isdisjoint(event_columns)
 
 
 def test_duplicate_bookmaker_market_is_coalesced_with_aggregate_provenance(
@@ -391,10 +673,7 @@ def test_duplicate_bookmaker_market_is_coalesced_with_aggregate_provenance(
 
     save_collection(session_factory, result)
     stored = load_latest_complete_collections(session_factory, last=1)
-    assert stored != (result,)
-    assert _legacy_storage_canonical_collection(stored[0]) == (
-        _legacy_storage_canonical_collection(result)
-    )
+    assert _canonical_collection(stored[0]) == _canonical_collection(result)
     with session_factory() as session:
         assert session.scalar(select(func.count(ExternalEventDisposition.id))) == 15
         assert session.scalar(select(func.count(ExternalBookmakerQuote.id))) == 45
