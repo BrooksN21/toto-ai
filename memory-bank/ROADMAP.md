@@ -197,8 +197,11 @@
   day five only for stable null-start exact-pair misses.
 - Task 5 is complete: playable EV output requires exact fresh-target timing
   eligibility with status `playable`; all other statuses produce a zero-cost
-  `NO BET`. Research math and ranking remain unchanged. Task 6 acceptance and
-  final documentation remain.
+  `NO BET`. Research math and ranking remain unchanged.
+- Task 6 is complete: deterministic acceptance covers ordinary two-day,
+  day-five expansion, partial-date failure, confirmed multi-day, and unresolved
+  drawings across collection, persistence, audit/report, and playable/research
+  output. The multi-day eligibility feature is complete.
 - Automatic T-15 scheduling of the fresh prospective command
 - Open drawing analysis
 - Package generation

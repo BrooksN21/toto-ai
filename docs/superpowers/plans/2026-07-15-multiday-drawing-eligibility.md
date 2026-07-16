@@ -297,11 +297,11 @@ git commit -m "Gate playable packages on drawing duration"
 **Interfaces:**
 - Proves the full collection-to-eligibility-to-play-veto boundary.
 
-- [ ] **Step 1: Add end-to-end acceptance**
+- [x] **Step 1: Add end-to-end acceptance**
 
 Build synthetic ordinary, day-five, partial-date, multi-day, and unresolved drawings through collection, SQLite reload, audit report, and playable/research output. Assert exact 15-event preservation, immutable identity, deterministic reports, and no secret leakage.
 
-- [ ] **Step 2: Run focused verification**
+- [x] **Step 2: Run focused verification**
 
 ```bash
 .venv/bin/python -m pytest -q \
@@ -316,11 +316,11 @@ Build synthetic ordinary, day-five, partial-date, multi-day, and unresolved draw
   tests/test_ev_drawing.py tests/test_ev_reports.py tests/test_ev_end_to_end.py
 ```
 
-- [ ] **Step 3: Update project memory**
+- [x] **Step 3: Update project memory**
 
 Document the implemented classifier, progressive horizon, migration, CLI protocol, audit scopes, playable veto, and unchanged probability/EV definitions. Mark the roadmap task complete and record exact verification counts.
 
-- [ ] **Step 4: Run full verification**
+- [x] **Step 4: Run full verification**
 
 ```bash
 .venv/bin/python -m ruff check .
@@ -334,7 +334,11 @@ git diff --check
 
 Only when an open drawing and lawful API key remain available, run fresh collection without printing the key. Do not place a bet. Record whether expansion was needed and retain explicit fallback evidence.
 
-- [ ] **Step 6: Commit**
+Not required for acceptance and intentionally not run as part of the deterministic
+test suite. The earlier lawful live drawing-4945 collection remains the recorded
+operational evidence.
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add tests memory-bank knowledge docs/superpowers/plans/2026-07-15-multiday-drawing-eligibility.md

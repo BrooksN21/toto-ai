@@ -27,6 +27,8 @@ TotoBrief API page one
 -> Strict 15-event BK/pool input
 -> Reusable exact EV components
 -> Prize-factor surfaces and dynamic-bank selection
+-> Read-only exact drawing/fingerprint timing lookup
+-> Playable only when all 15 effective starts fit within two Moscow dates
 -> Rollback-safe CSV/Markdown package reports
 ```
 
@@ -110,7 +112,9 @@ Important modules:
   It resolves one TotoBrief target, creates one isolated cache session, and
   reuses that session across new provider clients after minute-quota resets.
   Only quota, provider schedule, and provider odds failures trigger another
-  pass. Every pass remains an immutable stored 15-disposition snapshot.
+  pass. Missing-start exact-pair misses may enter a separate bounded expansion
+  phase through day five; known-start misses do not. Every pass remains an
+  immutable stored 15-disposition snapshot.
 - `toto_ai.external_odds.audit` and `toto_ai.external_odds.reports`:
   read-only coverage auditing over the latest complete stored external-odds
   snapshot per drawing, registered prospective GO/PENDING/STOP gate predicates,
@@ -127,7 +131,10 @@ Important modules:
   End-to-end acceptance covers mixed success/fallback, provider failure, quota
   cutoff, interruption rollback, deterministic report evidence, EV
   non-interference, and API-key absence across persisted data, cache artifacts,
-  CLI output, recursive exception chains, and reports.
+  CLI output, recursive exception chains, and reports. The timing acceptance
+  matrix additionally covers ordinary two-day, day-five expansion, partial
+  schedule failure, confirmed multi-day, and unresolved drawings through
+  collection, SQLite reload, audit/report, and playable/research output.
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
   frozen-holdout exclusion, pre-result package hashing, complete factor
   rankings reused across dynamic banks and thresholds, cumulative realized

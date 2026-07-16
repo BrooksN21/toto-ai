@@ -214,3 +214,6 @@
 - `--live` means betting is closed and drawing is ongoing.
 - `--latest-finished` is for historical analysis.
 - Internal drawing ID differs from visible drawing number.
+- Multi-day timing acceptance is deterministic and must forbid real network
+  calls and sleeps. A lawful live dry run is optional operational evidence, not
+  a prerequisite for accepting the collection-to-eligibility-to-veto boundary.

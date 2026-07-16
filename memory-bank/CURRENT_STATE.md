@@ -23,8 +23,8 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 696
-- Focused Task 2 external-odds suite passed: 61
+- Tests currently passed: 746
+- Focused multi-day eligibility acceptance suite passed: 179
 - Ruff passed
 
 ## Latest Completed Feature: Fresh Prospective Collection
@@ -1493,3 +1493,26 @@ warnings rather than Research failures. `ev-package` adds read-only `--db`.
 Focused verification passed (`59 passed`), CLI help and Ruff passed, and the
 three independent review findings were re-reviewed as resolved. Task 6
 end-to-end acceptance and final documentation are next.
+
+## Multi-Day Drawing Eligibility Complete
+
+The approved six-task implementation is complete. Missing TotoBrief starts are
+collected first over two Moscow calendar days and may expand through day five
+only after a stable exact-pair miss. Schedule success and failure remain
+isolated per date, and every pass persists an immutable 15-event snapshot with
+target fingerprint, horizon, provider/effective starts, source, and eligibility.
+
+Historical and Research flows retain multi-day and unresolved drawings for
+analysis. Playable EV output requires an exact stored fingerprint match and
+`playable` eligibility: all 15 effective starts known within an inclusive
+two-day Moscow span. Confirmed multi-day, unresolved, absent, mismatched, and
+unchecked timing all produce zero-cost `NO BET` without publishing diagnostic
+coupons. External probabilities remain audit-only and do not enter EV or
+package ranking.
+
+Deterministic end-to-end acceptance covers ordinary two-day, day-five
+expansion, partial provider-date failure, confirmed multi-day, and unresolved
+drawings through collection, SQLite reload, audit/report, and playable/research
+output. Focused verification passed: 179 tests. Full-suite and Ruff results are
+green: 746 tests passed, repository-wide Ruff passed, both affected CLI help
+commands succeeded, and `git diff --check` passed.

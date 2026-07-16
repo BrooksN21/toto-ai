@@ -62,3 +62,15 @@
   missing-provider fallbacks, two reversed exact matches, and zero ambiguous
   matches. Daily quota remaining was 32. This proves the manual T-15 protocol
   on one live drawing; it does not satisfy the 30-drawing/450-event gate.
+- TotoBrief event `start_at` may be null. Missing-start prospective collection
+  begins with a two-Moscow-date schedule window and may expand through day five
+  only after a stable unique exact-pair miss. Known TotoBrief starts keep their
+  explicit schedule dates even outside that missing-start horizon.
+- Timing eligibility uses the inclusive `Europe/Moscow` calendar span. Exactly
+  15 known effective starts spanning at most two dates are `playable`; a known
+  span above two dates is `multi_day`; unresolved starts are `unknown` unless
+  the known subset already proves `multi_day`.
+- Multi-day and unresolved snapshots remain valid historical/research data but
+  are not playable. Exact drawing ID plus target fingerprint is required for a
+  stored eligibility verdict; legacy, missing, malformed, or mismatched timing
+  provenance fails closed.
