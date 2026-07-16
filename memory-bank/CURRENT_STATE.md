@@ -1544,3 +1544,15 @@ Implementation plan:
 - `docs/superpowers/plans/2026-07-16-safe-drawing-runner.md`
 
 Next action: execute the plan task by task with review gates.
+
+## Safe Drawing Runner Task 1 Complete
+
+Added the provider-neutral immutable runner domain and UTC timing state machine.
+`DrawingRunnerConfig` preserves the existing divisible-bank/stake rules and
+playable default, `pin_drawing()` binds a deterministic canonical target
+fingerprint, and waiting transitions exactly at T-20 with a fail-closed T-5
+boundary. Waiting uses injected clocks and sleepers only, rechecks wall time
+after each bounded sleep, and never sleeps through the final-window boundary.
+
+Task 1 verification passed: focused runner tests (`50 passed`), focused Ruff,
+full pytest (`796 passed`), full Ruff, and `git diff --check`.

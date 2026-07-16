@@ -1,160 +1,72 @@
-# Task 1 Report
+# Task 1 Report: Immutable Runner Domain and UTC Timing
 
-## Result
+## Status
 
-- Status: `DONE_WITH_CONCERNS`
-- Commit: `59da2b2` (`Add expected value domain math`)
-- Branch: `codex/hybrid-direct-package-experiment`
+`DONE`
 
-## Files Changed
+## Implementation
 
-- `src/toto_ai/ev/__init__.py`
-- `src/toto_ai/ev/models.py`
-- `src/toto_ai/ev/prize.py`
-- `tests/test_ev_prize.py`
+- Added immutable `DrawingRunnerConfig` with the existing strict divisible-bank
+  validation, default stake `30`, default mode `playable`, and validated T-20 /
+  T-5 settings.
+- Added `PinnedDrawing` and `pin_drawing()` using the canonical deterministic
+  target fingerprint and strict lowercase SHA-256 fingerprint validation.
+- Added immutable UTC-only `RunnerSchedule`, exact runner-window boundaries,
+  and injected-clock waiting that rechecks wall time after every bounded sleep.
+- Added public exports from `toto_ai.runner`.
+
+## Files
+
+- `src/toto_ai/runner/__init__.py`
+- `src/toto_ai/runner/models.py`
+- `src/toto_ai/runner/timing.py`
+- `tests/test_runner_timing.py`
 - `memory-bank/CURRENT_STATE.md`
 
 ## TDD Evidence
 
-The required red command was run before production implementation:
+RED, before runner implementation:
 
 ```text
-../../.venv/bin/python -m pytest tests/test_ev_prize.py -q
-ERROR collecting tests/test_ev_prize.py
-ModuleNotFoundError: No module named 'toto_ai.ev'
-1 error in 0.17s
-exit_code=2
+.venv/bin/python -m pytest -q tests/test_runner_timing.py
+ModuleNotFoundError: No module named 'toto_ai.runner'
+1 error during collection
 ```
 
-## Verification
-
-Focused tests:
+GREEN:
 
 ```text
-../../.venv/bin/python -m pytest tests/test_ev_prize.py -q
-.......                                                                  [100%]
-7 passed in 0.14s
-```
+.venv/bin/python -m pytest -q tests/test_runner_timing.py
+50 passed in 0.14s
 
-Focused Ruff:
-
-```text
-../../.venv/bin/python -m ruff check src/toto_ai/ev tests/test_ev_prize.py
+.venv/bin/python -m ruff check src/toto_ai/runner tests/test_runner_timing.py
 All checks passed!
 ```
 
-Full tests:
+## Full Verification
 
 ```text
-../../.venv/bin/python -m pytest -q
-295 passed in 5.17s
-```
+.venv/bin/python -m pytest -q
+796 passed in 7.92s
 
-Full Ruff:
-
-```text
-../../.venv/bin/python -m ruff check .
+.venv/bin/python -m ruff check .
 All checks passed!
+
+git diff --check
+exit code 0
 ```
+
+## Self-Review
+
+- Public interfaces and defaults match the task brief.
+- UTC validation, strict integer handling, canonical target pinning, exact
+  T-20/T-5 boundaries, sleep clamping, wall-clock jumps, and no-sleep terminal
+  states are covered by focused tests.
+- No category, cover, budget, stake, probability, or fingerprint definition
+  was changed.
+- Diff scope is limited to the assigned runner package, timing tests, and the
+  required current-state record and task report.
 
 ## Concerns
 
-The required `models.py` contract imports NumPy, but `pyproject.toml` does not
-declare NumPy directly. That file is outside Task 1 ownership, and NumPy is
-available in the current virtual environment through the existing dependency
-set. A later task or dependency-maintenance change should declare it directly.
-
-## Fix Review
-
-- Status: `DONE_WITH_CONCERNS`
-- Commit: `2aaac15` (`Fix expected value domain invariants`)
-- Files changed:
-  - `src/toto_ai/ev/__init__.py`
-  - `src/toto_ai/ev/models.py`
-  - `src/toto_ai/ev/prize.py`
-  - `tests/test_ev_prize.py`
-  - `memory-bank/CURRENT_STATE.md`
-  - This review section was appended to `.superpowers/sdd/task-1-report.md`.
-
-Focused tests:
-
-```text
-../../.venv/bin/python -m pytest tests/test_ev_prize.py -q
-40 passed in 0.12s
-```
-
-Full tests:
-
-```text
-../../.venv/bin/python -m pytest -q
-328 passed in 6.21s
-```
-
-Ruff:
-
-```text
-../../.venv/bin/python -m ruff check src/toto_ai/ev tests/test_ev_prize.py
-All checks passed!
-
-../../.venv/bin/python -m ruff check .
-All checks passed!
-```
-
-Concerns:
-
-- NumPy remains undeclared in `pyproject.toml` as required by the Task 3
-  schedule; the current environment provides it, but dependency declaration
-  remains a later task.
-
-## Second Fix Wave
-
-- Status: `DONE_WITH_CONCERNS`
-- Scope: stake validation parity, deep immutable normalization, and
-  buffer-level NumPy array immutability.
-
-TDD red command:
-
-```text
-../../.venv/bin/python -m pytest tests/test_ev_prize.py -q
-......FFFF.......................FFFFF..........                         [100%]
-9 failed, 39 passed in 0.19s
-```
-
-Focused tests after implementation:
-
-```text
-../../.venv/bin/python -m pytest tests/test_ev_prize.py -q
-................................................                         [100%]
-48 passed in 0.16s
-```
-
-Focused Ruff:
-
-```text
-../../.venv/bin/python -m ruff check src/toto_ai/ev tests/test_ev_prize.py
-All checks passed!
-```
-
-Full tests:
-
-```text
-../../.venv/bin/python -m pytest -q
-........................................................................ [ 21%]
-........................................................................ [ 42%]
-........................................................................ [ 64%]
-........................................................................ [ 85%]
-................................................                         [100%]
-336 passed in 4.96s
-```
-
-Full Ruff:
-
-```text
-../../.venv/bin/python -m ruff check .
-All checks passed!
-```
-
-Concerns:
-
-- NumPy remains undeclared in `pyproject.toml` as required by the Task 3
-  schedule; this fix wave intentionally does not edit that file.
+None.
