@@ -671,7 +671,7 @@ git diff --check
 
 Expected: full suite and Ruff pass; all three help commands exit zero.
 
-- [x] **Step 5: Independent final review**
+- [ ] **Step 5: Independent final review (approval pending)**
 
 Review the complete feature range against the approved design. Required checks: no model-definition change, no external probability entering EV, no post-T-5 coupon publication, no target roll-forward, no real test sleep/network, no secret surfaces, deterministic rollback-safe artifacts, and clean worktree after commit. Fix every critical/important finding and re-run Step 4.
 

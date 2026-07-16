@@ -256,10 +256,31 @@ def _coverage_payload(result: DrawingRunnerResult) -> dict[str, Any] | None:
     }
 
 
-def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any] | None:
+def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
     ev_run = result.ev_run
     if ev_run is None:
-        return None
+        return {
+            "computed": False,
+            "input_fetched_at": None,
+            "minimum_gross_ev": None,
+            "prize_fund_factor": None,
+            "possible_winnings_source": None,
+            "jackpot_source": None,
+            "self_dilution_ratio": None,
+            "model_supported": None,
+            "model_warning": None,
+            "package": {
+                "decision": "NO BET",
+                "coupons": [],
+                "selected_count": 0,
+                "cost": 0,
+                "unused_bank": result.config.bank,
+                "expected_payout": 0.0,
+                "modeled_roi": None,
+                "derived_brief": [],
+            },
+            "sensitivity": [],
+        }
     package = ev_run.package
     selected_coupons = (
         package.coupons
@@ -267,6 +288,7 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any] | None:
         else ()
     )
     return {
+        "computed": True,
         "input_fetched_at": ev_run.ev_input.fetched_at,
         "minimum_gross_ev": ev_run.config.min_gross_ev,
         "prize_fund_factor": ev_run.config.prize_fund_factor,
@@ -453,26 +475,36 @@ def _coverage_markdown(coverage: dict[str, Any] | None) -> list[str]:
     ]
 
 
-def _ev_markdown(ev: dict[str, Any] | None) -> list[str]:
-    if ev is None:
-        return ["- EV package not run"]
+def _ev_markdown(ev: dict[str, Any]) -> list[str]:
     package = ev["package"]
     lines = [
-        f"- input fetched at: {ev['input_fetched_at']}",
         f"- decision: {package['decision']}",
         f"- selected count: {package['selected_count']}",
         f"- cost: {package['cost']}",
         f"- unused bank: {package['unused_bank']}",
         f"- expected payout: {package['expected_payout']}",
         f"- modeled ROI: {_display(package['modeled_roi'])}",
-        f"- minimum gross EV: {ev['minimum_gross_ev']}",
-        f"- prize fund factor: {ev['prize_fund_factor']}",
-        f"- possible winnings source: {ev['possible_winnings_source']}",
-        f"- jackpot source: {ev['jackpot_source']}",
-        f"- self-dilution ratio: {ev['self_dilution_ratio']}",
-        f"- model supported: {_yes_no(ev['model_supported'])}",
-        "- modeled ROI is not observed ROI",
     ]
+    if not ev["computed"]:
+        lines.extend(
+            [
+                "- EV package computation: not run",
+                "- selected coupons: none",
+            ]
+        )
+        return lines
+    lines.extend(
+        [
+            f"- input fetched at: {ev['input_fetched_at']}",
+            f"- minimum gross EV: {ev['minimum_gross_ev']}",
+            f"- prize fund factor: {ev['prize_fund_factor']}",
+            f"- possible winnings source: {ev['possible_winnings_source']}",
+            f"- jackpot source: {ev['jackpot_source']}",
+            f"- self-dilution ratio: {ev['self_dilution_ratio']}",
+            f"- model supported: {_yes_no(ev['model_supported'])}",
+            "- modeled ROI is not observed ROI",
+        ]
+    )
     if not package["coupons"]:
         lines.append("- selected coupons: none")
         return lines

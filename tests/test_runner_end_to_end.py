@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import socket
 import time
 from collections.abc import Callable
@@ -11,12 +12,14 @@ from pathlib import Path
 import numpy as np
 import pytest
 import requests
+from typer.testing import CliRunner
 
 try:
     import httpx
 except ModuleNotFoundError:  # pragma: no cover - depends on the test environment
     httpx = None
 
+import toto_ai.cli as cli_module
 import toto_ai.ev.drawing as drawing_module
 import toto_ai.runner.reports as runner_reports
 from toto_ai.cli import (
@@ -30,7 +33,7 @@ from toto_ai.db.session import (
     open_readonly_db,
 )
 from toto_ai.ev.drawing import build_open_ev_package
-from toto_ai.ev.models import EVComponents, EVSurface
+from toto_ai.ev.models import EVComponents, EVInput, EVSurface
 from toto_ai.ev.reports import write_ev_package_reports
 from toto_ai.external_odds.api_sports import APISportsError
 from toto_ai.external_odds.audit import audit_external_coverage
@@ -49,6 +52,8 @@ T_MINUS_21 = DEADLINE - timedelta(minutes=21)
 T_MINUS_20 = DEADLINE - timedelta(minutes=20)
 T_MINUS_19 = DEADLINE - timedelta(minutes=19)
 T_MINUS_5 = DEADLINE - timedelta(minutes=5)
+SENTINEL_KEY = "task-6-review-sentinel-key"
+_CAPTURED_EV_INPUTS: list[EVInput] = []
 
 
 @dataclass
@@ -122,6 +127,7 @@ class _FakeProvider:
         unavailable_orders: tuple[int, ...] = (),
         failing_schedule_dates: tuple[date, ...] = (),
         on_first_schedule_call: Callable[[], None] | None = None,
+        market_prices: tuple[tuple[float, float, float], ...] | None = None,
     ) -> None:
         self.payload = payload
         self.observed_at = observed_at
@@ -129,6 +135,7 @@ class _FakeProvider:
         self.unavailable_orders = frozenset(unavailable_orders)
         self.failing_schedule_dates = frozenset(failing_schedule_dates)
         self.on_first_schedule_call = on_first_schedule_call
+        self.market_prices = market_prices
         self.requests_made = 0
         self.cache_hits = 0
         self.schedule_calls: list[date] = []
@@ -202,9 +209,21 @@ class _FakeProvider:
                 updated_at=self.observed_at - timedelta(hours=1),
                 fetched_at=self.observed_at,
                 payload_hash=f"market-{provider_event_id}-{index}",
-                home_price=2.0 + index / 10,
-                draw_price=3.8 + index / 10,
-                away_price=4.2 + index / 10,
+                home_price=(
+                    self.market_prices[index][0]
+                    if self.market_prices is not None
+                    else 2.0 + index / 10
+                ),
+                draw_price=(
+                    self.market_prices[index][1]
+                    if self.market_prices is not None
+                    else 3.8 + index / 10
+                ),
+                away_price=(
+                    self.market_prices[index][2]
+                    if self.market_prices is not None
+                    else 4.2 + index / 10
+                ),
             )
             for index in range(3)
         )
@@ -225,9 +244,11 @@ def _forbid_unconfigured_network(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture(autouse=True)
 def _fast_ev_and_no_real_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
+    _CAPTURED_EV_INPUTS.clear()
     values = np.zeros(3**6, dtype=np.float64)
 
-    def fixed_components(_ev_input, progress_callback=None):
+    def fixed_components(ev_input, progress_callback=None):
+        _CAPTURED_EV_INPUTS.append(ev_input)
         if progress_callback is not None:
             progress_callback({"phase": "category", "category": 15})
         return EVComponents(
@@ -322,6 +343,7 @@ def _run_acceptance_scenario(
     advance_after_package: bool = False,
     advance_on_first_schedule_call: bool = False,
     max_passes: int = 1,
+    market_prices: tuple[tuple[float, float, float], ...] | None = None,
 ):
     payload = payload or _payload()
     client = _FakeTotoBriefClient(payload, final_payload=final_payload)
@@ -348,6 +370,7 @@ def _run_acceptance_scenario(
                 if advance_on_first_schedule_call
                 else None
             ),
+            market_prices=market_prices,
         )
         provider_instances.append(provider)
         return provider
@@ -469,7 +492,7 @@ def test_safe_runner_operator_boundary(
     else:
         assert result.collection is None
         assert result.ev_run is None
-        assert all("222222" not in path.read_text() for path in report_paths)
+        _assert_suppressed_package_summary(report_paths, bank=4800)
 
 
 @pytest.mark.parametrize("bank", (4800, 6000, 9600))
@@ -535,6 +558,7 @@ def test_safe_runner_refuses_target_roll_forward_and_publishes_coupon_free_no_be
     assert result.target.fingerprint in manifest
     assert result.final_fingerprint in manifest
     assert "222222" not in manifest
+    _assert_suppressed_package_summary(report_paths, bank=4800)
 
 
 def test_safe_runner_expands_to_day_five_and_vetoes_multi_day_timing(
@@ -560,7 +584,7 @@ def test_safe_runner_expands_to_day_five_and_vetoes_multi_day_timing(
     assert result.ev_run is None
     assert len(result.collection.snapshot.events) == 15
     assert provider_calls[0][0] != provider_calls[-1][0]
-    assert all("222222" not in path.read_text() for path in report_paths)
+    _assert_suppressed_package_summary(report_paths, bank=4800)
 
 
 def test_safe_runner_partial_schedule_remains_explicit_and_unresolved(
@@ -582,7 +606,7 @@ def test_safe_runner_partial_schedule_remains_explicit_and_unresolved(
     assert result.collection.snapshot.eligibility.status == "unknown"
     assert result.timing_eligibility.status == "unknown"
     assert result.ev_run is None
-    assert all("222222" not in path.read_text() for path in report_paths)
+    _assert_suppressed_package_summary(report_paths, bank=4800)
     bytes_written = db_path.read_bytes() + b"".join(
         path.read_bytes() for path in report_paths
     ) + b"".join(
@@ -610,7 +634,7 @@ def test_safe_runner_stops_before_retry_when_collection_reaches_cutoff(
     assert result.collection.base_pass_count == 1
     assert len(provider_calls) == 1
     assert result.ev_run is None
-    assert all("222222" not in path.read_text() for path in report_paths)
+    _assert_suppressed_package_summary(report_paths, bank=4800)
 
 
 def test_safe_runner_discards_package_that_finishes_at_safety_cutoff(
@@ -627,7 +651,125 @@ def test_safe_runner_discards_package_that_finishes_at_safety_cutoff(
     assert result.decision == "NO BET"
     assert result.ev_run is None
     assert provider_calls
-    assert all("222222" not in path.read_text() for path in report_paths)
+    _assert_suppressed_package_summary(report_paths, bank=4800)
+
+
+def test_external_consensus_and_fallback_cannot_change_real_ev_input_or_output(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _forbid_unconfigured_network(monkeypatch)
+    payload = _payload()
+    consensus_result, _, _, _, _ = _run_acceptance_scenario(
+        tmp_path / "consensus",
+        T_MINUS_19,
+        payload=payload,
+        market_prices=(
+            (1.30, 8.0, 12.0),
+            (1.35, 7.5, 11.0),
+            (1.40, 7.0, 10.0),
+        ),
+    )
+    consensus_input = _CAPTURED_EV_INPUTS[-1]
+    _CAPTURED_EV_INPUTS.clear()
+    fallback_result, _, _, _, _ = _run_acceptance_scenario(
+        tmp_path / "fallback",
+        T_MINUS_19,
+        payload=payload,
+        unavailable_orders=tuple(range(15)),
+    )
+    fallback_input = _CAPTURED_EV_INPUTS[-1]
+
+    expected_bk = _independently_normalized_bk(payload)
+    assert len(consensus_input.true_probabilities) == 15
+    assert len(consensus_input.crowd_probabilities) == 15
+    np.testing.assert_allclose(
+        np.asarray(consensus_input.true_probabilities),
+        np.asarray(expected_bk),
+        rtol=1e-15,
+        atol=1e-15,
+    )
+    assert consensus_input == fallback_input
+    assert consensus_result.collection is not None
+    assert fallback_result.collection is not None
+    consensus_event = consensus_result.collection.snapshot.events[0]
+    fallback_event = fallback_result.collection.snapshot.events[0]
+    assert consensus_event.probability_source == "external_consensus"
+    assert fallback_event.probability_source == "totobrief_bk_fallback"
+    assert (
+        consensus_event.probability_1,
+        consensus_event.probability_x,
+        consensus_event.probability_2,
+    ) != (
+        fallback_event.probability_1,
+        fallback_event.probability_x,
+        fallback_event.probability_2,
+    )
+    assert consensus_result.ev_run is not None
+    assert fallback_result.ev_run is not None
+    assert consensus_result.ev_run.package == fallback_result.ev_run.package
+
+
+def test_command_boundary_detaches_chained_provider_secret_from_every_surface(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _forbid_unconfigured_network(monkeypatch)
+    now = datetime.now(timezone.utc)
+    payload = _payload_for_deadline(now + timedelta(minutes=19))
+    client = _FakeTotoBriefClient(payload)
+    scenario_dir = tmp_path / "command-secret"
+    monkeypatch.setenv("API_SPORTS_KEY", SENTINEL_KEY)
+    monkeypatch.setattr(cli_module, "TotoBriefClient", lambda: client)
+
+    def configured_provider_factory(api_key: str, quota_reserve: int):
+        assert api_key == SENTINEL_KEY
+        assert quota_reserve == 10
+
+        def fail(_cache_dir: Path):
+            try:
+                raise RuntimeError(f"provider context {SENTINEL_KEY}")
+            except RuntimeError:
+                error = APISportsError(f"provider rejected {SENTINEL_KEY}")
+                cause = ValueError(f"provider cause {SENTINEL_KEY}")
+                raise error from cause
+
+        return fail
+
+    monkeypatch.setattr(
+        cli_module,
+        "_api_sports_provider_factory",
+        configured_provider_factory,
+    )
+    result = CliRunner().invoke(
+        cli_module.app,
+        [
+            "run-drawing",
+            "--open",
+            "--bank",
+            "4800",
+            "--db",
+            str(scenario_dir / "toto.sqlite"),
+            "--report-dir",
+            str(scenario_dir / "reports"),
+            "--cache-root",
+            str(scenario_dir / "cache"),
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert SENTINEL_KEY not in result.output
+    assert "[redacted]" in result.output
+    assert result.exception is not None
+    assert all(
+        SENTINEL_KEY not in text
+        for error in _exception_graph(result.exception)
+        for text in (str(error), repr(error))
+    )
+    artifact_bytes = b"".join(
+        path.read_bytes() for path in scenario_dir.rglob("*") if path.is_file()
+    )
+    assert SENTINEL_KEY.encode() not in artifact_bytes
 
 
 def test_safe_runner_reports_are_byte_deterministic_and_secret_free(
@@ -687,3 +829,101 @@ def test_safe_runner_report_pair_rolls_back_and_removes_interrupted_new_pair(
         write_drawing_run_reports(result, report_dir=fresh_dir)
     assert tuple(fresh_dir.glob("drawing_run_*")) == ()
     assert tuple(fresh_dir.glob(".*.tmp")) == ()
+
+
+def _assert_suppressed_package_summary(
+    report_paths: tuple[Path, ...],
+    *,
+    bank: int,
+) -> None:
+    json_path = next(
+        path for path in report_paths if path.name.startswith("drawing_run_")
+        and path.suffix == ".json"
+    )
+    markdown_path = next(
+        path for path in report_paths if path.name.startswith("drawing_run_")
+        and path.suffix == ".md"
+    )
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    package = payload["ev"]["package"]
+    assert package["decision"] == "NO BET"
+    assert package["coupons"] == []
+    assert package["selected_count"] == 0
+    assert package["cost"] == 0
+    assert package["unused_bank"] == bank
+    assert package["expected_payout"] == 0.0
+    assert package["modeled_roi"] is None
+    bullets = _markdown_section_bullets(
+        markdown_path.read_text(encoding="utf-8"),
+        "EV Package",
+    )
+    assert bullets["decision"] == "NO BET"
+    assert bullets["selected count"] == "0"
+    assert bullets["cost"] == "0"
+    assert bullets["unused bank"] == str(bank)
+    assert bullets["expected payout"] == "0.0"
+    assert bullets["modeled ROI"] == "n/a"
+    assert bullets["selected coupons"] == "none"
+
+
+def _markdown_section_bullets(markdown: str, section: str) -> dict[str, str]:
+    marker = f"## {section}\n"
+    body = markdown.split(marker, 1)[1].split("\n## ", 1)[0]
+    return {
+        key: value
+        for line in body.splitlines()
+        if line.startswith("- ") and ": " in line
+        for key, value in (line[2:].split(": ", 1),)
+    }
+
+
+def _independently_normalized_bk(
+    payload: dict[str, object],
+) -> tuple[tuple[float, float, float], ...]:
+    data = payload["data"]
+    assert isinstance(data, dict)
+    events = data["events"]
+    assert isinstance(events, list)
+    rows = []
+    for event in sorted(events, key=lambda item: int(item["order"])):
+        quotes = event["quotes"]
+        assert isinstance(quotes, dict)
+        raw = (
+            float(quotes["bk_win_1"]),
+            float(quotes["bk_draw"]),
+            float(quotes["bk_win_2"]),
+        )
+        total = sum(raw)
+        rows.append(tuple(value / total for value in raw))
+    return tuple(rows)
+
+
+def _payload_for_deadline(deadline: datetime) -> dict[str, object]:
+    payload = _payload()
+    data = payload["data"]
+    assert isinstance(data, dict)
+    data["ended_at"] = deadline.isoformat()
+    events = data["events"]
+    assert isinstance(events, list)
+    for event in events:
+        order = int(event["order"])
+        event["start_at"] = (
+            deadline + timedelta(hours=1, minutes=order)
+        ).isoformat()
+    return payload
+
+
+def _exception_graph(error: BaseException) -> tuple[BaseException, ...]:
+    seen: set[int] = set()
+    pending = [error]
+    graph = []
+    while pending:
+        current = pending.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        graph.append(current)
+        for linked in (current.__cause__, current.__context__):
+            if linked is not None:
+                pending.append(linked)
+    return tuple(graph)

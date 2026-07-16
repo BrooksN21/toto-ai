@@ -23,14 +23,15 @@ task commits listed above.
 
 ## Verification
 
-- End-to-end runner acceptance: 13 passed.
-- Required focused runner/collection/audit/EV suite: 237 passed.
-- Full pytest: 898 passed.
+- End-to-end runner acceptance: 15 passed.
+- Review-focused runner/storage/audit/EV suite: 282 passed.
+- Full pytest: 901 passed.
 - Repository-wide Ruff: `All checks passed!`.
 
-## Latest Completed Task: Safe Drawing Runner End-to-End Acceptance
+## Task 6 Review Fixes In Progress
 
-Task 6 completes the approved Safe Drawing Runner feature. The new deterministic
+Task 6 review findings are implemented and verified, but independent review
+approval remains pending. The deterministic
 acceptance boundary drives real runner orchestration, pinned prospective
 collection, append-only SQLite persistence and read-only timing lookup, latest-30
 diagnostic audit, existing TotoBrief-BK EV generation, and all report writers
@@ -44,6 +45,19 @@ after EV, exact caps for 4800/6000/9600 RUB banks, deterministic bytes,
 rollback/interruption publication, and no configured network, real sleep, or
 automatic bet interface.
 
+Review hardening makes the terminal package summary canonical even when EV was
+suppressed: JSON and Markdown both record `NO BET`, no coupons, zero selected
+count/cost/payout, full unused bank, and absent modeled ROI. Acceptance now
+drives a real command-boundary chained provider failure with a configured
+sentinel key and verifies output, recursive exception graphs, and all scenario
+files. It captures the complete real 15-row EV input, independently normalizes
+TotoBrief BK probabilities, and proves materially different external consensus
+and fallback collections produce identical EV input and selected output.
+
+A focused SQLite/audit regression now surrounds two equal-timestamp passes with
+distinct older/newer observations. It proves timestamp remains primary while
+the later append wins exact eligibility and per-drawing audit deduplication.
+
 The acceptance run exposed and fixed one storage boundary: two immutable passes
 can legitimately have equal fake-clock observation timestamps. Latest SQLite
 reads now use append-order `rowid` before content-hash ordering for timestamp
@@ -51,8 +65,9 @@ ties, so the final day-five snapshot is selected over its earlier base pass.
 This does not change collection identity, timing, probability, EV, bank,
 stake, category, consensus, or coverage-gate definitions.
 
-The prospective external-odds gate remains `PENDING`; no 30-drawing/450-event
-gate is marked complete and external probabilities remain audit-only.
+Independent review approval remains pending. The prospective external-odds
+gate remains `PENDING`; no 30-drawing/450-event gate is marked complete and
+external probabilities remain audit-only.
 
 ## Latest Review Fix: Production `run-drawing` CLI
 

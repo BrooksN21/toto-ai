@@ -28,6 +28,9 @@ Known data notes:
   work at T-20, fails closed at T-5, and writes linked deterministic operator
   reports. It coordinates collection and timing evidence but never submits a
   bet; API-Sports consensus remains audit-only.
+- A suppressed runner package remains explicit in both operator artifacts as
+  zero-cost `NO BET`, with no coupons or payout, the full bank unused, and no
+  modeled ROI.
 - A progressive base and expansion collection may share an observation
   timestamp under deterministic clocks. SQLite resolves that latest-snapshot
   tie by append order so the final pass supplies the exact timing verdict.

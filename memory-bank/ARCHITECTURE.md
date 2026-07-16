@@ -237,4 +237,6 @@ Important CLI commands:
   check exact stored timing, audit the latest 30 snapshots, build the existing
   EV package, and publish linked runner reports. Page-one and drawing-info IDs
   must match before pinning, and controlled provider failures are detached from
-  their sanitized CLI error. It never submits a bet.
+  their sanitized CLI error. Every terminal runner report contains a canonical
+  package summary; suppressed `NO BET` reports zero selected coupons, cost, and
+  payout, the full bank unused, and no modeled ROI. It never submits a bet.

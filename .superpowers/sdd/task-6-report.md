@@ -1,4 +1,7 @@
-# Task 6 Report: Safe Drawing Runner Acceptance
+# Task 6 Report: Safe Drawing Runner Acceptance Review Fixes
+
+**Status:** Findings implemented and verified; independent review approval is
+pending.
 
 ## Delivered
 
@@ -15,12 +18,29 @@
 - Fixed equal-timestamp snapshot ordering in SQLite: latest reads now use
   append-order `rowid` before collection-ID order, so a final progressive pass
   cannot lose to its base pass under deterministic clocks.
+- Canonicalized suppressed terminal package summaries in JSON and Markdown:
+  `NO BET`, no coupons, zero selected count/cost/payout, full unused bank, and
+  absent modeled ROI.
+- Added a real `run-drawing` command-boundary sentinel-key scenario with a
+  chained provider failure. Output, recursive exception `str`/`repr`, SQLite,
+  cache, and every scenario artifact are secret-free.
+- Captured the complete real 15-row `EVInput`, independently normalized the
+  TotoBrief BK matrix, and proved extreme external consensus versus complete
+  fallback produces identical EV input and selected package output.
+- Added a real SQLite/audit regression proving same-timestamp append order wins
+  exact eligibility and audit deduplication while distinct timestamps remain
+  primary.
+
+## RED/GREEN
+
+- RED: `6 failed, 10 passed` because suppressed manifests had `ev: null`.
+- GREEN: focused report/end-to-end/storage regression `34 passed`.
 
 ## Verification
 
-- `tests/test_runner_end_to_end.py`: 13 passed.
-- Required focused suite: 237 passed.
-- Full pytest: 898 passed.
+- `tests/test_runner_end_to_end.py`: 15 passed as part of the final suite.
+- Review-focused runner/storage/audit/EV suite: 282 passed.
+- Full pytest: 901 passed.
 - Ruff: `All checks passed!`.
 - `run-drawing`, `collect-external-odds`, and `ev-package` help smokes exited
   successfully.

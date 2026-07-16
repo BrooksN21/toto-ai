@@ -20,7 +20,10 @@ from toto_ai.external_odds.eligibility import (
     EffectiveEventStart,
     classify_drawing_eligibility,
 )
-from toto_ai.external_odds.storage import save_collection
+from toto_ai.external_odds.storage import (
+    load_current_drawing_eligibility,
+    save_collection,
+)
 
 
 def aware_now() -> datetime:
@@ -436,6 +439,42 @@ def test_legacy_collection_is_always_in_unknown_scope():
     assert [metric.target_count for metric in audit.by_scope] == [0, 0, 0, 15]
     assert {row.collection_scope for row in audit.dispositions} == {"unknown"}
     assert {row.eligibility_status for row in audit.dispositions} == {"unknown"}
+
+
+def test_same_timestamp_append_order_wins_exact_lookup_and_audit_dedup(
+    tmp_path,
+):
+    engine = create_engine(f"sqlite+pysqlite:///{tmp_path / 'audit.sqlite'}")
+    Base.metadata.create_all(engine)
+    factory = sessionmaker(engine, expire_on_commit=False)
+    older = _modern_collection(_collection(1, ()), scope="ordinary_two_day")
+    same_base = replace(
+        _modern_collection(_collection(2, ()), scope="ordinary_two_day"),
+        collection_id="same-timestamp-base",
+    )
+    newer = _modern_collection(_collection(3, ()), scope="ordinary_two_day")
+    same_later = replace(
+        _modern_collection(_collection(2, ()), scope="unknown"),
+        collection_id="same-timestamp-later",
+    )
+    for collection in (same_base, newer, older, same_later):
+        save_collection(factory, collection)
+
+    assert load_current_drawing_eligibility(
+        factory,
+        same_later.drawing_id,
+        same_later.target_fingerprint,
+    ) == same_later.eligibility
+    audit = audit_external_coverage(factory, last=3, minimum_bookmakers=3)
+    assert tuple(item.collection_id for item in audit.collections) == (
+        newer.collection_id,
+        same_later.collection_id,
+        older.collection_id,
+    )
+    assert same_base.collection_id not in {
+        item.collection_id for item in audit.collections
+    }
+    engine.dispose()
 
 
 def _snapshot_session_factory(collections):

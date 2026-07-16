@@ -203,12 +203,16 @@
   betting. Review hardening rejects page-one/drawing-info ID mismatches,
   detaches sanitized provider failures from secret-bearing exception graphs,
   and closes the owned CLI acceptance gaps.
-- Safe Drawing Runner Task 6 end-to-end acceptance and project memory are
-  complete. Fake-clock acceptance proves preflight through report publication
+- Safe Drawing Runner Task 6 review findings are implemented and verified;
+  independent review approval remains pending. Fake-clock acceptance proves
+  preflight through report publication
   with real orchestration, prospective collection, SQLite timing, audit, and
   EV boundaries; it also fixes equal-timestamp latest-snapshot selection with
   an append-order SQLite tie-break. The 30-drawing/450-event coverage gate
-  remains `PENDING` and external probabilities remain audit-only.
+  remains `PENDING` and external probabilities remain audit-only. Canonical
+  suppressed package evidence, command-boundary recursive secret sanitation,
+  complete EV-input non-interference, and timestamp/append-order audit
+  selection now have direct regressions.
 
 - Task 1 complete: provider-neutral drawing eligibility classifier and
   deterministic target fingerprint, including immutable effective starts,

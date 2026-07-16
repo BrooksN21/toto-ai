@@ -226,3 +226,8 @@
   SQLite latest-snapshot reads use append order as the deterministic tie-break
   before collection-ID order, preserving a later progressive pass without
   changing immutable collection identities or timing definitions.
+- Every terminal runner artifact carries a package summary. When package
+  computation is skipped or suppressed, the summary is canonical zero-cost
+  `NO BET`: no coupons, zero selected count/cost/payout, full unused bank, and
+  unavailable modeled ROI. This is report evidence only and changes no EV or
+  package-selection definition.
