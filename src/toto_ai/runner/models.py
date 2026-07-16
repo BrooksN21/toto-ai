@@ -44,6 +44,14 @@ class PinnedDrawing:
             self.fingerprint
         ):
             raise ValueError("fingerprint must be a lowercase SHA-256 hex digest")
+        expected_fingerprint = target_fingerprint(
+            self.target.drawing_id,
+            self.target.drawing_number,
+            self.target.deadline,
+            self.target.events,
+        )
+        if self.fingerprint != expected_fingerprint:
+            raise ValueError("fingerprint does not match target")
 
 
 def pin_drawing(target: TargetDrawing) -> PinnedDrawing:

@@ -1554,5 +1554,6 @@ fingerprint, and waiting transitions exactly at T-20 with a fail-closed T-5
 boundary. Waiting uses injected clocks and sleepers only, rechecks wall time
 after each bounded sleep, and never sleeps through the final-window boundary.
 
-Task 1 verification passed: focused runner tests (`50 passed`), focused Ruff,
-full pytest (`796 passed`), full Ruff, and `git diff --check`.
+Task 1 verification passed: focused runner tests (`51 passed` after the
+reviewed fingerprint fix), focused Ruff,
+previous full pytest baseline (`796 passed`), full Ruff, and `git diff --check`.

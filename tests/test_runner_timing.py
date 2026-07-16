@@ -129,6 +129,22 @@ def test_pinned_drawing_rejects_malformed_fingerprint(fingerprint):
         PinnedDrawing(target=_target(), fingerprint=fingerprint)
 
 
+def test_pinned_drawing_rejects_valid_but_wrong_fingerprint():
+    target = _target()
+    canonical_fingerprint = target_fingerprint(
+        target.drawing_id,
+        target.drawing_number,
+        target.deadline,
+        target.events,
+    )
+    wrong_fingerprint = ("0" if canonical_fingerprint[0] != "0" else "1") + (
+        canonical_fingerprint[1:]
+    )
+
+    with pytest.raises(ValueError, match="fingerprint"):
+        PinnedDrawing(target=target, fingerprint=wrong_fingerprint)
+
+
 def test_pinned_drawing_requires_a_target_drawing():
     with pytest.raises(ValueError, match="target"):
         PinnedDrawing(target=object(), fingerprint="a" * 64)

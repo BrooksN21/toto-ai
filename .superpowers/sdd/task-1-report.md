@@ -70,3 +70,30 @@ exit code 0
 ## Concerns
 
 None.
+
+## Reviewed Defect Fix Evidence
+
+RED, after adding the regression test and before the model fix:
+
+```text
+.venv/bin/python -m pytest -q tests/test_runner_timing.py -k valid_but_wrong_fingerprint
+F                                                                        [100%]
+FAILED tests/test_runner_timing.py::test_pinned_drawing_rejects_valid_but_wrong_fingerprint
+E       Failed: DID NOT RAISE ValueError
+1 failed, 50 deselected in 0.13s
+```
+
+GREEN, after validating the canonical target fingerprint in
+`PinnedDrawing.__post_init__`:
+
+```text
+.venv/bin/python -m pytest -q tests/test_runner_timing.py
+51 passed in 0.13s
+
+.venv/bin/python -m ruff check src/toto_ai/runner/models.py tests/test_runner_timing.py
+All checks passed!
+```
+
+`pin_drawing()` behavior is unchanged. The fix rejects a valid lowercase
+64-character digest unless it exactly equals `target_fingerprint(...)` for the
+provided target.
