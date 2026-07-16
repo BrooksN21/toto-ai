@@ -30,7 +30,8 @@ Known data notes:
   bet; API-Sports consensus remains audit-only.
 - A suppressed runner package remains explicit in both operator artifacts as
   zero-cost `NO BET`, with no coupons or payout, the full bank unused, and no
-  modeled ROI.
+  modeled ROI. This structured computed/suppressed `ev` contract starts with
+  runner manifest schema v2; schema v1 used `ev: null` when EV did not run.
 - A progressive base and expansion collection may share an observation
   timestamp under deterministic clocks. SQLite resolves that latest-snapshot
   tie by append order so the final pass supplies the exact timing verdict.

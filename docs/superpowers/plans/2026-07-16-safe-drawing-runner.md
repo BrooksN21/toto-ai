@@ -424,6 +424,9 @@ git commit -m "Add safe drawing runner orchestration"
 - Produces: `drawing_run_id(result) -> str` as a 12-character lowercase SHA-256 prefix.
 - Produces: `drawing_run_report_paths(result, report_dir="reports") -> tuple[Path, Path]`.
 - Produces: `write_drawing_run_reports(result, links=RunnerReportLinks(), report_dir="reports", input_paths=()) -> tuple[Path, Path]`.
+- Runner manifest schema v2 is the first schema with a structured `ev` object
+  for both computed and suppressed terminal results. Schema v1 used `ev: null`
+  when EV did not run.
 
 - [ ] **Step 1: Write failing report tests**
 

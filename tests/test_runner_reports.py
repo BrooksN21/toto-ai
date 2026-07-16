@@ -476,7 +476,7 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
     payload = json.loads(json_path.read_text())
     markdown = markdown_path.read_text()
 
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert payload["run_id"] == drawing_run_id(result)
     assert payload["decision"] == "PLAY"
     assert payload["command_status"] == "success"
@@ -522,6 +522,68 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
     assert "SELECTED-COUPON" in markdown
     assert "api-sports" in markdown
     assert "PENDING" in markdown
+
+
+def test_schema_v2_structures_computed_and_suppressed_ev_results(tmp_path):
+    computed_json, _ = write_drawing_run_reports(
+        _runner_result("PLAY", coupon="SELECTED-COUPON"),
+        report_dir=tmp_path / "computed",
+    )
+    suppressed_json, _ = write_drawing_run_reports(
+        _terminal_result(final_target=None),
+        report_dir=tmp_path / "suppressed",
+    )
+
+    computed = json.loads(computed_json.read_text())
+    suppressed = json.loads(suppressed_json.read_text())
+
+    assert computed["schema_version"] == 2
+    assert computed["ev"]["computed"] is True
+    assert computed["ev"]["input_fetched_at"] == (
+        FINAL_STARTED_AT + timedelta(seconds=4)
+    ).isoformat()
+    assert computed["ev"]["package"] == {
+        "decision": "PLAY",
+        "coupons": [
+            {
+                "coupon": "SELECTED-COUPON",
+                "gross_ev": 1.1,
+                "net_ev": 0.1,
+                "rank": 1,
+            }
+        ],
+        "selected_count": 1,
+        "cost": 30,
+        "unused_bank": 4950,
+        "expected_payout": 33.0,
+        "modeled_roi": 0.1,
+        "derived_brief": ["1"] * 15,
+    }
+
+    # Schema v1 used null when EV was not computed; schema v2 owns this shape.
+    assert suppressed["schema_version"] == 2
+    assert suppressed["ev"] == {
+        "computed": False,
+        "input_fetched_at": None,
+        "minimum_gross_ev": None,
+        "prize_fund_factor": None,
+        "possible_winnings_source": None,
+        "jackpot_source": None,
+        "self_dilution_ratio": None,
+        "model_supported": None,
+        "model_warning": None,
+        "package": {
+            "decision": "NO BET",
+            "coupons": [],
+            "selected_count": 0,
+            "cost": 0,
+            "unused_bank": 4980,
+            "expected_payout": 0.0,
+            "modeled_roi": None,
+            "derived_brief": [],
+        },
+        "sensitivity": [],
+    }
 
 
 def test_mismatch_report_serializes_observed_final_fingerprint(tmp_path):

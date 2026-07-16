@@ -474,6 +474,9 @@ def test_safe_runner_operator_boundary(
     assert len(observed_provider_calls) == provider_calls
     assert all(path.exists() for path in report_paths)
     if expected_decision == "PLAY":
+        manifest = _runner_manifest_payload(report_paths)
+        assert manifest["schema_version"] == 2
+        assert manifest["ev"]["computed"] is True
         assert result.collection is not None
         assert len(result.collection.snapshot.events) == 15
         assert result.collection.snapshot.target_fingerprint == (
@@ -836,15 +839,9 @@ def _assert_suppressed_package_summary(
     *,
     bank: int,
 ) -> None:
-    json_path = next(
-        path for path in report_paths if path.name.startswith("drawing_run_")
-        and path.suffix == ".json"
-    )
-    markdown_path = next(
-        path for path in report_paths if path.name.startswith("drawing_run_")
-        and path.suffix == ".md"
-    )
-    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    payload = _runner_manifest_payload(report_paths)
+    assert payload["schema_version"] == 2
+    assert payload["ev"]["computed"] is False
     package = payload["ev"]["package"]
     assert package["decision"] == "NO BET"
     assert package["coupons"] == []
@@ -853,6 +850,10 @@ def _assert_suppressed_package_summary(
     assert package["unused_bank"] == bank
     assert package["expected_payout"] == 0.0
     assert package["modeled_roi"] is None
+    markdown_path = next(
+        path for path in report_paths if path.name.startswith("drawing_run_")
+        and path.suffix == ".md"
+    )
     bullets = _markdown_section_bullets(
         markdown_path.read_text(encoding="utf-8"),
         "EV Package",
@@ -864,6 +865,16 @@ def _assert_suppressed_package_summary(
     assert bullets["expected payout"] == "0.0"
     assert bullets["modeled ROI"] == "n/a"
     assert bullets["selected coupons"] == "none"
+
+
+def _runner_manifest_payload(report_paths: tuple[Path, ...]) -> dict[str, object]:
+    json_path = next(
+        path for path in report_paths if path.name.startswith("drawing_run_")
+        and path.suffix == ".json"
+    )
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    assert isinstance(payload, dict)
+    return payload
 
 
 def _markdown_section_bullets(markdown: str, section: str) -> dict[str, str]:

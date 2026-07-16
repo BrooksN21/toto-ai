@@ -24,8 +24,8 @@ task commits listed above.
 ## Verification
 
 - End-to-end runner acceptance: 15 passed.
-- Review-focused runner/storage/audit/EV suite: 282 passed.
-- Full pytest: 901 passed.
+- Focused runner report/end-to-end suite: 34 passed.
+- Full pytest: 902 passed.
 - Repository-wide Ruff: `All checks passed!`.
 
 ## Task 6 Review Fixes In Progress
@@ -53,6 +53,13 @@ sentinel key and verifies output, recursive exception graphs, and all scenario
 files. It captures the complete real 15-row EV input, independently normalizes
 TotoBrief BK probabilities, and proves materially different external consensus
 and fallback collections produce identical EV input and selected output.
+
+Runner manifest schema v2 is now the first version that guarantees a structured
+`ev` object for both completed EV work (`computed: true`) and suppressed or
+pre-EV terminal outcomes (`computed: false`). Schema v1 used `ev: null` when EV
+did not run, so this contract is not attributed retroactively to v1. Unit and
+real end-to-end artifacts pin the v2 discriminator and exact suppressed
+package.
 
 A focused SQLite/audit regression now surrounds two equal-timestamp passes with
 distinct older/newer observations. It proves timestamp remains primary while

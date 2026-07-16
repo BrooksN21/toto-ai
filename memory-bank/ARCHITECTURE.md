@@ -239,4 +239,7 @@ Important CLI commands:
   must match before pinning, and controlled provider failures are detached from
   their sanitized CLI error. Every terminal runner report contains a canonical
   package summary; suppressed `NO BET` reports zero selected coupons, cost, and
-  payout, the full bank unused, and no modeled ROI. It never submits a bet.
+  payout, the full bank unused, and no modeled ROI. Runner manifest schema v2
+  is the first schema to expose this through a structured `ev` object with a
+  `computed` discriminator for both computed and suppressed runs; schema v1
+  used `ev: null` when EV did not run. The command never submits a bet.

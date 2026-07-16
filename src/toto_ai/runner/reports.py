@@ -15,7 +15,7 @@ from typing import Any
 
 from toto_ai.runner.models import DrawingRunnerResult
 
-RUNNER_REPORT_SCHEMA_VERSION = 1
+RUNNER_REPORT_SCHEMA_VERSION = 2
 RUNNER_PROVIDER = "api-sports"
 
 

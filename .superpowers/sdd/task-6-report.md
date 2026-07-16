@@ -30,17 +30,28 @@ pending.
 - Added a real SQLite/audit regression proving same-timestamp append order wins
   exact eligibility and audit deduplication while distinct timestamps remain
   primary.
+- Advanced runner manifests to schema v2, the first version that guarantees a
+  structured `ev` object for both completed and suppressed runs. Focused unit
+  and real end-to-end artifacts prove the `computed` discriminator and exact
+  suppressed package; schema v1 retains its historical `ev: null` semantics
+  when EV did not run.
 
 ## RED/GREEN
 
-- RED: `6 failed, 10 passed` because suppressed manifests had `ev: null`.
-- GREEN: focused report/end-to-end/storage regression `34 passed`.
+- Package-summary review RED: `6 failed, 10 passed` because suppressed
+  manifests had `ev: null`.
+- Package-summary review GREEN: focused report/end-to-end/storage regression
+  `34 passed`.
+- Schema compatibility RED: `4 failed` because computed and suppressed
+  manifests carried the v2 EV shape while still declaring schema version 1.
+- Schema compatibility GREEN: the exact focused regression passed (`4 passed`),
+  followed by the complete report/end-to-end suite (`34 passed`).
 
 ## Verification
 
 - `tests/test_runner_end_to_end.py`: 15 passed as part of the final suite.
-- Review-focused runner/storage/audit/EV suite: 282 passed.
-- Full pytest: 901 passed.
+- Focused runner report/end-to-end suite: 34 passed.
+- Full pytest: 902 passed.
 - Ruff: `All checks passed!`.
 - `run-drawing`, `collect-external-odds`, and `ev-package` help smokes exited
   successfully.

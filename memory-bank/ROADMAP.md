@@ -212,7 +212,9 @@
   remains `PENDING` and external probabilities remain audit-only. Canonical
   suppressed package evidence, command-boundary recursive secret sanitation,
   complete EV-input non-interference, and timestamp/append-order audit
-  selection now have direct regressions.
+  selection now have direct regressions. Runner manifest schema v2 is the first
+  version with a structured computed/suppressed `ev` object; schema v1 retained
+  its historical `ev: null` representation when EV did not run.
 
 - Task 1 complete: provider-neutral drawing eligibility classifier and
   deterministic target fingerprint, including immutable effective starts,

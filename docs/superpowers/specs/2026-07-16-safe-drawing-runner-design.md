@@ -176,6 +176,12 @@ The canonical JSON manifest contains:
 - EV/package decision, package cost, unused bank, and package-report paths;
 - sanitized warnings and terminal reason.
 
+Runner manifest schema v2 is the first version that always carries `ev` as a
+structured object. Its `computed` discriminator is `true` for completed EV
+work and `false` for a pre-EV or suppressed terminal result, whose package is
+the canonical zero-cost `NO BET` summary. Schema v1 represented a result with
+no EV computation as `ev: null` and did not provide this structured contract.
+
 The Markdown report is an operator-readable rendering of the same canonical
 facts. Coupons may appear only when the existing EV package is allowed to
 publish them. A timing-vetoed or expired run cannot leak diagnostic coupons.
