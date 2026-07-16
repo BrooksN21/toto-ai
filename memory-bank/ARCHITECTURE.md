@@ -229,3 +229,7 @@ Important CLI commands:
 - `evaluate-hybrid`: regenerate and evaluate fixed hybrid packages only on the
   sealed development segment, write atomic reports, and print the GO/STOP
   decision from an enforced read-only SQLite database.
+- `run-drawing --open`: safely preflight and pin one open drawing, wait for the
+  T-20 final window, revalidate the target, collect fresh API-Sports odds,
+  check exact stored timing, audit the latest 30 snapshots, build the existing
+  EV package, and publish linked runner reports. It never submits a bet.

@@ -1,6 +1,7 @@
 import math
 import os
 import subprocess
+import time
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from pathlib import Path
@@ -67,7 +68,7 @@ from toto_ai.ev.reports import write_ev_backtest_reports, write_ev_package_repor
 from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
 from toto_ai.external_odds.audit import CoverageAudit, audit_external_coverage
 from toto_ai.external_odds.collection import collect_open_external_odds
-from toto_ai.external_odds.eligibility import target_fingerprint
+from toto_ai.external_odds.eligibility import DrawingEligibility, target_fingerprint
 from toto_ai.external_odds.matching import load_aliases
 from toto_ai.external_odds.prospective import (
     ProspectiveCollectionResult,
@@ -111,6 +112,14 @@ from toto_ai.optimizer.strategy_diagnostics import (
 )
 from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
+from toto_ai.runner import (
+    DrawingRunnerConfig,
+    PinnedDrawing,
+    RunnerReportLinks,
+    pin_drawing,
+    run_drawing,
+    write_drawing_run_reports,
+)
 
 app = typer.Typer(help="TotoBrief API commands.")
 
@@ -640,28 +649,238 @@ def _build_timing_eligibility_resolver(
                 fingerprint_match=False,
             )
 
-        if eligibility.status == "playable":
-            reason = (
-                "all 15 effective event starts fit within two Moscow calendar days"
-            )
-        elif eligibility.status == "multi_day":
-            reason = (
-                f"effective event starts span {eligibility.span_days} Moscow "
-                "calendar days"
-            )
-        else:
-            missing = ",".join(
-                str(order) for order in eligibility.missing_event_orders
-            )
-            reason = f"effective event timing is unresolved for event orders {missing}"
-        return PlayTimingEligibility(
-            status=eligibility.status,
-            reason=reason,
-            target_fingerprint=fingerprint,
-            fingerprint_match=True,
-        )
+        return _play_timing_from_eligibility(eligibility, fingerprint)
 
     return resolve
+
+
+def _play_timing_from_eligibility(
+    eligibility: DrawingEligibility,
+    fingerprint: str,
+) -> PlayTimingEligibility:
+    """Convert the stored exact eligibility verdict into the EV timing contract."""
+    if eligibility.status == "playable":
+        reason = "all 15 effective event starts fit within two Moscow calendar days"
+    elif eligibility.status == "multi_day":
+        reason = (
+            f"effective event starts span {eligibility.span_days} Moscow calendar days"
+        )
+    else:
+        missing = ",".join(str(order) for order in eligibility.missing_event_orders)
+        reason = f"effective event timing is unresolved for event orders {missing}"
+    return PlayTimingEligibility(
+        status=eligibility.status,
+        reason=reason,
+        target_fingerprint=fingerprint,
+        fingerprint_match=True,
+    )
+
+
+def _build_runner_timing_resolver(
+    db: str,
+) -> Callable[[PinnedDrawing], PlayTimingEligibility]:
+    """Resolve only the stored verdict matching the runner's pinned target."""
+    engine = open_readonly_db(db)
+    session_factory = get_session_factory(engine)
+
+    def resolve(pinned: PinnedDrawing) -> PlayTimingEligibility:
+        eligibility = load_current_drawing_eligibility(
+            session_factory,
+            pinned.target.drawing_id,
+            pinned.fingerprint,
+        )
+        if eligibility is None:
+            return PlayTimingEligibility(
+                status="absent",
+                reason=(
+                    "no complete stored eligibility matches the pinned target "
+                    "fingerprint"
+                ),
+                target_fingerprint=pinned.fingerprint,
+                fingerprint_match=False,
+            )
+        return _play_timing_from_eligibility(eligibility, pinned.fingerprint)
+
+    return resolve
+
+
+def _resolve_runner_target(
+    client: TotoBriefClient,
+    resolved_at: datetime,
+) -> PinnedDrawing:
+    reference = resolve_open_drawing_from_api(client, now=resolved_at)
+    target = parse_target_drawing(
+        client.drawing_info(reference.drawing_id),
+        fetched_at=resolved_at,
+    )
+    return pin_drawing(target)
+
+
+def _api_sports_provider_factory(
+    api_key: str,
+    quota_reserve: int,
+) -> Callable[[Path], APISportsClient]:
+    return lambda cache_dir: APISportsClient(
+        api_key,
+        cache_dir=cache_dir,
+        quota_reserve=quota_reserve,
+    )
+
+
+@app.command("run-drawing")
+def run_drawing_command(
+    open: bool = typer.Option(False),  # noqa: A002
+    bank: int = typer.Option(...),
+    stake: int = typer.Option(30),
+    mode: str = typer.Option("playable"),
+    final_lead_minutes: int = typer.Option(20, min=1),
+    safety_stop_minutes: int = typer.Option(5, min=1),
+    db: str = typer.Option("data/toto.db"),
+    report_dir: str = typer.Option("reports"),
+    provider: str = typer.Option("api-sports"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    quota_reserve: int = typer.Option(10, min=0),
+    max_passes: int = typer.Option(3, min=1),
+    max_expansion_passes: int = typer.Option(3, min=1),
+    retry_delay_seconds: float = typer.Option(65.0, min=0.0),
+    cache_root: str = typer.Option("data/external-cache/api-sports"),
+) -> None:
+    """Safely run one pinned drawing through collection, audit, and EV."""
+    if not open:
+        raise typer.BadParameter("--open is required")
+    try:
+        config = DrawingRunnerConfig(
+            bank=bank,
+            stake=stake,
+            mode=mode,  # type: ignore[arg-type]
+            final_lead_minutes=final_lead_minutes,
+            safety_stop_minutes=safety_stop_minutes,
+        )
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+    if provider != "api-sports":
+        raise typer.BadParameter("provider must be api-sports")
+    api_key = os.environ.get("API_SPORTS_KEY", "")
+    if not api_key.strip():
+        raise typer.BadParameter("API_SPORTS_KEY is required")
+
+    try:
+        engine = init_db(db)
+        session_factory = get_session_factory(engine)
+        reviewed_aliases = load_aliases(aliases)
+        readonly_engine = open_readonly_db(db)
+        readonly_session_factory = get_session_factory(readonly_engine)
+        timing_resolver = _build_runner_timing_resolver(db)
+        ev_timing_resolver = _build_timing_eligibility_resolver(db)
+        client = TotoBriefClient()
+        provider_factory = _api_sports_provider_factory(api_key, quota_reserve)
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            task_id = progress.add_task("Preflighting open drawing")
+
+            def update_progress(update: dict[str, object]) -> None:
+                phase = str(update.get("phase", "preflight"))
+                if phase == "waiting":
+                    remaining = float(update.get("seconds_until_final", 0.0))
+                    description = f"Waiting for T-{remaining / 60:.1f} final window"
+                else:
+                    descriptions = {
+                        "preflight": "Preflighting open drawing",
+                        "final": "Revalidating pinned drawing",
+                        "collect": "Collecting fresh API-Sports odds",
+                        "timing": "Checking exact timing eligibility",
+                        "audit": "Auditing latest 30 collections",
+                        "ev": "Building exact EV package",
+                        "complete": f"Runner complete: {update.get('decision')}",
+                    }
+                    description = descriptions.get(phase, "Running drawing")
+                progress.update(task_id, description=description)
+
+            result = run_drawing(
+                config=config,
+                resolve_target=lambda resolved_at: _resolve_runner_target(
+                    client, resolved_at
+                ),
+                collect_target=lambda target, stop_at: collect_fresh_open_external_odds(
+                    totobrief_client=client,
+                    provider_factory=provider_factory,
+                    session_factory=session_factory,
+                    aliases=reviewed_aliases,
+                    cache_root=Path(cache_root),
+                    target=target,
+                    stop_at=stop_at,
+                    max_passes=max_passes,
+                    max_expansion_passes=max_expansion_passes,
+                    retry_delay_seconds=retry_delay_seconds,
+                    now=lambda: datetime.now(timezone.utc),
+                    monotonic=time.monotonic,
+                    sleep=time.sleep,
+                ),
+                resolve_timing=timing_resolver,
+                audit_coverage=lambda: audit_external_coverage(
+                    readonly_session_factory,
+                    last=30,
+                    minimum_bookmakers=3,
+                ),
+                build_package=lambda drawing_id: build_open_ev_package(
+                    client=client,
+                    drawing_id=drawing_id,
+                    config=config.ev_config,
+                    progress_callback=update_progress,
+                    timing_eligibility_resolver=ev_timing_resolver,
+                ),
+                now=lambda: datetime.now(timezone.utc),
+                monotonic=time.monotonic,
+                sleep=time.sleep,
+                progress_callback=update_progress,
+            )
+
+            external_links: tuple[Path, ...] = ()
+            if result.audit is not None:
+                external_links = write_external_coverage_reports(
+                    result.audit,
+                    report_dir=report_dir,
+                )
+            ev_links: tuple[Path, ...] = ()
+            if result.ev_run is not None:
+                ev_links = write_ev_package_reports(
+                    result.ev_run,
+                    report_dir=report_dir,
+                )
+            runner_paths = write_drawing_run_reports(
+                result,
+                links=RunnerReportLinks(
+                    external=external_links,
+                    ev=ev_links,
+                ),
+                report_dir=report_dir,
+            )
+    except KeyboardInterrupt as error:
+        raise typer.BadParameter(
+            "Drawing runner interrupted; no final manifest was published"
+        ) from error
+    except (
+        APISportsError,
+        FloatingPointError,
+        KeyError,
+        OSError,
+        OverflowError,
+        requests.RequestException,
+        SQLAlchemyError,
+        TypeError,
+        ValueError,
+    ) as error:
+        raise typer.BadParameter(
+            _external_error_message(error, secret=api_key)
+        ) from None
+
+    print(f"Decision: {result.decision}")
+    print(f"Reason: {result.terminal_reason}")
+    print(f"Reports written to {runner_paths[0]} and {runner_paths[1]}")
 
 
 @app.command("ev-package")
@@ -2282,10 +2501,18 @@ def _external_coverage_table(audit: CoverageAudit) -> Table:
 
 
 def _external_error_message(error: Exception, *, secret: str) -> str:
-    message = str(error)
-    if secret:
-        message = message.replace(secret, "[redacted]")
-    return message
+    messages: list[str] = []
+    seen: set[int] = set()
+    current: BaseException | None = error
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        message = str(current)
+        if secret:
+            message = message.replace(secret, "[redacted]")
+        if message and message not in messages:
+            messages.append(message)
+        current = current.__cause__ or current.__context__
+    return ": ".join(messages) or "external provider operation failed"
 
 
 def _brief_matches_table(matches: list[object], brief: list[str]) -> Table:

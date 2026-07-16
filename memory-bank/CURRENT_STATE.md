@@ -23,9 +23,31 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 870
+- Tests currently passed: 877
 - Focused runner orchestration/report/timing suite passed: 115
 - Focused and repository-wide Ruff passed
+
+## Latest Completed Task: Production `run-drawing` CLI Wiring
+
+The `run-drawing --open --bank <RUB>` command now wires the existing safe
+runner into production dependencies without changing runner, collection, audit,
+or EV algorithms. It validates the runner configuration before provider access,
+requires `API_SPORTS_KEY`, permits only `api-sports`, uses fresh per-invocation
+collection caches, pins and revalidates the exact TotoBrief target, resolves
+stored timing through the existing read-only exact lookup, and keeps the latest
+30-drawing coverage audit diagnostic-only.
+
+The command exposes only the approved operational controls. It writes coverage
+reports only when an audit completed, EV reports only when EV ran, then writes
+the runner JSON/Markdown pair with those paths as associated links. Valid
+`NO BET` exits zero without coupon output; interruptions publish no final
+runner manifest. Provider failures sanitize the API key through recursive
+exception chains. No automatic betting was added.
+
+Verification: required RED was `7 failed in 3.07s` before registration. Final
+focused pytest passed (`7 passed in 0.41s`), command help succeeded with the
+approved controls, focused Ruff passed, full pytest passed (`877 passed in
+8.08s`), and repository-wide Ruff reported `All checks passed!`.
 
 ## Latest Completed Task: Deterministic Runner Reports
 

@@ -196,6 +196,11 @@
   fingerprint, including mismatch and unresolved-final states, and report-pair
   transactions precompute and exclusively create every temp/backup path before
   writes so interruptions cannot leak artifacts.
+- Safe Drawing Runner Task 5 production Typer wiring is complete. `run-drawing`
+  validates the approved configuration before API-Sports access, uses fresh
+  pinned collection, exact timing, latest-30 diagnostic audit, existing EV and
+  report writers, and publishes linked runner artifacts without automatic
+  betting.
 
 - Task 1 complete: provider-neutral drawing eligibility classifier and
   deterministic target fingerprint, including immutable effective starts,
