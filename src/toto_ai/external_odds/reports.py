@@ -31,6 +31,24 @@ CSV_FIELDS = (
     "market_updated_at",
     "market_payload_hashes",
     "target_fetched_at",
+    "collection_scope",
+    "target_fingerprint",
+    "missing_start_horizon_days",
+    "requested_schedule_dates",
+    "successful_schedule_dates",
+    "failed_schedule_dates",
+    "failed_schedule_reasons",
+    "target_starts_at",
+    "provider_starts_at",
+    "effective_starts_at",
+    "effective_start_source",
+    "eligibility_status",
+    "eligibility_earliest_start",
+    "eligibility_latest_start",
+    "eligibility_span_days",
+    "eligibility_missing_event_orders",
+    "eligibility_totobrief_count",
+    "eligibility_provider_count",
     "probability_source",
     "eligible_bookmaker_count",
     "fallback_reason",
@@ -53,6 +71,8 @@ CSV_FIELDS = (
     "unique_match_rate",
     "missing_count",
     "missing_rate",
+    "provider_missing_count",
+    "partial_schedule_count",
     "ambiguous_count",
     "ambiguous_rate",
     "unknown_sport_count",
@@ -125,6 +145,32 @@ def _render_csv(audit: CoverageAudit) -> str:
                 "market_updated_at": _json_values(row.market_updated_at),
                 "market_payload_hashes": _json_values(row.market_payload_hashes),
                 "target_fetched_at": row.target_fetched_at,
+                "collection_scope": row.collection_scope,
+                "target_fingerprint": row.target_fingerprint,
+                "missing_start_horizon_days": row.missing_start_horizon_days,
+                "requested_schedule_dates": _json_values(
+                    row.requested_schedule_dates
+                ),
+                "successful_schedule_dates": _json_values(
+                    row.successful_schedule_dates
+                ),
+                "failed_schedule_dates": _json_values(row.failed_schedule_dates),
+                "failed_schedule_reasons": _json_values(
+                    row.failed_schedule_reasons
+                ),
+                "target_starts_at": row.target_starts_at,
+                "provider_starts_at": row.provider_starts_at,
+                "effective_starts_at": row.effective_starts_at,
+                "effective_start_source": row.effective_start_source,
+                "eligibility_status": row.eligibility_status,
+                "eligibility_earliest_start": row.eligibility_earliest_start,
+                "eligibility_latest_start": row.eligibility_latest_start,
+                "eligibility_span_days": row.eligibility_span_days,
+                "eligibility_missing_event_orders": _json_values(
+                    row.eligibility_missing_event_orders
+                ),
+                "eligibility_totobrief_count": row.eligibility_totobrief_count,
+                "eligibility_provider_count": row.eligibility_provider_count,
                 "probability_source": row.probability_source,
                 "eligible_bookmaker_count": row.eligible_bookmaker_count,
                 "fallback_reason": row.fallback_reason,
@@ -142,6 +188,7 @@ def _render_csv(audit: CoverageAudit) -> str:
         )
     for metric in (
         audit.total,
+        *audit.by_scope,
         *audit.by_sport,
         *audit.by_league,
         *audit.by_drawing,
@@ -168,7 +215,7 @@ def _render_csv(audit: CoverageAudit) -> str:
     return output.getvalue()
 
 
-def _json_values(values: tuple[str, ...]) -> str:
+def _json_values(values: tuple[object, ...]) -> str:
     return json.dumps(values, ensure_ascii=False, separators=(",", ":"))
 
 
@@ -189,6 +236,8 @@ def _metric_csv_row(metric: CoverageMetrics) -> dict[str, object]:
         "unique_match_rate": f"{metric.unique_match_rate:.12f}",
         "missing_count": metric.missing_count,
         "missing_rate": f"{metric.missing_rate:.12f}",
+        "provider_missing_count": metric.provider_missing_count,
+        "partial_schedule_count": metric.partial_schedule_count,
         "ambiguous_count": metric.ambiguous_count,
         "ambiguous_rate": f"{metric.ambiguous_rate:.12f}",
         "unknown_sport_count": metric.unknown_sport_count,
@@ -245,10 +294,33 @@ def _render_markdown(audit: CoverageAudit) -> str:
             f"{audit.fallback_median_per_drawing:.6f}"
         ),
         f"- p90 fallback events per drawing: {audit.fallback_p90_per_drawing:.6f}",
+        f"- requested schedule-date units: {audit.requested_schedule_date_count}",
+        f"- successful schedule-date units: {audit.successful_schedule_date_count}",
+        f"- failed schedule-date units: {audit.failed_schedule_date_count}",
         "",
         "## Collection Run Evidence",
         "",
         *_collection_table(audit),
+        "",
+        "## Schedule Date Evidence",
+        "",
+        *_schedule_date_table(audit),
+        "",
+        "### Failed Schedule-Date Reason Counts",
+        "",
+        *_count_bullets(audit.failed_schedule_reason_counts),
+        "",
+        "## Event Timing Evidence",
+        "",
+        *_event_timing_table(audit),
+        "",
+        "## Drawing Eligibility Evidence",
+        "",
+        *_eligibility_table(audit),
+        "",
+        "## Eligibility Counts",
+        "",
+        *_count_bullets(audit.eligibility_counts),
         "",
         "## Gate",
         "",
@@ -269,6 +341,10 @@ def _render_markdown(audit: CoverageAudit) -> str:
         "## Overall Metrics",
         "",
         _metric_bullets(audit.total),
+        "",
+        "## Diagnostic Scope Metrics",
+        "",
+        *_metric_table(audit.by_scope),
         "",
         "## Sport Metrics",
         "",
@@ -299,10 +375,15 @@ def _render_markdown(audit: CoverageAudit) -> str:
 
 
 def _collection_table(audit: CoverageAudit) -> list[str]:
+    scopes = {
+        row.collection_id: row.collection_scope for row in audit.dispositions
+    }
     lines = [
         "| Collection | Drawing | Fetched At | Requests | Cache Hits | "
-        "Target Fetched At | Daily Limit | Daily Remaining | Minute Remaining |",
-        "| --- | ---: | --- | ---: | ---: | --- | ---: | ---: | ---: |",
+        "Target Fetched At | Daily Limit | Daily Remaining | Minute Remaining | "
+        "Scope | Horizon | Target Fingerprint |",
+        "| --- | ---: | --- | ---: | ---: | --- | ---: | ---: | ---: | "
+        "--- | ---: | --- |",
     ]
     for collection in audit.collections:
         lines.append(
@@ -312,11 +393,103 @@ def _collection_table(audit: CoverageAudit) -> list[str]:
             f"{collection.cache_hits} | {collection.target_fetched_at} | "
             f"{_optional_value(collection.daily_limit)} | "
             f"{_optional_value(collection.daily_remaining)} | "
-            f"{_optional_value(collection.minute_remaining)} |"
+            f"{_optional_value(collection.minute_remaining)} | "
+            f"{scopes[collection.collection_id]} | "
+            f"{collection.missing_start_horizon_days} | "
+            f"{collection.target_fingerprint or 'legacy'} |"
         )
     if not audit.collections:
-        lines.append("| none | 0 | none | 0 | 0 | none | none | none | none |")
+        lines.append(
+            "| none | 0 | none | 0 | 0 | none | none | none | none | "
+            "unknown | 0 | none |"
+        )
     return lines
+
+
+def _schedule_date_table(audit: CoverageAudit) -> list[str]:
+    scopes = {
+        row.collection_id: row.collection_scope for row in audit.dispositions
+    }
+    lines = [
+        "| Collection | Scope | Sport | Requested Date | Status | Failure Reason |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for collection in audit.collections:
+        for result in collection.requested_schedule_dates:
+            lines.append(
+                f"| {collection.collection_id} | "
+                f"{scopes[collection.collection_id]} | {result.sport} | "
+                f"{result.requested_date.isoformat()} | "
+                f"{'failed' if result.error is not None else 'successful'} | "
+                f"{result.error or 'none'} |"
+            )
+        if not collection.requested_schedule_dates:
+            lines.append(
+                f"| {collection.collection_id} | "
+                f"{scopes[collection.collection_id]} | none | none | "
+                "legacy | none |"
+            )
+    if not audit.collections:
+        lines.append("| none | unknown | none | none | none | none |")
+    return lines
+
+
+def _event_timing_table(audit: CoverageAudit) -> list[str]:
+    lines = [
+        "| Collection | Event | Target Start | Provider Start | Effective Start | "
+        "Source |",
+        "| --- | ---: | --- | --- | --- | --- |",
+    ]
+    for row in audit.dispositions:
+        lines.append(
+            f"| {row.collection_id} | {row.event_order} | "
+            f"{row.target_starts_at or 'none'} | "
+            f"{row.provider_starts_at or 'none'} | "
+            f"{row.effective_starts_at or 'none'} | "
+            f"{row.effective_start_source} |"
+        )
+    if not audit.dispositions:
+        lines.append("| none | 0 | none | none | none | unresolved |")
+    return lines
+
+
+def _eligibility_table(audit: CoverageAudit) -> list[str]:
+    scopes = {
+        row.collection_id: row.collection_scope for row in audit.dispositions
+    }
+    lines = [
+        "| Collection | Scope | Status | Earliest Start | Latest Start | Span Days | "
+        "Missing Orders | TotoBrief Starts | Provider Starts |",
+        "| --- | --- | --- | --- | --- | ---: | --- | ---: | ---: |",
+    ]
+    for collection in audit.collections:
+        eligibility = collection.eligibility
+        earliest = (
+            eligibility.earliest_start.isoformat()
+            if eligibility.earliest_start is not None
+            else "none"
+        )
+        latest = (
+            eligibility.latest_start.isoformat()
+            if eligibility.latest_start is not None
+            else "none"
+        )
+        lines.append(
+            f"| {collection.collection_id} | {scopes[collection.collection_id]} | "
+            f"{eligibility.status} | {earliest} | {latest} | "
+            f"{eligibility.span_days} | "
+            f"{_json_values(eligibility.missing_event_orders)} | "
+            f"{eligibility.totobrief_count} | {eligibility.provider_count} |"
+        )
+    if not audit.collections:
+        lines.append("| none | unknown | unknown | none | none | 0 | [] | 0 | 0 |")
+    return lines
+
+
+def _count_bullets(counts: dict[str, int]) -> list[str]:
+    if not counts:
+        return ["- none: 0"]
+    return [f"- {name}: {count}" for name, count in counts.items()]
 
 
 def _gate_predicate_table(audit: CoverageAudit) -> list[str]:
@@ -351,6 +524,8 @@ def _metric_bullets(metric: CoverageMetrics) -> str:
                 f"({metric.usable_consensus_rate:.6f})"
             ),
             f"- missing: {metric.missing_count} ({metric.missing_rate:.6f})",
+            f"- provider missing: {metric.provider_missing_count}",
+            f"- partial schedule: {metric.partial_schedule_count}",
             f"- ambiguous: {metric.ambiguous_count} ({metric.ambiguous_rate:.6f})",
             (
                 f"- unknown sport: {metric.unknown_sport_count} "
@@ -374,9 +549,10 @@ def _metric_table(metrics: tuple[CoverageMetrics, ...]) -> list[str]:
         "| Scope | Target | Explicit | Unique Match | Missing | Ambiguous | "
         "Unknown Sport | Consensus >=1 | Consensus >=2 | Consensus >=3 | "
         "Usable Consensus | Stale | Semantic | Incomplete Market | Quota | "
-        "Provider Error | Fallback |",
+        "Provider Error | Provider Missing | Partial Schedule | Fallback |",
         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | "
-        "---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | "
+        "---: |",
     ]
     for metric in metrics:
         usable_consensus = _count_rate(
@@ -396,7 +572,8 @@ def _metric_table(metrics: tuple[CoverageMetrics, ...]) -> list[str]:
             f"{usable_consensus} | "
             f"{metric.stale_count} | {metric.semantic_count} | "
             f"{metric.incomplete_market_count} | {metric.quota_count} | "
-            f"{metric.provider_error_count} | {metric.fallback_count} |"
+            f"{metric.provider_error_count} | {metric.provider_missing_count} | "
+            f"{metric.partial_schedule_count} | {metric.fallback_count} |"
         )
     if not metrics:
         values = [
@@ -404,7 +581,7 @@ def _metric_table(metrics: tuple[CoverageMetrics, ...]) -> list[str]:
             "0",
             "0",
             *(["0 (0.000000)"] * 8),
-            *(["0"] * 6),
+            *(["0"] * 8),
         ]
         lines.append(f"| {' | '.join(values)} |")
     return lines

@@ -177,15 +177,15 @@ Add nullable legacy-compatible columns through `_add_missing_columns`. Backfill 
 
 Canonicalize schedule-date structures before JSON encoding. Current lookup chooses the latest complete run for the exact drawing/fingerprint and returns `None` for absence or mismatch.
 
-- [ ] **Step 5: Extend audit/report tests and implementation**
+- [x] **Step 5: Extend audit/report tests and implementation**
 
 Expose horizon, schedule failures, effective starts/sources, eligibility status/span/missing orders, and counts by eligibility. Keep ordinary two-day provider coverage separate from expanded, multi-day, and unknown scopes. Preserve deterministic atomic report publication.
 
-- [ ] **Step 6: Verify GREEN**
+- [x] **Step 6: Verify GREEN**
 
 Run storage/audit/report tests, repeat report generation byte-for-byte, and run Ruff.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/toto_ai/db src/toto_ai/external_odds/storage.py \

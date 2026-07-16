@@ -20,6 +20,19 @@ from toto_ai.external_odds.storage import (
 )
 
 GateDecision = Literal["PENDING", "GO", "STOP"]
+CollectionScope = Literal[
+    "ordinary_two_day",
+    "expanded",
+    "multi_day",
+    "unknown",
+]
+
+COLLECTION_SCOPE_ORDER: tuple[CollectionScope, ...] = (
+    "ordinary_two_day",
+    "expanded",
+    "multi_day",
+    "unknown",
+)
 
 _CONSENSUS_FALLBACK_PATTERN = re.compile(
     r"^(?:fewer than [1-9][0-9]* eligible bookmakers|"
@@ -56,6 +69,24 @@ class CoverageDisposition:
     market_updated_at: tuple[str, ...]
     market_payload_hashes: tuple[str, ...]
     target_fetched_at: str
+    collection_scope: CollectionScope
+    target_fingerprint: str
+    missing_start_horizon_days: int
+    requested_schedule_dates: tuple[str, ...]
+    successful_schedule_dates: tuple[str, ...]
+    failed_schedule_dates: tuple[str, ...]
+    failed_schedule_reasons: tuple[str, ...]
+    target_starts_at: str | None
+    provider_starts_at: str | None
+    effective_starts_at: str | None
+    effective_start_source: str
+    eligibility_status: str
+    eligibility_earliest_start: str | None
+    eligibility_latest_start: str | None
+    eligibility_span_days: int
+    eligibility_missing_event_orders: tuple[int, ...]
+    eligibility_totobrief_count: int
+    eligibility_provider_count: int
     requests_made: int
     cache_hits: int
     daily_limit: int | None
@@ -73,6 +104,8 @@ class CoverageMetrics:
     unique_match_rate: float
     missing_count: int
     missing_rate: float
+    provider_missing_count: int
+    partial_schedule_count: int
     ambiguous_count: int
     ambiguous_rate: float
     unknown_sport_count: int
@@ -130,6 +163,12 @@ class CoverageAudit:
     by_sport: tuple[CoverageMetrics, ...]
     by_league: tuple[CoverageMetrics, ...]
     by_drawing: tuple[CoverageMetrics, ...]
+    by_scope: tuple[CoverageMetrics, ...]
+    eligibility_counts: dict[str, int]
+    requested_schedule_date_count: int
+    successful_schedule_date_count: int
+    failed_schedule_date_count: int
+    failed_schedule_reason_counts: dict[str, int]
     fallback_reason_counts: dict[str, int]
     fallback_median_per_drawing: float
     fallback_p90_per_drawing: float
@@ -164,6 +203,16 @@ def audit_external_coverage(
     by_sport = _grouped_metrics("sport", dispositions, minimum_bookmakers)
     by_league = _grouped_metrics("league", dispositions, minimum_bookmakers)
     by_drawing = _drawing_metrics(dispositions, minimum_bookmakers)
+    by_scope = _scope_metrics(dispositions, minimum_bookmakers)
+    eligibility_counts = Counter(
+        collection.eligibility.status for collection in collections
+    )
+    failed_schedule_reason_counts = Counter(
+        result.error
+        for collection in collections
+        for result in collection.failed_schedule_dates
+        if result.error is not None
+    )
     fallback_counts = _fallback_counts(dispositions)
     fallback_per_drawing = tuple(metric.fallback_count for metric in by_drawing)
     requests = tuple(collection.requests_made for collection in collections)
@@ -185,6 +234,23 @@ def audit_external_coverage(
         by_sport=by_sport,
         by_league=by_league,
         by_drawing=by_drawing,
+        by_scope=by_scope,
+        eligibility_counts={
+            status: eligibility_counts[status]
+            for status in ("playable", "multi_day", "unknown")
+        },
+        requested_schedule_date_count=sum(
+            len(collection.requested_schedule_dates) for collection in collections
+        ),
+        successful_schedule_date_count=sum(
+            len(collection.successful_schedule_dates) for collection in collections
+        ),
+        failed_schedule_date_count=sum(
+            len(collection.failed_schedule_dates) for collection in collections
+        ),
+        failed_schedule_reason_counts=dict(
+            sorted(failed_schedule_reason_counts.items())
+        ),
         fallback_reason_counts=dict(sorted(fallback_counts.items())),
         fallback_median_per_drawing=(
             float(median(fallback_per_drawing)) if fallback_per_drawing else 0.0
@@ -227,6 +293,20 @@ def _latest_complete_collections(
 def _dispositions_for_collection(
     collection: ExternalCollectionSnapshot,
 ) -> tuple[CoverageDisposition, ...]:
+    collection_scope = _collection_scope(collection)
+    requested_schedule_dates = _schedule_date_units(
+        collection.requested_schedule_dates
+    )
+    successful_schedule_dates = _schedule_date_units(
+        collection.successful_schedule_dates
+    )
+    failed_schedule_dates = _schedule_date_units(collection.failed_schedule_dates)
+    failed_schedule_reasons = tuple(
+        result.error
+        for result in collection.failed_schedule_dates
+        if result.error is not None
+    )
+    eligibility = collection.eligibility
     rows_by_order = {event.event_order: event for event in collection.events}
     rows = []
     for order in range(collection.event_count):
@@ -252,6 +332,32 @@ def _dispositions_for_collection(
                     market_updated_at=(),
                     market_payload_hashes=(),
                     target_fetched_at=collection.target_fetched_at,
+                    collection_scope=collection_scope,
+                    target_fingerprint=collection.target_fingerprint,
+                    missing_start_horizon_days=(
+                        collection.missing_start_horizon_days
+                    ),
+                    requested_schedule_dates=requested_schedule_dates,
+                    successful_schedule_dates=successful_schedule_dates,
+                    failed_schedule_dates=failed_schedule_dates,
+                    failed_schedule_reasons=failed_schedule_reasons,
+                    target_starts_at=None,
+                    provider_starts_at=None,
+                    effective_starts_at=None,
+                    effective_start_source="unresolved",
+                    eligibility_status=eligibility.status,
+                    eligibility_earliest_start=_optional_datetime_text(
+                        eligibility.earliest_start
+                    ),
+                    eligibility_latest_start=_optional_datetime_text(
+                        eligibility.latest_start
+                    ),
+                    eligibility_span_days=eligibility.span_days,
+                    eligibility_missing_event_orders=(
+                        eligibility.missing_event_orders
+                    ),
+                    eligibility_totobrief_count=eligibility.totobrief_count,
+                    eligibility_provider_count=eligibility.provider_count,
                     requests_made=collection.requests_made,
                     cache_hits=collection.cache_hits,
                     daily_limit=collection.daily_limit,
@@ -260,13 +366,29 @@ def _dispositions_for_collection(
                 )
             )
             continue
-        rows.append(_disposition_from_event(collection, event))
+        rows.append(
+            _disposition_from_event(
+                collection,
+                event,
+                collection_scope=collection_scope,
+                requested_schedule_dates=requested_schedule_dates,
+                successful_schedule_dates=successful_schedule_dates,
+                failed_schedule_dates=failed_schedule_dates,
+                failed_schedule_reasons=failed_schedule_reasons,
+            )
+        )
     return tuple(rows)
 
 
 def _disposition_from_event(
     collection: ExternalCollectionSnapshot,
     event: ExternalEventDispositionRecord,
+    *,
+    collection_scope: CollectionScope,
+    requested_schedule_dates: tuple[str, ...],
+    successful_schedule_dates: tuple[str, ...],
+    failed_schedule_dates: tuple[str, ...],
+    failed_schedule_reasons: tuple[str, ...],
 ) -> CoverageDisposition:
     reason = _normalized_reason(event.fallback_reason)
     if event.probability_source == TOTOBRIEF_BK_FALLBACK and not reason:
@@ -283,6 +405,7 @@ def _disposition_from_event(
             ),
         )
     )
+    eligibility = collection.eligibility
     return CoverageDisposition(
         collection_id=collection.collection_id,
         drawing_id=collection.drawing_id,
@@ -302,6 +425,26 @@ def _disposition_from_event(
         market_updated_at=tuple(quote.updated_at for quote in quotes),
         market_payload_hashes=tuple(quote.payload_hash for quote in quotes),
         target_fetched_at=collection.target_fetched_at,
+        collection_scope=collection_scope,
+        target_fingerprint=collection.target_fingerprint,
+        missing_start_horizon_days=collection.missing_start_horizon_days,
+        requested_schedule_dates=requested_schedule_dates,
+        successful_schedule_dates=successful_schedule_dates,
+        failed_schedule_dates=failed_schedule_dates,
+        failed_schedule_reasons=failed_schedule_reasons,
+        target_starts_at=event.starts_at,
+        provider_starts_at=event.provider_starts_at,
+        effective_starts_at=event.effective_starts_at,
+        effective_start_source=event.effective_start_source,
+        eligibility_status=eligibility.status,
+        eligibility_earliest_start=_optional_datetime_text(
+            eligibility.earliest_start
+        ),
+        eligibility_latest_start=_optional_datetime_text(eligibility.latest_start),
+        eligibility_span_days=eligibility.span_days,
+        eligibility_missing_event_orders=eligibility.missing_event_orders,
+        eligibility_totobrief_count=eligibility.totobrief_count,
+        eligibility_provider_count=eligibility.provider_count,
         requests_made=collection.requests_made,
         cache_hits=collection.cache_hits,
         daily_limit=collection.daily_limit,
@@ -339,6 +482,16 @@ def _metrics(
         unique_match_rate=_rate(unique_matches, target_count),
         missing_count=missing,
         missing_rate=_rate(missing, target_count),
+        provider_missing_count=sum(
+            row.match_status == "missing"
+            and row.fallback_reason == "0 exact candidates"
+            for row in rows
+        ),
+        partial_schedule_count=sum(
+            row.match_status == "missing"
+            and row.fallback_reason == "partial schedule"
+            for row in rows
+        ),
         ambiguous_count=ambiguous,
         ambiguous_rate=_rate(ambiguous, target_count),
         unknown_sport_count=unknown_sport,
@@ -402,6 +555,44 @@ def _drawing_metrics(
             )
         )
     return tuple(metrics)
+
+
+def _scope_metrics(
+    rows: tuple[CoverageDisposition, ...],
+    minimum_bookmakers: int,
+) -> tuple[CoverageMetrics, ...]:
+    grouped: dict[CollectionScope, list[CoverageDisposition]] = defaultdict(list)
+    for row in rows:
+        grouped[row.collection_scope].append(row)
+    return tuple(
+        _metrics(
+            "collection_scope",
+            scope,
+            tuple(grouped[scope]),
+            minimum_bookmakers,
+        )
+        for scope in COLLECTION_SCOPE_ORDER
+    )
+
+
+def _collection_scope(collection: ExternalCollectionSnapshot) -> CollectionScope:
+    if collection.eligibility.status == "multi_day":
+        return "multi_day"
+    if collection.eligibility.status == "unknown":
+        return "unknown"
+    if collection.missing_start_horizon_days > 2:
+        return "expanded"
+    return "ordinary_two_day"
+
+
+def _schedule_date_units(values: tuple[Any, ...]) -> tuple[str, ...]:
+    return tuple(
+        f"{value.sport}:{value.requested_date.isoformat()}" for value in values
+    )
+
+
+def _optional_datetime_text(value: Any) -> str | None:
+    return value.isoformat() if value is not None else None
 
 
 def _coverage_gate(

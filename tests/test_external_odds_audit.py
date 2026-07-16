@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from sqlalchemy import create_engine
@@ -14,6 +14,11 @@ from toto_ai.external_odds.collection import (
     ExternalCollectionSnapshot,
     ExternalEventDispositionRecord,
     ExternalMarketProvenanceRecord,
+    ScheduleDateResult,
+)
+from toto_ai.external_odds.eligibility import (
+    EffectiveEventStart,
+    classify_drawing_eligibility,
 )
 from toto_ai.external_odds.storage import save_collection
 
@@ -254,6 +259,185 @@ def test_audit_reads_latest_complete_collections_from_storage():
     assert audit.dispositions[0].drawing_id == 1002
 
 
+def test_collection_scopes_are_disjoint_fixed_and_have_isolated_rates():
+    fallback_counts = (0, 3, 6, 9)
+    scope_names = ("ordinary_two_day", "expanded", "multi_day", "unknown")
+    collections = tuple(
+        _modern_collection(
+            _collection(index, ("0 exact candidates",) * fallback_count),
+            scope=scope,
+        )
+        for index, (scope, fallback_count) in enumerate(
+            zip(scope_names, fallback_counts, strict=True),
+            start=1,
+        )
+    )
+
+    audit = audit_external_coverage(
+        _snapshot_session_factory(collections),
+        last=4,
+        minimum_bookmakers=3,
+    )
+
+    assert [metric.name for metric in audit.by_scope] == list(scope_names)
+    assert [metric.target_count for metric in audit.by_scope] == [15, 15, 15, 15]
+    assert [metric.usable_consensus_rate for metric in audit.by_scope] == [
+        1.0,
+        0.8,
+        0.6,
+        0.4,
+    ]
+    assert sum(metric.target_count for metric in audit.by_scope) == 60
+
+
+def test_gate_keeps_existing_predicates_and_uses_all_selected_scopes():
+    collections = tuple(
+        _modern_collection(_collection(index, ()), scope=scope)
+        for index, scope in enumerate(
+            ("ordinary_two_day", "expanded", "multi_day", "unknown"),
+            start=1,
+        )
+    )
+
+    audit = audit_external_coverage(
+        _snapshot_session_factory(collections),
+        last=4,
+        minimum_bookmakers=3,
+    )
+
+    assert audit.total.target_count == 60
+    assert audit.gate.events == 60
+    assert audit.gate.unique_match_rate == audit.total.unique_match_rate == 1.0
+    assert audit.gate.consensus_rate == audit.total.usable_consensus_rate == 1.0
+    assert [predicate.name for predicate in audit.gate.predicates] == [
+        "minimum_drawings",
+        "minimum_events",
+        "minimum_unique_match_rate",
+        "minimum_usable_consensus_rate",
+        "zero_ambiguous_matches",
+        "complete_explicit_dispositions",
+    ]
+
+
+def test_provider_missing_and_partial_schedule_events_are_counted_separately():
+    collection = _modern_collection(
+        _collection(1, ("0 exact candidates", "partial schedule")),
+        scope="unknown",
+    )
+
+    audit = audit_external_coverage(
+        _snapshot_session_factory((collection,)),
+        last=1,
+        minimum_bookmakers=3,
+    )
+
+    assert audit.total.missing_count == 2
+    assert audit.total.provider_missing_count == 1
+    assert audit.total.partial_schedule_count == 1
+
+
+def test_failed_schedule_date_units_and_reasons_are_not_event_fallback_units():
+    schedule_results = (
+        ScheduleDateResult("football", date(2026, 7, 14), (), None),
+        ScheduleDateResult(
+            "football",
+            date(2026, 7, 15),
+            (),
+            "provider schedule failure",
+        ),
+        ScheduleDateResult(
+            "hockey",
+            date(2026, 7, 14),
+            (),
+            "provider schedule failure",
+        ),
+        ScheduleDateResult(
+            "hockey",
+            date(2026, 7, 15),
+            (),
+            "quota reserve reached",
+        ),
+    )
+    collection = _modern_collection(
+        _collection(1, ("partial schedule",)),
+        scope="unknown",
+        schedule_results=schedule_results,
+    )
+
+    audit = audit_external_coverage(
+        _snapshot_session_factory((collection,)),
+        last=1,
+        minimum_bookmakers=3,
+    )
+
+    assert audit.requested_schedule_date_count == 4
+    assert audit.successful_schedule_date_count == 1
+    assert audit.failed_schedule_date_count == 3
+    assert audit.failed_schedule_reason_counts == {
+        "provider schedule failure": 2,
+        "quota reserve reached": 1,
+    }
+    assert audit.total.partial_schedule_count == 1
+    assert audit.failed_schedule_date_count != audit.total.partial_schedule_count
+
+
+def test_storage_backed_audit_exposes_collection_and_event_timing_provenance():
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    factory = sessionmaker(engine, expire_on_commit=False)
+    schedule_results = (
+        ScheduleDateResult("football", date(2026, 7, 14), (), None),
+        ScheduleDateResult(
+            "hockey",
+            date(2026, 7, 15),
+            (),
+            "provider schedule failure",
+        ),
+    )
+    collection = _modern_collection(
+        _collection(1, ()),
+        scope="ordinary_two_day",
+        schedule_results=schedule_results,
+        provider_orders=(0,),
+    )
+    save_collection(factory, collection)
+
+    audit = audit_external_coverage(factory, last=1, minimum_bookmakers=3)
+    row = audit.dispositions[0]
+
+    assert row.collection_scope == "ordinary_two_day"
+    assert row.target_fingerprint == "fingerprint-1"
+    assert row.missing_start_horizon_days == 2
+    assert row.requested_schedule_dates == (
+        "football:2026-07-14",
+        "hockey:2026-07-15",
+    )
+    assert row.successful_schedule_dates == ("football:2026-07-14",)
+    assert row.failed_schedule_dates == ("hockey:2026-07-15",)
+    assert row.failed_schedule_reasons == ("provider schedule failure",)
+    assert row.target_starts_at == ""
+    assert row.provider_starts_at == aware_now().isoformat()
+    assert row.effective_starts_at == aware_now().isoformat()
+    assert row.effective_start_source == "provider"
+    assert row.eligibility_status == "playable"
+    assert row.eligibility_span_days == 2
+    assert row.eligibility_missing_event_orders == ()
+    assert row.eligibility_totobrief_count == 14
+    assert row.eligibility_provider_count == 1
+
+
+def test_legacy_collection_is_always_in_unknown_scope():
+    audit = audit_external_coverage(
+        _snapshot_session_factory((_collection(1, ()),)),
+        last=1,
+        minimum_bookmakers=3,
+    )
+
+    assert [metric.target_count for metric in audit.by_scope] == [0, 0, 0, 15]
+    assert {row.collection_scope for row in audit.dispositions} == {"unknown"}
+    assert {row.eligibility_status for row in audit.dispositions} == {"unknown"}
+
+
 def _snapshot_session_factory(collections):
     class SnapshotFactory:
         _external_collections_for_test = tuple(collections)
@@ -362,6 +546,82 @@ def _collection(
     )
 
 
+def _modern_collection(
+    collection: ExternalCollectionSnapshot,
+    *,
+    scope: str,
+    schedule_results: tuple[ScheduleDateResult, ...] | None = None,
+    provider_orders: tuple[int, ...] = (),
+) -> ExternalCollectionSnapshot:
+    if scope not in {"ordinary_two_day", "expanded", "multi_day", "unknown"}:
+        raise ValueError("unsupported test collection scope")
+    events = []
+    for event in collection.events:
+        target_start = aware_now() + timedelta(hours=event.event_order)
+        if scope == "multi_day":
+            target_start = aware_now() + timedelta(
+                days=event.event_order // 5,
+                hours=event.event_order % 5,
+            )
+        if event.event_order in provider_orders:
+            events.append(
+                replace(
+                    event,
+                    starts_at="",
+                    provider_starts_at=target_start.isoformat(),
+                    effective_starts_at=target_start.isoformat(),
+                    effective_start_source="provider",
+                )
+            )
+        elif scope == "unknown" and event.event_order == 14:
+            events.append(
+                replace(
+                    event,
+                    starts_at="",
+                    provider_starts_at=None,
+                    effective_starts_at=None,
+                    effective_start_source="unresolved",
+                )
+            )
+        else:
+            events.append(
+                replace(
+                    event,
+                    starts_at=target_start.isoformat(),
+                    provider_starts_at=None,
+                    effective_starts_at=target_start.isoformat(),
+                    effective_start_source="totobrief",
+                )
+            )
+    results = schedule_results or (
+        ScheduleDateResult("football", date(2026, 7, 14), (), None),
+    )
+    eligibility = classify_drawing_eligibility(
+        tuple(
+            EffectiveEventStart(
+                event.event_order,
+                (
+                    datetime.fromisoformat(event.effective_starts_at)
+                    if event.effective_starts_at is not None
+                    else None
+                ),
+                event.effective_start_source,
+            )
+            for event in events
+        )
+    )
+    return replace(
+        collection,
+        events=tuple(events),
+        target_fingerprint=f"fingerprint-{collection.drawing_id - 1000}",
+        missing_start_horizon_days=5 if scope != "ordinary_two_day" else 2,
+        requested_schedule_dates=results,
+        successful_schedule_dates=tuple(item for item in results if item.error is None),
+        failed_schedule_dates=tuple(item for item in results if item.error is not None),
+        eligibility=eligibility,
+    )
+
+
 def _event(
     drawing_index: int,
     event_order: int,
@@ -425,6 +685,8 @@ def _event(
 def _status_for_reason(reason: str) -> str:
     if reason == "unknown sport":
         return "unknown_sport"
+    if reason == "partial schedule":
+        return "missing"
     if reason.endswith("exact candidates"):
         return "missing" if reason.startswith("0 ") else "ambiguous"
     if "provider" in reason:

@@ -188,9 +188,10 @@
 - Task 2 complete: deterministic per-date schedule collection/provenance,
   date-local failure isolation, quota-stop suppression of market requests,
   effective starts, and immutable eligibility-bound collection identity.
-- Task 3 persistence is complete: additive legacy-safe schema migration, full
-  schedule/timing provenance round-trip, and exact drawing/fingerprint
-  eligibility lookup. Task 3 audit/report work and Tasks 4-6 remain pending.
+- Task 3 is complete: additive legacy-safe persistence, exact
+  drawing/fingerprint eligibility lookup, and deterministic audit/report
+  evidence with separate ordinary, expanded, multi-day, and unknown scopes.
+  The existing overall coverage gate remains unchanged. Tasks 4-6 remain.
 - Automatic T-15 scheduling of the fresh prospective command
 - Open drawing analysis
 - Package generation

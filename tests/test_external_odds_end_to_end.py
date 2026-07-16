@@ -178,6 +178,19 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
     assert loaded.requests_made == 16
     assert loaded.cache_hits == 0
     assert loaded.target_fetched_at == FETCHED_AT.isoformat()
+    assert loaded.target_fingerprint
+    assert loaded.missing_start_horizon_days == 2
+    assert [
+        (item.sport, item.requested_date.isoformat(), item.error)
+        for item in loaded.requested_schedule_dates
+    ] == [("football", "2026-07-14", None)]
+    assert loaded.successful_schedule_dates == loaded.requested_schedule_dates
+    assert loaded.failed_schedule_dates == ()
+    assert loaded.eligibility.status == "playable"
+    assert loaded.eligibility.span_days == 1
+    assert loaded.eligibility.missing_event_orders == ()
+    assert loaded.eligibility.totobrief_count == 15
+    assert loaded.eligibility.provider_count == 0
     assert all(
         event.provider_event_fetched_at == FETCHED_AT.isoformat()
         for event in loaded.events
@@ -211,6 +224,26 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
         "gate_threshold",
         "gate_actual",
         "gate_passed",
+        "collection_scope",
+        "target_fingerprint",
+        "missing_start_horizon_days",
+        "requested_schedule_dates",
+        "successful_schedule_dates",
+        "failed_schedule_dates",
+        "failed_schedule_reasons",
+        "target_starts_at",
+        "provider_starts_at",
+        "effective_starts_at",
+        "effective_start_source",
+        "eligibility_status",
+        "eligibility_earliest_start",
+        "eligibility_latest_start",
+        "eligibility_span_days",
+        "eligibility_missing_event_orders",
+        "eligibility_totobrief_count",
+        "eligibility_provider_count",
+        "provider_missing_count",
+        "partial_schedule_count",
     } <= set(reader.fieldnames or ())
     disposition_rows = [row for row in report_rows if row["row_type"] == "disposition"]
     gate_rows = [row for row in report_rows if row["row_type"] == "gate_predicate"]
@@ -222,6 +255,26 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
     ]
     assert disposition_rows[9]["fallback_reason"] == "fewer than 3 eligible bookmakers"
     first_disposition = disposition_rows[0]
+    assert first_disposition["collection_scope"] == "ordinary_two_day"
+    assert first_disposition["target_fingerprint"] == loaded.target_fingerprint
+    assert first_disposition["missing_start_horizon_days"] == "2"
+    assert json.loads(first_disposition["requested_schedule_dates"]) == [
+        "football:2026-07-14"
+    ]
+    assert json.loads(first_disposition["successful_schedule_dates"]) == [
+        "football:2026-07-14"
+    ]
+    assert json.loads(first_disposition["failed_schedule_dates"]) == []
+    assert json.loads(first_disposition["failed_schedule_reasons"]) == []
+    assert first_disposition["target_starts_at"] == event_start(0).isoformat()
+    assert first_disposition["provider_starts_at"] == event_start(0).isoformat()
+    assert first_disposition["effective_starts_at"] == event_start(0).isoformat()
+    assert first_disposition["effective_start_source"] == "totobrief"
+    assert first_disposition["eligibility_status"] == "playable"
+    assert first_disposition["eligibility_span_days"] == "1"
+    assert first_disposition["eligibility_missing_event_orders"] == "[]"
+    assert first_disposition["eligibility_totobrief_count"] == "15"
+    assert first_disposition["eligibility_provider_count"] == "0"
     assert first_disposition["provider_schedule_fetched_at"] == FETCHED_AT.isoformat()
     assert first_disposition["provider_schedule_payload_hash"] == "schedule-hash-0"
     assert (
@@ -300,6 +353,10 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
     assert "- decision: PENDING" in markdown
     assert "- reasons: fewer than 30 drawings, fewer than 450 events" in markdown
     assert "## Collection Run Evidence" in markdown
+    assert "## Schedule Date Evidence" in markdown
+    assert "## Eligibility Counts" in markdown
+    assert "## Diagnostic Scope Metrics" in markdown
+    assert "| ordinary_two_day | 15 |" in markdown
     assert f"| 16 | 0 | {FETCHED_AT.isoformat()} | 100 | 78 | 8 |" in markdown
     assert "## Gate Predicate Outcomes" in markdown
     assert "| minimum_events | 15 | >= | 450 | false |" in markdown
@@ -308,8 +365,8 @@ def test_report_integrity_includes_required_evidence(monkeypatch, tmp_path):
         "0.700000000000 | false |"
     ) in markdown
     assert first_hashes == (
-        "55af4ab37630e3a93fb823041ac5c502dd5be8dbd62081e26d13bc420a17f506",
-        "0f29ad701380d6fa289e59ac7f41fc12ff7c2d1540c575b7ffb4ef7796b9336b",
+        "45359a3edb07741261cf3cfa5caa3e6f85628f99e76adb3e9998afa4400655b5",
+        "796fb78654a5db4a6c0bb9d9f8979fcf37b34c1b1d2f229ee9e080692f6544bb",
     )
 
 

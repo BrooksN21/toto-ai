@@ -2,12 +2,18 @@ from __future__ import annotations
 
 import csv
 from dataclasses import fields
+from datetime import date
 from pathlib import Path
 
 import pytest
 
-from tests.test_external_odds_audit import _collection, _snapshot_session_factory
+from tests.test_external_odds_audit import (
+    _collection,
+    _modern_collection,
+    _snapshot_session_factory,
+)
 from toto_ai.external_odds.audit import CoverageMetrics, audit_external_coverage
+from toto_ai.external_odds.collection import ScheduleDateResult
 from toto_ai.external_odds.reports import write_external_coverage_reports
 
 FALLBACK_REASONS = (
@@ -48,6 +54,24 @@ def test_disposition_csv_contains_all_15_rows_and_required_evidence(tmp_path):
         "requests_made",
         "cache_hits",
         "target_fetched_at",
+        "collection_scope",
+        "target_fingerprint",
+        "missing_start_horizon_days",
+        "requested_schedule_dates",
+        "successful_schedule_dates",
+        "failed_schedule_dates",
+        "failed_schedule_reasons",
+        "target_starts_at",
+        "provider_starts_at",
+        "effective_starts_at",
+        "effective_start_source",
+        "eligibility_status",
+        "eligibility_earliest_start",
+        "eligibility_latest_start",
+        "eligibility_span_days",
+        "eligibility_missing_event_orders",
+        "eligibility_totobrief_count",
+        "eligibility_provider_count",
     } <= set(reader.fieldnames or ())
     assert [row["fallback_reason"] for row in disposition_rows[:8]] == [
         *FALLBACK_REASONS[:7],
@@ -60,6 +84,34 @@ def test_disposition_csv_contains_all_15_rows_and_required_evidence(tmp_path):
     assert {row["target_fetched_at"] for row in disposition_rows} == {
         "2026-07-15T12:00:00+00:00"
     }
+    assert {row["collection_scope"] for row in disposition_rows} == {
+        "ordinary_two_day"
+    }
+    assert {row["target_fingerprint"] for row in disposition_rows} == {
+        "fingerprint-1"
+    }
+    assert {row["missing_start_horizon_days"] for row in disposition_rows} == {
+        "2"
+    }
+    assert disposition_rows[0]["requested_schedule_dates"] == (
+        '["football:2026-07-14","football:2026-07-15","hockey:2026-07-14"]'
+    )
+    assert disposition_rows[0]["successful_schedule_dates"] == (
+        '["football:2026-07-14"]'
+    )
+    assert disposition_rows[0]["failed_schedule_dates"] == (
+        '["football:2026-07-15","hockey:2026-07-14"]'
+    )
+    assert disposition_rows[0]["failed_schedule_reasons"] == (
+        '["provider schedule failure","quota reserve reached"]'
+    )
+    assert disposition_rows[0]["target_starts_at"] == "2026-07-15T12:00:00+00:00"
+    assert disposition_rows[0]["effective_starts_at"] == (
+        "2026-07-15T12:00:00+00:00"
+    )
+    assert disposition_rows[0]["effective_start_source"] == "totobrief"
+    assert disposition_rows[0]["eligibility_status"] == "playable"
+    assert disposition_rows[0]["eligibility_missing_event_orders"] == "[]"
 
 
 def test_aggregate_csv_has_complete_metrics_and_deterministic_scope_order(tmp_path):
@@ -80,6 +132,10 @@ def test_aggregate_csv_has_complete_metrics_and_deterministic_scope_order(tmp_pa
     )
     assert [(row["scope"], row["name"]) for row in aggregate_rows] == [
         ("overall", "all"),
+        ("collection_scope", "ordinary_two_day"),
+        ("collection_scope", "expanded"),
+        ("collection_scope", "multi_day"),
+        ("collection_scope", "unknown"),
         ("sport", "football"),
         ("sport", "hockey"),
         ("league", "League 0"),
@@ -98,6 +154,8 @@ def test_aggregate_csv_has_complete_metrics_and_deterministic_scope_order(tmp_pa
     assert overall["quota_count"] == "1"
     assert overall["provider_error_count"] == "1"
     assert overall["fallback_count"] == "8"
+    assert overall["provider_missing_count"] == "0"
+    assert overall["partial_schedule_count"] == "0"
 
 
 def test_markdown_contains_all_scope_metrics_thresholds_and_disclaimers(tmp_path):
@@ -108,20 +166,25 @@ def test_markdown_contains_all_scope_metrics_thresholds_and_disclaimers(tmp_path
         "| Scope | Target | Explicit | Unique Match | Missing | Ambiguous | "
         "Unknown Sport | Consensus >=1 | Consensus >=2 | Consensus >=3 | "
         "Usable Consensus | Stale | Semantic | Incomplete Market | Quota | "
-        "Provider Error | Fallback |"
+        "Provider Error | Provider Missing | Partial Schedule | Fallback |"
     )
     for section in (
         "## Configuration",
         "## Provenance and Quota",
+        "## Schedule Date Evidence",
+        "## Event Timing Evidence",
+        "## Drawing Eligibility Evidence",
+        "## Eligibility Counts",
         "## Gate",
         "## Overall Metrics",
+        "## Diagnostic Scope Metrics",
         "## Sport Metrics",
         "## League Metrics",
         "## Fallback Reason Counts",
         "## Drawing Metrics",
     ):
         assert section in report
-    assert report.count(table_header) == 3
+    assert report.count(table_header) == 4
     assert "| football |" in report
     assert "| hockey |" in report
     assert "| League 0 |" in report
@@ -134,6 +197,34 @@ def test_markdown_contains_all_scope_metrics_thresholds_and_disclaimers(tmp_path
     assert "- stale: 1" in report
     assert "- semantic: 3" in report
     assert "- incomplete market: 1" in report
+    assert "- requested schedule-date units: 3" in report
+    assert "- successful schedule-date units: 1" in report
+    assert "- failed schedule-date units: 2" in report
+    assert "- provider schedule failure: 1" in report
+    assert "- quota reserve reached: 1" in report
+    assert "- playable: 1" in report
+    assert "| ordinary_two_day | 15 |" in report
+    assert "| expanded | 0 |" in report
+    section_order = [
+        report.index(section)
+        for section in (
+            "## Configuration",
+            "## Provenance and Quota",
+            "## Collection Run Evidence",
+            "## Schedule Date Evidence",
+            "## Event Timing Evidence",
+            "## Drawing Eligibility Evidence",
+            "## Eligibility Counts",
+            "## Gate",
+            "## Overall Metrics",
+            "## Diagnostic Scope Metrics",
+            "## Sport Metrics",
+            "## League Metrics",
+            "## Fallback Reason Counts",
+            "## Drawing Metrics",
+        )
+    ]
+    assert section_order == sorted(section_order)
 
 
 def test_atomic_writer_restores_pair_and_cleans_temps_on_base_exception(
@@ -178,13 +269,32 @@ def test_repeat_write_is_byte_identical(tmp_path):
 
 
 def _report_audit():
+    schedule_results = (
+        ScheduleDateResult("football", date(2026, 7, 14), (), None),
+        ScheduleDateResult(
+            "football",
+            date(2026, 7, 15),
+            (),
+            "provider schedule failure",
+        ),
+        ScheduleDateResult(
+            "hockey",
+            date(2026, 7, 14),
+            (),
+            "quota reserve reached",
+        ),
+    )
     return audit_external_coverage(
         _snapshot_session_factory(
             (
-                _collection(
-                    1,
-                    FALLBACK_REASONS,
-                    fallback_bookmaker_counts=(0, 0, 0, 0, 0, 2, 0, 0),
+                _modern_collection(
+                    _collection(
+                        1,
+                        FALLBACK_REASONS,
+                        fallback_bookmaker_counts=(0, 0, 0, 0, 0, 2, 0, 0),
+                    ),
+                    scope="ordinary_two_day",
+                    schedule_results=schedule_results,
                 ),
             )
         ),

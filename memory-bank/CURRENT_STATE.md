@@ -1438,3 +1438,21 @@ schedule JSON and inconsistent timing/eligibility provenance fail closed.
 Focused verification passed: 16 storage tests and Ruff on all touched files.
 Task 3 audit/report diagnostics remain next; category, bank, probability, EV,
 and coverage-gate definitions are unchanged.
+
+## Multi-Day Eligibility Task 3B: Audit and Reports Complete
+
+Coverage auditing now exposes target fingerprint, collection horizon,
+requested/successful/failed schedule dates, event timing sources, drawing
+eligibility, provider-missing events, and partial-schedule events. Diagnostic
+collection scopes are disjoint and deterministic: `ordinary_two_day`,
+`expanded`, `multi_day`, and `unknown`. Legacy collections stay in `unknown`.
+
+The existing overall coverage-gate population, predicates, and thresholds are
+unchanged; scoped metrics are diagnostic only. Failed schedule dates are
+counted independently from affected event fallbacks. CSV and Markdown reports
+remain atomic and deterministic. Focused verification passed (`37 passed`),
+Ruff passed, and repeated report hashes were byte-identical:
+`45359a3edb07741261cf3cfa5caa3e6f85628f99e76adb3e9998afa4400655b5`
+for CSV and
+`796fb78654a5db4a6c0bb9d9f8979fcf37b34c1b1d2f229ee9e080692f6544bb`
+for Markdown. Task 4 progressive orchestration is next.
