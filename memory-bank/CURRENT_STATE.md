@@ -23,9 +23,35 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 848
-- Focused runner timing/orchestration suite passed: 93
+- Tests currently passed: 860
+- Focused runner report suite passed twice: 12
 - Focused and repository-wide Ruff passed
+
+## Latest Completed Task: Deterministic Runner Reports
+
+The safe drawing runner now publishes one deterministic canonical JSON manifest
+and operator-readable Markdown report as a rollback-safe pair. A 12-character
+lowercase SHA-256 run ID binds the canonical target, preflight timestamp,
+runner configuration, and the literal supported provider `api-sports`, so
+distinct invocations do not silently overwrite one another.
+
+The manifest is assembled from an explicit serializable payload and never uses
+`asdict(result)`. NumPy surfaces, probability matrices, cache paths, and
+diagnostic `top_coupons` remain outside the report boundary. `NO BET` never
+serializes coupons; `PLAY` and `RESEARCH ONLY` serialize only selected package
+coupons. JSON is sorted, compact, and ASCII. JSON/Markdown output collisions
+with declared inputs are rejected before writing.
+
+Both artifacts are fully rendered to same-directory temporary files and backed
+up before atomic replacement. Any `BaseException` after publication starts
+restores the previous pair byte-for-byte, or removes both newly installed
+artifacts, and temporary/backup files are always cleaned. External coverage
+remains diagnostic, external probabilities remain audit-only, and no runner,
+EV, category, bank, probability, or orchestration signature changed.
+
+Verification: the required RED import failure, focused GREEN twice (`12 passed`
+in `0.34s` and `0.37s`), focused Ruff, full pytest (`860 passed in 67.20s`),
+and repository-wide Ruff (`All checks passed!`).
 
 ## Latest Completed Task: Provider-Neutral Runner Orchestration
 
