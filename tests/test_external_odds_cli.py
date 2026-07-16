@@ -84,6 +84,10 @@ def test_external_odds_cli_help_lists_approved_commands():
     assert "--fresh" in collect.output
     assert "--reuse-cache" in collect.output
     assert "--max-passes" in collect.output
+    assert "--expand-missing-starts" in collect.output
+    assert "--no-expand-missing-starts" in collect.output
+    assert "--expansion-horizon-days" in collect.output
+    assert "--max-expansion-passes" in collect.output
     assert "--retry-delay-sec" in collect.output
     assert "--cache-root" in collect.output
     assert audit.exit_code == 0
@@ -96,11 +100,33 @@ def test_collect_cli_uses_fresh_multi_pass_mode_by_default(monkeypatch, tmp_path
 
     snapshot = _collection(1, ())
     captured = {}
+    base_pass = SimpleNamespace(
+        snapshot=snapshot,
+        phase="base",
+        phase_pass_number=1,
+        horizon_days=2,
+        elapsed_seconds=5.0,
+    )
+    expansion_pass = SimpleNamespace(
+        snapshot=snapshot,
+        phase="expansion",
+        phase_pass_number=1,
+        horizon_days=5,
+        elapsed_seconds=6.0,
+    )
     orchestration = SimpleNamespace(
         snapshot=snapshot,
-        passes=(SimpleNamespace(snapshot=snapshot), SimpleNamespace(snapshot=snapshot)),
+        passes=(base_pass, expansion_pass),
+        base_passes=(base_pass,),
+        expansion_passes=(expansion_pass,),
+        expanded=True,
+        final_horizon_days=5,
         total_requests=15,
         total_cache_hits=10,
+        total_requested_schedule_dates=7,
+        total_successful_schedule_dates=6,
+        total_failed_schedule_dates=1,
+        eligibility=snapshot.eligibility,
         elapsed_seconds=71.25,
         stop_reason="no_retryable_fallbacks",
     )
@@ -141,6 +167,9 @@ def test_collect_cli_uses_fresh_multi_pass_mode_by_default(monkeypatch, tmp_path
     assert captured["totobrief_client"] == "totobrief"
     assert captured["session_factory"] == "factory"
     assert captured["max_passes"] == 2
+    assert captured["expand_missing_starts"] is True
+    assert captured["expansion_horizon_days"] == 5
+    assert captured["max_expansion_passes"] == 3
     assert captured["retry_delay_seconds"] == 61.0
     assert captured["cache_root"] == tmp_path / "cache"
     assert "passes" in result.output
@@ -149,7 +178,83 @@ def test_collect_cli_uses_fresh_multi_pass_mode_by_default(monkeypatch, tmp_path
     assert "15" in result.output
     assert "total cache hits" in result.output
     assert "10" in result.output
+    assert "base passes" in result.output
+    assert "expansion passes" in result.output
+    assert "expanded" in result.output
+    assert "final horizon days" in result.output
+    assert "requested schedule dates" in result.output
+    assert "successful schedule dates" in result.output
+    assert "failed schedule dates" in result.output
+    assert "eligibility" in result.output
+    assert "base pass 1" in result.output
+    assert "expansion pass 1" in result.output
+    assert "horizon=2" in result.output
+    assert "horizon=5" in result.output
     assert "no_retryable_fallbacks" in result.output
+
+
+def test_collect_cli_passes_expansion_overrides(monkeypatch, tmp_path):
+    import toto_ai.cli as cli
+
+    snapshot = _collection(1, ())
+    captured = {}
+    base_pass = SimpleNamespace(
+        snapshot=snapshot,
+        phase="base",
+        phase_pass_number=1,
+        horizon_days=2,
+        elapsed_seconds=1.0,
+    )
+    orchestration = SimpleNamespace(
+        snapshot=snapshot,
+        passes=(base_pass,),
+        base_passes=(base_pass,),
+        expansion_passes=(),
+        expanded=False,
+        final_horizon_days=2,
+        total_requests=1,
+        total_cache_hits=0,
+        total_requested_schedule_dates=1,
+        total_successful_schedule_dates=1,
+        total_failed_schedule_dates=0,
+        eligibility=snapshot.eligibility,
+        elapsed_seconds=1.0,
+        stop_reason="no_retryable_fallbacks",
+    )
+
+    monkeypatch.setenv("API_SPORTS_KEY", "secret")
+    monkeypatch.setattr(cli, "init_db", lambda _db: "engine")
+    monkeypatch.setattr(cli, "get_session_factory", lambda _engine: "factory")
+    monkeypatch.setattr(cli, "load_aliases", lambda _path: {})
+    monkeypatch.setattr(cli, "TotoBriefClient", lambda: "totobrief")
+
+    def fake_collect(**kwargs):
+        captured.update(kwargs)
+        return orchestration
+
+    monkeypatch.setattr(cli, "collect_fresh_open_external_odds", fake_collect)
+
+    result = runner.invoke(
+        app,
+        [
+            "collect-external-odds",
+            "--open",
+            "--no-expand-missing-starts",
+            "--expansion-horizon-days",
+            "4",
+            "--max-expansion-passes",
+            "2",
+            "--db",
+            str(tmp_path / "toto.db"),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert captured["expand_missing_starts"] is False
+    assert captured["expansion_horizon_days"] == 4
+    assert captured["max_expansion_passes"] == 2
+    assert "expanded" in result.output
+    assert "False" in result.output
 
 
 def test_collect_cli_reuse_cache_keeps_single_pass_path(monkeypatch, tmp_path):

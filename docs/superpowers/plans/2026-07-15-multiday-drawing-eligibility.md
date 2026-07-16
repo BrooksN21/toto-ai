@@ -209,27 +209,27 @@ git commit -m "Persist external schedule eligibility provenance"
 - Adds: `max_expansion_passes: int = 3`
 - Extends result with `expanded`, `final_horizon_days`, and schedule failure totals.
 
-- [ ] **Step 1: Write failing orchestration tests**
+- [x] **Step 1: Write failing orchestration tests**
 
 Test no expansion for a clean two-day result, immediate expansion after a clean exact miss on a null-start target, no expansion for known-start misses, operational retry before expansion, quota retry inside expansion, cache path reuse across both phases, bounded expansion exhaustion, and aggregate counters/timing.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run prospective tests and confirm missing options/state fail.
 
-- [ ] **Step 3: Implement the two-phase state machine**
+- [x] **Step 3: Implement the two-phase state machine**
 
 Keep the existing base `max_passes` meaning. Expansion starts only after a stable base snapshot contains a canonical no-exact-pair miss for a target event whose TotoBrief start is null. Expansion uses the same pinned target and invocation cache, calls collection with horizon five, and has its own bounded pass count. Sleep only for operational failures, not merely to enter expansion.
 
-- [ ] **Step 4: Add CLI controls and output**
+- [x] **Step 4: Add CLI controls and output**
 
 Add `--expand-missing-starts/--no-expand-missing-starts`, `--expansion-horizon-days 5`, and `--max-expansion-passes 3`. Print phase/pass totals, final horizon, expanded flag, schedule-date failures, and eligibility. Keep secrets sanitized.
 
-- [ ] **Step 5: Verify GREEN**
+- [x] **Step 5: Verify GREEN**
 
 Run prospective/CLI/end-to-end tests and CLI help. Confirm no real sleeps or network calls in tests.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/toto_ai/external_odds/prospective.py src/toto_ai/cli.py \

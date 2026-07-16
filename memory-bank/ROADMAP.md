@@ -191,7 +191,10 @@
 - Task 3 is complete: additive legacy-safe persistence, exact
   drawing/fingerprint eligibility lookup, and deterministic audit/report
   evidence with separate ordinary, expanded, multi-day, and unknown scopes.
-  The existing overall coverage gate remains unchanged. Tasks 4-6 remain.
+  The existing overall coverage gate remains unchanged.
+- Task 4 is complete: fresh collection now uses bounded base retries at a
+  two-day horizon and an independent, cache-reusing expansion phase through
+  day five only for stable null-start exact-pair misses. Tasks 5-6 remain.
 - Automatic T-15 scheduling of the fresh prospective command
 - Open drawing analysis
 - Package generation

@@ -11,14 +11,28 @@ from uuid import uuid4
 
 from toto_ai.external_odds.collection import (
     ExternalCollectionSnapshot,
-    collect_target_external_odds,
+    build_external_collection,
     resolve_open_target,
 )
 from toto_ai.external_odds.domain import ExternalOddsProvider, TargetDrawing
+from toto_ai.external_odds.eligibility import DrawingEligibility
+from toto_ai.external_odds.storage import save_collection
 
-ProspectiveStopReason = Literal["no_retryable_fallbacks", "max_passes"]
+ProspectivePhase = Literal["base", "expansion"]
+ProspectiveStopReason = Literal[
+    "no_retryable_fallbacks",
+    "max_passes",
+    "max_expansion_passes",
+]
 ProviderFactory = Callable[[Path], ExternalOddsProvider]
-_RETRYABLE_EXACT_REASONS = frozenset(("quota reserve reached",))
+_BASE_HORIZON_DAYS = 2
+_MAX_HORIZON_DAYS = 5
+_RETRYABLE_EXACT_REASONS = frozenset(
+    (
+        "partial schedule",
+        "quota reserve reached",
+    )
+)
 _RETRYABLE_REASON_PREFIXES = (
     "provider schedule failure:",
     "provider odds failure:",
@@ -29,17 +43,36 @@ _RETRYABLE_REASON_PREFIXES = (
 class ProspectiveCollectionPass:
     snapshot: ExternalCollectionSnapshot
     elapsed_seconds: float
+    phase: ProspectivePhase
+    phase_pass_number: int
+    horizon_days: int
 
 
 @dataclass(frozen=True)
 class ProspectiveCollectionResult:
     snapshot: ExternalCollectionSnapshot
     passes: tuple[ProspectiveCollectionPass, ...]
+    base_passes: tuple[ProspectiveCollectionPass, ...]
+    expansion_passes: tuple[ProspectiveCollectionPass, ...]
     cache_dir: Path
     elapsed_seconds: float
     stop_reason: ProspectiveStopReason
+    expanded: bool
+    final_horizon_days: int
     total_requests: int
     total_cache_hits: int
+    total_requested_schedule_dates: int
+    total_successful_schedule_dates: int
+    total_failed_schedule_dates: int
+    eligibility: DrawingEligibility
+
+    @property
+    def base_pass_count(self) -> int:
+        return len(self.base_passes)
+
+    @property
+    def expansion_pass_count(self) -> int:
+        return len(self.expansion_passes)
 
 
 def fresh_cache_session_dir(
@@ -55,7 +88,7 @@ def fresh_cache_session_dir(
 
 
 def is_retryable_snapshot(snapshot: ExternalCollectionSnapshot) -> bool:
-    return any(
+    return bool(snapshot.failed_schedule_dates) or any(
         _is_retryable_reason(event.fallback_reason) for event in snapshot.events
     )
 
@@ -68,48 +101,167 @@ def collect_fresh_open_external_odds(
     aliases: dict[str, str],
     cache_root: Path,
     max_passes: int = 3,
+    expand_missing_starts: bool = True,
+    expansion_horizon_days: int = 5,
+    max_expansion_passes: int = 3,
     retry_delay_seconds: float = 65.0,
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
     monotonic: Callable[[], float] = time.monotonic,
     sleep: Callable[[float], None] = time.sleep,
 ) -> ProspectiveCollectionResult:
-    _validate_options(max_passes, retry_delay_seconds)
+    _validate_options(
+        max_passes=max_passes,
+        expand_missing_starts=expand_missing_starts,
+        expansion_horizon_days=expansion_horizon_days,
+        max_expansion_passes=max_expansion_passes,
+        retry_delay_seconds=retry_delay_seconds,
+    )
     started = monotonic()
     started_at = now()
     target = resolve_open_target(totobrief_client, fetched_at=started_at)
     cache_dir = fresh_cache_session_dir(cache_root, target, started_at)
-    passes: list[ProspectiveCollectionPass] = []
+    base_passes: list[ProspectiveCollectionPass] = []
+    expansion_passes: list[ProspectiveCollectionPass] = []
     stop_reason: ProspectiveStopReason = "max_passes"
 
     for pass_index in range(max_passes):
-        pass_started = monotonic()
-        snapshot = collect_target_external_odds(
+        item = _run_pass(
             target,
-            provider_factory(cache_dir),
-            session_factory,
-            aliases,
+            cache_dir=cache_dir,
+            provider_factory=provider_factory,
+            session_factory=session_factory,
+            aliases=aliases,
+            phase="base",
+            phase_pass_number=pass_index + 1,
+            horizon_days=_BASE_HORIZON_DAYS,
+            monotonic=monotonic,
         )
-        passes.append(
-            ProspectiveCollectionPass(
-                snapshot=snapshot,
-                elapsed_seconds=monotonic() - pass_started,
-            )
-        )
-        if not is_retryable_snapshot(snapshot):
+        base_passes.append(item)
+        if not is_retryable_snapshot(item.snapshot):
             stop_reason = "no_retryable_fallbacks"
             break
         if pass_index + 1 < max_passes:
             sleep(retry_delay_seconds)
 
+    stable_base_snapshot = (
+        base_passes[-1].snapshot
+        if stop_reason == "no_retryable_fallbacks"
+        else None
+    )
+    if (
+        expand_missing_starts
+        and stable_base_snapshot is not None
+        and _is_expansion_eligible(target, stable_base_snapshot)
+    ):
+        stop_reason = "max_expansion_passes"
+        for pass_index in range(max_expansion_passes):
+            item = _run_pass(
+                target,
+                cache_dir=cache_dir,
+                provider_factory=provider_factory,
+                session_factory=session_factory,
+                aliases=aliases,
+                phase="expansion",
+                phase_pass_number=pass_index + 1,
+                horizon_days=expansion_horizon_days,
+                monotonic=monotonic,
+            )
+            expansion_passes.append(item)
+            if not is_retryable_snapshot(item.snapshot):
+                stop_reason = "no_retryable_fallbacks"
+                break
+            if pass_index + 1 < max_expansion_passes:
+                sleep(retry_delay_seconds)
+
+    passes = (*base_passes, *expansion_passes)
     final_snapshot = passes[-1].snapshot
     return ProspectiveCollectionResult(
         snapshot=final_snapshot,
-        passes=tuple(passes),
+        passes=passes,
+        base_passes=tuple(base_passes),
+        expansion_passes=tuple(expansion_passes),
         cache_dir=cache_dir,
         elapsed_seconds=monotonic() - started,
         stop_reason=stop_reason,
+        expanded=bool(expansion_passes),
+        final_horizon_days=(
+            expansion_horizon_days if expansion_passes else _BASE_HORIZON_DAYS
+        ),
         total_requests=sum(item.snapshot.requests_made for item in passes),
         total_cache_hits=sum(item.snapshot.cache_hits for item in passes),
+        total_requested_schedule_dates=sum(
+            len(item.snapshot.requested_schedule_dates) for item in passes
+        ),
+        total_successful_schedule_dates=sum(
+            len(item.snapshot.successful_schedule_dates) for item in passes
+        ),
+        total_failed_schedule_dates=sum(
+            len(item.snapshot.failed_schedule_dates) for item in passes
+        ),
+        eligibility=final_snapshot.eligibility,
+    )
+
+
+def _run_pass(
+    target: TargetDrawing,
+    *,
+    cache_dir: Path,
+    provider_factory: ProviderFactory,
+    session_factory: Any,
+    aliases: dict[str, str],
+    phase: ProspectivePhase,
+    phase_pass_number: int,
+    horizon_days: int,
+    monotonic: Callable[[], float],
+) -> ProspectiveCollectionPass:
+    pass_started = monotonic()
+    snapshot = _collect_target_pass(
+        target,
+        provider_factory(cache_dir),
+        session_factory,
+        aliases,
+        missing_start_horizon_days=horizon_days,
+    )
+    return ProspectiveCollectionPass(
+        snapshot=snapshot,
+        elapsed_seconds=monotonic() - pass_started,
+        phase=phase,
+        phase_pass_number=phase_pass_number,
+        horizon_days=horizon_days,
+    )
+
+
+def _collect_target_pass(
+    target: TargetDrawing,
+    provider: ExternalOddsProvider,
+    session_factory: Any,
+    aliases: dict[str, str],
+    *,
+    missing_start_horizon_days: int,
+) -> ExternalCollectionSnapshot:
+    snapshot = build_external_collection(
+        target,
+        provider,
+        aliases,
+        missing_start_horizon_days=missing_start_horizon_days,
+    )
+    if len(snapshot.events) != 15:
+        raise ValueError("external collection must contain exactly 15 dispositions")
+    save_collection(session_factory, snapshot)
+    return snapshot
+
+
+def _is_expansion_eligible(
+    target: TargetDrawing,
+    snapshot: ExternalCollectionSnapshot,
+) -> bool:
+    target_events = {event.event_order: event for event in target.events}
+    return any(
+        target_events[event.event_order].starts_at is None
+        and event.match_status == "missing"
+        and event.match_candidate_ids == ()
+        and event.fallback_reason == "0 exact candidates"
+        for event in snapshot.events
     )
 
 
@@ -121,13 +273,37 @@ def _is_retryable_reason(reason: str | None) -> bool:
     )
 
 
-def _validate_options(max_passes: int, retry_delay_seconds: float) -> None:
+def _validate_options(
+    *,
+    max_passes: int,
+    expand_missing_starts: bool,
+    expansion_horizon_days: int,
+    max_expansion_passes: int,
+    retry_delay_seconds: float,
+) -> None:
     if (
         not isinstance(max_passes, int)
         or isinstance(max_passes, bool)
         or max_passes <= 0
     ):
         raise ValueError("max_passes must be a positive integer")
+    if not isinstance(expand_missing_starts, bool):
+        raise ValueError("expand_missing_starts must be a boolean")
+    if (
+        not isinstance(expansion_horizon_days, int)
+        or isinstance(expansion_horizon_days, bool)
+        or not _BASE_HORIZON_DAYS < expansion_horizon_days <= _MAX_HORIZON_DAYS
+    ):
+        raise ValueError(
+            "expansion_horizon_days must be an integer greater than 2 "
+            "and at most 5"
+        )
+    if (
+        not isinstance(max_expansion_passes, int)
+        or isinstance(max_expansion_passes, bool)
+        or max_expansion_passes <= 0
+    ):
+        raise ValueError("max_expansion_passes must be a positive integer")
     if (
         not isinstance(retry_delay_seconds, (int, float))
         or isinstance(retry_delay_seconds, bool)

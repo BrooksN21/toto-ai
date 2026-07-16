@@ -1456,3 +1456,21 @@ Ruff passed, and repeated report hashes were byte-identical:
 for CSV and
 `796fb78654a5db4a6c0bb9d9f8979fcf37b34c1b1d2f229ee9e080692f6544bb`
 for Markdown. Task 4 progressive orchestration is next.
+
+## Multi-Day Eligibility Task 4: Progressive Collection Complete
+
+Fresh prospective collection now has two bounded phases. Base collection keeps
+the existing two-day horizon and `max_passes` semantics. A stable canonical
+`0 exact candidates` miss expands through day five only when the original
+TotoBrief event start is absent. Known-start misses never expand. Expansion has
+its own pass limit, reuses the pinned target and cache-session path, retries
+only operational failures with the existing delay, and never sleeps merely to
+change phase.
+
+The result and CLI expose phase/pass counts, final horizon, schedule-date
+totals, eligibility, source counts, and stop reason. New controls are
+`--expand-missing-starts/--no-expand-missing-starts`,
+`--expansion-horizon-days`, and `--max-expansion-passes`. Focused verification
+passed (`31 passed`), CLI help succeeded, and Ruff passed. Task 5 fail-closed
+playable timing integration is next; probability, EV, bank, stake, and package
+ranking definitions remain unchanged.

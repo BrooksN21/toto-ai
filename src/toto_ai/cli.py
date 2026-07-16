@@ -762,10 +762,31 @@ def collect_external_odds_command(
     quota_reserve: int = typer.Option(10, min=0),
     fresh: bool = typer.Option(True, "--fresh/--reuse-cache"),
     max_passes: int = typer.Option(3, min=1),
+    expand_missing_starts: bool = typer.Option(
+        True,
+        "--expand-missing-starts/--no-expand-missing-starts",
+        help="Use --expand-missing-starts or --no-expand-missing-starts.",
+    ),
+    expansion_horizon_days: int = typer.Option(
+        5,
+        min=3,
+        max=5,
+        help="Expanded search limit set by --expansion-horizon-days.",
+    ),
+    max_expansion_passes: int = typer.Option(
+        3,
+        min=1,
+        help="Expansion retry limit set by --max-expansion-passes.",
+    ),
     retry_delay_seconds: float = typer.Option(65.0, min=0.0),
     cache_root: str = typer.Option("data/external-cache/api-sports"),
 ) -> None:
-    """Collect one prospective external-odds snapshot for the open drawing."""
+    """Collect one prospective external-odds snapshot for the open drawing.
+
+    Expansion controls: --expand-missing-starts/--no-expand-missing-starts,
+    --expansion-horizon-days, --max-expansion-passes, and
+    --retry-delay-seconds.
+    """
     if not open:
         raise typer.BadParameter("--open is required")
     if provider != "api-sports":
@@ -792,6 +813,9 @@ def collect_external_odds_command(
                 aliases=reviewed_aliases,
                 cache_root=Path(cache_root),
                 max_passes=max_passes,
+                expand_missing_starts=expand_missing_starts,
+                expansion_horizon_days=expansion_horizon_days,
+                max_expansion_passes=max_expansion_passes,
                 retry_delay_seconds=retry_delay_seconds,
             )
             result = prospective_result.snapshot
@@ -2054,12 +2078,67 @@ def _external_collection_table(
     if prospective_result is not None:
         table.add_row("passes", _format_value(len(prospective_result.passes)))
         table.add_row(
+            "base passes",
+            _format_value(len(prospective_result.base_passes)),
+        )
+        table.add_row(
+            "expansion passes",
+            _format_value(len(prospective_result.expansion_passes)),
+        )
+        table.add_row("expanded", _format_value(prospective_result.expanded))
+        table.add_row(
+            "final horizon days",
+            _format_value(prospective_result.final_horizon_days),
+        )
+        for item in prospective_result.passes:
+            table.add_row(
+                f"{item.phase} pass {item.phase_pass_number}",
+                (
+                    f"horizon={item.horizon_days} "
+                    f"failed_schedule_dates="
+                    f"{len(item.snapshot.failed_schedule_dates)} "
+                    f"requests={item.snapshot.requests_made} "
+                    f"cache_hits={item.snapshot.cache_hits} "
+                    f"elapsed={item.elapsed_seconds:.2f}s"
+                ),
+            )
+        table.add_row(
             "total requests",
             _format_value(prospective_result.total_requests),
         )
         table.add_row(
             "total cache hits",
             _format_value(prospective_result.total_cache_hits),
+        )
+        table.add_row(
+            "requested schedule dates",
+            _format_value(prospective_result.total_requested_schedule_dates),
+        )
+        table.add_row(
+            "successful schedule dates",
+            _format_value(prospective_result.total_successful_schedule_dates),
+        )
+        table.add_row(
+            "failed schedule dates",
+            _format_value(prospective_result.total_failed_schedule_dates),
+        )
+        eligibility = prospective_result.eligibility
+        table.add_row("eligibility", eligibility.status)
+        table.add_row(
+            "eligibility span days",
+            _format_value(eligibility.span_days),
+        )
+        table.add_row(
+            "eligibility missing event orders",
+            ",".join(str(order) for order in eligibility.missing_event_orders)
+            or "none",
+        )
+        table.add_row(
+            "eligibility start sources",
+            (
+                f"totobrief={eligibility.totobrief_count} "
+                f"provider={eligibility.provider_count}"
+            ),
         )
         table.add_row(
             "elapsed seconds",
