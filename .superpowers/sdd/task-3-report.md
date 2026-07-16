@@ -93,5 +93,5 @@ Result: `8 failed, 34 passed in 2.61s`.
   target-mismatch, cutoff, and timing-veto exits assert their progress phases.
 - Focused timing/orchestration pytest: `93 passed in 0.28s`.
 - Focused Ruff: `All checks passed!`.
-- Full pytest: `848 passed`.
+- Full pytest (independently confirmed): `848 passed in 45.95s`, exit 0.
 - Full Ruff: `All checks passed!`.

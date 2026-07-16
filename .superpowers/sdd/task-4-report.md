@@ -62,8 +62,9 @@ Implemented and verified on `feature/initial-toto-ai` from `d99bbb7`.
 - `memory-bank/CURRENT_STATE.md`
 - `.superpowers/sdd/task-4-report.md`
 
-The pre-existing modification to `.superpowers/sdd/task-3-report.md` was not
-changed or staged.
+The pre-existing `.superpowers/sdd/task-3-report.md` verification sync was
+included by the controller in the final fix commit after independently
+confirming `848 passed in 45.95s`; it does not change Task 4 behavior.
 
 ## Self-Review
 
@@ -89,3 +90,62 @@ changed or staged.
 
 - CLI construction and passing external/EV report links remain intentionally
   deferred to Task 5.
+
+## Review Fix Wave: Final Provenance and Transaction Cleanup
+
+Status: all Task 4 review findings fixed and verified from `6a93110`.
+
+### RED / GREEN Evidence
+
+1. Main RED
+
+   Command: `.venv/bin/python -m pytest -q tests/test_runner_orchestration.py tests/test_runner_reports.py`
+
+   Result: `13 failed, 50 passed in 75.71s`. Failures were the missing
+   `final_fingerprint` field/propagation/serialization and missing exclusive
+   transaction-write helpers. The lexical and symlink collision regressions
+   already passed against the existing resolve-based rejection.
+
+2. Timing-observation RED
+
+   Command: `.venv/bin/python -m pytest -q tests/test_runner_orchestration.py::test_result_rejects_mismatched_final_fingerprint_with_checked_timing`
+
+   Result: `1 failed in 40.91s`; a checked timing observation did not yet force
+   the observed final fingerprint to match the preflight pin.
+
+3. Focused GREEN
+
+   Command: `.venv/bin/python -m pytest -q tests/test_runner_orchestration.py tests/test_runner_reports.py tests/test_runner_timing.py`
+
+   Result: `115 passed in 0.34s`.
+
+4. Focused Ruff
+
+   Command: `.venv/bin/python -m ruff check src/toto_ai/runner/models.py src/toto_ai/runner/orchestration.py src/toto_ai/runner/reports.py tests/test_runner_orchestration.py tests/test_runner_reports.py`
+
+   Result: `All checks passed!`.
+
+5. Full pytest
+
+   Command: `.venv/bin/python -m pytest -q`
+
+   Result: `870 passed in 169.32s (0:02:49)`.
+
+6. Full Ruff
+
+   Command: `.venv/bin/python -m ruff check .`
+
+   Result: `All checks passed!`.
+
+### Review Fix Summary
+
+- `DrawingRunnerResult.final_fingerprint` records `None` before final
+  resolution, the observed mismatch fingerprint on a fail-closed target
+  change, and the matching observed fingerprint before any later phase.
+- Result validation rejects missing, malformed, unstarted, or post-final
+  inconsistent provenance. JSON emits the field verbatim, including `null`.
+- Report publication derives all four transaction paths from one token before
+  writes, creates temp and backup files with exclusive mode, and unconditionally
+  cleans every known path after interruptions or publication rollback.
+- KeyboardInterrupt regressions cover partial temp writes and partial backup
+  creation. Lexical and symlink aliases are rejected before output writes.

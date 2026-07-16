@@ -72,6 +72,7 @@ class DrawingRunnerResult:
     target: PinnedDrawing
     preflight_at: datetime
     final_started_at: datetime | None
+    final_fingerprint: str | None
     collection_finished_at: datetime | None
     timing_finished_at: datetime | None
     audit_finished_at: datetime | None
@@ -114,6 +115,17 @@ class DrawingRunnerResult:
             raise ValueError("audit must be a CoverageAudit")
         if self.ev_run is not None and not isinstance(self.ev_run, EVPackageRun):
             raise ValueError("ev_run must be an EVPackageRun")
+        if self.final_fingerprint is not None and (
+            not isinstance(self.final_fingerprint, str)
+            or not _FINGERPRINT_PATTERN.fullmatch(self.final_fingerprint)
+        ):
+            raise ValueError(
+                "final_fingerprint must be a lowercase SHA-256 hex digest"
+            )
+        if self.final_fingerprint is not None and self.final_started_at is None:
+            raise ValueError("final fingerprint requires final_started_at")
+        if self.final_started_at is not None and self.final_fingerprint is None:
+            raise ValueError("final resolve requires a fingerprint")
 
         timestamps = (
             ("preflight_at", self.preflight_at),
@@ -154,6 +166,29 @@ class DrawingRunnerResult:
             raise ValueError("audit requires audit_finished_at")
         if self.ev_run is not None and self.ev_finished_at is None:
             raise ValueError("ev_run requires ev_finished_at")
+
+        subsequent_phase_exists = (
+            self.timing_eligibility.status != "not_checked"
+            or any(
+                value is not None
+                for value in (
+                    self.collection_finished_at,
+                    self.timing_finished_at,
+                    self.audit_finished_at,
+                    self.ev_finished_at,
+                )
+            )
+        )
+        publishable_ev_exists = (
+            self.ev_run is not None
+            or self.decision in ("PLAY", "RESEARCH ONLY")
+        )
+        if (
+            subsequent_phase_exists or publishable_ev_exists
+        ) and self.final_fingerprint != self.target.fingerprint:
+            raise ValueError(
+                "final fingerprint must match the pinned preflight fingerprint"
+            )
 
         self._validate_target_identities()
         self._validate_terminal_decision()

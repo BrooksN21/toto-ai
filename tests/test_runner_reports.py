@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+import toto_ai.runner.reports as runner_reports
 from toto_ai.ev.drawing import EVPackageRun, EVSensitivitySummary
 from toto_ai.ev.models import (
     EVConfig,
@@ -323,6 +324,7 @@ def _runner_result(
         target=pinned,
         preflight_at=PREFLIGHT_AT,
         final_started_at=FINAL_STARTED_AT,
+        final_fingerprint=pinned.fingerprint,
         collection_finished_at=FINAL_STARTED_AT + timedelta(seconds=1),
         timing_finished_at=FINAL_STARTED_AT + timedelta(seconds=2),
         audit_finished_at=FINAL_STARTED_AT + timedelta(seconds=3),
@@ -335,6 +337,36 @@ def _runner_result(
         timing_eligibility=timing,
         audit=_audit(collection),
         ev_run=ev_run,
+    )
+
+
+def _terminal_result(*, final_target: TargetDrawing | None) -> DrawingRunnerResult:
+    target = _target()
+    pinned = pin_drawing(target)
+    final = None if final_target is None else pin_drawing(final_target)
+    final_started_at = None if final is None else FINAL_STARTED_AT
+    return DrawingRunnerResult(
+        config=DrawingRunnerConfig(bank=4980),
+        target=pinned,
+        preflight_at=PREFLIGHT_AT,
+        final_started_at=final_started_at,
+        collection_finished_at=None,
+        timing_finished_at=None,
+        audit_finished_at=None,
+        ev_finished_at=None,
+        finished_at=final_started_at or PREFLIGHT_AT,
+        elapsed_seconds=0.0,
+        decision="NO BET",
+        terminal_reason=(
+            "safety cutoff reached before final resolve"
+            if final is None
+            else "final target does not match preflight"
+        ),
+        collection=None,
+        timing_eligibility=PlayTimingEligibility.not_checked(),
+        audit=None,
+        ev_run=None,
+        final_fingerprint=None if final is None else final.fingerprint,
     )
 
 
@@ -492,6 +524,41 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
     assert "PENDING" in markdown
 
 
+def test_mismatch_report_serializes_observed_final_fingerprint(tmp_path):
+    changed_target = replace(
+        _target(),
+        events=tuple(
+            replace(event, home_team=f"Changed {event.event_order}")
+            for event in _target().events
+        ),
+    )
+    result = _terminal_result(final_target=changed_target)
+
+    json_path, markdown_path = write_drawing_run_reports(
+        result,
+        report_dir=tmp_path,
+    )
+    payload = json.loads(json_path.read_text())
+
+    assert result.final_fingerprint != result.target.fingerprint
+    assert payload["target"]["final_fingerprint"] == result.final_fingerprint
+    assert result.final_fingerprint in markdown_path.read_text()
+
+
+def test_early_cutoff_report_serializes_null_final_fingerprint(tmp_path):
+    result = _terminal_result(final_target=None)
+
+    json_path, markdown_path = write_drawing_run_reports(
+        result,
+        report_dir=tmp_path,
+    )
+    json_text = json_path.read_text()
+
+    assert json.loads(json_text)["target"]["final_fingerprint"] is None
+    assert '"final_fingerprint":null' in json_text
+    assert "- final fingerprint: null" in markdown_path.read_text()
+
+
 @pytest.mark.parametrize("decision", ["PLAY", "RESEARCH ONLY"])
 def test_actionable_reports_serialize_only_selected_package_coupons(
     decision,
@@ -551,6 +618,42 @@ def test_report_output_cannot_collide_with_an_input_path(tmp_path, output_index)
     assert not any(path.exists() for path in output_paths)
 
 
+def test_report_output_rejects_lexical_input_alias_before_writes(tmp_path):
+    result = _runner_result("PLAY")
+    output_paths = drawing_run_report_paths(result, tmp_path)
+    lexical_alias = tmp_path / "not-created" / ".." / output_paths[0].name
+
+    with pytest.raises(ValueError, match="runner report and input paths"):
+        write_drawing_run_reports(
+            result,
+            report_dir=tmp_path,
+            input_paths=(lexical_alias,),
+        )
+
+    assert not any(path.exists() for path in output_paths)
+    assert not (tmp_path / "not-created").exists()
+
+
+def test_report_output_rejects_symlink_input_alias_before_writes(tmp_path):
+    result = _runner_result("PLAY")
+    real_dir = tmp_path / "real"
+    alias_dir = tmp_path / "alias"
+    real_dir.mkdir()
+    alias_dir.symlink_to(real_dir, target_is_directory=True)
+    output_paths = drawing_run_report_paths(result, alias_dir)
+    real_input = real_dir / output_paths[0].name
+
+    with pytest.raises(ValueError, match="runner report and input paths"):
+        write_drawing_run_reports(
+            result,
+            report_dir=alias_dir,
+            input_paths=(real_input,),
+        )
+
+    assert not any(path.exists() for path in output_paths)
+    assert tuple(real_dir.iterdir()) == ()
+
+
 def test_runner_report_pair_is_restored_on_interruption(monkeypatch, tmp_path):
     original = write_drawing_run_reports(
         _runner_result("PLAY", coupon="ORIGINAL-COUPON"), report_dir=tmp_path
@@ -574,4 +677,65 @@ def test_new_runner_report_pair_is_removed_on_interruption(monkeypatch, tmp_path
         write_drawing_run_reports(result, report_dir=tmp_path)
 
     assert not any(path.exists() for path in expected_paths)
+    assert not tuple(tmp_path.glob(".*.tmp"))
+
+
+def test_runner_report_pair_survives_temp_write_interruption(monkeypatch, tmp_path):
+    original = write_drawing_run_reports(
+        _runner_result("PLAY", coupon="ORIGINAL-COUPON"), report_dir=tmp_path
+    )
+    original_bytes = tuple(path.read_bytes() for path in original)
+    real_write = runner_reports._write_exclusive
+    interrupted = False
+
+    def interrupt(path, content):
+        nonlocal interrupted
+        if not interrupted and path.name.endswith(".tmp"):
+            interrupted = True
+            with path.open("xb") as output:
+                output.write(content[:1])
+            raise KeyboardInterrupt
+        return real_write(path, content)
+
+    monkeypatch.setattr(runner_reports, "_write_exclusive", interrupt)
+
+    with pytest.raises(KeyboardInterrupt):
+        write_drawing_run_reports(
+            _runner_result("PLAY", coupon="CHANGED-COUPON"),
+            report_dir=tmp_path,
+        )
+
+    assert tuple(path.read_bytes() for path in original) == original_bytes
+    assert not tuple(tmp_path.glob(".*.tmp"))
+
+
+def test_runner_report_pair_survives_partial_backup_interruption(
+    monkeypatch,
+    tmp_path,
+):
+    original = write_drawing_run_reports(
+        _runner_result("PLAY", coupon="ORIGINAL-COUPON"), report_dir=tmp_path
+    )
+    original_bytes = tuple(path.read_bytes() for path in original)
+    real_copy = runner_reports._copy_exclusive
+    interrupted = False
+
+    def interrupt(source, destination):
+        nonlocal interrupted
+        if not interrupted:
+            interrupted = True
+            with source.open("rb") as input_file, destination.open("xb") as output:
+                output.write(input_file.read(1))
+            raise KeyboardInterrupt
+        return real_copy(source, destination)
+
+    monkeypatch.setattr(runner_reports, "_copy_exclusive", interrupt)
+
+    with pytest.raises(KeyboardInterrupt):
+        write_drawing_run_reports(
+            _runner_result("PLAY", coupon="CHANGED-COUPON"),
+            report_dir=tmp_path,
+        )
+
+    assert tuple(path.read_bytes() for path in original) == original_bytes
     assert not tuple(tmp_path.glob(".*.tmp"))

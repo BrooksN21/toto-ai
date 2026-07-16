@@ -417,6 +417,7 @@ def _complete_result(
         target=pin_drawing(resolved_target),
         preflight_at=T_MINUS_20,
         final_started_at=T_MINUS_19,
+        final_fingerprint=pin_drawing(resolved_target).fingerprint,
         collection_finished_at=T_MINUS_18,
         timing_finished_at=T_MINUS_18 + timedelta(seconds=1),
         audit_finished_at=T_MINUS_18 + timedelta(seconds=2),
@@ -463,6 +464,7 @@ def test_normal_playable_run_orders_every_phase():
 
     assert result.decision == "PLAY"
     assert result.target == pinned
+    assert result.final_fingerprint == pinned.fingerprint
     assert result.collection == collection
     assert result.audit == audit
     assert result.ev_run == ev_run
@@ -575,6 +577,7 @@ def test_already_closed_launch_stops_after_preflight():
     assert result.decision == "NO BET"
     assert result.terminal_reason == "safety cutoff reached before final resolve"
     assert result.final_started_at is None
+    assert result.final_fingerprint is None
     assert calls == ["preflight"]
     assert [update["phase"] for update in updates] == ["preflight", "complete"]
 
@@ -616,6 +619,7 @@ def test_target_change_fails_closed_before_provider_access(kind):
     assert result.decision == "NO BET"
     assert result.terminal_reason == "final target does not match preflight"
     assert result.target == preflight
+    assert result.final_fingerprint == changed_final.fingerprint
     assert calls == ["preflight", "final"]
     assert [update["phase"] for update in updates] == [
         "preflight",
@@ -1147,6 +1151,55 @@ def test_result_rejects_naive_phase_timestamp():
         replace(result, collection_finished_at=T_MINUS_18.replace(tzinfo=None))
 
 
+def test_result_rejects_final_fingerprint_without_final_start():
+    result = _complete_result()
+
+    with pytest.raises(ValueError, match="final fingerprint requires final_started_at"):
+        replace(result, final_started_at=None)
+
+
+def test_result_rejects_completed_final_without_fingerprint():
+    result = _complete_result()
+
+    with pytest.raises(ValueError, match="final resolve requires a fingerprint"):
+        replace(result, final_fingerprint=None)
+
+
+def test_result_rejects_mismatched_final_fingerprint_after_collection():
+    result = _complete_result()
+    changed_final = pin_drawing(_target(home_prefix="Changed"))
+
+    with pytest.raises(ValueError, match="final fingerprint must match"):
+        replace(result, final_fingerprint=changed_final.fingerprint)
+
+
+def test_result_rejects_mismatched_final_fingerprint_with_checked_timing():
+    target = _target()
+    preflight = pin_drawing(target)
+    changed_final = pin_drawing(_target(home_prefix="Changed"))
+
+    with pytest.raises(ValueError, match="final fingerprint must match"):
+        DrawingRunnerResult(
+            config=DrawingRunnerConfig(bank=4980),
+            target=preflight,
+            preflight_at=T_MINUS_20,
+            final_started_at=T_MINUS_19,
+            final_fingerprint=changed_final.fingerprint,
+            collection_finished_at=None,
+            timing_finished_at=None,
+            audit_finished_at=None,
+            ev_finished_at=None,
+            finished_at=T_MINUS_19,
+            elapsed_seconds=1.0,
+            decision="NO BET",
+            terminal_reason="test terminal reason",
+            collection=None,
+            timing_eligibility=_timing(target),
+            audit=None,
+            ev_run=None,
+        )
+
+
 def test_result_rejects_non_chronological_phase_timestamps():
     result = _complete_result()
 
@@ -1158,4 +1211,4 @@ def test_result_rejects_missing_earlier_phase_timestamp():
     result = _complete_result()
 
     with pytest.raises(ValueError, match="phase timestamps"):
-        replace(result, final_started_at=None)
+        replace(result, collection_finished_at=None)

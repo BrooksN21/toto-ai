@@ -23,8 +23,8 @@ task commits listed above.
 
 ## Verification
 
-- Tests currently passed: 860
-- Focused runner report suite passed twice: 12
+- Tests currently passed: 870
+- Focused runner orchestration/report/timing suite passed: 115
 - Focused and repository-wide Ruff passed
 
 ## Latest Completed Task: Deterministic Runner Reports
@@ -42,16 +42,30 @@ serializes coupons; `PLAY` and `RESEARCH ONLY` serialize only selected package
 coupons. JSON is sorted, compact, and ASCII. JSON/Markdown output collisions
 with declared inputs are rejected before writing.
 
+Task 4 review hardening adds explicit final-target provenance to the terminal
+result. `final_fingerprint` is `None` when final resolution never completed,
+records the actually observed fingerprint on a mismatch, and equals the pinned
+preflight fingerprint before collection, timing, audit, or EV may follow.
+Constructor invariants reject missing, malformed, unstarted, or later-phase
+inconsistent observations. Runner manifests serialize this value verbatim,
+including JSON `null`; mismatch and early-cutoff reports have regressions.
+
 Both artifacts are fully rendered to same-directory temporary files and backed
 up before atomic replacement. Any `BaseException` after publication starts
 restores the previous pair byte-for-byte, or removes both newly installed
-artifacts, and temporary/backup files are always cleaned. External coverage
-remains diagnostic, external probabilities remain audit-only, and no runner,
-EV, category, bank, probability, or orchestration signature changed.
+artifacts. One transaction token now determines every temp and backup path for
+both finals before any write; each path is created exclusively and every known
+transaction path is cleaned even if rendering or backup creation is interrupted.
+Lexical and symlink input aliases are rejected before writes. External coverage
+remains diagnostic, external probabilities remain audit-only, and no EV,
+category, bank, or probability definition changed.
 
-Verification: the required RED import failure, focused GREEN twice (`12 passed`
-in `0.34s` and `0.37s`), focused Ruff, full pytest (`860 passed in 67.20s`),
-and repository-wide Ruff (`All checks passed!`).
+Initial verification: the required RED import failure, focused GREEN twice
+(`12 passed` in `0.34s` and `0.37s`), focused Ruff, full pytest (`860 passed in
+67.20s`), and repository-wide Ruff. Review-fix RED was `13 failed, 50 passed`,
+with an additional isolated timing-provenance RED. Final focused GREEN was
+`115 passed in 0.34s`; full pytest passed (`870 passed in 169.32s`) and focused
+and repository-wide Ruff both reported `All checks passed!`.
 
 ## Latest Completed Task: Provider-Neutral Runner Orchestration
 

@@ -191,6 +191,11 @@
   machine rechecks the inclusive T-5 cutoff after each bound-phase progress
   notification, validates a terminal result before emitting `complete`, and
   keeps coverage `GO`/`PENDING`/`STOP` diagnostic-only.
+- Safe Drawing Runner Task 4 deterministic reports are complete and
+  review-hardened. Terminal results retain the actually observed final target
+  fingerprint, including mismatch and unresolved-final states, and report-pair
+  transactions precompute and exclusively create every temp/backup path before
+  writes so interruptions cannot leak artifacts.
 
 - Task 1 complete: provider-neutral drawing eligibility classifier and
   deterministic target fingerprint, including immutable effective starts,

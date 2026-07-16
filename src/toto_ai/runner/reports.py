@@ -5,8 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import secrets
 import shutil
-import tempfile
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -132,7 +132,7 @@ def _report_payload(
             "drawing_number": target.drawing_number,
             "deadline": _timestamp(target.deadline),
             "preflight_fingerprint": result.target.fingerprint,
-            "final_fingerprint": result.target.fingerprint,
+            "final_fingerprint": result.final_fingerprint,
         },
         "config": {
             "bank": config.bank,
@@ -342,7 +342,7 @@ def _render_markdown(payload: dict[str, Any]) -> str:
         f"- drawing number: {_display(target['drawing_number'])}",
         f"- deadline: {target['deadline']}",
         f"- preflight fingerprint: {target['preflight_fingerprint']}",
-        f"- final fingerprint: {target['final_fingerprint']}",
+        f"- final fingerprint: {_display_null(target['final_fingerprint'])}",
         "",
         "## Configuration",
         "",
@@ -500,54 +500,61 @@ def _link_markdown(label: str, paths: list[str]) -> list[str]:
 def _write_atomic_pair(
     artifacts: tuple[tuple[Path, bytes], tuple[Path, bytes]],
 ) -> None:
-    temporary_paths: list[Path] = []
-    rendered: list[tuple[Path, Path]] = []
-    backups: dict[Path, Path | None] = {}
+    token = secrets.token_hex(16)
+    transaction = tuple(
+        (
+            final_path,
+            content,
+            final_path.with_name(f".{final_path.name}.{token}.tmp"),
+            final_path.with_name(f".{final_path.name}.{token}.bak.tmp"),
+        )
+        for final_path, content in artifacts
+    )
+    transaction_paths = tuple(
+        path
+        for _, _, temporary_path, backup_path in transaction
+        for path in (temporary_path, backup_path)
+    )
+    originals: dict[Path, bool] = {}
     publication_started = False
 
     try:
-        for final_path, content in artifacts:
+        for final_path, _, _, _ in transaction:
             final_path.parent.mkdir(parents=True, exist_ok=True)
-            temporary_path = _temporary_path(final_path, ".tmp")
-            temporary_paths.append(temporary_path)
-            temporary_path.write_bytes(content)
-            rendered.append((temporary_path, final_path))
 
-        for _, final_path in rendered:
-            if not final_path.exists():
-                backups[final_path] = None
-                continue
-            backup_path = _temporary_path(final_path, ".bak.tmp")
-            temporary_paths.append(backup_path)
-            shutil.copyfile(final_path, backup_path)
-            backups[final_path] = backup_path
+        for _, content, temporary_path, _ in transaction:
+            _write_exclusive(temporary_path, content)
+
+        for final_path, _, _, backup_path in transaction:
+            original_exists = final_path.exists()
+            originals[final_path] = original_exists
+            if original_exists:
+                _copy_exclusive(final_path, backup_path)
 
         publication_started = True
-        for temporary_path, final_path in rendered:
+        for final_path, _, temporary_path, _ in transaction:
             os.replace(temporary_path, final_path)
     except BaseException:
         if publication_started:
-            for _, final_path in rendered:
-                backup_path = backups.get(final_path)
-                if backup_path is None:
+            for final_path, _, _, backup_path in transaction:
+                if not originals[final_path]:
                     final_path.unlink(missing_ok=True)
                 else:
                     os.replace(backup_path, final_path)
         raise
     finally:
-        for temporary_path in temporary_paths:
-            temporary_path.unlink(missing_ok=True)
+        for path in transaction_paths:
+            path.unlink(missing_ok=True)
 
 
-def _temporary_path(final_path: Path, suffix: str) -> Path:
-    with tempfile.NamedTemporaryFile(
-        mode="wb",
-        delete=False,
-        dir=final_path.parent,
-        prefix=f".{final_path.name}.",
-        suffix=suffix,
-    ) as output:
-        return Path(output.name)
+def _write_exclusive(path: Path, content: bytes) -> None:
+    with path.open("xb") as output:
+        output.write(content)
+
+
+def _copy_exclusive(source: Path, destination: Path) -> None:
+    with source.open("rb") as input_file, destination.open("xb") as output:
+        shutil.copyfileobj(input_file, output)
 
 
 def _canonical_json(payload: dict[str, Any]) -> str:
@@ -569,6 +576,10 @@ def _optional_timestamp(value: datetime | None) -> str | None:
 
 def _display(value: object) -> str:
     return "n/a" if value is None else str(value)
+
+
+def _display_null(value: object) -> str:
+    return "null" if value is None else str(value)
 
 
 def _display_list(values: list[object]) -> str:
