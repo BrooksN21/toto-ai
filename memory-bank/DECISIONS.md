@@ -38,13 +38,16 @@
 - External odds collection starts on API-Sports' free football and hockey plans.
   A paid plan up to 30 USD/month is a last resort after a prospective audit
   proves request quota, rather than provider coverage, is the limiting factor.
-- API-Sports event matching is deterministic and fail-closed. Only one exact
-  sport/home/away/team match inside the approved UTC time window is usable.
-  Exact team comparison may use the primary TotoBrief names, optional
-  `name_en` alternatives, and only reviewed versioned aliases. Alias files are
-  normalized deterministically and must reject normalized-key collisions,
-  normalized canonical-value collisions, and cycles. Fuzzy matches are
-  diagnostic only and ambiguous matches always fall back.
+- API-Sports event matching is deterministic and fail-closed. Exact matching
+  remains first and may use primary TotoBrief names, optional `name_en`
+  alternatives, and reviewed versioned aliases. When both English names are
+  absent and both target names are Cyrillic, matcher v4 may consume one
+  high-confidence transliterated same-or-reversed pair: pair score >= 0.74,
+  both team scores >= 0.55, and margin over the runner-up >= 0.15. Existing
+  sport and known-time restrictions still apply. Generic fuzzy suggestions
+  remain diagnostic-only; low-margin, low-score, and ambiguous matches always
+  fall back. Alias files remain deterministic and reject normalized-key or
+  canonical-value collisions and cycles.
 - External odds must be complete full-time football or regulation-time hockey
   `1/X/2` markets. Two-outcome hockey moneylines must never be mapped to Toto
   three-way outcomes. Exact `Home`/`Draw`/`Away` outcome-label validation is
@@ -75,15 +78,14 @@
 - Official API-Sports response envelopes do not provide a top-level observation
   timestamp. The client records its UTC receipt time in cache schema v2 and
   reuses that exact time on cache hits without mutating the raw provider payload.
-- TotoBrief may return `start_at = null` for every event in an open drawing. In
-  matcher v3, a missing target time permits only one unique exact team pair
-  inside schedules fetched for the deadline date and next date. A known target
-  time still requires the existing three-hour UTC window. The one exact pair
-  may have the same or reversed home/away orientation; reversed consensus swaps
-  `1` and `2` into TotoBrief orientation while raw provider quotes stay in
-  provider orientation. Orientation is persisted and reported. Multiple same
-  or reversed candidates are ambiguous and fail closed. Fuzzy matches remain
-  diagnostic-only.
+- TotoBrief may return `start_at = null` for every event in an open drawing. A
+  missing target time searches the approved progressively expanded schedule;
+  a known target time still requires the existing three-hour UTC window. The
+  accepted exact or constrained matcher-v4 pair may have the same or reversed
+  home/away orientation. Reversed consensus swaps `1` and `2` into TotoBrief
+  orientation while raw provider quotes stay in provider orientation.
+  Orientation is persisted and reported; multiple or low-confidence candidates
+  fail closed.
 - `quota_reserve` protects the API-Sports daily request allowance. The minute
   counter blocks only at zero. Cached historical quota headers are provenance,
   not current operational quota, and must not block a fresh client request.

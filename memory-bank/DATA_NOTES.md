@@ -82,3 +82,14 @@
   identical deterministic observation timestamp. Latest SQLite reads resolve
   such ties by append order, preserving the final completed pass rather than
   treating a collection-content hash as chronology.
+- Scheduled drawing 4947 (`id=11957`) exposed the missing production contract:
+  TotoBrief returned null event starts and English names, while API-Sports
+  returned 1096 fixtures containing all 15 target pairs. Matcher v3 produced
+  0/15 because its exact path had no aliases for the new Cyrillic team names;
+  the runner correctly failed closed with zero coupons and zero cost.
+- Matcher v4 replay over the complete saved drawing-4947 schedule resolves the
+  exact 15 expected provider IDs and yields 15 provider-derived effective
+  starts with `eligibility=playable`. Replay over drawing 4945 preserves its
+  previous 13 exact/alias matches and two provider-missing fallbacks, providing
+  a false-positive regression. These two observations are not coverage-gate or
+  profitability evidence.

@@ -282,6 +282,65 @@ def test_fuzzy_suggestion_never_authorizes_a_match(target):
     assert decision.provider_event_id is None
 
 
+def test_transliterated_matching_fails_closed_without_clear_margin(target):
+    matching = _matching_module()
+    cyrillic_target = dataclasses.replace(
+        target,
+        starts_at=None,
+        home_team="Сан Лоренцо",
+        away_team="Депортиво Риестра",
+        home_team_en=None,
+        away_team_en=None,
+    )
+    candidates = [
+        _provider_event(
+            provider_event_id="evt-a",
+            sport=target.sport,
+            starts_at=target.starts_at,
+            home_team="San Lorenzo",
+            away_team="Deportivo Riestra",
+        ),
+        _provider_event(
+            provider_event_id="evt-b",
+            sport=target.sport,
+            starts_at=target.starts_at,
+            home_team="San Lorenzo FC",
+            away_team="Deportivo Riestra",
+        ),
+    ]
+
+    result = matching.match_event(cyrillic_target, candidates, aliases={})
+
+    assert result.status == "missing"
+    assert result.provider_event_id is None
+
+
+def test_transliterated_matching_preserves_reversed_orientation(target):
+    matching = _matching_module()
+    cyrillic_target = dataclasses.replace(
+        target,
+        starts_at=None,
+        home_team="Сан Лоренцо",
+        away_team="Депортиво Риестра",
+        home_team_en=None,
+        away_team_en=None,
+    )
+    candidate = _provider_event(
+        provider_event_id="evt-reversed-transliterated",
+        sport=target.sport,
+        starts_at=target.starts_at,
+        home_team="Deportivo Riestra",
+        away_team="San Lorenzo",
+    )
+
+    result = matching.match_event(cyrillic_target, [candidate], aliases={})
+
+    assert result.status == "matched"
+    assert result.provider_event_id == candidate.provider_event_id
+    assert result.orientation == "reversed"
+    assert "high-confidence transliterated match" in result.reason
+
+
 def test_suggestions_are_capped_and_sorted_deterministically(target):
     matching = _matching_module()
     candidates = [

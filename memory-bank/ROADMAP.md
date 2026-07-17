@@ -182,6 +182,13 @@
 
 ## Phase 7: Production
 
+- The first scheduled run on drawing 4947 exposed an acceptance gap: the
+  exact-only matcher could not bridge new Cyrillic names when both `start_at`
+  and `name_en` were null, despite all 15 pairs existing in the provider
+  schedule. Matcher v4 remediation and raw replay regressions for drawings
+  4947 and 4945 are complete. Future matching releases require an unseen-team
+  raw replay plus a prior-drawing false-positive regression; synthetic
+  fail-closed tests alone are insufficient.
 - Safe Drawing Runner implementation and corrective verification are complete:
   immediate protected preflight, exact target binding, T-20 final start, strict
   in-pass T-5 provider cutoff, audit/eligibility/EV orchestration, and

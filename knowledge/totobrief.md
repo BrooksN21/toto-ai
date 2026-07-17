@@ -17,6 +17,10 @@ Known data notes:
 - Championship strings need whitespace normalization.
 - Current/open event `start_at` may be null. TotoAI may recover missing starts
   from provider schedule metadata, but never changes the TotoBrief event value.
+- Current/open event `name_en` may also be null. Exact/reviewed aliases remain
+  preferred; constrained transliterated matching is allowed only when both
+  Cyrillic team names have no English alternatives and the pair clears the
+  versioned score, per-team, and runner-up-margin safety thresholds.
 - Rare holiday/off-season drawings can span several days. They remain useful
   historical observations, while playable package generation requires all 15
   effective starts to be known within at most two inclusive Moscow calendar

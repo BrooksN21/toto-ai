@@ -17,13 +17,41 @@ memory stores.
 - `7e95f24` Add baseline brief generator
 - `8b3ed6d` Add persistent project memory bank
 - `2bd484a` Fix final safe runner review findings
+- `87955c4` Fix real null-start event matching
 
 Note: the current PR branch was rebased onto an empty remote base for the first
 GitHub pull request, so local branch commit hashes may differ from the original
 task commits listed above.
 
+## Drawing 4947 Incident and Matcher v4 Correction
+
+The first scheduled production-style run completed normally but returned
+zero-cost `NO BET`: TotoBrief supplied neither event starts nor English names,
+and matcher v3 resolved 0/15 provider events. This was a product-readiness
+failure, not a provider outage. The saved API-Sports responses contained 1096
+fixtures and all 15 target pairs. Earlier null-start work had only made times
+optional and expanded schedule dates; drawing-specific aliases from 4945 had
+incorrectly been treated as a general solution.
+
+Matcher v4 preserves exact/reviewed aliases first and adds a constrained
+transliterated fallback for Cyrillic targets with no English alternatives. It
+requires pair score >= 0.74, each team score >= 0.55, and runner-up margin >=
+0.15; all weaker cases remain fail-closed. The complete saved drawing-4947
+schedule now resolves the exact expected 15 provider IDs and collection replay
+returns `eligibility=playable` with 15 provider-derived times. Drawing-4945
+replay retains 13 correct matches and its two previous safe misses.
+
+The regression uses sanitized real provider schedules, not synthetic equal-name
+fixtures. Incident record:
+`docs/incidents/2026-07-17-drawing-4947-no-bet.md`.
+
 ## Verification
 
+- Matcher-v4 production regression: drawing 4947 resolves 15/15 and collection
+  timing is `playable`; drawing 4945 remains 13 matches plus two safe misses.
+- Matcher/collection/runner focused pytest: `105 passed`.
+- Full matcher-v4 pytest: `935 passed in 12.38s`.
+- Repository-wide Ruff and `git diff --check`: passed.
 - Focused final safe-runner pytest: `200 passed in 2.81s`.
 - Full pytest: `930 passed in 10.81s`; final repeat after documentation and
   memory updates: `930 passed in 11.92s`.

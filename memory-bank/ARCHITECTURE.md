@@ -95,10 +95,14 @@ Important modules:
   deterministic 15-event prospective external-odds collection, explicit
   event-level TotoBrief BK fallback, provider quota/request/cache provenance,
   and append-only SQLAlchemy persistence for immutable collection snapshots.
-  Matcher v3 records whether the unique exact provider pair has the same or
-  reversed home/away orientation. Reversed matches swap only the consensus
-  `1`/`2` probabilities into TotoBrief orientation; raw provider prices remain
-  unchanged. Orientation is part of collection identity, storage, and reports.
+  Matcher v4 keeps exact/reviewed-alias matching first and adds a constrained
+  transliterated fallback only for Cyrillic targets with missing English names.
+  It requires minimum pair/team scores and a deterministic lead over the
+  runner-up. Low-confidence candidates remain unconsumed. Unique same or
+  reversed matches record orientation; reversed matches swap only consensus
+  `1`/`2` probabilities into TotoBrief orientation while raw provider prices
+  remain unchanged. Orientation and matching evidence are part of collection
+  identity, storage, and reports.
   Collection run `fetched_at` is the external observation time and is at least
   as late as every consumed provider market fetch timestamp; the fresh
   TotoBrief drawing-info timestamp is stored separately as `target_fetched_at`.

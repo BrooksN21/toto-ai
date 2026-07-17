@@ -11,10 +11,49 @@ from typing import Literal
 
 from toto_ai.external_odds.domain import ProviderEvent, TargetEvent
 
-MATCHER_VERSION = "api-sports-v3"
+MATCHER_VERSION = "api-sports-v4"
 MAX_START_DELTA = timedelta(hours=3)
+MIN_TRANSLITERATED_PAIR_SCORE = 0.74
+MIN_TRANSLITERATED_TEAM_SCORE = 0.55
+MIN_TRANSLITERATED_MARGIN = 0.15
 MatchStatus = Literal["matched", "missing", "ambiguous", "unknown_sport"]
 MatchOrientation = Literal["same", "reversed"]
+
+_CYRILLIC_TO_LATIN = {
+    "а": "a",
+    "б": "b",
+    "в": "v",
+    "г": "g",
+    "д": "d",
+    "е": "e",
+    "ё": "e",
+    "ж": "zh",
+    "з": "z",
+    "и": "i",
+    "й": "i",
+    "к": "k",
+    "л": "l",
+    "м": "m",
+    "н": "n",
+    "о": "o",
+    "п": "p",
+    "р": "r",
+    "с": "s",
+    "т": "t",
+    "у": "u",
+    "ф": "f",
+    "х": "h",
+    "ц": "ts",
+    "ч": "ch",
+    "ш": "sh",
+    "щ": "shch",
+    "ы": "y",
+    "э": "e",
+    "ю": "yu",
+    "я": "ya",
+    "ь": "",
+    "ъ": "",
+}
 
 
 @dataclass(frozen=True)
@@ -187,6 +226,11 @@ def match_event(
             orientation=orientation,
         )
 
+    if not oriented_matches and _requires_transliterated_matching(target):
+        transliterated = _match_transliterated_pair(target, candidates, aliases)
+        if transliterated is not None:
+            return transliterated
+
     candidate_ids = tuple(
         sorted(candidate.provider_event_id for candidate, _ in oriented_matches)
     )
@@ -197,6 +241,129 @@ def match_event(
         candidate_ids=candidate_ids,
         reason=f"{len(oriented_matches)} exact candidates",
     )
+
+
+def _match_transliterated_pair(
+    target: TargetEvent,
+    candidates: tuple[ProviderEvent, ...] | list[ProviderEvent],
+    aliases: dict[str, str],
+) -> MatchDecision | None:
+    home_options = _target_team_options(target.home_team, None, aliases)
+    away_options = _target_team_options(target.away_team, None, aliases)
+    scored: list[tuple[float, float, str, MatchOrientation]] = []
+    for candidate in candidates:
+        if candidate.sport != target.sport:
+            continue
+        if (
+            target.starts_at is not None
+            and abs(candidate.starts_at - target.starts_at) > MAX_START_DELTA
+        ):
+            continue
+        same_home = _best_transliterated_similarity(
+            candidate.home_team, home_options, aliases
+        )
+        same_away = _best_transliterated_similarity(
+            candidate.away_team, away_options, aliases
+        )
+        reversed_home = _best_transliterated_similarity(
+            candidate.home_team, away_options, aliases
+        )
+        reversed_away = _best_transliterated_similarity(
+            candidate.away_team, home_options, aliases
+        )
+        scored.extend(
+            (
+                (
+                    (same_home + same_away) / 2.0,
+                    min(same_home, same_away),
+                    candidate.provider_event_id,
+                    "same",
+                ),
+                (
+                    (reversed_home + reversed_away) / 2.0,
+                    min(reversed_home, reversed_away),
+                    candidate.provider_event_id,
+                    "reversed",
+                ),
+            )
+        )
+
+    if not scored:
+        return None
+    scored.sort(key=lambda item: (-item[0], -item[1], item[2], item[3]))
+    best = scored[0]
+    runner_up_score = scored[1][0] if len(scored) > 1 else 0.0
+    margin = best[0] - runner_up_score
+    if (
+        best[0] < MIN_TRANSLITERATED_PAIR_SCORE
+        or best[1] < MIN_TRANSLITERATED_TEAM_SCORE
+        or margin < MIN_TRANSLITERATED_MARGIN
+    ):
+        return None
+
+    timing_note = (
+        ""
+        if target.starts_at is not None
+        else "; target start unavailable"
+    )
+    return MatchDecision(
+        status="matched",
+        provider_event_id=best[2],
+        matcher_version=MATCHER_VERSION,
+        candidate_ids=(best[2],),
+        reason=(
+            "unique high-confidence transliterated match"
+            f"{timing_note}; score={best[0]:.3f}; margin={margin:.3f}"
+        ),
+        orientation=best[3],
+    )
+
+
+def _requires_transliterated_matching(target: TargetEvent) -> bool:
+    return (
+        target.home_team_en is None
+        and target.away_team_en is None
+        and _contains_cyrillic(target.home_team)
+        and _contains_cyrillic(target.away_team)
+    )
+
+
+def _contains_cyrillic(value: str) -> bool:
+    return any(
+        "а" <= character.casefold() <= "я" or character in "Ёё"
+        for character in value
+    )
+
+
+def _best_transliterated_similarity(
+    name: str, options: frozenset[str], aliases: dict[str, str]
+) -> float:
+    candidate = _latinized_canonical(name, aliases)
+    return max(
+        SequenceMatcher(None, candidate, _latinize(option)).ratio()
+        for option in options
+    )
+
+
+def _latinized_canonical(name: str, aliases: dict[str, str]) -> str:
+    return _latinize(_canonical(name, aliases))
+
+
+def _latinize(value: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", value.casefold())
+    without_marks = "".join(
+        character
+        for character in decomposed
+        if not unicodedata.combining(character)
+    )
+    transliterated = "".join(
+        _CYRILLIC_TO_LATIN.get(character, character) for character in without_marks
+    )
+    normalized = re.sub(r"[^a-z0-9]+", " ", transliterated)
+    collapsed = " ".join(normalized.split())
+    if not collapsed:
+        raise ValueError("team name must latinize to a non-empty value")
+    return collapsed
 
 
 def _target_team_options(
