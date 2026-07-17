@@ -677,13 +677,13 @@ git diff --check
 
 Expected: full suite and Ruff pass; all three help commands exit zero.
 
-- [ ] **Step 5: Independent final review (approval pending)**
+- [x] **Step 5: Independent final review**
 
 Review the complete feature range against the approved design. Required checks: no model-definition change, no external probability entering EV, no post-T-5 coupon publication, no target roll-forward, no real test sleep/network, no secret surfaces, deterministic rollback-safe artifacts, and clean worktree after commit. Fix every critical/important finding and re-run Step 4.
 
-The requested whole-feature corrections have been implemented and verified.
-This step remains open until the independent reviewer approves the corrected
-feature.
+The requested whole-feature corrections were implemented and verified. The
+independent whole-feature re-review approved range `b54490db..2bd484ad` with no
+remaining Critical, Important, or Minor findings.
 
 - [x] **Step 6: Commit**
 

@@ -186,7 +186,7 @@
   immediate protected preflight, exact target binding, T-20 final start, strict
   in-pass T-5 provider cutoff, audit/eligibility/EV orchestration, and
   transactional run artifacts without automatic bet placement. Independent
-  final approval remains pending.
+  whole-feature review is approved with no remaining findings.
 - Safe Drawing Runner Task 3 orchestration is complete. The injected state
   machine rechecks the inclusive T-5 cutoff after each bound-phase progress
   notification, validates a terminal result before emitting `complete`, and
@@ -203,8 +203,8 @@
   betting. Review hardening rejects page-one/drawing-info ID mismatches,
   detaches sanitized provider failures from secret-bearing exception graphs,
   and closes the owned CLI acceptance gaps.
-- Safe Drawing Runner whole-feature review corrections are implemented and
-  verified; independent reviewer approval remains pending. Fake-clock and real
+- Safe Drawing Runner whole-feature review corrections are implemented,
+  verified, and independently approved. Fake-clock and real
   CLI acceptance cover in-pass schedule/market/page/retry cutoff, second-fetch
   target mutation, post-complete/publication cutoff, computed-`NO BET` coupon
   suppression, all-artifact rollback, path aliases, unwritable roots, and
