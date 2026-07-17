@@ -17,7 +17,7 @@ memory stores.
 - `7e95f24` Add baseline brief generator
 - `8b3ed6d` Add persistent project memory bank
 - `2bd484a` Fix final safe runner review findings
-- `87955c4` Fix real null-start event matching
+- `e9a23d0` Fix real null-start event matching
 
 Note: the current PR branch was rebased onto an empty remote base for the first
 GitHub pull request, so local branch commit hashes may differ from the original
