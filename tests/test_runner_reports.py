@@ -35,9 +35,12 @@ from toto_ai.external_odds.prospective import (
 )
 from toto_ai.runner import DrawingRunnerConfig, DrawingRunnerResult, pin_drawing
 from toto_ai.runner.reports import (
+    DrawingRunPublication,
     RunnerReportLinks,
+    drawing_run_candidate_paths,
     drawing_run_id,
     drawing_run_report_paths,
+    publish_drawing_run_artifacts,
     write_drawing_run_reports,
 )
 
@@ -368,6 +371,240 @@ def _terminal_result(*, final_target: TargetDrawing | None) -> DrawingRunnerResu
         ev_run=None,
         final_fingerprint=None if final is None else final.fingerprint,
     )
+
+
+def test_publication_skips_ev_child_for_computed_no_bet_and_hides_top_coupon(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        runner_reports,
+        "write_external_coverage_reports",
+        _write_stub_external_reports,
+    )
+    result = _runner_result("NO BET", top_coupon="DIAGNOSTIC-COUPON-MUST-NOT-LEAK")
+
+    publication = publish_drawing_run_artifacts(
+        result,
+        report_dir=tmp_path,
+        protected_paths=(),
+        protected_roots=(),
+        now=lambda: DEADLINE - timedelta(minutes=6),
+    )
+
+    assert isinstance(publication, DrawingRunPublication)
+    assert publication.result.decision == "NO BET"
+    assert publication.ev == ()
+    assert publication.external
+    assert publication.runner
+    for path in publication.paths:
+        assert "DIAGNOSTIC-COUPON-MUST-NOT-LEAK" not in path.read_text(
+            encoding="utf-8"
+        )
+    payload = json.loads(publication.runner[0].read_text(encoding="utf-8"))
+    assert payload["report_links"]["ev"] == []
+
+
+def test_publication_rolls_back_actionable_children_when_deadline_closes(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        runner_reports,
+        "write_external_coverage_reports",
+        _write_stub_external_reports,
+    )
+    result = _runner_result("PLAY", coupon="ACTIONABLE-COUPON-MUST-NOT-LEAK")
+    readings = iter(
+        (
+            DEADLINE - timedelta(minutes=6),
+            DEADLINE - timedelta(minutes=5),
+        )
+    )
+    latest = DEADLINE - timedelta(minutes=5)
+
+    def now() -> datetime:
+        return next(readings, latest)
+
+    publication = publish_drawing_run_artifacts(
+        result,
+        report_dir=tmp_path,
+        protected_paths=(),
+        protected_roots=(),
+        now=now,
+    )
+
+    assert publication.result.decision == "NO BET"
+    assert publication.result.ev_run is None
+    assert publication.result.terminal_reason == (
+        "safety cutoff reached before publication"
+    )
+    assert publication.ev == ()
+    for path in publication.paths:
+        assert "ACTIONABLE-COUPON-MUST-NOT-LEAK" not in path.read_text(
+            encoding="utf-8"
+        )
+    assert not tuple(tmp_path.glob("ev_package_*"))
+
+
+def test_publication_rolls_back_installed_children_on_runner_base_exception(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    result = _runner_result("PLAY")
+    monkeypatch.setattr(
+        runner_reports,
+        "write_external_coverage_reports",
+        _write_stub_external_reports,
+    )
+
+    def interrupt_runner(*_args, **_kwargs):
+        raise KeyboardInterrupt("post-install interruption")
+
+    monkeypatch.setattr(
+        runner_reports,
+        "write_drawing_run_reports",
+        interrupt_runner,
+    )
+
+    with pytest.raises(KeyboardInterrupt, match="post-install interruption"):
+        publish_drawing_run_artifacts(
+            result,
+            report_dir=tmp_path,
+            protected_paths=(),
+            protected_roots=(),
+            now=lambda: DEADLINE - timedelta(minutes=6),
+        )
+
+    assert tuple(path for path in tmp_path.rglob("*") if path.is_file()) == ()
+
+
+def test_publication_rolls_back_when_child_writer_returns_then_interrupts(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    result = _runner_result("PLAY")
+    monkeypatch.setattr(
+        runner_reports,
+        "write_external_coverage_reports",
+        _write_stub_external_reports,
+    )
+    real_write_ev = runner_reports.write_ev_package_reports
+
+    def interrupt_after_ev(*args, **kwargs):
+        real_write_ev(*args, **kwargs)
+        raise KeyboardInterrupt("interrupted after child writer return")
+
+    monkeypatch.setattr(
+        runner_reports,
+        "write_ev_package_reports",
+        interrupt_after_ev,
+    )
+
+    with pytest.raises(KeyboardInterrupt, match="after child writer return"):
+        publish_drawing_run_artifacts(
+            result,
+            report_dir=tmp_path,
+            protected_paths=(),
+            protected_roots=(),
+            now=lambda: DEADLINE - timedelta(minutes=6),
+        )
+
+    assert tuple(path for path in tmp_path.rglob("*") if path.is_file()) == ()
+
+
+def test_publication_rechecks_symlink_swap_before_replacing_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    result = _runner_result("NO BET")
+    report_dir = tmp_path / "reports"
+    cache_root = tmp_path / "cache"
+    report_dir.mkdir()
+    cache_root.mkdir()
+    sentinel = cache_root / "protected.txt"
+    sentinel.write_bytes(b"protected-cache-input")
+    candidates = drawing_run_candidate_paths(
+        result.config,
+        result.target,
+        result.preflight_at,
+        report_dir,
+    )
+    runner_reports.validate_output_paths(
+        candidates,
+        protected_paths=(),
+        protected_roots=(cache_root,),
+    )
+    report_dir.rmdir()
+    report_dir.symlink_to(cache_root, target_is_directory=True)
+    monkeypatch.setattr(
+        runner_reports,
+        "write_external_coverage_reports",
+        lambda *_args, **_kwargs: pytest.fail("writers must not start"),
+    )
+
+    with pytest.raises(ValueError, match="protected roots"):
+        publish_drawing_run_artifacts(
+            result,
+            report_dir=report_dir,
+            protected_paths=(),
+            protected_roots=(cache_root,),
+            now=lambda: DEADLINE - timedelta(minutes=6),
+        )
+
+    assert sentinel.read_bytes() == b"protected-cache-input"
+    assert report_dir.is_symlink()
+
+
+def test_publication_treats_interrupt_after_transaction_commit_as_success(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    result = _runner_result("NO BET")
+    monkeypatch.setattr(
+        runner_reports,
+        "write_external_coverage_reports",
+        _write_stub_external_reports,
+    )
+    real_exit = runner_reports.ArtifactPublicationTransaction.__exit__
+
+    def interrupt_after_commit(self, *args):
+        outcome = real_exit(self, *args)
+        if self.committed:
+            raise KeyboardInterrupt("interrupt after publication commit")
+        return outcome
+
+    monkeypatch.setattr(
+        runner_reports.ArtifactPublicationTransaction,
+        "__exit__",
+        interrupt_after_commit,
+    )
+
+    publication = publish_drawing_run_artifacts(
+        result,
+        report_dir=tmp_path,
+        protected_paths=(),
+        protected_roots=(),
+        now=lambda: DEADLINE - timedelta(minutes=6),
+    )
+
+    assert publication.result.decision == "NO BET"
+    assert publication.paths
+    assert all(path.exists() for path in publication.paths)
+
+
+def _write_stub_external_reports(
+    audit: CoverageAudit,
+    report_dir: str | Path,
+    *,
+    input_paths=(),
+) -> tuple[Path, Path]:
+    del input_paths
+    paths = runner_reports.external_coverage_report_paths(audit, report_dir)
+    for path in paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("external audit\n", encoding="utf-8")
+    return paths
 
 
 def _interrupt_second_install(monkeypatch) -> None:

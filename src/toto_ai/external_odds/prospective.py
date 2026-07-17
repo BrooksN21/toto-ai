@@ -10,6 +10,7 @@ from typing import Any, Literal
 from uuid import uuid4
 
 from toto_ai.external_odds.collection import (
+    SAFETY_STOP_FALLBACK,
     ExternalCollectionSnapshot,
     build_external_collection,
     resolve_open_target,
@@ -149,10 +150,14 @@ def collect_fresh_open_external_odds(
             phase="base",
             phase_pass_number=pass_index + 1,
             horizon_days=_BASE_HORIZON_DAYS,
+            stop_at=stop_at,
+            now=now,
             monotonic=monotonic,
         )
         base_passes.append(item)
-        if _safety_stop_reached(stop_at, now):
+        if _snapshot_reached_safety_stop(item.snapshot) or _safety_stop_reached(
+            stop_at, now
+        ):
             stop_reason = "safety_stop"
             break
         if not is_retryable_snapshot(item.snapshot):
@@ -192,10 +197,14 @@ def collect_fresh_open_external_odds(
                 phase="expansion",
                 phase_pass_number=pass_index + 1,
                 horizon_days=expansion_horizon_days,
+                stop_at=stop_at,
+                now=now,
                 monotonic=monotonic,
             )
             expansion_passes.append(item)
-            if _safety_stop_reached(stop_at, now):
+            if _snapshot_reached_safety_stop(
+                item.snapshot
+            ) or _safety_stop_reached(stop_at, now):
                 stop_reason = "safety_stop"
                 break
             if not is_retryable_snapshot(item.snapshot):
@@ -250,6 +259,8 @@ def _run_pass(
     phase: ProspectivePhase,
     phase_pass_number: int,
     horizon_days: int,
+    stop_at: datetime | None,
+    now: Callable[[], datetime],
     monotonic: Callable[[], float],
 ) -> ProspectiveCollectionPass:
     pass_started = monotonic()
@@ -259,6 +270,8 @@ def _run_pass(
         session_factory,
         aliases,
         missing_start_horizon_days=horizon_days,
+        stop_at=stop_at,
+        now=now,
     )
     return ProspectiveCollectionPass(
         snapshot=snapshot,
@@ -276,12 +289,16 @@ def _collect_target_pass(
     aliases: dict[str, str],
     *,
     missing_start_horizon_days: int,
+    stop_at: datetime | None,
+    now: Callable[[], datetime],
 ) -> ExternalCollectionSnapshot:
     snapshot = build_external_collection(
         target,
         provider,
         aliases,
         missing_start_horizon_days=missing_start_horizon_days,
+        stop_at=stop_at,
+        now=now,
     )
     if len(snapshot.events) != 15:
         raise ValueError("external collection must contain exactly 15 dispositions")
@@ -308,6 +325,12 @@ def _is_retryable_reason(reason: str | None) -> bool:
         return False
     return reason in _RETRYABLE_EXACT_REASONS or reason.startswith(
         _RETRYABLE_REASON_PREFIXES
+    )
+
+
+def _snapshot_reached_safety_stop(snapshot: ExternalCollectionSnapshot) -> bool:
+    return any(
+        event.fallback_reason == SAFETY_STOP_FALLBACK for event in snapshot.events
     )
 
 

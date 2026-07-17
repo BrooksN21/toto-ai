@@ -90,6 +90,10 @@
 - API-Sports request accounting reports actual HTTP attempts, including retry
   attempts and additional pages. Cache hits and logical fetch calls are tracked
   separately and must not be reported as requests.
+- Safe-runner T-5 enforcement is propagated through prospective collection to
+  every schedule date/page, event-market request/page, and API-Sports transport
+  retry. Closure completes the immutable pass with explicit safety-stop
+  fallbacks and permits no later provider call.
 - Prospective API-Sports collection is fresh by default. Each CLI invocation
   uses a unique cache-session directory, pins one TotoBrief target before any
   provider pass, and creates a new provider client per pass while reusing that
@@ -97,6 +101,20 @@
   retries. Only quota reserve, provider schedule failure, and provider odds
   failure are retryable. Shared-cache behavior requires explicit
   `--reuse-cache`; stale cache must never masquerade as a new observation.
+- Safe-runner preflight computes all possible coverage, EV, and runner paths
+  after target pinning and before waiting. Lexical and symlink collisions with
+  the database, aliases, cache root, or sibling outputs fail before provider
+  construction; report/cache writability is probed and the guard repeats at
+  publication.
+- Safe-runner publication is the final deadline-aware phase. Actionable child
+  and runner artifacts are covered by one transaction until commit; every
+  pre-commit `BaseException` restores/removes all artifacts, and an already
+  committed publication is command success. Runner `NO BET` never links an EV
+  child report or coupon strings.
+- The second fresh EV payload is compared with the expected `PinnedDrawing`
+  before timing or EV computation. Expected target mutation is a valid
+  zero-cost target-mismatch `NO BET` with `ev_run=None`; structurally corrupt
+  results remain command failures.
 - Rare holiday and off-season drawings may span up to five days. Missing-start
   external collection will use progressive two-to-five-day schedule expansion
   rather than querying five days for every normal drawing. A playable drawing

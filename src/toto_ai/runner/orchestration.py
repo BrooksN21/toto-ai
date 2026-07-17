@@ -1,6 +1,7 @@
 """Provider-neutral safe drawing runner orchestration."""
 
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import datetime, timedelta
 from math import isfinite
 
@@ -28,7 +29,12 @@ TargetCollector = Callable[
 ]
 TimingResolver = Callable[[PinnedDrawing], PlayTimingEligibility]
 CoverageAuditor = Callable[[], CoverageAudit]
-PackageBuilder = Callable[[int], EVPackageRun]
+PackageBuilder = Callable[[PinnedDrawing], EVPackageRun]
+PreflightCheck = Callable[[PinnedDrawing, datetime], object]
+
+
+class RunnerTargetMismatch(RuntimeError):
+    """Expected fail-closed mutation between collection and the EV payload."""
 
 
 def run_drawing(
@@ -43,6 +49,7 @@ def run_drawing(
     monotonic: Callable[[], float],
     sleep: Callable[[float], object],
     progress_callback: ProgressCallback | None = None,
+    preflight_check: PreflightCheck | None = None,
 ) -> DrawingRunnerResult:
     """Run one preflight-to-EV state machine with injected dependencies."""
     if not isinstance(config, DrawingRunnerConfig):
@@ -53,6 +60,10 @@ def run_drawing(
     preflight = resolve_target(preflight_at)
     _require_pinned_target("preflight", preflight)
     schedule = build_runner_schedule(preflight.target.deadline, config)
+    if preflight_check is not None:
+        if not callable(preflight_check):
+            raise ValueError("preflight_check must be callable")
+        preflight_check(preflight, preflight_at)
 
     window = wait_for_final_window(
         schedule,
@@ -358,7 +369,29 @@ def run_drawing(
             audit=audit,
             progress_callback=progress_callback,
         )
-    ev_run = build_package(final.target.drawing_id)
+    try:
+        ev_run = build_package(final)
+    except RunnerTargetMismatch as error:
+        mismatch_finished_at = _read_now(now)
+        return _no_bet_result(
+            config=config,
+            target=preflight,
+            preflight_at=preflight_at,
+            final_started_at=final_started_at,
+            final_fingerprint=final.fingerprint,
+            collection_finished_at=collection_finished_at,
+            timing_finished_at=timing_finished_at,
+            audit_finished_at=audit_finished_at,
+            ev_finished_at=None,
+            finished_at=mismatch_finished_at,
+            started_monotonic=started_monotonic,
+            monotonic=monotonic,
+            terminal_reason=str(error),
+            collection=collection,
+            timing_eligibility=timing_eligibility,
+            audit=audit,
+            progress_callback=progress_callback,
+        )
     if not isinstance(ev_run, EVPackageRun):
         raise ValueError("build_package must return EVPackageRun")
     ev_finished_at = _read_now(now)
@@ -412,6 +445,16 @@ def run_drawing(
         ev_run=ev_run,
     )
     _notify(progress_callback, "complete", decision=decision)
+    completed_at = _read_now(now)
+    if _is_closed(schedule, completed_at):
+        return replace(
+            result,
+            finished_at=completed_at,
+            elapsed_seconds=_elapsed_seconds(started_monotonic, monotonic),
+            decision="NO BET",
+            terminal_reason="safety cutoff reached after complete",
+            ev_run=None,
+        )
     return result
 
 

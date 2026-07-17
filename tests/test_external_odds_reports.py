@@ -268,6 +268,21 @@ def test_repeat_write_is_byte_identical(tmp_path):
     assert tuple(path.read_bytes() for path in second_paths) == first_bytes
 
 
+def test_coverage_writer_rejects_input_output_collision(tmp_path):
+    audit = _report_audit()
+    csv_path, _ = write_external_coverage_reports(audit, tmp_path)
+    original = csv_path.read_bytes()
+
+    with pytest.raises(ValueError, match="input paths must be distinct"):
+        write_external_coverage_reports(
+            audit,
+            tmp_path,
+            input_paths=(csv_path,),
+        )
+
+    assert csv_path.read_bytes() == original
+
+
 def _report_audit():
     schedule_results = (
         ScheduleDateResult("football", date(2026, 7, 14), (), None),

@@ -7,13 +7,32 @@ import json
 import os
 import secrets
 import shutil
-from collections.abc import Iterable
-from dataclasses import dataclass
-from datetime import datetime, timezone
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass, replace
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from toto_ai.runner.models import DrawingRunnerResult
+from toto_ai.ev.reports import (
+    ev_package_report_paths,
+    ev_package_report_paths_for_config,
+    write_ev_package_reports,
+)
+from toto_ai.external_odds.reports import (
+    external_coverage_report_paths,
+    external_coverage_report_paths_for_config,
+    write_external_coverage_reports,
+)
+from toto_ai.path_safety import (
+    ArtifactPublicationTransaction,
+    probe_writable_directory,
+    validate_output_paths,
+)
+from toto_ai.runner.models import (
+    DrawingRunnerConfig,
+    DrawingRunnerResult,
+    PinnedDrawing,
+)
 
 RUNNER_REPORT_SCHEMA_VERSION = 2
 RUNNER_PROVIDER = "api-sports"
@@ -39,11 +58,55 @@ class RunnerReportLinks:
 _EMPTY_REPORT_LINKS = RunnerReportLinks()
 
 
+@dataclass(frozen=True)
+class DrawingRunPublication:
+    result: DrawingRunnerResult
+    external: tuple[Path, ...]
+    ev: tuple[Path, ...]
+    runner: tuple[Path, Path]
+
+    @property
+    def paths(self) -> tuple[Path, ...]:
+        return (*self.external, *self.ev, *self.runner)
+
+
+class _PublicationDeadlineReached(RuntimeError):
+    def __init__(self, observed_at: datetime) -> None:
+        super().__init__("safety cutoff reached before publication")
+        self.observed_at = observed_at
+
+
 def drawing_run_id(result: DrawingRunnerResult) -> str:
     """Return the deterministic 12-character identity for one invocation."""
-    identity = _run_identity(result)
+    _require_result(result)
+    identity = _run_identity_values(
+        result.config,
+        result.target,
+        result.preflight_at,
+    )
     encoded = _canonical_json(identity).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()[:12]
+
+
+def drawing_run_report_paths_for_target(
+    config: DrawingRunnerConfig,
+    target: PinnedDrawing,
+    preflight_at: datetime,
+    report_dir: str | Path = "reports",
+) -> tuple[Path, Path]:
+    """Return runner paths before waiting or collecting provider data."""
+    _require_preflight_identity(config, target, preflight_at)
+    target_value = target.target
+    drawing_label = target_value.drawing_number or target_value.drawing_id
+    deadline = target_value.deadline.astimezone(timezone.utc).strftime(
+        "%Y%m%dT%H%M%SZ"
+    )
+    identity = _run_identity_values(config, target, preflight_at)
+    encoded = _canonical_json(identity).encode("utf-8")
+    run_id = hashlib.sha256(encoded).hexdigest()[:12]
+    stem = f"drawing_run_{drawing_label}_{deadline}_{run_id}"
+    output_dir = Path(report_dir)
+    return output_dir / f"{stem}.json", output_dir / f"{stem}.md"
 
 
 def drawing_run_report_paths(
@@ -52,14 +115,42 @@ def drawing_run_report_paths(
 ) -> tuple[Path, Path]:
     """Return deterministic JSON and Markdown paths for one runner result."""
     _require_result(result)
-    target = result.target.target
-    drawing_label = target.drawing_number or target.drawing_id
-    deadline = target.deadline.astimezone(timezone.utc).strftime(
-        "%Y%m%dT%H%M%SZ"
+    return drawing_run_report_paths_for_target(
+        result.config,
+        result.target,
+        result.preflight_at,
+        report_dir,
     )
-    stem = f"drawing_run_{drawing_label}_{deadline}_{drawing_run_id(result)}"
-    output_dir = Path(report_dir)
-    return output_dir / f"{stem}.json", output_dir / f"{stem}.md"
+
+
+def drawing_run_candidate_paths(
+    config: DrawingRunnerConfig,
+    target: PinnedDrawing,
+    preflight_at: datetime,
+    report_dir: str | Path = "reports",
+) -> tuple[Path, ...]:
+    """Return every child or runner path a successful run could publish."""
+    _require_preflight_identity(config, target, preflight_at)
+    target_value = target.target
+    external = external_coverage_report_paths_for_config(
+        requested_last=30,
+        minimum_bookmakers=3,
+        report_dir=report_dir,
+    )
+    ev = ev_package_report_paths_for_config(
+        drawing_id=target_value.drawing_id,
+        drawing_number=target_value.drawing_number,
+        mode=config.mode,
+        bank=config.bank,
+        report_dir=report_dir,
+    )
+    runner = drawing_run_report_paths_for_target(
+        config,
+        target,
+        preflight_at,
+        report_dir,
+    )
+    return (*external, *ev, *runner)
 
 
 def write_drawing_run_reports(
@@ -91,10 +182,113 @@ def write_drawing_run_reports(
     return json_path, markdown_path
 
 
+def publish_drawing_run_artifacts(
+    result: DrawingRunnerResult,
+    *,
+    report_dir: str | Path = "reports",
+    protected_paths: Iterable[str | Path] = (),
+    protected_roots: Iterable[str | Path] = (),
+    now: Callable[[], datetime],
+) -> DrawingRunPublication:
+    """Publish all linked artifacts as one deadline-aware transaction."""
+    _require_result(result)
+    protected = _normalize_protected_paths(protected_paths)
+    roots = _normalize_protected_paths(protected_roots)
+    current = result
+
+    while True:
+        if current.decision != "NO BET":
+            observed_at = _publication_now(now)
+            if _publication_closed(current, observed_at):
+                current = _suppress_for_publication(current, observed_at)
+
+        external_candidates = (
+            external_coverage_report_paths(current.audit, report_dir)
+            if current.audit is not None
+            else ()
+        )
+        ev_candidates = (
+            ev_package_report_paths(current.ev_run, report_dir)
+            if current.decision != "NO BET" and current.ev_run is not None
+            else ()
+        )
+        runner_candidates = drawing_run_report_paths(current, report_dir)
+        candidates = (
+            *external_candidates,
+            *ev_candidates,
+            *runner_candidates,
+        )
+        validate_output_paths(
+            candidates,
+            protected_paths=protected,
+            protected_roots=roots,
+        )
+        probe_writable_directory(report_dir)
+        for root in roots:
+            probe_writable_directory(root)
+        writer_inputs = (*protected, *roots)
+
+        try:
+            transaction = ArtifactPublicationTransaction(candidates)
+            publication: DrawingRunPublication | None = None
+            try:
+                with transaction:
+                    external_paths: tuple[Path, ...] = ()
+                    if current.audit is not None:
+                        external_paths = write_external_coverage_reports(
+                            current.audit,
+                            report_dir=report_dir,
+                            input_paths=writer_inputs,
+                        )
+
+                    ev_paths: tuple[Path, ...] = ()
+                    if current.decision != "NO BET" and current.ev_run is not None:
+                        _require_open_for_actionable_publication(current, now)
+                        ev_paths = write_ev_package_reports(
+                            current.ev_run,
+                            report_dir=report_dir,
+                            input_paths=writer_inputs,
+                        )
+
+                    if current.decision != "NO BET":
+                        _require_open_for_actionable_publication(current, now)
+                    runner_paths = write_drawing_run_reports(
+                        current,
+                        links=RunnerReportLinks(
+                            external=external_paths,
+                            ev=ev_paths,
+                        ),
+                        report_dir=report_dir,
+                        input_paths=writer_inputs,
+                    )
+                    publication = DrawingRunPublication(
+                        result=current,
+                        external=external_paths,
+                        ev=ev_paths,
+                        runner=runner_paths,
+                    )
+                    transaction.commit()
+            except BaseException:
+                if transaction.committed and publication is not None:
+                    return publication
+                raise
+            assert publication is not None
+            return publication
+        except _PublicationDeadlineReached as error:
+            current = _suppress_for_publication(current, error.observed_at)
+
+
 def _run_identity(result: DrawingRunnerResult) -> dict[str, Any]:
     _require_result(result)
-    target = result.target.target
-    config = result.config
+    return _run_identity_values(result.config, result.target, result.preflight_at)
+
+
+def _run_identity_values(
+    config: DrawingRunnerConfig,
+    pinned: PinnedDrawing,
+    preflight_at: datetime,
+) -> dict[str, Any]:
+    target = pinned.target
     return {
         "config": {
             "bank": config.bank,
@@ -104,12 +298,12 @@ def _run_identity(result: DrawingRunnerResult) -> dict[str, Any]:
             "safety_stop_minutes": config.safety_stop_minutes,
             "stake": config.stake,
         },
-        "preflight_at": _timestamp(result.preflight_at),
+        "preflight_at": _timestamp(preflight_at),
         "target": {
             "deadline": _timestamp(target.deadline),
             "drawing_id": target.drawing_id,
             "drawing_number": target.drawing_number,
-            "fingerprint": result.target.fingerprint,
+            "fingerprint": pinned.fingerprint,
         },
     }
 
@@ -620,6 +814,79 @@ def _display_list(values: list[object]) -> str:
 
 def _yes_no(value: object) -> str:
     return "yes" if value else "no"
+
+
+def _normalize_protected_paths(
+    paths: Iterable[str | Path],
+) -> tuple[Path, ...]:
+    try:
+        return tuple(Path(path) for path in paths)
+    except TypeError as error:
+        raise ValueError("protected inputs must contain filesystem paths") from error
+
+
+def _require_preflight_identity(
+    config: object,
+    target: object,
+    preflight_at: object,
+) -> None:
+    if not isinstance(config, DrawingRunnerConfig):
+        raise ValueError("config must be a DrawingRunnerConfig")
+    if not isinstance(target, PinnedDrawing):
+        raise ValueError("target must be a PinnedDrawing")
+    _require_utc_datetime("preflight_at", preflight_at)
+
+
+def _publication_now(now: Callable[[], datetime]) -> datetime:
+    if not callable(now):
+        raise ValueError("now must be callable")
+    observed_at = now()
+    _require_utc_datetime("publication time", observed_at)
+    return observed_at
+
+
+def _publication_closed(
+    result: DrawingRunnerResult,
+    observed_at: datetime,
+) -> bool:
+    cutoff = result.target.target.deadline - timedelta(
+        minutes=result.config.safety_stop_minutes
+    )
+    return observed_at >= cutoff
+
+
+def _require_open_for_actionable_publication(
+    result: DrawingRunnerResult,
+    now: Callable[[], datetime],
+) -> None:
+    observed_at = _publication_now(now)
+    if _publication_closed(result, observed_at):
+        raise _PublicationDeadlineReached(observed_at)
+
+
+def _suppress_for_publication(
+    result: DrawingRunnerResult,
+    observed_at: datetime,
+) -> DrawingRunnerResult:
+    finished_at = max(result.finished_at, observed_at)
+    elapsed_seconds = result.elapsed_seconds + (
+        finished_at - result.finished_at
+    ).total_seconds()
+    return replace(
+        result,
+        finished_at=finished_at,
+        elapsed_seconds=elapsed_seconds,
+        decision="NO BET",
+        terminal_reason="safety cutoff reached before publication",
+        ev_run=None,
+    )
+
+
+def _require_utc_datetime(name: str, value: object) -> None:
+    if not isinstance(value, datetime) or value.tzinfo is None:
+        raise ValueError(f"{name} must be timezone-aware UTC")
+    if value.utcoffset() != timedelta(0):
+        raise ValueError(f"{name} must be timezone-aware UTC")
 
 
 def _require_result(result: object) -> None:

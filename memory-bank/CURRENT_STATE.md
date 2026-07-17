@@ -23,54 +23,54 @@ task commits listed above.
 
 ## Verification
 
-- End-to-end runner acceptance: 15 passed.
-- Focused runner report/end-to-end suite: 34 passed.
-- Full pytest: 902 passed.
+- Focused final safe-runner pytest: `200 passed in 2.81s`.
+- Full pytest: `930 passed in 10.81s`; final repeat after documentation and
+  memory updates: `930 passed in 11.92s`.
+- Publication regressions: `6 passed`.
+- Runner CLI regressions: `21 passed`.
+- Path-safety regressions: `5 passed`.
 - Repository-wide Ruff: `All checks passed!`.
+- `run-drawing`, `collect-external-odds`, and `ev-package` help smokes exited
+  zero.
+- `git diff --check` passed.
+- Corrective RED/GREEN evidence: `.superpowers/sdd/final-safe-runner-fix-report.md`.
 
-## Task 6 Review Fixes In Progress
+## Final Whole-Feature Review Corrections Complete
 
-Task 6 review findings are implemented and verified, but independent review
-approval remains pending. The deterministic
-acceptance boundary drives real runner orchestration, pinned prospective
-collection, append-only SQLite persistence and read-only timing lookup, latest-30
-diagnostic audit, existing TotoBrief-BK EV generation, and all report writers
-with fake clocks, sleepers, TotoBrief clients, and API-Sports providers.
+All Important and Minor findings in the final safe-runner review are implemented
+and locally verified. Independent reviewer approval remains pending.
 
-Acceptance covers T-21 waiting, T-19 immediate final work, T-5 zero-provider
-`NO BET`, target mutation without roll-forward, provider fallbacks with an
-unchanged BK-only EV input, `PENDING` audit non-interference, day-five
-expansion, multi-day and unresolved timing vetoes, cutoff during retry and
-after EV, exact caps for 4800/6000/9600 RUB banks, deterministic bytes,
-rollback/interruption publication, and no configured network, real sleep, or
-automatic bet interface.
+The T-5 UTC boundary now reaches every schedule date/page, market request/page,
+and API-Sports transport retry. Once closed, the active immutable pass makes no
+later provider call, fills unresolved dispositions with `safety stop reached`,
+persists all 15 events, and returns `stop_reason="safety_stop"`.
 
-Review hardening makes the terminal package summary canonical even when EV was
-suppressed: JSON and Markdown both record `NO BET`, no coupons, zero selected
-count/cost/payout, full unused bank, and absent modeled ROI. Acceptance now
-drives a real command-boundary chained provider failure with a configured
-sentinel key and verifies output, recursive exception graphs, and all scenario
-files. It captures the complete real 15-row EV input, independently normalizes
-TotoBrief BK probabilities, and proves materially different external consensus
-and fallback collections produce identical EV input and selected output.
+Publication is a final deadline-aware phase. The clock is rechecked after the
+`complete` callback and before actionable child/runner artifacts. Coverage, EV,
+and runner artifacts share one outer transaction: every pre-commit
+`BaseException` restores/removes them, while an interruption after commit is
+treated as successful publication. Every runner `NO BET` skips the EV child;
+real CLI threshold acceptance recursively proves diagnostic top-coupon strings
+are absent from every linked artifact.
 
-Runner manifest schema v2 is now the first version that guarantees a structured
-`ev` object for both completed EV work (`computed: true`) and suppressed or
-pre-EV terminal outcomes (`computed: false`). Schema v1 used `ev: null` when EV
-did not run, so this contract is not attributed retroactively to v1. Unit and
-real end-to-end artifacts pin the v2 discriminator and exact suppressed
-package.
+The package boundary receives the expected `PinnedDrawing`, fetches one fresh
+payload, and compares drawing ID, number, deadline, and fingerprint before
+timing or heavy EV work. Expected second-fetch mutation is a valid zero-cost,
+coupon-free target-mismatch `NO BET` with `ev_run=None`; corrupt structural
+results remain failures.
 
-A focused SQLite/audit regression now surrounds two equal-timestamp passes with
-distinct older/newer observations. It proves timestamp remains primary while
-the later append wins exact eligibility and per-drawing audit deduplication.
+After target pinning and before waiting, preflight computes all possible report
+paths, rejects lexical/symlink collisions with the database, aliases, cache
+root, and sibling outputs, probes report/cache writability, and constructs the
+provider. The same guard repeats immediately before publication, every writer
+receives protected inputs, and coverage reports have the equivalent collision
+guard. Regressions cover unwritable roots, lexical and symlink aliases,
+input/output collisions, and publication TOCTOU without replacing inputs.
 
-The acceptance run exposed and fixed one storage boundary: two immutable passes
-can legitimately have equal fake-clock observation timestamps. Latest SQLite
-reads now use append-order `rowid` before content-hash ordering for timestamp
-ties, so the final day-five snapshot is selected over its earlier base pass.
-This does not change collection identity, timing, probability, EV, bank,
-stake, category, consensus, or coverage-gate definitions.
+The safe-runner design example uses bank 4980 for stake 30. Completed plan
+steps are marked accurately; independent final review remains unchecked.
+Probability, EV, category, bank, stake, consensus, timing, and coverage-gate
+definitions are unchanged.
 
 Independent review approval remains pending. The prospective external-odds
 gate remains `PENDING`; no 30-drawing/450-event gate is marked complete and

@@ -660,6 +660,40 @@ def test_transient_connection_errors_retry_with_bounded_delays(monkeypatch, tmp_
     assert sleep_calls == [0.05, 0.1]
 
 
+def test_safety_stop_prevents_transport_retry(monkeypatch, tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+
+    stop_at = datetime(2026, 7, 14, 12, 0, tzinfo=timezone.utc)
+    current = [stop_at.replace(minute=59, hour=11)]
+    sleep_calls: list[float] = []
+
+    class AdvancingSession(FakeSession):
+        def get(self, *args, **kwargs):
+            try:
+                return super().get(*args, **kwargs)
+            finally:
+                current[0] = stop_at
+
+    session = AdvancingSession([requests.ConnectionError("network down")])
+    monkeypatch.setattr(
+        "toto_ai.external_odds.api_sports.time.sleep", sleep_calls.append
+    )
+    client = APISportsClient(
+        "secret-key",
+        session=session,
+        cache_dir=tmp_path,
+        max_retries=2,
+        stop_at=stop_at,
+        now=lambda: current[0],
+    )
+
+    with pytest.raises(APISportsError, match="safety stop"):
+        client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert len(session.calls) == 1
+    assert sleep_calls == []
+
+
 def test_429_updates_quota_state_before_retry(monkeypatch, tmp_path):
     from toto_ai.external_odds.api_sports import APISportsClient
 
@@ -1055,6 +1089,71 @@ def test_odds_fetch_consumes_all_pages_deterministically(tmp_path):
     assert [call["params"] for call in fake_session.calls] == [
         {"fixture": "42", "page": 1},
         {"fixture": "42", "page": 2},
+    ]
+
+
+def test_safety_stop_prevents_later_schedule_date_request(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+
+    stop_at = datetime(2026, 7, 14, 12, 0, tzinfo=timezone.utc)
+    current = [stop_at.replace(minute=59, hour=11)]
+
+    class AdvancingSession(FakeSession):
+        def get(self, *args, **kwargs):
+            response = super().get(*args, **kwargs)
+            current[0] = stop_at
+            return response
+
+    session = AdvancingSession(
+        [FakeResponse(payload=football_schedule_payload(), headers=quota_headers())]
+    )
+    client = APISportsClient(
+        "secret-key",
+        session=session,
+        cache_dir=tmp_path,
+        stop_at=stop_at,
+        now=lambda: current[0],
+    )
+
+    with pytest.raises(APISportsError, match="safety stop"):
+        client.fetch_schedule(
+            "football",
+            (date(2026, 7, 14), date(2026, 7, 15)),
+        )
+
+    assert len(session.calls) == 1
+
+
+def test_safety_stop_prevents_later_odds_page_request(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+
+    stop_at = datetime(2026, 7, 14, 12, 0, tzinfo=timezone.utc)
+    current = [stop_at.replace(minute=59, hour=11)]
+    first = {**odds_payload(), "paging": {"current": 1, "total": 2}}
+
+    class AdvancingSession(FakeSession):
+        def get(self, *args, **kwargs):
+            response = super().get(*args, **kwargs)
+            current[0] = stop_at
+            return response
+
+    session = AdvancingSession(
+        [FakeResponse(payload=first, headers=quota_headers())]
+    )
+    client = APISportsClient(
+        "secret-key",
+        session=session,
+        cache_dir=tmp_path,
+        quota_reserve=0,
+        stop_at=stop_at,
+        now=lambda: current[0],
+    )
+
+    with pytest.raises(APISportsError, match="safety stop"):
+        client.fetch_event_markets("football", "42")
+
+    assert [call["params"] for call in session.calls] == [
+        {"fixture": "42", "page": 1}
     ]
 
 

@@ -210,14 +210,16 @@ def build_open_ev_package(
     jackpot_override: float | None = None,
     progress_callback: PhaseCallback | None = None,
     timing_eligibility_resolver: TimingEligibilityResolver | None = None,
+    payload: Mapping[str, Any] | None = None,
+    fetched_at: datetime | str | None = None,
 ) -> EVPackageRun:
     """Fetch a fresh snapshot and build one exact open-drawing EV package."""
-    payload = client.drawing_info(drawing_id)
-    fetched_at = _utc_now()
+    resolved_payload = client.drawing_info(drawing_id) if payload is None else payload
+    resolved_fetched_at = _fresh_timestamp(fetched_at)
     _notify(progress_callback, {"phase": "input", "drawing_id": drawing_id})
     ev_input = ev_input_from_payload(
-        payload,
-        fetched_at=fetched_at,
+        resolved_payload,
+        fetched_at=resolved_fetched_at,
         stake=config.stake,
         prize_fund_factor=config.prize_fund_factor,
         possible_winnings=config.possible_winnings,
@@ -231,7 +233,7 @@ def build_open_ev_package(
     timing_eligibility = (
         PlayTimingEligibility.not_checked()
         if timing_eligibility_resolver is None
-        else timing_eligibility_resolver(payload)
+        else timing_eligibility_resolver(resolved_payload)
     )
     if not isinstance(timing_eligibility, PlayTimingEligibility):
         raise TypeError("timing eligibility resolver returned an invalid result")
@@ -478,6 +480,17 @@ def _require_aware_timestamp(value: str) -> None:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _fresh_timestamp(value: datetime | str | None) -> str:
+    if value is None:
+        return _utc_now()
+    if isinstance(value, datetime):
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("fetched_at must be an ISO datetime with a timezone")
+        return value.isoformat()
+    _require_aware_timestamp(value)
+    return value
 
 
 def _notify(callback: PhaseCallback | None, payload: dict[str, object]) -> None:

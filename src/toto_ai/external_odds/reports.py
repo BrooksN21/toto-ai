@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import tempfile
+from collections.abc import Iterable
 from pathlib import Path
 
 from toto_ai.external_odds.audit import CoverageAudit, CoverageMetrics
@@ -98,9 +99,22 @@ def external_coverage_report_paths(
     audit: CoverageAudit,
     report_dir: str | Path = "reports",
 ) -> tuple[Path, Path]:
+    return external_coverage_report_paths_for_config(
+        requested_last=audit.requested_last,
+        minimum_bookmakers=audit.minimum_bookmakers,
+        report_dir=report_dir,
+    )
+
+
+def external_coverage_report_paths_for_config(
+    *,
+    requested_last: int,
+    minimum_bookmakers: int,
+    report_dir: str | Path = "reports",
+) -> tuple[Path, Path]:
     stem = (
-        f"external_coverage_last_{audit.requested_last}_"
-        f"min_bookmakers_{audit.minimum_bookmakers}"
+        f"external_coverage_last_{requested_last}_"
+        f"min_bookmakers_{minimum_bookmakers}"
     )
     output_dir = Path(report_dir)
     return output_dir / f"{stem}.csv", output_dir / f"{stem}.md"
@@ -109,8 +123,14 @@ def external_coverage_report_paths(
 def write_external_coverage_reports(
     audit: CoverageAudit,
     report_dir: str | Path = "reports",
+    *,
+    input_paths: Iterable[str | Path] = (),
 ) -> tuple[Path, Path]:
     csv_path, markdown_path = external_coverage_report_paths(audit, report_dir)
+    output_paths = {csv_path.resolve(), markdown_path.resolve()}
+    resolved_inputs = {Path(path).resolve() for path in input_paths}
+    if output_paths & resolved_inputs:
+        raise ValueError("external report and input paths must be distinct")
     _write_atomic_pair(
         (
             (csv_path, _render_csv(audit).encode("utf-8")),

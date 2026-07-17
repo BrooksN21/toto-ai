@@ -12,7 +12,12 @@ import toto_ai.runner.reports as runner_reports
 from toto_ai.ev.models import PlayTimingEligibility
 from toto_ai.external_odds.eligibility import DrawingEligibility
 from toto_ai.external_odds.targets import parse_target_drawing
-from toto_ai.runner import DrawingRunnerConfig, DrawingRunnerResult, pin_drawing
+from toto_ai.runner import (
+    DrawingRunnerConfig,
+    DrawingRunnerResult,
+    RunnerReportLinks,
+    pin_drawing,
+)
 
 runner = CliRunner()
 SENTINEL_SECRET = "api-sports-test-secret"
@@ -144,10 +149,31 @@ def _wire_runner(monkeypatch, *, result: _RunnerResult):
 
     def fake_run_drawing(**kwargs):
         captured.update(kwargs)
+        kwargs["preflight_check"](
+            _pinned_target(),
+            DEADLINE - timedelta(minutes=20),
+        )
         return result
 
     monkeypatch.setenv("API_SPORTS_KEY", SENTINEL_SECRET)
     monkeypatch.setattr(cli, "run_drawing", fake_run_drawing)
+    monkeypatch.setattr(
+        cli,
+        "TotoBriefClient",
+        lambda: SimpleNamespace(drawing_info=lambda _drawing_id: _target_payload()),
+    )
+    monkeypatch.setattr(
+        cli,
+        "validate_output_paths",
+        lambda outputs, **kwargs: captured.setdefault(
+            "path_validation", (tuple(outputs), kwargs)
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "probe_writable_directory",
+        lambda path: captured.setdefault("probed_paths", []).append(Path(path)),
+    )
 
     def init_database(db):
         captured["init_db"] = db
@@ -177,9 +203,36 @@ def _wire_runner(monkeypatch, *, result: _RunnerResult):
         lambda **kwargs: captured.setdefault("ev", kwargs),
     )
 
-    def write_runner(result, **kwargs):
-        captured["runner_report"] = kwargs
-        return Path("reports/runner.json"), Path("reports/runner.md")
+    def publish(result, **kwargs):
+        captured["publication"] = kwargs
+        external = (
+            (
+                Path(kwargs["report_dir"]) / "coverage.csv",
+                Path(kwargs["report_dir"]) / "coverage.md",
+            )
+            if result.audit is not None
+            else ()
+        )
+        ev = (
+            (
+                Path(kwargs["report_dir"]) / "ev.csv",
+                Path(kwargs["report_dir"]) / "ev.md",
+            )
+            if result.decision != "NO BET" and result.ev_run is not None
+            else ()
+        )
+        links = RunnerReportLinks(external=external, ev=ev)
+        captured["runner_report"] = {
+            "report_dir": kwargs["report_dir"],
+            "links": links,
+            "input_paths": kwargs["protected_paths"],
+        }
+        return SimpleNamespace(
+            result=result,
+            external=external,
+            ev=ev,
+            runner=(Path("reports/runner.json"), Path("reports/runner.md")),
+        )
 
     class RecordingProgress:
         def __init__(self, *columns):
@@ -201,7 +254,7 @@ def _wire_runner(monkeypatch, *, result: _RunnerResult):
             captured["progress_descriptions"].append(description)
 
     monkeypatch.setattr(cli, "Progress", RecordingProgress)
-    monkeypatch.setattr(cli, "write_drawing_run_reports", write_runner)
+    monkeypatch.setattr(cli, "publish_drawing_run_artifacts", publish)
     monkeypatch.setattr(
         cli,
         "write_external_coverage_reports",
@@ -271,6 +324,35 @@ def test_runner_target_and_timing_bridges_bind_exact_fingerprint(monkeypatch):
     assert timing.target_fingerprint == pinned.fingerprint
     assert timing.fingerprint_match is True
     assert lookups == [("sessions", 11953, pinned.fingerprint)]
+
+
+def test_runner_package_bridge_rejects_second_payload_mutation_before_ev(
+    monkeypatch,
+):
+    expected = _pinned_target()
+    mutated_payload = _target_payload()
+    mutated_payload["data"]["number"] = 9999
+    client = SimpleNamespace(drawing_info=lambda drawing_id: mutated_payload)
+    monkeypatch.setattr(
+        cli,
+        "build_open_ev_package",
+        lambda **_kwargs: pytest.fail("heavy EV work must not start"),
+    )
+
+    with pytest.raises(
+        cli.RunnerTargetMismatch,
+        match="fresh EV target does not match pinned target",
+    ):
+        cli._build_runner_package(
+            client=client,
+            expected=expected,
+            config=DrawingRunnerConfig(bank=4980).ev_config,
+            fetched_at=DEADLINE - timedelta(minutes=18),
+            progress_callback=None,
+            timing_eligibility_resolver=lambda _payload: pytest.fail(
+                "timing lookup must not start"
+            ),
+        )
 
 
 def test_run_drawing_wires_only_approved_options_and_fresh_dependencies(monkeypatch):
@@ -345,23 +427,31 @@ def test_run_drawing_wires_only_approved_options_and_fresh_dependencies(monkeypa
     assert collection["session_factory"] == "session-factory"
     assert collection["aliases"] == {"aliases": "aliases.json"}
     assert collection["provider_factory"](Path("fresh-provider")) is not None
-    assert provider_calls == [(SENTINEL_SECRET, Path("fresh-provider"), 0)]
+    assert provider_calls == [
+        (SENTINEL_SECRET, Path("fresh-cache"), 0),
+        (SENTINEL_SECRET, Path("fresh-provider"), 0),
+    ]
     captured["audit_coverage"]()
     assert captured["audit"] == (
         ("session-factory",),
         {"last": 30, "minimum_bookmakers": 3},
     )
-    captured["build_package"](11953)
+    captured["build_package"](_pinned_target())
     assert captured["ev"]["drawing_id"] == 11953
     assert captured["ev"]["config"] == config.ev_config
+    assert captured["probed_paths"] == [
+        Path("custom-reports"),
+        Path("fresh-cache"),
+    ]
     assert captured["runner_report"]["report_dir"] == "custom-reports"
     assert captured["runner_report"]["links"].external == (
         Path("custom-reports/coverage.csv"),
         Path("custom-reports/coverage.md"),
     )
-    assert captured["runner_report"]["links"].ev == (
-        Path("custom-reports/ev.csv"),
-        Path("custom-reports/ev.md"),
+    assert captured["runner_report"]["links"].ev == ()
+    assert captured["runner_report"]["input_paths"] == (
+        "custom.db",
+        "aliases.json",
     )
     assert "--reuse-cache" not in runner.invoke(
         cli.app, ["run-drawing", "--help"]
@@ -512,6 +602,105 @@ def test_run_drawing_validates_config_before_provider_access(
     assert not provider_accessed
 
 
+def test_runner_preflight_rejects_db_output_collision_before_any_access(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    report_dir = tmp_path / "reports"
+    db_path = report_dir / "external_coverage_last_30_min_bookmakers_3.csv"
+    db_path.parent.mkdir(parents=True)
+    db_path.write_bytes(b"protected-database")
+
+    monkeypatch.setattr(
+        cli,
+        "init_db",
+        lambda *_args: pytest.fail("database access must not start"),
+    )
+
+    with pytest.raises(ValueError, match="protected inputs"):
+        cli._prepare_runner_resources(
+            config=DrawingRunnerConfig(bank=4980),
+            target=_pinned_target(),
+            preflight_at=DEADLINE - timedelta(minutes=20),
+            db=db_path,
+            aliases=tmp_path / "aliases.json",
+            report_dir=report_dir,
+            cache_root=tmp_path / "cache",
+            provider_factory=lambda _path: pytest.fail(
+                "provider construction must not start"
+            ),
+        )
+
+    assert db_path.read_bytes() == b"protected-database"
+
+
+def test_runner_preflight_rejects_symlink_alias_collision(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    report_dir = tmp_path / "reports"
+    report_dir.mkdir()
+    aliases = tmp_path / "aliases.json"
+    aliases.write_bytes(b"protected-aliases")
+    collision = report_dir / "external_coverage_last_30_min_bookmakers_3.csv"
+    collision.symlink_to(aliases)
+    monkeypatch.setattr(
+        cli,
+        "init_db",
+        lambda *_args: pytest.fail("database access must not start"),
+    )
+
+    with pytest.raises(ValueError, match="protected inputs"):
+        cli._prepare_runner_resources(
+            config=DrawingRunnerConfig(bank=4980),
+            target=_pinned_target(),
+            preflight_at=DEADLINE - timedelta(minutes=20),
+            db=tmp_path / "toto.sqlite",
+            aliases=aliases,
+            report_dir=report_dir,
+            cache_root=tmp_path / "cache",
+            provider_factory=lambda _path: pytest.fail(
+                "provider construction must not start"
+            ),
+        )
+
+    assert aliases.read_bytes() == b"protected-aliases"
+    assert collision.is_symlink()
+
+
+@pytest.mark.parametrize("blocked_name", ("report", "cache"))
+def test_runner_preflight_rejects_unwritable_output_roots_before_provider(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    blocked_name: str,
+) -> None:
+    blocked = tmp_path / "not-a-directory"
+    blocked.write_bytes(b"protected")
+    report_dir = blocked if blocked_name == "report" else tmp_path / "reports"
+    cache_root = blocked if blocked_name == "cache" else tmp_path / "cache"
+    monkeypatch.setattr(
+        cli,
+        "init_db",
+        lambda *_args: pytest.fail("database access must not start"),
+    )
+
+    with pytest.raises(OSError):
+        cli._prepare_runner_resources(
+            config=DrawingRunnerConfig(bank=4980),
+            target=_pinned_target(),
+            preflight_at=DEADLINE - timedelta(minutes=20),
+            db=tmp_path / "toto.sqlite",
+            aliases=tmp_path / "aliases.json",
+            report_dir=report_dir,
+            cache_root=cache_root,
+            provider_factory=lambda _path: pytest.fail(
+                "provider construction must not start"
+            ),
+        )
+
+    assert blocked.read_bytes() == b"protected"
+
+
 def test_corrupt_stored_timing_is_a_controlled_nonzero_failure(monkeypatch):
     captured = _wire_runner(monkeypatch, result=_RunnerResult("NO BET"))
     pinned = _pinned_target()
@@ -520,6 +709,10 @@ def test_corrupt_stored_timing_is_a_controlled_nonzero_failure(monkeypatch):
         raise ValueError("corrupt stored eligibility")
 
     def resolve_timing(**kwargs):
+        kwargs["preflight_check"](
+            pinned,
+            DEADLINE - timedelta(minutes=20),
+        )
         kwargs["resolve_timing"](pinned)
         raise AssertionError("corrupt timing must stop the runner")
 
@@ -570,8 +763,8 @@ def test_keyboard_interrupt_during_runner_publication_leaves_no_manifest(
     _wire_runner(monkeypatch, result=result)
     monkeypatch.setattr(
         cli,
-        "write_drawing_run_reports",
-        runner_reports.write_drawing_run_reports,
+        "publish_drawing_run_artifacts",
+        runner_reports.publish_drawing_run_artifacts,
     )
     real_replace = runner_reports.os.replace
     installs = 0
@@ -602,12 +795,60 @@ def test_keyboard_interrupt_during_runner_publication_leaves_no_manifest(
             "4980",
             "--report-dir",
             str(tmp_path),
+            "--db",
+            str(tmp_path / "toto.sqlite"),
+            "--aliases",
+            str(tmp_path / "aliases.json"),
+            "--cache-root",
+            str(tmp_path / "cache"),
         ],
     )
 
     assert interrupted.exit_code != 0
     assert "no final manifest was published" in interrupted.output
-    assert tuple(tmp_path.iterdir()) == ()
+    assert tuple(path for path in tmp_path.rglob("*") if path.is_file()) == ()
+
+
+def test_progress_exit_interrupts_before_any_publication(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    result = _early_no_bet_result()
+    _wire_runner(monkeypatch, result=result)
+
+    class InterruptingProgress:
+        def __init__(self, *_columns):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            raise KeyboardInterrupt("progress shutdown interrupted")
+
+        def add_task(self, _description):
+            return 1
+
+        def update(self, *_args, **_kwargs):
+            pass
+
+    monkeypatch.setattr(cli, "Progress", InterruptingProgress)
+
+    interrupted = runner.invoke(
+        cli.app,
+        [
+            "run-drawing",
+            "--open",
+            "--bank",
+            "4980",
+            "--report-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert interrupted.exit_code != 0
+    assert "no final manifest was published" in interrupted.output
+    assert tuple(path for path in tmp_path.rglob("*") if path.is_file()) == ()
 
 
 def test_keyboard_interrupt_before_publication_is_nonzero(monkeypatch):

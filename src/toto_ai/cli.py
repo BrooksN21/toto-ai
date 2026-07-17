@@ -3,6 +3,7 @@ import os
 import subprocess
 import time
 from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -112,13 +113,16 @@ from toto_ai.optimizer.strategy_diagnostics import (
 )
 from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
+from toto_ai.path_safety import probe_writable_directory, validate_output_paths
 from toto_ai.runner import (
     DrawingRunnerConfig,
+    DrawingRunPublication,
     PinnedDrawing,
-    RunnerReportLinks,
+    RunnerTargetMismatch,
+    drawing_run_candidate_paths,
     pin_drawing,
+    publish_drawing_run_artifacts,
     run_drawing,
-    write_drawing_run_reports,
 )
 
 app = typer.Typer(help="TotoBrief API commands.")
@@ -721,6 +725,37 @@ def _resolve_runner_target(
     return pin_drawing(target)
 
 
+def _build_runner_package(
+    *,
+    client: TotoBriefClient,
+    expected: PinnedDrawing,
+    config: EVConfig,
+    fetched_at: datetime,
+    progress_callback: Callable[[dict[str, object]], None] | None,
+    timing_eligibility_resolver: Callable[
+        [Mapping[str, object]], PlayTimingEligibility
+    ],
+) -> EVPackageRun:
+    payload = client.drawing_info(expected.target.drawing_id)
+    observed = pin_drawing(parse_target_drawing(payload, fetched_at=fetched_at))
+    if (
+        observed.target.drawing_id != expected.target.drawing_id
+        or observed.target.drawing_number != expected.target.drawing_number
+        or observed.target.deadline != expected.target.deadline
+        or observed.fingerprint != expected.fingerprint
+    ):
+        raise RunnerTargetMismatch("fresh EV target does not match pinned target")
+    return build_open_ev_package(
+        client=client,
+        drawing_id=expected.target.drawing_id,
+        config=config,
+        progress_callback=progress_callback,
+        timing_eligibility_resolver=timing_eligibility_resolver,
+        payload=payload,
+        fetched_at=fetched_at,
+    )
+
+
 def _api_sports_provider_factory(
     api_key: str,
     quota_reserve: int,
@@ -730,6 +765,65 @@ def _api_sports_provider_factory(
         cache_dir=cache_dir,
         quota_reserve=quota_reserve,
     )
+
+
+@dataclass(frozen=True)
+class _RunnerResources:
+    engine: object
+    session_factory: object
+    reviewed_aliases: dict[str, str]
+    readonly_engine: object
+    readonly_session_factory: object
+    timing_resolver: Callable[[PinnedDrawing], PlayTimingEligibility]
+    ev_timing_resolver: Callable[
+        [Mapping[str, object]], PlayTimingEligibility
+    ]
+
+
+def _prepare_runner_resources(
+    *,
+    config: DrawingRunnerConfig,
+    target: PinnedDrawing,
+    preflight_at: datetime,
+    db: str | Path,
+    aliases: str | Path,
+    report_dir: str | Path,
+    cache_root: str | Path,
+    provider_factory: Callable[[Path], object],
+) -> _RunnerResources:
+    candidate_paths = drawing_run_candidate_paths(
+        config,
+        target,
+        preflight_at,
+        report_dir,
+    )
+    validate_output_paths(
+        candidate_paths,
+        protected_paths=(db, aliases),
+        protected_roots=(cache_root,),
+    )
+    probe_writable_directory(report_dir)
+    probe_writable_directory(cache_root)
+    provider_factory(Path(cache_root))
+
+    engine = init_db(db)
+    session_factory = get_session_factory(engine)
+    reviewed_aliases = load_aliases(aliases)
+    readonly_engine = open_readonly_db(db)
+    readonly_session_factory = get_session_factory(readonly_engine)
+    return _RunnerResources(
+        engine=engine,
+        session_factory=session_factory,
+        reviewed_aliases=reviewed_aliases,
+        readonly_engine=readonly_engine,
+        readonly_session_factory=readonly_session_factory,
+        timing_resolver=_build_runner_timing_resolver(str(db)),
+        ev_timing_resolver=_build_timing_eligibility_resolver(str(db)),
+    )
+
+
+def _utc_now_datetime() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 @app.command("run-drawing")
@@ -770,16 +864,59 @@ def run_drawing_command(
         raise typer.BadParameter("API_SPORTS_KEY is required")
 
     command_error: typer.BadParameter | None = None
+    result = None
+    publication: DrawingRunPublication | None = None
     try:
-        engine = init_db(db)
-        session_factory = get_session_factory(engine)
-        reviewed_aliases = load_aliases(aliases)
-        readonly_engine = open_readonly_db(db)
-        readonly_session_factory = get_session_factory(readonly_engine)
-        timing_resolver = _build_runner_timing_resolver(db)
-        ev_timing_resolver = _build_timing_eligibility_resolver(db)
         client = TotoBriefClient()
         provider_factory = _api_sports_provider_factory(api_key, quota_reserve)
+        resources: _RunnerResources | None = None
+
+        def require_resources() -> _RunnerResources:
+            if resources is None:
+                raise ValueError("runner resources were not preflighted")
+            return resources
+
+        def preflight_check(
+            target: PinnedDrawing,
+            preflight_at: datetime,
+        ) -> None:
+            nonlocal resources
+            resources = _prepare_runner_resources(
+                config=config,
+                target=target,
+                preflight_at=preflight_at,
+                db=db,
+                aliases=aliases,
+                report_dir=report_dir,
+                cache_root=cache_root,
+                provider_factory=provider_factory,
+            )
+
+        def collect_target(target, stop_at):
+            prepared = require_resources()
+            return collect_fresh_open_external_odds(
+                totobrief_client=client,
+                provider_factory=provider_factory,
+                session_factory=prepared.session_factory,
+                aliases=prepared.reviewed_aliases,
+                cache_root=Path(cache_root),
+                target=target,
+                stop_at=stop_at,
+                max_passes=max_passes,
+                max_expansion_passes=max_expansion_passes,
+                retry_delay_seconds=retry_delay_seconds,
+                now=_utc_now_datetime,
+                monotonic=time.monotonic,
+                sleep=time.sleep,
+            )
+
+        def audit_coverage():
+            prepared = require_resources()
+            return audit_external_coverage(
+                prepared.readonly_session_factory,
+                last=30,
+                minimum_bookmakers=3,
+            )
 
         with Progress(
             SpinnerColumn(),
@@ -811,59 +948,26 @@ def run_drawing_command(
                 resolve_target=lambda resolved_at: _resolve_runner_target(
                     client, resolved_at
                 ),
-                collect_target=lambda target, stop_at: collect_fresh_open_external_odds(
-                    totobrief_client=client,
-                    provider_factory=provider_factory,
-                    session_factory=session_factory,
-                    aliases=reviewed_aliases,
-                    cache_root=Path(cache_root),
-                    target=target,
-                    stop_at=stop_at,
-                    max_passes=max_passes,
-                    max_expansion_passes=max_expansion_passes,
-                    retry_delay_seconds=retry_delay_seconds,
-                    now=lambda: datetime.now(timezone.utc),
-                    monotonic=time.monotonic,
-                    sleep=time.sleep,
+                collect_target=collect_target,
+                resolve_timing=lambda target: require_resources().timing_resolver(
+                    target
                 ),
-                resolve_timing=timing_resolver,
-                audit_coverage=lambda: audit_external_coverage(
-                    readonly_session_factory,
-                    last=30,
-                    minimum_bookmakers=3,
-                ),
-                build_package=lambda drawing_id: build_open_ev_package(
+                audit_coverage=audit_coverage,
+                build_package=lambda expected: _build_runner_package(
                     client=client,
-                    drawing_id=drawing_id,
+                    expected=expected,
                     config=config.ev_config,
+                    fetched_at=_utc_now_datetime(),
                     progress_callback=update_progress,
-                    timing_eligibility_resolver=ev_timing_resolver,
+                    timing_eligibility_resolver=(
+                        require_resources().ev_timing_resolver
+                    ),
                 ),
-                now=lambda: datetime.now(timezone.utc),
+                now=_utc_now_datetime,
                 monotonic=time.monotonic,
                 sleep=time.sleep,
                 progress_callback=update_progress,
-            )
-
-            external_links: tuple[Path, ...] = ()
-            if result.audit is not None:
-                external_links = write_external_coverage_reports(
-                    result.audit,
-                    report_dir=report_dir,
-                )
-            ev_links: tuple[Path, ...] = ()
-            if result.ev_run is not None:
-                ev_links = write_ev_package_reports(
-                    result.ev_run,
-                    report_dir=report_dir,
-                )
-            runner_paths = write_drawing_run_reports(
-                result,
-                links=RunnerReportLinks(
-                    external=external_links,
-                    ev=ev_links,
-                ),
-                report_dir=report_dir,
+                preflight_check=preflight_check,
             )
     except KeyboardInterrupt:
         command_error = typer.BadParameter(
@@ -886,7 +990,39 @@ def run_drawing_command(
 
     if command_error is not None:
         raise command_error
+    if result is None:
+        raise typer.BadParameter("Drawing runner did not produce a result")
 
+    try:
+        publication = publish_drawing_run_artifacts(
+            result,
+            report_dir=report_dir,
+            protected_paths=(db, aliases),
+            protected_roots=(cache_root,),
+            now=_utc_now_datetime,
+        )
+    except KeyboardInterrupt:
+        if publication is None:
+            raise typer.BadParameter(
+                "Drawing runner interrupted; no final manifest was published"
+            ) from None
+    except (
+        FloatingPointError,
+        KeyError,
+        OSError,
+        OverflowError,
+        SQLAlchemyError,
+        TypeError,
+        ValueError,
+    ) as error:
+        raise typer.BadParameter(
+            _external_error_message(error, secret=api_key)
+        ) from None
+
+    if publication is None:
+        raise typer.BadParameter("Drawing runner publication did not complete")
+    result = publication.result
+    runner_paths = publication.runner
     print(f"Decision: {result.decision}")
     print(f"Reason: {result.terminal_reason}")
     print(f"Reports written to {runner_paths[0]} and {runner_paths[1]}")

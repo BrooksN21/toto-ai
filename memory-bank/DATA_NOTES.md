@@ -34,6 +34,10 @@
 - `external_collection_runs.requests_made` is actual provider HTTP attempts,
   including retries and paginated page fetches. Cache hits are stored
   separately in `cache_hits` and are not requests.
+- A safe-runner pass that reaches T-5 remains a complete immutable 15-event
+  observation. No later provider request/page/retry starts; the current and
+  remaining unresolved events use the explicit `safety stop reached` fallback,
+  and prospective orchestration records `stop_reason="safety_stop"`.
 - Live TotoBrief drawing 4945 (`id=11953`) returned `start_at = null` and
   `name_en = null` for all 15 events. API-Sports free fixtures access on
   2026-07-15 covered only 2026-07-14 through 2026-07-16.

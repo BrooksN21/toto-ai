@@ -1,5 +1,8 @@
 # Safe Drawing Runner Implementation Plan
 
+**Status:** Implementation and corrective verification are complete;
+independent final approval remains pending.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add one fail-closed `run-drawing --open` command that preflights immediately, starts final work at T-20, suppresses output at T-5, and orchestrates existing fresh collection, timing, audit, and EV package behavior without placing a bet.
@@ -58,7 +61,7 @@
 - Produces: `runner_window(schedule, now) -> Literal["waiting", "final", "closed"]`.
 - Produces: `wait_for_final_window(schedule, now, sleep, progress_callback=None, maximum_sleep_seconds=30.0) -> Literal["final", "closed"]`.
 
-- [ ] **Step 1: Write failing domain and timing tests**
+- [x] **Step 1: Write failing domain and timing tests**
 
 Add tests that instantiate the real types and prove strict validation, fingerprint determinism, exact boundary semantics, a wall-clock jump to closed, bounded sleep, and progress updates:
 
@@ -93,7 +96,7 @@ def test_wait_rechecks_wall_clock_and_never_sleeps_past_final_window():
 
 Also reject booleans/non-integers, non-divisible banks, non-UTC datetimes, `final_lead_minutes <= safety_stop_minutes`, invalid modes, malformed fingerprints, and a maximum sleep that is non-finite or non-positive.
 
-- [ ] **Step 2: Run tests to verify RED**
+- [x] **Step 2: Run tests to verify RED**
 
 Run:
 
@@ -103,7 +106,7 @@ Run:
 
 Expected: collection failure because `toto_ai.runner` does not exist.
 
-- [ ] **Step 3: Implement minimal immutable models and timing state machine**
+- [x] **Step 3: Implement minimal immutable models and timing state machine**
 
 Implement the public shapes exactly:
 
@@ -147,7 +150,7 @@ def pin_drawing(target: TargetDrawing) -> PinnedDrawing:
 
 `wait_for_final_window` must calculate `min(maximum_sleep_seconds, seconds_until_final)`, call no sleeper when already final/closed, and classify again from the injected wall clock after every sleep.
 
-- [ ] **Step 4: Verify GREEN and public exports**
+- [x] **Step 4: Verify GREEN and public exports**
 
 Run:
 
@@ -158,7 +161,7 @@ Run:
 
 Expected: all new tests pass and Ruff reports `All checks passed!`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/toto_ai/runner tests/test_runner_timing.py
@@ -179,7 +182,7 @@ git commit -m "Add safe runner timing model"
   `stop_at: datetime | None = None`.
 - Preserves: all existing callers when both new arguments are omitted.
 
-- [ ] **Step 1: Write failing pinned-target and cutoff tests**
+- [x] **Step 1: Write failing pinned-target and cutoff tests**
 
 Add focused tests:
 
@@ -228,7 +231,7 @@ def test_safety_stop_prevents_retry_after_first_pass(monkeypatch, tmp_path):
 
 Also prove a retry sleep is shortened to the remaining safe duration, expansion cannot start after the cutoff, `stop_at` must be UTC-aware, a cutoff reached before pass one raises a stable `ValueError`, and the existing no-target path still resolves exactly once.
 
-- [ ] **Step 2: Run tests to verify RED**
+- [x] **Step 2: Run tests to verify RED**
 
 Run:
 
@@ -238,7 +241,7 @@ Run:
 
 Expected: failures for unknown `target`, `stop_at`, and `safety_stop` behavior.
 
-- [ ] **Step 3: Implement target selection and stop checks**
+- [x] **Step 3: Implement target selection and stop checks**
 
 Use this selection at the top of the function:
 
@@ -269,7 +272,7 @@ if now() >= stop_at:
 
 Never discard an already completed immutable pass. Return its snapshot with `stop_reason="safety_stop"`.
 
-- [ ] **Step 4: Verify GREEN and regression behavior**
+- [x] **Step 4: Verify GREEN and regression behavior**
 
 Run:
 
@@ -284,7 +287,7 @@ Run:
 
 Expected: all tests pass; standalone collection behavior is unchanged.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/toto_ai/external_odds/prospective.py \
@@ -311,7 +314,7 @@ git commit -m "Bind prospective collection to runner deadline"
   - `audit_coverage() -> CoverageAudit`
   - `build_package(int) -> EVPackageRun`
 
-- [ ] **Step 1: Write failing orchestration tests**
+- [x] **Step 1: Write failing orchestration tests**
 
 Cover the state machine with real immutable runner records and recording
 callables. In the test module, define small local factories for complete real
@@ -358,7 +361,7 @@ def test_target_change_fails_closed_before_provider_access():
 
 Also test immediate final-window launch, already-closed launch, unknown/multi-day/absent playable timing skipping EV, research mode retaining `RESEARCH ONLY`, coverage `PENDING` not changing EV input or decision, safety cutoff before collection/audit/EV, cutoff after EV discarding the EV run and coupons, EV-produced `NO BET`, and progress phase order.
 
-- [ ] **Step 2: Run tests to verify RED**
+- [x] **Step 2: Run tests to verify RED**
 
 Run:
 
@@ -368,7 +371,7 @@ Run:
 
 Expected: import failure because runner orchestration does not exist.
 
-- [ ] **Step 3: Implement the minimal state machine**
+- [x] **Step 3: Implement the minimal state machine**
 
 Use one return helper for fail-closed outcomes and exact target comparison:
 
@@ -392,7 +395,7 @@ An ordinary EV-threshold `NO BET` may retain its zero-cost `EVPackageRun` for
 diagnostics, but reports must not serialize `top_coupons`. A package suppressed
 because it completed at or after T-5 must use `ev_run=None`.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run:
 
@@ -405,7 +408,7 @@ Run:
 
 Expected: all tests pass and orchestration has no network/filesystem dependency.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/toto_ai/runner tests/test_runner_orchestration.py
@@ -428,7 +431,7 @@ git commit -m "Add safe drawing runner orchestration"
   for both computed and suppressed terminal results. Schema v1 used `ev: null`
   when EV did not run.
 
-- [ ] **Step 1: Write failing report tests**
+- [x] **Step 1: Write failing report tests**
 
 Prove deterministic paths/bytes, distinct IDs for distinct preflight timestamps
 or configs, canonical JSON, complete Markdown, path-collision rejection, no
@@ -464,7 +467,7 @@ def test_runner_report_pair_is_restored_on_interruption(monkeypatch, tmp_path):
     assert not tuple(tmp_path.glob(".*.tmp"))
 ```
 
-- [ ] **Step 2: Run tests to verify RED**
+- [x] **Step 2: Run tests to verify RED**
 
 Run:
 
@@ -474,7 +477,7 @@ Run:
 
 Expected: import failure because runner reports do not exist.
 
-- [ ] **Step 3: Implement canonical rendering and atomic publication**
+- [x] **Step 3: Implement canonical rendering and atomic publication**
 
 Build one explicit dictionary rather than `asdict(result)` so NumPy arrays and internal diagnostic coupons cannot leak. Canonical JSON uses:
 
@@ -484,7 +487,7 @@ json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 Derive `run_id` from canonical target ID/number/deadline/fingerprint, preflight timestamp, bank/stake/mode/lead/safety/provider. Sanitize deadline for filenames and include the ID in both paths. Validate output paths against all input paths before writing. Use same-directory temporary files, backups, atomic replacement, restoration on every `BaseException`, and unconditional temporary cleanup.
 
-- [ ] **Step 4: Verify GREEN and deterministic repeat**
+- [x] **Step 4: Verify GREEN and deterministic repeat**
 
 Run twice:
 
@@ -497,7 +500,7 @@ Run twice:
 
 Expected: both runs pass and generated byte hashes are identical inside tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/toto_ai/runner tests/test_runner_reports.py
@@ -515,7 +518,7 @@ git commit -m "Add deterministic drawing runner reports"
 - Adds private CLI bridges that convert stored `DrawingEligibility` to existing `PlayTimingEligibility`, create the API-Sports provider factory, and publish associated audit/EV reports.
 - Consumes: Tasks 1-4 public runner APIs.
 
-- [ ] **Step 1: Write failing CLI validation and wiring tests**
+- [x] **Step 1: Write failing CLI validation and wiring tests**
 
 Use `CliRunner`, monkeypatched services, and a sentinel secret. Prove:
 
@@ -535,7 +538,7 @@ def test_run_drawing_requires_open_and_api_key(monkeypatch):
 
 Also verify arbitrary valid banks, invalid divisibility, provider restriction, lead/safety validation, fresh-only provider factory, exact DB and report-dir wiring, latest-30 audit, Rich phase/countdown updates, `PLAY`, `NO BET`, `RESEARCH ONLY`, exit-zero valid `NO BET`, nonzero internal failure, `KeyboardInterrupt`, associated report paths, no top-coupon table after suppression, and recursive absence of the API key from output/exceptions.
 
-- [ ] **Step 2: Run tests to verify RED**
+- [x] **Step 2: Run tests to verify RED**
 
 Run:
 
@@ -545,7 +548,7 @@ Run:
 
 Expected: failure because `run-drawing` is not registered.
 
-- [ ] **Step 3: Register and wire `run-drawing`**
+- [x] **Step 3: Register and wire `run-drawing`**
 
 The command must expose exactly these approved controls and reuse existing
 defaults:
@@ -570,7 +573,7 @@ defaults:
 
 Do not expose `--reuse-cache`, EV threshold tuning, payout overrides, or bet submission. Construct `DrawingRunnerConfig` before provider access. Use `init_db` for collection writes and the existing exact read-only timing resolver for the final EV payload. Publish coverage reports only when an audit exists, EV reports only when `ev_run` exists, then publish the runner pair with those paths. Sanitize every caught provider error with `_external_error_message(error, secret=api_key)`.
 
-- [ ] **Step 4: Verify GREEN and CLI help**
+- [x] **Step 4: Verify GREEN and CLI help**
 
 Run:
 
@@ -582,7 +585,7 @@ Run:
 
 Expected: tests pass; help shows T-20/T-5 defaults and no cache-reuse or automatic-bet option.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/toto_ai/cli.py tests/test_runner_cli.py
@@ -677,6 +680,10 @@ Expected: full suite and Ruff pass; all three help commands exit zero.
 - [ ] **Step 5: Independent final review (approval pending)**
 
 Review the complete feature range against the approved design. Required checks: no model-definition change, no external probability entering EV, no post-T-5 coupon publication, no target roll-forward, no real test sleep/network, no secret surfaces, deterministic rollback-safe artifacts, and clean worktree after commit. Fix every critical/important finding and re-run Step 4.
+
+The requested whole-feature corrections have been implemented and verified.
+This step remains open until the independent reviewer approves the corrected
+feature.
 
 - [x] **Step 6: Commit**
 

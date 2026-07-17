@@ -3,13 +3,18 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
 from zoneinfo import ZoneInfo
 
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
-from toto_ai.external_odds.api_sports import APISportsError, QuotaExhausted
+from toto_ai.external_odds.api_sports import (
+    APISportsError,
+    QuotaExhausted,
+    SafetyStopReached,
+)
 from toto_ai.external_odds.consensus import (
     MAXIMUM_ODDS_AGE,
     ConsensusResult,
@@ -36,6 +41,7 @@ from toto_ai.external_odds.targets import parse_target_drawing
 CONSENSUS_MINIMUM_BOOKMAKERS = 3
 EXTERNAL_CONSENSUS = "external_consensus"
 TOTOBRIEF_BK_FALLBACK = "totobrief_bk_fallback"
+SAFETY_STOP_FALLBACK = "safety stop reached"
 _MOSCOW = ZoneInfo("Europe/Moscow")
 _UNKNOWN_ELIGIBILITY = DrawingEligibility(
     status="unknown",
@@ -157,6 +163,7 @@ class _MarketFetchResult:
 class _ScheduleFetchResult:
     schedule_dates: tuple[ScheduleDateResult, ...]
     quota_exhausted: bool
+    safety_stopped: bool
 
 
 def build_external_collection(
@@ -164,9 +171,14 @@ def build_external_collection(
     provider: ExternalOddsProvider,
     aliases: dict[str, str],
     missing_start_horizon_days: int = 2,
+    *,
+    stop_at: datetime | None = None,
+    now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> ExternalCollectionSnapshot:
     _validate_missing_start_horizon_days(missing_start_horizon_days)
-    request_counter = _RequestCounter(provider)
+    _validate_safety_boundary(stop_at, now)
+    _bind_provider_safety_boundary(provider, stop_at=stop_at, now=now)
+    request_counter = _RequestCounter(provider, stop_at=stop_at, now=now)
     provider_name = provider.provider_name
     schedule_fetch = _fetch_schedules(
         target,
@@ -178,10 +190,18 @@ def build_external_collection(
 
     market_cache: dict[tuple[Sport, str], tuple[ProviderMarket, ...]] = {}
     quota_stopped = schedule_fetch.quota_exhausted
+    safety_stopped = schedule_fetch.safety_stopped
     market_results: dict[int, _MarketFetchResult] = {}
     for event in target.events:
         matched_target = decisions[event.event_order]
         decision = matched_target.decision
+        if safety_stopped or request_counter.safety_stop_reached():
+            safety_stopped = True
+            market_results[event.event_order] = _MarketFetchResult(
+                markets=(),
+                fallback_reason=SAFETY_STOP_FALLBACK,
+            )
+            continue
         if decision.status != "matched" or decision.provider_event_id is None:
             market_results[event.event_order] = _MarketFetchResult(
                 markets=(),
@@ -204,6 +224,13 @@ def build_external_collection(
                     event.sport,
                     decision.provider_event_id,
                 )
+            except SafetyStopReached:
+                safety_stopped = True
+                market_results[event.event_order] = _MarketFetchResult(
+                    markets=(),
+                    fallback_reason=SAFETY_STOP_FALLBACK,
+                )
+                continue
             except QuotaExhausted:
                 quota_stopped = True
                 market_results[event.event_order] = _MarketFetchResult(
@@ -370,42 +397,83 @@ def collect_target_external_odds(
 
 
 class _RequestCounter:
-    def __init__(self, provider: ExternalOddsProvider) -> None:
+    def __init__(
+        self,
+        provider: ExternalOddsProvider,
+        *,
+        stop_at: datetime | None,
+        now: Callable[[], datetime],
+    ) -> None:
         self.provider = provider
         self.requests_made = 0
         self.cache_hits = 0
+        self._stop_at = stop_at
+        self._now = now
+
+    def safety_stop_reached(self) -> bool:
+        if self._stop_at is None:
+            return False
+        current = self._now()
+        _require_utc_datetime("now", current)
+        return current >= self._stop_at
+
+    def _raise_if_safety_stopped(self) -> None:
+        if self.safety_stop_reached():
+            raise SafetyStopReached("external collection safety stop reached")
 
     def fetch_schedule(
         self,
         sport: Sport,
         dates: tuple[date, ...],
     ) -> tuple[ProviderEvent, ...]:
+        self._raise_if_safety_stopped()
         before_requests = _provider_counter(self.provider, "requests_made")
         before_cache_hits = _provider_counter(self.provider, "cache_hits")
         try:
-            return self.provider.fetch_schedule(sport, dates)
-        finally:
+            result = self.provider.fetch_schedule(sport, dates)
+        except Exception:
             self._sync_provider_counts(
                 before_requests=before_requests,
                 before_cache_hits=before_cache_hits,
                 fallback_requests=max(1, len(dates)),
             )
+            self._raise_if_safety_stopped()
+            raise
+        else:
+            self._sync_provider_counts(
+                before_requests=before_requests,
+                before_cache_hits=before_cache_hits,
+                fallback_requests=max(1, len(dates)),
+            )
+            self._raise_if_safety_stopped()
+            return result
 
     def fetch_event_markets(
         self,
         sport: Sport,
         provider_event_id: str,
     ) -> tuple[ProviderMarket, ...]:
+        self._raise_if_safety_stopped()
         before_requests = _provider_counter(self.provider, "requests_made")
         before_cache_hits = _provider_counter(self.provider, "cache_hits")
         try:
-            return self.provider.fetch_event_markets(sport, provider_event_id)
-        finally:
+            result = self.provider.fetch_event_markets(sport, provider_event_id)
+        except Exception:
             self._sync_provider_counts(
                 before_requests=before_requests,
                 before_cache_hits=before_cache_hits,
                 fallback_requests=1,
             )
+            self._raise_if_safety_stopped()
+            raise
+        else:
+            self._sync_provider_counts(
+                before_requests=before_requests,
+                before_cache_hits=before_cache_hits,
+                fallback_requests=1,
+            )
+            self._raise_if_safety_stopped()
+            return result
 
     def _sync_provider_counts(
         self,
@@ -457,7 +525,19 @@ def _fetch_schedules(
     )
     results: list[ScheduleDateResult] = []
     quota_stopped = False
+    safety_stopped = False
     for sport, requested_date in requested:
+        if safety_stopped or request_counter.safety_stop_reached():
+            safety_stopped = True
+            results.append(
+                ScheduleDateResult(
+                    sport=sport,
+                    requested_date=requested_date,
+                    events=(),
+                    error=SAFETY_STOP_FALLBACK,
+                )
+            )
+            continue
         if quota_stopped:
             results.append(
                 ScheduleDateResult(
@@ -476,6 +556,16 @@ def _fetch_schedules(
                     requested_date=requested_date,
                     events=events,
                     error=None,
+                )
+            )
+        except SafetyStopReached:
+            safety_stopped = True
+            results.append(
+                ScheduleDateResult(
+                    sport=sport,
+                    requested_date=requested_date,
+                    events=(),
+                    error=SAFETY_STOP_FALLBACK,
                 )
             )
         except QuotaExhausted:
@@ -500,6 +590,7 @@ def _fetch_schedules(
     return _ScheduleFetchResult(
         schedule_dates=tuple(results),
         quota_exhausted=quota_stopped,
+        safety_stopped=safety_stopped,
     )
 
 
@@ -1046,6 +1137,38 @@ def _optional_iso_datetime(value: datetime | None) -> str:
 
 def _optional_datetime_or_none(value: datetime | None) -> str | None:
     return None if value is None else _iso_datetime(value)
+
+
+def _validate_safety_boundary(
+    stop_at: datetime | None,
+    now: Callable[[], datetime],
+) -> None:
+    if not callable(now):
+        raise ValueError("now must be callable")
+    if stop_at is not None:
+        _require_utc_datetime("stop_at", stop_at)
+
+
+def _bind_provider_safety_boundary(
+    provider: ExternalOddsProvider,
+    *,
+    stop_at: datetime | None,
+    now: Callable[[], datetime],
+) -> None:
+    bind = getattr(provider, "bind_safety_boundary", None)
+    if bind is not None:
+        if not callable(bind):
+            raise ValueError("provider safety boundary binder must be callable")
+        bind(stop_at=stop_at, now=now)
+
+
+def _require_utc_datetime(name: str, value: object) -> None:
+    if (
+        not isinstance(value, datetime)
+        or value.tzinfo is None
+        or value.utcoffset() != timedelta(0)
+    ):
+        raise ValueError(f"{name} must be timezone-aware UTC")
 
 
 def _validate_missing_start_horizon_days(value: int) -> None:

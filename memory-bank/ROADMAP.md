@@ -182,11 +182,11 @@
 
 ## Phase 7: Production
 
-- Safe Drawing Runner design approved: immediate preflight, exact target
-  binding, T-20 final start, T-5 fail-closed safety boundary, fresh collection,
-  audit/eligibility/EV orchestration, and atomic run artifacts without automatic
-  bet placement. The six-task TDD implementation plan is approved and ready for
-  execution.
+- Safe Drawing Runner implementation and corrective verification are complete:
+  immediate protected preflight, exact target binding, T-20 final start, strict
+  in-pass T-5 provider cutoff, audit/eligibility/EV orchestration, and
+  transactional run artifacts without automatic bet placement. Independent
+  final approval remains pending.
 - Safe Drawing Runner Task 3 orchestration is complete. The injected state
   machine rechecks the inclusive T-5 cutoff after each bound-phase progress
   notification, validates a terminal result before emitting `complete`, and
@@ -203,18 +203,15 @@
   betting. Review hardening rejects page-one/drawing-info ID mismatches,
   detaches sanitized provider failures from secret-bearing exception graphs,
   and closes the owned CLI acceptance gaps.
-- Safe Drawing Runner Task 6 review findings are implemented and verified;
-  independent review approval remains pending. Fake-clock acceptance proves
-  preflight through report publication
-  with real orchestration, prospective collection, SQLite timing, audit, and
-  EV boundaries; it also fixes equal-timestamp latest-snapshot selection with
-  an append-order SQLite tie-break. The 30-drawing/450-event coverage gate
-  remains `PENDING` and external probabilities remain audit-only. Canonical
-  suppressed package evidence, command-boundary recursive secret sanitation,
-  complete EV-input non-interference, and timestamp/append-order audit
-  selection now have direct regressions. Runner manifest schema v2 is the first
-  version with a structured computed/suppressed `ev` object; schema v1 retained
-  its historical `ev: null` representation when EV did not run.
+- Safe Drawing Runner whole-feature review corrections are implemented and
+  verified; independent reviewer approval remains pending. Fake-clock and real
+  CLI acceptance cover in-pass schedule/market/page/retry cutoff, second-fetch
+  target mutation, post-complete/publication cutoff, computed-`NO BET` coupon
+  suppression, all-artifact rollback, path aliases, unwritable roots, and
+  publication TOCTOU. The 30-drawing/450-event coverage gate remains `PENDING`
+  and external probabilities remain audit-only. Runner manifest schema v2 is
+  still the first structured computed/suppressed `ev` contract; schema v1
+  retains its historical `ev: null` representation when EV did not run.
 
 - Task 1 complete: provider-neutral drawing eligibility classifier and
   deterministic target fingerprint, including immutable effective starts,

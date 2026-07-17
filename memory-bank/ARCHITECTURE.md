@@ -235,11 +235,16 @@ Important CLI commands:
 - `run-drawing --open`: safely preflight and pin one open drawing, wait for the
   T-20 final window, revalidate the target, collect fresh API-Sports odds,
   check exact stored timing, audit the latest 30 snapshots, build the existing
-  EV package, and publish linked runner reports. Page-one and drawing-info IDs
-  must match before pinning, and controlled provider failures are detached from
-  their sanitized CLI error. Every terminal runner report contains a canonical
-  package summary; suppressed `NO BET` reports zero selected coupons, cost, and
-  payout, the full bank unused, and no modeled ROI. Runner manifest schema v2
-  is the first schema to expose this through a structured `ev` object with a
-  `computed` discriminator for both computed and suppressed runs; schema v1
-  used `ev: null` when EV did not run. The command never submits a bet.
+  EV package, and publish linked runner reports. Preflight validates every
+  candidate output against the database, aliases, cache root, and sibling
+  outputs before provider construction or waiting; publication repeats the
+  check. The injected T-5 boundary reaches schedule/odds pages and transport
+  retries, completing the immutable pass with explicit safety-stop fallbacks
+  and no later provider calls. A second fresh EV payload must still match the
+  pinned target before heavy work. Publication is a final deadline-aware
+  all-artifact transaction: pre-commit `BaseException` restores/removes every
+  child and runner artifact, while a committed publication is success. Every
+  `NO BET` omits the EV child report and linked coupon strings. Runner manifest
+  schema v2 remains the first structured computed/suppressed `ev` contract;
+  schema v1 used `ev: null` when EV did not run. The command never submits a
+  bet.

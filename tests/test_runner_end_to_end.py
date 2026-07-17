@@ -23,6 +23,7 @@ import toto_ai.cli as cli_module
 import toto_ai.ev.drawing as drawing_module
 import toto_ai.runner.reports as runner_reports
 from toto_ai.cli import (
+    _build_runner_package,
     _build_runner_timing_resolver,
     _build_timing_eligibility_resolver,
     _resolve_runner_target,
@@ -32,17 +33,14 @@ from toto_ai.db.session import (
     init_db,
     open_readonly_db,
 )
-from toto_ai.ev.drawing import build_open_ev_package
 from toto_ai.ev.models import EVComponents, EVInput, EVSurface
-from toto_ai.ev.reports import write_ev_package_reports
 from toto_ai.external_odds.api_sports import APISportsError
 from toto_ai.external_odds.audit import audit_external_coverage
 from toto_ai.external_odds.domain import ProviderEvent, ProviderMarket, QuotaState
 from toto_ai.external_odds.prospective import collect_fresh_open_external_odds
-from toto_ai.external_odds.reports import write_external_coverage_reports
 from toto_ai.runner import (
     DrawingRunnerConfig,
-    RunnerReportLinks,
+    publish_drawing_run_artifacts,
     run_drawing,
     write_drawing_run_reports,
 )
@@ -82,9 +80,12 @@ class _FakeTotoBriefClient:
         payload: dict[str, object],
         *,
         final_payload: dict[str, object] | None = None,
+        ev_payload: dict[str, object] | None = None,
     ) -> None:
         self._payloads = (payload, final_payload or payload)
+        self._ev_payload = ev_payload
         self._resolution_index = 0
+        self._drawing_info_calls = 0
         self._active_payload = payload
 
     @property
@@ -109,10 +110,16 @@ class _FakeTotoBriefClient:
         }
 
     def drawing_info(self, drawing_id: int) -> dict[str, object]:
-        data = self._active_payload["data"]
+        self._drawing_info_calls += 1
+        payload = (
+            self._ev_payload
+            if self._ev_payload is not None and self._drawing_info_calls >= 3
+            else self._active_payload
+        )
+        data = payload["data"]
         assert isinstance(data, dict)
         assert drawing_id == data["id"]
-        return deepcopy(self._active_payload)
+        return deepcopy(payload)
 
 
 class _FakeProvider:
@@ -127,6 +134,7 @@ class _FakeProvider:
         unavailable_orders: tuple[int, ...] = (),
         failing_schedule_dates: tuple[date, ...] = (),
         on_first_schedule_call: Callable[[], None] | None = None,
+        on_first_market_call: Callable[[], None] | None = None,
         market_prices: tuple[tuple[float, float, float], ...] | None = None,
     ) -> None:
         self.payload = payload
@@ -135,6 +143,7 @@ class _FakeProvider:
         self.unavailable_orders = frozenset(unavailable_orders)
         self.failing_schedule_dates = frozenset(failing_schedule_dates)
         self.on_first_schedule_call = on_first_schedule_call
+        self.on_first_market_call = on_first_market_call
         self.market_prices = market_prices
         self.requests_made = 0
         self.cache_hits = 0
@@ -200,6 +209,10 @@ class _FakeProvider:
         self.requests_made += 1
         assert sport == "football"
         self.market_calls.append(provider_event_id)
+        if self.on_first_market_call is not None:
+            callback = self.on_first_market_call
+            self.on_first_market_call = None
+            callback()
         return tuple(
             ProviderMarket(
                 provider=self.provider_name,
@@ -335,6 +348,7 @@ def _run_acceptance_scenario(
     *,
     payload: dict[str, object] | None = None,
     final_payload: dict[str, object] | None = None,
+    ev_payload: dict[str, object] | None = None,
     bank: int = 4800,
     mode: str = "playable",
     provider_starts: dict[int, datetime] | None = None,
@@ -342,11 +356,16 @@ def _run_acceptance_scenario(
     failing_schedule_dates: tuple[date, ...] = (),
     advance_after_package: bool = False,
     advance_on_first_schedule_call: bool = False,
+    advance_on_first_market_call: bool = False,
     max_passes: int = 1,
     market_prices: tuple[tuple[float, float, float], ...] | None = None,
 ):
     payload = payload or _payload()
-    client = _FakeTotoBriefClient(payload, final_payload=final_payload)
+    client = _FakeTotoBriefClient(
+        payload,
+        final_payload=final_payload,
+        ev_payload=ev_payload,
+    )
     clock = _FakeClock(launch_at)
     db_path = tmp_path / "toto.sqlite"
     report_dir = tmp_path / "reports"
@@ -370,6 +389,11 @@ def _run_acceptance_scenario(
                 if advance_on_first_schedule_call
                 else None
             ),
+            on_first_market_call=(
+                lambda: setattr(clock, "current", T_MINUS_5)
+                if advance_on_first_market_call
+                else None
+            ),
             market_prices=market_prices,
         )
         provider_instances.append(provider)
@@ -378,11 +402,13 @@ def _run_acceptance_scenario(
     config = DrawingRunnerConfig(bank=bank, stake=30, mode=mode)
     timing_resolver = _build_runner_timing_resolver(str(db_path))
     ev_timing_resolver = _build_timing_eligibility_resolver(str(db_path))
-    def build_package(drawing_id: int):
-        package = build_open_ev_package(
+    def build_package(expected):
+        package = _build_runner_package(
             client=client,
-            drawing_id=drawing_id,
+            expected=expected,
             config=config.ev_config,
+            fetched_at=clock.now(),
+            progress_callback=None,
             timing_eligibility_resolver=ev_timing_resolver,
         )
         if advance_after_package:
@@ -421,22 +447,15 @@ def _run_acceptance_scenario(
         sleep=clock.sleep,
     )
 
-    external_paths = (
-        write_external_coverage_reports(result.audit, report_dir=report_dir)
-        if result.audit is not None
-        else ()
-    )
-    ev_paths = (
-        write_ev_package_reports(result.ev_run, report_dir=report_dir)
-        if result.ev_run is not None
-        else ()
-    )
-    runner_paths = write_drawing_run_reports(
+    publication = publish_drawing_run_artifacts(
         result,
-        links=RunnerReportLinks(external=external_paths, ev=ev_paths),
         report_dir=report_dir,
+        protected_paths=(db_path,),
+        protected_roots=(cache_root,),
+        now=clock.now,
     )
-    report_paths = (*external_paths, *ev_paths, *runner_paths)
+    result = publication.result
+    report_paths = publication.paths
     engine.dispose()
     readonly_engine.dispose()
     provider_calls = tuple(
@@ -496,6 +515,115 @@ def test_safe_runner_operator_boundary(
         assert result.collection is None
         assert result.ev_run is None
         _assert_suppressed_package_summary(report_paths, bank=4800)
+
+
+def test_run_drawing_cli_computed_threshold_no_bet_leaks_no_coupon_artifact(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _forbid_unconfigured_network(monkeypatch)
+    payload = _payload()
+    client = _FakeTotoBriefClient(payload)
+    clock = _FakeClock(T_MINUS_19)
+    provider_instances: list[_FakeProvider] = []
+    captured_publications = []
+
+    def zero_surface(components, _possible_winnings, _jackpot):
+        return EVSurface(
+            gross_ev=np.zeros_like(components.possible_winnings_ev_per_ruble),
+            event_count=components.event_count,
+            probability_mass=components.probability_mass,
+            crowd_mass=components.crowd_mass,
+            minimum_denominator=components.minimum_denominator,
+        )
+
+    def configured_provider_factory(api_key: str, quota_reserve: int):
+        assert api_key == SENTINEL_KEY
+        assert quota_reserve == 10
+
+        def create(_cache_dir: Path):
+            provider = _FakeProvider(payload, clock.now())
+            provider_instances.append(provider)
+            return provider
+
+        return create
+
+    real_publish = runner_reports.publish_drawing_run_artifacts
+
+    def capture_publication(*args, **kwargs):
+        publication = real_publish(*args, **kwargs)
+        captured_publications.append(publication)
+        return publication
+
+    aliases_path = tmp_path / "aliases.json"
+    aliases_path.write_text(
+        json.dumps({"version": 1, "aliases": {}}),
+        encoding="utf-8",
+    )
+    report_dir = tmp_path / "reports"
+    monkeypatch.setenv("API_SPORTS_KEY", SENTINEL_KEY)
+    monkeypatch.setattr(cli_module, "TotoBriefClient", lambda: client)
+    monkeypatch.setattr(cli_module, "_utc_now_datetime", clock.now)
+    monkeypatch.setattr(
+        cli_module,
+        "_api_sports_provider_factory",
+        configured_provider_factory,
+    )
+    monkeypatch.setattr(drawing_module, "materialize_ev_surface", zero_surface)
+    monkeypatch.setattr(
+        cli_module,
+        "publish_drawing_run_artifacts",
+        capture_publication,
+    )
+
+    command = CliRunner().invoke(
+        cli_module.app,
+        [
+            "run-drawing",
+            "--open",
+            "--bank",
+            "4800",
+            "--db",
+            str(tmp_path / "toto.sqlite"),
+            "--report-dir",
+            str(report_dir),
+            "--cache-root",
+            str(tmp_path / "cache"),
+            "--aliases",
+            str(aliases_path),
+            "--max-passes",
+            "1",
+            "--max-expansion-passes",
+            "1",
+            "--retry-delay-seconds",
+            "0",
+        ],
+    )
+
+    assert command.exit_code == 0, command.output
+    assert "Decision: NO BET" in command.output
+    assert "Coupon" not in command.output
+    assert len(captured_publications) == 1
+    publication = captured_publications[0]
+    assert publication.result.decision == "NO BET"
+    assert publication.result.ev_run is not None
+    assert publication.result.ev_run.package.decision == "NO BET"
+    assert publication.result.ev_run.top_coupons
+    assert publication.ev == ()
+    assert provider_instances
+
+    manifest = _runner_manifest_payload(publication.paths)
+    assert manifest["report_links"]["ev"] == []
+    linked_paths = {
+        Path(path)
+        for paths in manifest["report_links"].values()
+        for path in paths
+    }
+    assert linked_paths <= set(publication.paths)
+    scanned = b"".join(path.read_bytes() for path in publication.paths)
+    for coupon in publication.result.ev_run.top_coupons:
+        assert coupon.coupon.encode() not in scanned
+    assert not tuple(report_dir.glob("ev_package_*"))
 
 
 @pytest.mark.parametrize("bank", (4800, 6000, 9600))
@@ -564,6 +692,31 @@ def test_safe_runner_refuses_target_roll_forward_and_publishes_coupon_free_no_be
     _assert_suppressed_package_summary(report_paths, bank=4800)
 
 
+def test_safe_runner_refuses_second_fetch_target_mutation_without_starting_ev(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _forbid_unconfigured_network(monkeypatch)
+    changed = _payload()
+    changed_data = changed["data"]
+    assert isinstance(changed_data, dict)
+    changed_data["number"] = 5201
+
+    result, report_paths, provider_calls, _, _ = _run_acceptance_scenario(
+        tmp_path,
+        T_MINUS_19,
+        ev_payload=changed,
+    )
+
+    assert result.decision == "NO BET"
+    assert result.terminal_reason == "fresh EV target does not match pinned target"
+    assert result.collection is not None
+    assert result.ev_run is None
+    assert provider_calls
+    assert _CAPTURED_EV_INPUTS == []
+    _assert_suppressed_package_summary(report_paths, bank=4800)
+
+
 def test_safe_runner_expands_to_day_five_and_vetoes_multi_day_timing(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -626,7 +779,6 @@ def test_safe_runner_stops_before_retry_when_collection_reaches_cutoff(
     result, report_paths, provider_calls, _, _ = _run_acceptance_scenario(
         tmp_path,
         T_MINUS_19,
-        failing_schedule_dates=(DEADLINE.date(),),
         advance_on_first_schedule_call=True,
         max_passes=2,
     )
@@ -635,7 +787,46 @@ def test_safe_runner_stops_before_retry_when_collection_reaches_cutoff(
     assert result.collection is not None
     assert result.collection.stop_reason == "safety_stop"
     assert result.collection.base_pass_count == 1
-    assert len(provider_calls) == 1
+    assert provider_calls == (((DEADLINE.date(),), ()),)
+    assert result.collection.snapshot.status == "complete"
+    assert len(result.collection.snapshot.events) == 15
+    assert {
+        event.fallback_reason for event in result.collection.snapshot.events
+    } == {"safety stop reached"}
+    assert result.ev_run is None
+    _assert_suppressed_package_summary(report_paths, bank=4800)
+
+
+def test_safe_runner_stops_in_pass_after_market_request_reaches_cutoff(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _forbid_unconfigured_network(monkeypatch)
+    result, report_paths, provider_calls, _, _ = _run_acceptance_scenario(
+        tmp_path,
+        T_MINUS_19,
+        advance_on_first_market_call=True,
+        max_passes=2,
+    )
+
+    assert result.decision == "NO BET"
+    assert result.collection is not None
+    assert result.collection.stop_reason == "safety_stop"
+    assert provider_calls == (
+        (
+            (DEADLINE.date(), DEADLINE.date() + timedelta(days=1)),
+            ("provider-0",),
+        ),
+    )
+    assert result.collection.snapshot.status == "complete"
+    assert len(result.collection.snapshot.events) == 15
+    assert result.collection.snapshot.events[0].fallback_reason == (
+        "safety stop reached"
+    )
+    assert all(
+        event.fallback_reason == "safety stop reached"
+        for event in result.collection.snapshot.events[1:]
+    )
     assert result.ev_run is None
     _assert_suppressed_package_summary(report_paths, bank=4800)
 

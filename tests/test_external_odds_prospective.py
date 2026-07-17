@@ -111,7 +111,11 @@ def _run(
         aliases,
         *,
         missing_start_horizon_days,
+        stop_at,
+        now,
     ):
+        assert stop_at is None
+        assert callable(now)
         collection_calls.append(
             (
                 supplied_target,

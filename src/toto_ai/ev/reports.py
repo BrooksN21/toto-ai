@@ -21,10 +21,27 @@ def ev_package_report_paths(
     result: EVPackageRun,
     report_dir: str | Path = "reports",
 ) -> tuple[Path, Path]:
-    drawing_number = result.ev_input.drawing_number or result.ev_input.drawing_id
+    return ev_package_report_paths_for_config(
+        drawing_id=result.ev_input.drawing_id,
+        drawing_number=result.ev_input.drawing_number,
+        mode=result.config.mode,
+        bank=result.config.bank,
+        report_dir=report_dir,
+    )
+
+
+def ev_package_report_paths_for_config(
+    *,
+    drawing_id: int,
+    drawing_number: int | None,
+    mode: str,
+    bank: int,
+    report_dir: str | Path = "reports",
+) -> tuple[Path, Path]:
+    drawing_number = drawing_number or drawing_id
     stem = (
-        f"ev_package_{drawing_number}_{result.config.mode}_"
-        f"bank_{result.config.bank}"
+        f"ev_package_{drawing_number}_{mode}_"
+        f"bank_{bank}"
     )
     output_dir = Path(report_dir)
     return output_dir / f"{stem}.csv", output_dir / f"{stem}.md"

@@ -32,6 +32,7 @@ from toto_ai.external_odds.prospective import (
 from toto_ai.runner import (
     DrawingRunnerConfig,
     DrawingRunnerResult,
+    RunnerTargetMismatch,
     pin_drawing,
     run_drawing,
 )
@@ -382,9 +383,9 @@ def _recording_dependencies(calls, target, collection, audit, timing, ev_run):
         calls.append("audit")
         return audit
 
-    def build_package(drawing_id):
+    def build_package(pinned):
         calls.append("ev")
-        assert drawing_id == target.drawing_id
+        assert pinned == pin_drawing(target)
         return ev_run
 
     return collect, resolve_timing, audit_coverage, build_package
@@ -480,6 +481,35 @@ def test_normal_playable_run_orders_every_phase():
         "ev",
         "complete",
     ]
+
+
+def test_preflight_check_failure_stops_before_wait_and_provider_access():
+    pinned = pin_drawing(_target())
+    calls: list[str] = []
+
+    def preflight_check(target, preflight_at):
+        calls.append("preflight-check")
+        assert target == pinned
+        assert preflight_at == T_MINUS_21
+        raise OSError("report directory is not writable")
+
+    with pytest.raises(OSError, match="not writable"):
+        run_drawing(
+            config=DrawingRunnerConfig(bank=4980),
+            resolve_target=_recording_resolver(calls, pinned),
+            collect_target=lambda *_args: pytest.fail(
+                "collection must not start"
+            ),
+            resolve_timing=lambda *_args: pytest.fail("timing must not start"),
+            audit_coverage=lambda: pytest.fail("audit must not start"),
+            build_package=lambda *_args: pytest.fail("EV must not start"),
+            now=SequenceClock(T_MINUS_21),
+            monotonic=SequenceClock(10.0),
+            sleep=lambda _seconds: pytest.fail("wait must not start"),
+            preflight_check=preflight_check,
+        )
+
+    assert calls == ["preflight", "preflight-check"]
 
 
 def test_launch_before_final_window_waits_with_injected_sleep():
@@ -719,9 +749,9 @@ def test_coverage_is_diagnostic_and_does_not_change_ev_input_or_decision(
     calls = []
     built_for = []
 
-    def build_package(drawing_id):
+    def build_package(pinned):
         calls.append("ev")
-        built_for.append(drawing_id)
+        built_for.append(pinned)
         return _ev_run(target)
 
     dependencies = _recording_dependencies(
@@ -747,7 +777,7 @@ def test_coverage_is_diagnostic_and_does_not_change_ev_input_or_decision(
 
     assert result.audit.gate.decision == coverage_decision
     assert result.decision == "PLAY"
-    assert built_for == [target.drawing_id]
+    assert built_for == [pinned]
 
 
 @pytest.mark.parametrize(
@@ -896,9 +926,9 @@ def test_package_completing_at_cutoff_is_discarded_in_every_mode(mode):
         ev_run,
     )
 
-    def build_package(drawing_id):
+    def build_package(expected):
         calls.append("ev")
-        assert drawing_id == target.drawing_id
+        assert expected == pinned
         clock.value = T_MINUS_5
         return ev_run
 
@@ -918,6 +948,87 @@ def test_package_completing_at_cutoff_is_discarded_in_every_mode(mode):
     assert result.terminal_reason == "safety cutoff reached after EV"
     assert result.ev_run is None
     assert result.ev_finished_at == T_MINUS_5
+    assert calls == ["preflight", "final", "collect", "timing", "audit", "ev"]
+
+
+@pytest.mark.parametrize("mode", ["playable", "research"])
+def test_complete_callback_reaching_cutoff_suppresses_actionable_result(mode):
+    target = _target(fetched_at=T_MINUS_19)
+    pinned = pin_drawing(target)
+    collection = _collection(target)
+    clock = MutableClock(T_MINUS_19)
+    calls = []
+    updates = []
+    dependencies = _recording_dependencies(
+        calls,
+        target,
+        collection,
+        _audit(collection),
+        _timing(target),
+        _ev_run(target, mode=mode),
+    )
+
+    def progress_callback(update):
+        updates.append(update)
+        if update["phase"] == "complete":
+            clock.value = T_MINUS_5
+
+    result = run_drawing(
+        config=DrawingRunnerConfig(bank=4980, mode=mode),
+        resolve_target=_recording_resolver(calls, pinned, pinned),
+        collect_target=dependencies[0],
+        resolve_timing=dependencies[1],
+        audit_coverage=dependencies[2],
+        build_package=dependencies[3],
+        now=clock,
+        monotonic=SequenceClock(1.0, 2.0, 3.0),
+        sleep=lambda _seconds: pytest.fail("sleep must not run"),
+        progress_callback=progress_callback,
+    )
+
+    assert result.decision == "NO BET"
+    assert result.terminal_reason == "safety cutoff reached after complete"
+    assert result.ev_run is None
+    assert result.ev_finished_at == T_MINUS_19
+    assert result.finished_at == T_MINUS_5
+    assert [update["phase"] for update in updates].count("complete") == 1
+
+
+def test_second_fetch_target_mismatch_is_coupon_free_no_bet():
+    target = _target(fetched_at=T_MINUS_19)
+    pinned = pin_drawing(target)
+    collection = _collection(target)
+    calls = []
+    dependencies = _recording_dependencies(
+        calls,
+        target,
+        collection,
+        _audit(collection),
+        _timing(target),
+        _ev_run(target),
+    )
+
+    def build_package(expected_target):
+        calls.append("ev")
+        assert expected_target == pinned
+        raise RunnerTargetMismatch("fresh EV target does not match pinned target")
+
+    result = run_drawing(
+        config=DrawingRunnerConfig(bank=4980),
+        resolve_target=_recording_resolver(calls, pinned, pinned),
+        collect_target=dependencies[0],
+        resolve_timing=dependencies[1],
+        audit_coverage=dependencies[2],
+        build_package=build_package,
+        now=MutableClock(T_MINUS_19),
+        monotonic=SequenceClock(1.0, 2.0),
+        sleep=lambda _seconds: pytest.fail("sleep must not run"),
+    )
+
+    assert result.decision == "NO BET"
+    assert result.terminal_reason == "fresh EV target does not match pinned target"
+    assert result.ev_run is None
+    assert result.ev_finished_at is None
     assert calls == ["preflight", "final", "collect", "timing", "audit", "ev"]
 
 

@@ -6,9 +6,9 @@ import re
 import tempfile
 import time
 import unicodedata
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from math import isfinite
 from pathlib import Path
 from typing import Any
@@ -41,6 +41,10 @@ class QuotaExhausted(APISportsError):
     """Raised when the provider quota reserve has been reached."""
 
 
+class SafetyStopReached(APISportsError):
+    """Raised before API-Sports can make work continue past a UTC cutoff."""
+
+
 @dataclass(frozen=True)
 class _CachePayload:
     quota: QuotaState
@@ -60,6 +64,8 @@ class APISportsClient:
         quota_reserve: int = 10,
         timeout: float = 30.0,
         max_retries: int = 2,
+        stop_at: datetime | None = None,
+        now: Callable[[], datetime] | None = None,
     ) -> None:
         if not api_key.strip():
             raise ValueError("API_SPORTS_KEY is required")
@@ -77,6 +83,7 @@ class APISportsClient:
         self._requests_made = 0
         self._cache_hits = 0
         self._logical_fetches = 0
+        self.bind_safety_boundary(stop_at=stop_at, now=now)
 
     @property
     def quota_state(self) -> QuotaState:
@@ -97,12 +104,25 @@ class APISportsClient:
     def set_quota_for_test(self, quota_state: QuotaState) -> None:
         self._quota_state = quota_state
 
+    def bind_safety_boundary(
+        self,
+        *,
+        stop_at: datetime | None,
+        now: Callable[[], datetime] | None,
+    ) -> None:
+        _validate_stop_at(stop_at)
+        if now is not None and not callable(now):
+            raise ValueError("now must be callable")
+        self._stop_at = stop_at
+        self._now = now or _utc_now
+
     def fetch_schedule(
         self, sport: Sport, dates: tuple[date, ...]
     ) -> tuple[ProviderEvent, ...]:
         self._logical_fetches += 1
         events: list[ProviderEvent] = []
         for item in dates:
+            self._check_safety_stop()
             cached = self._get_json_single_page(
                 sport,
                 _schedule_path(sport),
@@ -121,6 +141,7 @@ class APISportsClient:
         self, sport: Sport, provider_event_id: str
     ) -> tuple[ProviderMarket, ...]:
         self._logical_fetches += 1
+        self._check_safety_stop()
         payloads = self._get_json_pages(
             sport,
             "/odds",
@@ -144,6 +165,7 @@ class APISportsClient:
         path: str,
         params: Mapping[str, object],
     ) -> _CachePayload:
+        self._check_safety_stop()
         cached = self._get_json(sport, path, params)
         if (
             _paging_value(cached.payload, "current") != 1
@@ -158,12 +180,14 @@ class APISportsClient:
         path: str,
         params: Mapping[str, object],
     ) -> tuple[_CachePayload, ...]:
+        self._check_safety_stop()
         first = self._get_json(sport, path, params | {"page": 1})
         total = _paging_value(first.payload, "total")
         if _paging_value(first.payload, "current") != 1:
             raise APISportsError("API-Sports paging is inconsistent")
         pages = [first]
         for page in range(2, total + 1):
+            self._check_safety_stop()
             cached = self._get_json(sport, path, params | {"page": page})
             if _paging_value(cached.payload, "current") != page:
                 raise APISportsError("API-Sports paging is inconsistent")
@@ -178,6 +202,7 @@ class APISportsClient:
         path: str,
         params: Mapping[str, object],
     ) -> _CachePayload:
+        self._check_safety_stop()
         cache_key = _cache_key(self._base_url(sport), path, params)
         cached = self._load_cache(cache_key)
         if cached is not None:
@@ -186,6 +211,7 @@ class APISportsClient:
         self._ensure_quota_available()
 
         for attempt in range(self._max_retries + 1):
+            self._check_safety_stop()
             connection_failed = False
             try:
                 self._requests_made += 1
@@ -199,12 +225,14 @@ class APISportsClient:
                 connection_failed = True
 
             if connection_failed:
+                self._check_safety_stop()
                 if attempt == self._max_retries:
                     raise APISportsError("API-Sports transport connection failed")
                 self._sleep_before_retry(attempt)
                 continue
 
             self._quota_state = quota_from_headers(response.headers)
+            self._check_safety_stop()
             if response.status_code in _RETRY_STATUSES:
                 if attempt == self._max_retries:
                     raise APISportsError(
@@ -245,6 +273,14 @@ class APISportsClient:
     def _ensure_quota_available(self) -> None:
         if _is_quota_exhausted(self._quota_state, self._quota_reserve):
             raise QuotaExhausted("API-Sports quota reserve reached")
+
+    def _check_safety_stop(self) -> None:
+        if self._stop_at is None:
+            return
+        current = self._now()
+        _require_utc_datetime("now", current)
+        if current >= self._stop_at:
+            raise SafetyStopReached("API-Sports safety stop reached")
 
     def _sleep_before_retry(self, attempt: int) -> None:
         time.sleep(0.05 * (attempt + 1))
@@ -547,6 +583,20 @@ def _observed_fetched_at(payload: Mapping[str, Any]) -> datetime:
 
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def _validate_stop_at(stop_at: datetime | None) -> None:
+    if stop_at is not None:
+        _require_utc_datetime("stop_at", stop_at)
+
+
+def _require_utc_datetime(name: str, value: object) -> None:
+    if (
+        not isinstance(value, datetime)
+        or value.tzinfo is None
+        or value.utcoffset() != timedelta(0)
+    ):
+        raise ValueError(f"{name} must be timezone-aware UTC")
 
 
 def _item_updated_at(item: Mapping[str, Any]) -> datetime | None:

@@ -25,9 +25,11 @@ Known data notes:
   of the exact fresh TotoBrief target. A stale or different target cannot reuse
   an earlier playable verdict.
 - `run-drawing --open --bank <RUB>` pins that target at preflight, starts final
-  work at T-20, fails closed at T-5, and writes linked deterministic operator
-  reports. It coordinates collection and timing evidence but never submits a
-  bet; API-Sports consensus remains audit-only.
+  work at T-20, fails closed inside every provider page/retry and at final
+  publication at T-5, and writes linked deterministic operator reports in one
+  rollback transaction. Preflight protects database/alias/cache inputs, and a
+  second fresh target mutation becomes coupon-free `NO BET` before EV work. It
+  never submits a bet; API-Sports consensus remains audit-only.
 - A suppressed runner package remains explicit in both operator artifacts as
   zero-cost `NO BET`, with no coupons or payout, the full bank unused, and no
   modeled ROI. This structured computed/suppressed `ev` contract starts with

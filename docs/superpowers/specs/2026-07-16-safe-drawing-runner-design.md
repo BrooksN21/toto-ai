@@ -29,7 +29,7 @@ Add:
 ```bash
 python -m toto_ai.cli run-drawing \
   --open \
-  --bank 5000 \
+  --bank 4980 \
   --stake 30 \
   --mode playable
 ```
