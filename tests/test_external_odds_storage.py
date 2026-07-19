@@ -156,6 +156,20 @@ class ReversedProvider(CompleteProvider):
         return tuple(reversed(super().fetch_event_markets(sport, provider_event_id)))
 
 
+class CachedCompleteProvider(CompleteProvider):
+    def fetch_schedule(self, sport, dates):
+        events = super().fetch_schedule(sport, dates)
+        self.requests_made -= 1
+        self.cache_hits += 1
+        return events
+
+    def fetch_event_markets(self, sport, provider_event_id):
+        markets = super().fetch_event_markets(sport, provider_event_id)
+        self.requests_made -= 1
+        self.cache_hits += 1
+        return markets
+
+
 class ScheduleFailureProvider(CompleteProvider):
     def fetch_schedule(self, sport, dates):
         self.requests_made += 1
@@ -343,6 +357,36 @@ def test_fetched_at_is_part_of_collection_identity(session_factory):
     save_collection(session_factory, second)
 
     assert first.collection_id != second.collection_id
+    with session_factory() as session:
+        run_count = session.scalar(
+            select(func.count(ExternalCollectionRun.collection_id))
+        )
+        assert run_count == 2
+
+
+def test_request_and_cache_provenance_are_part_of_collection_identity(
+    session_factory,
+):
+    fetched = build_external_collection(
+        target_drawing(),
+        CompleteProvider(),
+        aliases={},
+    )
+    cached = build_external_collection(
+        target_drawing(),
+        CachedCompleteProvider(),
+        aliases={},
+    )
+
+    assert fetched.requests_made == 16
+    assert fetched.cache_hits == 0
+    assert cached.requests_made == 0
+    assert cached.cache_hits == 16
+    assert fetched.collection_id != cached.collection_id
+
+    save_collection(session_factory, fetched)
+    save_collection(session_factory, cached)
+
     with session_factory() as session:
         run_count = session.scalar(
             select(func.count(ExternalCollectionRun.collection_id))

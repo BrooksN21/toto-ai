@@ -182,6 +182,11 @@
 
 ## Phase 7: Production
 
+- Drawing 4950 early-run hardening is complete: immutable collection identity
+  now includes request/cache/quota provenance, preventing retry passes with the
+  same provider content from conflicting in storage. The early 7/15 coverage
+  is explained by the API-Sports free-plan date window rejecting 2026-07-21;
+  repeat the final collection after that date enters the provider window.
 - The first scheduled run on drawing 4947 exposed an acceptance gap: the
   exact-only matcher could not bridge new Cyrillic names when both `start_at`
   and `name_en` were null, despite all 15 pairs existing in the provider

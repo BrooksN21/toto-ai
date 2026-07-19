@@ -22,9 +22,10 @@
   explicit TotoBrief BK fallback reason.
 - External collection identity includes the fresh TotoBrief target snapshot,
   provider matching/market provenance, consensus configuration, external
-  observation `fetched_at`, and TotoBrief `target_fetched_at`; repeated
-  identical snapshots are idempotent, while a different observation or target
-  fetch time creates a distinct immutable collection.
+  observation `fetched_at`, TotoBrief `target_fetched_at`, request/cache
+  counters, and observed quota state; repeated identical snapshots are
+  idempotent, while a different observation, target fetch time, or operational
+  retry provenance creates a distinct immutable collection.
 - Matched event rows retain the provider schedule event `payload_hash` and
   `fetched_at`, plus candidate IDs and match reason. Quote rows retain provider
   market `payload_hash` and `fetched_at`. Exact duplicate bookmaker/market

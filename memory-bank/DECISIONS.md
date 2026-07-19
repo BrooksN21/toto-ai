@@ -63,9 +63,11 @@
 - External odds collection snapshots are append-only and immutable. The
   deterministic collection identity includes the canonical drawing target,
   the fresh TotoBrief target `target_fetched_at`, the external observation
-  `fetched_at`, provider matching decisions and market payload provenance, and
-  consensus configuration. Saving the same canonical collection is idempotent;
-  conflicting content under the same identity is rejected.
+  `fetched_at`, provider matching decisions and market payload provenance,
+  request/cache counters, observed quota state, and consensus configuration.
+  Saving the same canonical collection is idempotent; operationally distinct
+  retry passes receive distinct identities, and conflicting content under the
+  same identity is rejected.
 - External odds consensus age and future-update checks use the explicit
   external observation time, not the earlier TotoBrief target fetch time. The
   observation time must be at least as late as every consumed provider market

@@ -23,6 +23,29 @@ Note: the current PR branch was rebased onto an empty remote base for the first
 GitHub pull request, so local branch commit hashes may differ from the original
 task commits listed above.
 
+## Drawing 4950 Early-Run Check
+
+An early production-style collection for drawing 4950 exposed an immutable
+identity bug before the final window. A base retry reused nine cached schedule
+responses and repeated one failed date request. Match content and timestamps
+were unchanged, so the two passes shared a `collection_id`, while their
+request/cache/quota provenance differed; storage correctly rejected the second
+snapshot as conflicting content.
+
+Collection identity now binds request/cache counters and observed quota state.
+A regression proves that operationally different passes with identical match
+content persist under distinct identities. The repeated live command completed
+three passes without conflict.
+
+The early 2026-07-19 check matched 7/15 events and remained timing `unknown`
+because the API-Sports free plan allowed fixture dates only from 2026-07-18
+through 2026-07-20 and rejected 2026-07-21. Eight dispositions therefore used
+explicit `partial schedule` fallback. This is an early-window provider limit,
+not a matcher-v4 failure; the final 2026-07-20 run must fetch 2026-07-21 after
+the free-plan date window advances. External probabilities remain audit-only.
+Full verification after the identity correction: `936 passed`; repository-wide
+Ruff and `git diff --check` passed.
+
 ## Drawing 4947 Incident and Matcher v4 Correction
 
 The first scheduled production-style run completed normally but returned
