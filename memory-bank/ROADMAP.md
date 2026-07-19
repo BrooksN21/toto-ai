@@ -182,6 +182,9 @@
 
 ## Phase 7: Production
 
+- Add automatic incremental TotoBrief synchronization before/after production
+  runs so open-drawing freshness and newly finished results do not depend on a
+  manual full `collect`; retain full backfill as the recovery path.
 - Drawing 4950 early-run hardening is complete: immutable collection identity
   now includes request/cache/quota provenance, preventing retry passes with the
   same provider content from conflicting in storage. The early 7/15 coverage

@@ -46,6 +46,31 @@ the free-plan date window advances. External probabilities remain audit-only.
 Full verification after the identity correction: `936 passed`; repository-wide
 Ruff and `git diff --check` passed.
 
+The protected final run for drawing 4950 is installed as macOS LaunchAgent
+`com.totoai.run-drawing-4950`. It is pinned to drawing ID 11964, number 4950,
+and deadline 2026-07-20T14:30:00Z. Launch attempts begin at 16:40 Moscow time;
+the runner starts final work at T-20 (17:10), stops new provider work at T-5
+(17:25), uses bank 4980 RUB and stake 30 RUB, and never places a bet. Logs are
+`data/external-cache/scheduled-runner/4950.stdout.log` and
+`data/external-cache/scheduled-runner/4950.stderr.log`.
+
+## Historical Sync Audit
+
+The core SQLite collector is currently manual rather than continuously
+scheduled. This caused the local open-drawing lookup to be stale until
+`collect` was run; the safe runner itself resolves its pinned target directly
+from TotoBrief API. A full sync backfills all available pages, so this is a
+freshness gap rather than permanent loss, but automatic incremental sync is a
+remaining production task.
+
+After the 2026-07-19 sync, SQLite contains 2190 drawings from 2759 through 4950.
+Every stored drawing has exactly 15 events and 15 quote rows. The only numeric
+gaps are 3843 and 3844, and TotoBrief API page 23 also omits those numbers.
+Drawing 4948 is finished with 15 results; drawing 4949 is still `expected` in
+TotoBrief with no results; drawing 4950 is active. Some older finished events
+have missing source results (360 drawings are not result-complete); existing
+standard backtests exclude incomplete/void results rather than inventing them.
+
 ## Drawing 4947 Incident and Matcher v4 Correction
 
 The first scheduled production-style run completed normally but returned
