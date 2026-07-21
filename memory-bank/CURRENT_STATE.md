@@ -18,10 +18,40 @@ memory stores.
 - `8b3ed6d` Add persistent project memory bank
 - `2bd484a` Fix final safe runner review findings
 - `e9a23d0` Fix real null-start event matching
+- `f655ce2` Initially captured the incident-4950 readiness patch; full
+  verification was `1090` full tests and `151` targeted QA. Historical
+  untracked `reports/` artifacts are excluded from this capture.
 
 Note: the current PR branch was rebased onto an empty remote base for the first
 GitHub pull request, so local branch commit hashes may differ from the original
 task commits listed above.
+
+
+## Drawing 4950 No-Bet Assessment (2026-07-20)
+
+Current boundary statement for the latest reviewed output:
+
+- Root causes are recorded as:
+  - `7/15` raw matching before aliases in the first matching pass.
+  - `2` provider-absent events remain unresolved after reviewed-alias constraints.
+  - `start_at = null` in TotoBrief event payloads for this draw, so effective event timing is reconstructed only when a reviewed timing override is accepted.
+  - Exact self-dilution gating: effective budget is `min(requested_bank, floor(pool_sum × 1% / stake) × stake)`.
+- `drawing-4950`: with `pool_sum = 81_445`, `requested_bank = 4_980`, `stake = 30`, the exact cap is `810`.
+- Matcher behavior on reviewed data is now `13/15`; unresolved pairs stay fail-closed and retain `NO BET` timing semantics.
+- Reviewed timing overrides are strict: schema-vetted override catalog + provenance match + overlay validation. If any preflight/audit/package audit is missing or changed, timing remains `unknown` and no EV package is built.
+- Reporting baseline changed to runner manifest `schema_version = 3`: raw/effective timing is explicit, plus budget provenance (`requested_bank`, `effective_budget`, `unused_requested_bank`, etc.).
+- Runner outputs now record immutable run-scoped hashes for inputs and package artifacts.
+- Old `drawing 4947` and legacy `drawing 4950` `schema_version = 2` report files are historical pre-fix artifacts and are not treated as current output evidence.
+
+Current verification (requested pack):
+
+- Full pytest: `1090 passed`.
+- Targeted QA pass set: `151 passed`.
+- Ruff and `git diff --check`: both passed.
+- Final targeted verdict: `SAFE TO PROCEED` for documented boundaries.
+
+Open items remain:
+- Live platform install and prospective live production run are still pending; no profitability claim is made from this evidence.
 
 ## Drawing 4950 Early-Run Check
 

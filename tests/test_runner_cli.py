@@ -1,3 +1,5 @@
+import hashlib
+import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -9,13 +11,17 @@ from typer.testing import CliRunner
 
 import toto_ai.cli as cli
 import toto_ai.runner.reports as runner_reports
+import toto_ai.runner.scheduler as scheduler_module
 from toto_ai.ev.models import PlayTimingEligibility
 from toto_ai.external_odds.eligibility import DrawingEligibility
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.runner import (
+    CommandSchedulerPhaseRunner,
     DrawingRunnerConfig,
     DrawingRunnerResult,
     RunnerReportLinks,
+    VirtualSchedulerClock,
+    parse_runner_manifest_phase_result,
     pin_drawing,
 )
 
@@ -113,6 +119,7 @@ def _invoke_command_direct() -> None:
         report_dir="reports",
         provider="api-sports",
         aliases="aliases.json",
+        timing_overrides=None,
         quota_reserve=10,
         max_passes=3,
         max_expansion_passes=3,
@@ -461,6 +468,50 @@ def test_run_drawing_wires_only_approved_options_and_fresh_dependencies(monkeypa
     ).output
 
 
+def test_run_drawing_pins_optional_timing_catalog_and_protects_input(
+    monkeypatch,
+    tmp_path,
+):
+    catalog_path = tmp_path / "timing-overrides.json"
+    catalog_path.write_text('{"overrides": []}', encoding="utf-8")
+    pinned_catalog = object()
+    pin_calls = []
+    monkeypatch.setattr(cli, "APISportsClient", lambda *args, **kwargs: object())
+    monkeypatch.setattr(
+        cli,
+        "pin_timing_override_catalog",
+        lambda path: pin_calls.append(Path(path)) or pinned_catalog,
+    )
+    captured = _wire_runner(monkeypatch, result=_RunnerResult("NO BET"))
+
+    result = runner.invoke(
+        cli.app,
+        [
+            "run-drawing",
+            "--open",
+            "--bank",
+            "4980",
+            "--timing-overrides",
+            str(catalog_path),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert pin_calls == [catalog_path]
+    assert callable(captured["resolve_timing_override"])
+    assert callable(captured["verify_timing_override"])
+    assert captured["path_validation"][1]["protected_paths"] == (
+        "data/toto.db",
+        "data/external-odds/team-aliases.json",
+        str(catalog_path),
+    )
+    assert captured["runner_report"]["input_paths"] == (
+        "data/toto.db",
+        "data/external-odds/team-aliases.json",
+        str(catalog_path),
+    )
+
+
 def test_run_drawing_exposes_exact_approved_option_surface():
     command = typer.main.get_command(cli.app).commands["run-drawing"]
     option_names = {
@@ -480,6 +531,7 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "--report-dir",
         "--provider",
         "--aliases",
+        "--timing-overrides",
         "--quota-reserve",
         "--max-passes",
         "--max-expansion-passes",
@@ -518,6 +570,7 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "report_dir": "reports",
         "provider": "api-sports",
         "aliases": "data/external-odds/team-aliases.json",
+        "timing_overrides": None,
         "quota_reserve": 10,
         "max_passes": 3,
         "max_expansion_passes": 3,
@@ -865,3 +918,391 @@ def test_keyboard_interrupt_before_publication_is_nonzero(monkeypatch):
 
     assert interrupted.exit_code != 0
     assert "interrupted" in interrupted.output.lower()
+
+
+def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
+    fingerprint = "b" * 64
+    return {
+        "schema_version": 3,
+        "run_id": f"local-{final_lead_minutes}",
+        "command_status": "success",
+        "decision": "PLAY",
+        "terminal_reason": "local production-parser fixture",
+        "target": {
+            "drawing_id": 12001,
+            "drawing_number": 5001,
+            "deadline": "2030-01-02T12:00:00Z",
+            "preflight_fingerprint": fingerprint,
+            "final_fingerprint": fingerprint,
+        },
+        "config": {
+            "bank": 4980,
+            "stake": 30,
+            "mode": "playable",
+            "final_lead_minutes": final_lead_minutes,
+            "safety_stop_minutes": 10,
+            "provider": "api-sports",
+        },
+        "timeline": {
+            "preflight_at": "2030-01-02T11:15:00Z",
+            "final_started_at": "2030-01-02T11:45:00Z",
+            "collection_finished_at": "2030-01-02T11:46:00Z",
+            "timing_finished_at": "2030-01-02T11:47:00Z",
+            "audit_finished_at": "2030-01-02T11:48:00Z",
+            "ev_finished_at": "2030-01-02T11:49:00Z",
+            "finished_at": "2030-01-02T11:49:00Z",
+            "elapsed_seconds": 1.0,
+        },
+        "collection": {
+            "final_collection_id": "c" * 64,
+            "collection_ids": ["c" * 64],
+            "pass_count": 1,
+            "base_pass_count": 1,
+            "expansion_pass_count": 0,
+            "expanded": False,
+            "final_horizon_days": 2,
+            "stop_reason": "no_retryable_fallbacks",
+            "total_requests": 5,
+            "total_cache_hits": 0,
+            "requested_schedule_date_count": 2,
+            "successful_schedule_date_count": 2,
+            "failed_schedule_date_count": 0,
+            "elapsed_seconds": 1.0,
+        },
+        "eligibility": {
+            "status": "playable",
+            "reason": "local playable timing",
+            "target_fingerprint": fingerprint,
+            "fingerprint_match": True,
+            "span_days": 1,
+            "missing_event_orders": [],
+            "totobrief_count": 15,
+            "provider_count": 0,
+            "operator_override_count": 0,
+            "earliest_start": "2030-01-02T12:30:00Z",
+            "latest_start": "2030-01-02T14:30:00Z",
+            "effective": {
+                "status": "playable",
+                "reason": "local playable timing",
+                "target_fingerprint": fingerprint,
+                "fingerprint_match": True,
+                "span_days": 1,
+                "missing_event_orders": [],
+                "totobrief_count": 15,
+                "provider_count": 0,
+                "operator_override_count": 0,
+                "earliest_start": "2030-01-02T12:30:00Z",
+                "latest_start": "2030-01-02T14:30:00Z",
+            },
+            "raw": {
+                "status": "playable",
+                "reason": "local playable timing",
+                "target_fingerprint": fingerprint,
+                "fingerprint_match": True,
+                "span_days": 1,
+                "missing_event_orders": [],
+                "totobrief_count": 15,
+                "provider_count": 0,
+                "operator_override_count": 0,
+                "earliest_start": "2030-01-02T12:30:00Z",
+                "latest_start": "2030-01-02T14:30:00Z",
+            },
+            "override": None,
+        },
+        "coverage": {
+            "gate_decision": "PENDING",
+            "gate_reasons": ["prospective sample is incomplete"],
+            "drawings": 1,
+            "events": 15,
+            "unique_match_rate": 0.8,
+            "consensus_rate": 0.7,
+            "ambiguous_matches": 0,
+            "explicit_dispositions": 15,
+            "operational_failures": 0,
+        },
+        "ev": {
+            "computed": True,
+            "requested_bank": 4980,
+            "effective_budget": 30,
+            "selected_cost": 30,
+            "unused_requested_bank": 4950,
+            "input_fetched_at": "2030-01-02T11:45:00Z",
+            "minimum_gross_ev": 1.0,
+            "prize_fund_factor": 1.0,
+            "possible_winnings_source": "pool_sum proxy",
+            "jackpot_source": "totobrief payload",
+            "self_dilution_ratio": 0.001,
+            "model_supported": True,
+            "model_warning": None,
+            "package": {
+                "decision": "PLAY",
+                "decision_reason": None,
+                "coupons": [
+                    {
+                        "rank": 1,
+                        "coupon": "111111111111111",
+                        "gross_ev": 1.2,
+                        "net_ev": 0.2,
+                    }
+                ],
+                "selected_count": 1,
+                "cost": 30,
+                "unused_bank": 4950,
+                "expected_payout": 36.0,
+                "modeled_roi": 0.2,
+                "derived_brief": ["1"] * 15,
+            },
+            "sensitivity": [],
+        },
+        "report_links": {"external": [], "ev": []},
+        "warnings": [],
+    }
+
+
+def test_scheduler_cli_plan_simulated_execute_and_operator_pickup_are_offline(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "production-scheduler"
+    monkeypatch.delenv("API_SPORTS_KEY", raising=False)
+    monkeypatch.setattr(
+        cli,
+        "TotoBriefClient",
+        lambda: (_ for _ in ()).throw(AssertionError("network client used")),
+    )
+
+    prepared = runner.invoke(
+        cli.app,
+        [
+            "scheduler-plan",
+            "--drawing",
+            "5001",
+            "--drawing-id",
+            "12001",
+            "--ended-at",
+            "2030-01-02T12:00:00Z",
+            "--bank",
+            "4980",
+            "--output-dir",
+            str(output_dir),
+        ],
+    )
+
+    assert prepared.exit_code == 0, prepared.output
+    plan_path = output_dir / "scheduler-plan.json"
+    assert plan_path.is_file()
+    assert (output_dir / "run-scheduler.sh").is_file()
+    assert (output_dir / "totoai-scheduler.plist").is_file()
+
+    executed = runner.invoke(
+        cli.app,
+        [
+            "scheduler-execute",
+            "--plan",
+            str(plan_path),
+            "--simulate",
+            "--run-id",
+            "cli-acceptance",
+        ],
+    )
+
+    assert executed.exit_code == 0, executed.output
+    assert "Outcome: bet-ready" in executed.output
+    assert "Decision: PLAY" in executed.output
+    run_dir = output_dir / "runs" / "5001" / "cli-acceptance"
+    status_path = run_dir / "status.json"
+    package_path = run_dir / "package.csv"
+    status = json.loads(status_path.read_text(encoding="utf-8"))
+    package = package_path.read_bytes()
+    assert status["outcome"] == "bet-ready"
+    assert status["decision"] == "PLAY"
+    assert status["package_path"] == str(package_path)
+    assert status["package_sha256"] == hashlib.sha256(package).hexdigest()
+    assert package.startswith(b"rank,coupon,gross_ev,net_ev\n")
+    assert package.count(b"\n") >= 3
+    assert (run_dir / ".bet-ready").is_file()
+    assert not (run_dir / ".success").exists()
+
+
+def test_scheduler_cli_real_production_parser_and_capture_are_offline(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "production-parser-scheduler"
+    plan_result = runner.invoke(
+        cli.app,
+        [
+            "scheduler-plan",
+            "--drawing",
+            "5001",
+            "--drawing-id",
+            "12001",
+            "--ended-at",
+            "2030-01-02T12:00:00Z",
+            "--bank",
+            "4980",
+            "--output-dir",
+            str(output_dir),
+        ],
+    )
+    assert plan_result.exit_code == 0, plan_result.output
+
+    clock = VirtualSchedulerClock(
+        datetime(2030, 1, 2, 11, 15, tzinfo=UTC)
+    )
+
+    class LocalCommandRunner(CommandSchedulerPhaseRunner):
+        def _preflight(self, _plan, _work_dir):
+            return None
+
+    production_runner = LocalCommandRunner(
+        environment={},
+        target_validator=lambda _plan, _started_at: None,
+    )
+    monkeypatch.setattr(cli, "CommandSchedulerPhaseRunner", lambda: production_runner)
+    monkeypatch.setattr(cli, "_utc_now_datetime", clock.now)
+    monkeypatch.setattr(cli.time, "sleep", clock.sleep)
+
+    subprocess_calls: list[tuple[str, ...]] = []
+
+    def local_subprocess(command, **_kwargs):
+        command = tuple(command)
+        subprocess_calls.append(command)
+        report_dir = Path(command[command.index("--report-dir") + 1])
+        final_lead = int(command[command.index("--final-lead-minutes") + 1])
+        report_dir.mkdir(parents=True)
+        (report_dir / f"drawing_run_local_{final_lead}.json").write_text(
+            json.dumps(
+                _local_scheduler_manifest(final_lead_minutes=final_lead)
+            ),
+            encoding="utf-8",
+        )
+        return SimpleNamespace(returncode=0, stdout="Decision: PLAY\n", stderr="")
+
+    parsed: list[Path] = []
+    production_parser = parse_runner_manifest_phase_result
+
+    def tracked_parser(context, manifest_path):
+        parsed.append(Path(manifest_path))
+        return production_parser(context, manifest_path)
+
+    monkeypatch.setattr(scheduler_module.subprocess, "run", local_subprocess)
+    monkeypatch.setattr(
+        scheduler_module,
+        "parse_runner_manifest_phase_result",
+        tracked_parser,
+    )
+
+    executed = runner.invoke(
+        cli.app,
+        [
+            "scheduler-execute",
+            "--plan",
+            str(output_dir / "scheduler-plan.json"),
+            "--run-id",
+            "real-local-acceptance",
+        ],
+    )
+
+    assert executed.exit_code == 0, executed.output
+    assert "Outcome: bet-ready" in executed.output
+    assert len(subprocess_calls) == 2
+    assert all(
+        command[command.index("--min-gross-ev") + 1] == "1"
+        for command in subprocess_calls
+    )
+    assert len(parsed) == 2
+    run_dir = output_dir / "runs" / "5001" / "real-local-acceptance"
+    package = run_dir / "package.csv"
+    assert package.read_text(encoding="utf-8") == (
+        "rank,coupon,gross_ev,net_ev\n"
+        "1,111111111111111,1.2,0.20000000000000001\n"
+    )
+    assert (run_dir / ".bet-ready").is_file()
+    status = json.loads((run_dir / "status.json").read_text(encoding="utf-8"))
+    assert status["selected_snapshot"] == "final"
+    assert status["selected_count"] == 1
+    assert status["selected_cost"] == 30
+
+
+def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> None:
+    output_dir = tmp_path / "dry-run-scheduler"
+
+    result = runner.invoke(
+        cli.app,
+        [
+            "scheduler-plan",
+            "--drawing",
+            "5002",
+            "--ended-at",
+            "2030-01-03T12:00:00Z",
+            "--bank",
+            "4980",
+            "--output-dir",
+            str(output_dir),
+            "--dry-run",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["target"]["drawing"] == 5002
+    assert payload["config"]["minimum_gross_ev"] == 1.0
+    assert payload["deadlines"]["t_minus_45"] == "2030-01-03T11:15:00Z"
+    assert payload["deadlines"]["t_minus_10"] == "2030-01-03T11:50:00Z"
+    assert not output_dir.exists()
+
+
+def test_scheduler_cli_rejects_null_ended_at_before_artifact_creation(
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "invalid-scheduler"
+
+    result = runner.invoke(
+        cli.app,
+        [
+            "scheduler-plan",
+            "--drawing",
+            "5002",
+            "--ended-at",
+            "null",
+            "--bank",
+            "4980",
+            "--output-dir",
+            str(output_dir),
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "ended_at" in result.output
+    assert not output_dir.exists()
+
+
+def test_scheduler_cli_rejects_shell_script_python_executable(
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "unsafe-executable-scheduler"
+    executable = tmp_path / "python-probe"
+    executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    executable.chmod(0o755)
+
+    result = runner.invoke(
+        cli.app,
+        [
+            "scheduler-plan",
+            "--drawing",
+            "5002",
+            "--ended-at",
+            "2030-01-03T12:00:00Z",
+            "--bank",
+            "4980",
+            "--output-dir",
+            str(output_dir),
+            "--python-executable",
+            str(executable),
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "current interpreter" in result.output
+    assert not output_dir.exists()

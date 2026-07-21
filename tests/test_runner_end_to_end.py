@@ -494,8 +494,21 @@ def test_safe_runner_operator_boundary(
     assert all(path.exists() for path in report_paths)
     if expected_decision == "PLAY":
         manifest = _runner_manifest_payload(report_paths)
-        assert manifest["schema_version"] == 2
-        assert manifest["ev"]["computed"] is True
+        assert manifest["schema_version"] == 3
+        _assert_stable_non_override_timing(manifest)
+        ev = manifest["ev"]
+        package = ev["package"]
+        assert ev["computed"] is True
+        assert ev["requested_bank"] == 4800
+        assert ev["effective_budget"] == 4800
+        assert ev["selected_cost"] == 4800
+        assert ev["unused_requested_bank"] == 0
+        assert package["decision"] == "PLAY"
+        assert package["selected_count"] == len(package["coupons"]) == 160
+        assert package["cost"] == ev["selected_cost"] == 4800
+        assert package["unused_bank"] == ev["unused_requested_bank"] == 0
+        assert package["cost"] == package["selected_count"] * 30
+        assert 0 < package["cost"] <= ev["effective_budget"] <= ev["requested_bank"]
         assert result.collection is not None
         assert len(result.collection.snapshot.events) == 15
         assert result.collection.snapshot.target_fingerprint == (
@@ -1031,16 +1044,35 @@ def _assert_suppressed_package_summary(
     bank: int,
 ) -> None:
     payload = _runner_manifest_payload(report_paths)
-    assert payload["schema_version"] == 2
-    assert payload["ev"]["computed"] is False
-    package = payload["ev"]["package"]
-    assert package["decision"] == "NO BET"
-    assert package["coupons"] == []
-    assert package["selected_count"] == 0
-    assert package["cost"] == 0
-    assert package["unused_bank"] == bank
-    assert package["expected_payout"] == 0.0
-    assert package["modeled_roi"] is None
+    assert payload["schema_version"] == 3
+    _assert_stable_non_override_timing(payload)
+    assert payload["ev"] == {
+        "computed": False,
+        "requested_bank": bank,
+        "effective_budget": None,
+        "selected_cost": None,
+        "unused_requested_bank": None,
+        "input_fetched_at": None,
+        "minimum_gross_ev": None,
+        "prize_fund_factor": None,
+        "possible_winnings_source": None,
+        "jackpot_source": None,
+        "self_dilution_ratio": None,
+        "model_supported": None,
+        "model_warning": None,
+        "package": {
+            "decision": "NO BET",
+            "decision_reason": payload["terminal_reason"],
+            "coupons": [],
+            "selected_count": None,
+            "cost": None,
+            "unused_bank": None,
+            "expected_payout": None,
+            "modeled_roi": None,
+            "derived_brief": [],
+        },
+        "sensitivity": [],
+    }
     markdown_path = next(
         path for path in report_paths if path.name.startswith("drawing_run_")
         and path.suffix == ".md"
@@ -1049,13 +1081,35 @@ def _assert_suppressed_package_summary(
         markdown_path.read_text(encoding="utf-8"),
         "EV Package",
     )
+    assert bullets["EV package computation"] == "not run"
     assert bullets["decision"] == "NO BET"
-    assert bullets["selected count"] == "0"
-    assert bullets["cost"] == "0"
-    assert bullets["unused bank"] == str(bank)
-    assert bullets["expected payout"] == "0.0"
+    assert bullets["decision reason"] == payload["terminal_reason"]
+    assert bullets["requested bank"] == str(bank)
+    assert bullets["effective cap"] == "n/a"
+    assert bullets["selected count"] == "n/a"
+    assert bullets["selected cost"] == "n/a"
+    assert bullets["cost"] == "n/a"
+    assert bullets["unused requested bank"] == "n/a"
+    assert bullets["unused bank"] == "n/a"
+    assert bullets["expected payout"] == "n/a"
     assert bullets["modeled ROI"] == "n/a"
     assert bullets["selected coupons"] == "none"
+
+
+def _assert_stable_non_override_timing(payload: dict[str, object]) -> None:
+    eligibility = payload["eligibility"]
+    assert isinstance(eligibility, dict)
+    raw = eligibility["raw"]
+    effective = eligibility["effective"]
+    assert isinstance(raw, dict)
+    assert isinstance(effective, dict)
+    assert raw == effective
+    assert eligibility == {
+        **effective,
+        "raw": raw,
+        "effective": effective,
+        "override": None,
+    }
 
 
 def _runner_manifest_payload(report_paths: tuple[Path, ...]) -> dict[str, object]:

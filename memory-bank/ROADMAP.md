@@ -181,6 +181,13 @@
   and chronological backtest tests, including bank utilization and `NO BET`.
 
 ## Phase 7: Production
+- Drawing-4950 production-boundary update (no live bet):
+  - 7/15 raw matching, reviewed-alias correction to 13/15, and strict reviewed-timing overrides are now documented for operational use.
+  - Scheduler and runner output boundary remains strict fail-closed: only `bet-ready` at T-10 publishes an actionable package, while missing timing or catalog mismatches remain `no-bet`; terminal marker also includes `failed`.
+  - Runner/reporting boundary now records `schema_version = 3` raw/effective timing and budget provenance.
+  - Old `schema_version = 2` `drawing_4947` and `drawing_4950` reports remain historical and are excluded from current status.
+  - Live platform install and first prospective live production run are pending.
+
 
 - Add automatic incremental TotoBrief synchronization before/after production
   runs so open-drawing freshness and newly finished results do not depend on a

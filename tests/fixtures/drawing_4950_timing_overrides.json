@@ -1,0 +1,92 @@
+{
+  "overrides": [
+    {
+      "schema_version": 1,
+      "override_id": "drawing-4950-reviewed-timing-v1",
+      "drawing_id": 11964,
+      "target_fingerprint": "8f06d994a6e505d59e5b76166208a5987463df904fcc79afaf3311401b2c3704",
+      "reviewer": "offline-reviewer@example.test",
+      "reviewed_at": "2026-07-20T12:00:00+00:00",
+      "source_ref": "offline-review:drawing-4950",
+      "events": [
+        {
+          "event_order": 0,
+          "event_id": 178563,
+          "starts_at": "2026-07-20T18:30:00+00:00"
+        },
+        {
+          "event_order": 1,
+          "event_id": 178564,
+          "starts_at": "2026-07-20T19:00:00+00:00",
+          "source_ref": "https://www.sofascore.com/football/match/atletico-juniors-de-yotala-atletico-sucre/JwMdsiGpj"
+        },
+        {
+          "event_order": 2,
+          "event_id": 178565,
+          "starts_at": "2026-07-20T19:15:00+00:00"
+        },
+        {
+          "event_order": 3,
+          "event_id": 178566,
+          "starts_at": "2026-07-20T19:15:00+00:00"
+        },
+        {
+          "event_order": 4,
+          "event_id": 178567,
+          "starts_at": "2026-07-20T19:15:00+00:00",
+          "source_ref": "https://www.footlive.com/score/grindavik-njardvik-women-vs-throttur-reykjavik-women-2026-07-20/"
+        },
+        {
+          "event_order": 5,
+          "event_id": 178568,
+          "starts_at": "2026-07-20T16:00:00+00:00"
+        },
+        {
+          "event_order": 6,
+          "event_id": 178569,
+          "starts_at": "2026-07-20T14:30:00+00:00"
+        },
+        {
+          "event_order": 7,
+          "event_id": 178570,
+          "starts_at": "2026-07-20T18:30:00+00:00"
+        },
+        {
+          "event_order": 8,
+          "event_id": 178571,
+          "starts_at": "2026-07-20T20:00:00+00:00"
+        },
+        {
+          "event_order": 9,
+          "event_id": 178572,
+          "starts_at": "2026-07-20T15:30:00+00:00"
+        },
+        {
+          "event_order": 10,
+          "event_id": 178573,
+          "starts_at": "2026-07-20T18:30:00+00:00"
+        },
+        {
+          "event_order": 11,
+          "event_id": 178574,
+          "starts_at": "2026-07-20T15:00:00+00:00"
+        },
+        {
+          "event_order": 12,
+          "event_id": 178575,
+          "starts_at": "2026-07-20T17:00:00+00:00"
+        },
+        {
+          "event_order": 13,
+          "event_id": 178576,
+          "starts_at": "2026-07-20T17:00:00+00:00"
+        },
+        {
+          "event_order": 14,
+          "event_id": 178577,
+          "starts_at": "2026-07-20T19:00:00+00:00"
+        }
+      ]
+    }
+  ]
+}

@@ -39,10 +39,7 @@ def ev_package_report_paths_for_config(
     report_dir: str | Path = "reports",
 ) -> tuple[Path, Path]:
     drawing_number = drawing_number or drawing_id
-    stem = (
-        f"ev_package_{drawing_number}_{mode}_"
-        f"bank_{bank}"
-    )
+    stem = f"ev_package_{drawing_number}_{mode}_bank_{bank}"
     output_dir = Path(report_dir)
     return output_dir / f"{stem}.csv", output_dir / f"{stem}.md"
 
@@ -132,13 +129,9 @@ def _render_ev_backtest_csv(result: EVBacktestResult) -> str:
         values = asdict(row)
         values["threshold"] = f"{row.threshold:.12f}"
         values["prize_fund_factor"] = f"{row.prize_fund_factor:.12f}"
-        values["package_expected_payout"] = (
-            f"{row.package_expected_payout:.12f}"
-        )
+        values["package_expected_payout"] = f"{row.package_expected_payout:.12f}"
         values["package_modeled_roi"] = (
-            ""
-            if row.package_modeled_roi is None
-            else f"{row.package_modeled_roi:.12f}"
+            "" if row.package_modeled_roi is None else f"{row.package_modeled_roi:.12f}"
         )
         values["self_dilution_ratio"] = f"{row.self_dilution_ratio:.12f}"
         values["best_hits"] = "" if row.best_hits is None else row.best_hits
@@ -160,9 +153,7 @@ def _render_ev_backtest_markdown(result: EVBacktestResult) -> str:
         "- thresholds: "
         + ",".join(f"{value:.12f}" for value in result.config.thresholds),
         "- prize fund factors: "
-        + ",".join(
-            f"{value:.12f}" for value in result.config.prize_fund_factors
-        ),
+        + ",".join(f"{value:.12f}" for value in result.config.prize_fund_factors),
         f"- stake: {result.config.stake}",
         "- modeled payout uses expected crowd denominators",
         "- modeled payout is not observed bookmaker payout",
@@ -225,7 +216,8 @@ def _render_markdown(result: EVPackageRun) -> str:
     ev_input = result.ev_input
     package = result.package
     timing = result.timing_eligibility
-    bank_ratio = config.bank / ev_input.pool_sum
+    bank_ratio = result.requested_bank / ev_input.pool_sum
+    effective_budget_ratio = result.effective_budget / ev_input.pool_sum
     modeled_roi = (
         "n/a" if package.modeled_roi is None else f"{package.modeled_roi:.12f}"
     )
@@ -235,10 +227,15 @@ def _render_markdown(result: EVPackageRun) -> str:
         "## Decision",
         "",
         f"- decision: {package.decision}",
+        f"- decision reason: {package.decision_reason or 'n/a'}",
         f"- mode: {config.mode}",
         f"- minimum gross EV: {config.min_gross_ev:.12f}",
+        f"- requested bank: {result.requested_bank}",
+        f"- effective cap: {result.effective_budget}",
         f"- selected count: {len(package.coupons)}",
+        f"- selected cost: {result.selected_cost}",
         f"- cost: {package.cost}",
+        f"- unused requested bank: {result.unused_requested_bank}",
         f"- unused bank: {package.unused_bank}",
         f"- expected payout: {package.expected_payout:.12f}",
         f"- modeled ROI: {modeled_roi}",
@@ -264,11 +261,12 @@ def _render_markdown(result: EVPackageRun) -> str:
         f"- prize fund factor: {config.prize_fund_factor:.6f}",
         "- crowd joint model: independent event marginals",
         f"- bank ratio: {bank_ratio:.12f}",
+        f"- effective cap ratio: {effective_budget_ratio:.12f}",
         f"- self-dilution ratio: {result.self_dilution_ratio:.12f}",
         f"- model supported: {'yes' if result.model_supported else 'no'}",
     ]
     if result.model_warning is not None:
-        lines.append(f"- unsupported warning: {result.model_warning}")
+        lines.append(f"- model warning: {result.model_warning}")
 
     lines.extend(
         [
@@ -310,9 +308,7 @@ def _render_markdown(result: EVPackageRun) -> str:
         ]
     )
     if result.timing_diagnostics_suppressed:
-        lines.append(
-            "Timing-veto diagnostics are suppressed in playable mode."
-        )
+        lines.append("Timing-veto diagnostics are suppressed in playable mode.")
     else:
         lines.extend(
             [

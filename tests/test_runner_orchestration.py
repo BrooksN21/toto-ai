@@ -314,15 +314,20 @@ def _ev_run(
     selected = () if resolved_decision == "NO BET" else (_ranked_coupon(),)
     cost = 30 if selected else 0
     return EVPackageRun(
-        config=EVConfig(bank=4980, stake=30, mode=mode),
+        config=EVConfig(
+            bank=4980,
+            stake=30,
+            mode=mode,
+            effective_budget=90,
+        ),
         ev_input=EVInput(
             drawing_id=target.drawing_id,
             drawing_number=target.drawing_number,
             true_probabilities=((0.2, 0.3, 0.5),) * 15,
             crowd_probabilities=((0.3, 0.3, 0.4),) * 15,
-            pool_sum=1000.0,
+            pool_sum=10000.0,
             jackpot=0.0,
-            possible_winnings=1000.0,
+            possible_winnings=10000.0,
             probability_sources=("totobrief_bk",) * 15,
             fetched_at=T_MINUS_18.isoformat(),
         ),
@@ -346,7 +351,7 @@ def _ev_run(
         sensitivity=(),
         possible_winnings_source="pool_sum proxy",
         jackpot_source="totobrief payload",
-        self_dilution_ratio=cost / 1000.0,
+        self_dilution_ratio=cost / 10000.0,
         model_supported=True,
         model_warning=None,
         timing_eligibility=_timing(target),
@@ -469,6 +474,9 @@ def test_normal_playable_run_orders_every_phase():
     assert result.collection == collection
     assert result.audit == audit
     assert result.ev_run == ev_run
+    assert result.ev_run.effective_budget == 90
+    assert result.ev_run.selected_cost == 30
+    assert result.ev_run.unused_requested_bank == 4950
     assert result.elapsed_seconds == 4.0
     assert calls == ["preflight", "final", "collect", "timing", "audit", "ev"]
     assert sleeps == []

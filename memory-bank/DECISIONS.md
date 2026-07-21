@@ -255,3 +255,12 @@
   `NO BET`: no coupons, zero selected count/cost/payout, full unused bank, and
   unavailable modeled ROI. This is report evidence only and changes no EV or
   package-selection definition.
+
+- Drawing-4950 boundary is defined by strict fail-closed rules: `7/15` raw matches are validly fail-closed without aliases; reviewed aliases may raise the resolved set but unresolved targets are preserved as missing. Two unresolved provider events are not coerced into synthetic matches.
+- Exact timing provenance is now required for production decisions. The runner uses `PlayTimingEligibility` as raw and effective pair; only a reviewed timing overlay with exact catalog hash/provenance parity can change effective timing. Any unverified, invalid, or catalog-changed override drives effective timing to `unknown`.
+- Runner manifests and scheduler ingestion are strict:
+  - manifest must be `schema_version = 3` and include exact `raw`/`effective` timing payloads;
+  - manifest and package inputs are path-safe and hash-checked (`package_sha256`, timing catalog hashes, manifest manifest fields);
+  - strict JSON parsing rejects duplicate keys, non-finite numbers, non-JSON, and symlink/collision hazards.
+- Self-dilution budget is exact and authoritative for package budget math: `requested_cap = min(requested_bank, floor(pool_sum*1% / stake) * stake)`, and `effective_budget` follows that cap before EV sensitivity and selection.
+- `drawing 4947`/legacy `drawing 4950` `schema_version = 2` runner outputs are historical; they are not a source of current production truth.

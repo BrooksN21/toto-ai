@@ -1,4 +1,5 @@
 import csv
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -86,6 +87,11 @@ def test_reports_use_deterministic_paths_and_disclose_model(tmp_path):
         "prize fund factor: 0.900000",
         "modeled ROI is not observed ROI",
         "decision: NO BET",
+        "decision reason: n/a",
+        "requested bank: 6000",
+        "effective cap: 6000",
+        "selected cost: 0",
+        "unused requested bank: 6000",
         "fetched at: 2026-07-14T12:00:00+00:00",
         "self-dilution ratio:",
         "model supported: yes",
@@ -93,6 +99,72 @@ def test_reports_use_deterministic_paths_and_disclose_model(tmp_path):
         "## Top 20 diagnostics",
     ):
         assert expected in markdown
+
+
+def test_report_exposes_requested_bank_effective_cap_and_unused_request(tmp_path):
+    base = fixture_run(decision="PLAY")
+    run = replace(
+        base,
+        config=replace(base.config, bank=4980, effective_budget=810),
+        ev_input=replace(
+            base.ev_input,
+            pool_sum=81_445.0,
+            possible_winnings=73_300.5,
+        ),
+        package=replace(
+            base.package,
+            cost=30,
+            unused_bank=4950,
+            expected_payout=28.5,
+            modeled_roi=-0.05,
+        ),
+        self_dilution_ratio=30 / 81_445,
+    )
+
+    _, markdown_path = write_ev_package_reports(run, tmp_path)
+    markdown = markdown_path.read_text(encoding="utf-8")
+
+    for expected in (
+        "requested bank: 4980",
+        "effective cap: 810",
+        "selected cost: 30",
+        "unused requested bank: 4950",
+        "self-dilution ratio: 0.000368346737",
+    ):
+        assert expected in markdown
+
+
+def test_below_stake_no_bet_report_includes_precise_reason(tmp_path):
+    reason = (
+        "Effective budget 0 RUB is below one coupon stake 30 RUB after applying "
+        "the 1% self-dilution support limit to requested bank 30 RUB; no "
+        "supported coupon can be selected."
+    )
+    base = fixture_run()
+    run = replace(
+        base,
+        config=replace(base.config, bank=30, effective_budget=0),
+        ev_input=replace(
+            base.ev_input,
+            pool_sum=2_999.999,
+            possible_winnings=2_699.9991,
+        ),
+        package=replace(
+            base.package,
+            unused_bank=30,
+            decision_reason=reason,
+        ),
+        model_warning=reason,
+    )
+
+    _, markdown_path = write_ev_package_reports(run, tmp_path)
+    markdown = markdown_path.read_text(encoding="utf-8")
+
+    assert "decision: NO BET" in markdown
+    assert f"decision reason: {reason}" in markdown
+    assert "requested bank: 30" in markdown
+    assert "effective cap: 0" in markdown
+    assert f"model warning: {reason}" in markdown
 
 
 def test_unsupported_no_bet_report_is_non_actionable(tmp_path):

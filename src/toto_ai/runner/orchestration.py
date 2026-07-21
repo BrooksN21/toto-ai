@@ -14,6 +14,9 @@ from toto_ai.runner.models import (
     DrawingRunnerConfig,
     DrawingRunnerResult,
     PinnedDrawing,
+    RunnerTimingResolution,
+    TimingOverrideAudit,
+    validate_timing_resolution_for_runner,
 )
 from toto_ai.runner.timing import (
     RunnerSchedule,
@@ -28,6 +31,14 @@ TargetCollector = Callable[
     [TargetDrawing, datetime], ProspectiveCollectionResult
 ]
 TimingResolver = Callable[[PinnedDrawing], PlayTimingEligibility]
+TimingOverrideResolver = Callable[
+    [PinnedDrawing, ProspectiveCollectionResult, PlayTimingEligibility],
+    RunnerTimingResolution,
+]
+TimingOverrideVerifier = Callable[
+    [RunnerTimingResolution],
+    RunnerTimingResolution,
+]
 CoverageAuditor = Callable[[], CoverageAudit]
 PackageBuilder = Callable[[PinnedDrawing], EVPackageRun]
 PreflightCheck = Callable[[PinnedDrawing, datetime], object]
@@ -50,6 +61,8 @@ def run_drawing(
     sleep: Callable[[float], object],
     progress_callback: ProgressCallback | None = None,
     preflight_check: PreflightCheck | None = None,
+    resolve_timing_override: TimingOverrideResolver | None = None,
+    verify_timing_override: TimingOverrideVerifier | None = None,
 ) -> DrawingRunnerResult:
     """Run one preflight-to-EV state machine with injected dependencies."""
     if not isinstance(config, DrawingRunnerConfig):
@@ -251,9 +264,29 @@ def run_drawing(
             audit=None,
             progress_callback=progress_callback,
         )
-    timing_eligibility = resolve_timing(final)
-    if not isinstance(timing_eligibility, PlayTimingEligibility):
+    raw_timing_eligibility = resolve_timing(final)
+    if not isinstance(raw_timing_eligibility, PlayTimingEligibility):
         raise ValueError("resolve_timing must return PlayTimingEligibility")
+    timing_resolution = RunnerTimingResolution.without_override(
+        raw_timing_eligibility
+    )
+    if resolve_timing_override is not None:
+        if not callable(resolve_timing_override):
+            raise ValueError("resolve_timing_override must be callable")
+        timing_resolution = resolve_timing_override(
+            final,
+            collection,
+            raw_timing_eligibility,
+        )
+        _require_timing_resolution(
+            timing_resolution,
+            expected_raw=raw_timing_eligibility,
+            target=final,
+            collection=collection,
+            preflight_at=preflight_at,
+            require_override=True,
+        )
+    timing_eligibility = timing_resolution.effective
     timing_finished_at = _read_now(now)
     if _is_closed(schedule, timing_finished_at):
         return _no_bet_result(
@@ -274,6 +307,8 @@ def run_drawing(
             timing_eligibility=timing_eligibility,
             audit=None,
             progress_callback=progress_callback,
+            raw_timing_eligibility=timing_resolution.raw,
+            timing_override=timing_resolution.override,
         )
 
     _notify(progress_callback, "audit")
@@ -297,6 +332,8 @@ def run_drawing(
             timing_eligibility=timing_eligibility,
             audit=None,
             progress_callback=progress_callback,
+            raw_timing_eligibility=timing_resolution.raw,
+            timing_override=timing_resolution.override,
         )
     audit = audit_coverage()
     if not isinstance(audit, CoverageAudit):
@@ -321,6 +358,37 @@ def run_drawing(
             timing_eligibility=timing_eligibility,
             audit=audit,
             progress_callback=progress_callback,
+            raw_timing_eligibility=timing_resolution.raw,
+            timing_override=timing_resolution.override,
+        )
+
+    if (
+        timing_resolution.override is not None
+        and timing_resolution.override.status != "applied"
+    ):
+        return _no_bet_result(
+            config=config,
+            target=preflight,
+            preflight_at=preflight_at,
+            final_started_at=final_started_at,
+            final_fingerprint=final.fingerprint,
+            collection_finished_at=collection_finished_at,
+            timing_finished_at=timing_finished_at,
+            audit_finished_at=audit_finished_at,
+            ev_finished_at=None,
+            finished_at=audit_finished_at,
+            started_monotonic=started_monotonic,
+            monotonic=monotonic,
+            terminal_reason=(
+                "timing override is not usable: "
+                f"{timing_resolution.override.status}"
+            ),
+            collection=collection,
+            timing_eligibility=timing_eligibility,
+            audit=audit,
+            progress_callback=progress_callback,
+            raw_timing_eligibility=timing_resolution.raw,
+            timing_override=timing_resolution.override,
         )
 
     if config.mode == "playable" and timing_eligibility.status != "playable":
@@ -345,6 +413,8 @@ def run_drawing(
             timing_eligibility=timing_eligibility,
             audit=audit,
             progress_callback=progress_callback,
+            raw_timing_eligibility=timing_resolution.raw,
+            timing_override=timing_resolution.override,
         )
 
     _notify(progress_callback, "ev")
@@ -368,7 +438,81 @@ def run_drawing(
             timing_eligibility=timing_eligibility,
             audit=audit,
             progress_callback=progress_callback,
+            raw_timing_eligibility=timing_resolution.raw,
+            timing_override=timing_resolution.override,
         )
+
+    if timing_resolution.override is not None:
+        if verify_timing_override is None:
+            timing_resolution = _unverified_timing_override(timing_resolution)
+        else:
+            if not callable(verify_timing_override):
+                raise ValueError("verify_timing_override must be callable")
+            timing_resolution = verify_timing_override(timing_resolution)
+            _require_timing_resolution(
+                timing_resolution,
+                expected_raw=raw_timing_eligibility,
+                target=final,
+                collection=collection,
+                preflight_at=preflight_at,
+                require_override=True,
+            )
+        timing_eligibility = timing_resolution.effective
+        override_audit = timing_resolution.override
+        if (
+            override_audit is None
+            or override_audit.status != "applied"
+            or override_audit.package_catalog_sha256
+            != override_audit.preflight_catalog_sha256
+        ):
+            verification_finished_at = _read_now(now)
+            return _no_bet_result(
+                config=config,
+                target=preflight,
+                preflight_at=preflight_at,
+                final_started_at=final_started_at,
+                final_fingerprint=final.fingerprint,
+                collection_finished_at=collection_finished_at,
+                timing_finished_at=timing_finished_at,
+                audit_finished_at=audit_finished_at,
+                ev_finished_at=None,
+                finished_at=verification_finished_at,
+                started_monotonic=started_monotonic,
+                monotonic=monotonic,
+                terminal_reason=(
+                    "timing override catalog hash was not preserved for "
+                    "package generation"
+                ),
+                collection=collection,
+                timing_eligibility=timing_eligibility,
+                audit=audit,
+                progress_callback=progress_callback,
+                raw_timing_eligibility=timing_resolution.raw,
+                timing_override=timing_resolution.override,
+            )
+        verification_finished_at = _read_now(now)
+        if _is_closed(schedule, verification_finished_at):
+            return _no_bet_result(
+                config=config,
+                target=preflight,
+                preflight_at=preflight_at,
+                final_started_at=final_started_at,
+                final_fingerprint=final.fingerprint,
+                collection_finished_at=collection_finished_at,
+                timing_finished_at=timing_finished_at,
+                audit_finished_at=audit_finished_at,
+                ev_finished_at=None,
+                finished_at=verification_finished_at,
+                started_monotonic=started_monotonic,
+                monotonic=monotonic,
+                terminal_reason="safety cutoff reached before ev",
+                collection=collection,
+                timing_eligibility=timing_eligibility,
+                audit=audit,
+                progress_callback=progress_callback,
+                raw_timing_eligibility=timing_resolution.raw,
+                timing_override=timing_resolution.override,
+            )
     try:
         ev_run = build_package(final)
     except RunnerTargetMismatch as error:
@@ -391,6 +535,8 @@ def run_drawing(
             timing_eligibility=timing_eligibility,
             audit=audit,
             progress_callback=progress_callback,
+            raw_timing_eligibility=timing_resolution.raw,
+            timing_override=timing_resolution.override,
         )
     if not isinstance(ev_run, EVPackageRun):
         raise ValueError("build_package must return EVPackageRun")
@@ -414,6 +560,8 @@ def run_drawing(
             timing_eligibility=timing_eligibility,
             audit=audit,
             progress_callback=progress_callback,
+            raw_timing_eligibility=timing_resolution.raw,
+            timing_override=timing_resolution.override,
         )
 
     decision = ev_run.package.decision
@@ -443,6 +591,8 @@ def run_drawing(
         timing_eligibility=timing_eligibility,
         audit=audit,
         ev_run=ev_run,
+        raw_timing_eligibility=timing_resolution.raw,
+        timing_override=timing_resolution.override,
     )
     _notify(progress_callback, "complete", decision=decision)
     completed_at = _read_now(now)
@@ -486,6 +636,8 @@ def _no_bet_result(
     timing_eligibility: PlayTimingEligibility,
     audit: CoverageAudit | None,
     progress_callback: ProgressCallback | None,
+    raw_timing_eligibility: PlayTimingEligibility | None = None,
+    timing_override: TimingOverrideAudit | None = None,
 ) -> DrawingRunnerResult:
     elapsed_seconds = _elapsed_seconds(started_monotonic, monotonic)
     result = DrawingRunnerResult(
@@ -506,6 +658,8 @@ def _no_bet_result(
         timing_eligibility=timing_eligibility,
         audit=audit,
         ev_run=None,
+        raw_timing_eligibility=raw_timing_eligibility,
+        timing_override=timing_override,
     )
     _notify(progress_callback, "complete", decision="NO BET")
     return result
@@ -514,6 +668,59 @@ def _no_bet_result(
 def _require_pinned_target(name: str, value: object) -> None:
     if not isinstance(value, PinnedDrawing):
         raise ValueError(f"{name} resolver must return PinnedDrawing")
+
+
+def _require_timing_resolution(
+    value: object,
+    *,
+    expected_raw: PlayTimingEligibility,
+    target: PinnedDrawing,
+    collection: ProspectiveCollectionResult,
+    preflight_at: datetime,
+    require_override: bool,
+) -> None:
+    if not isinstance(value, RunnerTimingResolution):
+        raise ValueError(
+            "timing override resolver must return RunnerTimingResolution"
+        )
+    if value.raw != expected_raw:
+        raise ValueError("timing override resolver cannot change raw eligibility")
+    validate_timing_resolution_for_runner(
+        value,
+        target=target,
+        collection=collection,
+        preflight_at=preflight_at,
+        require_override=require_override,
+    )
+
+
+def _unverified_timing_override(
+    resolution: RunnerTimingResolution,
+) -> RunnerTimingResolution:
+    audit = resolution.override
+    if audit is None:
+        raise ValueError("timing override verification requires override audit")
+    fingerprint = resolution.effective.target_fingerprint
+    if fingerprint is None:
+        raise ValueError("timing override verification requires target fingerprint")
+    return RunnerTimingResolution(
+        raw=resolution.raw,
+        effective=PlayTimingEligibility(
+            status="unknown",
+            reason="timing override catalog hash was not verified for package use",
+            target_fingerprint=fingerprint,
+            fingerprint_match=True,
+        ),
+        override=replace(
+            audit,
+            status="hash_unverified",
+            package_catalog_sha256=None,
+            diagnostics=(
+                *audit.diagnostics,
+                "catalog hash was not verified before package generation",
+            ),
+        ),
+    )
 
 
 def _read_now(now: Callable[[], datetime]) -> datetime:

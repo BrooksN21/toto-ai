@@ -6,6 +6,7 @@ import math
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import Any, Literal
 
 from toto_ai.analytics.api_inspector import DrawingReference
@@ -29,7 +30,11 @@ from toto_ai.ev.ternary import (
 )
 
 SENSITIVITY_FACTORS = (0.70, 0.80, 0.90, 1.00)
-SELF_DILUTION_LIMIT = 0.01
+_SELF_DILUTION_LIMIT_NUMERATOR = 1
+_SELF_DILUTION_LIMIT_DENOMINATOR = 100
+SELF_DILUTION_LIMIT = (
+    _SELF_DILUTION_LIMIT_NUMERATOR / _SELF_DILUTION_LIMIT_DENOMINATOR
+)
 PossibleWinningsSource = Literal["pool_sum proxy", "explicit override"]
 JackpotSource = Literal["totobrief payload", "explicit override"]
 PhaseCallback = Callable[[dict[str, object]], None]
@@ -71,6 +76,28 @@ class EVPackageRun:
             self.config.mode == "playable"
             and self.timing_eligibility.status != "playable"
         )
+
+    @property
+    def requested_bank(self) -> int:
+        return self.config.requested_bank
+
+    @property
+    def effective_budget(self) -> int:
+        if self.config.effective_budget is not None:
+            return self.config.effective_budget
+        return _effective_budget(
+            requested_bank=self.config.bank,
+            pool_sum=self.ev_input.pool_sum,
+            stake=self.config.stake,
+        )
+
+    @property
+    def selected_cost(self) -> int:
+        return self.package.cost
+
+    @property
+    def unused_requested_bank(self) -> int:
+        return self.requested_bank - self.selected_cost
 
 
 def resolve_open_drawing_from_api(
@@ -230,6 +257,7 @@ def build_open_ev_package(
             f"drawing-info data.id {ev_input.drawing_id} does not match requested "
             f"drawing id {drawing_id}"
         )
+    effective_budget_pool_sum = _payload_pool_sum(resolved_payload)
     timing_eligibility = (
         PlayTimingEligibility.not_checked()
         if timing_eligibility_resolver is None
@@ -237,6 +265,19 @@ def build_open_ev_package(
     )
     if not isinstance(timing_eligibility, PlayTimingEligibility):
         raise TypeError("timing eligibility resolver returned an invalid result")
+
+    derived_effective_budget = _effective_budget(
+        requested_bank=config.bank,
+        pool_sum=effective_budget_pool_sum,
+        stake=config.stake,
+    )
+    effective_budget = min(derived_effective_budget, config.selection_budget)
+    selection_config = replace(config, effective_budget=effective_budget)
+    budget_reason = (
+        _below_stake_budget_reason(selection_config)
+        if effective_budget < config.stake
+        else None
+    )
 
     def category_progress(update: dict[str, str | int | float]) -> None:
         _notify(progress_callback, dict(update))
@@ -261,7 +302,7 @@ def build_open_ev_package(
         winnings = ev_input.pool_sum * factor
         surface = materialize_ev_surface(components, winnings, ev_input.jackpot)
         factor_config = replace(
-            config,
+            selection_config,
             prize_fund_factor=factor,
             possible_winnings=None,
         )
@@ -271,9 +312,15 @@ def build_open_ev_package(
                 factor_config,
             )
             main_surface = surface
-            main_package = factor_package
         else:
             factor_package = select_ev_package(surface, factor_config)
+        factor_package = _suppress_below_stake_budget(
+            factor_package,
+            config=factor_config,
+            reason=budget_reason,
+        )
+        if factor == main_factor:
+            main_package = factor_package
         factor_supported = (
             factor_package.cost / ev_input.pool_sum <= SELF_DILUTION_LIMIT
         )
@@ -311,7 +358,12 @@ def build_open_ev_package(
         )
         main_package, top_coupons = select_ev_package_with_top_coupons(
             main_surface,
-            config,
+            selection_config,
+        )
+        main_package = _suppress_below_stake_budget(
+            main_package,
+            config=selection_config,
+            reason=budget_reason,
         )
     self_dilution_ratio = main_package.cost / ev_input.pool_sum
     model_supported = self_dilution_ratio <= SELF_DILUTION_LIMIT
@@ -327,7 +379,7 @@ def build_open_ev_package(
         timing_eligibility=timing_eligibility,
         bank=config.bank,
     )
-    warning = None
+    warning = budget_reason
     if not model_supported:
         warning = (
             "Package cost exceeds 1% of pool_sum; the v1 model excludes "
@@ -335,7 +387,7 @@ def build_open_ev_package(
         )
 
     return EVPackageRun(
-        config=config,
+        config=selection_config,
         ev_input=ev_input,
         surface=main_surface,
         package=package,
@@ -347,15 +399,66 @@ def build_open_ev_package(
             else "pool_sum proxy"
         ),
         jackpot_source=(
-            "explicit override"
-            if jackpot_override is not None
-            else "totobrief payload"
+            "explicit override" if jackpot_override is not None else "totobrief payload"
         ),
         self_dilution_ratio=self_dilution_ratio,
         model_supported=model_supported,
         model_warning=warning,
         timing_eligibility=timing_eligibility,
     )
+
+
+def _effective_budget(
+    *,
+    requested_bank: int,
+    pool_sum: int | float,
+    stake: int,
+) -> int:
+    validated_pool_sum = _finite_number("pool_sum", pool_sum, positive=True)
+    if isinstance(pool_sum, int):
+        pool_numerator, pool_denominator = int(pool_sum), 1
+    else:
+        pool_numerator, pool_denominator = Decimal(
+            str(validated_pool_sum)
+        ).as_integer_ratio()
+    supported_coupon_count = (
+        _SELF_DILUTION_LIMIT_NUMERATOR * pool_numerator
+        // (_SELF_DILUTION_LIMIT_DENOMINATOR * pool_denominator * stake)
+    )
+    return min(requested_bank, supported_coupon_count * stake)
+
+
+def _payload_pool_sum(payload: Mapping[str, Any]) -> int | float:
+    data = payload.get("data") if isinstance(payload, Mapping) else None
+    if not isinstance(data, Mapping):
+        raise ValueError("drawing-info payload must contain a data object")
+    pool_sum = data.get("pool_sum")
+    _finite_number("pool_sum", pool_sum, positive=True)
+    if isinstance(pool_sum, bool) or not isinstance(pool_sum, (int, float)):
+        raise ValueError("pool_sum must be a finite number")
+    return pool_sum
+
+
+def _below_stake_budget_reason(config: EVConfig) -> str:
+    return (
+        f"Effective budget {config.selection_budget} RUB is below one coupon "
+        f"stake {config.stake} RUB after applying the 1% self-dilution support "
+        f"limit to requested bank {config.bank} RUB; no supported coupon can "
+        "be selected."
+    )
+
+
+def _suppress_below_stake_budget(
+    package: EVPackage,
+    *,
+    config: EVConfig,
+    reason: str | None,
+) -> EVPackage:
+    if config.selection_budget >= config.stake:
+        return package
+    if reason is None:
+        raise ValueError("below-stake effective budget requires a reason")
+    return _empty_no_bet(package, bank=config.bank, reason=reason)
 
 
 def _suppress_unsupported_play(
@@ -386,7 +489,12 @@ def _suppress_ineligible_timing(
     return package
 
 
-def _empty_no_bet(package: EVPackage, *, bank: int) -> EVPackage:
+def _empty_no_bet(
+    package: EVPackage,
+    *,
+    bank: int,
+    reason: str | None = None,
+) -> EVPackage:
     return replace(
         package,
         decision="NO BET",
@@ -396,6 +504,7 @@ def _empty_no_bet(package: EVPackage, *, bank: int) -> EVPackage:
         expected_payout=0.0,
         modeled_roi=None,
         derived_brief=("",) * len(package.derived_brief),
+        decision_reason=reason if reason is not None else package.decision_reason,
     )
 
 

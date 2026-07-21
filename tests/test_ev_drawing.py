@@ -1,6 +1,7 @@
 import gc
 import weakref
 from dataclasses import FrozenInstanceError
+from decimal import Decimal
 from pathlib import Path
 
 import numpy as np
@@ -108,9 +109,7 @@ def test_payload_rejects_naive_fetched_at(open_drawing_payload):
     "mutate",
     [
         lambda data: data.__setitem__("pool_sum", 10**10_000),
-        lambda data: data["events"][0]["quotes"].__setitem__(
-            "bk_win_1", 10**10_000
-        ),
+        lambda data: data["events"][0]["quotes"].__setitem__("bk_win_1", 10**10_000),
     ],
 )
 def test_payload_converts_oversized_numeric_failures_to_value_error(
@@ -144,9 +143,7 @@ def test_payload_converts_oversized_numeric_failures_to_value_error(
         (lambda data: data.__setitem__("jackpot", None), "jackpot"),
         (lambda data: data["events"][0]["quotes"].__setitem__("bk_win_1", -1), "BK"),
         (
-            lambda data: data["events"][0]["quotes"].__setitem__(
-                "pool_draw", None
-            ),
+            lambda data: data["events"][0]["quotes"].__setitem__("pool_draw", None),
             "pool",
         ),
     ],
@@ -409,6 +406,84 @@ def _build_fast_run(
     )
 
 
+def test_effective_budget_caps_capacity_without_replacing_requested_bank():
+    config = EVConfig(bank=4980, stake=30, effective_budget=810)
+
+    assert config.requested_bank == 4980
+    assert config.selection_budget == 810
+    assert config.max_coupons == 27
+
+
+@pytest.mark.parametrize(
+    ("effective_budget", "message"),
+    [
+        (-30, "non-negative int"),
+        (30.0, "non-negative int"),
+        (True, "non-negative int"),
+        (5_010, "cannot exceed bank"),
+        (811, "divisible by stake"),
+    ],
+)
+def test_caller_effective_budget_rejects_invalid_or_misaligned_values(
+    effective_budget,
+    message,
+):
+    with pytest.raises(ValueError, match=message):
+        EVConfig(bank=4_980, stake=30, effective_budget=effective_budget)
+
+
+@pytest.mark.parametrize(
+    ("pool_sum", "requested_bank", "stake", "expected"),
+    [
+        (81_445, 4_980, 30, 810),
+        (81_445.0, 600, 30, 600),
+        (2_999.999, 30, 30, 0),
+        (9_007_199_254_742_999, 90_071_992_547_430, 30, 90_071_992_547_400),
+    ],
+)
+def test_effective_budget_uses_exact_stake_aligned_arithmetic(
+    pool_sum,
+    requested_bank,
+    stake,
+    expected,
+):
+    import toto_ai.ev.drawing as drawing_module
+
+    assert (
+        drawing_module._effective_budget(
+            requested_bank=requested_bank,
+            pool_sum=pool_sum,
+            stake=stake,
+        )
+        == expected
+    )
+
+
+@pytest.mark.parametrize(
+    "pool_sum",
+    [
+        float("nan"),
+        float("inf"),
+        float("-inf"),
+        -1,
+        0,
+        10**10_000,
+        Decimal("81445"),
+        True,
+        "81445",
+    ],
+)
+def test_effective_budget_rejects_invalid_pool_values(pool_sum):
+    import toto_ai.ev.drawing as drawing_module
+
+    with pytest.raises(ValueError, match="pool_sum"):
+        drawing_module._effective_budget(
+            requested_bank=4_980,
+            pool_sum=pool_sum,
+            stake=30,
+        )
+
+
 def test_play_timing_eligibility_is_immutable():
     timing = PlayTimingEligibility(
         status="playable",
@@ -659,23 +734,23 @@ def test_timing_parse_failure_is_conservative_without_aborting_ev(
         "pool_sum",
         "jackpot_override",
         "expected_jackpot_source",
-        "expected_supported",
+        "expected_effective_budget",
         "expected_decision",
     ),
     [
-        ("playable", 3_000.0, None, "totobrief payload", True, "PLAY"),
-        ("playable", 2_999.999, 800.0, "explicit override", False, "NO BET"),
-        ("research", 2_999.999, None, "totobrief payload", False, "RESEARCH ONLY"),
+        ("playable", 3_000.0, None, "totobrief payload", 30, "PLAY"),
+        ("playable", 2_999.999, 800.0, "explicit override", 0, "NO BET"),
+        ("research", 2_999.999, None, "totobrief payload", 0, "NO BET"),
     ],
 )
-def test_build_package_enforces_self_dilution_boundary(
+def test_build_package_uses_stake_aligned_self_dilution_budget(
     monkeypatch,
     open_drawing_payload,
     mode,
     pool_sum,
     jackpot_override,
     expected_jackpot_source,
-    expected_supported,
+    expected_effective_budget,
     expected_decision,
 ):
     import toto_ai.ev.drawing as drawing_module
@@ -713,7 +788,7 @@ def test_build_package_enforces_self_dilution_boundary(
             sum(reference() is not None for reference in surface_references)
         )
         selected_configs.append(config)
-        return _package(config, cost=30)
+        return _package(config, cost=min(30, config.selection_budget))
 
     def fake_select_with_top(surface, config, diagnostic_limit=20):
         return fake_select(surface, config), ()
@@ -727,6 +802,7 @@ def test_build_package_enforces_self_dilution_boundary(
         fake_select_with_top,
     )
     monkeypatch.setattr(drawing_module, "_utc_now", lambda: "2026-07-14T12:00:01+00:00")
+
     def playable_timing(payload):
         return PlayTimingEligibility(
             status="playable",
@@ -754,8 +830,14 @@ def test_build_package_enforces_self_dilution_boundary(
         0.90,
         1.00,
     ]
-    assert result.self_dilution_ratio == pytest.approx(30 / pool_sum)
-    assert result.model_supported is expected_supported
+    assert result.requested_bank == 30
+    assert result.config.bank == 30
+    assert result.effective_budget == expected_effective_budget
+    assert result.config.effective_budget == expected_effective_budget
+    assert result.selected_cost == (30 if expected_effective_budget else 0)
+    assert result.unused_requested_bank == 30 - result.selected_cost
+    assert result.self_dilution_ratio == pytest.approx(result.selected_cost / pool_sum)
+    assert result.model_supported is True
     assert result.package.decision == expected_decision
     assert result.jackpot_source == expected_jackpot_source
     assert result.ev_input.jackpot == (
@@ -763,17 +845,237 @@ def test_build_package_enforces_self_dilution_boundary(
     )
     assert len(materialized) == 4
     assert len(selected_configs) == 4
+    assert all(config.bank == 30 for config in selected_configs)
+    assert all(
+        config.effective_budget == expected_effective_budget
+        for config in selected_configs
+    )
     assert max(live_surface_counts) <= 2
-    if mode == "playable" and not expected_supported:
+    if expected_effective_budget < result.config.stake:
+        reason = (
+            "Effective budget 0 RUB is below one coupon stake 30 RUB after "
+            "applying the 1% self-dilution support limit to requested bank "
+            "30 RUB; no supported coupon can be selected."
+        )
         assert result.package.coupons == ()
         assert result.package.cost == 0
         assert result.package.unused_bank == result.config.bank
         assert result.package.expected_payout == 0.0
         assert result.package.modeled_roi is None
         assert result.package.derived_brief == ("",) * 15
+        assert result.package.decision_reason == reason
+        assert result.model_warning == reason
         assert all(row.selected_count == 0 for row in result.sensitivity)
         assert all(row.cost == 0 for row in result.sensitivity)
         assert all(row.unused_bank == result.config.bank for row in result.sensitivity)
+    else:
+        assert result.package.decision_reason is None
+        assert result.model_warning is None
+
+
+def test_requested_bank_above_support_cap_selects_with_effective_budget(
+    monkeypatch,
+    open_drawing_payload,
+):
+    import toto_ai.ev.drawing as drawing_module
+
+    open_drawing_payload["data"]["pool_sum"] = 81_445.0
+    selected_configs = []
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == 9000
+            return open_drawing_payload
+
+    monkeypatch.setattr(
+        drawing_module,
+        "compute_ev_components",
+        lambda ev_input, progress_callback=None: EVComponents(
+            np.array([1.0]),
+            np.array([0.0]),
+            15,
+            1.0,
+            1.0,
+            1.0,
+        ),
+    )
+    monkeypatch.setattr(
+        drawing_module,
+        "materialize_ev_surface",
+        lambda components, possible_winnings, jackpot: _surface(possible_winnings),
+    )
+
+    def fake_select(surface, config):
+        selected_configs.append(config)
+        return _package(config, cost=config.max_coupons * config.stake)
+
+    monkeypatch.setattr(drawing_module, "select_ev_package", fake_select)
+    monkeypatch.setattr(
+        drawing_module,
+        "select_ev_package_with_top_coupons",
+        lambda surface, config, diagnostic_limit=20: (fake_select(surface, config), ()),
+    )
+
+    result = build_open_ev_package(
+        client=Client(),
+        drawing_id=9000,
+        config=EVConfig(
+            bank=4980,
+            stake=30,
+            mode="playable",
+            prize_fund_factor=0.9,
+        ),
+        timing_eligibility_resolver=lambda payload: PlayTimingEligibility(
+            status="playable",
+            reason="stored eligibility matches the fresh target",
+            target_fingerprint="b" * 64,
+            fingerprint_match=True,
+        ),
+        fetched_at="2026-07-20T12:00:00+00:00",
+    )
+
+    assert result.config.bank == 4980
+    assert result.requested_bank == 4980
+    assert result.effective_budget == 810
+    assert result.config.effective_budget == 810
+    assert all(config.bank == 4980 for config in selected_configs)
+    assert all(config.effective_budget == 810 for config in selected_configs)
+    assert all(config.max_coupons == 27 for config in selected_configs)
+    assert result.package.decision == "PLAY"
+    assert result.package.cost == 810
+    assert result.package.cost <= result.effective_budget
+    assert result.package.unused_bank == 4170
+    assert result.unused_requested_bank == 4170
+    assert result.self_dilution_ratio == pytest.approx(810 / 81_445)
+    assert result.model_supported is True
+    assert result.model_warning is None
+
+
+@pytest.mark.parametrize(
+    ("caller_cap", "expected_budget", "expected_decision"),
+    [
+        pytest.param(0, 0, "NO BET", id="below-stake"),
+        pytest.param(600, 600, "PLAY", id="below-derived-cap"),
+        pytest.param(810, 810, "PLAY", id="equal-derived-cap"),
+        pytest.param(900, 810, "PLAY", id="above-derived-cap"),
+    ],
+)
+def test_build_uses_strictest_caller_and_derived_effective_budget(
+    monkeypatch,
+    open_drawing_payload,
+    caller_cap,
+    expected_budget,
+    expected_decision,
+):
+    import toto_ai.ev.drawing as drawing_module
+
+    open_drawing_payload["data"]["pool_sum"] = 81_445
+    selected_configs = []
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == 9000
+            return open_drawing_payload
+
+    monkeypatch.setattr(
+        drawing_module,
+        "compute_ev_components",
+        lambda ev_input, progress_callback=None: EVComponents(
+            np.array([1.0]),
+            np.array([0.0]),
+            15,
+            1.0,
+            1.0,
+            1.0,
+        ),
+    )
+    monkeypatch.setattr(
+        drawing_module,
+        "materialize_ev_surface",
+        lambda components, possible_winnings, jackpot: _surface(possible_winnings),
+    )
+
+    def fake_select(surface, config):
+        selected_configs.append(config)
+        return _package(config, cost=config.selection_budget)
+
+    monkeypatch.setattr(drawing_module, "select_ev_package", fake_select)
+    monkeypatch.setattr(
+        drawing_module,
+        "select_ev_package_with_top_coupons",
+        lambda surface, config, diagnostic_limit=20: (fake_select(surface, config), ()),
+    )
+
+    caller_config = EVConfig(
+        bank=4_980,
+        stake=30,
+        mode="playable",
+        prize_fund_factor=0.9,
+        effective_budget=caller_cap,
+    )
+    result = build_open_ev_package(
+        client=Client(),
+        drawing_id=9000,
+        config=caller_config,
+        timing_eligibility_resolver=lambda payload: PlayTimingEligibility(
+            status="playable",
+            reason="stored eligibility matches the fresh target",
+            target_fingerprint="c" * 64,
+            fingerprint_match=True,
+        ),
+        fetched_at="2026-07-20T12:00:00+00:00",
+    )
+
+    assert caller_config.effective_budget == caller_cap
+    assert result.requested_bank == 4_980
+    assert result.effective_budget == expected_budget
+    assert result.config.effective_budget == expected_budget
+    assert all(
+        config.effective_budget == expected_budget for config in selected_configs
+    )
+    assert all(
+        config.selection_budget == expected_budget for config in selected_configs
+    )
+    assert result.package.decision == expected_decision
+    assert result.package.cost == expected_budget
+    assert result.package.unused_bank == 4_980 - expected_budget
+    if expected_budget == 0:
+        assert result.package.coupons == ()
+        assert result.package.expected_payout == 0.0
+        assert result.package.modeled_roi is None
+        assert all(row.decision == "NO BET" for row in result.sensitivity)
+
+
+def test_build_preserves_exact_integer_pool_for_effective_budget(
+    monkeypatch,
+    open_drawing_payload,
+):
+    exact_pool_sum = 9_007_199_254_742_999
+    rounded_up_float_cap = 90_071_992_547_430
+    exact_cap = 90_071_992_547_400
+    open_drawing_payload["data"]["pool_sum"] = exact_pool_sum
+    _install_fast_ev_engine(monkeypatch)
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == 9000
+            return open_drawing_payload
+
+    result = build_open_ev_package(
+        client=Client(),
+        drawing_id=9000,
+        config=EVConfig(
+            bank=rounded_up_float_cap,
+            stake=30,
+            mode="research",
+            prize_fund_factor=0.9,
+        ),
+    )
+
+    assert result.requested_bank == rounded_up_float_cap
+    assert result.effective_budget == exact_cap
+    assert result.config.effective_budget == exact_cap
+    assert result.effective_budget != rounded_up_float_cap
 
 
 def test_cli_requires_open():

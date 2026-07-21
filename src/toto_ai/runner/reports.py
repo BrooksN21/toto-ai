@@ -34,7 +34,7 @@ from toto_ai.runner.models import (
     PinnedDrawing,
 )
 
-RUNNER_REPORT_SCHEMA_VERSION = 2
+RUNNER_REPORT_SCHEMA_VERSION = 3
 RUNNER_PROVIDER = "api-sports"
 
 
@@ -390,45 +390,114 @@ def _collection_payload(result: DrawingRunnerResult) -> dict[str, Any] | None:
 
 
 def _eligibility_payload(result: DrawingRunnerResult) -> dict[str, Any]:
-    timing = result.timing_eligibility
+    effective_timing = result.timing_eligibility
+    raw_timing = result.raw_timing_eligibility
+    assert raw_timing is not None
     collection_eligibility = (
         None if result.collection is None else result.collection.eligibility
     )
+    raw_details = _stored_timing_details(collection_eligibility)
+    override = result.timing_override
+    if override is None:
+        effective_details = raw_details
+    elif override.status == "applied" and override.overlay_summary is not None:
+        effective_details = _summary_timing_details(override.overlay_summary)
+    else:
+        effective_details = _empty_timing_details()
+    raw_payload = _timing_eligibility_details(raw_timing, raw_details)
+    effective_payload = _timing_eligibility_details(
+        effective_timing,
+        effective_details,
+    )
+    return {
+        **effective_payload,
+        "raw": raw_payload,
+        "effective": effective_payload,
+        "override": _timing_override_payload(result),
+    }
+
+
+def _timing_eligibility_details(
+    timing: object,
+    details: dict[str, Any],
+) -> dict[str, Any]:
     return {
         "status": timing.status,
         "reason": timing.reason,
         "target_fingerprint": timing.target_fingerprint,
         "fingerprint_match": timing.fingerprint_match,
-        "span_days": (
-            None
-            if collection_eligibility is None
-            else collection_eligibility.span_days
-        ),
-        "missing_event_orders": (
-            []
-            if collection_eligibility is None
-            else list(collection_eligibility.missing_event_orders)
-        ),
-        "totobrief_count": (
-            None
-            if collection_eligibility is None
-            else collection_eligibility.totobrief_count
-        ),
-        "provider_count": (
-            None
-            if collection_eligibility is None
-            else collection_eligibility.provider_count
-        ),
-        "earliest_start": (
-            None
-            if collection_eligibility is None
-            else _optional_timestamp(collection_eligibility.earliest_start)
-        ),
-        "latest_start": (
-            None
-            if collection_eligibility is None
-            else _optional_timestamp(collection_eligibility.latest_start)
-        ),
+        **details,
+    }
+
+
+def _stored_timing_details(eligibility: object | None) -> dict[str, Any]:
+    if eligibility is None:
+        return _empty_timing_details(operator_override_count=0)
+    return {
+        "span_days": eligibility.span_days,
+        "missing_event_orders": list(eligibility.missing_event_orders),
+        "totobrief_count": eligibility.totobrief_count,
+        "provider_count": eligibility.provider_count,
+        "operator_override_count": 0,
+        "earliest_start": _optional_timestamp(eligibility.earliest_start),
+        "latest_start": _optional_timestamp(eligibility.latest_start),
+    }
+
+
+def _summary_timing_details(summary: object) -> dict[str, Any]:
+    return {
+        "span_days": summary.span_days,
+        "missing_event_orders": list(summary.missing_event_orders),
+        "totobrief_count": summary.totobrief_count,
+        "provider_count": summary.provider_count,
+        "operator_override_count": summary.operator_override_count,
+        "earliest_start": _optional_timestamp(summary.earliest_start),
+        "latest_start": _optional_timestamp(summary.latest_start),
+    }
+
+
+def _empty_timing_details(
+    *,
+    operator_override_count: int | None = None,
+) -> dict[str, Any]:
+    return {
+        "span_days": None,
+        "missing_event_orders": [],
+        "totobrief_count": None,
+        "provider_count": None,
+        "operator_override_count": operator_override_count,
+        "earliest_start": None,
+        "latest_start": None,
+    }
+
+
+def _timing_override_payload(
+    result: DrawingRunnerResult,
+) -> dict[str, Any] | None:
+    override = result.timing_override
+    if override is None:
+        return None
+    return {
+        "status": override.status,
+        "preflight_catalog_sha256": override.preflight_catalog_sha256,
+        "timing_catalog_sha256": override.timing_catalog_sha256,
+        "package_catalog_sha256": override.package_catalog_sha256,
+        "override_id": override.override_id,
+        "reviewer": override.reviewer,
+        "reviewed_at": _optional_timestamp(override.reviewed_at),
+        "source_ref": override.source_ref,
+        "overlay_complete": override.overlay_complete,
+        "applied_events": [
+            {
+                "event_order": event.event_order,
+                "event_id": event.event_id,
+                "starts_at": _timestamp(event.starts_at),
+                "source_ref": event.source_ref,
+            }
+            for event in override.applied_events
+        ],
+        "preserved_event_orders": list(override.preserved_event_orders),
+        "diagnostics": list(override.diagnostics),
     }
 
 
@@ -455,6 +524,10 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
     if ev_run is None:
         return {
             "computed": False,
+            "requested_bank": result.config.bank,
+            "effective_budget": None,
+            "selected_cost": None,
+            "unused_requested_bank": None,
             "input_fetched_at": None,
             "minimum_gross_ev": None,
             "prize_fund_factor": None,
@@ -465,24 +538,33 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
             "model_warning": None,
             "package": {
                 "decision": "NO BET",
+                "decision_reason": result.terminal_reason,
                 "coupons": [],
-                "selected_count": 0,
-                "cost": 0,
-                "unused_bank": result.config.bank,
-                "expected_payout": 0.0,
+                "selected_count": None,
+                "cost": None,
+                "unused_bank": None,
+                "expected_payout": None,
                 "modeled_roi": None,
                 "derived_brief": [],
             },
             "sensitivity": [],
         }
     package = ev_run.package
+    _validate_computed_ev_payload(result)
     selected_coupons = (
         package.coupons
         if result.decision in ("PLAY", "RESEARCH ONLY")
         else ()
     )
+    decision_reason = package.decision_reason
+    if package.decision == "NO BET" and decision_reason is None:
+        decision_reason = result.terminal_reason
     return {
         "computed": True,
+        "requested_bank": ev_run.requested_bank,
+        "effective_budget": ev_run.effective_budget,
+        "selected_cost": ev_run.selected_cost,
+        "unused_requested_bank": ev_run.unused_requested_bank,
         "input_fetched_at": ev_run.ev_input.fetched_at,
         "minimum_gross_ev": ev_run.config.min_gross_ev,
         "prize_fund_factor": ev_run.config.prize_fund_factor,
@@ -493,6 +575,7 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
         "model_warning": ev_run.model_warning,
         "package": {
             "decision": package.decision,
+            "decision_reason": decision_reason,
             "coupons": [
                 {
                     "rank": coupon.rank,
@@ -523,6 +606,49 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
             for row in ev_run.sensitivity
         ],
     }
+
+
+def _validate_computed_ev_payload(result: DrawingRunnerResult) -> None:
+    ev_run = result.ev_run
+    assert ev_run is not None
+    package = ev_run.package
+    requested_bank = ev_run.requested_bank
+    effective_budget = ev_run.effective_budget
+    selected_cost = ev_run.selected_cost
+    selected_count = len(package.coupons)
+
+    if requested_bank != result.config.bank:
+        raise ValueError("EV requested bank must match runner requested bank")
+    if (
+        type(effective_budget) is not int
+        or effective_budget < 0
+        or effective_budget > requested_bank
+        or effective_budget % result.config.stake
+    ):
+        raise ValueError("EV effective budget must be an exact stake-aligned cap")
+    if selected_cost != package.cost:
+        raise ValueError("EV selected cost must match package cost")
+    if selected_cost != selected_count * result.config.stake:
+        raise ValueError("EV selected cost must match selected coupon count")
+    if selected_cost > effective_budget:
+        raise ValueError("EV selected cost cannot exceed effective budget")
+    if ev_run.unused_requested_bank != requested_bank - selected_cost:
+        raise ValueError("EV unused requested bank is inconsistent")
+    if package.unused_bank != ev_run.unused_requested_bank:
+        raise ValueError("EV package unused bank is inconsistent")
+    if result.decision == "PLAY" and (
+        ev_run.config.effective_budget is None
+        or effective_budget <= 0
+        or selected_count <= 0
+        or selected_cost <= 0
+    ):
+        raise ValueError(
+            "PLAY requires a positive explicit effective budget and selected package"
+        )
+    if package.decision == "NO BET" and (
+        selected_count != 0 or selected_cost != 0
+    ):
+        raise ValueError("NO BET must not contain a selected package")
 
 
 def _warnings(result: DrawingRunnerResult) -> list[str]:
@@ -590,22 +716,7 @@ def _render_markdown(payload: dict[str, Any]) -> str:
             "",
             "## Timing Eligibility",
             "",
-            f"- status: {eligibility['status']}",
-            f"- reason: {eligibility['reason']}",
-            "- fingerprint match: "
-            f"{_yes_no(eligibility['fingerprint_match'])}",
-            "- target fingerprint: "
-            f"{_display(eligibility['target_fingerprint'])}",
-            f"- span days: {_display(eligibility['span_days'])}",
-            "- TotoBrief timing count: "
-            f"{_display(eligibility['totobrief_count'])}",
-            "- provider timing count: "
-            f"{_display(eligibility['provider_count'])}",
-            "- missing event orders: "
-            f"{_display_list(eligibility['missing_event_orders'])}",
-            "- earliest start: "
-            f"{_display(eligibility['earliest_start'])}",
-            f"- latest start: {_display(eligibility['latest_start'])}",
+            *_timing_eligibility_markdown(eligibility),
             "",
             "## Coverage Audit",
             "",
@@ -653,6 +764,47 @@ def _collection_markdown(collection: dict[str, Any] | None) -> list[str]:
     ]
 
 
+def _timing_eligibility_markdown(eligibility: dict[str, Any]) -> list[str]:
+    raw = eligibility["raw"]
+    effective = eligibility["effective"]
+    return [
+        f"- raw status: {raw['status']}",
+        f"- raw reason: {raw['reason']}",
+        f"- raw fingerprint match: {_yes_no(raw['fingerprint_match'])}",
+        f"- raw target fingerprint: {_display(raw['target_fingerprint'])}",
+        f"- raw span days: {_display(raw['span_days'])}",
+        f"- raw TotoBrief timing count: {_display(raw['totobrief_count'])}",
+        f"- raw provider timing count: {_display(raw['provider_count'])}",
+        "- raw operator override count: "
+        f"{_display(raw['operator_override_count'])}",
+        "- raw missing event orders: "
+        f"{_display_list(raw['missing_event_orders'])}",
+        f"- raw earliest start: {_display(raw['earliest_start'])}",
+        f"- raw latest start: {_display(raw['latest_start'])}",
+        f"- effective status: {effective['status']}",
+        f"- effective reason: {effective['reason']}",
+        "- effective fingerprint match: "
+        f"{_yes_no(effective['fingerprint_match'])}",
+        "- effective target fingerprint: "
+        f"{_display(effective['target_fingerprint'])}",
+        f"- effective span days: {_display(effective['span_days'])}",
+        "- effective TotoBrief timing count: "
+        f"{_display(effective['totobrief_count'])}",
+        "- effective provider timing count: "
+        f"{_display(effective['provider_count'])}",
+        "- effective operator override count: "
+        f"{_display(effective['operator_override_count'])}",
+        "- effective missing event orders: "
+        f"{_display_list(effective['missing_event_orders'])}",
+        f"- effective earliest start: {_display(effective['earliest_start'])}",
+        f"- effective latest start: {_display(effective['latest_start'])}",
+        "",
+        "### Timing Override",
+        "",
+        *_timing_override_markdown(eligibility["override"]),
+    ]
+
+
 def _coverage_markdown(coverage: dict[str, Any] | None) -> list[str]:
     if coverage is None:
         return ["- coverage audit not run"]
@@ -669,23 +821,63 @@ def _coverage_markdown(coverage: dict[str, Any] | None) -> list[str]:
     ]
 
 
+def _timing_override_markdown(override: dict[str, Any] | None) -> list[str]:
+    if override is None:
+        return ["- no timing override catalog supplied"]
+    lines = [
+        f"- status: {override['status']}",
+        "- preflight catalog SHA-256: "
+        f"{_display(override['preflight_catalog_sha256'])}",
+        "- timing catalog SHA-256: "
+        f"{_display(override['timing_catalog_sha256'])}",
+        "- package catalog SHA-256: "
+        f"{_display(override['package_catalog_sha256'])}",
+        f"- override ID: {_display(override['override_id'])}",
+        f"- reviewer: {_display(override['reviewer'])}",
+        f"- reviewed at: {_display(override['reviewed_at'])}",
+        f"- source: {_display(override['source_ref'])}",
+        f"- complete overlay: {_yes_no(override['overlay_complete'])}",
+        "- preserved event orders: "
+        f"{_display_list(override['preserved_event_orders'])}",
+        f"- diagnostics: {_display_list(override['diagnostics'])}",
+    ]
+    if not override["applied_events"]:
+        lines.append("- applied events: none")
+        return lines
+    lines.extend(
+        [
+            "",
+            "| Order | Event ID | UTC start | Source |",
+            "| ---: | ---: | --- | --- |",
+        ]
+    )
+    for event in override["applied_events"]:
+        lines.append(
+            f"| {event['event_order']} | {event['event_id']} | "
+            f"{event['starts_at']} | {event['source_ref']} |"
+        )
+    return lines
+
+
 def _ev_markdown(ev: dict[str, Any]) -> list[str]:
     package = ev["package"]
     lines = [
+        f"- EV package computation: {'computed' if ev['computed'] else 'not run'}",
         f"- decision: {package['decision']}",
-        f"- selected count: {package['selected_count']}",
-        f"- cost: {package['cost']}",
-        f"- unused bank: {package['unused_bank']}",
-        f"- expected payout: {package['expected_payout']}",
+        f"- decision reason: {_display(package['decision_reason'])}",
+        f"- requested bank: {ev['requested_bank']}",
+        f"- effective cap: {_display(ev['effective_budget'])}",
+        f"- selected count: {_display(package['selected_count'])}",
+        f"- selected cost: {_display(ev['selected_cost'])}",
+        f"- cost: {_display(package['cost'])}",
+        "- unused requested bank: "
+        f"{_display(ev['unused_requested_bank'])}",
+        f"- unused bank: {_display(package['unused_bank'])}",
+        f"- expected payout: {_display(package['expected_payout'])}",
         f"- modeled ROI: {_display(package['modeled_roi'])}",
     ]
     if not ev["computed"]:
-        lines.extend(
-            [
-                "- EV package computation: not run",
-                "- selected coupons: none",
-            ]
-        )
+        lines.append("- selected coupons: none")
         return lines
     lines.extend(
         [

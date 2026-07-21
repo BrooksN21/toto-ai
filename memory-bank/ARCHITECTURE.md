@@ -83,6 +83,8 @@ Important modules:
   self-dilution support gate. Sensitivity surfaces are processed sequentially;
   only scalar summaries and the requested main surface/package are retained.
   It does not consult SQLite.
+- `toto_ai.external_odds.timing_overrides`: reviewed timing override catalog
+  loading, strict catalog provenance, and overlay validation.
 - `toto_ai.external_odds.domain` and `toto_ai.external_odds.targets`:
   provider-neutral immutable external-odds records, strict TotoBrief
   drawing-target parsing with explicit nullable event start times, explicit
@@ -91,7 +93,7 @@ Important modules:
 - `toto_ai.external_odds.consensus`: strict football full-time and hockey
   regulation-time three-way market validation, duplicate bookmaker rejection,
   per-book de-vig, median consensus, and explicit minimum-bookmaker fallback.
-- `toto_ai.external_odds.collection` and `toto_ai.external_odds.storage`:
+- `toto_ai.external_odds.timing_overrides` and `toto_ai.external_odds.collection` and `toto_ai.external_odds.storage`:
   deterministic 15-event prospective external-odds collection, explicit
   event-level TotoBrief BK fallback, provider quota/request/cache provenance,
   and append-only SQLAlchemy persistence for immutable collection snapshots.
@@ -142,6 +144,12 @@ Important modules:
   matrix additionally covers ordinary two-day, day-five expansion, partial
   schedule failure, confirmed multi-day, and unresolved drawings through
   collection, SQLite reload, audit/report, and playable/research output.
+- `toto_ai.runner.reports`, `toto_ai.runner.orchestration`,
+  `toto_ai.runner.scheduler`, `toto_ai.runner.models`:
+  schema v3 runner manifests, raw/effective timing boundary, strict parsing,
+  immutable run-scoped artifacts, and deadline-driven scheduler phases
+  (`T-45`, `T-30`, `T-15`, `T-10`) with terminal markers
+  (`.bet-ready`, `.no-bet`, `.failed`).
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
   frozen-holdout exclusion, pre-result package hashing, complete factor
   rankings reused across dynamic banks and thresholds, cumulative realized
@@ -249,6 +257,11 @@ Important CLI commands:
   all-artifact transaction: pre-commit `BaseException` restores/removes every
   child and runner artifact, while a committed publication is success. Every
   `NO BET` omits the EV child report and linked coupon strings. Runner manifest
-  schema v2 remains the first structured computed/suppressed `ev` contract;
-  schema v1 used `ev: null` when EV did not run. The command never submits a
-  bet.
+  now uses schema v3 raw/effective timing and budget provenance. Historical
+  schema v2 output files are legacy. The command never submits a bet.
+- `scheduler-plan`: build immutable scheduler plans, wrapper scripts, and
+  LaunchAgent files for the fixed phase boundaries (`T-45`, `T-30`, `T-15`,
+  `T-10`).
+- `scheduler-execute`: execute preflight/fallback/final/freeze phases from a
+  signed schedule, strictly parse runner manifests, and only publish an
+  actionable package when freeze publishes `.bet-ready`.

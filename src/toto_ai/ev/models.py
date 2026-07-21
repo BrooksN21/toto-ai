@@ -51,13 +51,30 @@ class EVConfig:
     min_gross_ev: float = 1.0
     prize_fund_factor: float = 1.0
     possible_winnings: float | None = None
+    effective_budget: int | None = None
 
     def __post_init__(self) -> None:
         validate_config_bank(self.bank, self.stake)
+        if self.effective_budget is None:
+            return
+        if type(self.effective_budget) is not int or self.effective_budget < 0:
+            raise ValueError("effective_budget must be a non-negative int")
+        if self.effective_budget > self.bank:
+            raise ValueError("effective_budget cannot exceed bank")
+        if self.effective_budget % self.stake:
+            raise ValueError("effective_budget must be divisible by stake")
+
+    @property
+    def requested_bank(self) -> int:
+        return self.bank
+
+    @property
+    def selection_budget(self) -> int:
+        return self.bank if self.effective_budget is None else self.effective_budget
 
     @property
     def max_coupons(self) -> int:
-        return validate_config_bank(self.bank, self.stake)
+        return self.selection_budget // self.stake
 
 
 @dataclass(frozen=True)
@@ -191,7 +208,13 @@ class EVPackage:
     expected_payout: float
     modeled_roi: float | None
     derived_brief: tuple[str, ...]
+    decision_reason: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "coupons", tuple(self.coupons))
         object.__setattr__(self, "derived_brief", tuple(self.derived_brief))
+        if self.decision_reason is not None and (
+            not isinstance(self.decision_reason, str)
+            or not self.decision_reason.strip()
+        ):
+            raise ValueError("decision_reason must be non-empty when present")

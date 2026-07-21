@@ -33,7 +33,21 @@ from toto_ai.external_odds.prospective import (
     ProspectiveCollectionPass,
     ProspectiveCollectionResult,
 )
-from toto_ai.runner import DrawingRunnerConfig, DrawingRunnerResult, pin_drawing
+from toto_ai.external_odds.timing_overrides import (
+    TimingOverrideCatalog,
+    TimingOverrideEvent,
+    TimingOverrideRecord,
+    classify_timing_snapshot,
+    drawing_timing_snapshot_from_collection,
+    overlay_timing_override,
+    timing_override_catalog_sha256,
+)
+from toto_ai.runner import (
+    DrawingRunnerConfig,
+    DrawingRunnerResult,
+    TimingOverrideAudit,
+    pin_drawing,
+)
 from toto_ai.runner.reports import (
     DrawingRunPublication,
     RunnerReportLinks,
@@ -50,11 +64,15 @@ PREFLIGHT_AT = DEADLINE - timedelta(minutes=20)
 FINAL_STARTED_AT = DEADLINE - timedelta(minutes=19)
 
 
-def _target() -> TargetDrawing:
+def _target(
+    *,
+    drawing_id: int = 11953,
+    drawing_number: int = 4945,
+) -> TargetDrawing:
     events = tuple(
         TargetEvent(
-            drawing_id=11953,
-            drawing_number=4945,
+            drawing_id=drawing_id,
+            drawing_number=drawing_number,
             event_id=20000 + order,
             event_order=order,
             sport="football",
@@ -70,8 +88,8 @@ def _target() -> TargetDrawing:
         for order in range(15)
     )
     return TargetDrawing(
-        drawing_id=11953,
-        drawing_number=4945,
+        drawing_id=drawing_id,
+        drawing_number=drawing_number,
         deadline=DEADLINE,
         fetched_at=PREFLIGHT_AT,
         events=events,
@@ -250,8 +268,10 @@ def _runner_result(
     coupon: str = "UNIQUE-COUPON",
     *,
     top_coupon: str | None = None,
+    target: TargetDrawing | None = None,
+    effective_budget: int | None = 90,
 ) -> DrawingRunnerResult:
-    target = _target()
+    target = target or _target()
     pinned = pin_drawing(target)
     collection = _collection(target)
     mode = "research" if decision == "RESEARCH ONLY" else "playable"
@@ -274,7 +294,12 @@ def _runner_result(
         fingerprint_match=True,
     )
     ev_run = EVPackageRun(
-        config=EVConfig(bank=4980, stake=30, mode=mode),
+        config=EVConfig(
+            bank=4980,
+            stake=30,
+            mode=mode,
+            effective_budget=effective_budget,
+        ),
         ev_input=EVInput(
             drawing_id=target.drawing_id,
             drawing_number=target.drawing_number,
@@ -340,6 +365,59 @@ def _runner_result(
         timing_eligibility=timing,
         audit=_audit(collection),
         ev_run=ev_run,
+    )
+
+
+def _runner_result_with_override(decision: str) -> DrawingRunnerResult:
+    result = _runner_result(decision, coupon="SELECTED-COUPON")
+    assert result.collection is not None
+    target = result.target.target
+    record = TimingOverrideRecord(
+        schema_version=1,
+        override_id="drawing-4945-reviewed-timing-v1",
+        drawing_id=target.drawing_id,
+        drawing_number=None,
+        target_fingerprint=result.target.fingerprint,
+        reviewer="operator@example.test",
+        reviewed_at=PREFLIGHT_AT,
+        source_ref="offline-review:drawing-4945",
+        events=tuple(
+            TimingOverrideEvent(
+                event_order=event.event_order,
+                event_id=event.event_id,
+                starts_at=event.starts_at,
+            )
+            for event in target.events
+        ),
+    )
+    catalog = TimingOverrideCatalog(records=(record,))
+    catalog_hash = timing_override_catalog_sha256(catalog)
+    raw_snapshot = drawing_timing_snapshot_from_collection(
+        result.collection.snapshot
+    )
+    overlay = overlay_timing_override(raw_snapshot, catalog)
+    assert overlay.complete_overlay is True
+    audit = TimingOverrideAudit(
+        status="applied",
+        preflight_catalog_sha256=catalog_hash,
+        timing_catalog_sha256=catalog_hash,
+        package_catalog_sha256=catalog_hash,
+        override_id=record.override_id,
+        reviewer=record.reviewer,
+        reviewed_at=record.reviewed_at,
+        source_ref=record.source_ref,
+        overlay_complete=True,
+        applied_events=(),
+        preserved_event_orders=tuple(range(15)),
+        diagnostics=tuple(
+            f"{item.code}: {item.message}" for item in overlay.diagnostics
+        ),
+        overlay_summary=classify_timing_snapshot(overlay.snapshot),
+    )
+    return replace(
+        result,
+        raw_timing_eligibility=result.timing_eligibility,
+        timing_override=audit,
     )
 
 
@@ -713,7 +791,7 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
     payload = json.loads(json_path.read_text())
     markdown = markdown_path.read_text()
 
-    assert payload["schema_version"] == 2
+    assert payload["schema_version"] == 3
     assert payload["run_id"] == drawing_run_id(result)
     assert payload["decision"] == "PLAY"
     assert payload["command_status"] == "success"
@@ -729,8 +807,15 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
     assert payload["collection"]["pass_count"] == 1
     assert payload["collection"]["total_requests"] == 4
     assert payload["eligibility"]["status"] == "playable"
-    assert payload["eligibility"]["span_days"] == 2
+    assert payload["eligibility"]["raw"] == payload["eligibility"]["effective"]
+    assert payload["eligibility"]["raw"]["span_days"] == 2
+    assert payload["eligibility"]["raw"]["operator_override_count"] == 0
+    assert payload["eligibility"]["override"] is None
     assert payload["coverage"]["gate_decision"] == "PENDING"
+    assert payload["ev"]["requested_bank"] == 4980
+    assert payload["ev"]["effective_budget"] == 90
+    assert payload["ev"]["selected_cost"] == 30
+    assert payload["ev"]["unused_requested_bank"] == 4950
     assert payload["ev"]["package"]["coupons"] == [
         {
             "coupon": "SELECTED-COUPON",
@@ -759,28 +844,64 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
     assert "SELECTED-COUPON" in markdown
     assert "api-sports" in markdown
     assert "PENDING" in markdown
+    assert "schema version: 3" in markdown
+    assert "no timing override catalog supplied" in markdown
 
 
-def test_schema_v2_structures_computed_and_suppressed_ev_results(tmp_path):
-    computed_json, _ = write_drawing_run_reports(
+def test_schema_v3_has_stable_timing_and_budget_shapes_with_or_without_override(
+    tmp_path,
+):
+    non_override_json, _ = write_drawing_run_reports(
         _runner_result("PLAY", coupon="SELECTED-COUPON"),
+        report_dir=tmp_path / "non-override",
+    )
+    computed_json, _ = write_drawing_run_reports(
+        _runner_result_with_override("PLAY"),
         report_dir=tmp_path / "computed",
     )
+    suppressed_result = replace(
+        _runner_result_with_override("PLAY"),
+        decision="NO BET",
+        terminal_reason="timing override package was suppressed for test",
+        ev_finished_at=None,
+        finished_at=FINAL_STARTED_AT + timedelta(seconds=3),
+        ev_run=None,
+    )
     suppressed_json, _ = write_drawing_run_reports(
-        _terminal_result(final_target=None),
+        suppressed_result,
         report_dir=tmp_path / "suppressed",
     )
 
+    non_override = json.loads(non_override_json.read_text())
     computed = json.loads(computed_json.read_text())
     suppressed = json.loads(suppressed_json.read_text())
 
-    assert computed["schema_version"] == 2
+    assert non_override["schema_version"] == 3
+    assert non_override["eligibility"]["raw"] == (
+        non_override["eligibility"]["effective"]
+    )
+    assert non_override["eligibility"]["override"] is None
+    assert non_override["ev"]["requested_bank"] == 4980
+    assert non_override["ev"]["effective_budget"] == 90
+    assert non_override["ev"]["selected_cost"] == 30
+    assert non_override["ev"]["unused_requested_bank"] == 4950
+    assert computed["schema_version"] == 3
     assert computed["ev"]["computed"] is True
     assert computed["ev"]["input_fetched_at"] == (
         FINAL_STARTED_AT + timedelta(seconds=4)
     ).isoformat()
+    assert computed["eligibility"]["raw"] == computed["eligibility"]["effective"]
+    assert computed["eligibility"]["override"]["status"] == "applied"
+    assert computed["eligibility"]["override"]["override_id"] == (
+        "drawing-4945-reviewed-timing-v1"
+    )
+    assert computed["ev"]["requested_bank"] == 4980
+    assert computed["ev"]["effective_budget"] == 90
+    assert computed["ev"]["selected_cost"] == 30
+    assert computed["ev"]["unused_requested_bank"] == 4950
     assert computed["ev"]["package"] == {
         "decision": "PLAY",
+        "decision_reason": None,
         "coupons": [
             {
                 "coupon": "SELECTED-COUPON",
@@ -797,8 +918,9 @@ def test_schema_v2_structures_computed_and_suppressed_ev_results(tmp_path):
         "derived_brief": ["1"] * 15,
     }
 
-    # Schema v1 used null when EV was not computed; schema v2 owns this shape.
-    assert suppressed["schema_version"] == 2
+    assert suppressed["schema_version"] == 3
+    assert suppressed["eligibility"]["raw"] == suppressed["eligibility"]["effective"]
+    assert suppressed["eligibility"]["override"]["status"] == "applied"
     assert suppressed["ev"] == {
         "computed": False,
         "input_fetched_at": None,
@@ -809,18 +931,120 @@ def test_schema_v2_structures_computed_and_suppressed_ev_results(tmp_path):
         "self_dilution_ratio": None,
         "model_supported": None,
         "model_warning": None,
+        "requested_bank": 4980,
+        "effective_budget": None,
+        "selected_cost": None,
+        "unused_requested_bank": None,
         "package": {
             "decision": "NO BET",
+            "decision_reason": "timing override package was suppressed for test",
             "coupons": [],
-            "selected_count": 0,
-            "cost": 0,
-            "unused_bank": 4980,
-            "expected_payout": 0.0,
+            "selected_count": None,
+            "cost": None,
+            "unused_bank": None,
+            "expected_payout": None,
             "modeled_roi": None,
             "derived_brief": [],
         },
         "sensitivity": [],
     }
+
+
+def test_schema_v3_computed_no_bet_preserves_known_budget_and_reason(tmp_path):
+    result = _runner_result("NO BET")
+
+    json_path, _ = write_drawing_run_reports(result, report_dir=tmp_path)
+    ev = json.loads(json_path.read_text())["ev"]
+
+    assert ev["computed"] is True
+    assert ev["requested_bank"] == 4980
+    assert ev["effective_budget"] == 90
+    assert ev["selected_cost"] == 0
+    assert ev["unused_requested_bank"] == 4980
+    assert ev["package"]["decision"] == "NO BET"
+    assert ev["package"]["decision_reason"] == result.terminal_reason
+    assert ev["package"]["selected_count"] == 0
+    assert ev["package"]["cost"] == 0
+
+
+def test_schema_v3_non_override_not_computed_uses_explicit_null_provenance(
+    tmp_path,
+):
+    result = _terminal_result(final_target=None)
+
+    json_path, markdown_path = write_drawing_run_reports(
+        result,
+        report_dir=tmp_path,
+    )
+    payload = json.loads(json_path.read_text())
+    ev = payload["ev"]
+    markdown = markdown_path.read_text()
+
+    assert payload["schema_version"] == 3
+    assert payload["eligibility"]["raw"] == payload["eligibility"]["effective"]
+    assert payload["eligibility"]["override"] is None
+    assert ev["computed"] is False
+    assert ev["requested_bank"] == 4980
+    assert ev["effective_budget"] is None
+    assert ev["selected_cost"] is None
+    assert ev["unused_requested_bank"] is None
+    assert ev["package"]["decision"] == "NO BET"
+    assert ev["package"]["decision_reason"] == result.terminal_reason
+    assert ev["package"]["selected_count"] is None
+    assert ev["package"]["cost"] is None
+    assert ev["package"]["unused_bank"] is None
+    assert f"decision reason: {result.terminal_reason}" in markdown
+    assert "effective cap: n/a" in markdown
+    assert "selected cost: n/a" in markdown
+    assert "unused requested bank: n/a" in markdown
+
+
+def test_schema_v3_preserves_drawing_4950_exact_effective_cap_810(tmp_path):
+    result = _runner_result(
+        "PLAY",
+        coupon="DRAWING-4950-SELECTED",
+        target=_target(drawing_id=11964, drawing_number=4950),
+        effective_budget=810,
+    )
+
+    json_path, _ = write_drawing_run_reports(result, report_dir=tmp_path)
+    payload = json.loads(json_path.read_text())
+
+    assert payload["schema_version"] == 3
+    assert payload["target"]["drawing_number"] == 4950
+    assert payload["ev"]["requested_bank"] == 4980
+    assert payload["ev"]["effective_budget"] == 810
+    assert payload["ev"]["selected_cost"] == 30
+    assert payload["ev"]["unused_requested_bank"] == 4950
+    assert payload["ev"]["package"]["selected_count"] == 1
+
+
+@pytest.mark.parametrize("effective_budget", [None, 0])
+def test_schema_v3_rejects_play_without_positive_explicit_effective_budget(
+    tmp_path,
+    effective_budget,
+):
+    result = _runner_result("PLAY", effective_budget=effective_budget)
+
+    with pytest.raises(ValueError, match="effective budget"):
+        write_drawing_run_reports(result, report_dir=tmp_path)
+
+
+def test_schema_v3_rejects_selected_cost_count_mismatch(tmp_path):
+    result = _runner_result("PLAY")
+    assert result.ev_run is not None
+    bad_package = replace(
+        result.ev_run.package,
+        cost=60,
+        unused_bank=4920,
+    )
+    bad_result = replace(
+        result,
+        ev_run=replace(result.ev_run, package=bad_package),
+    )
+
+    with pytest.raises(ValueError, match="selected coupon count"):
+        write_drawing_run_reports(bad_result, report_dir=tmp_path)
 
 
 def test_mismatch_report_serializes_observed_final_fingerprint(tmp_path):

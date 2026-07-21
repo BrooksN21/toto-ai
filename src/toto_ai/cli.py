@@ -1,9 +1,10 @@
 import math
 import os
 import subprocess
+import sys
 import time
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -78,6 +79,16 @@ from toto_ai.external_odds.prospective import (
 from toto_ai.external_odds.reports import write_external_coverage_reports
 from toto_ai.external_odds.storage import load_current_drawing_eligibility
 from toto_ai.external_odds.targets import parse_target_drawing
+from toto_ai.external_odds.timing_overrides import (
+    PinnedTimingOverrideCatalog,
+    TimingOverrideRecord,
+    TimingSnapshotSummary,
+    check_pinned_timing_override_catalog,
+    classify_timing_snapshot,
+    drawing_timing_snapshot_from_collection,
+    overlay_timing_override,
+    pin_timing_override_catalog,
+)
 from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.brief_backtest import (
     run_brief_backtest,
@@ -115,14 +126,27 @@ from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
 from toto_ai.path_safety import probe_writable_directory, validate_output_paths
 from toto_ai.runner import (
+    DEFAULT_MINIMUM_GROSS_EV,
+    AppliedTimingOverrideEvent,
+    CommandSchedulerPhaseRunner,
     DrawingRunnerConfig,
     DrawingRunPublication,
     PinnedDrawing,
     RunnerTargetMismatch,
+    RunnerTimingResolution,
+    SchedulerError,
+    SimulatedSchedulerPhaseRunner,
+    TimingOverrideAudit,
+    VirtualSchedulerClock,
+    build_scheduler_plan,
     drawing_run_candidate_paths,
+    execute_scheduler_plan,
+    load_scheduler_plan,
     pin_drawing,
+    prepare_scheduler_artifacts,
     publish_drawing_run_artifacts,
     run_drawing,
+    scheduler_plan_json,
 )
 
 app = typer.Typer(help="TotoBrief API commands.")
@@ -708,6 +732,295 @@ def _build_runner_timing_resolver(
     return resolve
 
 
+def _resolve_runner_timing_override(
+    pinned: PinnedDrawing,
+    collection: ProspectiveCollectionResult,
+    raw: PlayTimingEligibility,
+    catalog_pin: PinnedTimingOverrideCatalog,
+) -> RunnerTimingResolution:
+    """Apply one strict, immutable timing overlay to the collected snapshot."""
+
+    if not isinstance(pinned, PinnedDrawing):
+        raise ValueError("pinned must be a PinnedDrawing")
+    if not isinstance(collection, ProspectiveCollectionResult):
+        raise ValueError("collection must be a ProspectiveCollectionResult")
+    if not isinstance(raw, PlayTimingEligibility):
+        raise ValueError("raw must be a PlayTimingEligibility")
+    if not isinstance(catalog_pin, PinnedTimingOverrideCatalog):
+        raise ValueError("catalog_pin must be a PinnedTimingOverrideCatalog")
+
+    raw_snapshot = drawing_timing_snapshot_from_collection(collection.snapshot)
+    if (
+        raw_snapshot.drawing_id != pinned.target.drawing_id
+        or raw_snapshot.drawing_number != pinned.target.drawing_number
+        or raw_snapshot.target_fingerprint != pinned.fingerprint
+    ):
+        raise ValueError("raw collection timing does not match the pinned target")
+    raw_summary = classify_timing_snapshot(raw_snapshot)
+    raw_exact = (
+        raw.status in {"playable", "multi_day", "unknown"}
+        and raw.fingerprint_match
+        and raw.target_fingerprint == pinned.fingerprint
+        and raw.status == raw_summary.status
+    )
+    if not raw_exact:
+        return _unusable_runner_timing_override(
+            raw=raw,
+            pinned=pinned,
+            status="not_applied",
+            catalog_pin=catalog_pin,
+            timing_catalog_sha256=None,
+            diagnostics=(
+                "raw stored timing is not an exact match for the collected snapshot",
+            ),
+        )
+
+    if not catalog_pin.valid:
+        return _unusable_runner_timing_override(
+            raw=raw,
+            pinned=pinned,
+            status="invalid_catalog",
+            catalog_pin=catalog_pin,
+            timing_catalog_sha256=None,
+            diagnostics=(catalog_pin.validation_error or "invalid catalog",),
+        )
+
+    catalog_check = check_pinned_timing_override_catalog(catalog_pin)
+    if not catalog_check.matches_preflight or catalog_check.catalog is None:
+        diagnostics = (
+            catalog_check.validation_error
+            or "catalog semantic hash changed after preflight",
+        )
+        return _unusable_runner_timing_override(
+            raw=raw,
+            pinned=pinned,
+            status="catalog_changed",
+            catalog_pin=catalog_pin,
+            timing_catalog_sha256=catalog_check.observed_sha256,
+            diagnostics=diagnostics,
+        )
+
+    overlay = overlay_timing_override(raw_snapshot, catalog_check.catalog)
+    record = _override_record_for_overlay(catalog_check.catalog.records, overlay)
+    diagnostics = tuple(
+        f"{item.code}: {item.message}" for item in overlay.diagnostics
+    )
+    if not overlay.complete_overlay or record is None:
+        return RunnerTimingResolution(
+            raw=raw,
+            effective=_unknown_override_eligibility(
+                pinned,
+                "timing override did not produce one complete exact overlay",
+            ),
+            override=_timing_override_audit(
+                status="not_applied",
+                catalog_pin=catalog_pin,
+                timing_catalog_sha256=catalog_check.observed_sha256,
+                package_catalog_sha256=None,
+                record=record,
+                overlay_complete=overlay.complete_overlay,
+                applied_event_orders=overlay.applied_event_orders,
+                preserved_event_orders=overlay.preserved_event_orders,
+                diagnostics=diagnostics or ("override was not applied",),
+                overlay_summary=None,
+            ),
+        )
+
+    overlay_summary = classify_timing_snapshot(overlay.snapshot)
+    effective = _play_timing_from_summary(
+        overlay_summary,
+        pinned.fingerprint,
+    )
+    return RunnerTimingResolution(
+        raw=raw,
+        effective=effective,
+        override=_timing_override_audit(
+            status="applied",
+            catalog_pin=catalog_pin,
+            timing_catalog_sha256=catalog_check.observed_sha256,
+            package_catalog_sha256=None,
+            record=record,
+            overlay_complete=True,
+            applied_event_orders=overlay.applied_event_orders,
+            preserved_event_orders=overlay.preserved_event_orders,
+            diagnostics=diagnostics,
+            overlay_summary=overlay_summary,
+        ),
+    )
+
+
+def _verify_runner_timing_override(
+    resolution: RunnerTimingResolution,
+    catalog_pin: PinnedTimingOverrideCatalog,
+) -> RunnerTimingResolution:
+    """Bind package generation to the same strict semantic catalog hash."""
+
+    if not isinstance(resolution, RunnerTimingResolution):
+        raise ValueError("resolution must be a RunnerTimingResolution")
+    audit = resolution.override
+    if audit is None or audit.status != "applied":
+        return resolution
+    catalog_check = check_pinned_timing_override_catalog(catalog_pin)
+    if (
+        catalog_check.catalog is None
+        or not catalog_check.matches_preflight
+        or catalog_check.observed_sha256 != audit.preflight_catalog_sha256
+    ):
+        diagnostic = (
+            catalog_check.validation_error
+            or "catalog semantic hash changed before package generation"
+        )
+        return RunnerTimingResolution(
+            raw=resolution.raw,
+            effective=PlayTimingEligibility(
+                status="unknown",
+                reason="timing override catalog changed before package generation",
+                target_fingerprint=resolution.effective.target_fingerprint,
+                fingerprint_match=True,
+            ),
+            override=replace(
+                audit,
+                status="catalog_changed",
+                package_catalog_sha256=None,
+                diagnostics=(*audit.diagnostics, diagnostic),
+            ),
+        )
+    return RunnerTimingResolution(
+        raw=resolution.raw,
+        effective=resolution.effective,
+        override=replace(
+            audit,
+            package_catalog_sha256=catalog_check.observed_sha256,
+        ),
+    )
+
+
+def _unusable_runner_timing_override(
+    *,
+    raw: PlayTimingEligibility,
+    pinned: PinnedDrawing,
+    status: str,
+    catalog_pin: PinnedTimingOverrideCatalog,
+    timing_catalog_sha256: str | None,
+    diagnostics: tuple[str, ...],
+) -> RunnerTimingResolution:
+    return RunnerTimingResolution(
+        raw=raw,
+        effective=_unknown_override_eligibility(
+            pinned,
+            "timing override is unavailable or does not exactly match the target",
+        ),
+        override=_timing_override_audit(
+            status=status,
+            catalog_pin=catalog_pin,
+            timing_catalog_sha256=timing_catalog_sha256,
+            package_catalog_sha256=None,
+            record=None,
+            overlay_complete=False,
+            applied_event_orders=(),
+            preserved_event_orders=(),
+            diagnostics=diagnostics,
+            overlay_summary=None,
+        ),
+    )
+
+
+def _timing_override_audit(
+    *,
+    status: str,
+    catalog_pin: PinnedTimingOverrideCatalog,
+    timing_catalog_sha256: str | None,
+    package_catalog_sha256: str | None,
+    record: TimingOverrideRecord | None,
+    overlay_complete: bool,
+    applied_event_orders: tuple[int, ...],
+    preserved_event_orders: tuple[int, ...],
+    diagnostics: tuple[str, ...],
+    overlay_summary: TimingSnapshotSummary | None,
+) -> TimingOverrideAudit:
+    record_events = {} if record is None else {
+        event.event_order: event for event in record.events
+    }
+    applied_events = tuple(
+        AppliedTimingOverrideEvent(
+            event_order=order,
+            event_id=record_events[order].event_id,
+            starts_at=record_events[order].starts_at,
+            source_ref=record_events[order].source_ref or record.source_ref,
+        )
+        for order in applied_event_orders
+    )
+    return TimingOverrideAudit(
+        status=status,  # type: ignore[arg-type]
+        preflight_catalog_sha256=catalog_pin.catalog_sha256,
+        timing_catalog_sha256=timing_catalog_sha256,
+        package_catalog_sha256=package_catalog_sha256,
+        override_id=None if record is None else record.override_id,
+        reviewer=None if record is None else record.reviewer,
+        reviewed_at=None if record is None else record.reviewed_at,
+        source_ref=None if record is None else record.source_ref,
+        overlay_complete=overlay_complete,
+        applied_events=applied_events,
+        preserved_event_orders=preserved_event_orders,
+        diagnostics=diagnostics,
+        overlay_summary=overlay_summary,
+    )
+
+
+def _override_record_for_overlay(
+    records: tuple[TimingOverrideRecord, ...],
+    overlay: object,
+) -> TimingOverrideRecord | None:
+    override_id = getattr(overlay, "override_id", None)
+    if override_id is None:
+        diagnostic_ids = {
+            item.override_id
+            for item in getattr(overlay, "diagnostics", ())
+            if item.override_id is not None
+        }
+        if len(diagnostic_ids) == 1:
+            override_id = diagnostic_ids.pop()
+    matches = tuple(record for record in records if record.override_id == override_id)
+    return matches[0] if len(matches) == 1 else None
+
+
+def _unknown_override_eligibility(
+    pinned: PinnedDrawing,
+    reason: str,
+) -> PlayTimingEligibility:
+    return PlayTimingEligibility(
+        status="unknown",
+        reason=reason,
+        target_fingerprint=pinned.fingerprint,
+        fingerprint_match=True,
+    )
+
+
+def _play_timing_from_summary(
+    summary: TimingSnapshotSummary,
+    fingerprint: str,
+) -> PlayTimingEligibility:
+    if summary.status == "playable":
+        reason = (
+            "complete reviewed timing overlay resolves all 15 event starts "
+            f"within {summary.span_days} Moscow calendar date"
+        )
+    elif summary.status == "multi_day":
+        reason = (
+            "complete reviewed timing overlay spans "
+            f"{summary.span_days} Moscow calendar days"
+        )
+    else:
+        missing = ",".join(str(order) for order in summary.missing_event_orders)
+        reason = f"effective timing remains unresolved for event orders {missing}"
+    return PlayTimingEligibility(
+        status=summary.status,
+        reason=reason,
+        target_fingerprint=fingerprint,
+        fingerprint_match=True,
+    )
+
+
 def _resolve_runner_target(
     client: TotoBriefClient,
     resolved_at: datetime,
@@ -778,6 +1091,7 @@ class _RunnerResources:
     ev_timing_resolver: Callable[
         [Mapping[str, object]], PlayTimingEligibility
     ]
+    timing_override_pin: PinnedTimingOverrideCatalog | None
 
 
 def _prepare_runner_resources(
@@ -790,6 +1104,7 @@ def _prepare_runner_resources(
     report_dir: str | Path,
     cache_root: str | Path,
     provider_factory: Callable[[Path], object],
+    timing_overrides: str | Path | None = None,
 ) -> _RunnerResources:
     candidate_paths = drawing_run_candidate_paths(
         config,
@@ -797,13 +1112,23 @@ def _prepare_runner_resources(
         preflight_at,
         report_dir,
     )
+    protected_paths = (
+        (db, aliases)
+        if timing_overrides is None
+        else (db, aliases, timing_overrides)
+    )
     validate_output_paths(
         candidate_paths,
-        protected_paths=(db, aliases),
+        protected_paths=protected_paths,
         protected_roots=(cache_root,),
     )
     probe_writable_directory(report_dir)
     probe_writable_directory(cache_root)
+    timing_override_pin = (
+        None
+        if timing_overrides is None
+        else pin_timing_override_catalog(timing_overrides)
+    )
     provider_factory(Path(cache_root))
 
     engine = init_db(db)
@@ -819,11 +1144,20 @@ def _prepare_runner_resources(
         readonly_session_factory=readonly_session_factory,
         timing_resolver=_build_runner_timing_resolver(str(db)),
         ev_timing_resolver=_build_timing_eligibility_resolver(str(db)),
+        timing_override_pin=timing_override_pin,
     )
 
 
 def _utc_now_datetime() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def _require_override_resolution(
+    resolution: RunnerTimingResolution | None,
+) -> RunnerTimingResolution:
+    if not isinstance(resolution, RunnerTimingResolution):
+        raise ValueError("effective timing override was not resolved")
+    return resolution
 
 
 @app.command("run-drawing")
@@ -838,6 +1172,7 @@ def run_drawing_command(
     report_dir: str = typer.Option("reports"),
     provider: str = typer.Option("api-sports"),
     aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    timing_overrides: str | None = typer.Option(None, "--timing-overrides"),
     quota_reserve: int = typer.Option(10, min=0),
     max_passes: int = typer.Option(3, min=1),
     max_expansion_passes: int = typer.Option(3, min=1),
@@ -870,6 +1205,7 @@ def run_drawing_command(
         client = TotoBriefClient()
         provider_factory = _api_sports_provider_factory(api_key, quota_reserve)
         resources: _RunnerResources | None = None
+        timing_resolution: RunnerTimingResolution | None = None
 
         def require_resources() -> _RunnerResources:
             if resources is None:
@@ -890,7 +1226,38 @@ def run_drawing_command(
                 report_dir=report_dir,
                 cache_root=cache_root,
                 provider_factory=provider_factory,
+                timing_overrides=timing_overrides,
             )
+
+        def resolve_timing_override(
+            target: PinnedDrawing,
+            collection: ProspectiveCollectionResult,
+            raw: PlayTimingEligibility,
+        ) -> RunnerTimingResolution:
+            nonlocal timing_resolution
+            catalog_pin = require_resources().timing_override_pin
+            if catalog_pin is None:
+                raise ValueError("timing override catalog was not preflighted")
+            timing_resolution = _resolve_runner_timing_override(
+                target,
+                collection,
+                raw,
+                catalog_pin,
+            )
+            return timing_resolution
+
+        def verify_timing_override(
+            resolution: RunnerTimingResolution,
+        ) -> RunnerTimingResolution:
+            nonlocal timing_resolution
+            catalog_pin = require_resources().timing_override_pin
+            if catalog_pin is None:
+                raise ValueError("timing override catalog was not preflighted")
+            timing_resolution = _verify_runner_timing_override(
+                resolution,
+                catalog_pin,
+            )
+            return timing_resolution
 
         def collect_target(target, stop_at):
             prepared = require_resources()
@@ -961,6 +1328,10 @@ def run_drawing_command(
                     progress_callback=update_progress,
                     timing_eligibility_resolver=(
                         require_resources().ev_timing_resolver
+                        if timing_overrides is None
+                        else lambda _payload: _require_override_resolution(
+                            timing_resolution
+                        ).effective
                     ),
                 ),
                 now=_utc_now_datetime,
@@ -968,6 +1339,16 @@ def run_drawing_command(
                 sleep=time.sleep,
                 progress_callback=update_progress,
                 preflight_check=preflight_check,
+                resolve_timing_override=(
+                    resolve_timing_override
+                    if timing_overrides is not None
+                    else None
+                ),
+                verify_timing_override=(
+                    verify_timing_override
+                    if timing_overrides is not None
+                    else None
+                ),
             )
     except KeyboardInterrupt:
         command_error = typer.BadParameter(
@@ -997,7 +1378,11 @@ def run_drawing_command(
         publication = publish_drawing_run_artifacts(
             result,
             report_dir=report_dir,
-            protected_paths=(db, aliases),
+            protected_paths=(
+                (db, aliases)
+                if timing_overrides is None
+                else (db, aliases, timing_overrides)
+            ),
             protected_roots=(cache_root,),
             now=_utc_now_datetime,
         )
@@ -1025,7 +1410,119 @@ def run_drawing_command(
     runner_paths = publication.runner
     print(f"Decision: {result.decision}")
     print(f"Reason: {result.terminal_reason}")
+    raw_timing = getattr(result, "raw_timing_eligibility", None)
+    effective_timing = getattr(result, "timing_eligibility", None)
+    if raw_timing is not None:
+        print(f"Raw timing: {raw_timing.status}")
+    if effective_timing is not None:
+        print(f"Effective timing: {effective_timing.status}")
     print(f"Reports written to {runner_paths[0]} and {runner_paths[1]}")
+
+
+@app.command("scheduler-plan")
+def scheduler_plan_command(
+    drawing: int = typer.Option(..., min=1),
+    ended_at: str = typer.Option(..., "--ended-at"),
+    bank: int = typer.Option(..., min=1),
+    output_dir: str = typer.Option(..., "--output-dir"),
+    drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
+    stake: int = typer.Option(30, min=1),
+    minimum_gross_ev: float = typer.Option(
+        DEFAULT_MINIMUM_GROSS_EV,
+        "--min-gross-ev",
+    ),
+    db: str = typer.Option("data/toto.db"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    timing_overrides: str | None = typer.Option(None, "--timing-overrides"),
+    quota_reserve: int = typer.Option(10, min=0),
+    max_passes: int = typer.Option(3, min=1),
+    max_expansion_passes: int = typer.Option(3, min=1),
+    retry_delay_seconds: float = typer.Option(65.0, min=0.0),
+    python_executable: str = typer.Option(
+        sys.executable,
+        "--python-executable",
+        help=(
+            "Current Python executable or exact project .venv interpreter "
+            "used by generated scheduler artifacts."
+        ),
+    ),
+    dry_run: bool = typer.Option(False, "--dry-run"),
+) -> None:
+    """Prepare a tracked T-45/T-30/T-15/T-10 scheduler plan."""
+    try:
+        plan = build_scheduler_plan(
+            drawing=drawing,
+            drawing_id=drawing_id,
+            ended_at=ended_at,
+            bank=bank,
+            stake=stake,
+            minimum_gross_ev=minimum_gross_ev,
+            output_dir=output_dir,
+            db=db,
+            aliases=aliases,
+            timing_overrides=timing_overrides,
+            quota_reserve=quota_reserve,
+            max_passes=max_passes,
+            max_expansion_passes=max_expansion_passes,
+            retry_delay_seconds=retry_delay_seconds,
+        )
+        if dry_run:
+            typer.echo(scheduler_plan_json(plan), nl=False)
+            return
+        artifacts = prepare_scheduler_artifacts(
+            plan,
+            python_command=python_executable,
+        )
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(f"Plan: {artifacts.plan_path}")
+    print(f"Wrapper: {artifacts.wrapper_path}")
+    print(f"LaunchAgent candidate: {artifacts.launch_agent_path}")
+    print("LaunchAgent was generated only; install/load it manually if desired.")
+
+
+@app.command("scheduler-execute")
+def scheduler_execute_command(
+    plan: str = typer.Option(..., "--plan"),
+    run_id: str | None = typer.Option(None, "--run-id"),
+    dry_run: bool = typer.Option(False, "--dry-run"),
+    simulate: bool = typer.Option(False, "--simulate"),
+) -> None:
+    """Execute a scheduler plan or perform a network-free simulation."""
+    try:
+        scheduler_plan = load_scheduler_plan(plan)
+        if dry_run:
+            typer.echo(scheduler_plan_json(scheduler_plan), nl=False)
+            return
+        if simulate:
+            clock = VirtualSchedulerClock(scheduler_plan.preflight_at)
+            phase_runner = SimulatedSchedulerPhaseRunner()
+            now = clock.now
+            sleeper = clock.sleep
+        else:
+            phase_runner = CommandSchedulerPhaseRunner()
+            now = _utc_now_datetime
+            sleeper = time.sleep
+        result = execute_scheduler_plan(
+            scheduler_plan,
+            phase_runner=phase_runner,
+            now=now,
+            sleep=sleeper,
+            run_id=run_id,
+        )
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(f"Outcome: {result.outcome}")
+    print(f"Decision: {result.decision}")
+    print(f"Reason: {result.reason}")
+    print(f"Status: {result.status_path}")
+    if result.package_path is not None:
+        print(f"Operator package: {result.package_path}")
+        print(f"Package SHA-256: {result.package_sha256}")
+    if result.outcome == "failed":
+        raise typer.Exit(code=1)
 
 
 @app.command("ev-package")
@@ -2413,9 +2910,12 @@ def _ev_package_summary_table(result: EVPackageRun) -> Table:
     table.add_column("Value", justify="right")
     rows = (
         ("decision", package.decision),
+        ("requested bank", result.requested_bank),
+        ("effective cap", result.effective_budget),
         ("selected coupons", len(package.coupons)),
         ("cost", package.cost),
         ("unused bank", package.unused_bank),
+        ("unused requested bank", result.unused_requested_bank),
         ("expected payout", f"{package.expected_payout:.6f}"),
         ("modeled ROI", modeled_roi),
         ("self-dilution ratio", f"{result.self_dilution_ratio:.6f}"),
