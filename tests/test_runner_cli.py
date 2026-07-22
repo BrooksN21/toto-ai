@@ -21,7 +21,10 @@ from toto_ai.runner import (
     DrawingRunnerConfig,
     DrawingRunnerResult,
     RunnerReportLinks,
+    SchedulerPhaseContext,
     VirtualSchedulerClock,
+    build_run_drawing_phase_command,
+    build_scheduler_plan,
     parse_runner_manifest_phase_result,
     pin_drawing,
 )
@@ -120,6 +123,7 @@ def _invoke_command_direct() -> None:
         bank=4980,
         stake=30,
         mode="playable",
+        minimum_gross_ev=1.0,
         final_lead_minutes=20,
         safety_stop_minutes=5,
         db="custom.db",
@@ -475,7 +479,7 @@ def test_run_drawing_wires_only_approved_options_and_fresh_dependencies(monkeypa
     assert "--reuse-cache" not in runner.invoke(
         cli.app, ["run-drawing", "--help"]
     ).output
-    assert "--min-gross-ev" not in runner.invoke(
+    assert "--min-gross-ev" in runner.invoke(
         cli.app, ["run-drawing", "--help"]
     ).output
 
@@ -543,6 +547,7 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "--bank",
         "--stake",
         "--mode",
+        "--min-gross-ev",
         "--final-lead-minutes",
         "--safety-stop-minutes",
         "--db",
@@ -562,7 +567,6 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "--fresh",
         "--expand-missing-starts",
         "--expansion-horizon-days",
-        "--min-gross-ev",
         "--prize-fund-factor",
         "--possible-winnings",
         "--jackpot",
@@ -587,9 +591,10 @@ def test_run_drawing_exposes_exact_approved_option_surface():
             "replay_as_of": None,
             "replay_root": None,
             "stake": 30,
-        "mode": "playable",
-        "final_lead_minutes": 20,
-        "safety_stop_minutes": 5,
+            "mode": "playable",
+            "minimum_gross_ev": 1.0,
+            "final_lead_minutes": 20,
+            "safety_stop_minutes": 5,
             "db": None,
             "report_dir": None,
         "provider": "api-sports",
@@ -601,6 +606,40 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "retry_delay_seconds": 65.0,
             "cache_root": None,
     }
+
+
+def test_scheduler_generated_run_drawing_argv_matches_cli_contract(
+    monkeypatch,
+    tmp_path,
+):
+    captured = _wire_runner(monkeypatch, result=_RunnerResult("NO BET"))
+    plan = build_scheduler_plan(
+        drawing=5001,
+        drawing_id=12001,
+        ended_at="2030-01-02T12:00:00Z",
+        bank=4980,
+        minimum_gross_ev=1.07,
+        output_dir=tmp_path / "scheduler",
+    )
+    work_dir = tmp_path / "scheduler" / "work"
+    context = SchedulerPhaseContext(
+        phase="final",
+        plan=plan,
+        run_id="contract",
+        run_dir=work_dir.parent,
+        work_dir=work_dir,
+        scheduled_at=plan.final_at,
+        started_at=plan.final_at,
+    )
+    command = build_run_drawing_phase_command(context)
+    argv = list(command[command.index("run-drawing") :])
+
+    result = runner.invoke(cli.app, argv)
+
+    assert result.exit_code == 0, result.output
+    assert result.exit_code != 2
+    captured["build_package"](_pinned_target())
+    assert captured["ev"]["config"].min_gross_ev == 1.07
 
 
 @pytest.mark.parametrize(
@@ -657,6 +696,7 @@ def test_run_drawing_prints_actionable_decisions_and_rich_progress(
         (["--bank", "61", "--stake", "20"], "divisible"),
         (["--bank", "60", "--final-lead-minutes", "5"], "greater"),
         (["--bank", "60", "--safety-stop-minutes", "0"], "x>=1"),
+        (["--bank", "60", "--min-gross-ev", "nan"], "must be finite"),
         (["--bank", "60", "--provider", "other"], "provider must be api-sports"),
     ],
 )

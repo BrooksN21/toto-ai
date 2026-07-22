@@ -120,3 +120,11 @@
   operational evidence. The sidecar hash and timestamp form the cache commit
   marker; missing or mismatched pairs fail closed. Explicit sidecar-free test
   fixtures remain limited to non-production offline replay.
+- Scheduler credentials are not data artifacts. Generated plans, plists, and
+  logs must not contain `API_SPORTS_KEY`; only a validated env-file path may be
+  persisted. The env file must be a current-user-owned regular non-symlink file
+  with permissions no broader than `0600`, and the wrapper revalidates it at
+  execution time.
+- A scheduled expected drawing number is compared only with the fresh
+  TotoBrief page-one open candidate. It is not inferred from historical SQLite
+  state and is checked before requesting detail or writing preparation/pins.

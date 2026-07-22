@@ -43,6 +43,8 @@ RUNNER_MANIFEST_SCHEMA_VERSION = 4
 SCHEDULER_PLAN_FILENAME = "scheduler-plan.json"
 SCHEDULER_WRAPPER_FILENAME = "run-scheduler.sh"
 SCHEDULER_LAUNCH_AGENT_FILENAME = "totoai-scheduler.plist"
+MORNING_WRAPPER_FILENAME = "run-morning-preanalysis.sh"
+MORNING_LAUNCH_AGENT_FILENAME = "totoai-morning-preanalysis.plist"
 PACKAGE_CSV_HEADER = ("rank", "coupon", "gross_ev", "net_ev")
 DEFAULT_MINIMUM_GROSS_EV = EVConfig(
     bank=30,
@@ -105,6 +107,7 @@ class SchedulerPlan:
     db: Path = Path("data/toto.db")
     aliases: Path = Path("data/external-odds/team-aliases.json")
     timing_overrides: Path | None = None
+    env_file: Path | None = None
     provider: str = "api-sports"
     quota_reserve: int = 10
     max_passes: int = 3
@@ -145,6 +148,12 @@ class SchedulerPlan:
                 self,
                 "timing_overrides",
                 _normalized_path(self.timing_overrides),
+            )
+        if self.env_file is not None:
+            object.__setattr__(
+                self,
+                "env_file",
+                _normalized_path(self.env_file),
             )
         if self.provider != "api-sports":
             raise ValueError("provider must be api-sports")
@@ -223,6 +232,11 @@ class SchedulerPlan:
                     None
                     if self.timing_overrides is None
                     else str(self.timing_overrides)
+                ),
+                **(
+                    {}
+                    if self.env_file is None
+                    else {"env_file": str(self.env_file)}
                 ),
             },
         }
@@ -374,6 +388,12 @@ class SchedulerArtifacts:
     launch_agent_path: Path
 
 
+@dataclass(frozen=True)
+class MorningPreanalysisArtifacts:
+    wrapper_path: Path
+    launch_agent_path: Path
+
+
 def build_scheduler_plan(
     *,
     drawing: int,
@@ -386,6 +406,7 @@ def build_scheduler_plan(
     db: str | Path = "data/toto.db",
     aliases: str | Path = "data/external-odds/team-aliases.json",
     timing_overrides: str | Path | None = None,
+    env_file: str | Path | None = None,
     provider: str = "api-sports",
     quota_reserve: int = 10,
     max_passes: int = 3,
@@ -407,6 +428,7 @@ def build_scheduler_plan(
         timing_overrides=(
             None if timing_overrides is None else Path(timing_overrides)
         ),
+        env_file=None if env_file is None else Path(env_file),
         provider=provider,
         quota_reserve=quota_reserve,
         max_passes=max_passes,
@@ -466,11 +488,13 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         },
         "config",
     )
-    paths = _exact_mapping(
-        payload["paths"],
-        {"output_dir", "db", "aliases", "timing_overrides"},
-        "paths",
-    )
+    raw_paths = payload["paths"]
+    if not isinstance(raw_paths, Mapping):
+        raise ValueError("paths must be a JSON object")
+    path_keys = {"output_dir", "db", "aliases", "timing_overrides"}
+    if "env_file" in raw_paths:
+        path_keys.add("env_file")
+    paths = _exact_mapping(raw_paths, path_keys, "paths")
     plan = build_scheduler_plan(
         drawing=target["drawing"],
         drawing_id=target["drawing_id"],
@@ -482,6 +506,7 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         db=paths["db"],
         aliases=paths["aliases"],
         timing_overrides=paths["timing_overrides"],
+        env_file=paths.get("env_file"),
         provider=config["provider"],
         quota_reserve=config["quota_reserve"],
         max_passes=config["max_passes"],
@@ -526,6 +551,8 @@ def prepare_scheduler_artifacts(
         sys.executable if python_command is None else python_command
     )
     output_dir = plan.output_dir
+    if plan.env_file is not None:
+        _require_secure_env_file(plan.env_file)
     _ensure_output_directory(output_dir, output_dir)
     _reject_unsafe_output_descendants(output_dir)
     logs_dir = output_dir / "logs"
@@ -544,6 +571,7 @@ def prepare_scheduler_artifacts(
         wrapper = _render_scheduler_wrapper(
             plan_path=plan_path,
             python_executable=python_executable,
+            env_file=plan.env_file,
         )
         _write_exclusive_atomic(
             output_dir,
@@ -554,8 +582,7 @@ def prepare_scheduler_artifacts(
         created.append(wrapper_path)
         launch_agent = _render_launch_agent(
             plan,
-            plan_path=plan_path,
-            python_executable=python_executable,
+            wrapper_path=wrapper_path,
             logs_dir=logs_dir,
         )
         _write_exclusive_atomic(output_dir, launch_agent_path, launch_agent)
@@ -569,6 +596,88 @@ def prepare_scheduler_artifacts(
         wrapper_path=wrapper_path,
         launch_agent_path=launch_agent_path,
     )
+
+
+def prepare_morning_preanalysis_artifacts(
+    *,
+    expected_drawing_number: int,
+    times: Sequence[str],
+    retry_count: int,
+    retry_delay_seconds: float,
+    output_dir: str | Path,
+    env_file: str | Path,
+    project_root: str | Path,
+    python_command: str | Path | None = None,
+) -> MorningPreanalysisArtifacts:
+    """Generate, but never install, a non-betting morning launchd candidate."""
+    _require_positive_int("expected_drawing_number", expected_drawing_number)
+    _require_non_negative_int("retry_count", retry_count)
+    if (
+        not isinstance(retry_delay_seconds, (int, float))
+        or isinstance(retry_delay_seconds, bool)
+        or not math.isfinite(float(retry_delay_seconds))
+        or float(retry_delay_seconds) < 0
+    ):
+        raise ValueError("retry_delay_seconds must be finite and non-negative")
+    parsed_times = tuple(dict.fromkeys(_parse_morning_time(value) for value in times))
+    if not parsed_times:
+        raise ValueError("at least one morning time is required")
+    root = _normalized_path(project_root)
+    _require_directory_no_symlink(root, name="project root")
+    rehearsal_root = root / "reports" / "rehearsal"
+    destination = _normalized_path(output_dir)
+    _require_contained_path(
+        root,
+        destination,
+        name="morning preanalysis output",
+    )
+    _require_contained_path(
+        rehearsal_root,
+        destination,
+        name="morning preanalysis output",
+    )
+    environment_path = _normalized_path(env_file)
+    _require_secure_env_file(environment_path)
+    python_executable = _validated_python_executable(
+        sys.executable if python_command is None else python_command
+    )
+
+    _ensure_output_directory(destination, destination)
+    _reject_unsafe_output_descendants(destination)
+    logs_dir = destination / "logs"
+    _ensure_output_directory(destination, logs_dir)
+    wrapper_path = destination / MORNING_WRAPPER_FILENAME
+    launch_agent_path = destination / MORNING_LAUNCH_AGENT_FILENAME
+    created: list[Path] = []
+    try:
+        wrapper = _render_morning_preanalysis_wrapper(
+            expected_drawing_number=expected_drawing_number,
+            retry_count=retry_count,
+            retry_delay_seconds=float(retry_delay_seconds),
+            env_file=environment_path,
+            project_root=root,
+            python_executable=python_executable,
+        )
+        _write_exclusive_atomic(
+            destination,
+            wrapper_path,
+            wrapper.encode("utf-8"),
+            mode=0o755,
+        )
+        created.append(wrapper_path)
+        launch_agent = _render_morning_launch_agent(
+            expected_drawing_number=expected_drawing_number,
+            times=parsed_times,
+            wrapper_path=wrapper_path,
+            logs_dir=logs_dir,
+        )
+        _write_exclusive_atomic(destination, launch_agent_path, launch_agent)
+        created.append(launch_agent_path)
+    except BaseException:
+        for path in reversed(created):
+            _unlink_output_path(destination, path)
+        raise
+    return MorningPreanalysisArtifacts(wrapper_path, launch_agent_path)
 
 
 def execute_scheduler_plan(
@@ -3282,14 +3391,24 @@ def _render_package_csv(rows: Sequence[tuple[int, str, float, float]]) -> bytes:
 
 
 def _render_scheduler_wrapper(
-    *, plan_path: Path, python_executable: str
+    *,
+    plan_path: Path,
+    python_executable: str,
+    env_file: Path | None,
 ) -> str:
     executable_arg = shlex.quote(python_executable)
     plan_arg = shlex.quote(str(plan_path))
     return (
-        "#!/bin/sh\n"
-        "set -eu\n"
-        f"exec {executable_arg} -m toto_ai.cli scheduler-execute "
+        "#!/bin/sh\nset -eu\numask 077\n"
+        + (
+            ""
+            if env_file is None
+            else _render_secure_env_prelude(
+                env_file=env_file,
+                python_executable=python_executable,
+            )
+        )
+        + f"exec {executable_arg} -m toto_ai.cli scheduler-execute "
         f"--plan {plan_arg} \"$@\"\n"
     )
 
@@ -3297,21 +3416,13 @@ def _render_scheduler_wrapper(
 def _render_launch_agent(
     plan: SchedulerPlan,
     *,
-    plan_path: Path,
-    python_executable: str,
+    wrapper_path: Path,
     logs_dir: Path,
 ) -> bytes:
     local_start = plan.preflight_at.astimezone()
     payload = {
         "Label": f"com.totoai.production-scheduler.{plan.plan_id}",
-        "ProgramArguments": [
-            python_executable,
-            "-m",
-            "toto_ai.cli",
-            "scheduler-execute",
-            "--plan",
-            str(plan_path),
-        ],
+        "ProgramArguments": [str(wrapper_path)],
         "RunAtLoad": False,
         "StartCalendarInterval": {
             "Year": local_start.year,
@@ -3324,6 +3435,127 @@ def _render_launch_agent(
         "StandardErrorPath": str(logs_dir / "scheduler.stderr.log"),
     }
     return plistlib.dumps(payload, fmt=plistlib.FMT_XML, sort_keys=True)
+
+
+def _render_morning_preanalysis_wrapper(
+    *,
+    expected_drawing_number: int,
+    retry_count: int,
+    retry_delay_seconds: float,
+    env_file: Path,
+    project_root: Path,
+    python_executable: str,
+) -> str:
+    executable = shlex.quote(python_executable)
+    command = " ".join(
+        shlex.quote(value)
+        for value in (
+            python_executable,
+            "-m",
+            "toto_ai.cli",
+            "sync-prepare",
+            "--open",
+            "--expected-drawing-number",
+            str(expected_drawing_number),
+            "--db",
+            str(project_root / "data" / "toto.db"),
+            "--aliases",
+            str(project_root / "data" / "external-odds" / "team-aliases.json"),
+            "--raw-cache-dir",
+            str(project_root / "data" / "raw"),
+            "--totobrief-rate-state",
+            str(
+                project_root
+                / "data"
+                / "totobrief-cache"
+                / "request-state.json"
+            ),
+            "--cache-root",
+            str(project_root / "data" / "external-cache" / "api-sports"),
+        )
+    )
+    return (
+        "#!/bin/sh\n"
+        "set -eu\n"
+        "umask 077\n"
+        + _render_secure_env_prelude(
+            env_file=env_file,
+            python_executable=python_executable,
+        )
+        + f"cd {shlex.quote(str(project_root))}\n"
+        + "attempt=0\n"
+        + "while :; do\n"
+        + f"  if {command}; then\n"
+        + "    exit 0\n"
+        + "  else\n"
+        + "    status=$?\n"
+        + "  fi\n"
+        + f"  if [ \"$attempt\" -ge {retry_count} ]; then\n"
+        + "    exit \"$status\"\n"
+        + "  fi\n"
+        + "  attempt=$((attempt + 1))\n"
+        + f"  {executable} -c 'import time; time.sleep({retry_delay_seconds!r})'\n"
+        + "done\n"
+    )
+
+
+def _render_morning_launch_agent(
+    *,
+    expected_drawing_number: int,
+    times: Sequence[tuple[int, int]],
+    wrapper_path: Path,
+    logs_dir: Path,
+) -> bytes:
+    payload = {
+        "Label": (
+            "com.totoai.morning-preanalysis."
+            f"{expected_drawing_number}"
+        ),
+        "ProgramArguments": [str(wrapper_path)],
+        "RunAtLoad": False,
+        "StartCalendarInterval": [
+            {"Hour": hour, "Minute": minute} for hour, minute in times
+        ],
+        "StandardOutPath": str(logs_dir / "morning.stdout.log"),
+        "StandardErrorPath": str(logs_dir / "morning.stderr.log"),
+    }
+    return plistlib.dumps(payload, fmt=plistlib.FMT_XML, sort_keys=True)
+
+
+def _render_secure_env_prelude(
+    *,
+    env_file: Path,
+    python_executable: str,
+) -> str:
+    environment_arg = shlex.quote(str(env_file))
+    executable_arg = shlex.quote(python_executable)
+    return (
+        f"ENV_FILE={environment_arg}\n"
+        f"{executable_arg} - \"$ENV_FILE\" <<'PY'\n"
+        "import os\n"
+        "import stat\n"
+        "import sys\n"
+        "path = sys.argv[1]\n"
+        "try:\n"
+        "    metadata = os.lstat(path)\n"
+        "except OSError:\n"
+        "    raise SystemExit('scheduler env file is missing or inaccessible')\n"
+        "if stat.S_ISLNK(metadata.st_mode):\n"
+        "    raise SystemExit('scheduler env file must not be a symlink')\n"
+        "if not stat.S_ISREG(metadata.st_mode):\n"
+        "    raise SystemExit('scheduler env file must be a regular file')\n"
+        "if metadata.st_uid != os.getuid():\n"
+        "    raise SystemExit('scheduler env file must be owned by current user')\n"
+        "if stat.S_IMODE(metadata.st_mode) & ~0o600:\n"
+        "    raise SystemExit('scheduler env file mode must be no broader than 0600')\n"
+        "PY\n"
+        ". \"$ENV_FILE\"\n"
+        "if [ -z \"${API_SPORTS_KEY:-}\" ]; then\n"
+        "  echo 'API_SPORTS_KEY is required in scheduler env file' >&2\n"
+        "  exit 78\n"
+        "fi\n"
+        "export API_SPORTS_KEY\n"
+    )
 
 
 def _validate_preflight_inputs(plan: SchedulerPlan) -> None:
@@ -3986,6 +4218,34 @@ def _require_regular_file(
         raise SchedulerError(f"{name} must not be a symlink")
     if not stat.S_ISREG(metadata.st_mode):
         raise SchedulerError(f"{name} must be a regular file")
+
+
+def _require_secure_env_file(path: Path) -> None:
+    try:
+        metadata = os.lstat(path)
+    except OSError as error:
+        raise SchedulerError(
+            "scheduler env file must be an existing regular file"
+        ) from error
+    if stat.S_ISLNK(metadata.st_mode):
+        raise SchedulerError("scheduler env file must not be a symlink")
+    if not stat.S_ISREG(metadata.st_mode):
+        raise SchedulerError("scheduler env file must be a regular file")
+    if metadata.st_uid != os.getuid():
+        raise SchedulerError("scheduler env file must be owned by current user")
+    if stat.S_IMODE(metadata.st_mode) & ~0o600:
+        raise SchedulerError(
+            "scheduler env file mode must be no broader than 0600"
+        )
+
+
+def _parse_morning_time(value: object) -> tuple[int, int]:
+    if not isinstance(value, str) or re.fullmatch(r"\d{2}:\d{2}", value) is None:
+        raise ValueError("morning time must use HH:MM")
+    hour, minute = (int(part) for part in value.split(":"))
+    if not 0 <= hour <= 23 or not 0 <= minute <= 59:
+        raise ValueError("morning time must use a valid 24-hour HH:MM value")
+    return hour, minute
 
 
 def _ensure_output_directory(output_root: Path, directory: Path) -> None:

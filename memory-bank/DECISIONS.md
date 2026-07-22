@@ -263,6 +263,10 @@
   fetched page one. A stale SQLite open row absent from page one is never used.
   `--sync-only` performs strict synchronization diagnostics without API-Sports
   preparation or pin writes.
+- Scheduled preparation additionally pins the expected visible drawing number.
+  `--expected-drawing-number` is checked immediately after fresh page-one open
+  selection and before detail fetch, API-Sports work, or pin writes. A mismatch
+  is a fail-closed scheduling error rather than permission to reuse SQLite.
 - TotoBrief `start_at = null` is never replaced with a fabricated timestamp.
   The existing bounded provider-date expansion supplies preparation evidence.
 - Multi-day timing acceptance is deterministic and must forbid real network
@@ -273,6 +277,19 @@
   collection, exact stored timing, diagnostic coverage audit, existing EV, and
   rollback-safe linked reports. It never submits a bet. T-5 forbids new work
   and suppresses any package that completes at or after the cutoff.
+- The scheduler and runner share one explicit gross-EV threshold contract:
+  scheduler-generated package commands pass `--min-gross-ev`, and
+  `run-drawing` validates and uses that value through the existing decision
+  configuration. The default remains `1.0`.
+- Scheduler credentials are referenced only by secure env-file path. Generated
+  wrappers set `umask 077`, validate ownership/type/mode both at generation and
+  runtime, require non-empty `API_SPORTS_KEY`, and never print its value. A
+  LaunchAgent plist contains only the wrapper path. Generated artifacts are
+  candidates only; this feature does not install or load launchd.
+- Morning preanalysis is operationally separate from evening package
+  scheduling. Its generated wrapper performs guarded synchronization and
+  preparation only, uses bounded retries and isolated rehearsal logs, and is
+  forbidden from creating scheduler/betting markers.
 - Historical/current operational replay is an explicit `run-drawing
   --offline-replay` mode, not an environment switch and not scheduler input.
   It requires exact target/schedule cache envelopes and an aware injected

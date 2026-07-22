@@ -170,6 +170,7 @@ from toto_ai.runner import (
     execute_scheduler_plan,
     load_scheduler_plan,
     pin_drawing,
+    prepare_morning_preanalysis_artifacts,
     prepare_scheduler_artifacts,
     publish_drawing_run_artifacts,
     run_drawing,
@@ -1249,6 +1250,7 @@ def _run_drawing_offline_replay(
     replay_root: str,
     bank: int,
     stake: int,
+    minimum_gross_ev: float,
     final_lead_minutes: int,
     safety_stop_minutes: int,
     db: str | None,
@@ -1275,6 +1277,7 @@ def _run_drawing_offline_replay(
         bank=bank,
         stake=stake,
         mode="research",
+        minimum_gross_ev=minimum_gross_ev,
         final_lead_minutes=final_lead_minutes,
         safety_stop_minutes=safety_stop_minutes,
     )
@@ -1453,6 +1456,10 @@ def run_drawing_command(
     bank: int = typer.Option(...),
     stake: int = typer.Option(30),
     mode: str = typer.Option("playable"),
+    minimum_gross_ev: float = typer.Option(
+        DEFAULT_MINIMUM_GROSS_EV,
+        "--min-gross-ev",
+    ),
     final_lead_minutes: int = typer.Option(20, min=1),
     safety_stop_minutes: int = typer.Option(5, min=1),
     db: str | None = typer.Option(None),
@@ -1495,6 +1502,7 @@ def run_drawing_command(
                 replay_root=replay_root,
                 bank=bank,
                 stake=stake,
+                minimum_gross_ev=minimum_gross_ev,
                 final_lead_minutes=final_lead_minutes,
                 safety_stop_minutes=safety_stop_minutes,
                 db=db,
@@ -1521,6 +1529,7 @@ def run_drawing_command(
             bank=bank,
             stake=stake,
             mode=mode,  # type: ignore[arg-type]
+            minimum_gross_ev=minimum_gross_ev,
             final_lead_minutes=final_lead_minutes,
             safety_stop_minutes=safety_stop_minutes,
         )
@@ -1773,6 +1782,7 @@ def scheduler_plan_command(
     db: str = typer.Option("data/toto.db"),
     aliases: str = typer.Option("data/external-odds/team-aliases.json"),
     timing_overrides: str | None = typer.Option(None, "--timing-overrides"),
+    env_file: str | None = typer.Option(None, "--env-file"),
     quota_reserve: int = typer.Option(10, min=0),
     max_passes: int = typer.Option(3, min=1),
     max_expansion_passes: int = typer.Option(3, min=1),
@@ -1800,6 +1810,7 @@ def scheduler_plan_command(
             db=db,
             aliases=aliases,
             timing_overrides=timing_overrides,
+            env_file=env_file,
             quota_reserve=quota_reserve,
             max_passes=max_passes,
             max_expansion_passes=max_expansion_passes,
@@ -1819,6 +1830,48 @@ def scheduler_plan_command(
     print(f"Wrapper: {artifacts.wrapper_path}")
     print(f"LaunchAgent candidate: {artifacts.launch_agent_path}")
     print("LaunchAgent was generated only; install/load it manually if desired.")
+
+
+@app.command("morning-preanalysis-plan")
+def morning_preanalysis_plan_command(
+    expected_drawing_number: int = typer.Option(
+        ...,
+        "--expected-drawing-number",
+        min=1,
+    ),
+    env_file: str = typer.Option(..., "--env-file"),
+    at: list[str] | None = typer.Option(None, "--at"),  # noqa: B008
+    retry_count: int = typer.Option(2, "--retry-count", min=0),
+    retry_delay_seconds: float = typer.Option(
+        60.0,
+        "--retry-delay-seconds",
+        min=0,
+    ),
+    output_dir: str = typer.Option(..., "--output-dir"),
+    project_root: str | None = typer.Option(None, "--project-root"),
+    python_executable: str = typer.Option(
+        sys.executable,
+        "--python-executable",
+    ),
+) -> None:
+    """Generate a non-betting morning sync/preparation launchd candidate."""
+    try:
+        artifacts = prepare_morning_preanalysis_artifacts(
+            expected_drawing_number=expected_drawing_number,
+            times=tuple(at or ("08:00",)),
+            retry_count=retry_count,
+            retry_delay_seconds=retry_delay_seconds,
+            output_dir=output_dir,
+            env_file=env_file,
+            project_root=project_root or Path.cwd(),
+            python_command=python_executable,
+        )
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(f"Wrapper: {artifacts.wrapper_path}")
+    print(f"LaunchAgent candidate: {artifacts.launch_agent_path}")
+    print("LaunchAgent was generated only; no betting markers are created.")
 
 
 @app.command("scheduler-execute")
@@ -2278,6 +2331,11 @@ def sync_prepare_command(
     open: bool = typer.Option(False, "--open"),  # noqa: A002
     db: str = typer.Option("data/toto.db"),
     community: str = typer.Option("baltbet-main"),
+    expected_drawing_number: int | None = typer.Option(
+        None,
+        "--expected-drawing-number",
+        min=1,
+    ),
     aliases: str = typer.Option("data/external-odds/team-aliases.json"),
     provider: str = typer.Option("api-sports"),
     schedule_cache: str | None = typer.Option(None, "--schedule-cache"),
@@ -2354,6 +2412,7 @@ def sync_prepare_command(
             session_factory,
             now=fetched_at,
             community=community,
+            expected_drawing_number=expected_drawing_number,
             raw_cache_dir=raw_cache_dir,
             detail_cache_max_age_seconds=detail_cache_max_age_seconds,
             storage_root=Path.cwd(),

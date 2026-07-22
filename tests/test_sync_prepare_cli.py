@@ -145,6 +145,87 @@ def test_sync_prepare_help_exposes_rate_and_cache_controls():
     assert "--totobrief-max-retries" in option_names
     assert "--detail-cache-max-age-seconds" in option_names
     assert "--sync-only" in option_names
+    assert "--expected-drawing-number" in option_names
+
+
+def test_sync_prepare_expected_number_mismatch_stops_before_detail_or_prepare(
+    monkeypatch,
+    tmp_path,
+):
+    monkeypatch.chdir(tmp_path)
+    now = datetime.now(timezone.utc)
+    payload = target_payload(now + timedelta(days=1))
+    fake_client = PageOnlyClient(payload)
+    monkeypatch.setattr(cli, "TotoBriefClient", lambda **_kwargs: fake_client)
+    monkeypatch.setattr(
+        cli,
+        "prepare_drawing",
+        lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("mismatch must stop before preparation")
+        ),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "sync-prepare",
+            "--open",
+            "--expected-drawing-number",
+            "4953",
+            "--db",
+            str(tmp_path / "toto.db"),
+            "--raw-cache-dir",
+            str(tmp_path / "raw"),
+            "--totobrief-rate-state",
+            str(tmp_path / "rate.json"),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "expected drawing 4953" in result.output
+    assert "selected 4952" in result.output
+    assert fake_client.page_calls == 1
+    assert fake_client.detail_calls == 0
+
+
+def test_sync_prepare_expected_number_match_is_idempotent(
+    monkeypatch,
+    tmp_path,
+):
+    monkeypatch.chdir(tmp_path)
+    now = datetime.now(timezone.utc)
+    payload = target_payload(now + timedelta(days=1))
+    write_drawing_detail_cache(
+        payload,
+        drawing_id=11970,
+        cache_dir=tmp_path / "raw",
+        fetched_at=now,
+        source="inspect-api",
+        allowed_root=tmp_path,
+    )
+    fake_client = PageOnlyClient(payload)
+    monkeypatch.setattr(cli, "TotoBriefClient", lambda **_kwargs: fake_client)
+
+    arguments = [
+        "sync-prepare",
+        "--open",
+        "--sync-only",
+        "--expected-drawing-number",
+        "4952",
+        "--db",
+        str(tmp_path / "toto.db"),
+        "--raw-cache-dir",
+        str(tmp_path / "raw"),
+        "--totobrief-rate-state",
+        str(tmp_path / "rate.json"),
+    ]
+    first = CliRunner().invoke(cli.app, arguments)
+    second = CliRunner().invoke(cli.app, arguments)
+
+    assert first.exit_code == 0, first.output
+    assert second.exit_code == 0, second.output
+    assert fake_client.page_calls == 2
+    assert fake_client.detail_calls == 0
 
 
 def test_prepare_drawing_uses_synced_local_cache_without_totobrief_client(

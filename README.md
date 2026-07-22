@@ -100,6 +100,58 @@ After a successful morning run, `prepare-drawing --open` uses the synchronized
 local drawing and exact validated cache by default and makes no TotoBrief
 detail request. Use `--refresh-totobrief` only for an explicit remote refresh.
 
+For unattended runs, bind synchronization to the expected visible drawing
+number. The guard is checked against the freshly fetched TotoBrief page-one
+candidate before any detail request, API-Sports preparation, or pin write:
+
+```bash
+.venv/bin/python -m toto_ai.cli sync-prepare \
+  --open \
+  --expected-drawing-number 4953
+```
+
+## Generated Scheduler Artifacts
+
+`scheduler-plan` can generate the evening wrapper and LaunchAgent candidate
+without installing either one. When `--env-file` is supplied, it must be a
+regular non-symlink file owned by the current user with permissions no broader
+than `0600`. The generated wrapper repeats those checks at runtime, requires a
+non-empty `API_SPORTS_KEY`, uses `umask 077`, and never prints or embeds the
+secret. The plist contains only the wrapper path.
+
+```bash
+.venv/bin/python -m toto_ai.cli scheduler-plan \
+  --drawing 4952 \
+  --drawing-id 11970 \
+  --ended-at 2026-07-22T16:00:00Z \
+  --bank 4980 \
+  --stake 30 \
+  --min-gross-ev 1.0 \
+  --env-file /Users/turshevr/toto-ai/.env \
+  --output-dir /Users/turshevr/toto-ai/reports/rehearsal/evening-4952
+```
+
+The generated scheduler command passes the configured `--min-gross-ev` to
+`run-drawing`; the CLI validates the same finite threshold and preserves the
+existing default of `1.0`.
+
+`morning-preanalysis-plan` generates a separate non-betting wrapper and plist
+under `reports/rehearsal`. It runs only `sync-prepare --open` with an exact
+expected drawing number, supports multiple morning times and bounded retries,
+and creates no betting markers. Generation does not install or load launchd:
+
+```bash
+.venv/bin/python -m toto_ai.cli morning-preanalysis-plan \
+  --expected-drawing-number 4953 \
+  --env-file /Users/turshevr/toto-ai/.env \
+  --at 08:00 \
+  --at 10:30 \
+  --retry-count 2 \
+  --retry-delay-seconds 60 \
+  --project-root /Users/turshevr/toto-ai \
+  --output-dir /Users/turshevr/toto-ai/reports/rehearsal/morning-4953
+```
+
 ## Deterministic Offline Drawing Replay
 
 `run-drawing --offline-replay` replays one exact saved target and provider

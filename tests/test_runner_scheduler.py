@@ -4,7 +4,6 @@ import json
 import os
 import plistlib
 import subprocess
-import sys
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -800,14 +799,7 @@ def test_generated_artifacts_are_credential_free_generic_and_exclusive(
     assert json.loads(plan_text)["config"]["minimum_gross_ev"] == 1.0
     assert os.stat(artifacts.wrapper_path).st_mode & 0o111
     launch_agent = plistlib.loads(artifacts.launch_agent_path.read_bytes())
-    assert launch_agent["ProgramArguments"] == [
-        sys.executable,
-        "-m",
-        "toto_ai.cli",
-        "scheduler-execute",
-        "--plan",
-        str(artifacts.plan_path),
-    ]
+    assert launch_agent["ProgramArguments"] == [str(artifacts.wrapper_path)]
     assert launch_agent["Label"].startswith("com.totoai.production-scheduler.")
     with pytest.raises(FileExistsError, match="refusing to overwrite"):
         prepare_scheduler_artifacts(plan)
@@ -827,8 +819,7 @@ def test_generated_artifacts_quote_paths_without_shell_injection(
     artifacts = prepare_scheduler_artifacts(plan)
 
     launch_agent = plistlib.loads(artifacts.launch_agent_path.read_bytes())
-    assert launch_agent["ProgramArguments"][0] == sys.executable
-    assert launch_agent["ProgramArguments"][-1] == str(artifacts.plan_path)
+    assert launch_agent["ProgramArguments"] == [str(artifacts.wrapper_path)]
     subprocess.run(
         [str(artifacts.wrapper_path), "--dry-run"],
         check=True,

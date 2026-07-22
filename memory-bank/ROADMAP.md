@@ -181,6 +181,15 @@
   and chronological backtest tests, including bank utilization and `NO BET`.
 
 ## Phase 7: Production
+- Scheduler operational contracts are implemented but not installed:
+  - scheduler-generated `run-drawing` argv carries the configured finite
+    `--min-gross-ev` threshold;
+  - generated wrappers may securely source a user-owned `0600` env file while
+    plists remain secret-free and wrapper-only;
+  - `sync-prepare --expected-drawing-number` prevents a stale still-open draw
+    from being prepared for the next scheduled target;
+  - a separate morning preanalysis wrapper/plist generator supports multiple
+    times and retries beneath `reports/rehearsal` without betting markers.
 - Systematic team-resolution Phase 2 is implemented:
   - context-aware reviewed team registry and backward-compatible migration;
   - conservative oriented candidate resolution with review-queue fallback;

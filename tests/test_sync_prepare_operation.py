@@ -193,6 +193,35 @@ def test_fresh_page_without_open_candidate_never_falls_back_to_stale_sqlite(
     engine.dispose()
 
 
+def test_expected_visible_number_mismatch_stops_before_detail_fetch(tmp_path):
+    target_cache = json.loads(
+        (FIXTURES / "drawing_4951_totobrief_target_cache.json").read_text()
+    )
+    target_payload = target_cache["payload"]
+    now = datetime(2026, 7, 21, 12, 30, tzinfo=timezone.utc)
+    engine = init_db(tmp_path / "toto.db")
+    factory = get_session_factory(engine)
+    client = PageOnlyClient(target_payload)
+
+    with pytest.raises(ValueError, match="expected drawing 4953.*selected 4951"):
+        synchronize_open_drawing(
+            client,
+            factory,
+            now=now,
+            expected_drawing_number=4953,
+            raw_cache_dir=tmp_path / "raw",
+            storage_root=tmp_path,
+        )
+
+    assert client.page_calls == 1
+    assert client.detail_calls == 0
+    with factory() as session:
+        assert session.scalar(
+            select(Event).where(Event.drawing_id == target_payload["data"]["id"])
+        ) is None
+    engine.dispose()
+
+
 def test_finished_detail_mismatch_fails_before_events_or_pins(tmp_path):
     target_cache = json.loads(
         (FIXTURES / "drawing_4951_totobrief_target_cache.json").read_text()

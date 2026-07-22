@@ -290,6 +290,10 @@ Important CLI commands:
 - `sync-prepare --open --sync-only`: run the same strict TotoBrief selection,
   detail validation, and persistence but stop before API-Sports, preparation,
   or pin writes.
+- `sync-prepare --open --expected-drawing-number N`: require the fresh
+  page-one open candidate to have visible number `N` before detail fetch,
+  preparation, or pin publication. A missing or different drawing fails
+  closed.
 - `research`: print historical analytics.
 - `inspect-events`: inspect event-level pool/BK/result diagnostics.
 - `audit`: audit database quality and completeness.
@@ -374,7 +378,17 @@ Important CLI commands:
   Unresolved output is machine-readable and exits nonzero.
 - `scheduler-plan`: build immutable scheduler plans, wrapper scripts, and
   LaunchAgent files for the fixed phase boundaries (`T-45`, `T-30`, `T-15`,
-  `T-10`).
+  `T-10`). The plan's gross-EV threshold is passed through the exact
+  `run-drawing --min-gross-ev` CLI contract. Optional `--env-file` produces a
+  wrapper that validates and sources a user-owned regular non-symlink file
+  whose mode is no broader than `0600`; the plist contains only the wrapper
+  path and no credentials.
+- `morning-preanalysis-plan`: generate, but never install, a separate launchd
+  candidate beneath `reports/rehearsal`. Its wrapper uses the same secure env
+  contract and runs only guarded `sync-prepare --open
+  --expected-drawing-number N` at configured morning times with bounded
+  retries. It writes isolated logs and never invokes the betting scheduler or
+  creates betting markers.
 - `scheduler-execute`: execute preflight/fallback/final/freeze phases from a
   signed schedule, strictly parse runner manifests, and only publish an
   actionable package when freeze publishes `.bet-ready`.

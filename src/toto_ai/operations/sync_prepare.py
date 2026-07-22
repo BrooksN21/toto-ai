@@ -28,6 +28,7 @@ def synchronize_open_drawing(
     *,
     now: datetime,
     community: str = "baltbet-main",
+    expected_drawing_number: int | None = None,
     raw_cache_dir: str | Path = "data/raw",
     detail_cache_max_age_seconds: float = 12 * 60 * 60,
     storage_root: str | Path = ".",
@@ -53,6 +54,15 @@ def synchronize_open_drawing(
         now=now,
         community=community,
     )
+    if expected_drawing_number is not None:
+        if type(expected_drawing_number) is not int or expected_drawing_number <= 0:
+            raise ValueError("expected_drawing_number must be a positive integer")
+        if reference.number != expected_drawing_number:
+            selected = "none" if reference.number is None else str(reference.number)
+            raise ValueError(
+                f"expected drawing {expected_drawing_number}, selected {selected} "
+                "from fresh API page one"
+            )
     detail = collector.sync_drawing_detail(
         reference.drawing_id,
         drawing_summary=summary,

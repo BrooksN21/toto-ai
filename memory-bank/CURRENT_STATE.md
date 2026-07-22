@@ -4,6 +4,34 @@ This file is the project-local state note for TotoAI only. Do not mix it with
 local skills, personal knowledge bases, team knowledge bases, or unrelated
 memory stores.
 
+## Scheduler Operational Contracts (2026-07-22)
+
+The generated evening scheduler command and `run-drawing` now share the exact
+`--min-gross-ev` CLI contract. The configured finite threshold reaches the
+existing EV decision configuration, while the default remains `1.0`.
+
+`scheduler-plan --env-file` generates a `umask 077` wrapper that validates a
+current-user-owned regular non-symlink env file with mode no broader than
+`0600` both before publication and at execution. It requires a non-empty
+`API_SPORTS_KEY` without printing its value. The LaunchAgent plist contains
+only the wrapper path; no key is embedded in the plan, plist, or logs.
+
+`sync-prepare --open --expected-drawing-number N` now checks the fresh
+page-one-selected visible drawing before any detail fetch, provider
+preparation, or pin write. A mismatch fails closed. The separate
+`morning-preanalysis-plan` command generates, but does not install, a
+non-betting launchd candidate beneath `reports/rehearsal`; it supports multiple
+morning times and bounded retries, uses the same secure env contract, and
+creates no betting markers.
+
+Final verification: the affected scheduler/synchronization suite passed
+`180 passed in 17.92s`; the full suite passed
+`1199 passed in 203.22s (0:03:23)`. The exact scheduler-generated
+`run-drawing` argv contract smoke passed `1 passed in 0.57s`. Repository-wide
+Ruff reported `All checks passed!`; all six affected CLI help smokes and
+`git diff --check` passed. No network, `.env`, launchd installation, commit, or
+push was used.
+
 ## Country Identity and Progressive Preparation (2026-07-22)
 
 Country context comparison now uses shared stable identities for Russian,

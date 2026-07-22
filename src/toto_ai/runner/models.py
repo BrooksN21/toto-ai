@@ -231,6 +231,7 @@ class DrawingRunnerConfig:
     bank: int
     stake: int = 30
     mode: EVMode = "playable"
+    minimum_gross_ev: float = 1.0
     final_lead_minutes: int = 20
     safety_stop_minutes: int = 5
 
@@ -238,6 +239,15 @@ class DrawingRunnerConfig:
         validate_config_bank(self.bank, self.stake)
         if self.mode not in ("research", "playable"):
             raise ValueError("mode must be research or playable")
+        if isinstance(self.minimum_gross_ev, bool):
+            raise ValueError("minimum_gross_ev must be finite")
+        try:
+            minimum_gross_ev = float(self.minimum_gross_ev)
+        except (TypeError, ValueError) as error:
+            raise ValueError("minimum_gross_ev must be finite") from error
+        if not isfinite(minimum_gross_ev):
+            raise ValueError("minimum_gross_ev must be finite")
+        object.__setattr__(self, "minimum_gross_ev", minimum_gross_ev)
         _require_positive_int("final_lead_minutes", self.final_lead_minutes)
         _require_positive_int("safety_stop_minutes", self.safety_stop_minutes)
         if self.final_lead_minutes <= self.safety_stop_minutes:
@@ -245,7 +255,12 @@ class DrawingRunnerConfig:
 
     @property
     def ev_config(self) -> EVConfig:
-        return EVConfig(bank=self.bank, stake=self.stake, mode=self.mode)
+        return EVConfig(
+            bank=self.bank,
+            stake=self.stake,
+            mode=self.mode,
+            min_gross_ev=self.minimum_gross_ev,
+        )
 
 
 @dataclass(frozen=True)
