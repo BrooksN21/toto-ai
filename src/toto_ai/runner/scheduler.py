@@ -38,7 +38,8 @@ from toto_ai.external_odds.timing_overrides import (
     timing_override_catalog_sha256,
 )
 
-SCHEDULER_SCHEMA_VERSION = 1
+SCHEDULER_SCHEMA_VERSION = 2
+LEGACY_SCHEDULER_SCHEMA_VERSION = 1
 RUNNER_MANIFEST_SCHEMA_VERSION = 4
 SCHEDULER_PLAN_FILENAME = "scheduler-plan.json"
 SCHEDULER_WRAPPER_FILENAME = "run-scheduler.sh"
@@ -101,6 +102,7 @@ class SchedulerPlan:
     ended_at: datetime
     requested_bank: int
     output_dir: Path
+    project_root: Path
     drawing_id: int | None = None
     stake: int = 30
     minimum_gross_ev: float = DEFAULT_MINIMUM_GROSS_EV
@@ -140,9 +142,35 @@ class SchedulerPlan:
             "minimum_gross_ev",
             minimum_gross_ev,
         )
-        object.__setattr__(self, "output_dir", _normalized_path(self.output_dir))
-        object.__setattr__(self, "db", _normalized_path(self.db))
-        object.__setattr__(self, "aliases", _normalized_path(self.aliases))
+        project_root = _validated_project_root(self.project_root)
+        object.__setattr__(self, "project_root", project_root)
+        object.__setattr__(
+            self,
+            "output_dir",
+            _validated_project_path(
+                project_root,
+                self.output_dir,
+                name="scheduler output_dir",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "db",
+            _validated_project_path(
+                project_root,
+                self.db,
+                name="scheduler database",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "aliases",
+            _validated_project_path(
+                project_root,
+                self.aliases,
+                name="scheduler aliases",
+            ),
+        )
         if self.timing_overrides is not None:
             object.__setattr__(
                 self,
@@ -225,6 +253,7 @@ class SchedulerPlan:
                 "retry_delay_seconds": self.retry_delay_seconds,
             },
             "paths": {
+                "project_root": str(self.project_root),
                 "output_dir": str(self.output_dir),
                 "db": str(self.db),
                 "aliases": str(self.aliases),
@@ -400,6 +429,7 @@ def build_scheduler_plan(
     ended_at: datetime | str,
     bank: int,
     output_dir: str | Path,
+    project_root: str | Path | None = None,
     drawing_id: int | None = None,
     stake: int = 30,
     minimum_gross_ev: float = DEFAULT_MINIMUM_GROSS_EV,
@@ -415,6 +445,14 @@ def build_scheduler_plan(
 ) -> SchedulerPlan:
     """Build a strict plan; null or malformed ``ended_at`` fails immediately."""
 
+    normalized_output = _normalized_path(output_dir)
+    normalized_db = _normalized_path(db)
+    normalized_aliases = _normalized_path(aliases)
+    root = _normalized_path(
+        Path(__file__).resolve().parents[3]
+        if project_root is None
+        else project_root
+    )
     return SchedulerPlan(
         drawing=drawing,
         drawing_id=drawing_id,
@@ -422,9 +460,10 @@ def build_scheduler_plan(
         requested_bank=bank,
         stake=stake,
         minimum_gross_ev=minimum_gross_ev,
-        output_dir=Path(output_dir),
-        db=Path(db),
-        aliases=Path(aliases),
+        output_dir=normalized_output,
+        project_root=root,
+        db=normalized_db,
+        aliases=normalized_aliases,
         timing_overrides=(
             None if timing_overrides is None else Path(timing_overrides)
         ),
@@ -440,6 +479,44 @@ def build_scheduler_plan(
 def scheduler_plan_json(plan: SchedulerPlan) -> str:
     _require_plan(plan)
     return _canonical_json_bytes(plan.to_payload()).decode("utf-8") + "\n"
+
+
+def _infer_scheduler_project_root(
+    *,
+    output_dir: Path,
+    db: Path,
+    aliases: Path,
+) -> Path:
+    """Infer the root only for legacy schema-v1 plans.
+
+    Version 1 stored absolute operational paths but omitted the root itself.
+    Their common ancestor is the narrowest compatible migration boundary.
+    """
+
+    try:
+        common = Path(
+            os.path.commonpath((str(output_dir), str(db), str(aliases)))
+        )
+    except ValueError as error:
+        raise ValueError(
+            "legacy scheduler plan project_root cannot be inferred"
+        ) from error
+    root = _normalized_path(common)
+    if root == Path(root.anchor):
+        raise ValueError(
+            "legacy scheduler plan project_root inference is too broad"
+        )
+    return root
+
+
+def _legacy_scheduler_plan_id(payload: Mapping[str, Any]) -> str:
+    semantic = {
+        "schema_version": LEGACY_SCHEDULER_SCHEMA_VERSION,
+        "target": payload["target"],
+        "config": payload["config"],
+        "paths": payload["paths"],
+    }
+    return hashlib.sha256(_canonical_json_bytes(semantic)).hexdigest()[:16]
 
 
 def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
@@ -462,12 +539,14 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         },
         "scheduler plan",
     )
-    if (
-        type(payload["schema_version"]) is not int
-        or payload["schema_version"] != SCHEDULER_SCHEMA_VERSION
-    ):
+    schema_version = payload["schema_version"]
+    if type(schema_version) is not int or schema_version not in {
+        LEGACY_SCHEDULER_SCHEMA_VERSION,
+        SCHEDULER_SCHEMA_VERSION,
+    }:
         raise ValueError(
-            f"scheduler plan schema_version must be {SCHEDULER_SCHEMA_VERSION}"
+            "scheduler plan schema_version must be "
+            f"{LEGACY_SCHEDULER_SCHEMA_VERSION} or {SCHEDULER_SCHEMA_VERSION}"
         )
     target = _exact_mapping(
         payload["target"],
@@ -492,6 +571,8 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
     if not isinstance(raw_paths, Mapping):
         raise ValueError("paths must be a JSON object")
     path_keys = {"output_dir", "db", "aliases", "timing_overrides"}
+    if schema_version == SCHEDULER_SCHEMA_VERSION:
+        path_keys.add("project_root")
     if "env_file" in raw_paths:
         path_keys.add("env_file")
     paths = _exact_mapping(raw_paths, path_keys, "paths")
@@ -503,6 +584,15 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         stake=config["stake"],
         minimum_gross_ev=config["minimum_gross_ev"],
         output_dir=paths["output_dir"],
+        project_root=(
+            paths["project_root"]
+            if schema_version == SCHEDULER_SCHEMA_VERSION
+            else _infer_scheduler_project_root(
+                output_dir=_normalized_path(paths["output_dir"]),
+                db=_normalized_path(paths["db"]),
+                aliases=_normalized_path(paths["aliases"]),
+            )
+        ),
         db=paths["db"],
         aliases=paths["aliases"],
         timing_overrides=paths["timing_overrides"],
@@ -513,7 +603,12 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         max_expansion_passes=config["max_expansion_passes"],
         retry_delay_seconds=config["retry_delay_seconds"],
     )
-    if payload["plan_id"] != plan.plan_id:
+    expected_plan_id = (
+        plan.plan_id
+        if schema_version == SCHEDULER_SCHEMA_VERSION
+        else _legacy_scheduler_plan_id(payload)
+    )
+    if payload["plan_id"] != expected_plan_id:
         raise ValueError("scheduler plan_id does not match plan content")
     expected_deadlines = {
         key: _timestamp(value) for key, value in plan.deadlines.items()
@@ -570,6 +665,7 @@ def prepare_scheduler_artifacts(
         created.append(plan_path)
         wrapper = _render_scheduler_wrapper(
             plan_path=plan_path,
+            project_root=plan.project_root,
             python_executable=python_executable,
             env_file=plan.env_file,
         )
@@ -1061,7 +1157,7 @@ def build_run_drawing_phase_command(
 
 def build_prepare_drawing_command(
     plan: SchedulerPlan,
-    work_dir: Path,
+    _work_dir: Path,
     *,
     python_executable: str | Path = sys.executable,
 ) -> tuple[str, ...]:
@@ -1078,8 +1174,10 @@ def build_prepare_drawing_command(
         str(plan.aliases),
         "--provider",
         plan.provider,
+        "--raw-cache-dir",
+        str(plan.project_root / "data" / "raw"),
         "--cache-root",
-        str(work_dir / "cache"),
+        str(plan.project_root / "data" / "external-cache" / "api-sports"),
         "--quota-reserve",
         str(plan.quota_reserve),
         "--expansion-horizon-days",
@@ -1123,6 +1221,7 @@ class CommandSchedulerPhaseRunner:
                 capture_output=True,
                 text=True,
                 env=self.environment,
+                cwd=context.plan.project_root,
                 timeout=max(
                     0.001,
                     (
@@ -1187,6 +1286,7 @@ class CommandSchedulerPhaseRunner:
                 capture_output=True,
                 text=True,
                 env=self.environment,
+                cwd=plan.project_root,
                 timeout=300,
             )
         except subprocess.TimeoutExpired as error:
@@ -3393,6 +3493,7 @@ def _render_package_csv(rows: Sequence[tuple[int, str, float, float]]) -> bytes:
 def _render_scheduler_wrapper(
     *,
     plan_path: Path,
+    project_root: Path,
     python_executable: str,
     env_file: Path | None,
 ) -> str:
@@ -3408,6 +3509,7 @@ def _render_scheduler_wrapper(
                 python_executable=python_executable,
             )
         )
+        + f"cd {shlex.quote(str(project_root))}\n"
         + f"exec {executable_arg} -m toto_ai.cli scheduler-execute "
         f"--plan {plan_arg} \"$@\"\n"
     )
@@ -3423,6 +3525,7 @@ def _render_launch_agent(
     payload = {
         "Label": f"com.totoai.production-scheduler.{plan.plan_id}",
         "ProgramArguments": [str(wrapper_path)],
+        "WorkingDirectory": str(plan.project_root),
         "RunAtLoad": False,
         "StartCalendarInterval": {
             "Year": local_start.year,
@@ -4133,6 +4236,43 @@ def _normalized_path(value: object) -> Path:
     if not isinstance(raw, str) or not raw or "\x00" in raw:
         raise ValueError("scheduler paths must be non-empty")
     return Path(os.path.abspath(os.path.expanduser(raw)))
+
+
+def _validated_project_root(value: object) -> Path:
+    root = _normalized_path(value)
+    if root == Path(root.anchor):
+        raise ValueError("scheduler project_root must not be filesystem root")
+    try:
+        resolved = root.resolve(strict=True)
+    except OSError as error:
+        raise ValueError(
+            "scheduler project_root must be an existing directory"
+        ) from error
+    if root != resolved:
+        raise ValueError("scheduler project_root must not contain symlinks")
+    if not resolved.is_dir():
+        raise ValueError("scheduler project_root must be an existing directory")
+    return resolved
+
+
+def _validated_project_path(
+    project_root: Path,
+    value: object,
+    *,
+    name: str,
+) -> Path:
+    path = _normalized_path(value)
+    try:
+        resolved = path.resolve(strict=False)
+    except OSError as error:
+        raise ValueError(f"{name} could not be resolved safely") from error
+    if path != resolved:
+        raise ValueError(f"{name} must not contain symlinks")
+    try:
+        resolved.relative_to(project_root)
+    except ValueError as error:
+        raise ValueError(f"{name} must be contained within project_root") from error
+    return resolved
 
 
 def _require_contained_path(

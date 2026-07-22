@@ -181,6 +181,12 @@
   and chronological backtest tests, including bank utilization and `NO BET`.
 
 ## Phase 7: Production
+- Drawing-4952 launchd incident remediation is implemented: scheduler plan v2
+  binds an absolute project root, wrapper/plist/subprocess working directories
+  agree, preflight reuses absolute warmed preparation caches, and package
+  phases retain isolated caches. A real cache-only preflight regression starts
+  from `cwd=/` with HTTP prohibited. Existing installed launchd jobs are not
+  modified automatically and require explicit artifact regeneration/install.
 - Scheduler operational contracts are implemented but not installed:
   - scheduler-generated `run-drawing` argv carries the configured finite
     `--min-gross-ev` threshold;

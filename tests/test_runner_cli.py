@@ -620,6 +620,9 @@ def test_scheduler_generated_run_drawing_argv_matches_cli_contract(
         bank=4980,
         minimum_gross_ev=1.07,
         output_dir=tmp_path / "scheduler",
+        project_root=tmp_path,
+        db=tmp_path / "data" / "toto.db",
+        aliases=tmp_path / "data" / "aliases.json",
     )
     work_dir = tmp_path / "scheduler" / "work"
     context = SchedulerPhaseContext(
@@ -1155,6 +1158,12 @@ def test_scheduler_cli_plan_simulated_execute_and_operator_pickup_are_offline(
             "4980",
             "--output-dir",
             str(output_dir),
+            "--project-root",
+            str(tmp_path),
+            "--db",
+            str(tmp_path / "data" / "toto.db"),
+            "--aliases",
+            str(tmp_path / "data" / "aliases.json"),
         ],
     )
 
@@ -1213,6 +1222,12 @@ def test_scheduler_cli_real_production_parser_and_capture_are_offline(
             "4980",
             "--output-dir",
             str(output_dir),
+            "--project-root",
+            str(tmp_path),
+            "--db",
+            str(tmp_path / "data" / "toto.db"),
+            "--aliases",
+            str(tmp_path / "data" / "aliases.json"),
         ],
     )
     assert plan_result.exit_code == 0, plan_result.output
@@ -1310,6 +1325,12 @@ def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> No
             "4980",
             "--output-dir",
             str(output_dir),
+            "--project-root",
+            str(tmp_path),
+            "--db",
+            str(tmp_path / "data" / "toto.db"),
+            "--aliases",
+            str(tmp_path / "data" / "aliases.json"),
             "--dry-run",
         ],
     )
@@ -1368,6 +1389,12 @@ def test_scheduler_cli_rejects_shell_script_python_executable(
             "4980",
             "--output-dir",
             str(output_dir),
+            "--project-root",
+            str(tmp_path),
+            "--db",
+            str(tmp_path / "data" / "toto.db"),
+            "--aliases",
+            str(tmp_path / "data" / "aliases.json"),
             "--python-executable",
             str(executable),
         ],

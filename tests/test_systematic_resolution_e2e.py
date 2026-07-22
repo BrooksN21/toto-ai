@@ -65,6 +65,7 @@ def _plan(tmp_path: Path, *, suffix: str):
         ended_at=_target_drawing().deadline,
         bank=4980,
         output_dir=tmp_path / suffix,
+        project_root=tmp_path,
         db=db,
         aliases=aliases,
     )

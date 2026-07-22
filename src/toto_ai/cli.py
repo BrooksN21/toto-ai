@@ -1773,6 +1773,7 @@ def scheduler_plan_command(
     ended_at: str = typer.Option(..., "--ended-at"),
     bank: int = typer.Option(..., min=1),
     output_dir: str = typer.Option(..., "--output-dir"),
+    project_root: str | None = typer.Option(None, "--project-root"),
     drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
     stake: int = typer.Option(30, min=1),
     minimum_gross_ev: float = typer.Option(
@@ -1807,6 +1808,7 @@ def scheduler_plan_command(
             stake=stake,
             minimum_gross_ev=minimum_gross_ev,
             output_dir=output_dir,
+            project_root=project_root or Path(__file__).resolve().parents[2],
             db=db,
             aliases=aliases,
             timing_overrides=timing_overrides,

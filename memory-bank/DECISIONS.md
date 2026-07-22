@@ -13,6 +13,14 @@
 - One task, one commit, one verification cycle.
 - Every hypothesis must be backtested.
 - Never claim guaranteed profit.
+- Evening production scheduler plans carry an absolute project root. Generated
+  wrappers, launchd `WorkingDirectory`, and subprocess `cwd` all enforce that
+  root. Preflight deliberately reuses the warmed project raw/provider caches;
+  fallback and final package phases deliberately retain isolated run caches.
+  Legacy scheduler schema v1 is load-compatible only through strict absolute
+  common-root inference and validation of its original plan ID. Filesystem root
+  is never a valid project root; root/path symlink ambiguity is rejected, and
+  scheduler database, aliases, and output paths must resolve inside that root.
 - Separate prediction quality from cover quality.
 - The completed BK-only experiments used `13+` hit rate as their fixed primary
   objective. The next optimizer changes the primary objective to modeled

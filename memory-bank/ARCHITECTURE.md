@@ -77,6 +77,15 @@ created and revalidated before SQLite initialization. Scheduler ingestion of a
 replay manifest terminates as `ignored` with status evidence only and no marker;
 the normal production error path continues to publish `.failed`.
 
+Evening scheduler plans use schema v2 and bind one absolute `project_root`.
+The generated shell wrapper changes to that root, the LaunchAgent candidate
+sets it as `WorkingDirectory`, and production subprocesses receive it as
+`cwd`. Systematic preflight consumes the shared warmed project raw/API-Sports
+caches, while fallback and final package generation continue to use immutable
+run-scoped caches. Schema-v1 plans remain readable through strict root
+inference; artifact regeneration is required to add wrapper/plist defenses to
+an already generated candidate.
+
 The compatibility matcher remains available only for an explicitly opted-in
 direct run. Scheduler preflight always prepares the open drawing and scheduler
 package phases cannot silently use legacy name matching.

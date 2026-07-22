@@ -26,6 +26,7 @@ from toto_ai.runner.scheduler import (
     SchedulerPhaseError,
     SchedulerPhaseResult,
     VirtualSchedulerClock,
+    build_prepare_drawing_command,
     build_run_drawing_phase_command,
     build_scheduler_plan,
     execute_scheduler_plan,
@@ -58,6 +59,7 @@ def _plan(
         stake=30,
         minimum_gross_ev=minimum_gross_ev,
         output_dir=tmp_path / "scheduler",
+        project_root=tmp_path,
         db=tmp_path / "toto.sqlite",
         aliases=tmp_path / "aliases.json",
         timing_overrides=timing_overrides,
@@ -658,6 +660,7 @@ def test_packages_are_run_scoped_and_existing_scope_is_never_overwritten(
         ended_at=ENDED_AT,
         bank=4980,
         output_dir=tmp_path / "collision-scheduler",
+        project_root=tmp_path,
         db=tmp_path / "toto.sqlite",
         aliases=tmp_path / "aliases.json",
     )
@@ -782,6 +785,9 @@ def test_generated_artifacts_are_credential_free_generic_and_exclusive(
         ended_at=ENDED_AT,
         bank=5010,
         output_dir=tmp_path / "generated",
+        project_root=tmp_path,
+        db=tmp_path / "data" / "toto.db",
+        aliases=tmp_path / "data" / "aliases.json",
     )
 
     artifacts = prepare_scheduler_artifacts(plan)
@@ -814,6 +820,9 @@ def test_generated_artifacts_quote_paths_without_shell_injection(
         ended_at=ENDED_AT,
         bank=4980,
         output_dir=tmp_path / "generated safe;$(touch escaped)",
+        project_root=tmp_path,
+        db=tmp_path / "data" / "toto.db",
+        aliases=tmp_path / "data" / "aliases.json",
     )
 
     artifacts = prepare_scheduler_artifacts(plan)
@@ -908,7 +917,7 @@ def test_command_phase_preflight_runs_mandatory_prepare_drawing(
     calls = []
 
     def completed(command, **kwargs):
-        calls.append((tuple(command), kwargs["env"]))
+        calls.append((tuple(command), kwargs))
         return subprocess.CompletedProcess(
             command, 0, stdout='{"status":"ready"}', stderr=""
         )
@@ -927,7 +936,66 @@ def test_command_phase_preflight_runs_mandatory_prepare_drawing(
     assert result.status == "complete"
     assert calls[0][0][3] == "prepare-drawing"
     assert "--open" in calls[0][0]
-    assert "TOTO_LEGACY_NAME_MATCHING" not in calls[0][1]
+    assert "TOTO_LEGACY_NAME_MATCHING" not in calls[0][1]["env"]
+    assert calls[0][1]["cwd"] == plan.project_root
+
+
+def test_prepare_command_uses_absolute_raw_and_reusable_provider_cache(
+    tmp_path: Path,
+):
+    plan = _plan(tmp_path)
+    command = build_prepare_drawing_command(
+        plan,
+        plan.output_dir / "runs" / "one" / "work" / "preflight",
+    )
+
+    assert command[command.index("--raw-cache-dir") + 1] == str(
+        tmp_path / "data" / "raw"
+    )
+    assert command[command.index("--cache-root") + 1] == str(
+        tmp_path / "data" / "external-cache" / "api-sports"
+    )
+    assert Path(command[command.index("--raw-cache-dir") + 1]).is_absolute()
+    assert Path(command[command.index("--cache-root") + 1]).is_absolute()
+
+
+def test_package_phases_keep_run_isolated_cache(tmp_path: Path):
+    context = _manifest_context(tmp_path, phase="final")
+
+    command = build_run_drawing_phase_command(context)
+
+    assert command[command.index("--cache-root") + 1] == str(
+        context.work_dir / "cache"
+    )
+    assert command[command.index("--cache-root") + 1] != str(
+        context.plan.project_root
+        / "data"
+        / "external-cache"
+        / "api-sports"
+    )
+
+
+def test_package_subprocess_runs_from_project_root(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    context = _manifest_context(tmp_path, phase="final")
+    calls = []
+
+    def completed(command, **kwargs):
+        calls.append((tuple(command), kwargs))
+        _write_runner_manifest(context, _valid_runner_manifest(context))
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(scheduler.subprocess, "run", completed)
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"}
+    )
+
+    result = runner(context)
+
+    assert result.decision == "PLAY"
+    assert calls[0][1]["cwd"] == context.plan.project_root
 
 
 def test_production_manifest_parser_accepts_strict_schema_v4_play(

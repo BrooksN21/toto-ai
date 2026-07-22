@@ -4,6 +4,26 @@ This file is the project-local state note for TotoAI only. Do not mix it with
 local skills, personal knowledge bases, team knowledge bases, or unrelated
 memory stores.
 
+## Evening Scheduler Launchd Root Fix (2026-07-22)
+
+The drawing-4952 incident exposed two launchd-only gaps: the evening wrapper
+started without a project working directory, and preflight used a new empty
+run cache instead of the warmed preparation cache. Scheduler plan schema v2
+now carries an absolute `project_root`; schema-v1 plans remain loadable through
+strict common-root inference and their original plan-ID validation.
+
+Generated evening wrappers `cd` to `project_root`, LaunchAgent candidates set
+`WorkingDirectory`, and every production subprocess receives the same explicit
+`cwd`. Preflight now passes absolute project `data/raw` and
+`data/external-cache/api-sports` paths. Fallback and final package phases keep
+their isolated run-scoped caches unchanged. A real subprocess regression runs
+preflight from launchd-like `cwd=/`, blocks HTTP, consumes warmed local caches,
+and proves atomic 15/15 pin preparation.
+
+The project-root boundary rejects `/`, missing/non-directory roots, symlinked
+roots or operational path components, and any database/aliases/output escape
+after resolution. Safe existing schema-v1 and schema-v2 plans remain covered.
+
 ## Scheduler Operational Contracts (2026-07-22)
 
 The generated evening scheduler command and `run-drawing` now share the exact
