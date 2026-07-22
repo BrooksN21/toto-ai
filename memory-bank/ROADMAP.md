@@ -190,10 +190,11 @@
   - recent provider fixture/team/start revalidation without display-name
     rematching;
   - production-derived sport/country/competition/league context, including
-    fail-closed competition-level conflicts and local geographic exonym
-    normalization;
-  - all-required-date preparation gating: any failed date keeps the attempt
-    unresolved and publishes zero pins;
+    fail-closed competition-level conflicts and shared Russian/English/ISO
+    country-identity normalization;
+  - progressive preparation resolves after each successful date and stops at
+    playable unique 15/15; unresolved attempts exhaust the configured horizon,
+    while any attempted pre-readiness date failure publishes zero pins;
   - runner/manifest schema v4 authoritative 15/15 revalidation summaries and
     scheduler `.no-bet` enforcement before EV/actionable publication;
   - offline 4951 replay, prior-drawing regressions, unseen-team coverage, and
@@ -219,9 +220,16 @@
   - Live platform install and first prospective live production run are pending.
 
 
-- Add automatic incremental TotoBrief synchronization before/after production
-  runs so open-drawing freshness and newly finished results do not depend on a
-  manual full `collect`; retain full backfill as the recovery path.
+- Automatic incremental TotoBrief morning synchronization is implemented:
+  page-one status updates commit independently, exact detail synchronization
+  is cache-aware/resumable, all normal request paths share cross-process
+  pacing/retry state, and `sync-prepare --open` reaches systematic preparation
+  without a duplicate detail request. The path now has strict page-one-only
+  selection, server-authoritative Retry-After state, mandatory sidecar/torn
+  cache rejection, exact 15-event validation, safe local roots, and a
+  `--sync-only` diagnostic mode. Full historical `collect` remains the
+  recovery/backfill path. A post-run finished-result refresh remains future
+  operational work.
 - Drawing 4950 early-run hardening is complete: immutable collection identity
   now includes request/cache/quota provenance, preventing retry passes with the
   same provider content from conflicting in storage. The early 7/15 coverage

@@ -19,6 +19,7 @@ from toto_ai.db.models import (
     TeamEntity,
     TeamRegistryReview,
 )
+from toto_ai.external_odds.countries import countries_equivalent
 from toto_ai.external_odds.matching import normalize_team_name
 
 _CYRILLIC_TO_LATIN = {
@@ -172,13 +173,22 @@ def upsert_team_entity(
     transliterated_name = transliterate_team_name(canonical_name)
 
     with session_factory.begin() as session:
-        row = session.scalar(
+        rows = tuple(
+            session.scalars(
             select(TeamEntity).where(
                 TeamEntity.sport == sport,
                 TeamEntity.normalized_name == normalized_name,
-                TeamEntity.country == country,
                 TeamEntity.context == context,
             )
+            )
+        )
+        row = next(
+            (
+                candidate
+                for candidate in sorted(rows, key=lambda item: item.id)
+                if _country_context_equal(candidate.country, country)
+            ),
+            None,
         )
         if row is None:
             row = TeamEntity(
@@ -245,14 +255,23 @@ def upsert_reviewed_alias(
             if provider_row is not None and provider_row.team_id != team_id:
                 raise ValueError("provider team ID is assigned to another team")
 
-        row = session.scalar(
-            select(TeamAlias).where(
-                TeamAlias.sport == team.sport,
-                TeamAlias.provider == provider,
-                TeamAlias.normalized_alias == normalized_alias,
-                TeamAlias.country == country,
-                TeamAlias.context == context,
+        alias_rows = tuple(
+            session.scalars(
+                select(TeamAlias).where(
+                    TeamAlias.sport == team.sport,
+                    TeamAlias.provider == provider,
+                    TeamAlias.normalized_alias == normalized_alias,
+                    TeamAlias.context == context,
+                )
             )
+        )
+        row = next(
+            (
+                candidate
+                for candidate in sorted(alias_rows, key=lambda item: item.id)
+                if _country_context_equal(candidate.country, country)
+            ),
+            None,
         )
         if row is not None and row.team_id != team_id:
             raise ValueError("alias is assigned to another team")
@@ -352,7 +371,10 @@ def lookup_reviewed_alias(
             exact = tuple(
                 row
                 for row in rows
-                if (country is None or row.country == country)
+                if (
+                    country is None
+                    or _country_context_equal(row.country, country)
+                )
                 and (context is None or row.context == context)
             )
             if exact:
@@ -1353,6 +1375,14 @@ def _optional_context(value: str | None, field_name: str) -> str:
     if not isinstance(value, str):
         raise ValueError(f"{field_name} must be text")
     return value.strip()
+
+
+def _country_context_equal(left: str, right: str) -> bool:
+    if left == right:
+        return True
+    if not left or not right:
+        return False
+    return countries_equivalent(left, right)
 
 
 def _optional_identifier(value: str | None, field_name: str) -> str | None:

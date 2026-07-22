@@ -236,6 +236,35 @@
 - `--live` means betting is closed and drawing is ongoing.
 - `--latest-finished` is for historical analysis.
 - Internal drawing ID differs from visible drawing number.
+- Normal TotoBrief requests use one cross-process project-local coordinator:
+  two-second default spacing, server-authoritative `Retry-After` (persisted even
+  after a final exhausted 429), and bounded retry/backoff for 429, temporary
+  5xx, timeout, connection, chunked-transfer, and content-decoding failures.
+  Local backoff is capped after jitter; a larger valid server directive is not
+  shortened. Request diagnostics contain endpoint paths/status/timing only and
+  never query strings or secrets.
+- Drawing page metadata/status is an independently committed synchronization
+  stage. Current-detail failure must not retain stale statuses for other
+  drawings from the successfully fetched page.
+- Operational drawing detail may come from the network or an exact
+  schema/hash/identity-validated raw cache with a mandatory sidecar commit
+  marker. Exactly 15 contiguous events and structurally complete pool/BK
+  quotes are required before cache or DB persistence. The default 12-hour
+  freshness window supports morning preparation for a same-day final run and
+  remains configurable. Wrong, partial, torn, sidecar-free, stale, or
+  future-dated cache fails closed. Sidecar-free fixtures are non-operational
+  and restricted to explicit offline replay. Explicit operational target-cache
+  input must also match an already synchronized playable SQLite drawing.
+- `sync-prepare --open` is the minimum-call morning path. Subsequent
+  `prepare-drawing` is local/cache-first and performs remote TotoBrief detail
+  work only on explicit `--refresh-totobrief`; duplicate immediate detail
+  fetches are not part of the normal workflow.
+- Open selection for `sync-prepare --open` is made only from its freshly
+  fetched page one. A stale SQLite open row absent from page one is never used.
+  `--sync-only` performs strict synchronization diagnostics without API-Sports
+  preparation or pin writes.
+- TotoBrief `start_at = null` is never replaced with a fabricated timestamp.
+  The existing bounded provider-date expansion supplies preparation evidence.
 - Multi-day timing acceptance is deterministic and must forbid real network
   calls and sleeps. A lawful live dry run is optional operational evidence, not
   a prerequisite for accepting the collection-to-eligibility-to-veto boundary.
@@ -319,12 +348,18 @@
 - Schedule preparation expands null starts progressively by UTC dates derived
   from the Moscow drawing horizon. Each date is isolated, successful dates are
   retained, API client cache/retry/quota behavior is reused, and diagnostics
-  preserve each failed date's reason. Any failed required date in the bounded
-  eligible window prevents READY and transactional pin publication.
+  preserve each failed date's reason. The accumulated candidates are resolved
+  without writes after every successful date. Once all 15 resolve uniquely and
+  their effective starts are playable within the normal two-day rule, later
+  dates are not requested and are not failures. If readiness is not reached,
+  the configured horizon is exhausted; any attempted date failure before
+  readiness prevents READY and transactional pin publication.
 - Preparation derives conservative sport/country/competition/league context
-  directly from TotoBrief championship text. Local normalization may map
-  stable geographic exonyms, but no network translation or team-specific
-  alias may supply identity. Conflicting country, league level, date, sport, or
-  orientation fails closed in the production path.
+  directly from TotoBrief championship text. Shared country normalization maps
+  Russian, English, ISO alpha-2/alpha-3, and common provider forms to one stable
+  country identity; it is not a drawing/team alias mechanism. Unknown values
+  compare only by deterministic normalized identity. No network translation or
+  team-specific alias may supply country identity. Conflicting country, league
+  level, date, sport, or orientation fails closed in the production path.
 - Drawing numbers, current team names, and provider fixture IDs are test replay
   data only. Production resolution contains no drawing-4951 or per-team branch.

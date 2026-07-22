@@ -182,7 +182,9 @@ def test_prospective_unseen_teams_resolve_without_production_aliases(
     assert result.provider_event_id == "future-1"
 
 
-def test_preparation_schedule_fetch_is_progressive_and_isolates_date_failure():
+def test_preparation_schedule_fetch_is_progressive_and_isolates_date_failure(
+    session_factory,
+):
     events = tuple(
         TargetEvent(
             **{
@@ -208,7 +210,10 @@ def test_preparation_schedule_fetch_is_progressive_and_isolates_date_failure():
 
     provider = Provider()
     result = fetch_preparation_schedule(
-        drawing, provider, missing_start_horizon_days=3
+        drawing,
+        provider,
+        session_factory=session_factory,
+        missing_start_horizon_days=3,
     )
 
     assert len(provider.calls) >= 3

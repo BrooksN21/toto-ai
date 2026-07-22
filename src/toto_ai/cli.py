@@ -50,6 +50,17 @@ from toto_ai.analytics.research_bk_vs_norm import (
 )
 from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
+from toto_ai.api.detail_cache import (
+    DEFAULT_DETAIL_CACHE_MAX_AGE_SECONDS,
+    load_drawing_detail_cache,
+)
+from toto_ai.api.rate_limit import (
+    DEFAULT_RATE_STATE_PATH,
+    RequestDiagnostic,
+    TotoBriefRequestCoordinator,
+    TotoBriefRequestError,
+)
+from toto_ai.api.safe_paths import resolve_contained_path
 from toto_ai.collector.sync import Collector
 from toto_ai.db.session import get_session_factory, init_db, open_readonly_db
 from toto_ai.ev.backtest import (
@@ -103,6 +114,7 @@ from toto_ai.external_odds.timing_overrides import (
     overlay_timing_override,
     pin_timing_override_catalog,
 )
+from toto_ai.operations.sync_prepare import synchronize_open_drawing
 from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.brief_backtest import (
     run_brief_backtest,
@@ -174,6 +186,21 @@ from toto_ai.runner.offline_replay import (
 app = typer.Typer(help="TotoBrief API commands.")
 
 
+def _validate_cached_reference(
+    payload: dict[str, object],
+    reference: DrawingReference,
+) -> None:
+    data = payload.get("data")
+    if not isinstance(data, dict) or data.get("id") != reference.drawing_id:
+        raise ValueError("synchronized target cache drawing id mismatch")
+    if reference.number is not None and data.get("number") != reference.number:
+        raise ValueError("synchronized target cache drawing number mismatch")
+    if reference.status is not None and data.get("status") != reference.status:
+        raise ValueError("synchronized target cache drawing status mismatch")
+    if reference.ended_at is not None and data.get("ended_at") != reference.ended_at:
+        raise ValueError("synchronized target cache deadline mismatch")
+
+
 @app.command()
 def supported() -> None:
     """Show supported drawing names."""
@@ -223,7 +250,11 @@ def collect(name: str = "baltbet-main", db: str = "data/toto.db") -> None:
     """Collect historical drawings into a SQLite database."""
     engine = init_db(db)
     session_factory = get_session_factory(engine)
-    collector = Collector(client=TotoBriefClient(), session_factory=session_factory)
+    collector = Collector(
+        client=TotoBriefClient(),
+        session_factory=session_factory,
+        raw_cache_dir="data/raw",
+    )
 
     with Progress(
         SpinnerColumn(),
@@ -235,7 +266,9 @@ def collect(name: str = "baltbet-main", db: str = "data/toto.db") -> None:
     print(
         f"Collected {result.drawings_saved} new drawings "
         f"from {result.drawings_seen} seen across {result.pages_fetched} pages. "
-        f"Saved {result.events_saved} events and {result.quotes_saved} quotes."
+        f"Updated {result.drawings_updated} summaries; saved "
+        f"{result.events_saved} events and {result.quotes_saved} quotes; "
+        f"deferred {result.details_deferred} detail(s)."
     )
 
 
@@ -2023,6 +2056,17 @@ def prepare_drawing_command(
     provider: str = typer.Option("api-sports"),
     schedule_cache: str | None = typer.Option(None, "--schedule-cache"),
     target_cache: str | None = typer.Option(None, "--target-cache"),
+    raw_cache_dir: str = typer.Option("data/raw", "--raw-cache-dir"),
+    detail_cache_max_age_seconds: float = typer.Option(
+        DEFAULT_DETAIL_CACHE_MAX_AGE_SECONDS,
+        "--detail-cache-max-age-seconds",
+        min=0,
+    ),
+    refresh_totobrief: bool = typer.Option(
+        False,
+        "--refresh-totobrief",
+        help="Explicitly refresh TotoBrief instead of using synchronized local detail.",
+    ),
     cache_root: str = typer.Option("data/external-cache/api-sports"),
     quota_reserve: int = typer.Option(10, min=0),
     max_retries: int = typer.Option(2, min=0),
@@ -2035,23 +2079,124 @@ def prepare_drawing_command(
         raise typer.BadParameter("provider must be api-sports")
     fetched_at = datetime.now(timezone.utc)
     try:
-        client = TotoBriefClient()
-        if target_cache is not None:
-            raw_target = json.loads(Path(target_cache).read_text(encoding="utf-8"))
-            target_payload = raw_target.get("payload", raw_target)
-            target_fetched_at = raw_target.get("fetched_at", fetched_at.isoformat())
-            target = parse_target_drawing(target_payload, fetched_at=target_fetched_at)
-            if drawing_id is not None and target.drawing_id != drawing_id:
-                raise ValueError("target cache drawing id does not match --drawing-id")
-        elif open:
-            target = _resolve_runner_target(client, fetched_at).target
-        else:
-            target = parse_target_drawing(
-                client.drawing_info(drawing_id), fetched_at=fetched_at
-            )
-
         engine = init_db(db)
         session_factory = get_session_factory(engine)
+        if target_cache is not None:
+            if drawing_id is None:
+                raise ValueError(
+                    "--target-cache requires --drawing-id; operational target "
+                    "cache discovery is never inferred from cache contents"
+                )
+            target_cache_path = resolve_contained_path(
+                target_cache,
+                allowed_root=Path.cwd(),
+            )
+            expected_name = f"drawing_{drawing_id}.json"
+            if target_cache_path.name != expected_name:
+                raise ValueError(
+                    "operational --target-cache must use the canonical "
+                    f"{expected_name} filename"
+                )
+            cache_record = load_drawing_detail_cache(
+                drawing_id,
+                cache_dir=target_cache_path.parent,
+                max_age_seconds=detail_cache_max_age_seconds,
+                now=fetched_at,
+                allowed_root=Path.cwd(),
+            )
+            with session_factory() as session:
+                reference = resolve_drawing_reference(
+                    session,
+                    drawing_id=drawing_id,
+                )
+            if reference.community is None:
+                raise ValueError(
+                    "drawing is not synchronized locally; run sync-prepare "
+                    "before using an operational --target-cache"
+                )
+            _validate_cached_reference(cache_record.payload, reference)
+            if reference.status not in {"active", "expected"}:
+                raise ValueError("operational target cache drawing is not playable")
+            target = parse_target_drawing(
+                cache_record.payload,
+                fetched_at=cache_record.fetched_at,
+            )
+        elif refresh_totobrief and open:
+            synchronized = synchronize_open_drawing(
+                TotoBriefClient(),
+                session_factory,
+                now=fetched_at,
+                raw_cache_dir=raw_cache_dir,
+                detail_cache_max_age_seconds=detail_cache_max_age_seconds,
+                storage_root=Path.cwd(),
+            )
+            if not synchronized.ready:
+                raise ValueError(
+                    "TotoBrief detail synchronization deferred: "
+                    f"{synchronized.detail.error or 'detail unavailable'}"
+                )
+            target = parse_target_drawing(
+                synchronized.detail.payload,
+                fetched_at=(
+                    fetched_at
+                    if synchronized.detail.cache_age_seconds is None
+                    else fetched_at
+                    - timedelta(seconds=synchronized.detail.cache_age_seconds)
+                ),
+            )
+        elif refresh_totobrief:
+            client = TotoBriefClient()
+            collector = Collector(
+                client,
+                session_factory,
+                raw_cache_dir=raw_cache_dir,
+                detail_cache_max_age_seconds=detail_cache_max_age_seconds,
+                storage_root=Path.cwd(),
+                now=lambda: fetched_at,
+            )
+            detail = collector.sync_drawing_detail(drawing_id, force=True)
+            if detail.status == "deferred" or detail.payload is None:
+                raise ValueError(
+                    "TotoBrief detail refresh deferred: "
+                    f"{detail.error or 'detail unavailable'}"
+                )
+            target = parse_target_drawing(
+                detail.payload,
+                fetched_at=fetched_at,
+            )
+        else:
+            if open:
+                with session_factory() as session:
+                    reference = resolve_drawing_reference(
+                        session,
+                        open=True,
+                        now=fetched_at,
+                    )
+                selected_drawing_id = reference.drawing_id
+            else:
+                selected_drawing_id = drawing_id
+                with session_factory() as session:
+                    reference = resolve_drawing_reference(
+                        session,
+                        drawing_id=selected_drawing_id,
+                    )
+                if reference.community is None:
+                    raise ValueError(
+                        "drawing is not synchronized locally; run sync-prepare "
+                        "or use --refresh-totobrief"
+                    )
+            cache_record = load_drawing_detail_cache(
+                selected_drawing_id,
+                cache_dir=raw_cache_dir,
+                max_age_seconds=detail_cache_max_age_seconds,
+                now=fetched_at,
+                allowed_root=Path.cwd(),
+            )
+            _validate_cached_reference(cache_record.payload, reference)
+            target = parse_target_drawing(
+                cache_record.payload,
+                fetched_at=cache_record.fetched_at,
+            )
         seed_reviewed_alias_config(session_factory, aliases, provider=provider)
         if schedule_cache is not None:
             candidates = load_local_schedule(schedule_cache, provider=provider)
@@ -2078,6 +2223,8 @@ def prepare_drawing_command(
             schedule = fetch_preparation_schedule(
                 target,
                 provider_client,
+                session_factory=session_factory,
+                provider=provider,
                 missing_start_horizon_days=expansion_horizon_days,
             )
             candidates = schedule.candidates
@@ -2122,6 +2269,218 @@ def prepare_drawing_command(
             separators=(",", ":"),
         )
     )
+    if result.status != "ready":
+        raise typer.Exit(code=2)
+
+
+@app.command("sync-prepare")
+def sync_prepare_command(
+    open: bool = typer.Option(False, "--open"),  # noqa: A002
+    db: str = typer.Option("data/toto.db"),
+    community: str = typer.Option("baltbet-main"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    provider: str = typer.Option("api-sports"),
+    schedule_cache: str | None = typer.Option(None, "--schedule-cache"),
+    raw_cache_dir: str = typer.Option("data/raw", "--raw-cache-dir"),
+    detail_cache_max_age_seconds: float = typer.Option(
+        DEFAULT_DETAIL_CACHE_MAX_AGE_SECONDS,
+        "--detail-cache-max-age-seconds",
+        min=0,
+    ),
+    totobrief_rate_state: str = typer.Option(
+        str(DEFAULT_RATE_STATE_PATH),
+        "--totobrief-rate-state",
+    ),
+    totobrief_min_interval: float = typer.Option(
+        2.0,
+        "--totobrief-min-interval",
+        min=0,
+    ),
+    totobrief_max_retries: int = typer.Option(
+        3,
+        "--totobrief-max-retries",
+        min=0,
+    ),
+    cache_root: str = typer.Option("data/external-cache/api-sports"),
+    quota_reserve: int = typer.Option(10, min=0),
+    api_sports_max_retries: int = typer.Option(
+        2,
+        "--api-sports-max-retries",
+        min=0,
+    ),
+    expansion_horizon_days: int = typer.Option(5, min=1, max=5),
+    sync_only: bool = typer.Option(
+        False,
+        "--sync-only",
+        help="Synchronize and validate TotoBrief only; do not write preparation/pins.",
+    ),
+) -> None:
+    """Synchronize page one and prepare exact pins with no duplicate detail fetch."""
+    if not open:
+        raise typer.BadParameter("--open is required")
+    if provider != "api-sports":
+        raise typer.BadParameter("provider must be api-sports")
+
+    fetched_at = datetime.now(timezone.utc)
+
+    def on_diagnostic(item: RequestDiagnostic) -> None:
+        parts = [
+            f"totobrief event={item.event}",
+            f"endpoint={item.endpoint}",
+            f"attempt={item.attempt}",
+        ]
+        if item.wait_seconds:
+            parts.append(f"wait={item.wait_seconds:.2f}s")
+        if item.status_code is not None:
+            parts.append(f"status={item.status_code}")
+        if item.reason:
+            parts.append(f"reason={item.reason}")
+        typer.echo(" ".join(parts))
+
+    try:
+        engine = init_db(db)
+        session_factory = get_session_factory(engine)
+        coordinator = TotoBriefRequestCoordinator(
+            state_path=totobrief_rate_state,
+            minimum_interval=totobrief_min_interval,
+            max_retries=totobrief_max_retries,
+            allowed_root=Path.cwd(),
+            diagnostic_callback=on_diagnostic,
+        )
+        client = TotoBriefClient(coordinator=coordinator)
+        typer.echo("phase=totobrief-summary status=running page=1")
+        synchronized = synchronize_open_drawing(
+            client,
+            session_factory,
+            now=fetched_at,
+            community=community,
+            raw_cache_dir=raw_cache_dir,
+            detail_cache_max_age_seconds=detail_cache_max_age_seconds,
+            storage_root=Path.cwd(),
+        )
+        detail = synchronized.detail
+        cache_age = (
+            detail.cache_age_seconds
+            if detail.cache_age_seconds is not None
+            else "none"
+        )
+        typer.echo(
+            "phase=totobrief-detail "
+            f"status={detail.status} drawing={synchronized.reference.number} "
+            f"source={detail.source or 'none'} "
+            f"cache_age={cache_age} "
+            f"wait_total={coordinator.total_wait_seconds:.2f}s "
+            f"attempts={coordinator.request_attempts}"
+        )
+        if not synchronized.ready:
+            typer.echo(
+                "phase=sync-prepare status=deferred reason="
+                f"{detail.error or 'TotoBrief detail unavailable'}"
+            )
+            raise typer.Exit(code=2)
+
+        target_fetched_at = (
+            fetched_at
+            if detail.cache_age_seconds is None
+            else fetched_at - timedelta(seconds=detail.cache_age_seconds)
+        )
+        target = parse_target_drawing(
+            detail.payload,
+            fetched_at=target_fetched_at,
+        )
+        if sync_only:
+            typer.echo(
+                json.dumps(
+                    {
+                        "drawing_id": target.drawing_id,
+                        "drawing_number": target.drawing_number,
+                        "status": "synchronized",
+                        "preparation_written": False,
+                        "totobrief_detail_source": detail.source,
+                        "totobrief_cache_age_seconds": detail.cache_age_seconds,
+                        "totobrief_request_attempts": coordinator.request_attempts,
+                        "totobrief_wait_seconds": round(
+                            coordinator.total_wait_seconds,
+                            3,
+                        ),
+                        "summary_inserted": synchronized.summary_page.inserted,
+                        "summary_updated": synchronized.summary_page.updated,
+                    },
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+            )
+            return
+        seed_reviewed_alias_config(session_factory, aliases, provider=provider)
+
+        typer.echo("phase=api-sports-preparation status=running")
+        if schedule_cache is not None:
+            candidates = load_local_schedule(schedule_cache, provider=provider)
+            schedule_diagnostics = (
+                {
+                    "sport": "all",
+                    "date": None,
+                    "status": "success",
+                    "reason": f"local schedule cache: {schedule_cache}",
+                },
+            )
+        else:
+            api_key = os.environ.get("API_SPORTS_KEY", "")
+            if not api_key.strip():
+                raise ValueError(
+                    "API_SPORTS_KEY is required without --schedule-cache"
+                )
+            provider_client = APISportsClient(
+                api_key,
+                cache_dir=Path(cache_root),
+                quota_reserve=quota_reserve,
+                max_retries=api_sports_max_retries,
+            )
+            schedule = fetch_preparation_schedule(
+                target,
+                provider_client,
+                session_factory=session_factory,
+                provider=provider,
+                missing_start_horizon_days=expansion_horizon_days,
+            )
+            candidates = schedule.candidates
+            schedule_diagnostics = schedule.diagnostics
+
+        result = prepare_drawing(
+            target,
+            candidates,
+            session_factory=session_factory,
+            provider=provider,
+            schedule_diagnostics=schedule_diagnostics,
+        )
+    except typer.Exit:
+        raise
+    except (
+        APISportsError,
+        OSError,
+        SQLAlchemyError,
+        TotoBriefRequestError,
+        TypeError,
+        ValueError,
+    ) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    payload = {
+        "drawing_id": result.drawing_id,
+        "drawing_number": result.drawing_number,
+        "drawing_fingerprint": result.drawing_fingerprint,
+        "status": result.status,
+        "mapped_count": result.mapped_count,
+        "unresolved_event_orders": result.unresolved_event_orders,
+        "eligibility_status": result.eligibility.status,
+        "totobrief_detail_source": synchronized.detail.source,
+        "totobrief_cache_age_seconds": synchronized.detail.cache_age_seconds,
+        "totobrief_request_attempts": coordinator.request_attempts,
+        "totobrief_wait_seconds": round(coordinator.total_wait_seconds, 3),
+        "summary_inserted": synchronized.summary_page.inserted,
+        "summary_updated": synchronized.summary_page.updated,
+    }
+    typer.echo(json.dumps(payload, sort_keys=True, separators=(",", ":")))
     if result.status != "ready":
         raise typer.Exit(code=2)
 

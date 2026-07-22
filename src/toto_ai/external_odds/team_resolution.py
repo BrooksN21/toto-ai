@@ -6,6 +6,10 @@ from datetime import timedelta
 from difflib import SequenceMatcher
 from typing import Any, Literal
 
+from toto_ai.external_odds.countries import (
+    countries_equivalent,
+    country_identity,
+)
 from toto_ai.external_odds.domain import ProviderEvent, TargetEvent
 from toto_ai.external_odds.matching import normalize_team_name
 from toto_ai.external_odds.team_registry import (
@@ -40,47 +44,6 @@ _CONTEXT_STOP_WORDS = frozenset(
         "чемпионат",
     }
 )
-
-# TotoBrief championship labels are Russian while provider geography is usually
-# English.  Keep this limited to stable geographic exonyms (never team or draw
-# aliases) so country is usable as identity evidence without online translation.
-_COUNTRY_EQUIVALENTS = {
-    "angliya": "england",
-    "armeniya": "armenia",
-    "avstraliya": "australia",
-    "avstriya": "austria",
-    "belarus": "belarus",
-    "belgiya": "belgium",
-    "braziliya": "brazil",
-    "chekhiya": "czechia",
-    "daniya": "denmark",
-    "ekvador": "ecuador",
-    "finlyandiya": "finland",
-    "frantsiya": "france",
-    "germaniya": "germany",
-    "gretsiya": "greece",
-    "irlandiya": "ireland",
-    "islandiya": "iceland",
-    "ispaniya": "spain",
-    "italiya": "italy",
-    "kanada": "canada",
-    "kitay": "china",
-    "mekhiko": "mexico",
-    "niderlandy": "netherlands",
-    "norvegiya": "norway",
-    "polsha": "poland",
-    "portugaliya": "portugal",
-    "rossiya": "russia",
-    "shotlandiya": "scotland",
-    "shvetsiya": "sweden",
-    "shveytsariya": "switzerland",
-    "turtsiya": "turkey",
-    "ukraina": "ukraine",
-    "uels": "wales",
-    "vengriya": "hungary",
-    "yaponiya": "japan",
-}
-
 
 @dataclass(frozen=True)
 class ResolutionContext:
@@ -398,14 +361,7 @@ def _candidate_context(
 
 
 def _countries_equivalent(expected: str, actual: str) -> bool:
-    expected_key = normalize_team_name(transliterate_team_name(expected))
-    actual_key = normalize_team_name(transliterate_team_name(actual))
-    expected_canonical = _COUNTRY_EQUIVALENTS.get(expected_key, expected_key)
-    actual_canonical = _COUNTRY_EQUIVALENTS.get(actual_key, actual_key)
-    return (
-        expected_canonical == actual_canonical
-        or _context_anchor_similarity(expected_canonical, actual_canonical) >= 0.68
-    )
+    return countries_equivalent(expected, actual)
 
 
 def _team_evidence(
@@ -592,11 +548,9 @@ def _competition_level_tokens(value: str) -> frozenset[str]:
 
 
 def _is_global_scope(value: str) -> bool:
-    return normalize_team_name(value) in {
-        "world",
-        "international",
-        "international clubs",
-    }
+    return country_identity(value) == "GLOBAL" or normalize_team_name(value) == (
+        "international clubs"
+    )
 
 
 def _identity_rank(item: CandidateEvidence) -> tuple[int, int, int, int]:

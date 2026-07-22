@@ -75,6 +75,15 @@
   15 known effective starts spanning at most two dates are `playable`; a known
   span above two dates is `multi_day`; unresolved starts are `unknown` unless
   the known subset already proves `multi_day`.
+- Provider and TotoBrief country labels can differ by language or code. Shared
+  stable country identities make forms such as `США`, `USA`, `US`, and
+  `United States` equivalent before context comparison; a genuinely different
+  country remains a hard mismatch.
+- Missing-start preparation requests schedule dates in order and re-runs the
+  read-only resolver after each successful date. A reviewed-ID 4952-style
+  regression reaches playable 15/15 from July 21-23 and therefore never asks
+  for July 24-26. If 15/15 is not reached, all configured dates remain required
+  attempts and a later date failure keeps publication fail-closed.
 - Multi-day and unresolved snapshots remain valid historical/research data but
   are not playable. Exact drawing ID plus target fingerprint is required for a
   stored eligibility verdict; legacy, missing, malformed, or mismatched timing
@@ -94,3 +103,20 @@
   previous 13 exact/alias matches and two provider-missing fallbacks, providing
   a false-positive regression. These two observations are not coverage-gate or
   profitability evidence.
+- Drawing 4952 (`id=11970`) exposed a separate transport/synchronization
+  failure: a successful page-one request followed immediately by drawing-info
+  could receive HTTP 429 while the local database retained stale 4949-4951
+  statuses and no 4952 row. Request pacing/retries are now coordinated across
+  processes, page status updates commit before detail, and a fresh validated
+  `data/raw/drawing_11970.json` can populate the missing exact drawing without
+  a second detail request. This incident is regression data, not production
+  hardcoding.
+- Operational TotoBrief detail is complete only with exactly 15 events whose
+  unique orders are `0..14` and whose pool/BK quote triples are finite,
+  non-negative, and have positive totals. Partial legacy SQLite rows remain
+  eligible for a future detail retry; partial network/cache data cannot replace
+  a complete drawing.
+- A raw `drawing_<id>.json` payload without its matching metadata sidecar is not
+  operational evidence. The sidecar hash and timestamp form the cache commit
+  marker; missing or mismatched pairs fail closed. Explicit sidecar-free test
+  fixtures remain limited to non-production offline replay.

@@ -18,6 +18,30 @@ TotoBrief API
 -> Package Export
 ```
 
+Coordinated morning synchronization path:
+
+```text
+TotoBrief page one through cross-process request coordinator
+-> Atomic SQLite summary/status commit for every listed drawing
+-> Select exact next playable drawing only from that fresh page-one response
+-> Fresh validated exact raw detail cache OR coordinated drawing-info request
+-> Idempotent drawing/event/quote upsert and cache provenance
+-> Existing API-Sports date expansion and systematic preparation
+-> Atomic ready preparation + 15 pins OR explicit deferred/unresolved exit
+```
+
+The request coordinator stores schema-versioned timing/backoff state with
+`written_at`, block source, and server-authoritative `Retry-After` in
+`data/totobrief-cache/request-state.json`. A process lock, symlink-safe root
+containment, fsynced atomic replacement, a maximum plausible-state policy, and
+a bounded local wait protect separate invocations without shortening a valid
+server block. Summary persistence is not rolled back when detail is deferred.
+Raw detail is operational only with its fsynced sidecar commit marker and valid
+schema/hash/identity/freshness. It must contain exactly 15 unique contiguous
+event orders (`0..14`) and complete pool/BK quote triples. `prepare-drawing` is
+local/cache-first by default; network refresh is explicit, avoiding an
+immediate duplicate detail request after synchronization.
+
 Systematic production identity path:
 
 ```text
@@ -89,7 +113,13 @@ Validated frozen strategy manifest
 
 Important modules:
 - `toto_ai.api.client`: TotoBrief API client.
+- `toto_ai.api.rate_limit`: coordinated retry, `Retry-After`, backoff, and
+  cross-process minimum-interval state for all normal TotoBrief requests.
+- `toto_ai.api.detail_cache`: exact schema/hash/identity/freshness validation
+  and atomic raw drawing-detail cache persistence.
 - `toto_ai.collector.sync`: historical drawing collector.
+- `toto_ai.operations.sync_prepare`: minimal page-one plus exact-detail
+  synchronization used by morning preparation without duplicate detail fetch.
 - `toto_ai.db.models`: SQLite schema with SQLAlchemy models.
 - `toto_ai.db.session`: database initialization and session helpers.
   Development diagnostics use its SQLite `mode=ro` engine and never initialize
@@ -166,9 +196,13 @@ Important modules:
   Preparation can consume saved local schedule caches for deterministic replay
   or fetch progressive per-date schedules through the provider cache/retry and
   quota boundary. TotoBrief championships are conservatively parsed into
-  sport/country/competition/league context, with local geographic exonym
-  normalization and explicit competition-level conflict rejection. Every
-  required eligible-window date must succeed before atomic READY publication.
+  sport/country/competition/league context. Country values pass through shared
+  stable identities covering Russian, English, and ISO forms before comparison;
+  mismatched identities and competition levels still fail closed. After every
+  successful date, the accumulated schedule is resolved without publishing.
+  Fetching stops only at unique 15/15 resolution with normal playable two-day
+  timing. Later unrequested dates are not failures; every attempted failure
+  before readiness prevents atomic READY publication.
 - `toto_ai.external_odds.prospective`: fresh-by-default multi-pass collection.
   It resolves one TotoBrief target, creates one isolated cache session, and
   reuses that session across new provider clients after minute-quota resets.
@@ -250,6 +284,12 @@ Important CLI commands:
 - `drawings`: fetch drawing pages from TotoBrief.
 - `info`: fetch one drawing-info payload.
 - `collect`: collect historical drawings into SQLite.
+- `sync-prepare --open`: commit page-one status metadata, synchronize the exact
+  open drawing from validated cache or one coordinated detail request, then run
+  systematic API-Sports preparation. Deferred detail exits fail-closed.
+- `sync-prepare --open --sync-only`: run the same strict TotoBrief selection,
+  detail validation, and persistence but stop before API-Sports, preparation,
+  or pin writes.
 - `research`: print historical analytics.
 - `inspect-events`: inspect event-level pool/BK/result diagnostics.
 - `audit`: audit database quality and completeness.
@@ -324,8 +364,13 @@ Important CLI commands:
   emits `RESEARCH ONLY`; writes only beneath that root; and is ignored without
   markers by scheduler ingestion.
 - `prepare-drawing --open` or `--drawing-id`: prepare one exact drawing from
-  live cached schedule dates or `--schedule-cache`, persist review diagnostics
-  when unresolved, and atomically publish a ready preparation plus 15 pins.
+  synchronized local TotoBrief identity/detail cache and live cached schedule
+  dates or `--schedule-cache`, persist review diagnostics when unresolved, and
+  atomically publish a ready preparation plus 15 pins. It performs no
+  TotoBrief detail request by default; `--refresh-totobrief` is explicit.
+  Explicit `--target-cache` is operational only with `--drawing-id`, canonical
+  `drawing_<id>.json` naming, a valid mandatory sidecar, and an exact playable
+  drawing already synchronized in SQLite.
   Unresolved output is machine-readable and exits nonzero.
 - `scheduler-plan`: build immutable scheduler plans, wrapper scripts, and
   LaunchAgent files for the fixed phase boundaries (`T-45`, `T-30`, `T-15`,

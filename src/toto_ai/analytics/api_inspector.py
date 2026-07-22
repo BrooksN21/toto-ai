@@ -7,6 +7,11 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from toto_ai.api.detail_cache import (
+    drawing_detail_cache_path,
+    write_drawing_detail_cache,
+)
+from toto_ai.api.safe_paths import prepare_contained_parent
 from toto_ai.db.models import Drawing, Event, Quote
 
 RAW_TO_DB_MAPPINGS = {
@@ -134,11 +139,31 @@ def save_raw_response(
     payload: dict[str, Any],
     drawing_id: int,
     output_dir: str | Path = "data/raw",
+    *,
+    allowed_root: str | Path = ".",
 ) -> Path:
-    path = Path(output_dir) / f"drawing_{drawing_id}.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
-    return path
+    try:
+        return write_drawing_detail_cache(
+            payload,
+            drawing_id=drawing_id,
+            cache_dir=output_dir,
+            source="inspect-api",
+            allowed_root=allowed_root,
+        ).path
+    except ValueError:
+        # The inspector is also used to save malformed/experimental payloads
+        # for schema diagnostics. Such a file has no validated sidecar and is
+        # therefore rejected by the operational detail-cache loader.
+        path = prepare_contained_parent(
+            drawing_detail_cache_path(
+                drawing_id,
+                output_dir,
+                allowed_root=allowed_root,
+            ),
+            allowed_root=allowed_root,
+        )
+        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
+        return path
 
 
 def compare_raw_json_to_db_model(payload: dict[str, Any]) -> dict[str, list[str]]:

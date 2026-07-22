@@ -4,6 +4,84 @@ This file is the project-local state note for TotoAI only. Do not mix it with
 local skills, personal knowledge bases, team knowledge bases, or unrelated
 memory stores.
 
+## Country Identity and Progressive Preparation (2026-07-22)
+
+Country context comparison now uses shared stable identities for Russian,
+English, ISO alpha-2/alpha-3, and common provider forms. This includes
+`США`/`USA`/`US`/`United States` equivalence while preserving fail-closed
+country mismatches. The same identity comparison is used by conservative event
+resolution and the persistent reviewed team registry; it is not a team or
+drawing alias mechanism.
+
+Missing-start preparation now resolves the accumulated provider schedule after
+each successfully loaded date without publishing preparation or pins. It stops
+requesting later dates only after unique 15/15 resolution and normal playable
+two-Moscow-date timing. If readiness is not reached, it continues through the
+configured horizon. Any attempted date failure before readiness remains
+fail-closed, and final ready pin publication remains atomic. The self-contained
+drawing-4952-style reviewed-provider-ID regression reaches 15/15 on dates
+July 21-23 without requesting July 24-26; its unresolved counterpart continues
+and fails closed on a later required date.
+
+Verification: country/preparation focused tests passed `32 passed in 5.22s`;
+the synchronization/systematic-resolution integration set passed `17 passed in
+79.14s`; the full suite passed `1184 passed in 200.39s`. Repository-wide Ruff
+and `git diff --check` passed. No network, `.env`, commit, or push was used.
+
+The authorized live diagnostic preparation for drawing 4952 (internal ID
+11970) synchronized exactly 15 events and 15 quote sets, then reached atomic
+`ready` preparation with 15/15 pins. Its final cache-first preparation made
+zero additional TotoBrief detail requests and zero provider requests. It
+generated no package, scheduler marker, or bet; this is operational readiness
+evidence only, not profitability evidence.
+
+## Coordinated TotoBrief Synchronization (2026-07-22)
+
+The TotoBrief transport now has one request coordinator shared by normal
+client and CLI paths. It enforces a configurable two-second minimum interval,
+persists server-authoritative `Retry-After` even after the final exhausted 429,
+and applies capped exponential backoff with jitter for 429, temporary 5xx,
+timeout, connection, chunked-transfer, and content-decoding failures. A locked,
+fsynced project-local state file coordinates separate CLI processes; explicit
+schema/`written_at`/plausibility policy distinguishes stale or corrupt state
+without shortening a valid long block. Diagnostics strip query strings and
+secrets. Clock, sleep, and randomness remain injectable for deterministic
+tests.
+
+Drawing summaries and detail are now separate synchronization stages. Page-one
+metadata/status changes commit before detail fetch, so a deferred current
+detail cannot leave earlier drawing statuses stale. Detail persistence is
+idempotent and resumable. Exact schema-validated raw detail caches require a
+hash/provenance sidecar commit marker, accept a configurable 12-hour freshness
+window, and reject wrong drawing IDs, malformed or torn payloads, missing
+sidecars, non-contiguous/duplicate orders, partial quotes, stale data, future
+timestamps, and symlink/escape paths. Exactly 15 complete events are required
+before cache or SQLite persistence. A valid cache may populate a locally
+missing drawing without another detail request, while a partial legacy SQLite
+detail remains eligible for retry.
+
+`sync-prepare --open` is the single morning operational path: one page-one
+request, page-one-only open selection, cache-first exact detail
+synchronization, then the existing
+API-Sports preparation. It exposes request waits/retries and cache provenance,
+commits partial summary progress, and exits fail-closed when detail is
+unavailable. `prepare-drawing` consumes the synchronized exact local
+drawing/cache by default and only performs remote TotoBrief work with explicit
+`--refresh-totobrief`. Null `start_at` remains supported without fabricated
+timestamps; existing bounded schedule-date expansion remains authoritative.
+`sync-prepare --open --sync-only` performs the strict synchronization path but
+does not call API-Sports or write preparation/pins. Full synchronization writes
+pins only after all detail identity/status/deadline and 15-event gates pass.
+
+No live network or `.env` was used during implementation or tests. No
+profitability claim follows from synchronization reliability work.
+
+Final verification for this hardening pass: the explicit adversarial/focused
+suite passed `51 passed in 25.25s`; the full suite passed `1173 passed in
+199.65s`. Repository-wide Ruff and `git diff --check` passed. CLI help smoke
+passed for `sync-prepare`, `prepare-drawing`, `collect`, `inspect-api`, `info`,
+and `drawings`. No live request or `.env` was used.
+
 ## Deterministic Offline Runner Replay (2026-07-21)
 
 `run-drawing` now has an explicit `--offline-replay` path for one exact internal

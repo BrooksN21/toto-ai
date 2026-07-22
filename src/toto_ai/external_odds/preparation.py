@@ -66,13 +66,25 @@ class PreparationScheduleResult:
     diagnostics: tuple[dict[str, str | None], ...]
 
 
+@dataclass(frozen=True)
+class _ResolutionPreview:
+    provider_candidates: tuple[ProviderEvent, ...]
+    resolutions: tuple[CandidateResolution, ...]
+    candidate_by_id: Mapping[str, ProviderEvent]
+    resolved_starts: Mapping[int, datetime]
+    eligibility: DrawingEligibility
+
+
 def fetch_preparation_schedule(
     target: TargetDrawing,
     provider_client: Any,
     *,
+    session_factory: Any,
+    provider: str = "api-sports",
+    event_contexts: Mapping[int, ResolutionContext] | None = None,
     missing_start_horizon_days: int = 5,
 ) -> PreparationScheduleResult:
-    """Fetch dates progressively, preserving successes when one date fails."""
+    """Fetch dates until strict non-publishing resolution is ready or exhausted."""
     if not 1 <= missing_start_horizon_days <= 5:
         raise ValueError("missing_start_horizon_days must be from 1 through 5")
     required: dict[str, set[date]] = {}
@@ -91,6 +103,8 @@ def fetch_preparation_schedule(
 
     events_by_identity: dict[tuple[str, str], ProviderEvent] = {}
     diagnostics: list[dict[str, str | None]] = []
+    failed_before_readiness = False
+    ready = False
     for sport in sorted(required):
         for requested_date in sorted(required[sport]):
             try:
@@ -106,6 +120,7 @@ def fetch_preparation_schedule(
                         "reason": str(error) or type(error).__name__,
                     }
                 )
+                failed_before_readiness = True
                 continue
             diagnostics.append(
                 {
@@ -117,6 +132,25 @@ def fetch_preparation_schedule(
             )
             for event in events:
                 events_by_identity[(event.provider, event.provider_event_id)] = event
+            preview = _resolve_preparation_candidates(
+                target,
+                tuple(events_by_identity.values()),
+                session_factory=session_factory,
+                provider=provider,
+                event_contexts=event_contexts,
+            )
+            ready = (
+                not failed_before_readiness
+                and all(
+                    resolution.status == "matched"
+                    for resolution in preview.resolutions
+                )
+                and preview.eligibility.status == "playable"
+            )
+            if ready:
+                break
+        if ready:
+            break
     return PreparationScheduleResult(
         candidates=tuple(events_by_identity.values()),
         diagnostics=tuple(diagnostics),
@@ -165,58 +199,17 @@ def prepare_drawing(
         )
         return _result_from_existing(target, fingerprint, provider, existing)
 
-    provider_candidates = tuple(
-        candidate for candidate in candidates if candidate.provider == provider
+    preview = _resolve_preparation_candidates(
+        target,
+        candidates,
+        session_factory=session_factory,
+        provider=provider,
+        event_contexts=event_contexts,
     )
-    resolutions: list[CandidateResolution] = []
-    for event in target.events:
-        context = (
-            event_contexts.get(event.event_order)
-            if event_contexts is not None
-            else None
-        ) or derive_resolution_context(event, provider=provider)
-        resolutions.append(
-            resolve_event_candidate(
-                event,
-                provider_candidates,
-                session_factory=session_factory,
-                context=context,
-            )
-        )
+    resolutions = list(preview.resolutions)
+    candidate_by_id = preview.candidate_by_id
 
-    matched_fixture_ids = [
-        resolution.provider_event_id
-        for resolution in resolutions
-        if resolution.status == "matched"
-    ]
-    duplicated = {
-        fixture_id
-        for fixture_id in matched_fixture_ids
-        if matched_fixture_ids.count(fixture_id) > 1
-    }
-    if duplicated:
-        resolutions = [
-            (
-                CandidateResolution(
-                    status="ambiguous",
-                    provider_event_id=None,
-                    orientation=None,
-                    confidence=resolution.confidence,
-                    margin=resolution.margin,
-                    reason="provider fixture is not unique across drawing events",
-                    candidates=resolution.candidates,
-                )
-                if resolution.provider_event_id in duplicated
-                else resolution
-            )
-            for resolution in resolutions
-        ]
-
-    candidate_by_id = {
-        candidate.provider_event_id: candidate for candidate in provider_candidates
-    }
     pin_specs: list[dict[str, Any]] = []
-    resolved_starts: dict[int, datetime] = {}
     events: list[PreparationEventResult] = []
     for event, resolution in zip(target.events, resolutions, strict=True):
         fixture_id = resolution.provider_event_id
@@ -262,7 +255,6 @@ def prepare_drawing(
                     country=candidate.country,
                     context=candidate.league,
                 ).id
-            resolved_starts[event.event_order] = candidate.starts_at
             pin_specs.append(
                 {
                     "drawing_id": target.drawing_id,
@@ -303,27 +295,7 @@ def prepare_drawing(
             )
         )
 
-    starts = tuple(
-        EffectiveEventStart(
-            event_order=event.event_order,
-            starts_at=(
-                event.starts_at
-                if event.starts_at is not None
-                else resolved_starts.get(event.event_order)
-            ),
-            source=(
-                "totobrief"
-                if event.starts_at is not None
-                else (
-                    "provider"
-                    if resolved_starts.get(event.event_order) is not None
-                    else "unresolved"
-                )
-            ),
-        )
-        for event in target.events
-    )
-    eligibility = classify_drawing_eligibility(starts)
+    eligibility = preview.eligibility
     date_failure_orders = _failed_date_event_orders(
         target, schedule_diagnostics
     )
@@ -375,6 +347,99 @@ def prepare_drawing(
             **draft.__dict__,
             "pins": tuple(sorted(pins, key=lambda pin: pin.event_order)),
         }
+    )
+
+
+def _resolve_preparation_candidates(
+    target: TargetDrawing,
+    candidates: tuple[ProviderEvent, ...] | list[ProviderEvent],
+    *,
+    session_factory: Any,
+    provider: str,
+    event_contexts: Mapping[int, ResolutionContext] | None,
+) -> _ResolutionPreview:
+    provider_candidates = tuple(
+        candidate for candidate in candidates if candidate.provider == provider
+    )
+    resolutions: list[CandidateResolution] = []
+    for event in target.events:
+        context = (
+            event_contexts.get(event.event_order)
+            if event_contexts is not None
+            else None
+        ) or derive_resolution_context(event, provider=provider)
+        resolutions.append(
+            resolve_event_candidate(
+                event,
+                provider_candidates,
+                session_factory=session_factory,
+                context=context,
+            )
+        )
+
+    matched_fixture_ids = [
+        resolution.provider_event_id
+        for resolution in resolutions
+        if resolution.status == "matched"
+    ]
+    duplicated = {
+        fixture_id
+        for fixture_id in matched_fixture_ids
+        if matched_fixture_ids.count(fixture_id) > 1
+    }
+    if duplicated:
+        resolutions = [
+            (
+                CandidateResolution(
+                    status="ambiguous",
+                    provider_event_id=None,
+                    orientation=None,
+                    confidence=resolution.confidence,
+                    margin=resolution.margin,
+                    reason="provider fixture is not unique across drawing events",
+                    candidates=resolution.candidates,
+                )
+                if resolution.provider_event_id in duplicated
+                else resolution
+            )
+            for resolution in resolutions
+        ]
+
+    candidate_by_id = {
+        candidate.provider_event_id: candidate for candidate in provider_candidates
+    }
+    resolved_starts = {
+        event.event_order: candidate_by_id[resolution.provider_event_id].starts_at
+        for event, resolution in zip(target.events, resolutions, strict=True)
+        if resolution.status == "matched"
+        and resolution.provider_event_id is not None
+    }
+    starts = tuple(
+        EffectiveEventStart(
+            event_order=event.event_order,
+            starts_at=(
+                event.starts_at
+                if event.starts_at is not None
+                else resolved_starts.get(event.event_order)
+            ),
+            source=(
+                "totobrief"
+                if event.starts_at is not None
+                else (
+                    "provider"
+                    if resolved_starts.get(event.event_order) is not None
+                    else "unresolved"
+                )
+            ),
+        )
+        for event in target.events
+    )
+    return _ResolutionPreview(
+        provider_candidates=provider_candidates,
+        resolutions=tuple(resolutions),
+        candidate_by_id=candidate_by_id,
+        resolved_starts=resolved_starts,
+        eligibility=classify_drawing_eligibility(starts),
     )
 
 

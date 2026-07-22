@@ -14,6 +14,7 @@ dist/
 data/*.db
 data/*.sqlite
 data/external-cache/
+data/totobrief-cache/
 data/raw/*.json
 reports/validation_*.md
 reports/bk_vs_norm.md

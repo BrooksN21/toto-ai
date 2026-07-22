@@ -1,4 +1,7 @@
+import pytest
+
 from toto_ai.api.client import BASE_URL, TotoBriefClient
+from toto_ai.api.rate_limit import TotoBriefRequestError
 
 
 class FakeResponse:
@@ -68,3 +71,25 @@ def test_drawing_info_requests_drawing_info_endpoint():
             "timeout": 30,
         }
     ]
+
+
+def test_malformed_json_is_sanitized_and_not_retried():
+    class MalformedResponse(FakeResponse):
+        status_code = 200
+
+        def json(self):
+            raise ValueError(
+                "malformed body from https://totobrief.com/path?token=secret"
+            )
+
+    session = FakeSession(MalformedResponse(None))
+    client = TotoBriefClient(session=session)
+
+    with pytest.raises(TotoBriefRequestError, match="malformed JSON") as exc:
+        client.get_json("/path?token=secret")
+
+    assert exc.value.endpoint == "/path"
+    assert exc.value.attempts == 1
+    assert len(session.calls) == 1
+    assert "secret" not in str(exc.value)
+    assert "https://" not in str(exc.value)

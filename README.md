@@ -34,6 +34,72 @@ python -m pytest
 python -m ruff check .
 ```
 
+## Morning Synchronization and Preparation
+
+Use one command to refresh TotoBrief page-one metadata, synchronize the exact
+open drawing, and prepare the API-Sports fixture/team/time pins:
+
+```bash
+set -a
+source .env
+set +a
+.venv/bin/python -m toto_ai.cli sync-prepare \
+  --open \
+  --db data/toto.db \
+  --aliases data/external-odds/team-aliases.json \
+  --raw-cache-dir data/raw \
+  --totobrief-rate-state data/totobrief-cache/request-state.json
+```
+
+The TotoBrief client coordinates requests across CLI processes through the
+project-local state file, waits at least two seconds between attempts, honors
+`Retry-After` (including a final exhausted `429`), and retries bounded
+`429`/temporary `5xx` and transport failures. Page-one status changes are
+committed before drawing detail is requested, and the open candidate is chosen
+only from that fresh page-one response. A fresh exact drawing cache is reused
+only when its mandatory sidecar, payload hash, identity, 12-hour freshness,
+and complete 15-event/quote structure all validate. Preparation therefore
+does not immediately issue the same detail request again. Progress reports
+waits, retries, cache provenance, and deferred status.
+
+The command fails closed with exit code `2` when exact drawing detail is not
+available or preparation is unresolved. `start_at = null` remains null in the
+TotoBrief data; the existing bounded API-Sports date expansion supplies
+preparation evidence rather than inventing a start time. For deterministic
+testing or replay, pass `--schedule-cache`; otherwise `API_SPORTS_KEY` must be
+present in the environment.
+
+To synchronize and diagnose TotoBrief without calling API-Sports or writing
+preparation/pins, use:
+
+```bash
+.venv/bin/python -m toto_ai.cli sync-prepare \
+  --open \
+  --sync-only \
+  --db data/toto.db \
+  --raw-cache-dir data/raw \
+  --totobrief-rate-state data/totobrief-cache/request-state.json
+```
+
+The full `sync-prepare` path writes preparation and pins only after fresh
+page-one selection, exact detail identity/status/deadline validation, complete
+15-event cache validation, and successful API-Sports resolution. Schedule
+dates are loaded incrementally and resolution is evaluated without publishing
+after each successful date. Once all 15 events resolve uniquely within the
+normal playable two-day timing rule, later dates are not requested. If the
+configured horizon is still needed, any attempted date failure before readiness
+keeps the run fail-closed. Country context uses stable Russian/English/ISO
+identities rather than drawing-specific aliases. Any failed gate exits closed.
+An explicit operational `prepare-drawing --target-cache`
+must be the canonical `drawing_<id>.json` file, must have its valid sidecar,
+requires `--drawing-id`, and must match an already synchronized playable local
+drawing; sidecar-free fixtures are accepted only by the explicit
+non-production `run-drawing --offline-replay` workflow.
+
+After a successful morning run, `prepare-drawing --open` uses the synchronized
+local drawing and exact validated cache by default and makes no TotoBrief
+detail request. Use `--refresh-totobrief` only for an explicit remote refresh.
+
 ## Deterministic Offline Drawing Replay
 
 `run-drawing --offline-replay` replays one exact saved target and provider

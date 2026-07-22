@@ -1,6 +1,6 @@
 import json
 from dataclasses import replace
-from datetime import timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from sqlalchemy import func, select
@@ -12,7 +12,8 @@ from tests.test_external_event_matching_drawing_4951 import (
     _target_drawing,
 )
 from toto_ai import cli
-from toto_ai.db.models import DrawingEventPin
+from toto_ai.api.detail_cache import write_drawing_detail_cache
+from toto_ai.db.models import Drawing, DrawingEventPin
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.external_odds.collection import build_external_collection
 from toto_ai.external_odds.domain import QuotaState
@@ -69,13 +70,16 @@ def _plan(tmp_path: Path, *, suffix: str):
     )
 
 
-def _target_cache_payload():
+def _target_cache_payload(*, deadline=None):
     target = _target_drawing()
+    deadline = deadline or target.deadline
     return {
         "data": {
             "id": target.drawing_id,
             "number": target.drawing_number,
-            "ended_at": target.deadline.isoformat(),
+            "name": "baltbet-main",
+            "status": "active",
+            "ended_at": deadline.isoformat(),
             "events": [
                 {
                     "id": event.event_id,
@@ -89,6 +93,9 @@ def _target_cache_payload():
                         "bk_win_1": event.bk_probabilities[0],
                         "bk_draw": event.bk_probabilities[1],
                         "bk_win_2": event.bk_probabilities[2],
+                        "pool_win_1": event.bk_probabilities[0],
+                        "pool_draw": event.bk_probabilities[1],
+                        "pool_win_2": event.bk_probabilities[2],
                     },
                 }
                 for event in target.events
@@ -99,11 +106,18 @@ def _target_cache_payload():
 
 def test_prepare_drawing_cli_unresolved_is_machine_readable_and_nonzero(
     tmp_path: Path,
+    monkeypatch,
 ):
-    target_cache = tmp_path / "target.json"
-    target_cache.write_text(
-        json.dumps(_target_cache_payload(), ensure_ascii=False),
-        encoding="utf-8",
+    monkeypatch.chdir(tmp_path)
+    deadline = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(days=1)
+    target_payload = _target_cache_payload(deadline=deadline)
+    target_cache = write_drawing_detail_cache(
+        target_payload,
+        drawing_id=11968,
+        cache_dir=tmp_path / "raw",
+        fetched_at=datetime.now(timezone.utc),
+        source="test-fixture",
+        allowed_root=tmp_path,
     )
     schedule_cache = tmp_path / "schedule.json"
     schedule_cache.write_text(
@@ -113,6 +127,19 @@ def test_prepare_drawing_cli_unresolved_is_machine_readable_and_nonzero(
     aliases = tmp_path / "aliases.json"
     aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
     db = tmp_path / "unresolved.sqlite"
+    engine = init_db(db)
+    with get_session_factory(engine)() as session:
+        session.add(
+            Drawing(
+                id=11968,
+                number=4951,
+                name="baltbet-main",
+                status="active",
+                ended_at=deadline.isoformat(),
+            )
+        )
+        session.commit()
+    engine.dispose()
 
     result = CLI_RUNNER.invoke(
         cli.app,
@@ -125,7 +152,7 @@ def test_prepare_drawing_cli_unresolved_is_machine_readable_and_nonzero(
             "--aliases",
             str(aliases),
             "--target-cache",
-            str(target_cache),
+            str(target_cache.path),
             "--schedule-cache",
             str(schedule_cache),
         ],

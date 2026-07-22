@@ -135,7 +135,12 @@ def test_inspect_json_paths_flattens_nested_dicts_and_arrays():
 
 
 def test_save_raw_response_writes_complete_json(tmp_path):
-    path = save_raw_response(sample_payload(), drawing_id=4875, output_dir=tmp_path)
+    path = save_raw_response(
+        sample_payload(),
+        drawing_id=4875,
+        output_dir=tmp_path,
+        allowed_root=tmp_path,
+    )
 
     assert path == tmp_path / "drawing_4875.json"
     assert json.loads(path.read_text()) == sample_payload()
