@@ -37,7 +37,9 @@ from toto_ai.ev.models import EVComponents, EVInput, EVSurface
 from toto_ai.external_odds.api_sports import APISportsError
 from toto_ai.external_odds.audit import audit_external_coverage
 from toto_ai.external_odds.domain import ProviderEvent, ProviderMarket, QuotaState
+from toto_ai.external_odds.preparation import prepare_drawing
 from toto_ai.external_odds.prospective import collect_fresh_open_external_odds
+from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.runner import (
     DrawingRunnerConfig,
     publish_drawing_run_artifacts,
@@ -195,6 +197,8 @@ class _FakeProvider:
                 away_team=f"Away {event['order']}",
                 fetched_at=self.observed_at,
                 payload_hash=f"schedule-{event['order']}",
+                provider_home_team_id=f"provider-home-{event['order']}",
+                provider_away_team_id=f"provider-away-{event['order']}",
             )
             for event in events
             if int(event["order"]) not in self.unavailable_orders
@@ -359,6 +363,7 @@ def _run_acceptance_scenario(
     advance_on_first_market_call: bool = False,
     max_passes: int = 1,
     market_prices: tuple[tuple[float, float, float], ...] | None = None,
+    schedule_observed_at: datetime | None = None,
 ):
     payload = payload or _payload()
     client = _FakeTotoBriefClient(
@@ -376,11 +381,39 @@ def _run_acceptance_scenario(
     readonly_session_factory = get_session_factory(readonly_engine)
     provider_instances: list[_FakeProvider] = []
 
+    preparation_target = parse_target_drawing(payload, fetched_at=launch_at)
+    preparation_candidates = tuple(
+        ProviderEvent(
+            provider="api-sports",
+            provider_event_id=f"provider-{event.event_order}",
+            sport=event.sport,
+            league=event.championship,
+            starts_at=(
+                event.starts_at
+                or (provider_starts or {}).get(event.event_order)
+                or event.deadline + timedelta(hours=event.event_order + 1)
+            ),
+            home_team=event.home_team,
+            away_team=event.away_team,
+            fetched_at=launch_at,
+            payload_hash=f"preparation-{event.event_order}",
+            provider_home_team_id=f"provider-home-{event.event_order}",
+            provider_away_team_id=f"provider-away-{event.event_order}",
+        )
+        for event in preparation_target.events
+    )
+    preparation = prepare_drawing(
+        preparation_target,
+        preparation_candidates,
+        session_factory=session_factory,
+    )
+    prepared_pins = preparation.pins if preparation.status == "ready" else None
+
     def provider_factory(cache_dir: Path) -> _FakeProvider:
         cache_dir.mkdir(parents=True, exist_ok=True)
         provider = _FakeProvider(
             payload,
-            clock.now(),
+            schedule_observed_at or clock.now(),
             provider_starts=provider_starts,
             unavailable_orders=unavailable_orders,
             failing_schedule_dates=failing_schedule_dates,
@@ -425,6 +458,7 @@ def _run_acceptance_scenario(
             provider_factory=provider_factory,
             session_factory=session_factory,
             aliases={},
+            prepared_pins=prepared_pins,
             cache_root=cache_root,
             target=target,
             stop_at=stop_at,
@@ -494,7 +528,7 @@ def test_safe_runner_operator_boundary(
     assert all(path.exists() for path in report_paths)
     if expected_decision == "PLAY":
         manifest = _runner_manifest_payload(report_paths)
-        assert manifest["schema_version"] == 3
+        assert manifest["schema_version"] == 4
         _assert_stable_non_override_timing(manifest)
         ev = manifest["ev"]
         package = ev["package"]
@@ -514,6 +548,8 @@ def test_safe_runner_operator_boundary(
         assert result.collection.snapshot.target_fingerprint == (
             result.target.fingerprint
         )
+        assert result.collection.snapshot.pinned_revalidation is not None
+        assert result.collection.snapshot.pinned_revalidation.ready_for_play is True
         assert result.timing_eligibility.target_fingerprint == (
             result.target.fingerprint
         )
@@ -573,6 +609,28 @@ def test_run_drawing_cli_computed_threshold_no_bet_leaks_no_coupon_artifact(
         json.dumps({"version": 1, "aliases": {}}),
         encoding="utf-8",
     )
+    db_path = tmp_path / "toto.sqlite"
+    engine = init_db(db_path)
+    session_factory = get_session_factory(engine)
+    target = parse_target_drawing(payload, fetched_at=clock.now())
+    preparation_provider = _FakeProvider(payload, clock.now())
+    schedule_dates = tuple(
+        sorted({event.starts_at.date() for event in target.events if event.starts_at})
+    )
+    candidates = tuple(
+        candidate
+        for requested_date in schedule_dates
+        for candidate in preparation_provider.fetch_schedule(
+            "football", (requested_date,)
+        )
+    )
+    prepared = prepare_drawing(
+        target,
+        candidates,
+        session_factory=session_factory,
+    )
+    assert prepared.status == "ready"
+    engine.dispose()
     report_dir = tmp_path / "reports"
     monkeypatch.setenv("API_SPORTS_KEY", SENTINEL_KEY)
     monkeypatch.setattr(cli_module, "TotoBriefClient", lambda: client)
@@ -597,7 +655,7 @@ def test_run_drawing_cli_computed_threshold_no_bet_leaks_no_coupon_artifact(
             "--bank",
             "4800",
             "--db",
-            str(tmp_path / "toto.sqlite"),
+            str(db_path),
             "--report-dir",
             str(report_dir),
             "--cache-root",
@@ -640,7 +698,7 @@ def test_run_drawing_cli_computed_threshold_no_bet_leaks_no_coupon_artifact(
 
 
 @pytest.mark.parametrize("bank", (4800, 6000, 9600))
-def test_safe_runner_caps_dynamic_banks_and_keeps_external_fallback_audit_only(
+def test_safe_runner_never_authorizes_bk_fallback_after_pin_failure(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     bank: int,
@@ -655,20 +713,20 @@ def test_safe_runner_caps_dynamic_banks_and_keeps_external_fallback_audit_only(
         )
     )
 
-    assert result.decision == "PLAY"
+    assert result.decision == "NO BET"
     assert result.collection is not None
     assert len(result.collection.snapshot.events) == 15
     assert sum(
         event.probability_source == "totobrief_bk_fallback"
         for event in result.collection.snapshot.events
     ) == 3
-    assert result.audit is not None
-    assert result.audit.gate.decision == "PENDING"
-    assert result.ev_run is not None
-    assert result.ev_run.ev_input.probability_sources == ("totobrief_bk",) * 15
-    assert result.ev_run.package.cost == bank
-    assert result.ev_run.package.cost <= bank
-    assert result.ev_run.package.cost % 30 == 0
+    summary = result.collection.snapshot.pinned_revalidation
+    assert summary is not None
+    assert summary.matched_count == 12
+    assert summary.missing_event_orders == (12, 13, 14)
+    assert summary.ready_for_play is False
+    assert result.audit is None
+    assert result.ev_run is None
     assert provider_calls and provider_calls[0][0]
     persisted = db_path.read_bytes() + b"".join(
         path.read_bytes() for path in report_paths
@@ -749,7 +807,8 @@ def test_safe_runner_expands_to_day_five_and_vetoes_multi_day_timing(
     assert result.collection.expanded is True
     assert result.collection.final_horizon_days == 5
     assert result.collection.snapshot.events[14].effective_start_source == "provider"
-    assert result.timing_eligibility.status == "multi_day"
+    assert result.timing_eligibility.status == "not_checked"
+    assert "pinned revalidation" in result.terminal_reason
     assert result.ev_run is None
     assert len(result.collection.snapshot.events) == 15
     assert provider_calls[0][0] != provider_calls[-1][0]
@@ -773,7 +832,16 @@ def test_safe_runner_partial_schedule_remains_explicit_and_unresolved(
     assert result.collection is not None
     assert len(result.collection.snapshot.events) == 15
     assert result.collection.snapshot.eligibility.status == "unknown"
-    assert result.timing_eligibility.status == "unknown"
+    assert result.timing_eligibility.status == "not_checked"
+    summary = result.collection.snapshot.pinned_revalidation
+    assert summary is not None
+    assert summary.ready_for_play is False
+    assert summary.failed_schedule_dates
+    assert summary.provider_failure_event_orders
+    assert any(
+        event.probability_source == "totobrief_bk_fallback"
+        for event in result.collection.snapshot.events
+    )
     assert result.ev_run is None
     _assert_suppressed_package_summary(report_paths, bank=4800)
     bytes_written = db_path.read_bytes() + b"".join(
@@ -782,6 +850,30 @@ def test_safe_runner_partial_schedule_remains_explicit_and_unresolved(
         path.read_bytes() for path in cache_root.rglob("*") if path.is_file()
     )
     assert b"acceptance-secret-must-not-persist" not in bytes_written
+
+
+def test_stale_pinned_schedule_blocks_runner_before_ev(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _forbid_unconfigured_network(monkeypatch)
+    result, report_paths, _, _, _ = _run_acceptance_scenario(
+        tmp_path,
+        T_MINUS_19,
+        schedule_observed_at=T_MINUS_19 - timedelta(days=2),
+    )
+
+    assert result.decision == "NO BET"
+    assert result.ev_run is None
+    assert result.collection is not None
+    summary = result.collection.snapshot.pinned_revalidation
+    assert summary is not None
+    assert summary.matched_count == 0
+    assert summary.stale_event_orders == tuple(range(15))
+    assert summary.schedule_fresh is False
+    assert summary.ready_for_play is False
+    assert "pinned revalidation" in result.terminal_reason
+    _assert_suppressed_package_summary(report_paths, bank=4800)
 
 
 def test_safe_runner_stops_before_retry_when_collection_reaches_cutoff(
@@ -861,7 +953,7 @@ def test_safe_runner_discards_package_that_finishes_at_safety_cutoff(
     _assert_suppressed_package_summary(report_paths, bank=4800)
 
 
-def test_external_consensus_and_fallback_cannot_change_real_ev_input_or_output(
+def test_external_consensus_is_diagnostic_and_pin_failure_blocks_fallback_ev(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -885,7 +977,6 @@ def test_external_consensus_and_fallback_cannot_change_real_ev_input_or_output(
         payload=payload,
         unavailable_orders=tuple(range(15)),
     )
-    fallback_input = _CAPTURED_EV_INPUTS[-1]
 
     expected_bk = _independently_normalized_bk(payload)
     assert len(consensus_input.true_probabilities) == 15
@@ -896,7 +987,6 @@ def test_external_consensus_and_fallback_cannot_change_real_ev_input_or_output(
         rtol=1e-15,
         atol=1e-15,
     )
-    assert consensus_input == fallback_input
     assert consensus_result.collection is not None
     assert fallback_result.collection is not None
     consensus_event = consensus_result.collection.snapshot.events[0]
@@ -913,8 +1003,12 @@ def test_external_consensus_and_fallback_cannot_change_real_ev_input_or_output(
         fallback_event.probability_2,
     )
     assert consensus_result.ev_run is not None
-    assert fallback_result.ev_run is not None
-    assert consensus_result.ev_run.package == fallback_result.ev_run.package
+    assert fallback_result.decision == "NO BET"
+    assert fallback_result.ev_run is None
+    summary = fallback_result.collection.snapshot.pinned_revalidation
+    assert summary is not None
+    assert summary.matched_count == 0
+    assert summary.ready_for_play is False
 
 
 def test_command_boundary_detaches_chained_provider_secret_from_every_surface(
@@ -1044,7 +1138,7 @@ def _assert_suppressed_package_summary(
     bank: int,
 ) -> None:
     payload = _runner_manifest_payload(report_paths)
-    assert payload["schema_version"] == 3
+    assert payload["schema_version"] == 4
     _assert_stable_non_override_timing(payload)
     assert payload["ev"] == {
         "computed": False,

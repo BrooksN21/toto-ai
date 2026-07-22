@@ -471,9 +471,16 @@ def _parse_schedule_payload(
     for item in payload["response"]:
         if not isinstance(item, Mapping):
             raise APISportsError("API-Sports event must be an object")
-        provider_event_id, starts_at, league, home, away = _event_core_fields(
-            item, sport=sport
-        )
+        (
+            provider_event_id,
+            starts_at,
+            league,
+            country,
+            home,
+            away,
+            home_id,
+            away_id,
+        ) = _event_core_fields(item, sport=sport)
         events.append(
             ProviderEvent(
                 provider="api-sports",
@@ -485,6 +492,9 @@ def _parse_schedule_payload(
                 away_team=away,
                 fetched_at=fetched_at,
                 payload_hash=_payload_hash(item),
+                country=country,
+                provider_home_team_id=home_id,
+                provider_away_team_id=away_id,
             )
         )
     return tuple(events)
@@ -609,7 +619,7 @@ def _event_core_fields(
     item: Mapping[str, Any],
     *,
     sport: Sport,
-) -> tuple[str, datetime, str, str, str]:
+) -> tuple[str, datetime, str, str | None, str, str, str | None, str | None]:
     if sport == "football":
         event_label = "fixture"
     elif sport == "hockey":
@@ -627,6 +637,8 @@ def _event_core_fields(
     if not isinstance(league_obj, Mapping):
         raise APISportsError("API-Sports league must be an object")
     league = _text(league_obj.get("name"), "league name")
+    raw_country = league_obj.get("country")
+    country = None if raw_country is None else _text(raw_country, "league country")
     teams = item.get("teams")
     if not isinstance(teams, Mapping):
         raise APISportsError("API-Sports teams must be an object")
@@ -636,7 +648,9 @@ def _event_core_fields(
         raise APISportsError("API-Sports teams must include home and away")
     home = _text(home_obj.get("name"), "home team")
     away = _text(away_obj.get("name"), "away team")
-    return provider_event_id, starts_at, league, home, away
+    home_id = _optional_identifier(home_obj.get("id"), "home team id")
+    away_id = _optional_identifier(away_obj.get("id"), "away team id")
+    return provider_event_id, starts_at, league, country, home, away, home_id, away_id
 
 
 def _market_event_id(item: Mapping[str, Any], *, sport: Sport) -> str:
@@ -672,6 +686,10 @@ def _identifier(value: object, field_name: str) -> str:
     if isinstance(value, str) and value.strip():
         return value.strip()
     raise APISportsError(f"API-Sports {field_name} is invalid")
+
+
+def _optional_identifier(value: object, field_name: str) -> str | None:
+    return None if value is None else _identifier(value, field_name)
 
 
 def _text(value: object, field_name: str) -> str:

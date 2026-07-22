@@ -1,3 +1,4 @@
+import json
 import math
 import os
 import subprocess
@@ -5,7 +6,7 @@ import sys
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -69,9 +70,17 @@ from toto_ai.ev.models import EVConfig, PlayTimingEligibility
 from toto_ai.ev.reports import write_ev_backtest_reports, write_ev_package_reports
 from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
 from toto_ai.external_odds.audit import CoverageAudit, audit_external_coverage
-from toto_ai.external_odds.collection import collect_open_external_odds
+from toto_ai.external_odds.collection import (
+    collect_open_external_odds,
+    pinned_revalidation_is_ready,
+)
 from toto_ai.external_odds.eligibility import DrawingEligibility, target_fingerprint
 from toto_ai.external_odds.matching import load_aliases
+from toto_ai.external_odds.preparation import (
+    fetch_preparation_schedule,
+    load_local_schedule,
+    prepare_drawing,
+)
 from toto_ai.external_odds.prospective import (
     ProspectiveCollectionResult,
     collect_fresh_open_external_odds,
@@ -79,6 +88,11 @@ from toto_ai.external_odds.prospective import (
 from toto_ai.external_odds.reports import write_external_coverage_reports
 from toto_ai.external_odds.storage import load_current_drawing_eligibility
 from toto_ai.external_odds.targets import parse_target_drawing
+from toto_ai.external_odds.team_registry import (
+    DrawingEventPinRecord,
+    load_ready_drawing_pins,
+    seed_reviewed_alias_config,
+)
 from toto_ai.external_odds.timing_overrides import (
     PinnedTimingOverrideCatalog,
     TimingOverrideRecord,
@@ -131,6 +145,7 @@ from toto_ai.runner import (
     CommandSchedulerPhaseRunner,
     DrawingRunnerConfig,
     DrawingRunPublication,
+    OfflineReplayProvenance,
     PinnedDrawing,
     RunnerTargetMismatch,
     RunnerTimingResolution,
@@ -147,6 +162,13 @@ from toto_ai.runner import (
     publish_drawing_run_artifacts,
     run_drawing,
     scheduler_plan_json,
+    write_drawing_run_reports,
+)
+from toto_ai.runner.offline_replay import (
+    OfflineReplayInputs,
+    OfflineScheduleProvider,
+    load_offline_replay_inputs,
+    resolve_offline_replay_paths,
 )
 
 app = typer.Typer(help="TotoBrief API commands.")
@@ -1092,6 +1114,7 @@ class _RunnerResources:
         [Mapping[str, object]], PlayTimingEligibility
     ]
     timing_override_pin: PinnedTimingOverrideCatalog | None
+    prepared_pins: tuple[DrawingEventPinRecord, ...] | None
 
 
 def _prepare_runner_resources(
@@ -1105,6 +1128,7 @@ def _prepare_runner_resources(
     cache_root: str | Path,
     provider_factory: Callable[[Path], object],
     timing_overrides: str | Path | None = None,
+    systematic_resolution: bool = True,
 ) -> _RunnerResources:
     candidate_paths = drawing_run_candidate_paths(
         config,
@@ -1136,6 +1160,18 @@ def _prepare_runner_resources(
     reviewed_aliases = load_aliases(aliases)
     readonly_engine = open_readonly_db(db)
     readonly_session_factory = get_session_factory(readonly_engine)
+    prepared_pins = (
+        load_ready_drawing_pins(
+            session_factory,
+            drawing_id=target.target.drawing_id,
+            drawing_fingerprint=target.fingerprint,
+            provider="api-sports",
+        )
+        if systematic_resolution
+        else None
+    )
+    if systematic_resolution and not prepared_pins:
+        raise ValueError("exact prepared drawing pins are missing; run prepare-drawing")
     return _RunnerResources(
         engine=engine,
         session_factory=session_factory,
@@ -1145,6 +1181,7 @@ def _prepare_runner_resources(
         timing_resolver=_build_runner_timing_resolver(str(db)),
         ev_timing_resolver=_build_timing_eligibility_resolver(str(db)),
         timing_override_pin=timing_override_pin,
+        prepared_pins=prepared_pins,
     )
 
 
@@ -1160,16 +1197,233 @@ def _require_override_resolution(
     return resolution
 
 
+class _OfflineTargetClient:
+    def __init__(self, inputs: OfflineReplayInputs) -> None:
+        self._inputs = inputs
+
+    def drawing_info(self, drawing_id: int) -> dict[str, object]:
+        if drawing_id != self._inputs.target.drawing_id:
+            raise ValueError("offline replay requested an unexpected drawing id")
+        return self._inputs.target_payload
+
+
+def _run_drawing_offline_replay(
+    *,
+    drawing_id: int,
+    target_cache: str,
+    schedule_cache: str,
+    replay_as_of: str,
+    replay_root: str,
+    bank: int,
+    stake: int,
+    final_lead_minutes: int,
+    safety_stop_minutes: int,
+    db: str | None,
+    report_dir: str | None,
+    provider: str,
+    aliases: str,
+    cache_root: str | None,
+) -> None:
+    paths = resolve_offline_replay_paths(
+        replay_root=replay_root,
+        db=db,
+        report_dir=report_dir,
+        cache_root=cache_root,
+        project_root=Path(__file__).resolve().parents[2],
+    )
+    inputs = load_offline_replay_inputs(
+        drawing_id=drawing_id,
+        target_cache=target_cache,
+        schedule_cache=schedule_cache,
+        replay_as_of=replay_as_of,
+        provider=provider,
+    )
+    config = DrawingRunnerConfig(
+        bank=bank,
+        stake=stake,
+        mode="research",
+        final_lead_minutes=final_lead_minutes,
+        safety_stop_minutes=safety_stop_minutes,
+    )
+    final_at = inputs.target.deadline - timedelta(minutes=config.final_lead_minutes)
+    safety_stop_at = inputs.target.deadline - timedelta(
+        minutes=config.safety_stop_minutes
+    )
+    if not final_at <= inputs.replay_as_of < safety_stop_at:
+        raise ValueError(
+            "--replay-as-of must be within the runner final window and before "
+            "the safety stop"
+        )
+
+    paths.root.mkdir(parents=True, exist_ok=True)
+    verified_paths = resolve_offline_replay_paths(
+        replay_root=paths.root,
+        db=paths.db,
+        report_dir=paths.reports,
+        cache_root=paths.provider_cache,
+        project_root=Path(__file__).resolve().parents[2],
+    )
+    if verified_paths != paths:
+        raise ValueError("replay output boundary changed before initialization")
+
+    engine = init_db(paths.db)
+    readonly_engine = None
+    try:
+        session_factory = get_session_factory(engine)
+        seed_reviewed_alias_config(session_factory, aliases, provider=provider)
+        preparation = prepare_drawing(
+            inputs.target,
+            inputs.schedule_events,
+            session_factory=session_factory,
+            provider=provider,
+            schedule_diagnostics=(
+                {
+                    "sport": "all",
+                    "date": None,
+                    "status": "success",
+                    "reason": (
+                        "validated offline schedule cache "
+                        f"sha256={inputs.schedule_cache_sha256}"
+                    ),
+                },
+            ),
+        )
+        if preparation.status != "ready" or len(preparation.pins) != 15:
+            raise ValueError(
+                "offline replay preparation is unresolved: "
+                f"mapped={preparation.mapped_count}/15, "
+                f"orders={preparation.unresolved_event_orders}"
+            )
+
+        aliases_map = load_aliases(aliases)
+        readonly_engine = open_readonly_db(paths.db)
+        readonly_factory = get_session_factory(readonly_engine)
+        timing_resolver = _build_runner_timing_resolver(str(paths.db))
+        ev_timing_resolver = _build_timing_eligibility_resolver(str(paths.db))
+        cached_client = _OfflineTargetClient(inputs)
+
+        def collect_target(target, stop_at):
+            result = collect_fresh_open_external_odds(
+                totobrief_client=cached_client,
+                provider_factory=lambda _cache_dir: OfflineScheduleProvider(
+                    inputs.schedule_events, provider
+                ),
+                session_factory=session_factory,
+                aliases=aliases_map,
+                prepared_pins=preparation.pins,
+                cache_root=paths.provider_cache,
+                target=target,
+                stop_at=stop_at,
+                max_passes=1,
+                max_expansion_passes=1,
+                retry_delay_seconds=0.0,
+                now=lambda: inputs.replay_as_of,
+                monotonic=lambda: 0.0,
+                sleep=lambda _seconds: (_ for _ in ()).throw(
+                    ValueError("offline replay must never sleep")
+                ),
+            )
+            if not pinned_revalidation_is_ready(result.snapshot):
+                summary = result.snapshot.pinned_revalidation
+                detail = "absent" if summary is None else (
+                    f"{summary.matched_count}/{summary.expected_count}; "
+                    f"stale={summary.stale_event_orders}; "
+                    f"provider_failures={summary.provider_failure_event_orders}; "
+                    f"date_failures={summary.date_failure_event_orders}"
+                )
+                raise ValueError(
+                    "offline replay pinned revalidation is not ready: " + detail
+                )
+            return result
+
+        pinned = pin_drawing(inputs.target)
+        result = run_drawing(
+            config=config,
+            resolve_target=lambda _resolved_at: pinned,
+            collect_target=collect_target,
+            resolve_timing=timing_resolver,
+            audit_coverage=lambda: audit_external_coverage(
+                readonly_factory,
+                last=30,
+                minimum_bookmakers=3,
+            ),
+            build_package=lambda expected: _build_runner_package(
+                client=cached_client,
+                expected=expected,
+                config=config.ev_config,
+                fetched_at=inputs.replay_as_of,
+                progress_callback=None,
+                timing_eligibility_resolver=ev_timing_resolver,
+            ),
+            now=lambda: inputs.replay_as_of,
+            monotonic=lambda: 0.0,
+            sleep=lambda _seconds: (_ for _ in ()).throw(
+                ValueError("offline replay must never sleep")
+            ),
+        )
+        if result.decision != "RESEARCH ONLY":
+            raise ValueError(
+                "offline replay did not finish as RESEARCH ONLY; no report published"
+            )
+        summary = result.collection.snapshot.pinned_revalidation
+        if summary is None or not summary.ready_for_play:
+            raise ValueError("offline replay lost authoritative pin revalidation")
+        result = replace(
+            result,
+            terminal_reason=(
+                "offline replay completed; research-only and non-actionable"
+            ),
+            offline_replay=OfflineReplayProvenance(
+                replay_root=str(paths.root),
+                replay_as_of=inputs.replay_as_of,
+                target_cache_path=str(inputs.target_cache_path),
+                target_cache_sha256=inputs.target_cache_sha256,
+                target_payload_sha256=inputs.target_payload_sha256,
+                schedule_cache_path=str(inputs.schedule_cache_path),
+                schedule_cache_sha256=inputs.schedule_cache_sha256,
+                schedule_payload_sha256=inputs.schedule_payload_sha256,
+                provider=inputs.provider,
+            ),
+        )
+        manifest_path, markdown_path = write_drawing_run_reports(
+            result,
+            report_dir=paths.reports,
+            input_paths=(
+                paths.db,
+                aliases,
+                inputs.target_cache_path,
+                inputs.schedule_cache_path,
+            ),
+        )
+    finally:
+        if readonly_engine is not None:
+            readonly_engine.dispose()
+        engine.dispose()
+
+    print("Decision: RESEARCH ONLY")
+    print("Actionable: no")
+    print("Preparation: ready 15/15")
+    print("Pinned revalidation: 15/15")
+    print(f"Manifest: {manifest_path}")
+    print(f"Report: {markdown_path}")
+
+
 @app.command("run-drawing")
 def run_drawing_command(
     open: bool = typer.Option(False, "--open"),  # noqa: A002
+    offline_replay: bool = typer.Option(False, "--offline-replay"),
+    drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
+    target_cache: str | None = typer.Option(None, "--target-cache"),
+    schedule_cache: str | None = typer.Option(None, "--schedule-cache"),
+    replay_as_of: str | None = typer.Option(None, "--replay-as-of"),
+    replay_root: str | None = typer.Option(None, "--replay-root"),
     bank: int = typer.Option(...),
     stake: int = typer.Option(30),
     mode: str = typer.Option("playable"),
     final_lead_minutes: int = typer.Option(20, min=1),
     safety_stop_minutes: int = typer.Option(5, min=1),
-    db: str = typer.Option("data/toto.db"),
-    report_dir: str = typer.Option("reports"),
+    db: str | None = typer.Option(None),
+    report_dir: str | None = typer.Option(None),
     provider: str = typer.Option("api-sports"),
     aliases: str = typer.Option("data/external-odds/team-aliases.json"),
     timing_overrides: str | None = typer.Option(None, "--timing-overrides"),
@@ -1177,11 +1431,58 @@ def run_drawing_command(
     max_passes: int = typer.Option(3, min=1),
     max_expansion_passes: int = typer.Option(3, min=1),
     retry_delay_seconds: float = typer.Option(65.0, min=0.0),
-    cache_root: str = typer.Option("data/external-cache/api-sports"),
+    cache_root: str | None = typer.Option(None),
 ) -> None:
     """Safely run one pinned drawing through collection, audit, and EV."""
+    replay_values = (drawing_id, target_cache, schedule_cache, replay_as_of)
+    if offline_replay:
+        if open:
+            raise typer.BadParameter("--offline-replay is incompatible with --open")
+        if any(value is None for value in replay_values):
+            raise typer.BadParameter(
+                "--offline-replay requires --drawing-id, --target-cache, "
+                "--schedule-cache, and --replay-as-of"
+            )
+        if replay_root is None:
+            raise typer.BadParameter("--offline-replay requires --replay-root")
+        if mode != "research":
+            raise typer.BadParameter(
+                "--offline-replay requires --mode research; playable is forbidden"
+            )
+        if timing_overrides is not None:
+            raise typer.BadParameter(
+                "--offline-replay is incompatible with --timing-overrides"
+            )
+        try:
+            _run_drawing_offline_replay(
+                drawing_id=drawing_id,
+                target_cache=target_cache,
+                schedule_cache=schedule_cache,
+                replay_as_of=replay_as_of,
+                replay_root=replay_root,
+                bank=bank,
+                stake=stake,
+                final_lead_minutes=final_lead_minutes,
+                safety_stop_minutes=safety_stop_minutes,
+                db=db,
+                report_dir=report_dir,
+                provider=provider,
+                aliases=aliases,
+                cache_root=cache_root,
+            )
+        except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+            raise typer.BadParameter(str(error)) from error
+        return
+    if any(value is not None for value in (*replay_values, replay_root)):
+        raise typer.BadParameter(
+            "--drawing-id/--target-cache/--schedule-cache/--replay-as-of/"
+            "--replay-root require --offline-replay"
+        )
+    db = db or "data/toto.db"
+    report_dir = report_dir or "reports"
+    cache_root = cache_root or "data/external-cache/api-sports"
     if not open:
-        raise typer.BadParameter("--open is required")
+        raise typer.BadParameter("--open is required unless --offline-replay is used")
     try:
         config = DrawingRunnerConfig(
             bank=bank,
@@ -1197,6 +1498,9 @@ def run_drawing_command(
     api_key = os.environ.get("API_SPORTS_KEY", "")
     if not api_key.strip():
         raise typer.BadParameter("API_SPORTS_KEY is required")
+    systematic_resolution = os.environ.get(
+        "TOTO_LEGACY_NAME_MATCHING", ""
+    ).strip().casefold() not in {"1", "true", "yes", "on"}
 
     command_error: typer.BadParameter | None = None
     result = None
@@ -1227,6 +1531,7 @@ def run_drawing_command(
                 cache_root=cache_root,
                 provider_factory=provider_factory,
                 timing_overrides=timing_overrides,
+                systematic_resolution=systematic_resolution,
             )
 
         def resolve_timing_override(
@@ -1266,6 +1571,7 @@ def run_drawing_command(
                 provider_factory=provider_factory,
                 session_factory=prepared.session_factory,
                 aliases=prepared.reviewed_aliases,
+                prepared_pins=prepared.prepared_pins,
                 cache_root=Path(cache_root),
                 target=target,
                 stop_at=stop_at,
@@ -1706,6 +2012,118 @@ def backtest_ev_command(
 
     print(_ev_backtest_summary_table(result))
     print(f"Reports written to {csv_path} and {markdown_path}")
+
+
+@app.command("prepare-drawing")
+def prepare_drawing_command(
+    open: bool = typer.Option(False, "--open"),  # noqa: A002
+    drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
+    db: str = typer.Option("data/toto.db"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    provider: str = typer.Option("api-sports"),
+    schedule_cache: str | None = typer.Option(None, "--schedule-cache"),
+    target_cache: str | None = typer.Option(None, "--target-cache"),
+    cache_root: str = typer.Option("data/external-cache/api-sports"),
+    quota_reserve: int = typer.Option(10, min=0),
+    max_retries: int = typer.Option(2, min=0),
+    expansion_horizon_days: int = typer.Option(5, min=1, max=5),
+) -> None:
+    """Prepare exact immutable fixture/team/time pins for one drawing."""
+    if open == (drawing_id is not None):
+        raise typer.BadParameter("choose exactly one of --open or --drawing-id")
+    if provider != "api-sports":
+        raise typer.BadParameter("provider must be api-sports")
+    fetched_at = datetime.now(timezone.utc)
+    try:
+        client = TotoBriefClient()
+        if target_cache is not None:
+            raw_target = json.loads(Path(target_cache).read_text(encoding="utf-8"))
+            target_payload = raw_target.get("payload", raw_target)
+            target_fetched_at = raw_target.get("fetched_at", fetched_at.isoformat())
+            target = parse_target_drawing(target_payload, fetched_at=target_fetched_at)
+            if drawing_id is not None and target.drawing_id != drawing_id:
+                raise ValueError("target cache drawing id does not match --drawing-id")
+        elif open:
+            target = _resolve_runner_target(client, fetched_at).target
+        else:
+            target = parse_target_drawing(
+                client.drawing_info(drawing_id), fetched_at=fetched_at
+            )
+
+        engine = init_db(db)
+        session_factory = get_session_factory(engine)
+        seed_reviewed_alias_config(session_factory, aliases, provider=provider)
+        if schedule_cache is not None:
+            candidates = load_local_schedule(schedule_cache, provider=provider)
+            schedule_diagnostics = (
+                {
+                    "sport": "all",
+                    "date": None,
+                    "status": "success",
+                    "reason": f"local schedule cache: {schedule_cache}",
+                },
+            )
+        else:
+            api_key = os.environ.get("API_SPORTS_KEY", "")
+            if not api_key.strip():
+                raise ValueError(
+                    "API_SPORTS_KEY is required without --schedule-cache"
+                )
+            provider_client = APISportsClient(
+                api_key,
+                cache_dir=Path(cache_root),
+                quota_reserve=quota_reserve,
+                max_retries=max_retries,
+            )
+            schedule = fetch_preparation_schedule(
+                target,
+                provider_client,
+                missing_start_horizon_days=expansion_horizon_days,
+            )
+            candidates = schedule.candidates
+            schedule_diagnostics = schedule.diagnostics
+        result = prepare_drawing(
+            target,
+            candidates,
+            session_factory=session_factory,
+            provider=provider,
+            schedule_diagnostics=schedule_diagnostics,
+        )
+    except (APISportsError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    drawing_label = result.drawing_number or result.drawing_id
+    table = Table(title=f"Drawing {drawing_label} readiness")
+    table.add_column("Status")
+    table.add_column("Pins")
+    table.add_column("Timing")
+    table.add_column("Unresolved")
+    table.add_row(
+        result.status,
+        f"{result.mapped_count}/15",
+        result.eligibility.status,
+        ",".join(map(str, result.unresolved_event_orders)) or "none",
+    )
+    print(table)
+    typer.echo(
+        json.dumps(
+            {
+                "drawing_id": result.drawing_id,
+                "drawing_number": result.drawing_number,
+                "drawing_fingerprint": result.drawing_fingerprint,
+                "provider": result.provider,
+                "status": result.status,
+                "mapped_count": result.mapped_count,
+                "unresolved_event_orders": result.unresolved_event_orders,
+                "eligibility_status": result.eligibility.status,
+                "schedule_diagnostics": result.schedule_diagnostics,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    if result.status != "ready":
+        raise typer.Exit(code=2)
 
 
 @app.command("collect-external-odds")

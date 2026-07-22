@@ -1,0 +1,3225 @@
+{
+  "cache_kind": "api-sports-schedule",
+  "deadline": "2026-07-21T16:00:00+00:00",
+  "drawing_id": 11968,
+  "drawing_number": 4951,
+  "events": [
+    {
+      "away": "Minnesota United II",
+      "date": "2026-07-20T00:00:00+00:00",
+      "home": "Sporting KC II",
+      "id": "1513233",
+      "league": "MLS Next Pro"
+    },
+    {
+      "away": "Sport Huancayo",
+      "date": "2026-07-20T00:00:00+00:00",
+      "home": "Alianza Lima",
+      "id": "1549411",
+      "league": "Primera División"
+    },
+    {
+      "away": "Emelec",
+      "date": "2026-07-20T00:15:00+00:00",
+      "home": "Independiente del Valle",
+      "id": "1519412",
+      "league": "Liga Pro"
+    },
+    {
+      "away": "Real Tomayapo",
+      "date": "2026-07-20T00:30:00+00:00",
+      "home": "Blooming",
+      "id": "1538393",
+      "league": "Primera División"
+    },
+    {
+      "away": "Tacoma Defiance",
+      "date": "2026-07-20T01:30:00+00:00",
+      "home": "Real Monarchs",
+      "id": "1513232",
+      "league": "MLS Next Pro"
+    },
+    {
+      "away": "Colorado Storm",
+      "date": "2026-07-20T01:30:00+00:00",
+      "home": "Ballard",
+      "id": "1595451",
+      "league": "USL League Two"
+    },
+    {
+      "away": "Verspah Oita",
+      "date": "2026-07-20T07:00:00+00:00",
+      "home": "Sagan Tosu",
+      "id": "1598485",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Bnei Yehuda",
+      "date": "2026-07-20T07:00:00+00:00",
+      "home": "Hapoel Petah Tikva",
+      "id": "1598486",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "United",
+      "date": "2026-07-20T09:30:00+00:00",
+      "home": "Kalighat Club",
+      "id": "1595182",
+      "league": "Calcutta Premier Division"
+    },
+    {
+      "away": "Peerless",
+      "date": "2026-07-20T09:30:00+00:00",
+      "home": "Measurers",
+      "id": "1595183",
+      "league": "Calcutta Premier Division"
+    },
+    {
+      "away": "Police",
+      "date": "2026-07-20T09:30:00+00:00",
+      "home": "Mohammedan",
+      "id": "1595184",
+      "league": "Calcutta Premier Division"
+    },
+    {
+      "away": "Calcutta Police",
+      "date": "2026-07-20T09:30:00+00:00",
+      "home": "NA Suruchi Sangha",
+      "id": "1595185",
+      "league": "Calcutta Premier Division"
+    },
+    {
+      "away": "Braintree",
+      "date": "2026-07-20T11:00:00+00:00",
+      "home": "Cambridge United",
+      "id": "1548887",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Samgurali",
+      "date": "2026-07-20T13:30:00+00:00",
+      "home": "Spaeri",
+      "id": "1598487",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Tallinna Kalev II",
+      "date": "2026-07-20T14:00:00+00:00",
+      "home": "Luunja",
+      "id": "1521647",
+      "league": "Esiliiga B"
+    },
+    {
+      "away": "Al Ahed",
+      "date": "2026-07-20T14:30:00+00:00",
+      "home": "Jwaaya FC",
+      "id": "1593669",
+      "league": "Premier League"
+    },
+    {
+      "away": "Ilves",
+      "date": "2026-07-20T15:00:00+00:00",
+      "home": "Turku PS",
+      "id": "1495737",
+      "league": "Veikkausliiga"
+    },
+    {
+      "away": "Rīgas FS",
+      "date": "2026-07-20T15:00:00+00:00",
+      "home": "FS Jelgava",
+      "id": "1515885",
+      "league": "Virsliga"
+    },
+    {
+      "away": "Neptūną Klaipėda",
+      "date": "2026-07-20T15:00:00+00:00",
+      "home": "Transinvest 2",
+      "id": "1556385",
+      "league": "1 Lyga"
+    },
+    {
+      "away": "Rops",
+      "date": "2026-07-20T15:30:00+00:00",
+      "home": "KPV-j",
+      "id": "1517219",
+      "league": "Ykkönen"
+    },
+    {
+      "away": "Csikszereda",
+      "date": "2026-07-20T15:30:00+00:00",
+      "home": "Corvinul Hunedoara",
+      "id": "1565183",
+      "league": "Liga I"
+    },
+    {
+      "away": "Hegelmann Litauen",
+      "date": "2026-07-20T15:45:00+00:00",
+      "home": "Suduva Marijampole",
+      "id": "1547593",
+      "league": "A Lyga"
+    },
+    {
+      "away": "Lahti",
+      "date": "2026-07-20T16:00:00+00:00",
+      "home": "Mariehamn",
+      "id": "1495738",
+      "league": "Veikkausliiga"
+    },
+    {
+      "away": "Grobiņa",
+      "date": "2026-07-20T16:00:00+00:00",
+      "home": "Super Nova",
+      "id": "1515888",
+      "league": "Virsliga"
+    },
+    {
+      "away": "Rīgas FS II",
+      "date": "2026-07-20T16:00:00+00:00",
+      "home": "Tukums II",
+      "id": "1529574",
+      "league": "1. Liga"
+    },
+    {
+      "away": "U. San Martin",
+      "date": "2026-07-20T16:00:00+00:00",
+      "home": "Molinos El Pirata",
+      "id": "1559524",
+      "league": "Segunda División"
+    },
+    {
+      "away": "Wolfsberger AC",
+      "date": "2026-07-20T16:00:00+00:00",
+      "home": "Velden",
+      "id": "1567689",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Hatta SC",
+      "date": "2026-07-20T16:00:00+00:00",
+      "home": "Grafičar",
+      "id": "1598488",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "CSKA Sofia",
+      "date": "2026-07-20T16:15:00+00:00",
+      "home": "Slavia Sofia",
+      "id": "1551052",
+      "league": "First League"
+    },
+    {
+      "away": "Ska-khabarovsk",
+      "date": "2026-07-20T16:30:00+00:00",
+      "home": "Rotor Volgograd",
+      "id": "1577449",
+      "league": "First League"
+    },
+    {
+      "away": "Malmo FF",
+      "date": "2026-07-20T17:00:00+00:00",
+      "home": "Kalmar FF",
+      "id": "1494214",
+      "league": "Allsvenskan"
+    },
+    {
+      "away": "Djurgardens IF",
+      "date": "2026-07-20T17:00:00+00:00",
+      "home": "Orgryte IS",
+      "id": "1494216",
+      "league": "Allsvenskan"
+    },
+    {
+      "away": "GIF Sundsvall",
+      "date": "2026-07-20T17:00:00+00:00",
+      "home": "Norrby IF",
+      "id": "1497627",
+      "league": "Superettan"
+    },
+    {
+      "away": "Everton La Plata",
+      "date": "2026-07-20T17:00:00+00:00",
+      "home": "Buenos Aires City",
+      "id": "1549983",
+      "league": "Torneo Promocional Amateur"
+    },
+    {
+      "away": "Ezeiza",
+      "date": "2026-07-20T17:30:00+00:00",
+      "home": "Barrancas UMET",
+      "id": "1549981",
+      "league": "Torneo Promocional Amateur"
+    },
+    {
+      "away": "San Telmo",
+      "date": "2026-07-20T18:00:00+00:00",
+      "home": "Acassuso",
+      "id": "1498649",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Club Atlético Güemes",
+      "date": "2026-07-20T18:00:00+00:00",
+      "home": "Chacarita Juniors",
+      "id": "1498654",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Los Andes",
+      "date": "2026-07-20T18:00:00+00:00",
+      "home": "Defensores De Belgrano",
+      "id": "1498658",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Tristan Suarez",
+      "date": "2026-07-20T18:00:00+00:00",
+      "home": "San Martin S.J.",
+      "id": "1498665",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Sacachispas",
+      "date": "2026-07-20T18:00:00+00:00",
+      "home": "Atletico Atlas",
+      "id": "1499993",
+      "league": "Primera C"
+    },
+    {
+      "away": "Central Cordoba",
+      "date": "2026-07-20T18:00:00+00:00",
+      "home": "Berazategui",
+      "id": "1499994",
+      "league": "Primera C"
+    },
+    {
+      "away": "Central Ballester",
+      "date": "2026-07-20T18:00:00+00:00",
+      "home": "Deportivo Paraguayo",
+      "id": "1499999",
+      "league": "Primera C"
+    },
+    {
+      "away": "Lujan",
+      "date": "2026-07-20T18:00:00+00:00",
+      "home": "Estrella Del Sur",
+      "id": "1500000",
+      "league": "Primera C"
+    },
+    {
+      "away": "Leones de Rosario",
+      "date": "2026-07-20T18:00:00+00:00",
+      "home": "Centro Español",
+      "id": "1500181",
+      "league": "Primera C"
+    },
+    {
+      "away": "São José EC",
+      "date": "2026-07-20T18:00:00+00:00",
+      "home": "São Caetano",
+      "id": "1546069",
+      "league": "Copa Paulista"
+    },
+    {
+      "away": "Sepsi OSK Sfantu Gheorghe",
+      "date": "2026-07-20T18:30:00+00:00",
+      "home": "Rapid",
+      "id": "1565184",
+      "league": "Liga I"
+    },
+    {
+      "away": "Al Nejmeh",
+      "date": "2026-07-20T18:30:00+00:00",
+      "home": "Al Ansar",
+      "id": "1593670",
+      "league": "Premier League"
+    },
+    {
+      "away": "Welwyn Garden City",
+      "date": "2026-07-20T18:45:00+00:00",
+      "home": "Redbridge",
+      "id": "1598489",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "United of Manchester",
+      "date": "2026-07-20T18:45:00+00:00",
+      "home": "Trafford",
+      "id": "1598490",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Orense SC",
+      "date": "2026-07-20T19:00:00+00:00",
+      "home": "Mushuc Runa SC",
+      "id": "1519414",
+      "league": "Liga Pro"
+    },
+    {
+      "away": "ABB",
+      "date": "2026-07-20T19:00:00+00:00",
+      "home": "San Antonio Bulo Bulo",
+      "id": "1538389",
+      "league": "Primera División"
+    },
+    {
+      "away": "IA Akranes",
+      "date": "2026-07-20T19:15:00+00:00",
+      "home": "Keflavik",
+      "id": "1508810",
+      "league": "Úrvalsdeild"
+    },
+    {
+      "away": "Breidablik",
+      "date": "2026-07-20T19:15:00+00:00",
+      "home": "FH hafnarfjordur",
+      "id": "1508813",
+      "league": "Úrvalsdeild"
+    },
+    {
+      "away": "Vestri",
+      "date": "2026-07-20T19:15:00+00:00",
+      "home": "HK Kopavogur",
+      "id": "1514236",
+      "league": "1. Deild"
+    },
+    {
+      "away": "Strasbourg",
+      "date": "2026-07-20T19:15:00+00:00",
+      "home": "Sporting CP",
+      "id": "1562949",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Danubio",
+      "date": "2026-07-20T20:00:00+00:00",
+      "home": "Atletico Torque",
+      "id": "1576801",
+      "league": "Primera División - Apertura"
+    },
+    {
+      "away": "Deportivo Capiata",
+      "date": "2026-07-20T20:00:00+00:00",
+      "home": "Tacuary",
+      "id": "1586075",
+      "league": "Division Intermedia"
+    },
+    {
+      "away": "São Gonçalo EC RJ",
+      "date": "2026-07-20T22:00:00+00:00",
+      "home": "Volta Redonda",
+      "id": "1589165",
+      "league": "Copa Rio"
+    },
+    {
+      "away": "Fernando De La Mora",
+      "date": "2026-07-20T22:30:00+00:00",
+      "home": "Deportivo Santani",
+      "id": "1586076",
+      "league": "Division Intermedia"
+    },
+    {
+      "away": "Midland",
+      "date": "2026-07-20T23:00:00+00:00",
+      "home": "Colegiales",
+      "id": "1498657",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Atlanta",
+      "date": "2026-07-20T23:00:00+00:00",
+      "home": "Patronato",
+      "id": "1498663",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Gimnasia Jujuy",
+      "date": "2026-07-20T23:00:00+00:00",
+      "home": "Quilmes",
+      "id": "1498664",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Real Oruro",
+      "date": "2026-07-20T23:00:00+00:00",
+      "home": "Nacional Potosí",
+      "id": "1538394",
+      "league": "Primera División"
+    },
+    {
+      "away": "Liverpool Montevideo",
+      "date": "2026-07-20T23:00:00+00:00",
+      "home": "Defensor Sporting",
+      "id": "1576802",
+      "league": "Primera División - Apertura"
+    },
+    {
+      "away": "San Miguel",
+      "date": "2026-07-21T00:00:00+00:00",
+      "home": "Chaco For Ever",
+      "id": "1498655",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Deportivo Moron",
+      "date": "2026-07-21T00:30:00+00:00",
+      "home": "Central Norte",
+      "id": "1498653",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Nagoya Grampus",
+      "date": "2026-07-21T04:00:00+00:00",
+      "home": "FC Tokyo",
+      "id": "1591889",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Beijing Guoan",
+      "date": "2026-07-21T08:00:00+00:00",
+      "home": "Dalian Kewei",
+      "id": "1567360",
+      "league": "FA Cup"
+    },
+    {
+      "away": "Drukpa",
+      "date": "2026-07-21T09:00:00+00:00",
+      "home": "Tsirang",
+      "id": "1595439",
+      "league": "Premier League"
+    },
+    {
+      "away": "Toronto Awaba Stags",
+      "date": "2026-07-21T09:30:00+00:00",
+      "home": "New Lambton",
+      "id": "1532600",
+      "league": "NNSW League 1"
+    },
+    {
+      "away": "Canberra FC",
+      "date": "2026-07-21T09:30:00+00:00",
+      "home": "Canberra Juventus",
+      "id": "1537443",
+      "league": "Capital Territory NPL"
+    },
+    {
+      "away": "Newcastle Jets",
+      "date": "2026-07-21T09:30:00+00:00",
+      "home": "Preston Lions",
+      "id": "1560864",
+      "league": "Australia Cup"
+    },
+    {
+      "away": "Perth Glory",
+      "date": "2026-07-21T09:30:00+00:00",
+      "home": "Lions",
+      "id": "1560865",
+      "league": "Australia Cup"
+    },
+    {
+      "away": "Aryan",
+      "date": "2026-07-21T09:30:00+00:00",
+      "home": "Coal India",
+      "id": "1595186",
+      "league": "Calcutta Premier Division"
+    },
+    {
+      "away": "Patha Chakra",
+      "date": "2026-07-21T09:30:00+00:00",
+      "home": "Calcutta Customs",
+      "id": "1598843",
+      "league": "Calcutta Premier Division"
+    },
+    {
+      "away": "George Telegraph",
+      "date": "2026-07-21T09:30:00+00:00",
+      "home": "Railway",
+      "id": "1598844",
+      "league": "Calcutta Premier Division"
+    },
+    {
+      "away": "Heidelberg United",
+      "date": "2026-07-21T10:00:00+00:00",
+      "home": "Cumberland United",
+      "id": "1560859",
+      "league": "Australia Cup"
+    },
+    {
+      "away": "Gangwon FC",
+      "date": "2026-07-21T10:30:00+00:00",
+      "home": "Jeju United FC",
+      "id": "1507004",
+      "league": "K League 1"
+    },
+    {
+      "away": "Daejeon Citizen",
+      "date": "2026-07-21T10:30:00+00:00",
+      "home": "Jeonbuk Motors",
+      "id": "1507005",
+      "league": "K League 1"
+    },
+    {
+      "away": "Incheon United",
+      "date": "2026-07-21T10:30:00+00:00",
+      "home": "Ulsan Hyundai FC",
+      "id": "1507006",
+      "league": "K League 1"
+    },
+    {
+      "away": "Sydney",
+      "date": "2026-07-21T10:30:00+00:00",
+      "home": "Bayswater City",
+      "id": "1560858",
+      "league": "Australia Cup"
+    },
+    {
+      "away": "Huddersfield",
+      "date": "2026-07-21T11:00:00+00:00",
+      "home": "Sheffield Utd",
+      "id": "1548888",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Sichuan Jiuniu",
+      "date": "2026-07-21T11:00:00+00:00",
+      "home": "SHANGHAI SIPG",
+      "id": "1567362",
+      "league": "FA Cup"
+    },
+    {
+      "away": "Newport County",
+      "date": "2026-07-21T11:00:00+00:00",
+      "home": "Bristol City",
+      "id": "1598491",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Qingdao Youth Island",
+      "date": "2026-07-21T11:35:00+00:00",
+      "home": "Chongqing Tongliang Long",
+      "id": "1567356",
+      "league": "FA Cup"
+    },
+    {
+      "away": "Qingdao Jonoon",
+      "date": "2026-07-21T11:35:00+00:00",
+      "home": "Shanghai Shenhua",
+      "id": "1567358",
+      "league": "FA Cup"
+    },
+    {
+      "away": "Shandong Luneng",
+      "date": "2026-07-21T11:35:00+00:00",
+      "home": "Wuhan Three Towns",
+      "id": "1567363",
+      "league": "FA Cup"
+    },
+    {
+      "away": "Chateauroux",
+      "date": "2026-07-21T12:00:00+00:00",
+      "home": "Auxerre",
+      "id": "1560760",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Wycombe",
+      "date": "2026-07-21T12:00:00+00:00",
+      "home": "QPR",
+      "id": "1560761",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "VVV Venlo",
+      "date": "2026-07-21T12:00:00+00:00",
+      "home": "FC Viktoria Köln",
+      "id": "1560762",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Dalian Zhixing",
+      "date": "2026-07-21T12:00:00+00:00",
+      "home": "Henan Jianye",
+      "id": "1567357",
+      "league": "FA Cup"
+    },
+    {
+      "away": "Chengdu Better City",
+      "date": "2026-07-21T12:00:00+00:00",
+      "home": "Yunnan Yukun",
+      "id": "1567359",
+      "league": "FA Cup"
+    },
+    {
+      "away": "Maccabi Bnei Raina",
+      "date": "2026-07-21T12:00:00+00:00",
+      "home": "Czarni Połaniec",
+      "id": "1583396",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Green Boys",
+      "date": "2026-07-21T12:00:00+00:00",
+      "home": "Mamer",
+      "id": "1589289",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Cardiff City U21",
+      "date": "2026-07-21T13:00:00+00:00",
+      "home": "Chelsea U21",
+      "id": "1548008",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Obolon'-Brovar",
+      "date": "2026-07-21T13:00:00+00:00",
+      "home": "Livyi Bereh",
+      "id": "1567690",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Manica Diamonds",
+      "date": "2026-07-21T13:00:00+00:00",
+      "home": "Herentals",
+      "id": "1589372",
+      "league": "Premier Soccer League"
+    },
+    {
+      "away": "Racing",
+      "date": "2026-07-21T13:00:00+00:00",
+      "home": "Tadamon Sour",
+      "id": "1592148",
+      "league": "Premier League"
+    },
+    {
+      "away": "Sundby",
+      "date": "2026-07-21T14:00:00+00:00",
+      "home": "Fremad Amager",
+      "id": "1560763",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Bunyodkor",
+      "date": "2026-07-21T15:00:00+00:00",
+      "home": "Buxoro",
+      "id": "1516065",
+      "league": "Super League"
+    },
+    {
+      "away": "Xorazm",
+      "date": "2026-07-21T15:00:00+00:00",
+      "home": "Pakhtakor",
+      "id": "1516070",
+      "league": "Super League"
+    },
+    {
+      "away": "Neftchi",
+      "date": "2026-07-21T15:00:00+00:00",
+      "home": "Sogdiana",
+      "id": "1516071",
+      "league": "Super League"
+    },
+    {
+      "away": "Orleans",
+      "date": "2026-07-21T15:00:00+00:00",
+      "home": "RED Star FC 93",
+      "id": "1567691",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Mamelodi Sundowns",
+      "date": "2026-07-21T15:00:00+00:00",
+      "home": "Hertha BSC",
+      "id": "1591891",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Puebla U21",
+      "date": "2026-07-21T15:00:00+00:00",
+      "home": "Cruz Azul U21",
+      "id": "1592788",
+      "league": "Liga MX U21"
+    },
+    {
+      "away": "UNAM Pumas U21",
+      "date": "2026-07-21T15:00:00+00:00",
+      "home": "Toluca U21",
+      "id": "1592789",
+      "league": "Liga MX U21"
+    },
+    {
+      "away": "Brann U19",
+      "date": "2026-07-21T15:30:00+00:00",
+      "home": "Vålerenga U19",
+      "id": "1546419",
+      "league": "Nasjonal U19 Champions League"
+    },
+    {
+      "away": "VSK Århus",
+      "date": "2026-07-21T15:30:00+00:00",
+      "home": "Brabrand",
+      "id": "1598493",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Klubi-04",
+      "away_id": "2085",
+      "country": "Finland",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "KäPa",
+      "home_id": "9187",
+      "id": "1504266",
+      "league": "Ykkösliiga"
+    },
+    {
+      "away": "Žalgiris II",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "Hegelmann II",
+      "id": "1556386",
+      "league": "1 Lyga"
+    },
+    {
+      "away": "Shakhtar Donetsk",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "NK Slaven Belupo",
+      "id": "1567692",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Fagiano Okayama",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "Metalist 1925 Kharkiv",
+      "id": "1567693",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "VfL Bochum",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "Swansea",
+      "id": "1583397",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Nea Salamis",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "Busko-Zdroj",
+      "id": "1584912",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Shamrock Rovers",
+      "away_id": "652",
+      "country": "World",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "Ararat-Armenia",
+      "home_id": "3683",
+      "id": "1589415",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Slovan Bratislava",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "Saburtalo",
+      "id": "1589416",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Lincoln Red Imps FC",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "Mjallby AIF",
+      "id": "1589418",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "KuPS",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "Sabah FA",
+      "id": "1589419",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Omladinac Zablaće",
+      "date": "2026-07-21T16:00:00+00:00",
+      "home": "Sloboda Uzice",
+      "id": "1598492",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "SG Sonnenhof Grossaspach",
+      "date": "2026-07-21T16:30:00+00:00",
+      "home": "VfR Aalen",
+      "id": "1550594",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Generation Tallinn",
+      "date": "2026-07-21T16:30:00+00:00",
+      "home": "Kompanii Marjamaa",
+      "id": "1557747",
+      "league": "Cup"
+    },
+    {
+      "away": "Weiden",
+      "date": "2026-07-21T16:30:00+00:00",
+      "home": "Eintracht Bamberg",
+      "id": "1566697",
+      "league": "Oberliga - Bayern Nord"
+    },
+    {
+      "away": "Schwabmünchen",
+      "date": "2026-07-21T16:30:00+00:00",
+      "home": "Kottern",
+      "id": "1566999",
+      "league": "Oberliga - Bayern Süd"
+    },
+    {
+      "away": "Heimstetten",
+      "date": "2026-07-21T16:30:00+00:00",
+      "home": "Pipinsried",
+      "id": "1567003",
+      "league": "Oberliga - Bayern Süd"
+    },
+    {
+      "away": "Schalding-Heining",
+      "date": "2026-07-21T16:30:00+00:00",
+      "home": "1860 Rosenheim",
+      "id": "1567004",
+      "league": "Oberliga - Bayern Süd"
+    },
+    {
+      "away": "Pfaffenhofen",
+      "date": "2026-07-21T16:30:00+00:00",
+      "home": "Ismaning",
+      "id": "1567239",
+      "league": "Oberliga - Bayern Süd"
+    },
+    {
+      "away": "FC Nordsjaelland",
+      "date": "2026-07-21T16:30:00+00:00",
+      "home": "Hørsholm-Usserød",
+      "id": "1584913",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Helsingborg",
+      "away_id": "811",
+      "country": "Sweden",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "Falkenbergs FF",
+      "home_id": "812",
+      "id": "1497625",
+      "league": "Superettan"
+    },
+    {
+      "away": "Karlberg",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "Sollentuna",
+      "id": "1542338",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "SC Wiener Neustadt",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "Gloggnitz",
+      "id": "1554928",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Lech Poznan",
+      "away_id": "347",
+      "country": "World",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "Aarhus",
+      "home_id": "406",
+      "id": "1556501",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "MVV",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "EVV",
+      "id": "1560765",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Kornburg",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "DJK Bamberg",
+      "id": "1566698",
+      "league": "Oberliga - Bayern Nord"
+    },
+    {
+      "away": "Fortuna Regensburg",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "Neudrossenfeld",
+      "id": "1566700",
+      "league": "Oberliga - Bayern Nord"
+    },
+    {
+      "away": "Würzburger FV",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "Großbardorf",
+      "id": "1566717",
+      "league": "Oberliga - Bayern Nord"
+    },
+    {
+      "away": "Al-Ittihad FC",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "Orlando Pirates",
+      "id": "1584914",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Vaprus",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "Tabasalu Ulasabat",
+      "id": "1589969",
+      "league": "Cup"
+    },
+    {
+      "away": "FC Levadia Tallinn",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "IFK Goteborg",
+      "id": "1593486",
+      "league": "UEFA Europa Conference League"
+    },
+    {
+      "away": "Mistelbach",
+      "date": "2026-07-21T17:00:00+00:00",
+      "home": "Gerasdorf Stammersdorf",
+      "id": "1598494",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Jõgeva Wolves",
+      "date": "2026-07-21T17:30:00+00:00",
+      "home": "Kristiine JK",
+      "id": "1551265",
+      "league": "Cup"
+    },
+    {
+      "away": "PAU",
+      "date": "2026-07-21T17:30:00+00:00",
+      "home": "Espanyol",
+      "id": "1560764",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Drita",
+      "away_id": "14281",
+      "country": "World",
+      "date": "2026-07-21T17:30:00+00:00",
+      "home": "Floriana",
+      "home_id": "4625",
+      "id": "1589428",
+      "league": "UEFA Europa Conference League"
+    },
+    {
+      "away": "Gimnasia Y Tiro",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Almagro",
+      "id": "1498650",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Juventud Unida",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Claypole",
+      "id": "1499996",
+      "league": "Primera C"
+    },
+    {
+      "away": "Fortaleza U17",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Athletico PR U17",
+      "id": "1543952",
+      "league": "Brasileiro U17"
+    },
+    {
+      "away": "Internacional U17",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Corinthians U17",
+      "id": "1543954",
+      "league": "Brasileiro U17"
+    },
+    {
+      "away": "Vasco U17",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Cruzeiro U17",
+      "id": "1543955",
+      "league": "Brasileiro U17"
+    },
+    {
+      "away": "RB Bragantino U17",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Gremio U17",
+      "id": "1543958",
+      "league": "Brasileiro U17"
+    },
+    {
+      "away": "Vitoria U17",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Juventude U17",
+      "id": "1543959",
+      "league": "Brasileiro U17"
+    },
+    {
+      "away": "Oxford United",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Aldershot Town",
+      "id": "1546703",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Bristol Rovers",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Forest Green",
+      "id": "1546704",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "AFC Fylde",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Longridge Town",
+      "id": "1548009",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Tupy",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Sport Brasil ES",
+      "id": "1548254",
+      "league": "Capixaba B"
+    },
+    {
+      "away": "West Ham United U21",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Ebbsfleet United",
+      "id": "1548889",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Millwall",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Gillingham",
+      "id": "1550595",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Hartlepool",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Hebburn Town",
+      "id": "1550596",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Gornik Zabrze",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Fenerbahçe",
+      "id": "1556502",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Dinamo Zagreb",
+      "away_id": "620",
+      "country": "World",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "FC Thun",
+      "home_id": "1012",
+      "id": "1556504",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Bolton",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Oldham",
+      "id": "1560766",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Swindon Town",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Woking",
+      "id": "1560767",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Unión Santa Fe Res.",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Aldosivi Res.",
+      "id": "1576835",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Atlético Tucumán Res.",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Argentinos Juniors Res.",
+      "id": "1576836",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Defensa y Justicia Res.",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Colón Res.",
+      "id": "1576837",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Gimnasia La Plata Res.",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Instituto Res.",
+      "id": "1576838",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Godoy Cruz Res.",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Sarmiento Res.",
+      "id": "1576839",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Leyton Orient",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Cheshunt",
+      "id": "1584915",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Amal Tiznit",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "Olympique Dcheïra",
+      "id": "1589963",
+      "league": "Botola Pro"
+    },
+    {
+      "away": "El Massira",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "UTS Rabat",
+      "id": "1589964",
+      "league": "Botola Pro"
+    },
+    {
+      "away": "Avenir Beggen",
+      "date": "2026-07-21T18:00:00+00:00",
+      "home": "AS Jeunesse Esch",
+      "id": "1591892",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Gyori ETO FC",
+      "date": "2026-07-21T18:15:00+00:00",
+      "home": "Atert Bissen",
+      "id": "1591941",
+      "league": "UEFA Europa Conference League"
+    },
+    {
+      "away": "Plymouth",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Torquay",
+      "id": "1546702",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Preston North End U21",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Lancaster City",
+      "id": "1546705",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Crewe",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "AFC Telford United",
+      "id": "1546706",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Rotherham",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Alfreton Town",
+      "id": "1548890",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Queens Park Rangers U21",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Worthing",
+      "id": "1548892",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Glenavon FC",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Crusaders FC",
+      "id": "1548895",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Huddersfield",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Fleetwood Town",
+      "id": "1550597",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Aston Villa",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Walsall",
+      "id": "1550598",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Lokomotiv Sofia",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Botev Plovdiv",
+      "id": "1551047",
+      "league": "First League"
+    },
+    {
+      "away": "Heart Of Midlothian",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Sturm Graz",
+      "id": "1556503",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Queen's University",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Carrick Rangers",
+      "id": "1560768",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Barrow",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Radcliffe",
+      "id": "1560769",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Harrogate Town",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "South Shields",
+      "id": "1560770",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Marine",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Prescot Cables",
+      "id": "1567694",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Everton U21",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Shrewsbury",
+      "id": "1583398",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Merthyr Town",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Briton Ferry",
+      "id": "1584916",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Dunston UTS",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Redcar Athletic",
+      "id": "1584917",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Tottenham Hotspur U21",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Boreham Wood",
+      "id": "1598495",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Guiseley AFC",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Garforth Town",
+      "id": "1598496",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Hastings United",
+      "date": "2026-07-21T18:30:00+00:00",
+      "home": "Roffey",
+      "id": "1598497",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Leyton Orient",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "AFC Hornchurch",
+      "id": "1546707",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Sutton Utd",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Salisbury",
+      "id": "1546708",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Weston-super-Mare",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Taunton Town",
+      "id": "1546709",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Wealdstone",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Chertsey Town",
+      "id": "1548010",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Altrincham",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Chorley",
+      "id": "1548011",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Deal Town",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Dover",
+      "id": "1548012",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "FC Halifax Town",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Gainsborough Trinity",
+      "id": "1548013",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Enfield Town",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Stotfold",
+      "id": "1548014",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Falkirk",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Alloa Athletic",
+      "id": "1548152",
+      "league": "League Cup"
+    },
+    {
+      "away": "Montrose",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Arbroath",
+      "id": "1548153",
+      "league": "League Cup"
+    },
+    {
+      "away": "Annan Athletic",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Clyde",
+      "id": "1548154",
+      "league": "League Cup"
+    },
+    {
+      "away": "Spartans",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Dundee Utd",
+      "id": "1548155",
+      "league": "League Cup"
+    },
+    {
+      "away": "Cove Rangers",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Dunfermline",
+      "id": "1548156",
+      "league": "League Cup"
+    },
+    {
+      "away": "Linlithgow Rose",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "East Fife",
+      "id": "1548157",
+      "league": "League Cup"
+    },
+    {
+      "away": "ST Johnstone",
+      "away_id": "258",
+      "country": "Scotland",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Inverness CT",
+      "home_id": "903",
+      "id": "1548158",
+      "league": "League Cup"
+    },
+    {
+      "away": "Brora Rangers",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Kelty Hearts",
+      "id": "1548159",
+      "league": "League Cup"
+    },
+    {
+      "away": "Hamilton Academical",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Kilmarnock",
+      "id": "1548160",
+      "league": "League Cup"
+    },
+    {
+      "away": "Forfar Athletic",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Livingston",
+      "id": "1548161",
+      "league": "League Cup"
+    },
+    {
+      "away": "Stenhousemuir",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Partick",
+      "id": "1548162",
+      "league": "League Cup"
+    },
+    {
+      "away": "Peterhead",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Raith Rovers",
+      "id": "1548163",
+      "league": "League Cup"
+    },
+    {
+      "away": "Dundee",
+      "away_id": "253",
+      "country": "Scotland",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Ross County",
+      "home_id": "902",
+      "id": "1548164",
+      "league": "League Cup"
+    },
+    {
+      "away": "East Kilbride",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "ST Mirren",
+      "id": "1548165",
+      "league": "League Cup"
+    },
+    {
+      "away": "Edinburgh City",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Stranraer",
+      "id": "1548166",
+      "league": "League Cup"
+    },
+    {
+      "away": "Warrenpoint Town",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Cliftonville FC",
+      "id": "1548893",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Peterborough",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Colchester",
+      "id": "1548894",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Dungannon Swifts",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Loughgall",
+      "id": "1550599",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Stoke City",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Chester",
+      "id": "1560771",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Carlisle",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Darlington 1883",
+      "id": "1560772",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Brackley Town",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Stratford Town",
+      "id": "1560773",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Walton & Hersham",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Sutton Utd",
+      "id": "1560774",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Portadown",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "H&W Welders",
+      "id": "1562950",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Scunthorpe",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Buxton",
+      "id": "1562951",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Bangor",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Oxford Sunnyside",
+      "id": "1562952",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Tadley Calleva",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Ashford Town (Middlesex)",
+      "id": "1583399",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Aston Villa U21",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Tamworth",
+      "id": "1583400",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Wycombe",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Farnham Town",
+      "id": "1584918",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Kingstonian",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "Hanworth Villa",
+      "id": "1591890",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Kauno Žalgiris",
+      "away_id": "3872",
+      "country": "World",
+      "date": "2026-07-21T18:45:00+00:00",
+      "home": "KI Klaksvik",
+      "home_id": "701",
+      "id": "1591934",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Caerau (Ely)",
+      "date": "2026-07-21T19:00:00+00:00",
+      "home": "Haverfordwest County AFC",
+      "id": "1548015",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "FK Crvena Zvezda",
+      "date": "2026-07-21T19:00:00+00:00",
+      "home": "Larne",
+      "id": "1589417",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Hapoel Beer Sheva",
+      "away_id": "563",
+      "country": "World",
+      "date": "2026-07-21T19:00:00+00:00",
+      "home": "Vikingur Reykjavik",
+      "home_id": "278",
+      "id": "1589420",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Afturelding",
+      "date": "2026-07-21T19:30:00+00:00",
+      "home": "Fylkir",
+      "id": "1553726",
+      "league": "Cup"
+    },
+    {
+      "away": "Union Magdalena",
+      "date": "2026-07-21T20:00:00+00:00",
+      "home": "Santa Fe",
+      "id": "1545511",
+      "league": "Copa Colombia"
+    },
+    {
+      "away": "Estudiantes L.P.",
+      "date": "2026-07-21T20:00:00+00:00",
+      "home": "Independ. Rivadavia",
+      "id": "1589960",
+      "league": "Super Copa"
+    },
+    {
+      "away": "Tigres FC",
+      "date": "2026-07-21T21:00:00+00:00",
+      "home": "Atletico Nacional",
+      "id": "1545505",
+      "league": "Copa Colombia"
+    },
+    {
+      "away": "Delfin SC",
+      "away_id": "1149",
+      "country": "Ecuador",
+      "date": "2026-07-21T21:30:00+00:00",
+      "home": "Libertad",
+      "home_id": "18762",
+      "id": "1519419",
+      "league": "Liga Pro"
+    },
+    {
+      "away": "Godoy Cruz",
+      "date": "2026-07-21T22:00:00+00:00",
+      "home": "Deportivo Madryn",
+      "id": "1498659",
+      "league": "Primera Nacional"
+    },
+    {
+      "away": "Internacional Palmira",
+      "date": "2026-07-21T22:00:00+00:00",
+      "home": "Internacional de Bogota",
+      "id": "1545508",
+      "league": "Copa Colombia"
+    },
+    {
+      "away": "Tigre",
+      "away_id": "452",
+      "country": "World",
+      "date": "2026-07-21T22:00:00+00:00",
+      "home": "Club Nacional",
+      "home_id": "2356",
+      "id": "1547777",
+      "league": "CONMEBOL Sudamericana"
+    },
+    {
+      "away": "Platense Res.",
+      "date": "2026-07-21T22:00:00+00:00",
+      "home": "Central Córdoba SdE Res.",
+      "id": "1576840",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Bahia",
+      "away_id": "118",
+      "country": "Brazil",
+      "date": "2026-07-21T22:30:00+00:00",
+      "home": "Atletico-MG",
+      "home_id": "1062",
+      "id": "1492290",
+      "league": "Serie A"
+    },
+    {
+      "away": "America Mineiro",
+      "away_id": "125",
+      "country": "Brazil",
+      "date": "2026-07-21T22:30:00+00:00",
+      "home": "Avai",
+      "home_id": "145",
+      "id": "1520781",
+      "league": "Serie B"
+    },
+    {
+      "away": "Criciuma",
+      "away_id": "140",
+      "country": "Brazil",
+      "date": "2026-07-21T22:30:00+00:00",
+      "home": "Novorizontino",
+      "home_id": "7834",
+      "id": "1520787",
+      "league": "Serie B"
+    },
+    {
+      "away": "Real Potosí",
+      "date": "2026-07-21T23:00:00+00:00",
+      "home": "Independiente Petrolero",
+      "id": "1538392",
+      "league": "Primera División"
+    },
+    {
+      "away": "Quindio",
+      "date": "2026-07-21T23:00:00+00:00",
+      "home": "Deportes Tolima",
+      "id": "1545506",
+      "league": "Copa Colombia"
+    },
+    {
+      "away": "Barcelona SC",
+      "date": "2026-07-22T00:00:00+00:00",
+      "home": "Universidad Catolica",
+      "id": "1519423",
+      "league": "Liga Pro"
+    },
+    {
+      "away": "Bogota FC",
+      "date": "2026-07-22T00:00:00+00:00",
+      "home": "Deportivo Pasto",
+      "id": "1545507",
+      "league": "Copa Colombia"
+    },
+    {
+      "away": "Envigado",
+      "date": "2026-07-22T00:00:00+00:00",
+      "home": "Once Caldas",
+      "id": "1545510",
+      "league": "Copa Colombia"
+    },
+    {
+      "away": "Real Cartagena",
+      "date": "2026-07-22T00:30:00+00:00",
+      "home": "America de Cali",
+      "id": "1545504",
+      "league": "Copa Colombia"
+    },
+    {
+      "away": "Santos",
+      "date": "2026-07-22T00:30:00+00:00",
+      "home": "UCV",
+      "id": "1547780",
+      "league": "CONMEBOL Sudamericana"
+    },
+    {
+      "away": "Fortaleza EC",
+      "date": "2026-07-22T00:35:00+00:00",
+      "home": "Vila Nova",
+      "id": "1520789",
+      "league": "Serie B"
+    },
+    {
+      "away": "Puebla",
+      "date": "2026-07-22T01:00:00+00:00",
+      "home": "Cruz Azul",
+      "id": "1550903",
+      "league": "Liga MX"
+    },
+    {
+      "away": "Imabari",
+      "date": "2026-07-22T02:00:00+00:00",
+      "home": "Vissel Kobe",
+      "id": "1589291",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "U.N.A.M. - Pumas",
+      "date": "2026-07-22T03:05:00+00:00",
+      "home": "Toluca",
+      "id": "1550904",
+      "league": "Liga MX"
+    },
+    {
+      "away": "Budućnost W",
+      "date": "2026-07-22T08:00:00+00:00",
+      "home": "Neftçi Bakı",
+      "id": "1558456",
+      "league": "UEFA Champions League Women"
+    },
+    {
+      "away": "Belmont Swansea",
+      "date": "2026-07-22T09:00:00+00:00",
+      "home": "Hamilton Olympic",
+      "id": "1523790",
+      "league": "Northern NSW NPL"
+    },
+    {
+      "away": "ZFK Skopje 2014 W",
+      "date": "2026-07-22T09:00:00+00:00",
+      "home": "Athlone WFC W",
+      "id": "1558468",
+      "league": "UEFA Champions League Women"
+    },
+    {
+      "away": "Fremantle City",
+      "date": "2026-07-22T09:30:00+00:00",
+      "home": "Maitland",
+      "id": "1560862",
+      "league": "Australia Cup"
+    },
+    {
+      "away": "Central Coast Mariners",
+      "date": "2026-07-22T09:30:00+00:00",
+      "home": "Sydney United",
+      "id": "1560869",
+      "league": "Australia Cup"
+    },
+    {
+      "away": "Western Sydney Wanderers",
+      "date": "2026-07-22T09:30:00+00:00",
+      "home": "Cooma Tigers FC",
+      "id": "1560870",
+      "league": "Australia Cup"
+    },
+    {
+      "away": "Paredes",
+      "date": "2026-07-22T09:30:00+00:00",
+      "home": "AVS",
+      "id": "1583401",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Amarante",
+      "date": "2026-07-22T09:30:00+00:00",
+      "home": "Chaves",
+      "id": "1584919",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Macarthur",
+      "date": "2026-07-22T10:00:00+00:00",
+      "home": "Uni Azzurri",
+      "id": "1560872",
+      "league": "Australia Cup"
+    },
+    {
+      "away": "Blackburn",
+      "date": "2026-07-22T10:00:00+00:00",
+      "home": "Nottingham Forest",
+      "id": "1562953",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Academica",
+      "date": "2026-07-22T10:00:00+00:00",
+      "home": "Tondela",
+      "id": "1584921",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Leganes",
+      "date": "2026-07-22T10:00:00+00:00",
+      "home": "Nacional",
+      "id": "1591893",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Launceston United",
+      "date": "2026-07-22T10:15:00+00:00",
+      "home": "Launceston City",
+      "id": "1529267",
+      "league": "Tasmania NPL"
+    },
+    {
+      "away": "FC Anyang",
+      "date": "2026-07-22T10:30:00+00:00",
+      "home": "Bucheon FC 1995",
+      "id": "1507007",
+      "league": "K League 1"
+    },
+    {
+      "away": "Gimcheon Sangmu FC",
+      "date": "2026-07-22T10:30:00+00:00",
+      "home": "Gwangju FC",
+      "id": "1507008",
+      "league": "K League 1"
+    },
+    {
+      "away": "Pohang Steelers",
+      "date": "2026-07-22T10:30:00+00:00",
+      "home": "FC Seoul",
+      "id": "1507009",
+      "league": "K League 1"
+    },
+    {
+      "away": "Moreirense",
+      "date": "2026-07-22T10:30:00+00:00",
+      "home": "Santa Clara",
+      "id": "1567700",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Riga W",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Glentoran BU W",
+      "id": "1558455",
+      "league": "UEFA Champions League Women"
+    },
+    {
+      "away": "Dijon",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Bourg-en-bresse 01",
+      "id": "1560775",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Avranches",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Laval",
+      "id": "1562954",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Shaanxi Union",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Rizhao Yuqi",
+      "id": "1567361",
+      "league": "FA Cup"
+    },
+    {
+      "away": "Samsunspor",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Dunkerque",
+      "id": "1567696",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Arouca",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Famalicao",
+      "id": "1567697",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Vizela",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Lusitânia Lourosa",
+      "id": "1567698",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Bochnia",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "KSZO 1929",
+      "id": "1567699",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Estoril",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Alverca",
+      "id": "1583402",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Scafatese",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Avellino",
+      "id": "1583403",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Fleury 91",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Clermont Foot",
+      "id": "1583404",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Pelikan Łowicz",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Wisla Plock",
+      "id": "1583405",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Antigua and Barbuda",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Podlasie Biała Podlaska",
+      "id": "1583652",
+      "league": "Friendlies"
+    },
+    {
+      "away": "Naprzód",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Garbarnia Kraków",
+      "id": "1584920",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Pogoń Mogilno",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Unia Swarzędz",
+      "id": "1584922",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Al-Fayha",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "KVC Westerlo",
+      "id": "1584923",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Jong AZ",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Willem II",
+      "id": "1584924",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Camacha",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Maritimo",
+      "id": "1589292",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Sharjah FC",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Beltinci",
+      "id": "1598498",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Ruh Lviv",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Bukovyna",
+      "id": "1598499",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Al-Faisaly FC",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "TSC Backa Topola",
+      "id": "1598500",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "União de Leiria",
+      "date": "2026-07-22T12:00:00+00:00",
+      "home": "Guimaraes",
+      "id": "1598501",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "TelOne",
+      "date": "2026-07-22T13:00:00+00:00",
+      "home": "Chicken Inn",
+      "id": "1589373",
+      "league": "Premier Soccer League"
+    },
+    {
+      "away": "Dynamos",
+      "date": "2026-07-22T13:00:00+00:00",
+      "home": "Platinum",
+      "id": "1589374",
+      "league": "Premier Soccer League"
+    },
+    {
+      "away": "Bulawayo Chiefs",
+      "date": "2026-07-22T13:00:00+00:00",
+      "home": "Scotland Mabvuku",
+      "id": "1589375",
+      "league": "Premier Soccer League"
+    },
+    {
+      "away": "MWOS",
+      "date": "2026-07-22T13:00:00+00:00",
+      "home": "Simba Bhora",
+      "id": "1589376",
+      "league": "Premier Soccer League"
+    },
+    {
+      "away": "Highlanders",
+      "date": "2026-07-22T13:00:00+00:00",
+      "home": "Kariba",
+      "id": "1589377",
+      "league": "Premier Soccer League"
+    },
+    {
+      "away": "1. FC Heidenheim",
+      "date": "2026-07-22T14:00:00+00:00",
+      "home": "Bologna",
+      "id": "1560778",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Reims",
+      "date": "2026-07-22T14:00:00+00:00",
+      "home": "Amiens",
+      "id": "1560779",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "FC Schalke 04",
+      "date": "2026-07-22T14:00:00+00:00",
+      "home": "Metalist 1925 Kharkiv",
+      "id": "1567695",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Ludogorets W",
+      "date": "2026-07-22T14:30:00+00:00",
+      "home": "KÍ",
+      "id": "1558471",
+      "league": "UEFA Champions League Women"
+    },
+    {
+      "away": "Zimbru Chisinau W",
+      "date": "2026-07-22T14:30:00+00:00",
+      "home": "Mitrovica W",
+      "id": "1558472",
+      "league": "UEFA Champions League Women"
+    },
+    {
+      "away": "Frosinone U20",
+      "date": "2026-07-22T14:30:00+00:00",
+      "home": "Frosinone",
+      "id": "1567701",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Olmaliq",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "Kokand-1912",
+      "id": "1516066",
+      "league": "Super League"
+    },
+    {
+      "away": "Andijan",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "Lokomotiv",
+      "id": "1516067",
+      "league": "Super League"
+    },
+    {
+      "away": "Nasaf",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "Mash'al",
+      "id": "1516068",
+      "league": "Super League"
+    },
+    {
+      "away": "Tulevik",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "Hiiumaa",
+      "id": "1556623",
+      "league": "Cup"
+    },
+    {
+      "away": "Milton Keynes Dons",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "Tottenham",
+      "id": "1560777",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Padova",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "Sassuolo",
+      "id": "1560780",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Paradiso",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "Palermo",
+      "id": "1567702",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Tamper",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "JK Tabasalu",
+      "id": "1583712",
+      "league": "Cup"
+    },
+    {
+      "away": "Sanat Naft",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "Mes Rafsanjan",
+      "id": "1593106",
+      "league": "Persian Gulf Pro League"
+    },
+    {
+      "away": "Příbram II",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "Jablonec II",
+      "id": "1598502",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Os Marialvas",
+      "date": "2026-07-22T15:00:00+00:00",
+      "home": "União Lamas",
+      "id": "1598503",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "GBK",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "Jaro 2",
+      "id": "1541752",
+      "league": "Kakkonen - Lohko C"
+    },
+    {
+      "away": "Concarneau",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "Guingamp",
+      "id": "1548897",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Hapoel Jerusalem W",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "PAOK W",
+      "id": "1558473",
+      "league": "UEFA Champions League Women"
+    },
+    {
+      "away": "Seraing United",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "Feignies-Aulnoye",
+      "id": "1560776",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Sochaux",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "Metz",
+      "id": "1560781",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Alcione",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "Torino",
+      "id": "1560782",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Fagiano Okayama",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "Werder Bremen",
+      "id": "1562955",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "La Roche VF",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "Nantes",
+      "id": "1567703",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Virtus Verona",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "Hellas Verona",
+      "id": "1584925",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Pardubice II",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "Vysoké Mýto",
+      "id": "1589293",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "FC Politehnica Timisoara",
+      "date": "2026-07-22T15:30:00+00:00",
+      "home": "Lecce",
+      "id": "1591894",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "VJS",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "PKKU",
+      "id": "1517220",
+      "league": "Ykkönen"
+    },
+    {
+      "away": "St. Truiden",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Liège",
+      "id": "1548898",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Nimes",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Rodez",
+      "id": "1550600",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Flora II",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Trans Narva",
+      "id": "1554096",
+      "league": "Cup"
+    },
+    {
+      "away": "Hell Hunt",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Phoenix",
+      "id": "1556624",
+      "league": "Cup"
+    },
+    {
+      "away": "Lusso W",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Czarni Sosnowiec W",
+      "id": "1558469",
+      "league": "UEFA Champions League Women"
+    },
+    {
+      "away": "Mgarr W",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Flora W",
+      "id": "1558470",
+      "league": "UEFA Champions League Women"
+    },
+    {
+      "away": "Al Wakrah",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Stade Brestois 29",
+      "id": "1560783",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Beerschot VA",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "MSV Duisburg",
+      "id": "1560784",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Cannes",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Montpellier",
+      "id": "1560785",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Barockstadt Fulda-Lehn.",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "VfL Halle",
+      "id": "1560786",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "SV Rodinghausen",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "SSV Jeddeloh",
+      "id": "1560787",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Elva",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Läänemaa Haapsalu",
+      "id": "1583713",
+      "league": "Cup"
+    },
+    {
+      "away": "Versailles",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Le Mans",
+      "id": "1584926",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Arezzo",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Napoli",
+      "id": "1591895",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Turnov",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Sokol Zápy",
+      "id": "1591896",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Dinamo Minsk",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Neftchi Baku",
+      "id": "1595191",
+      "league": "UEFA Europa Conference League"
+    },
+    {
+      "away": "Povltava FA",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Kolín",
+      "id": "1598504",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Jarosław",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "Puszcza Niepołomice",
+      "id": "1598505",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Kifisia",
+      "date": "2026-07-22T16:00:00+00:00",
+      "home": "RAAL La Louvière",
+      "id": "1598506",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Joker",
+      "date": "2026-07-22T16:30:00+00:00",
+      "home": "Vigri Maarjamäe",
+      "id": "1553591",
+      "league": "Cup"
+    },
+    {
+      "away": "Keila",
+      "date": "2026-07-22T16:30:00+00:00",
+      "home": "TalTech",
+      "id": "1553597",
+      "league": "Cup"
+    },
+    {
+      "away": "Genk",
+      "date": "2026-07-22T16:30:00+00:00",
+      "home": "AZ Alkmaar",
+      "id": "1567704",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Avarta",
+      "date": "2026-07-22T16:30:00+00:00",
+      "home": "Brønshøj",
+      "id": "1583406",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Wienerberg",
+      "date": "2026-07-22T16:30:00+00:00",
+      "home": "Wiener Viktoria",
+      "id": "1591897",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Ham-Kam",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Bodo/Glimt",
+      "id": "1494611",
+      "league": "Eliteserien"
+    },
+    {
+      "away": "Viking",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Lillestrom",
+      "id": "1494680",
+      "league": "Eliteserien"
+    },
+    {
+      "away": "Les Herbiers",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Angers",
+      "id": "1548896",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "FC 08 Homburg",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "FV Ravensburg",
+      "id": "1550593",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Gubbio",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Fiorentina",
+      "id": "1560788",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Schöningen",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Wolfenbuttel",
+      "id": "1560789",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Wilhelmshaven",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Atlas Delmenhorst",
+      "id": "1562956",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Patro Eisden",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Heist",
+      "id": "1562957",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Eldense",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Valencia",
+      "id": "1562958",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Vanløse",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Glostrup",
+      "id": "1567705",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Mamer",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "F91 Dudelange",
+      "id": "1583407",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "HNK Cibalia",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "NK Osijek",
+      "id": "1583408",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Leicester",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Cadiz",
+      "id": "1584927",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Hamburger SV II",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Lüneburger SK Hansa",
+      "id": "1584928",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Kreuzlingen",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "FSV Mainz 05 II",
+      "id": "1584929",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Las Palmas",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Orlando Pirates",
+      "id": "1584930",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Felgueiras 1932",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Santa Clara",
+      "id": "1584931",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "US Hostert",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Excelsior Virton",
+      "id": "1584932",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Zambia W",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Algeria W",
+      "id": "1586122",
+      "league": "Friendlies Women"
+    },
+    {
+      "away": "Kairat Almaty",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Omonia Nicosia",
+      "id": "1591936",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Ballkani",
+      "date": "2026-07-22T17:00:00+00:00",
+      "home": "Bohemians",
+      "id": "1593479",
+      "league": "UEFA Europa Conference League"
+    },
+    {
+      "away": "Unterrath",
+      "date": "2026-07-22T17:30:00+00:00",
+      "home": "Hilden",
+      "id": "1560790",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Athletic Club",
+      "date": "2026-07-22T17:30:00+00:00",
+      "home": "Sestao River",
+      "id": "1560791",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "APM Metz",
+      "date": "2026-07-22T17:30:00+00:00",
+      "home": "Progres Niederkorn",
+      "id": "1567706",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Bersenbrück",
+      "date": "2026-07-22T17:30:00+00:00",
+      "home": "Atlas Delmenhorst",
+      "id": "1584933",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Koeppchen",
+      "date": "2026-07-22T17:30:00+00:00",
+      "home": "AS Jeunesse Esch",
+      "id": "1591898",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Universitatea Craiova",
+      "date": "2026-07-22T17:30:00+00:00",
+      "home": "Levski Sofia",
+      "id": "1591935",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Bavois",
+      "date": "2026-07-22T17:30:00+00:00",
+      "home": "Echallens",
+      "id": "1598507",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "América RJ",
+      "date": "2026-07-22T17:45:00+00:00",
+      "home": "Nova Iguaçu",
+      "id": "1589166",
+      "league": "Copa Rio"
+    },
+    {
+      "away": "Pérolas Negras",
+      "date": "2026-07-22T17:45:00+00:00",
+      "home": "CFRJ / Maricá",
+      "id": "1589167",
+      "league": "Copa Rio"
+    },
+    {
+      "away": "Olaria",
+      "date": "2026-07-22T17:45:00+00:00",
+      "home": "Bangu",
+      "id": "1589168",
+      "league": "Copa Rio"
+    },
+    {
+      "away": "Bonsucesso",
+      "date": "2026-07-22T17:45:00+00:00",
+      "home": "Madureira",
+      "id": "1589170",
+      "league": "Copa Rio"
+    },
+    {
+      "away": "Inter Turku",
+      "date": "2026-07-22T17:45:00+00:00",
+      "home": "Başakşehir",
+      "id": "1593477",
+      "league": "UEFA Europa Conference League"
+    },
+    {
+      "away": "Criciuma U20",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Joinville U20",
+      "id": "1539858",
+      "league": "Catarinense U20"
+    },
+    {
+      "away": "Avaí U20",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Nação U20",
+      "id": "1539860",
+      "league": "Catarinense U20"
+    },
+    {
+      "away": "Carlos Renaux U20",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Figueirense U20",
+      "id": "1539862",
+      "league": "Catarinense U20"
+    },
+    {
+      "away": "Nação",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Blumenau",
+      "id": "1542010",
+      "league": "Catarinense - 2"
+    },
+    {
+      "away": "Tubarao",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Fluminense-SC",
+      "id": "1542011",
+      "league": "Catarinense - 2"
+    },
+    {
+      "away": "Metropolitano",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Juventus SC",
+      "id": "1542012",
+      "league": "Catarinense - 2"
+    },
+    {
+      "away": "Jaraguá",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Guarani de Palhoça",
+      "id": "1542033",
+      "league": "Catarinense - 2"
+    },
+    {
+      "away": "Botafogo U17",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "America MG U17",
+      "id": "1543951",
+      "league": "Brasileiro U17"
+    },
+    {
+      "away": "Palmeiras U17",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Bahia U17",
+      "id": "1543953",
+      "league": "Brasileiro U17"
+    },
+    {
+      "away": "Atletico GO U17",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Fluminense U17",
+      "id": "1543957",
+      "league": "Brasileiro U17"
+    },
+    {
+      "away": "Atlético Mineiro U17",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Sao Paulo U17",
+      "id": "1543960",
+      "league": "Brasileiro U17"
+    },
+    {
+      "away": "CTE Colatina",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Audax São Mateus",
+      "id": "1548251",
+      "league": "Capixaba B"
+    },
+    {
+      "away": "Pinheiros",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Estrela do Norte",
+      "id": "1548252",
+      "league": "Capixaba B"
+    },
+    {
+      "away": "Norwich",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "AFC Wimbledon",
+      "id": "1548899",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Wrexham W",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Pyunik W",
+      "id": "1558474",
+      "league": "UEFA Champions League Women"
+    },
+    {
+      "away": "KRC Genk II",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Eendracht Termien",
+      "id": "1562959",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Ferro 2",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Belgrano Córdoba Res.",
+      "id": "1576841",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Boca Juniors Res.",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Deportivo Riestra Res.",
+      "id": "1576842",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Banfield Res.",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "San Lorenzo Res.",
+      "id": "1576843",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Rosario Central Res.",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Tigre Res.",
+      "id": "1576844",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Talleres Córdoba Res.",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Vélez Sársfield Res.",
+      "id": "1576845",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Girona",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Olot",
+      "id": "1583409",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Riga",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Vardar Skopje",
+      "id": "1589430",
+      "league": "UEFA Europa Conference League"
+    },
+    {
+      "away": "AS Mansouria",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "KAC Kenitra",
+      "id": "1589967",
+      "league": "Botola 2"
+    },
+    {
+      "away": "Rapide Oued ZEM",
+      "date": "2026-07-22T18:00:00+00:00",
+      "home": "Union Sportive Boujaad",
+      "id": "1589968",
+      "league": "Botola 2"
+    },
+    {
+      "away": "Real Betis",
+      "date": "2026-07-22T18:30:00+00:00",
+      "home": "Recreativo Huelva",
+      "id": "1548016",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Wolves",
+      "date": "2026-07-22T18:30:00+00:00",
+      "home": "Maidenhead",
+      "id": "1548891",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Northampton",
+      "date": "2026-07-22T18:30:00+00:00",
+      "home": "Southend",
+      "id": "1548900",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "CSKA 1948",
+      "date": "2026-07-22T18:30:00+00:00",
+      "home": "Spartak Trnava",
+      "id": "1556521",
+      "league": "UEFA Europa Conference League"
+    },
+    {
+      "away": "Birmingham",
+      "date": "2026-07-22T18:30:00+00:00",
+      "home": "Burton Albion",
+      "id": "1560792",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Aberdeen",
+      "date": "2026-07-22T18:45:00+00:00",
+      "home": "Queen of the South",
+      "id": "1548167",
+      "league": "League Cup"
+    },
+    {
+      "away": "Peterborough",
+      "date": "2026-07-22T18:45:00+00:00",
+      "home": "Peterborough Sports",
+      "id": "1560793",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "West Ham",
+      "date": "2026-07-22T18:45:00+00:00",
+      "home": "Stevenage",
+      "id": "1560794",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Valenciennes",
+      "date": "2026-07-22T18:45:00+00:00",
+      "home": "Eastleigh",
+      "id": "1583410",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Saint Etienne",
+      "date": "2026-07-22T18:45:00+00:00",
+      "home": "Rangers",
+      "id": "1584934",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "Deportivo Cuenca",
+      "date": "2026-07-22T19:00:00+00:00",
+      "home": "Macara",
+      "id": "1519420",
+      "league": "Liga Pro"
+    },
+    {
+      "away": "Santos U17",
+      "date": "2026-07-22T19:00:00+00:00",
+      "home": "Flamengo RJ U17",
+      "id": "1543956",
+      "league": "Brasileiro U17"
+    },
+    {
+      "away": "SC Braga",
+      "date": "2026-07-22T19:00:00+00:00",
+      "home": "Železničar Pančevo",
+      "id": "1556524",
+      "league": "UEFA Europa Conference League"
+    },
+    {
+      "away": "Getafe",
+      "date": "2026-07-22T19:00:00+00:00",
+      "home": "Tenerife",
+      "id": "1567707",
+      "league": "Friendlies Clubs"
+    },
+    {
+      "away": "CEAC / Araruama",
+      "date": "2026-07-22T19:00:00+00:00",
+      "home": "Boavista SC",
+      "id": "1589171",
+      "league": "Copa Rio"
+    },
+    {
+      "away": "Celje",
+      "date": "2026-07-22T19:00:00+00:00",
+      "home": "Egnatia Rrogozhinë",
+      "id": "1591933",
+      "league": "UEFA Champions League"
+    },
+    {
+      "away": "Vasco da Gama U20",
+      "date": "2026-07-22T19:00:00+00:00",
+      "home": "Santos U20",
+      "id": "1593472",
+      "league": "Brasileiro U20 A"
+    },
+    {
+      "away": "Araioses",
+      "date": "2026-07-22T19:00:00+00:00",
+      "home": "Timon MA",
+      "id": "1595189",
+      "league": "Maranhense - 2"
+    },
+    {
+      "away": "Carlos Mannucci W",
+      "date": "2026-07-22T20:15:00+00:00",
+      "home": "U. de Deportes W",
+      "id": "1557278",
+      "league": "Liga Women"
+    },
+    {
+      "away": "Cumbayá",
+      "date": "2026-07-22T20:30:00+00:00",
+      "home": "San Antonio",
+      "id": "1526582",
+      "league": "Liga Pro Serie B"
+    },
+    {
+      "away": "Tecnico Universitario",
+      "date": "2026-07-22T21:30:00+00:00",
+      "home": "Independiente del Valle",
+      "id": "1519417",
+      "league": "Liga Pro"
+    },
+    {
+      "away": "XV de Piracicaba",
+      "date": "2026-07-22T22:00:00+00:00",
+      "home": "União São João",
+      "id": "1546076",
+      "league": "Copa Paulista"
+    },
+    {
+      "away": "Vasco DA Gama",
+      "date": "2026-07-22T22:00:00+00:00",
+      "home": "Independiente Medellin",
+      "id": "1547775",
+      "league": "CONMEBOL Sudamericana"
+    },
+    {
+      "away": "Barracas Central Res.",
+      "date": "2026-07-22T22:00:00+00:00",
+      "home": "River Plate Res.",
+      "id": "1576846",
+      "league": "Reserve League"
+    },
+    {
+      "away": "Pinheiro",
+      "date": "2026-07-22T22:00:00+00:00",
+      "home": "Lago Verde",
+      "id": "1595190",
+      "league": "Maranhense - 2"
+    },
+    {
+      "away": "Palmeiras",
+      "date": "2026-07-22T22:30:00+00:00",
+      "home": "Coritiba",
+      "id": "1492294",
+      "league": "Serie A"
+    },
+    {
+      "away": "Inter Miami II",
+      "date": "2026-07-22T22:30:00+00:00",
+      "home": "Carolina Core",
+      "id": "1513234",
+      "league": "MLS Next Pro"
+    },
+    {
+      "away": "CRB",
+      "date": "2026-07-22T22:30:00+00:00",
+      "home": "Ceara",
+      "id": "1520783",
+      "league": "Serie B"
+    },
+    {
+      "away": "Ponte Preta",
+      "date": "2026-07-22T22:30:00+00:00",
+      "home": "Operario-PR",
+      "id": "1520788",
+      "league": "Serie B"
+    },
+    {
+      "away": "Resende",
+      "date": "2026-07-22T22:30:00+00:00",
+      "home": "Sampaio Corrêa RJ",
+      "id": "1589172",
+      "league": "Copa Rio"
+    },
+    {
+      "away": "Oakland Roots",
+      "date": "2026-07-22T23:00:00+00:00",
+      "home": "Lexington",
+      "id": "1493586",
+      "league": "USL Championship"
+    },
+    {
+      "away": "Union Omaha",
+      "date": "2026-07-22T23:00:00+00:00",
+      "home": "Portland Hearts of Pine",
+      "id": "1493907",
+      "league": "USL League One"
+    },
+    {
+      "away": "NY Cosmos",
+      "date": "2026-07-22T23:00:00+00:00",
+      "home": "Westchester SC",
+      "id": "1493909",
+      "league": "USL League One"
+    },
+    {
+      "away": "Caravaggio",
+      "date": "2026-07-22T23:00:00+00:00",
+      "home": "Hercílio Luz",
+      "id": "1542009",
+      "league": "Catarinense - 2"
+    },
+    {
+      "away": "Gramadense",
+      "date": "2026-07-22T23:00:00+00:00",
+      "home": "Brasil DE Pelotas",
+      "id": "1581834",
+      "league": "Copa Gaúcha"
+    },
+    {
+      "away": "Chicago Fire",
+      "date": "2026-07-22T23:30:00+00:00",
+      "home": "Inter Miami",
+      "id": "1490331",
+      "league": "Major League Soccer"
+    },
+    {
+      "away": "Vancouver Whitecaps",
+      "date": "2026-07-22T23:30:00+00:00",
+      "home": "FC Cincinnati",
+      "id": "1490332",
+      "league": "Major League Soccer"
+    },
+    {
+      "away": "New York City FC",
+      "date": "2026-07-22T23:30:00+00:00",
+      "home": "Columbus Crew",
+      "id": "1490333",
+      "league": "Major League Soccer"
+    },
+    {
+      "away": "New York Red Bulls",
+      "date": "2026-07-22T23:30:00+00:00",
+      "home": "Philadelphia Union",
+      "id": "1490334",
+      "league": "Major League Soccer"
+    },
+    {
+      "away": "Toronto FC",
+      "date": "2026-07-22T23:30:00+00:00",
+      "home": "New England Revolution",
+      "id": "1490335",
+      "league": "Major League Soccer"
+    },
+    {
+      "away": "Sport Recife",
+      "date": "2026-07-22T23:30:00+00:00",
+      "home": "Goias",
+      "id": "1520785",
+      "league": "Serie B"
+    }
+  ],
+  "fetched_at": "2026-07-21T10:43:35.149133+00:00",
+  "payload_sha256": "bcf8ca1e21a50415d164a39db21546406b9a2bfa99415b051d7d6d1032ec70a0",
+  "provider": "api-sports",
+  "schema_version": 1,
+  "target_event_ids": [
+    32851,
+    32852,
+    32853,
+    32854,
+    32855,
+    32856,
+    32857,
+    32858,
+    32859,
+    32860,
+    32861,
+    32862,
+    32863,
+    32864,
+    32865
+  ],
+  "target_fingerprint": "e231a9e3b1933a7824ae46ba3c2c7541468a90b06e4cd6cdce6baa16c85e3b68"
+}

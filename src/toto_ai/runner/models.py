@@ -271,6 +271,45 @@ class PinnedDrawing:
 
 
 @dataclass(frozen=True)
+class OfflineReplayProvenance:
+    replay_root: str
+    replay_as_of: datetime
+    target_cache_path: str
+    target_cache_sha256: str
+    target_payload_sha256: str
+    schedule_cache_path: str
+    schedule_cache_sha256: str
+    schedule_payload_sha256: str
+    provider: str
+    actionable: bool = False
+
+    def __post_init__(self) -> None:
+        _require_utc_datetime("replay_as_of", self.replay_as_of)
+        for name, value in (
+            ("replay_root", self.replay_root),
+            ("target_cache_path", self.target_cache_path),
+            ("schedule_cache_path", self.schedule_cache_path),
+            ("provider", self.provider),
+        ):
+            _require_text(name, value)
+        for name, value in (
+            ("target_cache_sha256", self.target_cache_sha256),
+            ("target_payload_sha256", self.target_payload_sha256),
+            ("schedule_cache_sha256", self.schedule_cache_sha256),
+            ("schedule_payload_sha256", self.schedule_payload_sha256),
+        ):
+            if (
+                not isinstance(value, str)
+                or _FINGERPRINT_PATTERN.fullmatch(value) is None
+            ):
+                raise ValueError(f"{name} must be a lowercase SHA-256 hex digest")
+        if self.provider != "api-sports":
+            raise ValueError("offline replay provider must be api-sports")
+        if self.actionable is not False:
+            raise ValueError("offline replay can never be actionable")
+
+
+@dataclass(frozen=True)
 class DrawingRunnerResult:
     config: DrawingRunnerConfig
     target: PinnedDrawing
@@ -291,6 +330,7 @@ class DrawingRunnerResult:
     ev_run: EVPackageRun | None
     raw_timing_eligibility: PlayTimingEligibility | None = None
     timing_override: TimingOverrideAudit | None = None
+    offline_replay: OfflineReplayProvenance | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.config, DrawingRunnerConfig):
@@ -358,6 +398,11 @@ class DrawingRunnerResult:
             raise ValueError("audit must be a CoverageAudit")
         if self.ev_run is not None and not isinstance(self.ev_run, EVPackageRun):
             raise ValueError("ev_run must be an EVPackageRun")
+        if self.offline_replay is not None:
+            if not isinstance(self.offline_replay, OfflineReplayProvenance):
+                raise ValueError("offline_replay provenance is invalid")
+            if self.config.mode != "research" or self.decision != "RESEARCH ONLY":
+                raise ValueError("offline replay must be RESEARCH ONLY")
         if self.final_fingerprint is not None and (
             not isinstance(self.final_fingerprint, str)
             or not _FINGERPRINT_PATTERN.fullmatch(self.final_fingerprint)

@@ -1,4 +1,14 @@
-from sqlalchemy import Float, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -105,6 +115,9 @@ class ExternalCollectionRun(Base):
     eligibility_provider_count: Mapped[int | None] = mapped_column(
         Integer, nullable=True
     )
+    pinned_revalidation_summary: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
 
 
 class ExternalEventDisposition(Base):
@@ -179,3 +192,208 @@ class ExternalBookmakerQuote(Base):
     rejection_reason: Mapped[str | None] = mapped_column(String)
     source_count: Mapped[int] = mapped_column(Integer)
     source_provenance: Mapped[str] = mapped_column(String)
+
+
+class TeamEntity(Base):
+    __tablename__ = "team_entities"
+    __table_args__ = (
+        UniqueConstraint(
+            "sport",
+            "normalized_name",
+            "country",
+            "context",
+            name="uq_team_entity_identity",
+        ),
+        Index("ix_team_entities_sport_transliterated", "sport", "transliterated_name"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    sport: Mapped[str] = mapped_column(String)
+    canonical_name: Mapped[str] = mapped_column(String)
+    normalized_name: Mapped[str] = mapped_column(String)
+    transliterated_name: Mapped[str] = mapped_column(String)
+    country: Mapped[str] = mapped_column(String, default="")
+    context: Mapped[str] = mapped_column(String, default="")
+    created_at: Mapped[str] = mapped_column(String)
+
+
+class TeamAlias(Base):
+    __tablename__ = "team_aliases"
+    __table_args__ = (
+        UniqueConstraint(
+            "sport",
+            "provider",
+            "normalized_alias",
+            "country",
+            "context",
+            name="uq_team_alias_identity",
+        ),
+        Index(
+            "uq_team_alias_provider_team_id",
+            "sport",
+            "provider",
+            "provider_team_id",
+            unique=True,
+            sqlite_where=text("provider_team_id IS NOT NULL"),
+        ),
+        Index(
+            "ix_team_alias_reviewed_lookup",
+            "sport",
+            "provider",
+            "normalized_alias",
+            "reviewed",
+            "active",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    team_id: Mapped[int] = mapped_column(ForeignKey("team_entities.id"), index=True)
+    sport: Mapped[str] = mapped_column(String)
+    alias: Mapped[str] = mapped_column(String)
+    normalized_alias: Mapped[str] = mapped_column(String)
+    transliterated_alias: Mapped[str] = mapped_column(String)
+    source: Mapped[str] = mapped_column(String)
+    provider: Mapped[str] = mapped_column(String, default="")
+    country: Mapped[str] = mapped_column(String, default="")
+    context: Mapped[str] = mapped_column(String, default="")
+    provider_team_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    provenance: Mapped[str] = mapped_column(Text)
+    confidence: Mapped[float] = mapped_column(Float)
+    reviewed: Mapped[bool] = mapped_column(Boolean, default=False)
+    reviewer: Mapped[str | None] = mapped_column(String, nullable=True)
+    reviewed_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[str] = mapped_column(String)
+    updated_at: Mapped[str] = mapped_column(String)
+
+
+class TeamRegistryReview(Base):
+    __tablename__ = "team_registry_reviews"
+    __table_args__ = (
+        UniqueConstraint(
+            "drawing_id",
+            "drawing_fingerprint",
+            "target_event_id",
+            "event_order",
+            "provider",
+            name="uq_team_registry_review_identity",
+        ),
+        Index("ix_team_registry_reviews_status", "status", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    drawing_id: Mapped[int] = mapped_column(Integer)
+    drawing_fingerprint: Mapped[str] = mapped_column(String)
+    target_event_id: Mapped[str] = mapped_column(String)
+    event_order: Mapped[int] = mapped_column(Integer)
+    provider: Mapped[str] = mapped_column(String)
+    sport: Mapped[str] = mapped_column(String)
+    target_home_team: Mapped[str] = mapped_column(String)
+    target_away_team: Mapped[str] = mapped_column(String)
+    target_home_normalized: Mapped[str] = mapped_column(String)
+    target_away_normalized: Mapped[str] = mapped_column(String)
+    context: Mapped[str] = mapped_column(Text)
+    resolution_reason: Mapped[str] = mapped_column(Text, default="")
+    candidate_evidence: Mapped[str] = mapped_column(Text)
+    matching_hash: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String)
+    resolution_home_team_id: Mapped[int | None] = mapped_column(
+        ForeignKey("team_entities.id"), nullable=True
+    )
+    resolution_away_team_id: Mapped[int | None] = mapped_column(
+        ForeignKey("team_entities.id"), nullable=True
+    )
+    resolution_provenance: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[str] = mapped_column(String)
+    updated_at: Mapped[str] = mapped_column(String)
+    resolved_at: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+class DrawingEventPin(Base):
+    __tablename__ = "drawing_event_pins"
+    __table_args__ = (
+        UniqueConstraint(
+            "drawing_id",
+            "drawing_fingerprint",
+            "target_event_id",
+            "event_order",
+            "provider",
+            name="uq_drawing_event_pin_identity",
+        ),
+        UniqueConstraint(
+            "drawing_id",
+            "drawing_fingerprint",
+            "provider",
+            "provider_fixture_id",
+            name="uq_drawing_event_pin_fixture",
+        ),
+        Index(
+            "ix_drawing_event_pins_exact_lookup",
+            "drawing_id",
+            "drawing_fingerprint",
+            "target_event_id",
+            "event_order",
+            "provider",
+            "status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    drawing_id: Mapped[int] = mapped_column(Integer)
+    drawing_fingerprint: Mapped[str] = mapped_column(String)
+    target_event_id: Mapped[str] = mapped_column(String)
+    event_order: Mapped[int] = mapped_column(Integer)
+    provider: Mapped[str] = mapped_column(String)
+    canonical_home_team_id: Mapped[int] = mapped_column(
+        ForeignKey("team_entities.id")
+    )
+    canonical_away_team_id: Mapped[int] = mapped_column(
+        ForeignKey("team_entities.id")
+    )
+    provider_home_team_id: Mapped[str] = mapped_column(String)
+    provider_away_team_id: Mapped[str] = mapped_column(String)
+    provider_fixture_id: Mapped[str] = mapped_column(String)
+    starts_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    collection_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    provenance: Mapped[str] = mapped_column(Text)
+    pin_hash: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String)
+    created_at: Mapped[str] = mapped_column(String)
+    invalidated_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    invalidation_reason: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+class DrawingPreparation(Base):
+    __tablename__ = "drawing_preparations"
+    __table_args__ = (
+        UniqueConstraint(
+            "drawing_id",
+            "drawing_fingerprint",
+            "provider",
+            name="uq_drawing_preparation_identity",
+        ),
+        Index(
+            "ix_drawing_preparations_lookup",
+            "drawing_id",
+            "provider",
+            "status",
+            "created_at",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    drawing_id: Mapped[int] = mapped_column(Integer)
+    drawing_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    drawing_fingerprint: Mapped[str] = mapped_column(String)
+    provider: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String)
+    mapped_count: Mapped[int] = mapped_column(Integer)
+    unresolved_event_orders: Mapped[str] = mapped_column(Text)
+    eligibility_status: Mapped[str] = mapped_column(String)
+    readiness_summary: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(String)
+    updated_at: Mapped[str] = mapped_column(String)
+
+
+# Name retained for the candidate terminology used by the implementation plan.
+TeamRegistryCandidate = TeamRegistryReview

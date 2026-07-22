@@ -8,7 +8,7 @@ import os
 import secrets
 import shutil
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -34,7 +34,7 @@ from toto_ai.runner.models import (
     PinnedDrawing,
 )
 
-RUNNER_REPORT_SCHEMA_VERSION = 3
+RUNNER_REPORT_SCHEMA_VERSION = 4
 RUNNER_PROVIDER = "api-sports"
 
 
@@ -336,6 +336,7 @@ def _report_payload(
             "safety_stop_minutes": config.safety_stop_minutes,
             "provider": RUNNER_PROVIDER,
         },
+        "replay": _offline_replay_payload(result),
         "timeline": {
             "preflight_at": _timestamp(result.preflight_at),
             "final_started_at": _optional_timestamp(result.final_started_at),
@@ -357,6 +358,25 @@ def _report_payload(
             "ev": [str(path) for path in links.ev],
         },
         "warnings": warnings,
+    }
+
+
+def _offline_replay_payload(result: DrawingRunnerResult) -> dict[str, Any] | None:
+    replay = result.offline_replay
+    if replay is None:
+        return None
+    return {
+        "mode": "offline-replay",
+        "replay_root": replay.replay_root,
+        "replay_as_of": _timestamp(replay.replay_as_of),
+        "target_cache_path": replay.target_cache_path,
+        "target_cache_sha256": replay.target_cache_sha256,
+        "target_payload_sha256": replay.target_payload_sha256,
+        "schedule_cache_path": replay.schedule_cache_path,
+        "schedule_cache_sha256": replay.schedule_cache_sha256,
+        "schedule_payload_sha256": replay.schedule_payload_sha256,
+        "provider": replay.provider,
+        "actionable": replay.actionable,
     }
 
 
@@ -386,7 +406,16 @@ def _collection_payload(result: DrawingRunnerResult) -> dict[str, Any] | None:
         ),
         "failed_schedule_date_count": collection.total_failed_schedule_dates,
         "elapsed_seconds": float(collection.elapsed_seconds),
+        "pinned_revalidation": _pinned_revalidation_payload(
+            collection.snapshot.pinned_revalidation
+        ),
     }
+
+
+def _pinned_revalidation_payload(summary: object | None) -> dict[str, Any] | None:
+    if summary is None:
+        return None
+    return asdict(summary)
 
 
 def _eligibility_payload(result: DrawingRunnerResult) -> dict[str, Any]:
@@ -660,6 +689,7 @@ def _warnings(result: DrawingRunnerResult) -> list[str]:
 def _render_markdown(payload: dict[str, Any]) -> str:
     target = payload["target"]
     config = payload["config"]
+    replay = payload["replay"]
     timeline = payload["timeline"]
     collection = payload["collection"]
     eligibility = payload["eligibility"]
@@ -694,6 +724,10 @@ def _render_markdown(payload: dict[str, Any]) -> str:
         f"- mode: {config['mode']}",
         f"- final lead minutes: {config['final_lead_minutes']}",
         f"- safety stop minutes: {config['safety_stop_minutes']}",
+        "",
+        "## Offline Replay",
+        "",
+        *_offline_replay_markdown(replay),
         "",
         "## Timeline",
         "",
@@ -737,6 +771,24 @@ def _render_markdown(payload: dict[str, Any]) -> str:
     )
     lines.append("")
     return "\n".join(lines)
+
+
+def _offline_replay_markdown(replay: dict[str, Any] | None) -> list[str]:
+    if replay is None:
+        return ["- live production path"]
+    return [
+        "- mode: offline-replay",
+        f"- isolation root: {replay['replay_root']}",
+        f"- replay as of: {replay['replay_as_of']}",
+        f"- actionable: {_yes_no(replay['actionable'])}",
+        f"- provider: {replay['provider']}",
+        f"- target cache: {replay['target_cache_path']}",
+        f"- target cache SHA-256: {replay['target_cache_sha256']}",
+        f"- target payload SHA-256: {replay['target_payload_sha256']}",
+        f"- schedule cache: {replay['schedule_cache_path']}",
+        f"- schedule cache SHA-256: {replay['schedule_cache_sha256']}",
+        f"- schedule payload SHA-256: {replay['schedule_payload_sha256']}",
+    ]
 
 
 def _collection_markdown(collection: dict[str, Any] | None) -> list[str]:

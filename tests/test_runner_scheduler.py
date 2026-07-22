@@ -5,12 +5,15 @@ import os
 import plistlib
 import subprocess
 import sys
+from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
 import toto_ai.runner.scheduler as scheduler
+from tests.pinned_revalidation_helpers import ready_pinned_revalidation
+from toto_ai.db.session import init_db
 from toto_ai.external_odds.timing_overrides import (
     load_timing_override_catalog,
     timing_override_catalog_sha256,
@@ -257,6 +260,9 @@ def _valid_runner_manifest(
             "successful_schedule_date_count": 2,
             "failed_schedule_date_count": 0,
             "elapsed_seconds": 1.0,
+            "pinned_revalidation": asdict(
+                ready_pinned_revalidation(context.started_at)
+            ),
         },
         "eligibility": {
             "status": "playable",
@@ -339,6 +345,7 @@ def _valid_runner_manifest(
             "sensitivity": [],
         },
         "report_links": {"external": [], "ev": []},
+        "replay": None,
         "warnings": [],
     }
 
@@ -891,7 +898,48 @@ def test_command_phase_preflight_validates_data_before_subprocess(tmp_path: Path
         runner(context)
 
 
-def test_production_manifest_parser_accepts_strict_schema_v3_play(
+def test_command_phase_preflight_runs_mandatory_prepare_drawing(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    plan = _plan(tmp_path)
+    init_db(plan.db).dispose()
+    plan.aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
+    context = SchedulerPhaseContext(
+        phase="preflight",
+        plan=plan,
+        run_id="preflight-ready",
+        run_dir=plan.output_dir / "run",
+        work_dir=plan.output_dir / "run" / "work" / "preflight",
+        scheduled_at=plan.preflight_at,
+        started_at=plan.preflight_at,
+    )
+    calls = []
+
+    def completed(command, **kwargs):
+        calls.append((tuple(command), kwargs["env"]))
+        return subprocess.CompletedProcess(
+            command, 0, stdout='{"status":"ready"}', stderr=""
+        )
+
+    monkeypatch.setattr(scheduler.subprocess, "run", completed)
+    runner = CommandSchedulerPhaseRunner(
+        environment={
+            "API_SPORTS_KEY": "not-persisted",
+            "TOTO_LEGACY_NAME_MATCHING": "1",
+        },
+        target_validator=lambda _plan, _started_at: None,
+    )
+
+    result = runner(context)
+
+    assert result.status == "complete"
+    assert calls[0][0][3] == "prepare-drawing"
+    assert "--open" in calls[0][0]
+    assert "TOTO_LEGACY_NAME_MATCHING" not in calls[0][1]
+
+
+def test_production_manifest_parser_accepts_strict_schema_v4_play(
     tmp_path: Path,
 ):
     context = _manifest_context(tmp_path)
@@ -909,6 +957,119 @@ def test_production_manifest_parser_accepts_strict_schema_v3_play(
     ).encode()
 
 
+def test_production_manifest_parser_ignores_offline_replay_as_non_production(
+    tmp_path: Path,
+):
+    context = _manifest_context(tmp_path)
+    payload = _valid_runner_manifest(context)
+    payload["replay"] = {
+        "mode": "offline-replay",
+        "actionable": False,
+    }
+    manifest = _write_runner_manifest(context, payload)
+
+    result = parse_runner_manifest_phase_result(context, manifest)
+
+    assert result.status == "ignored"
+    assert result.decision is None
+    assert result.reason == "non-production offline replay manifest ignored"
+
+
+def test_full_scheduler_ignores_replay_manifest_without_any_marker(tmp_path: Path):
+    plan = _plan(tmp_path)
+
+    def run(context: SchedulerPhaseContext) -> SchedulerPhaseResult:
+        if context.phase == "preflight":
+            return SchedulerPhaseResult.completed("preparation ready")
+        if context.phase == "fallback":
+            return SchedulerPhaseResult.no_bet("diagnostic fallback")
+        payload = _valid_runner_manifest(context)
+        payload["replay"] = {
+            "mode": "offline-replay",
+            "actionable": False,
+        }
+        manifest = _write_runner_manifest(context, payload)
+        return parse_runner_manifest_phase_result(context, manifest)
+
+    result = _execute(plan, run, run_id="ignored-offline-replay")
+
+    assert result.outcome == "ignored"
+    assert result.decision == "IGNORED"
+    assert result.marker_path is None
+    assert result.reason == "non-production offline replay manifest ignored"
+    assert not any(
+        path.name in {".bet-ready", ".no-bet", ".failed", ".ignored"}
+        for path in result.run_dir.rglob("*")
+    )
+    status = _status(result)
+    assert status["state"] == "ignored"
+    assert status["outcome"] == "ignored"
+    assert status["decision"] == "IGNORED"
+
+
+def test_full_scheduler_invalid_live_manifest_retains_failed_marker(tmp_path: Path):
+    plan = _plan(tmp_path)
+
+    def run(context: SchedulerPhaseContext) -> SchedulerPhaseResult:
+        if context.phase == "preflight":
+            return SchedulerPhaseResult.completed("preparation ready")
+        if context.phase == "fallback":
+            return SchedulerPhaseResult.no_bet("diagnostic fallback")
+        payload = _valid_runner_manifest(context)
+        del payload["timeline"]
+        manifest = _write_runner_manifest(context, payload)
+        return parse_runner_manifest_phase_result(context, manifest)
+
+    result = _execute(plan, run, run_id="invalid-live-manifest")
+
+    assert result.outcome == "failed"
+    assert result.decision == "FAILED"
+    assert result.marker_path == result.run_dir / ".failed"
+    assert result.marker_path.is_file()
+
+
+def test_scheduler_manifest_pin_revalidation_failure_publishes_no_bet_marker(
+    tmp_path: Path,
+):
+    plan = _plan(tmp_path)
+
+    def run(context: SchedulerPhaseContext) -> SchedulerPhaseResult:
+        if context.phase == "preflight":
+            return SchedulerPhaseResult.completed("preparation ready")
+        if context.phase == "fallback":
+            return SchedulerPhaseResult.no_bet("fallback cannot authorize play")
+        payload = _valid_runner_manifest(context)
+        collection = payload["collection"]
+        assert isinstance(collection, dict)
+        summary = collection["pinned_revalidation"]
+        assert isinstance(summary, dict)
+        summary["matched_count"] = 14
+        summary["provider_failure_event_orders"] = [14]
+        summary["stale_event_orders"] = [14]
+        summary["schedule_fresh"] = False
+        summary["provider_checks_passed"] = False
+        summary["fixture_checks_passed"] = False
+        summary["team_checks_passed"] = False
+        summary["orientation_checks_passed"] = False
+        summary["start_time_checks_passed"] = False
+        summary["ready_for_play"] = False
+        events = list(summary["events"])
+        summary["events"] = events
+        event = events[14]
+        assert isinstance(event, dict)
+        event["status"] = "provider_failure"
+        event["reason"] = "pinned fixture revalidation schedule is stale"
+        manifest = _write_runner_manifest(context, payload)
+        return parse_runner_manifest_phase_result(context, manifest)
+
+    result = _execute(plan, run, run_id="stale-pin-manifest")
+
+    assert result.outcome == "no-bet"
+    assert result.marker_path.name == ".no-bet"
+    assert result.marker_path.is_file()
+    assert not (result.run_dir / ".bet-ready").exists()
+
+
 def test_scheduler_plan_threshold_is_forwarded_and_enforced(tmp_path: Path):
     context = _manifest_context(tmp_path, minimum_gross_ev=1.1)
     command = build_run_drawing_phase_command(context)
@@ -920,7 +1081,7 @@ def test_scheduler_plan_threshold_is_forwarded_and_enforced(tmp_path: Path):
     assert result.decision == "PLAY"
 
 
-def test_production_manifest_parser_accepts_explicit_schema_v3_no_bet(
+def test_production_manifest_parser_accepts_explicit_schema_v4_no_bet(
     tmp_path: Path,
 ):
     context = _manifest_context(tmp_path)
@@ -1153,7 +1314,7 @@ def test_manifest_rejects_non_string_decision_reason(tmp_path: Path):
 
 
 @pytest.mark.parametrize("location", ["manifest", "target", "coupon"])
-def test_manifest_rejects_unknown_schema_v3_fields(
+def test_manifest_rejects_unknown_schema_v4_fields(
     tmp_path: Path,
     location: str,
 ):

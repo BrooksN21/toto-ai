@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from tests.pinned_revalidation_helpers import ready_pinned_revalidation
 from toto_ai.ev.drawing import EVPackageRun
 from toto_ai.ev.models import (
     EVConfig,
@@ -173,6 +174,7 @@ def _collection(target: TargetDrawing) -> ProspectiveCollectionResult:
         target_fingerprint=pinned.fingerprint,
         missing_start_horizon_days=2,
         eligibility=eligibility,
+        pinned_revalidation=ready_pinned_revalidation(T_MINUS_18),
     )
     collection_pass = ProspectiveCollectionPass(
         snapshot=snapshot,

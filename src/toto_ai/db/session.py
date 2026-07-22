@@ -4,7 +4,7 @@ from pathlib import Path
 from sqlalchemy import Engine, create_engine, inspect, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from toto_ai.db.models import Base
+from toto_ai.db.models import Base, TeamAlias
 
 
 def sqlite_url(db_path: str | Path) -> str:
@@ -40,6 +40,14 @@ def get_session_factory(engine: Engine) -> sessionmaker[Session]:
 def _add_missing_columns(engine: Engine) -> None:
     inspector = inspect(engine)
     table_names = set(inspector.get_table_names())
+    if "team_aliases" in table_names:
+        alias_columns = {
+            column["name"] for column in inspector.get_columns("team_aliases")
+        }
+        if not {"country", "context"} <= alias_columns:
+            _migrate_team_aliases_to_context_identity(engine)
+            inspector = inspect(engine)
+            table_names = set(inspector.get_table_names())
     with engine.begin() as connection:
         if "quotes" in table_names:
             existing_quote_columns = {
@@ -77,6 +85,7 @@ def _add_missing_columns(engine: Engine) -> None:
                 "eligibility_missing_event_orders": "VARCHAR",
                 "eligibility_totobrief_count": "INTEGER",
                 "eligibility_provider_count": "INTEGER",
+                "pinned_revalidation_summary": "TEXT",
             }
             for column_name, column_type in required_run_columns.items():
                 if column_name not in run_columns:
@@ -141,3 +150,68 @@ def _add_missing_columns(engine: Engine) -> None:
                     "WHERE effective_start_source IS NULL"
                 )
             )
+
+        if "team_registry_reviews" in table_names:
+            review_columns = {
+                column["name"]
+                for column in inspector.get_columns("team_registry_reviews")
+            }
+            if "resolution_reason" not in review_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE team_registry_reviews "
+                        "ADD COLUMN resolution_reason TEXT NOT NULL DEFAULT ''"
+                    )
+                )
+
+        if "drawing_preparations" in table_names:
+            preparation_columns = {
+                column["name"]
+                for column in inspector.get_columns("drawing_preparations")
+            }
+            if "updated_at" not in preparation_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE drawing_preparations "
+                        "ADD COLUMN updated_at VARCHAR NOT NULL DEFAULT ''"
+                    )
+                )
+                connection.execute(
+                    text(
+                        "UPDATE drawing_preparations SET updated_at = created_at "
+                        "WHERE updated_at = ''"
+                    )
+                )
+
+
+def _migrate_team_aliases_to_context_identity(engine: Engine) -> None:
+    """Rebuild the Phase-1 alias table so names can be scoped by competition."""
+    legacy_table = "team_aliases_phase1"
+    with engine.begin() as connection:
+        connection.execute(
+            text("ALTER TABLE team_aliases RENAME TO team_aliases_phase1")
+        )
+        for index_name in (
+            "uq_team_alias_provider_team_id",
+            "ix_team_alias_reviewed_lookup",
+            "ix_team_aliases_team_id",
+        ):
+            connection.execute(text(f"DROP INDEX IF EXISTS {index_name}"))
+        TeamAlias.__table__.create(connection)
+        connection.execute(
+            text(
+                "INSERT INTO team_aliases ("
+                "id, team_id, sport, alias, normalized_alias, transliterated_alias, "
+                "source, provider, country, context, provider_team_id, provenance, "
+                "confidence, reviewed, reviewer, reviewed_at, active, created_at, "
+                "updated_at) "
+                "SELECT a.id, a.team_id, a.sport, a.alias, a.normalized_alias, "
+                "a.transliterated_alias, a.source, a.provider, "
+                "COALESCE(t.country, ''), COALESCE(t.context, ''), "
+                "a.provider_team_id, a.provenance, a.confidence, a.reviewed, "
+                "a.reviewer, a.reviewed_at, a.active, a.created_at, a.updated_at "
+                "FROM team_aliases_phase1 AS a "
+                "JOIN team_entities AS t ON t.id = a.team_id"
+            )
+        )
+        connection.execute(text(f"DROP TABLE {legacy_table}"))

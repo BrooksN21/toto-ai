@@ -1,6 +1,6 @@
 import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -12,6 +12,7 @@ from typer.testing import CliRunner
 import toto_ai.cli as cli
 import toto_ai.runner.reports as runner_reports
 import toto_ai.runner.scheduler as scheduler_module
+from tests.pinned_revalidation_helpers import ready_pinned_revalidation
 from toto_ai.ev.models import PlayTimingEligibility
 from toto_ai.external_odds.eligibility import DrawingEligibility
 from toto_ai.external_odds.targets import parse_target_drawing
@@ -110,6 +111,12 @@ def _exception_graph(root: BaseException) -> tuple[BaseException, ...]:
 def _invoke_command_direct() -> None:
     cli.run_drawing_command(
         open=True,
+        offline_replay=False,
+        drawing_id=None,
+        target_cache=None,
+        schedule_cache=None,
+        replay_as_of=None,
+        replay_root=None,
         bank=4980,
         stake=30,
         mode="playable",
@@ -194,6 +201,11 @@ def _wire_runner(monkeypatch, *, result: _RunnerResult):
     monkeypatch.setattr(cli, "get_session_factory", lambda engine: "session-factory")
     monkeypatch.setattr(cli, "open_readonly_db", open_readonly_database)
     monkeypatch.setattr(cli, "load_aliases", lambda aliases: {"aliases": aliases})
+    monkeypatch.setattr(
+        cli,
+        "load_ready_drawing_pins",
+        lambda *_args, **_kwargs: tuple(f"pin-{index}" for index in range(15)),
+    )
     monkeypatch.setattr(
         cli,
         "collect_fresh_open_external_odds",
@@ -522,6 +534,12 @@ def test_run_drawing_exposes_exact_approved_option_surface():
 
     assert option_names == {
         "--open",
+        "--offline-replay",
+        "--drawing-id",
+        "--target-cache",
+        "--schedule-cache",
+        "--replay-as-of",
+        "--replay-root",
         "--bank",
         "--stake",
         "--mode",
@@ -560,14 +578,20 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         name: parameter.default
         for name, parameter in parameters.items()
         if name != "bank"
-    } == {
-        "open": False,
-        "stake": 30,
+        } == {
+            "open": False,
+            "offline_replay": False,
+            "drawing_id": None,
+            "target_cache": None,
+            "schedule_cache": None,
+            "replay_as_of": None,
+            "replay_root": None,
+            "stake": 30,
         "mode": "playable",
         "final_lead_minutes": 20,
         "safety_stop_minutes": 5,
-        "db": "data/toto.db",
-        "report_dir": "reports",
+            "db": None,
+            "report_dir": None,
         "provider": "api-sports",
         "aliases": "data/external-odds/team-aliases.json",
         "timing_overrides": None,
@@ -575,7 +599,7 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "max_passes": 3,
         "max_expansion_passes": 3,
         "retry_delay_seconds": 65.0,
-        "cache_root": "data/external-cache/api-sports",
+            "cache_root": None,
     }
 
 
@@ -923,7 +947,7 @@ def test_keyboard_interrupt_before_publication_is_nonzero(monkeypatch):
 def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
     fingerprint = "b" * 64
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "run_id": f"local-{final_lead_minutes}",
         "command_status": "success",
         "decision": "PLAY",
@@ -968,6 +992,11 @@ def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
             "successful_schedule_date_count": 2,
             "failed_schedule_date_count": 0,
             "elapsed_seconds": 1.0,
+            "pinned_revalidation": asdict(
+                ready_pinned_revalidation(
+                    datetime(2030, 1, 2, 11, 46, tzinfo=UTC)
+                )
+            ),
         },
         "eligibility": {
             "status": "playable",
@@ -1055,6 +1084,7 @@ def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
             "sensitivity": [],
         },
         "report_links": {"external": [], "ev": []},
+        "replay": None,
         "warnings": [],
     }
 

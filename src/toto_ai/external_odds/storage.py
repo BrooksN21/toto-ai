@@ -17,6 +17,8 @@ from toto_ai.external_odds.collection import (
     ExternalCollectionSnapshot,
     ExternalEventDispositionRecord,
     ExternalMarketProvenanceRecord,
+    PinnedRevalidationEvent,
+    PinnedRevalidationSummary,
     ScheduleDateResult,
 )
 from toto_ai.external_odds.eligibility import (
@@ -177,6 +179,9 @@ def _load_collection_by_id(
             allow_missing=legacy,
         ),
         eligibility=_eligibility_from_row(run),
+        pinned_revalidation=_pinned_revalidation_from_json(
+            run.pinned_revalidation_summary
+        ),
     )
     canonical = _canonical_snapshot(collection)
     if canonical.target_fingerprint:
@@ -244,6 +249,15 @@ def _collection_run_row(
         ),
         eligibility_totobrief_count=eligibility.totobrief_count,
         eligibility_provider_count=eligibility.provider_count,
+        pinned_revalidation_summary=(
+            None
+            if collection.pinned_revalidation is None
+            else json.dumps(
+                asdict(collection.pinned_revalidation),
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+        ),
     )
 
 
@@ -556,6 +570,44 @@ def _integer_tuple_from_json(value: str | None, field_name: str) -> tuple[int, .
         raise ValueError(f"invalid {field_name} JSON") from error
 
 
+def _pinned_revalidation_from_json(
+    value: str | None,
+) -> PinnedRevalidationSummary | None:
+    if value is None:
+        return None
+    try:
+        payload = json.loads(value)
+        if not isinstance(payload, dict):
+            raise ValueError("summary must be an object")
+        event_payloads = payload.pop("events")
+        if not isinstance(event_payloads, list):
+            raise ValueError("events must be a list")
+        events = tuple(
+            PinnedRevalidationEvent(**item)
+            for item in event_payloads
+            if isinstance(item, dict)
+        )
+        if len(events) != len(event_payloads):
+            raise ValueError("events must contain objects")
+        tuple_fields = (
+            "missing_event_orders",
+            "provider_failure_event_orders",
+            "stale_event_orders",
+            "date_failure_event_orders",
+            "identity_failure_event_orders",
+            "start_time_failure_event_orders",
+            "failed_schedule_dates",
+        )
+        for field in tuple_fields:
+            items = payload[field]
+            if not isinstance(items, list):
+                raise ValueError(f"{field} must be a list")
+            payload[field] = tuple(items)
+        return PinnedRevalidationSummary(**payload, events=events)
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+        raise ValueError("invalid pinned_revalidation_summary JSON") from error
+
+
 def _required_integer(value: int | None, field_name: str) -> int:
     if not isinstance(value, int) or isinstance(value, bool):
         raise ValueError(f"{field_name} must be an integer")
@@ -604,6 +656,8 @@ def _validate_collection_provenance(
             raise ValueError("collection without target fingerprint must be unknown")
         return
 
+    _validate_pinned_revalidation(collection)
+
     starts = []
     for event in collection.events:
         target_start = _event_datetime(event.starts_at, "starts_at")
@@ -639,6 +693,34 @@ def _validate_collection_provenance(
     derived = classify_drawing_eligibility(tuple(starts))
     if derived != collection.eligibility:
         raise ValueError("eligibility does not match event timing")
+
+
+def _validate_pinned_revalidation(
+    collection: ExternalCollectionSnapshot,
+) -> None:
+    summary = collection.pinned_revalidation
+    if summary is None:
+        return
+    if summary.expected_count != 15 or len(summary.events) != 15:
+        raise ValueError("pinned revalidation must describe exactly 15 events")
+    if tuple(item.event_order for item in summary.events) != tuple(range(15)):
+        raise ValueError("pinned revalidation event orders must be 0 through 14")
+    matched = tuple(
+        item.event_order for item in summary.events if item.status == "matched"
+    )
+    if summary.matched_count != len(matched):
+        raise ValueError("pinned revalidation matched count is inconsistent")
+    if summary.ready_for_play != (
+        summary.matched_count == 15
+        and summary.schedule_fresh
+        and summary.provider_checks_passed
+        and summary.fixture_checks_passed
+        and summary.team_checks_passed
+        and summary.orientation_checks_passed
+        and summary.start_time_checks_passed
+        and summary.required_dates_complete
+    ):
+        raise ValueError("pinned revalidation ready status is inconsistent")
 
 
 def _event_datetime(value: str | None, field_name: str) -> datetime | None:

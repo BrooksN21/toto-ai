@@ -103,6 +103,9 @@ class ProviderEvent:
     fetched_at: datetime
     payload_hash: str
     markets: tuple[ProviderMarket, ...] = ()
+    country: str | None = None
+    provider_home_team_id: str | None = None
+    provider_away_team_id: str | None = None
 
     def __post_init__(self) -> None:
         _require_text("provider", self.provider)
@@ -114,6 +117,9 @@ class ProviderEvent:
         _require_text("away_team", self.away_team)
         _require_utc_datetime("fetched_at", self.fetched_at)
         _require_text("payload_hash", self.payload_hash)
+        _require_optional_text("country", self.country)
+        _require_optional_text("provider_home_team_id", self.provider_home_team_id)
+        _require_optional_text("provider_away_team_id", self.provider_away_team_id)
         if not isinstance(self.markets, tuple):
             raise ValueError("markets must be a tuple")
         if any(market.provider != self.provider for market in self.markets):

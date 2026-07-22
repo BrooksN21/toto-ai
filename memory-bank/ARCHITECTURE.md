@@ -18,6 +18,45 @@ TotoBrief API
 -> Package Export
 ```
 
+Systematic production identity path:
+
+```text
+Exact TotoBrief drawing fingerprint and 15 event IDs
+-> Reviewed/context-scoped team registry and provider-team IDs
+-> Progressive cached provider schedule dates with isolated failures
+-> Conservative oriented candidate resolver (context + uniqueness + margin)
+-> Unresolved diagnostics/review queue OR atomic ready preparation + 15 pins
+-> Final recent schedule revalidation by fixture/team IDs and starts_at
+-> Authoritative fresh 15/15 revalidation summary (manifest schema v4)
+-> Pinned collection without display-name rematching
+-> Existing timing/audit/EV runner
+-> Scheduler T-10 publication only when the final package remains valid
+```
+
+Deterministic offline replay uses the same identity boundary without live
+adapters:
+
+```text
+Strict saved TotoBrief target + strict saved provider schedule + aware as-of
+-> Mandatory isolated replay root and contained mutable paths
+-> Cache hash and exact drawing/fingerprint/event-order validation
+-> Atomic preparation + exactly 15 pins
+-> Fresh cached provider/fixture/team/orientation/start revalidation (15/15)
+-> Standard runner timing/audit/diagnostic EV
+-> Manifest schema v4 with non-actionable replay provenance
+-> Runner JSON/Markdown only (no package and no scheduler markers)
+```
+
+Replay roots are validated without writes, must not overlap repository/live
+data/report/cache/marker roots, and may not traverse symlinks. The root is then
+created and revalidated before SQLite initialization. Scheduler ingestion of a
+replay manifest terminates as `ignored` with status evidence only and no marker;
+the normal production error path continues to publish `.failed`.
+
+The compatibility matcher remains available only for an explicitly opted-in
+direct run. Scheduler preflight always prepares the open drawing and scheduler
+package phases cannot silently use legacy name matching.
+
 Fresh playable EV path:
 
 ```text
@@ -117,6 +156,19 @@ Important modules:
   When immutable snapshots have the same external observation timestamp,
   SQLite latest-snapshot reads use append order before collection-ID order so
   a completed progressive expansion cannot be superseded by its base pass.
+- `toto_ai.external_odds.team_registry`,
+  `toto_ai.external_odds.team_resolution`, and
+  `toto_ai.external_odds.preparation`: context-scoped reviewed identities,
+  conservative provider candidate evidence, unresolved review persistence, and
+  atomic exact-drawing preparation. A ready preparation owns exactly 15
+  fixture-unique pins. Final collection revalidates provider fixture/team IDs,
+  start time, and schedule freshness without consulting changed display names.
+  Preparation can consume saved local schedule caches for deterministic replay
+  or fetch progressive per-date schedules through the provider cache/retry and
+  quota boundary. TotoBrief championships are conservatively parsed into
+  sport/country/competition/league context, with local geographic exonym
+  normalization and explicit competition-level conflict rejection. Every
+  required eligible-window date must succeed before atomic READY publication.
 - `toto_ai.external_odds.prospective`: fresh-by-default multi-pass collection.
   It resolves one TotoBrief target, creates one isolated cache session, and
   reuses that session across new provider clients after minute-quota resets.
@@ -146,8 +198,9 @@ Important modules:
   collection, SQLite reload, audit/report, and playable/research output.
 - `toto_ai.runner.reports`, `toto_ai.runner.orchestration`,
   `toto_ai.runner.scheduler`, `toto_ai.runner.models`:
-  schema v3 runner manifests, raw/effective timing boundary, strict parsing,
-  immutable run-scoped artifacts, and deadline-driven scheduler phases
+  schema v4 runner manifests, raw/effective timing boundary, mandatory exact
+  15/15 pinned schedule freshness/identity summary, strict parsing, immutable
+  run-scoped artifacts, and deadline-driven scheduler phases
   (`T-45`, `T-30`, `T-15`, `T-10`) with terminal markers
   (`.bet-ready`, `.no-bet`, `.failed`).
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
@@ -257,8 +310,23 @@ Important CLI commands:
   all-artifact transaction: pre-commit `BaseException` restores/removes every
   child and runner artifact, while a committed publication is success. Every
   `NO BET` omits the EV child report and linked coupon strings. Runner manifest
-  now uses schema v3 raw/effective timing and budget provenance. Historical
-  schema v2 output files are legacy. The command never submits a bet.
+  now uses schema v4: v3 raw/effective timing and budget provenance plus an
+  authoritative pinned-revalidation summary. Historical schema v2/v3 output
+  files are legacy and fail closed for actionable scheduling. The command
+  never submits a bet.
+- `run-drawing --offline-replay --drawing-id ... --target-cache ...
+  --schedule-cache ... --replay-as-of ... --replay-root ... --mode research`:
+  run one exact saved
+  drawing through preparation, pins, cached fresh revalidation, runner, and
+  manifest v4 with an injected clock. This branch does not read environment
+  credentials or instantiate network clients. It validates strict cache
+  schemas/hashes, exact target identity, and a symlink-free isolation root;
+  emits `RESEARCH ONLY`; writes only beneath that root; and is ignored without
+  markers by scheduler ingestion.
+- `prepare-drawing --open` or `--drawing-id`: prepare one exact drawing from
+  live cached schedule dates or `--schedule-cache`, persist review diagnostics
+  when unresolved, and atomically publish a ready preparation plus 15 pins.
+  Unresolved output is machine-readable and exits nonzero.
 - `scheduler-plan`: build immutable scheduler plans, wrapper scripts, and
   LaunchAgent files for the fixed phase boundaries (`T-45`, `T-30`, `T-15`,
   `T-10`).

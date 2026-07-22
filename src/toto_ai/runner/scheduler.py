@@ -39,7 +39,7 @@ from toto_ai.external_odds.timing_overrides import (
 )
 
 SCHEDULER_SCHEMA_VERSION = 1
-RUNNER_MANIFEST_SCHEMA_VERSION = 3
+RUNNER_MANIFEST_SCHEMA_VERSION = 4
 SCHEDULER_PLAN_FILENAME = "scheduler-plan.json"
 SCHEDULER_WRAPPER_FILENAME = "run-scheduler.sh"
 SCHEDULER_LAUNCH_AGENT_FILENAME = "totoai-scheduler.plist"
@@ -51,7 +51,7 @@ DEFAULT_MINIMUM_GROSS_EV = EVConfig(
 
 SchedulerPhase = Literal["preflight", "fallback", "final", "freeze"]
 PackagePhase = Literal["fallback", "final"]
-SchedulerOutcome = Literal["bet-ready", "no-bet", "failed"]
+SchedulerOutcome = Literal["bet-ready", "no-bet", "failed", "ignored"]
 PhaseDecision = Literal["PLAY", "NO BET"]
 
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
@@ -85,6 +85,10 @@ class SchedulerError(RuntimeError):
 
 class SchedulerPhaseError(SchedulerError):
     """A package phase failed without making a package actionable."""
+
+
+class _NonProductionArtifact(SchedulerError):
+    """A valid non-production artifact stops without terminal markers."""
 
 
 @dataclass(frozen=True)
@@ -251,7 +255,7 @@ class SchedulerPhaseContext:
 class SchedulerPhaseResult:
     """Result returned by a phase runner before scheduler-owned publication."""
 
-    status: Literal["complete", "failed"] = "complete"
+    status: Literal["complete", "failed", "ignored"] = "complete"
     decision: PhaseDecision | None = None
     reason: str = "phase completed"
     package_bytes: bytes | None = None
@@ -263,8 +267,10 @@ class SchedulerPhaseResult:
     override_sha256: str | None = None
 
     def __post_init__(self) -> None:
-        if self.status not in ("complete", "failed"):
-            raise ValueError("phase result status must be complete or failed")
+        if self.status not in ("complete", "failed", "ignored"):
+            raise ValueError(
+                "phase result status must be complete, failed, or ignored"
+            )
         if self.decision not in (None, "PLAY", "NO BET"):
             raise ValueError("phase decision must be PLAY, NO BET, or absent")
         _require_text("reason", self.reason)
@@ -323,6 +329,10 @@ class SchedulerPhaseResult:
     def failed(cls, reason: str) -> SchedulerPhaseResult:
         return cls(status="failed", reason=reason)
 
+    @classmethod
+    def ignored(cls, reason: str) -> SchedulerPhaseResult:
+        return cls(status="ignored", reason=reason)
+
 
 class SchedulerPhaseRunner(Protocol):
     def __call__(self, context: SchedulerPhaseContext) -> SchedulerPhaseResult: ...
@@ -344,13 +354,13 @@ class PackageSnapshot:
 @dataclass(frozen=True)
 class SchedulerExecutionResult:
     outcome: SchedulerOutcome
-    decision: Literal["PLAY", "NO BET", "FAILED"]
+    decision: Literal["PLAY", "NO BET", "FAILED", "IGNORED"]
     reason: str
     drawing: int
     run_id: str
     run_dir: Path
     status_path: Path
-    marker_path: Path
+    marker_path: Path | None
     package_path: Path | None
     package_sha256: str | None
     requested_bank: int
@@ -702,6 +712,8 @@ def execute_scheduler_plan(
                         reason = phase_state["final"].get("reason")
                         if reason:
                             phase_absences.append(f"final: {reason}")
+                except _NonProductionArtifact:
+                    raise
                 except Exception as error:
                     message = _safe_error(error)
                     phase_errors.append(f"final: {message}")
@@ -752,6 +764,31 @@ def execute_scheduler_plan(
             final_inputs_sha256=final_inputs_sha256,
             final_override_sha256=final_override_sha256,
             completed_at=freeze_finished,
+        )
+    except _NonProductionArtifact as error:
+        observed_at = _read_now(now)
+        terminal = {
+            "outcome": "ignored",
+            "decision": "IGNORED",
+            "reason": str(error),
+            "package_path": None,
+            "package_sha256": None,
+            "effective_bank": None,
+            "selected_count": None,
+            "selected_cost": None,
+            "selected_snapshot": None,
+            "published_at": None,
+        }
+        return _finalize_status(
+            plan,
+            run_id=resolved_run_id,
+            run_dir=run_dir,
+            status_path=status_path,
+            status=status,
+            terminal=terminal,
+            final_inputs_sha256=final_inputs_sha256,
+            final_override_sha256=final_override_sha256,
+            completed_at=observed_at,
         )
     except Exception as error:
         observed_at = _read_now(now)
@@ -913,6 +950,34 @@ def build_run_drawing_phase_command(
     return tuple(command)
 
 
+def build_prepare_drawing_command(
+    plan: SchedulerPlan,
+    work_dir: Path,
+    *,
+    python_executable: str | Path = sys.executable,
+) -> tuple[str, ...]:
+    """Build the mandatory systematic-resolution scheduler preflight."""
+    return (
+        _validated_python_executable(python_executable),
+        "-m",
+        "toto_ai.cli",
+        "prepare-drawing",
+        "--open",
+        "--db",
+        str(plan.db),
+        "--aliases",
+        str(plan.aliases),
+        "--provider",
+        plan.provider,
+        "--cache-root",
+        str(work_dir / "cache"),
+        "--quota-reserve",
+        str(plan.quota_reserve),
+        "--expansion-horizon-days",
+        "5",
+    )
+
+
 class CommandSchedulerPhaseRunner:
     """Production adapter around the existing safe ``run-drawing`` command."""
 
@@ -926,6 +991,7 @@ class CommandSchedulerPhaseRunner:
     ) -> None:
         self.python_executable = _validated_python_executable(python_executable)
         self.environment = dict(os.environ if environment is None else environment)
+        self.environment.pop("TOTO_LEGACY_NAME_MATCHING", None)
         self.target_validator = target_validator or _validate_live_scheduler_target
 
     def __call__(self, context: SchedulerPhaseContext) -> SchedulerPhaseResult:
@@ -1002,6 +1068,30 @@ class CommandSchedulerPhaseRunner:
         probe = work_dir / ".preflight-write-probe"
         _write_exclusive_atomic(plan.output_dir, probe, b"ok\n")
         _unlink_output_path(plan.output_dir, probe)
+        command = build_prepare_drawing_command(
+            plan, work_dir, python_executable=self.python_executable
+        )
+        try:
+            completed = subprocess.run(
+                command,
+                check=False,
+                capture_output=True,
+                text=True,
+                env=self.environment,
+                timeout=300,
+            )
+        except subprocess.TimeoutExpired as error:
+            raise SchedulerPhaseError("prepare-drawing preflight timed out") from error
+        if completed.returncode != 0:
+            detail = completed.stderr.strip() or completed.stdout.strip()
+            secret = self.environment.get("API_SPORTS_KEY", "")
+            if secret:
+                detail = detail.replace(secret, "[REDACTED]")
+            suffix = f": {detail[-1000:]}" if detail else ""
+            raise SchedulerPhaseError(
+                "prepare-drawing did not produce a ready 15/15 preparation"
+                f"{suffix}"
+            )
 
 
 class SimulatedSchedulerPhaseRunner:
@@ -1110,6 +1200,16 @@ def _execute_package_phase(
     try:
         result = _call_phase_runner(phase_runner, context)
         completed_at = _read_now(now)
+        if result.status == "ignored":
+            _phase_finished(
+                phase_state,
+                phase,
+                finished_at=completed_at,
+                status="ignored",
+                reason=result.reason,
+            )
+            _write_status_atomic(plan.output_dir, status_path, status)
+            raise _NonProductionArtifact(result.reason)
         if result.status == "failed":
             raise SchedulerPhaseError(result.reason)
         if result.decision == "NO BET":
@@ -1163,6 +1263,8 @@ def _execute_package_phase(
         phase_state[phase]["snapshot_sha256"] = snapshot.sha256
         _write_status_atomic(plan.output_dir, status_path, status)
         return snapshot
+    except _NonProductionArtifact:
+        raise
     except Exception as error:
         completed_at = _read_now(now)
         _phase_finished(
@@ -1456,7 +1558,9 @@ def _finalize_status(
         _validate_terminal_package(plan, run_dir, terminal)
     status.update(
         {
-            "state": "complete",
+            "state": (
+                "ignored" if terminal["outcome"] == "ignored" else "complete"
+            ),
             "outcome": terminal["outcome"],
             "decision": terminal["decision"],
             "reason": terminal["reason"],
@@ -1483,6 +1587,8 @@ def _finalize_status(
     )
     _write_status_atomic(plan.output_dir, status_path, status)
     _validate_status_file(plan, status_path, status)
+    if terminal["outcome"] == "ignored":
+        return _execution_result_from_status(status, run_dir, status_path)
     marker_path = run_dir / f".{terminal['outcome']}"
     marker_payload = {
         "drawing": plan.drawing,
@@ -1599,6 +1705,7 @@ def _parse_runner_manifest_phase_result_strict(
             "coverage",
             "ev",
             "report_links",
+            "replay",
             "warnings",
         },
         "runner manifest",
@@ -1614,6 +1721,10 @@ def _parse_runner_manifest_phase_result_strict(
     if payload["command_status"] != "success":
         raise SchedulerPhaseError("runner command_status must be success")
     _strict_text("runner run_id", payload["run_id"])
+    if payload["replay"] is not None:
+        return SchedulerPhaseResult.ignored(
+            "non-production offline replay manifest ignored"
+        )
     _validate_runner_manifest_diagnostics(payload)
 
     target = _exact_phase_mapping(
@@ -1780,6 +1891,10 @@ def _parse_runner_manifest_phase_result_strict(
     if decision == "NO BET":
         _validate_no_bet_manifest(plan, ev, package)
         return SchedulerPhaseResult.no_bet(reason)
+    if not _manifest_pinned_revalidation_ready(payload["collection"]):
+        return SchedulerPhaseResult.no_bet(
+            "pinned revalidation is not fresh matched 15/15"
+        )
     if decision != "PLAY" or package["decision"] != "PLAY":
         raise SchedulerPhaseError(
             "runner manifest top-level and package decisions must both be PLAY"
@@ -2078,6 +2193,7 @@ def _validate_runner_manifest_diagnostics(payload: Mapping[str, Any]) -> None:
                 "successful_schedule_date_count",
                 "failed_schedule_date_count",
                 "elapsed_seconds",
+                "pinned_revalidation",
             },
             "runner collection",
         )
@@ -2129,6 +2245,9 @@ def _validate_runner_manifest_diagnostics(payload: Mapping[str, Any]) -> None:
             raise SchedulerPhaseError(
                 "collection elapsed_seconds must be non-negative"
             )
+        _validate_pinned_revalidation_payload(
+            collection_payload["pinned_revalidation"]
+        )
 
     coverage = payload["coverage"]
     if coverage is not None:
@@ -2183,6 +2302,143 @@ def _validate_runner_manifest_diagnostics(payload: Mapping[str, Any]) -> None:
         raise SchedulerPhaseError("runner warnings must be a list")
     for warning in warnings:
         _strict_text("runner warning", warning)
+
+
+def _manifest_pinned_revalidation_ready(value: object) -> bool:
+    if not isinstance(value, Mapping):
+        return False
+    return _validate_pinned_revalidation_payload(
+        value.get("pinned_revalidation")
+    )
+
+
+def _validate_pinned_revalidation_payload(value: object) -> bool:
+    if value is None:
+        return False
+    summary = _exact_phase_mapping(
+        value,
+        {
+            "expected_count",
+            "matched_count",
+            "missing_event_orders",
+            "provider_failure_event_orders",
+            "stale_event_orders",
+            "date_failure_event_orders",
+            "identity_failure_event_orders",
+            "start_time_failure_event_orders",
+            "failed_schedule_dates",
+            "oldest_schedule_fetched_at",
+            "newest_schedule_fetched_at",
+            "maximum_schedule_age_seconds",
+            "schedule_fresh",
+            "provider_checks_passed",
+            "fixture_checks_passed",
+            "team_checks_passed",
+            "orientation_checks_passed",
+            "start_time_checks_passed",
+            "required_dates_complete",
+            "ready_for_play",
+            "events",
+        },
+        "pinned revalidation",
+    )
+    expected = _strict_non_negative_int(
+        "pinned revalidation expected_count", summary["expected_count"]
+    )
+    matched = _strict_non_negative_int(
+        "pinned revalidation matched_count", summary["matched_count"]
+    )
+    if expected != 15 or matched > expected:
+        raise SchedulerPhaseError(
+            "pinned revalidation counts must describe exactly 15 events"
+        )
+    order_fields = (
+        "missing_event_orders",
+        "provider_failure_event_orders",
+        "stale_event_orders",
+        "date_failure_event_orders",
+        "identity_failure_event_orders",
+        "start_time_failure_event_orders",
+    )
+    orders: dict[str, tuple[int, ...]] = {}
+    for field in order_fields:
+        raw = summary[field]
+        if not isinstance(raw, list) or any(
+            type(order) is not int or not 0 <= order < 15 for order in raw
+        ):
+            raise SchedulerPhaseError(
+                f"pinned revalidation {field} must contain event orders"
+            )
+        if raw != sorted(set(raw)):
+            raise SchedulerPhaseError(
+                f"pinned revalidation {field} must be ordered and unique"
+            )
+        orders[field] = tuple(raw)
+    failed_dates = summary["failed_schedule_dates"]
+    if not isinstance(failed_dates, list):
+        raise SchedulerPhaseError(
+            "pinned revalidation failed_schedule_dates must be a list"
+        )
+    for item in failed_dates:
+        _strict_text("pinned revalidation failed schedule date", item)
+    events = summary["events"]
+    if not isinstance(events, list) or len(events) != 15:
+        raise SchedulerPhaseError(
+            "pinned revalidation events must contain exactly 15 rows"
+        )
+    matched_orders = []
+    for expected_order, item in enumerate(events):
+        row = _exact_phase_mapping(
+            item, {"event_order", "status", "reason"}, "pinned revalidation event"
+        )
+        if _strict_int("pinned event_order", row["event_order"]) != expected_order:
+            raise SchedulerPhaseError(
+                "pinned revalidation event orders must be 0 through 14"
+            )
+        if row["status"] not in {"matched", "missing", "provider_failure"}:
+            raise SchedulerPhaseError("pinned revalidation event status is invalid")
+        _strict_text("pinned revalidation event reason", row["reason"])
+        if row["status"] == "matched":
+            matched_orders.append(expected_order)
+    if matched != len(matched_orders):
+        raise SchedulerPhaseError(
+            "pinned revalidation matched count is inconsistent"
+        )
+    boolean_fields = (
+        "schedule_fresh",
+        "provider_checks_passed",
+        "fixture_checks_passed",
+        "team_checks_passed",
+        "orientation_checks_passed",
+        "start_time_checks_passed",
+        "required_dates_complete",
+        "ready_for_play",
+    )
+    for field in boolean_fields:
+        if type(summary[field]) is not bool:
+            raise SchedulerPhaseError(f"pinned revalidation {field} must be boolean")
+    for field in ("oldest_schedule_fetched_at", "newest_schedule_fetched_at"):
+        if summary[field] is not None:
+            _parse_utc_datetime(f"pinned revalidation {field}", summary[field])
+    maximum_age = summary["maximum_schedule_age_seconds"]
+    if maximum_age is not None and _finite_metric(
+        "pinned revalidation maximum_schedule_age_seconds", maximum_age
+    ) < 0:
+        raise SchedulerPhaseError(
+            "pinned revalidation maximum schedule age must be non-negative"
+        )
+    ready = bool(summary["ready_for_play"])
+    derived_ready = (
+        matched == 15
+        and not any(orders.values())
+        and not failed_dates
+        and all(bool(summary[field]) for field in boolean_fields[:-1])
+    )
+    if ready != derived_ready:
+        raise SchedulerPhaseError(
+            "pinned revalidation ready status is inconsistent"
+        )
+    return ready
 
 
 def _validate_timing_payload(
@@ -3409,13 +3665,13 @@ def _execution_result_from_status(
 ) -> SchedulerExecutionResult:
     outcome = status["outcome"]
     decision = status["decision"]
-    if outcome not in ("bet-ready", "no-bet", "failed"):
+    if outcome not in ("bet-ready", "no-bet", "failed", "ignored"):
         raise ValueError("terminal scheduler status has invalid outcome")
-    if decision not in ("PLAY", "NO BET", "FAILED"):
+    if decision not in ("PLAY", "NO BET", "FAILED", "IGNORED"):
         raise ValueError("terminal scheduler status has invalid decision")
     package_value = status.get("package_path")
     package_path = None if package_value is None else Path(str(package_value))
-    marker_path = run_dir / f".{outcome}"
+    marker_path = None if outcome == "ignored" else run_dir / f".{outcome}"
     return SchedulerExecutionResult(
         outcome=outcome,
         decision=decision,

@@ -181,10 +181,40 @@
   and chronological backtest tests, including bank utilization and `NO BET`.
 
 ## Phase 7: Production
+- Systematic team-resolution Phase 2 is implemented:
+  - context-aware reviewed team registry and backward-compatible migration;
+  - conservative oriented candidate resolution with review-queue fallback;
+  - atomic 15/15 drawing preparation and exact immutable pins;
+  - progressive per-date schedule preparation with isolated failures;
+  - scheduler preparation preflight and default pin-based final execution;
+  - recent provider fixture/team/start revalidation without display-name
+    rematching;
+  - production-derived sport/country/competition/league context, including
+    fail-closed competition-level conflicts and local geographic exonym
+    normalization;
+  - all-required-date preparation gating: any failed date keeps the attempt
+    unresolved and publishes zero pins;
+  - runner/manifest schema v4 authoritative 15/15 revalidation summaries and
+    scheduler `.no-bet` enforcement before EV/actionable publication;
+  - offline 4951 replay, prior-drawing regressions, unseen-team coverage, and
+    scheduler-to-bet-ready/fail-closed acceptance.
+  - official deterministic `run-drawing --offline-replay` path through real
+    preparation, pins, cached 15/15 revalidation, runner, and manifest v4;
+    strict cache hashes/identity, injected replay clock, research-only output,
+    and scheduler-marker prohibition are covered by CLI acceptance tests.
+  - replay safety hardening requires one isolated `--replay-root`, derives all
+    mutable state beneath it, rejects live-root/symlink/output escape before
+    writes, and makes scheduler replay ingestion marker-free `ignored` while
+    retaining `.failed` for malformed live production manifests.
+- The legacy name matcher remains compatibility-only through explicit direct
+  opt-in. It is not a scheduler/final fallback and its global thresholds were
+  not weakened.
 - Drawing-4950 production-boundary update (no live bet):
   - 7/15 raw matching, reviewed-alias correction to 13/15, and strict reviewed-timing overrides are now documented for operational use.
   - Scheduler and runner output boundary remains strict fail-closed: only `bet-ready` at T-10 publishes an actionable package, while missing timing or catalog mismatches remain `no-bet`; terminal marker also includes `failed`.
-  - Runner/reporting boundary now records `schema_version = 3` raw/effective timing and budget provenance.
+  - Runner/reporting boundary now records `schema_version = 4`: v3
+    raw/effective timing and budget provenance plus mandatory pinned schedule
+    freshness/identity revalidation evidence.
   - Old `schema_version = 2` `drawing_4947` and `drawing_4950` reports remain historical and are excluded from current status.
   - Live platform install and first prospective live production run are pending.
 

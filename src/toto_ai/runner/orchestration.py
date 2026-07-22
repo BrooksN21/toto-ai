@@ -8,6 +8,7 @@ from math import isfinite
 from toto_ai.ev.drawing import EVPackageRun
 from toto_ai.ev.models import PlayTimingEligibility
 from toto_ai.external_odds.audit import CoverageAudit
+from toto_ai.external_odds.collection import pinned_revalidation_is_ready
 from toto_ai.external_odds.domain import TargetDrawing
 from toto_ai.external_odds.prospective import ProspectiveCollectionResult
 from toto_ai.runner.models import (
@@ -236,6 +237,42 @@ def run_drawing(
             started_monotonic=started_monotonic,
             monotonic=monotonic,
             terminal_reason="safety cutoff reached before timing",
+            collection=collection,
+            timing_eligibility=PlayTimingEligibility.not_checked(),
+            audit=None,
+            progress_callback=progress_callback,
+        )
+
+    if config.mode == "playable" and not pinned_revalidation_is_ready(
+        collection.snapshot
+    ):
+        summary = collection.snapshot.pinned_revalidation
+        detail = (
+            "summary absent"
+            if summary is None
+            else (
+                f"matched={summary.matched_count}/{summary.expected_count}; "
+                f"missing={summary.missing_event_orders}; "
+                "provider_failures="
+                f"{summary.provider_failure_event_orders}; "
+                f"stale={summary.stale_event_orders}; "
+                f"date_failures={summary.date_failure_event_orders}"
+            )
+        )
+        return _no_bet_result(
+            config=config,
+            target=preflight,
+            preflight_at=preflight_at,
+            final_started_at=final_started_at,
+            final_fingerprint=final.fingerprint,
+            collection_finished_at=collection_finished_at,
+            timing_finished_at=None,
+            audit_finished_at=None,
+            ev_finished_at=None,
+            finished_at=collection_finished_at,
+            started_monotonic=started_monotonic,
+            monotonic=monotonic,
+            terminal_reason=f"pinned revalidation is not ready: {detail}",
             collection=collection,
             timing_eligibility=PlayTimingEligibility.not_checked(),
             audit=None,

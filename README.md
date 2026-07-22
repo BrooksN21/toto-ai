@@ -34,6 +34,42 @@ python -m pytest
 python -m ruff check .
 ```
 
+## Deterministic Offline Drawing Replay
+
+`run-drawing --offline-replay` replays one exact saved target and provider
+schedule through the production preparation, pinning, schedule revalidation,
+runner, and manifest-v4 path without reading `API_SPORTS_KEY` or constructing
+network clients. The replay clock is supplied explicitly, and both cache
+payload hashes and exact drawing identity are validated before work begins.
+An explicit `--replay-root` is mandatory. Replay SQLite, reports, provider
+cache, and temporary artifacts are derived beneath it; live defaults are never
+inherited. Roots that overlap the repository root, `data/`, `reports/`, cache,
+or scheduler-marker state, and roots traversing symlinks, fail before writes.
+
+The sanitized drawing-4951 fixture can be replayed with:
+
+```bash
+python -m toto_ai.cli run-drawing \
+  --offline-replay \
+  --drawing-id 11968 \
+  --target-cache tests/fixtures/drawing_4951_totobrief_target_cache.json \
+  --schedule-cache tests/fixtures/drawing_4951_api_sports_schedule.json \
+  --replay-as-of 2026-07-21T15:41:00+00:00 \
+  --replay-root /private/tmp/toto-4951-replay \
+  --mode research \
+  --bank 4980
+```
+
+The manifest is written as
+`/private/tmp/toto-4951-replay/reports/drawing_run_4951_20260721T160000Z_7d6517bbfe6d.json`.
+Offline replay is always `RESEARCH ONLY`, writes no production EV package, and
+does not create scheduler markers. If a replay manifest is supplied to the
+scheduler, execution records an explicit non-production `ignored` status and
+creates no `.bet-ready`, `.no-bet`, `.failed`, or replacement marker. `--open`,
+playable mode, timing overrides, naive timestamps, stale schedules, changed
+hashes, cross-drawing caches, and output overrides outside the replay root fail
+closed.
+
 ## Expected-Value Package Workflow
 
 Verify the complete 15-event EV surface before using the operational commands:

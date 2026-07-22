@@ -244,6 +244,24 @@
   collection, exact stored timing, diagnostic coverage audit, existing EV, and
   rollback-safe linked reports. It never submits a bet. T-5 forbids new work
   and suppresses any package that completes at or after the cutoff.
+- Historical/current operational replay is an explicit `run-drawing
+  --offline-replay` mode, not an environment switch and not scheduler input.
+  It requires exact target/schedule cache envelopes and an aware injected
+  as-of time, validates payload hashes and drawing/provider/event identity,
+  and never falls back to network clients or process credentials.
+- Offline replay is permanently research-only even if diagnostic EV is
+  computed. It writes only runner JSON/Markdown with additive manifest-v4
+  `replay` provenance (`actionable=false`, as-of, provider, cache paths and
+  hashes). Scheduler parsing rejects non-null replay provenance, so a replay
+  cannot authorize PLAY or publish a production package. Full scheduler
+  execution classifies it as non-production `ignored`, writes status only, and
+  creates no terminal marker; malformed production manifests still create
+  `.failed`.
+- Replay mutable state requires an explicit isolation capability:
+  `--replay-root`. SQLite, reports, provider cache, and temporary files derive
+  below it. Live defaults are resolved only after the replay branch. Output
+  overrides must remain strictly contained; repository/live-root overlap and
+  symlink traversal are rejected before any directory or database is created.
 - Equal external observation timestamps do not define collection chronology.
   SQLite latest-snapshot reads use append order as the deterministic tie-break
   before collection-ID order, preserving a later progressive pass without
@@ -259,8 +277,54 @@
 - Drawing-4950 boundary is defined by strict fail-closed rules: `7/15` raw matches are validly fail-closed without aliases; reviewed aliases may raise the resolved set but unresolved targets are preserved as missing. Two unresolved provider events are not coerced into synthetic matches.
 - Exact timing provenance is now required for production decisions. The runner uses `PlayTimingEligibility` as raw and effective pair; only a reviewed timing overlay with exact catalog hash/provenance parity can change effective timing. Any unverified, invalid, or catalog-changed override drives effective timing to `unknown`.
 - Runner manifests and scheduler ingestion are strict:
-  - manifest must be `schema_version = 3` and include exact `raw`/`effective` timing payloads;
+  - current manifest must be `schema_version = 4` and include exact
+    `raw`/`effective` timing payloads plus an authoritative
+    `pinned_revalidation` summary; schema v3 remains historical only;
   - manifest and package inputs are path-safe and hash-checked (`package_sha256`, timing catalog hashes, manifest manifest fields);
   - strict JSON parsing rejects duplicate keys, non-finite numbers, non-JSON, and symlink/collision hazards.
 - Self-dilution budget is exact and authoritative for package budget math: `requested_cap = min(requested_bank, floor(pool_sum*1% / stake) * stake)`, and `effective_budget` follows that cap before EV sensitivity and selection.
 - `drawing 4947`/legacy `drawing 4950` `schema_version = 2` runner outputs are historical; they are not a source of current production truth.
+
+## Systematic Team Identity and Preparation
+
+- A production drawing is actionable only when its exact target fingerprint,
+  provider, and event IDs have one `ready` preparation and exactly 15 valid,
+  fixture-unique pins. Pins carry provider fixture/team IDs and `starts_at`.
+- Preparation publication is atomic. An unresolved attempt writes diagnostics
+  and review records but zero authoritative pins. A later complete retry may
+  replace unresolved state with one transactional ready version. Ready content
+  is immutable; changed provider data requires invalidation/new fingerprint or
+  fails closed.
+- Reviewed aliases and exact provider-team IDs outrank inferred evidence.
+  Normalization and transliteration never authorize a match by themselves.
+  Non-registry acceptance requires date, competition/country/league context,
+  home-away orientation, pair uniqueness, one exact/high-confidence side, and
+  confidence margin. Two weak shared-token names remain unresolved.
+- Team aliases are scoped by sport, provider, normalized alias, country, and
+  competition context. Context-free Phase-1 aliases remain compatible only
+  when lookup is unambiguous; SQLite initialization migrates existing rows
+  using their canonical team context.
+- The production runner defaults to systematic pins. Legacy name matching is
+  an explicit direct-command compatibility option and is never inherited by
+  scheduler execution.
+- Final collection revalidates pinned provider fixture ID, team IDs, start
+  time, provider, and schedule freshness. Display-name differences are ignored
+  after pinning; unavailable, absent, stale, or changed identity data is a
+  fail-closed outcome, not a reason to rematch names.
+- Playable work is gated before timing/audit/EV on exactly 15 successful pin
+  revalidations. The same provider, fixture ID, oriented home/away team IDs,
+  bounded start-time tolerance, fresh schedule, and complete required-date
+  fetches are all mandatory. TotoBrief BK fallback is diagnostic only after
+  any pin-revalidation failure.
+- Schedule preparation expands null starts progressively by UTC dates derived
+  from the Moscow drawing horizon. Each date is isolated, successful dates are
+  retained, API client cache/retry/quota behavior is reused, and diagnostics
+  preserve each failed date's reason. Any failed required date in the bounded
+  eligible window prevents READY and transactional pin publication.
+- Preparation derives conservative sport/country/competition/league context
+  directly from TotoBrief championship text. Local normalization may map
+  stable geographic exonyms, but no network translation or team-specific
+  alias may supply identity. Conflicting country, league level, date, sport, or
+  orientation fails closed in the production path.
+- Drawing numbers, current team names, and provider fixture IDs are test replay
+  data only. Production resolution contains no drawing-4951 or per-team branch.

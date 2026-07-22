@@ -37,11 +37,14 @@ from toto_ai.external_odds.eligibility import (
 )
 from toto_ai.external_odds.matching import MATCHER_VERSION, MatchDecision, match_event
 from toto_ai.external_odds.targets import parse_target_drawing
+from toto_ai.external_odds.team_registry import DrawingEventPinRecord
 
 CONSENSUS_MINIMUM_BOOKMAKERS = 3
 EXTERNAL_CONSENSUS = "external_consensus"
 TOTOBRIEF_BK_FALLBACK = "totobrief_bk_fallback"
 SAFETY_STOP_FALLBACK = "safety stop reached"
+PIN_SCHEDULE_MAX_AGE = timedelta(hours=24)
+PIN_START_TIME_TOLERANCE = timedelta(minutes=5)
 _MOSCOW = ZoneInfo("Europe/Moscow")
 _UNKNOWN_ELIGIBILITY = DrawingEligibility(
     status="unknown",
@@ -86,6 +89,38 @@ class ScheduleDateResult:
     requested_date: date
     events: tuple[ProviderEvent, ...]
     error: str | None
+
+
+@dataclass(frozen=True)
+class PinnedRevalidationEvent:
+    event_order: int
+    status: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class PinnedRevalidationSummary:
+    expected_count: int
+    matched_count: int
+    missing_event_orders: tuple[int, ...]
+    provider_failure_event_orders: tuple[int, ...]
+    stale_event_orders: tuple[int, ...]
+    date_failure_event_orders: tuple[int, ...]
+    identity_failure_event_orders: tuple[int, ...]
+    start_time_failure_event_orders: tuple[int, ...]
+    failed_schedule_dates: tuple[str, ...]
+    oldest_schedule_fetched_at: str | None
+    newest_schedule_fetched_at: str | None
+    maximum_schedule_age_seconds: float | None
+    schedule_fresh: bool
+    provider_checks_passed: bool
+    fixture_checks_passed: bool
+    team_checks_passed: bool
+    orientation_checks_passed: bool
+    start_time_checks_passed: bool
+    required_dates_complete: bool
+    ready_for_play: bool
+    events: tuple[PinnedRevalidationEvent, ...]
 
 
 @dataclass(frozen=True)
@@ -145,12 +180,14 @@ class ExternalCollectionSnapshot:
     successful_schedule_dates: tuple[ScheduleDateResult, ...] = ()
     failed_schedule_dates: tuple[ScheduleDateResult, ...] = ()
     eligibility: DrawingEligibility = _UNKNOWN_ELIGIBILITY
+    pinned_revalidation: PinnedRevalidationSummary | None = None
 
 
 @dataclass(frozen=True)
 class _MatchedTarget:
     decision: MatchDecision
     provider_event: ProviderEvent | None
+    fallback_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -172,6 +209,7 @@ def build_external_collection(
     aliases: dict[str, str],
     missing_start_horizon_days: int = 2,
     *,
+    prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
     stop_at: datetime | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> ExternalCollectionSnapshot:
@@ -180,13 +218,32 @@ def build_external_collection(
     _bind_provider_safety_boundary(provider, stop_at=stop_at, now=now)
     request_counter = _RequestCounter(provider, stop_at=stop_at, now=now)
     provider_name = provider.provider_name
+    observed_at = now()
     schedule_fetch = _fetch_schedules(
         target,
         request_counter,
         missing_start_horizon_days,
+        prepared_pins=prepared_pins,
     )
     schedule_results = schedule_fetch.schedule_dates
-    decisions = _match_targets(target, schedule_results, aliases)
+    decisions = _match_targets(
+        target,
+        schedule_results,
+        aliases,
+        prepared_pins=prepared_pins,
+        observed_at=observed_at,
+    )
+    pinned_revalidation = (
+        _pinned_revalidation_summary(
+            target,
+            schedule_results,
+            decisions,
+            prepared_pins,
+            observed_at=observed_at,
+        )
+        if prepared_pins is not None
+        else None
+    )
 
     market_cache: dict[tuple[Sport, str], tuple[ProviderMarket, ...]] = {}
     quota_stopped = schedule_fetch.quota_exhausted
@@ -205,7 +262,7 @@ def build_external_collection(
         if decision.status != "matched" or decision.provider_event_id is None:
             market_results[event.event_order] = _MarketFetchResult(
                 markets=(),
-                fallback_reason=decision.reason,
+                fallback_reason=matched_target.fallback_reason or decision.reason,
             )
             continue
         if quota_stopped:
@@ -331,6 +388,7 @@ def build_external_collection(
         successful_schedule_dates=successful_schedule_dates,
         failed_schedule_dates=failed_schedule_dates,
         eligibility=eligibility,
+        pinned_revalidation=pinned_revalidation,
     )
     collection_id = _hash_payload(body)
     return ExternalCollectionSnapshot(
@@ -355,6 +413,7 @@ def build_external_collection(
         successful_schedule_dates=successful_schedule_dates,
         failed_schedule_dates=failed_schedule_dates,
         eligibility=eligibility,
+        pinned_revalidation=pinned_revalidation,
     )
 
 
@@ -507,21 +566,32 @@ def _fetch_schedules(
     target: TargetDrawing,
     request_counter: _RequestCounter,
     missing_start_horizon_days: int,
+    *,
+    prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
 ) -> _ScheduleFetchResult:
     required_dates: dict[Sport, set[date]] = defaultdict(set)
-    for event in target.events:
-        if event.sport in {"football", "hockey"}:
-            if event.starts_at is not None:
-                required_dates[event.sport].add(
-                    event.starts_at.astimezone(timezone.utc).date()
-                )
-            else:
-                required_dates[event.sport].update(
-                    _missing_start_request_dates(
-                        target.deadline,
-                        missing_start_horizon_days,
+    if prepared_pins is not None:
+        if len(prepared_pins) != 15:
+            raise ValueError("prepared pins must contain exactly 15 events")
+        for event, pin in zip(target.events, prepared_pins, strict=True):
+            starts_at = _event_datetime(pin.starts_at)
+            if starts_at is None:
+                raise ValueError("prepared pin must contain starts_at")
+            required_dates[event.sport].add(starts_at.date())
+    else:
+        for event in target.events:
+            if event.sport in {"football", "hockey"}:
+                if event.starts_at is not None:
+                    required_dates[event.sport].add(
+                        event.starts_at.astimezone(timezone.utc).date()
                     )
-                )
+                else:
+                    required_dates[event.sport].update(
+                        _missing_start_request_dates(
+                            target.deadline,
+                            missing_start_horizon_days,
+                        )
+                    )
 
     requested = tuple(
         (sport, requested_date)
@@ -603,7 +673,16 @@ def _match_targets(
     target: TargetDrawing,
     schedule_results: tuple[ScheduleDateResult, ...],
     aliases: dict[str, str],
+    *,
+    prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
+    observed_at: datetime | None = None,
 ) -> dict[int, _MatchedTarget]:
+    if prepared_pins is not None:
+        if observed_at is None:
+            raise ValueError("pin revalidation observation time is required")
+        return _match_targets_from_pins(
+            target, schedule_results, prepared_pins, observed_at=observed_at
+        )
     schedules = _successful_schedule_events(schedule_results)
     failures = {
         (result.sport, result.requested_date): result.error
@@ -643,25 +722,314 @@ def _match_targets(
             schedules.get(event.sport, ()),
             aliases,
         )
+        fallback_reason = None
         if (
             event.starts_at is None
             and decision.status == "missing"
             and event.sport in failures_by_sport
         ):
-            decision = MatchDecision(
-                status=decision.status,
-                provider_event_id=decision.provider_event_id,
-                matcher_version=decision.matcher_version,
-                candidate_ids=decision.candidate_ids,
-                reason="partial schedule",
-                orientation=decision.orientation,
-            )
+            # Keep the precise matcher rejection in match_reason. The later
+            # transport failure remains the fallback classification only.
+            fallback_reason = "partial schedule"
         provider_event = _matched_provider_event(
             decision,
             schedules.get(event.sport, ()),
         )
+        decisions[event.event_order] = _MatchedTarget(
+            decision, provider_event, fallback_reason
+        )
+    return decisions
+
+
+def _match_targets_from_pins(
+    target: TargetDrawing,
+    schedule_results: tuple[ScheduleDateResult, ...],
+    pins: tuple[DrawingEventPinRecord, ...],
+    *,
+    observed_at: datetime,
+) -> dict[int, _MatchedTarget]:
+    fingerprint = target_fingerprint(
+        target.drawing_id, target.drawing_number, target.deadline, target.events
+    )
+    if len(pins) != 15 or tuple(pin.event_order for pin in pins) != tuple(range(15)):
+        raise ValueError("prepared pins must contain event orders 0 through 14")
+    schedules = _successful_schedule_events(schedule_results)
+    failures = {
+        (result.sport, result.requested_date): result.error
+        for result in schedule_results
+        if result.error is not None
+    }
+    decisions: dict[int, _MatchedTarget] = {}
+    for event, pin in zip(target.events, pins, strict=True):
+        if (
+            pin.drawing_id != target.drawing_id
+            or pin.drawing_fingerprint != fingerprint
+            or pin.target_event_id != str(event.event_id)
+            or pin.status != "valid"
+        ):
+            raise ValueError(
+                "prepared pin does not match exact drawing fingerprint/event"
+            )
+        pinned_start = _event_datetime(pin.starts_at)
+        if pinned_start is None:
+            raise ValueError("prepared pin must contain starts_at")
+        failure = failures.get((event.sport, pinned_start.date()))
+        if failure is not None:
+            decision = MatchDecision(
+                status="provider_failure",
+                provider_event_id=None,
+                matcher_version="systematic-team-pin-v1",
+                candidate_ids=(pin.provider_fixture_id,),
+                reason=f"pinned fixture revalidation unavailable: {failure}",
+            )
+            decisions[event.event_order] = _MatchedTarget(decision, None)
+            continue
+        candidates = tuple(
+            candidate
+            for candidate in schedules.get(event.sport, ())
+            if candidate.provider_event_id == pin.provider_fixture_id
+        )
+        if len(candidates) > 1:
+            raise ValueError("pinned provider fixture is not unique in schedule")
+        if not candidates:
+            decision = MatchDecision(
+                status="missing",
+                provider_event_id=None,
+                matcher_version="systematic-team-pin-v1",
+                candidate_ids=(pin.provider_fixture_id,),
+                reason=(
+                    "pinned provider fixture absent from recent schedule; "
+                    "rerun prepare-drawing"
+                ),
+            )
+            decisions[event.event_order] = _MatchedTarget(decision, None)
+            continue
+        provider_event = candidates[0]
+        if provider_event.provider != pin.provider:
+            decision = MatchDecision(
+                status="missing",
+                provider_event_id=None,
+                matcher_version="systematic-team-pin-v1",
+                candidate_ids=(pin.provider_fixture_id,),
+                reason="pinned fixture provider identity changed",
+            )
+            decisions[event.event_order] = _MatchedTarget(decision, None)
+            continue
+        orientation = str(pin.provenance.get("orientation", "same"))
+        if orientation not in {"same", "reversed"}:
+            decision = MatchDecision(
+                status="missing",
+                provider_event_id=None,
+                matcher_version="systematic-team-pin-v1",
+                candidate_ids=(pin.provider_fixture_id,),
+                reason="prepared pin orientation is invalid",
+            )
+            decisions[event.event_order] = _MatchedTarget(decision, None)
+            continue
+        if not _pin_team_ids_match(provider_event, pin):
+            decision = MatchDecision(
+                status="missing",
+                provider_event_id=None,
+                matcher_version="systematic-team-pin-v1",
+                candidate_ids=(pin.provider_fixture_id,),
+                reason="pinned provider team IDs changed",
+            )
+            decisions[event.event_order] = _MatchedTarget(decision, None)
+            continue
+        if abs(provider_event.starts_at - pinned_start) > PIN_START_TIME_TOLERANCE:
+            decision = MatchDecision(
+                status="missing",
+                provider_event_id=None,
+                matcher_version="systematic-team-pin-v1",
+                candidate_ids=(pin.provider_fixture_id,),
+                reason="pinned provider fixture start changed; rerun prepare-drawing",
+            )
+            decisions[event.event_order] = _MatchedTarget(decision, None)
+            continue
+        if (
+            provider_event.fetched_at > observed_at + timedelta(minutes=5)
+            or observed_at - provider_event.fetched_at > PIN_SCHEDULE_MAX_AGE
+        ):
+            decision = MatchDecision(
+                status="provider_failure",
+                provider_event_id=None,
+                matcher_version="systematic-team-pin-v1",
+                candidate_ids=(pin.provider_fixture_id,),
+                reason=(
+                    "pinned fixture revalidation schedule is stale; "
+                    "refresh schedule cache"
+                ),
+            )
+            decisions[event.event_order] = _MatchedTarget(decision, None)
+            continue
+        decision = MatchDecision(
+            status="matched",
+            provider_event_id=pin.provider_fixture_id,
+            matcher_version="systematic-team-pin-v1",
+            candidate_ids=(pin.provider_fixture_id,),
+            reason="exact valid drawing pin; name rematching bypassed",
+            orientation=orientation,  # type: ignore[arg-type]
+        )
         decisions[event.event_order] = _MatchedTarget(decision, provider_event)
     return decisions
+
+
+def _pin_team_ids_match(
+    candidate: ProviderEvent, pin: DrawingEventPinRecord
+) -> bool:
+    if (
+        candidate.provider_home_team_id is None
+        or candidate.provider_away_team_id is None
+    ):
+        return False
+    orientation = pin.provenance.get("orientation", "same")
+    expected = (
+        (pin.provider_home_team_id, pin.provider_away_team_id)
+        if orientation == "same"
+        else (pin.provider_away_team_id, pin.provider_home_team_id)
+    )
+    return (
+        candidate.provider_home_team_id,
+        candidate.provider_away_team_id,
+    ) == expected
+
+
+def pinned_revalidation_is_ready(snapshot: ExternalCollectionSnapshot) -> bool:
+    summary = snapshot.pinned_revalidation
+    return bool(
+        summary is not None
+        and summary.expected_count == 15
+        and summary.matched_count == 15
+        and summary.ready_for_play
+    )
+
+
+def _pinned_revalidation_summary(
+    target: TargetDrawing,
+    schedule_results: tuple[ScheduleDateResult, ...],
+    decisions: dict[int, _MatchedTarget],
+    pins: tuple[DrawingEventPinRecord, ...],
+    *,
+    observed_at: datetime,
+) -> PinnedRevalidationSummary:
+    results = tuple(
+        PinnedRevalidationEvent(
+            event_order=event.event_order,
+            status=decisions[event.event_order].decision.status,
+            reason=decisions[event.event_order].decision.reason,
+        )
+        for event in target.events
+    )
+    matched = tuple(item.event_order for item in results if item.status == "matched")
+    missing = tuple(item.event_order for item in results if item.status == "missing")
+    provider_failures = tuple(
+        item.event_order for item in results if item.status == "provider_failure"
+    )
+    stale = _orders_with_reason(results, "schedule is stale")
+    date_failures = _orders_with_reason(results, "revalidation unavailable")
+    provider_failures_by_identity = _orders_with_reason(
+        results, "provider identity changed"
+    )
+    fixture_failures = _orders_with_reason(
+        results, "fixture absent from recent schedule"
+    )
+    team_failures = _orders_with_reason(results, "team IDs changed")
+    orientation_failures = _orders_with_reason(results, "orientation is invalid")
+    start_failures = _orders_with_reason(results, "fixture start changed")
+    identity_failures = tuple(
+        sorted(
+            set(provider_failures_by_identity)
+            | set(fixture_failures)
+            | set(team_failures)
+            | set(orientation_failures)
+        )
+    )
+    failed_dates = tuple(
+        f"{item.sport}:{item.requested_date.isoformat()}:{item.error}"
+        for item in schedule_results
+        if item.error is not None
+    )
+    pin_ids = {pin.provider_fixture_id for pin in pins}
+    fetched_at = tuple(
+        event.fetched_at
+        for result in schedule_results
+        if result.error is None
+        for event in result.events
+        if event.provider_event_id in pin_ids
+    )
+    oldest = min(fetched_at) if fetched_at else None
+    newest = max(fetched_at) if fetched_at else None
+    maximum_age = (
+        None
+        if oldest is None
+        else max(0.0, (observed_at - oldest).total_seconds())
+    )
+    matched_count = len(matched)
+    required_dates_complete = not failed_dates
+    schedule_fresh = matched_count == 15 and not stale and oldest is not None
+    provider_checks_passed = matched_count == 15 and not provider_failures_by_identity
+    fixture_checks_passed = matched_count == 15 and not fixture_failures
+    team_checks_passed = matched_count == 15 and not team_failures
+    orientation_checks_passed = matched_count == 15 and not orientation_failures
+    start_time_checks_passed = matched_count == 15 and not start_failures
+    ready = all(
+        (
+            matched_count == 15,
+            required_dates_complete,
+            schedule_fresh,
+            provider_checks_passed,
+            fixture_checks_passed,
+            team_checks_passed,
+            orientation_checks_passed,
+            start_time_checks_passed,
+        )
+    )
+    return PinnedRevalidationSummary(
+        expected_count=15,
+        matched_count=matched_count,
+        missing_event_orders=missing,
+        provider_failure_event_orders=provider_failures,
+        stale_event_orders=stale,
+        date_failure_event_orders=date_failures,
+        identity_failure_event_orders=identity_failures,
+        start_time_failure_event_orders=start_failures,
+        failed_schedule_dates=failed_dates,
+        oldest_schedule_fetched_at=(None if oldest is None else _iso_datetime(oldest)),
+        newest_schedule_fetched_at=(None if newest is None else _iso_datetime(newest)),
+        maximum_schedule_age_seconds=maximum_age,
+        schedule_fresh=schedule_fresh,
+        provider_checks_passed=provider_checks_passed,
+        fixture_checks_passed=fixture_checks_passed,
+        team_checks_passed=team_checks_passed,
+        orientation_checks_passed=orientation_checks_passed,
+        start_time_checks_passed=start_time_checks_passed,
+        required_dates_complete=required_dates_complete,
+        ready_for_play=ready,
+        events=results,
+    )
+
+
+def _orders_with_reason(
+    events: tuple[PinnedRevalidationEvent, ...], fragment: str
+) -> tuple[int, ...]:
+    return tuple(item.event_order for item in events if fragment in item.reason)
+
+
+def _event_datetime(value: object) -> datetime | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, str) and value:
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError as error:
+            raise ValueError("prepared pin datetime is invalid") from error
+    else:
+        raise ValueError("prepared pin datetime is invalid")
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("prepared pin datetime must be timezone-aware")
+    return parsed.astimezone(timezone.utc)
 
 
 def _successful_schedule_events(
@@ -936,6 +1304,7 @@ def _collection_identity_payload(
     successful_schedule_dates: tuple[ScheduleDateResult, ...],
     failed_schedule_dates: tuple[ScheduleDateResult, ...],
     eligibility: DrawingEligibility,
+    pinned_revalidation: PinnedRevalidationSummary | None,
 ) -> dict[str, object]:
     return {
         "drawing": {
@@ -969,6 +1338,9 @@ def _collection_identity_payload(
             "totobrief_count": eligibility.totobrief_count,
             "provider_count": eligibility.provider_count,
         },
+        "pinned_revalidation": (
+            None if pinned_revalidation is None else asdict(pinned_revalidation)
+        ),
         "target_payload": tuple(
             _target_event_payload(event) for event in target.events
         ),

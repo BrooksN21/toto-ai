@@ -18,6 +18,7 @@ from toto_ai.external_odds.collection import (
 from toto_ai.external_odds.domain import ExternalOddsProvider, TargetDrawing
 from toto_ai.external_odds.eligibility import DrawingEligibility
 from toto_ai.external_odds.storage import save_collection
+from toto_ai.external_odds.team_registry import DrawingEventPinRecord
 
 ProspectivePhase = Literal["base", "expansion"]
 ProspectiveStopReason = Literal[
@@ -102,6 +103,7 @@ def collect_fresh_open_external_odds(
     session_factory: Any,
     aliases: dict[str, str],
     cache_root: Path,
+    prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
     target: TargetDrawing | None = None,
     stop_at: datetime | None = None,
     max_passes: int = 3,
@@ -147,6 +149,7 @@ def collect_fresh_open_external_odds(
             provider_factory=provider_factory,
             session_factory=session_factory,
             aliases=aliases,
+            prepared_pins=prepared_pins,
             phase="base",
             phase_pass_number=pass_index + 1,
             horizon_days=_BASE_HORIZON_DAYS,
@@ -194,6 +197,7 @@ def collect_fresh_open_external_odds(
                 provider_factory=provider_factory,
                 session_factory=session_factory,
                 aliases=aliases,
+                prepared_pins=prepared_pins,
                 phase="expansion",
                 phase_pass_number=pass_index + 1,
                 horizon_days=expansion_horizon_days,
@@ -256,6 +260,7 @@ def _run_pass(
     provider_factory: ProviderFactory,
     session_factory: Any,
     aliases: dict[str, str],
+    prepared_pins: tuple[DrawingEventPinRecord, ...] | None,
     phase: ProspectivePhase,
     phase_pass_number: int,
     horizon_days: int,
@@ -264,14 +269,19 @@ def _run_pass(
     monotonic: Callable[[], float],
 ) -> ProspectiveCollectionPass:
     pass_started = monotonic()
+    arguments = {
+        "missing_start_horizon_days": horizon_days,
+        "stop_at": stop_at,
+        "now": now,
+    }
+    if prepared_pins is not None:
+        arguments["prepared_pins"] = prepared_pins
     snapshot = _collect_target_pass(
         target,
         provider_factory(cache_dir),
         session_factory,
         aliases,
-        missing_start_horizon_days=horizon_days,
-        stop_at=stop_at,
-        now=now,
+        **arguments,
     )
     return ProspectiveCollectionPass(
         snapshot=snapshot,
@@ -291,12 +301,14 @@ def _collect_target_pass(
     missing_start_horizon_days: int,
     stop_at: datetime | None,
     now: Callable[[], datetime],
+    prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
 ) -> ExternalCollectionSnapshot:
     snapshot = build_external_collection(
         target,
         provider,
         aliases,
         missing_start_horizon_days=missing_start_horizon_days,
+        prepared_pins=prepared_pins,
         stop_at=stop_at,
         now=now,
     )

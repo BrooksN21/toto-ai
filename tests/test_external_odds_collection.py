@@ -702,6 +702,7 @@ def test_unmatched_missing_start_with_failed_schedule_uses_partial_schedule_fall
     result = build_external_collection(target, FailingProvider(target), aliases={})
 
     assert result.events[0].match_status == "missing"
+    assert result.events[0].match_reason == "0 exact candidates"
     assert result.events[0].fallback_reason == "partial schedule"
     assert result.eligibility.status == "unknown"
 

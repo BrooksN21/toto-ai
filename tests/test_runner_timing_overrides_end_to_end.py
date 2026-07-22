@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -11,6 +11,7 @@ import pytest
 
 import toto_ai.cli as cli_module
 import toto_ai.ev.drawing as drawing_module
+from tests.pinned_revalidation_helpers import ready_pinned_revalidation
 from toto_ai.db.session import get_session_factory, init_db, open_readonly_db
 from toto_ai.ev.models import (
     EVComponents,
@@ -156,6 +157,26 @@ def _collect_replay(tmp_path: Path) -> _ReplayContext:
         now=lambda: RUN_AT,
         monotonic=lambda: 0.0,
         sleep=lambda _seconds: pytest.fail("offline replay must not sleep"),
+    )
+    # This suite isolates reviewed timing-overlay behavior. Identity
+    # revalidation is independently covered by production pin tests, so supply
+    # its already-passed boundary explicitly instead of exercising legacy name
+    # matching as an authorization path.
+    snapshot = replace(
+        collection.snapshot,
+        pinned_revalidation=ready_pinned_revalidation(RUN_AT),
+    )
+    collection = replace(
+        collection,
+        snapshot=snapshot,
+        passes=tuple(replace(item, snapshot=snapshot) for item in collection.passes),
+        base_passes=tuple(
+            replace(item, snapshot=snapshot) for item in collection.base_passes
+        ),
+        expansion_passes=tuple(
+            replace(item, snapshot=snapshot)
+            for item in collection.expansion_passes
+        ),
     )
     raw_timing = cli_module._build_runner_timing_resolver(str(db_path))(pinned)
     readonly_engine = open_readonly_db(db_path)
@@ -425,7 +446,7 @@ def test_drawing_4950_reviewed_timing_override_operational_readiness_replay(
         now=lambda: RUN_AT,
     )
     manifest = json.loads(publication.runner[0].read_text(encoding="utf-8"))
-    assert manifest["schema_version"] == 3
+    assert manifest["schema_version"] == 4
     assert manifest["eligibility"]["raw"]["status"] == "unknown"
     assert manifest["eligibility"]["raw"]["missing_event_orders"] == [1, 4]
     assert manifest["eligibility"]["effective"]["status"] == "playable"

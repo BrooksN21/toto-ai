@@ -4,7 +4,108 @@ This file is the project-local state note for TotoAI only. Do not mix it with
 local skills, personal knowledge bases, team knowledge bases, or unrelated
 memory stores.
 
+## Deterministic Offline Runner Replay (2026-07-21)
+
+`run-drawing` now has an explicit `--offline-replay` path for one exact internal
+drawing ID, strict TotoBrief target cache, strict API-Sports schedule cache, and
+timezone-aware `--replay-as-of`. The command validates cache schemas and
+payload hashes, provider, drawing ID/number/deadline/fingerprint, target event
+count/IDs/order, and provider fixture/team identity before running. It never
+reads `API_SPORTS_KEY` or constructs live clients.
+
+An explicit `--replay-root` is mandatory. The replay database, report
+directory, provider cache, and temporary artifacts are derived below that
+root, rather than inheriting `data/toto.db`, `reports/`, or the live cache.
+Explicit output overrides are accepted only when they resolve strictly below
+the same root. Repository root, project `data/`/`reports/`/cache/marker state,
+ancestor overlap, and any symlink traversal are rejected before the first
+write; the boundary is revalidated immediately after root creation.
+
+Replay uses the injected timestamp for runner and schedule-freshness gates,
+runs the real atomic preparation, 15 pins, cached schedule revalidation,
+runner, diagnostic EV, and manifest-v4 path, and records cache paths, whole-file
+hashes, payload hashes, provider, and replay time in the manifest. It is always
+`RESEARCH ONLY` and non-actionable: it directly publishes only the JSON and
+Markdown runner report, never a production package or scheduler marker.
+Scheduler ingestion classifies manifests with replay provenance as an explicit
+non-production `ignored` execution and creates no terminal marker at all.
+Malformed live production manifests retain the existing `.failed` semantics.
+
+The self-contained drawing-4951 target fixture now mirrors DB identity 11968,
+deadline `2026-07-21T16:00:00Z`, event IDs 32851-32865, championships, and saved
+quotes. Together with the saved API-Sports schedule it resolves 15/15 and
+reaches provider fixtures 1492290, 1548164, and 1547777 through the generic
+resolver; none of these values is present in production source or aliases.
+
+## Systematic Team Resolution Phase 2 (2026-07-21)
+
+The production drawing workflow now defaults to prepared systematic identity
+pins. `prepare-drawing` resolves all 15 target events against provider schedule
+fixtures and publishes a `ready` preparation and all 15 fixture/team/start
+pins in one transaction. Unresolved runs publish zero authoritative pins while
+retaining machine-readable diagnostics and review-queue records. Identical
+ready runs are idempotent; changed provider identity or drawing fingerprints
+fail closed.
+
+Resolution prioritizes reviewed registry and provider-team IDs. Otherwise it
+requires an oriented unique fixture, date and competition/country/league
+context, one exact or high-confidence side, a sufficiently strong pair, and a
+deterministic margin. Transliteration and normalization are evidence only;
+sport/date and shared tokens cannot auto-accept two weak team names. Alias
+identity is scoped by country and competition, with an additive migration for
+the Phase-1 global alias table. Existing reviewed alias configuration and only
+already accepted exact/reviewed history remain valid seed sources.
+
+The scheduler preflight now runs `prepare-drawing --open`. The final runner
+requires an exact `ready` preparation and 15 valid pins. It fetches recent
+schedule data to revalidate provider, fixture, team IDs, and start time without
+rematching display names. Missing, failed, stale, or changed revalidation data
+cannot produce a bet-ready package. Legacy name matching is available only by
+explicit direct-run opt-in and is removed from scheduler environments.
+
+Preparation derives sport, country, competition, and league context from each
+TotoBrief event/championship. Stable geographic exonyms are normalized locally;
+there is no network translation and no team-specific production mapping. An
+exact-looking pair from a conflicting competition level (for example Serie B
+for a Serie A target), country, sport, or date is rejected in the normal
+service/CLI path. Every required date in the bounded eligible search window
+must fetch successfully before READY or pin publication; successful dates and
+per-date failure diagnostics are retained for retry.
+
+Collection persistence and runner manifest schema v4 contain an authoritative
+`pinned_revalidation` summary: expected/matched counts, ordered missing,
+provider-failure, stale, date-failure, identity-failure, and start-time-failure
+events, failed dates, schedule age/freshness, identity-check booleans, and
+per-event reasons. Playable execution gates before timing, audit, or EV unless
+the summary proves fresh exact 15/15 provider/fixture/team/orientation/start
+identity. TotoBrief BK fallback remains diagnostic and cannot authorize PLAY.
+The scheduler validates the same summary and emits `.no-bet`, never
+`.bet-ready`, for any valid but non-ready result; absent legacy summaries fail
+closed.
+
+The drawing-4951 regression is an offline replay with the actual
+2026-07-21T16:00:00Z deadline, target event/championship metadata, and saved
+provider fixture/team IDs. It resolves 15/15 without adding the six
+current-drawing aliases. Prior 4945/4947/4950 behavior remains covered, and an
+unseen-team regression guards against drawing-specific production logic.
+
+Final pre-commit verification including isolation hardening is
+`1140 passed in 196.14s`.
+The replay/scheduler/CLI/report focused suite was `151 passed in 92.20s`, and
+the isolated 4951 E2E alone was `1 passed in 78.34s`. Repository-wide Ruff,
+whitespace, and production-hardcoding results are recorded in the completion
+response.
+Focused systematic resolver/runner/scheduler verification was `194 passed in
+83.51s`; the post-failure regression rerun was `15 passed in 7.37s`.
+Repository-wide Ruff reported `All checks passed!`; `git diff --check` exited
+zero; and the production scan found none of drawing 4951, its drawing ID, the
+three asserted fixture IDs, or the six current-draw team aliases in `src/` or
+the production alias file. No profitability claim follows from this work.
+
 ## Current Important Commits
+
+The two completed sections above are included in the same local commit as this
+state update. Its hash is intentionally not embedded in the commit itself.
 
 - `f771bbe` Initial TotoBrief API client and CLI
 - `bdcf776` Add historical data collector
@@ -39,7 +140,9 @@ Current boundary statement for the latest reviewed output:
 - `drawing-4950`: with `pool_sum = 81_445`, `requested_bank = 4_980`, `stake = 30`, the exact cap is `810`.
 - Matcher behavior on reviewed data is now `13/15`; unresolved pairs stay fail-closed and retain `NO BET` timing semantics.
 - Reviewed timing overrides are strict: schema-vetted override catalog + provenance match + overlay validation. If any preflight/audit/package audit is missing or changed, timing remains `unknown` and no EV package is built.
-- Reporting baseline changed to runner manifest `schema_version = 3`: raw/effective timing is explicit, plus budget provenance (`requested_bank`, `effective_budget`, `unused_requested_bank`, etc.).
+- Reporting baseline for that incident was runner manifest `schema_version = 3`:
+  raw/effective timing and budget provenance were explicit. Current production
+  output is schema v4 with the additive mandatory pinned-revalidation summary.
 - Runner outputs now record immutable run-scoped hashes for inputs and package artifacts.
 - Old `drawing 4947` and legacy `drawing 4950` `schema_version = 2` report files are historical pre-fix artifacts and are not treated as current output evidence.
 

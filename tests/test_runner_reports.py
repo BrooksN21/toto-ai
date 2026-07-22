@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 
 import toto_ai.runner.reports as runner_reports
+from tests.pinned_revalidation_helpers import ready_pinned_revalidation
 from toto_ai.ev.drawing import EVPackageRun, EVSensitivitySummary
 from toto_ai.ev.models import (
     EVConfig,
@@ -162,6 +163,9 @@ def _collection(target: TargetDrawing) -> ProspectiveCollectionResult:
         target_fingerprint=pinned.fingerprint,
         missing_start_horizon_days=2,
         eligibility=eligibility,
+        pinned_revalidation=ready_pinned_revalidation(
+            FINAL_STARTED_AT + timedelta(seconds=1)
+        ),
     )
     collection_pass = ProspectiveCollectionPass(
         snapshot=snapshot,
@@ -791,7 +795,7 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
     payload = json.loads(json_path.read_text())
     markdown = markdown_path.read_text()
 
-    assert payload["schema_version"] == 3
+    assert payload["schema_version"] == 4
     assert payload["run_id"] == drawing_run_id(result)
     assert payload["decision"] == "PLAY"
     assert payload["command_status"] == "success"
@@ -844,11 +848,11 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
     assert "SELECTED-COUPON" in markdown
     assert "api-sports" in markdown
     assert "PENDING" in markdown
-    assert "schema version: 3" in markdown
+    assert "schema version: 4" in markdown
     assert "no timing override catalog supplied" in markdown
 
 
-def test_schema_v3_has_stable_timing_and_budget_shapes_with_or_without_override(
+def test_schema_v4_has_stable_timing_and_budget_shapes_with_or_without_override(
     tmp_path,
 ):
     non_override_json, _ = write_drawing_run_reports(
@@ -876,7 +880,7 @@ def test_schema_v3_has_stable_timing_and_budget_shapes_with_or_without_override(
     computed = json.loads(computed_json.read_text())
     suppressed = json.loads(suppressed_json.read_text())
 
-    assert non_override["schema_version"] == 3
+    assert non_override["schema_version"] == 4
     assert non_override["eligibility"]["raw"] == (
         non_override["eligibility"]["effective"]
     )
@@ -885,7 +889,7 @@ def test_schema_v3_has_stable_timing_and_budget_shapes_with_or_without_override(
     assert non_override["ev"]["effective_budget"] == 90
     assert non_override["ev"]["selected_cost"] == 30
     assert non_override["ev"]["unused_requested_bank"] == 4950
-    assert computed["schema_version"] == 3
+    assert computed["schema_version"] == 4
     assert computed["ev"]["computed"] is True
     assert computed["ev"]["input_fetched_at"] == (
         FINAL_STARTED_AT + timedelta(seconds=4)
@@ -918,7 +922,7 @@ def test_schema_v3_has_stable_timing_and_budget_shapes_with_or_without_override(
         "derived_brief": ["1"] * 15,
     }
 
-    assert suppressed["schema_version"] == 3
+    assert suppressed["schema_version"] == 4
     assert suppressed["eligibility"]["raw"] == suppressed["eligibility"]["effective"]
     assert suppressed["eligibility"]["override"]["status"] == "applied"
     assert suppressed["ev"] == {
@@ -950,7 +954,7 @@ def test_schema_v3_has_stable_timing_and_budget_shapes_with_or_without_override(
     }
 
 
-def test_schema_v3_computed_no_bet_preserves_known_budget_and_reason(tmp_path):
+def test_schema_v4_computed_no_bet_preserves_known_budget_and_reason(tmp_path):
     result = _runner_result("NO BET")
 
     json_path, _ = write_drawing_run_reports(result, report_dir=tmp_path)
@@ -967,7 +971,7 @@ def test_schema_v3_computed_no_bet_preserves_known_budget_and_reason(tmp_path):
     assert ev["package"]["cost"] == 0
 
 
-def test_schema_v3_non_override_not_computed_uses_explicit_null_provenance(
+def test_schema_v4_non_override_not_computed_uses_explicit_null_provenance(
     tmp_path,
 ):
     result = _terminal_result(final_target=None)
@@ -980,7 +984,7 @@ def test_schema_v3_non_override_not_computed_uses_explicit_null_provenance(
     ev = payload["ev"]
     markdown = markdown_path.read_text()
 
-    assert payload["schema_version"] == 3
+    assert payload["schema_version"] == 4
     assert payload["eligibility"]["raw"] == payload["eligibility"]["effective"]
     assert payload["eligibility"]["override"] is None
     assert ev["computed"] is False
@@ -999,7 +1003,7 @@ def test_schema_v3_non_override_not_computed_uses_explicit_null_provenance(
     assert "unused requested bank: n/a" in markdown
 
 
-def test_schema_v3_preserves_drawing_4950_exact_effective_cap_810(tmp_path):
+def test_schema_v4_preserves_drawing_4950_exact_effective_cap_810(tmp_path):
     result = _runner_result(
         "PLAY",
         coupon="DRAWING-4950-SELECTED",
@@ -1010,7 +1014,7 @@ def test_schema_v3_preserves_drawing_4950_exact_effective_cap_810(tmp_path):
     json_path, _ = write_drawing_run_reports(result, report_dir=tmp_path)
     payload = json.loads(json_path.read_text())
 
-    assert payload["schema_version"] == 3
+    assert payload["schema_version"] == 4
     assert payload["target"]["drawing_number"] == 4950
     assert payload["ev"]["requested_bank"] == 4980
     assert payload["ev"]["effective_budget"] == 810
@@ -1020,7 +1024,7 @@ def test_schema_v3_preserves_drawing_4950_exact_effective_cap_810(tmp_path):
 
 
 @pytest.mark.parametrize("effective_budget", [None, 0])
-def test_schema_v3_rejects_play_without_positive_explicit_effective_budget(
+def test_schema_v4_rejects_play_without_positive_explicit_effective_budget(
     tmp_path,
     effective_budget,
 ):
@@ -1030,7 +1034,7 @@ def test_schema_v3_rejects_play_without_positive_explicit_effective_budget(
         write_drawing_run_reports(result, report_dir=tmp_path)
 
 
-def test_schema_v3_rejects_selected_cost_count_mismatch(tmp_path):
+def test_schema_v4_rejects_selected_cost_count_mismatch(tmp_path):
     result = _runner_result("PLAY")
     assert result.ev_run is not None
     bad_package = replace(
