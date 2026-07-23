@@ -1,5 +1,15 @@
 # Decisions
 
+## Package audit report verification is fail-closed
+
+- Schema-v1 keeps readable top-level audit fields duplicated alongside the
+  canonical `audit_hash_payload`.
+- Recomputing from a complete report requires canonical equality for every
+  duplicated hash-bound field and requires its stored `audit_sha256` to match.
+  Missing or mismatched fields raise `ValueError`; the embedded payload is
+  never trusted in isolation when a complete report is supplied.
+- Direct recomputation from a standalone canonical payload remains supported.
+
 - Use repository memory instead of relying on chat memory.
 - This memory bank is project-local to TotoAI and must never be mixed with
   local skills, personal knowledge bases, team knowledge bases, or unrelated
@@ -13,6 +23,53 @@
 - One task, one commit, one verification cycle.
 - Every hypothesis must be backtested.
 - Never claim guaranteed profit.
+- Every eligible drawing will eventually expose three separate package
+  strategies under the same dynamic bank: `cover`, `ev`, and `hybrid`.
+  Strategy labels are semantic contracts, not presentation aliases.
+- `cover` requires an explicit brief, target category, compact package, and
+  exact verifier evidence. Its category guarantee remains conditional on the
+  actual 15 outcomes being inside the brief.
+- `ev` retains exact modeled monetary-EV ranking but receives the same
+  concentration and Hamming audit. A union of outcomes observed in an EV
+  package is a derived brief and never a Cover guarantee.
+- `hybrid` must combine calibrated final probabilities, modeled category-hit
+  probability, Cover/Hamming evidence, modeled EV, and frozen
+  diversity/concentration constraints. Its objective and constraints require
+  chronological development plus untouched/prospective GO/STOP evaluation.
+- The operator bank is any positive integer multiple of the configured stake;
+  4980 RUB is an operational example only and must not be hard-coded.
+- Common package audit schema v1 hashes the exact ordered canonical coupon
+  list and separately hashes all audit metadata. Coupons are 15 uppercase
+  `1/X/2` outcomes, non-empty, and unique; malformed or duplicate packages
+  fail closed.
+- Audit report identity includes the full audit SHA-256. Exact existing bundles
+  must match regenerated JSON/CSV/Markdown byte-for-byte with no missing or
+  extra files, and JSON stores the canonical hash payload for independent
+  recomputation.
+- Union-brief category coverage is computed by an independent exact streaming
+  verifier distance implementation. The derived guaranteed category is
+  `15 - worst_minimum_distance`; coverage shares are reported for categories
+  15 through 9. For EV/Hybrid this is descriptive conditional coverage of the
+  union brief and is not a declared Cover guarantee.
+- Fixed/near-fixed and fixed-low-probability findings are auditable warnings.
+  The audit never changes coupons. Optional probability-weighted category
+  values are explicitly conditional on the union brief.
+- Market probabilities remain the probability prior and mandatory fallback.
+  Sports-statistical evidence may influence package generation only through a
+  provider-neutral, time-valid, leakage-free, calibrated blend that passes
+  frozen coverage and no-degradation gates. Morning caching must prevent a
+  last-minute sports-provider call from being required for safe completion.
+- Every generated morning, fallback, final, recommended, and manually recorded
+  package must eventually be archived before results and settled after an
+  authoritative 15-outcome refresh. Hit/category/cost settlement is mandatory;
+  payout/profit/ROI remain unavailable rather than fabricated when lawful
+  actual payout data is absent.
+- Prospective package, result, and settlement evidence is append-only and
+  content/provenance bound. Corrections append a new snapshot/settlement and do
+  not overwrite prior evidence.
+- The evening scheduler continues to publish for manual upload only. A
+  separate post-draw scheduler may refresh and settle evidence but can never
+  submit a bet or create `.bet-ready`.
 - Evening production scheduler plans carry an absolute project root. Generated
   wrappers, launchd `WorkingDirectory`, and subprocess `cwd` all enforce that
   root. Preflight deliberately reuses the warmed project raw/provider caches;

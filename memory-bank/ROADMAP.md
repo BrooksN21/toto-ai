@@ -1,5 +1,52 @@
 # Roadmap
 
+## Hybrid Package Program — Milestone 1 complete
+
+The ordered program is defined in
+`plans/hybrid-package-program/plan.md`. Its goal is to compare and eventually
+operate three explicitly different strategies for every eligible drawing under
+the same dynamic bank: true conditional **Cover**, exact modeled **EV**, and a
+calibrated/concentration-controlled **Hybrid**. No strategy claims profit.
+
+Ordered vertical milestones:
+
+1. **COMPLETE:** Package strategy metadata and deterministic
+   concentration/Hamming/coverage audit with schema-v1 JSON/CSV/Markdown,
+   `package-audit`, independent exact streaming distance, dynamic banks,
+   canonical hashes, probability-aware warnings, and the independently
+   verified drawing-4952 acceptance reproduction. Acceptance: focused
+   `88 passed`, full `1269 passed`, Ruff passed, `git diff --check` passed,
+   real drawing-4952 audit verified, and all P1/P2 findings closed.
+2. True probability-aware Cover strategy with exact verification and a common
+   EV/Cover comparison.
+3. Append-only prospective package archive, forced post-draw result refresh,
+   settlement, and expected-vs-actual ledger.
+4. Provider-neutral lawful sports-statistics collection, morning cache,
+   historical backfill, and canonical football/hockey feature snapshots.
+5. Chronologically evaluated and calibrated market/sports probability blend;
+   market remains prior/fallback and sports influence remains audit-only until
+   frozen gates pass.
+6. Hybrid optimizer combining category-hit probability, Cover/Hamming
+   coverage, modeled EV, and explicit diversity/concentration constraints.
+7. Morning and evening three-strategy scheduler integration with dynamic
+   stake-multiple banks and manual package upload only.
+8. Separate bounded post-draw scheduler that refreshes results/payout evidence,
+   settles every archived package, and surfaces missing data.
+
+The first slice reproduces the known drawing-4952 package audit
+(`EV`, 166 coupons, fixed events 1/5/8/14/15, event-12 frequency 163/2/1,
+union brief 5184, no 13/14/15 guarantee, worst distance 6) before Cover or
+Hybrid selection is changed.
+
+Future/not implemented milestones include actual Hybrid package
+selection/optimization; an official/reputable sports-statistics probability
+model with calibrated integration; mandatory post-draw result refresh,
+settlement, and payout/profit/ROI ledger; and morning/evening/post-draw
+scheduler integration for the unified Cover/EV/Hybrid lifecycle. True
+probability-aware Cover generation and common EV/Cover comparison are also
+future work. Completion of the audit foundation is not evidence of
+profitability or a proven winning strategy.
+
 ## Phase 1: Infrastructure - completed
 
 - API client

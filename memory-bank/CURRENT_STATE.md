@@ -4,6 +4,79 @@ This file is the project-local state note for TotoAI only. Do not mix it with
 local skills, personal knowledge bases, team knowledge bases, or unrelated
 memory stores.
 
+## Unified Package Audit/Metadata Foundation Complete (2026-07-23)
+
+Hybrid Package Program Milestone 1, the first vertical slice, is complete.
+Independent acceptance is `READY`: focused tests passed (`88 passed`), the
+full suite passed (`1269 passed`), repository-wide Ruff passed,
+`git diff --check` passed, the real drawing-4952 audit was verified, and all
+P1/P2 review findings are closed. The implementation does not change package
+selection, EV ranking, Cover generation, scheduler behavior, or publication.
+The common `PackageStrategy` contract has exactly `cover`, `ev`, and `hybrid`.
+`package-audit` accepts canonical 15-outcome CSV/text packages, a positive
+stake-multiple requested/effective bank, optional event probabilities, and
+emits deterministic schema-v1 JSON/CSV/Markdown.
+
+The audit reports ordered canonical coupons and SHA-256, requested/effective/
+used bank, coupon count, 1/X/2 event counts and shares, fixed/near-fixed
+events, union brief and Cartesian size, exact union-brief minimum-distance
+distribution, derived guaranteed category, and exact coverage shares for
+categories 15 through 9. It uses an independent exact streaming distance
+calculation. Cover target categories fail closed when they do not verify.
+Probability-aware audits add conditional union-brief category probabilities
+and explicit fixed-low-probability warnings; concentration never modifies a
+coupon.
+
+Immutable report bundle paths include the full package and audit SHA-256.
+Existing bundles are reused only after deterministic JSON/CSV/Markdown bytes
+and the exact file set verify. JSON persists the exact JSON-compatible audit
+hash payload and configuration for independent recomputation. Complete-report
+recomputation fails closed unless every duplicated hash-bound displayed field
+is canonically equal to that payload and the stored audit hash verifies; direct
+payload recomputation remains supported. Report publication reconstructs and
+verifies that complete report before creating any filesystem output, so
+post-construction mutation of nested audit mappings fails with no partial
+bundle. CLI package CSV loading is streaming and bounded by
+`effective_bank // stake`.
+
+The real drawing-4952 EV CSV independently reproduces 166 coupons, fixed events
+1/5/8/14/15, event-12 counts 163/2/1, 5184 union variants, category 15/14/13
+coverage 166/992/2600, no 13/14/15 guarantee, and worst distance 6. The package
+is labelled `ev`; its derived category 9 is descriptive union-brief coverage,
+not a Cover declaration.
+
+The target product explicitly generates and compares three strategies under
+one user-supplied bank that is a positive stake multiple:
+
+- **Cover**: explicit brief, target category, compact package, and exact
+  conditional Hamming guarantee verification;
+- **EV**: the existing exact monetary-EV ranking, separately labelled and
+  audited for concentration;
+- **Hybrid**: calibrated final probabilities, modeled category-hit
+  probabilities, Hamming/cover evidence, EV, and frozen
+  diversity/concentration constraints.
+
+The program also makes official/reputable sports statistics and the full
+post-draw lifecycle first-class work. Market probability remains the
+prior/fallback; sports data is collected in the morning, cached, backfilled,
+time-valid, calibrated, and audit-only until prospective gates pass. Every
+morning/fallback/final package will eventually be archived before results,
+force-refreshed after completion, settled for hits/categories/cost and—only
+when actual payout evidence exists—payout/profit/ROI.
+
+The following milestones remain future and are not implemented by this slice:
+
+- actual Hybrid package selection/optimization;
+- an official/reputable sports-statistics probability model and its calibrated
+  integration;
+- mandatory post-draw result refresh, settlement, and payout/profit/ROI ledger;
+- morning/evening/post-draw scheduler integration for the unified
+  Cover/EV/Hybrid lifecycle.
+
+True probability-aware Cover generation and common EV/Cover comparison also
+remain future work. This milestone establishes audit and metadata foundations
+only; it is not evidence of profitability or a proven winning strategy.
+
 ## Evening Scheduler Launchd Root Fix (2026-07-22)
 
 The drawing-4952 incident exposed two launchd-only gaps: the evening wrapper

@@ -229,6 +229,26 @@ not a profit guarantee. The prize-fund proxy, independent-event crowd model,
 and resulting modeled ROI remain experimental and require prospective payout
 validation.
 
+Audit any complete 15-event package without changing its coupons:
+
+```bash
+python -m toto_ai.cli package-audit \
+  --package reports/my_package.csv \
+  --strategy ev \
+  --bank 6000 \
+  --effective-bank 4980 \
+  --stake 30
+```
+
+The command writes deterministic schema-v1 JSON, event-exposure CSV, and
+Markdown. It reports canonical package/audit SHA-256 values, dynamic
+requested/effective/used bank, event concentration, union brief, and exact
+category coverage for 15 through 9. `cover`, `ev`, and `hybrid` are distinct
+strategy labels; an EV/Hybrid union-brief category is descriptive and is not a
+Cover target guarantee. Optional `--probabilities` JSON enables auditable
+fixed-low-probability warnings and conditional union-brief category
+probabilities.
+
 ## External Odds Coverage Workflow
 
 External odds collection is a prospective coverage audit only. It does not feed

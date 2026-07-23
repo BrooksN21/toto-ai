@@ -148,6 +148,12 @@ from toto_ai.optimizer.strategy_diagnostics import (
     summarize_strategy_diagnostics,
     write_strategy_diagnostics_reports,
 )
+from toto_ai.package.audit import (
+    PackageStrategy,
+    build_package_audit,
+    parse_package,
+)
+from toto_ai.package.audit_reports import write_package_audit_reports
 from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
 from toto_ai.path_safety import probe_writable_directory, validate_output_paths
@@ -636,6 +642,114 @@ def cover(
     print(_cover_summary_table(result, stake=stake))
     print(_cover_coupons_table(result["selected_coupons"][:20]))
     print(f"Report written to {report_path}")
+
+
+@app.command("package-audit")
+def package_audit_command(
+    package_path: Path = typer.Option(  # noqa: B008
+        ...,
+        "--package",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        help="CSV or line-oriented file containing full 15-outcome coupons.",
+    ),
+    strategy: PackageStrategy = typer.Option(  # noqa: B008
+        ...,
+        help="Package strategy: cover, ev, or hybrid.",
+    ),
+    bank: int = typer.Option(..., help="Requested bank; a positive stake multiple."),
+    stake: int = typer.Option(30, help="Positive coupon stake."),
+    effective_bank: int | None = typer.Option(
+        None,
+        help="Optional effective bank cap; defaults to requested bank.",
+    ),
+    drawing_id: int | None = typer.Option(None, help="Optional drawing identifier."),
+    open_drawing: bool = typer.Option(
+        False,
+        "--open",
+        help="Resolve the current open drawing from TotoBrief page one.",
+    ),
+    target_category: int | None = typer.Option(
+        None,
+        help="Declared Cover target category: 13, 14, or 15.",
+    ),
+    probabilities_path: Path | None = typer.Option(  # noqa: B008
+        None,
+        "--probabilities",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        help="Optional JSON array of 15 normalized 1/X/2 triplets.",
+    ),
+    report_dir: Path = typer.Option(  # noqa: B008
+        Path("reports"),
+        help="Directory for deterministic JSON, CSV, and Markdown reports.",
+    ),
+    max_distance_comparisons: int = typer.Option(
+        10_000_000,
+        help="Fail-closed limit for exact variant*coupon comparisons.",
+    ),
+) -> None:
+    """Audit any EV, Cover, or Hybrid package without changing its coupons."""
+    if open_drawing and drawing_id is not None:
+        raise typer.BadParameter("Use either --drawing-id or --open, not both.")
+    try:
+        resolved_drawing_id = drawing_id
+        if open_drawing:
+            resolved_drawing_id = resolve_open_drawing_from_api(
+                TotoBriefClient()
+            ).drawing_id
+        probabilities = None
+        if probabilities_path is not None:
+            loaded = json.loads(probabilities_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                loaded = loaded.get("probabilities")
+            if not isinstance(loaded, list):
+                raise ValueError("Probability JSON must be an array of triplets.")
+            probabilities = loaded
+        effective_value = bank if effective_bank is None else effective_bank
+        if stake <= 0 or effective_value <= 0:
+            raise ValueError("Stake and effective bank must be positive.")
+        audit = build_package_audit(
+            parse_package(
+                package_path,
+                max_coupons=effective_value // stake,
+            ),
+            strategy=strategy,
+            requested_bank=bank,
+            effective_bank=effective_bank,
+            stake=stake,
+            drawing_id=resolved_drawing_id,
+            target_category=target_category,
+            probabilities=probabilities,
+            max_distance_comparisons=max_distance_comparisons,
+        )
+        paths = write_package_audit_reports(audit, report_dir)
+    except (OSError, json.JSONDecodeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    typer.echo(
+        json.dumps(
+            {
+                "schema_version": audit.schema_version,
+                "strategy": audit.strategy,
+                "package_sha256": audit.package_sha256,
+                "audit_sha256": audit.audit_sha256,
+                "coupon_count": audit.bank.coupon_count,
+                "requested_bank": audit.bank.requested,
+                "effective_bank": audit.bank.effective,
+                "used_bank": audit.bank.used,
+                "union_brief_variant_count": audit.union_brief_variant_count,
+                "worst_minimum_distance": audit.worst_minimum_distance,
+                "guaranteed_category": audit.guaranteed_category,
+                "warnings": list(audit.warnings),
+                "reports": [str(path) for path in paths],
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
 
 
 @app.command("benchmark-cover")

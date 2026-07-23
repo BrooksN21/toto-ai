@@ -18,6 +18,55 @@ TotoBrief API
 -> Package Export
 ```
 
+Approved target pipeline for the Hybrid Package Program:
+
+```text
+Morning exact drawing preparation
+-> Frozen market + lawful sports-statistics snapshots
+-> Calibrated event probabilities with explicit market-only fallback
+-> Cover + EV + Hybrid package candidates under one dynamic bank
+-> Common probability/EV/Hamming/concentration audit and comparison
+-> Evening exact revalidation and one atomic manual-upload recommendation
+-> Append-only prospective package archive
+-> Post-draw forced result/payout refresh
+-> Settlement of every archived package
+-> Immutable expected-vs-actual ledger and prospective gates
+```
+
+The three strategy boundaries are explicit:
+
+- Cover owns the brief, target category, compact package, and exact conditional
+  Hamming verification.
+- EV owns exact full-space monetary-EV ranking and does not inherit a category
+  guarantee from its derived union brief.
+- Hybrid owns the future multi-objective package selection that combines
+  calibrated final probabilities, category-hit probability, Hamming/coverage,
+  EV, and frozen concentration/diversity constraints.
+
+The common probability boundary will persist source timestamps, market prior,
+optional sport-model output, calibrated final probabilities, model/config
+hashes, fallback reason, and provenance for each of the 15 events. Official or
+reputable sports data is collected/cache-frozen in the morning and backfilled
+under the same as-of rules. Evening generation may refresh eligible inputs but
+must remain able to fall back explicitly to the last valid snapshot or market
+prior rather than depend on a last-minute provider request.
+
+The common package boundary will persist strategy, phase, dynamic
+requested/effective/used bank, stake, exact ordered coupons, probability/pool/
+sports snapshots, algorithm/config/code versions, package hash, union brief,
+event frequencies, concentration, Hamming and conditional category coverage.
+The post-draw boundary force-refreshes authoritative results, settles every
+archived package for hits/categories/cost, and records payout/profit/ROI only
+when actual payout evidence is available. Package, result, and settlement
+records are append-only and idempotent.
+
+The completed first implementation slice adds only strategy metadata and the
+common package audit/report contract. It is implemented in
+`toto_ai.package.audit` and `toto_ai.package.audit_reports`, with CLI
+`package-audit`. Exact union-brief distance/category coverage uses an
+independent exact streaming distance calculation. The slice does not change
+package selection, probabilities, live scheduler behavior, or bet publication.
+
 Coordinated morning synchronization path:
 
 ```text
