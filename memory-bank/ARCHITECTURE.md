@@ -1,5 +1,48 @@
 # Architecture
 
+## Emergency pre-bet safety boundary
+
+- `package.audit.evaluate_package_safety` is the pure exposure/probability
+  decision gate and returns hash-bound thresholds, reason codes, and the exact
+  uploadable coupon set.
+- `ev.drawing` applies it only when `EVConfig.package_safety_enabled` is true;
+  `DrawingRunnerConfig` enables it by default for production-playable runs.
+- Runner reports serialize hash-bound `package_safety` probabilities,
+  thresholds, reasons, original evaluated coupons/package SHA-256, and
+  separately approved uploadable coupons. Scheduler ingestion uses the same
+  canonical `PackageSafetyConfig` and `evaluate_package_safety` implementation
+  to recompute every non-null record before either PLAY or NO BET processing;
+  declared manifest decisions are not trusted.
+- Scheduler `NO BET` accepts valid recomputed safety in either state: rejected
+  by safety, or passed before a later timing/self-dilution rejection. The
+  machine-readable package/terminal reason identifies the actual gate; the
+  scheduler never emits package bytes or `.bet-ready` for either form.
+- `SchedulerPlan` owns the canonical package-safety thresholds and includes
+  them in its semantic payload/plan identity. Generated package commands pass
+  the same values to `run-drawing`; manifest parsing compares against and
+  recomputes with this trusted plan config rather than manifest thresholds.
+- Preparation readiness summaries bind the 15 TotoBrief probability rows and
+  source fetch time. Production resource loading requires ready 15/15 pins,
+  no unresolved orders, playable eligibility, a matching probability hash,
+  and input age within 24 hours.
+- Unsafe but structurally valid packages become zero-cost `NO BET`.
+  Invalid/stale operational evidence raises a machine-readable
+  `preparation_fail:*` failure and produces no package.
+- Post-draw result refresh is a separate non-betting boundary. It accepts only
+  one explicit drawing ID/number, appends immutable result snapshots, archives
+  reproducible package bytes, and writes hash-bound immutable settlements.
+  Its bounded retry state never selects an open/next drawing or emits betting
+  markers.
+- Actionable scheduler publication durably writes canonical pre-bet package
+  evidence before `.bet-ready`. Settlement requires matching pre-existing
+  archive evidence; legacy imports are explicit and cannot be relabeled as
+  pre-bet runner provenance.
+- Systematic preparation and production preflight share one exact persisted
+  drawing identity (internal ID, visible number, and `ended_at`). Scheduler
+  publication verifies that identity during archive import and enforces T-10
+  again directly after the database write and directly before marker creation;
+  late publication bytes/markers are removed while the archive remains.
+
 Current pipeline:
 
 ```text

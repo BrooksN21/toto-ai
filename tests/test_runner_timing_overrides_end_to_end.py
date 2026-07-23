@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from copy import deepcopy
 from dataclasses import dataclass, replace
@@ -208,12 +209,8 @@ def _catalog_payload() -> dict[str, object]:
 
 
 def _coupon(index: int) -> str:
-    outcomes = []
-    value = index
-    for _ in range(15):
-        outcomes.append("1X2"[value % 3])
-        value //= 3
-    return "".join(reversed(outcomes))
+    digest = hashlib.sha256(f"timing-override-{index}".encode()).digest()
+    return "".join("1X2"[digest[order] % 3] for order in range(15))
 
 
 def _install_operational_ev_replay(monkeypatch: pytest.MonkeyPatch) -> None:

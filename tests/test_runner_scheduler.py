@@ -4,19 +4,23 @@ import json
 import os
 import plistlib
 import subprocess
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
+from sqlalchemy import select
 
 import toto_ai.runner.scheduler as scheduler
 from tests.pinned_revalidation_helpers import ready_pinned_revalidation
-from toto_ai.db.session import init_db
+from tests.test_package_audit import DRAWING_4952_PROBABILITIES
+from toto_ai.db.models import ArchivedPackage, Drawing
+from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.external_odds.timing_overrides import (
     load_timing_override_catalog,
     timing_override_catalog_sha256,
 )
+from toto_ai.package.audit import PackageSafetyConfig, evaluate_package_safety
 from toto_ai.runner.scheduler import (
     PACKAGE_CSV_HEADER,
     RUNNER_MANIFEST_SCHEMA_VERSION,
@@ -50,6 +54,9 @@ def _plan(
     *,
     timing_overrides: Path | None = None,
     minimum_gross_ev: float = 1.0,
+    package_near_fixed_share: float = 0.95,
+    package_low_probability_threshold: float = 0.20,
+    package_material_probability_threshold: float = 0.20,
 ):
     return build_scheduler_plan(
         drawing=5001,
@@ -58,6 +65,11 @@ def _plan(
         bank=4980,
         stake=30,
         minimum_gross_ev=minimum_gross_ev,
+        package_near_fixed_share=package_near_fixed_share,
+        package_low_probability_threshold=package_low_probability_threshold,
+        package_material_probability_threshold=(
+            package_material_probability_threshold
+        ),
         output_dir=tmp_path / "scheduler",
         project_root=tmp_path,
         db=tmp_path / "toto.sqlite",
@@ -92,6 +104,20 @@ def _happy_runner(calls: list[SchedulerPhaseContext]):
 
 
 def _execute(plan, runner, *, run_id: str = "test-run", clock=None):
+    if plan.drawing_id is not None:
+        engine = init_db(plan.db)
+        with get_session_factory(engine).begin() as session:
+            if session.get(Drawing, plan.drawing_id) is None:
+                session.add(
+                    Drawing(
+                        id=plan.drawing_id,
+                        number=plan.drawing,
+                        name="scheduler-test",
+                        status="active",
+                        ended_at=plan.ended_at.isoformat(),
+                    )
+                )
+        engine.dispose()
     clock = clock or VirtualSchedulerClock(plan.preflight_at)
     return execute_scheduler_plan(
         plan,
@@ -168,11 +194,15 @@ def _manifest_context(
     timing_overrides: Path | None = None,
     override_sha256: str | None = None,
     minimum_gross_ev: float = 1.0,
+    package_material_probability_threshold: float = 0.20,
 ) -> SchedulerPhaseContext:
     plan = _plan(
         tmp_path,
         timing_overrides=timing_overrides,
         minimum_gross_ev=minimum_gross_ev,
+        package_material_probability_threshold=(
+            package_material_probability_threshold
+        ),
     )
     run_dir = plan.output_dir / "runs" / "5001" / "manifest-test"
     work_dir = run_dir / "work" / phase
@@ -213,6 +243,11 @@ def _valid_runner_manifest(
     expected_payout = sum(
         float(row["gross_ev"]) * context.plan.stake for row in coupons
     )
+    safety = evaluate_package_safety(
+        tuple(str(row["coupon"]) for row in coupons),
+        ((0.45, 0.45, 0.10),) * 15,
+        config=context.plan.package_safety_config,
+    ).to_dict()
     return {
         "schema_version": RUNNER_MANIFEST_SCHEMA_VERSION,
         "run_id": "local-runner-fixture",
@@ -332,6 +367,7 @@ def _valid_runner_manifest(
             "self_dilution_ratio": 0.001,
             "model_supported": True,
             "model_warning": None,
+            "package_safety": safety,
             "package": {
                 "decision": "PLAY",
                 "decision_reason": None,
@@ -367,6 +403,72 @@ def _write_runner_manifest(
     return path
 
 
+def _unsafe_4952_no_bet_manifest(
+    context: SchedulerPhaseContext,
+) -> dict[str, object]:
+    payload = _valid_runner_manifest(context)
+    coupons = tuple(
+        (Path(__file__).parent / "fixtures" / "drawing_4952_coupons.txt")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    )
+    safety = evaluate_package_safety(
+        coupons,
+        DRAWING_4952_PROBABILITIES,
+        config=PackageSafetyConfig(),
+    )
+    assert safety.decision == "NO BET"
+    payload["decision"] = "NO BET"
+    payload["terminal_reason"] = "package safety rejected archived 4952 package"
+    ev = payload["ev"]
+    ev["package_safety"] = safety.to_dict()
+    ev["selected_cost"] = 0
+    ev["unused_requested_bank"] = context.plan.requested_bank
+    package = ev["package"]
+    package.update(
+        {
+            "decision": "NO BET",
+            "decision_reason": "package_safety:extreme_concentration",
+            "coupons": [],
+            "selected_count": 0,
+            "cost": 0,
+            "unused_bank": context.plan.requested_bank,
+            "expected_payout": 0.0,
+            "modeled_roi": None,
+            "derived_brief": [],
+        }
+    )
+    return payload
+
+
+def _passing_safety_no_bet_manifest(
+    context: SchedulerPhaseContext,
+    *,
+    terminal_reason: str,
+) -> dict[str, object]:
+    payload = _valid_runner_manifest(context)
+    payload["decision"] = "NO BET"
+    payload["terminal_reason"] = terminal_reason
+    ev = payload["ev"]
+    ev["selected_cost"] = 0
+    ev["unused_requested_bank"] = context.plan.requested_bank
+    package = ev["package"]
+    package.update(
+        {
+            "decision": "NO BET",
+            "decision_reason": terminal_reason,
+            "coupons": [],
+            "selected_count": 0,
+            "cost": 0,
+            "unused_bank": context.plan.requested_bank,
+            "expected_payout": 0.0,
+            "modeled_roi": None,
+            "derived_brief": [],
+        }
+    )
+    return payload
+
+
 def test_happy_final_package_is_the_only_bet_ready_publication(tmp_path: Path):
     plan = _plan(tmp_path)
     calls: list[SchedulerPhaseContext] = []
@@ -380,6 +482,31 @@ def test_happy_final_package_is_the_only_bet_ready_publication(tmp_path: Path):
     assert result.package_sha256 == hashlib.sha256(FINAL_PACKAGE).hexdigest()
     assert result.marker_path.name == ".bet-ready"
     assert result.marker_path.is_file()
+    archive = json.loads((result.run_dir / "package-archive.json").read_text())
+    assert archive["provenance"] == "pre_bet_runner"
+    assert archive["drawing_id"] == 12001
+    assert archive["drawing_number"] == 5001
+    assert archive["source_bytes_sha256"] == result.package_sha256
+    unsigned_archive = dict(archive)
+    archive_sha = unsigned_archive.pop("archive_manifest_sha256")
+    assert archive_sha == hashlib.sha256(
+        json.dumps(
+            unsigned_archive,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+    ).hexdigest()
+    engine = init_db(plan.db)
+    with get_session_factory(engine)() as session:
+        archived = session.scalar(select(ArchivedPackage))
+        assert archived is not None
+        assert archived.drawing_id == 12001
+        assert archived.package_sha256 == archive["canonical_package_sha256"]
+        assert archived.source_bytes_sha256 == result.package_sha256
+        assert archived.provenance == "pre_bet_runner"
+        assert archived.archive_manifest_sha256 == archive_sha
+    engine.dispose()
     assert not (result.run_dir / ".success").exists()
     assert not (result.run_dir / ".no-bet").exists()
     assert not (result.run_dir / ".failed").exists()
@@ -416,13 +543,133 @@ def test_final_exception_never_promotes_diagnostic_fallback(tmp_path: Path):
     assert result.outcome == "failed"
     assert result.package_path is None
     assert not (result.run_dir / "package.csv").exists()
+
+
+def test_archive_failure_is_terminal_failed_without_bet_ready(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    plan = _plan(tmp_path)
+    monkeypatch.setattr(
+        scheduler,
+        "import_prebet_package_manifest",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            ValueError("archive database unavailable")
+        ),
+    )
+
+    result = _execute(plan, _happy_runner([]), run_id="archive-failed")
+
+    assert result.outcome == "failed"
+    assert result.decision == "FAILED"
+    assert result.package_path is None
+    assert result.marker_path.name == ".failed"
+    assert not (result.run_dir / ".bet-ready").exists()
+    assert not (result.run_dir / "package.csv").exists()
+    assert not (result.run_dir / "package-archive.json").exists()
+
+
+def test_deadline_crossed_during_durable_archive_fails_without_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    plan = _plan(tmp_path)
+    clock = VirtualSchedulerClock(plan.preflight_at)
+    original_import = scheduler.import_prebet_package_manifest
+
+    def import_then_cross_deadline(*args, **kwargs):
+        archived = original_import(*args, **kwargs)
+        clock.sleep(1)
+        return archived
+
+    monkeypatch.setattr(
+        scheduler,
+        "import_prebet_package_manifest",
+        import_then_cross_deadline,
+    )
+
+    result = _execute(
+        plan,
+        _happy_runner([]),
+        run_id="archive-crossed-deadline",
+        clock=clock,
+    )
+
+    assert result.outcome == "failed"
+    assert result.decision == "FAILED"
+    assert "durable archive completed after T-10" in result.reason
+    assert not (result.run_dir / ".bet-ready").exists()
+    assert not (result.run_dir / "package.csv").exists()
+    assert not (result.run_dir / "package-archive.json").exists()
+    engine = init_db(plan.db)
+    with get_session_factory(engine)() as session:
+        archived = session.scalar(select(ArchivedPackage))
+        assert archived is not None
+        assert archived.drawing_id == plan.drawing_id
+    engine.dispose()
+
+
+def test_deadline_rechecked_immediately_before_bet_ready_marker(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    plan = _plan(tmp_path)
+    clock = VirtualSchedulerClock(plan.preflight_at)
+    original_validate = scheduler._validate_status_file
+    advanced = False
+
+    def validate_then_cross_deadline(*args, **kwargs):
+        nonlocal advanced
+        original_validate(*args, **kwargs)
+        status = args[2]
+        if not advanced and status.get("outcome") == "bet-ready":
+            advanced = True
+            clock.sleep(1)
+
+    monkeypatch.setattr(
+        scheduler,
+        "_validate_status_file",
+        validate_then_cross_deadline,
+    )
+
+    result = _execute(
+        plan,
+        _happy_runner([]),
+        run_id="marker-crossed-deadline",
+        clock=clock,
+    )
+
+    assert result.outcome == "failed"
+    assert result.decision == "FAILED"
+    assert "bet-ready marker deadline crossed after durable archive" in result.reason
+    assert not (result.run_dir / ".bet-ready").exists()
+    assert not (result.run_dir / "package.csv").exists()
+    assert not (result.run_dir / "package-archive.json").exists()
+    engine = init_db(plan.db)
+    with get_session_factory(engine)() as session:
+        assert session.scalar(select(ArchivedPackage)) is not None
+    engine.dispose()
+
+
+def test_legacy_plan_without_internal_drawing_id_cannot_publish(
+    tmp_path: Path,
+):
+    plan = replace(
+        _plan(tmp_path),
+        drawing_id=None,
+        actionable_safety_bound=False,
+    )
+
+    result = _execute(plan, _happy_runner([]), run_id="legacy-no-internal-id")
+
+    assert result.outcome == "failed"
+    assert result.decision == "FAILED"
+    assert result.package_path is None
     assert not (result.run_dir / ".bet-ready").exists()
     status = _status(result)
     assert status["selected_snapshot"] is None
-    assert status["phase_timestamps"]["final"]["status"] == "failed"
-    assert "final computation failed" in status["phase_timestamps"]["final"][
-        "reason"
-    ]
+    assert status["phase_timestamps"]["final"]["status"] == "complete"
+    assert "internal drawing_id" in status["reason"]
 
 
 def test_explicit_final_no_bet_never_promotes_diagnostic_fallback(
@@ -1016,6 +1263,126 @@ def test_production_manifest_parser_accepts_strict_schema_v4_play(
     ).encode()
 
 
+def test_legacy_play_manifest_without_package_safety_fails_closed(
+    tmp_path: Path,
+):
+    context = _manifest_context(tmp_path)
+    payload = _valid_runner_manifest(context)
+    del payload["ev"]["package_safety"]
+    manifest = _write_runner_manifest(context, payload)
+
+    with pytest.raises(SchedulerPhaseError, match="runner EV payload"):
+        parse_runner_manifest_phase_result(context, manifest)
+
+
+def test_manifest_cannot_play_after_package_safety_rejection(tmp_path: Path):
+    context = _manifest_context(tmp_path)
+    payload = _valid_runner_manifest(context)
+    safety = payload["ev"]["package_safety"]
+    safety["decision"] = "NO BET"
+    safety["reason_codes"] = ["extreme_concentration"]
+    safety["reasons"] = [{"code": "extreme_concentration"}]
+    safety["uploadable_coupons"] = []
+    manifest = _write_runner_manifest(context, payload)
+
+    with pytest.raises(
+        SchedulerPhaseError,
+        match="canonical recomputation|does not match scheduler plan",
+    ):
+        parse_runner_manifest_phase_result(context, manifest)
+
+
+def test_current_manifest_tampered_safety_decision_fails_recomputation(
+    tmp_path: Path,
+):
+    context = _manifest_context(tmp_path)
+    payload = _valid_runner_manifest(context)
+    safety = payload["ev"]["package_safety"]
+    safety["probabilities"] = (
+        (0.05, 0.05, 0.90),
+        *safety["probabilities"][1:],
+    )
+    manifest = _write_runner_manifest(context, payload)
+
+    with pytest.raises(
+        SchedulerPhaseError,
+        match="canonical recomputation|does not match scheduler plan",
+    ):
+        parse_runner_manifest_phase_result(context, manifest)
+
+
+def test_canonically_safe_manifest_publishes_bet_ready(tmp_path: Path):
+    plan = _plan(tmp_path)
+
+    def run(context: SchedulerPhaseContext) -> SchedulerPhaseResult:
+        if context.phase == "preflight":
+            return SchedulerPhaseResult.completed("preflight ready")
+        manifest = _write_runner_manifest(
+            context,
+            _valid_runner_manifest(context),
+        )
+        return parse_runner_manifest_phase_result(context, manifest)
+
+    result = _execute(plan, run, run_id="safe-package")
+
+    assert result.outcome == "bet-ready"
+    assert result.decision == "PLAY"
+    assert result.package_path is not None
+    assert result.marker_path.name == ".bet-ready"
+
+
+@pytest.mark.parametrize("value", [0.0, "nan", "inf", -0.1, 1.1])
+def test_manifest_uses_canonical_package_safety_threshold_validation(
+    tmp_path: Path,
+    value: object,
+):
+    context = _manifest_context(tmp_path)
+    payload = _valid_runner_manifest(context)
+    payload["ev"]["package_safety"]["config"]["near_fixed_share"] = value
+    manifest = _write_runner_manifest(context, payload)
+
+    with pytest.raises(SchedulerPhaseError, match="config is invalid"):
+        parse_runner_manifest_phase_result(context, manifest)
+
+
+def test_self_consistent_relaxed_manifest_config_cannot_override_plan(
+    tmp_path: Path,
+):
+    context = _manifest_context(tmp_path)
+    payload = _valid_runner_manifest(context)
+    relaxed = PackageSafetyConfig(material_probability_threshold=0.30)
+    safety = evaluate_package_safety(
+        ("1" * 15, "X" * 15),
+        ((0.40, 0.40, 0.20),) * 15,
+        config=relaxed,
+    )
+    assert safety.decision == "PLAY"
+    payload["ev"]["package_safety"] = safety.to_dict()
+    manifest = _write_runner_manifest(context, payload)
+
+    with pytest.raises(SchedulerPhaseError, match="does not match scheduler plan"):
+        parse_runner_manifest_phase_result(context, manifest)
+
+
+def test_custom_plan_safety_config_is_forwarded_and_accepts_matching_manifest(
+    tmp_path: Path,
+):
+    context = _manifest_context(
+        tmp_path,
+        package_material_probability_threshold=0.30,
+    )
+    payload = _valid_runner_manifest(context)
+    manifest = _write_runner_manifest(context, payload)
+    command = build_run_drawing_phase_command(context)
+
+    result = parse_runner_manifest_phase_result(context, manifest)
+
+    assert result.decision == "PLAY"
+    assert command[
+        command.index("--package-material-probability-threshold") + 1
+    ] == "0.29999999999999999"
+
+
 def test_production_manifest_parser_ignores_offline_replay_as_non_production(
     tmp_path: Path,
 ):
@@ -1162,6 +1529,7 @@ def test_production_manifest_parser_accepts_explicit_schema_v4_no_bet(
             "jackpot_source": None,
             "self_dilution_ratio": None,
             "model_supported": None,
+            "package_safety": None,
         }
     )
     package = ev["package"]
@@ -1185,6 +1553,110 @@ def test_production_manifest_parser_accepts_explicit_schema_v4_no_bet(
 
     assert result.decision == "NO BET"
     assert result.package_bytes is None
+
+
+def test_rejected_4952_safety_is_recomputed_before_coupon_free_no_bet(
+    tmp_path: Path,
+):
+    context = _manifest_context(tmp_path)
+    payload = _unsafe_4952_no_bet_manifest(context)
+    manifest = _write_runner_manifest(context, payload)
+
+    result = parse_runner_manifest_phase_result(context, manifest)
+
+    assert result.decision == "NO BET"
+    assert result.package_bytes is None
+    assert payload["ev"]["package"]["coupons"] == []
+    assert len(payload["ev"]["package_safety"]["evaluated_coupons"]) == 166
+
+
+@pytest.mark.parametrize(
+    "field",
+    ["evaluated_coupons", "package_sha256", "reasons", "config", "probabilities"],
+)
+def test_rejected_4952_safety_tampering_fails_before_no_bet_return(
+    tmp_path: Path,
+    field: str,
+):
+    context = _manifest_context(tmp_path)
+    payload = _unsafe_4952_no_bet_manifest(context)
+    safety = payload["ev"]["package_safety"]
+    if field == "evaluated_coupons":
+        safety[field] = [*safety[field][:-1], "1" * 15]
+    elif field == "package_sha256":
+        safety[field] = "0" * 64
+    elif field == "reasons":
+        safety[field] = []
+    elif field == "config":
+        safety[field]["near_fixed_share"] = 0.90
+    else:
+        safety[field] = [
+            [0.05, 0.05, 0.90],
+            *safety[field][1:],
+        ]
+    manifest = _write_runner_manifest(context, payload)
+
+    with pytest.raises(
+        SchedulerPhaseError,
+        match="canonical recomputation|does not match scheduler plan",
+    ):
+        parse_runner_manifest_phase_result(context, manifest)
+
+
+@pytest.mark.parametrize(
+    "terminal_reason",
+    [
+        "timing:multi_day",
+        "self_dilution:package_cost_exceeds_1_percent_pool",
+    ],
+)
+def test_non_safety_no_bet_accepts_recomputed_passing_safety_without_package(
+    tmp_path: Path,
+    terminal_reason: str,
+):
+    context = _manifest_context(tmp_path)
+    payload = _passing_safety_no_bet_manifest(
+        context,
+        terminal_reason=terminal_reason,
+    )
+    manifest = _write_runner_manifest(context, payload)
+
+    result = parse_runner_manifest_phase_result(context, manifest)
+
+    assert result.decision == "NO BET"
+    assert result.reason == terminal_reason
+    assert result.package_bytes is None
+    assert payload["ev"]["package"]["coupons"] == []
+    assert payload["ev"]["package_safety"]["decision"] == "PLAY"
+
+
+@pytest.mark.parametrize("field", ["package_sha256", "config", "probabilities"])
+def test_non_safety_no_bet_rejects_tampered_passing_safety(
+    tmp_path: Path,
+    field: str,
+):
+    context = _manifest_context(tmp_path)
+    payload = _passing_safety_no_bet_manifest(
+        context,
+        terminal_reason="timing:multi_day",
+    )
+    safety = payload["ev"]["package_safety"]
+    if field == "package_sha256":
+        safety[field] = "0" * 64
+    elif field == "config":
+        safety[field]["material_probability_threshold"] = 0.30
+    else:
+        safety[field] = [
+            [0.05, 0.05, 0.90],
+            *safety[field][1:],
+        ]
+    manifest = _write_runner_manifest(context, payload)
+
+    with pytest.raises(
+        SchedulerPhaseError,
+        match="canonical recomputation|does not match scheduler plan",
+    ):
+        parse_runner_manifest_phase_result(context, manifest)
 
 
 @pytest.mark.parametrize(

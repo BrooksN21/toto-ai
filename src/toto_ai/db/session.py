@@ -176,10 +176,61 @@ def _add_missing_columns(engine: Engine) -> None:
                         "ADD COLUMN updated_at VARCHAR NOT NULL DEFAULT ''"
                     )
                 )
+            connection.execute(
+                text(
+                    "UPDATE drawing_preparations SET updated_at = created_at "
+                    "WHERE updated_at = ''"
+                )
+            )
+
+        if "drawing_result_snapshots" in table_names:
+            snapshot_columns = {
+                column["name"]
+                for column in inspector.get_columns("drawing_result_snapshots")
+            }
+            if "ended_at" not in snapshot_columns:
                 connection.execute(
                     text(
-                        "UPDATE drawing_preparations SET updated_at = created_at "
-                        "WHERE updated_at = ''"
+                        "ALTER TABLE drawing_result_snapshots "
+                        "ADD COLUMN ended_at VARCHAR NOT NULL DEFAULT ''"
+                    )
+                )
+                connection.execute(
+                    text(
+                        "UPDATE drawing_result_snapshots "
+                        "SET ended_at = COALESCE(("
+                        "SELECT drawings.ended_at FROM drawings "
+                        "WHERE drawings.id = drawing_result_snapshots.drawing_id"
+                        "), '') WHERE ended_at = ''"
+                    )
+                )
+            if "hash_schema_version" not in snapshot_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE drawing_result_snapshots "
+                        "ADD COLUMN hash_schema_version INTEGER "
+                        "NOT NULL DEFAULT 1"
+                    )
+                )
+
+        if "archived_packages" in table_names:
+            archive_columns = {
+                column["name"]
+                for column in inspector.get_columns("archived_packages")
+            }
+            if "provenance" not in archive_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE archived_packages "
+                        "ADD COLUMN provenance VARCHAR NOT NULL "
+                        "DEFAULT 'legacy_import'"
+                    )
+                )
+            if "archive_manifest_sha256" not in archive_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE archived_packages "
+                        "ADD COLUMN archive_manifest_sha256 VARCHAR"
                     )
                 )
 

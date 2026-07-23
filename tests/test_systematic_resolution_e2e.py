@@ -13,13 +13,15 @@ from tests.test_external_event_matching_drawing_4951 import (
 )
 from toto_ai import cli
 from toto_ai.api.detail_cache import write_drawing_detail_cache
-from toto_ai.db.models import Drawing, DrawingEventPin
+from toto_ai.db.models import ArchivedPackage, Drawing, DrawingEventPin
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.external_odds.collection import build_external_collection
 from toto_ai.external_odds.domain import QuotaState
 from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.preparation import prepare_drawing
+from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.team_registry import load_ready_drawing_pins
+from toto_ai.runner.models import DrawingRunnerConfig, pin_drawing
 from toto_ai.runner.scheduler import (
     SchedulerPhaseResult,
     VirtualSchedulerClock,
@@ -105,16 +107,18 @@ def _target_cache_payload(*, deadline=None):
     }
 
 
-def test_prepare_drawing_cli_unresolved_is_machine_readable_and_nonzero(
+def test_morning_4953_zero_mapped_is_terminal_fail_without_package(
     tmp_path: Path,
     monkeypatch,
 ):
     monkeypatch.chdir(tmp_path)
     deadline = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(days=1)
     target_payload = _target_cache_payload(deadline=deadline)
+    target_payload["data"]["id"] = 11971
+    target_payload["data"]["number"] = 4953
     target_cache = write_drawing_detail_cache(
         target_payload,
-        drawing_id=11968,
+        drawing_id=11971,
         cache_dir=tmp_path / "raw",
         fetched_at=datetime.now(timezone.utc),
         source="test-fixture",
@@ -132,8 +136,8 @@ def test_prepare_drawing_cli_unresolved_is_machine_readable_and_nonzero(
     with get_session_factory(engine)() as session:
         session.add(
             Drawing(
-                id=11968,
-                number=4951,
+                id=11971,
+                number=4953,
                 name="baltbet-main",
                 status="active",
                 ended_at=deadline.isoformat(),
@@ -147,7 +151,7 @@ def test_prepare_drawing_cli_unresolved_is_machine_readable_and_nonzero(
         [
             "prepare-drawing",
             "--drawing-id",
-            "11968",
+            "11971",
             "--db",
             str(db),
             "--aliases",
@@ -163,10 +167,57 @@ def test_prepare_drawing_cli_unresolved_is_machine_readable_and_nonzero(
     payload = json.loads(result.output.splitlines()[-1])
     assert payload["status"] == "unresolved"
     assert payload["mapped_count"] == 0
+    assert payload["unresolved_event_orders"] == list(range(15))
     engine = init_db(db)
     with get_session_factory(engine)() as session:
         assert session.scalar(select(func.count(DrawingEventPin.id))) == 0
     engine.dispose()
+
+    plan = build_scheduler_plan(
+        drawing=4953,
+        drawing_id=11971,
+        ended_at=deadline,
+        bank=4980,
+        output_dir=tmp_path / "morning-4953",
+        project_root=tmp_path,
+        db=db,
+        aliases=aliases,
+    )
+    clock = VirtualSchedulerClock(plan.preflight_at)
+    pinned = pin_drawing(
+        parse_target_drawing(target_payload, fetched_at=datetime.now(timezone.utc))
+    )
+
+    def production_preflight(_context):
+        try:
+            cli._prepare_runner_resources(
+                config=DrawingRunnerConfig(bank=4980),
+                target=pinned,
+                preflight_at=_context.started_at,
+                db=db,
+                aliases=aliases,
+                report_dir=tmp_path / "runner-reports",
+                cache_root=tmp_path / "provider-cache",
+                provider_factory=lambda _path: object(),
+            )
+        except ValueError as error:
+            return SchedulerPhaseResult.failed(str(error))
+        raise AssertionError("zero-mapped preparation unexpectedly passed preflight")
+
+    scheduled = execute_scheduler_plan(
+        plan,
+        phase_runner=production_preflight,
+        now=clock.now,
+        sleep=clock.sleep,
+        run_id="4953-zero-mapped",
+    )
+
+    assert scheduled.outcome == "failed"
+    assert scheduled.decision == "FAILED"
+    assert scheduled.package_path is None
+    assert scheduled.marker_path.name == ".failed"
+    assert not (scheduled.run_dir / ".bet-ready").exists()
+    assert not (scheduled.run_dir / "package.csv").exists()
 
 
 def test_scheduler_prepare_final_pin_use_and_stale_fail_closed(tmp_path: Path):
@@ -233,6 +284,15 @@ def test_scheduler_prepare_final_pin_use_and_stale_fail_closed(tmp_path: Path):
     assert result.marker_path.name == ".bet-ready"
     assert result.marker_path.is_file()
     assert final_snapshots
+    with session_factory() as session:
+        stored_drawing = session.get(Drawing, target.drawing_id)
+        assert stored_drawing is not None
+        assert stored_drawing.number == target.drawing_number
+        assert datetime.fromisoformat(stored_drawing.ended_at) == target.deadline
+        archived = session.scalar(select(ArchivedPackage))
+        assert archived is not None
+        assert archived.drawing_id == target.drawing_id
+        assert archived.drawing_number == target.drawing_number
 
     stale_plan = _plan(tmp_path, suffix="stale")
     stale_target = replace(

@@ -1,8 +1,59 @@
 # Current State
 
+## 2026-07-23: Finished-drawing lifecycle recovery
+
+Explicit `sync-finished-results`, `settle-drawing`, `post-draw-run`, and
+`post-draw-plan` commands implement the non-betting post-draw lifecycle.
+Result, package, and settlement records are append-only and hash-bound;
+identical reruns are idempotent and corrected results append. Drawing 4952
+settles 166 coupons/4980 RUB at best 5. Because API payments/rules evidence is
+null, category entitlement, return, and ROI remain null with
+`unknown_until_payouts`; no category threshold is inferred.
+
 This file is the project-local state note for TotoAI only. Do not mix it with
 local skills, personal knowledge bases, team knowledge bases, or unrelated
 memory stores.
+
+## Emergency Pre-Bet Safety Slice Complete (2026-07-23)
+
+Production-playable EV packages now pass an explicit fail-closed safety gate
+before publication. The gate reuses package-audit exposure semantics and
+serialized thresholds for near-fixed concentration, fixed low-probability
+outcomes, and zero exposure to materially modeled outcomes. Valid unsafe
+packages become coupon-free `NO BET`; malformed safety evidence is an
+operational failure and cannot be accepted as `PLAY`. The archived drawing
+4952 package/probability fixture is rejected with explicit concentration and
+material-outcome reason codes.
+
+Morning preparation is usable only with a ready 15/15 mapping, no unresolved
+orders, playable eligibility, and matching fresh probability-input evidence.
+The drawing-4953 zero-mapped/all-unresolved regression terminates as `FAILED`
+through the production resource preflight and scheduler, with no package or
+`.bet-ready`. Runner schema-v4 ingestion does not trust declared
+`package_safety`: it canonically validates thresholds and recomputes the gate
+from serialized original evaluated coupons and probabilities before any PLAY
+or NO BET return. Safety evidence separately hash-binds the original package
+SHA-256 and the approved uploadable coupons; rejected packages retain their
+original audit evidence while publication remains coupon-free. Tampered
+current manifests and legacy manifests without complete evidence fail closed.
+For terminal `NO BET`, canonically recomputed safety may itself reject the
+package or may pass when another audited gate (for example timing or
+self-dilution) is the actual rejection. The terminal reason preserves that
+machine-readable gate, and publication remains coupon-free in both cases.
+Package-safety thresholds are now trusted scheduler-plan inputs, serialized in
+the plan and forwarded explicitly to `run-drawing`. Manifest ingestion requires
+its canonical safety config to equal the approved plan config and recomputes
+with the plan config, so a self-consistent manifest with relaxed thresholds
+cannot authorize `PLAY`.
+Actionable schema-v3 scheduler plans require the exact internal drawing ID.
+Systematic preparation/preflight persists or verifies that ID together with
+the visible number and authoritative `ended_at`. Before `.bet-ready`, the
+scheduler imports and verifies the package in the durable archive, then
+rechecks the authoritative clock both immediately after that import and
+immediately before marker creation. Crossing T-10 removes publication
+artifacts and fails closed while retaining the database archive for audit.
+Cover Engine mathematics are unchanged. Finished result synchronization,
+settlement, payout/ROI persistence, and post-draw retries remain pending.
 
 ## Unified Package Audit/Metadata Foundation Complete (2026-07-23)
 

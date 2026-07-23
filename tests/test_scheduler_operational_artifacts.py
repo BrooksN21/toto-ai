@@ -144,10 +144,47 @@ def test_legacy_schema_v1_plan_loads_with_inferred_absolute_project_root(
     assert loaded.drawing == 5001
 
 
+def test_genuine_schema_v2_plan_hash_loads_without_new_safety_fields(
+    tmp_path: Path,
+):
+    env_file = _env_file(tmp_path / ".env")
+    artifacts = prepare_scheduler_artifacts(_plan(tmp_path, env_file))
+    payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
+    payload["schema_version"] = 2
+    for key in (
+        "package_near_fixed_share",
+        "package_low_probability_threshold",
+        "package_material_probability_threshold",
+    ):
+        payload["config"].pop(key)
+    semantic = {
+        key: payload[key]
+        for key in ("schema_version", "target", "config", "paths")
+    }
+    payload["plan_id"] = hashlib.sha256(
+        json.dumps(
+            semantic,
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()[:16]
+    artifacts.plan_path.write_text(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+
+    loaded = load_scheduler_plan(artifacts.plan_path)
+
+    assert loaded.drawing_id == 12001
+    assert loaded.actionable_safety_bound is False
+
+
 def test_schema_v2_rejects_filesystem_root_as_project_root(tmp_path: Path):
     with pytest.raises(ValueError, match="must not be filesystem root"):
         build_scheduler_plan(
             drawing=5001,
+            drawing_id=12001,
             ended_at="2030-01-02T12:00:00Z",
             bank=4980,
             output_dir=tmp_path / "scheduler",
@@ -166,6 +203,7 @@ def test_schema_v2_rejects_symlinked_project_root(tmp_path: Path):
     with pytest.raises(ValueError, match="project_root must not contain symlinks"):
         build_scheduler_plan(
             drawing=5001,
+            drawing_id=12001,
             ended_at="2030-01-02T12:00:00Z",
             bank=4980,
             output_dir=linked_root / "reports" / "scheduler",
@@ -187,6 +225,7 @@ def test_schema_v2_rejects_project_path_symlink_and_containment_escape(
     with pytest.raises(ValueError, match="database must not contain symlinks"):
         build_scheduler_plan(
             drawing=5001,
+            drawing_id=12001,
             ended_at="2030-01-02T12:00:00Z",
             bank=4980,
             output_dir=project_root / "reports" / "scheduler",
@@ -198,6 +237,7 @@ def test_schema_v2_rejects_project_path_symlink_and_containment_escape(
     with pytest.raises(ValueError, match="output_dir must be contained"):
         build_scheduler_plan(
             drawing=5001,
+            drawing_id=12001,
             ended_at="2030-01-02T12:00:00Z",
             bank=4980,
             output_dir=outside / "scheduler",

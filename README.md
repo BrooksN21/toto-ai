@@ -303,6 +303,54 @@ predicate with its actual value, threshold, and observed result. The Markdown
 report repeats the collection run, consensus configuration, gate decision, and
 predicate outcomes for operator review.
 
+## Finished-Drawing Lifecycle
+
+Finished results are synchronized only by an explicit visible number or
+internal ID. These commands never select an open or next drawing:
+
+```bash
+python -m toto_ai.cli sync-finished-results --drawing-number 4952
+python -m toto_ai.cli settle-drawing --drawing-number 4952 \
+  --package-file reports/rehearsal/evening-4952/emergency-final/baltbet_package_4952_4980.txt \
+  --stake 30
+python -m toto_ai.cli post-draw-run --drawing-id 11970 \
+  --package-file /absolute/package.txt --state-file /absolute/post-draw.json
+```
+
+`sync-finished-results` requires a finished, identity-matching drawing-info
+payload with exactly 15 ordered results and scores. Operational event columns
+are updated for convenience, while every distinct result/payment observation
+is appended as an immutable hash-bound snapshot. Identical observations are
+idempotent; official corrections append a new snapshot.
+
+Package archives retain the canonical coupon hash, target identity, stake,
+coupon count, source path, original bytes/hash, and provenance. Import legacy
+evidence explicitly with `archive-package`; new actionable scheduler packages
+publish a hash-bound `package-archive.json` before `.bet-ready`, which can be
+imported with `archive-package --pre-bet-manifest`. Settlement never creates
+its first archive after the draw.
+
+Settlements bind the package archive to one result-snapshot hash and are
+append-only/idempotent. Hit distribution and best coupon are known from 15/15
+results, but category entitlement, return, and ROI remain unknown without
+explicit supported official category/payout evidence. For drawing 4952,
+payments are null, so return/ROI are null with `unknown_until_payouts`; they
+are not inferred from the lack of a 10+ hit, pool, or jackpot totals.
+
+Generate optional local scheduler candidates without installing anything:
+
+```bash
+python -m toto_ai.cli post-draw-plan --drawing-id 11970 \
+  --ended-at 2026-07-22T16:00:00Z --package-file /absolute/package.txt \
+  --state-file /absolute/post-draw.json --output-dir /absolute/scheduler
+```
+
+The generated plan preserves exact target identity and an absolute first-run
+instant strictly after `ended_at`; its wrapper can only invoke that target.
+Polling is bounded with exponential delay and writes terminal machine-readable
+`complete`, `pending`, or `failed` state. It never installs automation or
+places a bet.
+
 ## Project Memory
 
 TotoAI uses a repository-local memory bank for persistent project context.

@@ -232,6 +232,10 @@ class DrawingRunnerConfig:
     stake: int = 30
     mode: EVMode = "playable"
     minimum_gross_ev: float = 1.0
+    package_near_fixed_share: float = 0.95
+    package_low_probability_threshold: float = 0.20
+    package_material_probability_threshold: float = 0.20
+    package_safety_enabled: bool = True
     final_lead_minutes: int = 20
     safety_stop_minutes: int = 5
 
@@ -248,6 +252,17 @@ class DrawingRunnerConfig:
         if not isfinite(minimum_gross_ev):
             raise ValueError("minimum_gross_ev must be finite")
         object.__setattr__(self, "minimum_gross_ev", minimum_gross_ev)
+        EVConfig(
+            bank=self.bank,
+            stake=self.stake,
+            mode=self.mode,
+            package_safety_enabled=self.package_safety_enabled,
+            package_near_fixed_share=self.package_near_fixed_share,
+            package_low_probability_threshold=self.package_low_probability_threshold,
+            package_material_probability_threshold=(
+                self.package_material_probability_threshold
+            ),
+        )
         _require_positive_int("final_lead_minutes", self.final_lead_minutes)
         _require_positive_int("safety_stop_minutes", self.safety_stop_minutes)
         if self.final_lead_minutes <= self.safety_stop_minutes:
@@ -260,6 +275,12 @@ class DrawingRunnerConfig:
             stake=self.stake,
             mode=self.mode,
             min_gross_ev=self.minimum_gross_ev,
+            package_safety_enabled=self.package_safety_enabled,
+            package_near_fixed_share=self.package_near_fixed_share,
+            package_low_probability_threshold=self.package_low_probability_threshold,
+            package_material_probability_threshold=(
+                self.package_material_probability_threshold
+            ),
         )
 
 

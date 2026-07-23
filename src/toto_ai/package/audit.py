@@ -12,7 +12,7 @@ from enum import Enum
 from itertools import chain, product
 from numbers import Real
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 AUDIT_SCHEMA_VERSION = 1
 EVENT_COUNT = 15
@@ -26,6 +26,128 @@ class PackageStrategy(str, Enum):
     COVER = "cover"
     EV = "ev"
     HYBRID = "hybrid"
+
+
+@dataclass(frozen=True)
+class PackageSafetyConfig:
+    """Fail-closed thresholds applied before a playable package is published."""
+
+    near_fixed_share: float = DEFAULT_NEAR_FIXED_SHARE
+    low_probability_threshold: float = DEFAULT_LOW_PROBABILITY_THRESHOLD
+    material_probability_threshold: float = DEFAULT_LOW_PROBABILITY_THRESHOLD
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "near_fixed_share",
+            _probability_threshold(
+                self.near_fixed_share,
+                "near_fixed_share",
+                lower_inclusive=False,
+            ),
+        )
+        object.__setattr__(
+            self,
+            "low_probability_threshold",
+            _probability_threshold(
+                self.low_probability_threshold,
+                "low_probability_threshold",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "material_probability_threshold",
+            _probability_threshold(
+                self.material_probability_threshold,
+                "material_probability_threshold",
+                lower_inclusive=False,
+            ),
+        )
+
+
+@dataclass(frozen=True)
+class PackageSafetyResult:
+    decision: Literal["PLAY", "NO BET"]
+    reason_codes: tuple[str, ...]
+    reasons: tuple[dict[str, Any], ...]
+    config: PackageSafetyConfig
+    evaluated_coupons: tuple[str, ...]
+    package_sha256: str
+    probability_input_sha256: str
+    probabilities: tuple[tuple[float, float, float], ...]
+    uploadable_coupons: tuple[str, ...]
+    safety_sha256: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def evaluate_package_safety(
+    coupons: Sequence[str],
+    probabilities: Sequence[Sequence[float]],
+    *,
+    config: PackageSafetyConfig | None = None,
+) -> PackageSafetyResult:
+    """Reject unsafe concentration without changing Cover Engine mathematics."""
+    config = PackageSafetyConfig() if config is None else config
+    if not isinstance(config, PackageSafetyConfig):
+        raise ValueError("config must be a PackageSafetyConfig")
+    canonical = validate_coupons(coupons)
+    probability_rows = _validate_probabilities(probabilities)
+    if probability_rows is None:  # pragma: no cover - required by the signature
+        raise ValueError("probabilities are required for package safety")
+    exposures = _event_exposures(canonical)
+    reasons = _warnings(
+        exposures,
+        probability_rows,
+        config.near_fixed_share,
+        config.low_probability_threshold,
+    )
+    for exposure, row in zip(exposures, probability_rows, strict=True):
+        for outcome, probability in zip(OUTCOMES, row, strict=True):
+            if (
+                probability >= config.material_probability_threshold
+                and exposure.counts[outcome] == 0
+            ):
+                reasons.append(
+                    {
+                        "code": "zero_exposure_material_outcome",
+                        "event": exposure.event,
+                        "outcome": outcome,
+                        "probability": probability,
+                        "threshold": config.material_probability_threshold,
+                    }
+                )
+    reason_codes = tuple(sorted({str(reason["code"]) for reason in reasons}))
+    decision = "NO BET" if reasons else "PLAY"
+    probability_hash = _sha256([list(row) for row in probability_rows])
+    package_hash = hashlib.sha256(",".join(canonical).encode("utf-8")).hexdigest()
+    uploadable = () if reasons else canonical
+    safety_hash = _sha256(
+        {
+            "decision": decision,
+            "reason_codes": reason_codes,
+            "reasons": reasons,
+            "config": asdict(config),
+            "evaluated_coupons": canonical,
+            "package_sha256": package_hash,
+            "probability_input_sha256": probability_hash,
+            "probabilities": probability_rows,
+            "uploadable_coupons": uploadable,
+        }
+    )
+    return PackageSafetyResult(
+        decision=decision,
+        reason_codes=reason_codes,
+        reasons=tuple(reasons),
+        config=config,
+        evaluated_coupons=canonical,
+        package_sha256=package_hash,
+        probability_input_sha256=probability_hash,
+        probabilities=probability_rows,
+        uploadable_coupons=uploadable,
+        safety_sha256=safety_hash,
+    )
 
 
 @dataclass(frozen=True)
@@ -526,6 +648,22 @@ def _warnings(
                     }
                 )
     return warnings
+
+
+def _probability_threshold(
+    value: object,
+    name: str,
+    *,
+    lower_inclusive: bool = True,
+) -> float:
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise ValueError(f"{name} must be a real number")
+    normalized = float(value)
+    lower_ok = normalized >= 0 if lower_inclusive else normalized > 0
+    if not math.isfinite(normalized) or not lower_ok or normalized > 1:
+        interval = "[0, 1]" if lower_inclusive else "(0, 1]"
+        raise ValueError(f"{name} must be in {interval}")
+    return normalized
 
 
 def _sha256(payload: object) -> str:

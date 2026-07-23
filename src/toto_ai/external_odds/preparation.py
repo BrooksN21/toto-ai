@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
@@ -8,6 +9,7 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from toto_ai.db.models import Drawing
 from toto_ai.external_odds.api_sports import _parse_schedule_payload
 from toto_ai.external_odds.domain import ProviderEvent, TargetDrawing
 from toto_ai.external_odds.eligibility import (
@@ -167,6 +169,7 @@ def prepare_drawing(
     schedule_diagnostics: tuple[dict[str, str | None], ...] = (),
 ) -> DrawingPreparationResult:
     """Resolve a drawing and atomically publish pins only when all 15 are ready."""
+    persist_drawing_identity(session_factory, target)
     fingerprint = target_fingerprint(
         target.drawing_id, target.drawing_number, target.deadline, target.events
     )
@@ -184,6 +187,7 @@ def prepare_drawing(
             "stale drawing pins: fingerprint changed",
             "ready drawing preparation is missing; run prepare-drawing",
             "drawing preparation is not ready; run prepare-drawing",
+            "preparation_fail:not_ready_15_of_15",
         }:
             raise
         existing = ()
@@ -339,7 +343,7 @@ def prepare_drawing(
         status=status,
         unresolved_event_orders=unresolved,
         eligibility_status=eligibility.status,
-        readiness_summary=_readiness_summary(draft),
+        readiness_summary=_readiness_summary(draft, target),
         pin_specs=tuple(pin_specs) if status == "ready" else (),
     )
     return DrawingPreparationResult(
@@ -348,6 +352,51 @@ def prepare_drawing(
             "pins": tuple(sorted(pins, key=lambda pin: pin.event_order)),
         }
     )
+
+
+def persist_drawing_identity(
+    session_factory: Any,
+    target: TargetDrawing,
+    *,
+    require_visible_number: bool = False,
+) -> None:
+    """Persist or verify the authoritative target identity used for preparation."""
+
+    if not isinstance(target, TargetDrawing):
+        raise ValueError("target must be a TargetDrawing")
+    if require_visible_number and target.drawing_number is None:
+        raise ValueError(
+            "systematic preparation requires a visible drawing number"
+        )
+    ended_at = target.deadline.astimezone(timezone.utc).isoformat()
+    with session_factory.begin() as session:
+        drawing = session.get(Drawing, target.drawing_id)
+        if drawing is None:
+            session.add(
+                Drawing(
+                    id=target.drawing_id,
+                    number=target.drawing_number,
+                    ended_at=ended_at,
+                )
+            )
+            return
+        if (
+            drawing.number is not None
+            and target.drawing_number is not None
+            and drawing.number != target.drawing_number
+        ):
+            raise ValueError(
+                "stored drawing number does not match preparation target"
+            )
+        if drawing.number is None:
+            drawing.number = target.drawing_number
+        if drawing.ended_at is not None:
+            if _parse_datetime(drawing.ended_at) != target.deadline:
+                raise ValueError(
+                    "stored drawing ended_at does not match preparation target"
+                )
+        else:
+            drawing.ended_at = ended_at
 
 
 def _resolve_preparation_candidates(
@@ -543,7 +592,13 @@ def _result_from_existing(
     )
 
 
-def _readiness_summary(result: DrawingPreparationResult) -> str:
+def _readiness_summary(
+    result: DrawingPreparationResult,
+    target: TargetDrawing,
+) -> str:
+    probability_hash = preparation_probability_sha256(
+        tuple(event.bk_probabilities for event in target.events)
+    )
     return json.dumps(
         {
             "status": result.status,
@@ -552,11 +607,28 @@ def _readiness_summary(result: DrawingPreparationResult) -> str:
             "eligibility": asdict(result.eligibility),
             "events": [asdict(event) for event in result.events],
             "schedule_diagnostics": result.schedule_diagnostics,
+            "target_fetched_at": target.fetched_at.isoformat(),
+            "probability_input_sha256": probability_hash,
         },
         sort_keys=True,
         default=str,
         separators=(",", ":"),
     )
+
+
+def preparation_probability_sha256(
+    probabilities: tuple[tuple[float, float, float], ...],
+) -> str:
+    if len(probabilities) != 15:
+        raise ValueError("preparation probabilities require exactly 15 rows")
+    payload = json.dumps(
+        probabilities,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 
 
 def _target_oriented_candidate(

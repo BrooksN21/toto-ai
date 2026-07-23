@@ -228,6 +228,14 @@ profitability or a proven winning strategy.
   and chronological backtest tests, including bank utilization and `NO BET`.
 
 ## Phase 7: Production
+- Emergency pre-bet safety slice is complete: production-playable packages
+  fail closed on configured concentration/fixed-low-probability/material-
+  outcome exposure checks, 4952 is rejected before upload, and morning
+  preparation requires fresh playable 15/15 evidence. Actionable schema-v3
+  plans now bind a persisted exact drawing identity and require durable package
+  archival plus post-archive/pre-marker T-10 checks before `.bet-ready`.
+  Result synchronization, settlement, payout/ROI persistence, and a post-draw
+  retry scheduler remain pending.
 - Drawing-4952 launchd incident remediation is implemented: scheduler plan v2
   binds an absolute project root, wrapper/plist/subprocess working directories
   agree, preflight reuses absolute warmed preparation caches, and package
@@ -290,8 +298,8 @@ profitability or a proven winning strategy.
   selection, server-authoritative Retry-After state, mandatory sidecar/torn
   cache rejection, exact 15-event validation, safe local roots, and a
   `--sync-only` diagnostic mode. Full historical `collect` remains the
-  recovery/backfill path. A post-run finished-result refresh remains future
-  operational work.
+  recovery/backfill path. Explicit finished-result refresh, package archive,
+  immutable settlement, and bounded non-betting retry are implemented.
 - Drawing 4950 early-run hardening is complete: immutable collection identity
   now includes request/cache/quota provenance, preventing retry passes with the
   same provider content from conflicting in storage. The early 7/15 coverage

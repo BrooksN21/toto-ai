@@ -215,6 +215,7 @@ def _render_markdown(result: EVPackageRun) -> str:
     config = result.config
     ev_input = result.ev_input
     package = result.package
+    safety = result.package_safety
     timing = result.timing_eligibility
     bank_ratio = result.requested_bank / ev_input.pool_sum
     effective_budget_ratio = result.effective_budget / ev_input.pool_sum
@@ -240,6 +241,37 @@ def _render_markdown(result: EVPackageRun) -> str:
         f"- expected payout: {package.expected_payout:.12f}",
         f"- modeled ROI: {modeled_roi}",
         "- modeled ROI is not observed ROI",
+        "",
+        "## Package Safety",
+        "",
+        f"- enabled: {'yes' if config.package_safety_enabled else 'no'}",
+        (
+            f"- decision: {safety.decision}"
+            if safety is not None
+            else "- decision: not evaluated"
+        ),
+        (
+            "- reason codes: "
+            + (", ".join(safety.reason_codes) if safety.reason_codes else "none")
+            if safety is not None
+            else "- reason codes: n/a"
+        ),
+        (
+            f"- near-fixed share: {config.package_near_fixed_share:.12f}"
+        ),
+        (
+            "- low-probability threshold: "
+            f"{config.package_low_probability_threshold:.12f}"
+        ),
+        (
+            "- material-probability threshold: "
+            f"{config.package_material_probability_threshold:.12f}"
+        ),
+        (
+            f"- probability input SHA-256: {safety.probability_input_sha256}"
+            if safety is not None
+            else "- probability input SHA-256: n/a"
+        ),
         "",
         "## Timing Eligibility",
         "",

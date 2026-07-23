@@ -4,6 +4,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     String,
     Text,
     UniqueConstraint,
@@ -43,6 +44,87 @@ class Event(Base):
     sport: Mapped[str | None] = mapped_column(String)
     result: Mapped[str | None] = mapped_column(String)
     score: Mapped[str | None] = mapped_column(String)
+
+
+class DrawingResultSnapshot(Base):
+    """Immutable authoritative drawing-result observation."""
+
+    __tablename__ = "drawing_result_snapshots"
+    __table_args__ = (
+        UniqueConstraint(
+            "drawing_id",
+            "snapshot_sha256",
+            name="uq_drawing_result_snapshot_content",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    drawing_id: Mapped[int] = mapped_column(Integer, index=True)
+    drawing_number: Mapped[int] = mapped_column(Integer, index=True)
+    hash_schema_version: Mapped[int] = mapped_column(Integer, default=2)
+    ended_at: Mapped[str] = mapped_column(String)
+    retrieved_at: Mapped[str] = mapped_column(String)
+    source_endpoint: Mapped[str] = mapped_column(String)
+    payload_sha256: Mapped[str] = mapped_column(String)
+    result_sha256: Mapped[str] = mapped_column(String)
+    snapshot_sha256: Mapped[str] = mapped_column(String, index=True)
+    complete: Mapped[bool] = mapped_column(Boolean)
+    event_count: Mapped[int] = mapped_column(Integer)
+    actual: Mapped[str] = mapped_column(String)
+    events_json: Mapped[str] = mapped_column(Text)
+    payments_json: Mapped[str | None] = mapped_column(Text)
+    pool_sum: Mapped[float | None] = mapped_column(Float)
+    jackpot: Mapped[float | None] = mapped_column(Float)
+    payload_json: Mapped[str] = mapped_column(Text)
+
+
+class ArchivedPackage(Base):
+    """Canonical package plus original source bytes for exact replay."""
+
+    __tablename__ = "archived_packages"
+
+    archive_sha256: Mapped[str] = mapped_column(String, primary_key=True)
+    package_sha256: Mapped[str] = mapped_column(String, index=True)
+    drawing_id: Mapped[int] = mapped_column(Integer, index=True)
+    drawing_number: Mapped[int] = mapped_column(Integer, index=True)
+    stake: Mapped[int] = mapped_column(Integer)
+    coupon_count: Mapped[int] = mapped_column(Integer)
+    cost: Mapped[int] = mapped_column(Integer)
+    source_path: Mapped[str] = mapped_column(Text)
+    source_bytes_sha256: Mapped[str] = mapped_column(String)
+    source_bytes: Mapped[bytes] = mapped_column(LargeBinary)
+    coupons_json: Mapped[str] = mapped_column(Text)
+    archived_at: Mapped[str] = mapped_column(String)
+    provenance: Mapped[str] = mapped_column(String)
+    archive_manifest_sha256: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+
+
+class PackageSettlement(Base):
+    """Immutable settlement bound to one result and one archived package."""
+
+    __tablename__ = "package_settlements"
+
+    settlement_sha256: Mapped[str] = mapped_column(String, primary_key=True)
+    drawing_id: Mapped[int] = mapped_column(Integer, index=True)
+    drawing_number: Mapped[int] = mapped_column(Integer, index=True)
+    result_snapshot_sha256: Mapped[str] = mapped_column(String, index=True)
+    archive_sha256: Mapped[str] = mapped_column(String, index=True)
+    package_sha256: Mapped[str] = mapped_column(String, index=True)
+    settled_at: Mapped[str] = mapped_column(String)
+    actual: Mapped[str] = mapped_column(String)
+    hit_distribution_json: Mapped[str] = mapped_column(Text)
+    best_hits: Mapped[int] = mapped_column(Integer)
+    best_coupon_ranks_json: Mapped[str] = mapped_column(Text)
+    category_counts_json: Mapped[str | None] = mapped_column(Text)
+    cost: Mapped[int] = mapped_column(Integer)
+    fixed_miss_events_json: Mapped[str] = mapped_column(Text)
+    zero_exposure_miss_events_json: Mapped[str] = mapped_column(Text)
+    known_return: Mapped[float | None] = mapped_column(Float)
+    roi: Mapped[float | None] = mapped_column(Float)
+    return_status: Mapped[str] = mapped_column(String)
+    settlement_json: Mapped[str] = mapped_column(Text)
 
 
 class Quote(Base):

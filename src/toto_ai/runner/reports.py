@@ -565,6 +565,7 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
             "self_dilution_ratio": None,
             "model_supported": None,
             "model_warning": None,
+            "package_safety": None,
             "package": {
                 "decision": "NO BET",
                 "decision_reason": result.terminal_reason,
@@ -602,6 +603,11 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
         "self_dilution_ratio": ev_run.self_dilution_ratio,
         "model_supported": ev_run.model_supported,
         "model_warning": ev_run.model_warning,
+        "package_safety": (
+            None
+            if ev_run.package_safety is None
+            else ev_run.package_safety.to_dict()
+        ),
         "package": {
             "decision": package.decision,
             "decision_reason": decision_reason,

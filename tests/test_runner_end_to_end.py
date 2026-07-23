@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import socket
 import time
@@ -33,7 +34,13 @@ from toto_ai.db.session import (
     init_db,
     open_readonly_db,
 )
-from toto_ai.ev.models import EVComponents, EVInput, EVSurface
+from toto_ai.ev.models import (
+    EVComponents,
+    EVInput,
+    EVPackage,
+    EVSurface,
+    RankedCoupon,
+)
 from toto_ai.external_odds.api_sports import APISportsError
 from toto_ai.external_odds.audit import audit_external_coverage
 from toto_ai.external_odds.domain import ProviderEvent, ProviderMarket, QuotaState
@@ -262,7 +269,7 @@ def _forbid_unconfigured_network(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.fixture(autouse=True)
 def _fast_ev_and_no_real_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
     _CAPTURED_EV_INPUTS.clear()
-    values = np.zeros(3**6, dtype=np.float64)
+    values = np.zeros(1, dtype=np.float64)
 
     def fixed_components(ev_input, progress_callback=None):
         _CAPTURED_EV_INPUTS.append(ev_input)
@@ -271,7 +278,7 @@ def _fast_ev_and_no_real_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
         return EVComponents(
             possible_winnings_ev_per_ruble=values,
             jackpot_ev_per_ruble=values,
-            event_count=6,
+            event_count=15,
             probability_mass=1.0,
             crowd_mass=1.0,
             minimum_denominator=1.0,
@@ -279,8 +286,8 @@ def _fast_ev_and_no_real_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
 
     def fixed_surface(_components, _possible_winnings, _jackpot):
         return EVSurface(
-            gross_ev=np.linspace(1.1, 1.5, num=3**6, dtype=np.float64),
-            event_count=6,
+            gross_ev=np.array([1.2], dtype=np.float64),
+            event_count=15,
             probability_mass=1.0,
             crowd_mass=1.0,
             minimum_denominator=1.0,
@@ -288,6 +295,59 @@ def _fast_ev_and_no_real_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(drawing_module, "compute_ev_components", fixed_components)
     monkeypatch.setattr(drawing_module, "materialize_ev_surface", fixed_surface)
+
+    def safety_valid_coupon(index: int) -> str:
+        digest = hashlib.sha256(f"runner-e2e-{index}".encode()).digest()
+        return "".join("1X2"[digest[order] % 3] for order in range(15))
+
+    def fixture_coupons(config):
+        return tuple(
+            RankedCoupon(
+                rank=index + 1,
+                coupon=safety_valid_coupon(index),
+                gross_ev=1.2,
+                net_ev=0.2,
+            )
+            for index in range(config.max_coupons)
+        )
+
+    def fixed_package(surface, config):
+        if not np.any(surface.gross_ev >= config.min_gross_ev):
+            return EVPackage(
+                decision="NO BET",
+                coupons=(),
+                cost=0,
+                unused_bank=config.bank,
+                expected_payout=0.0,
+                modeled_roi=None,
+                derived_brief=(),
+                decision_reason="no coupon meets the gross EV threshold",
+            )
+        coupons = fixture_coupons(config)
+        cost = len(coupons) * config.stake
+        return EVPackage(
+            decision="PLAY",
+            coupons=coupons,
+            cost=cost,
+            unused_bank=config.bank - cost,
+            expected_payout=1.2 * cost,
+            modeled_roi=0.2,
+            derived_brief=("1X2",) * 15,
+        )
+
+    monkeypatch.setattr(
+        drawing_module,
+        "select_ev_package",
+        fixed_package,
+    )
+    monkeypatch.setattr(
+        drawing_module,
+        "select_ev_package_with_top_coupons",
+        lambda surface, config, diagnostic_limit=20: (
+            fixed_package(surface, config),
+            fixture_coupons(config)[:diagnostic_limit],
+        ),
+    )
     monkeypatch.setattr(
         drawing_module,
         "_utc_now",
@@ -1154,6 +1214,7 @@ def _assert_suppressed_package_summary(
         "self_dilution_ratio": None,
         "model_supported": None,
         "model_warning": None,
+        "package_safety": None,
         "package": {
             "decision": "NO BET",
             "decision_reason": payload["terminal_reason"],

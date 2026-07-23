@@ -1,4 +1,5 @@
 import copy
+import sqlite3
 from datetime import datetime, timezone
 
 import requests
@@ -133,18 +134,57 @@ def test_init_db_creates_sqlite_database(tmp_path):
 
     assert db_path.exists()
     assert set(inspect(engine).get_table_names()) == {
+        "archived_packages",
         "drawing_event_pins",
         "drawing_preparations",
+        "drawing_result_snapshots",
         "drawings",
         "events",
         "external_bookmaker_quotes",
         "external_collection_runs",
         "external_event_dispositions",
+        "package_settlements",
         "quotes",
         "team_aliases",
         "team_entities",
         "team_registry_reviews",
     }
+    engine.dispose()
+
+
+def test_init_db_backfills_legacy_preparation_independent_of_archive_migration(
+    tmp_path,
+):
+    db_path = tmp_path / "legacy.sqlite"
+    with sqlite3.connect(db_path) as connection:
+        connection.executescript(
+            """
+            CREATE TABLE drawing_preparations (
+                drawing_id INTEGER PRIMARY KEY,
+                created_at VARCHAR NOT NULL
+            );
+            INSERT INTO drawing_preparations (drawing_id, created_at)
+            VALUES (11970, '2026-07-22T10:00:00+00:00');
+            CREATE TABLE archived_packages (
+                archive_sha256 VARCHAR PRIMARY KEY,
+                provenance VARCHAR NOT NULL,
+                archive_manifest_sha256 VARCHAR
+            );
+            """
+        )
+
+    engine = init_db(db_path)
+    columns = {
+        column["name"]
+        for column in inspect(engine).get_columns("drawing_preparations")
+    }
+    with sqlite3.connect(db_path) as connection:
+        updated_at = connection.execute(
+            "SELECT updated_at FROM drawing_preparations WHERE drawing_id = 11970"
+        ).fetchone()[0]
+
+    assert "updated_at" in columns
+    assert updated_at == "2026-07-22T10:00:00+00:00"
     engine.dispose()
 
 

@@ -13,9 +13,12 @@ import toto_ai.cli as cli
 import toto_ai.runner.reports as runner_reports
 import toto_ai.runner.scheduler as scheduler_module
 from tests.pinned_revalidation_helpers import ready_pinned_revalidation
+from toto_ai.db.models import Drawing
+from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.models import PlayTimingEligibility
 from toto_ai.external_odds.eligibility import DrawingEligibility
 from toto_ai.external_odds.targets import parse_target_drawing
+from toto_ai.package.audit import evaluate_package_safety
 from toto_ai.runner import (
     CommandSchedulerPhaseRunner,
     DrawingRunnerConfig,
@@ -124,6 +127,9 @@ def _invoke_command_direct() -> None:
         stake=30,
         mode="playable",
         minimum_gross_ev=1.0,
+        package_near_fixed_share=0.95,
+        package_low_probability_threshold=0.20,
+        package_material_probability_threshold=0.20,
         final_lead_minutes=20,
         safety_stop_minutes=5,
         db="custom.db",
@@ -203,6 +209,14 @@ def _wire_runner(monkeypatch, *, result: _RunnerResult):
 
     monkeypatch.setattr(cli, "init_db", init_database)
     monkeypatch.setattr(cli, "get_session_factory", lambda engine: "session-factory")
+    monkeypatch.setattr(
+        cli,
+        "persist_drawing_identity",
+        lambda session_factory, target, **kwargs: captured.setdefault(
+            "persisted_drawing_identity",
+            (session_factory, target, kwargs),
+        ),
+    )
     monkeypatch.setattr(cli, "open_readonly_db", open_readonly_database)
     monkeypatch.setattr(cli, "load_aliases", lambda aliases: {"aliases": aliases})
     monkeypatch.setattr(
@@ -548,6 +562,9 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "--stake",
         "--mode",
         "--min-gross-ev",
+        "--package-near-fixed-share",
+        "--package-low-probability-threshold",
+        "--package-material-probability-threshold",
         "--final-lead-minutes",
         "--safety-stop-minutes",
         "--db",
@@ -593,6 +610,9 @@ def test_run_drawing_exposes_exact_approved_option_surface():
             "stake": 30,
             "mode": "playable",
             "minimum_gross_ev": 1.0,
+            "package_near_fixed_share": 0.95,
+            "package_low_probability_threshold": 0.20,
+            "package_material_probability_threshold": 0.20,
             "final_lead_minutes": 20,
             "safety_stop_minutes": 5,
             "db": None,
@@ -989,6 +1009,24 @@ def test_keyboard_interrupt_before_publication_is_nonzero(monkeypatch):
 
 def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
     fingerprint = "b" * 64
+    coupons = [
+        {
+            "rank": 1,
+            "coupon": "111111111111111",
+            "gross_ev": 1.2,
+            "net_ev": 0.2,
+        },
+        {
+            "rank": 2,
+            "coupon": "XXXXXXXXXXXXXXX",
+            "gross_ev": 1.1,
+            "net_ev": 0.1,
+        },
+    ]
+    safety = evaluate_package_safety(
+        tuple(str(row["coupon"]) for row in coupons),
+        ((0.45, 0.45, 0.10),) * 15,
+    ).to_dict()
     return {
         "schema_version": 4,
         "run_id": f"local-{final_lead_minutes}",
@@ -1095,9 +1133,9 @@ def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
         "ev": {
             "computed": True,
             "requested_bank": 4980,
-            "effective_budget": 30,
-            "selected_cost": 30,
-            "unused_requested_bank": 4950,
+            "effective_budget": 60,
+            "selected_cost": 60,
+            "unused_requested_bank": 4920,
             "input_fetched_at": "2030-01-02T11:45:00Z",
             "minimum_gross_ev": 1.0,
             "prize_fund_factor": 1.0,
@@ -1106,23 +1144,17 @@ def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
             "self_dilution_ratio": 0.001,
             "model_supported": True,
             "model_warning": None,
+            "package_safety": safety,
             "package": {
                 "decision": "PLAY",
                 "decision_reason": None,
-                "coupons": [
-                    {
-                        "rank": 1,
-                        "coupon": "111111111111111",
-                        "gross_ev": 1.2,
-                        "net_ev": 0.2,
-                    }
-                ],
-                "selected_count": 1,
-                "cost": 30,
-                "unused_bank": 4950,
-                "expected_payout": 36.0,
-                "modeled_roi": 0.2,
-                "derived_brief": ["1"] * 15,
+                "coupons": coupons,
+                "selected_count": 2,
+                "cost": 60,
+                "unused_bank": 4920,
+                "expected_payout": 69.0,
+                "modeled_roi": 69.0 / 60.0 - 1.0,
+                "derived_brief": ["1X"] * 15,
             },
             "sensitivity": [],
         },
@@ -1130,6 +1162,27 @@ def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
         "replay": None,
         "warnings": [],
     }
+
+
+def _seed_scheduler_drawing(
+    db: Path,
+    *,
+    drawing_id: int,
+    drawing_number: int,
+    ended_at: str,
+) -> None:
+    engine = init_db(db)
+    with get_session_factory(engine).begin() as session:
+        session.add(
+            Drawing(
+                id=drawing_id,
+                number=drawing_number,
+                name="scheduler-cli-fixture",
+                status="active",
+                ended_at=ended_at,
+            )
+        )
+    engine.dispose()
 
 
 def test_scheduler_cli_plan_simulated_execute_and_operator_pickup_are_offline(
@@ -1172,6 +1225,12 @@ def test_scheduler_cli_plan_simulated_execute_and_operator_pickup_are_offline(
     assert plan_path.is_file()
     assert (output_dir / "run-scheduler.sh").is_file()
     assert (output_dir / "totoai-scheduler.plist").is_file()
+    _seed_scheduler_drawing(
+        tmp_path / "data" / "toto.db",
+        drawing_id=12001,
+        drawing_number=5001,
+        ended_at="2030-01-02T12:00:00Z",
+    )
 
     executed = runner.invoke(
         cli.app,
@@ -1231,6 +1290,12 @@ def test_scheduler_cli_real_production_parser_and_capture_are_offline(
         ],
     )
     assert plan_result.exit_code == 0, plan_result.output
+    _seed_scheduler_drawing(
+        tmp_path / "data" / "toto.db",
+        drawing_id=12001,
+        drawing_number=5001,
+        ended_at="2030-01-02T12:00:00Z",
+    )
 
     clock = VirtualSchedulerClock(
         datetime(2030, 1, 2, 11, 15, tzinfo=UTC)
@@ -1302,12 +1367,13 @@ def test_scheduler_cli_real_production_parser_and_capture_are_offline(
     assert package.read_text(encoding="utf-8") == (
         "rank,coupon,gross_ev,net_ev\n"
         "1,111111111111111,1.2,0.20000000000000001\n"
+        "2,XXXXXXXXXXXXXXX,1.1000000000000001,0.10000000000000001\n"
     )
     assert (run_dir / ".bet-ready").is_file()
     status = json.loads((run_dir / "status.json").read_text(encoding="utf-8"))
     assert status["selected_snapshot"] == "final"
-    assert status["selected_count"] == 1
-    assert status["selected_cost"] == 30
+    assert status["selected_count"] == 2
+    assert status["selected_cost"] == 60
 
 
 def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> None:
@@ -1319,6 +1385,8 @@ def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> No
             "scheduler-plan",
             "--drawing",
             "5002",
+            "--drawing-id",
+            "12002",
             "--ended-at",
             "2030-01-03T12:00:00Z",
             "--bank",
@@ -1355,6 +1423,8 @@ def test_scheduler_cli_rejects_null_ended_at_before_artifact_creation(
             "scheduler-plan",
             "--drawing",
             "5002",
+            "--drawing-id",
+            "12002",
             "--ended-at",
             "null",
             "--bank",
@@ -1383,6 +1453,8 @@ def test_scheduler_cli_rejects_shell_script_python_executable(
             "scheduler-plan",
             "--drawing",
             "5002",
+            "--drawing-id",
+            "12002",
             "--ended-at",
             "2030-01-03T12:00:00Z",
             "--bank",

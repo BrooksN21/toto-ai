@@ -5,7 +5,7 @@ import subprocess
 import sys
 import time
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -90,6 +90,8 @@ from toto_ai.external_odds.matching import load_aliases
 from toto_ai.external_odds.preparation import (
     fetch_preparation_schedule,
     load_local_schedule,
+    persist_drawing_identity,
+    preparation_probability_sha256,
     prepare_drawing,
 )
 from toto_ai.external_odds.prospective import (
@@ -113,6 +115,16 @@ from toto_ai.external_odds.timing_overrides import (
     drawing_timing_snapshot_from_collection,
     overlay_timing_override,
     pin_timing_override_catalog,
+)
+from toto_ai.operations.finished_draw import (
+    PostDrawRetryConfig,
+    archive_package,
+    import_prebet_package_manifest,
+    prepare_post_draw_scheduler_artifacts,
+    resolve_explicit_drawing,
+    run_post_draw,
+    settle_package_file,
+    sync_finished_drawing,
 )
 from toto_ai.operations.sync_prepare import synchronize_open_drawing
 from toto_ai.optimizer.brief import build_brief_for_drawing
@@ -277,6 +289,218 @@ def collect(name: str = "baltbet-main", db: str = "data/toto.db") -> None:
         f"{result.events_saved} events and {result.quotes_saved} quotes; "
         f"deferred {result.details_deferred} detail(s)."
     )
+
+
+@app.command("sync-finished-results")
+def sync_finished_results_command(
+    drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
+    drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
+    db: str = typer.Option("data/toto.db", "--db"),
+) -> None:
+    """Force one exact finished drawing-info snapshot by explicit identity."""
+    if (drawing_id is None) == (drawing_number is None):
+        raise typer.BadParameter(
+            "use exactly one of --drawing-id or --drawing-number"
+        )
+    try:
+        factory = get_session_factory(init_db(db))
+        result = sync_finished_drawing(
+            factory,
+            TotoBriefClient(),
+            drawing_id=drawing_id,
+            drawing_number=drawing_number,
+        )
+    except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(asdict(result), ensure_ascii=False, sort_keys=True))
+
+
+@app.command("settle-drawing")
+def settle_drawing_command(
+    package_file: str = typer.Option(..., "--package-file"),
+    drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
+    drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
+    stake: int = typer.Option(30, "--stake", min=1),
+    db: str = typer.Option("data/toto.db", "--db"),
+) -> None:
+    """Settle an archived/package file against the latest complete snapshot."""
+    if (drawing_id is None) == (drawing_number is None):
+        raise typer.BadParameter(
+            "use exactly one of --drawing-id or --drawing-number"
+        )
+    try:
+        result = settle_package_file(
+            get_session_factory(init_db(db)),
+            package_file,
+            drawing_id=drawing_id,
+            drawing_number=drawing_number,
+            stake=stake,
+        )
+    except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(result.to_dict(), ensure_ascii=False, sort_keys=True))
+
+
+@app.command("archive-package")
+def archive_package_command(
+    package_file: str = typer.Option(..., "--package-file"),
+    drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
+    drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
+    stake: int = typer.Option(30, "--stake", min=1),
+    pre_bet_manifest: str | None = typer.Option(
+        None,
+        "--pre-bet-manifest",
+        help="Verified scheduler package-archive manifest for pre-bet provenance.",
+    ),
+    db: str = typer.Option("data/toto.db", "--db"),
+) -> None:
+    """Explicitly import auditable legacy package evidence."""
+    if (drawing_id is None) == (drawing_number is None):
+        raise typer.BadParameter(
+            "use exactly one of --drawing-id or --drawing-number"
+        )
+    try:
+        factory = get_session_factory(init_db(db))
+        resolved_id, resolved_number = resolve_explicit_drawing(
+            factory,
+            drawing_id=drawing_id,
+            drawing_number=drawing_number,
+        )
+        if pre_bet_manifest is None:
+            result = archive_package(
+                factory,
+                package_file,
+                drawing_id=resolved_id,
+                drawing_number=resolved_number,
+                stake=stake,
+                provenance="legacy_import",
+            )
+        else:
+            result = import_prebet_package_manifest(
+                factory,
+                pre_bet_manifest,
+                package_file,
+            )
+            if (
+                result.drawing_id != resolved_id
+                or result.drawing_number != resolved_number
+                or result.stake != stake
+            ):
+                raise ValueError(
+                    "pre-bet manifest does not match requested identity/stake"
+                )
+    except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(asdict(result), ensure_ascii=False, sort_keys=True))
+
+
+@app.command("post-draw-run")
+def post_draw_run_command(
+    package_file: str = typer.Option(..., "--package-file"),
+    state_file: str = typer.Option(..., "--state-file"),
+    drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
+    drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
+    stake: int = typer.Option(30, "--stake", min=1),
+    db: str = typer.Option("data/toto.db", "--db"),
+    max_attempts: int = typer.Option(6, "--max-attempts", min=1),
+    initial_delay_seconds: float = typer.Option(
+        60.0,
+        "--initial-delay-seconds",
+        min=0,
+    ),
+    max_delay_seconds: float = typer.Option(
+        900.0,
+        "--max-delay-seconds",
+        min=0,
+    ),
+    backoff_multiplier: float = typer.Option(
+        2.0,
+        "--backoff-multiplier",
+        min=1,
+    ),
+) -> None:
+    """Boundedly poll and settle one explicit ended drawing; never places bets."""
+    if (drawing_id is None) == (drawing_number is None):
+        raise typer.BadParameter(
+            "use exactly one of --drawing-id or --drawing-number"
+        )
+    try:
+        state = run_post_draw(
+            get_session_factory(init_db(db)),
+            TotoBriefClient(),
+            package_file=package_file,
+            drawing_id=drawing_id,
+            drawing_number=drawing_number,
+            stake=stake,
+            config=PostDrawRetryConfig(
+                max_attempts=max_attempts,
+                initial_delay_seconds=initial_delay_seconds,
+                max_delay_seconds=max_delay_seconds,
+                backoff_multiplier=backoff_multiplier,
+            ),
+            state_path=state_file,
+        )
+    except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(state.to_dict(), ensure_ascii=False, sort_keys=True))
+    if state.status != "complete":
+        raise typer.Exit(code=2 if state.status == "pending" else 1)
+
+
+@app.command("post-draw-plan")
+def post_draw_plan_command(
+    package_file: str = typer.Option(..., "--package-file"),
+    ended_at: str = typer.Option(..., "--ended-at"),
+    state_file: str = typer.Option(..., "--state-file"),
+    output_dir: str = typer.Option(..., "--output-dir"),
+    drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
+    drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
+    stake: int = typer.Option(30, "--stake", min=1),
+    db: str = typer.Option("data/toto.db", "--db"),
+    project_root: str | None = typer.Option(None, "--project-root"),
+    python_executable: str = typer.Option(
+        sys.executable,
+        "--python-executable",
+    ),
+    max_attempts: int = typer.Option(6, "--max-attempts", min=1),
+    initial_delay_seconds: float = typer.Option(
+        60.0,
+        "--initial-delay-seconds",
+        min=0,
+    ),
+    max_delay_seconds: float = typer.Option(
+        900.0,
+        "--max-delay-seconds",
+        min=0,
+    ),
+) -> None:
+    """Generate uninstalled non-betting post-draw launchd artifacts."""
+    if (drawing_id is None) == (drawing_number is None):
+        raise typer.BadParameter(
+            "use exactly one of --drawing-id or --drawing-number"
+        )
+    try:
+        plan, wrapper, plist = prepare_post_draw_scheduler_artifacts(
+            drawing_id=drawing_id,
+            drawing_number=drawing_number,
+            ended_at=ended_at,
+            package_file=package_file,
+            stake=stake,
+            db=db,
+            state_file=state_file,
+            output_dir=output_dir,
+            project_root=project_root or Path.cwd(),
+            python_executable=python_executable,
+            max_attempts=max_attempts,
+            initial_delay_seconds=initial_delay_seconds,
+            max_delay_seconds=max_delay_seconds,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    print(f"Plan: {plan}")
+    print(f"Wrapper: {wrapper}")
+    print(f"LaunchAgent candidate: {plist}")
+    print("Artifacts were generated only; nothing was installed and no bet is placed.")
 
 
 @app.command()
@@ -1305,6 +1529,12 @@ def _prepare_runner_resources(
 
     engine = init_db(db)
     session_factory = get_session_factory(engine)
+    if systematic_resolution:
+        persist_drawing_identity(
+            session_factory,
+            target.target,
+            require_visible_number=True,
+        )
     reviewed_aliases = load_aliases(aliases)
     readonly_engine = open_readonly_db(db)
     readonly_session_factory = get_session_factory(readonly_engine)
@@ -1314,6 +1544,13 @@ def _prepare_runner_resources(
             drawing_id=target.target.drawing_id,
             drawing_fingerprint=target.fingerprint,
             provider="api-sports",
+            expected_probability_sha256=preparation_probability_sha256(
+                tuple(
+                    event.bk_probabilities
+                    for event in target.target.events
+                )
+            ),
+            as_of=preflight_at,
         )
         if systematic_resolution
         else None
@@ -1574,6 +1811,15 @@ def run_drawing_command(
         DEFAULT_MINIMUM_GROSS_EV,
         "--min-gross-ev",
     ),
+    package_near_fixed_share: float = typer.Option(
+        0.95, "--package-near-fixed-share"
+    ),
+    package_low_probability_threshold: float = typer.Option(
+        0.20, "--package-low-probability-threshold"
+    ),
+    package_material_probability_threshold: float = typer.Option(
+        0.20, "--package-material-probability-threshold"
+    ),
     final_lead_minutes: int = typer.Option(20, min=1),
     safety_stop_minutes: int = typer.Option(5, min=1),
     db: str | None = typer.Option(None),
@@ -1644,6 +1890,11 @@ def run_drawing_command(
             stake=stake,
             mode=mode,  # type: ignore[arg-type]
             minimum_gross_ev=minimum_gross_ev,
+            package_near_fixed_share=package_near_fixed_share,
+            package_low_probability_threshold=package_low_probability_threshold,
+            package_material_probability_threshold=(
+                package_material_probability_threshold
+            ),
             final_lead_minutes=final_lead_minutes,
             safety_stop_minutes=safety_stop_minutes,
         )
@@ -1894,6 +2145,15 @@ def scheduler_plan_command(
         DEFAULT_MINIMUM_GROSS_EV,
         "--min-gross-ev",
     ),
+    package_near_fixed_share: float = typer.Option(
+        0.95, "--package-near-fixed-share"
+    ),
+    package_low_probability_threshold: float = typer.Option(
+        0.20, "--package-low-probability-threshold"
+    ),
+    package_material_probability_threshold: float = typer.Option(
+        0.20, "--package-material-probability-threshold"
+    ),
     db: str = typer.Option("data/toto.db"),
     aliases: str = typer.Option("data/external-odds/team-aliases.json"),
     timing_overrides: str | None = typer.Option(None, "--timing-overrides"),
@@ -1921,6 +2181,11 @@ def scheduler_plan_command(
             bank=bank,
             stake=stake,
             minimum_gross_ev=minimum_gross_ev,
+            package_near_fixed_share=package_near_fixed_share,
+            package_low_probability_threshold=package_low_probability_threshold,
+            package_material_probability_threshold=(
+                package_material_probability_threshold
+            ),
             output_dir=output_dir,
             project_root=project_root or Path(__file__).resolve().parents[2],
             db=db,
@@ -2040,6 +2305,15 @@ def ev_package_command(
     bank: int = typer.Option(...),
     stake: int = typer.Option(30),
     min_gross_ev: float = typer.Option(1.0),
+    package_near_fixed_share: float = typer.Option(
+        0.95, "--package-near-fixed-share"
+    ),
+    package_low_probability_threshold: float = typer.Option(
+        0.20, "--package-low-probability-threshold"
+    ),
+    package_material_probability_threshold: float = typer.Option(
+        0.20, "--package-material-probability-threshold"
+    ),
     prize_fund_factor: float = typer.Option(1.0),
     possible_winnings: float | None = typer.Option(None),
     jackpot: float | None = typer.Option(None),
@@ -2057,6 +2331,12 @@ def ev_package_command(
             stake=stake,
             mode=mode,
             min_gross_ev=min_gross_ev,
+            package_safety_enabled=True,
+            package_near_fixed_share=package_near_fixed_share,
+            package_low_probability_threshold=package_low_probability_threshold,
+            package_material_probability_threshold=(
+                package_material_probability_threshold
+            ),
             prize_fund_factor=prize_fund_factor,
             possible_winnings=possible_winnings,
         )

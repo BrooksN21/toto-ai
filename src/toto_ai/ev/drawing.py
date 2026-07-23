@@ -28,6 +28,7 @@ from toto_ai.ev.ternary import (
     compute_ev_components,
     materialize_ev_surface,
 )
+from toto_ai.package.audit import PackageSafetyResult, evaluate_package_safety
 
 SENSITIVITY_FACTORS = (0.70, 0.80, 0.90, 1.00)
 _SELF_DILUTION_LIMIT_NUMERATOR = 1
@@ -66,6 +67,7 @@ class EVPackageRun:
     self_dilution_ratio: float
     model_supported: bool
     model_warning: str | None
+    package_safety: PackageSafetyResult | None = None
     timing_eligibility: PlayTimingEligibility = field(
         default_factory=PlayTimingEligibility.not_checked
     )
@@ -291,6 +293,7 @@ def build_open_ev_package(
     main_surface: EVSurface | None = None
     main_package: EVPackage | None = None
     top_coupons: tuple[RankedCoupon, ...] = ()
+    main_safety: PackageSafetyResult | None = None
     main_factor = (
         config.prize_fund_factor
         if config.possible_winnings is None
@@ -321,6 +324,13 @@ def build_open_ev_package(
         )
         if factor == main_factor:
             main_package = factor_package
+        factor_package, factor_safety = _suppress_unsafe_play(
+            factor_package,
+            config=factor_config,
+            probabilities=ev_input.true_probabilities,
+        )
+        if factor == main_factor:
+            main_safety = factor_safety
         factor_supported = (
             factor_package.cost / ev_input.pool_sum <= SELF_DILUTION_LIMIT
         )
@@ -365,6 +375,11 @@ def build_open_ev_package(
             config=selection_config,
             reason=budget_reason,
         )
+        _, main_safety = _suppress_unsafe_play(
+            main_package,
+            config=selection_config,
+            probabilities=ev_input.true_probabilities,
+        )
     self_dilution_ratio = main_package.cost / ev_input.pool_sum
     model_supported = self_dilution_ratio <= SELF_DILUTION_LIMIT
     package = _suppress_unsupported_play(
@@ -379,6 +394,13 @@ def build_open_ev_package(
         timing_eligibility=timing_eligibility,
         bank=config.bank,
     )
+    package, final_safety = _suppress_unsafe_play(
+        package,
+        config=selection_config,
+        probabilities=ev_input.true_probabilities,
+    )
+    if final_safety is not None:
+        main_safety = final_safety
     warning = budget_reason
     if not model_supported:
         warning = (
@@ -404,6 +426,7 @@ def build_open_ev_package(
         self_dilution_ratio=self_dilution_ratio,
         model_supported=model_supported,
         model_warning=warning,
+        package_safety=main_safety,
         timing_eligibility=timing_eligibility,
     )
 
@@ -461,6 +484,29 @@ def _suppress_below_stake_budget(
     return _empty_no_bet(package, bank=config.bank, reason=reason)
 
 
+def _suppress_unsafe_play(
+    package: EVPackage,
+    *,
+    config: EVConfig,
+    probabilities: tuple[tuple[float, float, float], ...],
+) -> tuple[EVPackage, PackageSafetyResult | None]:
+    if (
+        config.mode != "playable"
+        or not config.package_safety_enabled
+        or package.decision != "PLAY"
+    ):
+        return package, None
+    safety = evaluate_package_safety(
+        tuple(coupon.coupon for coupon in package.coupons),
+        probabilities,
+        config=config.package_safety_config,
+    )
+    if safety.decision == "PLAY":
+        return package, safety
+    reason = "package_safety:" + ",".join(safety.reason_codes)
+    return _empty_no_bet(package, bank=config.bank, reason=reason), safety
+
+
 def _suppress_unsupported_play(
     package: EVPackage,
     *,
@@ -469,7 +515,11 @@ def _suppress_unsupported_play(
     bank: int,
 ) -> EVPackage:
     if mode == "playable" and not supported and package.decision == "PLAY":
-        return _empty_no_bet(package, bank=bank)
+        return _empty_no_bet(
+            package,
+            bank=bank,
+            reason="self_dilution:package_cost_exceeds_1_percent_pool",
+        )
     return package
 
 
@@ -485,7 +535,11 @@ def _suppress_ineligible_timing(
         and timing_eligibility.status != "playable"
         and package.decision == "PLAY"
     ):
-        return _empty_no_bet(package, bank=bank)
+        return _empty_no_bet(
+            package,
+            bank=bank,
+            reason=f"timing:{timing_eligibility.status}",
+        )
     return package
 
 

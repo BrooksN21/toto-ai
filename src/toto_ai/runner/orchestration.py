@@ -604,7 +604,10 @@ def run_drawing(
     decision = ev_run.package.decision
     terminal_reason = {
         "PLAY": "EV package selected playable coupons",
-        "NO BET": "EV package returned NO BET",
+        "NO BET": (
+            ev_run.package.decision_reason
+            or "EV package returned NO BET"
+        ),
         "RESEARCH ONLY": "research package completed",
     }.get(decision)
     if terminal_reason is None:

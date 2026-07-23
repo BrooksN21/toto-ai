@@ -309,6 +309,7 @@ def _ev_run(
     *,
     mode: str = "playable",
     decision: str | None = None,
+    decision_reason: str | None = None,
 ) -> EVPackageRun:
     resolved_decision = decision or (
         "RESEARCH ONLY" if mode == "research" else "PLAY"
@@ -348,6 +349,7 @@ def _ev_run(
             expected_payout=33.0 if selected else 0.0,
             modeled_roi=0.1 if selected else None,
             derived_brief=("1",) * 15 if selected else (),
+            decision_reason=decision_reason,
         ),
         top_coupons=(_ranked_coupon(),),
         sensitivity=(),
@@ -1124,12 +1126,30 @@ def test_fail_closed_validation_failure_does_not_emit_complete_progress():
     ]
 
 
-def test_ev_threshold_no_bet_retains_zero_cost_diagnostic_run():
+@pytest.mark.parametrize(
+    ("decision_reason", "expected_reason"),
+    [
+        (None, "EV package returned NO BET"),
+        ("timing:multi_day", "timing:multi_day"),
+        (
+            "self_dilution:package_cost_exceeds_1_percent_pool",
+            "self_dilution:package_cost_exceeds_1_percent_pool",
+        ),
+    ],
+)
+def test_ev_no_bet_retains_zero_cost_run_and_actual_gate_reason(
+    decision_reason,
+    expected_reason,
+):
     target = _target(fetched_at=T_MINUS_19)
     pinned = pin_drawing(target)
     collection = _collection(target)
     calls = []
-    ev_run = _ev_run(target, decision="NO BET")
+    ev_run = _ev_run(
+        target,
+        decision="NO BET",
+        decision_reason=decision_reason,
+    )
     dependencies = _recording_dependencies(
         calls,
         target,
@@ -1152,7 +1172,7 @@ def test_ev_threshold_no_bet_retains_zero_cost_diagnostic_run():
     )
 
     assert result.decision == "NO BET"
-    assert result.terminal_reason == "EV package returned NO BET"
+    assert result.terminal_reason == expected_reason
     assert result.ev_run == ev_run
     assert result.ev_run.package.cost == 0
     assert result.ev_run.package.coupons == ()

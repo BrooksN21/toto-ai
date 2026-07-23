@@ -29,6 +29,7 @@ from typing import Any, Literal, Protocol
 from zoneinfo import ZoneInfo
 
 from toto_ai.api.client import TotoBriefClient
+from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.ev.models import EVConfig, validate_config_bank
 from toto_ai.external_odds.matching import load_aliases
@@ -37,9 +38,15 @@ from toto_ai.external_odds.timing_overrides import (
     load_timing_override_catalog,
     timing_override_catalog_sha256,
 )
+from toto_ai.operations.finished_draw import import_prebet_package_manifest
+from toto_ai.package.audit import (
+    PackageSafetyConfig,
+    evaluate_package_safety,
+)
 
-SCHEDULER_SCHEMA_VERSION = 2
+SCHEDULER_SCHEMA_VERSION = 3
 LEGACY_SCHEDULER_SCHEMA_VERSION = 1
+LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION = 2
 RUNNER_MANIFEST_SCHEMA_VERSION = 4
 SCHEDULER_PLAN_FILENAME = "scheduler-plan.json"
 SCHEDULER_WRAPPER_FILENAME = "run-scheduler.sh"
@@ -51,6 +58,7 @@ DEFAULT_MINIMUM_GROSS_EV = EVConfig(
     bank=30,
     mode="playable",
 ).min_gross_ev
+DEFAULT_PACKAGE_SAFETY_CONFIG = PackageSafetyConfig()
 
 SchedulerPhase = Literal["preflight", "fallback", "final", "freeze"]
 PackagePhase = Literal["fallback", "final"]
@@ -106,6 +114,15 @@ class SchedulerPlan:
     drawing_id: int | None = None
     stake: int = 30
     minimum_gross_ev: float = DEFAULT_MINIMUM_GROSS_EV
+    package_near_fixed_share: float = (
+        DEFAULT_PACKAGE_SAFETY_CONFIG.near_fixed_share
+    )
+    package_low_probability_threshold: float = (
+        DEFAULT_PACKAGE_SAFETY_CONFIG.low_probability_threshold
+    )
+    package_material_probability_threshold: float = (
+        DEFAULT_PACKAGE_SAFETY_CONFIG.material_probability_threshold
+    )
     db: Path = Path("data/toto.db")
     aliases: Path = Path("data/external-odds/team-aliases.json")
     timing_overrides: Path | None = None
@@ -115,9 +132,12 @@ class SchedulerPlan:
     max_passes: int = 3
     max_expansion_passes: int = 3
     retry_delay_seconds: float = 65.0
+    actionable_safety_bound: bool = True
 
     def __post_init__(self) -> None:
         _require_positive_int("drawing", self.drawing)
+        if not isinstance(self.actionable_safety_bound, bool):
+            raise ValueError("actionable_safety_bound must be a bool")
         if self.drawing_id is not None:
             _require_positive_int("drawing_id", self.drawing_id)
         object.__setattr__(
@@ -141,6 +161,20 @@ class SchedulerPlan:
             self,
             "minimum_gross_ev",
             minimum_gross_ev,
+        )
+        safety_config = self.package_safety_config
+        object.__setattr__(
+            self, "package_near_fixed_share", safety_config.near_fixed_share
+        )
+        object.__setattr__(
+            self,
+            "package_low_probability_threshold",
+            safety_config.low_probability_threshold,
+        )
+        object.__setattr__(
+            self,
+            "package_material_probability_threshold",
+            safety_config.material_probability_threshold,
         )
         project_root = _validated_project_root(self.project_root)
         object.__setattr__(self, "project_root", project_root)
@@ -229,6 +263,16 @@ class SchedulerPlan:
         }
 
     @property
+    def package_safety_config(self) -> PackageSafetyConfig:
+        return PackageSafetyConfig(
+            near_fixed_share=self.package_near_fixed_share,
+            low_probability_threshold=self.package_low_probability_threshold,
+            material_probability_threshold=(
+                self.package_material_probability_threshold
+            ),
+        )
+
+    @property
     def plan_id(self) -> str:
         return hashlib.sha256(
             _canonical_json_bytes(self.semantic_payload())
@@ -246,6 +290,13 @@ class SchedulerPlan:
                 "requested_bank": self.requested_bank,
                 "stake": self.stake,
                 "minimum_gross_ev": self.minimum_gross_ev,
+                "package_near_fixed_share": self.package_near_fixed_share,
+                "package_low_probability_threshold": (
+                    self.package_low_probability_threshold
+                ),
+                "package_material_probability_threshold": (
+                    self.package_material_probability_threshold
+                ),
                 "provider": self.provider,
                 "quota_reserve": self.quota_reserve,
                 "max_passes": self.max_passes,
@@ -433,6 +484,15 @@ def build_scheduler_plan(
     drawing_id: int | None = None,
     stake: int = 30,
     minimum_gross_ev: float = DEFAULT_MINIMUM_GROSS_EV,
+    package_near_fixed_share: float = (
+        DEFAULT_PACKAGE_SAFETY_CONFIG.near_fixed_share
+    ),
+    package_low_probability_threshold: float = (
+        DEFAULT_PACKAGE_SAFETY_CONFIG.low_probability_threshold
+    ),
+    package_material_probability_threshold: float = (
+        DEFAULT_PACKAGE_SAFETY_CONFIG.material_probability_threshold
+    ),
     db: str | Path = "data/toto.db",
     aliases: str | Path = "data/external-odds/team-aliases.json",
     timing_overrides: str | Path | None = None,
@@ -442,9 +502,14 @@ def build_scheduler_plan(
     max_passes: int = 3,
     max_expansion_passes: int = 3,
     retry_delay_seconds: float = 65.0,
+    _allow_missing_drawing_id: bool = False,
+    _actionable_safety_bound: bool = True,
 ) -> SchedulerPlan:
     """Build a strict plan; null or malformed ``ended_at`` fails immediately."""
 
+    parsed_ended_at = _parse_utc_datetime("ended_at", ended_at)
+    if drawing_id is None and not _allow_missing_drawing_id:
+        raise ValueError("drawing_id is required for actionable scheduler plans")
     normalized_output = _normalized_path(output_dir)
     normalized_db = _normalized_path(db)
     normalized_aliases = _normalized_path(aliases)
@@ -456,10 +521,15 @@ def build_scheduler_plan(
     return SchedulerPlan(
         drawing=drawing,
         drawing_id=drawing_id,
-        ended_at=_parse_utc_datetime("ended_at", ended_at),
+        ended_at=parsed_ended_at,
         requested_bank=bank,
         stake=stake,
         minimum_gross_ev=minimum_gross_ev,
+        package_near_fixed_share=package_near_fixed_share,
+        package_low_probability_threshold=package_low_probability_threshold,
+        package_material_probability_threshold=(
+            package_material_probability_threshold
+        ),
         output_dir=normalized_output,
         project_root=root,
         db=normalized_db,
@@ -473,6 +543,7 @@ def build_scheduler_plan(
         max_passes=max_passes,
         max_expansion_passes=max_expansion_passes,
         retry_delay_seconds=retry_delay_seconds,
+        actionable_safety_bound=_actionable_safety_bound,
     )
 
 
@@ -511,7 +582,7 @@ def _infer_scheduler_project_root(
 
 def _legacy_scheduler_plan_id(payload: Mapping[str, Any]) -> str:
     semantic = {
-        "schema_version": LEGACY_SCHEDULER_SCHEMA_VERSION,
+        "schema_version": payload["schema_version"],
         "target": payload["target"],
         "config": payload["config"],
         "paths": payload["paths"],
@@ -542,36 +613,54 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
     schema_version = payload["schema_version"]
     if type(schema_version) is not int or schema_version not in {
         LEGACY_SCHEDULER_SCHEMA_VERSION,
+        LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
         SCHEDULER_SCHEMA_VERSION,
     }:
         raise ValueError(
             "scheduler plan schema_version must be "
-            f"{LEGACY_SCHEDULER_SCHEMA_VERSION} or {SCHEDULER_SCHEMA_VERSION}"
+            f"{LEGACY_SCHEDULER_SCHEMA_VERSION}, "
+            f"{LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION}, or "
+            f"{SCHEDULER_SCHEMA_VERSION}"
         )
     target = _exact_mapping(
         payload["target"],
         {"drawing", "drawing_id", "ended_at"},
         "target",
     )
+    base_config_keys = {
+        "requested_bank",
+        "stake",
+        "minimum_gross_ev",
+        "provider",
+        "quota_reserve",
+        "max_passes",
+        "max_expansion_passes",
+        "retry_delay_seconds",
+    }
+    safety_config_keys = {
+        "package_near_fixed_share",
+        "package_low_probability_threshold",
+        "package_material_probability_threshold",
+    }
+    raw_config = payload["config"]
+    if not isinstance(raw_config, Mapping):
+        raise ValueError("config must be a JSON object")
+    present_safety_keys = safety_config_keys & set(raw_config)
+    if present_safety_keys and present_safety_keys != safety_config_keys:
+        raise ValueError("config package safety thresholds must be complete")
     config = _exact_mapping(
-        payload["config"],
-        {
-            "requested_bank",
-            "stake",
-            "minimum_gross_ev",
-            "provider",
-            "quota_reserve",
-            "max_passes",
-            "max_expansion_passes",
-            "retry_delay_seconds",
-        },
+        raw_config,
+        base_config_keys | present_safety_keys,
         "config",
     )
     raw_paths = payload["paths"]
     if not isinstance(raw_paths, Mapping):
         raise ValueError("paths must be a JSON object")
     path_keys = {"output_dir", "db", "aliases", "timing_overrides"}
-    if schema_version == SCHEDULER_SCHEMA_VERSION:
+    if schema_version in {
+        LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
+        SCHEDULER_SCHEMA_VERSION,
+    }:
         path_keys.add("project_root")
     if "env_file" in raw_paths:
         path_keys.add("env_file")
@@ -583,10 +672,26 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         bank=config["requested_bank"],
         stake=config["stake"],
         minimum_gross_ev=config["minimum_gross_ev"],
+        package_near_fixed_share=config.get(
+            "package_near_fixed_share",
+            DEFAULT_PACKAGE_SAFETY_CONFIG.near_fixed_share,
+        ),
+        package_low_probability_threshold=config.get(
+            "package_low_probability_threshold",
+            DEFAULT_PACKAGE_SAFETY_CONFIG.low_probability_threshold,
+        ),
+        package_material_probability_threshold=config.get(
+            "package_material_probability_threshold",
+            DEFAULT_PACKAGE_SAFETY_CONFIG.material_probability_threshold,
+        ),
         output_dir=paths["output_dir"],
         project_root=(
             paths["project_root"]
-            if schema_version == SCHEDULER_SCHEMA_VERSION
+            if schema_version
+            in {
+                LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
+                SCHEDULER_SCHEMA_VERSION,
+            }
             else _infer_scheduler_project_root(
                 output_dir=_normalized_path(paths["output_dir"]),
                 db=_normalized_path(paths["db"]),
@@ -602,6 +707,13 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         max_passes=config["max_passes"],
         max_expansion_passes=config["max_expansion_passes"],
         retry_delay_seconds=config["retry_delay_seconds"],
+        _allow_missing_drawing_id=(
+            schema_version != SCHEDULER_SCHEMA_VERSION
+        ),
+        _actionable_safety_bound=(
+            schema_version == SCHEDULER_SCHEMA_VERSION
+            and present_safety_keys == safety_config_keys
+        ),
     )
     expected_plan_id = (
         plan.plan_id
@@ -969,6 +1081,7 @@ def execute_scheduler_plan(
             final_inputs_sha256=final_inputs_sha256,
             final_override_sha256=final_override_sha256,
             completed_at=freeze_finished,
+            now=now,
         )
     except _NonProductionArtifact as error:
         observed_at = _read_now(now)
@@ -994,6 +1107,7 @@ def execute_scheduler_plan(
             final_inputs_sha256=final_inputs_sha256,
             final_override_sha256=final_override_sha256,
             completed_at=observed_at,
+            now=now,
         )
     except Exception as error:
         observed_at = _read_now(now)
@@ -1029,6 +1143,7 @@ def execute_scheduler_plan(
             final_inputs_sha256=final_inputs_sha256,
             final_override_sha256=final_override_sha256,
             completed_at=observed_at,
+            now=now,
         )
 
 
@@ -1127,6 +1242,12 @@ def build_run_drawing_phase_command(
         "playable",
         "--min-gross-ev",
         format(plan.minimum_gross_ev, ".17g"),
+        "--package-near-fixed-share",
+        format(plan.package_near_fixed_share, ".17g"),
+        "--package-low-probability-threshold",
+        format(plan.package_low_probability_threshold, ".17g"),
+        "--package-material-probability-threshold",
+        format(plan.package_material_probability_threshold, ".17g"),
         "--final-lead-minutes",
         str(lead_minutes),
         "--safety-stop-minutes",
@@ -1593,6 +1714,16 @@ def _freeze_and_publish(
     now: Callable[[], datetime],
 ) -> dict[str, Any]:
     observed_at = _read_now(now)
+    if plan.drawing_id is None:
+        phase_errors.append(
+            "freeze: internal drawing_id is required for package archival"
+        )
+        return _no_package_terminal(phase_errors, phase_absences)
+    if not plan.actionable_safety_bound:
+        phase_errors.append(
+            "freeze: legacy scheduler plan lacks trusted package safety binding"
+        )
+        return _no_package_terminal(phase_errors, phase_absences)
     if observed_at > plan.freeze_at:
         phase_absences.append("T-10 publication deadline was missed")
         return _no_package_terminal(phase_errors, phase_absences)
@@ -1632,13 +1763,14 @@ def _freeze_and_publish(
         return _no_package_terminal(phase_errors, phase_absences)
 
     package_path = run_dir / "package.csv"
+    archive_manifest_path = run_dir / "package-archive.json"
     try:
         package_bytes = _read_regular_file(
             snapshot.path,
             name="final snapshot package",
             reject_symlink=True,
         )
-        _validate_package_csv(
+        validated_package = _validate_package_csv(
             package_bytes,
             stake=plan.stake,
             minimum_gross_ev=plan.minimum_gross_ev,
@@ -1673,6 +1805,58 @@ def _freeze_and_publish(
         published_at = _read_now(now)
         if published_at > plan.freeze_at:
             raise SchedulerPhaseError("package publication completed after T-10")
+        canonical_package_sha256 = hashlib.sha256(
+            ",".join(validated_package.coupons).encode("utf-8")
+        ).hexdigest()
+        archive_payload = {
+            "schema_version": 1,
+            "provenance": "pre_bet_runner",
+            "drawing_id": plan.drawing_id,
+            "drawing_number": plan.drawing,
+            "ended_at": _timestamp(plan.ended_at),
+            "archived_at": _timestamp(published_at),
+            "stake": plan.stake,
+            "coupon_count": validated_package.count,
+            "cost": validated_package.cost,
+            "source_path": str(package_path),
+            "source_bytes_sha256": snapshot.sha256,
+            "canonical_package_sha256": canonical_package_sha256,
+        }
+        archive_payload["archive_manifest_sha256"] = _sha256_bytes(
+            _canonical_json_bytes(archive_payload)
+        )
+        _write_exclusive_atomic(
+            plan.output_dir,
+            archive_manifest_path,
+            _canonical_json_bytes(archive_payload) + b"\n",
+        )
+        archive_engine = init_db(plan.db)
+        try:
+            archived = import_prebet_package_manifest(
+                get_session_factory(archive_engine),
+                archive_manifest_path,
+                package_path,
+            )
+            archive_completed_at = _read_now(now)
+        finally:
+            archive_engine.dispose()
+        if archive_completed_at > plan.freeze_at:
+            raise SchedulerPhaseError(
+                "durable archive completed after T-10"
+            )
+        if (
+            archived.drawing_id != plan.drawing_id
+            or archived.drawing_number != plan.drawing
+            or archived.stake != plan.stake
+            or archived.package_sha256 != canonical_package_sha256
+            or archived.source_bytes_sha256 != snapshot.sha256
+            or archived.provenance != "pre_bet_runner"
+            or archived.archive_manifest_sha256
+            != archive_payload["archive_manifest_sha256"]
+        ):
+            raise SchedulerPhaseError(
+                "durable pre-bet package archive did not verify"
+            )
         return {
             "outcome": "bet-ready",
             "decision": "PLAY",
@@ -1687,6 +1871,11 @@ def _freeze_and_publish(
         }
     except Exception as error:
         _unlink_output_path(plan.output_dir, package_path, missing_ok=True)
+        _unlink_output_path(
+            plan.output_dir,
+            archive_manifest_path,
+            missing_ok=True,
+        )
         phase_errors.append(f"final: {_safe_error(error)}")
         return _no_package_terminal(phase_errors, phase_absences)
 
@@ -1762,6 +1951,7 @@ def _finalize_status(
     final_inputs_sha256: str | None,
     final_override_sha256: str | None,
     completed_at: datetime,
+    now: Callable[[], datetime],
 ) -> SchedulerExecutionResult:
     if terminal["outcome"] == "bet-ready":
         _validate_terminal_package(plan, run_dir, terminal)
@@ -1813,6 +2003,10 @@ def _finalize_status(
         if terminal["outcome"] == "bet-ready":
             _validate_terminal_package(plan, run_dir, terminal)
             _validate_status_file(plan, status_path, status)
+            if _read_now(now) > plan.freeze_at:
+                raise SchedulerPhaseError(
+                    "bet-ready marker deadline crossed after durable archive"
+                )
         _write_exclusive_atomic(
             plan.output_dir,
             marker_path,
@@ -1849,6 +2043,11 @@ def _finalize_status(
             _unlink_output_path(
                 plan.output_dir,
                 run_dir / "package.csv",
+                missing_ok=True,
+            )
+            _unlink_output_path(
+                plan.output_dir,
+                run_dir / "package-archive.json",
                 missing_ok=True,
             )
             _write_status_atomic(plan.output_dir, status_path, status)
@@ -2018,6 +2217,7 @@ def _parse_runner_manifest_phase_result_strict(
             "self_dilution_ratio",
             "model_supported",
             "model_warning",
+            "package_safety",
             "package",
             "sensitivity",
         },
@@ -2038,6 +2238,66 @@ def _parse_runner_manifest_phase_result_strict(
         },
         "runner EV package",
     )
+    package_safety = ev["package_safety"]
+    recomputed_safety = None
+    if package_safety is not None:
+        safety = _exact_phase_mapping(
+            package_safety,
+            {
+                "decision",
+                "reason_codes",
+                "reasons",
+                "config",
+                "evaluated_coupons",
+                "package_sha256",
+                "probability_input_sha256",
+                "probabilities",
+                "uploadable_coupons",
+                "safety_sha256",
+            },
+            "runner package safety",
+        )
+        safety_config_payload = _exact_phase_mapping(
+            safety["config"],
+            {
+                "near_fixed_share",
+                "low_probability_threshold",
+                "material_probability_threshold",
+            },
+            "runner package safety config",
+        )
+        try:
+            manifest_safety_config = PackageSafetyConfig(**safety_config_payload)
+        except (TypeError, ValueError) as error:
+            raise SchedulerPhaseError(
+                f"runner package safety config is invalid: {error}"
+            ) from error
+        approved_safety_config = context.plan.package_safety_config
+        if manifest_safety_config != approved_safety_config:
+            raise SchedulerPhaseError(
+                "runner package safety config does not match scheduler plan"
+            )
+        _strict_sha256("package safety package_sha256", safety["package_sha256"])
+        _strict_sha256(
+            "package safety probability_input_sha256",
+            safety["probability_input_sha256"],
+        )
+        _strict_sha256("package safety safety_sha256", safety["safety_sha256"])
+        try:
+            recomputed_safety = evaluate_package_safety(
+                safety["evaluated_coupons"],
+                safety["probabilities"],
+                config=approved_safety_config,
+            )
+        except (TypeError, ValueError) as error:
+            raise SchedulerPhaseError(
+                f"runner package safety evidence is invalid: {error}"
+            ) from error
+        if json.loads(json.dumps(recomputed_safety.to_dict())) != package_safety:
+            raise SchedulerPhaseError(
+                "runner package safety evidence does not match canonical "
+                "recomputation"
+            )
     plan = context.plan
     manifest_drawing_id = _strict_int("runner drawing_id", target["drawing_id"])
     manifest_drawing_number = _strict_int(
@@ -2108,6 +2368,10 @@ def _parse_runner_manifest_phase_result_strict(
         raise SchedulerPhaseError(
             "runner manifest top-level and package decisions must both be PLAY"
         )
+    if package_safety is None or safety["decision"] != "PLAY":
+        raise SchedulerPhaseError("PLAY runner manifest lacks a passing safety gate")
+    if safety["reason_codes"] or safety["reasons"]:
+        raise SchedulerPhaseError("PLAY runner manifest retains safety reasons")
     if ev["computed"] is not True:
         raise SchedulerPhaseError("PLAY runner manifest must have computed EV")
     if (
@@ -2254,6 +2518,12 @@ def _parse_runner_manifest_phase_result_strict(
         expected_count=selected_count,
         expected_cost=selected_cost,
     )
+    if recomputed_safety is None:
+        raise SchedulerPhaseError("PLAY runner manifest lacks recomputed safety")
+    if recomputed_safety.uploadable_coupons != validated_package.coupons:
+        raise SchedulerPhaseError(
+            "PLAY runner package differs from safety-approved coupons"
+        )
     _validate_derived_brief(package["derived_brief"], validated_package.coupons)
     _validate_sensitivity_rows(
         ev["sensitivity"],

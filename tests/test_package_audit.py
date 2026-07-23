@@ -8,14 +8,34 @@ from typer.testing import CliRunner
 
 from toto_ai.cli import app
 from toto_ai.package.audit import (
+    PackageSafetyConfig,
     PackageStrategy,
     build_package_audit,
+    evaluate_package_safety,
     parse_package,
     recompute_audit_sha256,
     validate_bank,
     validate_coupons,
 )
 from toto_ai.package.audit_reports import write_package_audit_reports
+
+DRAWING_4952_PROBABILITIES = (
+    (0.43, 0.31, 0.26),
+    (0.237623762376, 0.267326732673, 0.495049504951),
+    (0.52, 0.28, 0.20),
+    (0.277227722772, 0.267326732673, 0.455445544555),
+    (0.34, 0.30, 0.36),
+    (0.21, 0.28, 0.51),
+    (0.48, 0.29, 0.23),
+    (0.41, 0.29, 0.30),
+    (0.30, 0.26, 0.44),
+    (0.48, 0.25, 0.27),
+    (0.31, 0.27, 0.42),
+    (0.414141414141, 0.252525252525, 0.333333333334),
+    (0.41, 0.35, 0.24),
+    (0.40, 0.30, 0.30),
+    (0.28, 0.28, 0.44),
+)
 
 
 def _coupon(number: int) -> str:
@@ -226,6 +246,32 @@ def test_real_drawing_4952_coupon_fixture_regression():
         "3e07537b74d18e8261a71b43394e4ff46fbb20c2bb6cb05fc09461f3ffca90de"
     )
     assert audit.package_sha256 == independently_computed_hash
+
+
+def test_real_drawing_4952_package_is_not_uploadable_under_safety_gate():
+    coupons = tuple(
+        (Path(__file__).parent / "fixtures" / "drawing_4952_coupons.txt")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    )
+
+    result = evaluate_package_safety(
+        coupons,
+        DRAWING_4952_PROBABILITIES,
+        config=PackageSafetyConfig(),
+    )
+
+    assert result.decision == "NO BET"
+    assert result.evaluated_coupons == coupons
+    assert result.package_sha256 == hashlib.sha256(
+        ",".join(coupons).encode("utf-8")
+    ).hexdigest()
+    assert result.uploadable_coupons == ()
+    assert result.reason_codes == (
+        "extreme_concentration",
+        "zero_exposure_material_outcome",
+    )
+    assert {reason["event"] for reason in result.reasons} >= {1, 5, 8, 12, 14, 15}
 
 
 def test_reports_and_cli_are_deterministic(tmp_path):

@@ -6,7 +6,7 @@ import re
 import unicodedata
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -612,6 +612,9 @@ def load_ready_drawing_pins(
     drawing_id: int,
     drawing_fingerprint: str,
     provider: str,
+    expected_probability_sha256: str | None = None,
+    as_of: datetime | None = None,
+    max_probability_age: timedelta = timedelta(hours=24),
 ) -> tuple[DrawingEventPinRecord, ...]:
     """Require a ready preparation and its exact complete authoritative pin set."""
     with session_factory() as session:
@@ -633,8 +636,37 @@ def load_ready_drawing_pins(
         raise ValueError(
             "ready drawing preparation is missing; run prepare-drawing"
         )
-    if preparation.status != "ready" or preparation.mapped_count != 15:
-        raise ValueError("drawing preparation is not ready; run prepare-drawing")
+    try:
+        unresolved = json.loads(preparation.unresolved_event_orders)
+        summary = json.loads(preparation.readiness_summary)
+    except (TypeError, json.JSONDecodeError) as error:
+        raise ValueError("preparation_fail:invalid_readiness_evidence") from error
+    if (
+        preparation.status != "ready"
+        or preparation.mapped_count != 15
+        or unresolved != []
+        or preparation.eligibility_status != "playable"
+        or not isinstance(summary, dict)
+        or summary.get("status") != "ready"
+        or summary.get("mapped_count") != 15
+        or summary.get("unresolved_event_orders") not in ([], ())
+    ):
+        raise ValueError("preparation_fail:not_ready_15_of_15")
+    if expected_probability_sha256 is not None:
+        if summary.get("probability_input_sha256") != expected_probability_sha256:
+            raise ValueError("preparation_fail:probability_input_changed_or_missing")
+        fetched_at_value = summary.get("target_fetched_at")
+        try:
+            fetched_at = datetime.fromisoformat(str(fetched_at_value))
+        except ValueError as error:
+            raise ValueError("preparation_fail:probability_input_not_fresh") from error
+        reference = as_of or datetime.now(timezone.utc)
+        if (
+            fetched_at.tzinfo is None
+            or fetched_at > reference
+            or reference - fetched_at > max_probability_age
+        ):
+            raise ValueError("preparation_fail:probability_input_not_fresh")
     pins = load_drawing_pins(
         session_factory,
         drawing_id=drawing_id,

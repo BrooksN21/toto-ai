@@ -5,6 +5,8 @@ from typing import Literal
 
 import numpy as np
 
+from toto_ai.package.audit import PackageSafetyConfig
+
 ProbabilityMatrix = tuple[tuple[float, float, float], ...]
 EVMode = Literal["research", "playable"]
 PlayTimingStatus = Literal[
@@ -52,17 +54,23 @@ class EVConfig:
     prize_fund_factor: float = 1.0
     possible_winnings: float | None = None
     effective_budget: int | None = None
+    package_safety_enabled: bool = False
+    package_near_fixed_share: float = 0.95
+    package_low_probability_threshold: float = 0.20
+    package_material_probability_threshold: float = 0.20
 
     def __post_init__(self) -> None:
         validate_config_bank(self.bank, self.stake)
-        if self.effective_budget is None:
-            return
-        if type(self.effective_budget) is not int or self.effective_budget < 0:
-            raise ValueError("effective_budget must be a non-negative int")
-        if self.effective_budget > self.bank:
-            raise ValueError("effective_budget cannot exceed bank")
-        if self.effective_budget % self.stake:
-            raise ValueError("effective_budget must be divisible by stake")
+        if not isinstance(self.package_safety_enabled, bool):
+            raise ValueError("package_safety_enabled must be a bool")
+        _ = self.package_safety_config
+        if self.effective_budget is not None:
+            if type(self.effective_budget) is not int or self.effective_budget < 0:
+                raise ValueError("effective_budget must be a non-negative int")
+            if self.effective_budget > self.bank:
+                raise ValueError("effective_budget cannot exceed bank")
+            if self.effective_budget % self.stake:
+                raise ValueError("effective_budget must be divisible by stake")
 
     @property
     def requested_bank(self) -> int:
@@ -75,6 +83,14 @@ class EVConfig:
     @property
     def max_coupons(self) -> int:
         return self.selection_budget // self.stake
+
+    @property
+    def package_safety_config(self) -> PackageSafetyConfig:
+        return PackageSafetyConfig(
+            near_fixed_share=self.package_near_fixed_share,
+            low_probability_threshold=self.package_low_probability_threshold,
+            material_probability_threshold=self.package_material_probability_threshold,
+        )
 
 
 @dataclass(frozen=True)

@@ -1,5 +1,57 @@
 # Decisions
 
+## 2026-07-23: Finished result and settlement identity
+
+- Result snapshot identity excludes retrieval time and includes exact drawing
+  identity, ordered result/score rows, payments, pool, and jackpot.
+- Package identity uses canonical ordered coupons, drawing identity, and stake;
+  original source bytes and their SHA-256 are retained.
+- Settlement identity binds result snapshot and package archive hashes.
+- Category entitlement is derived only from explicit supported official
+  category/payout evidence. Without it, return and ROI remain null even when
+  observed hits are below a historically familiar threshold; pool and jackpot
+  totals are never treated as payouts.
+- Post-draw scheduling uses one explicit target and an absolute instant after
+  `ended_at`; it never resolves an open drawing or places a bet.
+
+## 2026-07-23: Production PLAY requires explicit package-safety evidence
+
+- Keep Cover Engine generation and guarantee mathematics unchanged.
+- Apply the safety gate only at the production-playable publication boundary;
+  research selection remains backward compatible.
+- Reuse audit exposure definitions. Reject near-fixed concentration, a fixed
+  outcome below the configured probability floor, or zero package exposure to
+  an outcome at or above the configured material-probability floor.
+- A valid unsafe package is `NO BET` with no uploadable coupons. Missing,
+  malformed, stale, or mismatched readiness/safety evidence is operational
+  `FAILED`, never an implicit `NO BET` or `PLAY`.
+- A schema-v4 `PLAY` manifest must serialize coupons, normalized probability
+  rows, and canonical safety thresholds. Scheduler ingestion reconstructs
+  `PackageSafetyConfig`, recomputes `evaluate_package_safety`, and requires the
+  complete declared result to equal that recomputation. It never trusts a
+  manifest-declared safety decision. Legacy-incomplete or tampered evidence
+  fails closed.
+- Safety evidence always retains the original evaluated coupons and package
+  SHA-256 separately from `uploadable_coupons`. A rejected package therefore
+  remains auditable, while only the publication package is emptied. Every
+  non-null safety record is recomputed before scheduler PLAY or NO BET returns.
+- A terminal `NO BET` does not imply that package safety failed. Recomputed
+  safety evidence may be either `NO BET` or `PLAY`; timing, self-dilution, or
+  another audited boundary may be the rejecting gate. Preserve that gate in
+  `terminal_reason`, while always publishing zero coupons for `NO BET`.
+- Safety thresholds are authorization inputs owned by the scheduler plan, not
+  evidence supplied by the runner manifest. Canonically validate and serialize
+  them in the plan, forward them to `run-drawing`, require manifest equality,
+  and recompute with the plan's `PackageSafetyConfig`.
+- Actionable schema-v3 plans require a resolved internal drawing ID.
+  Systematic preparation/preflight persists or verifies its exact visible
+  number and `ended_at`; pre-bet manifest import verifies the same database
+  identity. Durable archival is necessary but not sufficient for publication:
+  clock checks immediately after import and immediately before `.bet-ready`
+  fail closed after T-10 without deleting the audit archive.
+- This decision does not implement finished-result sync, settlement, payout
+  accounting, observed ROI, or post-draw scheduling.
+
 ## Package audit report verification is fail-closed
 
 - Schema-v1 keeps readable top-level audit fields duplicated alongside the
