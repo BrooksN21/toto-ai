@@ -144,8 +144,10 @@ def test_init_db_creates_sqlite_database(tmp_path):
         "external_collection_runs",
         "external_event_dispositions",
         "package_settlements",
-        "quotes",
-        "team_aliases",
+            "quotes",
+            "sports_event_feature_snapshots",
+            "sports_stats_runs",
+            "team_aliases",
         "team_entities",
         "team_registry_reviews",
     }

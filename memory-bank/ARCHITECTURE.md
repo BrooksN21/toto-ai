@@ -493,3 +493,49 @@ Important CLI commands:
 - `scheduler-execute`: execute preflight/fallback/final/freeze phases from a
   signed schedule, strictly parse runner manifests, and only publish an
   actionable package when freeze publishes `.bet-ready`.
+
+## Audit-only sports-statistics evidence
+
+The first sports-statistics vertical slice is isolated under
+`toto_ai.sports_stats`:
+
+```text
+ready exact 15/15 drawing pins
+-> API-Sports football target context
+-> completed fixtures strictly before min(as_of, target kickoff)
+-> optional league standings
+-> immutable provider-neutral feature records
+-> append-only SQLite snapshot
+-> JSON/CSV/Markdown audit report
+```
+
+`collect-sports-stats` supports one exact selector (`--open`, `--drawing-id`,
+or `--drawing-number`) and an explicit cache-only `--historical-as-of`.
+Prospective collection fails closed at the drawing deadline. Target fixtures,
+future fixtures, and non-finished/cancelled/postponed fixtures are excluded
+locally regardless of provider ordering.
+
+Historical mode resolves drawing identity only from SQLite, loads a
+hash-verified TotoBrief raw-detail cache/sidecar captured no later than
+`as_of`, and invokes API-Sports with `cache_only=True` for every endpoint. It
+does not construct or call a TotoBrief network client. Missing or newer frozen
+detail is a command error; missing provider history remains explicit
+market-only evidence.
+
+Run construction enforces exact run/event parity for drawing ID/number,
+fingerprint, provider, captured-at, as-of, and deadline. Source providers and
+the run's request-fingerprint set must match event evidence. Provider history
+rows for unrelated teams are discarded. Empty/error/plan-denied history is
+stored as an unavailable (`None`) window, so report feature cells are blank
+rather than numeric zeros. API-Sports standings support is read from the
+actual `league.standings` field.
+
+The additive `sports_stats_runs` and `sports_event_feature_snapshots` tables
+are append-only. The package does not import prediction, package, runner,
+scheduler, result, or settlement code. Reports state `AUDIT ONLY`,
+`package influence: NONE`, and `fallback: MARKET ONLY`.
+
+API-Sports free-plan denials are represented as
+`provider_plan_unavailable`, never as zero-valued features. Sports evidence
+cannot affect bookmaker probabilities or PLAY until a separately frozen
+chronological out-of-sample gate passes.

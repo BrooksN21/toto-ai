@@ -2250,3 +2250,72 @@ after each bounded sleep, and never sleeps through the final-window boundary.
 Task 1 verification passed: focused runner tests (`51 passed` after the
 reviewed fingerprint fix), focused Ruff,
 previous full pytest baseline (`796 passed`), full Ruff, and `git diff --check`.
+
+## Audit-only sports-statistics slice (2026-07-27)
+
+Implemented locally, not committed:
+
+- provider-neutral immutable football evidence contracts and canonical hashes;
+- additive append-only SQLite run/event snapshot tables;
+- API-Sports adapter over the existing authenticated/cache/quota transport;
+- strict exclusion of target, future, cancelled, postponed, and non-finished
+  fixtures;
+- recent overall/home/away W-D-L and goals, points/form, rest, and optional
+  standings;
+- `collect-sports-stats` with open/id/number selection, secure `.env` loading,
+  deadline checks, and cache-only historical as-of;
+- JSON/CSV/Markdown audit reports with explicit missing/fallback reasons;
+- no influence on probability, brief, package, scheduler, PLAY, result, or
+  settlement paths.
+
+Prospective acceptance on drawing 4957 produced a valid 15-row immutable run,
+but zero complete events. The API-Sports free plan rejects 2026 team history
+and standings (`provider_plan_unavailable`; the provider response limits free
+season access to older seasons). The optimized second run used 10 target
+context cache hits and 7 HTTP requests, with 15 partial rows and explicit
+`MARKET ONLY` fallback. This proves the fail-safe pipeline, not useful sports
+coverage and not profitability.
+
+Next: evaluate a lawful free current-season source against the same contracts.
+Only if no viable free source exists should the previously allowed paid ceiling
+be reconsidered. Do not blend empty API-Sports evidence into market
+probabilities.
+
+Verification for this uncommitted slice:
+
+- focused sports-stat regressions: `26 passed`;
+- focused provider/collector/runner compatibility: `129 passed`;
+- full suite: `1382 passed in 234.10s`;
+- repository-wide Ruff: passed;
+- `git diff --check`: passed;
+- CLI help smoke: passed;
+- reviewed prospective drawing-4957 run:
+  `be141718e87c9e7a6ca85eecdc34a17cbed20c2e249bc3d0a142cd439db99db4`;
+  15 partial rows, no numeric history windows, blank CSV/Markdown feature
+  fields, and explicit `provider_plan_unavailable`.
+
+Independent review hardening is implemented locally and remains uncommitted:
+
+- historical as-of uses only frozen raw-detail/provider caches and never
+  contacts TotoBrief or API-Sports;
+- normal prospective team-history cache entries (`last=10`) are replayable by
+  the bounded historical `from/to` path only when their provider observation
+  time is at or before the requested as-of; the adapter still applies the
+  strict target-kickoff/as-of cutoff locally and records the actual cached
+  request fingerprint;
+- prospective-to-historical replay is covered end to end with API-Sports
+  network access disabled, identical event features, and byte-identical
+  JSON/CSV/Markdown reports; a cache captured after as-of is rejected;
+- raw detail must have a valid sidecar and `fetched_at <= as_of`;
+- unavailable history is `None`, not a zero-valued window;
+- target fixture standings capability is parsed from `league.standings`;
+- unrelated-team history is ignored and cannot produce a complete event;
+- run/event drawing/provider/fingerprint/time/provenance identity is exact;
+- sports-stat reports are ignored generated artifacts and deterministic;
+- existing databases initialize additively without data loss;
+- archived package/PLAY provenance remains unchanged by sports persistence.
+
+The remaining prospective-cache/historical-replay P1 is closed locally.
+Final verification for the uncommitted sports-stat slice: focused
+sports-stat/provider/collector tests `38 passed`; full suite
+`1384 passed in 243.60s`; repository-wide Ruff and `git diff --check` passed.

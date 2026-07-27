@@ -203,6 +203,10 @@ from toto_ai.runner.offline_replay import (
     load_offline_replay_inputs,
     resolve_offline_replay_paths,
 )
+from toto_ai.sports_stats.operation import (
+    collect_and_store_sports_stats,
+    parse_historical_as_of,
+)
 
 app = typer.Typer(help="TotoBrief API commands.")
 
@@ -3167,6 +3171,87 @@ def backtest(
     csv_path, markdown_path = write_backtest_reports(result, last=last)
     print(_backtest_summary_table(result.summary))
     print(f"Reports written to {csv_path} and {markdown_path}")
+
+
+@app.command("collect-sports-stats")
+def collect_sports_stats_command(
+    open: bool = typer.Option(False, "--open"),  # noqa: A002
+    drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
+    drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
+    db: str = typer.Option("data/toto.db"),
+    provider: str = typer.Option("api-sports"),
+    last: int = typer.Option(10, "--last", min=1, max=10),
+    report_dir: str = typer.Option(
+        "reports/sports-stats",
+        "--report-dir",
+    ),
+    cache_root: str = typer.Option(
+        "data/external-cache/api-sports",
+        "--cache-root",
+    ),
+    raw_cache_dir: str = typer.Option("data/raw", "--raw-cache-dir"),
+    env_file: str = typer.Option(".env", "--env-file"),
+    historical_as_of: str | None = typer.Option(
+        None,
+        "--historical-as-of",
+        help=(
+            "Explicit cache-only UTC as-of for historical audit. "
+            "Never performs a historical network reconstruction."
+        ),
+    ),
+) -> None:
+    """Collect immutable football statistics — AUDIT ONLY.
+
+    This command never changes probabilities, packages, PLAY/NO BET, scheduler
+    state, or betting markers.
+    """
+    if provider != "api-sports":
+        raise typer.BadParameter("provider must be api-sports")
+    try:
+        snapshot, paths = collect_and_store_sports_stats(
+            db=db,
+            open_drawing=open,
+            drawing_id=drawing_id,
+            drawing_number=drawing_number,
+            history_size=last,
+            report_dir=report_dir,
+            cache_root=cache_root,
+            raw_cache_dir=raw_cache_dir,
+            env_file=env_file,
+            historical_as_of=parse_historical_as_of(historical_as_of),
+        )
+    except (
+        APISportsError,
+        OSError,
+        SQLAlchemyError,
+        TotoBriefRequestError,
+        TypeError,
+        ValueError,
+    ) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    typer.echo(
+        json.dumps(
+            {
+                "mode": "AUDIT ONLY",
+                "package_influence": "NONE",
+                "fallback": "MARKET ONLY",
+                "run_id": snapshot.run_id,
+                "drawing_id": snapshot.drawing_id,
+                "drawing_number": snapshot.drawing_number,
+                "status": snapshot.status,
+                "complete_count": snapshot.complete_count,
+                "partial_count": snapshot.partial_count,
+                "missing_count": snapshot.missing_count,
+                "unsupported_count": snapshot.unsupported_count,
+                "requests_made": snapshot.requests_made,
+                "cache_hits": snapshot.cache_hits,
+                "reports": [str(path) for path in paths],
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
 
 
 @app.command()

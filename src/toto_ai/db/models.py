@@ -477,5 +477,84 @@ class DrawingPreparation(Base):
     updated_at: Mapped[str] = mapped_column(String)
 
 
+class SportsStatsRun(Base):
+    """Immutable, content-addressed audit-only sports-statistics run."""
+
+    __tablename__ = "sports_stats_runs"
+    __table_args__ = (
+        UniqueConstraint(
+            "drawing_id",
+            "drawing_fingerprint",
+            "provider",
+            "as_of",
+            name="uq_sports_stats_run_identity",
+        ),
+        Index(
+            "ix_sports_stats_runs_latest",
+            "drawing_id",
+            "drawing_fingerprint",
+            "provider",
+            "as_of",
+        ),
+    )
+
+    run_id: Mapped[str] = mapped_column(String, primary_key=True)
+    content_sha256: Mapped[str] = mapped_column(String)
+    schema_version: Mapped[int] = mapped_column(Integer)
+    drawing_id: Mapped[int] = mapped_column(Integer, index=True)
+    drawing_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    drawing_fingerprint: Mapped[str] = mapped_column(String)
+    provider: Mapped[str] = mapped_column(String)
+    requested_history_size: Mapped[int] = mapped_column(Integer)
+    captured_at: Mapped[str] = mapped_column(String)
+    as_of: Mapped[str] = mapped_column(String)
+    deadline: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String)
+    complete_count: Mapped[int] = mapped_column(Integer)
+    partial_count: Mapped[int] = mapped_column(Integer)
+    missing_count: Mapped[int] = mapped_column(Integer)
+    unsupported_count: Mapped[int] = mapped_column(Integer)
+    requests_made: Mapped[int] = mapped_column(Integer)
+    cache_hits: Mapped[int] = mapped_column(Integer)
+    source_request_fingerprints_json: Mapped[str] = mapped_column(Text)
+    snapshot_json: Mapped[str] = mapped_column(Text)
+
+
+class SportsEventFeatureSnapshot(Base):
+    """One immutable event row belonging to a sports-statistics run."""
+
+    __tablename__ = "sports_event_feature_snapshots"
+    __table_args__ = (
+        UniqueConstraint(
+            "run_id",
+            "event_order",
+            name="uq_sports_stats_run_event",
+        ),
+        UniqueConstraint(
+            "run_id",
+            "target_event_id",
+            name="uq_sports_stats_run_target_event",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    run_id: Mapped[str] = mapped_column(String, index=True)
+    drawing_id: Mapped[int] = mapped_column(Integer, index=True)
+    event_order: Mapped[int] = mapped_column(Integer)
+    target_event_id: Mapped[str] = mapped_column(String)
+    sport: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String)
+    missing_reasons_json: Mapped[str] = mapped_column(Text)
+    provider_fixture_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    provider_home_team_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    provider_away_team_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    league_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    season: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    target_starts_at: Mapped[str] = mapped_column(String)
+    feature_sha256: Mapped[str] = mapped_column(String)
+    feature_json: Mapped[str] = mapped_column(Text)
+    source_evidence_json: Mapped[str] = mapped_column(Text)
+
+
 # Name retained for the candidate terminology used by the implementation plan.
 TeamRegistryCandidate = TeamRegistryReview

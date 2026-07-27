@@ -1,5 +1,31 @@
 # Roadmap
 
+## Sports statistics milestone
+
+- [x] Provider-neutral immutable football contracts and validators.
+- [x] Append-only run/event persistence and as-of lookup.
+- [x] Existing-transport API-Sports adapter and strict no-future filtering.
+- [x] Recent form/home-away/rest/standings feature builder.
+- [x] Audit-only CLI and JSON/CSV/Markdown reports.
+- [x] Prospective acceptance run on drawing 4957.
+- [x] Independent-review hardening: strict network-free historical replay,
+  nullable unknown windows, actual standings capability parsing, full
+  run/event identity validation, unrelated-team rejection, deterministic
+  reports, legacy-DB initialization, package/PLAY isolation tests, and safe
+  reuse of a frozen prospective `last=10` history cache by historical
+  `from/to` replay with strict as-of and local fixture cutoffs.
+- [ ] Select a lawful source with current-season history/standings coverage.
+- [ ] Accumulate at least 30 frozen drawings / 450 events with material
+  non-fallback sports coverage.
+- [ ] Run chronological out-of-sample sports-only and capped-blend evaluation
+  against bookmaker log loss, Brier, calibration, and coverage.
+- [ ] Consider a capped bookmaker/sports blend only after a frozen
+  no-degradation gate passes.
+
+The API-Sports free-plan result is a provider limitation, not a reason to
+weaken the as-of contract or substitute old-season/currently fetched data.
+Until a suitable source is selected, `p_final = p_market`.
+
 ## Hybrid Package Program — Milestone 1 complete
 
 The ordered program is defined in

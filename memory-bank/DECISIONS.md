@@ -1,5 +1,24 @@
 # Decisions
 
+## 2026-07-27: sports statistics start as immutable audit evidence
+
+- Sports statistics are a separate provider-neutral evidence boundary.
+- The first implementation is football-only and cannot affect probabilities,
+  package selection, scheduler decisions, PLAY/NO BET, or betting markers.
+- Every fixture is filtered locally with
+  `fixture_start < min(snapshot_as_of, target_start)`; target and non-finished
+  fixtures are always excluded.
+- Missing and provider-plan-denied data remain explicit missingness with
+  market-only fallback. They are never converted to numeric zeros.
+- Feature hashes exclude run observation timestamps but include source
+  provenance, so identical immutable cache evidence reproduces the same feature
+  identity.
+- Activation requires a predeclared chronological out-of-sample comparison
+  against bookmaker probabilities after at least 30 drawings / 450 events and
+  sufficient non-fallback feature coverage.
+- The tested API-Sports free plan does not provide current-season history or
+  standings, so it is not accepted as the sole sports-data source.
+
 ## 2026-07-27: Active preparation has a distinct short detail-cache boundary
 
 - The general raw TotoBrief detail cache may remain useful for collection and
@@ -544,3 +563,32 @@
   level, date, sport, or orientation fails closed in the production path.
 - Drawing numbers, current team names, and provider fixture IDs are test replay
   data only. Production resolution contains no drawing-4951 or per-team branch.
+
+## Sports-statistics audit isolation
+
+- `--historical-as-of` is frozen-input only. It may read only local SQLite,
+  hash-verified TotoBrief raw detail/sidecar, and provider cache records whose
+  fetch timestamps are at or before `as_of`; it must never fall back to any
+  network request.
+- Historical team-history replay first looks for its bounded `from/to` cache
+  key and may then reuse the normal prospective `last=N` key for the same
+  provider/team/season/status/timezone request. Reuse is lawful only when the
+  cached provider observation time is not later than `as_of`; the actual cache
+  key remains part of source provenance, and fixture rows are filtered again
+  locally by target ID, team identity, completed status, target kickoff, and
+  as-of. A newer compatible cache is never accepted and historical mode never
+  contacts the provider.
+- Replaying the same frozen evidence with different transport counters is
+  idempotent: storage returns the existing immutable run only when every
+  semantic event/source/timing field is identical. Any evidence difference
+  remains an append conflict. Reports are emitted from that persisted run so a
+  prospective-to-offline replay is byte deterministic.
+- An available form window contains at least one eligible completed fixture.
+  Provider failure, plan denial, no history, and unrelated-team-only history
+  are unknown (`None`) with explicit reasons, never synthetic zero-valued
+  W-D-L/goals windows.
+- Sports-stat run and event identities/boundaries must agree exactly, including
+  drawing ID/number, fingerprint, provider, captured-at, as-of, deadline, and
+  request-fingerprint provenance.
+- Sports-stat collection and persistence are audit-only. They do not update
+  archived packages, package decisions, scheduler markers, or PLAY/NO BET.

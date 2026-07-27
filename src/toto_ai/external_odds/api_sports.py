@@ -45,11 +45,41 @@ class SafetyStopReached(APISportsError):
     """Raised before API-Sports can make work continue past a UTC cutoff."""
 
 
+class HistoricalCacheUnavailable(APISportsError):
+    """Raised when a historical as-of cannot use a lawful cached response."""
+
+
+class ProviderPlanUnavailable(APISportsError):
+    """Raised when the configured API-Sports plan cannot access an endpoint."""
+
+
 @dataclass(frozen=True)
 class _CachePayload:
     quota: QuotaState
     payload: dict[str, Any]
     fetched_at: datetime
+
+
+@dataclass(frozen=True)
+class APISportsJSONPayload:
+    endpoint: str
+    params: tuple[tuple[str, str], ...]
+    payload: dict[str, Any]
+    fetched_at: datetime
+
+    @property
+    def request_fingerprint(self) -> str:
+        return _payload_hash(
+            {
+                "provider": "api-sports",
+                "endpoint": self.endpoint,
+                "params": self.params,
+            }
+        )
+
+    @property
+    def payload_sha256(self) -> str:
+        return _payload_hash(self.payload)
 
 
 class APISportsClient:
@@ -158,6 +188,135 @@ class APISportsClient:
                 )
             )
         return _dedupe_provider_markets(tuple(markets))
+
+    def fetch_football_fixture_payload(
+        self,
+        fixture_id: str,
+        *,
+        as_of: datetime | None = None,
+        cache_only: bool = False,
+    ) -> APISportsJSONPayload:
+        return self._fetch_football_stats_payload(
+            "/fixtures",
+            {"id": _identifier(fixture_id, "fixture id")},
+            as_of=as_of,
+            cache_only=cache_only,
+        )
+
+    def fetch_football_team_fixtures_payload(
+        self,
+        team_id: str,
+        season: int,
+        *,
+        limit: int,
+        as_of: datetime | None = None,
+        cache_only: bool = False,
+        historical_from: date | None = None,
+        historical_to: date | None = None,
+    ) -> APISportsJSONPayload:
+        if not isinstance(season, int) or isinstance(season, bool) or season <= 0:
+            raise ValueError("season must be a positive integer")
+        if (
+            not isinstance(limit, int)
+            or isinstance(limit, bool)
+            or not 1 <= limit <= 10
+        ):
+            raise ValueError("limit must be in range 1 through 10")
+        base_params: dict[str, object] = {
+            "team": _identifier(team_id, "team id"),
+            "season": season,
+            "status": "FT-AET-PEN",
+            "timezone": "UTC",
+        }
+        params = dict(base_params)
+        compatible_cache_params: tuple[Mapping[str, object], ...] = ()
+        if historical_from is None and historical_to is None:
+            params["last"] = limit
+        elif historical_from is not None and historical_to is not None:
+            if historical_from > historical_to:
+                raise ValueError("historical fixture date range is invalid")
+            params["from"] = historical_from.isoformat()
+            params["to"] = historical_to.isoformat()
+            compatible_cache_params = (base_params | {"last": limit},)
+        else:
+            raise ValueError("historical fixture date range must be complete")
+        return self._fetch_football_stats_payload(
+            "/fixtures",
+            params,
+            as_of=as_of,
+            cache_only=cache_only,
+            compatible_cache_params=compatible_cache_params,
+        )
+
+    def fetch_football_standings_payload(
+        self,
+        league_id: str,
+        season: int,
+        *,
+        as_of: datetime | None = None,
+        cache_only: bool = False,
+    ) -> APISportsJSONPayload:
+        if not isinstance(season, int) or isinstance(season, bool) or season <= 0:
+            raise ValueError("season must be a positive integer")
+        return self._fetch_football_stats_payload(
+            "/standings",
+            {
+                "league": _identifier(league_id, "league id"),
+                "season": season,
+            },
+            as_of=as_of,
+            cache_only=cache_only,
+        )
+
+    def _fetch_football_stats_payload(
+        self,
+        path: str,
+        params: Mapping[str, object],
+        *,
+        as_of: datetime | None,
+        cache_only: bool,
+        compatible_cache_params: tuple[Mapping[str, object], ...] = (),
+    ) -> APISportsJSONPayload:
+        self._logical_fetches += 1
+        if as_of is not None:
+            _require_utc_datetime("as_of", as_of)
+        selected_params = params
+        if cache_only:
+            cached = None
+            for candidate_params in (params, *compatible_cache_params):
+                cache_key = _cache_key(
+                    FOOTBALL_BASE_URL,
+                    path,
+                    candidate_params,
+                )
+                candidate = self._load_cache(cache_key)
+                if candidate is None:
+                    continue
+                if as_of is not None and candidate.fetched_at > as_of:
+                    continue
+                cached = candidate
+                selected_params = candidate_params
+                break
+            if cached is None:
+                raise HistoricalCacheUnavailable(
+                    "historical API-Sports cache is unavailable"
+                )
+            self._cache_hits += 1
+        else:
+            cached = self._get_json_single_page("football", path, params)
+        if as_of is not None and cached.fetched_at > as_of:
+            raise HistoricalCacheUnavailable(
+                "API-Sports cache was captured after historical as-of"
+            )
+        return APISportsJSONPayload(
+            endpoint=path,
+            params=tuple(
+                (key, str(value))
+                for key, value in sorted(selected_params.items())
+            ),
+            payload=cached.payload,
+            fetched_at=cached.fetched_at,
+        )
 
     def _get_json_single_page(
         self,
@@ -437,6 +596,12 @@ def _json_mapping(response: Any) -> dict[str, Any]:
 def _validate_top_level_payload(payload: Mapping[str, Any]) -> None:
     errors = payload.get("errors")
     if errors not in ([], None):
+        if isinstance(errors, Mapping) and any(
+            key in errors for key in ("plan", "subscription")
+        ):
+            raise ProviderPlanUnavailable(
+                "API-Sports plan does not provide the requested data"
+            )
         raise APISportsError("API-Sports returned provider errors")
     paging = payload.get("paging")
     if paging is not None:
