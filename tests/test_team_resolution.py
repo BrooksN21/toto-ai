@@ -1,3 +1,5 @@
+import json
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -7,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from toto_ai.db.models import (
     Base,
     DrawingEventPin,
+    DrawingPreparation,
     TeamAlias,
     TeamEntity,
     TeamRegistryReview,
@@ -14,10 +17,13 @@ from toto_ai.db.models import (
 from toto_ai.external_odds.domain import ProviderEvent, TargetDrawing, TargetEvent
 from toto_ai.external_odds.preparation import (
     fetch_preparation_schedule,
+    preparation_probability_sha256,
     prepare_drawing,
 )
 from toto_ai.external_odds.team_registry import (
     backfill_accepted_matches,
+    load_ready_drawing_pins,
+    refresh_ready_drawing_preparation_evidence,
     seed_reviewed_alias_config,
 )
 from toto_ai.external_odds.team_resolution import (
@@ -357,6 +363,369 @@ def test_prepare_persists_ambiguous_event_to_review_queue(session_factory):
     assert retry.mapped_count == 15
     with session_factory() as session:
         assert session.scalar(select(func.count(DrawingEventPin.id))) == 15
+
+
+def test_prepare_reused_pins_refresh_probability_readiness_evidence(
+    session_factory,
+):
+    events = tuple(
+        TargetEvent(
+            **{
+                **_target(
+                    f"Home {order}", f"Away {order}"
+                ).__dict__,
+                "event_id": 100 + order,
+                "event_order": order,
+                "bk_probabilities": (
+                    (40 / 101, 31 / 101, 30 / 101)
+                    if order == 14
+                    else (0.4, 0.3, 0.3)
+                ),
+            }
+        )
+        for order in range(15)
+    )
+    original = TargetDrawing(
+        1, 1, NOW, NOW - timedelta(hours=2), events
+    )
+    candidates = tuple(
+        _candidate(
+            str(order),
+            f"Home {order}",
+            f"Away {order}",
+            home_id=f"home-{order}",
+            away_id=f"away-{order}",
+        )
+        for order in range(15)
+    )
+    prepared = prepare_drawing(
+        original,
+        candidates,
+        session_factory=session_factory,
+        event_contexts={
+            order: ResolutionContext("api-sports", league="Premier League")
+            for order in range(15)
+        },
+    )
+    assert prepared.status == "ready"
+    original_pin_hashes = tuple(pin.pin_hash for pin in prepared.pins)
+    original_fingerprint = prepared.drawing_fingerprint
+    with session_factory() as session:
+        stored = session.scalar(select(DrawingPreparation))
+        assert stored is not None
+        original_summary = json.loads(stored.readiness_summary)
+
+    refreshed_events = (
+        *events[:-1],
+        TargetEvent(
+            **{
+                **events[-1].__dict__,
+                "bk_probabilities": (0.42, 0.30, 0.28),
+            }
+        ),
+    )
+    refreshed = TargetDrawing(
+        1, 1, NOW, NOW - timedelta(hours=1), refreshed_events
+    )
+    new_hash = preparation_probability_sha256(
+        tuple(event.bk_probabilities for event in refreshed.events)
+    )
+
+    result = prepare_drawing(
+        refreshed,
+        candidates,
+        session_factory=session_factory,
+        event_contexts={
+            order: ResolutionContext("api-sports", league="Premier League")
+            for order in range(15)
+        },
+    )
+
+    assert result.drawing_fingerprint == original_fingerprint
+    assert tuple(pin.pin_hash for pin in result.pins) == original_pin_hashes
+    with session_factory() as session:
+        preparation = session.scalar(select(DrawingPreparation))
+        assert preparation is not None
+        summary = json.loads(preparation.readiness_summary)
+        assert summary["probability_input_sha256"] == new_hash
+        assert summary["target_fetched_at"] == refreshed.fetched_at.isoformat()
+        for key in ("probability_input_sha256", "target_fetched_at"):
+            summary.pop(key)
+            original_summary.pop(key)
+        assert summary == original_summary
+    assert (
+        tuple(
+            pin.pin_hash
+            for pin in load_ready_drawing_pins(
+                session_factory,
+                drawing_id=refreshed.drawing_id,
+                drawing_fingerprint=original_fingerprint,
+                provider="api-sports",
+                expected_probability_sha256=new_hash,
+                as_of=NOW,
+            )
+        )
+        == original_pin_hashes
+    )
+
+
+def _readiness_summary_for_assertion(prepared, target):
+    with_probability_evidence = {
+        "status": prepared.status,
+        "mapped_count": prepared.mapped_count,
+        "unresolved_event_orders": prepared.unresolved_event_orders,
+        "eligibility": prepared.eligibility.__dict__,
+        "events": [event.__dict__ for event in prepared.events],
+        "schedule_diagnostics": prepared.schedule_diagnostics,
+        "target_fetched_at": target.fetched_at.isoformat(),
+        "probability_input_sha256": preparation_probability_sha256(
+            tuple(event.bk_probabilities for event in target.events)
+        ),
+    }
+    return json.dumps(
+        with_probability_evidence,
+        sort_keys=True,
+        default=str,
+        separators=(",", ":"),
+    )
+
+
+def test_refresh_probability_evidence_is_monotonic_and_equal_time_fail_closed(
+    session_factory,
+):
+    events = tuple(
+        TargetEvent(
+            **{
+                **_target(f"Home {order}", f"Away {order}").__dict__,
+                "event_id": 100 + order,
+                "event_order": order,
+            }
+        )
+        for order in range(15)
+    )
+    target = TargetDrawing(1, 1, NOW, NOW - timedelta(hours=2), events)
+    candidates = tuple(
+        _candidate(
+            str(order),
+            f"Home {order}",
+            f"Away {order}",
+            home_id=f"home-{order}",
+            away_id=f"away-{order}",
+        )
+        for order in range(15)
+    )
+    prepared = prepare_drawing(
+        target,
+        candidates,
+        session_factory=session_factory,
+        event_contexts={
+            order: ResolutionContext("api-sports", league="Premier League")
+            for order in range(15)
+        },
+    )
+    original_hash = preparation_probability_sha256(
+        tuple(event.bk_probabilities for event in events)
+    )
+    newer_hash = "a" * 64
+    newer_at = NOW - timedelta(hours=1)
+    newer_summary = json.loads(_readiness_summary_for_assertion(prepared, target))
+    newer_summary["probability_input_sha256"] = newer_hash
+    newer_summary["target_fetched_at"] = newer_at.isoformat()
+    refresh_ready_drawing_preparation_evidence(
+        session_factory,
+        drawing_id=1,
+        drawing_fingerprint=prepared.drawing_fingerprint,
+        provider="api-sports",
+        readiness_summary=json.dumps(newer_summary),
+    )
+    with session_factory() as session:
+        row = session.scalar(select(DrawingPreparation))
+        assert row is not None
+        after_newer = (row.readiness_summary, row.updated_at)
+
+    older_summary = dict(newer_summary)
+    older_summary["probability_input_sha256"] = original_hash
+    older_summary["target_fetched_at"] = target.fetched_at.isoformat()
+    with pytest.raises(ValueError, match="older probability evidence"):
+        refresh_ready_drawing_preparation_evidence(
+            session_factory,
+            drawing_id=1,
+            drawing_fingerprint=prepared.drawing_fingerprint,
+            provider="api-sports",
+            readiness_summary=json.dumps(older_summary),
+        )
+
+    refresh_ready_drawing_preparation_evidence(
+        session_factory,
+        drawing_id=1,
+        drawing_fingerprint=prepared.drawing_fingerprint,
+        provider="api-sports",
+        readiness_summary=json.dumps(newer_summary),
+    )
+    mismatched = dict(newer_summary)
+    mismatched["probability_input_sha256"] = "b" * 64
+    with pytest.raises(ValueError, match="conflicting probability evidence"):
+        refresh_ready_drawing_preparation_evidence(
+            session_factory,
+            drawing_id=1,
+            drawing_fingerprint=prepared.drawing_fingerprint,
+            provider="api-sports",
+            readiness_summary=json.dumps(mismatched),
+        )
+
+    with session_factory() as session:
+        row = session.scalar(select(DrawingPreparation))
+        assert row is not None
+        assert (row.readiness_summary, row.updated_at) == after_newer
+
+
+def test_concurrent_probability_refresh_keeps_newest_evidence(tmp_path):
+    engine = create_engine(f"sqlite+pysqlite:///{tmp_path / 'registry.db'}")
+    Base.metadata.create_all(engine)
+    factory = sessionmaker(engine, expire_on_commit=False)
+    events = tuple(
+        TargetEvent(
+            **{
+                **_target(f"Home {order}", f"Away {order}").__dict__,
+                "event_id": 100 + order,
+                "event_order": order,
+            }
+        )
+        for order in range(15)
+    )
+    target = TargetDrawing(1, 1, NOW, NOW - timedelta(hours=3), events)
+    candidates = tuple(
+        _candidate(
+            str(order),
+            f"Home {order}",
+            f"Away {order}",
+            home_id=f"home-{order}",
+            away_id=f"away-{order}",
+        )
+        for order in range(15)
+    )
+    prepared = prepare_drawing(
+        target,
+        candidates,
+        session_factory=factory,
+        event_contexts={
+            order: ResolutionContext("api-sports", league="Premier League")
+            for order in range(15)
+        },
+    )
+    base = json.loads(_readiness_summary_for_assertion(prepared, target))
+    older = {**base, "target_fetched_at": (NOW - timedelta(hours=2)).isoformat()}
+    newer = {
+        **base,
+        "target_fetched_at": (NOW - timedelta(hours=1)).isoformat(),
+        "probability_input_sha256": "c" * 64,
+    }
+
+    def refresh(summary):
+        try:
+            refresh_ready_drawing_preparation_evidence(
+                factory,
+                drawing_id=1,
+                drawing_fingerprint=prepared.drawing_fingerprint,
+                provider="api-sports",
+                readiness_summary=json.dumps(summary),
+            )
+        except ValueError:
+            pass
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        tuple(executor.map(refresh, (newer, older)))
+
+    with factory() as session:
+        row = session.scalar(select(DrawingPreparation))
+        assert row is not None
+        summary = json.loads(row.readiness_summary)
+        assert summary["target_fetched_at"] == newer["target_fetched_at"]
+        assert (
+            summary["probability_input_sha256"]
+            == newer["probability_input_sha256"]
+        )
+    engine.dispose()
+
+
+@pytest.mark.parametrize(
+    "invalid_probabilities",
+    [
+        (0.42, 0.30),
+        (0.42, 0.30, 0.30),
+    ],
+)
+def test_prepare_reused_pins_reject_invalid_probabilities_without_partial_update(
+    session_factory,
+    invalid_probabilities,
+):
+    events = tuple(
+        TargetEvent(
+            **{
+                **_target(
+                    f"Home {order}", f"Away {order}"
+                ).__dict__,
+                "event_id": 100 + order,
+                "event_order": order,
+            }
+        )
+        for order in range(15)
+    )
+    target = TargetDrawing(1, 1, NOW, NOW - timedelta(hours=2), events)
+    candidates = tuple(
+        _candidate(
+            str(order),
+            f"Home {order}",
+            f"Away {order}",
+            home_id=f"home-{order}",
+            away_id=f"away-{order}",
+        )
+        for order in range(15)
+    )
+    prepared = prepare_drawing(
+        target,
+        candidates,
+        session_factory=session_factory,
+        event_contexts={
+            order: ResolutionContext("api-sports", league="Premier League")
+            for order in range(15)
+        },
+    )
+    with session_factory() as session:
+        before = session.scalar(select(DrawingPreparation))
+        assert before is not None
+        before_summary = before.readiness_summary
+        before_updated_at = before.updated_at
+    before_pin_hashes = tuple(pin.pin_hash for pin in prepared.pins)
+
+    object.__setattr__(
+        target.events[-1], "bk_probabilities", invalid_probabilities
+    )
+    object.__setattr__(target, "fetched_at", NOW - timedelta(hours=1))
+
+    with pytest.raises(ValueError, match="preparation probabilities"):
+        prepare_drawing(
+            target,
+            candidates,
+            session_factory=session_factory,
+            event_contexts={
+                order: ResolutionContext("api-sports", league="Premier League")
+                for order in range(15)
+            },
+        )
+
+    with session_factory() as session:
+        after = session.scalar(select(DrawingPreparation))
+        assert after is not None
+        assert after.readiness_summary == before_summary
+        assert after.updated_at == before_updated_at
+        assert tuple(
+            session.scalars(
+                select(DrawingEventPin.pin_hash).order_by(
+                    DrawingEventPin.event_order
+                )
+            )
+        ) == before_pin_hashes
 
 
 def test_prepare_default_context_rejects_same_pair_from_wrong_league(

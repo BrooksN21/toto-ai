@@ -10,6 +10,8 @@ from toto_ai.analytics.api_inspector import DrawingReference
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector, DetailSyncResult, SummaryPageResult
 
+DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS = 60.0
+
 
 @dataclass(frozen=True)
 class OpenDrawingSyncResult:
@@ -30,16 +32,31 @@ def synchronize_open_drawing(
     community: str = "baltbet-main",
     expected_drawing_number: int | None = None,
     raw_cache_dir: str | Path = "data/raw",
-    detail_cache_max_age_seconds: float = 12 * 60 * 60,
+    detail_cache_max_age_seconds: float = (
+        DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS
+    ),
     storage_root: str | Path = ".",
 ) -> OpenDrawingSyncResult:
     """Perform the minimum TotoBrief morning synchronization.
 
     Exactly one page-list request is made. All page metadata is committed, the
     exact open drawing is selected only from that fresh response, and its
-    detail is loaded from a fresh validated cache when available or fetched
-    once otherwise.
+    detail is loaded only from an operationally fresh validated cache when
+    available or fetched once otherwise. The short preparation cache window
+    prevents a long-lived raw cache from becoming the probability evidence
+    later compared with the runner's fresh drawing snapshot.
     """
+    if (
+        not isinstance(detail_cache_max_age_seconds, int | float)
+        or isinstance(detail_cache_max_age_seconds, bool)
+        or detail_cache_max_age_seconds < 0
+        or detail_cache_max_age_seconds
+        > DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS
+    ):
+        raise ValueError(
+            "detail_cache_max_age_seconds for active preparation must be between "
+            f"0 and {DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS:g}"
+        )
     collector = Collector(
         client,
         session_factory,

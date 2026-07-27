@@ -5,6 +5,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta, timezone
+from math import isclose, isfinite
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -24,6 +25,7 @@ from toto_ai.external_odds.team_registry import (
     enqueue_review,
     load_ready_drawing_pins,
     publish_drawing_preparation,
+    refresh_ready_drawing_preparation_evidence,
     upsert_team_entity,
 )
 from toto_ai.external_odds.team_resolution import (
@@ -201,7 +203,15 @@ def prepare_drawing(
         _validate_existing_pins_against_candidates(
             target, existing, tuple(candidates), provider=provider
         )
-        return _result_from_existing(target, fingerprint, provider, existing)
+        result = _result_from_existing(target, fingerprint, provider, existing)
+        refresh_ready_drawing_preparation_evidence(
+            session_factory,
+            drawing_id=target.drawing_id,
+            drawing_fingerprint=fingerprint,
+            provider=provider,
+            readiness_summary=_readiness_summary(result, target),
+        )
+        return result
 
     preview = _resolve_preparation_candidates(
         target,
@@ -621,6 +631,23 @@ def preparation_probability_sha256(
 ) -> str:
     if len(probabilities) != 15:
         raise ValueError("preparation probabilities require exactly 15 rows")
+    for row in probabilities:
+        if len(row) != 3:
+            raise ValueError(
+                "preparation probabilities require exactly three values per row"
+            )
+        if any(
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not isfinite(value)
+            or value <= 0
+            for value in row
+        ):
+            raise ValueError(
+                "preparation probabilities require finite positive values"
+            )
+        if not isclose(sum(row), 1.0, rel_tol=0.0, abs_tol=1e-9):
+            raise ValueError("preparation probabilities must sum to one")
     payload = json.dumps(
         probabilities,
         sort_keys=True,

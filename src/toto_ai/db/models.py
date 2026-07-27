@@ -61,7 +61,7 @@ class DrawingResultSnapshot(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     drawing_id: Mapped[int] = mapped_column(Integer, index=True)
     drawing_number: Mapped[int] = mapped_column(Integer, index=True)
-    hash_schema_version: Mapped[int] = mapped_column(Integer, default=2)
+    hash_schema_version: Mapped[int] = mapped_column(Integer, default=3)
     ended_at: Mapped[str] = mapped_column(String)
     retrieved_at: Mapped[str] = mapped_column(String)
     source_endpoint: Mapped[str] = mapped_column(String)

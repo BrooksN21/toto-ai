@@ -51,7 +51,6 @@ from toto_ai.analytics.research_bk_vs_norm import (
 from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.api.detail_cache import (
-    DEFAULT_DETAIL_CACHE_MAX_AGE_SECONDS,
     load_drawing_detail_cache,
 )
 from toto_ai.api.rate_limit import (
@@ -126,7 +125,10 @@ from toto_ai.operations.finished_draw import (
     settle_package_file,
     sync_finished_drawing,
 )
-from toto_ai.operations.sync_prepare import synchronize_open_drawing
+from toto_ai.operations.sync_prepare import (
+    DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS,
+    synchronize_open_drawing,
+)
 from toto_ai.optimizer.brief import build_brief_for_drawing
 from toto_ai.optimizer.brief_backtest import (
     run_brief_backtest,
@@ -295,6 +297,18 @@ def collect(name: str = "baltbet-main", db: str = "data/toto.db") -> None:
 def sync_finished_results_command(
     drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
     drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
+    void_event: list[int] | None = typer.Option(  # noqa: B008
+        None,
+        "--void-event",
+        min=1,
+        max=15,
+        help="Reviewed 1-based event order settled as void; repeat as needed.",
+    ),
+    void_source: str | None = typer.Option(
+        None,
+        "--void-source",
+        help="HTTP(S) evidence URL required when --void-event is used.",
+    ),
     db: str = typer.Option("data/toto.db", "--db"),
 ) -> None:
     """Force one exact finished drawing-info snapshot by explicit identity."""
@@ -309,6 +323,8 @@ def sync_finished_results_command(
             TotoBriefClient(),
             drawing_id=drawing_id,
             drawing_number=drawing_number,
+            void_event_orders=tuple(void_event or ()),
+            void_source=void_source,
         )
     except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
@@ -2507,9 +2523,10 @@ def prepare_drawing_command(
     target_cache: str | None = typer.Option(None, "--target-cache"),
     raw_cache_dir: str = typer.Option("data/raw", "--raw-cache-dir"),
     detail_cache_max_age_seconds: float = typer.Option(
-        DEFAULT_DETAIL_CACHE_MAX_AGE_SECONDS,
+        DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS,
         "--detail-cache-max-age-seconds",
         min=0,
+        max=DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS,
     ),
     refresh_totobrief: bool = typer.Option(
         False,
@@ -2737,9 +2754,10 @@ def sync_prepare_command(
     schedule_cache: str | None = typer.Option(None, "--schedule-cache"),
     raw_cache_dir: str = typer.Option("data/raw", "--raw-cache-dir"),
     detail_cache_max_age_seconds: float = typer.Option(
-        DEFAULT_DETAIL_CACHE_MAX_AGE_SECONDS,
+        DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS,
         "--detail-cache-max-age-seconds",
         min=0,
+        max=DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS,
     ),
     totobrief_rate_state: str = typer.Option(
         str(DEFAULT_RATE_STATE_PATH),

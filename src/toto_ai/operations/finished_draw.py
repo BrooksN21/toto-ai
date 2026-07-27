@@ -18,6 +18,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 from sqlalchemy import select
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -33,9 +34,11 @@ from toto_ai.db.models import (
 from toto_ai.package.audit import OUTCOMES, validate_coupons
 
 EVENT_COUNT = 15
+VOID_RESULT = "*"
 RESULT_ENDPOINT_TEMPLATE = "/drawing-info/{drawing_id}"
 LEGACY_RESULT_SNAPSHOT_HASH_SCHEMA_VERSION = 1
-RESULT_SNAPSHOT_HASH_SCHEMA_VERSION = 2
+TIMED_RESULT_SNAPSHOT_HASH_SCHEMA_VERSION = 2
+RESULT_SNAPSHOT_HASH_SCHEMA_VERSION = 3
 
 
 @dataclass(frozen=True)
@@ -46,6 +49,7 @@ class ResultSync:
     payload_sha256: str
     result_sha256: str
     actual: str
+    void_event_orders: tuple[int, ...]
     complete: bool
     created: bool
     retrieved_at: str
@@ -77,6 +81,7 @@ class Settlement:
     archive_sha256: str
     package_sha256: str
     actual: str
+    void_event_orders: tuple[int, ...]
     hit_distribution: dict[int, int]
     best_hits: int
     best_coupon_ranks: tuple[int, ...]
@@ -151,6 +156,8 @@ def sync_finished_drawing(
     drawing_id: int | None = None,
     drawing_number: int | None = None,
     retrieved_at: datetime | None = None,
+    void_event_orders: Sequence[int] = (),
+    void_source: str | None = None,
 ) -> ResultSync:
     """Fetch exactly one `/drawing-info/{id}` and append its result snapshot."""
     expected_id, expected_number = _resolve_explicit_drawing(
@@ -171,6 +178,8 @@ def sync_finished_drawing(
         expected_id=expected_id,
         expected_number=expected_number,
         authoritative_ended_at=authoritative_ended_at,
+        void_event_orders=void_event_orders,
+        void_source=void_source,
     )
     payload_json = _canonical_json(payload)
     payload_hash = _sha256_text(payload_json)
@@ -234,6 +243,7 @@ def sync_finished_drawing(
         payload_sha256=payload_hash,
         result_sha256=result_hash,
         actual=normalized["actual"],
+        void_event_orders=tuple(normalized["void_event_orders"]),
         complete=True,
         created=created,
         retrieved_at=retrieved_text,
@@ -460,7 +470,7 @@ def settle_archived_package(
             "result_snapshot_sha256": snapshot.snapshot_sha256,
             "archive_sha256": package.archive_sha256,
             "package_sha256": package.package_sha256,
-            **computed,
+            **_settlement_payload_fields(computed),
         }
         settlement_hash = _sha256_json(settlement_payload)
         inserted = session.execute(
@@ -510,6 +520,7 @@ def settle_archived_package(
         archive_sha256=package.archive_sha256,
         package_sha256=package.package_sha256,
         actual=actual,
+        void_event_orders=tuple(computed["void_event_orders"]),
         hit_distribution={
             int(key): value for key, value in computed["hit_distribution"].items()
         },
@@ -906,7 +917,13 @@ def _normalize_finished_payload(
     expected_id: int,
     expected_number: int,
     authoritative_ended_at: str,
+    void_event_orders: Sequence[int] = (),
+    void_source: str | None = None,
 ) -> dict[str, Any]:
+    void_orders, reviewed_void_source = _normalize_void_event_orders(
+        void_event_orders,
+        void_source=void_source,
+    )
     if not isinstance(payload, dict) or not isinstance(payload.get("data"), dict):
         raise ValueError("drawing-info payload must contain an object data field")
     data = payload["data"]
@@ -951,12 +968,33 @@ def _normalize_finished_payload(
         event_ids.add(event_id)
         result = raw.get("result")
         score = raw.get("score")
+        public_order = order + 1
+        if public_order in void_orders:
+            if result not in (None, "") or score not in (None, ""):
+                raise ValueError(
+                    f"void event {public_order} already has a result or score"
+                )
+            by_order[order] = {
+                "order": order,
+                "event_id": event_id,
+                "result": VOID_RESULT,
+                "result_status": "void",
+                "score": "",
+                "void_source": reviewed_void_source,
+            }
+            continue
+        if result in (None, "") and score in (None, ""):
+            raise ValueError(
+                f"finished event {public_order} result is unresolved; "
+                "a reviewed void override is required"
+            )
         if result not in OUTCOMES or not isinstance(score, str) or not score.strip():
             raise ValueError("finished drawing requires complete 15/15 results/scores")
         by_order[order] = {
             "order": order,
             "event_id": event_id,
             "result": result,
+            "result_status": "resolved",
             "score": score,
         }
     if set(by_order) != set(range(EVENT_COUNT)):
@@ -967,10 +1005,60 @@ def _normalize_finished_payload(
         "ended_at": authoritative_ended_at,
         "events": events,
         "actual": "".join(event["result"] for event in events),
+        "void_event_orders": sorted(void_orders),
         "payments": _extract_payments(data),
         "pool_sum": _optional_finite_number(data.get("pool_sum"), "pool_sum"),
         "jackpot": _optional_finite_number(data.get("jackpot"), "jackpot"),
     }
+
+
+def _normalize_void_event_orders(
+    values: Sequence[int],
+    *,
+    void_source: str | None,
+) -> tuple[set[int], str | None]:
+    orders: set[int] = set()
+    for value in values:
+        if type(value) is not int or value not in range(1, EVENT_COUNT + 1):
+            raise ValueError("void_event_orders must contain integers from 1 to 15")
+        if value in orders:
+            raise ValueError("void_event_orders must be unique")
+        orders.add(value)
+    if orders:
+        reviewed_source = _normalize_http_evidence_url(void_source)
+    elif void_source is not None:
+        raise ValueError("void_source requires at least one void event")
+    else:
+        reviewed_source = None
+    return orders, reviewed_source
+
+
+def _normalize_http_evidence_url(value: Any) -> str:
+    if not isinstance(value, str):
+        raise ValueError("void_source must be a non-empty HTTP(S) evidence URL")
+    normalized = value.strip()
+    if (
+        not normalized
+        or len(normalized) > 2048
+        or any(character.isspace() for character in normalized)
+    ):
+        raise ValueError("void_source must be a non-empty HTTP(S) evidence URL")
+    try:
+        parsed = urlsplit(normalized)
+        hostname = parsed.hostname
+    except ValueError as error:
+        raise ValueError(
+            "void_source must be a non-empty HTTP(S) evidence URL"
+        ) from error
+    if (
+        parsed.scheme.lower() not in {"http", "https"}
+        or not parsed.netloc
+        or hostname is None
+        or parsed.username is not None
+        or parsed.password is not None
+    ):
+        raise ValueError("void_source must be a non-empty HTTP(S) evidence URL")
+    return normalized
 
 
 def _persist_operational_result(
@@ -1016,12 +1104,18 @@ def _compute_settlement(
     stake: int,
     payments: Any,
 ) -> dict[str, Any]:
-    if len(actual) != EVENT_COUNT or any(value not in OUTCOMES for value in actual):
+    allowed_results = set(OUTCOMES) | {VOID_RESULT}
+    if len(actual) != EVENT_COUNT or any(
+        value not in allowed_results for value in actual
+    ):
         raise ValueError("settlement requires an actual 15-outcome string")
     if not coupons:
         raise ValueError("settlement package must contain coupons")
     hits = [
-        sum(left == right for left, right in zip(coupon, actual, strict=True))
+        sum(
+            right == VOID_RESULT or left == right
+            for left, right in zip(coupon, actual, strict=True)
+        )
         for coupon in coupons
     ]
     counts = Counter(hits)
@@ -1040,6 +1134,8 @@ def _compute_settlement(
     fixed_misses: list[int] = []
     zero_exposure_misses: list[int] = []
     for index, outcome in enumerate(actual):
+        if outcome == VOID_RESULT:
+            continue
         exposed = {coupon[index] for coupon in coupons}
         if outcome not in exposed:
             zero_exposure_misses.append(index + 1)
@@ -1065,6 +1161,11 @@ def _compute_settlement(
             return_status = "known_from_official_payments"
     return {
         "actual": actual,
+        "void_event_orders": [
+            index + 1
+            for index, outcome in enumerate(actual)
+            if outcome == VOID_RESULT
+        ],
         "hit_distribution": distribution,
         "best_hits": best,
         "best_coupon_ranks": best_ranks,
@@ -1214,6 +1315,10 @@ def _verified_snapshot(
         raise ValueError("result snapshot payload ended_at mismatch")
     if _sha256_json(events) != row.result_sha256:
         raise ValueError("result snapshot result hash mismatch")
+    _validate_snapshot_events(
+        events,
+        hash_schema_version=row.hash_schema_version,
+    )
     if (
         not row.complete
         or row.event_count != EVENT_COUNT
@@ -1361,7 +1466,7 @@ def _verified_settlement(
         "result_snapshot_sha256": snapshot.snapshot_sha256,
         "archive_sha256": package.archive_sha256,
         "package_sha256": package.package_sha256,
-        **computed,
+        **_settlement_payload_fields(computed),
     }
     if _sha256_json(payload) != row.settlement_sha256:
         raise ValueError("settlement hash mismatch")
@@ -1398,6 +1503,13 @@ def _verified_settlement(
     if any(getattr(row, key) != value for key, value in expected_columns.items()):
         raise ValueError("settlement stored columns mismatch")
     return row
+
+
+def _settlement_payload_fields(computed: Mapping[str, Any]) -> dict[str, Any]:
+    fields = dict(computed)
+    if not fields.get("void_event_orders"):
+        fields.pop("void_event_orders", None)
+    return fields
 
 
 def _verify_complete_state(
@@ -1537,7 +1649,10 @@ def _result_snapshot_hash_content(
         "pool_sum": pool_sum,
         "jackpot": jackpot,
     }
-    if hash_schema_version == RESULT_SNAPSHOT_HASH_SCHEMA_VERSION:
+    if hash_schema_version in (
+        TIMED_RESULT_SNAPSHOT_HASH_SCHEMA_VERSION,
+        RESULT_SNAPSHOT_HASH_SCHEMA_VERSION,
+    ):
         content["ended_at"] = _canonical_timestamp(
             ended_at,
             "result snapshot ended_at",
@@ -1545,6 +1660,47 @@ def _result_snapshot_hash_content(
     elif hash_schema_version != LEGACY_RESULT_SNAPSHOT_HASH_SCHEMA_VERSION:
         raise ValueError("unsupported result snapshot hash schema version")
     return content
+
+
+def _validate_snapshot_events(
+    events: Any,
+    *,
+    hash_schema_version: int,
+) -> None:
+    if not isinstance(events, list) or len(events) != EVENT_COUNT:
+        raise ValueError("result snapshot events are invalid")
+    for expected_order, event in enumerate(events):
+        if not isinstance(event, Mapping) or event.get("order") != expected_order:
+            raise ValueError("result snapshot event order is invalid")
+        result = event.get("result")
+        score = event.get("score")
+        if hash_schema_version < RESULT_SNAPSHOT_HASH_SCHEMA_VERSION:
+            if (
+                result not in OUTCOMES
+                or not isinstance(score, str)
+                or not score.strip()
+            ):
+                raise ValueError("legacy result snapshot event is invalid")
+            continue
+        status = event.get("result_status")
+        if result == VOID_RESULT:
+            source = event.get("void_source")
+            try:
+                reviewed_source = _normalize_http_evidence_url(source)
+            except ValueError as error:
+                raise ValueError(
+                    "void result snapshot evidence is invalid"
+                ) from error
+            if status != "void" or score != "" or source != reviewed_source:
+                raise ValueError("void result snapshot evidence is invalid")
+        elif (
+            result not in OUTCOMES
+            or status != "resolved"
+            or not isinstance(score, str)
+            or not score.strip()
+            or "void_source" in event
+        ):
+            raise ValueError("resolved result snapshot event is invalid")
 
 
 def _sha256_json(value: Any) -> str:

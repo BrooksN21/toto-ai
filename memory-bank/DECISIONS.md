@@ -1,5 +1,52 @@
 # Decisions
 
+## 2026-07-27: Active preparation has a distinct short detail-cache boundary
+
+- The general raw TotoBrief detail cache may remain useful for collection and
+  recovery, but its 12-hour lifetime is not valid operational probability
+  evidence for an active drawing.
+- `sync-prepare` and `prepare-drawing` accept an exact cached detail only when
+  it is at most 60 seconds old. Older cache content triggers one coordinated
+  exact-detail refresh; refresh failure defers preparation instead of falling
+  back to stale probabilities.
+- The short cache boundary prevents a known stale-cache mismatch, but it does
+  not pin probabilities forever. A genuine probability change after
+  preparation remains a fail-closed runner rejection.
+- This decision does not weaken drawing identity, probability hash,
+  monotonic-timestamp, equal-time conflict, or unrelated readiness-evidence
+  checks.
+
+## 2026-07-27: Cancelled events require reviewed evidence and settle as VOID
+
+- TotoBrief empty result/score fields are insufficient to infer cancellation.
+  A current snapshot may mark an event VOID only from explicit 1-based event
+  numbers plus a syntactically valid HTTP(S) evidence URL.
+- A VOID override must agree with the raw payload: both result and score must
+  be empty. An existing result or score is a contradiction and fails closed.
+- Snapshot schema v3 stores the VOID marker `*`, status, empty score, and
+  evidence URL in the immutable hash. Schema v1 and v2 snapshots retain their
+  original event shape and hash rules.
+- Under BaltBet VOID semantics, every 1/X/2 selection is correct at that
+  position. VOID positions are not prediction misses and therefore do not
+  appear in fixed-miss or zero-exposure-miss diagnostics.
+- Non-VOID settlement hash payloads do not gain an empty VOID field; historical
+  settlement identities remain compatible.
+
+## 2026-07-27: Ready pins and probability evidence have separate lifecycles
+
+- A matching drawing fingerprint and successfully revalidated provider
+  identity allow the exact existing 15 pins to be reused.
+- Reusing pins does not authorize reusing probability evidence. Preparation
+  must hash the exact newly loaded normalized 15-by-3 TotoBrief BK input and
+  atomically patch only its probability hash, target fetch timestamp, and row
+  update time; all unrelated readiness evidence is immutable during refresh.
+- Probability evidence is monotonic and compare-and-swap protected. Older
+  target fetch times cannot replace newer evidence. Equal time and hash is an
+  idempotent no-op; equal time with a different hash is a closed conflict.
+- The refresh transaction first verifies ready/playable 15/15 preparation and
+  every authoritative pin. Invalid probability input or invalid pin state
+  fails closed without partially changing preparation evidence or pins.
+
 ## 2026-07-23: Finished result and settlement identity
 
 - Result snapshot identity excludes retrieval time and includes exact drawing

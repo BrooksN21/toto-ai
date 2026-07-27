@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 
 from toto_ai.db.models import (
     DrawingEventPin,
@@ -676,6 +676,129 @@ def load_ready_drawing_pins(
     if len(pins) != 15:
         raise ValueError("ready drawing preparation has no complete pin set")
     return pins
+
+
+def refresh_ready_drawing_preparation_evidence(
+    session_factory: Any,
+    *,
+    drawing_id: int,
+    drawing_fingerprint: str,
+    provider: str,
+    readiness_summary: str,
+) -> None:
+    """Atomically refresh evidence for an unchanged ready authoritative pin set."""
+    drawing_id = _positive_integer(drawing_id, "drawing_id")
+    drawing_fingerprint = _required_text(
+        drawing_fingerprint, "drawing_fingerprint"
+    )
+    provider = _required_text(provider, "provider")
+    try:
+        summary = json.loads(readiness_summary)
+    except (TypeError, json.JSONDecodeError) as error:
+        raise ValueError("invalid readiness summary") from error
+    if (
+        not isinstance(summary, dict)
+        or summary.get("status") != "ready"
+        or summary.get("mapped_count") != 15
+        or summary.get("unresolved_event_orders") not in ([], ())
+        or not isinstance(summary.get("probability_input_sha256"), str)
+        or not isinstance(summary.get("target_fetched_at"), str)
+    ):
+        raise ValueError("invalid ready preparation evidence")
+    incoming_hash = summary["probability_input_sha256"]
+    try:
+        incoming_fetched_at = datetime.fromisoformat(summary["target_fetched_at"])
+    except ValueError as error:
+        raise ValueError("invalid ready preparation evidence") from error
+    if incoming_fetched_at.tzinfo is None:
+        raise ValueError("invalid ready preparation evidence")
+
+    while True:
+        with session_factory() as session:
+            preparation = session.scalar(
+                select(DrawingPreparation).where(
+                    DrawingPreparation.drawing_id == drawing_id,
+                    DrawingPreparation.drawing_fingerprint == drawing_fingerprint,
+                    DrawingPreparation.provider == provider,
+                )
+            )
+            if (
+                preparation is None
+                or preparation.status != "ready"
+                or preparation.mapped_count != 15
+                or preparation.unresolved_event_orders != "[]"
+                or preparation.eligibility_status != "playable"
+            ):
+                raise ValueError("ready drawing preparation cannot be refreshed")
+            rows = tuple(
+                session.scalars(
+                    select(DrawingEventPin)
+                    .where(
+                        DrawingEventPin.drawing_id == drawing_id,
+                        DrawingEventPin.drawing_fingerprint == drawing_fingerprint,
+                        DrawingEventPin.provider == provider,
+                        DrawingEventPin.status == "valid",
+                    )
+                    .order_by(DrawingEventPin.event_order)
+                )
+            )
+            if (
+                len(rows) != 15
+                or tuple(row.event_order for row in rows) != tuple(range(15))
+                or len({row.provider_fixture_id for row in rows}) != 15
+            ):
+                raise ValueError("ready drawing preparation has incomplete pins")
+            for row in rows:
+                _validate_pin_integrity(row)
+            stored_text = preparation.readiness_summary
+            stored_updated_at = preparation.updated_at
+            preparation_id = preparation.id
+
+        try:
+            stored_summary = json.loads(stored_text)
+            stored_fetched_at = datetime.fromisoformat(
+                stored_summary["target_fetched_at"]
+            )
+            stored_hash = stored_summary["probability_input_sha256"]
+        except (KeyError, TypeError, json.JSONDecodeError, ValueError) as error:
+            raise ValueError("invalid stored ready preparation evidence") from error
+        if (
+            not isinstance(stored_summary, dict)
+            or not isinstance(stored_hash, str)
+            or stored_fetched_at.tzinfo is None
+        ):
+            raise ValueError("invalid stored ready preparation evidence")
+        if incoming_fetched_at < stored_fetched_at:
+            raise ValueError("older probability evidence cannot replace newer evidence")
+        if incoming_fetched_at == stored_fetched_at:
+            if incoming_hash != stored_hash:
+                raise ValueError("conflicting probability evidence at equal timestamp")
+            return
+
+        refreshed_summary = dict(stored_summary)
+        refreshed_summary["probability_input_sha256"] = incoming_hash
+        refreshed_summary["target_fetched_at"] = summary["target_fetched_at"]
+        refreshed_text = json.dumps(
+            refreshed_summary,
+            sort_keys=True,
+            default=str,
+            separators=(",", ":"),
+        )
+        with session_factory.begin() as session:
+            result = session.execute(
+                update(DrawingPreparation)
+                .where(
+                    DrawingPreparation.id == preparation_id,
+                    DrawingPreparation.readiness_summary == stored_text,
+                    DrawingPreparation.updated_at == stored_updated_at,
+                )
+                .values(
+                    readiness_summary=refreshed_text,
+                    updated_at=_utc_now(),
+                )
+            )
+            if result.rowcount == 1:
+                return
 
 
 def publish_drawing_preparation(

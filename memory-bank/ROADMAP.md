@@ -19,8 +19,12 @@ Ordered vertical milestones:
    real drawing-4952 audit verified, and all P1/P2 findings closed.
 2. True probability-aware Cover strategy with exact verification and a common
    EV/Cover comparison.
-3. Append-only prospective package archive, forced post-draw result refresh,
-   settlement, and expected-vs-actual ledger.
+3. **IN PROGRESS:** Append-only prospective package archive, forced post-draw
+   result refresh, settlement, and expected-vs-actual ledger. Explicit
+   finished-result sync, immutable package/result/settlement evidence, bounded
+   retries, reviewed VOID-event settlement, and the short fail-closed
+   active-detail freshness boundary are implemented. Mandatory production
+   scheduler integration and complete official payout evidence remain.
 4. Provider-neutral lawful sports-statistics collection, morning cache,
    historical backfill, and canonical football/hockey feature snapshots.
 5. Chronologically evaluated and calibrated market/sports probability blend;

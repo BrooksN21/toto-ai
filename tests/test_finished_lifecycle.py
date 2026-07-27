@@ -252,6 +252,108 @@ def test_finished_sync_rejects_identity_and_partial_results(tmp_path):
         assert session.scalar(select(DrawingResultSnapshot)) is None
 
 
+def test_finished_sync_accepts_reviewed_void_and_settlement_counts_it_as_hit(
+    tmp_path,
+):
+    factory = _database(tmp_path)
+    payload = finished_payload(payments=None)
+    payload["data"]["events"][14]["result"] = ""
+    payload["data"]["events"][14]["score"] = ""
+    source = (
+        "https://www.oursportscentral.com/services/releases/"
+        "new-mexico-united-birmingham-legion-fc-match-postponed-to-later-date/"
+        "n-6392681"
+    )
+
+    snapshot = sync_finished_drawing(
+        factory,
+        SnapshotClient([payload]),
+        drawing_id=11970,
+        void_event_orders=(15,),
+        void_source=source,
+    )
+
+    assert snapshot.actual == ACTUAL_4952[:-1] + "*"
+    assert snapshot.void_event_orders == (15,)
+    with factory() as session:
+        stored = session.scalar(
+            select(DrawingResultSnapshot).where(
+                DrawingResultSnapshot.snapshot_sha256
+                == snapshot.snapshot_sha256
+            )
+        )
+        events = json.loads(stored.events_json)
+        assert events[14] == {
+            "event_id": 20_014,
+            "order": 14,
+            "result": "*",
+            "result_status": "void",
+            "score": "",
+            "void_source": source,
+        }
+
+    package = tmp_path / "void-winner.txt"
+    package.write_text("30; " + "; ".join(ACTUAL_4952) + "\n")
+    archived = archive_package(
+        factory,
+        package,
+        drawing_id=11970,
+        drawing_number=4952,
+        stake=30,
+    )
+    settlement = settle_archived_package(
+        factory,
+        snapshot_sha256=snapshot.snapshot_sha256,
+        archive_sha256=archived.archive_sha256,
+    )
+
+    assert settlement.best_hits == 15
+    assert settlement.hit_distribution[15] == 1
+    assert settlement.void_event_orders == (15,)
+    assert 15 not in settlement.fixed_miss_events
+    assert 15 not in settlement.zero_exposure_miss_events
+
+
+def test_finished_sync_requires_explicit_consistent_void_evidence(tmp_path):
+    factory = _database(tmp_path)
+    empty = finished_payload()
+    empty["data"]["events"][14]["result"] = ""
+    empty["data"]["events"][14]["score"] = ""
+
+    with pytest.raises(ValueError, match="unresolved"):
+        sync_finished_drawing(
+            factory,
+            SnapshotClient([empty]),
+            drawing_id=11970,
+        )
+    with pytest.raises(ValueError, match="void_source"):
+        sync_finished_drawing(
+            factory,
+            SnapshotClient([empty]),
+            drawing_id=11970,
+            void_event_orders=(15,),
+        )
+    with pytest.raises(ValueError, match="already has a result"):
+        sync_finished_drawing(
+            factory,
+            SnapshotClient([finished_payload()]),
+            drawing_id=11970,
+            void_event_orders=(15,),
+            void_source="https://example.test/official-postponement",
+        )
+    with pytest.raises(ValueError, match=r"HTTP\(S\)"):
+        sync_finished_drawing(
+            factory,
+            SnapshotClient([empty]),
+            drawing_id=11970,
+            void_event_orders=(15,),
+            void_source="https://",
+        )
+
+    with factory() as session:
+        assert session.scalar(select(DrawingResultSnapshot)) is None
+
+
 @pytest.mark.parametrize(
     "ended_at",
     (
@@ -350,8 +452,67 @@ def test_legacy_snapshot_hash_survives_migration_and_current_append(tmp_path):
         snapshots = session.scalars(
             select(DrawingResultSnapshot).order_by(DrawingResultSnapshot.id)
         ).all()
-        assert [row.hash_schema_version for row in snapshots] == [1, 2, 2]
+        assert [row.hash_schema_version for row in snapshots] == [1, 3, 3]
         assert snapshots[0].snapshot_sha256 == legacy_hash
+
+
+def test_timed_schema_v2_snapshot_remains_verifiable(tmp_path):
+    factory = _database(tmp_path)
+    payload = finished_payload()
+    events = [
+        {
+            "order": event["order"],
+            "event_id": event["id"],
+            "result": event["result"],
+            "score": event["score"],
+        }
+        for event in payload["data"]["events"]
+    ]
+    canonical = lambda value: json.dumps(  # noqa: E731
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    payload_json = canonical(payload)
+    events_json = canonical(events)
+    content = {
+        "drawing_id": 11970,
+        "drawing_number": 4952,
+        "status": "finished",
+        "events": events,
+        "payments": None,
+        "pool_sum": 1_000_000.0,
+        "jackpot": 500_000.0,
+        "ended_at": "2026-07-22T16:00:00+00:00",
+    }
+    payload_hash = hashlib.sha256(payload_json.encode()).hexdigest()
+    result_hash = hashlib.sha256(events_json.encode()).hexdigest()
+    snapshot_hash = hashlib.sha256(canonical(content).encode()).hexdigest()
+    with factory.begin() as session:
+        session.add(
+            DrawingResultSnapshot(
+                drawing_id=11970,
+                drawing_number=4952,
+                hash_schema_version=2,
+                ended_at="2026-07-22T16:00:00+00:00",
+                retrieved_at="2026-07-23T00:00:00+00:00",
+                source_endpoint="/drawing-info/11970",
+                payload_sha256=payload_hash,
+                result_sha256=result_hash,
+                snapshot_sha256=snapshot_hash,
+                complete=True,
+                event_count=15,
+                actual=ACTUAL_4952,
+                events_json=events_json,
+                payments_json=None,
+                pool_sum=1_000_000,
+                jackpot=500_000,
+                payload_json=payload_json,
+            )
+        )
+
+    assert verify_result_snapshot(factory, snapshot_hash) == snapshot_hash
 
 
 def test_legacy_snapshot_timing_or_hash_tamper_fails_closed(tmp_path):
@@ -791,6 +952,52 @@ def test_finished_sync_cli_refuses_payload_identity_mismatch(monkeypatch, tmp_pa
 
     assert result.exit_code != 0
     assert "drawing id mismatch" in result.output
+
+
+def test_finished_sync_cli_passes_reviewed_void_evidence(monkeypatch, tmp_path):
+    db = tmp_path / "toto.db"
+    factory = get_session_factory(init_db(db))
+    with factory.begin() as session:
+        session.add(
+            Drawing(
+                id=11970,
+                number=4952,
+                status="finished",
+                ended_at="2026-07-22T16:00:00+00:00",
+            )
+        )
+    payload = finished_payload()
+    payload["data"]["events"][14]["result"] = ""
+    payload["data"]["events"][14]["score"] = ""
+    source = "https://example.test/official-postponement"
+    monkeypatch.setattr(
+        cli,
+        "TotoBriefClient",
+        lambda: SnapshotClient([payload]),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "sync-finished-results",
+            "--drawing-id",
+            "11970",
+            "--void-event",
+            "15",
+            "--void-source",
+            source,
+            "--db",
+            str(db),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    output = json.loads(result.output)
+    assert output["actual"] == ACTUAL_4952[:-1] + "*"
+    assert output["void_event_orders"] == [15]
+    with factory() as session:
+        stored = session.scalar(select(DrawingResultSnapshot))
+        assert json.loads(stored.events_json)[14]["void_source"] == source
 
 
 def test_archive_package_cli_is_explicit_legacy_import(tmp_path):

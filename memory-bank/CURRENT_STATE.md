@@ -1,5 +1,59 @@
 # Current State
 
+## 2026-07-27: Active preparation rejects stale probability detail
+
+The operational `sync-prepare`/`prepare-drawing` path no longer treats the
+general 12-hour raw-detail cache lifetime as acceptable probability evidence.
+Active preparation has a separate fail-closed cache-age ceiling of 60 seconds.
+An older exact drawing cache is refreshed from `/drawing-info/{id}` before
+READY evidence is written; if that refresh fails, the old cache is diagnostic
+only and preparation is deferred. The historical collector keeps its existing
+general cache policy.
+
+This fixes the drawing-4957 failure where `sync-prepare` accepted a cache about
+1618 seconds old and `run-drawing` immediately observed a different fresh BK
+hash. Regression coverage reproduces that stale-cache/fresh-run lifecycle,
+proves the fresh hash authorizes the unchanged ready pins, and proves a real
+subsequent probability change still raises
+`preparation_fail:probability_input_changed_or_missing`. The existing
+monotonic/CAS refresh rules and unrelated readiness fields remain unchanged.
+Current combined verification: focused operational/probability tests
+`42 passed`; full suite `1356 passed in 237.33s`; repository-wide Ruff and
+`git diff --check` passed.
+
+## 2026-07-27: Reviewed VOID result lifecycle
+
+Finished drawings may now record a cancelled/postponed event only through an
+explicit reviewed override: one or more public 1-based `--void-event` values
+and a required valid HTTP(S) `--void-source` evidence URL. An unresolved empty
+TotoBrief result still fails closed without that evidence, and an override is
+rejected when TotoBrief already supplies a result or score. Current immutable
+result snapshots use hash schema v3 and store `*`, `result_status = "void"`,
+an empty score, and the exact reviewed source. Legacy schema-v1 and timed
+schema-v2 snapshots remain independently verifiable.
+
+Settlement treats every coupon selection at a VOID event as correct and omits
+that event from fixed-miss and zero-exposure-miss diagnostics. Existing
+non-VOID settlement identities remain byte-compatible because an empty VOID
+list is not added to their hash payload. CLI pass-through, immutable evidence,
+inconsistent override rejection, schema-v2 compatibility, and settlement
+semantics are covered. Verification for the complete uncommitted lifecycle and
+probability-evidence patch: focused `65 passed`; full `1354 passed in 220.83s`;
+repository-wide Ruff and `git diff --check` passed.
+
+## 2026-07-27: Reused-pin probability evidence refresh
+
+`prepare_drawing()` now reuses an already validated exact 15-pin set while
+atomically refreshing only `probability_input_sha256`, `target_fetched_at`, and
+the preparation row update time. All event, confidence, margin, eligibility,
+and schedule diagnostics remain unchanged. A compare-and-swap retry makes the
+evidence monotonic under concurrent refreshes: older timestamps are rejected,
+equal timestamp/hash input is idempotent, and an equal timestamp with a
+different hash fails closed. Drawing identity, fingerprint, and pin content
+remain unchanged. Missing, malformed, non-finite, non-positive, or
+non-normalized probability rows fail before the readiness transaction, leaving
+the prior evidence and pins untouched.
+
 ## 2026-07-23: Finished-drawing lifecycle recovery
 
 Explicit `sync-finished-results`, `settle-drawing`, `post-draw-run`, and
