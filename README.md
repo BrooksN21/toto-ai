@@ -364,6 +364,42 @@ predicate with its actual value, threshold, and observed result. The Markdown
 report repeats the collection run, consensus configuration, gate decision, and
 predicate outcomes for operator review.
 
+## Data Health Contract
+
+`data-health` is a read-only, versioned quality gate for the complete local
+`baltbet-main` history:
+
+```bash
+python -m toto_ai.cli data-health --db data/toto.db
+python -m toto_ai.cli data-health --db data/toto.db \
+  --use-case backtest_probability --last 500 --no-strict
+python -m toto_ai.cli data-health --db data/toto.db \
+  --from-drawing 4940 --to-drawing 4959
+```
+
+Contract v1 reports every drawing and separate eligibility for:
+
+- `historical_inventory`;
+- `backtest_probability`;
+- `result_settlement`;
+- `prospective_generation`.
+
+It treats a pool triplet `0/0/0` as invalid and accepts explicit
+`*`/VOID/cancelled values as terminal results. Missing RAW/result snapshots are
+preserved as distinct reason codes. A missing settlement is an error only for
+a canonical `pre_bet_runner` package; legacy/rehearsal imports do not create a
+settlement obligation.
+
+The default is `--strict`. Exit code `0` means the selected use case passed,
+`3` is a controlled data-quality failure, and `4` is an execution failure.
+CSV, JSON, and Markdown reports are written under `reports/data-health` by
+default. `--last` cannot be combined with range selectors.
+
+Baseline brief generation and the MVP/baseline/strategy historical backtests
+reuse the same fail-closed API. Historical commands expose only the explicit
+`--allow-unhealthy-research` bypass and label its output as research-only;
+prospective generation has no bypass.
+
 ## Finished-Drawing Lifecycle
 
 Finished results are synchronized only by an explicit visible number or

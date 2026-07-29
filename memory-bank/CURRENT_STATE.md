@@ -2633,3 +2633,49 @@ remains rejected. API-Sports still has no women fixture for event 5, so drawing
 
 Focused verification: `98 passed`; touched-file Ruff and `git diff --check`
 passed.
+
+## Data-health contract v1 (2026-07-29)
+
+Implemented locally for task `TOTO-DATA-HEALTH-CONTRACT-V1`:
+
+- read-only `data-health` CLI with strict default, range/latest selectors,
+  controlled exit codes, and CSV/JSON/Markdown exports;
+- stable per-drawing reason codes and independent eligibility for four use
+  cases;
+- explicit `0/0/0` rejection and terminal VOID support;
+- canonical RAW discovery limited to `data/raw`;
+- actionable settlement obligation limited to `pre_bet_runner` archives;
+- fail-closed gates in baseline prospective brief generation and the
+  MVP/baseline/strategy historical backtests;
+- explicit research-only override with persisted/printed warning.
+
+Current full-history v1 result on `data/toto.db`:
+
+- 2,199 drawings / 32,985 event rows;
+- 369 finished drawings with incomplete terminal results;
+- 754 missing terminal outcomes in finished drawings;
+- 215 drawings with invalid all-zero pool;
+- 3 drawings with missing quotes/names/incomplete BK;
+- 12 drawings with canonical primary `data/raw` evidence;
+- 4 drawings with complete immutable result snapshots;
+- gaps 3843/3844; no duplicate visible numbers;
+- strict `historical_inventory`: 1 healthy, 2,198 unhealthy;
+- `backtest_probability`: 1,651 eligible under v1 SQL-quality semantics;
+- `prospective_generation`: 1,981 structurally input-eligible;
+- `result_settlement`: 4 result-evidence-eligible.
+
+The RAW count intentionally differs from the forensic report's 15 because the
+contract does not accept JSON under reports/tests as canonical source
+provenance. Production data was not changed and no network/backfill ran.
+
+Verification:
+
+- contract/gate focused suite: `68 passed`;
+- full pytest: `1485 passed in 248.07s`;
+- repository Ruff: passed;
+- `git diff --check`: passed;
+- strict real CLI: controlled exit `3`;
+- database SHA-256 remained
+  `1a6c9f4d62ba2198852066405342769ebbfa8a057b0525661fc1b58f576fd0c9`.
+
+Next task: P0.2 lifecycle-aware collector freshness.

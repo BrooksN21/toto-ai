@@ -178,9 +178,11 @@ def test_run_brief_backtest_skips_drawings_missing_pre_match_quotes():
             bank=90,
             stake=30,
             category=15,
+            allow_unhealthy_research=True,
         )
 
     assert result.summary["drawings_tested"] == 1
+    assert result.summary["data_health_override"] is True
     assert result.rows[0].drawing_number == 1001
 
 

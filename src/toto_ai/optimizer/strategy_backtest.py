@@ -15,6 +15,10 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from toto_ai.analytics.data_health import (
+    DATA_HEALTH_CONTRACT_VERSION,
+    require_data_health,
+)
 from toto_ai.analytics.history import normalize_result
 from toto_ai.db.models import Drawing, Event, Quote
 from toto_ai.optimizer.brief import (
@@ -243,6 +247,7 @@ def run_strategy_backtest(
     progress_callback=None,
     package_builder=build_packages_for_probabilities,
     drawing_ids: list[int] | None = None,
+    allow_unhealthy_research: bool = False,
 ) -> StrategyBacktestResult:
     if last <= 0:
         raise ValueError("last must be positive.")
@@ -260,6 +265,12 @@ def run_strategy_backtest(
             raise ValueError("Manifest drawing count must match last.")
         drawings = _load_exact_strategy_drawings(session, drawing_ids, community)
         eligibility_skipped = 0
+    gate = require_data_health(
+        session,
+        use_case="backtest_probability",
+        drawing_ids=tuple(drawing.id for drawing in drawings),
+        allow_unhealthy_research=allow_unhealthy_research,
+    )
     segments = split_development_holdout(drawings, holdout_size)
     input_data_hash = _strategy_input_data_hash(session, drawings)
     configuration_hash = _configuration_hash(config)
@@ -408,6 +419,8 @@ def run_strategy_backtest(
         "selected_drawing_numbers": [drawing.number for drawing in drawings],
         "input_data_hash": input_data_hash,
         "configuration_hash": configuration_hash,
+        "data_health_contract_version": DATA_HEALTH_CONTRACT_VERSION,
+        "data_health_override": gate.override_applied,
         "execution_time_seconds": round(time.perf_counter() - started_at, 4),
         }
     )
@@ -739,6 +752,9 @@ def _strategy_report_markdown(result: StrategyBacktestResult) -> str:
         f"- timeout_per_drawing: {config.timeout_per_drawing}",
         f"- configuration_hash: {summary.get('configuration_hash', '')}",
         f"- input_data_hash: {summary.get('input_data_hash', '')}",
+        "- data_health_contract_version: "
+        f"{summary.get('data_health_contract_version', '')}",
+        f"- data_health_override: {summary.get('data_health_override', False)}",
         "",
         "## Eligibility And Split",
         "",

@@ -10,6 +10,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from toto_ai.analytics.data_health import require_data_health
 from toto_ai.db.models import Drawing, Event, Quote
 from toto_ai.optimizer.cover import (
     greedy_cover,
@@ -78,6 +79,11 @@ def build_brief_for_drawing(
     if drawing is None:
         raise ValueError(f"Drawing {drawing_id} was not found.")
 
+    require_data_health(
+        session,
+        use_case="prospective_generation",
+        drawing_ids=(drawing_id,),
+    )
     events, quotes = _load_events_and_quotes(session, drawing_id)
     analyses = [
         analyze_event(event, quotes[event.event_order])

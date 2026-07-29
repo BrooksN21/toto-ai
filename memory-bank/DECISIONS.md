@@ -757,3 +757,30 @@
   request-fingerprint provenance.
 - Sports-stat collection and persistence are audit-only. They do not update
   archived packages, package decisions, scheduler markers, or PLAY/NO BET.
+
+## Data-health contract v1 decisions
+
+- Contract version `1.0.0` is the single source of truth for drawing
+  eligibility; `0/0/0` is never a valid pool.
+- `1`, `X`, `2`, and explicit `*`/VOID/cancelled values are terminal health
+  outcomes. Missing or unsupported values are not silently normalized.
+- `historical_inventory` is intentionally strict: it requires complete
+  structure, names, probability inputs, terminal results, canonical RAW,
+  immutable result evidence, and settlement of any canonical actionable
+  package.
+- `backtest_probability` v1 requires complete structure, names, usable
+  pool/BK, and terminal results. Missing canonical RAW/result snapshots remain
+  explicit observed deficiencies but are not yet blocking for this use case,
+  preserving the currently usable SQL research corpus. Such research is not
+  proof of pre-deadline provenance.
+- `prospective_generation` requires only the data needed before the draw:
+  structure, names, usable pool, and complete BK. Historical RAW, results, and
+  settlement are not required.
+- `result_settlement` requires terminal results plus immutable result evidence.
+  Absence of a settlement blocks only when a `pre_bet_runner` package exists.
+  Legacy/rehearsal imports are excluded.
+- Strict CLI exit code `3` means controlled data-quality failure; execution
+  failures use `4`. Research override is explicit, historical-only, and always
+  labeled. Prospective generation has no override.
+- Gap numbers remain metadata until verified against the authoritative listing;
+  the system must not synthesize drawings 3843/3844.

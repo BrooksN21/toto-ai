@@ -660,3 +660,26 @@ API-Sports free-plan denials are represented as
 `provider_plan_unavailable`, never as zero-valued features. Sports evidence
 cannot affect bookmaker probabilities or PLAY until a separately frozen
 chronological out-of-sample gate passes.
+
+## Data-health contract v1
+
+`toto_ai.analytics.data_health` is the reusable read-only quality boundary for
+the SQLite history. Contract version `1.0.0` evaluates every selected drawing,
+emits stable reason codes, and computes independent eligibility for
+`historical_inventory`, `backtest_probability`, `result_settlement`, and
+`prospective_generation`.
+
+The contract distinguishes missing quote rows, invalid `0/0/0` pools,
+incomplete BK, result gaps, explicit terminal VOID, canonical RAW/result
+snapshots, and unsettled canonical `pre_bet_runner` packages. Numeric gaps and
+duplicate visible numbers are report-level metadata rather than invented
+drawing rows. Canonical RAW discovery is deliberately limited to the sibling
+`data/raw` tree; rehearsal, report, and test-fixture JSON do not satisfy
+provenance.
+
+`data-health` opens SQLite in read-only mode and exports detail plus aggregates
+to CSV/JSON/Markdown. Baseline prospective brief generation and the
+MVP/baseline/strategy backtests call the same API. Generation always fails
+closed. Historical commands may continue only through the explicit
+`--allow-unhealthy-research` override, which is persisted in summaries and
+printed as research-only.

@@ -507,3 +507,23 @@ profitability or a proven winning strategy.
 - Package generation
 - Report export
 - Reproducible backtests
+
+## Full-history remediation
+
+- [x] `TOTO-DATA-HEALTH-CONTRACT-V1`: versioned read-only contract, strict
+  CLI, per-use-case eligibility, machine reason codes, selectors, exports, and
+  minimal generation/backtest gates.
+- [ ] P0.2: lifecycle-aware collector freshness. A transition to `finished`,
+  incomplete terminal results, or invalid `0/0/0` input must trigger explicit
+  reconciliation rather than be treated as current.
+- [ ] P0.3/P0.4: RAW-first immutable archive plus full-detail finished
+  importer.
+- [ ] Offline repair of fields provably recoverable from existing canonical
+  RAW.
+- [ ] Rate-limited resumable network backfill with durable attempt evidence.
+- [ ] Nightly listing/detail/result reconciliation and health report.
+- [ ] Complete actionable package settlement and mandatory post-draw report.
+
+Do not build another optimizer before the measurable lifecycle
+`drawing -> package -> archive -> results/VOID -> settlement -> review` is
+closed.

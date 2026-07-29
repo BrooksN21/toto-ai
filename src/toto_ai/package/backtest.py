@@ -9,6 +9,10 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from toto_ai.analytics.data_health import (
+    DATA_HEALTH_CONTRACT_VERSION,
+    require_data_health,
+)
 from toto_ai.analytics.history import normalize_result
 from toto_ai.db.models import Drawing, Event, Quote
 from toto_ai.package.mvp import generate_mvp_package
@@ -45,12 +49,20 @@ def run_mvp_backtest(
     stake: int = 30,
     category: int = 13,
     community: str = "baltbet-main",
+    allow_unhealthy_research: bool = False,
 ) -> BacktestResult:
     if last <= 0:
         raise ValueError("Last must be a positive integer.")
 
+    drawings = select_complete_finished_drawings(session, last, community)
+    gate = require_data_health(
+        session,
+        use_case="backtest_probability",
+        drawing_ids=tuple(drawing.id for drawing in drawings),
+        allow_unhealthy_research=allow_unhealthy_research,
+    )
     rows = []
-    for drawing in select_complete_finished_drawings(session, last, community):
+    for drawing in drawings:
         events, quotes = _drawing_events_and_quotes(session, drawing.id)
         result_string = build_result_string(events)
         brief = build_mvp_brief(events, quotes)
@@ -77,7 +89,14 @@ def run_mvp_backtest(
             )
         )
 
-    return BacktestResult(rows=rows, summary=summarize_backtest(rows))
+    summary = summarize_backtest(rows)
+    summary.update(
+        {
+            "data_health_contract_version": DATA_HEALTH_CONTRACT_VERSION,
+            "data_health_override": gate.override_applied,
+        }
+    )
+    return BacktestResult(rows=rows, summary=summary)
 
 
 def select_complete_finished_drawings(

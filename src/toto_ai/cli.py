@@ -38,6 +38,16 @@ from toto_ai.analytics.calibration import (
     run_calibration_study,
     write_calibration_reports,
 )
+from toto_ai.analytics.data_health import (
+    DATA_QUALITY_EXIT_CODE,
+    EXECUTION_ERROR_EXIT_CODE,
+    DataHealthReport,
+    audit_data_health,
+    write_data_health_reports,
+)
+from toto_ai.analytics.data_health import (
+    USE_CASES as DATA_HEALTH_USE_CASES,
+)
 from toto_ai.analytics.history import (
     get_crowd_accuracy,
     get_drawings_summary,
@@ -592,6 +602,82 @@ def audit(db: str = "data/toto.db") -> None:
     print(_probability_validation_table(audit_result["probability_validation"]))
     print(_duplicates_table(audit_result["duplicates"]))
     print(_quality_score_table(audit_result["quality_score"]))
+
+
+@app.command("data-health")
+def data_health_command(
+    db: str = typer.Option("data/toto.db", help="SQLite database path."),
+    use_case: str = typer.Option(
+        "historical_inventory",
+        "--use-case",
+        help=(
+            "Strict health use case: historical_inventory, "
+            "backtest_probability, result_settlement, or "
+            "prospective_generation."
+        ),
+    ),
+    from_drawing: int | None = typer.Option(
+        None,
+        "--from-drawing",
+        min=1,
+    ),
+    to_drawing: int | None = typer.Option(
+        None,
+        "--to-drawing",
+        min=1,
+    ),
+    last: int | None = typer.Option(None, "--last", min=1),
+    output_dir: str = typer.Option(
+        "reports/data-health",
+        "--output-dir",
+    ),
+    strict: bool = typer.Option(True, "--strict/--no-strict"),
+) -> None:
+    """Evaluate the versioned read-only drawing data-health contract."""
+    if use_case not in DATA_HEALTH_USE_CASES:
+        raise typer.BadParameter(
+            "--use-case must be one of: "
+            + ", ".join(DATA_HEALTH_USE_CASES)
+        )
+    if last is not None and (
+        from_drawing is not None or to_drawing is not None
+    ):
+        raise typer.BadParameter(
+            "--last cannot be combined with --from-drawing or --to-drawing"
+        )
+    if (
+        from_drawing is not None
+        and to_drawing is not None
+        and from_drawing > to_drawing
+    ):
+        raise typer.BadParameter(
+            "--from-drawing cannot be greater than --to-drawing"
+        )
+    try:
+        engine = open_readonly_db(db)
+        session_factory = get_session_factory(engine)
+        with session_factory() as session:
+            report = audit_data_health(
+                session,
+                db_path=db,
+                use_case=use_case,
+                from_drawing=from_drawing,
+                to_drawing=to_drawing,
+                last=last,
+                strict=strict,
+            )
+        paths = write_data_health_reports(report, output_dir)
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        typer.echo(f"data-health execution error: {error}", err=True)
+        raise typer.Exit(EXECUTION_ERROR_EXIT_CODE) from error
+
+    print(_data_health_summary_table(report))
+    print(
+        "Reports written to "
+        + ", ".join(str(path) for path in paths)
+    )
+    if strict and not report.summary.passed:
+        raise typer.Exit(DATA_QUALITY_EXIT_CODE)
 
 
 @app.command()
@@ -3556,6 +3642,11 @@ def backtest(
     bank: int = typer.Option(..., help="Any positive integer budget."),
     stake: int = typer.Option(30, help="Stake per coupon."),
     category: int = typer.Option(13, help="Target category: 13, 14, or 15."),
+    allow_unhealthy_research: bool = typer.Option(
+        False,
+        "--allow-unhealthy-research",
+        help="Explicit research-only bypass; marks all output as overridden.",
+    ),
 ) -> None:
     """Backtest the MVP package generator on finished drawings."""
     engine = init_db(db)
@@ -3569,11 +3660,13 @@ def backtest(
                 bank=bank,
                 stake=stake,
                 category=category,
+                allow_unhealthy_research=allow_unhealthy_research,
             )
         except ValueError as error:
             raise typer.BadParameter(str(error)) from error
 
     csv_path, markdown_path = write_backtest_reports(result, last=last)
+    _print_data_health_override(result.summary)
     print(_backtest_summary_table(result.summary))
     print(f"Reports written to {csv_path} and {markdown_path}")
 
@@ -3678,6 +3771,11 @@ def backtest_brief(
         30,
         help="Timeout guard per drawing in seconds.",
     ),
+    allow_unhealthy_research: bool = typer.Option(
+        False,
+        "--allow-unhealthy-research",
+        help="Explicit research-only bypass; marks all output as overridden.",
+    ),
 ) -> None:
     """Backtest the baseline brief generator on finished drawings."""
     engine = init_db(db)
@@ -3714,12 +3812,14 @@ def backtest_brief(
                     max_candidate_briefs=max_candidate_briefs,
                     timeout_per_drawing=timeout_per_drawing,
                     progress_callback=update_progress,
+                    allow_unhealthy_research=allow_unhealthy_research,
                 )
             except ValueError as error:
                 raise typer.BadParameter(str(error)) from error
         progress.update(task_id, description="Baseline brief backtest complete")
 
     csv_path, markdown_path = write_brief_backtest_reports(result, last=last)
+    _print_data_health_override(result.summary)
     print(_brief_backtest_summary_table(result.summary))
     print(f"Reports written to {csv_path} and {markdown_path}")
 
@@ -3745,6 +3845,11 @@ def backtest_strategies(
     manifest_in: str = typer.Option(
         ...,
         help="Required frozen manifest with exact drawing IDs and hashes.",
+    ),
+    allow_unhealthy_research: bool = typer.Option(
+        False,
+        "--allow-unhealthy-research",
+        help="Explicit research-only bypass; marks all output as overridden.",
     ),
 ) -> None:
     """Compare baseline and direct package strategies on historical drawings."""
@@ -3812,12 +3917,14 @@ def backtest_strategies(
                     config=config,
                     progress_callback=update_progress,
                     drawing_ids=drawing_ids,
+                    allow_unhealthy_research=allow_unhealthy_research,
                 )
             except ValueError as error:
                 raise typer.BadParameter(str(error)) from error
         progress.update(task_id, description="Strategy backtest complete")
 
     csv_path, markdown_path = write_strategy_backtest_reports(result, last=last)
+    _print_data_health_override(result.summary)
     print(_strategy_backtest_overview_table(result.summary))
     print(_strategy_holdout_table(result.summary["holdout"]))
     print(_strategy_decision_table(result.summary))
@@ -4241,6 +4348,41 @@ def _quality_score_table(score: float) -> Table:
     table.add_column("Value", justify="right")
     table.add_row("score", f"{score:.2f}/100")
     return table
+
+
+def _data_health_summary_table(report: DataHealthReport) -> Table:
+    summary = report.summary
+    table = Table(title="Data Health Contract")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("contract version", report.contract_version)
+    table.add_row("use case", report.use_case)
+    table.add_row("strict", str(report.strict).lower())
+    table.add_row("drawings", str(summary.total_drawings))
+    table.add_row("healthy", str(summary.healthy_drawings))
+    table.add_row("unhealthy", str(summary.unhealthy_drawings))
+    table.add_row("gaps", str(summary.gap_count))
+    table.add_row("duplicate numbers", str(summary.duplicate_number_count))
+    table.add_row(
+        "finished incomplete results",
+        str(summary.inventory_counts["finished_incomplete_result_drawings"]),
+    )
+    table.add_row(
+        "missing finished outcomes",
+        str(summary.inventory_counts["missing_terminal_results_in_finished"]),
+    )
+    table.add_row("exit status", summary.exit_status)
+    for reason, count in summary.reason_counts.items():
+        table.add_row(f"reason:{reason}", str(count))
+    return table
+
+
+def _print_data_health_override(summary: Mapping[str, object]) -> None:
+    if summary.get("data_health_override") is True:
+        print(
+            "[bold red]DATA-HEALTH OVERRIDE: RESEARCH ONLY; "
+            "results are not production-eligible.[/bold red]"
+        )
 
 
 def _api_paths_table(rows: list[dict[str, object]]) -> Table:
