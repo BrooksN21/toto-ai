@@ -1,5 +1,29 @@
 # Decisions
 
+## 2026-07-29: Row counts are not evidence of historical completeness
+
+- A database is never described as current, complete, or validated from
+  drawing/event counts alone. Claims must name the audited scope, required
+  fields, evidence source, and timestamp.
+- The complete local history is untrusted by default. Each analytical use
+  declares a versioned data-health contract and admits only drawings that pass
+  that contract with machine-readable reasons.
+- A finished drawing requires terminal `1/X/2` outcomes or explicit reviewed
+  `VOID`; null results are not silently interpreted or synthesized.
+- Non-null `0/0/0` pool triples are unusable data, not complete probabilities.
+- RAW detail must be archived immutably with identity, capture time, and hash
+  before operational-table mutation. Absence of RAW is explicit provenance
+  debt and cannot be hidden by a populated SQLite row.
+- Backfill preserves source truth. Data recoverable from local RAW is repaired
+  separately from data requiring a future TotoBrief request; permanently
+  unavailable evidence remains unknown and is excluded from affected studies.
+- A package is not evidence of strategy performance until it has immutable
+  pre-draw provenance, authoritative final results, settlement, and a
+  post-draw report. Rehearsal/simulation packages are excluded.
+- `TOTO-DATA-HEALTH-CONTRACT-V1` is the next implementation boundary. New
+  optimizer development remains paused until the P0 ingestion, archive, and
+  health gates are in place.
+
 ## 2026-07-29: Reviewed schedules are source evidence, never synthetic fixtures
 
 - Reviewed schedule fallback is admitted only after complete successful

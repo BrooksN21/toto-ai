@@ -1,5 +1,40 @@
 # Current State
 
+## 2026-07-29: Full-history forensic audit invalidated the completeness claim
+
+Task `TOTO-FULL-HISTORY-DATA-AUDIT` audited every locally stored
+`baltbet-main` drawing in read-only mode. The database passes SQLite
+`quick_check` and contains 2,199 drawings from visible number 2759 through
+4959, with 32,985 events and exactly 15 ordered event rows per stored drawing.
+Visible numbers 3843 and 3844 are absent.
+
+Structural row coverage is not historical data completeness. Of 2,197
+finished drawings, 369 have incomplete results and 754 event outcomes are
+missing. Nineteen finished drawings have no result signs at all. In addition,
+215 drawings contain 15 unusable `0/0/0` pool triples, three drawings have
+blank event names and no quote rows, immutable result snapshots exist for only
+four drawings, locally discoverable RAW/detail evidence exists for only 15
+drawings, and no package settlement exists.
+
+The retained `reports/validation_4938.md` proves only that drawing 4938 matched
+one supplied RAW payload. The former 2,179-drawing/32,685-event count proved
+only `2,179 × 15` event-row structure. It did not prove complete results,
+usable pool data, RAW retention, snapshots, or settlements. The previous broad
+claim that the full API history and all fields had been validated was
+incorrect.
+
+Confirmed local causes are: collector freshness does not require results after
+a drawing becomes finished; the finished-result importer updates outcomes but
+does not restore names or quotes; zero pool triples passed the old non-null
+audit; most historical RAW evidence was never retained; and the package
+lifecycle has no completed settlement evidence.
+
+Authoritative audit artifacts and the staged remediation plan are under
+`plans/TOTO-FULL-HISTORY-DATA-AUDIT/`. The only next implementation task is
+`TOTO-DATA-HEALTH-CONTRACT-V1`: a versioned read-only health contract and CLI.
+Until its eligibility gates exist, the full local history must not be treated
+as one trusted backtest corpus, and optimizer work is paused.
+
 ## 2026-07-29: Drawing coverage audit 4940–4959
 
 Read-only audit task `TOTO-DRAWING-COVERAGE-AUDIT-4940-4959` verified the

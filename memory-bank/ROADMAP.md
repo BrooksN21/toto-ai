@@ -3,26 +3,42 @@
 ## Historical data-health remediation
 
 - [x] Audit visible drawings 4940–4959 in the local SQLite database.
-  Header coverage is 20/20 with 15 ordered events per drawing and no duplicate
-  visible numbers.
-- [ ] Backfill missing result signs for 4940, 4945, 4949, 4950, 4951, 4952,
-  4957 and 4958, plus event 12 of 4946, without overwriting reviewed `VOID`
-  evidence.
-- [ ] Restore event names and pool/BK quote rows for 4954–4956 from
-  reproducible source evidence.
-- [ ] Create immutable result snapshots for every completed, usable drawing.
-- [ ] Add a fail-closed data-health gate for analytical/backtest admission:
-  exactly 15 events, complete names, required pool/BK input, complete
-  1/X/2-or-VOID results, and a valid immutable result snapshot.
+- [x] Expand the audit to the complete locally stored `baltbet-main` history:
+  2,199 drawings, 32,985 events, visible range 2759–4959.
+- [x] Classify local evidence as recoverable from RAW, requiring a future
+  TotoBrief request, or permanently unknown unless new authoritative evidence
+  is obtained.
+- [ ] Implement `TOTO-DATA-HEALTH-CONTRACT-V1`: a versioned, read-only
+  per-drawing health contract and `data-health` CLI with machine-readable
+  reasons.
+- [ ] Reject `0/0/0` pool triples as unusable rather than merely non-null.
+- [ ] Fix collector freshness so a transition to `finished` requires terminal
+  results or explicit unresolved/void evidence.
+- [ ] Make final-result ingestion restore complete event identity, names,
+  quotes, results, scores, and statuses from one validated detail payload.
+- [ ] Archive every fetched detail payload RAW-first with identity, timestamp,
+  and hash provenance before mutating operational tables.
+- [ ] Repair the locally recoverable class-A defects from immutable RAW without
+  overwriting reviewed `VOID` evidence.
+- [ ] Add a resumable, rate-limited network backfill for class-B/class-C gaps;
+  never synthesize missing history when TotoBrief cannot supply it.
+- [ ] Create immutable result snapshots for every completed usable drawing.
+- [ ] Gate every backtest/research dataset by its declared requirements:
+  exactly 15 events, nonblank identity, usable required pool/BK inputs,
+  complete `1/X/2/VOID` terminal outcomes, and valid as-of provenance.
+- [ ] Add nightly reconciliation that discovers new drawings, refreshes active
+  ones, finalizes finished ones, and reports unresolved gaps.
 - [ ] Keep rehearsal/simulation package archives out of production
   performance and realized-ROI statistics.
-- [ ] Require a visible post-draw settlement state for every production
-  package archive, including explicit missing-payout evidence.
+- [ ] Require settlement and a post-draw report for every production package,
+  including explicit missing-payout evidence.
 - [ ] Repeat mixed-provider 15/15 preparation and final revalidation in the
   main operational database with activation disabled.
 
-Do not add another optimizer before this P0 data-health and post-draw lifecycle
-is complete. The reproducible audit is stored under
+Do not add another optimizer before the P0 data-health contract, collector and
+importer corrections, RAW-first archive, and post-draw lifecycle are complete.
+The authoritative full-history audit and remediation plan are stored under
+`plans/TOTO-FULL-HISTORY-DATA-AUDIT/`. The earlier interval audit remains under
 `plans/TOTO-DRAWING-COVERAGE-AUDIT-4940-4959/`.
 
 ## Scheduler operational remediation

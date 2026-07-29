@@ -1,0 +1,105 @@
+{
+  "anomalies": {
+    "by_root_cause_class": {
+      "A": 14,
+      "B": 17,
+      "C": 4946
+    },
+    "by_severity": {
+      "ERROR": 600,
+      "INFO": 1,
+      "WARN": 4377
+    },
+    "by_type": {
+      "bk_quotes_incomplete": 3,
+      "blank_event_names": 3,
+      "finished_results_incomplete": 369,
+      "immutable_result_snapshot_absent": 2193,
+      "package_without_settlement": 1,
+      "pool_quotes_incomplete": 218,
+      "quote_structure_incomplete": 3,
+      "raw_snapshot_absent": 2184,
+      "stale_nonfinished_status": 1,
+      "visible_number_gap": 2,
+      "void_result": 1
+    }
+  },
+  "audited_at": "2026-07-29T13:29:15.476953+00:00",
+  "completeness": {
+    "all_zero_pool_drawings": 215,
+    "bk_complete_drawings": 2196,
+    "complete_result_snapshot_drawings": 4,
+    "ended_at_present_drawings": 2199,
+    "event_structure_complete_drawings": 2199,
+    "finished_drawings": 2197,
+    "finished_missing_result_events": 754,
+    "finished_result_incomplete_drawings": 369,
+    "health_fail": 548,
+    "health_pass": 1,
+    "health_warn": 1650,
+    "nonblank_name_complete_drawings": 2196,
+    "norm_complete_drawings": 2,
+    "package_drawings": 1,
+    "pin_complete_drawings": 0,
+    "pin_drawings": 2,
+    "pool_complete_drawings": 1981,
+    "preparation_drawings": 5,
+    "quote_structure_complete_drawings": 2196,
+    "result_complete_drawings_including_void": 1828,
+    "result_incomplete_drawings_all_statuses": 371,
+    "settled_drawings": 0,
+    "started_at_present_drawings": 0,
+    "void_events": 1
+  },
+  "database": {
+    "path": "/Users/turshevr/toto-ai/data/toto.db",
+    "quick_check": "ok",
+    "sha256": "1a6c9f4d62ba2198852066405342769ebbfa8a057b0525661fc1b58f576fd0c9",
+    "size_bytes": 100753408,
+    "table_counts": {
+      "archived_packages": 1,
+      "drawing_event_pins": 30,
+      "drawing_preparations": 5,
+      "drawing_result_snapshots": 4,
+      "drawings": 2199,
+      "events": 32985,
+      "package_settlements": 0,
+      "quotes": 32940
+    }
+  },
+  "previous_claim_check": {
+    "added_4940_4959_missing_result_events": 136,
+    "added_4940_4959_result_incomplete_drawings": 10,
+    "arithmetic": "2179 * 15 = 32685",
+    "claimed_initial_drawings": 2179,
+    "claimed_initial_events": 32685,
+    "current_drawings": 2199,
+    "current_events": 32985,
+    "initial_corpus_missing_result_events": 639,
+    "initial_corpus_result_incomplete_drawings": 361,
+    "validated_scope": "The retained reports/validation_4938.md proves PASS only for drawing 4938. The historical validate command accepts one drawing number, fetches one live RAW detail, and compares that one payload with SQLite. The row counts prove 15 event rows per initial drawing, not full-history result/RAW/snapshot completeness."
+  },
+  "raw_inventory": {
+    "drawings_with_any_snapshot": 15,
+    "drawings_with_file_snapshot": 13,
+    "drawings_with_primary_data_raw_snapshot": 12,
+    "drawings_with_result_snapshot_payload": 4,
+    "drawings_without_any_snapshot": 2184,
+    "json_scan_errors": 1,
+    "snapshot_records": 23,
+    "unique_payloads": 21
+  },
+  "repository_root": "/Users/turshevr/toto-ai",
+  "scope": {
+    "bookmaker": "baltbet-main",
+    "drawings": 2199,
+    "duplicate_visible_numbers": {},
+    "max_visible_number": 4959,
+    "min_visible_number": 2759,
+    "visible_number_gaps": [
+      3843,
+      3844
+    ]
+  },
+  "task_id": "TOTO-FULL-HISTORY-DATA-AUDIT"
+}
