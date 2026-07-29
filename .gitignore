@@ -15,6 +15,7 @@ data/*.db
 data/*.sqlite
 data/external-cache/
 data/totobrief-cache/
+data/scheduler/
 data/raw/*.json
 reports/
 reports/validation_*.md
