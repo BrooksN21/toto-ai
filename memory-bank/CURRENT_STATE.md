@@ -1,5 +1,8 @@
 # Current State
 
+Latest implementation commit: `1d5736b Harden atomic scheduler and dynamic
+preparation`.
+
 ## 2026-07-29: Drawing 4959 live activation-disabled drill
 
 A fresh network-backed `morning-dispatch` drill selected visible drawing 4959,
