@@ -1,5 +1,32 @@
 # Current State
 
+## 2026-07-29: Drawing coverage audit 4940–4959
+
+Read-only audit task `TOTO-DRAWING-COVERAGE-AUDIT-4940-4959` verified the
+current `data/toto.db` (`PRAGMA quick_check = ok`). All visible drawing numbers
+4940–4959 are present exactly once and each has 15 ordered events, so drawing
+headers are not being lost in this interval.
+
+Historical content is incomplete: eight finished drawings have no result
+signs, drawing 4946 has one missing result, drawings 4954–4956 have blank event
+names and no quote rows, and immutable result snapshots exist only for
+4953–4956. No package settlement exists for any drawing in the interval.
+Drawing 4954 event 15 is correctly stored as explicit `VOID`.
+
+The main database still records 4959 as unresolved; its successful
+mixed-provider 15/15 drill was intentionally performed on a copied database.
+The archived two-coupon/60 RUB 4959 package is a rehearsal artifact and must
+not be treated as a placed bet or production outcome.
+
+Reproducible audit and project-status reports:
+
+- `plans/TOTO-DRAWING-COVERAGE-AUDIT-4940-4959/context.md`;
+- `plans/TOTO-DRAWING-COVERAGE-AUDIT-4940-4959/status.md`.
+
+Next P0 action: restore result/quote/name completeness, add an explicit
+data-health gate, and require the full post-draw result snapshot and settlement
+cycle before further optimizer work.
+
 ## 2026-07-29: Reviewed schedule fallback implemented and live-drilled
 
 Task `TOTO-REVIEWED-SCHEDULE-FALLBACK` is implemented in the current branch.

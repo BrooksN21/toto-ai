@@ -1,5 +1,30 @@
 # Roadmap
 
+## Historical data-health remediation
+
+- [x] Audit visible drawings 4940–4959 in the local SQLite database.
+  Header coverage is 20/20 with 15 ordered events per drawing and no duplicate
+  visible numbers.
+- [ ] Backfill missing result signs for 4940, 4945, 4949, 4950, 4951, 4952,
+  4957 and 4958, plus event 12 of 4946, without overwriting reviewed `VOID`
+  evidence.
+- [ ] Restore event names and pool/BK quote rows for 4954–4956 from
+  reproducible source evidence.
+- [ ] Create immutable result snapshots for every completed, usable drawing.
+- [ ] Add a fail-closed data-health gate for analytical/backtest admission:
+  exactly 15 events, complete names, required pool/BK input, complete
+  1/X/2-or-VOID results, and a valid immutable result snapshot.
+- [ ] Keep rehearsal/simulation package archives out of production
+  performance and realized-ROI statistics.
+- [ ] Require a visible post-draw settlement state for every production
+  package archive, including explicit missing-payout evidence.
+- [ ] Repeat mixed-provider 15/15 preparation and final revalidation in the
+  main operational database with activation disabled.
+
+Do not add another optimizer before this P0 data-health and post-draw lifecycle
+is complete. The reproducible audit is stored under
+`plans/TOTO-DRAWING-COVERAGE-AUDIT-4940-4959/`.
+
 ## Scheduler operational remediation
 
 - [x] Add drawing-4959 contextual API-Sports identities for Gimnasia L.P.
