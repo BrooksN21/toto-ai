@@ -179,8 +179,11 @@ creating an actionable evening job.
 
 Migration status on 2026-07-28: the five known obsolete jobs below were
 booted out and their plist files were removed. A follow-up inspection found no
-installed or loaded `com.totoai.*` LaunchAgent. The atomic evening scheduler
-and generic morning dispatcher are still **not installed**. The
+installed or loaded `com.totoai.*` LaunchAgent. On 2026-07-29 the passive
+generic morning dispatcher was installed as
+`com.totoai.morning-dispatcher.v1` for 08:00 and 10:30 Moscow time. Its wrapper
+contains neither `--activate` nor a drawing number. The atomic evening
+scheduler remains **not installed**. The
 activation-disabled 4958 drill correctly deferred because one women fixture
 was absent from API-Sports; no plan or package was created.
 

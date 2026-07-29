@@ -1,7 +1,25 @@
 # Current State
 
-Latest implementation commit: `1d5736b Harden atomic scheduler and dynamic
-preparation`.
+Latest implementation commits:
+
+- `1d5736b Harden atomic scheduler and dynamic preparation`;
+- `51f12ef Make morning automation passive by default`.
+
+## 2026-07-29: Passive morning dispatcher installed and exercised
+
+`com.totoai.morning-dispatcher.v1` is installed in the current user's launchd
+domain with exact daily triggers at 08:00 and 10:30 Moscow time. The installed
+plist bytes match the generated candidate, are owned by the user with mode
+0600, use `/Users/turshevr/toto-ai` as the working directory, and invoke the
+project wrapper. The wrapper contains no drawing number and no `--activate`.
+
+A manual `launchctl kickstart` exercised the installed path. It completed all
+three bounded attempts against drawing 4959, each returned the same explicit
+`preparation_not_ready`/`deferred` result, and launchd finished with exit code
+2. The persisted record binds drawing 11988/4959 and records
+`activation_status=not_requested`, `plan_id=null`, and `plan_path=null`.
+There is no evening LaunchAgent, package, marker, or bet. The recurring job
+remains loaded for the next calendar trigger.
 
 ## 2026-07-29: Morning installation split into passive and actionable modes
 

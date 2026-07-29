@@ -39,8 +39,10 @@
 - [x] Split generic morning automation into passive default and explicit
   post-drill `--activate-evening` mode; full verification is `1444 passed`,
   with Ruff and diff checks green.
-- [ ] Install and verify the passive generic morning dispatcher; it must not
-  contain `--activate` or a drawing number.
+- [x] Install and verify the passive generic morning dispatcher at
+  08:00/10:30 Moscow time; its installed wrapper contains neither `--activate`
+  nor a drawing number. Manual launchd execution completed three bounded,
+  consistent 4959 deferrals without an evening plan/package/marker.
 - [ ] Repeat an activation-disabled 15/15 live drill.
 - [ ] Enable automatic evening activation only after that drill passes.
 

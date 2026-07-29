@@ -77,9 +77,10 @@ artifacts are passive by default and omit `morning-dispatch --activate`;
 `morning-preanalysis-plan --activate-evening` is the explicit post-drill
 opt-in. A passive recurring job may synchronize, prepare, record diagnostics,
 and generate an exact evening plan, but cannot install that plan. Neither a
-generic dispatcher candidate nor an evening schema-v4 scheduler is currently
-installed. The five obsolete drawing-specific LaunchAgents were removed on
-2026-07-28.
+schema-v4 evening scheduler nor automatic bet path is installed. The passive
+generic dispatcher is installed as `com.totoai.morning-dispatcher.v1` at
+08:00/10:30 Moscow time. The five obsolete drawing-specific LaunchAgents were
+removed on 2026-07-28.
 
 ## Emergency pre-bet safety boundary
 
