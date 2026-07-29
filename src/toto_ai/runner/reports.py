@@ -34,7 +34,8 @@ from toto_ai.runner.models import (
     PinnedDrawing,
 )
 
-RUNNER_REPORT_SCHEMA_VERSION = 4
+RUNNER_REPORT_SCHEMA_VERSION = 5
+LEGACY_RUNNER_REPORT_SCHEMA_VERSION = 4
 RUNNER_PROVIDER = "api-sports"
 
 
@@ -316,7 +317,11 @@ def _report_payload(
     config = result.config
     warnings = _warnings(result)
     return {
-        "schema_version": RUNNER_REPORT_SCHEMA_VERSION,
+        "schema_version": (
+            RUNNER_REPORT_SCHEMA_VERSION
+            if result.final_input is not None
+            else LEGACY_RUNNER_REPORT_SCHEMA_VERSION
+        ),
         "run_id": drawing_run_id(result),
         "command_status": "success",
         "decision": result.decision,
@@ -337,6 +342,7 @@ def _report_payload(
             "provider": RUNNER_PROVIDER,
         },
         "replay": _offline_replay_payload(result),
+        "final_input": _final_input_payload(result),
         "timeline": {
             "preflight_at": _timestamp(result.preflight_at),
             "final_started_at": _optional_timestamp(result.final_started_at),
@@ -358,6 +364,20 @@ def _report_payload(
             "ev": [str(path) for path in links.ev],
         },
         "warnings": warnings,
+    }
+
+
+def _final_input_payload(result: DrawingRunnerResult) -> dict[str, Any] | None:
+    provenance = result.final_input
+    if provenance is None:
+        return None
+    return {
+        "path": provenance.path,
+        "captured_at": _timestamp(provenance.captured_at),
+        "snapshot_sha256": provenance.snapshot_sha256,
+        "detail_payload_sha256": provenance.detail_payload_sha256,
+        "probability_input_sha256": provenance.probability_input_sha256,
+        "attempt_id": provenance.attempt_id,
     }
 
 

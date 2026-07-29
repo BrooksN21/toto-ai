@@ -1,5 +1,44 @@
 # Roadmap
 
+## Scheduler operational remediation
+
+- [x] Add drawing-4959 contextual API-Sports identities for Gimnasia L.P.
+  (434) and River Plate (435), reject domestic/global-friendly crossover, and
+  retain Iceland 3. Deild as an explicit source-missing non-match.
+- [x] One immutable final snapshot and canonical probability binding.
+- [x] Independent T−45/T−30/T−20/T−16/T−12 ticks and zero-cost `NO BET`.
+- [x] Dynamic drawing-neutral morning dispatcher.
+- [x] Persist generated state before activation and safely reuse exact
+  artifacts after bootstrap failure or process interruption.
+- [x] Reuse one per-drawing plan across a permitted two-day drawing.
+- [x] Typed/status-based retry classification; no message substring matching.
+- [x] Reject incompatible production `--run-id`, preserve schema-v3 root, use
+  correct T−12 diagnostics, and blanket-ignore generated reports.
+- [x] Reacquire time after morning/preflight network preparation and block
+  post-preparation plan generation at or after T−45.
+- [x] Record final snapshot capture at detail-response completion.
+- [x] Remove stale actionable package/archive files on late recovery to
+  zero-cost `NO BET`.
+- [x] Enforce the actionable cutoff for final calculation completion,
+  recomputed subprocess timeouts, and every retry admission.
+- [x] Reserve the remaining interval through hard T−12 exclusively for
+  package/archive-manifest writing, durable archive, recovery, status, and
+  marker publication; allow recovery through T−12 and fail closed after it.
+- [x] Current verification: five exact reserve boundaries, 175 focused
+  scheduler/morning tests, 1443 full tests, Ruff, and diff check.
+- [ ] Add a lawful provider-neutral schedule fallback for events absent from
+  API-Sports; drawing 4958 women event 5 and drawing 4959 Iceland 3. Deild
+  event 9 are current real examples. Official KSÍ and an independent public
+  source confirm the latter fixture, but reviewed web evidence is not yet a
+  provider pin and must not be injected as an API-Sports fixture.
+- [x] Run drawing-4959 activation-disabled morning drill: 14 safe candidates,
+  one explicit source-missing event, zero partial pins, no evening plan,
+  package, marker, activation, or bet.
+- [x] Run a schema-v4 five-trigger network-free simulation after the
+  2026-07-29 scheduler fixes.
+- [ ] Repeat an activation-disabled 15/15 live drill.
+- [ ] Install a generic morning dispatcher only after that drill passes.
+
 ## Sports statistics milestone
 
 - [x] Provider-neutral immutable football contracts and validators.
@@ -258,12 +297,32 @@ profitability or a proven winning strategy.
   and chronological backtest tests, including bank utilization and `NO BET`.
 
 ## Phase 7: Production
+- Atomic-final scheduler remediation is complete: canonical zero-cost
+  `NO BET`, immutable one-fetch final detail, snapshot-fed preparation/EV,
+  plan-v4 five-trigger ticks, persistent restart/concurrency state, bounded
+  retry, T−12 cutoff, runner manifest v5, and archive manifest v2 provenance
+  are implemented and fixture-tested. Terminal `bet_ready` is committed only
+  after marker success; marker failures stay package-free/failed, archive
+  recovery rechecks current timing overrides, and activation retry verifies
+  exact plan/wrapper/plist bytes. Generated LaunchAgent candidates remain
+  uninstalled; a bounded operator-controlled drill is still required before
+  any manual installation.
+- Dynamic morning dispatcher implementation is complete: the recurring
+  candidate contains no drawing number, pins one fresh exact drawing, retries
+  deferred preparation idempotently, and creates one per-drawing schema-v4
+  evening plan only before T−45. The five known obsolete LaunchAgents were
+  removed and follow-up inspection found none installed or loaded.
+- Next operational gate: run an activation-disabled morning plus atomic-final
+  drill on drawing 4958, inspect exact identity/readiness, all due ticks,
+  immutable final-input provenance, terminal decision, and absence of automatic
+  betting. Do not install any scheduler until this drill succeeds.
 - Emergency pre-bet safety slice is complete: production-playable packages
   fail closed on configured concentration/fixed-low-probability/material-
   outcome exposure checks, 4952 is rejected before upload, and morning
-  preparation requires fresh playable 15/15 evidence. Actionable schema-v3
-  plans now bind a persisted exact drawing identity and require durable package
-  archival plus post-archive/pre-marker T-10 checks before `.bet-ready`.
+  preparation requires fresh playable 15/15 evidence. The earlier actionable
+  schema-v3/T-10 contract remains historical compatibility; production
+  schema-v4 now requires durable package archival plus post-archive/pre-marker
+  T−12 checks before `.bet-ready`.
   Result synchronization, settlement, payout/ROI persistence, and a post-draw
   retry scheduler remain pending.
 - Drawing-4952 launchd incident remediation is implemented: scheduler plan v2
@@ -393,7 +452,7 @@ profitability or a proven winning strategy.
   day-five expansion, partial-date failure, confirmed multi-day, and unresolved
   drawings across collection, persistence, audit/report, and playable/research
   output. The multi-day eligibility feature is complete.
-- Automatic T-15 scheduling of the fresh prospective command
+- Automatic T−12 publication scheduling of the fresh prospective command
 - Open drawing analysis
 - Package generation
 - Report export

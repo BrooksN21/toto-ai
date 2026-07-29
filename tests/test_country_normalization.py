@@ -51,6 +51,23 @@ def test_country_identity_keeps_real_country_mismatch():
     assert not countries_equivalent("США", "Canada")
 
 
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    (
+        ("IL", "IL"),
+        ("ISR", "IL"),
+        ("Israel", "IL"),
+        ("Израиль", "IL"),
+        ("UZ", "UZ"),
+        ("UZB", "UZ"),
+        ("Uzbekistan", "UZ"),
+        ("Узбекистан", "UZ"),
+    ),
+)
+def test_country_identity_unifies_israel_and_uzbekistan_forms(value, expected):
+    assert country_identity(value) == expected
+
+
 def test_resolution_country_context_accepts_equivalence_and_rejects_mismatch(
     session_factory,
 ):

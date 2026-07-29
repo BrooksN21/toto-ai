@@ -4,6 +4,7 @@ import os
 import plistlib
 import subprocess
 import sys
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -178,6 +179,45 @@ def test_genuine_schema_v2_plan_hash_loads_without_new_safety_fields(
 
     assert loaded.drawing_id == 12001
     assert loaded.actionable_safety_bound is False
+
+
+def test_schema_v3_plan_preserves_declared_project_root(tmp_path: Path):
+    project_root = tmp_path / "project"
+    nested = project_root / "nested"
+    nested.mkdir(parents=True)
+    env_file = _env_file(project_root / ".env")
+    plan = _plan(project_root, env_file)
+    plan = replace(
+        plan,
+        output_dir=nested / "scheduler",
+        db=nested / "data" / "toto.db",
+        aliases=nested / "data" / "aliases.json",
+    )
+    artifacts = prepare_scheduler_artifacts(plan)
+    payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
+    payload["schema_version"] = 3
+    semantic = {
+        key: payload[key]
+        for key in ("schema_version", "target", "config", "paths")
+    }
+    payload["plan_id"] = hashlib.sha256(
+        json.dumps(
+            semantic,
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()[:16]
+    artifacts.plan_path.write_text(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+
+    loaded = load_scheduler_plan(artifacts.plan_path)
+
+    assert loaded.source_schema_version == 3
+    assert loaded.project_root == project_root.resolve(strict=True)
+    assert loaded.project_root != nested.resolve(strict=True)
 
 
 def test_schema_v2_rejects_filesystem_root_as_project_root(tmp_path: Path):
@@ -497,25 +537,28 @@ def test_morning_preanalysis_artifacts_are_isolated_and_non_betting(tmp_path):
     output_dir = tmp_path / "reports" / "rehearsal" / "morning-4953"
 
     artifacts = prepare_morning_preanalysis_artifacts(
-        expected_drawing_number=4953,
         times=("08:00", "10:30"),
         retry_count=2,
         retry_delay_seconds=30.0,
         output_dir=output_dir,
         env_file=env_file,
         project_root=tmp_path,
+        bank=4980,
+        stake=30,
         python_command=sys.executable,
     )
 
     wrapper = artifacts.wrapper_path.read_text(encoding="utf-8")
     launch_agent = plistlib.loads(artifacts.launch_agent_path.read_bytes())
-    assert "sync-prepare" in wrapper
-    assert "--expected-drawing-number 4953" in wrapper
+    assert "morning-dispatch" in wrapper
+    assert "--expected-drawing-number" not in wrapper
+    assert "4953" not in wrapper
     assert "scheduler-execute" not in wrapper
     assert "run-drawing" not in wrapper
     assert ".bet-ready" not in wrapper
     assert ".no-bet" not in wrapper
     assert launch_agent["ProgramArguments"] == [str(artifacts.wrapper_path)]
+    assert launch_agent["Label"] == "com.totoai.morning-dispatcher.v1"
     assert launch_agent["StartCalendarInterval"] == [
         {"Hour": 8, "Minute": 0},
         {"Hour": 10, "Minute": 30},
@@ -532,8 +575,6 @@ def test_morning_preanalysis_cli_generates_without_network(tmp_path):
         cli.app,
         [
             "morning-preanalysis-plan",
-            "--expected-drawing-number",
-            "4953",
             "--env-file",
             str(env_file),
             "--at",

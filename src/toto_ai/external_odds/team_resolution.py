@@ -19,14 +19,20 @@ from toto_ai.external_odds.team_registry import (
     transliterate_team_name,
 )
 
-RESOLVER_VERSION = "systematic-team-v1"
+RESOLVER_VERSION = "systematic-team-v2"
 MAX_KNOWN_START_DELTA = timedelta(hours=3)
 MAX_MISSING_START_HORIZON = timedelta(days=5)
 MIN_PAIR_SCORE = 0.62
 MIN_TEAM_SCORE = 0.52
 MIN_MARGIN = 0.10
 MIN_HIGH_CONFIDENCE_TEAM_SCORE = 0.74
-ResolutionStatus = Literal["matched", "missing", "ambiguous", "rejected"]
+ResolutionStatus = Literal[
+    "matched",
+    "missing",
+    "ambiguous",
+    "rejected",
+    "source_missing_competition",
+]
 Orientation = Literal["same", "reversed"]
 
 _CONTEXT_STOP_WORDS = frozenset(
@@ -42,6 +48,35 @@ _CONTEXT_STOP_WORDS = frozenset(
         "drawing",
         "real",
         "чемпионат",
+    }
+)
+_WOMEN_MARKERS = frozenset(
+    {
+        "female",
+        "femenino",
+        "feminine",
+        "ladies",
+        "woman",
+        "women",
+        "жен",
+        "женская",
+        "женский",
+        "ж",
+    }
+)
+_NON_SENIOR_MARKERS = frozenset(
+    {
+        "academy",
+        "reserve",
+        "reserves",
+        "res",
+        "u17",
+        "u18",
+        "u19",
+        "u20",
+        "u21",
+        "u23",
+        "youth",
     }
 )
 
@@ -207,13 +242,23 @@ def resolve_event_candidate(
         )
     )
     if not evidence:
+        status: ResolutionStatus = (
+            "source_missing_competition"
+            if _source_missing_domestic_competition(candidates, context)
+            else "missing"
+        )
         return CandidateResolution(
-            "missing",
+            status,
             None,
             None,
             0.0,
             0.0,
-            "no candidates passed sport/date/country/league context",
+            (
+                "source schedule has no candidate in the confirmed domestic "
+                "competition context"
+                if status == "source_missing_competition"
+                else "no candidates passed sport/date/country/league context"
+            ),
             tuple(sorted(rejected, key=_candidate_sort_key)[:10]),
         )
 
@@ -282,7 +327,11 @@ def resolve_event_candidate(
             home_id,
             away_id,
         )
-    status: ResolutionStatus = "ambiguous" if len(evidence) > 1 else "missing"
+    status: ResolutionStatus
+    if _source_missing_domestic_competition(candidates, context):
+        status = "source_missing_competition"
+    else:
+        status = "ambiguous" if len(evidence) > 1 else "missing"
     return CandidateResolution(
         status,
         None,
@@ -290,8 +339,13 @@ def resolve_event_candidate(
         best.pair_score,
         margin,
         (
-            "candidate evidence is insufficient for conservative auto-accept; "
-            f"score={best.pair_score:.3f}; margin={margin:.3f}"
+            "source schedule has no candidate in the confirmed domestic "
+            "competition context"
+            if status == "source_missing_competition"
+            else (
+                "candidate evidence is insufficient for conservative auto-accept; "
+                f"score={best.pair_score:.3f}; margin={margin:.3f}"
+            )
         ),
         visible,
     )
@@ -310,6 +364,8 @@ def _candidate_context(
         rejected.append("target sport context mismatch")
     if candidate.sport != target.sport:
         rejected.append("sport mismatch")
+    if not _gender_context_matches(target, candidate):
+        rejected.append("gender mismatch")
     if target.starts_at is not None:
         if abs(candidate.starts_at - target.starts_at) > MAX_KNOWN_START_DELTA:
             rejected.append("outside known-start window")
@@ -325,6 +381,13 @@ def _candidate_context(
         accepted.append("date-window")
 
     expected_country = context.country
+    if (
+        expected_country
+        and _is_confirmed_domestic_scope(expected_country)
+        and candidate.country
+        and _is_global_scope(candidate.country)
+    ):
+        rejected.append("domestic target cannot use global competition")
     if expected_country and candidate.country and not _is_global_scope(
         candidate.country
     ):
@@ -358,6 +421,55 @@ def _candidate_context(
     ):
         accepted.append("competition")
     return tuple(rejected), tuple(accepted)
+
+
+def _gender_context_matches(
+    target: TargetEvent,
+    candidate: ProviderEvent,
+) -> bool:
+    target_women = _has_women_context(
+        target.home_team,
+        target.away_team,
+        target.home_team_en,
+        target.away_team_en,
+        target.championship,
+        allow_team_w_marker=False,
+    )
+    candidate_women = _has_women_context(
+        candidate.home_team,
+        candidate.away_team,
+        candidate.league,
+        allow_team_w_marker=True,
+    )
+    if target_women:
+        return candidate_women and not _has_non_senior_context(
+            candidate.home_team,
+            candidate.away_team,
+            candidate.league,
+        )
+    return not candidate_women
+
+
+def _has_women_context(
+    *values: str | None,
+    allow_team_w_marker: bool,
+) -> bool:
+    for index, value in enumerate(values):
+        if not value:
+            continue
+        tokens = frozenset(normalize_team_name(value).split())
+        if tokens & _WOMEN_MARKERS:
+            return True
+        if allow_team_w_marker and index < 2 and "w" in tokens:
+            return True
+    return False
+
+
+def _has_non_senior_context(*values: str) -> bool:
+    return any(
+        frozenset(normalize_team_name(value).split()) & _NON_SENIOR_MARKERS
+        for value in values
+    )
 
 
 def _countries_equivalent(expected: str, actual: str) -> bool:
@@ -550,6 +662,50 @@ def _competition_level_tokens(value: str) -> frozenset[str]:
 def _is_global_scope(value: str) -> bool:
     return country_identity(value) == "GLOBAL" or normalize_team_name(value) == (
         "international clubs"
+    )
+
+
+def _is_confirmed_domestic_scope(value: str) -> bool:
+    identity = country_identity(value)
+    return identity != "GLOBAL" and not identity.startswith("NAME:")
+
+
+def _source_missing_domestic_competition(
+    candidates: tuple[ProviderEvent, ...] | list[ProviderEvent],
+    context: ResolutionContext,
+) -> bool:
+    """Classify observed provider coverage, never invent a fixture."""
+    if (
+        not context.derived
+        or not context.country
+        or not _is_confirmed_domestic_scope(context.country)
+        or not context.league
+        or not _competition_level_tokens(context.league)
+    ):
+        return False
+    provider_candidates = tuple(
+        candidate
+        for candidate in candidates
+        if candidate.provider == context.provider
+        and candidate.sport == (context.sport or candidate.sport)
+    )
+    if not provider_candidates:
+        return False
+    domestic = tuple(
+        candidate
+        for candidate in provider_candidates
+        if candidate.country
+        and not _is_global_scope(candidate.country)
+        and _countries_equivalent(context.country, candidate.country)
+    )
+    return bool(domestic) and not any(
+        _competition_level_tokens(candidate.league)
+        == _competition_level_tokens(context.league)
+        and (
+            _context_similarity(context.league, candidate.league) >= 0.58
+            or _context_anchor_similarity(context.league, candidate.league) >= 0.62
+        )
+        for candidate in domestic
     )
 
 

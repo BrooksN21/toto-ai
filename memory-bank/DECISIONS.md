@@ -1,5 +1,113 @@
 # Decisions
 
+## 2026-07-29: Contextual identities do not authorize cross-competition fixtures
+
+- Reviewed provider team IDs are stable team identity evidence, not fixture
+  identity and never a reason to hardcode a fixture ID.
+- Reviewed identities may be scoped by country and competition context.
+- A domestic target cannot consume a provider fixture classified under a
+  global competition; this closes the friendly-match bypass.
+- `source_missing_competition` is diagnostic non-match evidence. It is emitted
+  only for a derived, confirmed domestic country with an explicit numbered
+  competition level, successful same-country provider schedule evidence, and
+  no compatible competition. It never creates a pin or makes a drawing ready.
+
+## 2026-07-29: atomic-final clocks and publication reserve are completion gates
+
+- Any decision made after network preparation uses a newly sampled UTC clock.
+  Morning plan generation is forbidden at or after T−45 based on that
+  post-preparation sample; phase-start time is not valid completion evidence.
+- `FinalInputSnapshot.captured_at` is the detail-response acquisition time,
+  sampled immediately after `drawing_info()` returns. Request-start time is
+  not snapshot freshness provenance.
+- `publication_reserve_seconds` defines the actionable calculation cutoff, not
+  a second publication deadline. Final calculation, each recomputed subprocess
+  timeout, and every retry admission must stop no later than
+  `T−12 − publication_reserve_seconds`.
+- The interval after the actionable cutoff through hard T−12 is reserved only
+  for package writing, archive-manifest writing, durable archive, recovery,
+  status, and `.bet-ready` marker work. Those steps use
+  `plan.publish_deadline`/`plan.freeze_at`, not the actionable cutoff.
+- A recoverable archive without a marker may complete publication during that
+  reserve, including exactly at hard T−12. After hard T−12 it becomes terminal
+  zero-cost `NO BET`; stale `package.csv` and `package-archive.json` are
+  removed so they cannot be mistaken for uploadable coupons. Immutable
+  final-input and durable audit evidence may remain.
+- Simulation-only legacy long-running execution retains its historical T−12
+  fixture semantics; production schema-v4 ticks enforce the reserve boundary.
+
+## 2026-07-28: scheduler failures and morning artifacts are typed evidence
+
+- Retry/permanent classification must use exception type, structured HTTP
+  status, or an explicit category. Error-message substring matching is
+  forbidden.
+- HTTP 503, transport timeouts, and explicitly transient configuration-service
+  failures remain retryable. Unknown failures are retryable within the bounded
+  attempt budget. Typed integrity/identity/hash failures are terminal.
+- Morning plan/wrapper/plist bytes are immutable evidence. A dispatcher writes
+  `scheduled/generated` state before activation and retries activation by
+  verifying and reusing the exact existing artifact set.
+- `bet_ready` and `publish=complete` are durable facts only after the
+  exclusive `.bet-ready` marker succeeds. Marker failure is package-free,
+  terminal `failed`; a later tick must not retry or report publication.
+- Archive recovery must compare the saved atomic-final timing-override hash
+  with the current semantic override hash and fail closed on any change.
+- Morning state is keyed by drawing ID and deadline, not by the date of a
+  dispatcher invocation. One drawing spanning two allowed Moscow dates owns
+  one plan.
+- Production schema-v4 execution is tick-only. `--run-id` is simulation-only;
+  the incompatible legacy long-running production mode is rejected.
+- Legacy schema-v3 plans preserve their declared `project_root`.
+- Generated `reports/` are ignored as one directory; no report is an
+  intentional tracked source artifact.
+
+## 2026-07-28: gender is a hard event-identity boundary
+
+- A TotoBrief women target (`(ж)`, Women/female context) may resolve only to a
+  provider candidate with explicit W/Women/female evidence.
+- Reserve, academy, youth, and U17-U23 candidates cannot satisfy a senior
+  women target even when a women marker is present.
+- A non-women target cannot resolve to an explicitly women provider event.
+- Missing women coverage remains unresolved; it must never be bridged to a
+  male team, reserve, or youth fixture by fuzzy similarity or a manual alias.
+
+## Atomic final input temporal invariant (2026-07-28)
+
+- Pool/BK changes before a final capture are expected and do not invalidate
+  earlier diagnostic preparation.
+- One production final attempt owns one immutable exact drawing-detail
+  snapshot. Its canonical payload, normalized final BK probabilities, capture
+  time, target fingerprint, plan, and attempt provenance are independently
+  hash-bound.
+- A computed or uncomputed `NO BET` is always coupon-free, zero-cost, and has
+  an empty derived brief. Empty per-event placeholder strings are not a valid
+  zero package.
+- The hard manual-publication cutoff is T−12. The configured production phase
+  times are T−45, T−30, T−20, T−16, and T−12.
+- Scheduler state is persistent evidence, while the process lock is only a
+  concurrency primitive. A recovered `running` attempt is marked abandoned
+  and a retry receives a new immutable attempt directory.
+- Warmup and refresh never authorize a package. Only a verified final snapshot
+  may flow through immediate publication, and publication/archive recovery
+  validates that snapshot without consulting the mutable live API.
+
+## Dynamic morning identity and deployment gate (2026-07-28)
+
+- A recurring cross-day morning job must never embed a drawing number. The
+  morning dispatcher resolves one fresh current drawing per invocation and
+  persists the exact identity before generating a per-drawing evening plan.
+- Drawing identity belongs to the immutable per-drawing plan, not to the
+  recurring dispatcher.
+- Multiple morning triggers are idempotent and serialized. Deferred readiness
+  may retry; ambiguous/no drawing, identity conflicts, ineligible timing spans,
+  and dispatch after T−45 do not create a partial evening schedule.
+- Scheduler artifact generation never implies installation. The generic
+  dispatcher and schema-v4 evening scheduler require an activation-disabled
+  live drill before manual installation.
+- The five known obsolete LaunchAgents were explicitly removed. Cleanup must
+  remain label-specific; wildcard deletion of unknown `com.totoai.*` jobs is
+  forbidden.
+
 ## 2026-07-27: sports statistics start as immutable audit evidence
 
 - Sports statistics are a separate provider-neutral evidence boundary.

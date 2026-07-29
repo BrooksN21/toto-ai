@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "aliases": {
     "Англия": "England",
     "Аргентина": "Argentina",
@@ -39,9 +39,33 @@
     "Феникс Пилар": "Fénix",
     "Эстер": "Osters IF",
     "Варберг": "Varbergs BoIS FC",
+    "Хорезм": "Xorazm",
+    "Термез Сурхан": "Surkhon",
     "ТПС": "Turku PS",
     "Ильвес": "Ilves",
     "Кальмар": "Kalmar FF",
     "Мальме": "Malmo FF"
-  }
+  },
+  "identities": [
+    {
+      "canonical_name": "Gimnasia L.P.",
+      "country": "Argentina",
+      "context": "Чемпионат",
+      "provider_team_id": "434",
+      "aliases": [
+        "Gimnasia L.P.",
+        "Химнасия и Эсгрима ЛП"
+      ]
+    },
+    {
+      "canonical_name": "River Plate",
+      "country": "Argentina",
+      "context": "Чемпионат",
+      "provider_team_id": "435",
+      "aliases": [
+        "River Plate",
+        "Ривер Плэйт Буэнос-Айрес"
+      ]
+    }
+  ]
 }

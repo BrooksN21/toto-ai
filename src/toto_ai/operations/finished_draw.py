@@ -69,6 +69,9 @@ class PackageArchive:
     source_bytes_sha256: str
     provenance: str
     archive_manifest_sha256: str | None
+    final_input_sha256: str | None
+    probability_input_sha256: str | None
+    final_input_captured_at: str | None
     created: bool
 
 
@@ -275,6 +278,9 @@ def archive_package(
     archived_at: datetime | None = None,
     provenance: Literal["pre_bet_runner", "legacy_import"] = "legacy_import",
     archive_manifest_sha256: str | None = None,
+    final_input_sha256: str | None = None,
+    probability_input_sha256: str | None = None,
+    final_input_captured_at: str | None = None,
 ) -> PackageArchive:
     if type(drawing_id) is not int or drawing_id < 1:
         raise ValueError("drawing_id must be a positive integer")
@@ -297,6 +303,15 @@ def archive_package(
             raise ValueError("pre-bet archive manifest hash is required")
     elif archive_manifest_sha256 is not None:
         raise ValueError("legacy archive cannot declare a pre-bet manifest hash")
+    if provenance == "legacy_import" and any(
+        value is not None
+        for value in (
+            final_input_sha256,
+            probability_input_sha256,
+            final_input_captured_at,
+        )
+    ):
+        raise ValueError("legacy archive cannot declare atomic-final provenance")
     source_bytes = path.read_bytes()
     coupons, declared_stakes = _parse_package_source(source_bytes)
     if declared_stakes and declared_stakes != {stake}:
@@ -341,6 +356,9 @@ def archive_package(
                 archived_at=archived_text,
                 provenance=provenance,
                 archive_manifest_sha256=archive_manifest_sha256,
+                final_input_sha256=final_input_sha256,
+                probability_input_sha256=probability_input_sha256,
+                final_input_captured_at=final_input_captured_at,
             )
             .on_conflict_do_nothing()
         )
@@ -353,6 +371,12 @@ def archive_package(
             and existing.archive_manifest_sha256 != archive_manifest_sha256
         ):
             raise ValueError("archive manifest hash cannot be changed")
+        if existing is not None and (
+            existing.final_input_sha256 != final_input_sha256
+            or existing.probability_input_sha256 != probability_input_sha256
+            or existing.final_input_captured_at != final_input_captured_at
+        ):
+            raise ValueError("archive final-input provenance cannot be changed")
         _verified_archive(session, archive_hash)
     return PackageArchive(
         archive_sha256=archive_hash,
@@ -366,6 +390,9 @@ def archive_package(
         source_bytes_sha256=source_hash,
         provenance=provenance,
         archive_manifest_sha256=archive_manifest_sha256,
+        final_input_sha256=final_input_sha256,
+        probability_input_sha256=probability_input_sha256,
+        final_input_captured_at=final_input_captured_at,
         created=created,
     )
 
@@ -399,6 +426,28 @@ def import_prebet_package_manifest(
         raise ValueError("pre-bet package manifest hash mismatch")
     if payload.get("provenance") != "pre_bet_runner":
         raise ValueError("pre-bet package manifest provenance mismatch")
+    schema_version = payload.get("schema_version")
+    if schema_version not in (1, 2):
+        raise ValueError("unsupported pre-bet package manifest schema")
+    if schema_version == 2:
+        for name in ("final_input_sha256", "probability_input_sha256"):
+            value = payload.get(name)
+            if (
+                not isinstance(value, str)
+                or len(value) != 64
+                or any(character not in "0123456789abcdef" for character in value)
+            ):
+                raise ValueError(f"pre-bet {name} is invalid")
+        _parse_timestamp_required(payload.get("final_input_captured_at"))
+    elif any(
+        payload.get(name) is not None
+        for name in (
+            "final_input_sha256",
+            "probability_input_sha256",
+            "final_input_captured_at",
+        )
+    ):
+        raise ValueError("schema-v1 pre-bet manifest has atomic-final fields")
     manifest_ended_at = _parse_timestamp_required(payload.get("ended_at"))
     with session_factory() as session:
         drawing = session.get(Drawing, payload.get("drawing_id"))
@@ -427,6 +476,9 @@ def import_prebet_package_manifest(
         archived_at=_parse_timestamp_required(payload.get("archived_at")),
         provenance="pre_bet_runner",
         archive_manifest_sha256=manifest_hash,
+        final_input_sha256=payload.get("final_input_sha256"),
+        probability_input_sha256=payload.get("probability_input_sha256"),
+        final_input_captured_at=payload.get("final_input_captured_at"),
     )
 
 
@@ -1436,6 +1488,9 @@ def _archive_result(row: ArchivedPackage, *, created: bool) -> PackageArchive:
         source_bytes_sha256=row.source_bytes_sha256,
         provenance=row.provenance,
         archive_manifest_sha256=row.archive_manifest_sha256,
+        final_input_sha256=row.final_input_sha256,
+        probability_input_sha256=row.probability_input_sha256,
+        final_input_captured_at=row.final_input_captured_at,
         created=created,
     )
 

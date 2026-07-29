@@ -99,6 +99,13 @@ class ArchivedPackage(Base):
     archive_manifest_sha256: Mapped[str | None] = mapped_column(
         String, nullable=True
     )
+    final_input_sha256: Mapped[str | None] = mapped_column(String, nullable=True)
+    probability_input_sha256: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    final_input_captured_at: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
 
 
 class PackageSettlement(Base):

@@ -29,6 +29,7 @@ from toto_ai.external_odds.team_registry import (
     upsert_team_entity,
 )
 from toto_ai.external_odds.team_resolution import (
+    RESOLVER_VERSION,
     CandidateResolution,
     ResolutionContext,
     derive_resolution_context,
@@ -283,7 +284,7 @@ def prepare_drawing(
                     "provider_fixture_id": fixture_id,
                     "starts_at": candidate.starts_at,
                     "provenance": {
-                        "resolver": "systematic-team-v1",
+                        "resolver": RESOLVER_VERSION,
                         "reason": resolution.reason,
                         "confidence": resolution.confidence,
                         "margin": resolution.margin,
@@ -654,6 +655,39 @@ def preparation_probability_sha256(
         separators=(",", ":"),
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
+
+
+def refresh_ready_preparation_for_target(
+    target: TargetDrawing,
+    *,
+    session_factory: Any,
+    provider: str,
+) -> None:
+    """Bind unchanged authoritative pins to a newly captured target."""
+    refresh_ready_drawing_preparation_evidence(
+        session_factory,
+        drawing_id=target.drawing_id,
+        drawing_fingerprint=target_fingerprint(
+            drawing_id=target.drawing_id,
+            drawing_number=target.drawing_number,
+            deadline=target.deadline,
+            events=target.events,
+        ),
+        provider=provider,
+        readiness_summary=json.dumps(
+            {
+                "status": "ready",
+                "mapped_count": 15,
+                "unresolved_event_orders": [],
+                "target_fetched_at": target.fetched_at.isoformat(),
+                "probability_input_sha256": preparation_probability_sha256(
+                    tuple(event.bk_probabilities for event in target.events)
+                ),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
+    )
 
 
 

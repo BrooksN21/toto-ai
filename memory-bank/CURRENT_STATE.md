@@ -1,5 +1,168 @@
 # Current State
 
+## 2026-07-29: Drawing 4959 live activation-disabled drill
+
+A fresh network-backed `morning-dispatch` drill selected visible drawing 4959,
+internal ID 11988, with deadline `2026-07-29T14:00:00Z`. The updated resolver
+found 14 safe event candidates, including fixture 1493023 for event order 3
+through reviewed provider team IDs 434/435. Event order 8 remained
+`source_missing_competition`: API-Sports did not provide Iceland 3. Deild.
+
+Preparation therefore remained atomically `unresolved`: no partial pin set was
+published, `mapped_count` remained 0 at the readiness boundary, no evening
+plan was generated, activation was not requested, and no package or bet marker
+was created. The event-level readiness evidence retains all 14 matched
+candidates plus the explicit source-missing event for diagnosis.
+
+A separate network-free schema-v4 simulation verified all five generated
+launchd triggers (T−45/T−30/T−20/T−16/T−12), package/archive/status/marker
+publication through hard T−12, bank 4980 and stake 30. This is deterministic
+scheduler evidence, not a real PLAY result and not a 15/15 live drill.
+
+Direct verification after combining scheduler and resolver changes:
+`172 passed` for the critical scheduler/resolver set, `1443 passed` for the
+full suite, repository-wide Ruff passed, and staged/unstaged diff checks
+passed. No LaunchAgent is installed.
+
+## 2026-07-29: Drawing 4959 resolver quality
+
+Drawing 4959 event 4 now resolves systematically through reviewed,
+competition-scoped API-Sports team identities: Gimnasia L.P. team 434 and
+River Plate team 435. The fixture ID is not stored or hardcoded. Reviewed alias
+catalog schema v2 adds contextual identities while preserving schema-v1 input.
+The compatibility matcher validates either exact catalog schema and consumes
+only the normalized flat alias view; contextual identities remain exclusive to
+the systematic registry.
+
+Domestic targets reject provider candidates classified as global competition,
+preventing an unrelated friendly from bypassing country context. A successfully
+observed domestic schedule may report `source_missing_competition` when the
+target has an explicit numbered competition level and same-country provider
+coverage contains no compatible competition. This remains a non-match: drawing
+4959 event 9 (Iceland 3. Deild, absent from API-Sports) receives no pin and
+preparation remains fail-closed.
+
+## 2026-07-29: Atomic-final scheduler timing/recovery defects fixed locally
+
+Four deterministic scheduler defects from the 2026-07-29 context reproduction
+are closed in the uncommitted working tree. Morning dispatch reacquires UTC
+after network preparation and refuses new evening scheduling at or after
+T−45. Production preflight target validation also receives the fresh
+post-preparation time rather than the phase start.
+
+`FinalInputSnapshot.captured_at` is now sampled immediately after the direct
+detail response returns. Final subprocess timeouts are recomputed from the
+current clock on every attempt and end at
+`T−12 − publication_reserve_seconds`. Final calculation completion and every
+retry admission use that same actionable cutoff. Package writing,
+archive-manifest writing, durable archive, recovery, status, and `.bet-ready`
+marker creation may use the reserved interval and enforce the hard T−12
+boundary instead. Recovery at or before hard T−12 may finish publication;
+publication/recovery after hard T−12 removes `package.csv` and
+`package-archive.json` and produces terminal zero-cost `NO BET`. The durable
+audit row and immutable final input may remain non-actionable evidence.
+
+Regression-first verification: the five requested reserve-boundary tests
+passed (`5 passed in 0.68s`); the scheduler/morning/final-input/state/CLI suite
+passed (`175 passed in 6.11s`); full pytest passed
+(`1443 passed in 221.96s`); repository-wide Ruff and `git diff --check`
+passed. No scheduler was installed, no bet was placed, and no automatic bet
+path was added.
+
+## 2026-07-28: Scheduler/morning review findings closed locally
+
+The remaining atomic-scheduler review findings are fixed in the uncommitted
+working tree. Morning dispatch now writes a hash-bound `scheduled/generated`
+record before LaunchAgent activation, so a temporary bootstrap failure can
+retry without regenerating or overwriting artifacts. Exact existing plan,
+wrapper, and plist bytes are independently verified and reused. Dispatch
+records are keyed by immutable drawing ID/deadline rather than the morning
+calendar date, so the same allowed two-day drawing reuses one plan on the next
+morning.
+
+Final retry classification no longer examines exception text. Typed transient,
+permanent, and integrity errors plus structured TotoBrief HTTP status determine
+retryability. Unknown failures remain bounded/retryable; HTTP 503, timeouts,
+and temporary configuration-service failures cannot become terminal merely
+because their text contains `path` or `config`. Typed final-input, manifest,
+package, identity, and hash integrity errors terminate final fail-closed.
+
+Production `scheduler-execute --run-id` is now explicitly rejected for
+schema-v4; `--run-id` remains available for simulation only. Legacy schema-v3
+loading preserves its declared `project_root`. Operator-facing scheduler
+messages consistently name the real T−12 cutoff. Generated `reports/` is
+blanket-ignored by Git. The IL/UZ country mappings, reviewed Uzbek aliases, and
+hard women/male/reserve/youth identity guard remain unchanged.
+
+Final P1 review reproductions now enforce that persistent `bet_ready` and
+`publish=complete` are written only after the exclusive `.bet-ready` marker
+succeeds. Marker failure removes package bytes, records terminal `failed`, and
+later ticks remain fail-closed. Archive recovery rejects a changed current
+timing-override hash before publication. Morning activation retry calls the
+exact plan/wrapper/plist verifier before invoking activation and rejects
+tampered bytes.
+
+Verification after these fixes: exact P1 reproductions `5 passed`; focused
+scheduler/morning/final-input/CLI suite `186 passed`; full suite
+`1433 passed in 237.71s`; repository-wide Ruff and `git diff --check` passed.
+The earlier fixture rehearsal passed `42 passed in 99.09s`. No scheduler was
+installed, no package or betting marker was generated, and no bet was placed.
+
+## 2026-07-28: Atomic-final scheduler protocol complete
+
+Drawing 4957 is the incident that motivated this redesign. Its one-shot
+LaunchAgent failed during T−45 preparation and therefore never reached later
+phases; a manual restart then compared normal live-pool changes across
+different phases and failed again at final calculation. The outcome was
+correctly fail-closed—zero approved coupons and no bet—but demonstrated that
+the old lifecycle could not recover operationally.
+
+Canonical computed `NO BET` output now has no coupons, cost, or derived-brief
+placeholders. Immutable exact final-input snapshots bind the actual normalized
+final probabilities and source payload/provenance and reject post-capture
+tampering. Captured payloads can be persisted without a second detail fetch.
+Scheduler plan schema v4 and generated launchd candidates use T−45, T−30,
+T−20, T−16, and T−12, with explicit bounded runtime/retry budgets. Normal
+execution is a locked short-lived tick over hash-chained persistent state;
+warmup failure does not block final, transient final work has bounded backoff,
+orphan attempts are abandoned, duplicate/concurrent ticks are idempotent, and
+deadline misses become zero-cost `NO BET`.
+
+The final tick captures exactly one direct detail snapshot and passes its
+payload through preparation evidence refresh and EV without a second detail
+fetch. Runner manifest v5 and pre-bet archive manifest v2 bind snapshot,
+detail, and probability provenance; legacy archive rows remain readable but
+cannot acquire atomic provenance. Fixture-only acceptance covers one-fetch
+snapshot/tamper, warmup recovery, bounded transient retry, restart,
+deadline miss, and overlapping ticks. No LaunchAgent was installed and no
+upload or bet path was added.
+
+Verification: focused scheduler/final-input/archive/orchestration tests
+`278 passed`; final full suite `1407 passed`; repository-wide Ruff and
+`git diff --check` passed. The deterministic atomic-final/research/offline
+fixture rehearsal passed twice with the same `40 passed` result. No package,
+upload, or bet was produced by those verification runs.
+
+## 2026-07-28: Dynamic morning dispatcher implemented; live drill deferred
+
+The recurring morning candidate is now drawing-neutral. `morning-dispatch`
+selects one fresh current drawing, pins its exact number/internal ID/deadline/
+fingerprint, runs 15/15 preparation, and idempotently creates a schema-v4
+evening plan only while the full T−45/T−30/T−20/T−16/T−12 schedule remains
+possible. A fixed `--expected-drawing-number` is no longer embedded in the
+cross-day recurring job. Locks, persistent state, deferred retries, ambiguity
+rejection, timing-span policy, and late-dispatch rejection are covered.
+
+The five obsolete LaunchAgents for drawings 4947, 4950, 4952, 4953, and 4957
+were booted out and their plist files removed. Follow-up inspection found zero
+installed and zero loaded TotoAI LaunchAgents. The new generic morning
+dispatcher and evening atomic scheduler remain uninstalled. The
+activation-disabled 4958 drill selected the exact active drawing but deferred
+at preparation: API-Sports resolved 14/15 after the country/alias patch and
+does not contain the women fixture Huracán Women — River Plate Women. No plan,
+package, marker, or scheduler was created. Installation remains blocked until
+provider-neutral schedule evidence can resolve all 15 events safely.
+
 ## 2026-07-27: Active preparation rejects stale probability detail
 
 The operational `sync-prepare`/`prepare-drawing` path no longer treats the
@@ -2319,3 +2482,17 @@ The remaining prospective-cache/historical-replay P1 is closed locally.
 Final verification for the uncommitted sports-stat slice: focused
 sports-stat/provider/collector tests `38 passed`; full suite
 `1384 passed in 243.60s`; repository-wide Ruff and `git diff --check` passed.
+
+## Drawing 4958 focused identity patch (2026-07-28)
+
+Implemented locally, not committed: Israel and Uzbekistan now share stable
+Russian/English/ISO country identities; reviewed aliases map `Хорезм` to
+`Xorazm` and `Термез Сурхан` to `Surkhon`; systematic resolver v2 rejects
+women targets unless the provider candidate has explicit W/Women/female
+context and is not reserve/academy/youth/U17-U23. Fixture regressions cover
+API-Sports IDs `1557935` and `1516080`, while the male false leader `1493023`
+remains rejected. API-Sports still has no women fixture for event 5, so drawing
+4958 remains unresolved until a second provider supplies that event.
+
+Focused verification: `98 passed`; touched-file Ruff and `git diff --check`
+passed.

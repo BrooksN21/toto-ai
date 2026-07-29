@@ -316,6 +316,20 @@ class Collector:
                 for row in quote_rows
             )
 
+    def synchronize_payload(
+        self,
+        payload: dict[str, Any],
+        *,
+        drawing_summary: dict[str, Any],
+        source: str,
+    ) -> DetailSyncResult:
+        """Persist an already obtained exact detail without transport access."""
+        return self._persist_detail(
+            payload,
+            drawing_summary=drawing_summary,
+            source=source,
+        )
+
     def _load_cache(
         self,
         drawing_id: int,

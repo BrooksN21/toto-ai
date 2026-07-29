@@ -435,14 +435,25 @@ def seed_reviewed_alias_config(
     if isinstance(aliases, (str, Path)):
         path = Path(aliases)
         payload = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(payload, dict) or set(payload) != {"version", "aliases"}:
+        if not isinstance(payload, dict) or set(payload) not in (
+            {"version", "aliases"},
+            {"version", "aliases", "identities"},
+        ):
             raise ValueError("alias file must use the exact schema")
-        if payload["version"] != 1 or not isinstance(payload["aliases"], dict):
+        if payload["version"] not in (1, 2) or not isinstance(
+            payload["aliases"], dict
+        ):
             raise ValueError("alias file version and aliases are invalid")
+        if payload["version"] == 1 and "identities" in payload:
+            raise ValueError("alias file v1 cannot contain identities")
+        identities = payload.get("identities", [])
+        if not isinstance(identities, list):
+            raise ValueError("alias identities must be a list")
         mapping = payload["aliases"]
         source_path = source_path or str(path)
     else:
         mapping = aliases
+        identities = []
     results = []
     for target_name, provider_name in sorted(mapping.items()):
         if not isinstance(target_name, str) or not isinstance(provider_name, str):
@@ -480,6 +491,50 @@ def seed_reviewed_alias_config(
             confidence=1.0,
             reviewer="reviewed-alias-config",
         )
+    for identity in identities:
+        if not isinstance(identity, dict) or set(identity) != {
+            "canonical_name",
+            "country",
+            "context",
+            "provider_team_id",
+            "aliases",
+        }:
+            raise ValueError("reviewed identity must use the exact schema")
+        identity_aliases = identity["aliases"]
+        if not isinstance(identity_aliases, list) or not identity_aliases:
+            raise ValueError("reviewed identity aliases must be a non-empty list")
+        if not all(isinstance(alias, str) for alias in identity_aliases):
+            raise ValueError("reviewed identity aliases must be strings")
+        team = upsert_team_entity(
+            session_factory,
+            sport=sport,
+            canonical_name=identity["canonical_name"],
+            country=identity["country"],
+            context=identity["context"],
+        )
+        provenance = {
+            "source": "reviewed-contextual-identity",
+            "source_path": source_path or "in-memory",
+            "provider_team_id": identity["provider_team_id"],
+        }
+        for index, alias in enumerate(identity_aliases):
+            results.append(
+                upsert_reviewed_alias(
+                    session_factory,
+                    team_id=team.id,
+                    alias=alias,
+                    source="reviewed-contextual-identity",
+                    provider=provider,
+                    provider_team_id=(
+                        identity["provider_team_id"] if index == 0 else None
+                    ),
+                    country=identity["country"],
+                    context=identity["context"],
+                    provenance=provenance,
+                    confidence=1.0,
+                    reviewer="reviewed-alias-config",
+                )
+            )
     return tuple(results)
 
 

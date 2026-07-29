@@ -16,6 +16,7 @@ data/*.sqlite
 data/external-cache/
 data/totobrief-cache/
 data/raw/*.json
+reports/
 reports/validation_*.md
 reports/bk_vs_norm.md
 reports/backtest_mvp_last_*.csv

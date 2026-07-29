@@ -233,6 +233,27 @@ def _add_missing_columns(engine: Engine) -> None:
                         "ADD COLUMN archive_manifest_sha256 VARCHAR"
                     )
                 )
+            if "final_input_sha256" not in archive_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE archived_packages "
+                        "ADD COLUMN final_input_sha256 VARCHAR"
+                    )
+                )
+            if "probability_input_sha256" not in archive_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE archived_packages "
+                        "ADD COLUMN probability_input_sha256 VARCHAR"
+                    )
+                )
+            if "final_input_captured_at" not in archive_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE archived_packages "
+                        "ADD COLUMN final_input_captured_at VARCHAR"
+                    )
+                )
 
 
 def _migrate_team_aliases_to_context_identity(engine: Engine) -> None:

@@ -89,10 +89,52 @@ def normalize_team_name(value: str) -> str:
 
 def load_aliases(path: str | Path) -> dict[str, str]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
-    if not isinstance(payload, dict) or set(payload) != {"version", "aliases"}:
+    if not isinstance(payload, dict):
         raise ValueError("alias file must use the exact schema")
-    if payload["version"] != 1:
-        raise ValueError("alias file version must be 1")
+    version = payload.get("version")
+    expected_keys = (
+        {"version", "aliases"}
+        if version == 1
+        else {"version", "aliases", "identities"}
+        if version == 2
+        else None
+    )
+    if expected_keys is None:
+        raise ValueError("alias file version must be 1 or 2")
+    if set(payload) != expected_keys:
+        raise ValueError("alias file must use the exact schema")
+    if version == 2:
+        identities = payload["identities"]
+        if not isinstance(identities, list):
+            raise ValueError("alias identities must be a list")
+        for identity in identities:
+            if not isinstance(identity, dict) or set(identity) != {
+                "canonical_name",
+                "country",
+                "context",
+                "provider_team_id",
+                "aliases",
+            }:
+                raise ValueError("reviewed identity must use the exact schema")
+            if (
+                any(
+                    not isinstance(identity[field], str)
+                    or not identity[field].strip()
+                    for field in (
+                        "canonical_name",
+                        "country",
+                        "context",
+                        "provider_team_id",
+                    )
+                )
+                or not isinstance(identity["aliases"], list)
+                or not identity["aliases"]
+                or any(
+                    not isinstance(alias, str) or not alias.strip()
+                    for alias in identity["aliases"]
+                )
+            ):
+                raise ValueError("reviewed identity values are invalid")
     raw_aliases = payload["aliases"]
     if not isinstance(raw_aliases, dict):
         raise ValueError("aliases must be a mapping")

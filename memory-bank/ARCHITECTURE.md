@@ -1,5 +1,82 @@
 # Architecture
 
+## Atomic final scheduler protocol
+
+Production final evidence uses a run-scoped canonical `FinalInputSnapshot`
+containing the exact direct-detail payload, capture time, target fingerprint,
+normalized 15×3 BK probability hash, detail hash, attempt/plan identity, and
+optional timing-override hash. Loading revalidates the canonical document,
+payload, probability matrix, drawing identity, deadline, and snapshot hash;
+post-capture mutation fails closed. Captured payload ingestion is a local
+database operation and does not perform another TotoBrief request.
+
+Scheduler plan schema v4 defines T−45 warmup, T−30 refresh, T−20 final,
+T−16 retry, and T−12 hard publication times plus explicit final-runtime,
+publication-reserve, attempt-count, and bounded-backoff configuration.
+Generated LaunchAgent candidates contain all five triggers and remain
+generation-only; automated upload and betting are absent.
+
+Each normal `scheduler-execute` invocation is a short-lived idempotent tick
+under a plan-scoped file lock. Hash-chained persistent state records every
+attempt and supports orphan recovery. Warmup/refresh failures are diagnostic;
+final attempts have isolated directories and bounded transient retry. A final
+tick captures one detail snapshot at response completion, refreshes unchanged
+15-pin preparation evidence from it, and injects the same payload into EV
+without another detail request. Runner manifest v5, package archive manifest
+v2, and durable archive columns bind the snapshot and normalized probability
+hashes. Final calculation completion, subprocess timeout, and every retry
+admission use the actionable cutoff
+`T−12 − publication_reserve_seconds`. The remaining interval through hard
+T−12 is reserved exclusively for package/archive-manifest writing, durable
+archive, recovery, status, and `.bet-ready` marker work. Those publication
+steps use hard T−12. Recovery may finish within the reserve, including exactly
+at T−12; after T−12 it removes stale package and archive-manifest files before
+recording coupon-free zero-cost `NO BET`.
+
+Retry classification is structural: typed scheduler errors, TotoBrief HTTP
+status, and explicit categories are inspected; message text is never parsed.
+HTTP 503/timeouts remain retryable, while typed final-input, identity, manifest,
+package, and hash integrity failures are terminal. Production schema-v4
+execution is tick-only; explicit `--run-id` is reserved for simulation.
+Persistent `bet_ready`/`publish=complete` state is committed only after the
+exclusive `.bet-ready` marker exists and verifies. A non-deadline marker
+failure removes actionable package bytes and becomes terminal `failed`; a
+hard-T−12 crossing removes the same bytes and becomes zero-cost `NO BET`.
+Later ticks cannot mistake either case for a published package. Archive
+recovery also compares the persisted atomic-final timing-override hash with the
+current semantic override hash before publication.
+
+## Dynamic morning dispatcher protocol
+
+The recurring morning boundary is drawing-neutral. One generic
+`morning-dispatch` invocation resolves exactly one current drawing from a fresh
+page-one response, validates one exact detail payload, performs systematic
+preparation from that pinned identity, and records the visible number, internal
+ID, deadline, fingerprint, detail hash, readiness, and eligibility. It creates
+or reuses one schema-v4 evening plan only when preparation is 15/15,
+eligibility is playable, and the complete five-tick schedule can still start
+before T−45.
+
+The dispatcher has a process lock and persistent per-drawing state keyed by
+drawing ID and deadline, independent of the morning date. Repeated morning
+triggers are idempotent; a deferred preparation may be retried, while
+ambiguous selection, missing identity/deadline, timing spans outside policy,
+conflicting state, or a late dispatch fail closed. Time is reacquired after
+network preparation before the T−45 plan-generation gate. The recurring
+wrapper never contains a drawing number. The generated evening plan owns the
+exact drawing identity and its independent T−45/T−30/T−20/T−16/T−12 ticks.
+
+Plan, wrapper, and plist bytes are generated once. The dispatcher persists
+`scheduled/generated` before activation. A retry after bootstrap failure or a
+crash verifies and reuses the exact plan, wrapper, and plist bytes before
+invoking activation, then advances only the activation state. A conflicting,
+tampered, or partial artifact set fails closed.
+
+Generation is deliberately separate from activation. Neither the generic
+dispatcher candidate nor an evening schema-v4 scheduler is currently
+installed. The five obsolete drawing-specific LaunchAgents were removed on
+2026-07-28. Drawing 4958 remains the next activation-disabled live drill.
+
 ## Emergency pre-bet safety boundary
 
 - `package.audit.evaluate_package_safety` is the pure exposure/probability
@@ -39,7 +116,7 @@
   pre-bet runner provenance.
 - Systematic preparation and production preflight share one exact persisted
   drawing identity (internal ID, visible number, and `ended_at`). Scheduler
-  publication verifies that identity during archive import and enforces T-10
+  publication verifies that identity during archive import and enforces T−12
   again directly after the database write and directly before marker creation;
   late publication bytes/markers are removed while the archive remains.
 
@@ -146,8 +223,15 @@ Exact TotoBrief drawing fingerprint and 15 event IDs
 -> Authoritative fresh 15/15 revalidation summary (manifest schema v4)
 -> Pinned collection without display-name rematching
 -> Existing timing/audit/EV runner
--> Scheduler T-10 publication only when the final package remains valid
+-> Scheduler T−12 publication cutoff when the final package remains valid
 ```
+
+Reviewed alias catalog schema v2 can bind a canonical team to provider team ID,
+country, and competition context. Team identity never hardcodes a fixture.
+Domestic competition resolution rejects global provider competitions.
+Sufficient observed provider coverage may distinguish
+`source_missing_competition` from a generic missing candidate, but both remain
+unresolved and publish no pin.
 
 Deterministic offline replay uses the same identity boundary without live
 adapters:
@@ -332,12 +416,14 @@ Important modules:
   schedule failure, confirmed multi-day, and unresolved drawings through
   collection, SQLite reload, audit/report, and playable/research output.
 - `toto_ai.runner.reports`, `toto_ai.runner.orchestration`,
-  `toto_ai.runner.scheduler`, `toto_ai.runner.models`:
-  schema v4 runner manifests, raw/effective timing boundary, mandatory exact
-  15/15 pinned schedule freshness/identity summary, strict parsing, immutable
-  run-scoped artifacts, and deadline-driven scheduler phases
-  (`T-45`, `T-30`, `T-15`, `T-10`) with terminal markers
-  (`.bet-ready`, `.no-bet`, `.failed`).
+  `toto_ai.runner.scheduler`, `toto_ai.runner.scheduler_state`,
+  `toto_ai.runner.final_input`, `toto_ai.runner.morning_dispatch`, and
+  `toto_ai.runner.models`: runner manifest v5, immutable one-fetch final input,
+  mandatory exact 15/15 schedule/identity evidence, strict parsing,
+  hash-chained state, plan-scoped locking, restart/recovery, dynamic
+  drawing-neutral morning dispatch, and independent scheduler ticks at T−45,
+  T−30, T−20, T−16, and T−12 with terminal markers (`.bet-ready`, `.no-bet`,
+  `.failed`).
 - `toto_ai.ev.backtest`: chronological modeled-EV evaluation with SQL-level
   frozen-holdout exclusion, pre-result package hashing, complete factor
   rankings reused across dynamic banks and thresholds, cumulative realized
@@ -478,21 +564,24 @@ Important CLI commands:
   drawing already synchronized in SQLite.
   Unresolved output is machine-readable and exits nonzero.
 - `scheduler-plan`: build immutable scheduler plans, wrapper scripts, and
-  LaunchAgent files for the fixed phase boundaries (`T-45`, `T-30`, `T-15`,
-  `T-10`). The plan's gross-EV threshold is passed through the exact
+  LaunchAgent candidates for the fixed phase boundaries (`T−45`, `T−30`,
+  `T−20`, `T−16`, `T−12`). The plan's gross-EV threshold is passed through the exact
   `run-drawing --min-gross-ev` CLI contract. Optional `--env-file` produces a
   wrapper that validates and sources a user-owned regular non-symlink file
   whose mode is no broader than `0600`; the plist contains only the wrapper
   path and no credentials.
 - `morning-preanalysis-plan`: generate, but never install, a separate launchd
   candidate beneath `reports/rehearsal`. Its wrapper uses the same secure env
-  contract and runs only guarded `sync-prepare --open
-  --expected-drawing-number N` at configured morning times with bounded
-  retries. It writes isolated logs and never invokes the betting scheduler or
-  creates betting markers.
-- `scheduler-execute`: execute preflight/fallback/final/freeze phases from a
-  signed schedule, strictly parse runner manifests, and only publish an
-  actionable package when freeze publishes `.bet-ready`.
+  contract and invokes drawing-neutral `morning-dispatch` at configured times.
+  A ready invocation creates or reuses one exact per-drawing schema-v4 plan;
+  it never uploads a package or places a bet.
+- `morning-dispatch`: resolve, validate, pin, prepare, and persist one current
+  drawing under a lock, then generate one idempotent evening plan only before
+  T−45.
+- `scheduler-execute`: run one short-lived resumable tick, capture one immutable
+  final detail for a final attempt, strictly verify the bound runner/archive
+  evidence, recover safely from restart, and publish `.bet-ready` only before
+  T−12.
 
 ## Audit-only sports-statistics evidence
 

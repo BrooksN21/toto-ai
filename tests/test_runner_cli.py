@@ -28,7 +28,6 @@ from toto_ai.runner import (
     VirtualSchedulerClock,
     build_run_drawing_phase_command,
     build_scheduler_plan,
-    parse_runner_manifest_phase_result,
     pin_drawing,
 )
 
@@ -1007,7 +1006,11 @@ def test_keyboard_interrupt_before_publication_is_nonzero(monkeypatch):
     assert "interrupted" in interrupted.output.lower()
 
 
-def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
+def _local_scheduler_manifest(
+    *,
+    final_lead_minutes: int,
+    safety_stop_minutes: int = 10,
+) -> dict[str, object]:
     fingerprint = "b" * 64
     coupons = [
         {
@@ -1028,7 +1031,7 @@ def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
         ((0.45, 0.45, 0.10),) * 15,
     ).to_dict()
     return {
-        "schema_version": 4,
+        "schema_version": 5,
         "run_id": f"local-{final_lead_minutes}",
         "command_status": "success",
         "decision": "PLAY",
@@ -1045,7 +1048,7 @@ def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
             "stake": 30,
             "mode": "playable",
             "final_lead_minutes": final_lead_minutes,
-            "safety_stop_minutes": 10,
+            "safety_stop_minutes": safety_stop_minutes,
             "provider": "api-sports",
         },
         "timeline": {
@@ -1160,6 +1163,14 @@ def _local_scheduler_manifest(*, final_lead_minutes: int) -> dict[str, object]:
         },
         "report_links": {"external": [], "ev": []},
         "replay": None,
+        "final_input": {
+            "path": "final-input.json",
+            "captured_at": "2030-01-02T11:40:00Z",
+            "snapshot_sha256": "1" * 64,
+            "detail_payload_sha256": "2" * 64,
+            "probability_input_sha256": "3" * 64,
+            "attempt_id": "local",
+        },
         "warnings": [],
     }
 
@@ -1262,8 +1273,7 @@ def test_scheduler_cli_plan_simulated_execute_and_operator_pickup_are_offline(
     assert not (run_dir / ".success").exists()
 
 
-def test_scheduler_cli_real_production_parser_and_capture_are_offline(
-    monkeypatch: pytest.MonkeyPatch,
+def test_scheduler_cli_rejects_production_run_id_for_schema_v4(
     tmp_path: Path,
 ) -> None:
     output_dir = tmp_path / "production-parser-scheduler"
@@ -1297,52 +1307,6 @@ def test_scheduler_cli_real_production_parser_and_capture_are_offline(
         ended_at="2030-01-02T12:00:00Z",
     )
 
-    clock = VirtualSchedulerClock(
-        datetime(2030, 1, 2, 11, 15, tzinfo=UTC)
-    )
-
-    class LocalCommandRunner(CommandSchedulerPhaseRunner):
-        def _preflight(self, _plan, _work_dir):
-            return None
-
-    production_runner = LocalCommandRunner(
-        environment={},
-        target_validator=lambda _plan, _started_at: None,
-    )
-    monkeypatch.setattr(cli, "CommandSchedulerPhaseRunner", lambda: production_runner)
-    monkeypatch.setattr(cli, "_utc_now_datetime", clock.now)
-    monkeypatch.setattr(cli.time, "sleep", clock.sleep)
-
-    subprocess_calls: list[tuple[str, ...]] = []
-
-    def local_subprocess(command, **_kwargs):
-        command = tuple(command)
-        subprocess_calls.append(command)
-        report_dir = Path(command[command.index("--report-dir") + 1])
-        final_lead = int(command[command.index("--final-lead-minutes") + 1])
-        report_dir.mkdir(parents=True)
-        (report_dir / f"drawing_run_local_{final_lead}.json").write_text(
-            json.dumps(
-                _local_scheduler_manifest(final_lead_minutes=final_lead)
-            ),
-            encoding="utf-8",
-        )
-        return SimpleNamespace(returncode=0, stdout="Decision: PLAY\n", stderr="")
-
-    parsed: list[Path] = []
-    production_parser = parse_runner_manifest_phase_result
-
-    def tracked_parser(context, manifest_path):
-        parsed.append(Path(manifest_path))
-        return production_parser(context, manifest_path)
-
-    monkeypatch.setattr(scheduler_module.subprocess, "run", local_subprocess)
-    monkeypatch.setattr(
-        scheduler_module,
-        "parse_runner_manifest_phase_result",
-        tracked_parser,
-    )
-
     executed = runner.invoke(
         cli.app,
         [
@@ -1354,26 +1318,168 @@ def test_scheduler_cli_real_production_parser_and_capture_are_offline(
         ],
     )
 
+    assert executed.exit_code == 2
+    assert "--run-id is simulation-only" in executed.output
+    assert not (output_dir / "runs").exists()
+
+
+def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "atomic-production-scheduler"
+    deadline = datetime(2030, 1, 2, 12, 0, tzinfo=UTC)
+    detail_payload = {
+        "data": {
+            "id": 12001,
+            "number": 5001,
+            "status": "active",
+            "ended_at": deadline.isoformat(),
+            "events": [
+                {
+                    "id": 30_000 + order,
+                    "order": order,
+                    "name": f"Home {order} — Away {order}",
+                    "championship": "Atomic Fixture League",
+                    "quotes": {
+                        "bk_win_1": 45,
+                        "bk_draw": 45,
+                        "bk_win_2": 10,
+                        "pool_win_1": 45,
+                        "pool_draw": 45,
+                        "pool_win_2": 10,
+                    },
+                }
+                for order in range(15)
+            ],
+        }
+    }
+    plan_result = runner.invoke(
+        cli.app,
+        [
+            "scheduler-plan",
+            "--drawing",
+            "5001",
+            "--drawing-id",
+            "12001",
+            "--ended-at",
+            deadline.isoformat(),
+            "--bank",
+            "4980",
+            "--output-dir",
+            str(output_dir),
+            "--project-root",
+            str(tmp_path),
+            "--db",
+            str(tmp_path / "data" / "toto.db"),
+            "--aliases",
+            str(tmp_path / "data" / "aliases.json"),
+        ],
+    )
+    assert plan_result.exit_code == 0, plan_result.output
+    _seed_scheduler_drawing(
+        tmp_path / "data" / "toto.db",
+        drawing_id=12001,
+        drawing_number=5001,
+        ended_at=deadline.isoformat(),
+    )
+
+    detail_calls = 0
+
+    class LocalClient:
+        def drawing_info(self, drawing_id):
+            nonlocal detail_calls
+            detail_calls += 1
+            assert drawing_id == 12001
+            return detail_payload
+
+    class LocalCommandRunner(CommandSchedulerPhaseRunner):
+        pass
+
+    clock = VirtualSchedulerClock(deadline - timedelta(minutes=20))
+    production_runner = LocalCommandRunner(
+        environment={},
+        target_validator=lambda _plan, _started_at: None,
+    )
+    monkeypatch.setattr(cli, "CommandSchedulerPhaseRunner", lambda: production_runner)
+    monkeypatch.setattr(cli, "_utc_now_datetime", clock.now)
+    monkeypatch.setattr(cli.time, "sleep", clock.sleep)
+    monkeypatch.setattr(scheduler_module, "TotoBriefClient", LocalClient)
+
+    def local_subprocess(command, **kwargs):
+        command = tuple(command)
+        report_dir = Path(command[command.index("--report-dir") + 1])
+        report_dir.mkdir(parents=True)
+        final_input_path = Path(kwargs["env"]["TOTO_FINAL_INPUT"])
+        final_input = json.loads(final_input_path.read_text(encoding="utf-8"))
+        manifest = _local_scheduler_manifest(
+            final_lead_minutes=20,
+            safety_stop_minutes=12,
+        )
+        fingerprint = final_input["target_fingerprint"]
+        manifest["run_id"] = final_input["attempt_id"]
+        manifest["target"].update(
+            {
+                "preflight_fingerprint": fingerprint,
+                "final_fingerprint": fingerprint,
+            }
+        )
+        manifest["eligibility"]["target_fingerprint"] = fingerprint
+        manifest["eligibility"]["raw"]["target_fingerprint"] = fingerprint
+        manifest["eligibility"]["effective"][
+            "target_fingerprint"
+        ] = fingerprint
+        manifest["final_input"] = {
+            "path": str(final_input_path),
+            "captured_at": final_input["captured_at"],
+            "snapshot_sha256": final_input["snapshot_sha256"],
+            "detail_payload_sha256": final_input["detail_payload_sha256"],
+            "probability_input_sha256": final_input[
+                "probability_input_sha256"
+            ],
+            "attempt_id": final_input["attempt_id"],
+        }
+        manifest["timeline"]["final_started_at"] = "2030-01-02T11:40:00Z"
+        manifest["ev"]["input_fetched_at"] = final_input["captured_at"]
+        (report_dir / "drawing_run_atomic.json").write_text(
+            json.dumps(manifest),
+            encoding="utf-8",
+        )
+        clock.sleep(60)
+        return SimpleNamespace(returncode=0, stdout="Decision: PLAY\n", stderr="")
+
+    monkeypatch.setattr(scheduler_module.subprocess, "run", local_subprocess)
+
+    executed = runner.invoke(
+        cli.app,
+        [
+            "scheduler-execute",
+            "--plan",
+            str(output_dir / "scheduler-plan.json"),
+        ],
+    )
+
     assert executed.exit_code == 0, executed.output
     assert "Outcome: bet-ready" in executed.output
-    assert len(subprocess_calls) == 2
-    assert all(
-        command[command.index("--min-gross-ev") + 1] == "1"
-        for command in subprocess_calls
+    assert detail_calls == 1
+    attempts = tuple((output_dir / "attempts").iterdir())
+    assert len(attempts) == 1
+    attempt = attempts[0]
+    final_input = json.loads(
+        (attempt / "final-input.json").read_text(encoding="utf-8")
     )
-    assert len(parsed) == 2
-    run_dir = output_dir / "runs" / "5001" / "real-local-acceptance"
-    package = run_dir / "package.csv"
-    assert package.read_text(encoding="utf-8") == (
-        "rank,coupon,gross_ev,net_ev\n"
-        "1,111111111111111,1.2,0.20000000000000001\n"
-        "2,XXXXXXXXXXXXXXX,1.1000000000000001,0.10000000000000001\n"
+    archive = json.loads(
+        (attempt / "package-archive.json").read_text(encoding="utf-8")
     )
-    assert (run_dir / ".bet-ready").is_file()
-    status = json.loads((run_dir / "status.json").read_text(encoding="utf-8"))
-    assert status["selected_snapshot"] == "final"
-    assert status["selected_count"] == 2
-    assert status["selected_cost"] == 60
+    status = json.loads((attempt / "status.json").read_text(encoding="utf-8"))
+    assert archive["schema_version"] == 2
+    assert archive["final_input_sha256"] == final_input["snapshot_sha256"]
+    assert (
+        archive["probability_input_sha256"]
+        == final_input["probability_input_sha256"]
+    )
+    assert status["final_inputs_sha256"]
+    assert (attempt / ".bet-ready").is_file()
 
 
 def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> None:
@@ -1408,7 +1514,7 @@ def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> No
     assert payload["target"]["drawing"] == 5002
     assert payload["config"]["minimum_gross_ev"] == 1.0
     assert payload["deadlines"]["t_minus_45"] == "2030-01-03T11:15:00Z"
-    assert payload["deadlines"]["t_minus_10"] == "2030-01-03T11:50:00Z"
+    assert payload["deadlines"]["t_minus_12"] == "2030-01-03T11:48:00Z"
     assert not output_dir.exists()
 
 

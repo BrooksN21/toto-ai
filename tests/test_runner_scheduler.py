@@ -34,6 +34,7 @@ from toto_ai.runner.scheduler import (
     build_run_drawing_phase_command,
     build_scheduler_plan,
     execute_scheduler_plan,
+    execute_scheduler_tick,
     find_prior_bet_ready,
     parse_runner_manifest_phase_result,
     prepare_scheduler_artifacts,
@@ -76,6 +77,34 @@ def _plan(
         aliases=tmp_path / "aliases.json",
         timing_overrides=timing_overrides,
     )
+
+
+def _atomic_final_payload(plan):
+    return {
+        "data": {
+            "id": plan.drawing_id,
+            "number": plan.drawing,
+            "status": "active",
+            "ended_at": plan.ended_at.isoformat(),
+            "events": [
+                {
+                    "id": 39000 + order,
+                    "order": order,
+                    "name": f"Home {order} — Away {order}",
+                    "championship": "Fixture League",
+                    "quotes": {
+                        "bk_win_1": 40,
+                        "bk_draw": 30,
+                        "bk_win_2": 30,
+                        "pool_win_1": 40,
+                        "pool_draw": 30,
+                        "pool_win_2": 30,
+                    },
+                }
+                for order in range(15)
+            ],
+        }
+    }
 
 
 def _play(package: bytes, context: SchedulerPhaseContext):
@@ -383,6 +412,14 @@ def _valid_runner_manifest(
         },
         "report_links": {"external": [], "ev": []},
         "replay": None,
+        "final_input": {
+            "path": "final-input.json",
+            "captured_at": "2030-01-02T11:40:00Z",
+            "snapshot_sha256": "1" * 64,
+            "detail_payload_sha256": "2" * 64,
+            "probability_input_sha256": "3" * 64,
+            "attempt_id": "test",
+        },
         "warnings": [],
     }
 
@@ -520,7 +557,7 @@ def test_happy_final_package_is_the_only_bet_ready_publication(tmp_path: Path):
     assert status["package_path"] == str(result.package_path)
     assert status["package_sha256"] == result.package_sha256
     assert status["selected_snapshot"] == "final"
-    assert status["published_at"] == "2030-01-02T11:50:00Z"
+    assert status["published_at"] == "2030-01-02T11:48:00Z"
     assert tuple(context.phase for context in calls) == (
         "preflight",
         "fallback",
@@ -569,7 +606,7 @@ def test_archive_failure_is_terminal_failed_without_bet_ready(
     assert not (result.run_dir / "package-archive.json").exists()
 
 
-def test_deadline_crossed_during_durable_archive_fails_without_publication(
+def test_deadline_crossed_during_durable_archive_is_zero_cost_no_bet(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ):
@@ -595,10 +632,13 @@ def test_deadline_crossed_during_durable_archive_fails_without_publication(
         clock=clock,
     )
 
-    assert result.outcome == "failed"
-    assert result.decision == "FAILED"
-    assert "durable archive completed after T-10" in result.reason
+    assert result.outcome == "no-bet"
+    assert result.decision == "NO BET"
+    assert "durable archive completed after T-12" in result.reason
     assert not (result.run_dir / ".bet-ready").exists()
+    assert result.marker_path == result.run_dir / ".no-bet"
+    assert result.marker_path.is_file()
+    assert result.package_path is None
     assert not (result.run_dir / "package.csv").exists()
     assert not (result.run_dir / "package-archive.json").exists()
     engine = init_db(plan.db)
@@ -609,7 +649,7 @@ def test_deadline_crossed_during_durable_archive_fails_without_publication(
     engine.dispose()
 
 
-def test_deadline_rechecked_immediately_before_bet_ready_marker(
+def test_bet_ready_marker_crossing_hard_t12_becomes_zero_cost_no_bet(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ):
@@ -639,10 +679,13 @@ def test_deadline_rechecked_immediately_before_bet_ready_marker(
         clock=clock,
     )
 
-    assert result.outcome == "failed"
-    assert result.decision == "FAILED"
+    assert result.outcome == "no-bet"
+    assert result.decision == "NO BET"
     assert "bet-ready marker deadline crossed after durable archive" in result.reason
     assert not (result.run_dir / ".bet-ready").exists()
+    assert result.marker_path == result.run_dir / ".no-bet"
+    assert result.marker_path.is_file()
+    assert result.package_path is None
     assert not (result.run_dir / "package.csv").exists()
     assert not (result.run_dir / "package-archive.json").exists()
     engine = init_db(plan.db)
@@ -738,7 +781,7 @@ def test_final_completion_after_t_minus_10_is_never_bet_ready(tmp_path: Path):
             return SchedulerPhaseResult.completed()
         if context.phase == "fallback":
             return _play(FALLBACK_PACKAGE, context)
-        clock.sleep(5 * 60 + 1)
+        clock.sleep(8 * 60 + 1)
         return _play(FINAL_PACKAGE, context)
 
     result = _execute(plan, run, clock=clock)
@@ -1001,8 +1044,9 @@ def test_exact_offsets_and_phase_start_times_are_ended_at_anchored(tmp_path: Pat
     plan = _plan(tmp_path)
     assert plan.preflight_at == ENDED_AT - timedelta(minutes=45)
     assert plan.fallback_at == ENDED_AT - timedelta(minutes=30)
-    assert plan.final_at == ENDED_AT - timedelta(minutes=15)
-    assert plan.freeze_at == ENDED_AT - timedelta(minutes=10)
+    assert plan.final_at == ENDED_AT - timedelta(minutes=20)
+    assert plan.retry_at == ENDED_AT - timedelta(minutes=16)
+    assert plan.freeze_at == ENDED_AT - timedelta(minutes=12)
     calls: list[SchedulerPhaseContext] = []
 
     result = _execute(plan, _happy_runner(calls))
@@ -1013,11 +1057,12 @@ def test_exact_offsets_and_phase_start_times_are_ended_at_anchored(tmp_path: Pat
         plan.final_at,
     ]
     phases = _status(result)["phase_timestamps"]
-    assert phases["freeze"]["started_at"] == "2030-01-02T11:50:00Z"
+    assert phases["freeze"]["started_at"] == "2030-01-02T11:48:00Z"
     assert _status(result)["deadlines"] == {
         "ended_at": "2030-01-02T12:00:00Z",
-        "t_minus_10": "2030-01-02T11:50:00Z",
-        "t_minus_15": "2030-01-02T11:45:00Z",
+        "t_minus_12": "2030-01-02T11:48:00Z",
+        "t_minus_16": "2030-01-02T11:44:00Z",
+        "t_minus_20": "2030-01-02T11:40:00Z",
         "t_minus_30": "2030-01-02T11:30:00Z",
         "t_minus_45": "2030-01-02T11:15:00Z",
     }
@@ -1054,6 +1099,7 @@ def test_generated_artifacts_are_credential_free_generic_and_exclusive(
     launch_agent = plistlib.loads(artifacts.launch_agent_path.read_bytes())
     assert launch_agent["ProgramArguments"] == [str(artifacts.wrapper_path)]
     assert launch_agent["Label"].startswith("com.totoai.production-scheduler.")
+    assert len(launch_agent["StartCalendarInterval"]) == 5
     with pytest.raises(FileExistsError, match="refusing to overwrite"):
         prepare_scheduler_artifacts(plan)
 
@@ -1187,6 +1233,100 @@ def test_command_phase_preflight_runs_mandatory_prepare_drawing(
     assert calls[0][1]["cwd"] == plan.project_root
 
 
+def test_command_phase_preflight_uses_fresh_post_preparation_time(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    plan = _plan(tmp_path)
+    init_db(plan.db).dispose()
+    plan.aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
+    context = SchedulerPhaseContext(
+        phase="preflight",
+        plan=plan,
+        run_id="preflight-fresh-clock",
+        run_dir=plan.output_dir / "run",
+        work_dir=plan.output_dir / "run" / "work" / "preflight",
+        scheduled_at=plan.preflight_at,
+        started_at=plan.preflight_at,
+    )
+    preparation_completed_at = plan.preflight_at + timedelta(minutes=4)
+    validator_observations = []
+
+    monkeypatch.setattr(
+        scheduler.subprocess,
+        "run",
+        lambda command, **_kwargs: subprocess.CompletedProcess(
+            command, 0, stdout='{"status":"ready"}', stderr=""
+        ),
+    )
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"},
+        target_validator=lambda _plan, observed: validator_observations.append(
+            observed
+        ),
+        now=lambda: preparation_completed_at,
+    )
+
+    result = runner(context)
+
+    assert result.status == "complete"
+    assert validator_observations == [preparation_completed_at]
+
+
+def test_command_final_subprocess_timeout_preserves_publication_reserve(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    plan = _plan(tmp_path)
+    payload = _atomic_final_payload(plan)
+    recorded_timeouts = []
+
+    class Clock:
+        current = plan.final_at
+
+        def now(self):
+            return self.current
+
+        def advance(self, seconds):
+            self.current += timedelta(seconds=seconds)
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == plan.drawing_id
+            clock.advance(9)
+            return payload
+
+    def time_out(command, **kwargs):
+        recorded_timeouts.append(kwargs["timeout"])
+        expected = (
+            plan.publish_deadline
+            - timedelta(seconds=plan.publication_reserve_seconds)
+            - clock.now()
+        ).total_seconds()
+        assert kwargs["timeout"] == pytest.approx(expected)
+        clock.advance(20)
+        raise subprocess.TimeoutExpired(command, kwargs["timeout"])
+
+    clock = Clock()
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(scheduler.subprocess, "run", time_out)
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"},
+        now=clock.now,
+    )
+
+    result = execute_scheduler_tick(
+        plan,
+        phase_runner=runner,
+        now=clock.now,
+        sleep=clock.advance,
+    )
+
+    assert result is None
+    assert len(recorded_timeouts) >= 2
+    assert recorded_timeouts == sorted(recorded_timeouts, reverse=True)
+
+
 def test_prepare_command_uses_absolute_raw_and_reusable_provider_cache(
     tmp_path: Path,
 ):
@@ -1243,6 +1383,57 @@ def test_package_subprocess_runs_from_project_root(
 
     assert result.decision == "PLAY"
     assert calls[0][1]["cwd"] == context.plan.project_root
+
+
+def test_atomic_final_subprocess_retry_reuses_persisted_snapshot(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    context = replace(
+        _manifest_context(tmp_path, phase="final"),
+        atomic_final=True,
+    )
+    detail_calls = 0
+    subprocess_calls = 0
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            nonlocal detail_calls
+            detail_calls += 1
+            assert drawing_id == context.plan.drawing_id
+            return _atomic_final_payload(context.plan)
+
+    def completed(command, **kwargs):
+        nonlocal subprocess_calls
+        subprocess_calls += 1
+        if subprocess_calls == 1:
+            return subprocess.CompletedProcess(
+                command, 75, stdout="", stderr="temporary provider failure"
+            )
+        report_dir = context.work_dir / "reports"
+        report_dir.mkdir(parents=True, exist_ok=True)
+        (report_dir / "drawing_run_retry.json").write_text("{}")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(scheduler.subprocess, "run", completed)
+    monkeypatch.setattr(
+        scheduler,
+        "parse_runner_manifest_phase_result",
+        lambda _context, _path: SchedulerPhaseResult.no_bet("safe retry"),
+    )
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"}
+    )
+
+    with pytest.raises(SchedulerPhaseError, match="temporary provider failure"):
+        runner(context)
+    result = runner(context)
+
+    assert result.decision == "NO BET"
+    assert detail_calls == 1
+    assert subprocess_calls == 2
+    assert (context.run_dir / "final-input.json").is_file()
 
 
 def test_production_manifest_parser_accepts_strict_schema_v4_play(

@@ -11,12 +11,16 @@ from toto_ai.external_odds.audit import CoverageAudit
 from toto_ai.external_odds.collection import pinned_revalidation_is_ready
 from toto_ai.external_odds.domain import TargetDrawing
 from toto_ai.external_odds.prospective import ProspectiveCollectionResult
+from toto_ai.external_odds.targets import parse_target_drawing
+from toto_ai.runner.final_input import FinalInputSnapshot
 from toto_ai.runner.models import (
     DrawingRunnerConfig,
     DrawingRunnerResult,
+    FinalInputProvenance,
     PinnedDrawing,
     RunnerTimingResolution,
     TimingOverrideAudit,
+    pin_drawing,
     validate_timing_resolution_for_runner,
 )
 from toto_ai.runner.timing import (
@@ -646,6 +650,61 @@ def run_drawing(
             ev_run=None,
         )
     return result
+
+
+def run_drawing_from_final_input(
+    *,
+    snapshot: FinalInputSnapshot,
+    config: DrawingRunnerConfig,
+    collect_target: TargetCollector,
+    resolve_timing: TimingResolver,
+    audit_coverage: CoverageAuditor,
+    build_package: PackageBuilder,
+    now: Callable[[], datetime],
+    monotonic: Callable[[], float],
+    sleep: Callable[[float], object],
+    progress_callback: ProgressCallback | None = None,
+    preflight_check: PreflightCheck | None = None,
+    resolve_timing_override: TimingOverrideResolver | None = None,
+    verify_timing_override: TimingOverrideVerifier | None = None,
+) -> DrawingRunnerResult:
+    """Run from one already captured detail view without another target fetch."""
+    target = pin_drawing(
+        parse_target_drawing(snapshot.payload, fetched_at=snapshot.captured_at)
+    )
+    if (
+        target.target.drawing_id != snapshot.drawing_id
+        or target.target.drawing_number != snapshot.drawing_number
+        or target.target.deadline != snapshot.deadline
+        or target.fingerprint != snapshot.target_fingerprint
+    ):
+        raise ValueError("final input target provenance does not verify")
+    result = run_drawing(
+        config=config,
+        resolve_target=lambda _observed_at: target,
+        collect_target=collect_target,
+        resolve_timing=resolve_timing,
+        audit_coverage=audit_coverage,
+        build_package=build_package,
+        now=now,
+        monotonic=monotonic,
+        sleep=sleep,
+        progress_callback=progress_callback,
+        preflight_check=preflight_check,
+        resolve_timing_override=resolve_timing_override,
+        verify_timing_override=verify_timing_override,
+    )
+    return replace(
+        result,
+        final_input=FinalInputProvenance(
+            path=str(snapshot.path),
+            captured_at=snapshot.captured_at,
+            snapshot_sha256=snapshot.snapshot_sha256,
+            detail_payload_sha256=snapshot.detail_payload_sha256,
+            probability_input_sha256=snapshot.probability_input_sha256,
+            attempt_id=snapshot.attempt_id,
+        ),
+    )
 
 
 def _same_target(left: PinnedDrawing, right: PinnedDrawing) -> bool:

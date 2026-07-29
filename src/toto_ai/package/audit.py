@@ -120,7 +120,7 @@ def evaluate_package_safety(
                 )
     reason_codes = tuple(sorted({str(reason["code"]) for reason in reasons}))
     decision = "NO BET" if reasons else "PLAY"
-    probability_hash = _sha256([list(row) for row in probability_rows])
+    probability_hash = canonical_probability_input_sha256(probability_rows)
     package_hash = hashlib.sha256(",".join(canonical).encode("utf-8")).hexdigest()
     uploadable = () if reasons else canonical
     safety_hash = _sha256(
@@ -148,6 +148,16 @@ def evaluate_package_safety(
         uploadable_coupons=uploadable,
         safety_sha256=safety_hash,
     )
+
+
+def canonical_probability_input_sha256(
+    probabilities: Sequence[Sequence[float]],
+) -> str:
+    """Hash one validated 15×3 probability matrix for every package boundary."""
+    rows = _validate_probabilities(probabilities)
+    if rows is None:  # pragma: no cover - required by the public signature
+        raise ValueError("probabilities are required")
+    return _sha256([list(row) for row in rows])
 
 
 @dataclass(frozen=True)

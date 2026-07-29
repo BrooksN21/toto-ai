@@ -273,7 +273,7 @@ def test_actual_readonly_timing_lookup_gates_playable_output(
         assert run.package.unused_bank == run.config.bank
         assert run.package.expected_payout == 0.0
         assert run.package.modeled_roi is None
-        assert run.package.derived_brief == ("",) * 6
+        assert run.package.derived_brief == ()
 
 
 @pytest.mark.parametrize("database_kind", ["missing", "unreadable"])

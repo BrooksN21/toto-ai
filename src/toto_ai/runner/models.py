@@ -38,6 +38,29 @@ TimingOverrideStatus = Literal[
 
 
 @dataclass(frozen=True)
+class FinalInputProvenance:
+    path: str
+    captured_at: datetime
+    snapshot_sha256: str
+    detail_payload_sha256: str
+    probability_input_sha256: str
+    attempt_id: str
+
+    def __post_init__(self) -> None:
+        _require_text("final input path", self.path)
+        _require_utc_datetime("final input captured_at", self.captured_at)
+        for name in (
+            "snapshot_sha256",
+            "detail_payload_sha256",
+            "probability_input_sha256",
+        ):
+            value = getattr(self, name)
+            if not isinstance(value, str) or not _FINGERPRINT_PATTERN.fullmatch(value):
+                raise ValueError(f"{name} must be a lowercase SHA-256 digest")
+        _require_text("final input attempt_id", self.attempt_id)
+
+
+@dataclass(frozen=True)
 class AppliedTimingOverrideEvent:
     event_order: int
     event_id: int
@@ -367,6 +390,7 @@ class DrawingRunnerResult:
     raw_timing_eligibility: PlayTimingEligibility | None = None
     timing_override: TimingOverrideAudit | None = None
     offline_replay: OfflineReplayProvenance | None = None
+    final_input: FinalInputProvenance | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.config, DrawingRunnerConfig):

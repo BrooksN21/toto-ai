@@ -348,6 +348,47 @@ def test_fresh_page_without_open_candidate_never_falls_back_to_stale_sqlite(
     engine.dispose()
 
 
+def test_fresh_page_rejects_ambiguous_nearest_deadline(tmp_path):
+    target_cache = json.loads(
+        (FIXTURES / "drawing_4951_totobrief_target_cache.json").read_text()
+    )
+    target_payload = target_cache["payload"]
+    now = datetime(2026, 7, 21, 12, 30, tzinfo=timezone.utc)
+    second = {
+        **target_payload["data"],
+        "id": target_payload["data"]["id"] + 1,
+        "number": target_payload["data"]["number"] + 1,
+    }
+
+    class AmbiguousPageClient:
+        detail_calls = 0
+
+        def drawings(self, name="baltbet-main", page=1):
+            assert name == "baltbet-main"
+            assert page == 1
+            return {"data": [target_payload["data"], second]}
+
+        def drawing_info(self, drawing_id):
+            self.detail_calls += 1
+            raise AssertionError(f"unexpected detail request {drawing_id}")
+
+    engine = init_db(tmp_path / "toto.db")
+    factory = get_session_factory(engine)
+    client = AmbiguousPageClient()
+
+    with pytest.raises(ValueError, match="ambiguous nearest playable"):
+        synchronize_open_drawing(
+            client,
+            factory,
+            now=now,
+            raw_cache_dir=tmp_path / "raw",
+            storage_root=tmp_path,
+        )
+
+    assert client.detail_calls == 0
+    engine.dispose()
+
+
 def test_expected_visible_number_mismatch_stops_before_detail_fetch(tmp_path):
     target_cache = json.loads(
         (FIXTURES / "drawing_4951_totobrief_target_cache.json").read_text()

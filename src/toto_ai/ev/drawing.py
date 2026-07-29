@@ -557,7 +557,7 @@ def _empty_no_bet(
         unused_bank=bank,
         expected_payout=0.0,
         modeled_roi=None,
-        derived_brief=("",) * len(package.derived_brief),
+        derived_brief=(),
         decision_reason=reason if reason is not None else package.decision_reason,
     )
 

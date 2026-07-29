@@ -56,6 +56,7 @@ _COUNTRY_IDENTITIES = {
     **_aliases("HU", "HU", "HUN", "Hungary", "Венгрия"),
     **_aliases("IS", "IS", "ISL", "Iceland", "Исландия"),
     **_aliases("IE", "IE", "IRL", "Ireland", "Ирландия"),
+    **_aliases("IL", "IL", "ISR", "Israel", "Израиль"),
     **_aliases("IT", "IT", "ITA", "Italy", "Италия"),
     **_aliases("JP", "JP", "JPN", "Japan", "Япония"),
     **_aliases("KZ", "KZ", "KAZ", "Kazakhstan", "Казахстан"),
@@ -126,6 +127,7 @@ _COUNTRY_IDENTITIES = {
         "Соединённые Штаты Америки",
     ),
     **_aliases("UY", "UY", "URY", "Uruguay", "Уругвай"),
+    **_aliases("UZ", "UZ", "UZB", "Uzbekistan", "Узбекистан"),
     **_aliases("VE", "VE", "VEN", "Venezuela", "Венесуэла"),
     **_aliases("GB-WLS", "WAL", "Wales", "Уэльс"),
     **_aliases(

@@ -100,9 +100,10 @@ After a successful morning run, `prepare-drawing --open` uses the synchronized
 local drawing and exact validated cache by default and makes no TotoBrief
 detail request. Use `--refresh-totobrief` only for an explicit remote refresh.
 
-For unattended runs, bind synchronization to the expected visible drawing
-number. The guard is checked against the freshly fetched TotoBrief page-one
-candidate before any detail request, API-Sports preparation, or pin write:
+For a one-off operator run, synchronization may still be bound to an expected
+visible drawing number. The guard is checked against the freshly fetched
+TotoBrief page-one candidate before any detail request, API-Sports preparation,
+or pin write:
 
 ```bash
 .venv/bin/python -m toto_ai.cli sync-prepare \
@@ -117,7 +118,10 @@ without installing either one. When `--env-file` is supplied, it must be a
 regular non-symlink file owned by the current user with permissions no broader
 than `0600`. The generated wrapper repeats those checks at runtime, requires a
 non-empty `API_SPORTS_KEY`, uses `umask 077`, and never prints or embeds the
-secret. The plist contains only the wrapper path.
+secret. The plist contains only the wrapper path. Current schema-v4 candidates
+contain five exact local triggers at T−45, T−30, T−20, T−16, and the T−12
+publication cutoff. Generation still does not install or load the LaunchAgent,
+and no command uploads or places a bet.
 
 ```bash
 .venv/bin/python -m toto_ai.cli scheduler-plan \
@@ -135,22 +139,69 @@ The generated scheduler command passes the configured `--min-gross-ev` to
 `run-drawing`; the CLI validates the same finite threshold and preserves the
 existing default of `1.0`.
 
-`morning-preanalysis-plan` generates a separate non-betting wrapper and plist
-under `reports/rehearsal`. It runs only `sync-prepare --open` with an exact
-expected drawing number, supports multiple morning times and bounded retries,
-and creates no betting markers. Generation does not install or load launchd:
+`morning-preanalysis-plan` now generates one generic non-betting dispatcher
+wrapper and plist under `reports/rehearsal`. The recurring artifact contains
+no drawing identity. At each configured time it resolves exactly one fresh
+current drawing, prepares it, and—only when it is ready 15/15, playable, and
+still before T−45—creates one exact schema-v4 evening scheduler pinned to its
+visible number, internal ID, deadline, and fingerprint. Repeated morning runs
+reuse the same per-drawing plan, including when one allowed two-day drawing is
+still active the next morning; unresolved preparation may retry. Generated
+state is persisted before activation, and a bootstrap retry verifies and
+reuses the exact plan/wrapper/plist bytes rather than overwriting them.
+Ambiguous selection, no drawing, multi-day or greater-than-five-day timing,
+and late dispatch all fail closed. No code uploads coupons or places a bet.
+
+Generation of the generic morning candidate itself does not install or load
+launchd:
 
 ```bash
 .venv/bin/python -m toto_ai.cli morning-preanalysis-plan \
-  --expected-drawing-number 4953 \
   --env-file /Users/turshevr/toto-ai/.env \
+  --bank 4980 \
+  --stake 30 \
   --at 08:00 \
   --at 10:30 \
   --retry-count 2 \
   --retry-delay-seconds 60 \
   --project-root /Users/turshevr/toto-ai \
-  --output-dir /Users/turshevr/toto-ai/reports/rehearsal/morning-4953
+  --output-dir /Users/turshevr/toto-ai/reports/rehearsal/morning-dispatcher
 ```
+
+### One-time stale LaunchAgent cleanup
+
+Migration status on 2026-07-28: the five known obsolete jobs below were
+booted out and their plist files were removed. A follow-up inspection found no
+installed or loaded `com.totoai.*` LaunchAgent. The atomic evening scheduler
+and generic morning dispatcher are still **not installed**. The
+activation-disabled 4958 drill correctly deferred because one women fixture
+was absent from API-Sports; no plan or package was created.
+
+Production schema-v4 execution is always a short-lived idempotent tick.
+`scheduler-execute --run-id` is supported only with `--simulate`; production
+use is rejected rather than entering the incompatible legacy long-running
+path.
+
+The code does not perform this migration automatically. If the obsolete jobs
+reappear on another machine, inspect and remove only these exact labels. These
+commands are documentation; they are not executed by tests or artifact
+generation:
+
+```bash
+for label in \
+  com.totoai.morning-preanalysis.4953 \
+  com.totoai.production-scheduler.a28e7c2c9c77683e \
+  com.totoai.production-scheduler.df543a668bb7557a \
+  com.totoai.run-drawing-4947 \
+  com.totoai.run-drawing-4950
+do
+  launchctl bootout "gui/$UID/$label" 2>/dev/null || true
+  rm -f "$HOME/Library/LaunchAgents/$label.plist"
+done
+```
+
+Unknown `com.totoai.*` jobs must be reported and reviewed, never deleted by a
+wildcard cleanup.
 
 ## Deterministic Offline Drawing Replay
 

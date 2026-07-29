@@ -1,3 +1,4 @@
+import hashlib
 import json
 import math
 import os
@@ -92,6 +93,7 @@ from toto_ai.external_odds.preparation import (
     persist_drawing_identity,
     preparation_probability_sha256,
     prepare_drawing,
+    refresh_ready_preparation_for_target,
 )
 from toto_ai.external_odds.prospective import (
     ProspectiveCollectionResult,
@@ -177,6 +179,8 @@ from toto_ai.runner import (
     CommandSchedulerPhaseRunner,
     DrawingRunnerConfig,
     DrawingRunPublication,
+    MorningDispatchConfig,
+    MorningPreparedDrawing,
     OfflineReplayProvenance,
     PinnedDrawing,
     RunnerTargetMismatch,
@@ -185,18 +189,23 @@ from toto_ai.runner import (
     SimulatedSchedulerPhaseRunner,
     TimingOverrideAudit,
     VirtualSchedulerClock,
+    activate_scheduler_launch_agent,
     build_scheduler_plan,
+    dispatch_morning,
     drawing_run_candidate_paths,
     execute_scheduler_plan,
+    execute_scheduler_tick,
     load_scheduler_plan,
     pin_drawing,
     prepare_morning_preanalysis_artifacts,
     prepare_scheduler_artifacts,
     publish_drawing_run_artifacts,
     run_drawing,
+    run_drawing_from_final_input,
     scheduler_plan_json,
     write_drawing_run_reports,
 )
+from toto_ai.runner.final_input import load_final_input
 from toto_ai.runner.offline_replay import (
     OfflineReplayInputs,
     OfflineScheduleProvider,
@@ -1521,6 +1530,7 @@ def _prepare_runner_resources(
     provider_factory: Callable[[Path], object],
     timing_overrides: str | Path | None = None,
     systematic_resolution: bool = True,
+    refresh_probability_evidence: bool = False,
 ) -> _RunnerResources:
     candidate_paths = drawing_run_candidate_paths(
         config,
@@ -1555,6 +1565,12 @@ def _prepare_runner_resources(
             target.target,
             require_visible_number=True,
         )
+        if refresh_probability_evidence:
+            refresh_ready_preparation_for_target(
+                target.target,
+                session_factory=session_factory,
+                provider="api-sports",
+            )
     reviewed_aliases = load_aliases(aliases)
     readonly_engine = open_readonly_db(db)
     readonly_session_factory = get_session_factory(readonly_engine)
@@ -1899,6 +1915,12 @@ def run_drawing_command(
             "--drawing-id/--target-cache/--schedule-cache/--replay-as-of/"
             "--replay-root require --offline-replay"
         )
+    final_input = os.environ.get("TOTO_FINAL_INPUT")
+    scheduler_plan = os.environ.get("TOTO_SCHEDULER_PLAN")
+    if (final_input is None) != (scheduler_plan is None):
+        raise typer.BadParameter(
+            "atomic final input environment is incomplete"
+        )
     db = db or "data/toto.db"
     report_dir = report_dir or "reports"
     cache_root = cache_root or "data/external-cache/api-sports"
@@ -1934,6 +1956,14 @@ def run_drawing_command(
     publication: DrawingRunPublication | None = None
     try:
         client = TotoBriefClient()
+        atomic_snapshot = (
+            None
+            if final_input is None
+            else load_final_input(
+                Path(final_input),
+                expected_plan=load_scheduler_plan(scheduler_plan),
+            )
+        )
         provider_factory = _api_sports_provider_factory(api_key, quota_reserve)
         resources: _RunnerResources | None = None
         timing_resolution: RunnerTimingResolution | None = None
@@ -1959,6 +1989,7 @@ def run_drawing_command(
                 provider_factory=provider_factory,
                 timing_overrides=timing_overrides,
                 systematic_resolution=systematic_resolution,
+                refresh_probability_evidence=atomic_snapshot is not None,
             )
 
         def resolve_timing_override(
@@ -2043,29 +2074,44 @@ def run_drawing_command(
                     description = descriptions.get(phase, "Running drawing")
                 progress.update(task_id, description=description)
 
-            result = run_drawing(
+            runner_kwargs = dict(
                 config=config,
-                resolve_target=lambda resolved_at: _resolve_runner_target(
-                    client, resolved_at
-                ),
                 collect_target=collect_target,
                 resolve_timing=lambda target: require_resources().timing_resolver(
                     target
                 ),
                 audit_coverage=audit_coverage,
-                build_package=lambda expected: _build_runner_package(
-                    client=client,
-                    expected=expected,
-                    config=config.ev_config,
-                    fetched_at=_utc_now_datetime(),
-                    progress_callback=update_progress,
-                    timing_eligibility_resolver=(
-                        require_resources().ev_timing_resolver
-                        if timing_overrides is None
-                        else lambda _payload: _require_override_resolution(
-                            timing_resolution
-                        ).effective
-                    ),
+                build_package=lambda expected: (
+                    _build_runner_package(
+                        client=client,
+                        expected=expected,
+                        config=config.ev_config,
+                        fetched_at=_utc_now_datetime(),
+                        progress_callback=update_progress,
+                        timing_eligibility_resolver=(
+                            require_resources().ev_timing_resolver
+                            if timing_overrides is None
+                            else lambda _payload: _require_override_resolution(
+                                timing_resolution
+                            ).effective
+                        ),
+                    )
+                    if atomic_snapshot is None
+                    else build_open_ev_package(
+                        client=client,
+                        drawing_id=expected.target.drawing_id,
+                        config=config.ev_config,
+                        progress_callback=update_progress,
+                        timing_eligibility_resolver=(
+                            require_resources().ev_timing_resolver
+                            if timing_overrides is None
+                            else lambda _payload: _require_override_resolution(
+                                timing_resolution
+                            ).effective
+                        ),
+                        payload=atomic_snapshot.payload,
+                        fetched_at=atomic_snapshot.captured_at,
+                    )
                 ),
                 now=_utc_now_datetime,
                 monotonic=time.monotonic,
@@ -2082,6 +2128,18 @@ def run_drawing_command(
                     if timing_overrides is not None
                     else None
                 ),
+            )
+            result = (
+                run_drawing(
+                    **runner_kwargs,
+                    resolve_target=lambda resolved_at: _resolve_runner_target(
+                        client, resolved_at
+                    ),
+                )
+                if atomic_snapshot is None
+                else run_drawing_from_final_input(
+                    **runner_kwargs, snapshot=atomic_snapshot
+                )
             )
     except KeyboardInterrupt:
         command_error = typer.BadParameter(
@@ -2192,7 +2250,7 @@ def scheduler_plan_command(
     ),
     dry_run: bool = typer.Option(False, "--dry-run"),
 ) -> None:
-    """Prepare a tracked T-45/T-30/T-15/T-10 scheduler plan."""
+    """Prepare a tracked T-45/T-30/T-20/T-16/T-12 scheduler plan."""
     try:
         plan = build_scheduler_plan(
             drawing=drawing,
@@ -2235,13 +2293,10 @@ def scheduler_plan_command(
 
 @app.command("morning-preanalysis-plan")
 def morning_preanalysis_plan_command(
-    expected_drawing_number: int = typer.Option(
-        ...,
-        "--expected-drawing-number",
-        min=1,
-    ),
     env_file: str = typer.Option(..., "--env-file"),
     at: list[str] | None = typer.Option(None, "--at"),  # noqa: B008
+    bank: int = typer.Option(4980, min=1),
+    stake: int = typer.Option(30, min=1),
     retry_count: int = typer.Option(2, "--retry-count", min=0),
     retry_delay_seconds: float = typer.Option(
         60.0,
@@ -2258,13 +2313,14 @@ def morning_preanalysis_plan_command(
     """Generate a non-betting morning sync/preparation launchd candidate."""
     try:
         artifacts = prepare_morning_preanalysis_artifacts(
-            expected_drawing_number=expected_drawing_number,
             times=tuple(at or ("08:00",)),
             retry_count=retry_count,
             retry_delay_seconds=retry_delay_seconds,
             output_dir=output_dir,
             env_file=env_file,
             project_root=project_root or Path.cwd(),
+            bank=bank,
+            stake=stake,
             python_command=python_executable,
         )
     except (OSError, SchedulerError, TypeError, ValueError) as error:
@@ -2273,6 +2329,216 @@ def morning_preanalysis_plan_command(
     print(f"Wrapper: {artifacts.wrapper_path}")
     print(f"LaunchAgent candidate: {artifacts.launch_agent_path}")
     print("LaunchAgent was generated only; no betting markers are created.")
+
+
+def _prepare_current_for_morning(
+    *,
+    observed_at: datetime,
+    db: Path,
+    community: str,
+    aliases: Path,
+    provider: str,
+    raw_cache_dir: Path,
+    totobrief_rate_state: Path,
+    cache_root: Path,
+    quota_reserve: int,
+    api_sports_max_retries: int,
+    expansion_horizon_days: int,
+    project_root: Path,
+) -> MorningPreparedDrawing:
+    """Synchronize and prepare the exact selected drawing from one detail view."""
+    engine = init_db(db)
+    try:
+        session_factory = get_session_factory(engine)
+        coordinator = TotoBriefRequestCoordinator(
+            state_path=totobrief_rate_state,
+            minimum_interval=2.0,
+            max_retries=3,
+            allowed_root=project_root,
+        )
+        synchronized = synchronize_open_drawing(
+            TotoBriefClient(coordinator=coordinator),
+            session_factory,
+            now=observed_at,
+            community=community,
+            raw_cache_dir=raw_cache_dir,
+            detail_cache_max_age_seconds=(
+                DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS
+            ),
+            storage_root=project_root,
+        )
+        if not synchronized.ready or synchronized.detail.payload is None:
+            raise ValueError(
+                synchronized.detail.error
+                or "current TotoBrief detail is unavailable"
+            )
+        fetched_at = (
+            observed_at
+            if synchronized.detail.cache_age_seconds is None
+            else observed_at
+            - timedelta(seconds=synchronized.detail.cache_age_seconds)
+        )
+        target = parse_target_drawing(
+            synchronized.detail.payload,
+            fetched_at=fetched_at,
+        )
+        if target.drawing_number is None:
+            raise ValueError("current drawing visible number is required")
+        seed_reviewed_alias_config(
+            session_factory, aliases, provider=provider
+        )
+        api_key = os.environ.get("API_SPORTS_KEY", "")
+        if not api_key.strip():
+            raise ValueError("API_SPORTS_KEY is required")
+        schedule = fetch_preparation_schedule(
+            target,
+            APISportsClient(
+                api_key,
+                cache_dir=cache_root,
+                quota_reserve=quota_reserve,
+                max_retries=api_sports_max_retries,
+            ),
+            session_factory=session_factory,
+            provider=provider,
+            missing_start_horizon_days=expansion_horizon_days,
+        )
+        prepared = prepare_drawing(
+            target,
+            schedule.candidates,
+            session_factory=session_factory,
+            provider=provider,
+            schedule_diagnostics=schedule.diagnostics,
+        )
+        detail_sha256 = hashlib.sha256(
+            json.dumps(
+                synchronized.detail.payload,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=True,
+            ).encode("utf-8")
+        ).hexdigest()
+        return MorningPreparedDrawing(
+            drawing_id=target.drawing_id,
+            drawing_number=target.drawing_number,
+            deadline=target.deadline,
+            drawing_fingerprint=prepared.drawing_fingerprint,
+            detail_sha256=detail_sha256,
+            preparation_status=prepared.status,
+            mapped_count=prepared.mapped_count,
+            eligibility_status=prepared.eligibility.status,
+            span_days=prepared.eligibility.span_days,
+        )
+    finally:
+        engine.dispose()
+
+
+@app.command("morning-dispatch")
+def morning_dispatch_command(
+    bank: int = typer.Option(..., min=1),
+    stake: int = typer.Option(30, min=1),
+    env_file: str = typer.Option(..., "--env-file"),
+    project_root: str = typer.Option(..., "--project-root"),
+    state_root: str = typer.Option(..., "--state-root"),
+    scheduler_root: str = typer.Option(..., "--scheduler-root"),
+    db: str = typer.Option("data/toto.db"),
+    community: str = typer.Option("baltbet-main"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    provider: str = typer.Option("api-sports"),
+    raw_cache_dir: str = typer.Option("data/raw", "--raw-cache-dir"),
+    totobrief_rate_state: str = typer.Option(
+        str(DEFAULT_RATE_STATE_PATH),
+        "--totobrief-rate-state",
+    ),
+    cache_root: str = typer.Option("data/external-cache/api-sports"),
+    quota_reserve: int = typer.Option(10, min=0),
+    api_sports_max_retries: int = typer.Option(
+        2, "--api-sports-max-retries", min=0
+    ),
+    expansion_horizon_days: int = typer.Option(5, min=1, max=5),
+    activate: bool = typer.Option(False, "--activate"),
+    python_executable: str = typer.Option(
+        sys.executable, "--python-executable"
+    ),
+) -> None:
+    """Prepare one current drawing and hand it to one exact evening scheduler."""
+    if provider != "api-sports":
+        raise typer.BadParameter("provider must be api-sports")
+    root = Path(project_root).absolute()
+    resolved_raw_cache = resolve_contained_path(
+        raw_cache_dir, allowed_root=root
+    )
+    resolved_rate_state = resolve_contained_path(
+        totobrief_rate_state, allowed_root=root
+    )
+    resolved_cache_root = resolve_contained_path(
+        cache_root, allowed_root=root
+    )
+    config = MorningDispatchConfig(
+        project_root=root,
+        state_root=Path(state_root),
+        scheduler_root=Path(scheduler_root),
+        env_file=Path(env_file),
+        bank=bank,
+        stake=stake,
+        db=Path(db),
+        aliases=Path(aliases),
+    )
+    observed_at = datetime.now(timezone.utc)
+    try:
+        result = dispatch_morning(
+            config,
+            observed_at=observed_at,
+            prepare_current=lambda now: _prepare_current_for_morning(
+                observed_at=now,
+                db=config.db,
+                community=community,
+                aliases=config.aliases,
+                provider=provider,
+                raw_cache_dir=resolved_raw_cache,
+                totobrief_rate_state=resolved_rate_state,
+                cache_root=resolved_cache_root,
+                quota_reserve=quota_reserve,
+                api_sports_max_retries=api_sports_max_retries,
+                expansion_horizon_days=expansion_horizon_days,
+                project_root=root,
+            ),
+            now=lambda: datetime.now(timezone.utc),
+            activate=activate_scheduler_launch_agent if activate else None,
+            python_command=python_executable,
+        )
+    except (
+        APISportsError,
+        OSError,
+        SQLAlchemyError,
+        SchedulerError,
+        TotoBriefRequestError,
+        TypeError,
+        ValueError,
+    ) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": result.status,
+                "reason": result.reason,
+                "record_path": str(result.record_path),
+                "plan_id": result.plan_id,
+                "plan_path": (
+                    None if result.plan_path is None else str(result.plan_path)
+                ),
+                "launch_agent_path": (
+                    None
+                    if result.launch_agent_path is None
+                    else str(result.launch_agent_path)
+                ),
+                "activation_status": result.activation_status,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    if result.status == "deferred":
+        raise typer.Exit(code=2)
 
 
 @app.command("scheduler-execute")
@@ -2288,6 +2554,18 @@ def scheduler_execute_command(
         if dry_run:
             typer.echo(scheduler_plan_json(scheduler_plan), nl=False)
             return
+        if (
+            not simulate
+            and scheduler_plan.source_schema_version != 4
+        ):
+            raise ValueError(
+                "legacy scheduler plan is inspection-only; regenerate schema v4"
+            )
+        if run_id is not None and not simulate:
+            raise ValueError(
+                "--run-id is simulation-only; production schema-v4 plans "
+                "must use idempotent scheduler ticks"
+            )
         if simulate:
             clock = VirtualSchedulerClock(scheduler_plan.preflight_at)
             phase_runner = SimulatedSchedulerPhaseRunner()
@@ -2297,16 +2575,28 @@ def scheduler_execute_command(
             phase_runner = CommandSchedulerPhaseRunner()
             now = _utc_now_datetime
             sleeper = time.sleep
-        result = execute_scheduler_plan(
-            scheduler_plan,
-            phase_runner=phase_runner,
-            now=now,
-            sleep=sleeper,
-            run_id=run_id,
-        )
+        if simulate:
+            result = execute_scheduler_plan(
+                scheduler_plan,
+                phase_runner=phase_runner,
+                now=now,
+                sleep=sleeper,
+                run_id=run_id,
+            )
+        else:
+            result = execute_scheduler_tick(
+                scheduler_plan,
+                phase_runner=phase_runner,
+                now=now,
+                sleep=sleeper,
+            )
     except (OSError, SchedulerError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
 
+    if result is None:
+        print("Outcome: no-op")
+        print("Reason: no due scheduler phase")
+        return
     print(f"Outcome: {result.outcome}")
     print(f"Decision: {result.decision}")
     print(f"Reason: {result.reason}")

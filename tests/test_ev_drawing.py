@@ -563,7 +563,7 @@ def test_playable_without_timing_resolver_fails_closed(
     assert result.package.unused_bank == result.config.bank
     assert result.package.expected_payout == 0.0
     assert result.package.modeled_roi is None
-    assert result.package.derived_brief == ("",) * 15
+    assert result.package.derived_brief == ()
     assert result.top_coupons
     assert all(row.decision == "NO BET" for row in result.sensitivity)
     assert all(row.selected_count == 0 for row in result.sensitivity)
@@ -601,7 +601,7 @@ def test_nonplayable_timing_verdict_suppresses_only_final_playable_output(
     assert vetoed.package.unused_bank == vetoed.config.bank
     assert vetoed.package.expected_payout == 0.0
     assert vetoed.package.modeled_roi is None
-    assert vetoed.package.derived_brief == ("",) * 15
+    assert vetoed.package.derived_brief == ()
     assert vetoed.ev_input == baseline.ev_input
     assert vetoed.top_coupons == baseline.top_coupons
     assert np.array_equal(vetoed.surface.gross_ev, baseline.surface.gross_ev)
@@ -862,7 +862,7 @@ def test_build_package_uses_stake_aligned_self_dilution_budget(
         assert result.package.unused_bank == result.config.bank
         assert result.package.expected_payout == 0.0
         assert result.package.modeled_roi is None
-        assert result.package.derived_brief == ("",) * 15
+        assert result.package.derived_brief == ()
         assert result.package.decision_reason == reason
         assert result.model_warning == reason
         assert all(row.selected_count == 0 for row in result.sensitivity)

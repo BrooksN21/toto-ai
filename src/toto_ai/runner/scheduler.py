@@ -1,8 +1,8 @@
-"""Tracked T-45/T-30/T-15/T-10 production package scheduler.
+"""Tracked T-45/T-30/T-20/T-16/T-12 production package scheduler.
 
 The scheduler deliberately separates a process completing from an actionable
-package becoming ``BET READY``.  Package-producing work happens in immutable
-phase scopes; the T-10 freeze verifies the selected bytes and every pinned
+package becoming ``BET READY``. Package-producing work happens in immutable
+phase scopes; the T-12 cutoff verifies the selected bytes and every pinned
 scheduler input before an exclusive publication and marker write.
 """
 
@@ -29,6 +29,7 @@ from typing import Any, Literal, Protocol
 from zoneinfo import ZoneInfo
 
 from toto_ai.api.client import TotoBriefClient
+from toto_ai.api.rate_limit import TotoBriefRequestError
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.ev.models import EVConfig, validate_config_bank
@@ -43,11 +44,24 @@ from toto_ai.package.audit import (
     PackageSafetyConfig,
     evaluate_package_safety,
 )
+from toto_ai.runner.final_input import (
+    FinalInputSnapshot,
+    capture_final_input,
+    load_final_input,
+)
+from toto_ai.runner.scheduler_state import (
+    load_state,
+    recover_orphan,
+    save_state,
+    scheduler_lock,
+    transition,
+)
 
-SCHEDULER_SCHEMA_VERSION = 3
+SCHEDULER_SCHEMA_VERSION = 4
 LEGACY_SCHEDULER_SCHEMA_VERSION = 1
 LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION = 2
-RUNNER_MANIFEST_SCHEMA_VERSION = 4
+LEGACY_ACTIONABLE_SCHEMA_VERSION = 3
+RUNNER_MANIFEST_SCHEMA_VERSION = 5
 SCHEDULER_PLAN_FILENAME = "scheduler-plan.json"
 SCHEDULER_WRAPPER_FILENAME = "run-scheduler.sh"
 SCHEDULER_LAUNCH_AGENT_FILENAME = "totoai-scheduler.plist"
@@ -98,6 +112,57 @@ class SchedulerPhaseError(SchedulerError):
     """A package phase failed without making a package actionable."""
 
 
+class SchedulerPublicationDeadlineError(SchedulerPhaseError):
+    """Publication crossed the hard T-12 boundary without integrity loss."""
+
+
+class SchedulerTransientError(SchedulerPhaseError):
+    """A typed retryable scheduler failure."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        category: str = "transient",
+        status_code: int | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.category = category
+        self.status_code = status_code
+
+
+class SchedulerPermanentError(SchedulerPhaseError):
+    """A typed non-retryable scheduler failure."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        category: str = "permanent",
+        status_code: int | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.category = category
+        self.status_code = status_code
+
+
+class SchedulerIntegrityError(SchedulerPermanentError):
+    """A typed integrity/identity failure that must terminate final."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        category: str = "integrity",
+        status_code: int | None = None,
+    ) -> None:
+        super().__init__(
+            message,
+            category=category,
+            status_code=status_code,
+        )
+
+
 class _NonProductionArtifact(SchedulerError):
     """A valid non-production artifact stops without terminal markers."""
 
@@ -132,7 +197,12 @@ class SchedulerPlan:
     max_passes: int = 3
     max_expansion_passes: int = 3
     retry_delay_seconds: float = 65.0
+    minimum_final_runtime_seconds: int = 180
+    publication_reserve_seconds: int = 45
+    max_final_attempts: int = 2
+    transient_backoff_seconds: tuple[int, ...] = (2, 5, 10)
     actionable_safety_bound: bool = True
+    source_schema_version: int = SCHEDULER_SCHEMA_VERSION
 
     def __post_init__(self) -> None:
         _require_positive_int("drawing", self.drawing)
@@ -235,6 +305,29 @@ class SchedulerPlan:
             "retry_delay_seconds",
             float(self.retry_delay_seconds),
         )
+        _require_positive_int(
+            "minimum_final_runtime_seconds", self.minimum_final_runtime_seconds
+        )
+        _require_non_negative_int(
+            "publication_reserve_seconds", self.publication_reserve_seconds
+        )
+        _require_positive_int("max_final_attempts", self.max_final_attempts)
+        if self.source_schema_version not in {
+            LEGACY_SCHEDULER_SCHEMA_VERSION,
+            LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
+            LEGACY_ACTIONABLE_SCHEMA_VERSION,
+            SCHEDULER_SCHEMA_VERSION,
+        }:
+            raise ValueError("unsupported scheduler source schema")
+        if (
+            not isinstance(self.transient_backoff_seconds, tuple)
+            or not self.transient_backoff_seconds
+            or any(
+                type(value) is not int or value < 0
+                for value in self.transient_backoff_seconds
+            )
+        ):
+            raise ValueError("transient_backoff_seconds must be non-negative integers")
 
     @property
     def preflight_at(self) -> datetime:
@@ -246,11 +339,27 @@ class SchedulerPlan:
 
     @property
     def final_at(self) -> datetime:
-        return self.ended_at - timedelta(minutes=15)
+        return self.ended_at - timedelta(minutes=20)
+
+    @property
+    def retry_at(self) -> datetime:
+        return self.ended_at - timedelta(minutes=16)
+
+    @property
+    def publish_deadline(self) -> datetime:
+        return self.ended_at - timedelta(minutes=12)
+
+    @property
+    def actionable_publication_deadline(self) -> datetime:
+        """Latest instant that still preserves the configured T-12 reserve."""
+        return self.publish_deadline - timedelta(
+            seconds=self.publication_reserve_seconds
+        )
 
     @property
     def freeze_at(self) -> datetime:
-        return self.ended_at - timedelta(minutes=10)
+        """Compatibility alias for the hard publication deadline."""
+        return self.publish_deadline
 
     @property
     def deadlines(self) -> dict[str, datetime]:
@@ -258,8 +367,9 @@ class SchedulerPlan:
             "ended_at": self.ended_at,
             "t_minus_45": self.preflight_at,
             "t_minus_30": self.fallback_at,
-            "t_minus_15": self.final_at,
-            "t_minus_10": self.freeze_at,
+            "t_minus_20": self.final_at,
+            "t_minus_16": self.retry_at,
+            "t_minus_12": self.publish_deadline,
         }
 
     @property
@@ -302,6 +412,10 @@ class SchedulerPlan:
                 "max_passes": self.max_passes,
                 "max_expansion_passes": self.max_expansion_passes,
                 "retry_delay_seconds": self.retry_delay_seconds,
+                "minimum_final_runtime_seconds": self.minimum_final_runtime_seconds,
+                "publication_reserve_seconds": self.publication_reserve_seconds,
+                "max_final_attempts": self.max_final_attempts,
+                "transient_backoff_seconds": list(self.transient_backoff_seconds),
             },
             "paths": {
                 "project_root": str(self.project_root),
@@ -343,6 +457,7 @@ class SchedulerPhaseContext:
     started_at: datetime
     override_sha256: str | None = None
     final_inputs_sha256: str | None = None
+    atomic_final: bool = False
 
 
 @dataclass(frozen=True)
@@ -359,6 +474,7 @@ class SchedulerPhaseResult:
     selected_count: int | None = None
     selected_cost: int | None = None
     override_sha256: str | None = None
+    final_inputs_sha256: str | None = None
 
     def __post_init__(self) -> None:
         if self.status not in ("complete", "failed", "ignored"):
@@ -386,6 +502,10 @@ class SchedulerPhaseResult:
             _require_positive_int("selected_cost", self.selected_cost)
         if self.override_sha256 is not None:
             _require_sha256("override_sha256", self.override_sha256)
+        if self.final_inputs_sha256 is not None:
+            _require_sha256(
+                "final_inputs_sha256", self.final_inputs_sha256
+            )
 
     @classmethod
     def completed(cls, reason: str = "phase completed") -> SchedulerPhaseResult:
@@ -405,6 +525,7 @@ class SchedulerPhaseResult:
         selected_count: int | None = None,
         selected_cost: int | None = None,
         override_sha256: str | None = None,
+        final_inputs_sha256: str | None = None,
         package_sha256: str | None = None,
     ) -> SchedulerPhaseResult:
         return cls(
@@ -417,6 +538,7 @@ class SchedulerPhaseResult:
             selected_count=selected_count,
             selected_cost=selected_cost,
             override_sha256=override_sha256,
+            final_inputs_sha256=final_inputs_sha256,
         )
 
     @classmethod
@@ -502,8 +624,13 @@ def build_scheduler_plan(
     max_passes: int = 3,
     max_expansion_passes: int = 3,
     retry_delay_seconds: float = 65.0,
+    minimum_final_runtime_seconds: int = 180,
+    publication_reserve_seconds: int = 45,
+    max_final_attempts: int = 2,
+    transient_backoff_seconds: tuple[int, ...] = (2, 5, 10),
     _allow_missing_drawing_id: bool = False,
     _actionable_safety_bound: bool = True,
+    source_schema_version: int = SCHEDULER_SCHEMA_VERSION,
 ) -> SchedulerPlan:
     """Build a strict plan; null or malformed ``ended_at`` fails immediately."""
 
@@ -543,7 +670,12 @@ def build_scheduler_plan(
         max_passes=max_passes,
         max_expansion_passes=max_expansion_passes,
         retry_delay_seconds=retry_delay_seconds,
+        minimum_final_runtime_seconds=minimum_final_runtime_seconds,
+        publication_reserve_seconds=publication_reserve_seconds,
+        max_final_attempts=max_final_attempts,
+        transient_backoff_seconds=transient_backoff_seconds,
         actionable_safety_bound=_actionable_safety_bound,
+        source_schema_version=source_schema_version,
     )
 
 
@@ -614,12 +746,14 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
     if type(schema_version) is not int or schema_version not in {
         LEGACY_SCHEDULER_SCHEMA_VERSION,
         LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
+        LEGACY_ACTIONABLE_SCHEMA_VERSION,
         SCHEDULER_SCHEMA_VERSION,
     }:
         raise ValueError(
             "scheduler plan schema_version must be "
             f"{LEGACY_SCHEDULER_SCHEMA_VERSION}, "
             f"{LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION}, or "
+            f"{LEGACY_ACTIONABLE_SCHEMA_VERSION}, or "
             f"{SCHEDULER_SCHEMA_VERSION}"
         )
     target = _exact_mapping(
@@ -637,14 +771,25 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         "max_expansion_passes",
         "retry_delay_seconds",
     }
+    tick_config_keys = {
+        "minimum_final_runtime_seconds",
+        "publication_reserve_seconds",
+        "max_final_attempts",
+        "transient_backoff_seconds",
+    }
+    raw_config = payload["config"]
+    if not isinstance(raw_config, Mapping):
+        raise ValueError("config must be a JSON object")
+    present_tick_keys = tick_config_keys & set(raw_config)
+    if present_tick_keys and present_tick_keys != tick_config_keys:
+        raise ValueError("config scheduler tick fields must be complete")
+    if present_tick_keys:
+        base_config_keys |= tick_config_keys
     safety_config_keys = {
         "package_near_fixed_share",
         "package_low_probability_threshold",
         "package_material_probability_threshold",
     }
-    raw_config = payload["config"]
-    if not isinstance(raw_config, Mapping):
-        raise ValueError("config must be a JSON object")
     present_safety_keys = safety_config_keys & set(raw_config)
     if present_safety_keys and present_safety_keys != safety_config_keys:
         raise ValueError("config package safety thresholds must be complete")
@@ -659,6 +804,7 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
     path_keys = {"output_dir", "db", "aliases", "timing_overrides"}
     if schema_version in {
         LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
+        LEGACY_ACTIONABLE_SCHEMA_VERSION,
         SCHEDULER_SCHEMA_VERSION,
     }:
         path_keys.add("project_root")
@@ -690,6 +836,7 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
             if schema_version
             in {
                 LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
+                LEGACY_ACTIONABLE_SCHEMA_VERSION,
                 SCHEDULER_SCHEMA_VERSION,
             }
             else _infer_scheduler_project_root(
@@ -707,6 +854,16 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         max_passes=config["max_passes"],
         max_expansion_passes=config["max_expansion_passes"],
         retry_delay_seconds=config["retry_delay_seconds"],
+        minimum_final_runtime_seconds=config.get(
+            "minimum_final_runtime_seconds", 180
+        ),
+        publication_reserve_seconds=config.get(
+            "publication_reserve_seconds", 45
+        ),
+        max_final_attempts=config.get("max_final_attempts", 2),
+        transient_backoff_seconds=tuple(
+            config.get("transient_backoff_seconds", (2, 5, 10))
+        ),
         _allow_missing_drawing_id=(
             schema_version != SCHEDULER_SCHEMA_VERSION
         ),
@@ -714,6 +871,7 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
             schema_version == SCHEDULER_SCHEMA_VERSION
             and present_safety_keys == safety_config_keys
         ),
+        source_schema_version=schema_version,
     )
     expected_plan_id = (
         plan.plan_id
@@ -722,9 +880,11 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
     )
     if payload["plan_id"] != expected_plan_id:
         raise ValueError("scheduler plan_id does not match plan content")
-    expected_deadlines = {
-        key: _timestamp(value) for key, value in plan.deadlines.items()
-    }
+    expected_deadlines = (
+        {key: _timestamp(value) for key, value in plan.deadlines.items()}
+        if schema_version == SCHEDULER_SCHEMA_VERSION
+        else payload["deadlines"]
+    )
     if payload["deadlines"] != expected_deadlines:
         raise ValueError("scheduler deadlines are not exact ended_at offsets")
     expected_plan_path = plan.output_dir / SCHEDULER_PLAN_FILENAME
@@ -806,19 +966,77 @@ def prepare_scheduler_artifacts(
     )
 
 
+def verify_scheduler_artifacts(
+    plan: SchedulerPlan,
+    *,
+    python_command: str | Path | None = None,
+) -> SchedulerArtifacts:
+    """Verify and reuse an exact previously generated scheduler artifact set."""
+
+    _require_plan(plan)
+    python_executable = _validated_python_executable(
+        sys.executable if python_command is None else python_command
+    )
+    if plan.env_file is not None:
+        _require_secure_env_file(plan.env_file)
+    output_dir = plan.output_dir
+    _require_output_directory(output_dir, output_dir)
+    _reject_unsafe_output_descendants(output_dir)
+    logs_dir = output_dir / "logs"
+    _require_output_directory(output_dir, logs_dir)
+    artifacts = SchedulerArtifacts(
+        plan_path=output_dir / SCHEDULER_PLAN_FILENAME,
+        wrapper_path=output_dir / SCHEDULER_WRAPPER_FILENAME,
+        launch_agent_path=output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME,
+    )
+    expected = {
+        artifacts.plan_path: scheduler_plan_json(plan).encode("utf-8"),
+        artifacts.wrapper_path: _render_scheduler_wrapper(
+            plan_path=artifacts.plan_path,
+            project_root=plan.project_root,
+            python_executable=python_executable,
+            env_file=plan.env_file,
+        ).encode("utf-8"),
+        artifacts.launch_agent_path: _render_launch_agent(
+            plan,
+            wrapper_path=artifacts.wrapper_path,
+            logs_dir=logs_dir,
+        ),
+    }
+    for path, content in expected.items():
+        try:
+            observed = _read_regular_file(
+                path,
+                name=f"scheduler artifact {path.name}",
+                reject_symlink=True,
+            )
+        except (OSError, SchedulerError) as error:
+            raise SchedulerIntegrityError(
+                "existing scheduler artifact set is incomplete or unsafe",
+                category="scheduler_artifact_integrity",
+            ) from error
+        if observed != content:
+            raise SchedulerIntegrityError(
+                f"existing scheduler artifact {path.name} conflicts",
+                category="scheduler_artifact_integrity",
+            )
+    return artifacts
+
+
 def prepare_morning_preanalysis_artifacts(
     *,
-    expected_drawing_number: int,
     times: Sequence[str],
     retry_count: int,
     retry_delay_seconds: float,
     output_dir: str | Path,
     env_file: str | Path,
     project_root: str | Path,
+    bank: int,
+    stake: int = 30,
     python_command: str | Path | None = None,
 ) -> MorningPreanalysisArtifacts:
     """Generate, but never install, a non-betting morning launchd candidate."""
-    _require_positive_int("expected_drawing_number", expected_drawing_number)
+    validate_config_bank(bank, stake)
     _require_non_negative_int("retry_count", retry_count)
     if (
         not isinstance(retry_delay_seconds, (int, float))
@@ -859,11 +1077,12 @@ def prepare_morning_preanalysis_artifacts(
     created: list[Path] = []
     try:
         wrapper = _render_morning_preanalysis_wrapper(
-            expected_drawing_number=expected_drawing_number,
             retry_count=retry_count,
             retry_delay_seconds=float(retry_delay_seconds),
             env_file=environment_path,
             project_root=root,
+            bank=bank,
+            stake=stake,
             python_executable=python_executable,
         )
         _write_exclusive_atomic(
@@ -874,10 +1093,10 @@ def prepare_morning_preanalysis_artifacts(
         )
         created.append(wrapper_path)
         launch_agent = _render_morning_launch_agent(
-            expected_drawing_number=expected_drawing_number,
             times=parsed_times,
             wrapper_path=wrapper_path,
             logs_dir=logs_dir,
+            project_root=root,
         )
         _write_exclusive_atomic(destination, launch_agent_path, launch_agent)
         created.append(launch_agent_path)
@@ -940,7 +1159,7 @@ def execute_scheduler_plan(
 
     try:
         if _read_now(now) > plan.freeze_at:
-            phase_absences.append("execution began after T-10; no work recalculated")
+            phase_absences.append("execution began after T-12; no work recalculated")
         else:
             _wait_until(plan.preflight_at, now=now, sleep=sleep)
             preflight_started = _read_now(now)
@@ -999,9 +1218,10 @@ def execute_scheduler_plan(
 
             if _read_now(now) < plan.freeze_at:
                 try:
-                    # Pin final scheduler inputs at T-15, never at T-45/T-30.
-                    # This intentionally permits a structurally valid operator
-                    # catalog update during the review window.
+                    # Pin scheduler inputs during the atomic-final phase, never
+                    # during T-45/T-30 warmup or refresh. This intentionally
+                    # permits a structurally valid operator catalog update
+                    # during the review window.
                     _wait_until(plan.final_at, now=now, sleep=sleep)
                     final_override_sha256 = _current_override_sha256(plan)
                     final_inputs_sha256 = _final_inputs_sha256(
@@ -1147,6 +1367,524 @@ def execute_scheduler_plan(
         )
 
 
+def execute_scheduler_tick(
+    plan: SchedulerPlan,
+    *,
+    phase_runner: SchedulerPhaseRunner,
+    now: Callable[[], datetime],
+    sleep: Callable[[float], object],
+) -> SchedulerExecutionResult | None:
+    """Run at most one due scheduler phase and return immediately.
+
+    State is plan-scoped and hash verified.  Warmup and refresh failures are
+    recorded but deliberately never become terminal dependencies of final.
+    """
+    _require_plan(plan)
+    _ensure_output_directory(plan.output_dir, plan.output_dir)
+    _reject_unsafe_output_descendants(plan.output_dir)
+    state_path = plan.output_dir / "scheduler-state.json"
+    lock_path = plan.output_dir / ".scheduler.lock"
+    with scheduler_lock(lock_path):
+        observed = _read_now(now)
+        state = recover_orphan(
+            load_state(state_path, plan_id=plan.plan_id, now=observed), observed
+        )
+        save_state(state_path, state)
+        prior = find_prior_bet_ready(plan)
+        if prior is not None:
+            return prior
+        recovered = _recover_atomic_publication(
+            plan,
+            state=state,
+            state_path=state_path,
+            observed_at=observed,
+            now=now,
+        )
+        if recovered is not None:
+            return recovered
+        if state["terminal"] is not None:
+            return None
+        if observed >= plan.publish_deadline:
+            return _finalize_tick_no_bet(
+                plan, state=state, state_path=state_path, observed_at=observed,
+                reason="T-12 publication deadline was missed",
+            )
+
+        phase: str | None = None
+        runner_phase: Literal["preflight", "final"] | None = None
+        scheduled_at: datetime | None = None
+        if (
+            observed >= plan.retry_at
+            and state["phases"]["final"]["status"]
+            in {"pending", "retryable_failed"}
+        ):
+            phase, runner_phase, scheduled_at = "final", "final", plan.retry_at
+        elif (
+            observed >= plan.final_at
+            and state["phases"]["final"]["status"] == "pending"
+        ):
+            phase, runner_phase, scheduled_at = "final", "final", plan.final_at
+        elif (
+            observed >= plan.fallback_at
+            and state["phases"]["refresh"]["status"] == "pending"
+        ):
+            phase, runner_phase, scheduled_at = "refresh", "preflight", plan.fallback_at
+        elif (
+            observed >= plan.preflight_at
+            and state["phases"]["warmup"]["status"] == "pending"
+        ):
+            phase, runner_phase, scheduled_at = "warmup", "preflight", plan.preflight_at
+        if phase is None or runner_phase is None or scheduled_at is None:
+            return None
+
+        attempts = state["phases"][phase]["attempts"]
+        if phase == "final":
+            if len(attempts) >= plan.max_final_attempts:
+                return _finalize_tick_no_bet(
+                    plan, state=state, state_path=state_path, observed_at=observed,
+                    reason="final attempt limit exhausted",
+                )
+            remaining = (
+                plan.actionable_publication_deadline - observed
+            ).total_seconds()
+            if remaining < plan.minimum_final_runtime_seconds:
+                return _finalize_tick_no_bet(
+                    plan, state=state, state_path=state_path, observed_at=observed,
+                    reason=(
+                        "insufficient final runtime budget before the "
+                        "actionable cutoff"
+                    ),
+                )
+
+        attempt_id = f"{phase}-{len(attempts) + 1:02d}-{_new_run_id(observed)}"
+        run_dir = plan.output_dir / "attempts" / attempt_id
+        _create_output_directory_exclusive(plan.output_dir, run_dir)
+        state = transition(
+            state, phase=phase, status="running", observed_at=observed,
+            attempt_id=attempt_id,
+        )
+        save_state(state_path, state)
+        context = SchedulerPhaseContext(
+            phase=runner_phase,
+            plan=plan,
+            run_id=attempt_id,
+            run_dir=run_dir,
+            work_dir=run_dir / runner_phase,
+            scheduled_at=scheduled_at,
+            started_at=observed,
+            override_sha256=(
+                _current_override_sha256(plan) if phase == "final" else None
+            ),
+            # Atomic final input does not exist until the phase runner captures
+            # it.  The parser returns the canonical binding after validating
+            # the immutable snapshot and package-safety probabilities.
+            final_inputs_sha256=None,
+            atomic_final=phase == "final",
+        )
+        try:
+            retry_delays = (
+                plan.transient_backoff_seconds if phase == "final" else ()
+            )
+            for retry_index in range(len(retry_delays) + 1):
+                try:
+                    result = _call_phase_runner(phase_runner, context)
+                    break
+                except Exception as phase_error:
+                    if (
+                        _permanent_tick_error(phase_error)
+                        or retry_index >= len(retry_delays)
+                    ):
+                        raise
+                    delay = retry_delays[retry_index]
+                    remaining = (
+                        plan.actionable_publication_deadline - _read_now(now)
+                    ).total_seconds()
+                    if (
+                        delay + plan.minimum_final_runtime_seconds
+                        > remaining
+                    ):
+                        raise
+                    sleep(delay)
+            completed = _read_now(now)
+            if result.status != "complete":
+                raise SchedulerPhaseError(result.reason)
+            if (
+                phase == "final"
+                and completed > plan.actionable_publication_deadline
+            ):
+                return _finalize_tick_no_bet(
+                    plan,
+                    state=state,
+                    state_path=state_path,
+                    observed_at=completed,
+                    reason=(
+                        "final work completed inside the publication reserve "
+                        "before T-12"
+                    ),
+                )
+            if phase != "final":
+                state = transition(
+                    state, phase=phase, status="complete",
+                    observed_at=completed, attempt_id=attempt_id,
+                    reason=result.reason,
+                )
+                save_state(state_path, state)
+                return None
+            if result.decision == "NO BET":
+                return _finalize_tick_no_bet(
+                    plan, state=state, state_path=state_path,
+                    observed_at=completed, reason=result.reason,
+                )
+            if result.decision != "PLAY":
+                raise SchedulerIntegrityError(
+                    "final phase must return PLAY or NO BET",
+                    category="phase_contract",
+                )
+            try:
+                snapshot = _capture_snapshot(
+                    plan, context=context, result=result, completed_at=completed
+                )
+            except SchedulerIntegrityError:
+                raise
+            except (
+                OSError,
+                SchedulerError,
+                TypeError,
+                ValueError,
+            ) as error:
+                raise SchedulerIntegrityError(
+                    f"final package snapshot rejected: {_safe_error(error)}",
+                    category="package_integrity",
+                ) from error
+            phase_state = _initial_phase_state(plan)
+            status = _base_status(plan, attempt_id, run_dir, phase_state)
+            status_path = run_dir / "status.json"
+            _write_exclusive_atomic(
+                plan.output_dir, status_path,
+                _canonical_json_bytes(status) + b"\n",
+            )
+            terminal = _freeze_and_publish(
+                plan, run_id=attempt_id, run_dir=run_dir,
+                snapshots={"final": snapshot}, phase_errors=[],
+                phase_absences=[],
+                final_inputs_sha256=snapshot.final_inputs_sha256,
+                final_override_sha256=context.override_sha256,
+                now=now,
+            )
+            completed = _read_now(now)
+            finalized = _finalize_status(
+                plan, run_id=attempt_id, run_dir=run_dir,
+                status_path=status_path, status=status, terminal=terminal,
+                final_inputs_sha256=snapshot.final_inputs_sha256,
+                final_override_sha256=context.override_sha256,
+                completed_at=completed, now=now,
+            )
+            state = _transition_after_tick_publication(
+                state,
+                result=finalized,
+                intended_outcome=terminal["outcome"],
+                observed_at=completed,
+                attempt_id=attempt_id,
+            )
+            save_state(state_path, state)
+            return finalized
+        except Exception as error:
+            completed = _read_now(now)
+            permanent = _permanent_tick_error(error)
+            status = "integrity_failed" if permanent and phase == "final" else (
+                "permanent_failed" if permanent else "retryable_failed"
+            )
+            state = transition(
+                state, phase=phase, status=status, observed_at=completed,
+                attempt_id=attempt_id, reason=_safe_error(error),
+                terminal="failed" if permanent and phase == "final" else None,
+            )
+            save_state(state_path, state)
+            if permanent and phase == "final":
+                raise
+            return None
+
+
+def _permanent_tick_error(error: Exception) -> bool:
+    """Classify failures by type/status only; error text is never semantic."""
+
+    current: BaseException | None = error
+    visited: set[int] = set()
+    while current is not None and id(current) not in visited:
+        visited.add(id(current))
+        if isinstance(current, SchedulerPermanentError):
+            return True
+        if isinstance(current, SchedulerTransientError):
+            return False
+        if isinstance(current, TotoBriefRequestError):
+            status = current.status_code
+            if status is None:
+                return False
+            return (
+                400 <= status < 500
+                and status not in {408, 409, 425, 429}
+            )
+        if isinstance(
+            current,
+            (
+                TimeoutError,
+                subprocess.TimeoutExpired,
+                ConnectionError,
+            ),
+        ):
+            return False
+        current = current.__cause__ or current.__context__
+    # Unknown failures remain retryable and are bounded by max_final_attempts.
+    return False
+
+
+def _remove_actionable_publication_artifacts(
+    plan: SchedulerPlan,
+    run_dir: Path,
+) -> None:
+    """Remove package bytes that no longer have a timely actionable marker."""
+    _unlink_output_path(
+        plan.output_dir,
+        run_dir / "package.csv",
+        missing_ok=True,
+    )
+    _unlink_output_path(
+        plan.output_dir,
+        run_dir / "package-archive.json",
+        missing_ok=True,
+    )
+
+
+def _recover_atomic_publication(
+    plan: SchedulerPlan,
+    *,
+    state: Mapping[str, Any],
+    state_path: Path,
+    observed_at: datetime,
+    now: Callable[[], datetime],
+) -> SchedulerExecutionResult | None:
+    attempts_root = plan.output_dir / "attempts"
+    if not attempts_root.is_dir():
+        return None
+    candidates = tuple(
+        sorted(
+            path.parent
+            for path in attempts_root.glob("*/package-archive.json")
+            if path.is_file() and not path.is_symlink()
+        )
+    )
+    if not candidates:
+        return None
+    if len(candidates) != 1:
+        raise SchedulerError("multiple recoverable atomic publications exist")
+    run_dir = candidates[0]
+    attempt_id = run_dir.name
+    manifest_path = run_dir / "package-archive.json"
+    package_path = run_dir / "package.csv"
+    final_input_path = run_dir / "final-input.json"
+    final_input = load_final_input(final_input_path, expected_plan=plan)
+    if final_input.attempt_id != attempt_id:
+        raise SchedulerError(
+            "recoverable archive final-input attempt mismatch"
+        )
+    current_override_sha256 = _current_override_sha256(plan)
+    if final_input.timing_override_sha256 != current_override_sha256:
+        raise SchedulerIntegrityError(
+            "recoverable archive timing override changed after atomic-final "
+            "capture",
+            category="timing_override_integrity",
+        )
+    final_inputs_sha256 = _final_inputs_sha256(
+        plan,
+        final_input.timing_override_sha256,
+        final_input,
+    )
+    payload = _load_strict_json(manifest_path, name="package archive")
+    if (
+        not isinstance(payload, Mapping)
+        or payload.get("schema_version") != 2
+        or payload.get("final_input_sha256") != final_input.snapshot_sha256
+        or payload.get("probability_input_sha256")
+        != final_input.probability_input_sha256
+    ):
+        raise SchedulerError("recoverable archive final-input provenance mismatch")
+    if observed_at > plan.publish_deadline:
+        _remove_actionable_publication_artifacts(plan, run_dir)
+        return _finalize_tick_no_bet(
+            plan,
+            state=state,
+            state_path=state_path,
+            observed_at=observed_at,
+            reason=(
+                "archive recovered after the T-12 publication deadline; "
+                "publication suppressed"
+            ),
+        )
+    archive_engine = init_db(plan.db)
+    try:
+        archived = import_prebet_package_manifest(
+            get_session_factory(archive_engine), manifest_path, package_path
+        )
+    finally:
+        archive_engine.dispose()
+    if archived.final_input_sha256 != final_input.snapshot_sha256:
+        raise SchedulerError("recoverable durable archive did not verify")
+    status_path = run_dir / "status.json"
+    if status_path.is_file():
+        status = _load_strict_json(status_path, name="scheduler status")
+        if not isinstance(status, dict):
+            raise SchedulerError("recoverable scheduler status is invalid")
+    else:
+        phase_state = _initial_phase_state(plan)
+        status = _base_status(plan, attempt_id, run_dir, phase_state)
+        _write_exclusive_atomic(
+            plan.output_dir,
+            status_path,
+            _canonical_json_bytes(status) + b"\n",
+        )
+    terminal = {
+        "outcome": "bet-ready",
+        "decision": "PLAY",
+        "reason": "verified archive recovered no later than T-12",
+        "package_path": package_path,
+        "package_sha256": archived.source_bytes_sha256,
+        "effective_bank": plan.requested_bank,
+        "selected_count": archived.coupon_count,
+        "selected_cost": archived.cost,
+        "selected_snapshot": "final",
+        "published_at": observed_at,
+    }
+    finalized = _finalize_status(
+        plan,
+        run_id=attempt_id,
+        run_dir=run_dir,
+        status_path=status_path,
+        status=status,
+        terminal=terminal,
+        final_inputs_sha256=final_inputs_sha256,
+        final_override_sha256=final_input.timing_override_sha256,
+        completed_at=observed_at,
+        now=now,
+    )
+    updated = _transition_after_tick_publication(
+        state,
+        result=finalized,
+        intended_outcome=terminal["outcome"],
+        observed_at=observed_at,
+        attempt_id=attempt_id,
+    )
+    save_state(state_path, updated)
+    return finalized
+
+
+def _transition_after_tick_publication(
+    state: Mapping[str, Any],
+    *,
+    result: SchedulerExecutionResult,
+    intended_outcome: str,
+    observed_at: datetime,
+    attempt_id: str,
+) -> dict[str, Any]:
+    """Persist terminal success only after its marker exists and verifies."""
+
+    if result.outcome == "bet-ready":
+        updated = transition(
+            state,
+            phase="final",
+            status="complete",
+            observed_at=observed_at,
+            attempt_id=attempt_id,
+            reason=result.reason,
+        )
+        return transition(
+            updated,
+            phase="publish",
+            status="complete",
+            observed_at=observed_at,
+            attempt_id=attempt_id,
+            reason=result.reason,
+            terminal="bet_ready",
+        )
+    if result.outcome == "no-bet":
+        updated = transition(
+            state,
+            phase="final",
+            status="no_bet",
+            observed_at=observed_at,
+            attempt_id=attempt_id,
+            reason=result.reason,
+        )
+        return transition(
+            updated,
+            phase="publish",
+            status="no_bet",
+            observed_at=observed_at,
+            attempt_id=attempt_id,
+            reason=result.reason,
+            terminal="no_bet",
+        )
+    if result.outcome == "failed":
+        final_status = (
+            "complete" if intended_outcome == "bet-ready" else "no_bet"
+        )
+        updated = transition(
+            state,
+            phase="final",
+            status=final_status,
+            observed_at=observed_at,
+            attempt_id=attempt_id,
+            reason=result.reason,
+        )
+        return transition(
+            updated,
+            phase="publish",
+            status="permanent_failed",
+            observed_at=observed_at,
+            attempt_id=attempt_id,
+            reason=result.reason,
+            terminal="failed",
+        )
+    raise SchedulerIntegrityError(
+        "atomic publication returned an unsupported outcome",
+        category="phase_contract",
+    )
+
+
+def _finalize_tick_no_bet(
+    plan: SchedulerPlan,
+    *,
+    state: Mapping[str, Any],
+    state_path: Path,
+    observed_at: datetime,
+    reason: str,
+) -> SchedulerExecutionResult:
+    run_id = f"no-bet-{_new_run_id(observed_at)}"
+    run_dir = plan.output_dir / "runs" / str(plan.drawing) / run_id
+    _create_output_directory_exclusive(plan.output_dir, run_dir)
+    phase_state = _initial_phase_state(plan)
+    status = _base_status(plan, run_id, run_dir, phase_state)
+    status_path = run_dir / "status.json"
+    _write_exclusive_atomic(
+        plan.output_dir, status_path, _canonical_json_bytes(status) + b"\n"
+    )
+    terminal = _no_package_terminal([], [reason])
+    updated = transition(
+        state, phase="final", status="no_bet", observed_at=observed_at,
+        reason=reason,
+    )
+    updated = transition(
+        updated, phase="publish", status="no_bet", observed_at=observed_at,
+        reason=reason, terminal="no_bet",
+    )
+    save_state(state_path, updated)
+    return _finalize_status(
+        plan, run_id=run_id, run_dir=run_dir, status_path=status_path,
+        status=status, terminal=terminal, final_inputs_sha256=None,
+        final_override_sha256=None, completed_at=observed_at,
+        now=lambda: observed_at,
+    )
+
+
 def find_prior_bet_ready(plan: SchedulerPlan) -> SchedulerExecutionResult | None:
     """Return only a cryptographically valid prior ``.bet-ready`` run.
 
@@ -1155,12 +1893,22 @@ def find_prior_bet_ready(plan: SchedulerPlan) -> SchedulerExecutionResult | None
     """
 
     _require_plan(plan)
-    drawing_root = plan.output_dir / "runs" / str(plan.drawing)
-    if not _path_exists(plan.output_dir) or not _path_exists(drawing_root):
+    if not _path_exists(plan.output_dir):
         return None
     _reject_unsafe_output_descendants(plan.output_dir)
-    _require_output_directory(plan.output_dir, drawing_root)
-    for run_dir in sorted(drawing_root.iterdir(), reverse=True):
+    roots = tuple(
+        root
+        for root in (
+            plan.output_dir / "runs" / str(plan.drawing),
+            plan.output_dir / "attempts",
+        )
+        if _path_exists(root)
+    )
+    run_dirs: list[Path] = []
+    for root in roots:
+        _require_output_directory(plan.output_dir, root)
+        run_dirs.extend(path for path in root.iterdir() if path.is_dir())
+    for run_dir in sorted(run_dirs, reverse=True):
         marker_path = run_dir / ".bet-ready"
         if not run_dir.is_dir() or not _path_exists(marker_path):
             continue
@@ -1225,7 +1973,8 @@ def build_run_drawing_phase_command(
         raise ValueError("run-drawing command is only valid for package phases")
     validated_executable = _validated_python_executable(python_executable)
     plan = context.plan
-    lead_minutes = 30 if context.phase == "fallback" else 15
+    atomic_final = context.phase == "final" and context.atomic_final
+    lead_minutes = 30 if context.phase == "fallback" else (20 if atomic_final else 15)
     report_dir = context.work_dir / "reports"
     cache_root = context.work_dir / "cache"
     command = [
@@ -1251,7 +2000,7 @@ def build_run_drawing_phase_command(
         "--final-lead-minutes",
         str(lead_minutes),
         "--safety-stop-minutes",
-        "10",
+        str(12 if atomic_final else 10),
         "--db",
         str(plan.db),
         "--report-dir",
@@ -1316,43 +2065,85 @@ class CommandSchedulerPhaseRunner:
         environment: Mapping[str, str] | None = None,
         target_validator: Callable[[SchedulerPlan, datetime], object]
         | None = None,
+        now: Callable[[], datetime] | None = None,
     ) -> None:
         self.python_executable = _validated_python_executable(python_executable)
         self.environment = dict(os.environ if environment is None else environment)
         self.environment.pop("TOTO_LEGACY_NAME_MATCHING", None)
         self.target_validator = target_validator or _validate_live_scheduler_target
+        self.now = now or (lambda: datetime.now(timezone.utc))
 
     def __call__(self, context: SchedulerPhaseContext) -> SchedulerPhaseResult:
         if context.phase == "preflight":
             self._preflight(context.plan, context.work_dir)
-            self.target_validator(context.plan, context.started_at)
+            self.target_validator(context.plan, _read_now(self.now))
             return SchedulerPhaseResult.completed(
                 "target, data access, configuration, and override catalog validated"
             )
 
         context.work_dir.mkdir(parents=True, exist_ok=True)
+        atomic_input = None
+        if context.phase == "final" and context.atomic_final:
+            final_input_path = context.run_dir / "final-input.json"
+            try:
+                atomic_input = (
+                    load_final_input(final_input_path, expected_plan=context.plan)
+                    if final_input_path.exists()
+                    else capture_final_input(
+                        client=TotoBriefClient(),
+                        plan=context.plan,
+                        attempt_id=context.run_id,
+                        now=self.now,
+                        destination=final_input_path,
+                        timing_override_sha256=context.override_sha256,
+                    )
+                )
+            except TotoBriefRequestError:
+                raise
+            except (OSError, TypeError, ValueError) as error:
+                raise SchedulerIntegrityError(
+                    f"final input validation failed: {_safe_error(error)}",
+                    category="final_input_integrity",
+                ) from error
+            if atomic_input.attempt_id != context.run_id:
+                raise SchedulerIntegrityError(
+                    "persisted final input attempt identity mismatch",
+                    category="final_input_identity",
+                )
         command = build_run_drawing_phase_command(
             context,
             python_executable=self.python_executable,
         )
+        command_environment = dict(self.environment)
+        if atomic_input is not None:
+            command_environment["TOTO_FINAL_INPUT"] = str(atomic_input.path)
+            command_environment["TOTO_SCHEDULER_PLAN"] = str(
+                context.plan.output_dir / SCHEDULER_PLAN_FILENAME
+            )
+        subprocess_started_at = _read_now(self.now)
+        timeout_seconds = (
+            context.plan.actionable_publication_deadline
+            - subprocess_started_at
+        ).total_seconds()
+        if timeout_seconds <= 0:
+            raise SchedulerTransientError(
+                "run-drawing cannot preserve the publication reserve before T-12",
+                category="run_drawing_timeout",
+            )
         try:
             completed = subprocess.run(
                 command,
                 check=False,
                 capture_output=True,
                 text=True,
-                env=self.environment,
+                env=command_environment,
                 cwd=context.plan.project_root,
-                timeout=max(
-                    0.001,
-                    (
-                        context.plan.freeze_at - context.started_at
-                    ).total_seconds(),
-                ),
+                timeout=timeout_seconds,
             )
         except subprocess.TimeoutExpired as error:
-            raise SchedulerPhaseError(
-                "run-drawing timed out before the T-10 freeze"
+            raise SchedulerTransientError(
+                "run-drawing timed out before the T-12 cutoff",
+                category="run_drawing_timeout",
             ) from error
         if completed.returncode != 0:
             detail = completed.stderr.strip() or completed.stdout.strip()
@@ -1361,25 +2152,35 @@ class CommandSchedulerPhaseRunner:
                 detail = detail.replace(secret, "[REDACTED]")
             detail = detail[-1000:]
             suffix = f": {detail}" if detail else ""
-            raise SchedulerPhaseError(
-                f"run-drawing exited with code {completed.returncode}{suffix}"
+            raise SchedulerTransientError(
+                f"run-drawing exited with code {completed.returncode}{suffix}",
+                category="run_drawing_process",
             )
-        _reject_unsafe_output_descendants(context.plan.output_dir)
-        report_dir = context.work_dir / "reports"
-        _require_output_directory(context.plan.output_dir, report_dir)
-        manifests = tuple(
-            sorted(
-                path
-                for path in report_dir.iterdir()
-                if path.name.startswith("drawing_run_")
-                and path.name.endswith(".json")
+        try:
+            _reject_unsafe_output_descendants(context.plan.output_dir)
+            report_dir = context.work_dir / "reports"
+            _require_output_directory(context.plan.output_dir, report_dir)
+            manifests = tuple(
+                sorted(
+                    path
+                    for path in report_dir.iterdir()
+                    if path.name.startswith("drawing_run_")
+                    and path.name.endswith(".json")
+                )
             )
-        )
-        if len(manifests) != 1:
-            raise SchedulerPhaseError(
-                "run-drawing must publish exactly one runner JSON manifest"
-            )
-        return parse_runner_manifest_phase_result(context, manifests[0])
+            if len(manifests) != 1:
+                raise SchedulerIntegrityError(
+                    "run-drawing must publish exactly one runner JSON manifest",
+                    category="runner_manifest_integrity",
+                )
+            return parse_runner_manifest_phase_result(context, manifests[0])
+        except SchedulerIntegrityError:
+            raise
+        except (OSError, SchedulerError, TypeError, ValueError) as error:
+            raise SchedulerIntegrityError(
+                f"runner artifact validation failed: {_safe_error(error)}",
+                category="runner_manifest_integrity",
+            ) from error
 
     def _preflight(self, plan: SchedulerPlan, work_dir: Path) -> None:
         if not _is_regular_file(plan.db, reject_symlink=True) or not os.access(
@@ -1411,16 +2212,20 @@ class CommandSchedulerPhaseRunner:
                 timeout=300,
             )
         except subprocess.TimeoutExpired as error:
-            raise SchedulerPhaseError("prepare-drawing preflight timed out") from error
+            raise SchedulerTransientError(
+                "prepare-drawing preflight timed out",
+                category="preflight_timeout",
+            ) from error
         if completed.returncode != 0:
             detail = completed.stderr.strip() or completed.stdout.strip()
             secret = self.environment.get("API_SPORTS_KEY", "")
             if secret:
                 detail = detail.replace(secret, "[REDACTED]")
             suffix = f": {detail[-1000:]}" if detail else ""
-            raise SchedulerPhaseError(
+            raise SchedulerTransientError(
                 "prepare-drawing did not produce a ready 15/15 preparation"
-                f"{suffix}"
+                f"{suffix}",
+                category="preparation_unavailable",
             )
 
 
@@ -1572,7 +2377,7 @@ def _execute_package_phase(
                 phase,
                 finished_at=completed_at,
                 status="late",
-                reason="package completed after T-10 and was not captured",
+                reason="package completed after T-12 and was not captured",
             )
             _write_status_atomic(plan.output_dir, status_path, status)
             return None
@@ -1657,6 +2462,28 @@ def _capture_snapshot(
         raise SchedulerPhaseError("package cost exceeds effective bank")
     if result.override_sha256 != context.override_sha256:
         raise SchedulerPhaseError("phase timing override hash did not verify")
+    final_inputs_sha256 = context.final_inputs_sha256
+    if context.atomic_final:
+        final_input = load_final_input(
+            context.run_dir / "final-input.json",
+            expected_plan=plan,
+        )
+        final_inputs_sha256 = _final_inputs_sha256(
+            plan,
+            context.override_sha256,
+            final_input,
+        )
+        if (
+            result.final_inputs_sha256 is not None
+            and result.final_inputs_sha256 != final_inputs_sha256
+        ):
+            raise SchedulerPhaseError(
+                "phase final-input binding did not verify"
+            )
+    elif result.final_inputs_sha256 is not None:
+        raise SchedulerPhaseError(
+            "non-atomic phase cannot return a final-input binding"
+        )
 
     snapshot_dir = context.run_dir / "snapshots" / context.phase
     _create_output_directory_exclusive(plan.output_dir, snapshot_dir)
@@ -1679,7 +2506,7 @@ def _capture_snapshot(
         selected_count=package.count,
         selected_cost=package.cost,
         override_sha256=context.override_sha256,
-        final_inputs_sha256=context.final_inputs_sha256,
+        final_inputs_sha256=final_inputs_sha256,
     )
     manifest = {
         "phase": snapshot.phase,
@@ -1713,6 +2540,7 @@ def _freeze_and_publish(
     final_override_sha256: str | None,
     now: Callable[[], datetime],
 ) -> dict[str, Any]:
+    publication_deadline = plan.freeze_at
     observed_at = _read_now(now)
     if plan.drawing_id is None:
         phase_errors.append(
@@ -1724,16 +2552,27 @@ def _freeze_and_publish(
             "freeze: legacy scheduler plan lacks trusted package safety binding"
         )
         return _no_package_terminal(phase_errors, phase_absences)
-    if observed_at > plan.freeze_at:
-        phase_absences.append("T-10 publication deadline was missed")
+    if observed_at > publication_deadline:
+        phase_absences.append("T-12 publication deadline was missed")
         return _no_package_terminal(phase_errors, phase_absences)
 
     try:
         _reject_unsafe_output_descendants(plan.output_dir)
         current_override_sha256 = _current_override_sha256(plan)
-        current_final_inputs_sha256 = _final_inputs_sha256(
-            plan,
-            current_override_sha256,
+        final_input_path = run_dir / "final-input.json"
+        final_input = (
+            load_final_input(final_input_path, expected_plan=plan)
+            if final_input_path.exists()
+            else None
+        )
+        current_final_inputs_sha256 = (
+            _final_inputs_sha256(
+                plan,
+                current_override_sha256,
+                final_input,
+            )
+            if final_input is not None
+            else _final_inputs_sha256(plan, current_override_sha256)
         )
     except Exception as error:
         phase_errors.append(f"freeze override validation: {_safe_error(error)}")
@@ -1790,26 +2629,33 @@ def _freeze_and_publish(
             raise SchedulerPhaseError("published package SHA-256 did not verify")
 
         publication_override_sha256 = _current_override_sha256(plan)
-        publication_final_inputs_sha256 = _final_inputs_sha256(
-            plan,
-            publication_override_sha256,
+        publication_final_inputs_sha256 = (
+            _final_inputs_sha256(
+                plan,
+                publication_override_sha256,
+                final_input,
+            )
+            if final_input is not None
+            else _final_inputs_sha256(plan, publication_override_sha256)
         )
         if publication_override_sha256 != snapshot.override_sha256:
             raise SchedulerPhaseError(
-                "timing override hash changed during T-10 publication"
+                "timing override hash changed during T-12 publication"
             )
         if publication_final_inputs_sha256 != snapshot.final_inputs_sha256:
             raise SchedulerPhaseError(
-                "final input hash changed during T-10 publication"
+                "final input hash changed during T-12 publication"
             )
         published_at = _read_now(now)
-        if published_at > plan.freeze_at:
-            raise SchedulerPhaseError("package publication completed after T-10")
+        if published_at > publication_deadline:
+            raise SchedulerPublicationDeadlineError(
+                "package publication completed after T-12"
+            )
         canonical_package_sha256 = hashlib.sha256(
             ",".join(validated_package.coupons).encode("utf-8")
         ).hexdigest()
         archive_payload = {
-            "schema_version": 1,
+            "schema_version": 2 if final_input is not None else 1,
             "provenance": "pre_bet_runner",
             "drawing_id": plan.drawing_id,
             "drawing_number": plan.drawing,
@@ -1822,6 +2668,18 @@ def _freeze_and_publish(
             "source_bytes_sha256": snapshot.sha256,
             "canonical_package_sha256": canonical_package_sha256,
         }
+        if final_input is not None:
+            archive_payload.update(
+                {
+                    "final_input_sha256": final_input.snapshot_sha256,
+                    "probability_input_sha256": (
+                        final_input.probability_input_sha256
+                    ),
+                    "final_input_captured_at": _timestamp(
+                        final_input.captured_at
+                    ),
+                }
+            )
         archive_payload["archive_manifest_sha256"] = _sha256_bytes(
             _canonical_json_bytes(archive_payload)
         )
@@ -1830,6 +2688,10 @@ def _freeze_and_publish(
             archive_manifest_path,
             _canonical_json_bytes(archive_payload) + b"\n",
         )
+        if _read_now(now) > publication_deadline:
+            raise SchedulerPublicationDeadlineError(
+                "archive manifest completed after T-12"
+            )
         archive_engine = init_db(plan.db)
         try:
             archived = import_prebet_package_manifest(
@@ -1840,9 +2702,9 @@ def _freeze_and_publish(
             archive_completed_at = _read_now(now)
         finally:
             archive_engine.dispose()
-        if archive_completed_at > plan.freeze_at:
-            raise SchedulerPhaseError(
-                "durable archive completed after T-10"
+        if archive_completed_at > publication_deadline:
+            raise SchedulerPublicationDeadlineError(
+                "durable archive completed after T-12"
             )
         if (
             archived.drawing_id != plan.drawing_id
@@ -1853,6 +2715,17 @@ def _freeze_and_publish(
             or archived.provenance != "pre_bet_runner"
             or archived.archive_manifest_sha256
             != archive_payload["archive_manifest_sha256"]
+            or (
+                final_input is not None
+                and (
+                    archived.final_input_sha256
+                    != final_input.snapshot_sha256
+                    or archived.probability_input_sha256
+                    != final_input.probability_input_sha256
+                    or archived.final_input_captured_at
+                    != _timestamp(final_input.captured_at)
+                )
+            )
         ):
             raise SchedulerPhaseError(
                 "durable pre-bet package archive did not verify"
@@ -1860,7 +2733,7 @@ def _freeze_and_publish(
         return {
             "outcome": "bet-ready",
             "decision": "PLAY",
-            "reason": "final package verified and published no later than T-10",
+            "reason": "final package verified and published no later than T-12",
             "package_path": package_path,
             "package_sha256": snapshot.sha256,
             "effective_bank": snapshot.effective_bank,
@@ -1869,13 +2742,12 @@ def _freeze_and_publish(
             "selected_snapshot": "final",
             "published_at": published_at,
         }
+    except SchedulerPublicationDeadlineError as error:
+        _remove_actionable_publication_artifacts(plan, run_dir)
+        phase_absences.append(f"final: {_safe_error(error)}")
+        return _no_package_terminal(phase_errors, phase_absences)
     except Exception as error:
-        _unlink_output_path(plan.output_dir, package_path, missing_ok=True)
-        _unlink_output_path(
-            plan.output_dir,
-            archive_manifest_path,
-            missing_ok=True,
-        )
+        _remove_actionable_publication_artifacts(plan, run_dir)
         phase_errors.append(f"final: {_safe_error(error)}")
         return _no_package_terminal(phase_errors, phase_absences)
 
@@ -1889,8 +2761,8 @@ def _snapshot_validation_error(
     current_final_inputs_sha256: str,
     final_override_sha256: str | None,
 ) -> str | None:
-    if snapshot.completed_at > plan.freeze_at:
-        return "package completed after T-10"
+    if snapshot.completed_at > plan.actionable_publication_deadline:
+        return "package calculation completed inside the publication reserve"
     if not _valid_package_hash(
         plan,
         snapshot.path,
@@ -1908,7 +2780,7 @@ def _snapshot_validation_error(
         or snapshot.final_inputs_sha256 != current_final_inputs_sha256
         or snapshot.override_sha256 != final_override_sha256
     ):
-        return "final inputs do not match the T-15 pin"
+        return "final inputs do not match the atomic-final pin"
     return None
 
 
@@ -1923,7 +2795,7 @@ def _no_package_terminal(
         outcome = "no-bet"
         decision = "NO BET"
         reason = (
-            "no valid authoritative final PLAY package at T-10"
+            "no valid authoritative final PLAY package at T-12"
             + (": " + "; ".join(phase_absences) if phase_absences else "")
         )
     return {
@@ -1953,6 +2825,7 @@ def _finalize_status(
     completed_at: datetime,
     now: Callable[[], datetime],
 ) -> SchedulerExecutionResult:
+    publication_deadline = plan.freeze_at
     if terminal["outcome"] == "bet-ready":
         _validate_terminal_package(plan, run_dir, terminal)
     status.update(
@@ -2003,8 +2876,8 @@ def _finalize_status(
         if terminal["outcome"] == "bet-ready":
             _validate_terminal_package(plan, run_dir, terminal)
             _validate_status_file(plan, status_path, status)
-            if _read_now(now) > plan.freeze_at:
-                raise SchedulerPhaseError(
+            if _read_now(now) > publication_deadline:
+                raise SchedulerPublicationDeadlineError(
                     "bet-ready marker deadline crossed after durable archive"
                 )
         _write_exclusive_atomic(
@@ -2014,6 +2887,10 @@ def _finalize_status(
         )
         if terminal["outcome"] == "bet-ready":
             try:
+                if _read_now(now) > publication_deadline:
+                    raise SchedulerPublicationDeadlineError(
+                        "bet-ready marker completed after T-12"
+                    )
                 _validate_terminal_package(plan, run_dir, terminal)
                 _validate_status_file(plan, status_path, status)
             except Exception:
@@ -2025,11 +2902,21 @@ def _finalize_status(
                 raise
     except Exception as error:
         if terminal["outcome"] != "failed":
-            failure_reason = f"terminal marker publication failed: {_safe_error(error)}"
+            deadline_missed = isinstance(
+                error,
+                SchedulerPublicationDeadlineError,
+            )
+            failure_outcome = "no-bet" if deadline_missed else "failed"
+            failure_decision = "NO BET" if deadline_missed else "FAILED"
+            failure_reason = (
+                f"terminal marker publication missed T-12: {_safe_error(error)}"
+                if deadline_missed
+                else f"terminal marker publication failed: {_safe_error(error)}"
+            )
             status.update(
                 {
-                    "outcome": "failed",
-                    "decision": "FAILED",
+                    "outcome": failure_outcome,
+                    "decision": failure_decision,
                     "reason": failure_reason,
                     "package_path": None,
                     "package_sha256": None,
@@ -2040,26 +2927,17 @@ def _finalize_status(
                     "published_at": None,
                 }
             )
-            _unlink_output_path(
-                plan.output_dir,
-                run_dir / "package.csv",
-                missing_ok=True,
-            )
-            _unlink_output_path(
-                plan.output_dir,
-                run_dir / "package-archive.json",
-                missing_ok=True,
-            )
+            _remove_actionable_publication_artifacts(plan, run_dir)
             _write_status_atomic(plan.output_dir, status_path, status)
-            marker_path = run_dir / ".failed"
+            marker_path = run_dir / f".{failure_outcome}"
             _write_exclusive_atomic(
                 plan.output_dir,
                 marker_path,
                 _canonical_json_bytes(
                     {
                         **marker_payload,
-                        "outcome": "failed",
-                        "decision": "FAILED",
+                        "outcome": failure_outcome,
+                        "decision": failure_decision,
                         "package_path": None,
                         "package_sha256": None,
                     }
@@ -2114,6 +2992,7 @@ def _parse_runner_manifest_phase_result_strict(
             "ev",
             "report_links",
             "replay",
+            "final_input",
             "warnings",
         },
         "runner manifest",
@@ -2134,6 +3013,48 @@ def _parse_runner_manifest_phase_result_strict(
             "non-production offline replay manifest ignored"
         )
     _validate_runner_manifest_diagnostics(payload)
+    final_input_snapshot = None
+    if context.atomic_final:
+        final_input = _exact_phase_mapping(
+            payload["final_input"],
+            {
+                "path",
+                "captured_at",
+                "snapshot_sha256",
+                "detail_payload_sha256",
+                "probability_input_sha256",
+                "attempt_id",
+            },
+            "runner final input",
+        )
+        final_input_path = Path(
+            _strict_text("runner final input path", final_input["path"])
+        )
+        _require_contained_path(
+            context.run_dir, final_input_path, name="runner final input"
+        )
+        final_input_snapshot = load_final_input(
+            final_input_path, expected_plan=context.plan
+        )
+        if (
+            final_input_snapshot.attempt_id != context.run_id
+            or final_input_snapshot.snapshot_sha256
+            != _strict_sha256(
+                "runner final input snapshot_sha256",
+                final_input["snapshot_sha256"],
+            )
+            or final_input_snapshot.detail_payload_sha256
+            != _strict_sha256(
+                "runner final input detail_payload_sha256",
+                final_input["detail_payload_sha256"],
+            )
+            or final_input_snapshot.probability_input_sha256
+            != _strict_sha256(
+                "runner final input probability_input_sha256",
+                final_input["probability_input_sha256"],
+            )
+        ):
+            raise SchedulerPhaseError("runner final input provenance mismatch")
 
     target = _exact_phase_mapping(
         payload["target"],
@@ -2298,6 +3219,14 @@ def _parse_runner_manifest_phase_result_strict(
                 "runner package safety evidence does not match canonical "
                 "recomputation"
             )
+        if (
+            final_input_snapshot is not None
+            and safety["probability_input_sha256"]
+            != final_input_snapshot.probability_input_sha256
+        ):
+            raise SchedulerPhaseError(
+                "package safety probabilities do not match final input"
+            )
     plan = context.plan
     manifest_drawing_id = _strict_int("runner drawing_id", target["drawing_id"])
     manifest_drawing_number = _strict_int(
@@ -2335,11 +3264,15 @@ def _parse_runner_manifest_phase_result_strict(
         or _strict_int(
             "runner final_lead_minutes", config["final_lead_minutes"]
         )
-        != (30 if context.phase == "fallback" else 15)
+        != (
+            30
+            if context.phase == "fallback"
+            else (20 if context.atomic_final else 15)
+        )
         or _strict_int(
             "runner safety_stop_minutes", config["safety_stop_minutes"]
         )
-        != 10
+        != (12 if context.atomic_final else 10)
     ):
         raise SchedulerPhaseError(
             "runner manifest config does not match scheduler plan"
@@ -2544,6 +3477,15 @@ def _parse_runner_manifest_phase_result_strict(
         selected_count=selected_count,
         selected_cost=selected_cost,
         override_sha256=observed_override,
+        final_inputs_sha256=(
+            None
+            if final_input_snapshot is None
+            else _final_inputs_sha256(
+                context.plan,
+                observed_override,
+                final_input_snapshot,
+            )
+        ),
         package_sha256=_sha256_bytes(package_bytes),
     )
 
@@ -2555,11 +3497,18 @@ def parse_runner_manifest_phase_result(
 
     try:
         return _parse_runner_manifest_phase_result_strict(context, manifest_path)
-    except SchedulerPhaseError:
+    except SchedulerIntegrityError:
         raise
-    except (OSError, OverflowError, SchedulerError, TypeError, ValueError) as error:
-        raise SchedulerPhaseError(
-            f"runner manifest validation failed: {_safe_error(error)}"
+    except (
+        OSError,
+        OverflowError,
+        SchedulerError,
+        TypeError,
+        ValueError,
+    ) as error:
+        raise SchedulerIntegrityError(
+            f"runner manifest validation failed: {_safe_error(error)}",
+            category="runner_manifest_integrity",
         ) from error
 
 
@@ -3791,19 +4740,28 @@ def _render_launch_agent(
     wrapper_path: Path,
     logs_dir: Path,
 ) -> bytes:
-    local_start = plan.preflight_at.astimezone()
+    local_starts = (
+        plan.preflight_at,
+        plan.fallback_at,
+        plan.final_at,
+        plan.retry_at,
+        plan.publish_deadline,
+    )
     payload = {
         "Label": f"com.totoai.production-scheduler.{plan.plan_id}",
         "ProgramArguments": [str(wrapper_path)],
         "WorkingDirectory": str(plan.project_root),
         "RunAtLoad": False,
-        "StartCalendarInterval": {
-            "Year": local_start.year,
-            "Month": local_start.month,
-            "Day": local_start.day,
-            "Hour": local_start.hour,
-            "Minute": local_start.minute,
-        },
+        "StartCalendarInterval": [
+            {
+                "Year": local_start.astimezone().year,
+                "Month": local_start.astimezone().month,
+                "Day": local_start.astimezone().day,
+                "Hour": local_start.astimezone().hour,
+                "Minute": local_start.astimezone().minute,
+            }
+            for local_start in local_starts
+        ],
         "StandardOutPath": str(logs_dir / "scheduler.stdout.log"),
         "StandardErrorPath": str(logs_dir / "scheduler.stderr.log"),
     }
@@ -3812,11 +4770,12 @@ def _render_launch_agent(
 
 def _render_morning_preanalysis_wrapper(
     *,
-    expected_drawing_number: int,
     retry_count: int,
     retry_delay_seconds: float,
     env_file: Path,
     project_root: Path,
+    bank: int,
+    stake: int,
     python_executable: str,
 ) -> str:
     executable = shlex.quote(python_executable)
@@ -3826,10 +4785,19 @@ def _render_morning_preanalysis_wrapper(
             python_executable,
             "-m",
             "toto_ai.cli",
-            "sync-prepare",
-            "--open",
-            "--expected-drawing-number",
-            str(expected_drawing_number),
+            "morning-dispatch",
+            "--bank",
+            str(bank),
+            "--stake",
+            str(stake),
+            "--env-file",
+            str(env_file),
+            "--project-root",
+            str(project_root),
+            "--state-root",
+            str(project_root / "data" / "scheduler" / "morning-dispatch"),
+            "--scheduler-root",
+            str(project_root / "reports" / "rehearsal"),
             "--db",
             str(project_root / "data" / "toto.db"),
             "--aliases",
@@ -3845,6 +4813,7 @@ def _render_morning_preanalysis_wrapper(
             ),
             "--cache-root",
             str(project_root / "data" / "external-cache" / "api-sports"),
+            "--activate",
         )
     )
     return (
@@ -3874,17 +4843,15 @@ def _render_morning_preanalysis_wrapper(
 
 def _render_morning_launch_agent(
     *,
-    expected_drawing_number: int,
     times: Sequence[tuple[int, int]],
     wrapper_path: Path,
     logs_dir: Path,
+    project_root: Path,
 ) -> bytes:
     payload = {
-        "Label": (
-            "com.totoai.morning-preanalysis."
-            f"{expected_drawing_number}"
-        ),
+        "Label": "com.totoai.morning-dispatcher.v1",
         "ProgramArguments": [str(wrapper_path)],
+        "WorkingDirectory": str(project_root),
         "RunAtLoad": False,
         "StartCalendarInterval": [
             {"Hour": hour, "Minute": minute} for hour, minute in times
@@ -3933,7 +4900,8 @@ def _render_secure_env_prelude(
 
 def _validate_preflight_inputs(plan: SchedulerPlan) -> None:
     # Strict parsing is intentional, but this T-45 validation does not retain a
-    # semantic hash.  A valid operator edit before T-15 is therefore allowed.
+    # semantic hash. A valid operator edit before atomic-final capture is
+    # therefore allowed.
     if plan.timing_overrides is not None:
         _require_regular_file(
             plan.timing_overrides,
@@ -3966,8 +4934,9 @@ def _validate_live_scheduler_target(
             )
         )
     ):
-        raise SchedulerPhaseError(
-            "live open drawing does not match the scheduler target"
+        raise SchedulerIntegrityError(
+            "live open drawing does not match the scheduler target",
+            category="target_identity",
         )
 
 
@@ -3984,7 +4953,9 @@ def _current_override_sha256(plan: SchedulerPlan) -> str | None:
 
 
 def _final_inputs_sha256(
-    plan: SchedulerPlan, override_sha256: str | None
+    plan: SchedulerPlan,
+    override_sha256: str | None,
+    final_input: FinalInputSnapshot | None = None,
 ) -> str:
     payload = {
         "plan": plan.semantic_payload(),
@@ -3993,6 +4964,19 @@ def _final_inputs_sha256(
         "requested_bank": plan.requested_bank,
         "stake": plan.stake,
         "timing_override_sha256": override_sha256,
+        "final_input": (
+            None
+            if final_input is None
+            else {
+                "attempt_id": final_input.attempt_id,
+                "captured_at": _timestamp(final_input.captured_at),
+                "snapshot_sha256": final_input.snapshot_sha256,
+                "detail_payload_sha256": final_input.detail_payload_sha256,
+                "probability_input_sha256": (
+                    final_input.probability_input_sha256
+                ),
+            }
+        ),
     }
     return hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
 
@@ -4082,8 +5066,9 @@ def _call_phase_runner(
 ) -> SchedulerPhaseResult:
     result = phase_runner(context)
     if not isinstance(result, SchedulerPhaseResult):
-        raise SchedulerPhaseError(
-            "phase runner must return SchedulerPhaseResult"
+        raise SchedulerIntegrityError(
+            "phase runner must return SchedulerPhaseResult",
+            category="phase_contract",
         )
     return result
 

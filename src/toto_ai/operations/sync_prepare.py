@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -94,6 +95,44 @@ def synchronize_open_drawing(
     )
 
 
+def synchronize_drawing_payload(
+    payload: Mapping[str, object],
+    *,
+    fetched_at: datetime,
+    session_factory: sessionmaker[Session],
+    expected_drawing_id: int,
+    expected_drawing_number: int,
+) -> DetailSyncResult:
+    """Persist one already captured exact detail without any API request."""
+    parsed_at = fetched_at.astimezone(timezone.utc)
+    if fetched_at.tzinfo is None or fetched_at.utcoffset() is None:
+        raise ValueError("captured payload fetched_at must be timezone-aware")
+    data = payload.get("data")
+    if not isinstance(data, Mapping):
+        raise ValueError("captured drawing payload data must be a mapping")
+    if (
+        data.get("id") != expected_drawing_id
+        or data.get("number") != expected_drawing_number
+    ):
+        raise ValueError("captured drawing payload identity mismatch")
+    deadline = _parse_deadline(data.get("ended_at"))
+    if parsed_at > deadline:
+        raise ValueError("captured drawing payload is after the deadline")
+    collector = Collector(
+        TotoBriefClient(), session_factory, now=lambda: parsed_at
+    )
+    return collector.synchronize_payload(
+        dict(payload),
+        drawing_summary={
+            "id": expected_drawing_id,
+            "number": expected_drawing_number,
+            "ended_at": deadline.isoformat(),
+            "status": data.get("status"),
+        },
+        source="atomic-final",
+    )
+
+
 def _select_open_from_page(
     drawings: tuple[dict[str, object], ...],
     *,
@@ -118,7 +157,19 @@ def _select_open_from_page(
         raise ValueError(
             f"No playable {community} drawing was found on fresh API page one"
         )
-    deadline, drawing_id, selected = min(candidates, key=lambda item: item[:2])
+    nearest_deadline = min(item[0] for item in candidates)
+    nearest = tuple(
+        item for item in candidates if item[0] == nearest_deadline
+    )
+    if len(nearest) != 1:
+        identities = ",".join(
+            str(item[1]) for item in sorted(nearest, key=lambda item: item[1])
+        )
+        raise ValueError(
+            "ambiguous nearest playable drawings on fresh API page one: "
+            f"{identities}"
+        )
+    deadline, drawing_id, selected = nearest[0]
     number = selected.get("number")
     if number is not None and type(number) is not int:
         raise ValueError("playable page-one drawing number must be an integer or null")
