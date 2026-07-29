@@ -72,10 +72,14 @@ crash verifies and reuses the exact plan, wrapper, and plist bytes before
 invoking activation, then advances only the activation state. A conflicting,
 tampered, or partial artifact set fails closed.
 
-Generation is deliberately separate from activation. Neither the generic
-dispatcher candidate nor an evening schema-v4 scheduler is currently
+Generation is deliberately separate from activation. Generic morning
+artifacts are passive by default and omit `morning-dispatch --activate`;
+`morning-preanalysis-plan --activate-evening` is the explicit post-drill
+opt-in. A passive recurring job may synchronize, prepare, record diagnostics,
+and generate an exact evening plan, but cannot install that plan. Neither a
+generic dispatcher candidate nor an evening schema-v4 scheduler is currently
 installed. The five obsolete drawing-specific LaunchAgents were removed on
-2026-07-28. Drawing 4958 remains the next activation-disabled live drill.
+2026-07-28.
 
 ## Emergency pre-bet safety boundary
 

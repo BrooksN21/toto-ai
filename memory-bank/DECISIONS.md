@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-07-29: Generic morning automation is passive by default
+
+- Installing a recurring morning collector/preparer is separate from
+  authorizing automatic installation of an evening package scheduler.
+- `morning-preanalysis-plan` omits `--activate` by default. The explicit
+  `--activate-evening` flag is allowed only after a live activation-disabled
+  15/15 drill passes.
+- Passive morning automation may synchronize data, persist readiness evidence,
+  and generate an exact plan. It cannot load that plan into launchd, create a
+  package, or place a bet.
+
 ## 2026-07-29: Contextual identities do not authorize cross-competition fixtures
 
 - Reviewed provider team IDs are stable team identity evidence, not fixture

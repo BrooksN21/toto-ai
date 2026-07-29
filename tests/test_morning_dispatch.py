@@ -512,4 +512,27 @@ def test_generic_morning_artifacts_contain_no_drawing_identity(tmp_path):
     assert "--expected-drawing-number" not in wrapper
     assert "4953" not in wrapper
     assert "run-drawing" not in wrapper
+    assert "--activate" not in wrapper
     assert plist["Label"] == "com.totoai.morning-dispatcher.v1"
+
+
+def test_generic_morning_artifacts_require_explicit_evening_activation(tmp_path):
+    config = _config(tmp_path)
+    output = config.scheduler_root / "morning-dispatcher"
+
+    artifacts = prepare_morning_preanalysis_artifacts(
+        times=("08:00",),
+        retry_count=0,
+        retry_delay_seconds=0.0,
+        output_dir=output,
+        env_file=config.env_file,
+        project_root=config.project_root,
+        bank=config.bank,
+        stake=config.stake,
+        activate_evening=True,
+        python_command=sys.executable,
+    )
+
+    wrapper = artifacts.wrapper_path.read_text(encoding="utf-8")
+    assert "morning-dispatch" in wrapper
+    assert "--activate" in wrapper

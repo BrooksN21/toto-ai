@@ -36,8 +36,13 @@
   package, marker, activation, or bet.
 - [x] Run a schema-v4 five-trigger network-free simulation after the
   2026-07-29 scheduler fixes.
+- [x] Split generic morning automation into passive default and explicit
+  post-drill `--activate-evening` mode; full verification is `1444 passed`,
+  with Ruff and diff checks green.
+- [ ] Install and verify the passive generic morning dispatcher; it must not
+  contain `--activate` or a drawing number.
 - [ ] Repeat an activation-disabled 15/15 live drill.
-- [ ] Install a generic morning dispatcher only after that drill passes.
+- [ ] Enable automatic evening activation only after that drill passes.
 
 ## Sports statistics milestone
 

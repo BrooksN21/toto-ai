@@ -153,7 +153,10 @@ Ambiguous selection, no drawing, multi-day or greater-than-five-day timing,
 and late dispatch all fail closed. No code uploads coupons or places a bet.
 
 Generation of the generic morning candidate itself does not install or load
-launchd:
+launchd. The generated wrapper is also **passive by default**: it performs
+morning synchronization/preparation and may generate an exact evening plan,
+but it does not install that evening plan. `--activate-evening` is an explicit
+post-drill opt-in:
 
 ```bash
 .venv/bin/python -m toto_ai.cli morning-preanalysis-plan \
@@ -167,6 +170,10 @@ launchd:
   --project-root /Users/turshevr/toto-ai \
   --output-dir /Users/turshevr/toto-ai/reports/rehearsal/morning-dispatcher
 ```
+
+Do not add `--activate-evening` until an activation-disabled live 15/15 drill
+has passed. Passive installation can collect operational evidence without
+creating an actionable evening job.
 
 ### One-time stale LaunchAgent cleanup
 

@@ -1033,6 +1033,7 @@ def prepare_morning_preanalysis_artifacts(
     project_root: str | Path,
     bank: int,
     stake: int = 30,
+    activate_evening: bool = False,
     python_command: str | Path | None = None,
 ) -> MorningPreanalysisArtifacts:
     """Generate, but never install, a non-betting morning launchd candidate."""
@@ -1083,6 +1084,7 @@ def prepare_morning_preanalysis_artifacts(
             project_root=root,
             bank=bank,
             stake=stake,
+            activate_evening=activate_evening,
             python_executable=python_executable,
         )
         _write_exclusive_atomic(
@@ -4776,45 +4778,48 @@ def _render_morning_preanalysis_wrapper(
     project_root: Path,
     bank: int,
     stake: int,
+    activate_evening: bool,
     python_executable: str,
 ) -> str:
     executable = shlex.quote(python_executable)
+    command_values = [
+        python_executable,
+        "-m",
+        "toto_ai.cli",
+        "morning-dispatch",
+        "--bank",
+        str(bank),
+        "--stake",
+        str(stake),
+        "--env-file",
+        str(env_file),
+        "--project-root",
+        str(project_root),
+        "--state-root",
+        str(project_root / "data" / "scheduler" / "morning-dispatch"),
+        "--scheduler-root",
+        str(project_root / "reports" / "rehearsal"),
+        "--db",
+        str(project_root / "data" / "toto.db"),
+        "--aliases",
+        str(project_root / "data" / "external-odds" / "team-aliases.json"),
+        "--raw-cache-dir",
+        str(project_root / "data" / "raw"),
+        "--totobrief-rate-state",
+        str(
+            project_root
+            / "data"
+            / "totobrief-cache"
+            / "request-state.json"
+        ),
+        "--cache-root",
+        str(project_root / "data" / "external-cache" / "api-sports"),
+    ]
+    if activate_evening:
+        command_values.append("--activate")
     command = " ".join(
         shlex.quote(value)
-        for value in (
-            python_executable,
-            "-m",
-            "toto_ai.cli",
-            "morning-dispatch",
-            "--bank",
-            str(bank),
-            "--stake",
-            str(stake),
-            "--env-file",
-            str(env_file),
-            "--project-root",
-            str(project_root),
-            "--state-root",
-            str(project_root / "data" / "scheduler" / "morning-dispatch"),
-            "--scheduler-root",
-            str(project_root / "reports" / "rehearsal"),
-            "--db",
-            str(project_root / "data" / "toto.db"),
-            "--aliases",
-            str(project_root / "data" / "external-odds" / "team-aliases.json"),
-            "--raw-cache-dir",
-            str(project_root / "data" / "raw"),
-            "--totobrief-rate-state",
-            str(
-                project_root
-                / "data"
-                / "totobrief-cache"
-                / "request-state.json"
-            ),
-            "--cache-root",
-            str(project_root / "data" / "external-cache" / "api-sports"),
-            "--activate",
-        )
+        for value in command_values
     )
     return (
         "#!/bin/sh\n"

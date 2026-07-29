@@ -2305,6 +2305,14 @@ def morning_preanalysis_plan_command(
     ),
     output_dir: str = typer.Option(..., "--output-dir"),
     project_root: str | None = typer.Option(None, "--project-root"),
+    activate_evening: bool = typer.Option(
+        False,
+        "--activate-evening/--no-activate-evening",
+        help=(
+            "Allow a ready morning run to install the exact evening scheduler. "
+            "Disabled by default until a 15/15 live drill passes."
+        ),
+    ),
     python_executable: str = typer.Option(
         sys.executable,
         "--python-executable",
@@ -2321,6 +2329,7 @@ def morning_preanalysis_plan_command(
             project_root=project_root or Path.cwd(),
             bank=bank,
             stake=stake,
+            activate_evening=activate_evening,
             python_command=python_executable,
         )
     except (OSError, SchedulerError, TypeError, ValueError) as error:

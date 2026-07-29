@@ -3,6 +3,17 @@
 Latest implementation commit: `1d5736b Harden atomic scheduler and dynamic
 preparation`.
 
+## 2026-07-29: Morning installation split into passive and actionable modes
+
+`morning-preanalysis-plan` now omits evening activation by default. Its
+generated recurring wrapper runs drawing-neutral synchronization and
+preparation and may generate an exact evening plan, but cannot install that
+plan. `--activate-evening` is an explicit opt-in reserved for after a live
+activation-disabled 15/15 drill. This closes the mismatch where a command
+described as non-betting always embedded `morning-dispatch --activate`.
+Verification: `64 passed` for morning/CLI/artifact tests, `1444 passed` for
+the full suite, repository-wide Ruff and `git diff --check` passed.
+
 ## 2026-07-29: Drawing 4959 live activation-disabled drill
 
 A fresh network-backed `morning-dispatch` drill selected visible drawing 4959,
