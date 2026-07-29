@@ -1,5 +1,48 @@
 # Current State
 
+## 2026-07-29: Reviewed schedule fallback implemented and live-drilled
+
+Task `TOTO-REVIEWED-SCHEDULE-FALLBACK` is implemented in the current branch.
+A strict provider-neutral reviewed catalog now requires
+snapshot-backed official plus independent claims, exact target
+ID/number/fingerprint/event-order/event-ID binding, UTC agreement, freshness,
+scheduled status, and deterministic hashes. Reviewed pins never receive an
+API-Sports fixture/team ID and have schedule-only capability.
+
+Mixed preparations use one atomic canonical pin set: exactly 15 orders or no
+authoritative set. Existing API-Sports-only preparations retain the legacy
+loader path. Final collection groups pins by real source, revalidates every
+pin, never sends reviewed evidence to the market endpoint, and records
+`totobrief_bk_fallback` for reviewed schedule-only events. Readiness and
+probability evidence are rechecked when loading mixed pins. Catalog and source
+snapshot bytes are checked again immediately before actionable publication;
+mutation becomes `NO BET`.
+
+The activation-disabled live drill for drawing 11988/4959 used a copied
+database and fresh public snapshots for event order 8 / visible event 9. The
+evidence is generic catalog data bound to fingerprint
+`bed25208171b25e39a3fab84fb18b12e741af9b52f9863810d0a7a1d2d8e0c15`
+and target event 178931; there is no resolver hardcode. Result:
+`READY 15/15`, playable, provider distribution `14 api-sports + 1
+reviewed-schedule`, no fake reviewed fixture ID, final source revalidation
+`15/15`, and explicit TotoBrief BK fallback for the reviewed event. Activation
+was false; no scheduler, package, marker, upload, or bet was created.
+
+The first drill with the existing five-day expansion requested unsupported
+API-Sports dates and correctly failed closed at `0/15`. Repeating with the
+supported two-day playable horizon fetched 2026-07-28 through 2026-07-30 and
+passed. This is operational evidence, not authorization to activate evening
+automation.
+
+An additive legacy-schema smoke initialized the new tables twice on a copied
+database, preserved 2199 drawings, 32985 events, 30 legacy pins, and five
+preparations exactly, and loaded an existing legacy ready set as 15 pins.
+Canonical tables remained empty until a mixed set was explicitly published.
+
+Verification after the final reviewed-pin identity invariant: focused
+fallback/runner suite `301 passed`; full suite
+`1475 passed in 245.16s`; repository-wide Ruff and `git diff --check` passed.
+
 Latest implementation commits:
 
 - `1d5736b Harden atomic scheduler and dynamic preparation`;

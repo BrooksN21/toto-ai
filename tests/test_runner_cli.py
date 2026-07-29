@@ -241,6 +241,7 @@ def _wire_runner(monkeypatch, *, result: _RunnerResult):
 
     def publish(result, **kwargs):
         captured["publication"] = kwargs
+        captured["publication_result"] = result
         external = (
             (
                 Path(kwargs["report_dir"]) / "coverage.csv",
@@ -541,6 +542,76 @@ def test_run_drawing_pins_optional_timing_catalog_and_protects_input(
     )
 
 
+def test_run_drawing_protects_reviewed_snapshots_and_fails_closed_on_toctou(
+    monkeypatch,
+    tmp_path,
+):
+    catalog_path = tmp_path / "reviewed-catalog.json"
+    official_path = tmp_path / "official.html"
+    independent_path = tmp_path / "independent.html"
+    for path in (catalog_path, official_path, independent_path):
+        path.write_text("pinned", encoding="utf-8")
+    catalog = SimpleNamespace(
+        path=catalog_path.resolve(),
+        semantic_hash="c" * 64,
+        records=(
+            SimpleNamespace(
+                claims=(
+                    SimpleNamespace(snapshot_path=Path("official.html")),
+                    SimpleNamespace(snapshot_path=Path("independent.html")),
+                )
+            ),
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "load_reviewed_schedule_catalog",
+        lambda *args, **kwargs: catalog,
+    )
+    monkeypatch.setattr(
+        cli,
+        "revalidate_reviewed_catalog",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            ValueError("reviewed source snapshot hash mismatch")
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "load_ready_pin_set",
+        lambda *_args, **_kwargs: tuple(f"pin-{index}" for index in range(15)),
+    )
+    captured = _wire_runner(
+        monkeypatch,
+        result=_RunnerResult("PLAY", ev_run=object()),
+    )
+
+    result = runner.invoke(
+        cli.app,
+        [
+            "run-drawing",
+            "--open",
+            "--bank",
+            "4980",
+            "--reviewed-schedule-catalog",
+            str(catalog_path),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    protected = captured["runner_report"]["input_paths"]
+    assert protected == (
+        "data/toto.db",
+        "data/external-odds/team-aliases.json",
+        catalog_path.resolve(),
+        independent_path.resolve(),
+        official_path.resolve(),
+    )
+    publication_result = captured["publication_result"]
+    assert publication_result.decision == "NO BET"
+    assert "TOCTOU" in publication_result.terminal_reason
+    assert publication_result.ev_run is None
+
+
 def test_run_drawing_exposes_exact_approved_option_surface():
     command = typer.main.get_command(cli.app).commands["run-drawing"]
     option_names = {
@@ -571,6 +642,7 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "--provider",
         "--aliases",
         "--timing-overrides",
+        "--reviewed-schedule-catalog",
         "--quota-reserve",
         "--max-passes",
         "--max-expansion-passes",
@@ -619,6 +691,7 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "provider": "api-sports",
         "aliases": "data/external-odds/team-aliases.json",
         "timing_overrides": None,
+        "reviewed_schedule_catalog": None,
         "quota_reserve": 10,
         "max_passes": 3,
         "max_expansion_passes": 3,

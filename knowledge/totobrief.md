@@ -41,6 +41,15 @@ Known data notes:
 - A progressive base and expansion collection may share an observation
   timestamp under deterministic clocks. SQLite resolves that latest-snapshot
   tie by append order so the final pass supplies the exact timing verdict.
+- Missing TotoBrief `start_at` may be closed by a provider-neutral reviewed
+  schedule record only after API-Sports complete required-date coverage proves
+  a source-missing competition. The reviewed record requires agreeing official
+  and independent snapshot-backed claims and exact drawing/fingerprint/event
+  binding. It is never an API-Sports fixture and provides no market odds.
+- A successfully revalidated reviewed schedule-only event uses the existing
+  TotoBrief BK row with explicit `totobrief_bk_fallback` provenance. Missing,
+  stale, changed, cancelled, conflicting, or TOCTOU evidence is `NO BET`, not
+  an implicit probability fallback.
 
 Related:
 - [../memory-bank/DATA_NOTES.md](../memory-bank/DATA_NOTES.md)

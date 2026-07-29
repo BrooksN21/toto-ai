@@ -1,5 +1,32 @@
 # Architecture
 
+## Provider-neutral reviewed schedule fallback
+
+API-Sports remains the primary schedule/market provider. When and only when a
+complete required-date fetch proves an event is absent as
+`source_missing_competition`, an explicitly supplied reviewed catalog may
+provide schedule identity. Each reviewed record is bound to the exact drawing
+ID, visible number, fingerprint, event order, and target event ID and contains
+agreeing official and independent HTTPS claims backed by exact saved snapshot
+hashes. It is schedule-only and cannot carry a synthetic API-Sports fixture or
+team ID.
+
+Mixed readiness is persisted in additive `drawing_pin_sets` and
+`drawing_pin_set_items` tables. Publication is one transaction containing
+orders 0 through 14, real per-pin source providers, deterministic source/pin
+set hashes, provider distribution, and reviewed catalog identity. Existing
+API-Sports-only rows remain readable through the legacy path; no destructive
+legacy migration or invented backfill is performed.
+
+Final collection routes API-Sports and reviewed pins through separate source
+revalidation. Reviewed pins reload the strict catalog with a 90-minute
+freshness limit and use explicit TotoBrief BK probability fallback only after
+identity succeeds. The reviewed catalog and every referenced snapshot are
+protected inputs and are reloaded immediately before publication. Missing,
+stale, cancelled, changed, conflicting, or TOCTOU evidence results in
+fail-closed `NO BET`. CLI/scheduler catalog wiring is opt-in, morning remains
+passive by default, and no automatic betting path exists.
+
 ## Atomic final scheduler protocol
 
 Production final evidence uses a run-scoped canonical `FinalInputSnapshot`

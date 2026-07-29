@@ -9,6 +9,9 @@ from sqlalchemy.orm import sessionmaker
 from toto_ai.db.models import (
     Base,
     DrawingEventPin,
+    DrawingPinSet,
+    DrawingPinSetItem,
+    DrawingPreparation,
     TeamAlias,
     TeamEntity,
     TeamRegistryReview,
@@ -18,8 +21,10 @@ from toto_ai.external_odds.team_registry import (
     enqueue_review,
     invalidate_pin,
     load_pin,
+    load_ready_pin_set,
     lookup_reviewed_alias,
     lookup_reviewed_alias_by_provider_id,
+    publish_canonical_pin_set,
     resolve_review,
     upsert_reviewed_alias,
     upsert_team_entity,
@@ -28,10 +33,54 @@ from toto_ai.external_odds.team_registry import (
 
 REGISTRY_TABLES = {
     "drawing_event_pins",
+    "drawing_pin_sets",
+    "drawing_pin_set_items",
     "team_aliases",
     "team_entities",
     "team_registry_reviews",
 }
+
+
+def _canonical_specs(session_factory, *, reviewed_orders=(14,)):
+    home, away = _teams(session_factory)
+    return tuple(
+        {
+            "target_event_id": str(800 + order),
+            "event_order": order,
+            "source_provider": (
+                "reviewed-schedule"
+                if order in reviewed_orders
+                else "api-sports"
+            ),
+            "source_fixture_id": (
+                None if order in reviewed_orders else f"fixture-{order}"
+            ),
+            "reviewed_evidence_id": (
+                f"evidence-{order}" if order in reviewed_orders else None
+            ),
+            "canonical_home_team_id": home.id,
+            "canonical_away_team_id": away.id,
+            "source_home_team_id": (
+                None if order in reviewed_orders else f"home-{order}"
+            ),
+            "source_away_team_id": (
+                None if order in reviewed_orders else f"away-{order}"
+            ),
+            "starts_at": datetime(
+                2026, 7, 29, 17 + order // 6, order % 6, tzinfo=timezone.utc
+            ),
+            "schedule_only": order in reviewed_orders,
+            "provenance": (
+                {
+                    "evidence_id": f"evidence-{order}",
+                    "evidence_hash": f"{order:064x}",
+                }
+                if order in reviewed_orders
+                else {"payload_hash": f"{order:064x}", "orientation": "same"}
+            ),
+        }
+        for order in range(15)
+    )
 
 
 @pytest.fixture
@@ -541,3 +590,174 @@ def test_pin_load_fails_closed_when_immutable_content_is_tampered(session_factor
             event_order=pin.event_order,
             provider=pin.provider,
         )
+
+
+def test_publish_and_load_atomic_mixed_provider_pin_set(session_factory):
+    probability_hash = "a" * 64
+    pins = publish_canonical_pin_set(
+        session_factory,
+        drawing_id=11988,
+        drawing_number=4959,
+        drawing_fingerprint="f" * 64,
+        provider="api-sports",
+        eligibility_status="playable",
+        readiness_summary=(
+            '{"mapped_count":15,"probability_input_sha256":"'
+            + probability_hash
+            + '","status":"ready","target_fetched_at":'
+            '"2026-07-29T12:00:00+00:00","unresolved_event_orders":[]}'
+        ),
+        pin_specs=_canonical_specs(session_factory),
+        reviewed_catalog_hash="c" * 64,
+    )
+
+    assert len(pins) == 15
+    assert [pin.event_order for pin in pins] == list(range(15))
+    assert {pin.effective_source_provider for pin in pins} == {
+        "api-sports",
+        "reviewed-schedule",
+    }
+    reviewed = pins[14]
+    assert reviewed.provider_fixture_id is None
+    assert reviewed.reviewed_evidence_id == "evidence-14"
+    assert reviewed.schedule_only is True
+    assert (
+        load_ready_pin_set(
+            session_factory,
+            drawing_id=11988,
+            drawing_fingerprint="f" * 64,
+            expected_probability_sha256=probability_hash,
+            as_of=datetime(2026, 7, 29, 12, 30, tzinfo=timezone.utc),
+        )
+        == pins
+    )
+    with session_factory() as session:
+        assert session.scalar(select(func.count(DrawingPinSet.pin_set_id))) == 1
+        assert session.scalar(select(func.count(DrawingPinSetItem.id))) == 15
+
+
+def test_mixed_pin_set_requires_ready_fresh_probability_evidence(session_factory):
+    publish_canonical_pin_set(
+        session_factory,
+        drawing_id=11988,
+        drawing_number=4959,
+        drawing_fingerprint="f" * 64,
+        provider="api-sports",
+        eligibility_status="playable",
+        readiness_summary=(
+            '{"mapped_count":15,"probability_input_sha256":"'
+            + "a" * 64
+            + '","status":"ready","target_fetched_at":'
+            '"2026-07-29T12:00:00+00:00","unresolved_event_orders":[]}'
+        ),
+        pin_specs=_canonical_specs(session_factory),
+        reviewed_catalog_hash="c" * 64,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="preparation_fail:probability_input_changed_or_missing",
+    ):
+        load_ready_pin_set(
+            session_factory,
+            drawing_id=11988,
+            drawing_fingerprint="f" * 64,
+            expected_probability_sha256="b" * 64,
+            as_of=datetime(2026, 7, 29, 12, 30, tzinfo=timezone.utc),
+        )
+    with pytest.raises(
+        ValueError,
+        match="preparation_fail:probability_input_not_fresh",
+    ):
+        load_ready_pin_set(
+            session_factory,
+            drawing_id=11988,
+            drawing_fingerprint="f" * 64,
+            expected_probability_sha256="a" * 64,
+            as_of=datetime(2026, 7, 31, 12, 30, tzinfo=timezone.utc),
+        )
+
+    with session_factory.begin() as session:
+        preparation = session.scalar(
+            select(DrawingPreparation).where(
+                DrawingPreparation.drawing_id == 11988
+            )
+        )
+        assert preparation is not None
+        preparation.status = "unresolved"
+    with pytest.raises(
+        ValueError,
+        match="preparation_fail:not_ready_15_of_15",
+    ):
+        load_ready_pin_set(
+            session_factory,
+            drawing_id=11988,
+            drawing_fingerprint="f" * 64,
+        )
+
+
+def test_mixed_pin_set_rejects_partial_and_fake_reviewed_fixture(session_factory):
+    specs = _canonical_specs(session_factory)
+    with pytest.raises(ValueError, match="exactly 15"):
+        publish_canonical_pin_set(
+            session_factory,
+            drawing_id=11988,
+            drawing_number=4959,
+            drawing_fingerprint="f" * 64,
+            provider="api-sports",
+            eligibility_status="playable",
+            readiness_summary="{}",
+            pin_specs=specs[:-1],
+            reviewed_catalog_hash="c" * 64,
+        )
+    invalid = list(specs)
+    invalid[14] = {**invalid[14], "source_fixture_id": "fake-api-fixture"}
+    with pytest.raises(ValueError, match="forbids fixture"):
+        publish_canonical_pin_set(
+            session_factory,
+            drawing_id=11988,
+            drawing_number=4959,
+            drawing_fingerprint="f" * 64,
+            provider="api-sports",
+            eligibility_status="playable",
+            readiness_summary="{}",
+            pin_specs=tuple(invalid),
+            reviewed_catalog_hash="c" * 64,
+        )
+    invalid = list(specs)
+    invalid[14] = {**invalid[14], "source_home_team_id": "fake-api-team"}
+    with pytest.raises(ValueError, match="forbids provider team"):
+        publish_canonical_pin_set(
+            session_factory,
+            drawing_id=11988,
+            drawing_number=4959,
+            drawing_fingerprint="f" * 64,
+            provider="api-sports",
+            eligibility_status="playable",
+            readiness_summary="{}",
+            pin_specs=tuple(invalid),
+            reviewed_catalog_hash="c" * 64,
+        )
+    with session_factory() as session:
+        assert session.scalar(select(func.count(DrawingPinSet.pin_set_id))) == 0
+        assert session.scalar(select(func.count(DrawingPinSetItem.id))) == 0
+
+
+def test_mixed_pin_set_transaction_rolls_back_on_invalid_team(session_factory):
+    specs = list(_canonical_specs(session_factory))
+    specs[7] = {**specs[7], "canonical_home_team_id": 999999}
+    with pytest.raises(ValueError, match="canonical team"):
+        publish_canonical_pin_set(
+            session_factory,
+            drawing_id=11988,
+            drawing_number=4959,
+            drawing_fingerprint="f" * 64,
+            provider="api-sports",
+            eligibility_status="playable",
+            readiness_summary="{}",
+            pin_specs=tuple(specs),
+            reviewed_catalog_hash="c" * 64,
+        )
+    with session_factory() as session:
+        assert session.scalar(select(func.count(DrawingPinSet.pin_set_id))) == 0
+        assert session.scalar(select(func.count(DrawingPinSetItem.id))) == 0

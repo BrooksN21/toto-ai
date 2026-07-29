@@ -1,5 +1,27 @@
 # Decisions
 
+## 2026-07-29: Reviewed schedules are source evidence, never synthetic fixtures
+
+- Reviewed schedule fallback is admitted only after complete successful
+  API-Sports required-date coverage proves `source_missing_competition`.
+  Ambiguity, quota/date/transport failure, or a competing candidate cannot be
+  masked by reviewed evidence.
+- Production-reviewed evidence requires one official and one independent
+  agreeing source with immutable snapshots, exact target binding, scheduled
+  status, and bounded freshness.
+- A reviewed pin has `source_provider=reviewed-schedule`, no source fixture or
+  provider team IDs, a reviewed evidence ID/hash, and schedule-only capability.
+- Mixed authoritative pins use an additive canonical pin-set table rather than
+  mutating legacy API-Sports identities. Exactly 15 pins publish atomically or
+  none do. Existing API-Sports-only loaders remain compatible.
+- Final readiness is recomputed from 15 per-pin source revalidations. Reviewed
+  pins never reach an odds endpoint and use explicit TotoBrief BK fallback
+  only after schedule identity passes.
+- Catalog and snapshot mutation through publication is a TOCTOU failure and
+  yields `NO BET`.
+- The catalog CLI input is explicit opt-in. Passive morning behavior and the
+  prohibition on automated bet placement are unchanged.
+
 ## 2026-07-29: Generic morning automation is passive by default
 
 - Installing a recurring morning collector/preparer is separate from

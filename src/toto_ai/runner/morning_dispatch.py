@@ -86,6 +86,7 @@ class MorningDispatchConfig:
     db: Path = Path("data/toto.db")
     aliases: Path = Path("data/external-odds/team-aliases.json")
     timing_overrides: Path | None = None
+    reviewed_schedule_catalog: Path | None = None
 
     def __post_init__(self) -> None:
         root = Path(self.project_root).absolute()
@@ -108,6 +109,16 @@ class MorningDispatchConfig:
             if not value.is_relative_to(root):
                 raise ValueError("timing_overrides must remain inside project_root")
             object.__setattr__(self, "timing_overrides", value)
+        if self.reviewed_schedule_catalog is not None:
+            value = Path(self.reviewed_schedule_catalog)
+            if not value.is_absolute():
+                value = root / value
+            value = value.absolute()
+            if not value.is_relative_to(root):
+                raise ValueError(
+                    "reviewed_schedule_catalog must remain inside project_root"
+                )
+            object.__setattr__(self, "reviewed_schedule_catalog", value)
         if type(self.bank) is not int or self.bank <= 0:
             raise ValueError("bank must be a positive integer")
         if type(self.stake) is not int or self.stake <= 0:
@@ -203,6 +214,7 @@ def dispatch_morning(
             db=config.db,
             aliases=config.aliases,
             timing_overrides=config.timing_overrides,
+            reviewed_schedule_catalog=config.reviewed_schedule_catalog,
             env_file=config.env_file,
         )
         if observed >= plan.preflight_at:

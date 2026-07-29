@@ -34,6 +34,9 @@ from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.ev.models import EVConfig, validate_config_bank
 from toto_ai.external_odds.matching import load_aliases
+from toto_ai.external_odds.reviewed_schedule import (
+    load_reviewed_schedule_catalog,
+)
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.timing_overrides import (
     load_timing_override_catalog,
@@ -191,6 +194,8 @@ class SchedulerPlan:
     db: Path = Path("data/toto.db")
     aliases: Path = Path("data/external-odds/team-aliases.json")
     timing_overrides: Path | None = None
+    reviewed_schedule_catalog: Path | None = None
+    reviewed_catalog_sha256: str | None = None
     env_file: Path | None = None
     provider: str = "api-sports"
     quota_reserve: int = 10
@@ -280,6 +285,34 @@ class SchedulerPlan:
                 self,
                 "timing_overrides",
                 _normalized_path(self.timing_overrides),
+            )
+        if self.reviewed_schedule_catalog is not None:
+            object.__setattr__(
+                self,
+                "reviewed_schedule_catalog",
+                _validated_project_path(
+                    project_root,
+                    self.reviewed_schedule_catalog,
+                    name="reviewed schedule catalog",
+                ),
+            )
+            catalog_path = self.reviewed_schedule_catalog
+            if not catalog_path.is_file() or catalog_path.is_symlink():
+                raise ValueError(
+                    "reviewed schedule catalog must be a regular file"
+                )
+            observed_hash = hashlib.sha256(catalog_path.read_bytes()).hexdigest()
+            if (
+                self.reviewed_catalog_sha256 is not None
+                and self.reviewed_catalog_sha256 != observed_hash
+            ):
+                raise ValueError("reviewed schedule catalog content changed")
+            object.__setattr__(
+                self, "reviewed_catalog_sha256", observed_hash
+            )
+        elif self.reviewed_catalog_sha256 is not None:
+            raise ValueError(
+                "reviewed_catalog_sha256 requires reviewed schedule catalog"
             )
         if self.env_file is not None:
             object.__setattr__(
@@ -426,6 +459,18 @@ class SchedulerPlan:
                     None
                     if self.timing_overrides is None
                     else str(self.timing_overrides)
+                ),
+                **(
+                    {}
+                    if self.reviewed_schedule_catalog is None
+                    else {
+                        "reviewed_schedule_catalog": str(
+                            self.reviewed_schedule_catalog
+                        ),
+                        "reviewed_catalog_sha256": (
+                            self.reviewed_catalog_sha256
+                        ),
+                    }
                 ),
                 **(
                     {}
@@ -618,6 +663,8 @@ def build_scheduler_plan(
     db: str | Path = "data/toto.db",
     aliases: str | Path = "data/external-odds/team-aliases.json",
     timing_overrides: str | Path | None = None,
+    reviewed_schedule_catalog: str | Path | None = None,
+    reviewed_catalog_sha256: str | None = None,
     env_file: str | Path | None = None,
     provider: str = "api-sports",
     quota_reserve: int = 10,
@@ -664,6 +711,12 @@ def build_scheduler_plan(
         timing_overrides=(
             None if timing_overrides is None else Path(timing_overrides)
         ),
+        reviewed_schedule_catalog=(
+            None
+            if reviewed_schedule_catalog is None
+            else Path(reviewed_schedule_catalog)
+        ),
+        reviewed_catalog_sha256=reviewed_catalog_sha256,
         env_file=None if env_file is None else Path(env_file),
         provider=provider,
         quota_reserve=quota_reserve,
@@ -802,6 +855,10 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
     if not isinstance(raw_paths, Mapping):
         raise ValueError("paths must be a JSON object")
     path_keys = {"output_dir", "db", "aliases", "timing_overrides"}
+    if "reviewed_schedule_catalog" in raw_paths:
+        path_keys.update(
+            ("reviewed_schedule_catalog", "reviewed_catalog_sha256")
+        )
     if schema_version in {
         LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
         LEGACY_ACTIONABLE_SCHEMA_VERSION,
@@ -848,6 +905,8 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         db=paths["db"],
         aliases=paths["aliases"],
         timing_overrides=paths["timing_overrides"],
+        reviewed_schedule_catalog=paths.get("reviewed_schedule_catalog"),
+        reviewed_catalog_sha256=paths.get("reviewed_catalog_sha256"),
         env_file=paths.get("env_file"),
         provider=config["provider"],
         quota_reserve=config["quota_reserve"],
@@ -1034,6 +1093,7 @@ def prepare_morning_preanalysis_artifacts(
     bank: int,
     stake: int = 30,
     activate_evening: bool = False,
+    reviewed_schedule_catalog: str | Path | None = None,
     python_command: str | Path | None = None,
 ) -> MorningPreanalysisArtifacts:
     """Generate, but never install, a non-betting morning launchd candidate."""
@@ -1085,6 +1145,11 @@ def prepare_morning_preanalysis_artifacts(
             bank=bank,
             stake=stake,
             activate_evening=activate_evening,
+            reviewed_schedule_catalog=(
+                None
+                if reviewed_schedule_catalog is None
+                else _normalized_path(reviewed_schedule_catalog)
+            ),
             python_executable=python_executable,
         )
         _write_exclusive_atomic(
@@ -2024,6 +2089,13 @@ def build_run_drawing_phase_command(
     ]
     if plan.timing_overrides is not None:
         command.extend(("--timing-overrides", str(plan.timing_overrides)))
+    if plan.reviewed_schedule_catalog is not None:
+        command.extend(
+            (
+                "--reviewed-schedule-catalog",
+                str(plan.reviewed_schedule_catalog),
+            )
+        )
     return tuple(command)
 
 
@@ -2034,7 +2106,7 @@ def build_prepare_drawing_command(
     python_executable: str | Path = sys.executable,
 ) -> tuple[str, ...]:
     """Build the mandatory systematic-resolution scheduler preflight."""
-    return (
+    command = [
         _validated_python_executable(python_executable),
         "-m",
         "toto_ai.cli",
@@ -2054,7 +2126,15 @@ def build_prepare_drawing_command(
         str(plan.quota_reserve),
         "--expansion-horizon-days",
         "5",
-    )
+    ]
+    if plan.reviewed_schedule_catalog is not None:
+        command.extend(
+            (
+                "--reviewed-schedule-catalog",
+                str(plan.reviewed_schedule_catalog),
+            )
+        )
+    return tuple(command)
 
 
 class CommandSchedulerPhaseRunner:
@@ -3819,7 +3899,17 @@ def _validate_pinned_revalidation_payload(value: object) -> bool:
     matched_orders = []
     for expected_order, item in enumerate(events):
         row = _exact_phase_mapping(
-            item, {"event_order", "status", "reason"}, "pinned revalidation event"
+            item,
+            {
+                "event_order",
+                "status",
+                "reason",
+                "source_provider",
+                "revalidation_method",
+                "evidence_id",
+                "evidence_hash",
+            },
+            "pinned revalidation event",
         )
         if _strict_int("pinned event_order", row["event_order"]) != expected_order:
             raise SchedulerPhaseError(
@@ -3828,6 +3918,30 @@ def _validate_pinned_revalidation_payload(value: object) -> bool:
         if row["status"] not in {"matched", "missing", "provider_failure"}:
             raise SchedulerPhaseError("pinned revalidation event status is invalid")
         _strict_text("pinned revalidation event reason", row["reason"])
+        source_provider = _strict_text(
+            "pinned revalidation source_provider", row["source_provider"]
+        )
+        method = _strict_text(
+            "pinned revalidation method", row["revalidation_method"]
+        )
+        if source_provider == "reviewed-schedule":
+            if (
+                method != "reviewed-catalog-v1"
+                or not isinstance(row["evidence_id"], str)
+                or not isinstance(row["evidence_hash"], str)
+            ):
+                raise SchedulerPhaseError(
+                    "reviewed pin revalidation provenance is incomplete"
+                )
+        elif source_provider == "api-sports":
+            if method != "api-sports-fixture-v1":
+                raise SchedulerPhaseError(
+                    "API-Sports pin revalidation method is invalid"
+                )
+        else:
+            raise SchedulerPhaseError(
+                "pinned revalidation source provider is unknown"
+            )
         if row["status"] == "matched":
             matched_orders.append(expected_order)
     if matched != len(matched_orders):
@@ -4779,6 +4893,7 @@ def _render_morning_preanalysis_wrapper(
     bank: int,
     stake: int,
     activate_evening: bool,
+    reviewed_schedule_catalog: Path | None,
     python_executable: str,
 ) -> str:
     executable = shlex.quote(python_executable)
@@ -4817,6 +4932,18 @@ def _render_morning_preanalysis_wrapper(
     ]
     if activate_evening:
         command_values.append("--activate")
+    if reviewed_schedule_catalog is not None:
+        _require_contained_path(
+            project_root,
+            reviewed_schedule_catalog,
+            name="reviewed schedule catalog",
+        )
+        command_values.extend(
+            (
+                "--reviewed-schedule-catalog",
+                str(reviewed_schedule_catalog),
+            )
+        )
     command = " ".join(
         shlex.quote(value)
         for value in command_values
@@ -4914,6 +5041,17 @@ def _validate_preflight_inputs(plan: SchedulerPlan) -> None:
             reject_symlink=True,
         )
         load_timing_override_catalog(plan.timing_overrides)
+    if plan.reviewed_schedule_catalog is not None:
+        _require_regular_file(
+            plan.reviewed_schedule_catalog,
+            name="reviewed schedule catalog",
+            reject_symlink=True,
+        )
+        load_reviewed_schedule_catalog(
+            plan.reviewed_schedule_catalog,
+            evaluated_at=datetime.now(timezone.utc),
+            max_age=timedelta(hours=12),
+        )
 
 
 def _validate_live_scheduler_target(

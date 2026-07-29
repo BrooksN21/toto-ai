@@ -135,7 +135,9 @@ def test_init_db_creates_sqlite_database(tmp_path):
     assert db_path.exists()
     assert set(inspect(engine).get_table_names()) == {
         "archived_packages",
-        "drawing_event_pins",
+            "drawing_event_pins",
+            "drawing_pin_set_items",
+            "drawing_pin_sets",
         "drawing_preparations",
         "drawing_result_snapshots",
         "drawings",

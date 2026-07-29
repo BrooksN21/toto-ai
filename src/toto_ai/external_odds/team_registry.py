@@ -14,6 +14,8 @@ from sqlalchemy import delete, select, update
 
 from toto_ai.db.models import (
     DrawingEventPin,
+    DrawingPinSet,
+    DrawingPinSetItem,
     DrawingPreparation,
     TeamAlias,
     TeamEntity,
@@ -126,9 +128,9 @@ class DrawingEventPinRecord:
     provider: str
     canonical_home_team_id: int
     canonical_away_team_id: int
-    provider_home_team_id: str
-    provider_away_team_id: str
-    provider_fixture_id: str
+    provider_home_team_id: str | None
+    provider_away_team_id: str | None
+    provider_fixture_id: str | None
     starts_at: str | None
     collection_id: str | None
     provenance: Any
@@ -137,6 +139,20 @@ class DrawingEventPinRecord:
     created_at: str
     invalidated_at: str | None
     invalidation_reason: str | None
+    pin_set_id: str | None = None
+    source_provider: str | None = None
+    source_fixture_id: str | None = None
+    reviewed_evidence_id: str | None = None
+    source_identity_hash: str | None = None
+    schedule_only: bool = False
+
+    @property
+    def effective_source_provider(self) -> str:
+        return self.source_provider or self.provider
+
+    @property
+    def effective_source_fixture_id(self) -> str | None:
+        return self.source_fixture_id or self.provider_fixture_id
 
 
 def transliterate_team_name(value: str) -> str:
@@ -672,6 +688,37 @@ def load_ready_drawing_pins(
     max_probability_age: timedelta = timedelta(hours=24),
 ) -> tuple[DrawingEventPinRecord, ...]:
     """Require a ready preparation and its exact complete authoritative pin set."""
+    _validate_ready_preparation(
+        session_factory,
+        drawing_id=drawing_id,
+        drawing_fingerprint=drawing_fingerprint,
+        provider=provider,
+        expected_probability_sha256=expected_probability_sha256,
+        as_of=as_of,
+        max_probability_age=max_probability_age,
+    )
+    pins = load_drawing_pins(
+        session_factory,
+        drawing_id=drawing_id,
+        drawing_fingerprint=drawing_fingerprint,
+        provider=provider,
+    )
+    if len(pins) != 15:
+        raise ValueError("ready drawing preparation has no complete pin set")
+    return pins
+
+
+def _validate_ready_preparation(
+    session_factory: Any,
+    *,
+    drawing_id: int,
+    drawing_fingerprint: str,
+    provider: str,
+    expected_probability_sha256: str | None,
+    as_of: datetime | None,
+    max_probability_age: timedelta,
+) -> None:
+    """Validate immutable readiness/probability evidence before loading pins."""
     with session_factory() as session:
         preparation = session.scalar(
             select(DrawingPreparation).where(
@@ -722,15 +769,207 @@ def load_ready_drawing_pins(
             or reference - fetched_at > max_probability_age
         ):
             raise ValueError("preparation_fail:probability_input_not_fresh")
+
+
+def load_ready_pin_set(
+    session_factory: Any,
+    *,
+    drawing_id: int,
+    drawing_fingerprint: str,
+    expected_probability_sha256: str | None = None,
+    as_of: datetime | None = None,
+    max_probability_age: timedelta = timedelta(hours=24),
+) -> tuple[DrawingEventPinRecord, ...]:
+    """Load a canonical mixed-source set, with legacy API-Sports fallback."""
+    _validate_ready_preparation(
+        session_factory,
+        drawing_id=drawing_id,
+        drawing_fingerprint=drawing_fingerprint,
+        provider="api-sports",
+        expected_probability_sha256=expected_probability_sha256,
+        as_of=as_of,
+        max_probability_age=max_probability_age,
+    )
+    with session_factory() as session:
+        pin_set = session.scalar(
+            select(DrawingPinSet).where(
+                DrawingPinSet.drawing_id == drawing_id,
+                DrawingPinSet.drawing_fingerprint == drawing_fingerprint,
+                DrawingPinSet.status == "ready",
+            )
+        )
+        if pin_set is not None:
+            rows = tuple(
+                session.scalars(
+                    select(DrawingPinSetItem)
+                    .where(DrawingPinSetItem.pin_set_id == pin_set.pin_set_id)
+                    .order_by(DrawingPinSetItem.event_order)
+                )
+            )
+            _validate_canonical_pin_set(pin_set, rows)
+            return tuple(_canonical_pin_record(row) for row in rows)
     pins = load_drawing_pins(
         session_factory,
         drawing_id=drawing_id,
         drawing_fingerprint=drawing_fingerprint,
-        provider=provider,
+        provider="api-sports",
     )
     if len(pins) != 15:
         raise ValueError("ready drawing preparation has no complete pin set")
     return pins
+
+
+def publish_canonical_pin_set(
+    session_factory: Any,
+    *,
+    drawing_id: int,
+    drawing_number: int | None,
+    drawing_fingerprint: str,
+    provider: str,
+    eligibility_status: str,
+    readiness_summary: str,
+    pin_specs: tuple[Mapping[str, Any], ...],
+    reviewed_catalog_hash: str | None,
+) -> tuple[DrawingEventPinRecord, ...]:
+    """Atomically publish exactly one complete canonical 15-pin set."""
+    if len(pin_specs) != 15:
+        raise ValueError("canonical ready pin set requires exactly 15 pins")
+    contents = tuple(_canonical_pin_content_from_spec(spec) for spec in pin_specs)
+    if tuple(sorted(item["event_order"] for item in contents)) != tuple(range(15)):
+        raise ValueError("canonical ready pin set requires orders 0 through 14")
+    if len({item["target_event_id"] for item in contents}) != 15:
+        raise ValueError("canonical ready pin set reuses a target event")
+    source_keys = tuple(
+        (
+            item["source_provider"],
+            item["source_fixture_id"]
+            if item["source_fixture_id"] is not None
+            else item["reviewed_evidence_id"],
+        )
+        for item in contents
+    )
+    if len(set(source_keys)) != 15:
+        raise ValueError("canonical ready pin set reuses source identity")
+    reviewed = tuple(
+        item
+        for item in contents
+        if item["source_provider"] == "reviewed-schedule"
+    )
+    if bool(reviewed) != bool(reviewed_catalog_hash):
+        raise ValueError(
+            "reviewed catalog hash is required exactly when reviewed pins exist"
+        )
+    distribution: dict[str, int] = {}
+    for item in contents:
+        source = item["source_provider"]
+        distribution[source] = distribution.get(source, 0) + 1
+    pin_set_payload = {
+        "drawing_id": drawing_id,
+        "drawing_number": drawing_number,
+        "drawing_fingerprint": drawing_fingerprint,
+        "provider_distribution": distribution,
+        "reviewed_catalog_hash": reviewed_catalog_hash,
+        "pins": contents,
+    }
+    pin_set_hash = _sha256(pin_set_payload)
+    pin_set_id = f"pinset-{pin_set_hash}"
+    now = _utc_now()
+    with session_factory.begin() as session:
+        for stale in session.scalars(
+            select(DrawingPinSet).where(
+                DrawingPinSet.drawing_id == drawing_id,
+                DrawingPinSet.drawing_fingerprint != drawing_fingerprint,
+                DrawingPinSet.status == "ready",
+            )
+        ):
+            stale.status = "invalidated"
+            stale.invalidated_at = now
+            stale.invalidation_reason = "drawing fingerprint changed"
+        existing = session.get(DrawingPinSet, pin_set_id)
+        if existing is not None:
+            rows = tuple(
+                session.scalars(
+                    select(DrawingPinSetItem)
+                    .where(DrawingPinSetItem.pin_set_id == pin_set_id)
+                    .order_by(DrawingPinSetItem.event_order)
+                )
+            )
+            _validate_canonical_pin_set(existing, rows)
+            return tuple(_canonical_pin_record(row) for row in rows)
+        conflicting = session.scalar(
+            select(DrawingPinSet).where(
+                DrawingPinSet.drawing_id == drawing_id,
+                DrawingPinSet.drawing_fingerprint == drawing_fingerprint,
+                DrawingPinSet.status == "ready",
+            )
+        )
+        if conflicting is not None:
+            raise ValueError("conflicting immutable canonical pin set")
+        pin_set = DrawingPinSet(
+            pin_set_id=pin_set_id,
+            drawing_id=drawing_id,
+            drawing_number=drawing_number,
+            drawing_fingerprint=drawing_fingerprint,
+            pin_set_hash=pin_set_hash,
+            provider_distribution_json=json.dumps(
+                distribution, sort_keys=True, separators=(",", ":")
+            ),
+            reviewed_catalog_hash=reviewed_catalog_hash,
+            status="ready",
+            created_at=now,
+            invalidated_at=None,
+            invalidation_reason=None,
+        )
+        session.add(pin_set)
+        rows: list[DrawingPinSetItem] = []
+        for content in contents:
+            for team_id in (
+                content["canonical_home_team_id"],
+                content["canonical_away_team_id"],
+            ):
+                if session.get(TeamEntity, team_id) is None:
+                    raise ValueError("canonical team does not exist")
+            row = DrawingPinSetItem(
+                pin_set_id=pin_set_id,
+                drawing_id=drawing_id,
+                drawing_fingerprint=drawing_fingerprint,
+                **content,
+                pin_hash=_sha256(content),
+                created_at=now,
+            )
+            session.add(row)
+            rows.append(row)
+        preparation = session.scalar(
+            select(DrawingPreparation).where(
+                DrawingPreparation.drawing_id == drawing_id,
+                DrawingPreparation.drawing_fingerprint == drawing_fingerprint,
+                DrawingPreparation.provider == provider,
+            )
+        )
+        if preparation is None:
+            preparation = DrawingPreparation(
+                drawing_id=drawing_id,
+                drawing_number=drawing_number,
+                drawing_fingerprint=drawing_fingerprint,
+                provider=provider,
+                status="ready",
+                mapped_count=15,
+                unresolved_event_orders="[]",
+                eligibility_status=eligibility_status,
+                readiness_summary=readiness_summary,
+                created_at=now,
+                updated_at=now,
+            )
+            session.add(preparation)
+        else:
+            preparation.status = "ready"
+            preparation.mapped_count = 15
+            preparation.unresolved_event_orders = "[]"
+            preparation.eligibility_status = eligibility_status
+            preparation.readiness_summary = readiness_summary
+            preparation.updated_at = now
+        session.flush()
+        return tuple(_canonical_pin_record(row) for row in rows)
 
 
 def refresh_ready_drawing_preparation_evidence(
@@ -797,14 +1036,41 @@ def refresh_ready_drawing_preparation_evidence(
                     .order_by(DrawingEventPin.event_order)
                 )
             )
-            if (
-                len(rows) != 15
-                or tuple(row.event_order for row in rows) != tuple(range(15))
-                or len({row.provider_fixture_id for row in rows}) != 15
-            ):
-                raise ValueError("ready drawing preparation has incomplete pins")
-            for row in rows:
-                _validate_pin_integrity(row)
+            if rows:
+                if (
+                    len(rows) != 15
+                    or tuple(row.event_order for row in rows) != tuple(range(15))
+                    or len({row.provider_fixture_id for row in rows}) != 15
+                ):
+                    raise ValueError(
+                        "ready drawing preparation has incomplete pins"
+                    )
+                for row in rows:
+                    _validate_pin_integrity(row)
+            else:
+                canonical_set = session.scalar(
+                    select(DrawingPinSet).where(
+                        DrawingPinSet.drawing_id == drawing_id,
+                        DrawingPinSet.drawing_fingerprint
+                        == drawing_fingerprint,
+                        DrawingPinSet.status == "ready",
+                    )
+                )
+                if canonical_set is None:
+                    raise ValueError(
+                        "ready drawing preparation has incomplete pins"
+                    )
+                canonical_rows = tuple(
+                    session.scalars(
+                        select(DrawingPinSetItem)
+                        .where(
+                            DrawingPinSetItem.pin_set_id
+                            == canonical_set.pin_set_id
+                        )
+                        .order_by(DrawingPinSetItem.event_order)
+                    )
+                )
+                _validate_canonical_pin_set(canonical_set, canonical_rows)
             stored_text = preparation.readiness_summary
             stored_updated_at = preparation.updated_at
             preparation_id = preparation.id
@@ -1526,6 +1792,183 @@ def _pin_record(row: DrawingEventPin) -> DrawingEventPinRecord:
         created_at=row.created_at,
         invalidated_at=row.invalidated_at,
         invalidation_reason=row.invalidation_reason,
+    )
+
+
+def _canonical_pin_content_from_spec(
+    spec: Mapping[str, Any],
+) -> dict[str, Any]:
+    source_provider = _required_text(
+        spec.get("source_provider"), "source_provider"
+    )
+    source_fixture_id = _optional_identifier(
+        spec.get("source_fixture_id"), "source_fixture_id"
+    )
+    reviewed_evidence_id = _optional_identifier(
+        spec.get("reviewed_evidence_id"), "reviewed_evidence_id"
+    )
+    source_home_team_id = _optional_identifier(
+        spec.get("source_home_team_id"), "source_home_team_id"
+    )
+    source_away_team_id = _optional_identifier(
+        spec.get("source_away_team_id"), "source_away_team_id"
+    )
+    schedule_only = spec.get("schedule_only")
+    if not isinstance(schedule_only, bool):
+        raise ValueError("schedule_only must be a boolean")
+    if source_provider == "api-sports":
+        if (
+            source_fixture_id is None
+            or reviewed_evidence_id is not None
+            or schedule_only
+        ):
+            raise ValueError("API-Sports pin identity is invalid")
+    elif source_provider == "reviewed-schedule":
+        if (
+            source_fixture_id is not None
+            or reviewed_evidence_id is None
+            or source_home_team_id is not None
+            or source_away_team_id is not None
+            or not schedule_only
+        ):
+            raise ValueError(
+                "reviewed pin requires evidence, forbids fixture identity, "
+                "and forbids provider team identity"
+            )
+    else:
+        raise ValueError("unknown schedule source provider")
+    target_event_id = _required_text(
+        str(spec.get("target_event_id")), "target_event_id"
+    )
+    event_order = spec.get("event_order")
+    if (
+        not isinstance(event_order, int)
+        or isinstance(event_order, bool)
+        or event_order not in range(15)
+    ):
+        raise ValueError("event_order must be from 0 through 14")
+    starts_at = _optional_datetime(spec.get("starts_at"), "starts_at")
+    if starts_at is None:
+        raise ValueError("canonical pin starts_at is required")
+    provenance = json.loads(_canonical_json(spec.get("provenance"), "provenance"))
+    source_identity = {
+        "source_provider": source_provider,
+        "source_fixture_id": source_fixture_id,
+        "reviewed_evidence_id": reviewed_evidence_id,
+        "source_home_team_id": source_home_team_id,
+        "source_away_team_id": source_away_team_id,
+        "starts_at": starts_at,
+        "provenance": provenance,
+    }
+    source_identity_hash = _sha256(source_identity)
+    supplied_hash = spec.get("source_identity_hash")
+    if supplied_hash is not None and supplied_hash != source_identity_hash:
+        raise ValueError("source_identity_hash does not match pin identity")
+    return {
+        "target_event_id": target_event_id,
+        "event_order": event_order,
+        "source_provider": source_provider,
+        "source_fixture_id": source_fixture_id,
+        "reviewed_evidence_id": reviewed_evidence_id,
+        "canonical_home_team_id": _positive_integer(
+            spec.get("canonical_home_team_id"), "canonical_home_team_id"
+        ),
+        "canonical_away_team_id": _positive_integer(
+            spec.get("canonical_away_team_id"), "canonical_away_team_id"
+        ),
+        "source_home_team_id": source_identity["source_home_team_id"],
+        "source_away_team_id": source_identity["source_away_team_id"],
+        "starts_at": starts_at,
+        "source_identity_hash": source_identity_hash,
+        "schedule_only": schedule_only,
+        "provenance": _canonical_json(provenance, "provenance"),
+    }
+
+
+def _canonical_pin_content(row: DrawingPinSetItem) -> dict[str, Any]:
+    return {
+        "target_event_id": row.target_event_id,
+        "event_order": row.event_order,
+        "source_provider": row.source_provider,
+        "source_fixture_id": row.source_fixture_id,
+        "reviewed_evidence_id": row.reviewed_evidence_id,
+        "canonical_home_team_id": row.canonical_home_team_id,
+        "canonical_away_team_id": row.canonical_away_team_id,
+        "source_home_team_id": row.source_home_team_id,
+        "source_away_team_id": row.source_away_team_id,
+        "starts_at": row.starts_at,
+        "source_identity_hash": row.source_identity_hash,
+        "schedule_only": row.schedule_only,
+        "provenance": row.provenance,
+    }
+
+
+def _validate_canonical_pin_set(
+    pin_set: DrawingPinSet, rows: tuple[DrawingPinSetItem, ...]
+) -> None:
+    if (
+        pin_set.status != "ready"
+        or len(rows) != 15
+        or tuple(row.event_order for row in rows) != tuple(range(15))
+        or any(row.pin_set_id != pin_set.pin_set_id for row in rows)
+    ):
+        raise ValueError("canonical pin set is incomplete")
+    for row in rows:
+        if row.pin_hash != _sha256(_canonical_pin_content(row)):
+            raise ValueError("canonical pin content hash mismatch")
+    distribution: dict[str, int] = {}
+    for row in rows:
+        distribution[row.source_provider] = (
+            distribution.get(row.source_provider, 0) + 1
+        )
+    if json.loads(pin_set.provider_distribution_json) != distribution:
+        raise ValueError("canonical pin provider distribution mismatch")
+    reviewed_count = distribution.get("reviewed-schedule", 0)
+    if bool(reviewed_count) != bool(pin_set.reviewed_catalog_hash):
+        raise ValueError("canonical reviewed catalog binding is invalid")
+    payload = {
+        "drawing_id": pin_set.drawing_id,
+        "drawing_number": pin_set.drawing_number,
+        "drawing_fingerprint": pin_set.drawing_fingerprint,
+        "provider_distribution": distribution,
+        "reviewed_catalog_hash": pin_set.reviewed_catalog_hash,
+        "pins": tuple(_canonical_pin_content(row) for row in rows),
+    }
+    if pin_set.pin_set_hash != _sha256(payload):
+        raise ValueError("canonical pin set hash mismatch")
+    if pin_set.pin_set_id != f"pinset-{pin_set.pin_set_hash}":
+        raise ValueError("canonical pin set identity mismatch")
+
+
+def _canonical_pin_record(row: DrawingPinSetItem) -> DrawingEventPinRecord:
+    if row.pin_hash != _sha256(_canonical_pin_content(row)):
+        raise ValueError("canonical pin content hash mismatch")
+    return DrawingEventPinRecord(
+        id=row.id,
+        drawing_id=row.drawing_id,
+        drawing_fingerprint=row.drawing_fingerprint,
+        target_event_id=row.target_event_id,
+        event_order=row.event_order,
+        provider=row.source_provider,
+        canonical_home_team_id=row.canonical_home_team_id,
+        canonical_away_team_id=row.canonical_away_team_id,
+        provider_home_team_id=row.source_home_team_id,
+        provider_away_team_id=row.source_away_team_id,
+        provider_fixture_id=row.source_fixture_id,
+        starts_at=row.starts_at,
+        collection_id=None,
+        provenance=json.loads(row.provenance),
+        pin_hash=row.pin_hash,
+        status="valid",
+        created_at=row.created_at,
+        invalidated_at=None,
+        invalidation_reason=None,
+        pin_set_id=row.pin_set_id,
+        source_provider=row.source_provider,
+        source_fixture_id=row.source_fixture_id,
+        reviewed_evidence_id=row.reviewed_evidence_id,
+        source_identity_hash=row.source_identity_hash,
+        schedule_only=row.schedule_only,
     )
 
 

@@ -484,6 +484,96 @@ class DrawingPreparation(Base):
     updated_at: Mapped[str] = mapped_column(String)
 
 
+class DrawingPinSet(Base):
+    """Canonical authoritative schedule pin set.
+
+    Legacy drawing_event_pins remain readable for API-Sports-only preparations.
+    Mixed-source sets are stored here so reviewed evidence never needs a fake
+    provider fixture or team identifier.
+    """
+
+    __tablename__ = "drawing_pin_sets"
+    __table_args__ = (
+        UniqueConstraint(
+            "drawing_id",
+            "drawing_fingerprint",
+            name="uq_drawing_pin_set_target",
+        ),
+        Index(
+            "ix_drawing_pin_sets_lookup",
+            "drawing_id",
+            "drawing_fingerprint",
+            "status",
+        ),
+    )
+
+    pin_set_id: Mapped[str] = mapped_column(String, primary_key=True)
+    drawing_id: Mapped[int] = mapped_column(Integer)
+    drawing_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    drawing_fingerprint: Mapped[str] = mapped_column(String)
+    pin_set_hash: Mapped[str] = mapped_column(String)
+    provider_distribution_json: Mapped[str] = mapped_column(Text)
+    reviewed_catalog_hash: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    status: Mapped[str] = mapped_column(String)
+    created_at: Mapped[str] = mapped_column(String)
+    invalidated_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    invalidation_reason: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+
+
+class DrawingPinSetItem(Base):
+    __tablename__ = "drawing_pin_set_items"
+    __table_args__ = (
+        UniqueConstraint(
+            "pin_set_id", "event_order", name="uq_pin_set_item_order"
+        ),
+        UniqueConstraint(
+            "pin_set_id", "target_event_id", name="uq_pin_set_item_target"
+        ),
+        Index(
+            "ix_drawing_pin_set_items_lookup",
+            "pin_set_id",
+            "event_order",
+            "source_provider",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    pin_set_id: Mapped[str] = mapped_column(
+        ForeignKey("drawing_pin_sets.pin_set_id")
+    )
+    drawing_id: Mapped[int] = mapped_column(Integer)
+    drawing_fingerprint: Mapped[str] = mapped_column(String)
+    target_event_id: Mapped[str] = mapped_column(String)
+    event_order: Mapped[int] = mapped_column(Integer)
+    source_provider: Mapped[str] = mapped_column(String)
+    source_fixture_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    reviewed_evidence_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    canonical_home_team_id: Mapped[int] = mapped_column(
+        ForeignKey("team_entities.id")
+    )
+    canonical_away_team_id: Mapped[int] = mapped_column(
+        ForeignKey("team_entities.id")
+    )
+    source_home_team_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    source_away_team_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    starts_at: Mapped[str] = mapped_column(String)
+    source_identity_hash: Mapped[str] = mapped_column(String)
+    schedule_only: Mapped[bool] = mapped_column(Boolean)
+    provenance: Mapped[str] = mapped_column(Text)
+    pin_hash: Mapped[str] = mapped_column(String)
+    created_at: Mapped[str] = mapped_column(String)
+
+
 class SportsStatsRun(Base):
     """Immutable, content-addressed audit-only sports-statistics run."""
 

@@ -104,6 +104,7 @@ def collect_fresh_open_external_odds(
     aliases: dict[str, str],
     cache_root: Path,
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
+    reviewed_schedule_catalog: str | None = None,
     target: TargetDrawing | None = None,
     stop_at: datetime | None = None,
     max_passes: int = 3,
@@ -150,6 +151,7 @@ def collect_fresh_open_external_odds(
             session_factory=session_factory,
             aliases=aliases,
             prepared_pins=prepared_pins,
+            reviewed_schedule_catalog=reviewed_schedule_catalog,
             phase="base",
             phase_pass_number=pass_index + 1,
             horizon_days=_BASE_HORIZON_DAYS,
@@ -198,6 +200,7 @@ def collect_fresh_open_external_odds(
                 session_factory=session_factory,
                 aliases=aliases,
                 prepared_pins=prepared_pins,
+                reviewed_schedule_catalog=reviewed_schedule_catalog,
                 phase="expansion",
                 phase_pass_number=pass_index + 1,
                 horizon_days=expansion_horizon_days,
@@ -261,6 +264,7 @@ def _run_pass(
     session_factory: Any,
     aliases: dict[str, str],
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None,
+    reviewed_schedule_catalog: str | None,
     phase: ProspectivePhase,
     phase_pass_number: int,
     horizon_days: int,
@@ -276,6 +280,8 @@ def _run_pass(
     }
     if prepared_pins is not None:
         arguments["prepared_pins"] = prepared_pins
+    if reviewed_schedule_catalog is not None:
+        arguments["reviewed_schedule_catalog"] = reviewed_schedule_catalog
     snapshot = _collect_target_pass(
         target,
         provider_factory(cache_dir),
@@ -302,6 +308,7 @@ def _collect_target_pass(
     stop_at: datetime | None,
     now: Callable[[], datetime],
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
+    reviewed_schedule_catalog: str | None = None,
 ) -> ExternalCollectionSnapshot:
     snapshot = build_external_collection(
         target,
@@ -309,6 +316,7 @@ def _collect_target_pass(
         aliases,
         missing_start_horizon_days=missing_start_horizon_days,
         prepared_pins=prepared_pins,
+        reviewed_schedule_catalog=reviewed_schedule_catalog,
         stop_at=stop_at,
         now=now,
     )

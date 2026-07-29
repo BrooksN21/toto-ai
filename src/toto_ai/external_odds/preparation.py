@@ -20,10 +20,17 @@ from toto_ai.external_odds.eligibility import (
     target_fingerprint,
 )
 from toto_ai.external_odds.matching import normalize_team_name
+from toto_ai.external_odds.reviewed_schedule import (
+    ReviewedScheduleCatalog,
+    ReviewedScheduleEvidence,
+    load_reviewed_schedule_catalog,
+    select_reviewed_evidence,
+)
 from toto_ai.external_odds.team_registry import (
     DrawingEventPinRecord,
     enqueue_review,
     load_ready_drawing_pins,
+    publish_canonical_pin_set,
     publish_drawing_preparation,
     refresh_ready_drawing_preparation_evidence,
     upsert_team_entity,
@@ -170,6 +177,8 @@ def prepare_drawing(
     provider: str = "api-sports",
     event_contexts: Mapping[int, ResolutionContext] | None = None,
     schedule_diagnostics: tuple[dict[str, str | None], ...] = (),
+    reviewed_schedule_catalog: str | Path | None = None,
+    evaluated_at: datetime | None = None,
 ) -> DrawingPreparationResult:
     """Resolve a drawing and atomically publish pins only when all 15 are ready."""
     persist_drawing_identity(session_factory, target)
@@ -223,11 +232,94 @@ def prepare_drawing(
     )
     resolutions = list(preview.resolutions)
     candidate_by_id = preview.candidate_by_id
+    reviewed_catalog: ReviewedScheduleCatalog | None = None
+    reviewed_by_order: dict[int, ReviewedScheduleEvidence] = {}
+    reviewed_error: str | None = None
+    if reviewed_schedule_catalog is not None:
+        reference = evaluated_at or datetime.now(timezone.utc)
+        try:
+            reviewed_catalog = load_reviewed_schedule_catalog(
+                Path(reviewed_schedule_catalog),
+                evaluated_at=reference,
+                max_age=timedelta(hours=12),
+            )
+            reviewed_by_order = _admit_reviewed_fallbacks(
+                target,
+                fingerprint=fingerprint,
+                resolutions=tuple(resolutions),
+                catalog=reviewed_catalog,
+                schedule_diagnostics=schedule_diagnostics,
+            )
+        except (OSError, TypeError, ValueError) as error:
+            reviewed_error = str(error) or type(error).__name__
+            reviewed_by_order = {}
 
     pin_specs: list[dict[str, Any]] = []
+    canonical_pin_specs: list[dict[str, Any]] = []
     events: list[PreparationEventResult] = []
     for event, resolution in zip(target.events, resolutions, strict=True):
         fixture_id = resolution.provider_event_id
+        reviewed_evidence = reviewed_by_order.get(event.event_order)
+        if reviewed_evidence is not None:
+            home_team_id = upsert_team_entity(
+                session_factory,
+                sport=event.sport,
+                canonical_name=event.home_team,
+                context=event.championship,
+            ).id
+            away_team_id = upsert_team_entity(
+                session_factory,
+                sport=event.sport,
+                canonical_name=event.away_team,
+                context=event.championship,
+            ).id
+            canonical_pin_specs.append(
+                {
+                    "target_event_id": str(event.event_id),
+                    "event_order": event.event_order,
+                    "source_provider": "reviewed-schedule",
+                    "source_fixture_id": None,
+                    "reviewed_evidence_id": reviewed_evidence.evidence_id,
+                    "canonical_home_team_id": home_team_id,
+                    "canonical_away_team_id": away_team_id,
+                    "source_home_team_id": None,
+                    "source_away_team_id": None,
+                    "starts_at": reviewed_evidence.starts_at,
+                    "schedule_only": True,
+                    "provenance": {
+                        "evidence_id": reviewed_evidence.evidence_id,
+                        "evidence_hash": reviewed_evidence.semantic_hash,
+                        "catalog_hash": reviewed_catalog.semantic_hash,
+                        "reviewer": reviewed_evidence.reviewer,
+                        "reviewed_at": reviewed_evidence.reviewed_at.isoformat(),
+                        "source_claims": [
+                            {
+                                "source_name": claim.source_name,
+                                "role": claim.role,
+                                "source_url": claim.source_url,
+                                "snapshot_sha256": claim.snapshot_sha256,
+                                "captured_at": claim.captured_at.isoformat(),
+                            }
+                            for claim in reviewed_evidence.claims
+                        ],
+                    },
+                }
+            )
+            events.append(
+                PreparationEventResult(
+                    event_order=event.event_order,
+                    target_event_id=event.event_id,
+                    status="matched",
+                    provider_fixture_id=None,
+                    reason=(
+                        "strict reviewed schedule evidence admitted after "
+                        "API-Sports source absence"
+                    ),
+                    confidence=1.0,
+                    margin=1.0,
+                )
+            )
+            continue
         if resolution.status != "matched" or fixture_id is None:
             enqueue_review(
                 session_factory,
@@ -244,7 +336,12 @@ def prepare_drawing(
                     "starts_at": _iso(event.starts_at),
                     "deadline": target.deadline.isoformat(),
                 },
-                resolution_reason=resolution.reason,
+                resolution_reason=(
+                    f"{resolution.reason}; reviewed fallback: {reviewed_error}"
+                    if reviewed_error is not None
+                    and resolution.status == "source_missing_competition"
+                    else resolution.reason
+                ),
                 candidate_evidence=[asdict(item) for item in resolution.candidates],
             )
         else:
@@ -298,6 +395,34 @@ def prepare_drawing(
                     },
                 }
             )
+            canonical_pin_specs.append(
+                {
+                    "target_event_id": str(event.event_id),
+                    "event_order": event.event_order,
+                    "source_provider": provider,
+                    "source_fixture_id": fixture_id,
+                    "reviewed_evidence_id": None,
+                    "canonical_home_team_id": home_team_id,
+                    "canonical_away_team_id": away_team_id,
+                    "source_home_team_id": provider_home[1],
+                    "source_away_team_id": provider_away[1],
+                    "starts_at": candidate.starts_at,
+                    "schedule_only": False,
+                    "provenance": {
+                        "resolver": RESOLVER_VERSION,
+                        "reason": resolution.reason,
+                        "confidence": resolution.confidence,
+                        "margin": resolution.margin,
+                        "orientation": resolution.orientation,
+                        "provider_home_team": candidate.home_team,
+                        "provider_away_team": candidate.away_team,
+                        "provider_payload_hash": candidate.payload_hash,
+                        "provider_fetched_at": candidate.fetched_at.isoformat(),
+                        "league": candidate.league,
+                        "country": candidate.country,
+                    },
+                }
+            )
         events.append(
             PreparationEventResult(
                 event_order=event.event_order,
@@ -310,7 +435,11 @@ def prepare_drawing(
             )
         )
 
-    eligibility = preview.eligibility
+    eligibility = (
+        _eligibility_with_reviewed(target, preview, reviewed_by_order)
+        if reviewed_by_order
+        else preview.eligibility
+    )
     date_failure_orders = _failed_date_event_orders(
         target, schedule_diagnostics
     )
@@ -326,7 +455,7 @@ def prepare_drawing(
     )
     status = (
         "ready"
-        if len(pin_specs) == 15
+        if len(canonical_pin_specs) == 15
         and not unresolved
         and eligibility.status == "playable"
         and not date_failure_orders
@@ -345,23 +474,141 @@ def prepare_drawing(
         pins=(),
         schedule_diagnostics=schedule_diagnostics,
     )
-    pins = publish_drawing_preparation(
-        session_factory,
-        drawing_id=target.drawing_id,
-        drawing_number=target.drawing_number,
-        drawing_fingerprint=fingerprint,
-        provider=provider,
-        status=status,
-        unresolved_event_orders=unresolved,
-        eligibility_status=eligibility.status,
-        readiness_summary=_readiness_summary(draft, target),
-        pin_specs=tuple(pin_specs) if status == "ready" else (),
-    )
+    if status == "ready" and reviewed_by_order:
+        pins = publish_canonical_pin_set(
+            session_factory,
+            drawing_id=target.drawing_id,
+            drawing_number=target.drawing_number,
+            drawing_fingerprint=fingerprint,
+            provider=provider,
+            eligibility_status=eligibility.status,
+            readiness_summary=_readiness_summary(draft, target),
+            pin_specs=tuple(canonical_pin_specs),
+            reviewed_catalog_hash=(
+                None if reviewed_catalog is None else reviewed_catalog.semantic_hash
+            ),
+        )
+    else:
+        pins = publish_drawing_preparation(
+            session_factory,
+            drawing_id=target.drawing_id,
+            drawing_number=target.drawing_number,
+            drawing_fingerprint=fingerprint,
+            provider=provider,
+            status=status,
+            unresolved_event_orders=unresolved,
+            eligibility_status=eligibility.status,
+            readiness_summary=_readiness_summary(draft, target),
+            pin_specs=tuple(pin_specs) if status == "ready" else (),
+        )
     return DrawingPreparationResult(
         **{
             **draft.__dict__,
             "pins": tuple(sorted(pins, key=lambda pin: pin.event_order)),
         }
+    )
+
+
+def _admit_reviewed_fallbacks(
+    target: TargetDrawing,
+    *,
+    fingerprint: str,
+    resolutions: tuple[CandidateResolution, ...],
+    catalog: ReviewedScheduleCatalog,
+    schedule_diagnostics: tuple[dict[str, str | None], ...],
+) -> dict[int, ReviewedScheduleEvidence]:
+    if not schedule_diagnostics or any(
+        item.get("status") != "success" for item in schedule_diagnostics
+    ):
+        raise ValueError(
+            "reviewed fallback requires complete successful API-Sports dates"
+        )
+    if any(
+        resolution.status in {"ambiguous", "missing"}
+        for resolution in resolutions
+    ):
+        raise ValueError(
+            "reviewed fallback cannot mask ambiguous or unproven API absence"
+        )
+    admitted: dict[int, ReviewedScheduleEvidence] = {}
+    for event, resolution in zip(target.events, resolutions, strict=True):
+        if resolution.status != "source_missing_competition":
+            continue
+        if target.drawing_number is None:
+            raise ValueError("reviewed fallback requires visible drawing number")
+        evidence = select_reviewed_evidence(
+            catalog,
+            drawing_id=target.drawing_id,
+            drawing_number=target.drawing_number,
+            target_fingerprint=fingerprint,
+            event_order=event.event_order,
+            target_event_id=event.event_id,
+        )
+        if evidence.sport != event.sport:
+            raise ValueError("reviewed evidence sport does not match target")
+        if evidence.starts_at < target.deadline:
+            raise ValueError("reviewed evidence starts before drawing deadline")
+        expected_class = _target_gender_age_class(event)
+        if evidence.gender_age_class != expected_class:
+            raise ValueError(
+                "reviewed evidence gender/age class does not match target"
+            )
+        admitted[event.event_order] = evidence
+    return admitted
+
+
+def _target_gender_age_class(event: Any) -> str:
+    text = " ".join(
+        (
+            event.championship,
+            event.home_team,
+            event.away_team,
+            event.home_team_en or "",
+            event.away_team_en or "",
+        )
+    ).casefold()
+    if any(token in text for token in ("(ж)", "жен", "women", "female")):
+        return "women-senior"
+    if any(
+        token in text
+        for token in ("u19", "u-19", "u21", "u-21", "мол", "youth")
+    ):
+        return "men-youth"
+    return "men-senior"
+
+
+def _eligibility_with_reviewed(
+    target: TargetDrawing,
+    preview: _ResolutionPreview,
+    reviewed_by_order: Mapping[int, ReviewedScheduleEvidence],
+) -> DrawingEligibility:
+    return classify_drawing_eligibility(
+        tuple(
+            EffectiveEventStart(
+                event_order=event.event_order,
+                starts_at=(
+                    event.starts_at
+                    if event.starts_at is not None
+                    else (
+                        reviewed_by_order[event.event_order].starts_at
+                        if event.event_order in reviewed_by_order
+                        else preview.resolved_starts.get(event.event_order)
+                    )
+                ),
+                source=(
+                    "totobrief"
+                    if event.starts_at is not None
+                    else (
+                        "provider"
+                        if event.event_order in reviewed_by_order
+                        or preview.resolved_starts.get(event.event_order)
+                        is not None
+                        else "unresolved"
+                    )
+                ),
+            )
+            for event in target.events
+        )
     )
 
 

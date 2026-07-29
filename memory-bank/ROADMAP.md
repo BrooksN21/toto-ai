@@ -26,11 +26,10 @@
   marker publication; allow recovery through T−12 and fail closed after it.
 - [x] Current verification: five exact reserve boundaries, 175 focused
   scheduler/morning tests, 1443 full tests, Ruff, and diff check.
-- [ ] Add a lawful provider-neutral schedule fallback for events absent from
+- [x] Add a lawful provider-neutral schedule fallback for events absent from
   API-Sports; drawing 4958 women event 5 and drawing 4959 Iceland 3. Deild
-  event 9 are current real examples. Official KSÍ and an independent public
-  source confirm the latter fixture, but reviewed web evidence is not yet a
-  provider pin and must not be injected as an API-Sports fixture.
+  event 9 are real examples. Reviewed evidence is strict, snapshot-backed,
+  source-neutral, and never injected as an API-Sports fixture.
 - [x] Run drawing-4959 activation-disabled morning drill: 14 safe candidates,
   one explicit source-missing event, zero partial pins, no evening plan,
   package, marker, activation, or bet.
@@ -43,8 +42,11 @@
   08:00/10:30 Moscow time; its installed wrapper contains neither `--activate`
   nor a drawing number. Manual launchd execution completed three bounded,
   consistent 4959 deferrals without an evening plan/package/marker.
-- [ ] Repeat an activation-disabled 15/15 live drill.
+- [x] Repeat an activation-disabled 15/15 live drill. Drawing 4959 passed on a
+  copied DB with 14 API-Sports pins plus one reviewed schedule pin, source
+  revalidation 15/15, no activation, and no betting artifacts.
 - [ ] Enable automatic evening activation only after that drill passes.
+  This remains explicitly out of scope and is not authorized by the drill.
 
 ## Sports statistics milestone
 

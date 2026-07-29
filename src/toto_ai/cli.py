@@ -100,11 +100,17 @@ from toto_ai.external_odds.prospective import (
     collect_fresh_open_external_odds,
 )
 from toto_ai.external_odds.reports import write_external_coverage_reports
+from toto_ai.external_odds.reviewed_schedule import (
+    load_reviewed_schedule_catalog,
+    revalidate_reviewed_catalog,
+    reviewed_catalog_input_paths,
+)
 from toto_ai.external_odds.storage import load_current_drawing_eligibility
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.team_registry import (
     DrawingEventPinRecord,
     load_ready_drawing_pins,
+    load_ready_pin_set,
     seed_reviewed_alias_config,
 )
 from toto_ai.external_odds.timing_overrides import (
@@ -1516,6 +1522,9 @@ class _RunnerResources:
     ]
     timing_override_pin: PinnedTimingOverrideCatalog | None
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None
+    reviewed_catalog_path: Path | None
+    reviewed_catalog_hash: str | None
+    reviewed_input_paths: tuple[Path, ...]
 
 
 def _prepare_runner_resources(
@@ -1529,19 +1538,34 @@ def _prepare_runner_resources(
     cache_root: str | Path,
     provider_factory: Callable[[Path], object],
     timing_overrides: str | Path | None = None,
+    reviewed_schedule_catalog: str | Path | None = None,
     systematic_resolution: bool = True,
     refresh_probability_evidence: bool = False,
 ) -> _RunnerResources:
+    reviewed_catalog = (
+        None
+        if reviewed_schedule_catalog is None
+        else load_reviewed_schedule_catalog(
+            Path(reviewed_schedule_catalog),
+            evaluated_at=preflight_at,
+            max_age=timedelta(hours=12),
+        )
+    )
+    reviewed_input_paths = (
+        ()
+        if reviewed_catalog is None
+        else reviewed_catalog_input_paths(reviewed_catalog)
+    )
     candidate_paths = drawing_run_candidate_paths(
         config,
         target,
         preflight_at,
         report_dir,
     )
-    protected_paths = (
-        (db, aliases)
-        if timing_overrides is None
-        else (db, aliases, timing_overrides)
+    protected_paths = tuple(
+        path
+        for path in (db, aliases, timing_overrides, *reviewed_input_paths)
+        if path is not None
     )
     validate_output_paths(
         candidate_paths,
@@ -1574,23 +1598,28 @@ def _prepare_runner_resources(
     reviewed_aliases = load_aliases(aliases)
     readonly_engine = open_readonly_db(db)
     readonly_session_factory = get_session_factory(readonly_engine)
-    prepared_pins = (
-        load_ready_drawing_pins(
-            session_factory,
-            drawing_id=target.target.drawing_id,
-            drawing_fingerprint=target.fingerprint,
-            provider="api-sports",
-            expected_probability_sha256=preparation_probability_sha256(
+    if systematic_resolution:
+        loader = (
+            load_ready_drawing_pins
+            if reviewed_schedule_catalog is None
+            else load_ready_pin_set
+        )
+        loader_kwargs = {
+            "drawing_id": target.target.drawing_id,
+            "drawing_fingerprint": target.fingerprint,
+            "expected_probability_sha256": preparation_probability_sha256(
                 tuple(
                     event.bk_probabilities
                     for event in target.target.events
                 )
             ),
-            as_of=preflight_at,
-        )
-        if systematic_resolution
-        else None
-    )
+            "as_of": preflight_at,
+        }
+        if reviewed_schedule_catalog is None:
+            loader_kwargs["provider"] = "api-sports"
+        prepared_pins = loader(session_factory, **loader_kwargs)
+    else:
+        prepared_pins = None
     if systematic_resolution and not prepared_pins:
         raise ValueError("exact prepared drawing pins are missing; run prepare-drawing")
     return _RunnerResources(
@@ -1603,6 +1632,13 @@ def _prepare_runner_resources(
         ev_timing_resolver=_build_timing_eligibility_resolver(str(db)),
         timing_override_pin=timing_override_pin,
         prepared_pins=prepared_pins,
+        reviewed_catalog_path=(
+            None if reviewed_catalog is None else reviewed_catalog.path
+        ),
+        reviewed_catalog_hash=(
+            None if reviewed_catalog is None else reviewed_catalog.semantic_hash
+        ),
+        reviewed_input_paths=reviewed_input_paths,
     )
 
 
@@ -1863,6 +1899,9 @@ def run_drawing_command(
     provider: str = typer.Option("api-sports"),
     aliases: str = typer.Option("data/external-odds/team-aliases.json"),
     timing_overrides: str | None = typer.Option(None, "--timing-overrides"),
+    reviewed_schedule_catalog: str | None = typer.Option(
+        None, "--reviewed-schedule-catalog"
+    ),
     quota_reserve: int = typer.Option(10, min=0),
     max_passes: int = typer.Option(3, min=1),
     max_expansion_passes: int = typer.Option(3, min=1),
@@ -1988,6 +2027,7 @@ def run_drawing_command(
                 cache_root=cache_root,
                 provider_factory=provider_factory,
                 timing_overrides=timing_overrides,
+                reviewed_schedule_catalog=reviewed_schedule_catalog,
                 systematic_resolution=systematic_resolution,
                 refresh_probability_evidence=atomic_snapshot is not None,
             )
@@ -2030,6 +2070,7 @@ def run_drawing_command(
                 session_factory=prepared.session_factory,
                 aliases=prepared.reviewed_aliases,
                 prepared_pins=prepared.prepared_pins,
+                reviewed_schedule_catalog=reviewed_schedule_catalog,
                 cache_root=Path(cache_root),
                 target=target,
                 stop_at=stop_at,
@@ -2165,14 +2206,48 @@ def run_drawing_command(
     if result is None:
         raise typer.BadParameter("Drawing runner did not produce a result")
 
+    if (
+        result.decision != "NO BET"
+        and resources is not None
+        and resources.reviewed_catalog_path is not None
+        and resources.reviewed_catalog_hash is not None
+    ):
+        try:
+            revalidate_reviewed_catalog(
+                resources.reviewed_catalog_path,
+                expected_catalog_hash=resources.reviewed_catalog_hash,
+                evaluated_at=_utc_now_datetime(),
+                max_age=timedelta(minutes=90),
+            )
+        except (OSError, TypeError, ValueError) as error:
+            result = replace(
+                result,
+                decision="NO BET",
+                terminal_reason=(
+                    "reviewed schedule TOCTOU revalidation failed: "
+                    f"{str(error) or type(error).__name__}"
+                ),
+                ev_run=None,
+            )
+
     try:
+        reviewed_inputs = (
+            ()
+            if resources is None
+            else resources.reviewed_input_paths
+        )
         publication = publish_drawing_run_artifacts(
             result,
             report_dir=report_dir,
-            protected_paths=(
-                (db, aliases)
-                if timing_overrides is None
-                else (db, aliases, timing_overrides)
+            protected_paths=tuple(
+                path
+                for path in (
+                    db,
+                    aliases,
+                    timing_overrides,
+                    *reviewed_inputs,
+                )
+                if path is not None
             ),
             protected_roots=(cache_root,),
             now=_utc_now_datetime,
@@ -2235,6 +2310,9 @@ def scheduler_plan_command(
     db: str = typer.Option("data/toto.db"),
     aliases: str = typer.Option("data/external-odds/team-aliases.json"),
     timing_overrides: str | None = typer.Option(None, "--timing-overrides"),
+    reviewed_schedule_catalog: str | None = typer.Option(
+        None, "--reviewed-schedule-catalog"
+    ),
     env_file: str | None = typer.Option(None, "--env-file"),
     quota_reserve: int = typer.Option(10, min=0),
     max_passes: int = typer.Option(3, min=1),
@@ -2269,6 +2347,7 @@ def scheduler_plan_command(
             db=db,
             aliases=aliases,
             timing_overrides=timing_overrides,
+            reviewed_schedule_catalog=reviewed_schedule_catalog,
             env_file=env_file,
             quota_reserve=quota_reserve,
             max_passes=max_passes,
@@ -2305,6 +2384,9 @@ def morning_preanalysis_plan_command(
     ),
     output_dir: str = typer.Option(..., "--output-dir"),
     project_root: str | None = typer.Option(None, "--project-root"),
+    reviewed_schedule_catalog: str | None = typer.Option(
+        None, "--reviewed-schedule-catalog"
+    ),
     activate_evening: bool = typer.Option(
         False,
         "--activate-evening/--no-activate-evening",
@@ -2330,6 +2412,7 @@ def morning_preanalysis_plan_command(
             bank=bank,
             stake=stake,
             activate_evening=activate_evening,
+            reviewed_schedule_catalog=reviewed_schedule_catalog,
             python_command=python_executable,
         )
     except (OSError, SchedulerError, TypeError, ValueError) as error:
@@ -2354,6 +2437,7 @@ def _prepare_current_for_morning(
     api_sports_max_retries: int,
     expansion_horizon_days: int,
     project_root: Path,
+    reviewed_schedule_catalog: Path | None = None,
 ) -> MorningPreparedDrawing:
     """Synchronize and prepare the exact selected drawing from one detail view."""
     engine = init_db(db)
@@ -2417,6 +2501,8 @@ def _prepare_current_for_morning(
             session_factory=session_factory,
             provider=provider,
             schedule_diagnostics=schedule.diagnostics,
+            reviewed_schedule_catalog=reviewed_schedule_catalog,
+            evaluated_at=observed_at,
         )
         detail_sha256 = hashlib.sha256(
             json.dumps(
@@ -2464,6 +2550,9 @@ def morning_dispatch_command(
         2, "--api-sports-max-retries", min=0
     ),
     expansion_horizon_days: int = typer.Option(5, min=1, max=5),
+    reviewed_schedule_catalog: str | None = typer.Option(
+        None, "--reviewed-schedule-catalog"
+    ),
     activate: bool = typer.Option(False, "--activate"),
     python_executable: str = typer.Option(
         sys.executable, "--python-executable"
@@ -2491,6 +2580,11 @@ def morning_dispatch_command(
         stake=stake,
         db=Path(db),
         aliases=Path(aliases),
+        reviewed_schedule_catalog=(
+            None
+            if reviewed_schedule_catalog is None
+            else Path(reviewed_schedule_catalog)
+        ),
     )
     observed_at = datetime.now(timezone.utc)
     try:
@@ -2510,6 +2604,13 @@ def morning_dispatch_command(
                 api_sports_max_retries=api_sports_max_retries,
                 expansion_horizon_days=expansion_horizon_days,
                 project_root=root,
+                reviewed_schedule_catalog=(
+                    None
+                    if reviewed_schedule_catalog is None
+                    else resolve_contained_path(
+                        reviewed_schedule_catalog, allowed_root=root
+                    )
+                ),
             ),
             now=lambda: datetime.now(timezone.utc),
             activate=activate_scheduler_launch_agent if activate else None,
@@ -2840,6 +2941,9 @@ def prepare_drawing_command(
     quota_reserve: int = typer.Option(10, min=0),
     max_retries: int = typer.Option(2, min=0),
     expansion_horizon_days: int = typer.Option(5, min=1, max=5),
+    reviewed_schedule_catalog: str | None = typer.Option(
+        None, "--reviewed-schedule-catalog"
+    ),
 ) -> None:
     """Prepare exact immutable fixture/team/time pins for one drawing."""
     if open == (drawing_id is not None):
@@ -3004,6 +3108,8 @@ def prepare_drawing_command(
             session_factory=session_factory,
             provider=provider,
             schedule_diagnostics=schedule_diagnostics,
+            reviewed_schedule_catalog=reviewed_schedule_catalog,
+            evaluated_at=fetched_at,
         )
     except (APISportsError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error

@@ -6,6 +6,7 @@ from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -36,6 +37,7 @@ from toto_ai.external_odds.eligibility import (
     target_fingerprint,
 )
 from toto_ai.external_odds.matching import MATCHER_VERSION, MatchDecision, match_event
+from toto_ai.external_odds.schedule_sources import ReviewedCatalogScheduleSource
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.team_registry import DrawingEventPinRecord
 
@@ -96,6 +98,10 @@ class PinnedRevalidationEvent:
     event_order: int
     status: str
     reason: str
+    source_provider: str = "api-sports"
+    revalidation_method: str = "api-sports-fixture-v1"
+    evidence_id: str | None = None
+    evidence_hash: str | None = None
 
 
 @dataclass(frozen=True)
@@ -210,6 +216,7 @@ def build_external_collection(
     missing_start_horizon_days: int = 2,
     *,
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
+    reviewed_schedule_catalog: str | None = None,
     stop_at: datetime | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> ExternalCollectionSnapshot:
@@ -232,6 +239,7 @@ def build_external_collection(
         aliases,
         prepared_pins=prepared_pins,
         observed_at=observed_at,
+        reviewed_schedule_catalog=reviewed_schedule_catalog,
     )
     pinned_revalidation = (
         _pinned_revalidation_summary(
@@ -249,9 +257,23 @@ def build_external_collection(
     quota_stopped = schedule_fetch.quota_exhausted
     safety_stopped = schedule_fetch.safety_stopped
     market_results: dict[int, _MarketFetchResult] = {}
+    prepared_by_order = (
+        {}
+        if prepared_pins is None
+        else {pin.event_order: pin for pin in prepared_pins}
+    )
     for event in target.events:
         matched_target = decisions[event.event_order]
         decision = matched_target.decision
+        prepared_pin = prepared_by_order.get(event.event_order)
+        if prepared_pin is not None and prepared_pin.schedule_only:
+            market_results[event.event_order] = _MarketFetchResult(
+                markets=(),
+                fallback_reason=(
+                    "reviewed schedule-only identity; TotoBrief BK fallback"
+                ),
+            )
+            continue
         if safety_stopped or request_counter.safety_stop_reached():
             safety_stopped = True
             market_results[event.event_order] = _MarketFetchResult(
@@ -676,12 +698,17 @@ def _match_targets(
     *,
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
     observed_at: datetime | None = None,
+    reviewed_schedule_catalog: str | None = None,
 ) -> dict[int, _MatchedTarget]:
     if prepared_pins is not None:
         if observed_at is None:
             raise ValueError("pin revalidation observation time is required")
         return _match_targets_from_pins(
-            target, schedule_results, prepared_pins, observed_at=observed_at
+            target,
+            schedule_results,
+            prepared_pins,
+            observed_at=observed_at,
+            reviewed_schedule_catalog=reviewed_schedule_catalog,
         )
     schedules = _successful_schedule_events(schedule_results)
     failures = {
@@ -747,6 +774,7 @@ def _match_targets_from_pins(
     pins: tuple[DrawingEventPinRecord, ...],
     *,
     observed_at: datetime,
+    reviewed_schedule_catalog: str | None = None,
 ) -> dict[int, _MatchedTarget]:
     fingerprint = target_fingerprint(
         target.drawing_id, target.drawing_number, target.deadline, target.events
@@ -760,6 +788,12 @@ def _match_targets_from_pins(
         if result.error is not None
     }
     decisions: dict[int, _MatchedTarget] = {}
+    reviewed_results = _reviewed_pin_revalidation(
+        target,
+        pins,
+        observed_at=observed_at,
+        reviewed_schedule_catalog=reviewed_schedule_catalog,
+    )
     for event, pin in zip(target.events, pins, strict=True):
         if (
             pin.drawing_id != target.drawing_id
@@ -773,6 +807,38 @@ def _match_targets_from_pins(
         pinned_start = _event_datetime(pin.starts_at)
         if pinned_start is None:
             raise ValueError("prepared pin must contain starts_at")
+        if pin.effective_source_provider == "reviewed-schedule":
+            reviewed = reviewed_results.get(event.event_order)
+            if reviewed is None or not reviewed.matched:
+                decision = MatchDecision(
+                    status="provider_failure",
+                    provider_event_id=None,
+                    matcher_version="reviewed-schedule-v1",
+                    candidate_ids=(),
+                    reason=(
+                        "reviewed schedule revalidation failed: "
+                        + (
+                            "catalog unavailable"
+                            if reviewed is None
+                            else str(reviewed.reason)
+                        )
+                    ),
+                )
+                decisions[event.event_order] = _MatchedTarget(decision, None)
+                continue
+            decision = MatchDecision(
+                status="matched",
+                provider_event_id=None,
+                matcher_version="reviewed-schedule-v1",
+                candidate_ids=(),
+                reason=(
+                    "exact reviewed schedule evidence revalidated; "
+                    f"evidence={reviewed.evidence_id}"
+                ),
+                orientation="same",
+            )
+            decisions[event.event_order] = _MatchedTarget(decision, None)
+            continue
         failure = failures.get((event.sport, pinned_start.date()))
         if failure is not None:
             decision = MatchDecision(
@@ -874,6 +940,44 @@ def _match_targets_from_pins(
     return decisions
 
 
+def _reviewed_pin_revalidation(
+    target: TargetDrawing,
+    pins: tuple[DrawingEventPinRecord, ...],
+    *,
+    observed_at: datetime,
+    reviewed_schedule_catalog: str | None,
+) -> dict[int, Any]:
+    reviewed = tuple(
+        pin
+        for pin in pins
+        if pin.effective_source_provider == "reviewed-schedule"
+    )
+    if not reviewed:
+        return {}
+    if reviewed_schedule_catalog is None:
+        return {}
+    hashes = {
+        pin.provenance.get("catalog_hash")
+        for pin in reviewed
+        if isinstance(pin.provenance, dict)
+    }
+    if len(hashes) != 1 or not isinstance(next(iter(hashes)), str):
+        return {}
+    expected_hash = next(iter(hashes))
+    source = ReviewedCatalogScheduleSource(
+        Path(reviewed_schedule_catalog),
+        expected_catalog_hash=expected_hash,
+    )
+    return {
+        item.event_order: item
+        for item in source.revalidate_pins(
+            reviewed,
+            target=target,
+            evaluated_at=observed_at,
+        )
+    }
+
+
 def _pin_team_ids_match(
     candidate: ProviderEvent, pin: DrawingEventPinRecord
 ) -> bool:
@@ -917,6 +1021,22 @@ def _pinned_revalidation_summary(
             event_order=event.event_order,
             status=decisions[event.event_order].decision.status,
             reason=decisions[event.event_order].decision.reason,
+            source_provider=pins[event.event_order].effective_source_provider,
+            revalidation_method=(
+                "reviewed-catalog-v1"
+                if pins[event.event_order].effective_source_provider
+                == "reviewed-schedule"
+                else "api-sports-fixture-v1"
+            ),
+            evidence_id=pins[event.event_order].reviewed_evidence_id,
+            evidence_hash=(
+                pins[event.event_order].provenance.get("evidence_hash")
+                if pins[event.event_order].effective_source_provider
+                == "reviewed-schedule"
+                else pins[event.event_order].provenance.get(
+                    "provider_payload_hash"
+                )
+            ),
         )
         for event in target.events
     )
