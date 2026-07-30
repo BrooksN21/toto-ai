@@ -422,6 +422,8 @@ python -m toto_ai.cli sync-finished-results --drawing-number 4952
 python -m toto_ai.cli reconcile-finished --last 20 --dry-run
 python -m toto_ai.cli reconcile-finished --from-drawing 4940 \
   --to-drawing 4959 --batch-size 10 --apply
+python -m toto_ai.cli reconcile-finished --from-drawing 4946 \
+  --to-drawing 4946 --apply --force
 python -m toto_ai.cli repair-canonical-raw \
   --drawing-number 4954 --drawing-number 4955 --drawing-number 4956 --dry-run
 python -m toto_ai.cli settle-drawing --drawing-number 4952 \
@@ -439,15 +441,34 @@ idempotent; official corrections append a new snapshot.
 
 `reconcile-finished` is the non-betting nightly-ready command contract. It
 selects only incomplete finished drawings, supports exact ranges or `--last`,
-bounded retries/backoff, request pacing, batch limits, durable resume state,
-and a network-free `--dry-run`. Each attempt ends explicitly as repaired,
-source-incomplete, or exhausted; transport failures are never called source
-absence.
+bounded retries/backoff, request pacing, fair batch limits, durable resume
+state, and a network-free `--dry-run`. Dry-run opens the existing SQLite file
+through a read-only URI and never runs schema setup, migrations, `create_all`,
+or SQL mutations. If the optional reconciliation-state table is absent, it is
+treated as empty state rather than created. Retry state is persisted per
+drawing/provider/source in SQLite. Output includes classification, cumulative
+attempts, retry state, last error code, and next eligible time.
+
+An unchanged source-incomplete payload uses a bounded exponential cooldown
+(6 hours through 7 days by default). Five unchanged observations quarantine
+the source for 30 days; policy expiry permits one new observation. Transport,
+HTTP 429, and HTTP 5xx failures use a separate shorter 5-minute-through-1-hour
+policy and are never classified as source-incomplete. A changed source
+fingerprint or improved terminal count resets source stagnation. `--force`
+explicitly bypasses cooldown/quarantine for one run but preserves attempt
+history; the safe default is `--no-force`. Dry-run never calls the network,
+writes RAW/state/report artifacts, creates SQLite WAL/SHM sidecars, changes
+schema/data/timestamps, or changes reconciliation state. Schema setup remains
+an idempotent prerequisite of explicit `--apply`. Complete 15/15 results mark
+the state complete and future lifecycle checks skip the network.
 
 `repair-canonical-raw` performs evidence-only offline recovery. Dry-run is the
-default. It can restore only fields present in a validated local canonical RAW
-payload and reports missing local evidence separately. It never synthesizes
-historical data.
+default and uses the same physical read-only SQLite contract. It previews the
+logical importer delta directly from validated canonical RAW without creating
+an append-only archive or result snapshot. Apply mode archives evidence before
+mutation. The command can restore only fields present in a validated local
+canonical RAW payload and reports missing local evidence separately. It never
+synthesizes historical data.
 
 Package archives retain the canonical coupon hash, target identity, stake,
 coupon count, source path, original bytes/hash, and provenance. Import legacy

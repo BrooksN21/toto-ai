@@ -1,0 +1,813 @@
+{
+  "community": "baltbet-main",
+  "contract_version": "1.1.0",
+  "drawings": [
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 0,
+      "drawing_id": 11955,
+      "drawing_number": 4946,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [
+        "incomplete_results",
+        "missing_result_snapshot"
+      ],
+      "quote_count": 15,
+      "raw_snapshot_present": true,
+      "reconciliation_attempt_count": 1,
+      "reconciliation_classifications": [
+        "source_incomplete"
+      ],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": "2026-07-30T16:05:22.722261+00:00",
+      "reconciliation_retry_states": [
+        "cooldown"
+      ],
+      "reconciliation_state_count": 1,
+      "result_snapshot_count": 0,
+      "selected_reason_codes": [
+        "incomplete_results",
+        "missing_result_snapshot"
+      ],
+      "selected_status": "unhealthy",
+      "terminal_result_count": 14,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": false,
+        "historical_inventory": false,
+        "prospective_generation": true,
+        "result_settlement": false
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 0,
+      "drawing_id": 11957,
+      "drawing_number": 4947,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [
+        "missing_raw_snapshot",
+        "missing_result_snapshot"
+      ],
+      "quote_count": 15,
+      "raw_snapshot_present": false,
+      "reconciliation_attempt_count": 0,
+      "reconciliation_classifications": [],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [],
+      "reconciliation_state_count": 0,
+      "result_snapshot_count": 0,
+      "selected_reason_codes": [
+        "missing_result_snapshot"
+      ],
+      "selected_status": "unhealthy",
+      "terminal_result_count": 15,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": true,
+        "historical_inventory": false,
+        "prospective_generation": true,
+        "result_settlement": false
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 0,
+      "drawing_id": 11959,
+      "drawing_number": 4948,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [
+        "missing_raw_snapshot",
+        "missing_result_snapshot"
+      ],
+      "quote_count": 15,
+      "raw_snapshot_present": false,
+      "reconciliation_attempt_count": 0,
+      "reconciliation_classifications": [],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [],
+      "reconciliation_state_count": 0,
+      "result_snapshot_count": 0,
+      "selected_reason_codes": [
+        "missing_result_snapshot"
+      ],
+      "selected_status": "unhealthy",
+      "terminal_result_count": 15,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": true,
+        "historical_inventory": false,
+        "prospective_generation": true,
+        "result_settlement": false
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 0,
+      "drawing_id": 11962,
+      "drawing_number": 4949,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [
+        "all_results_missing",
+        "missing_raw_snapshot",
+        "missing_result_snapshot"
+      ],
+      "quote_count": 15,
+      "raw_snapshot_present": false,
+      "reconciliation_attempt_count": 0,
+      "reconciliation_classifications": [],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [],
+      "reconciliation_state_count": 0,
+      "result_snapshot_count": 0,
+      "selected_reason_codes": [
+        "all_results_missing",
+        "missing_result_snapshot"
+      ],
+      "selected_status": "unhealthy",
+      "terminal_result_count": 0,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": false,
+        "historical_inventory": false,
+        "prospective_generation": true,
+        "result_settlement": false
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 0,
+      "drawing_id": 11964,
+      "drawing_number": 4950,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [
+        "all_results_missing",
+        "missing_result_snapshot"
+      ],
+      "quote_count": 15,
+      "raw_snapshot_present": true,
+      "reconciliation_attempt_count": 0,
+      "reconciliation_classifications": [],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [],
+      "reconciliation_state_count": 0,
+      "result_snapshot_count": 0,
+      "selected_reason_codes": [
+        "all_results_missing",
+        "missing_result_snapshot"
+      ],
+      "selected_status": "unhealthy",
+      "terminal_result_count": 0,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": false,
+        "historical_inventory": false,
+        "prospective_generation": true,
+        "result_settlement": false
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 0,
+      "drawing_id": 11968,
+      "drawing_number": 4951,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [
+        "all_results_missing",
+        "missing_raw_snapshot",
+        "missing_result_snapshot"
+      ],
+      "quote_count": 15,
+      "raw_snapshot_present": false,
+      "reconciliation_attempt_count": 0,
+      "reconciliation_classifications": [],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [],
+      "reconciliation_state_count": 0,
+      "result_snapshot_count": 0,
+      "selected_reason_codes": [
+        "all_results_missing",
+        "missing_result_snapshot"
+      ],
+      "selected_status": "unhealthy",
+      "terminal_result_count": 0,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": false,
+        "historical_inventory": false,
+        "prospective_generation": true,
+        "result_settlement": false
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 0,
+      "drawing_id": 11970,
+      "drawing_number": 4952,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [
+        "all_results_missing",
+        "missing_result_snapshot"
+      ],
+      "quote_count": 15,
+      "raw_snapshot_present": true,
+      "reconciliation_attempt_count": 0,
+      "reconciliation_classifications": [],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [],
+      "reconciliation_state_count": 0,
+      "result_snapshot_count": 0,
+      "selected_reason_codes": [
+        "all_results_missing",
+        "missing_result_snapshot"
+      ],
+      "selected_status": "unhealthy",
+      "terminal_result_count": 0,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": false,
+        "historical_inventory": false,
+        "prospective_generation": true,
+        "result_settlement": false
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 0,
+      "drawing_id": 11972,
+      "drawing_number": 4953,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [
+        "missing_result_snapshot"
+      ],
+      "quote_count": 15,
+      "raw_snapshot_present": true,
+      "reconciliation_attempt_count": 0,
+      "reconciliation_classifications": [],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [],
+      "reconciliation_state_count": 0,
+      "result_snapshot_count": 1,
+      "selected_reason_codes": [
+        "missing_result_snapshot"
+      ],
+      "selected_status": "unhealthy",
+      "terminal_result_count": 15,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": true,
+        "historical_inventory": false,
+        "prospective_generation": true,
+        "result_settlement": false
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 0,
+      "complete_result_snapshot_count": 0,
+      "drawing_id": 11975,
+      "drawing_number": 4954,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 0,
+      "observed_reason_codes": [
+        "empty_event_names",
+        "missing_quotes",
+        "incomplete_bk",
+        "incomplete_results",
+        "missing_result_snapshot"
+      ],
+      "quote_count": 0,
+      "raw_snapshot_present": true,
+      "reconciliation_attempt_count": 0,
+      "reconciliation_classifications": [],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [],
+      "reconciliation_state_count": 0,
+      "result_snapshot_count": 1,
+      "selected_reason_codes": [
+        "incomplete_results",
+        "missing_result_snapshot"
+      ],
+      "selected_status": "unhealthy",
+      "terminal_result_count": 14,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": false,
+        "historical_inventory": false,
+        "prospective_generation": false,
+        "result_settlement": false
+      },
+      "valid_pool_count": 0,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 1,
+      "drawing_id": 11977,
+      "drawing_number": 4955,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [],
+      "quote_count": 15,
+      "raw_snapshot_present": true,
+      "reconciliation_attempt_count": 1,
+      "reconciliation_classifications": [
+        "complete"
+      ],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [
+        "complete"
+      ],
+      "reconciliation_state_count": 1,
+      "result_snapshot_count": 2,
+      "selected_reason_codes": [
+        "healthy"
+      ],
+      "selected_status": "healthy",
+      "terminal_result_count": 15,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": true,
+        "historical_inventory": true,
+        "prospective_generation": true,
+        "result_settlement": true
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 1,
+      "drawing_id": 11981,
+      "drawing_number": 4956,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [],
+      "quote_count": 15,
+      "raw_snapshot_present": true,
+      "reconciliation_attempt_count": 1,
+      "reconciliation_classifications": [
+        "complete"
+      ],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [
+        "complete"
+      ],
+      "reconciliation_state_count": 1,
+      "result_snapshot_count": 2,
+      "selected_reason_codes": [
+        "healthy"
+      ],
+      "selected_status": "healthy",
+      "terminal_result_count": 15,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": true,
+        "historical_inventory": true,
+        "prospective_generation": true,
+        "result_settlement": true
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 0,
+      "drawing_id": 11983,
+      "drawing_number": 4957,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [
+        "all_results_missing",
+        "missing_result_snapshot"
+      ],
+      "quote_count": 15,
+      "raw_snapshot_present": true,
+      "reconciliation_attempt_count": 0,
+      "reconciliation_classifications": [],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [],
+      "reconciliation_state_count": 0,
+      "result_snapshot_count": 0,
+      "selected_reason_codes": [
+        "all_results_missing",
+        "missing_result_snapshot"
+      ],
+      "selected_status": "unhealthy",
+      "terminal_result_count": 0,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": false,
+        "historical_inventory": false,
+        "prospective_generation": true,
+        "result_settlement": false
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    },
+    {
+      "actionable_package_count": 0,
+      "complete_bk_count": 15,
+      "complete_result_snapshot_count": 1,
+      "drawing_id": 11986,
+      "drawing_number": 4958,
+      "drawing_status": "finished",
+      "event_count": 15,
+      "event_orders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "nonblank_name_count": 15,
+      "observed_reason_codes": [],
+      "quote_count": 15,
+      "raw_snapshot_present": true,
+      "reconciliation_attempt_count": 1,
+      "reconciliation_classifications": [
+        "complete"
+      ],
+      "reconciliation_last_error_codes": [],
+      "reconciliation_next_eligible_at": null,
+      "reconciliation_retry_states": [
+        "complete"
+      ],
+      "reconciliation_state_count": 1,
+      "result_snapshot_count": 1,
+      "selected_reason_codes": [
+        "healthy"
+      ],
+      "selected_status": "healthy",
+      "terminal_result_count": 15,
+      "unsettled_actionable_package_count": 0,
+      "use_case_eligibility": {
+        "backtest_probability": true,
+        "historical_inventory": true,
+        "prospective_generation": true,
+        "result_settlement": true
+      },
+      "valid_pool_count": 15,
+      "void_result_count": 0,
+      "zero_pool_count": 0
+    }
+  ],
+  "generated_at": "2026-07-30T10:06:54.451299+00:00",
+  "metadata": {
+    "duplicates": {},
+    "gaps": [],
+    "healthy": true,
+    "selected_max_number": 4958,
+    "selected_min_number": 4946
+  },
+  "report_schema_version": 2,
+  "selectors": {
+    "from_drawing": 4946,
+    "last": null,
+    "to_drawing": 4958
+  },
+  "strict": false,
+  "summary": {
+    "duplicate_number_count": 0,
+    "exit_status": "pass",
+    "gap_count": 0,
+    "healthy_drawings": 3,
+    "inventory_counts": {
+      "actionable_package_drawings": 0,
+      "complete_bk_drawings": 12,
+      "event_rows": 195,
+      "finished_drawings": 13,
+      "finished_incomplete_result_drawings": 7,
+      "missing_terminal_results_in_finished": 77,
+      "raw_snapshot_drawings": 9,
+      "reconciliation_complete_drawings": 3,
+      "reconciliation_cooldown_drawings": 1,
+      "reconciliation_quarantined_drawings": 0,
+      "reconciliation_tracked_drawings": 4,
+      "result_snapshot_drawings": 3,
+      "unsettled_actionable_package_drawings": 0,
+      "valid_pool_drawings": 12
+    },
+    "observed_reason_counts": {
+      "all_results_missing": 5,
+      "empty_event_names": 1,
+      "incomplete_bk": 1,
+      "incomplete_results": 2,
+      "missing_quotes": 1,
+      "missing_raw_snapshot": 4,
+      "missing_result_snapshot": 10
+    },
+    "passed": false,
+    "reason_counts": {
+      "all_results_missing": 5,
+      "incomplete_results": 2,
+      "missing_result_snapshot": 10
+    },
+    "strict": false,
+    "total_drawings": 13,
+    "unhealthy_drawings": 10,
+    "use_case_totals": {
+      "backtest_probability": {
+        "healthy": 6,
+        "unhealthy": 7
+      },
+      "historical_inventory": {
+        "healthy": 3,
+        "unhealthy": 10
+      },
+      "prospective_generation": {
+        "healthy": 12,
+        "unhealthy": 1
+      },
+      "result_settlement": {
+        "healthy": 3,
+        "unhealthy": 10
+      }
+    }
+  },
+  "use_case": "result_settlement"
+}

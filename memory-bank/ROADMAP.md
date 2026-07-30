@@ -2,26 +2,35 @@
 
 ## Historical data-health remediation
 
+- [x] Add durable per-source reconciliation cooldown, separate transient retry,
+  expiring quarantine, force override, deterministic clock, and fair range
+  batching (`TOTO-RECONCILE-SOURCE-INCOMPLETE-COOLDOWN-V1`).
+- [x] Complete the network-free drawing-4946 replay on a copied database and
+  record exact state/RAW deltas.
+- [x] Run a small backed-up production reconciliation batch only after replay
+  acceptance; compare Data Health before/after.
 - [x] Audit visible drawings 4940–4959 in the local SQLite database.
 - [x] Expand the audit to the complete locally stored `baltbet-main` history:
   2,199 drawings, 32,985 events, visible range 2759–4959.
 - [x] Classify local evidence as recoverable from RAW, requiring a future
   TotoBrief request, or permanently unknown unless new authoritative evidence
   is obtained.
-- [ ] Implement `TOTO-DATA-HEALTH-CONTRACT-V1`: a versioned, read-only
+- [x] Implement `TOTO-DATA-HEALTH-CONTRACT-V1`: a versioned, read-only
   per-drawing health contract and `data-health` CLI with machine-readable
   reasons.
-- [ ] Reject `0/0/0` pool triples as unusable rather than merely non-null.
-- [ ] Fix collector freshness so a transition to `finished` requires terminal
+- [x] Reject `0/0/0` pool triples as unusable rather than merely non-null.
+- [x] Fix collector freshness so a transition to `finished` requires terminal
   results or explicit unresolved/void evidence.
-- [ ] Make final-result ingestion restore complete event identity, names,
+- [x] Make final-result ingestion restore complete event identity, names,
   quotes, results, scores, and statuses from one validated detail payload.
-- [ ] Archive every fetched detail payload RAW-first with identity, timestamp,
+- [x] Archive every fetched detail payload RAW-first with identity, timestamp,
   and hash provenance before mutating operational tables.
 - [ ] Repair the locally recoverable class-A defects from immutable RAW without
   overwriting reviewed `VOID` evidence.
-- [ ] Add a resumable, rate-limited network backfill for class-B/class-C gaps;
+- [x] Add a resumable, rate-limited network backfill for class-B/class-C gaps;
   never synthesize missing history when TotoBrief cannot supply it.
+- [ ] Process the historical class-B/class-C backlog through repeated small,
+  backed-up allowlist waves; unrestricted bulk mode remains forbidden.
 - [ ] Create immutable result snapshots for every completed usable drawing.
 - [ ] Gate every backtest/research dataset by its declared requirements:
   exactly 15 events, nonblank identity, usable required pool/BK inputs,
@@ -521,7 +530,16 @@ profitability or a proven winning strategy.
 - [x] Offline repair command and copy-database verification for fields provably recoverable from existing canonical
   RAW.
 - [x] Bounded, rate-limited resumable reconciliation engine and dry-run CLI.
-- [ ] Controlled canary network backfill, then full historical backlog.
+- [x] Controlled network canary on a database copy for 4946/4955/4956/4958.
+- [x] Persistent source-incomplete cooldown/quarantine required by the canary.
+- [x] `TOTO-RECONCILE-DRY-RUN-READONLY-FIX-V1`: physical read-only SQLite
+  dry-runs, missing-state-table compatibility, and write-free canonical RAW
+  preview.
+- [x] Small backed-up production reconciliation batch for
+  4946/4955/4956/4958 with exactly four first-pass requests and zero-request
+  idempotency pass.
+- [ ] Continue the controlled
+  historical backlog.
 - [ ] Install/schedule nightly listing/detail/result reconciliation and health report only after canary acceptance.
 - [ ] Complete actionable package settlement and mandatory post-draw report.
 

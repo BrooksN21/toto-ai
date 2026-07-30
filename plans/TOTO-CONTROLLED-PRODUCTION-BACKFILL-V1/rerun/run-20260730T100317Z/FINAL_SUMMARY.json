@@ -1,0 +1,22 @@
+{
+  "task_id": "TOTO-CONTROLLED-PRODUCTION-BACKFILL-V1-RERUN",
+  "run_id": "20260730T100317Z",
+  "decision_next_small_wave": "GO",
+  "decision_unrestricted_full_history": "NO-GO",
+  "backup_path": "/Users/turshevr/toto-ai/data/backups/toto-before-controlled-backfill-rerun-20260730T100317Z.db",
+  "backup_sha256": "49e43dbf3cfe54c0342e2bbba27c376e03ea9e293c03b3edda4ac86646121426",
+  "main_sha_baseline": "d94738e26cb35d1f7768a8621f30d0111c2945851bb7165dc6490c57863d2c42",
+  "main_sha_after_dry_run": "d94738e26cb35d1f7768a8621f30d0111c2945851bb7165dc6490c57863d2c42",
+  "main_sha_after_apply": "f2f2c2ede3fc6bd8f0ba7f52240d3800fa31a7516775fd4361a2e3e38905110c",
+  "main_sha_after_idempotency": "f2f2c2ede3fc6bd8f0ba7f52240d3800fa31a7516775fd4361a2e3e38905110c",
+  "allowlist": [4946, 4955, 4956, 4958],
+  "changed_outside_allowlist": 0,
+  "first_apply_http_requests": 4,
+  "first_apply_retries": 0,
+  "idempotency_http_requests": 0,
+  "api_errors": 0,
+  "tls_bypass": false,
+  "quick_check": "ok",
+  "foreign_key_violations": 0,
+  "cooldown_4946_until": "2026-07-30T16:05:22.722261+00:00"
+}

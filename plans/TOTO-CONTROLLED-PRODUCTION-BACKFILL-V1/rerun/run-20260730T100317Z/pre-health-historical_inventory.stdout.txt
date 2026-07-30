@@ -1,0 +1,32 @@
+                  Data Health Contract
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Metric                         ┃                Value ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━┩
+│ contract version               │                1.1.0 │
+│ use case                       │ historical_inventory │
+│ strict                         │                false │
+│ drawings                       │                   13 │
+│ healthy                        │                    0 │
+│ unhealthy                      │                   13 │
+│ gaps                           │                    0 │
+│ duplicate numbers              │                    0 │
+│ finished incomplete results    │                    8 │
+│ missing finished outcomes      │                   92 │
+│ reconciliation cooldown        │                    0 │
+│ reconciliation quarantined     │                    0 │
+│ exit status                    │                 pass │
+│ reason:all_results_missing     │                    6 │
+│ reason:empty_event_names       │                    3 │
+│ reason:incomplete_bk           │                    3 │
+│ reason:incomplete_results      │                    2 │
+│ reason:missing_quotes          │                    3 │
+│ reason:missing_raw_snapshot    │                    7 │
+│ reason:missing_result_snapshot │                   13 │
+└────────────────────────────────┴──────────────────────┘
+Reports written to
+plans/TOTO-CONTROLLED-PRODUCTION-BACKFILL-V1/rerun/run-20260730T100317Z/pre-heal
+th/historical_inventory/data_health_v1.csv,
+plans/TOTO-CONTROLLED-PRODUCTION-BACKFILL-V1/rerun/run-20260730T100317Z/pre-heal
+th/historical_inventory/data_health_v1.json,
+plans/TOTO-CONTROLLED-PRODUCTION-BACKFILL-V1/rerun/run-20260730T100317Z/pre-heal
+th/historical_inventory/data_health_v1.md

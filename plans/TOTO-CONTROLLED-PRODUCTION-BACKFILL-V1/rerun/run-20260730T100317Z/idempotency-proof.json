@@ -1,0 +1,12 @@
+{
+  "quick_check_ok": true,
+  "fk_zero": true,
+  "logical_sha_equal": true,
+  "tables_equal": true,
+  "physical_sha_equal": true,
+  "raw_count_before": 44,
+  "raw_count_after": 44,
+  "raw_tree_sha_before": "3697f938e9193893a000a6e9469ddcc4f79a8d58f733331afcf33f8924e314e9",
+  "raw_tree_sha_after": "3697f938e9193893a000a6e9469ddcc4f79a8d58f733331afcf33f8924e314e9",
+  "raw_unchanged": true
+}

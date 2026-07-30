@@ -135,12 +135,12 @@ def test_selectors_and_dry_run_make_no_network_calls(tmp_path):
     assert all(item.status == "would_reconcile" for item in report.items)
 
 
-def test_retries_partial_then_completes_and_resume_skips_complete(tmp_path):
+def test_partial_cools_down_then_forced_complete_resumes_as_fresh(tmp_path):
     factory = _factory(tmp_path)
     _seed(factory, numbers=(4954,))
     partial = _payload(11975, 4954, complete=False)
     complete = _payload(11975, 4954, complete=True)
-    client = SequenceClient([partial, complete])
+    client = SequenceClient([partial])
     state_path = tmp_path / "state.json"
     sleeps = []
 
@@ -158,10 +158,21 @@ def test_retries_partial_then_completes_and_resume_skips_complete(tmp_path):
         sleep=sleeps.append,
     )
 
-    assert client.calls == [11975, 11975]
-    assert sleeps == [1]
-    assert report.items[0].status == "repaired"
-    assert report.items[0].attempts == 2
+    assert client.calls == [11975]
+    assert sleeps == []
+    assert report.items[0].status == "source_incomplete"
+    assert report.items[0].attempts == 1
+    completed = reconcile_finished_drawings(
+        factory,
+        SequenceClient([complete]),
+        archive_root=tmp_path / "archive",
+        state_path=state_path,
+        config=ReconciliationConfig(max_attempts=2),
+        force=True,
+        now=lambda: NOW,
+    )
+    assert completed.items[0].status == "repaired"
+    assert completed.items[0].attempts == 2
     no_calls = SequenceClient([])
     resumed = reconcile_finished_drawings(
         factory,
@@ -195,10 +206,10 @@ def test_exhaustion_and_resume_state_are_explicit(tmp_path):
     )
 
     assert report.items[0].status == "source_incomplete"
-    assert report.items[0].attempts == 2
+    assert report.items[0].attempts == 1
     persisted = json.loads(state_path.read_text())
     assert persisted["drawings"]["11975"]["status"] == "source_incomplete"
-    assert len(persisted["attempts"]) == 2
+    assert len(persisted["attempts"]) == 1
 
 
 def test_network_error_is_exhausted_not_source_missing(tmp_path):
@@ -215,7 +226,7 @@ def test_network_error_is_exhausted_not_source_missing(tmp_path):
         now=lambda: NOW,
     )
 
-    assert report.items[0].status == "exhausted"
+    assert report.items[0].status == "transient_error"
     assert report.items[0].reason == "transport_error"
 
 

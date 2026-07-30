@@ -103,9 +103,7 @@ class RawArchive:
             "lifecycle_status": status,
             "payload_sha256": payload_hash,
         }
-        metadata_hash = hashlib.sha256(
-            _canonical_bytes(metadata_core)
-        ).hexdigest()
+        metadata_hash = hashlib.sha256(_canonical_bytes(metadata_core)).hexdigest()
         snapshot_hash = hashlib.sha256(
             _canonical_bytes(
                 {
@@ -252,38 +250,130 @@ def import_archived_detail(
 ) -> FullDetailImportResult:
     repository = RawArchive(archive.payload_path.parent.parent)
     payload = repository.load(archive)
+    return _import_detail_payload(
+        session_factory,
+        payload,
+        archive=archive,
+        dry_run=dry_run,
+        before_commit=before_commit,
+    )
+
+
+def preview_detail_payload(
+    session_factory: sessionmaker[Session],
+    payload: Mapping[str, Any],
+    *,
+    archive_root: str | Path,
+    captured_at: datetime,
+    source: str,
+    lifecycle_status: str,
+    source_endpoint: str | None = None,
+) -> FullDetailImportResult:
+    """Calculate an import delta without writing SQLite or RAW evidence."""
+    validated = validate_full_detail_payload(payload)
+    captured = _aware(captured_at).isoformat()
+    source_value = _nonempty(source, "source")
+    status = _nonempty(lifecycle_status, "lifecycle_status")
+    payload_hash = hashlib.sha256(_canonical_bytes(validated)).hexdigest()
+    data = validated["data"]
+    metadata_core = {
+        "schema_version": RAW_ARCHIVE_SCHEMA_VERSION,
+        "drawing_id": data["id"],
+        "drawing_number": data.get("number"),
+        "captured_at": captured,
+        "source": source_value,
+        "source_endpoint": source_endpoint,
+        "lifecycle_status": status,
+        "payload_sha256": payload_hash,
+    }
+    metadata_hash = hashlib.sha256(_canonical_bytes(metadata_core)).hexdigest()
+    snapshot_hash = hashlib.sha256(
+        _canonical_bytes(
+            {
+                "payload_sha256": payload_hash,
+                "metadata_sha256": metadata_hash,
+            }
+        )
+    ).hexdigest()
+    root = Path(archive_root).resolve()
+    directory = root / f"drawing_{data['id']}"
+    archive = RawArchiveRecord(
+        snapshot_sha256=snapshot_hash,
+        payload_sha256=payload_hash,
+        metadata_sha256=metadata_hash,
+        drawing_id=data["id"],
+        drawing_number=data.get("number"),
+        captured_at=captured,
+        source=source_value,
+        source_endpoint=source_endpoint,
+        lifecycle_status=status,
+        payload_path=directory / f"{snapshot_hash}.json",
+        metadata_path=directory / f"{snapshot_hash}.meta.json",
+        created=False,
+    )
+    return _import_detail_payload(
+        session_factory,
+        validated,
+        archive=archive,
+        dry_run=True,
+        before_commit=None,
+    )
+
+
+def _import_detail_payload(
+    session_factory: sessionmaker[Session],
+    payload: Mapping[str, Any],
+    *,
+    archive: RawArchiveRecord,
+    dry_run: bool,
+    before_commit: Callable[[Session], None] | None,
+) -> FullDetailImportResult:
     data = payload["data"]
     events_created = events_updated = quotes_created = quotes_updated = 0
     changes = 0
     terminal_events: list[dict[str, Any]] = []
 
     session = session_factory()
+    original_autoflush = session.autoflush
+    if dry_run:
+        session.autoflush = False
     transaction = session.begin()
     try:
-        inserted = session.execute(
-            sqlite_insert(DrawingRawSnapshot)
-            .values(
-                snapshot_sha256=archive.snapshot_sha256,
-                payload_sha256=archive.payload_sha256,
-                metadata_sha256=archive.metadata_sha256,
-                drawing_id=archive.drawing_id,
-                drawing_number=archive.drawing_number,
-                captured_at=archive.captured_at,
-                source=archive.source,
-                source_endpoint=archive.source_endpoint,
-                lifecycle_status=archive.lifecycle_status,
-                payload_path=str(archive.payload_path),
-                metadata_path=str(archive.metadata_path),
-                imported_at=datetime.now(timezone.utc).isoformat(),
-                classification="pending",
+        if dry_run:
+            raw_snapshot_exists = (
+                session.get(
+                    DrawingRawSnapshot,
+                    archive.snapshot_sha256,
+                )
+                is not None
             )
-            .on_conflict_do_nothing()
-        )
-        changes += max(0, inserted.rowcount)
+            changes += int(not raw_snapshot_exists)
+        else:
+            inserted = session.execute(
+                sqlite_insert(DrawingRawSnapshot)
+                .values(
+                    snapshot_sha256=archive.snapshot_sha256,
+                    payload_sha256=archive.payload_sha256,
+                    metadata_sha256=archive.metadata_sha256,
+                    drawing_id=archive.drawing_id,
+                    drawing_number=archive.drawing_number,
+                    captured_at=archive.captured_at,
+                    source=archive.source,
+                    source_endpoint=archive.source_endpoint,
+                    lifecycle_status=archive.lifecycle_status,
+                    payload_path=str(archive.payload_path),
+                    metadata_path=str(archive.metadata_path),
+                    imported_at=datetime.now(timezone.utc).isoformat(),
+                    classification="pending",
+                )
+                .on_conflict_do_nothing()
+            )
+            changes += max(0, inserted.rowcount)
         drawing = session.get(Drawing, archive.drawing_id)
         if drawing is None:
             drawing = Drawing(id=archive.drawing_id)
-            session.add(drawing)
+            if not dry_run:
+                session.add(drawing)
             changes += 1
         if (
             drawing.number is not None
@@ -318,7 +408,8 @@ def import_archived_detail(
             )
             if event is None:
                 event = Event(drawing_id=archive.drawing_id, event_order=order)
-                session.add(event)
+                if not dry_run:
+                    session.add(event)
                 events_created += 1
             event_changes = 0
             for field in ("name", "championship", "sport"):
@@ -377,7 +468,8 @@ def import_archived_detail(
             )
             if quote is None:
                 quote = Quote(drawing_id=archive.drawing_id, event_order=order)
-                session.add(quote)
+                if not dry_run:
+                    session.add(quote)
                 quotes_created += 1
             quote_changes = _merge_quotes(quote, quotes)
             if quote_changes and quote.id is not None:
@@ -392,23 +484,33 @@ def import_archived_detail(
         snapshot_created = False
         if complete:
             terminal_events.sort(key=lambda value: value["order"])
-            snapshot_created = _insert_result_snapshot(
-                session,
-                payload=payload,
-                archive=archive,
-                events=terminal_events,
-            )
+            if dry_run:
+                snapshot_created = _would_insert_result_snapshot(
+                    session,
+                    payload=payload,
+                    archive=archive,
+                    events=terminal_events,
+                )
+            else:
+                snapshot_created = _insert_result_snapshot(
+                    session,
+                    payload=payload,
+                    archive=archive,
+                    events=terminal_events,
+                )
             changes += int(snapshot_created)
         if archive.source.startswith(("canonical", "cache:")) and changes:
             classification = "importer_loss_recoverable_local"
         else:
-            classification = (
-                "source_complete" if complete else "source_incomplete"
+            classification = "source_complete" if complete else "source_incomplete"
+        if not dry_run:
+            raw_row = session.get(
+                DrawingRawSnapshot,
+                archive.snapshot_sha256,
             )
-        raw_row = session.get(DrawingRawSnapshot, archive.snapshot_sha256)
-        if raw_row is not None:
-            raw_row.classification = classification
-        if before_commit is not None:
+            if raw_row is not None:
+                raw_row.classification = classification
+        if before_commit is not None and not dry_run:
             before_commit(session)
         if dry_run:
             transaction.rollback()
@@ -418,6 +520,7 @@ def import_archived_detail(
         transaction.rollback()
         raise
     finally:
+        session.autoflush = original_autoflush
         session.close()
     return FullDetailImportResult(
         drawing_id=archive.drawing_id,
@@ -440,9 +543,7 @@ def finished_drawing_is_current(session: Session, drawing_id: int) -> bool:
     if drawing is None or drawing.status != "finished":
         return False
     events = session.scalars(
-        select(Event)
-        .where(Event.drawing_id == drawing_id)
-        .order_by(Event.event_order)
+        select(Event).where(Event.drawing_id == drawing_id).order_by(Event.event_order)
     ).all()
     if (
         len(events) != 15
@@ -477,6 +578,45 @@ def _insert_result_snapshot(
     archive: RawArchiveRecord,
     events: list[dict[str, Any]],
 ) -> bool:
+    values = _result_snapshot_values(
+        payload=payload,
+        archive=archive,
+        events=events,
+    )
+    inserted = session.execute(
+        sqlite_insert(DrawingResultSnapshot).values(**values).on_conflict_do_nothing()
+    )
+    return inserted.rowcount == 1
+
+
+def _would_insert_result_snapshot(
+    session: Session,
+    *,
+    payload: Mapping[str, Any],
+    archive: RawArchiveRecord,
+    events: list[dict[str, Any]],
+) -> bool:
+    values = _result_snapshot_values(
+        payload=payload,
+        archive=archive,
+        events=events,
+    )
+    return (
+        session.scalar(
+            select(DrawingResultSnapshot.id).where(
+                DrawingResultSnapshot.snapshot_sha256 == values["snapshot_sha256"]
+            )
+        )
+        is None
+    )
+
+
+def _result_snapshot_values(
+    *,
+    payload: Mapping[str, Any],
+    archive: RawArchiveRecord,
+    events: list[dict[str, Any]],
+) -> dict[str, Any]:
     data = payload["data"]
     number = data.get("number")
     ended_at = _canonical_timestamp(data.get("ended_at"))
@@ -495,34 +635,26 @@ def _insert_result_snapshot(
     }
     snapshot_hash = hashlib.sha256(_canonical_bytes(content)).hexdigest()
     result_hash = hashlib.sha256(_canonical_bytes(events)).hexdigest()
-    inserted = session.execute(
-        sqlite_insert(DrawingResultSnapshot)
-        .values(
-            drawing_id=archive.drawing_id,
-            drawing_number=number,
-            hash_schema_version=RESULT_SNAPSHOT_HASH_SCHEMA_VERSION,
-            ended_at=ended_at,
-            retrieved_at=archive.captured_at,
-            source_endpoint=archive.source_endpoint
-            or f"archive:{archive.source}",
-            payload_sha256=archive.payload_sha256,
-            raw_snapshot_sha256=archive.snapshot_sha256,
-            result_sha256=result_hash,
-            snapshot_sha256=snapshot_hash,
-            complete=True,
-            event_count=15,
-            actual="".join(event["result"] for event in events),
-            events_json=_canonical_text(events),
-            payments_json=(
-                None if payments is None else _canonical_text(payments)
-            ),
-            pool_sum=pool_sum,
-            jackpot=jackpot,
-            payload_json=_canonical_text(payload),
-        )
-        .on_conflict_do_nothing()
-    )
-    return inserted.rowcount == 1
+    return {
+        "drawing_id": archive.drawing_id,
+        "drawing_number": number,
+        "hash_schema_version": RESULT_SNAPSHOT_HASH_SCHEMA_VERSION,
+        "ended_at": ended_at,
+        "retrieved_at": archive.captured_at,
+        "source_endpoint": archive.source_endpoint or f"archive:{archive.source}",
+        "payload_sha256": archive.payload_sha256,
+        "raw_snapshot_sha256": archive.snapshot_sha256,
+        "result_sha256": result_hash,
+        "snapshot_sha256": snapshot_hash,
+        "complete": True,
+        "event_count": 15,
+        "actual": "".join(event["result"] for event in events),
+        "events_json": _canonical_text(events),
+        "payments_json": (None if payments is None else _canonical_text(payments)),
+        "pool_sum": pool_sum,
+        "jackpot": jackpot,
+        "payload_json": _canonical_text(payload),
+    }
 
 
 def _source_result(
@@ -598,9 +730,7 @@ def _write_once(path: Path, content: bytes) -> None:
             os.link(temporary, path)
         except FileExistsError as error:
             if path.read_bytes() != content:
-                raise ValueError(
-                    "content-addressed RAW archive collision"
-                ) from error
+                raise ValueError("content-addressed RAW archive collision") from error
         fsync_directory(path.parent)
     finally:
         temporary.unlink(missing_ok=True)

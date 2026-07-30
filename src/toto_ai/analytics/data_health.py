@@ -12,20 +12,21 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
 
-from sqlalchemy import select
+from sqlalchemy import inspect, select
 from sqlalchemy.orm import Session
 
 from toto_ai.db.models import (
     ArchivedPackage,
     Drawing,
+    DrawingReconciliationState,
     DrawingResultSnapshot,
     Event,
     PackageSettlement,
     Quote,
 )
 
-DATA_HEALTH_CONTRACT_VERSION = "1.0.0"
-DATA_HEALTH_REPORT_SCHEMA_VERSION = 1
+DATA_HEALTH_CONTRACT_VERSION = "1.1.0"
+DATA_HEALTH_REPORT_SCHEMA_VERSION = 2
 DATA_QUALITY_EXIT_CODE = 3
 EXECUTION_ERROR_EXIT_CODE = 4
 EXPECTED_EVENT_ORDERS = frozenset(range(15))
@@ -141,6 +142,12 @@ class DrawingHealth:
     raw_snapshot_present: bool
     actionable_package_count: int
     unsettled_actionable_package_count: int
+    reconciliation_state_count: int
+    reconciliation_classifications: tuple[str, ...]
+    reconciliation_retry_states: tuple[str, ...]
+    reconciliation_attempt_count: int
+    reconciliation_next_eligible_at: str | None
+    reconciliation_last_error_codes: tuple[str, ...]
     observed_reason_codes: tuple[str, ...]
     use_case_eligibility: dict[str, bool]
     selected_status: str
@@ -306,6 +313,19 @@ def audit_data_health(
             )
         ).all()
     )
+    reconciliation_states = (
+        _group_by_drawing(
+            session.scalars(
+                select(DrawingReconciliationState).where(
+                    DrawingReconciliationState.drawing_id.in_(selected_ids)
+                )
+            ).all()
+        )
+        if inspect(session.get_bind()).has_table(
+            DrawingReconciliationState.__tablename__
+        )
+        else {}
+    )
 
     raw_ids = (
         set(raw_snapshot_drawing_ids)
@@ -320,6 +340,7 @@ def audit_data_health(
             result_snapshots=result_snapshots.get(drawing.id, ()),
             packages=packages.get(drawing.id, ()),
             settlements=settlements.get(drawing.id, ()),
+            reconciliation_states=reconciliation_states.get(drawing.id, ()),
             raw_snapshot_present=drawing.id in raw_ids,
             selected_use_case=selected_use_case,
         )
@@ -438,6 +459,7 @@ def _drawing_health(
     result_snapshots: Sequence[DrawingResultSnapshot],
     packages: Sequence[ArchivedPackage],
     settlements: Sequence[PackageSettlement],
+    reconciliation_states: Sequence[DrawingReconciliationState],
     raw_snapshot_present: bool,
     selected_use_case: DataHealthUseCase,
 ) -> DrawingHealth:
@@ -508,6 +530,29 @@ def _drawing_health(
         package.archive_sha256 not in settled_archives
         for package in actionable_packages
     )
+    reconciliation_classifications = tuple(
+        sorted({state.classification for state in reconciliation_states})
+    )
+    reconciliation_retry_states = tuple(
+        sorted({state.retry_state for state in reconciliation_states})
+    )
+    reconciliation_next_eligible = min(
+        (
+            state.next_eligible_at
+            for state in reconciliation_states
+            if state.next_eligible_at is not None
+        ),
+        default=None,
+    )
+    reconciliation_errors = tuple(
+        sorted(
+            {
+                state.last_error_code
+                for state in reconciliation_states
+                if state.last_error_code is not None
+            }
+        )
+    )
 
     reasons: list[str] = []
     if not structure_valid:
@@ -559,6 +604,14 @@ def _drawing_health(
         raw_snapshot_present=raw_snapshot_present,
         actionable_package_count=len(actionable_packages),
         unsettled_actionable_package_count=unsettled_packages,
+        reconciliation_state_count=len(reconciliation_states),
+        reconciliation_classifications=reconciliation_classifications,
+        reconciliation_retry_states=reconciliation_retry_states,
+        reconciliation_attempt_count=sum(
+            state.attempt_count for state in reconciliation_states
+        ),
+        reconciliation_next_eligible_at=reconciliation_next_eligible,
+        reconciliation_last_error_codes=reconciliation_errors,
         observed_reason_codes=observed,
         use_case_eligibility=eligibility,
         selected_status="healthy" if not selected_blockers else "unhealthy",
@@ -623,6 +676,18 @@ def _summary(
         ),
         "unsettled_actionable_package_drawings": sum(
             row.unsettled_actionable_package_count > 0 for row in rows
+        ),
+        "reconciliation_tracked_drawings": sum(
+            row.reconciliation_state_count > 0 for row in rows
+        ),
+        "reconciliation_cooldown_drawings": sum(
+            "cooldown" in row.reconciliation_retry_states for row in rows
+        ),
+        "reconciliation_quarantined_drawings": sum(
+            "quarantined" in row.reconciliation_retry_states for row in rows
+        ),
+        "reconciliation_complete_drawings": sum(
+            "complete" in row.reconciliation_retry_states for row in rows
         ),
     }
     metadata_blocks = use_case == "historical_inventory" and not metadata.healthy
@@ -886,6 +951,20 @@ def _csv_row(
         "unsettled_actionable_package_count": (
             row.unsettled_actionable_package_count
         ),
+        "reconciliation_state_count": row.reconciliation_state_count,
+        "reconciliation_classifications": "|".join(
+            row.reconciliation_classifications
+        ),
+        "reconciliation_retry_states": "|".join(
+            row.reconciliation_retry_states
+        ),
+        "reconciliation_attempt_count": row.reconciliation_attempt_count,
+        "reconciliation_next_eligible_at": (
+            row.reconciliation_next_eligible_at
+        ),
+        "reconciliation_last_error_codes": "|".join(
+            row.reconciliation_last_error_codes
+        ),
         **{
             f"eligible_{use_case}": row.use_case_eligibility[use_case]
             for use_case in USE_CASES
@@ -969,8 +1048,8 @@ def _markdown(report: DataHealthReport) -> str:
             "## Drawing detail",
             "",
             "| Number | ID | Status | Health | Reasons | Events | Pool | BK | "
-            "Results | VOID |",
-            "|---:|---:|---|---|---|---:|---:|---:|---:|---:|",
+            "Results | VOID | Reconcile state | Attempts |",
+            "|---:|---:|---|---|---|---:|---:|---:|---:|---:|---|---:|",
         ]
     )
     for row in report.drawings:
@@ -979,6 +1058,8 @@ def _markdown(report: DataHealthReport) -> str:
             f"{row.drawing_status} | {row.selected_status} | "
             f"{', '.join(row.selected_reason_codes)} | {row.event_count} | "
             f"{row.valid_pool_count} | {row.complete_bk_count} | "
-            f"{row.terminal_result_count} | {row.void_result_count} |"
+            f"{row.terminal_result_count} | {row.void_result_count} | "
+            f"{','.join(row.reconciliation_retry_states) or '-'} | "
+            f"{row.reconciliation_attempt_count} |"
         )
     return "\n".join(lines) + "\n"

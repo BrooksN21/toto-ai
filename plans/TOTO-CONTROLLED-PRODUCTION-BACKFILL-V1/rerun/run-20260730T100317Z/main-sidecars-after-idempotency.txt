@@ -1,0 +1,2 @@
+data/toto.db-wal|ABSENT
+data/toto.db-shm|ABSENT

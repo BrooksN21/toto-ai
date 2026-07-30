@@ -1,0 +1,227 @@
+[
+  {
+    "drawing_number": 4946,
+    "drawing_id": 11955,
+    "status": "finished",
+    "event_count": 15,
+    "nonblank_name_count": 15,
+    "nonblank_championship_count": 15,
+    "quote_count": 15,
+    "valid_pool_count": 15,
+    "complete_bk_count": 15,
+    "terminal_result_count": 14,
+    "void_result_count": 0,
+    "missing_event_orders": [
+      11
+    ],
+    "raw_snapshot_count": 1,
+    "raw_snapshots": [
+      {
+        "snapshot_sha256": "f1883050c649fcd857790c5a4d5e894a69067323c4f1f6e9d39286bf624cfe83",
+        "payload_sha256": "c44c81ad8f19812c4a7a1caf95a1809ac3fd544e46653fd14f832c42f082fbff",
+        "classification": "source_incomplete",
+        "lifecycle_status": "finished",
+        "payload_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_11955/f1883050c649fcd857790c5a4d5e894a69067323c4f1f6e9d39286bf624cfe83.json",
+        "metadata_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_11955/f1883050c649fcd857790c5a4d5e894a69067323c4f1f6e9d39286bf624cfe83.meta.json",
+        "captured_at": "2026-07-30T10:05:23.171711+00:00"
+      }
+    ],
+    "result_snapshot_count": 0,
+    "complete_result_snapshot_count": 0,
+    "result_snapshots": [],
+    "reconciliation_states": [
+      {
+        "provider": "totobrief",
+        "source": "/drawing-info/11955",
+        "attempt_count": 1,
+        "last_source_fingerprint": "c44c81ad8f19812c4a7a1caf95a1809ac3fd544e46653fd14f832c42f082fbff",
+        "terminal_count": 14,
+        "classification": "source_incomplete",
+        "retry_state": "cooldown",
+        "next_eligible_at": "2026-07-30T16:05:22.722261+00:00",
+        "last_error_code": null,
+        "unchanged_observation_count": 1,
+        "transient_error_count": 0,
+        "updated_at": "2026-07-30T10:05:22.722261+00:00"
+      }
+    ]
+  },
+  {
+    "drawing_number": 4955,
+    "drawing_id": 11977,
+    "status": "finished",
+    "event_count": 15,
+    "nonblank_name_count": 15,
+    "nonblank_championship_count": 15,
+    "quote_count": 15,
+    "valid_pool_count": 15,
+    "complete_bk_count": 15,
+    "terminal_result_count": 15,
+    "void_result_count": 0,
+    "missing_event_orders": [],
+    "raw_snapshot_count": 1,
+    "raw_snapshots": [
+      {
+        "snapshot_sha256": "0cb9e471657f99d382e1d0249221543ea737a8c1ff5c14a7637e1de20e33df97",
+        "payload_sha256": "98f4bb8b52dbb36b95bf4e1deb9e064f75139a6ab67d238be77c1b3ef66505d8",
+        "classification": "source_complete",
+        "lifecycle_status": "finished",
+        "payload_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_11977/0cb9e471657f99d382e1d0249221543ea737a8c1ff5c14a7637e1de20e33df97.json",
+        "metadata_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_11977/0cb9e471657f99d382e1d0249221543ea737a8c1ff5c14a7637e1de20e33df97.meta.json",
+        "captured_at": "2026-07-30T10:05:55.248385+00:00"
+      }
+    ],
+    "result_snapshot_count": 2,
+    "complete_result_snapshot_count": 2,
+    "result_snapshots": [
+      {
+        "snapshot_sha256": "b17210c785a06bc6ba2fcc81e175bb5e7d7f7af26f2c678d79bb8bce3c808cd0",
+        "complete": 1,
+        "event_count": 15,
+        "actual": "21112X21XX22X22",
+        "raw_snapshot_sha256": null,
+        "retrieved_at": "2026-07-27T07:26:39.796208+00:00"
+      },
+      {
+        "snapshot_sha256": "a46bc159658735e61ec3acfc6ad5ffc040999eef437e6cc9aeca652a7d4f1a5f",
+        "complete": 1,
+        "event_count": 15,
+        "actual": "21112X21XX22X22",
+        "raw_snapshot_sha256": "0cb9e471657f99d382e1d0249221543ea737a8c1ff5c14a7637e1de20e33df97",
+        "retrieved_at": "2026-07-30T10:05:55.248385+00:00"
+      }
+    ],
+    "reconciliation_states": [
+      {
+        "provider": "totobrief",
+        "source": "/drawing-info/11977",
+        "attempt_count": 1,
+        "last_source_fingerprint": "98f4bb8b52dbb36b95bf4e1deb9e064f75139a6ab67d238be77c1b3ef66505d8",
+        "terminal_count": 15,
+        "classification": "complete",
+        "retry_state": "complete",
+        "next_eligible_at": null,
+        "last_error_code": null,
+        "unchanged_observation_count": 0,
+        "transient_error_count": 0,
+        "updated_at": "2026-07-30T10:05:55.041025+00:00"
+      }
+    ]
+  },
+  {
+    "drawing_number": 4956,
+    "drawing_id": 11981,
+    "status": "finished",
+    "event_count": 15,
+    "nonblank_name_count": 15,
+    "nonblank_championship_count": 15,
+    "quote_count": 15,
+    "valid_pool_count": 15,
+    "complete_bk_count": 15,
+    "terminal_result_count": 15,
+    "void_result_count": 0,
+    "missing_event_orders": [],
+    "raw_snapshot_count": 1,
+    "raw_snapshots": [
+      {
+        "snapshot_sha256": "744a1529de767409052454ee4c07447d5cb4ff70bf69e27a54db2c66d3d70b5d",
+        "payload_sha256": "c27e7f95b871c92a3cc11370437c675a48ed6f13d7af8a26fb37f29897a4a764",
+        "classification": "source_complete",
+        "lifecycle_status": "finished",
+        "payload_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_11981/744a1529de767409052454ee4c07447d5cb4ff70bf69e27a54db2c66d3d70b5d.json",
+        "metadata_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_11981/744a1529de767409052454ee4c07447d5cb4ff70bf69e27a54db2c66d3d70b5d.meta.json",
+        "captured_at": "2026-07-30T10:05:57.278633+00:00"
+      }
+    ],
+    "result_snapshot_count": 2,
+    "complete_result_snapshot_count": 2,
+    "result_snapshots": [
+      {
+        "snapshot_sha256": "ca090116115d8ab536eee2200ae77182290b835ade59ed8c72d58d1c3e6d9a41",
+        "complete": 1,
+        "event_count": 15,
+        "actual": "12X12121221XX1X",
+        "raw_snapshot_sha256": null,
+        "retrieved_at": "2026-07-27T07:26:48.777165+00:00"
+      },
+      {
+        "snapshot_sha256": "8ece6e4c60178e6fc7ebc4d930b8bdbb23632c821421d9d98f8e179827f9f3cb",
+        "complete": 1,
+        "event_count": 15,
+        "actual": "12X12121221XX1X",
+        "raw_snapshot_sha256": "744a1529de767409052454ee4c07447d5cb4ff70bf69e27a54db2c66d3d70b5d",
+        "retrieved_at": "2026-07-30T10:05:57.278633+00:00"
+      }
+    ],
+    "reconciliation_states": [
+      {
+        "provider": "totobrief",
+        "source": "/drawing-info/11981",
+        "attempt_count": 1,
+        "last_source_fingerprint": "c27e7f95b871c92a3cc11370437c675a48ed6f13d7af8a26fb37f29897a4a764",
+        "terminal_count": 15,
+        "classification": "complete",
+        "retry_state": "complete",
+        "next_eligible_at": null,
+        "last_error_code": null,
+        "unchanged_observation_count": 0,
+        "transient_error_count": 0,
+        "updated_at": "2026-07-30T10:05:55.768998+00:00"
+      }
+    ]
+  },
+  {
+    "drawing_number": 4958,
+    "drawing_id": 11986,
+    "status": "finished",
+    "event_count": 15,
+    "nonblank_name_count": 15,
+    "nonblank_championship_count": 15,
+    "quote_count": 15,
+    "valid_pool_count": 15,
+    "complete_bk_count": 15,
+    "terminal_result_count": 15,
+    "void_result_count": 0,
+    "missing_event_orders": [],
+    "raw_snapshot_count": 1,
+    "raw_snapshots": [
+      {
+        "snapshot_sha256": "de4dadd1be6fdee9341f11e570ba6f0bb7f253fb97d69a4d303a8bdb7a932788",
+        "payload_sha256": "b33266c4e72689e804f9536e85d38437ca6b452a400ccd4e1b0db4dbb67143be",
+        "classification": "source_complete",
+        "lifecycle_status": "finished",
+        "payload_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_11986/de4dadd1be6fdee9341f11e570ba6f0bb7f253fb97d69a4d303a8bdb7a932788.json",
+        "metadata_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_11986/de4dadd1be6fdee9341f11e570ba6f0bb7f253fb97d69a4d303a8bdb7a932788.meta.json",
+        "captured_at": "2026-07-30T10:05:59.298043+00:00"
+      }
+    ],
+    "result_snapshot_count": 1,
+    "complete_result_snapshot_count": 1,
+    "result_snapshots": [
+      {
+        "snapshot_sha256": "08222a620f45563644d2907af624d699778f1f3a2aa184c4894d68d54f64b668",
+        "complete": 1,
+        "event_count": 15,
+        "actual": "2X111X1X12X1X22",
+        "raw_snapshot_sha256": "de4dadd1be6fdee9341f11e570ba6f0bb7f253fb97d69a4d303a8bdb7a932788",
+        "retrieved_at": "2026-07-30T10:05:59.298043+00:00"
+      }
+    ],
+    "reconciliation_states": [
+      {
+        "provider": "totobrief",
+        "source": "/drawing-info/11986",
+        "attempt_count": 1,
+        "last_source_fingerprint": "b33266c4e72689e804f9536e85d38437ca6b452a400ccd4e1b0db4dbb67143be",
+        "terminal_count": 15,
+        "classification": "complete",
+        "retry_state": "complete",
+        "next_eligible_at": null,
+        "last_error_code": null,
+        "unchanged_observation_count": 0,
+        "transient_error_count": 0,
+        "updated_at": "2026-07-30T10:05:57.845366+00:00"
+      }
+    ]
+  }
+]

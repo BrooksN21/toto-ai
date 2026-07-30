@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-07-30T10:03:29.715949+00:00",
+  "method": "sqlite3.Connection.backup",
+  "source_database": "/Users/turshevr/toto-ai/data/toto.db",
+  "source_sha256_before": "d94738e26cb35d1f7768a8621f30d0111c2945851bb7165dc6490c57863d2c42",
+  "source_sha256_after": "d94738e26cb35d1f7768a8621f30d0111c2945851bb7165dc6490c57863d2c42",
+  "source_sidecars_before": {
+    "wal_exists": false,
+    "wal_size": 0,
+    "shm_exists": false,
+    "shm_size": 0
+  },
+  "backup_database": "/Users/turshevr/toto-ai/data/backups/toto-before-controlled-backfill-rerun-20260730T100317Z.db",
+  "backup_sha256": "49e43dbf3cfe54c0342e2bbba27c376e03ea9e293c03b3edda4ac86646121426",
+  "backup_size_bytes": 100855808,
+  "backup_mode_octal": "0o600",
+  "quick_check": [
+    "ok"
+  ],
+  "foreign_key_violation_count": 0,
+  "foreign_key_violations": []
+}

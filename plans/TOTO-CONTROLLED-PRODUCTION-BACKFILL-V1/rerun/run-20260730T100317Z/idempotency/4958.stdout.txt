@@ -1,0 +1,1 @@
+{"dry_run": false, "exhausted": 0, "force": false, "items": [], "processed": 0, "quarantined": 0, "repaired": 0, "selected": 0, "skipped_cooldown": 0, "source_incomplete": 0, "transient_error": 0}

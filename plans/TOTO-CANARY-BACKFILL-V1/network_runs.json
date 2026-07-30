@@ -1,0 +1,18 @@
+{
+  "first_pass": [
+    {
+      "drawing_number": 4955,
+      "sandbox_attempt": {"exit_code": 2, "status": "exhausted", "reason": "transport_error", "attempts": 2},
+      "approved_network_attempt": {"exit_code": 0, "status": "repaired", "reason": "terminal_15_of_15", "attempts": 1, "terminal_results": 15, "raw_snapshot_sha256": "f9cee63a0d1adb3d8db3d915e1c573660d266198b782d041aa1fe22be2a2ead1"}
+    },
+    {"drawing_number": 4956, "exit_code": 0, "status": "repaired", "reason": "terminal_15_of_15", "attempts": 1, "terminal_results": 15, "raw_snapshot_sha256": "01fd837ace6fea4045ec91481f87ff4e179856b3483aa1232e9f87cd3fa59cad"},
+    {"drawing_number": 4958, "exit_code": 0, "status": "repaired", "reason": "terminal_15_of_15", "attempts": 1, "terminal_results": 15, "raw_snapshot_sha256": "b046e3cf4154ca474bda17d4071ffd8796f61deaa5cecb21706ce39a37176174"},
+    {"drawing_number": 4946, "exit_code": 2, "status": "source_incomplete", "reason": "source_payload_incomplete", "attempts": 2, "terminal_results": 14, "raw_snapshot_sha256": "f51117b81d62c74af6f23b095b21c19878a789d398bd2ca8bca3f5d2da841328"}
+  ],
+  "second_pass": [
+    {"drawing_number": 4955, "exit_code": 0, "selected": 0, "processed": 0, "repaired": 0},
+    {"drawing_number": 4956, "exit_code": 0, "selected": 0, "processed": 0, "repaired": 0},
+    {"drawing_number": 4958, "exit_code": 0, "selected": 0, "processed": 0, "repaired": 0},
+    {"drawing_number": 4946, "exit_code": 2, "status": "source_incomplete", "reason": "source_payload_incomplete", "attempts": 2, "terminal_results": 14, "raw_snapshot_sha256": "3d1690e59a7ed7453f4224136bc52754b6f64aa1a831cb30d57dfb0eade35205"}
+  ]
+}

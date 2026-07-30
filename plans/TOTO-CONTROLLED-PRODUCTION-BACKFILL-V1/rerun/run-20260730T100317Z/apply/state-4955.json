@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempts": 1,
+      "classification": "complete",
+      "drawing_id": 11977,
+      "drawing_number": 4955,
+      "last_error_code": null,
+      "next_eligible_at": null,
+      "raw_snapshot_sha256": "0cb9e471657f99d382e1d0249221543ea737a8c1ff5c14a7637e1de20e33df97",
+      "reason": "terminal_15_of_15",
+      "recorded_at": "2026-07-30T10:05:55.288948+00:00",
+      "retry_state": "complete",
+      "status": "repaired",
+      "terminal_results": 15
+    }
+  ],
+  "drawings": {
+    "11977": {
+      "attempts": 1,
+      "classification": "complete",
+      "drawing_id": 11977,
+      "drawing_number": 4955,
+      "last_error_code": null,
+      "next_eligible_at": null,
+      "raw_snapshot_sha256": "0cb9e471657f99d382e1d0249221543ea737a8c1ff5c14a7637e1de20e33df97",
+      "reason": "terminal_15_of_15",
+      "retry_state": "complete",
+      "status": "repaired",
+      "terminal_results": 15
+    }
+  },
+  "schema_version": 1,
+  "state_sha256": "a2b023920ab44e8e95855d60a6cf288b5bb5790957fa62115fb2993debc30ccb",
+  "updated_at": "2026-07-30T10:05:55.289551+00:00"
+}

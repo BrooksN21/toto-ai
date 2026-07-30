@@ -1,5 +1,135 @@
 # Current State
 
+## Canary and controlled production backfill v1 (2026-07-30)
+
+`TOTO-CANARY-AND-CONTROLLED-BACKFILL-V1` completed the first bounded
+end-to-end use of the lifecycle reconciliation path.
+
+The network canary ran only on a copied database for drawings
+4946/4955/4956/4958. It restored 4955 and 4956 identity/quotes plus
+RAW-linked result snapshots, restored all 15 results for 4958, and proved that
+4946 remains genuinely source-incomplete at 14/15. Data Health for the
+4946–4958 interval improved from zero to three fully healthy drawings.
+
+After the canary exposed repeated fetching of unchanged 14/15 source data,
+durable cooldown/quarantine was implemented. A subsequent attempted
+production dry-run exposed an empty-schema mutation at CLI startup; that run
+was stopped before network access. The dry-run boundary was then corrected to
+physical SQLite read-only mode and verified against a fresh backup.
+
+The controlled production rerun used:
+
+- an online SQLite backup with mode `0600`, `quick_check=ok`, and zero
+  foreign-key violations;
+- strict allowlist `4946, 4955, 4956, 4958`;
+- a physically and logically immutable dry-run;
+- exactly four TotoBrief detail requests on first apply;
+- a second non-force apply with zero requests and zero database/RAW changes.
+
+Production runtime outcome:
+
+- 4946: remains 14/15, no synthetic VOID, persisted cooldown;
+- 4955/4956: restored 15 names/championships, 15 quote rows, RAW evidence, and
+  complete linked result snapshots;
+- 4958: restored 15 terminal results/scores/statuses and a linked snapshot;
+- no drawing outside the allowlist changed;
+- scheduler, packages, settlements, markers, uploads, and betting were not
+  touched;
+- final SQLite integrity and foreign-key checks passed.
+
+For drawings 4946–4958, healthy historical-inventory and settlement drawings
+improved `0 -> 3`, probability-backtest eligibility improved `3 -> 6`,
+prospective-generation eligibility improved `10 -> 12`, and missing terminal
+results fell `92 -> 77`.
+
+Decision: the same protocol is approved only for another small, explicitly
+allowlisted and backed-up wave. An unrestricted 2,199-drawing backfill and
+nightly installation remain blocked until several bounded waves complete
+without destructive or source-behavior surprises.
+
+The production SQLite database, backups, append-only RAW payloads, and
+reconciliation runtime state intentionally remain local and ignored by Git.
+Published repository artifacts contain code, tests, summaries, hashes, and
+audit evidence only.
+
+Sports statistics remain `AUDIT ONLY`: the implementation can persist
+provider-neutral, as-of feature evidence, but current data coverage is
+insufficient and no OOS-tested model is permitted to influence probabilities
+or coupons.
+
+Next:
+
+1. run another small backed-up allowlist wave and compare Data Health;
+2. convert the proven protocol into bounded nightly reconciliation only after
+   repeated acceptance;
+3. close package settlement and mandatory post-draw reporting;
+4. evaluate a lawful free sports-data source and run chronological OOS tests
+   before any probability blend.
+
+## Reconciliation dry-run physical read-only fix v1 (2026-07-30)
+
+`TOTO-RECONCILE-DRY-RUN-READONLY-FIX-V1` closes the controlled-backfill
+incident where CLI startup called `init_db()` and created an empty
+`drawing_reconciliation_states` table before a dry-run.
+
+- `reconcile-finished --dry-run` and `repair-canonical-raw --dry-run` now open
+  SQLite with `mode=ro`;
+- dry-run never calls `create_all`, migrations, or schema setup;
+- a missing reconciliation-state table is interpreted as no persisted state;
+- canonical RAW repair previews importer changes without creating RAW archive
+  files or result snapshots;
+- explicit apply mode still performs idempotent schema setup before mutation.
+
+Regression coverage uses real temporary SQLite files with both missing and
+existing reconciliation-state tables. It compares physical SHA-256,
+`sqlite_master`, every table row count, and WAL/SHM state before and after.
+A network-free smoke on a fresh copy of
+`toto-before-controlled-backfill-20260730T092227Z.db` preserved SHA-256
+`a117f28fe1d9e61f862191f179f3fcb8b05421e65b808fe9027ead71459ccc94`,
+all 76 schema objects, all 19 table counts, and absent WAL/SHM. Reconciliation
+selected 4946 without network or files; canonical repair previewed 171 changes
+for 4954 without creating an archive. The production database was not used.
+Focused verification passed 33 tests; the final full suite passed 1518 tests
+in 248.00 seconds. Ruff and `git diff --check` passed.
+
+The controlled production backfill was subsequently repeated from a fresh
+backup and passed under the strict allowlist protocol documented above.
+
+## Reconciliation cooldown/quarantine v1 (2026-07-30)
+
+`TOTO-RECONCILE-SOURCE-INCOMPLETE-COOLDOWN-V1` closes the canary defect where
+drawing 4946 (stable 14/15) was fetched and archived on every reconcile run.
+
+- additive `drawing_reconciliation_states` persists state per
+  drawing/provider/source;
+- unchanged source-incomplete payload fingerprints receive bounded
+  exponential cooldown and, after five observations, a 30-day expiring
+  quarantine;
+- transport, HTTP 429, and HTTP 5xx errors use a separate short retry policy;
+- changed fingerprints and improved terminal counts reset stagnation;
+- `--force` is explicit and off by default;
+- dry-run performs no network, RAW, JSON-state, or SQLite-state mutation;
+- blocked drawings do not consume `--batch-size`, preventing range starvation;
+- complete 15/15 observations mark state complete and remain network-skipped;
+- Data Health contract/report schema now exposes reconciliation inventory and
+  per-drawing state.
+
+The task was implemented and verified without network access or mutation of
+`data/toto.db`. The network-free 4946 replay on a SQLite backup used the exact
+saved canary payload hash
+`c44c81ad8f19812c4a7a1caf95a1809ac3fd544e46653fd14f832c42f082fbff`.
+Five eligible identical 14/15 observations produced cooldowns of 6/12/24/48
+hours and then quarantine through `2026-09-02T06:00:00+00:00`. A cooldown
+tick, quarantine tick, and dry-run each made zero fake-source calls and wrote
+zero RAW rows. Copy `quick_check` passed with zero foreign-key violations.
+Replay artifacts are under
+`reports/rehearsal/reconciliation-cooldown-4946-v1-20260730T120000Z/`.
+Acceptance verification: 86 focused lifecycle/reconciliation/data-health
+tests passed; full suite is 1514 passed in 267.40 seconds; Ruff and the
+network-free whitespace/diff-equivalent check passed. The primary database
+SHA-256 remained
+`5242945ace687adc59f2a6472bcf3c836075dbc88f47496a45756de6fe4f41fb`.
+
 ## Collector lifecycle freshness v1 (2026-07-30)
 
 Implemented on the current feature branch:
@@ -49,14 +179,9 @@ integration exists. The next sports-stat step is a lawful free source canary
 under the existing provider-neutral contract, after lifecycle data canary
 backfill is stable.
 
-Next:
-
-1. run a small explicit TotoBrief reconciliation canary on a database copy;
-2. compare health before/after and confirm no destructive changes;
-3. only then apply bounded repair to the primary DB and schedule nightly
-   reconciliation;
-4. close settlement/post-draw reporting;
-5. resume sports-source evaluation and OOS probability experiments.
+The canary and first bounded primary-database repair are now complete. The
+remaining lifecycle work is another controlled allowlist wave, eventual
+nightly reconciliation, and package settlement/post-draw reporting.
 
 ## 2026-07-29: Full-history forensic audit invalidated the completeness claim
 

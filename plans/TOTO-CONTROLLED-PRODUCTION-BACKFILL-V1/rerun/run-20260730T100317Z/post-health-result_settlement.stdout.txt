@@ -1,0 +1,28 @@
+                 Data Health Contract
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
+┃ Metric                         ┃             Value ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
+│ contract version               │             1.1.0 │
+│ use case                       │ result_settlement │
+│ strict                         │             false │
+│ drawings                       │                13 │
+│ healthy                        │                 3 │
+│ unhealthy                      │                10 │
+│ gaps                           │                 0 │
+│ duplicate numbers              │                 0 │
+│ finished incomplete results    │                 7 │
+│ missing finished outcomes      │                77 │
+│ reconciliation cooldown        │                 1 │
+│ reconciliation quarantined     │                 0 │
+│ exit status                    │              pass │
+│ reason:all_results_missing     │                 5 │
+│ reason:incomplete_results      │                 2 │
+│ reason:missing_result_snapshot │                10 │
+└────────────────────────────────┴───────────────────┘
+Reports written to
+plans/TOTO-CONTROLLED-PRODUCTION-BACKFILL-V1/rerun/run-20260730T100317Z/post-hea
+lth/result_settlement/data_health_v1.csv,
+plans/TOTO-CONTROLLED-PRODUCTION-BACKFILL-V1/rerun/run-20260730T100317Z/post-hea
+lth/result_settlement/data_health_v1.json,
+plans/TOTO-CONTROLLED-PRODUCTION-BACKFILL-V1/rerun/run-20260730T100317Z/post-hea
+lth/result_settlement/data_health_v1.md

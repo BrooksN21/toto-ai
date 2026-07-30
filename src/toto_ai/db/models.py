@@ -109,6 +109,43 @@ class DrawingResultSnapshot(Base):
     payload_json: Mapped[str] = mapped_column(Text)
 
 
+class DrawingReconciliationState(Base):
+    """Persistent per-source retry state for one finished drawing."""
+
+    __tablename__ = "drawing_reconciliation_states"
+    __table_args__ = (
+        UniqueConstraint(
+            "drawing_id",
+            "provider",
+            "source",
+            name="uq_drawing_reconciliation_source",
+        ),
+        Index(
+            "ix_drawing_reconciliation_eligibility",
+            "retry_state",
+            "next_eligible_at",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    drawing_id: Mapped[int] = mapped_column(Integer, index=True)
+    provider: Mapped[str] = mapped_column(String)
+    source: Mapped[str] = mapped_column(String)
+    last_attempt_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    attempt_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_source_fingerprint: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    terminal_count: Mapped[int] = mapped_column(Integer, default=0)
+    classification: Mapped[str] = mapped_column(String, default="transient_error")
+    retry_state: Mapped[str] = mapped_column(String, default="eligible")
+    next_eligible_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    last_error_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    unchanged_observation_count: Mapped[int] = mapped_column(Integer, default=0)
+    transient_error_count: Mapped[int] = mapped_column(Integer, default=0)
+    updated_at: Mapped[str] = mapped_column(String)
+
+
 class ArchivedPackage(Base):
     """Canonical package plus original source bytes for exact replay."""
 

@@ -351,9 +351,7 @@ def sync_finished_results_command(
 ) -> None:
     """Force one exact finished drawing-info snapshot by explicit identity."""
     if (drawing_id is None) == (drawing_number is None):
-        raise typer.BadParameter(
-            "use exactly one of --drawing-id or --drawing-number"
-        )
+        raise typer.BadParameter("use exactly one of --drawing-id or --drawing-number")
     try:
         factory = get_session_factory(init_db(db))
         result = sync_finished_drawing(
@@ -380,9 +378,7 @@ def settle_drawing_command(
 ) -> None:
     """Settle an archived/package file against the latest complete snapshot."""
     if (drawing_id is None) == (drawing_number is None):
-        raise typer.BadParameter(
-            "use exactly one of --drawing-id or --drawing-number"
-        )
+        raise typer.BadParameter("use exactly one of --drawing-id or --drawing-number")
     try:
         result = settle_package_file(
             get_session_factory(init_db(db)),
@@ -399,9 +395,7 @@ def settle_drawing_command(
 @app.command("reconcile-finished")
 def reconcile_finished_command(
     db: str = typer.Option("data/toto.db", "--db"),
-    from_drawing: int | None = typer.Option(
-        None, "--from-drawing", min=1
-    ),
+    from_drawing: int | None = typer.Option(None, "--from-drawing", min=1),
     to_drawing: int | None = typer.Option(None, "--to-drawing", min=1),
     last: int | None = typer.Option(None, "--last", min=1),
     batch_size: int | None = typer.Option(None, "--batch-size", min=1),
@@ -409,15 +403,9 @@ def reconcile_finished_command(
     initial_backoff_seconds: float = typer.Option(
         1.0, "--initial-backoff-seconds", min=0
     ),
-    max_backoff_seconds: float = typer.Option(
-        30.0, "--max-backoff-seconds", min=0
-    ),
-    backoff_multiplier: float = typer.Option(
-        2.0, "--backoff-multiplier", min=1
-    ),
-    rate_limit_seconds: float = typer.Option(
-        0.5, "--rate-limit-seconds", min=0
-    ),
+    max_backoff_seconds: float = typer.Option(30.0, "--max-backoff-seconds", min=0),
+    backoff_multiplier: float = typer.Option(2.0, "--backoff-multiplier", min=1),
+    rate_limit_seconds: float = typer.Option(0.5, "--rate-limit-seconds", min=0),
     state_file: str = typer.Option(
         "data/reconciliation/finished-state.json",
         "--state-file",
@@ -431,11 +419,21 @@ def reconcile_finished_command(
         "--dry-run/--apply",
         help="Select and report only; dry-run never performs network calls.",
     ),
+    force: bool = typer.Option(
+        False,
+        "--force/--no-force",
+        help=(
+            "Explicitly bypass persisted cooldown/quarantine for this run; "
+            "the default is fail-safe no force."
+        ),
+    ),
 ) -> None:
     """Reconcile incomplete finished drawings; never generates or places bets."""
+    engine = None
     try:
+        engine = open_readonly_db(db) if dry_run else init_db(db)
         report = reconcile_finished_drawings(
-            get_session_factory(init_db(db)),
+            get_session_factory(engine),
             TotoBriefClient(),
             archive_root=raw_archive_root,
             state_path=state_file,
@@ -451,11 +449,19 @@ def reconcile_finished_command(
             from_drawing=from_drawing,
             to_drawing=to_drawing,
             last=last,
+            force=force,
         )
     except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
+    finally:
+        if engine is not None:
+            engine.dispose()
     typer.echo(json.dumps(asdict(report), ensure_ascii=False, sort_keys=True))
-    if not dry_run and (report.source_incomplete or report.exhausted):
+    if not dry_run and (
+        report.source_incomplete
+        or report.transient_error
+        or any(item.status == "quarantined" for item in report.items)
+    ):
         raise typer.Exit(code=2)
 
 
@@ -480,9 +486,11 @@ def repair_canonical_raw_command(
     ),
 ) -> None:
     """Repair only losses proven by validated canonical local RAW."""
+    engine = None
     try:
+        engine = open_readonly_db(db) if dry_run else init_db(db)
         report = repair_from_canonical_raw(
-            get_session_factory(init_db(db)),
+            get_session_factory(engine),
             raw_cache_root=raw_cache_root,
             archive_root=raw_archive_root,
             drawing_numbers=tuple(drawing_number),
@@ -490,6 +498,9 @@ def repair_canonical_raw_command(
         )
     except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
+    finally:
+        if engine is not None:
+            engine.dispose()
     typer.echo(json.dumps(asdict(report), ensure_ascii=False, sort_keys=True))
     if report.invalid:
         raise typer.Exit(code=2)
@@ -510,9 +521,7 @@ def archive_package_command(
 ) -> None:
     """Explicitly import auditable legacy package evidence."""
     if (drawing_id is None) == (drawing_number is None):
-        raise typer.BadParameter(
-            "use exactly one of --drawing-id or --drawing-number"
-        )
+        raise typer.BadParameter("use exactly one of --drawing-id or --drawing-number")
     try:
         factory = get_session_factory(init_db(db))
         resolved_id, resolved_number = resolve_explicit_drawing(
@@ -579,9 +588,7 @@ def post_draw_run_command(
 ) -> None:
     """Boundedly poll and settle one explicit ended drawing; never places bets."""
     if (drawing_id is None) == (drawing_number is None):
-        raise typer.BadParameter(
-            "use exactly one of --drawing-id or --drawing-number"
-        )
+        raise typer.BadParameter("use exactly one of --drawing-id or --drawing-number")
     try:
         state = run_post_draw(
             get_session_factory(init_db(db)),
@@ -635,9 +642,7 @@ def post_draw_plan_command(
 ) -> None:
     """Generate uninstalled non-betting post-draw launchd artifacts."""
     if (drawing_id is None) == (drawing_number is None):
-        raise typer.BadParameter(
-            "use exactly one of --drawing-id or --drawing-number"
-        )
+        raise typer.BadParameter("use exactly one of --drawing-id or --drawing-number")
     try:
         plan, wrapper, plist = prepare_post_draw_scheduler_artifacts(
             drawing_id=drawing_id,
@@ -750,12 +755,9 @@ def data_health_command(
     """Evaluate the versioned read-only drawing data-health contract."""
     if use_case not in DATA_HEALTH_USE_CASES:
         raise typer.BadParameter(
-            "--use-case must be one of: "
-            + ", ".join(DATA_HEALTH_USE_CASES)
+            "--use-case must be one of: " + ", ".join(DATA_HEALTH_USE_CASES)
         )
-    if last is not None and (
-        from_drawing is not None or to_drawing is not None
-    ):
+    if last is not None and (from_drawing is not None or to_drawing is not None):
         raise typer.BadParameter(
             "--last cannot be combined with --from-drawing or --to-drawing"
         )
@@ -764,9 +766,7 @@ def data_health_command(
         and to_drawing is not None
         and from_drawing > to_drawing
     ):
-        raise typer.BadParameter(
-            "--from-drawing cannot be greater than --to-drawing"
-        )
+        raise typer.BadParameter("--from-drawing cannot be greater than --to-drawing")
     try:
         engine = open_readonly_db(db)
         session_factory = get_session_factory(engine)
@@ -786,10 +786,7 @@ def data_health_command(
         raise typer.Exit(EXECUTION_ERROR_EXIT_CODE) from error
 
     print(_data_health_summary_table(report))
-    print(
-        "Reports written to "
-        + ", ".join(str(path) for path in paths)
-    )
+    print("Reports written to " + ", ".join(str(path) for path in paths))
     if strict and not report.summary.passed:
         raise typer.Exit(DATA_QUALITY_EXIT_CODE)
 
@@ -1431,9 +1428,7 @@ def _resolve_runner_timing_override(
 
     overlay = overlay_timing_override(raw_snapshot, catalog_check.catalog)
     record = _override_record_for_overlay(catalog_check.catalog.records, overlay)
-    diagnostics = tuple(
-        f"{item.code}: {item.message}" for item in overlay.diagnostics
-    )
+    diagnostics = tuple(f"{item.code}: {item.message}" for item in overlay.diagnostics)
     if not overlay.complete_overlay or record is None:
         return RunnerTimingResolution(
             raw=raw,
@@ -1567,9 +1562,9 @@ def _timing_override_audit(
     diagnostics: tuple[str, ...],
     overlay_summary: TimingSnapshotSummary | None,
 ) -> TimingOverrideAudit:
-    record_events = {} if record is None else {
-        event.event_order: event for event in record.events
-    }
+    record_events = (
+        {} if record is None else {event.event_order: event for event in record.events}
+    )
     applied_events = tuple(
         AppliedTimingOverrideEvent(
             event_order=order,
@@ -1717,9 +1712,7 @@ class _RunnerResources:
     readonly_engine: object
     readonly_session_factory: object
     timing_resolver: Callable[[PinnedDrawing], PlayTimingEligibility]
-    ev_timing_resolver: Callable[
-        [Mapping[str, object]], PlayTimingEligibility
-    ]
+    ev_timing_resolver: Callable[[Mapping[str, object]], PlayTimingEligibility]
     timing_override_pin: PinnedTimingOverrideCatalog | None
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None
     reviewed_catalog_path: Path | None
@@ -1808,10 +1801,7 @@ def _prepare_runner_resources(
             "drawing_id": target.target.drawing_id,
             "drawing_fingerprint": target.fingerprint,
             "expected_probability_sha256": preparation_probability_sha256(
-                tuple(
-                    event.bk_probabilities
-                    for event in target.target.events
-                )
+                tuple(event.bk_probabilities for event in target.target.events)
             ),
             "as_of": preflight_at,
         }
@@ -1984,11 +1974,15 @@ def _run_drawing_offline_replay(
             )
             if not pinned_revalidation_is_ready(result.snapshot):
                 summary = result.snapshot.pinned_revalidation
-                detail = "absent" if summary is None else (
-                    f"{summary.matched_count}/{summary.expected_count}; "
-                    f"stale={summary.stale_event_orders}; "
-                    f"provider_failures={summary.provider_failure_event_orders}; "
-                    f"date_failures={summary.date_failure_event_orders}"
+                detail = (
+                    "absent"
+                    if summary is None
+                    else (
+                        f"{summary.matched_count}/{summary.expected_count}; "
+                        f"stale={summary.stale_event_orders}; "
+                        f"provider_failures={summary.provider_failure_event_orders}; "
+                        f"date_failures={summary.date_failure_event_orders}"
+                    )
                 )
                 raise ValueError(
                     "offline replay pinned revalidation is not ready: " + detail
@@ -2083,9 +2077,7 @@ def run_drawing_command(
         DEFAULT_MINIMUM_GROSS_EV,
         "--min-gross-ev",
     ),
-    package_near_fixed_share: float = typer.Option(
-        0.95, "--package-near-fixed-share"
-    ),
+    package_near_fixed_share: float = typer.Option(0.95, "--package-near-fixed-share"),
     package_low_probability_threshold: float = typer.Option(
         0.20, "--package-low-probability-threshold"
     ),
@@ -2157,9 +2149,7 @@ def run_drawing_command(
     final_input = os.environ.get("TOTO_FINAL_INPUT")
     scheduler_plan = os.environ.get("TOTO_SCHEDULER_PLAN")
     if (final_input is None) != (scheduler_plan is None):
-        raise typer.BadParameter(
-            "atomic final input environment is incomplete"
-        )
+        raise typer.BadParameter("atomic final input environment is incomplete")
     db = db or "data/toto.db"
     report_dir = report_dir or "reports"
     cache_root = cache_root or "data/external-cache/api-sports"
@@ -2332,9 +2322,11 @@ def run_drawing_command(
                         timing_eligibility_resolver=(
                             require_resources().ev_timing_resolver
                             if timing_overrides is None
-                            else lambda _payload: _require_override_resolution(
-                                timing_resolution
-                            ).effective
+                            else lambda _payload: (
+                                _require_override_resolution(
+                                    timing_resolution
+                                ).effective
+                            )
                         ),
                     )
                     if atomic_snapshot is None
@@ -2346,9 +2338,11 @@ def run_drawing_command(
                         timing_eligibility_resolver=(
                             require_resources().ev_timing_resolver
                             if timing_overrides is None
-                            else lambda _payload: _require_override_resolution(
-                                timing_resolution
-                            ).effective
+                            else lambda _payload: (
+                                _require_override_resolution(
+                                    timing_resolution
+                                ).effective
+                            )
                         ),
                         payload=atomic_snapshot.payload,
                         fetched_at=atomic_snapshot.captured_at,
@@ -2360,14 +2354,10 @@ def run_drawing_command(
                 progress_callback=update_progress,
                 preflight_check=preflight_check,
                 resolve_timing_override=(
-                    resolve_timing_override
-                    if timing_overrides is not None
-                    else None
+                    resolve_timing_override if timing_overrides is not None else None
                 ),
                 verify_timing_override=(
-                    verify_timing_override
-                    if timing_overrides is not None
-                    else None
+                    verify_timing_override if timing_overrides is not None else None
                 ),
             )
             result = (
@@ -2431,11 +2421,7 @@ def run_drawing_command(
             )
 
     try:
-        reviewed_inputs = (
-            ()
-            if resources is None
-            else resources.reviewed_input_paths
-        )
+        reviewed_inputs = () if resources is None else resources.reviewed_input_paths
         publication = publish_drawing_run_artifacts(
             result,
             report_dir=report_dir,
@@ -2498,9 +2484,7 @@ def scheduler_plan_command(
         DEFAULT_MINIMUM_GROSS_EV,
         "--min-gross-ev",
     ),
-    package_near_fixed_share: float = typer.Option(
-        0.95, "--package-near-fixed-share"
-    ),
+    package_near_fixed_share: float = typer.Option(0.95, "--package-near-fixed-share"),
     package_low_probability_threshold: float = typer.Option(
         0.20, "--package-low-probability-threshold"
     ),
@@ -2662,14 +2646,12 @@ def _prepare_current_for_morning(
         )
         if not synchronized.ready or synchronized.detail.payload is None:
             raise ValueError(
-                synchronized.detail.error
-                or "current TotoBrief detail is unavailable"
+                synchronized.detail.error or "current TotoBrief detail is unavailable"
             )
         fetched_at = (
             observed_at
             if synchronized.detail.cache_age_seconds is None
-            else observed_at
-            - timedelta(seconds=synchronized.detail.cache_age_seconds)
+            else observed_at - timedelta(seconds=synchronized.detail.cache_age_seconds)
         )
         target = parse_target_drawing(
             synchronized.detail.payload,
@@ -2677,9 +2659,7 @@ def _prepare_current_for_morning(
         )
         if target.drawing_number is None:
             raise ValueError("current drawing visible number is required")
-        seed_reviewed_alias_config(
-            session_factory, aliases, provider=provider
-        )
+        seed_reviewed_alias_config(session_factory, aliases, provider=provider)
         api_key = os.environ.get("API_SPORTS_KEY", "")
         if not api_key.strip():
             raise ValueError("API_SPORTS_KEY is required")
@@ -2746,31 +2726,23 @@ def morning_dispatch_command(
     ),
     cache_root: str = typer.Option("data/external-cache/api-sports"),
     quota_reserve: int = typer.Option(10, min=0),
-    api_sports_max_retries: int = typer.Option(
-        2, "--api-sports-max-retries", min=0
-    ),
+    api_sports_max_retries: int = typer.Option(2, "--api-sports-max-retries", min=0),
     expansion_horizon_days: int = typer.Option(5, min=1, max=5),
     reviewed_schedule_catalog: str | None = typer.Option(
         None, "--reviewed-schedule-catalog"
     ),
     activate: bool = typer.Option(False, "--activate"),
-    python_executable: str = typer.Option(
-        sys.executable, "--python-executable"
-    ),
+    python_executable: str = typer.Option(sys.executable, "--python-executable"),
 ) -> None:
     """Prepare one current drawing and hand it to one exact evening scheduler."""
     if provider != "api-sports":
         raise typer.BadParameter("provider must be api-sports")
     root = Path(project_root).absolute()
-    resolved_raw_cache = resolve_contained_path(
-        raw_cache_dir, allowed_root=root
-    )
+    resolved_raw_cache = resolve_contained_path(raw_cache_dir, allowed_root=root)
     resolved_rate_state = resolve_contained_path(
         totobrief_rate_state, allowed_root=root
     )
-    resolved_cache_root = resolve_contained_path(
-        cache_root, allowed_root=root
-    )
+    resolved_cache_root = resolve_contained_path(cache_root, allowed_root=root)
     config = MorningDispatchConfig(
         project_root=root,
         state_root=Path(state_root),
@@ -2864,10 +2836,7 @@ def scheduler_execute_command(
         if dry_run:
             typer.echo(scheduler_plan_json(scheduler_plan), nl=False)
             return
-        if (
-            not simulate
-            and scheduler_plan.source_schema_version != 4
-        ):
+        if not simulate and scheduler_plan.source_schema_version != 4:
             raise ValueError(
                 "legacy scheduler plan is inspection-only; regenerate schema v4"
             )
@@ -2925,9 +2894,7 @@ def ev_package_command(
     bank: int = typer.Option(...),
     stake: int = typer.Option(30),
     min_gross_ev: float = typer.Option(1.0),
-    package_near_fixed_share: float = typer.Option(
-        0.95, "--package-near-fixed-share"
-    ),
+    package_near_fixed_share: float = typer.Option(0.95, "--package-near-fixed-share"),
     package_low_probability_threshold: float = typer.Option(
         0.20, "--package-low-probability-threshold"
     ),
@@ -3284,9 +3251,7 @@ def prepare_drawing_command(
         else:
             api_key = os.environ.get("API_SPORTS_KEY", "")
             if not api_key.strip():
-                raise ValueError(
-                    "API_SPORTS_KEY is required without --schedule-cache"
-                )
+                raise ValueError("API_SPORTS_KEY is required without --schedule-cache")
             provider_client = APISportsClient(
                 api_key,
                 cache_dir=Path(cache_root),
@@ -3442,9 +3407,7 @@ def sync_prepare_command(
         )
         detail = synchronized.detail
         cache_age = (
-            detail.cache_age_seconds
-            if detail.cache_age_seconds is not None
-            else "none"
+            detail.cache_age_seconds if detail.cache_age_seconds is not None else "none"
         )
         typer.echo(
             "phase=totobrief-detail "
@@ -3509,9 +3472,7 @@ def sync_prepare_command(
         else:
             api_key = os.environ.get("API_SPORTS_KEY", "")
             if not api_key.strip():
-                raise ValueError(
-                    "API_SPORTS_KEY is required without --schedule-cache"
-                )
+                raise ValueError("API_SPORTS_KEY is required without --schedule-cache")
             provider_client = APISportsClient(
                 api_key,
                 cache_dir=Path(cache_root),
@@ -4485,6 +4446,14 @@ def _data_health_summary_table(report: DataHealthReport) -> Table:
         "missing finished outcomes",
         str(summary.inventory_counts["missing_terminal_results_in_finished"]),
     )
+    table.add_row(
+        "reconciliation cooldown",
+        str(summary.inventory_counts["reconciliation_cooldown_drawings"]),
+    )
+    table.add_row(
+        "reconciliation quarantined",
+        str(summary.inventory_counts["reconciliation_quarantined_drawings"]),
+    )
     table.add_row("exit status", summary.exit_status)
     for reason, count in summary.reason_counts.items():
         table.add_row(f"reason:{reason}", str(count))
@@ -5120,10 +5089,7 @@ def _external_coverage_table(audit: CoverageAudit) -> Table:
     table.add_row(
         "reversed exact matches",
         _format_value(
-            sum(
-                row.match_orientation == "reversed"
-                for row in audit.dispositions
-            )
+            sum(row.match_orientation == "reversed" for row in audit.dispositions)
         ),
     )
     table.add_row("consensus rate", f"{audit.total.usable_consensus_rate:.2%}")

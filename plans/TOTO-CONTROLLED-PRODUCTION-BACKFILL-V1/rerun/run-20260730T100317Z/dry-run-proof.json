@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "quick_check_equal": true,
+    "fk_equal_zero": true,
+    "logical_sha_equal": true,
+    "tables_equal": true,
+    "schema_table_count_equal": true,
+    "state_files_created_zero": true
+  },
+  "baseline_logical_sha": "1e207b8e4f12873e9240248483a17d2abb37268aa0399a7b95ea1885ccda166b",
+  "after_logical_sha": "1e207b8e4f12873e9240248483a17d2abb37268aa0399a7b95ea1885ccda166b",
+  "baseline_table_count": 20,
+  "after_table_count": 20,
+  "state_files": []
+}

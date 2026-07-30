@@ -23,10 +23,46 @@ triples cannot erase stronger data. Terminal conflicts fail closed. VOID is
 accepted only with explicit source status and HTTP(S) evidence.
 
 `reconcile-finished` is a non-betting, bounded, resumable command contract for
-recent/range incomplete finished drawings. Its dry-run performs no network.
-`repair-canonical-raw` is evidence-only offline repair and distinguishes
-provable importer loss from missing local evidence. Neither command installs
+recent/range incomplete finished drawings. Its dry-run uses a SQLite read-only
+URI, never invokes schema setup/migration, treats an absent optional
+reconciliation-state table as empty state, and performs no network or
+persistent writes. `repair-canonical-raw` uses the same read-only database
+boundary in dry-run and computes its importer delta without publishing RAW or
+result evidence. Explicit apply mode initializes the additive schema before
+the first mutation and retains RAW-first ordering. Neither command installs
 automation or places bets.
+
+Persistent reconciliation state is keyed by drawing, provider, and source in
+`drawing_reconciliation_states`. It separates source-incomplete observations
+from transient transport/429/5xx failures and records the last attempt,
+cumulative attempts, canonical upstream payload fingerprint, terminal count,
+classification, retry state, next eligible time, and last error code.
+Unchanged source-incomplete fingerprints use bounded exponential cooldown and
+eventual expiring quarantine. Transient failures use a shorter independent
+cooldown. Improved local terminal count, changed observed fingerprint, policy
+expiry, or explicit one-run force safely reopen eligibility. Blocked drawings
+do not consume a range batch slot, so nightly reconciliation cannot hot-loop
+or starve later eligible drawings. Dry-run reads this state but mutates neither
+it nor RAW.
+
+Controlled production backfill is an operator-bounded protocol layered over
+that engine:
+
+```text
+explicit drawing allowlist
+-> online SQLite backup + integrity manifest
+-> physical read-only dry-run
+-> one bounded network apply
+-> Data Health and exact changed-row scope proof
+-> non-force idempotency pass with zero network requests
+```
+
+The first accepted production batch covered 4946/4955/4956/4958. It made four
+detail requests, restored complete evidence for 4955/4956/4958, and persisted
+4946 as source-incomplete with cooldown. No unrestricted historical mode or
+nightly automation is authorized by that acceptance. SQLite, backups, RAW
+payloads, and retry state remain local operational data and are excluded from
+Git.
 
 ## Provider-neutral reviewed schedule fallback
 

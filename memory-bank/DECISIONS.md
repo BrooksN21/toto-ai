@@ -1,5 +1,49 @@
 # Decisions
 
+## Controlled backfill acceptance decisions (2026-07-30)
+
+- Historical network repair is permitted only through an explicit drawing
+  allowlist, an online SQLite backup, a physically read-only dry-run, one
+  bounded apply, Data Health comparison, scope proof, integrity checks, and a
+  zero-request idempotency pass.
+- The successful 4946/4955/4956/4958 batch proves this bounded protocol, not
+  unrestricted full-history safety. Bulk backfill and unattended nightly
+  installation remain disallowed until multiple small waves pass.
+- `source_incomplete` is valid source evidence, not a reason to synthesize a
+  result or VOID. Drawing 4946 remains 14/15 and is cooled down.
+- Complete reconciliation state prevents repeated network access. A second
+  non-force apply must perform zero requests and leave SQLite and RAW
+  unchanged.
+- Runtime data is local evidence: `data/toto.db`, backups, RAW payloads,
+  cooldown state, and rehearsal reports are never committed. Repository
+  publication contains code, tests, concise reports, hashes, and
+  machine-readable audit summaries only.
+- Sports-statistics evidence remains audit-only until a lawful source supplies
+  useful coverage and a frozen chronological OOS evaluation proves no
+  degradation against the market prior.
+
+## Reconciliation retry-state decisions (2026-07-30)
+
+- Reconciliation eligibility is durable database state keyed by exact
+  drawing/provider/source, not an invocation-local JSON log.
+- The canonical source fingerprint is the normalized detail payload SHA-256;
+  RAW snapshot hashes are not used because capture metadata changes per
+  observation.
+- Stable source-incomplete data is not a transport failure. It receives a
+  6-hour bounded exponential cooldown, capped at 7 days, and an expiring
+  30-day quarantine after five unchanged observations.
+- Transport failures and HTTP 429/5xx use a separate 5-minute-to-1-hour
+  cooldown and never increment source-incomplete stagnation.
+- A changed observed fingerprint or improved terminal count resets the
+  source-incomplete stagnation sequence. Quarantine expiry permits a bounded
+  new observation. `--force` bypasses blocking once without erasing history.
+- Source-incomplete payloads are not immediately re-requested inside one CLI
+  invocation. Bounded in-process retries remain only for transient failures.
+- Dry-run may inspect policy state but must not call the network or write RAW,
+  JSON resume state, or reconciliation rows.
+- A blocked drawing never consumes a range batch slot; otherwise old
+  quarantined rows could starve newer repairable drawings forever.
+
 ## Lifecycle evidence decisions (2026-07-30)
 
 - Fifteen event/quote rows do not make a finished drawing fresh. Freshness
@@ -806,3 +850,18 @@
   labeled. Prospective generation has no override.
 - Gap numbers remain metadata until verified against the authoritative listing;
   the system must not synthesize drawings 3843/3844.
+
+## Dry-run physical read-only contract
+
+- A CLI flag named `--dry-run` means physical as well as logical read-only:
+  no schema setup, migrations, `create_all`, SQL mutations, timestamps,
+  WAL/SHM, RAW, snapshots, state files, or adjacent reports.
+- Dry-run commands must open an existing SQLite file through the project
+  read-only engine. Optional additive tables that do not yet exist are empty
+  state during preview and must not be created implicitly.
+- Previewing canonical RAW computes the importer delta in memory against
+  read-only rows. It does not publish immutable evidence; evidence publication
+  remains an apply-mode prerequisite before analytical mutation.
+- Explicit apply mode owns idempotent schema initialization before its first
+  mutation. This separation is tested at the CLI boundary, not only inside the
+  reconciliation operation.
