@@ -1,5 +1,64 @@
 # Decisions
 
+## Passive nightly reconciliation decisions (2026-07-30)
+
+- Nightly automation is results-only. It cannot import or call package,
+  scheduler-activation, upload, or betting code.
+- "Last 30" means the last 30 finished drawings first; incomplete/cooldown
+  filtering happens only inside that bounded scope.
+- Apply is authorized only for the exact allowlist captured by a physical
+  read-only dry-run and confirmed unchanged by a second read-only selection.
+- The default attempt cap is eight drawings, force is disabled, and persistent
+  cooldown/quarantine remains authoritative.
+- An empty selection is `DEFERRED/NOOP` with zero network and no backup.
+- A valid online SQLite backup with mode `0600`, quick-check, FK check, SHA-256
+  and manifest is mandatory before any reconciliation mutation/network apply.
+- Retention removes only excess manifest-verified backups and always preserves
+  at least the newest known-good copy.
+- Morning preparation and nightly reconciliation share one global fcntl lock.
+  Stale lock-file metadata alone never permits overlap; the OS lock is
+  authoritative.
+- `source_incomplete` is `PARTIAL`, not a crash and never evidence for a
+  synthetic result/VOID.
+- LaunchAgent artifacts are generate-only. Installation requires a separate
+  explicit operator decision after review of tests, paths, timezone, and the
+  first manual run.
+- That operator decision was granted after wave 3. The installed deployment is
+  `com.totoai.nightly-reconciliation.v1`, daily 03:20 host-local/Moscow time,
+  `RunAtLoad=false`. Installation does not change the generate-only behavior
+  of `nightly-reconciliation-plan`.
+- Launchd exit code 2 is accepted only when the persisted nightly report is a
+  structurally valid `PARTIAL` run. It is not treated as success, but it is
+  distinct from `FAILED` and is expected for authoritative 14/15 source data.
+- Runtime state, logs, RAW, backups, SQLite, and the installed home plist are
+  operational evidence outside Git. Only code, tests and concise audit
+  summaries are published.
+
+## Offline canonical-RAW classification decisions (2026-07-30)
+
+- Offline canonical-RAW repair and network reconciliation are separate
+  classification domains. Network `source_incomplete` and its
+  provider/source-keyed cooldown state are never inferred or updated by an
+  offline repair.
+- Stable offline states are:
+  `offline_repair_recoverable` for a dry-run with provable pending changes,
+  `offline_repair_recovered` after those changes are applied, and
+  `offline_repair_no_changes` when the canonical RAW adds no analytical
+  information.
+- Reapplying an already classified local snapshot preserves its classification.
+  A reported `logical_changes=0` means a physical and logical no-op, including
+  raw-classification metadata, timestamps, attempt counters, archive bytes,
+  and SQLite bytes.
+- The historical erroneous transition
+  `source_incomplete -> offline_repair_recovered` is allowed once only when the
+  exact canonical RAW provenance/fingerprint matches its persisted row, its
+  content is already incorporated, and an independently hash-verified complete
+  result snapshot proves every terminal result omitted by that RAW. Ambiguous
+  cases remain unchanged and are reported for manual review.
+- A separately persisted and verified VOID result is stronger terminal
+  evidence than an older canonical RAW with an empty result. Offline repair
+  cannot remove or downgrade that VOID.
+
 ## Controlled backfill acceptance decisions (2026-07-30)
 
 - Historical network repair is permitted only through an explicit drawing
@@ -7,8 +66,9 @@
   bounded apply, Data Health comparison, scope proof, integrity checks, and a
   zero-request idempotency pass.
 - The successful 4946/4955/4956/4958 batch proves this bounded protocol, not
-  unrestricted full-history safety. Bulk backfill and unattended nightly
-  installation remain disallowed until multiple small waves pass.
+  unrestricted full-history safety. Waves 2/3 and the idempotency replay
+  authorized only the installed latest-30/eight-attempt nightly job; bulk
+  unrestricted full-history backfill remains disallowed.
 - `source_incomplete` is valid source evidence, not a reason to synthesize a
   result or VOID. Drawing 4946 remains 14/15 and is cooled down.
 - Complete reconciliation state prevents repeated network access. A second
@@ -61,10 +121,11 @@
   `source_missing` is used only when absence is proved by local/source
   evidence.
 - Historical repair never synthesizes fields. Validated canonical RAW can
-  prove `importer_loss_recoverable_local`; absent RAW remains
-  `no_local_evidence`.
-- Nightly reconciliation is a non-betting command contract only. This task
-  does not install or activate a LaunchAgent.
+  prove `offline_repair_recoverable`; applied recovery is persistently
+  `offline_repair_recovered`; absent RAW remains `no_local_evidence`.
+- Nightly reconciliation is a non-betting command contract only. Its installed
+  LaunchAgent may refresh finished-result evidence but cannot call package,
+  upload, evening scheduler activation, or betting paths.
 
 ## 2026-07-29: Row counts are not evidence of historical completeness
 

@@ -1,5 +1,106 @@
 # Current State
 
+## Passive nightly reconciliation v1 (2026-07-30)
+
+`TOTO-NIGHTLY-RECONCILIATION-V1` is implemented, installed, and enabled as the
+user LaunchAgent `com.totoai.nightly-reconciliation.v1`.
+
+- CLI: `nightly-reconciliation-run` and
+  `nightly-reconciliation-plan`;
+- installed schedule: daily 03:20 machine-local time, currently Moscow time;
+- scope: latest 30 finished drawings, maximum eight eligible attempts;
+- exact two-pass read-only selection with fail-closed drift detection;
+- shared morning/nightly global maintenance lock with stale metadata recovery;
+- mode-`0600` online SQLite backup and manifest before apply;
+- retention of seven known-good backups, never deleting the only/newest good
+  copy;
+- Data Health before/after and SQLite quick/FK checks;
+- timestamped report/state/JSONL log;
+- `SUCCESS`, `PARTIAL`, `DEFERRED`, and `FAILED` classifications;
+- no package generation, betting scheduler activation, upload, or bet path.
+
+The installed plist is
+`/Users/turshevr/Library/LaunchAgents/com.totoai.nightly-reconciliation.v1.plist`
+with mode `0600` and SHA-256
+`4a7302736e75e3eb3820acddb51223388ea3a5f518a9ac40d84225cb12907003`.
+It is loaded in `gui/501`, has `RunAtLoad=false`, and points to the generated
+repository-local wrapper. Runtime state, logs, backups, RAW and the installed
+home plist remain outside Git.
+
+The explicit smoke run completed as controlled `PARTIAL`:
+
+- captured finished drawings 4930 through 4937;
+- eight requests, zero retries, timeouts, TLS or transport errors;
+- seven drawings restored to 15/15;
+- drawing 4931 remained 14/15 and entered cooldown;
+- selected-scope Data Health improved from zero to six healthy drawings;
+- SQLite `quick_check=ok`, zero foreign-key violations;
+- no package, marker, upload, scheduler activation, or bet artifact.
+
+Launchd currently reports the job loaded and not running, with one completed
+run and `last exit code = 2`; exit 2 is the CLI contract for the recorded
+`PARTIAL` source-incomplete outcome, not a process crash. The next scheduled
+calendar trigger is daily at 03:20 local time.
+
+Runtime limitations:
+
+- only the latest 30 finished drawings are considered per run;
+- no more than eight eligible network attempts are made;
+- stable incomplete source payloads remain incomplete and are cooled down or
+  quarantined rather than synthesized;
+- the job repairs result/history evidence only and cannot generate packages or
+  place bets;
+- the installed schedule assumes the host timezone remains Europe/Moscow;
+- unrestricted full-history backfill remains forbidden.
+
+Publication verification for the combined wave2/wave3/nightly change set:
+
+- focused lifecycle/reconciliation/morning suite: 104 passed;
+- full pytest: 1536 passed in 244.28 seconds;
+- repository Ruff and `git diff --check`: passed;
+- installed plist and generated candidate SHA-256 match;
+- launchd status: loaded, not running, one completed `PARTIAL` smoke,
+  `last exit code = 2`.
+
+## Offline repair classification idempotency v1 (2026-07-30)
+
+`TOTO-OFFLINE-REPAIR-CLASSIFICATION-IDEMPOTENCY-V1` fixes the wave-2 defect
+where a second canonical repair with `logical_changes=0` changed snapshot
+classification from local importer recovery to network
+`source_incomplete`.
+
+Offline repair now uses stable classifications:
+
+- `offline_repair_recoverable` in read-only preview when changes are pending;
+- `offline_repair_recovered` after a proven local recovery;
+- `offline_repair_no_changes` when local RAW supplies no new data.
+
+No-change reapplication preserves classification and performs no SQLite,
+reconciliation-state, timestamp, attempt, RAW, or archive mutation. Network
+cooldown state remains keyed and isolated by its existing
+drawing/provider/source identity.
+
+The one-time historical normalization from an erroneous `source_incomplete`
+fails closed unless exact RAW provenance and a hash-verified complete result
+snapshot prove the current terminal facts. This specifically protects a
+separately reviewed VOID from an older canonical payload that contains an
+empty result.
+
+A network-free replay used a SQLite backup copy of the current drawing-4954
+state:
+
+- before: `source_incomplete`;
+- correction: `offline_repair_recovered`, `logical_changes=1`;
+- second apply: `offline_repair_recovered`, `logical_changes=0`;
+- second-run SQLite SHA and logical state were identical to post-correction;
+- RAW/archive hashes, network reconciliation rows, and VOID facts were
+  unchanged;
+- primary `data/toto.db` SHA remained
+  `a98eeeb8ec2a7c8121589edace4c7a72c144893f330175277cf205bae995650e`.
+
+The full wave-2 idempotency protocol and bounded wave 3 subsequently passed,
+so this bugfix is now part of the installed nightly reconciliation boundary.
+
 ## Canary and controlled production backfill v1 (2026-07-30)
 
 `TOTO-CANARY-AND-CONTROLLED-BACKFILL-V1` completed the first bounded
@@ -42,10 +143,21 @@ improved `0 -> 3`, probability-backtest eligibility improved `3 -> 6`,
 prospective-generation eligibility improved `10 -> 12`, and missing terminal
 results fell `92 -> 77`.
 
-Decision: the same protocol is approved only for another small, explicitly
-allowlisted and backed-up wave. An unrestricted 2,199-drawing backfill and
-nightly installation remain blocked until several bounded waves complete
-without destructive or source-behavior surprises.
+Controlled wave 2 and its idempotency rerun then completed. Wave 2 restored
+4940, 4951 and 4952 to 15/15; 4945, 4949, 4950 and 4957 remained 14/15 and
+entered cooldown; 4954 identity/quotes were recovered locally while its
+reviewed VOID remained intact. The first repeated local repair exposed the
+classification defect documented above; after the fix, replay changed only
+the erroneous classification once and the second apply was a byte/logical
+no-op.
+
+Controlled wave 3 used allowlist
+`4939,4499,3643,3351,3341,3292,2763,2762`. Drawing 4939 was restored to
+15/15. TotoBrief still returned 0/15 for the other seven, so they were
+preserved as source-incomplete with cooldown and no invented result or VOID.
+The repeat apply made zero HTTP requests and no changes. This acceptance
+authorized the bounded latest-30/eight-attempt nightly job, not unrestricted
+backfill of all 2,199 drawings.
 
 The production SQLite database, backups, append-only RAW payloads, and
 reconciliation runtime state intentionally remain local and ignored by Git.
@@ -59,9 +171,9 @@ or coupons.
 
 Next:
 
-1. run another small backed-up allowlist wave and compare Data Health;
-2. convert the proven protocol into bounded nightly reconciliation only after
-   repeated acceptance;
+1. observe the first scheduled 03:20 run and review its report/integrity delta;
+2. continue small backed-up historical waves for gaps outside the latest-30
+   nightly scope;
 3. close package settlement and mandatory post-draw reporting;
 4. evaluate a lawful free sports-data source and run chronological OOS tests
    before any probability blend.

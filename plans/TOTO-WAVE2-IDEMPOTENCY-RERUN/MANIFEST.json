@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTO-WAVE2-IDEMPOTENCY-RERUN",
+  "generated_at_utc": "2026-07-30T11:27:10.281784+00:00",
+  "run_directory": "/Users/turshevr/toto-ai/plans/TOTO-WAVE2-IDEMPOTENCY-RERUN/run-20260730T111538Z",
+  "scope": {
+    "network_reconciliation": [
+      4940,
+      4945,
+      4949,
+      4950,
+      4951,
+      4952,
+      4957
+    ],
+    "offline_repair": [
+      4954
+    ],
+    "extra_drawings_selected_or_changed": []
+  },
+  "backup": {
+    "schema_version": 1,
+    "created_at_utc": "2026-07-30T11:15:41.030190+00:00",
+    "method": "sqlite3.Connection.backup",
+    "source_database": "/Users/turshevr/toto-ai/data/toto.db",
+    "source_sha256_before": "a98eeeb8ec2a7c8121589edace4c7a72c144893f330175277cf205bae995650e",
+    "source_sha256_after": "a98eeeb8ec2a7c8121589edace4c7a72c144893f330175277cf205bae995650e",
+    "source_sidecars_before": {
+      "wal_exists": false,
+      "wal_size": 0,
+      "shm_exists": false,
+      "shm_size": 0
+    },
+    "backup_database": "/Users/turshevr/toto-ai/data/backups/toto-before-wave2-idempotency-rerun-20260730T111538Z.db",
+    "backup_sha256": "cc8704c46f276ed953c73e6af0dff7244f6400e6558ae0d44ab659c2de62cb5c",
+    "backup_size_bytes": 100933632,
+    "backup_mode_octal": "0o600",
+    "quick_check": [
+      "ok"
+    ],
+    "foreign_key_violation_count": 0,
+    "foreign_key_violations": []
+  },
+  "database_sha256_stages": {
+    "pre": "a98eeeb8ec2a7c8121589edace4c7a72c144893f330175277cf205bae995650e",
+    "post_dry_run": "a98eeeb8ec2a7c8121589edace4c7a72c144893f330175277cf205bae995650e",
+    "post_offline_normalization": "4a77aa7fb1b6a5417c7c466231419fc03bd40a5177dc04f659fef4e22afcfeff",
+    "post_network_skip": "4a77aa7fb1b6a5417c7c466231419fc03bd40a5177dc04f659fef4e22afcfeff",
+    "final_after_repeat": "4a77aa7fb1b6a5417c7c466231419fc03bd40a5177dc04f659fef4e22afcfeff"
+  },
+  "logical_sha256_stages": {
+    "pre": "2ae46738f73c64183398bf26f843a1be5361bb940fb0d7b540405d2eef9331f0",
+    "post_dry_run": "2ae46738f73c64183398bf26f843a1be5361bb940fb0d7b540405d2eef9331f0",
+    "post_network_skip": "2a136d7306b4840c585be720ad41e07032c4e6000f019825d1fab287a4f2998d",
+    "final_after_repeat": "2a136d7306b4840c585be720ad41e07032c4e6000f019825d1fab287a4f2998d"
+  },
+  "raw_inventory": {
+    "pre_file_count": 86,
+    "final_file_count": 86,
+    "pre_bytes": 250872,
+    "final_bytes": 250872,
+    "unchanged": true
+  },
+  "offline_transition": {
+    "raw_snapshots": [
+      {
+        "snapshot_sha256": "0d8b49b69bab76a64c422bbc7787cc0d7511bbf18020dbd913042aa9e614d6bb",
+        "diffs": {
+          "classification": [
+            "source_incomplete",
+            "offline_repair_recovered"
+          ]
+        }
+      }
+    ]
+  },
+  "network_http_requests": 0,
+  "repeat_total_noop": true,
+  "integrity": {
+    "quick_check": [
+      "ok"
+    ],
+    "foreign_key_violation_count": 0
+  },
+  "data_health_unchanged": true,
+  "decision": {
+    "wave3": "GO_BOUNDED_ALLOWLIST_SAME_PROTOCOL",
+    "nightly_unattended": "NO_GO_UNTIL_WAVE3_ACCEPTANCE"
+  },
+  "evidence_files": [
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTO-WAVE2-IDEMPOTENCY-RERUN/run-20260730T111538Z/dry-run-proof.txt",
+      "sha256": "b69f4f3ed6b930a4b2da4a11ff64481edaf8d9b651a06c7eb67a9cca10fbe246",
+      "size": 353
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTO-WAVE2-IDEMPOTENCY-RERUN/run-20260730T111538Z/offline-transition-proof.json",
+      "sha256": "eb191098f2e513e8d420175bc739e1d0fe6a7796dc927061ebbfdb84290c0e0b",
+      "size": 1121
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTO-WAVE2-IDEMPOTENCY-RERUN/run-20260730T111538Z/network-zero-http-proof.json",
+      "sha256": "dedebae24921e6250319869635d8925c57535582636250e345837e51dab362c9",
+      "size": 4152
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTO-WAVE2-IDEMPOTENCY-RERUN/run-20260730T111538Z/repeat-noop-proof.json",
+      "sha256": "eb06cc043af99a67635a003aa28dc38bbfe57d16ee705d6160bd3f93501b23e5",
+      "size": 4869
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTO-WAVE2-IDEMPOTENCY-RERUN/run-20260730T111538Z/scope-and-transition-proof.json",
+      "sha256": "7bcf965ba587f624d874eab352beda3d00eb592fb0c5c23fc729c1dd370f1043",
+      "size": 777
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTO-WAVE2-IDEMPOTENCY-RERUN/run-20260730T111538Z/data-health-proof.json",
+      "sha256": "e114b92a7d205280f5e48ca32ea906c6335dbc54b2a5af8cc118d93747267796",
+      "size": 7286
+    }
+  ]
+}

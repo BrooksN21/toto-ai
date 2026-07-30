@@ -1,0 +1,1091 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTO-CONTROLLED-PRODUCTION-BACKFILL-WAVE3",
+  "run_id": "20260730T113035Z",
+  "allowlist": [
+    4939,
+    4499,
+    3643,
+    3351,
+    3341,
+    3292,
+    2763,
+    2762
+  ],
+  "backup": {
+    "path": "/Users/turshevr/toto-ai/data/backups/toto-before-controlled-backfill-wave3-20260730T113035Z.db",
+    "sha256": "205d948dfb8da8bd9b7b08efa5b8f4959e3ec03e40315529222cc1114066acfa",
+    "size_bytes": 100933632,
+    "mode": "0o600",
+    "quick_check": [
+      "ok"
+    ],
+    "fk_violations": 0
+  },
+  "dry_run": {
+    "schema_version": 1,
+    "allowlist": [
+      4939,
+      4499,
+      3643,
+      3351,
+      3341,
+      3292,
+      2763,
+      2762
+    ],
+    "checks": {
+      "database_sha_unchanged": true,
+      "database_size_unchanged": true,
+      "schema_unchanged": true,
+      "table_row_counts_unchanged": true,
+      "raw_inventory_unchanged": true,
+      "sidecars_unchanged": true,
+      "logical_sha_unchanged": true,
+      "drawings_state_unchanged": true,
+      "quick_check_ok": true,
+      "foreign_keys_clean": true,
+      "only_allowlist_selected": true,
+      "no_per_drawing_dry_run_state_files": true
+    },
+    "database_sha256": "4a77aa7fb1b6a5417c7c466231419fc03bd40a5177dc04f659fef4e22afcfeff",
+    "logical_sha256": "2a136d7306b4840c585be720ad41e07032c4e6000f019825d1fab287a4f2998d"
+  },
+  "network": {
+    "first_pass_http_requests": 8,
+    "first_pass_http_retries": 0,
+    "first_pass_http_errors": 0,
+    "repeat_http_requests": 0,
+    "repeat_http_errors": 0,
+    "tls_bypass": false
+  },
+  "outcomes": {
+    "complete": 1,
+    "source_incomplete": 7,
+    "transient_error": 0,
+    "void_synthesized": 0
+  },
+  "health_delta": {
+    "schema_version": 1,
+    "full": {
+      "historical_inventory": {
+        "before": {
+          "duplicate_number_count": 0,
+          "exit_status": "pass",
+          "gap_count": 2,
+          "healthy_drawings": 6,
+          "inventory_counts": {
+            "actionable_package_drawings": 1,
+            "complete_bk_drawings": 2200,
+            "event_rows": 33000,
+            "finished_drawings": 2198,
+            "finished_incomplete_result_drawings": 367,
+            "missing_terminal_results_in_finished": 654,
+            "raw_snapshot_drawings": 18,
+            "reconciliation_complete_drawings": 6,
+            "reconciliation_cooldown_drawings": 5,
+            "reconciliation_quarantined_drawings": 0,
+            "reconciliation_tracked_drawings": 11,
+            "result_snapshot_drawings": 6,
+            "unsettled_actionable_package_drawings": 1,
+            "valid_pool_drawings": 1985
+          },
+          "observed_reason_counts": {
+            "all_results_missing": 13,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215,
+            "missing_raw_snapshot": 2182,
+            "missing_result_snapshot": 2192,
+            "unsettled_package": 1
+          },
+          "passed": false,
+          "reason_counts": {
+            "all_results_missing": 13,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215,
+            "missing_raw_snapshot": 2182,
+            "missing_result_snapshot": 2192,
+            "unsettled_package": 1
+          },
+          "strict": false,
+          "total_drawings": 2200,
+          "unhealthy_drawings": 2194,
+          "use_case_totals": {
+            "backtest_probability": {
+              "healthy": 1657,
+              "unhealthy": 543
+            },
+            "historical_inventory": {
+              "healthy": 6,
+              "unhealthy": 2194
+            },
+            "prospective_generation": {
+              "healthy": 1985,
+              "unhealthy": 215
+            },
+            "result_settlement": {
+              "healthy": 6,
+              "unhealthy": 2194
+            }
+          }
+        },
+        "after": {
+          "duplicate_number_count": 0,
+          "exit_status": "pass",
+          "gap_count": 2,
+          "healthy_drawings": 7,
+          "inventory_counts": {
+            "actionable_package_drawings": 1,
+            "complete_bk_drawings": 2200,
+            "event_rows": 33000,
+            "finished_drawings": 2198,
+            "finished_incomplete_result_drawings": 366,
+            "missing_terminal_results_in_finished": 639,
+            "raw_snapshot_drawings": 25,
+            "reconciliation_complete_drawings": 7,
+            "reconciliation_cooldown_drawings": 12,
+            "reconciliation_quarantined_drawings": 0,
+            "reconciliation_tracked_drawings": 19,
+            "result_snapshot_drawings": 7,
+            "unsettled_actionable_package_drawings": 1,
+            "valid_pool_drawings": 1985
+          },
+          "observed_reason_counts": {
+            "all_results_missing": 12,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215,
+            "missing_raw_snapshot": 2175,
+            "missing_result_snapshot": 2191,
+            "unsettled_package": 1
+          },
+          "passed": false,
+          "reason_counts": {
+            "all_results_missing": 12,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215,
+            "missing_raw_snapshot": 2175,
+            "missing_result_snapshot": 2191,
+            "unsettled_package": 1
+          },
+          "strict": false,
+          "total_drawings": 2200,
+          "unhealthy_drawings": 2193,
+          "use_case_totals": {
+            "backtest_probability": {
+              "healthy": 1658,
+              "unhealthy": 542
+            },
+            "historical_inventory": {
+              "healthy": 7,
+              "unhealthy": 2193
+            },
+            "prospective_generation": {
+              "healthy": 1985,
+              "unhealthy": 215
+            },
+            "result_settlement": {
+              "healthy": 7,
+              "unhealthy": 2193
+            }
+          }
+        },
+        "healthy_delta": 1,
+        "unhealthy_delta": -1
+      },
+      "backtest_probability": {
+        "before": {
+          "duplicate_number_count": 0,
+          "exit_status": "pass",
+          "gap_count": 2,
+          "healthy_drawings": 1657,
+          "inventory_counts": {
+            "actionable_package_drawings": 1,
+            "complete_bk_drawings": 2200,
+            "event_rows": 33000,
+            "finished_drawings": 2198,
+            "finished_incomplete_result_drawings": 367,
+            "missing_terminal_results_in_finished": 654,
+            "raw_snapshot_drawings": 18,
+            "reconciliation_complete_drawings": 6,
+            "reconciliation_cooldown_drawings": 5,
+            "reconciliation_quarantined_drawings": 0,
+            "reconciliation_tracked_drawings": 11,
+            "result_snapshot_drawings": 6,
+            "unsettled_actionable_package_drawings": 1,
+            "valid_pool_drawings": 1985
+          },
+          "observed_reason_counts": {
+            "all_results_missing": 13,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215,
+            "missing_raw_snapshot": 2182,
+            "missing_result_snapshot": 2192,
+            "unsettled_package": 1
+          },
+          "passed": false,
+          "reason_counts": {
+            "all_results_missing": 13,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215
+          },
+          "strict": false,
+          "total_drawings": 2200,
+          "unhealthy_drawings": 543,
+          "use_case_totals": {
+            "backtest_probability": {
+              "healthy": 1657,
+              "unhealthy": 543
+            },
+            "historical_inventory": {
+              "healthy": 6,
+              "unhealthy": 2194
+            },
+            "prospective_generation": {
+              "healthy": 1985,
+              "unhealthy": 215
+            },
+            "result_settlement": {
+              "healthy": 6,
+              "unhealthy": 2194
+            }
+          }
+        },
+        "after": {
+          "duplicate_number_count": 0,
+          "exit_status": "pass",
+          "gap_count": 2,
+          "healthy_drawings": 1658,
+          "inventory_counts": {
+            "actionable_package_drawings": 1,
+            "complete_bk_drawings": 2200,
+            "event_rows": 33000,
+            "finished_drawings": 2198,
+            "finished_incomplete_result_drawings": 366,
+            "missing_terminal_results_in_finished": 639,
+            "raw_snapshot_drawings": 25,
+            "reconciliation_complete_drawings": 7,
+            "reconciliation_cooldown_drawings": 12,
+            "reconciliation_quarantined_drawings": 0,
+            "reconciliation_tracked_drawings": 19,
+            "result_snapshot_drawings": 7,
+            "unsettled_actionable_package_drawings": 1,
+            "valid_pool_drawings": 1985
+          },
+          "observed_reason_counts": {
+            "all_results_missing": 12,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215,
+            "missing_raw_snapshot": 2175,
+            "missing_result_snapshot": 2191,
+            "unsettled_package": 1
+          },
+          "passed": false,
+          "reason_counts": {
+            "all_results_missing": 12,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215
+          },
+          "strict": false,
+          "total_drawings": 2200,
+          "unhealthy_drawings": 542,
+          "use_case_totals": {
+            "backtest_probability": {
+              "healthy": 1658,
+              "unhealthy": 542
+            },
+            "historical_inventory": {
+              "healthy": 7,
+              "unhealthy": 2193
+            },
+            "prospective_generation": {
+              "healthy": 1985,
+              "unhealthy": 215
+            },
+            "result_settlement": {
+              "healthy": 7,
+              "unhealthy": 2193
+            }
+          }
+        },
+        "healthy_delta": 1,
+        "unhealthy_delta": -1
+      },
+      "result_settlement": {
+        "before": {
+          "duplicate_number_count": 0,
+          "exit_status": "pass",
+          "gap_count": 2,
+          "healthy_drawings": 6,
+          "inventory_counts": {
+            "actionable_package_drawings": 1,
+            "complete_bk_drawings": 2200,
+            "event_rows": 33000,
+            "finished_drawings": 2198,
+            "finished_incomplete_result_drawings": 367,
+            "missing_terminal_results_in_finished": 654,
+            "raw_snapshot_drawings": 18,
+            "reconciliation_complete_drawings": 6,
+            "reconciliation_cooldown_drawings": 5,
+            "reconciliation_quarantined_drawings": 0,
+            "reconciliation_tracked_drawings": 11,
+            "result_snapshot_drawings": 6,
+            "unsettled_actionable_package_drawings": 1,
+            "valid_pool_drawings": 1985
+          },
+          "observed_reason_counts": {
+            "all_results_missing": 13,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215,
+            "missing_raw_snapshot": 2182,
+            "missing_result_snapshot": 2192,
+            "unsettled_package": 1
+          },
+          "passed": false,
+          "reason_counts": {
+            "all_results_missing": 13,
+            "incomplete_results": 356,
+            "missing_result_snapshot": 2192,
+            "unsettled_package": 1
+          },
+          "strict": false,
+          "total_drawings": 2200,
+          "unhealthy_drawings": 2194,
+          "use_case_totals": {
+            "backtest_probability": {
+              "healthy": 1657,
+              "unhealthy": 543
+            },
+            "historical_inventory": {
+              "healthy": 6,
+              "unhealthy": 2194
+            },
+            "prospective_generation": {
+              "healthy": 1985,
+              "unhealthy": 215
+            },
+            "result_settlement": {
+              "healthy": 6,
+              "unhealthy": 2194
+            }
+          }
+        },
+        "after": {
+          "duplicate_number_count": 0,
+          "exit_status": "pass",
+          "gap_count": 2,
+          "healthy_drawings": 7,
+          "inventory_counts": {
+            "actionable_package_drawings": 1,
+            "complete_bk_drawings": 2200,
+            "event_rows": 33000,
+            "finished_drawings": 2198,
+            "finished_incomplete_result_drawings": 366,
+            "missing_terminal_results_in_finished": 639,
+            "raw_snapshot_drawings": 25,
+            "reconciliation_complete_drawings": 7,
+            "reconciliation_cooldown_drawings": 12,
+            "reconciliation_quarantined_drawings": 0,
+            "reconciliation_tracked_drawings": 19,
+            "result_snapshot_drawings": 7,
+            "unsettled_actionable_package_drawings": 1,
+            "valid_pool_drawings": 1985
+          },
+          "observed_reason_counts": {
+            "all_results_missing": 12,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215,
+            "missing_raw_snapshot": 2175,
+            "missing_result_snapshot": 2191,
+            "unsettled_package": 1
+          },
+          "passed": false,
+          "reason_counts": {
+            "all_results_missing": 12,
+            "incomplete_results": 356,
+            "missing_result_snapshot": 2191,
+            "unsettled_package": 1
+          },
+          "strict": false,
+          "total_drawings": 2200,
+          "unhealthy_drawings": 2193,
+          "use_case_totals": {
+            "backtest_probability": {
+              "healthy": 1658,
+              "unhealthy": 542
+            },
+            "historical_inventory": {
+              "healthy": 7,
+              "unhealthy": 2193
+            },
+            "prospective_generation": {
+              "healthy": 1985,
+              "unhealthy": 215
+            },
+            "result_settlement": {
+              "healthy": 7,
+              "unhealthy": 2193
+            }
+          }
+        },
+        "healthy_delta": 1,
+        "unhealthy_delta": -1
+      },
+      "prospective_generation": {
+        "before": {
+          "duplicate_number_count": 0,
+          "exit_status": "pass",
+          "gap_count": 2,
+          "healthy_drawings": 1985,
+          "inventory_counts": {
+            "actionable_package_drawings": 1,
+            "complete_bk_drawings": 2200,
+            "event_rows": 33000,
+            "finished_drawings": 2198,
+            "finished_incomplete_result_drawings": 367,
+            "missing_terminal_results_in_finished": 654,
+            "raw_snapshot_drawings": 18,
+            "reconciliation_complete_drawings": 6,
+            "reconciliation_cooldown_drawings": 5,
+            "reconciliation_quarantined_drawings": 0,
+            "reconciliation_tracked_drawings": 11,
+            "result_snapshot_drawings": 6,
+            "unsettled_actionable_package_drawings": 1,
+            "valid_pool_drawings": 1985
+          },
+          "observed_reason_counts": {
+            "all_results_missing": 13,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215,
+            "missing_raw_snapshot": 2182,
+            "missing_result_snapshot": 2192,
+            "unsettled_package": 1
+          },
+          "passed": false,
+          "reason_counts": {
+            "invalid_zero_pool": 215
+          },
+          "strict": false,
+          "total_drawings": 2200,
+          "unhealthy_drawings": 215,
+          "use_case_totals": {
+            "backtest_probability": {
+              "healthy": 1657,
+              "unhealthy": 543
+            },
+            "historical_inventory": {
+              "healthy": 6,
+              "unhealthy": 2194
+            },
+            "prospective_generation": {
+              "healthy": 1985,
+              "unhealthy": 215
+            },
+            "result_settlement": {
+              "healthy": 6,
+              "unhealthy": 2194
+            }
+          }
+        },
+        "after": {
+          "duplicate_number_count": 0,
+          "exit_status": "pass",
+          "gap_count": 2,
+          "healthy_drawings": 1985,
+          "inventory_counts": {
+            "actionable_package_drawings": 1,
+            "complete_bk_drawings": 2200,
+            "event_rows": 33000,
+            "finished_drawings": 2198,
+            "finished_incomplete_result_drawings": 366,
+            "missing_terminal_results_in_finished": 639,
+            "raw_snapshot_drawings": 25,
+            "reconciliation_complete_drawings": 7,
+            "reconciliation_cooldown_drawings": 12,
+            "reconciliation_quarantined_drawings": 0,
+            "reconciliation_tracked_drawings": 19,
+            "result_snapshot_drawings": 7,
+            "unsettled_actionable_package_drawings": 1,
+            "valid_pool_drawings": 1985
+          },
+          "observed_reason_counts": {
+            "all_results_missing": 12,
+            "incomplete_results": 356,
+            "invalid_zero_pool": 215,
+            "missing_raw_snapshot": 2175,
+            "missing_result_snapshot": 2191,
+            "unsettled_package": 1
+          },
+          "passed": false,
+          "reason_counts": {
+            "invalid_zero_pool": 215
+          },
+          "strict": false,
+          "total_drawings": 2200,
+          "unhealthy_drawings": 215,
+          "use_case_totals": {
+            "backtest_probability": {
+              "healthy": 1658,
+              "unhealthy": 542
+            },
+            "historical_inventory": {
+              "healthy": 7,
+              "unhealthy": 2193
+            },
+            "prospective_generation": {
+              "healthy": 1985,
+              "unhealthy": 215
+            },
+            "result_settlement": {
+              "healthy": 7,
+              "unhealthy": 2193
+            }
+          }
+        },
+        "healthy_delta": 0,
+        "unhealthy_delta": 0
+      }
+    },
+    "selected": {
+      "4939": {
+        "historical_inventory": {
+          "before_healthy": 0,
+          "after_healthy": 1,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {}
+        },
+        "backtest_probability": {
+          "before_healthy": 0,
+          "after_healthy": 1,
+          "before_reasons": {
+            "all_results_missing": 1
+          },
+          "after_reasons": {}
+        },
+        "result_settlement": {
+          "before_healthy": 0,
+          "after_healthy": 1,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {}
+        },
+        "prospective_generation": {
+          "before_healthy": 1,
+          "after_healthy": 1,
+          "before_reasons": {},
+          "after_reasons": {}
+        }
+      },
+      "4499": {
+        "historical_inventory": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "invalid_zero_pool": 1,
+            "missing_raw_snapshot": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "invalid_zero_pool": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "backtest_probability": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "invalid_zero_pool": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "invalid_zero_pool": 1
+          }
+        },
+        "result_settlement": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "prospective_generation": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "invalid_zero_pool": 1
+          },
+          "after_reasons": {
+            "invalid_zero_pool": 1
+          }
+        }
+      },
+      "3643": {
+        "historical_inventory": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_raw_snapshot": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "backtest_probability": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1
+          }
+        },
+        "result_settlement": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "prospective_generation": {
+          "before_healthy": 1,
+          "after_healthy": 1,
+          "before_reasons": {},
+          "after_reasons": {}
+        }
+      },
+      "3351": {
+        "historical_inventory": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_raw_snapshot": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "backtest_probability": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1
+          }
+        },
+        "result_settlement": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "prospective_generation": {
+          "before_healthy": 1,
+          "after_healthy": 1,
+          "before_reasons": {},
+          "after_reasons": {}
+        }
+      },
+      "3341": {
+        "historical_inventory": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_raw_snapshot": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "backtest_probability": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1
+          }
+        },
+        "result_settlement": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "prospective_generation": {
+          "before_healthy": 1,
+          "after_healthy": 1,
+          "before_reasons": {},
+          "after_reasons": {}
+        }
+      },
+      "3292": {
+        "historical_inventory": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_raw_snapshot": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "backtest_probability": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1
+          }
+        },
+        "result_settlement": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "prospective_generation": {
+          "before_healthy": 1,
+          "after_healthy": 1,
+          "before_reasons": {},
+          "after_reasons": {}
+        }
+      },
+      "2763": {
+        "historical_inventory": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_raw_snapshot": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "backtest_probability": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1
+          }
+        },
+        "result_settlement": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "prospective_generation": {
+          "before_healthy": 1,
+          "after_healthy": 1,
+          "before_reasons": {},
+          "after_reasons": {}
+        }
+      },
+      "2762": {
+        "historical_inventory": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_raw_snapshot": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "backtest_probability": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1
+          }
+        },
+        "result_settlement": {
+          "before_healthy": 0,
+          "after_healthy": 0,
+          "before_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          },
+          "after_reasons": {
+            "all_results_missing": 1,
+            "missing_result_snapshot": 1
+          }
+        },
+        "prospective_generation": {
+          "before_healthy": 1,
+          "after_healthy": 1,
+          "before_reasons": {},
+          "after_reasons": {}
+        }
+      }
+    }
+  },
+  "integrity": {
+    "post_apply": {
+      "only_allowlist_drawings_changed": true,
+      "quick_check_ok": true,
+      "foreign_keys_clean": true
+    },
+    "repeat": {
+      "database_sha_unchanged": true,
+      "database_size_unchanged": true,
+      "schema_unchanged": true,
+      "table_row_counts_unchanged": true,
+      "raw_inventory_unchanged": true,
+      "sidecars_unchanged": true,
+      "logical_sha_unchanged": true,
+      "drawings_state_unchanged": true,
+      "quick_check_ok": true,
+      "foreign_keys_clean": true,
+      "zero_http_requests_inferred": true,
+      "scheduler_package_settlement_tables_unchanged": true
+    },
+    "non_betting_boundaries": true
+  },
+  "per_drawing": [
+    {
+      "drawing_number": 4939,
+      "drawing_id": 11938,
+      "before_terminal_results": 0,
+      "after_terminal_results": 15,
+      "status": "repaired",
+      "classification": "complete",
+      "retry_state": "complete",
+      "next_eligible_at": "",
+      "http_attempts": 1,
+      "http_errors": 0,
+      "named_events": 15,
+      "championship_events": 15,
+      "quote_rows": 15,
+      "valid_pool_rows": 15,
+      "complete_bk_rows": 15,
+      "void_results": 0,
+      "raw_snapshot_count": 1,
+      "result_snapshot_count": 1,
+      "raw_snapshot_sha256": "b4736f6d92365463fa20c772b9b9b40c5c2e7adfc74f28330ebbf3c67e1a31c3"
+    },
+    {
+      "drawing_number": 4499,
+      "drawing_id": 10683,
+      "before_terminal_results": 0,
+      "after_terminal_results": 0,
+      "status": "source_incomplete",
+      "classification": "source_incomplete",
+      "retry_state": "cooldown",
+      "next_eligible_at": "2026-07-30T17:33:31.680969+00:00",
+      "http_attempts": 1,
+      "http_errors": 0,
+      "named_events": 15,
+      "championship_events": 15,
+      "quote_rows": 15,
+      "valid_pool_rows": 0,
+      "complete_bk_rows": 15,
+      "void_results": 0,
+      "raw_snapshot_count": 1,
+      "result_snapshot_count": 0,
+      "raw_snapshot_sha256": "3f073846902a5c439c2b443929f0493e88d01ab277769293f09172dc9b03bfb1"
+    },
+    {
+      "drawing_number": 3643,
+      "drawing_id": 8149,
+      "before_terminal_results": 0,
+      "after_terminal_results": 0,
+      "status": "source_incomplete",
+      "classification": "source_incomplete",
+      "retry_state": "cooldown",
+      "next_eligible_at": "2026-07-30T17:34:12.528987+00:00",
+      "http_attempts": 1,
+      "http_errors": 0,
+      "named_events": 15,
+      "championship_events": 15,
+      "quote_rows": 15,
+      "valid_pool_rows": 15,
+      "complete_bk_rows": 15,
+      "void_results": 0,
+      "raw_snapshot_count": 1,
+      "result_snapshot_count": 0,
+      "raw_snapshot_sha256": "19803983b85ddfb267efdfd8ad7f64f300243b9da6e191690962c6d3e8924617"
+    },
+    {
+      "drawing_number": 3351,
+      "drawing_id": 7294,
+      "before_terminal_results": 0,
+      "after_terminal_results": 0,
+      "status": "source_incomplete",
+      "classification": "source_incomplete",
+      "retry_state": "cooldown",
+      "next_eligible_at": "2026-07-30T17:34:13.222126+00:00",
+      "http_attempts": 1,
+      "http_errors": 0,
+      "named_events": 15,
+      "championship_events": 15,
+      "quote_rows": 15,
+      "valid_pool_rows": 15,
+      "complete_bk_rows": 15,
+      "void_results": 0,
+      "raw_snapshot_count": 1,
+      "result_snapshot_count": 0,
+      "raw_snapshot_sha256": "808e731c0fd71c9dfd6cdd1ed8980faad340ef85efeb14fecd093af6e7e74da4"
+    },
+    {
+      "drawing_number": 3341,
+      "drawing_id": 7246,
+      "before_terminal_results": 0,
+      "after_terminal_results": 0,
+      "status": "source_incomplete",
+      "classification": "source_incomplete",
+      "retry_state": "cooldown",
+      "next_eligible_at": "2026-07-30T17:34:15.249857+00:00",
+      "http_attempts": 1,
+      "http_errors": 0,
+      "named_events": 15,
+      "championship_events": 15,
+      "quote_rows": 15,
+      "valid_pool_rows": 15,
+      "complete_bk_rows": 15,
+      "void_results": 0,
+      "raw_snapshot_count": 1,
+      "result_snapshot_count": 0,
+      "raw_snapshot_sha256": "5c0c630fe2ec9192b125a72967968ab05e1ee1c7e7f98817141bb6c094667d2b"
+    },
+    {
+      "drawing_number": 3292,
+      "drawing_id": 7028,
+      "before_terminal_results": 0,
+      "after_terminal_results": 0,
+      "status": "source_incomplete",
+      "classification": "source_incomplete",
+      "retry_state": "cooldown",
+      "next_eligible_at": "2026-07-30T17:34:17.263356+00:00",
+      "http_attempts": 1,
+      "http_errors": 0,
+      "named_events": 15,
+      "championship_events": 15,
+      "quote_rows": 15,
+      "valid_pool_rows": 15,
+      "complete_bk_rows": 15,
+      "void_results": 0,
+      "raw_snapshot_count": 1,
+      "result_snapshot_count": 0,
+      "raw_snapshot_sha256": "308d6b020cc3c63fff4438fe4090f581210617c53a691a9362fa7ff58418109a"
+    },
+    {
+      "drawing_number": 2763,
+      "drawing_id": 206,
+      "before_terminal_results": 0,
+      "after_terminal_results": 0,
+      "status": "source_incomplete",
+      "classification": "source_incomplete",
+      "retry_state": "cooldown",
+      "next_eligible_at": "2026-07-30T17:34:19.354264+00:00",
+      "http_attempts": 1,
+      "http_errors": 0,
+      "named_events": 15,
+      "championship_events": 15,
+      "quote_rows": 15,
+      "valid_pool_rows": 15,
+      "complete_bk_rows": 15,
+      "void_results": 0,
+      "raw_snapshot_count": 1,
+      "result_snapshot_count": 0,
+      "raw_snapshot_sha256": "4843d1462c6e3fb33af213075fff99f58aea2fae94472c3967b5a9b54920532c"
+    },
+    {
+      "drawing_number": 2762,
+      "drawing_id": 205,
+      "before_terminal_results": 0,
+      "after_terminal_results": 0,
+      "status": "source_incomplete",
+      "classification": "source_incomplete",
+      "retry_state": "cooldown",
+      "next_eligible_at": "2026-07-30T17:34:21.362289+00:00",
+      "http_attempts": 1,
+      "http_errors": 0,
+      "named_events": 15,
+      "championship_events": 15,
+      "quote_rows": 15,
+      "valid_pool_rows": 15,
+      "complete_bk_rows": 15,
+      "void_results": 0,
+      "raw_snapshot_count": 1,
+      "result_snapshot_count": 0,
+      "raw_snapshot_sha256": "fa90bd75df67c13629c30e6bfc5c76bfe05c2ce16318eba80ef0a7706a4478b8"
+    }
+  ],
+  "decision": {
+    "bounded_nightly_reconciliation": "GO",
+    "unrestricted_historical_backfill": "NO_GO",
+    "reason": "Three controlled waves now show exact allowlist scoping, RAW-first evidence, safe cooldown, read-only dry-run, and zero-request idempotency. Nightly must remain bounded, no-force, low-rate, non-betting, and fail-closed."
+  }
+}

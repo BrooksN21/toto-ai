@@ -85,6 +85,9 @@ class MorningDispatchConfig:
     stake: int = 30
     db: Path = Path("data/toto.db")
     aliases: Path = Path("data/external-odds/team-aliases.json")
+    maintenance_lock: Path = Path(
+        "data/operations/global-maintenance.lock"
+    )
     timing_overrides: Path | None = None
     reviewed_schedule_catalog: Path | None = None
 
@@ -93,7 +96,14 @@ class MorningDispatchConfig:
         if not root.is_dir() or root.is_symlink():
             raise ValueError("project_root must be an existing regular directory")
         object.__setattr__(self, "project_root", root)
-        for field in ("state_root", "scheduler_root", "env_file", "db", "aliases"):
+        for field in (
+            "state_root",
+            "scheduler_root",
+            "env_file",
+            "db",
+            "aliases",
+            "maintenance_lock",
+        ):
             value = Path(getattr(self, field))
             if not value.is_absolute():
                 value = root / value
@@ -154,139 +164,159 @@ def dispatch_morning(
     config.state_root.mkdir(parents=True, exist_ok=True)
     if config.state_root.is_symlink():
         raise ValueError("state_root cannot be a symlink")
-    with scheduler_lock(config.state_root / ".dispatch.lock"):
-        evidence = prepare_current(observed)
-        if not isinstance(evidence, MorningPreparedDrawing):
-            raise ValueError("prepare_current returned invalid evidence")
-        observed = _utc(now(), "post_preparation_observed_at")
-        record_path = _record_path(config, evidence, observed)
-        prior = _load_record(record_path)
-        replace_prior = False
-        if prior is not None:
-            if prior.get("status") == "scheduled":
-                return _reuse_prior(
-                    config,
-                    evidence=evidence,
-                    record_path=record_path,
-                    prior=prior,
-                    activate=activate,
-                    python_command=python_command,
-                )
-            if prior.get("status") != "deferred":
-                raise ValueError("morning dispatch record status is invalid")
-            if not _same_drawing_identity(prior, evidence):
-                raise ValueError("morning dispatch identity conflict")
-            replace_prior = True
-        reason = _ineligibility_reason(evidence)
-        if reason is not None:
-            record = _record(
-                evidence=evidence,
-                observed_at=observed,
-                status="deferred",
-                reason=reason,
-            )
-            (
-                _replace_record(record_path, record)
-                if replace_prior
-                else _write_record(record_path, record)
-            )
-            return MorningDispatchResult(
-                "deferred",
-                reason,
-                record_path,
-                None,
-                None,
-                None,
-                "not_requested",
-            )
-        output_dir = config.scheduler_root / (
-            f"evening-{evidence.drawing_number}-"
-            f"{evidence.deadline.strftime('%Y%m%dT%H%M%SZ')}"
-        )
-        plan = build_scheduler_plan(
-            drawing=evidence.drawing_number,
-            drawing_id=evidence.drawing_id,
-            ended_at=evidence.deadline,
-            bank=config.bank,
-            stake=config.stake,
-            output_dir=output_dir,
-            project_root=config.project_root,
-            db=config.db,
-            aliases=config.aliases,
-            timing_overrides=config.timing_overrides,
-            reviewed_schedule_catalog=config.reviewed_schedule_catalog,
-            env_file=config.env_file,
-        )
-        if observed >= plan.preflight_at:
-            reason = "late_dispatch"
-            record = _record(
-                evidence=evidence,
-                observed_at=observed,
-                status="deferred",
-                reason=reason,
-            )
-            (
-                _replace_record(record_path, record)
-                if replace_prior
-                else _write_record(record_path, record)
-            )
-            return MorningDispatchResult(
-                "deferred",
-                reason,
-                record_path,
-                None,
-                None,
-                None,
-                "not_requested",
-            )
-        artifact_paths = (
-            plan.output_dir / SCHEDULER_PLAN_FILENAME,
-            plan.output_dir / SCHEDULER_WRAPPER_FILENAME,
-            plan.output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME,
-        )
-        artifacts = (
-            verify_scheduler_artifacts(
-                plan,
+    with scheduler_lock(config.maintenance_lock):
+        with scheduler_lock(config.state_root / ".dispatch.lock"):
+            return _dispatch_morning_locked(
+                config,
+                observed=observed,
+                prepare_current=prepare_current,
+                now=now,
+                activate=activate,
                 python_command=python_command,
             )
-            if any(path.exists() for path in artifact_paths)
-            else prepare_scheduler_artifacts(
-                plan,
+
+
+def _dispatch_morning_locked(
+    config: MorningDispatchConfig,
+    *,
+    observed: datetime,
+    prepare_current: Callable[[datetime], MorningPreparedDrawing],
+    now: Callable[[], datetime],
+    activate: Callable[[str, Path], object] | None,
+    python_command: str | Path | None,
+) -> MorningDispatchResult:
+    evidence = prepare_current(observed)
+    if not isinstance(evidence, MorningPreparedDrawing):
+        raise ValueError("prepare_current returned invalid evidence")
+    observed = _utc(now(), "post_preparation_observed_at")
+    record_path = _record_path(config, evidence, observed)
+    prior = _load_record(record_path)
+    replace_prior = False
+    if prior is not None:
+        if prior.get("status") == "scheduled":
+            return _reuse_prior(
+                config,
+                evidence=evidence,
+                record_path=record_path,
+                prior=prior,
+                activate=activate,
                 python_command=python_command,
             )
-        )
-        activation_status: Literal["generated", "activated"] = "generated"
+        if prior.get("status") != "deferred":
+            raise ValueError("morning dispatch record status is invalid")
+        if not _same_drawing_identity(prior, evidence):
+            raise ValueError("morning dispatch identity conflict")
+        replace_prior = True
+    reason = _ineligibility_reason(evidence)
+    if reason is not None:
         record = _record(
             evidence=evidence,
             observed_at=observed,
-            status="scheduled",
-            reason="ready",
-            plan=plan,
-            activation_status=activation_status,
+            status="deferred",
+            reason=reason,
         )
         (
             _replace_record(record_path, record)
             if replace_prior
             else _write_record(record_path, record)
         )
-        if activate is not None:
-            activate(
-                f"com.totoai.production-scheduler.{plan.plan_id}",
-                artifacts.launch_agent_path,
-            )
-            activation_status = "activated"
-            activated_record = dict(record)
-            activated_record["activation_status"] = "activated"
-            _replace_record(record_path, activated_record)
         return MorningDispatchResult(
-            "scheduled",
-            "ready",
+            "deferred",
+            reason,
             record_path,
-            plan.plan_id,
-            artifacts.plan_path,
-            artifacts.launch_agent_path,
-            activation_status,
+            None,
+            None,
+            None,
+            "not_requested",
         )
+    output_dir = config.scheduler_root / (
+        f"evening-{evidence.drawing_number}-"
+        f"{evidence.deadline.strftime('%Y%m%dT%H%M%SZ')}"
+    )
+    plan = build_scheduler_plan(
+        drawing=evidence.drawing_number,
+        drawing_id=evidence.drawing_id,
+        ended_at=evidence.deadline,
+        bank=config.bank,
+        stake=config.stake,
+        output_dir=output_dir,
+        project_root=config.project_root,
+        db=config.db,
+        aliases=config.aliases,
+        timing_overrides=config.timing_overrides,
+        reviewed_schedule_catalog=config.reviewed_schedule_catalog,
+        env_file=config.env_file,
+    )
+    if observed >= plan.preflight_at:
+        reason = "late_dispatch"
+        record = _record(
+            evidence=evidence,
+            observed_at=observed,
+            status="deferred",
+            reason=reason,
+        )
+        (
+            _replace_record(record_path, record)
+            if replace_prior
+            else _write_record(record_path, record)
+        )
+        return MorningDispatchResult(
+            "deferred",
+            reason,
+            record_path,
+            None,
+            None,
+            None,
+            "not_requested",
+        )
+    artifact_paths = (
+        plan.output_dir / SCHEDULER_PLAN_FILENAME,
+        plan.output_dir / SCHEDULER_WRAPPER_FILENAME,
+        plan.output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME,
+    )
+    artifacts = (
+        verify_scheduler_artifacts(
+            plan,
+            python_command=python_command,
+        )
+        if any(path.exists() for path in artifact_paths)
+        else prepare_scheduler_artifacts(
+            plan,
+            python_command=python_command,
+        )
+    )
+    activation_status: Literal["generated", "activated"] = "generated"
+    record = _record(
+        evidence=evidence,
+        observed_at=observed,
+        status="scheduled",
+        reason="ready",
+        plan=plan,
+        activation_status=activation_status,
+    )
+    (
+        _replace_record(record_path, record)
+        if replace_prior
+        else _write_record(record_path, record)
+    )
+    if activate is not None:
+        activate(
+            f"com.totoai.production-scheduler.{plan.plan_id}",
+            artifacts.launch_agent_path,
+        )
+        activation_status = "activated"
+        activated_record = dict(record)
+        activated_record["activation_status"] = "activated"
+        _replace_record(record_path, activated_record)
+    return MorningDispatchResult(
+        "scheduled",
+        "ready",
+        record_path,
+        plan.plan_id,
+        artifacts.plan_path,
+        artifacts.launch_agent_path,
+        activation_status,
+    )
 
 
 def activate_scheduler_launch_agent(

@@ -273,7 +273,11 @@ def test_4954_4956_canonical_raw_repair_is_dry_run_then_idempotent(tmp_path):
     )
     assert applied.repaired == 3
     assert all(
-        item.classification == "importer_loss_recoverable_local"
+        item.classification == "offline_repair_recovered"
         for item in applied.items
     )
     assert all(item.logical_changes == 0 for item in repeated.items)
+    assert all(
+        item.classification == "offline_repair_recovered"
+        for item in repeated.items
+    )

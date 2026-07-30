@@ -1,5 +1,44 @@
 # Architecture
 
+## Passive nightly reconciliation
+
+`nightly-reconciliation-run` wraps the proven finished reconciliation engine
+without any package/betting dependency:
+
+```text
+global maintenance lock
+-> latest 30 finished drawings
+-> physical read-only dry-run
+-> exact captured eligible allowlist (maximum 8)
+-> repeated selection/drift check
+-> online SQLite backup + known-good manifest/retention
+-> one bounded non-force attempt per captured drawing
+-> Data Health before/after + quick/FK checks
+-> timestamped report/state/log
+```
+
+The shared lock path is `data/operations/global-maintenance.lock`; the morning
+dispatcher uses the same fcntl boundary. Stale metadata is recovered only
+after the OS lock is available. A live lock defers the nightly run without
+network or backup.
+
+No eligible work produces `DEFERRED/NOOP`, zero network calls, and no backup.
+`source_incomplete` and transient per-drawing failures produce `PARTIAL` while
+preserving cooldown/quarantine and allowing the bounded run to continue.
+Selection drift, backup/integrity failure, or complete captured-work failure is
+`FAILED`. Artifact generation is repository-local and never installs or loads
+the LaunchAgent.
+
+The reviewed deployment is separately installed as
+`com.totoai.nightly-reconciliation.v1` in the current user's LaunchAgent
+domain, daily at 03:20 host-local/Moscow time with `RunAtLoad=false`. Its
+installed plist points only to the generated repository-local wrapper.
+Launchd/runtime files live under the user's home directory and `data/` and are
+not repository artifacts. The first smoke run was `PARTIAL`: seven of eight
+captured drawings became complete and one authoritative 14/15 source response
+entered cooldown. Exit code 2 therefore denotes persisted partial work; the
+JSON run report remains the authoritative operational classification.
+
 ## Lifecycle-aware collection and reconciliation
 
 Finished freshness is evidence-based: a drawing is current only with 15
@@ -59,10 +98,11 @@ explicit drawing allowlist
 
 The first accepted production batch covered 4946/4955/4956/4958. It made four
 detail requests, restored complete evidence for 4955/4956/4958, and persisted
-4946 as source-incomplete with cooldown. No unrestricted historical mode or
-nightly automation is authorized by that acceptance. SQLite, backups, RAW
-payloads, and retry state remain local operational data and are excluded from
-Git.
+4946 as source-incomplete with cooldown. Waves 2/3 and a correction-once/no-op
+idempotency replay then authorized only the bounded latest-30/eight-attempt
+nightly deployment. No unrestricted historical mode is authorized. SQLite,
+backups, RAW payloads, retry/runtime state and installed home plists remain
+local operational data and are excluded from Git.
 
 ## Provider-neutral reviewed schedule fallback
 

@@ -8,7 +8,7 @@ import math
 import os
 import time
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Literal
@@ -20,13 +20,22 @@ from sqlalchemy.orm import Session, sessionmaker
 from toto_ai.api.detail_cache import load_drawing_detail_cache
 from toto_ai.api.rate_limit import TotoBriefRequestError
 from toto_ai.collector.lifecycle import (
+    OFFLINE_REPAIR_RECOVERED,
+    RAW_ARCHIVE_SCHEMA_VERSION,
     RawArchive,
+    RawArchiveRecord,
     finished_drawing_is_current,
     import_archived_detail,
     preview_detail_payload,
     validate_full_detail_payload,
 )
-from toto_ai.db.models import Drawing, DrawingReconciliationState, Event
+from toto_ai.db.models import (
+    Drawing,
+    DrawingRawSnapshot,
+    DrawingReconciliationState,
+    DrawingResultSnapshot,
+    Event,
+)
 
 
 @dataclass(frozen=True)
@@ -201,8 +210,10 @@ def select_incomplete_finished_drawings(
     to_drawing: int | None = None,
     last: int | None = None,
     batch_size: int | None = None,
+    drawing_numbers: tuple[int, ...] | None = None,
 ) -> tuple[ReconciliationTarget, ...]:
-    _validate_selectors(from_drawing, to_drawing, last)
+    _validate_selectors(from_drawing, to_drawing, last, drawing_numbers)
+    exact_numbers = set(drawing_numbers or ())
     with session_factory() as session:
         drawings = session.scalars(
             select(Drawing)
@@ -216,6 +227,7 @@ def select_incomplete_finished_drawings(
             drawing
             for drawing in drawings
             if drawing.number is not None
+            and (not exact_numbers or drawing.number in exact_numbers)
             and (from_drawing is None or drawing.number >= from_drawing)
             and (to_drawing is None or drawing.number <= to_drawing)
             and not finished_drawing_is_current(session, drawing.id)
@@ -254,6 +266,7 @@ def reconcile_finished_drawings(
     from_drawing: int | None = None,
     to_drawing: int | None = None,
     last: int | None = None,
+    drawing_numbers: tuple[int, ...] | None = None,
     force: bool = False,
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
     sleep: Callable[[float], None] = time.sleep,
@@ -268,6 +281,7 @@ def reconcile_finished_drawings(
         to_drawing=to_drawing,
         last=last,
         batch_size=None,
+        drawing_numbers=drawing_numbers,
     )
     observed_at = _aware(now())
     persisted = _load_persisted_states(session_factory, targets)
@@ -860,33 +874,51 @@ def repair_from_canonical_raw(
             )
             continue
         try:
+            source = f"canonical-cache:{cached.source}"
+            source_endpoint = f"/drawing-info/{drawing.id}"
+            lifecycle_status = str(
+                cached.payload["data"].get("status") or "unknown"
+            )
             if dry_run:
+                record = _preview_raw_archive_record(
+                    cached.payload,
+                    archive_root=archive_root,
+                    captured_at=cached.fetched_at,
+                    source=source,
+                    source_endpoint=source_endpoint,
+                    lifecycle_status=lifecycle_status,
+                )
                 imported = preview_detail_payload(
                     session_factory,
                     cached.payload,
                     archive_root=archive_root,
                     captured_at=cached.fetched_at,
-                    source=f"canonical-cache:{cached.source}",
-                    source_endpoint=f"/drawing-info/{drawing.id}",
-                    lifecycle_status=str(
-                        cached.payload["data"].get("status") or "unknown"
-                    ),
+                    source=source,
+                    source_endpoint=source_endpoint,
+                    lifecycle_status=lifecycle_status,
                 )
             else:
                 record = archive.archive(
                     cached.payload,
                     captured_at=cached.fetched_at,
-                    source=f"canonical-cache:{cached.source}",
-                    source_endpoint=f"/drawing-info/{drawing.id}",
-                    lifecycle_status=str(
-                        cached.payload["data"].get("status") or "unknown"
-                    ),
+                    source=source,
+                    source_endpoint=source_endpoint,
+                    lifecycle_status=lifecycle_status,
                 )
                 imported = import_archived_detail(
                     session_factory,
                     record,
                     dry_run=False,
                 )
+            imported, normalization_reason = (
+                _normalize_erroneous_offline_source_classification(
+                    session_factory,
+                    record=record,
+                    payload=cached.payload,
+                    imported=imported,
+                    dry_run=dry_run,
+                )
+            )
         except (OSError, TypeError, ValueError) as error:
             items.append(
                 OfflineRepairItem(
@@ -915,9 +947,12 @@ def repair_from_canonical_raw(
                 logical_changes=imported.logical_changes,
                 classification=imported.classification,
                 reason=(
-                    "validated_canonical_raw_dry_run"
-                    if dry_run
-                    else "validated_canonical_raw_applied"
+                    normalization_reason
+                    or (
+                        "validated_canonical_raw_dry_run"
+                        if dry_run
+                        else "validated_canonical_raw_applied"
+                    )
                 ),
             )
         )
@@ -931,10 +966,254 @@ def repair_from_canonical_raw(
     )
 
 
+def _preview_raw_archive_record(
+    payload: dict[str, Any],
+    *,
+    archive_root: str | Path,
+    captured_at: datetime,
+    source: str,
+    source_endpoint: str,
+    lifecycle_status: str,
+) -> RawArchiveRecord:
+    validated = validate_full_detail_payload(payload)
+    captured = _aware(captured_at).isoformat()
+    payload_bytes = json.dumps(
+        validated,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    payload_hash = hashlib.sha256(payload_bytes).hexdigest()
+    data = validated["data"]
+    metadata_core = {
+        "schema_version": RAW_ARCHIVE_SCHEMA_VERSION,
+        "drawing_id": data["id"],
+        "drawing_number": data.get("number"),
+        "captured_at": captured,
+        "source": source,
+        "source_endpoint": source_endpoint,
+        "lifecycle_status": lifecycle_status,
+        "payload_sha256": payload_hash,
+    }
+    metadata_hash = hashlib.sha256(
+        json.dumps(
+            metadata_core,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    snapshot_hash = hashlib.sha256(
+        json.dumps(
+            {
+                "payload_sha256": payload_hash,
+                "metadata_sha256": metadata_hash,
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    root = Path(archive_root).resolve()
+    directory = root / f"drawing_{data['id']}"
+    return RawArchiveRecord(
+        snapshot_sha256=snapshot_hash,
+        payload_sha256=payload_hash,
+        metadata_sha256=metadata_hash,
+        drawing_id=data["id"],
+        drawing_number=data.get("number"),
+        captured_at=captured,
+        source=source,
+        source_endpoint=source_endpoint,
+        lifecycle_status=lifecycle_status,
+        payload_path=directory / f"{snapshot_hash}.json",
+        metadata_path=directory / f"{snapshot_hash}.meta.json",
+        created=False,
+    )
+
+
+def _normalize_erroneous_offline_source_classification(
+    session_factory: sessionmaker[Session],
+    *,
+    record: RawArchiveRecord,
+    payload: dict[str, Any],
+    imported: Any,
+    dry_run: bool,
+) -> tuple[Any, str | None]:
+    """Normalize the historical local/source classification mix-up once.
+
+    ``source_incomplete`` belongs to the network reconciliation domain.  A
+    canonical-RAW repair may replace it only when the exact archived payload
+    is already incorporated and an independently verified complete result
+    snapshot proves every terminal outcome omitted by that RAW.
+    """
+    if (
+        imported.logical_changes != 0
+        or imported.classification != "source_incomplete"
+        or not record.source.startswith(("canonical-cache:", "cache:"))
+    ):
+        return imported, None
+    if not _offline_repair_recovery_is_proven(
+        session_factory,
+        record=record,
+        payload=payload,
+    ):
+        return imported, "ambiguous_local_classification_manual_review"
+    if not dry_run:
+        with session_factory.begin() as session:
+            row = session.get(DrawingRawSnapshot, record.snapshot_sha256)
+            if row is None or not _raw_row_matches_record(row, record):
+                raise ValueError(
+                    "offline repair classification normalization lost provenance"
+                )
+            if row.classification != "source_incomplete":
+                if row.classification == OFFLINE_REPAIR_RECOVERED:
+                    return (
+                        replace(
+                            imported,
+                            classification=OFFLINE_REPAIR_RECOVERED,
+                        ),
+                        None,
+                    )
+                raise ValueError(
+                    "offline repair classification changed during normalization"
+                )
+            row.classification = OFFLINE_REPAIR_RECOVERED
+    return (
+        replace(
+            imported,
+            logical_changes=imported.logical_changes + 1,
+            classification=OFFLINE_REPAIR_RECOVERED,
+        ),
+        "normalized_erroneous_offline_source_classification",
+    )
+
+
+def _offline_repair_recovery_is_proven(
+    session_factory: sessionmaker[Session],
+    *,
+    record: RawArchiveRecord,
+    payload: dict[str, Any],
+) -> bool:
+    from toto_ai.operations.finished_draw import verify_result_snapshot
+
+    try:
+        validated = validate_full_detail_payload(
+            payload,
+            expected_drawing_id=record.drawing_id,
+        )
+    except (TypeError, ValueError):
+        return False
+    with session_factory() as session:
+        raw_row = session.get(DrawingRawSnapshot, record.snapshot_sha256)
+        if raw_row is None or not _raw_row_matches_record(raw_row, record):
+            return False
+        snapshots = session.scalars(
+            select(DrawingResultSnapshot)
+            .where(
+                DrawingResultSnapshot.drawing_id == record.drawing_id,
+                DrawingResultSnapshot.complete.is_(True),
+                DrawingResultSnapshot.event_count == 15,
+            )
+            .order_by(DrawingResultSnapshot.id.desc())
+        ).all()
+        stored_events = {
+            event.event_order: event
+            for event in session.scalars(
+                select(Event).where(Event.drawing_id == record.drawing_id)
+            ).all()
+        }
+    if set(stored_events) != set(range(15)):
+        return False
+    source_events = {
+        event["order"]: event for event in validated["data"]["events"]
+    }
+    for snapshot in snapshots:
+        try:
+            verify_result_snapshot(session_factory, snapshot.snapshot_sha256)
+            events = json.loads(snapshot.events_json)
+        except (OSError, TypeError, ValueError, json.JSONDecodeError):
+            continue
+        if _snapshot_proves_current_results(
+            events=events,
+            source_events=source_events,
+            stored_events=stored_events,
+        ):
+            return True
+    return False
+
+
+def _raw_row_matches_record(
+    row: DrawingRawSnapshot,
+    record: RawArchiveRecord,
+) -> bool:
+    return (
+        row.snapshot_sha256 == record.snapshot_sha256
+        and row.payload_sha256 == record.payload_sha256
+        and row.drawing_id == record.drawing_id
+        and row.drawing_number == record.drawing_number
+        and row.metadata_sha256 == record.metadata_sha256
+        and row.source == record.source
+        and row.source_endpoint == record.source_endpoint
+        and row.lifecycle_status == record.lifecycle_status
+        and Path(row.payload_path) == record.payload_path
+        and Path(row.metadata_path) == record.metadata_path
+    )
+
+
+def _snapshot_proves_current_results(
+    *,
+    events: Any,
+    source_events: dict[int, dict[str, Any]],
+    stored_events: dict[int, Event],
+) -> bool:
+    if not isinstance(events, list) or len(events) != 15:
+        return False
+    for order, evidence in enumerate(events):
+        if not isinstance(evidence, dict) or evidence.get("order") != order:
+            return False
+        result = evidence.get("result")
+        status = evidence.get("result_status")
+        score = evidence.get("score")
+        stored = stored_events[order]
+        if stored.result != result:
+            return False
+        if result == "*":
+            source = evidence.get("void_source")
+            if (
+                status != "void"
+                or score != ""
+                or not isinstance(source, str)
+                or not source.startswith(("http://", "https://"))
+            ):
+                return False
+            if stored.result_status not in {None, "void", "cancelled", "canceled"}:
+                return False
+        elif (
+            result not in {"1", "X", "2"}
+            or status != "resolved"
+            or not isinstance(score, str)
+            or not score.strip()
+            or stored.result_status != "resolved"
+            or stored.score != score
+        ):
+            return False
+        source_result = source_events[order].get("result")
+        if source_result in {"1", "X", "2"} and source_result != result:
+            return False
+        if (
+            evidence.get("event_id") is not None
+            and evidence.get("event_id") != source_events[order].get("id")
+        ):
+            return False
+    return True
+
+
 def _validate_selectors(
     from_drawing: int | None,
     to_drawing: int | None,
     last: int | None,
+    drawing_numbers: tuple[int, ...] | None = None,
 ) -> None:
     for name, value in (
         ("from_drawing", from_drawing),
@@ -951,6 +1230,19 @@ def _validate_selectors(
         raise ValueError("from_drawing cannot exceed to_drawing")
     if last is not None and (from_drawing is not None or to_drawing is not None):
         raise ValueError("last cannot be combined with a drawing range")
+    if drawing_numbers is not None:
+        if not drawing_numbers or any(
+            type(number) is not int or number < 1 for number in drawing_numbers
+        ):
+            raise ValueError(
+                "drawing_numbers must contain positive integers or be None"
+            )
+        if len(set(drawing_numbers)) != len(drawing_numbers):
+            raise ValueError("drawing_numbers must be unique")
+        if from_drawing is not None or to_drawing is not None or last is not None:
+            raise ValueError(
+                "drawing_numbers cannot be combined with range/last selectors"
+            )
 
 
 def _load_state(path: str | Path) -> dict[str, Any]:

@@ -143,6 +143,17 @@ from toto_ai.operations.finished_draw import (
     settle_package_file,
     sync_finished_drawing,
 )
+from toto_ai.operations.nightly_reconciliation import (
+    DEFAULT_BACKUP_RETENTION,
+    DEFAULT_HOUR,
+    DEFAULT_MAX_NETWORK_ATTEMPTS,
+    DEFAULT_MINUTE,
+    DEFAULT_RECENT_FINISHED,
+    DEFAULT_TIMEOUT_SECONDS,
+    NightlyReconciliationConfig,
+    generate_nightly_reconciliation_artifacts,
+    run_nightly_reconciliation,
+)
 from toto_ai.operations.reconciliation import (
     ReconciliationConfig,
     reconcile_finished_drawings,
@@ -504,6 +515,147 @@ def repair_canonical_raw_command(
     typer.echo(json.dumps(asdict(report), ensure_ascii=False, sort_keys=True))
     if report.invalid:
         raise typer.Exit(code=2)
+
+
+@app.command("nightly-reconciliation-run")
+def nightly_reconciliation_run_command(
+    db: str = typer.Option("data/toto.db", "--db"),
+    project_root: str = typer.Option(".", "--project-root"),
+    last_finished: int = typer.Option(
+        DEFAULT_RECENT_FINISHED,
+        "--last-finished",
+        min=1,
+    ),
+    max_network_attempts: int = typer.Option(
+        DEFAULT_MAX_NETWORK_ATTEMPTS,
+        "--max-network-attempts",
+        min=1,
+    ),
+    timeout_seconds: float = typer.Option(
+        DEFAULT_TIMEOUT_SECONDS,
+        "--timeout-seconds",
+        min=1,
+    ),
+    request_timeout_seconds: int = typer.Option(
+        20,
+        "--request-timeout-seconds",
+        min=1,
+    ),
+    backup_retention: int = typer.Option(
+        DEFAULT_BACKUP_RETENTION,
+        "--backup-retention",
+        min=1,
+    ),
+    state_root: str = typer.Option(
+        "data/nightly-reconciliation",
+        "--state-root",
+    ),
+    raw_archive_root: str = typer.Option(
+        "data/raw/archive",
+        "--raw-archive-root",
+    ),
+    backup_root: str = typer.Option("data/backups", "--backup-root"),
+    request_state_file: str = typer.Option(
+        DEFAULT_RATE_STATE_PATH,
+        "--request-state-file",
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force/--no-force",
+        hidden=True,
+        help="Operator-only override; generated nightly artifacts always use no-force.",
+    ),
+) -> None:
+    """Run bounded results-only reconciliation; never creates betting artifacts."""
+    root = Path(project_root).resolve()
+    try:
+        config = NightlyReconciliationConfig(
+            project_root=root,
+            db_path=Path(db),
+            state_root=Path(state_root),
+            raw_archive_root=Path(raw_archive_root),
+            backup_root=Path(backup_root),
+            recent_finished=last_finished,
+            max_network_attempts=max_network_attempts,
+            timeout_seconds=timeout_seconds,
+            backup_retention=backup_retention,
+        )
+        result = run_nightly_reconciliation(
+            config,
+            client=TotoBriefClient(
+                timeout=min(request_timeout_seconds, int(timeout_seconds)),
+                max_retries=0,
+                rate_state_path=request_state_file,
+                rate_state_root=root,
+            ),
+            force_for_test=force,
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(result.to_dict(), ensure_ascii=False, sort_keys=True)
+    )
+    if result.classification == "FAILED":
+        raise typer.Exit(code=1)
+    if result.classification == "PARTIAL":
+        raise typer.Exit(code=2)
+
+
+@app.command("nightly-reconciliation-plan")
+def nightly_reconciliation_plan_command(
+    output_dir: str = typer.Option(
+        "reports/nightly-reconciliation",
+        "--output-dir",
+    ),
+    project_root: str = typer.Option(".", "--project-root"),
+    db: str = typer.Option("data/toto.db", "--db"),
+    hour: int = typer.Option(DEFAULT_HOUR, "--hour", min=0, max=23),
+    minute: int = typer.Option(DEFAULT_MINUTE, "--minute", min=0, max=59),
+    last_finished: int = typer.Option(
+        DEFAULT_RECENT_FINISHED,
+        "--last-finished",
+        min=1,
+    ),
+    max_network_attempts: int = typer.Option(
+        DEFAULT_MAX_NETWORK_ATTEMPTS,
+        "--max-network-attempts",
+        min=1,
+    ),
+    timeout_seconds: float = typer.Option(
+        DEFAULT_TIMEOUT_SECONDS,
+        "--timeout-seconds",
+        min=1,
+    ),
+    backup_retention: int = typer.Option(
+        DEFAULT_BACKUP_RETENTION,
+        "--backup-retention",
+        min=1,
+    ),
+    python_executable: str | None = typer.Option(
+        None,
+        "--python-executable",
+    ),
+) -> None:
+    """Generate passive nightly wrapper/plist artifacts without installing them."""
+    root = Path(project_root).resolve()
+    try:
+        artifacts = generate_nightly_reconciliation_artifacts(
+            project_root=root,
+            output_dir=output_dir,
+            db_path=db,
+            python_executable=python_executable,
+            hour=hour,
+            minute=minute,
+            recent_finished=last_finished,
+            max_network_attempts=max_network_attempts,
+            timeout_seconds=timeout_seconds,
+            backup_retention=backup_retention,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(f"Wrapper: {artifacts.wrapper_path}")
+    typer.echo(f"LaunchAgent candidate: {artifacts.launch_agent_path}")
+    typer.echo("Generated only; nothing was installed or launched.")
 
 
 @app.command("archive-package")

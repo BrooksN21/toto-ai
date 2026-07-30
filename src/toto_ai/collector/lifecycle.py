@@ -37,6 +37,10 @@ DECIDED_RESULTS = frozenset(("1", "X", "2"))
 VOID_RESULT = "*"
 RAW_ARCHIVE_SCHEMA_VERSION = 1
 RESULT_SNAPSHOT_HASH_SCHEMA_VERSION = 3
+OFFLINE_REPAIR_RECOVERABLE = "offline_repair_recoverable"
+OFFLINE_REPAIR_RECOVERED = "offline_repair_recovered"
+OFFLINE_REPAIR_NO_CHANGES = "offline_repair_no_changes"
+LEGACY_OFFLINE_REPAIR_RECOVERABLE = "importer_loss_recoverable_local"
 
 
 @dataclass(frozen=True)
@@ -331,6 +335,7 @@ def _import_detail_payload(
     data = payload["data"]
     events_created = events_updated = quotes_created = quotes_updated = 0
     changes = 0
+    raw_snapshot_created = False
     terminal_events: list[dict[str, Any]] = []
 
     session = session_factory()
@@ -347,7 +352,8 @@ def _import_detail_payload(
                 )
                 is not None
             )
-            changes += int(not raw_snapshot_exists)
+            raw_snapshot_created = not raw_snapshot_exists
+            changes += int(raw_snapshot_created)
         else:
             inserted = session.execute(
                 sqlite_insert(DrawingRawSnapshot)
@@ -368,7 +374,16 @@ def _import_detail_payload(
                 )
                 .on_conflict_do_nothing()
             )
-            changes += max(0, inserted.rowcount)
+            raw_snapshot_created = inserted.rowcount == 1
+            changes += int(raw_snapshot_created)
+        raw_row = session.get(
+            DrawingRawSnapshot,
+            archive.snapshot_sha256,
+        )
+        prior_classification = (
+            None if raw_row is None else raw_row.classification
+        )
+        content_changes_before = changes
         drawing = session.get(Drawing, archive.drawing_id)
         if drawing is None:
             drawing = Drawing(id=archive.drawing_id)
@@ -499,17 +514,20 @@ def _import_detail_payload(
                     events=terminal_events,
                 )
             changes += int(snapshot_created)
-        if archive.source.startswith(("canonical", "cache:")) and changes:
-            classification = "importer_loss_recoverable_local"
+        content_changes = changes - content_changes_before
+        if _is_offline_repair_source(archive.source):
+            classification = _offline_repair_classification(
+                prior_classification=prior_classification,
+                content_changes=content_changes,
+                dry_run=dry_run,
+            )
         else:
             classification = "source_complete" if complete else "source_incomplete"
         if not dry_run:
-            raw_row = session.get(
-                DrawingRawSnapshot,
-                archive.snapshot_sha256,
-            )
-            if raw_row is not None:
+            if raw_row is not None and raw_row.classification != classification:
                 raw_row.classification = classification
+                if not raw_snapshot_created:
+                    changes += 1
         if before_commit is not None and not dry_run:
             before_commit(session)
         if dry_run:
@@ -536,6 +554,37 @@ def _import_detail_payload(
         classification=classification,
         dry_run=dry_run,
     )
+
+
+def _is_offline_repair_source(source: str) -> bool:
+    return source.startswith(("canonical-cache:", "cache:"))
+
+
+def _offline_repair_classification(
+    *,
+    prior_classification: str | None,
+    content_changes: int,
+    dry_run: bool,
+) -> str:
+    if content_changes:
+        return (
+            OFFLINE_REPAIR_RECOVERABLE
+            if dry_run
+            else OFFLINE_REPAIR_RECOVERED
+        )
+    if prior_classification in {
+        OFFLINE_REPAIR_RECOVERED,
+        LEGACY_OFFLINE_REPAIR_RECOVERABLE,
+    }:
+        return OFFLINE_REPAIR_RECOVERED
+    if prior_classification == OFFLINE_REPAIR_NO_CHANGES:
+        return OFFLINE_REPAIR_NO_CHANGES
+    if prior_classification not in {None, "pending"}:
+        # A local repair must not reinterpret another classification domain.
+        # In particular, network source completeness is normalized only by the
+        # repair command after independent persisted-evidence verification.
+        return prior_classification
+    return OFFLINE_REPAIR_NO_CHANGES
 
 
 def finished_drawing_is_current(session: Session, drawing_id: int) -> bool:

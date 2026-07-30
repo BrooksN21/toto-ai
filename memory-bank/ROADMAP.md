@@ -2,6 +2,10 @@
 
 ## Historical data-health remediation
 
+- [x] Fix offline canonical-RAW classification idempotency, isolate it from
+  network `source_incomplete`, and prove drawing-4954 correction-once followed
+  by a byte/logical no-op replay
+  (`TOTO-OFFLINE-REPAIR-CLASSIFICATION-IDEMPOTENCY-V1`).
 - [x] Add durable per-source reconciliation cooldown, separate transient retry,
   expiring quarantine, force override, deterministic clock, and fair range
   batching (`TOTO-RECONCILE-SOURCE-INCOMPLETE-COOLDOWN-V1`).
@@ -25,7 +29,7 @@
   quotes, results, scores, and statuses from one validated detail payload.
 - [x] Archive every fetched detail payload RAW-first with identity, timestamp,
   and hash provenance before mutating operational tables.
-- [ ] Repair the locally recoverable class-A defects from immutable RAW without
+- [x] Repair the locally recoverable class-A defects from immutable RAW without
   overwriting reviewed `VOID` evidence.
 - [x] Add a resumable, rate-limited network backfill for class-B/class-C gaps;
   never synthesize missing history when TotoBrief cannot supply it.
@@ -35,8 +39,19 @@
 - [ ] Gate every backtest/research dataset by its declared requirements:
   exactly 15 events, nonblank identity, usable required pool/BK inputs,
   complete `1/X/2/VOID` terminal outcomes, and valid as-of provenance.
-- [ ] Add nightly reconciliation that discovers new drawings, refreshes active
-  ones, finalizes finished ones, and reports unresolved gaps.
+- [x] Implement bounded passive nightly result reconciliation for the latest
+  30 finished drawings with an eight-attempt cap, exact captured allowlist,
+  shared lock, backup/retention, cooldown/quarantine, Data Health/integrity
+  reports, and generate-only 03:20 LaunchAgent artifacts
+  (`TOTO-NIGHTLY-RECONCILIATION-V1`).
+- [x] Complete controlled waves 2/3 and the wave-2 idempotency replay; restore
+  available evidence without synthesizing source-empty results.
+- [x] Review and explicitly install
+  `com.totoai.nightly-reconciliation.v1` at 03:20 Moscow time after the
+  network-free rehearsal and operator smoke; smoke completed `PARTIAL` with
+  seven of eight captured drawings restored and one cooled down.
+- [ ] Observe and review the first calendar-triggered nightly run; keep the job
+  bounded to latest 30, maximum eight, no-force and results-only.
 - [ ] Keep rehearsal/simulation package archives out of production
   performance and realized-ROI statistics.
 - [ ] Require settlement and a post-draw report for every production package,

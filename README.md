@@ -470,6 +470,76 @@ mutation. The command can restore only fields present in a validated local
 canonical RAW payload and reports missing local evidence separately. It never
 synthesizes historical data.
 
+Offline repair classifications are deliberately separate from network
+reconciliation state:
+
+- `offline_repair_recoverable`: dry-run found provable pending changes;
+- `offline_repair_recovered`: those local changes are applied;
+- `offline_repair_no_changes`: the canonical RAW adds nothing.
+
+Reapplying a recovered/no-change snapshot is a complete no-op. The command
+does not rewrite network `source_incomplete` cooldown state. A historical
+misclassification can be normalized once only when exact RAW provenance and a
+hash-verified complete result snapshot unambiguously prove the current result
+set; otherwise it remains unchanged and is reported for manual review.
+Separately reviewed VOID evidence is never removed or downgraded by an older
+canonical RAW payload.
+
+### Passive nightly reconciliation
+
+Generate-only nightly artifacts are available through:
+
+```bash
+python -m toto_ai.cli nightly-reconciliation-plan \
+  --project-root /Users/turshevr/toto-ai \
+  --db /Users/turshevr/toto-ai/data/toto.db \
+  --output-dir /Users/turshevr/toto-ai/reports/nightly-reconciliation \
+  --python-executable /Users/turshevr/toto-ai/.venv/bin/python
+```
+
+The generated wrapper runs:
+
+```bash
+/Users/turshevr/toto-ai/.venv/bin/python -m toto_ai.cli \
+  nightly-reconciliation-run \
+  --db /Users/turshevr/toto-ai/data/toto.db \
+  --project-root /Users/turshevr/toto-ai \
+  --last-finished 30 \
+  --max-network-attempts 8 \
+  --timeout-seconds 240 \
+  --backup-retention 7 \
+  --no-force
+```
+
+The LaunchAgent candidate is scheduled for 03:20 machine-local time. On the
+target Mac that means Europe/Moscow. Artifact generation never installs or
+loads it.
+
+On the current operator Mac the reviewed candidate was separately installed as
+`com.totoai.nightly-reconciliation.v1` with `RunAtLoad=false`. The installed
+plist is outside the repository under the user's `Library/LaunchAgents`.
+Its first explicit smoke run returned controlled `PARTIAL`: seven of eight
+captured drawings were restored to 15/15 and one authoritative 14/15 drawing
+entered cooldown. The corresponding launchd exit code is 2 by CLI contract;
+the persisted JSON report distinguishes this from a `FAILED` run.
+
+The runner first limits scope to the most recent 30 **finished** drawings,
+performs a physical read-only dry-run, captures at most eight exact eligible
+drawing numbers, and repeats selection before any backup/network work. Any
+selection drift fails closed. An empty capture is `DEFERRED/NOOP`: zero
+network requests and no backup.
+
+For a non-empty capture, the runner acquires the global maintenance lock shared
+with morning preparation, creates a mode-`0600` online SQLite backup and
+integrity manifest, and applies exactly one bounded non-force attempt per
+captured drawing. Existing cooldown/quarantine is respected.
+`source_incomplete` is reported as controlled `PARTIAL`, never synthesized as
+VOID. Every run writes timestamped JSON report/state/log artifacts and records
+Data Health before/after plus SQLite quick/FK checks.
+
+The wrapper contains no package generation, scheduler activation, upload, or
+betting command. Automatic betting is not part of this job.
+
 Package archives retain the canonical coupon hash, target identity, stake,
 coupon count, source path, original bytes/hash, and provenance. Import legacy
 evidence explicitly with `archive-package`; new actionable scheduler packages
