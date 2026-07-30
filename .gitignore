@@ -17,6 +17,8 @@ data/external-cache/
 data/totobrief-cache/
 data/scheduler/
 data/raw/*.json
+data/raw/archive/
+data/reconciliation/
 reports/
 reports/validation_*.md
 reports/bk_vs_norm.md

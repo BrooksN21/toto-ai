@@ -46,7 +46,7 @@ class FakeClient:
                         "name": f"Event {drawing_id}-{order}",
                         "championship": "League",
                         "sport": "football",
-                        "result": "win_1",
+                        "result": "1",
                         "score": "2:1",
                         "quotes": {
                             "pool_win_1": 1.5,
@@ -103,10 +103,14 @@ def test_collector_fetches_all_pages_and_saves_drawings_events_quotes():
     assert quotes[0].pin_win_2 == 5.2
 
 
-def test_collector_is_incremental_and_skips_existing_drawings():
+def test_collector_is_incremental_and_skips_existing_drawings(tmp_path):
     client = FakeClient()
     session_factory = make_session_factory()
-    collector = Collector(client=client, session_factory=session_factory)
+    collector = Collector(
+        client=client,
+        session_factory=session_factory,
+        raw_archive_dir=tmp_path / "archive",
+    )
 
     first = collector.sync(name="baltbet-main")
     second = collector.sync(name="baltbet-main")
@@ -139,6 +143,7 @@ def test_init_db_creates_sqlite_database(tmp_path):
             "drawing_pin_set_items",
             "drawing_pin_sets",
         "drawing_preparations",
+        "drawing_raw_snapshots",
         "drawing_result_snapshots",
         "drawings",
         "events",
@@ -306,8 +311,8 @@ def test_page_status_updates_commit_even_when_current_detail_is_deferred():
 
     result = collector.sync(max_pages=1)
 
-    assert result.details_deferred == 1
-    assert client.info_calls == [11970]
+    assert result.details_deferred == 4
+    assert client.info_calls == [11966, 11964, 11968, 11970]
     with factory() as session:
         assert session.get(Drawing, 11966).status == "finished"
         assert session.get(Drawing, 11964).status == "finished"
@@ -344,10 +349,19 @@ def test_fresh_cached_11970_populates_missing_detail_without_network_or_duplicat
     first = collector.sync(max_pages=1)
     second = collector.sync(max_pages=1)
 
-    assert first.details_deferred == 0
-    assert first.detail_results[0].source == "cache:inspect-api"
+    assert first.details_deferred == 3
+    assert next(
+        item for item in first.detail_results if item.drawing_id == 11970
+    ).source == "cache:inspect-api"
     assert second.drawings_saved == 0
-    assert client.info_calls == []
+    assert client.info_calls == [
+        11966,
+        11964,
+        11968,
+        11966,
+        11964,
+        11968,
+    ]
     with factory() as session:
         assert session.get(Drawing, 11966).status == "finished"
         assert session.get(Drawing, 11964).status == "finished"
@@ -388,8 +402,9 @@ def test_fresh_cached_detail_cannot_roll_back_newer_page_status(tmp_path):
 
     result = collector.sync(max_pages=1)
 
-    assert result.detail_results[0].source == "cache:inspect-api"
-    assert client.info_calls == []
+    assert result.details_deferred == 4
+    assert all(item.source is None for item in result.detail_results)
+    assert client.info_calls == [11966, 11964, 11968, 11970]
     with factory() as session:
         assert session.get(Drawing, 11970).status == "finished"
 

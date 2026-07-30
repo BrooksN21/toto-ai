@@ -1,5 +1,33 @@
 # Architecture
 
+## Lifecycle-aware collection and reconciliation
+
+Finished freshness is evidence-based: a drawing is current only with 15
+terminal outcomes and a complete result snapshot linked to immutable RAW.
+Lifecycle transitions invalidate active/expected cache reuse.
+
+The collector and finished reconciliation share one full-detail importer:
+
+```text
+TotoBrief payload
+-> relaxed exact 15-event identity validation
+-> content-addressed append-only RAW + metadata/fsync
+-> monotonic/non-destructive full-detail merge
+-> terminal 15/15 check
+-> immutable result snapshot linked to RAW hash
+```
+
+The importer preserves names, championship, sport, pool/BK/pin/norm quotes,
+results, scores, and result status. Null/blank fields and zero probability
+triples cannot erase stronger data. Terminal conflicts fail closed. VOID is
+accepted only with explicit source status and HTTP(S) evidence.
+
+`reconcile-finished` is a non-betting, bounded, resumable command contract for
+recent/range incomplete finished drawings. Its dry-run performs no network.
+`repair-canonical-raw` is evidence-only offline repair and distinguishes
+provable importer loss from missing local evidence. Neither command installs
+automation or places bets.
+
 ## Provider-neutral reviewed schedule fallback
 
 API-Sports remains the primary schedule/market provider. When and only when a

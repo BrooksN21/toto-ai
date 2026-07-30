@@ -384,8 +384,8 @@ Contract v1 reports every drawing and separate eligibility for:
 - `result_settlement`;
 - `prospective_generation`.
 
-It treats a pool triplet `0/0/0` as invalid and accepts explicit
-`*`/VOID/cancelled values as terminal results. Missing RAW/result snapshots are
+It treats a pool triplet `0/0/0` as invalid and accepts `*`/VOID/cancelled only
+with an explicit source status/evidence as terminal results. Missing RAW/result snapshots are
 preserved as distinct reason codes. A missing settlement is an error only for
 a canonical `pre_bet_runner` package; legacy/rehearsal imports do not create a
 settlement obligation.
@@ -402,11 +402,28 @@ prospective generation has no bypass.
 
 ## Finished-Drawing Lifecycle
 
+Finished lifecycle freshness is stricter than row completeness. A finished
+drawing remains stale until SQLite contains 15 terminal source outcomes and a
+complete immutable result snapshot linked to an append-only RAW snapshot.
+An active/expected cache can never satisfy a later finished summary.
+
+Every network/cache payload is written first to a content-addressed archive
+with capture time, source, lifecycle status, payload hash, metadata hash, and
+snapshot hash. Only then may the shared full-detail importer merge drawing,
+event, quote, result, score, and result-status fields. Empty/null/zero source
+fields never erase stronger stored values; `0/0/0` is not useful pool data;
+conflicting terminal outcomes fail closed.
+
 Finished results are synchronized only by an explicit visible number or
 internal ID. These commands never select an open or next drawing:
 
 ```bash
 python -m toto_ai.cli sync-finished-results --drawing-number 4952
+python -m toto_ai.cli reconcile-finished --last 20 --dry-run
+python -m toto_ai.cli reconcile-finished --from-drawing 4940 \
+  --to-drawing 4959 --batch-size 10 --apply
+python -m toto_ai.cli repair-canonical-raw \
+  --drawing-number 4954 --drawing-number 4955 --drawing-number 4956 --dry-run
 python -m toto_ai.cli settle-drawing --drawing-number 4952 \
   --package-file reports/rehearsal/evening-4952/emergency-final/baltbet_package_4952_4980.txt \
   --stake 30
@@ -419,6 +436,18 @@ payload with exactly 15 ordered results and scores. Operational event columns
 are updated for convenience, while every distinct result/payment observation
 is appended as an immutable hash-bound snapshot. Identical observations are
 idempotent; official corrections append a new snapshot.
+
+`reconcile-finished` is the non-betting nightly-ready command contract. It
+selects only incomplete finished drawings, supports exact ranges or `--last`,
+bounded retries/backoff, request pacing, batch limits, durable resume state,
+and a network-free `--dry-run`. Each attempt ends explicitly as repaired,
+source-incomplete, or exhausted; transport failures are never called source
+absence.
+
+`repair-canonical-raw` performs evidence-only offline recovery. Dry-run is the
+default. It can restore only fields present in a validated local canonical RAW
+payload and reports missing local evidence separately. It never synthesizes
+historical data.
 
 Package archives retain the canonical coupon hash, target identity, stake,
 coupon count, source path, original bytes/hash, and provenance. Import legacy

@@ -19,6 +19,12 @@ from toto_ai.api.detail_cache import (
     write_drawing_detail_cache,
 )
 from toto_ai.api.rate_limit import TotoBriefRequestError
+from toto_ai.collector.lifecycle import (
+    RawArchive,
+    finished_drawing_is_current,
+    import_archived_detail,
+    validate_full_detail_payload,
+)
 from toto_ai.db.models import Drawing, Event, Quote
 
 
@@ -72,6 +78,7 @@ class Collector:
             DEFAULT_DETAIL_CACHE_MAX_AGE_SECONDS
         ),
         storage_root: str | Path = ".",
+        raw_archive_dir: str | Path | None = None,
         now: Any | None = None,
     ) -> None:
         self.client = client
@@ -81,6 +88,15 @@ class Collector:
         )
         self.detail_cache_max_age_seconds = detail_cache_max_age_seconds
         self.storage_root = Path(storage_root)
+        self.raw_archive_dir = (
+            Path(raw_archive_dir)
+            if raw_archive_dir is not None
+            else (
+                Path(raw_cache_dir) / "archive"
+                if raw_cache_dir is not None
+                else None
+            )
+        )
         self.now = now or (lambda: datetime.now(timezone.utc))
 
     def sync(
@@ -208,6 +224,10 @@ class Collector:
                         strict=strict_summary,
                         now=self.now(),
                     )
+                    _validate_cache_lifecycle(
+                        cached.payload,
+                        drawing_summary,
+                    )
                 except ValueError as error:
                     cache_error = _safe_error(error)
                 else:
@@ -220,10 +240,16 @@ class Collector:
 
         try:
             payload = self.client.drawing_info(drawing_id)
-            validate_drawing_detail_payload(
-                payload,
-                expected_drawing_id=drawing_id,
-            )
+            if _summary_or_payload_is_finished(payload, drawing_summary):
+                validate_full_detail_payload(
+                    payload,
+                    expected_drawing_id=drawing_id,
+                )
+            else:
+                validate_drawing_detail_payload(
+                    payload,
+                    expected_drawing_id=drawing_id,
+                )
             _validate_detail_matches_summary(
                 payload,
                 drawing_summary,
@@ -231,14 +257,20 @@ class Collector:
                 now=self.now(),
             )
             if self.raw_cache_dir is not None:
-                write_drawing_detail_cache(
-                    payload,
-                    drawing_id=drawing_id,
-                    cache_dir=self.raw_cache_dir,
-                    fetched_at=self.now(),
-                    source="collector-network",
-                    allowed_root=self.storage_root,
-                )
+                try:
+                    write_drawing_detail_cache(
+                        payload,
+                        drawing_id=drawing_id,
+                        cache_dir=self.raw_cache_dir,
+                        fetched_at=self.now(),
+                        source="collector-network",
+                        allowed_root=self.storage_root,
+                    )
+                except ValueError:
+                    # The operational cache requires useful pool/BK triples.
+                    # Incomplete finished payloads are still preserved in the
+                    # append-only archive and reconciled later.
+                    pass
         except (
             KeyError,
             OSError,
@@ -264,6 +296,10 @@ class Collector:
                         drawing_summary,
                         strict=strict_summary,
                         now=self.now(),
+                    )
+                    _validate_cache_lifecycle(
+                        cached.payload,
+                        drawing_summary,
                     )
                 except ValueError as error:
                     cache_error = _safe_error(error)
@@ -291,6 +327,8 @@ class Collector:
             drawing = session.get(Drawing, drawing_id)
             if drawing is None:
                 return True
+            if drawing.status == "finished":
+                return not finished_drawing_is_current(session, drawing_id)
             event_orders = session.scalars(
                 select(Event.event_order).where(Event.drawing_id == drawing_id)
             ).all()
@@ -358,15 +396,52 @@ class Collector:
         source: str,
         cache_age_seconds: float | None = None,
     ) -> DetailSyncResult:
-        validate_drawing_detail_payload(
-            payload,
-            expected_drawing_id=payload["data"]["id"],
-        )
+        if _summary_or_payload_is_finished(payload, drawing_summary):
+            validate_full_detail_payload(
+                payload,
+                expected_drawing_id=payload["data"]["id"],
+            )
+        else:
+            validate_drawing_detail_payload(
+                payload,
+                expected_drawing_id=payload["data"]["id"],
+            )
         drawing_id = payload["data"]["id"]
-        events_saved, quotes_saved = self._save_drawing(
-            drawing_summary=drawing_summary or {"id": drawing_id},
-            drawing_info=payload["data"],
-        )
+        if self.raw_archive_dir is not None:
+            captured_at = self.now()
+            archive = RawArchive(self.raw_archive_dir).archive(
+                payload,
+                captured_at=captured_at,
+                source=source,
+                lifecycle_status=str(
+                    (drawing_summary or {}).get("status")
+                    or payload["data"].get("status")
+                    or "unknown"
+                ),
+                source_endpoint=f"/drawing-info/{drawing_id}",
+            )
+            imported = import_archived_detail(
+                self.session_factory,
+                archive,
+            )
+            # The page summary is newer than a cache payload. Apply only
+            # monotonic drawing-level fields after the RAW-bound import.
+            if drawing_summary:
+                self._upsert_drawing_summaries(
+                    [drawing_summary],
+                    name=str(
+                        drawing_summary.get("name")
+                        or payload["data"].get("name")
+                        or "baltbet-main"
+                    ),
+                )
+            events_saved = imported.events_created
+            quotes_saved = imported.quotes_created
+        else:
+            events_saved, quotes_saved = self._save_drawing(
+                drawing_summary=drawing_summary or {"id": drawing_id},
+                drawing_info=payload["data"],
+            )
         return DetailSyncResult(
             drawing_id=drawing_id,
             status="synchronized",
@@ -501,6 +576,17 @@ def _apply_drawing_fields(
         if source not in data:
             continue
         value = data.get(source)
+        if value is None:
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        if target in {"pool_sum", "jackpot"} and value == 0:
+            if getattr(drawing, target) not in (None, 0):
+                continue
+        if target == "status":
+            ranks = {None: 0, "expected": 1, "active": 2, "finished": 3}
+            if ranks.get(value, 0) < ranks.get(drawing.status, 0):
+                continue
         if getattr(drawing, target) != value:
             setattr(drawing, target, value)
             changed = True
@@ -536,6 +622,30 @@ def _stored_quote_row_is_complete(row: Any) -> bool:
     return sum(float(value) for value in values[:3]) > 0 and sum(
         float(value) for value in values[3:]
     ) > 0
+
+
+def _summary_or_payload_is_finished(
+    payload: dict[str, Any],
+    drawing_summary: dict[str, Any] | None,
+) -> bool:
+    return (
+        (drawing_summary or {}).get("status") == "finished"
+        or payload.get("data", {}).get("status") == "finished"
+    )
+
+
+def _validate_cache_lifecycle(
+    payload: dict[str, Any],
+    drawing_summary: dict[str, Any] | None,
+) -> None:
+    if (
+        drawing_summary is not None
+        and drawing_summary.get("status") == "finished"
+        and payload.get("data", {}).get("status") != "finished"
+    ):
+        raise ValueError(
+            "active/expected detail cache cannot satisfy a finished drawing"
+        )
 
 
 def _validate_detail_matches_summary(

@@ -513,15 +513,16 @@ profitability or a proven winning strategy.
 - [x] `TOTO-DATA-HEALTH-CONTRACT-V1`: versioned read-only contract, strict
   CLI, per-use-case eligibility, machine reason codes, selectors, exports, and
   minimal generation/backtest gates.
-- [ ] P0.2: lifecycle-aware collector freshness. A transition to `finished`,
+- [x] P0.2: lifecycle-aware collector freshness. A transition to `finished`,
   incomplete terminal results, or invalid `0/0/0` input must trigger explicit
   reconciliation rather than be treated as current.
-- [ ] P0.3/P0.4: RAW-first immutable archive plus full-detail finished
+- [x] P0.3/P0.4: RAW-first immutable archive plus full-detail finished
   importer.
-- [ ] Offline repair of fields provably recoverable from existing canonical
+- [x] Offline repair command and copy-database verification for fields provably recoverable from existing canonical
   RAW.
-- [ ] Rate-limited resumable network backfill with durable attempt evidence.
-- [ ] Nightly listing/detail/result reconciliation and health report.
+- [x] Bounded, rate-limited resumable reconciliation engine and dry-run CLI.
+- [ ] Controlled canary network backfill, then full historical backlog.
+- [ ] Install/schedule nightly listing/detail/result reconciliation and health report only after canary acceptance.
 - [ ] Complete actionable package settlement and mandatory post-draw report.
 
 Do not build another optimizer before the measurable lifecycle

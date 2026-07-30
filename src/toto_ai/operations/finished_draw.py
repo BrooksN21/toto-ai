@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import csv
 import fcntl
 import hashlib
@@ -24,6 +25,7 @@ from sqlalchemy import select
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session, sessionmaker
 
+from toto_ai.collector.lifecycle import RawArchive, import_archived_detail
 from toto_ai.db.models import (
     ArchivedPackage,
     Drawing,
@@ -161,6 +163,7 @@ def sync_finished_drawing(
     retrieved_at: datetime | None = None,
     void_event_orders: Sequence[int] = (),
     void_source: str | None = None,
+    raw_archive_root: str | Path | None = None,
 ) -> ResultSync:
     """Fetch exactly one `/drawing-info/{id}` and append its result snapshot."""
     expected_id, expected_number = _resolve_explicit_drawing(
@@ -200,6 +203,27 @@ def sync_finished_drawing(
     snapshot_hash = _sha256_json(snapshot_content)
     retrieved_text = fetched_at.isoformat()
     endpoint = RESULT_ENDPOINT_TEMPLATE.format(drawing_id=expected_id)
+    raw_snapshot_sha256: str | None = None
+    archive_created_snapshot = False
+    if raw_archive_root is not None:
+        archive_payload = copy.deepcopy(payload)
+        for event in normalized["events"]:
+            source_event = archive_payload["data"]["events"][event["order"]]
+            source_event["result"] = event["result"]
+            source_event["result_status"] = event["result_status"]
+            source_event["score"] = event["score"]
+            if "void_source" in event:
+                source_event["void_source"] = event["void_source"]
+        archive = RawArchive(raw_archive_root).archive(
+            archive_payload,
+            captured_at=fetched_at,
+            source="totobrief-network",
+            source_endpoint=endpoint,
+            lifecycle_status="finished",
+        )
+        imported = import_archived_detail(session_factory, archive)
+        raw_snapshot_sha256 = archive.snapshot_sha256
+        archive_created_snapshot = imported.result_snapshot_created
 
     with session_factory.begin() as session:
         values = {
@@ -210,6 +234,7 @@ def sync_finished_drawing(
             "retrieved_at": retrieved_text,
             "source_endpoint": endpoint,
             "payload_sha256": payload_hash,
+            "raw_snapshot_sha256": raw_snapshot_sha256,
             "result_sha256": result_hash,
             "snapshot_sha256": snapshot_hash,
             "complete": True,
@@ -230,7 +255,7 @@ def sync_finished_drawing(
             .values(**values)
             .on_conflict_do_nothing()
         )
-        created = inserted.rowcount == 1
+        created = inserted.rowcount == 1 or archive_created_snapshot
         _persist_operational_result(
             session,
             normalized,
@@ -662,6 +687,7 @@ def _run_post_draw_locked(
     stake: int = 30,
     config: PostDrawRetryConfig | None = None,
     state_path: str | Path,
+    raw_archive_root: str | Path | None = None,
     now: Callable[[], datetime] | None = None,
     sleep: Callable[[float], None] = time.sleep,
 ) -> PostDrawState:
@@ -740,6 +766,7 @@ def _run_post_draw_locked(
                 client,
                 drawing_id=expected_id,
                 retrieved_at=now(),
+                raw_archive_root=raw_archive_root,
             )
             settlement = settle_archived_package(
                 session_factory,
@@ -1140,11 +1167,16 @@ def _persist_operational_result(
                 drawing_id=drawing_id,
                 event_order=item["order"],
                 result=item["result"],
+                result_status=item["result_status"],
                 score=item["score"],
             )
             .on_conflict_do_update(
                 index_elements=("drawing_id", "event_order"),
-                set_={"result": item["result"], "score": item["score"]},
+                set_={
+                    "result": item["result"],
+                    "result_status": item["result_status"],
+                    "score": item["score"],
+                },
             )
         )
 

@@ -43,7 +43,35 @@ class Event(Base):
     championship: Mapped[str | None] = mapped_column(String)
     sport: Mapped[str | None] = mapped_column(String)
     result: Mapped[str | None] = mapped_column(String)
+    result_status: Mapped[str | None] = mapped_column(String, nullable=True)
     score: Mapped[str | None] = mapped_column(String)
+
+
+class DrawingRawSnapshot(Base):
+    """Append-only source payload evidence written before analytical imports."""
+
+    __tablename__ = "drawing_raw_snapshots"
+    __table_args__ = (
+        UniqueConstraint(
+            "drawing_id",
+            "snapshot_sha256",
+            name="uq_drawing_raw_snapshot_content",
+        ),
+    )
+
+    snapshot_sha256: Mapped[str] = mapped_column(String, primary_key=True)
+    payload_sha256: Mapped[str] = mapped_column(String, index=True)
+    metadata_sha256: Mapped[str] = mapped_column(String)
+    drawing_id: Mapped[int] = mapped_column(Integer, index=True)
+    drawing_number: Mapped[int | None] = mapped_column(Integer, index=True)
+    captured_at: Mapped[str] = mapped_column(String)
+    source: Mapped[str] = mapped_column(String)
+    source_endpoint: Mapped[str | None] = mapped_column(String, nullable=True)
+    lifecycle_status: Mapped[str] = mapped_column(String)
+    payload_path: Mapped[str] = mapped_column(Text)
+    metadata_path: Mapped[str] = mapped_column(Text)
+    imported_at: Mapped[str] = mapped_column(String)
+    classification: Mapped[str] = mapped_column(String)
 
 
 class DrawingResultSnapshot(Base):
@@ -66,6 +94,9 @@ class DrawingResultSnapshot(Base):
     retrieved_at: Mapped[str] = mapped_column(String)
     source_endpoint: Mapped[str] = mapped_column(String)
     payload_sha256: Mapped[str] = mapped_column(String)
+    raw_snapshot_sha256: Mapped[str | None] = mapped_column(
+        String, nullable=True, index=True
+    )
     result_sha256: Mapped[str] = mapped_column(String)
     snapshot_sha256: Mapped[str] = mapped_column(String, index=True)
     complete: Mapped[bool] = mapped_column(Boolean)

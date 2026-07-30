@@ -67,6 +67,15 @@ def _add_missing_columns(engine: Engine) -> None:
                         )
                     )
 
+        if "events" in table_names:
+            existing_event_columns = {
+                column["name"] for column in inspector.get_columns("events")
+            }
+            if "result_status" not in existing_event_columns:
+                connection.execute(
+                    text("ALTER TABLE events ADD COLUMN result_status VARCHAR")
+                )
+
         if "external_collection_runs" in table_names:
             run_columns = {
                 column["name"]
@@ -212,6 +221,20 @@ def _add_missing_columns(engine: Engine) -> None:
                         "NOT NULL DEFAULT 1"
                     )
                 )
+            if "raw_snapshot_sha256" not in snapshot_columns:
+                connection.execute(
+                    text(
+                        "ALTER TABLE drawing_result_snapshots "
+                        "ADD COLUMN raw_snapshot_sha256 VARCHAR"
+                    )
+                )
+            connection.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS "
+                    "ix_drawing_result_snapshots_raw_snapshot_sha256 "
+                    "ON drawing_result_snapshots (raw_snapshot_sha256)"
+                )
+            )
 
         if "archived_packages" in table_names:
             archive_columns = {

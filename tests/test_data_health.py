@@ -61,6 +61,15 @@ def _add_drawing(
                 championship="League",
                 sport="football",
                 result=outcomes[order],
+                result_status=(
+                    outcomes[order]
+                    if outcomes[order] in ("void", "cancelled", "canceled")
+                    else "void"
+                    if outcomes[order] == "*"
+                    else "resolved"
+                    if outcomes[order] in ("1", "X", "2")
+                    else None
+                ),
             )
         )
         if order < quotes_to_add:
@@ -88,6 +97,7 @@ def _add_result_snapshot(session: Session, drawing_id: int, number: int) -> None
             retrieved_at="2030-01-02T00:00:00+00:00",
             source_endpoint=f"/drawing-info/{drawing_id}",
             payload_sha256=f"payload-{drawing_id}",
+            raw_snapshot_sha256=f"raw-{drawing_id}",
             result_sha256=f"result-{drawing_id}",
             snapshot_sha256=f"snapshot-{drawing_id}",
             complete=True,

@@ -1,5 +1,63 @@
 # Current State
 
+## Collector lifecycle freshness v1 (2026-07-30)
+
+Implemented on the current feature branch:
+
+- finished freshness requires terminal 15/15 plus a complete result snapshot
+  linked to immutable RAW;
+- active cache cannot satisfy a finished lifecycle;
+- content-addressed RAW-first archive with capture/source/status/hash metadata;
+- one non-destructive full-detail importer for identity, names,
+  championship/sport, pool/BK/pin/norm quotes, results, scores, and result
+  status;
+- explicit VOID evidence, terminal conflict rejection, and zero-pool
+  protection;
+- bounded range/recent reconciliation with dry-run, retry/backoff, pacing,
+  batch limit, resume state, and explicit outcomes;
+- evidence-only canonical RAW repair command;
+- additive SQLite `drawing_raw_snapshots`, Event `result_status`, and result
+  snapshot `raw_snapshot_sha256`.
+
+Network-free copy-database drill:
+
+- range 4940–4959 selected 20/20 for reconciliation because legacy snapshots
+  are not RAW-linked;
+- canonical RAW dry-run: 4954 has 171 provable importer-loss changes; 4955 and
+  4956 have no valid canonical local evidence;
+- copy-only apply restored 4954 to 15 names and 15 quote rows; terminal result
+  evidence remains 14/15, so no result snapshot was invented;
+- second 4954 import produced zero logical changes;
+- SQLite quick-check passed.
+
+Focused lifecycle/data-health/finished suite: 71 passed. Final full suite:
+1499 passed in 246.95s. Repository Ruff and `git diff --check` passed.
+
+Operational observation: the already-installed passive morning dispatcher ran
+at 10:30 Moscow while this working tree was under development and synchronized
+active drawing 4960, creating three RAW observations in the main database.
+This task did not install or activate that job, but future schema development
+must account for already-loaded automation before claiming the production DB
+was untouched.
+
+Sports statistics remain AUDIT ONLY. Collection contracts, immutable feature
+snapshots, as-of filtering, form/home-away/rest/standings fields, and
+`collect-sports-stats` exist, but current free API-Sports access does not
+provide the required 2026 history. No complete event snapshot corpus, trained
+model, OOS improvement, probability blend, package influence, or scheduler
+integration exists. The next sports-stat step is a lawful free source canary
+under the existing provider-neutral contract, after lifecycle data canary
+backfill is stable.
+
+Next:
+
+1. run a small explicit TotoBrief reconciliation canary on a database copy;
+2. compare health before/after and confirm no destructive changes;
+3. only then apply bounded repair to the primary DB and schedule nightly
+   reconciliation;
+4. close settlement/post-draw reporting;
+5. resume sports-source evaluation and OOS probability experiments.
+
 ## 2026-07-29: Full-history forensic audit invalidated the completeness claim
 
 Task `TOTO-FULL-HISTORY-DATA-AUDIT` audited every locally stored

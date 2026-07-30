@@ -143,6 +143,11 @@ from toto_ai.operations.finished_draw import (
     settle_package_file,
     sync_finished_drawing,
 )
+from toto_ai.operations.reconciliation import (
+    ReconciliationConfig,
+    reconcile_finished_drawings,
+    repair_from_canonical_raw,
+)
 from toto_ai.operations.sync_prepare import (
     DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS,
     synchronize_open_drawing,
@@ -339,6 +344,10 @@ def sync_finished_results_command(
         help="HTTP(S) evidence URL required when --void-event is used.",
     ),
     db: str = typer.Option("data/toto.db", "--db"),
+    raw_archive_root: str = typer.Option(
+        "data/raw/archive",
+        "--raw-archive-root",
+    ),
 ) -> None:
     """Force one exact finished drawing-info snapshot by explicit identity."""
     if (drawing_id is None) == (drawing_number is None):
@@ -354,6 +363,7 @@ def sync_finished_results_command(
             drawing_number=drawing_number,
             void_event_orders=tuple(void_event or ()),
             void_source=void_source,
+            raw_archive_root=raw_archive_root,
         )
     except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
@@ -384,6 +394,105 @@ def settle_drawing_command(
     except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
     typer.echo(json.dumps(result.to_dict(), ensure_ascii=False, sort_keys=True))
+
+
+@app.command("reconcile-finished")
+def reconcile_finished_command(
+    db: str = typer.Option("data/toto.db", "--db"),
+    from_drawing: int | None = typer.Option(
+        None, "--from-drawing", min=1
+    ),
+    to_drawing: int | None = typer.Option(None, "--to-drawing", min=1),
+    last: int | None = typer.Option(None, "--last", min=1),
+    batch_size: int | None = typer.Option(None, "--batch-size", min=1),
+    max_attempts: int = typer.Option(3, "--max-attempts", min=1),
+    initial_backoff_seconds: float = typer.Option(
+        1.0, "--initial-backoff-seconds", min=0
+    ),
+    max_backoff_seconds: float = typer.Option(
+        30.0, "--max-backoff-seconds", min=0
+    ),
+    backoff_multiplier: float = typer.Option(
+        2.0, "--backoff-multiplier", min=1
+    ),
+    rate_limit_seconds: float = typer.Option(
+        0.5, "--rate-limit-seconds", min=0
+    ),
+    state_file: str = typer.Option(
+        "data/reconciliation/finished-state.json",
+        "--state-file",
+    ),
+    raw_archive_root: str = typer.Option(
+        "data/raw/archive",
+        "--raw-archive-root",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run/--apply",
+        help="Select and report only; dry-run never performs network calls.",
+    ),
+) -> None:
+    """Reconcile incomplete finished drawings; never generates or places bets."""
+    try:
+        report = reconcile_finished_drawings(
+            get_session_factory(init_db(db)),
+            TotoBriefClient(),
+            archive_root=raw_archive_root,
+            state_path=state_file,
+            config=ReconciliationConfig(
+                max_attempts=max_attempts,
+                initial_backoff_seconds=initial_backoff_seconds,
+                max_backoff_seconds=max_backoff_seconds,
+                backoff_multiplier=backoff_multiplier,
+                rate_limit_seconds=rate_limit_seconds,
+                batch_size=batch_size,
+                dry_run=dry_run,
+            ),
+            from_drawing=from_drawing,
+            to_drawing=to_drawing,
+            last=last,
+        )
+    except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(asdict(report), ensure_ascii=False, sort_keys=True))
+    if not dry_run and (report.source_incomplete or report.exhausted):
+        raise typer.Exit(code=2)
+
+
+@app.command("repair-canonical-raw")
+def repair_canonical_raw_command(
+    drawing_number: list[int] = typer.Option(  # noqa: B008
+        ...,
+        "--drawing-number",
+        min=1,
+        help="Exact visible number; repeat for each drawing.",
+    ),
+    db: str = typer.Option("data/toto.db", "--db"),
+    raw_cache_root: str = typer.Option("data/raw", "--raw-cache-root"),
+    raw_archive_root: str = typer.Option(
+        "data/raw/archive",
+        "--raw-archive-root",
+    ),
+    dry_run: bool = typer.Option(
+        True,
+        "--dry-run/--apply",
+        help="Dry-run is default and never mutates SQLite.",
+    ),
+) -> None:
+    """Repair only losses proven by validated canonical local RAW."""
+    try:
+        report = repair_from_canonical_raw(
+            get_session_factory(init_db(db)),
+            raw_cache_root=raw_cache_root,
+            archive_root=raw_archive_root,
+            drawing_numbers=tuple(drawing_number),
+            dry_run=dry_run,
+        )
+    except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(asdict(report), ensure_ascii=False, sort_keys=True))
+    if report.invalid:
+        raise typer.Exit(code=2)
 
 
 @app.command("archive-package")
@@ -447,6 +556,10 @@ def post_draw_run_command(
     drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
     stake: int = typer.Option(30, "--stake", min=1),
     db: str = typer.Option("data/toto.db", "--db"),
+    raw_archive_root: str = typer.Option(
+        "data/raw/archive",
+        "--raw-archive-root",
+    ),
     max_attempts: int = typer.Option(6, "--max-attempts", min=1),
     initial_delay_seconds: float = typer.Option(
         60.0,
@@ -484,6 +597,7 @@ def post_draw_run_command(
                 backoff_multiplier=backoff_multiplier,
             ),
             state_path=state_file,
+            raw_archive_root=raw_archive_root,
         )
     except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error

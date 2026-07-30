@@ -50,6 +50,18 @@ Known data notes:
   TotoBrief BK row with explicit `totobrief_bk_fallback` provenance. Missing,
   stale, changed, cancelled, conflicting, or TOCTOU evidence is `NO BET`, not
   an implicit probability fallback.
+- A drawing-info payload can remain incomplete after the listing reports
+  `finished`. Fifteen stored event/quote rows therefore do not prove result
+  freshness. Reconciliation must continue until 15 terminal source outcomes
+  and an immutable RAW-linked result snapshot exist.
+- An active/expected detail cache is not authoritative after a transition to
+  `finished`.
+- `0/0/0` pool values are source data but not useful probability evidence.
+- An empty result/score does not prove VOID. VOID/cancelled is terminal only
+  with explicit source status and evidence.
+- TotoBrief transport failures and absent local RAW are not proof that the
+  source itself lacks data. They are tracked separately as transport
+  exhaustion and no-local-evidence.
 
 Related:
 - [../memory-bank/DATA_NOTES.md](../memory-bank/DATA_NOTES.md)

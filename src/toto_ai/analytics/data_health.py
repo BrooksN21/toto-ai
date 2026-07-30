@@ -488,10 +488,16 @@ def _drawing_health(
         )
         for quote in quotes
     )
-    terminal_results = sum(_terminal_result(event.result) for event in events)
-    void_results = sum(_void_result(event.result) for event in events)
+    terminal_results = sum(
+        _terminal_result(event.result, event.result_status) for event in events
+    )
+    void_results = sum(
+        _void_result(event.result, event.result_status) for event in events
+    )
     complete_result_snapshots = sum(
-        bool(snapshot.complete) and snapshot.event_count == 15
+        bool(snapshot.complete)
+        and snapshot.event_count == 15
+        and snapshot.raw_snapshot_sha256 is not None
         for snapshot in result_snapshots
     )
     actionable_packages = tuple(
@@ -778,17 +784,33 @@ def _valid_number(value: float | None) -> bool:
     )
 
 
-def _terminal_result(value: str | None) -> bool:
+def _terminal_result(
+    value: str | None,
+    result_status: str | None,
+) -> bool:
     if not isinstance(value, str):
         return False
     normalized = value.strip()
-    return normalized in DECIDED_RESULTS or normalized.casefold() in VOID_RESULTS
+    if normalized in DECIDED_RESULTS:
+        return True
+    return (
+        normalized.casefold() in VOID_RESULTS
+        and isinstance(result_status, str)
+        and result_status.strip().casefold()
+        in {"void", "cancelled", "canceled"}
+    )
 
 
-def _void_result(value: str | None) -> bool:
+def _void_result(
+    value: str | None,
+    result_status: str | None,
+) -> bool:
     return (
         isinstance(value, str)
         and value.strip().casefold() in VOID_RESULTS
+        and isinstance(result_status, str)
+        and result_status.strip().casefold()
+        in {"void", "cancelled", "canceled"}
     )
 
 

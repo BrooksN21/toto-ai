@@ -1,5 +1,27 @@
 # Decisions
 
+## Lifecycle evidence decisions (2026-07-30)
+
+- Fifteen event/quote rows do not make a finished drawing fresh. Freshness
+  requires 15 terminal outcomes plus a complete result snapshot linked to an
+  immutable RAW snapshot.
+- RAW archive publication precedes every lifecycle SQL import. The canonical
+  overwriteable cache is operational convenience, not historical evidence.
+- Full-detail imports are monotonic and non-destructive. Empty/null/zero
+  payload fields do not downgrade known values; terminal-result conflicts stop
+  the import.
+- `0/0/0` remains invalid pool evidence.
+- VOID/cancelled is terminal only with explicit source status and evidence.
+  Empty result/score fields never imply VOID.
+- Network failures are `exhausted/transport_error`, never `source_missing`.
+  `source_missing` is used only when absence is proved by local/source
+  evidence.
+- Historical repair never synthesizes fields. Validated canonical RAW can
+  prove `importer_loss_recoverable_local`; absent RAW remains
+  `no_local_evidence`.
+- Nightly reconciliation is a non-betting command contract only. This task
+  does not install or activate a LaunchAgent.
+
 ## 2026-07-29: Row counts are not evidence of historical completeness
 
 - A database is never described as current, complete, or validated from
