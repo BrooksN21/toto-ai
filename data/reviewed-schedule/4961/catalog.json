@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "catalog_id": "reviewed-schedule-4961-20260731T091100Z",
+  "generated_at": "2026-07-31T09:11:00Z",
+  "records": [
+    {
+      "evidence_id": "reviewed-11993-b713fca3-order6-event179004-v1",
+      "drawing_id": 11993,
+      "drawing_number": 4961,
+      "target_fingerprint": "b713fca373c9663e39da777bebcc3b4fc9754259e6ca3bea0db628776ae1fe37",
+      "event_order": 6,
+      "target_event_id": 179004,
+      "reviewer": "operator-reviewed-context",
+      "reviewed_at": "2026-07-31T09:11:00Z",
+      "claims": [
+        {
+          "source_name": "leagueofireland.ie",
+          "role": "official",
+          "source_url": "https://www.leagueofireland.ie/mens/first-division/fixtures/",
+          "snapshot_path": "athlone-official.txt",
+          "snapshot_sha256": "5b51bf5f6b73bf07ba4420e67fb13aa6e080e4c60301ceb712eb92bc51ed4935",
+          "captured_at": "2026-07-31T09:11:00Z",
+          "home_name": "Athlone Town AFC",
+          "away_name": "UCD AFC",
+          "competition": "SSE Airtricity Men's First Division 2026",
+          "sport": "football",
+          "gender_age_class": "men-senior",
+          "starts_at": "2026-07-31T18:45:00Z",
+          "status": "scheduled",
+          "native_fixture_id": null,
+          "native_home_team_id": null,
+          "native_away_team_id": null
+        },
+        {
+          "source_name": "sofascore.com",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/athlone-town-university-college-dublin/tnbsYnb",
+          "snapshot_path": "athlone-independent.txt",
+          "snapshot_sha256": "8f0b54473159137043913fce9b12594f639babd895d25724403ec90caf5a2e54",
+          "captured_at": "2026-07-31T09:11:00Z",
+          "home_name": "Athlone Town AFC",
+          "away_name": "UCD AFC",
+          "competition": "SSE Airtricity Men's First Division 2026",
+          "sport": "football",
+          "gender_age_class": "men-senior",
+          "starts_at": "2026-07-31T18:45:00Z",
+          "status": "scheduled",
+          "native_fixture_id": null,
+          "native_home_team_id": null,
+          "native_away_team_id": null
+        }
+      ]
+    },
+    {
+      "evidence_id": "reviewed-11993-b713fca3-order10-event179008-v1",
+      "drawing_id": 11993,
+      "drawing_number": 4961,
+      "target_fingerprint": "b713fca373c9663e39da777bebcc3b4fc9754259e6ca3bea0db628776ae1fe37",
+      "event_order": 10,
+      "target_event_id": 179008,
+      "reviewer": "operator-reviewed-context",
+      "reviewed_at": "2026-07-31T09:11:00Z",
+      "claims": [
+        {
+          "source_name": "football.ch",
+          "role": "official",
+          "source_url": "https://assets-eu-01.kc-usercontent.com/3668e732-8a21-0181-1c69-be073a63937a/3f12d6db-a700-406a-af86-4b1bc344b156/dieci_Challenge_League_Spielplan-Calendrier_2026-27.pdf",
+          "snapshot_path": "wil-official.txt",
+          "snapshot_sha256": "ea7c02bcf7f578e04587f5469a19ff4eb8188f13c7ee53464f2e38f9a7d0cbf8",
+          "captured_at": "2026-07-31T09:11:00Z",
+          "home_name": "FC Wil 1900",
+          "away_name": "Neuchatel Xamax FCS",
+          "competition": "dieci Challenge League 2026/27",
+          "sport": "football",
+          "gender_age_class": "men-senior",
+          "starts_at": "2026-07-31T17:30:00Z",
+          "status": "scheduled",
+          "native_fixture_id": null,
+          "native_home_team_id": null,
+          "native_away_team_id": null
+        },
+        {
+          "source_name": "matchcenter-anf.football.ch",
+          "role": "independent",
+          "source_url": "https://matchcenter-anf.football.ch/Default.aspx?a=vs&lng=2&oid=15&v=1315276",
+          "snapshot_path": "wil-independent.txt",
+          "snapshot_sha256": "9256c3434a82ccdcee47225366784710635ac8613b95084c3c7b17e9596e4e62",
+          "captured_at": "2026-07-31T09:11:00Z",
+          "home_name": "FC Wil 1900",
+          "away_name": "Neuchatel Xamax FCS",
+          "competition": "dieci Challenge League 2026/27",
+          "sport": "football",
+          "gender_age_class": "men-senior",
+          "starts_at": "2026-07-31T17:30:00Z",
+          "status": "scheduled",
+          "native_fixture_id": null,
+          "native_home_team_id": null,
+          "native_away_team_id": null
+        }
+      ]
+    }
+  ]
+}

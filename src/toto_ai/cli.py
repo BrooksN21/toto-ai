@@ -7,7 +7,7 @@ import sys
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass, replace
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -213,6 +213,7 @@ from toto_ai.runner import (
     DrawingRunPublication,
     MorningDispatchConfig,
     MorningExpectedIdentity,
+    MorningIdentityDriftError,
     MorningPreparedDrawing,
     MorningUnresolvedEvent,
     OfflineReplayProvenance,
@@ -2795,6 +2796,87 @@ def preflight_status_command(
     typer.echo(json.dumps(payload, ensure_ascii=False, sort_keys=True))
 
 
+@app.command("preflight-retry-run")
+def preflight_retry_run_command(
+    plan: Path = typer.Option(..., "--plan"),  # noqa: B008
+) -> None:
+    """Run one passive identity-bound preflight retry tick."""
+    from toto_ai.runner.preflight_retry_scheduler import run_preflight_retry
+
+    raise typer.Exit(
+        run_preflight_retry(plan, now=datetime.now(timezone.utc))
+    )
+
+
+@app.command("preflight-retry-install")
+def preflight_retry_install_command(
+    plan: Path = typer.Option(..., "--plan"),  # noqa: B008
+) -> None:
+    """Explicitly generate and install one passive retry LaunchAgent."""
+    from toto_ai.runner.preflight_retry_scheduler import (
+        install_preflight_retry_launch_agent,
+        prepare_preflight_retry_artifacts,
+    )
+
+    artifacts = prepare_preflight_retry_artifacts(plan)
+    payload = install_preflight_retry_launch_agent(artifacts)
+    typer.echo(json.dumps(payload, sort_keys=True))
+
+
+@app.command("preflight-retry-rehearsal")
+def preflight_retry_rehearsal_command(
+    db: Path = typer.Option(..., "--db"),  # noqa: B008
+    target_cache: Path = typer.Option(..., "--target-cache"),  # noqa: B008
+    schedule_cache: list[Path] = typer.Option(  # noqa: B008
+        ..., "--schedule-cache"
+    ),
+    aliases: Path = typer.Option(..., "--aliases"),  # noqa: B008
+    reviewed_schedule_catalog: Path = typer.Option(  # noqa: B008
+        ..., "--reviewed-schedule-catalog"
+    ),
+    output_root: Path = typer.Option(..., "--output-root"),  # noqa: B008
+    drawing_id: int = typer.Option(..., "--drawing-id", min=1),
+    drawing_number: int = typer.Option(..., "--drawing-number", min=1),
+    at: str = typer.Option(..., "--at"),
+    failed_schedule_date: list[str] = typer.Option(  # noqa: B008
+        [],
+        "--failed-schedule-date",
+        help="Inject a failed provider UTC date into the isolated rehearsal.",
+    ),
+    bank: int = typer.Option(4980, min=1),
+    stake: int = typer.Option(30, min=1),
+) -> None:
+    """Run the deterministic passive retry E2E on an isolated database copy."""
+    from toto_ai.runner.preflight_retry_rehearsal import (
+        PreflightRetryRehearsalConfig,
+        run_preflight_retry_rehearsal,
+    )
+
+    try:
+        summary = run_preflight_retry_rehearsal(
+            PreflightRetryRehearsalConfig(
+                source_db=db,
+                target_cache=target_cache,
+                schedule_caches=tuple(schedule_cache),
+                aliases=aliases,
+                reviewed_schedule_catalog=reviewed_schedule_catalog,
+                output_root=output_root,
+                drawing_id=drawing_id,
+                drawing_number=drawing_number,
+                rehearsal_at=datetime.fromisoformat(at.replace("Z", "+00:00")),
+                failed_schedule_dates=tuple(
+                    date.fromisoformat(value)
+                    for value in failed_schedule_date
+                ),
+                bank=bank,
+                stake=stake,
+            )
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(summary, ensure_ascii=False, sort_keys=True))
+
+
 def _prepare_current_for_morning(
     *,
     observed_at: datetime,
@@ -3027,6 +3109,15 @@ def morning_dispatch_command(
             python_command=python_executable,
             expected_identity=expected_identity,
         )
+    except MorningIdentityDriftError as error:
+        typer.echo(
+            json.dumps(
+                {"status": "terminal", "reason": "identity_drift"},
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+        )
+        raise typer.Exit(code=3) from error
     except (
         APISportsError,
         OSError,

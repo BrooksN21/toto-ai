@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -17,6 +17,10 @@ from toto_ai.db.models import (
 )
 from toto_ai.db.session import get_session_factory, open_readonly_db
 from toto_ai.runner.morning_dispatch import load_morning_dispatch_record
+from toto_ai.runner.preflight_retry_scheduler import (
+    prepare_preflight_retry_artifacts,
+    verify_preflight_retry_launch_agent,
+)
 from toto_ai.runner.scheduler import MORNING_WRAPPER_FILENAME
 
 MOSCOW = ZoneInfo("Europe/Moscow")
@@ -83,6 +87,20 @@ def build_preflight_status(
             else "not_requested"
         )
         morning_state = _morning_activation_state(scheduler)
+        retry_scheduler = None
+        if retry_plan_path.is_file():
+            artifacts = prepare_preflight_retry_artifacts(
+                retry_plan_path, write=False
+            )
+            terminal_retry = (
+                preparation.get("status") == "ready"
+                and int(preparation.get("mapped_count", 0)) == 15
+            ) or observed_at >= deadline - timedelta(minutes=60)
+            retry_scheduler = verify_preflight_retry_launch_agent(
+                artifacts,
+                now=observed_at,
+                terminal=terminal_retry,
+            )
         return {
             "drawing_id": reference.drawing_id,
             "drawing_number": reference.number,
@@ -107,6 +125,7 @@ def build_preflight_status(
             "retry_plan_path": (
                 str(retry_plan_path) if retry_plan_path.is_file() else None
             ),
+            "retry_scheduler": retry_scheduler,
             "morning_activation_state": morning_state,
             "evening_activation_state": activation,
             "package_generation_state": (

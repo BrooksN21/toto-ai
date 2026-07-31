@@ -35,6 +35,10 @@ _SCHEDULER_LABEL = re.compile(
 )
 
 
+class MorningIdentityDriftError(ValueError):
+    """The retried drawing no longer matches its persisted exact identity."""
+
+
 @dataclass(frozen=True)
 class MorningUnresolvedEvent:
     event_order: int
@@ -787,13 +791,13 @@ def _validate_expected_identity(
     if expected is None:
         return
     if evidence.drawing_id != expected.drawing_id:
-        raise ValueError("preflight drawing ID drift")
+        raise MorningIdentityDriftError("preflight drawing ID drift")
     if evidence.drawing_number != expected.drawing_number:
-        raise ValueError("preflight drawing number drift")
+        raise MorningIdentityDriftError("preflight drawing number drift")
     if evidence.deadline != expected.deadline:
-        raise ValueError("preflight deadline drift")
+        raise MorningIdentityDriftError("preflight deadline drift")
     if evidence.drawing_fingerprint != expected.drawing_fingerprint:
-        raise ValueError("preflight fingerprint drift")
+        raise MorningIdentityDriftError("preflight fingerprint drift")
 
 
 def _update_preflight_escalation(

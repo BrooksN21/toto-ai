@@ -154,7 +154,7 @@ def test_4952_style_progressive_preparation_stops_after_ready_date(
     assert len(prepared.pins) == 15
 
 
-def test_progressive_preparation_continues_and_later_failure_is_fail_closed(
+def test_progressive_preparation_scopes_later_failure_to_unresolved_event(
     session_factory,
 ):
     target = _target()
@@ -210,6 +210,6 @@ def test_progressive_preparation_continues_and_later_failure_is_fail_closed(
     assert prepared.status == "unresolved"
     assert prepared.mapped_count == 0
     assert prepared.pins == ()
-    assert prepared.unresolved_event_orders == tuple(range(15))
+    assert prepared.unresolved_event_orders == (14,)
     with session_factory() as session:
         assert session.scalar(select(func.count(DrawingEventPin.id))) == 0

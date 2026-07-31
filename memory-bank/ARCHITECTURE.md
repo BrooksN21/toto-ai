@@ -106,8 +106,10 @@ local operational data and are excluded from Git.
 
 ## Provider-neutral reviewed schedule fallback
 
-API-Sports remains the primary schedule/market provider. When and only when a
-complete required-date fetch proves an event is absent as
+API-Sports remains the primary schedule/market provider. Provider completeness
+is evaluated per target event and API-Sports UTC request date, not across the
+whole expanded drawing horizon. When and only when the event's relevant
+UTC-date fetch proves it absent as
 `source_missing_competition`, an explicitly supplied reviewed catalog may
 provide schedule identity. Each reviewed record is bound to the exact drawing
 ID, visible number, fingerprint, event order, and target event ID and contains
@@ -121,6 +123,14 @@ orders 0 through 14, real per-pin source providers, deterministic source/pin
 set hashes, provider distribution, and reviewed catalog identity. Existing
 API-Sports-only rows remain readable through the legacy path; no destructive
 legacy migration or invented backfill is performed.
+
+The relevant date is derived from the target start, matched provider fixture,
+or strict reviewed evidence, always normalized to UTC because API-Sports
+schedule requests use UTC. An unrelated later expansion-date failure cannot
+veto an otherwise strict event-level fallback, including local-calendar
+cross-midnight cases. A missing or failed relevant UTC date, unknown effective
+date, stale/mismatched evidence, identity drift, or ineligible multi-day
+drawing still fails closed.
 
 Final collection routes API-Sports and reviewed pins through separate source
 revalidation. Reviewed pins reload the strict catalog with a 90-minute

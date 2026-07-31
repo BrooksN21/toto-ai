@@ -30,6 +30,7 @@ from toto_ai.external_odds.team_registry import (
     DrawingEventPinRecord,
     enqueue_review,
     load_ready_drawing_pins,
+    load_ready_pin_set,
     publish_canonical_pin_set,
     publish_drawing_preparation,
     refresh_ready_drawing_preparation_evidence,
@@ -188,12 +189,19 @@ def prepare_drawing(
     )
     # This also invalidates any valid pins for an older fingerprint.
     try:
-        existing = load_ready_drawing_pins(
-            session_factory,
-            drawing_id=target.drawing_id,
-            drawing_fingerprint=fingerprint,
-            provider=provider,
-        )
+        if reviewed_schedule_catalog is None:
+            existing = load_ready_drawing_pins(
+                session_factory,
+                drawing_id=target.drawing_id,
+                drawing_fingerprint=fingerprint,
+                provider=provider,
+            )
+        else:
+            existing = load_ready_pin_set(
+                session_factory,
+                drawing_id=target.drawing_id,
+                drawing_fingerprint=fingerprint,
+            )
     except ValueError as error:
         if str(error) not in {
             "drawing pins are incomplete",
@@ -201,18 +209,32 @@ def prepare_drawing(
             "ready drawing preparation is missing; run prepare-drawing",
             "drawing preparation is not ready; run prepare-drawing",
             "preparation_fail:not_ready_15_of_15",
+            "ready drawing preparation has no complete pin set",
         }:
             raise
         existing = ()
     if existing:
-        failed_orders = _failed_date_event_orders(target, schedule_diagnostics)
+        failed_orders = _failed_date_pin_orders(
+            target, existing, schedule_diagnostics
+        )
         if failed_orders:
             raise ValueError(
-                "required preparation schedule date failed for event orders "
+                "required preparation schedule UTC date failed for event orders "
                 f"{failed_orders}; retry before using existing pins"
             )
+        reviewed_catalog = None
+        if reviewed_schedule_catalog is not None:
+            reviewed_catalog = load_reviewed_schedule_catalog(
+                Path(reviewed_schedule_catalog),
+                evaluated_at=evaluated_at or datetime.now(timezone.utc),
+                max_age=timedelta(hours=12),
+            )
         _validate_existing_pins_against_candidates(
-            target, existing, tuple(candidates), provider=provider
+            target,
+            existing,
+            tuple(candidates),
+            provider=provider,
+            reviewed_catalog=reviewed_catalog,
         )
         result = _result_from_existing(target, fingerprint, provider, existing)
         refresh_ready_drawing_preparation_evidence(
@@ -446,7 +468,11 @@ def prepare_drawing(
         else preview.eligibility
     )
     date_failure_orders = _failed_date_event_orders(
-        target, schedule_diagnostics
+        target,
+        schedule_diagnostics,
+        resolutions=tuple(resolutions),
+        candidate_by_id=candidate_by_id,
+        reviewed_by_order=reviewed_by_order,
     )
     unresolved = tuple(
         sorted(
@@ -522,12 +548,6 @@ def _admit_reviewed_fallbacks(
     catalog: ReviewedScheduleCatalog,
     schedule_diagnostics: tuple[dict[str, str | None], ...],
 ) -> dict[int, ReviewedScheduleEvidence]:
-    if not schedule_diagnostics or any(
-        item.get("status") != "success" for item in schedule_diagnostics
-    ):
-        raise ValueError(
-            "reviewed fallback requires complete successful API-Sports dates"
-        )
     if any(
         resolution.status in {"ambiguous", "missing"}
         for resolution in resolutions
@@ -549,8 +569,28 @@ def _admit_reviewed_fallbacks(
             event_order=event.event_order,
             target_event_id=event.event_id,
         )
+        relevant_key = (
+            evidence.sport,
+            evidence.starts_at.astimezone(timezone.utc).date().isoformat(),
+        )
+        relevant_status = _schedule_diagnostic_statuses(
+            schedule_diagnostics
+        ).get(relevant_key)
+        if relevant_status != "success":
+            raise ValueError(
+                "reviewed fallback requires successful API-Sports fetch for "
+                f"relevant UTC date {relevant_key[0]}:{relevant_key[1]}"
+            )
         if evidence.sport != event.sport:
             raise ValueError("reviewed evidence sport does not match target")
+        if (
+            event.starts_at is not None
+            and evidence.starts_at
+            != event.starts_at.astimezone(timezone.utc)
+        ):
+            raise ValueError(
+                "reviewed evidence start date/time does not match target"
+            )
         if evidence.starts_at < target.deadline:
             raise ValueError("reviewed evidence starts before drawing deadline")
         expected_class = _target_gender_age_class(event)
@@ -964,6 +1004,7 @@ def _validate_existing_pins_against_candidates(
     candidates: tuple[ProviderEvent, ...],
     *,
     provider: str,
+    reviewed_catalog: ReviewedScheduleCatalog | None = None,
 ) -> None:
     candidates_by_id: dict[str, list[ProviderEvent]] = {}
     for candidate in candidates:
@@ -972,7 +1013,34 @@ def _validate_existing_pins_against_candidates(
                 candidate
             )
     for event, pin in zip(target.events, pins, strict=True):
-        matches = candidates_by_id.get(pin.provider_fixture_id, [])
+        if pin.effective_source_provider == "reviewed-schedule":
+            if reviewed_catalog is None or pin.reviewed_evidence_id is None:
+                raise ValueError(
+                    "ready reviewed pin cannot be revalidated without catalog"
+                )
+            if target.drawing_number is None:
+                raise ValueError("reviewed pin requires visible drawing number")
+            evidence = select_reviewed_evidence(
+                reviewed_catalog,
+                drawing_id=target.drawing_id,
+                drawing_number=target.drawing_number,
+                target_fingerprint=pin.drawing_fingerprint,
+                event_order=event.event_order,
+                target_event_id=event.event_id,
+            )
+            if (
+                evidence.evidence_id != pin.reviewed_evidence_id
+                or _parse_datetime(pin.starts_at) != evidence.starts_at
+                or pin.provenance.get("evidence_hash")
+                != evidence.semantic_hash
+                or pin.provenance.get("catalog_hash")
+                != reviewed_catalog.semantic_hash
+            ):
+                raise ValueError("ready reviewed pin conflicts with catalog")
+            continue
+        if pin.effective_source_provider != provider:
+            raise ValueError("ready drawing pin has unknown source provider")
+        matches = candidates_by_id.get(pin.effective_source_fixture_id, [])
         if len(matches) != 1:
             raise ValueError(
                 "ready drawing preparation cannot be revalidated; "
@@ -1018,22 +1086,94 @@ def _missing_start_dates(
 def _failed_date_event_orders(
     target: TargetDrawing,
     diagnostics: tuple[dict[str, str | None], ...],
+    *,
+    resolutions: tuple[CandidateResolution, ...] = (),
+    candidate_by_id: Mapping[str, ProviderEvent] | None = None,
+    reviewed_by_order: Mapping[int, ReviewedScheduleEvidence] | None = None,
 ) -> tuple[int, ...]:
+    statuses = _schedule_diagnostic_statuses(diagnostics)
     failed = {
-        (item.get("sport"), item.get("date"))
-        for item in diagnostics
-        if item.get("status") == "failed"
+        key for key, status in statuses.items() if status == "failed"
     }
     if not failed:
         return ()
+    resolution_by_order = {
+        event.event_order: resolution
+        for event, resolution in zip(target.events, resolutions, strict=True)
+    }
+    candidate_by_id = candidate_by_id or {}
+    reviewed_by_order = reviewed_by_order or {}
     orders = []
     for event in target.events:
-        if event.starts_at is None:
+        effective_start = event.starts_at
+        reviewed = reviewed_by_order.get(event.event_order)
+        if effective_start is None and reviewed is not None:
+            effective_start = reviewed.starts_at
+        if effective_start is None:
+            resolution = resolution_by_order.get(event.event_order)
+            candidate = (
+                None
+                if resolution is None or resolution.provider_event_id is None
+                else candidate_by_id.get(resolution.provider_event_id)
+            )
+            if candidate is not None:
+                effective_start = candidate.starts_at
+        if effective_start is None:
             if any(sport == event.sport for sport, _ in failed):
                 orders.append(event.event_order)
-        elif (event.sport, event.starts_at.date().isoformat()) in failed:
+        elif (
+            event.sport,
+            effective_start.astimezone(timezone.utc).date().isoformat(),
+        ) in failed:
             orders.append(event.event_order)
     return tuple(orders)
+
+
+def _failed_date_pin_orders(
+    target: TargetDrawing,
+    pins: tuple[DrawingEventPinRecord, ...],
+    diagnostics: tuple[dict[str, str | None], ...],
+) -> tuple[int, ...]:
+    failed = {
+        key
+        for key, status in _schedule_diagnostic_statuses(diagnostics).items()
+        if status == "failed"
+    }
+    if not failed:
+        return ()
+    return tuple(
+        event.event_order
+        for event, pin in zip(target.events, pins, strict=True)
+        if (
+            event.sport,
+            _parse_datetime(pin.starts_at).date().isoformat(),
+        )
+        in failed
+    )
+
+
+def _schedule_diagnostic_statuses(
+    diagnostics: tuple[dict[str, str | None], ...],
+) -> dict[tuple[str, str], str]:
+    """Return the final per-UTC-date fetch status.
+
+    API-Sports schedule requests explicitly use ``timezone=UTC`` semantics,
+    so local-calendar rollover must not change the relevant provider date.
+    Later diagnostics for the same key supersede an earlier retry result.
+    """
+    statuses: dict[tuple[str, str], str] = {}
+    for item in diagnostics:
+        sport = item.get("sport")
+        requested_date = item.get("date")
+        status = item.get("status")
+        if not sport or not requested_date or status not in {"success", "failed"}:
+            continue
+        try:
+            canonical_date = date.fromisoformat(requested_date).isoformat()
+        except ValueError:
+            continue
+        statuses[(sport, canonical_date)] = status
+    return statuses
 
 
 def _parse_datetime(value: object) -> datetime:

@@ -15,6 +15,10 @@ from toto_ai.runner.morning_dispatch import (
     MorningUnresolvedEvent,
     dispatch_morning,
 )
+from toto_ai.runner.preflight_retry_scheduler import (
+    prepare_preflight_retry_artifacts,
+    verify_preflight_retry_launch_agent,
+)
 from toto_ai.runner.scheduler import prepare_morning_preanalysis_artifacts
 
 UTC = timezone.utc
@@ -286,3 +290,37 @@ def test_generic_morning_schedule_has_early_retry_and_remains_passive(tmp_path):
     assert "--activate" not in wrapper
     assert "run-drawing" not in wrapper
     assert {"Hour": 12, "Minute": 0} in plist["StartCalendarInterval"]
+
+
+def test_13_of_15_retry_plan_generates_verified_passive_launch_agent(tmp_path):
+    config = _config(tmp_path)
+    observed = datetime(2026, 7, 30, 7, 35, tzinfo=UTC)
+    result = dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: _unresolved(),
+        python_command=sys.executable,
+    )
+
+    artifacts = prepare_preflight_retry_artifacts(result.retry_plan_path)
+    plist = plistlib.loads(artifacts.candidate_path.read_bytes())
+    wrapper = artifacts.wrapper_path.read_text(encoding="utf-8")
+
+    assert artifacts.label.startswith("com.totoai.preflight-retry.11990.")
+    assert len(plist["StartCalendarInterval"]) == 6
+    assert "preflight-retry-run" in wrapper
+    assert "run-drawing" not in wrapper
+    assert "--activate" not in wrapper
+    assert ".bet-ready" not in wrapper
+    installed = tmp_path / "Library" / "LaunchAgents" / (
+        artifacts.label + ".plist"
+    )
+    installed.parent.mkdir(parents=True)
+    installed.write_bytes(artifacts.candidate_path.read_bytes())
+    status = verify_preflight_retry_launch_agent(
+        artifacts, launch_agents_root=installed.parent,
+        command_runner=lambda *a, **k: type("R", (), {"returncode": 0})(),
+    )
+    assert status["installed_verified"] is True
+    assert status["loaded_verified"] is True

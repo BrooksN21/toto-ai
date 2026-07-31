@@ -67,6 +67,14 @@ The authoritative full-history audit and remediation plan are stored under
 
 ## Scheduler operational remediation
 
+- [x] Complete drawing-bound passive preflight retry scheduling and its
+  reusable isolated rehearsal: exact artifact verification, secure environment
+  loading, mixed-source READY reuse, terminal cleanup, hard-stop, drift,
+  missing-key and bounded-transport scenarios all pass without package/bet
+  output or main-database mutation.
+- [ ] Keep production preflight retry LaunchAgent activation separate and
+  operator-authorized; no drawing-4961 retry job is installed or loaded.
+
 - [x] Add drawing-4959 contextual API-Sports identities for Gimnasia L.P.
   (434) and River Plate (435), reject domestic/global-friendly crossover, and
   retain Iceland 3. Deild as an explicit source-missing non-match.
@@ -541,6 +549,11 @@ profitability or a proven winning strategy.
 - Reproducible backtests
 
 ## Full-history remediation
+
+- [x] `TOTO-REVIEWED-EVIDENCE-DATE-SCOPED-POLICY-V1`: evaluate provider
+  completeness per event UTC date, ignore unrelated expansion-date failures,
+  preserve strict fail-closed controls, and verify drawing 4961 on an isolated
+  database copy.
 
 - [x] `TOTO-DATA-HEALTH-CONTRACT-V1`: versioned read-only contract, strict
   CLI, per-use-case eligibility, machine reason codes, selectors, exports, and

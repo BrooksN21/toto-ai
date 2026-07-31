@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -130,7 +131,13 @@ def _seed(session_factory) -> None:
     assert backfill_accepted_matches(session_factory, rows) == 28
 
 
-def _catalog(tmp_path: Path, target: TargetDrawing, *, one_source=False) -> Path:
+def _catalog(
+    tmp_path: Path,
+    target: TargetDrawing,
+    *,
+    one_source=False,
+    starts_at: str = "2026-07-29T18:00:00Z",
+) -> Path:
     claims = []
     for name, role in (
         ("official.json", "official"),
@@ -153,7 +160,7 @@ def _catalog(tmp_path: Path, target: TargetDrawing, *, one_source=False) -> Path
                 "competition": "Iceland 3. Deild",
                 "sport": "football",
                 "gender_age_class": "men-senior",
-                "starts_at": "2026-07-29T18:00:00Z",
+                "starts_at": starts_at,
                 "status": "scheduled",
                 "native_fixture_id": None,
                 "native_home_team_id": None,
@@ -224,6 +231,24 @@ def test_preparation_atomically_publishes_14_api_plus_one_reviewed(
                 "status": "success",
                 "reason": None,
             },
+            {
+                "sport": "football",
+                "date": "2026-08-02",
+                "status": "failed",
+                "reason": "plan limit",
+            },
+            {
+                "sport": "football",
+                "date": "2026-08-03",
+                "status": "failed",
+                "reason": "plan limit",
+            },
+            {
+                "sport": "football",
+                "date": "2026-08-04",
+                "status": "failed",
+                "reason": "plan limit",
+            },
         ),
         reviewed_schedule_catalog=_catalog(tmp_path, target),
         evaluated_at=EVALUATED_AT,
@@ -238,6 +263,228 @@ def test_preparation_atomically_publishes_14_api_plus_one_reviewed(
     with session_factory() as session:
         assert session.scalar(select(func.count(DrawingPinSetItem.id))) == 15
         assert session.scalar(select(func.count(DrawingEventPin.id))) == 0
+
+
+def test_reviewed_fallback_uses_api_utc_date_across_local_midnight(
+    session_factory, tmp_path: Path
+) -> None:
+    target = _target()
+    _seed(session_factory)
+
+    result = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=(
+            {
+                "sport": "football",
+                "date": "2026-07-29",
+                "status": "success",
+                "reason": None,
+            },
+            {
+                "sport": "football",
+                "date": "2026-07-30",
+                "status": "failed",
+                "reason": "unrelated local-calendar date failed",
+            },
+        ),
+        reviewed_schedule_catalog=_catalog(
+            tmp_path,
+            target,
+            starts_at="2026-07-29T21:30:00Z",
+        ),
+        evaluated_at=EVALUATED_AT,
+    )
+
+    assert result.status == "ready"
+    assert result.mapped_count == 15
+    assert len(result.pins) == 15
+
+
+def test_reviewed_fallback_requires_relevant_api_utc_date_diagnostic(
+    session_factory, tmp_path: Path
+) -> None:
+    target = _target()
+    _seed(session_factory)
+
+    result = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=(
+            {
+                "sport": "football",
+                "date": "2026-08-02",
+                "status": "failed",
+                "reason": "plan limit",
+            },
+        ),
+        reviewed_schedule_catalog=_catalog(tmp_path, target),
+        evaluated_at=EVALUATED_AT,
+    )
+
+    assert result.status == "unresolved"
+    assert result.pins == ()
+
+
+def test_reviewed_fallback_rejects_target_start_date_time_mismatch(
+    session_factory, tmp_path: Path
+) -> None:
+    original = _target()
+    events = list(original.events)
+    events[14] = replace(
+        events[14], starts_at=datetime(2026, 7, 29, 18, 0, tzinfo=UTC)
+    )
+    target = replace(original, events=tuple(events))
+    _seed(session_factory)
+
+    result = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=(
+            {
+                "sport": "football",
+                "date": "2026-07-29",
+                "status": "success",
+                "reason": None,
+            },
+        ),
+        reviewed_schedule_catalog=_catalog(
+            tmp_path,
+            target,
+            starts_at="2026-07-29T18:30:00Z",
+        ),
+        evaluated_at=EVALUATED_AT,
+    )
+
+    assert result.status == "unresolved"
+    assert result.pins == ()
+
+
+def test_reviewed_fallback_cannot_make_multi_day_drawing_playable(
+    session_factory, tmp_path: Path
+) -> None:
+    target = _target()
+    _seed(session_factory)
+
+    result = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=(
+            {
+                "sport": "football",
+                "date": "2026-08-04",
+                "status": "success",
+                "reason": None,
+            },
+        ),
+        reviewed_schedule_catalog=_catalog(
+            tmp_path,
+            target,
+            starts_at="2026-08-04T18:00:00Z",
+        ),
+        evaluated_at=EVALUATED_AT,
+    )
+
+    assert result.status == "unresolved"
+    assert result.eligibility.status != "playable"
+    assert result.pins == ()
+
+
+def test_ready_mixed_pin_set_is_reused_with_exact_source_revalidation(
+    session_factory, tmp_path: Path
+) -> None:
+    target = _target()
+    _seed(session_factory)
+    catalog = _catalog(tmp_path, target)
+    first = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=(
+            {
+                "sport": "football",
+                "date": "2026-07-29",
+                "status": "success",
+                "reason": None,
+            },
+        ),
+        reviewed_schedule_catalog=catalog,
+        evaluated_at=EVALUATED_AT,
+    )
+
+    second = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=(
+            {
+                "sport": "football",
+                "date": "2026-07-30",
+                "status": "failed",
+                "reason": "later provider date unavailable",
+            },
+        ),
+        reviewed_schedule_catalog=catalog,
+        evaluated_at=EVALUATED_AT,
+    )
+
+    assert first.status == second.status == "ready"
+    assert second.mapped_count == 15
+    assert len(second.pins) == 15
+    assert second.pins[14].effective_source_provider == "reviewed-schedule"
+
+
+def test_ready_mixed_pin_set_rejects_relevant_utc_date_failure(
+    session_factory, tmp_path: Path
+) -> None:
+    target = _target()
+    _seed(session_factory)
+    catalog = _catalog(tmp_path, target)
+    prepared = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=(
+            {
+                "sport": "football",
+                "date": "2026-07-29",
+                "status": "success",
+                "reason": None,
+            },
+        ),
+        reviewed_schedule_catalog=catalog,
+        evaluated_at=EVALUATED_AT,
+    )
+    assert prepared.status == "ready"
+
+    with pytest.raises(ValueError, match="UTC date failed"):
+        prepare_drawing(
+            target,
+            _candidates(),
+            session_factory=session_factory,
+            event_contexts=_contexts(target),
+            schedule_diagnostics=(
+                {
+                    "sport": "football",
+                    "date": "2026-07-29",
+                    "status": "failed",
+                    "reason": "transport failure",
+                },
+            ),
+            reviewed_schedule_catalog=catalog,
+            evaluated_at=EVALUATED_AT,
+        )
 
 
 def test_invalid_reviewed_evidence_keeps_zero_authoritative_pins(

@@ -1,5 +1,14 @@
 # Decisions
 
+## Passive preflight retry launchd boundary
+
+- A persisted retry plan may generate only a drawing-ID/fingerprint-specific
+  LaunchAgent whose wrapper calls `preflight-retry-run`.
+- Installed status requires byte equality with the generated candidate;
+  loaded status requires `launchctl print` success for the exact label.
+- This boundary cannot contain `--activate`, `run-drawing`, betting, package,
+  or `.bet-ready` operations.
+
 ## Passive nightly reconciliation decisions (2026-07-30)
 
 - Nightly automation is results-only. It cannot import or call package,
@@ -879,6 +888,11 @@
 - `preflight-status --open` is physically read-only. It reports generated
   activation candidates and records but does not inspect, install, enable, or
   execute GUI/launchd state.
+- Reviewed-schedule fallback eligibility is date-scoped per event. API-Sports
+  schedule dates are UTC; unrelated failed expansion dates do not block an
+  event whose own UTC date was fetched successfully. Unknown or relevant
+  failed dates remain fail-closed, and reviewed evidence cannot mask an
+  ambiguous identity-bearing provider fixture.
 
 ## Sports-statistics audit isolation
 

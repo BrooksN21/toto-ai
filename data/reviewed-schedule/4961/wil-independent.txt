@@ -1,0 +1,6 @@
+Reviewed source snapshot extracted from plans/TOTO-4961-REVIEWED-EVIDENCE-20260731/context.md.
+Captured 2026-07-31T09:11:00Z.
+Source: https://matchcenter-anf.football.ch/Default.aspx?a=vs&lng=2&oid=15&v=1315276
+Match 100206: FC Wil 1900 vs Neuchatel Xamax FCS, Challenge League phase 1.
+Friday 31 July 2026, 17:30 UTC, Lidl Sportpark Bergholz.
+Status: scheduled.

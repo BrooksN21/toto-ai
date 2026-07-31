@@ -1,5 +1,32 @@
 # Current State
 
+## Drawing-4961 preflight retry remediation (2026-07-31)
+
+The non-deployed passive retry slice is complete and has a stable
+`preflight-retry-rehearsal` CLI. The rehearsal creates an online SQLite backup
+copy, copies the strict reviewed evidence into an isolated project root, and
+uses only isolated runtime/LaunchAgent roots. It never installs production
+launchd state, mutates the main database, or emits package/bet artifacts.
+
+The final drawing-4961 rehearsal proved:
+
+- initial systematic preparation: ACTION REQUIRED 13/15 and zero pins;
+- checked-in reviewed evidence: READY 15/15 and exactly 15 mixed-source pins;
+- due retry, idempotency, READY cleanup, hard-stop cleanup, drawing drift and
+  fingerprint drift: PASS;
+- real generated-wrapper missing-key failure: exit 78 before dispatch;
+- bounded API-Sports transport failure: two attempts and sanitized failure;
+- evening output remained generation-only;
+- no package, coupon, `.bet-ready`, or `.no-bet` artifact;
+- main DB SHA-256 remained
+  `9ca6e7404d6259e2856c0eed505eb936f2329b6bf0d2520a1f9df4ba839d2860`;
+- production retry plist is absent and the exact launchd label is not loaded.
+
+Final evidence is under
+`reports/rehearsal/TOTO-4961-RETRY-E2E-FINAL-20260731/`. Focused verification
+is `24 passed`; repository Ruff and `git diff --check` pass. Production
+activation remains explicitly unauthorized.
+
 ## Passive nightly reconciliation v1 (2026-07-30)
 
 `TOTO-NIGHTLY-RECONCILIATION-V1` is implemented, installed, and enabled as the
@@ -3014,3 +3041,23 @@ The `.invalid` source snapshots in this rehearsal validate the strict local
 contract only and are not operational betting evidence. A real
 provider-missing event still requires captured official and independent HTTPS
 sources reviewed before deadline.
+
+## Date-scoped reviewed evidence policy (2026-07-31)
+
+Implemented locally for `TOTO-REVIEWED-EVIDENCE-DATE-SCOPED-POLICY-V1`:
+
+- reviewed fallback and failed-date attribution use the event's API-Sports UTC
+  request date;
+- unrelated plan-limit failures in an expanded five-day window no longer block
+  strict evidence for a successfully fetched relevant date;
+- local-calendar cross-midnight events remain bound to the UTC provider date;
+- missing/failed relevant dates, ambiguous identity, stale/mismatched evidence,
+  fingerprint drift, and ineligible multi-day spans remain fail-closed;
+- the reusable retry rehearsal accepts explicit failed provider dates.
+
+Drawing-4961 isolated acceptance used real local 31-Jul/1-Aug caches plus
+injected plan-limit failures for 2-4 Aug. It produced ACTION REQUIRED 13/15
+with zero pins, then READY 15/15 with 15 atomic mixed-provider pins, zero
+network requests, zero package/bet-ready artifacts, and unchanged main DB
+SHA-256 `d5ad1ff83f7c93ec14b04a6145ba603ced8f144a87a71f0a1003f621ebb97a73`.
+Artifact: `reports/rehearsal/TOTO-4961-DATE-SCOPED-POLICY-V1-ACCEPTANCE-20260731/rehearsal-summary.json`.
