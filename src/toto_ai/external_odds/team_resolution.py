@@ -328,7 +328,11 @@ def resolve_event_candidate(
             away_id,
         )
     status: ResolutionStatus
-    if _source_missing_domestic_competition(candidates, context):
+    identity_absence = _source_missing_without_identity(
+        tuple(item for item, _, _ in evidence),
+        context,
+    )
+    if _source_missing_domestic_competition(candidates, context) or identity_absence:
         status = "source_missing_competition"
     else:
         status = "ambiguous" if len(evidence) > 1 else "missing"
@@ -341,14 +345,39 @@ def resolve_event_candidate(
         (
             "source schedule has no candidate in the confirmed domestic "
             "competition context"
-            if status == "source_missing_competition"
+            if status == "source_missing_competition" and not identity_absence
             else (
-                "candidate evidence is insufficient for conservative auto-accept; "
-                f"score={best.pair_score:.3f}; margin={margin:.3f}"
+                "source schedule has no identity-bearing candidate for the "
+                "target teams in the complete date window"
+                if status == "source_missing_competition"
+                else (
+                    "candidate evidence is insufficient for conservative "
+                    f"auto-accept; score={best.pair_score:.3f}; "
+                    f"margin={margin:.3f}"
+                )
             )
         ),
         visible,
     )
+
+
+def _source_missing_without_identity(
+    evidence: tuple[CandidateEvidence, ...],
+    context: ResolutionContext,
+) -> bool:
+    """Distinguish unrelated fuzzy collisions from a real ambiguous fixture."""
+    if not context.derived or not context.competition or not evidence:
+        return False
+    if any(
+        item.provider_id_count
+        or item.reviewed_team_count
+        or item.exact_team_count
+        or item.transliterated_equal_count
+        for item in evidence
+    ):
+        return False
+    best = evidence[0]
+    return max(best.home_score, best.away_score) < MIN_TEAM_SCORE
 
 
 def _candidate_context(

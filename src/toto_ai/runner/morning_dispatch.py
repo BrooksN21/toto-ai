@@ -11,7 +11,7 @@ import secrets
 import subprocess
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Literal
 
@@ -29,9 +29,76 @@ from toto_ai.runner.scheduler_state import scheduler_lock
 
 _SHA256_LENGTH = 64
 MORNING_DISPATCH_SCHEMA_VERSION = 1
+PREFLIGHT_ESCALATION_SCHEMA_VERSION = 1
 _SCHEDULER_LABEL = re.compile(
     r"com\.totoai\.production-scheduler\.[0-9a-f]{16}\Z"
 )
+
+
+@dataclass(frozen=True)
+class MorningUnresolvedEvent:
+    event_order: int
+    target_event_id: int
+    home_team: str
+    away_team: str
+    resolution_status: str
+    reason: str
+    candidate_evidence: tuple[Mapping[str, object], ...] = ()
+    provider_diagnostics: tuple[Mapping[str, object], ...] = ()
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.event_order) is not int
+            or not 0 <= self.event_order < 15
+        ):
+            raise ValueError("event_order must be from 0 through 14")
+        if type(self.target_event_id) is not int or self.target_event_id <= 0:
+            raise ValueError("target_event_id must be a positive integer")
+        for value, name in (
+            (self.home_team, "home_team"),
+            (self.away_team, "away_team"),
+            (self.resolution_status, "resolution_status"),
+            (self.reason, "reason"),
+        ):
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{name} is required")
+
+    @property
+    def required_evidence_type(self) -> str:
+        if self.resolution_status == "source_missing_competition":
+            return "reviewed_schedule"
+        return "reviewed_alias"
+
+    def payload(self) -> dict[str, object]:
+        return {
+            "event_order": self.event_order,
+            "target_event_id": self.target_event_id,
+            "home_team": self.home_team,
+            "away_team": self.away_team,
+            "resolution_status": self.resolution_status,
+            "reason": self.reason,
+            "candidate_evidence": [dict(item) for item in self.candidate_evidence],
+            "provider_diagnostics": [
+                dict(item) for item in self.provider_diagnostics
+            ],
+            "required_evidence_type": self.required_evidence_type,
+        }
+
+
+@dataclass(frozen=True)
+class MorningExpectedIdentity:
+    drawing_id: int
+    drawing_number: int
+    deadline: datetime
+    drawing_fingerprint: str
+
+    def __post_init__(self) -> None:
+        if type(self.drawing_id) is not int or self.drawing_id <= 0:
+            raise ValueError("drawing_id must be a positive integer")
+        if type(self.drawing_number) is not int or self.drawing_number <= 0:
+            raise ValueError("drawing_number must be a positive integer")
+        object.__setattr__(self, "deadline", _utc(self.deadline, "deadline"))
+        _sha256(self.drawing_fingerprint, "drawing_fingerprint")
 
 
 @dataclass(frozen=True)
@@ -45,6 +112,7 @@ class MorningPreparedDrawing:
     mapped_count: int
     eligibility_status: str
     span_days: int | None
+    unresolved_events: tuple[MorningUnresolvedEvent, ...] = ()
 
     def __post_init__(self) -> None:
         if type(self.drawing_id) is not int or self.drawing_id <= 0:
@@ -64,6 +132,13 @@ class MorningPreparedDrawing:
             type(self.span_days) is not int or self.span_days <= 0
         ):
             raise ValueError("span_days must be a positive integer or null")
+        orders = tuple(item.event_order for item in self.unresolved_events)
+        if len(set(orders)) != len(orders) or tuple(sorted(orders)) != orders:
+            raise ValueError(
+                "unresolved_events must have unique ascending event orders"
+            )
+        if self.preparation_status == "ready" and self.unresolved_events:
+            raise ValueError("ready preparation cannot contain unresolved events")
 
     def identity_payload(self) -> dict[str, object]:
         return {
@@ -90,6 +165,8 @@ class MorningDispatchConfig:
     )
     timing_overrides: Path | None = None
     reviewed_schedule_catalog: Path | None = None
+    retry_offsets_minutes: tuple[int, ...] = (360, 240, 180, 120, 90)
+    retry_hard_stop_minutes: int = 60
 
     def __post_init__(self) -> None:
         root = Path(self.project_root).absolute()
@@ -135,6 +212,24 @@ class MorningDispatchConfig:
             raise ValueError("stake must be a positive integer")
         if self.bank % self.stake:
             raise ValueError("bank must be exactly divisible by stake")
+        if (
+            not self.retry_offsets_minutes
+            or any(
+                type(value) is not int or value <= self.retry_hard_stop_minutes
+                for value in self.retry_offsets_minutes
+            )
+            or tuple(sorted(set(self.retry_offsets_minutes), reverse=True))
+            != self.retry_offsets_minutes
+        ):
+            raise ValueError(
+                "retry_offsets_minutes must be unique descending values "
+                "before the hard stop"
+            )
+        if (
+            type(self.retry_hard_stop_minutes) is not int
+            or self.retry_hard_stop_minutes <= 0
+        ):
+            raise ValueError("retry_hard_stop_minutes must be positive")
 
 
 @dataclass(frozen=True)
@@ -146,6 +241,9 @@ class MorningDispatchResult:
     plan_path: Path | None
     launch_agent_path: Path | None
     activation_status: Literal["not_requested", "generated", "activated"]
+    attention_path: Path | None = None
+    retry_plan_path: Path | None = None
+    review_queue_path: Path | None = None
 
 
 def dispatch_morning(
@@ -156,20 +254,25 @@ def dispatch_morning(
     now: Callable[[], datetime],
     activate: Callable[[str, Path], object] | None = None,
     python_command: str | Path | None = None,
+    expected_identity: MorningExpectedIdentity | None = None,
 ) -> MorningDispatchResult:
     """Resolve/prepare once and create at most one exact schema-v4 evening plan."""
     if not isinstance(config, MorningDispatchConfig):
         raise ValueError("config must be MorningDispatchConfig")
     observed = _utc(observed_at, "observed_at")
-    config.state_root.mkdir(parents=True, exist_ok=True)
-    if config.state_root.is_symlink():
-        raise ValueError("state_root cannot be a symlink")
     with scheduler_lock(config.maintenance_lock):
+        evidence = prepare_current(observed)
+        if not isinstance(evidence, MorningPreparedDrawing):
+            raise ValueError("prepare_current returned invalid evidence")
+        _validate_expected_identity(evidence, expected_identity)
+        config.state_root.mkdir(parents=True, exist_ok=True)
+        if config.state_root.is_symlink():
+            raise ValueError("state_root cannot be a symlink")
         with scheduler_lock(config.state_root / ".dispatch.lock"):
             return _dispatch_morning_locked(
                 config,
                 observed=observed,
-                prepare_current=prepare_current,
+                evidence=evidence,
                 now=now,
                 activate=activate,
                 python_command=python_command,
@@ -180,15 +283,18 @@ def _dispatch_morning_locked(
     config: MorningDispatchConfig,
     *,
     observed: datetime,
-    prepare_current: Callable[[datetime], MorningPreparedDrawing],
+    evidence: MorningPreparedDrawing,
     now: Callable[[], datetime],
     activate: Callable[[str, Path], object] | None,
     python_command: str | Path | None,
 ) -> MorningDispatchResult:
-    evidence = prepare_current(observed)
-    if not isinstance(evidence, MorningPreparedDrawing):
-        raise ValueError("prepare_current returned invalid evidence")
     observed = _utc(now(), "post_preparation_observed_at")
+    escalation = _update_preflight_escalation(
+        config,
+        evidence=evidence,
+        observed_at=observed,
+        python_command=python_command,
+    )
     record_path = _record_path(config, evidence, observed)
     prior = _load_record(record_path)
     replace_prior = False
@@ -228,6 +334,9 @@ def _dispatch_morning_locked(
             None,
             None,
             "not_requested",
+            escalation.attention_path,
+            escalation.retry_plan_path,
+            escalation.review_queue_path,
         )
     output_dir = config.scheduler_root / (
         f"evening-{evidence.drawing_number}-"
@@ -268,6 +377,9 @@ def _dispatch_morning_locked(
             None,
             None,
             "not_requested",
+            escalation.attention_path,
+            escalation.retry_plan_path,
+            escalation.review_queue_path,
         )
     artifact_paths = (
         plan.output_dir / SCHEDULER_PLAN_FILENAME,
@@ -488,7 +600,12 @@ def _same_drawing_identity(
 
 def _ineligibility_reason(evidence: MorningPreparedDrawing) -> str | None:
     if evidence.preparation_status != "ready" or evidence.mapped_count != 15:
-        return "preparation_not_ready"
+        unresolved_count = (
+            len(evidence.unresolved_events)
+            if evidence.unresolved_events
+            else 15 - evidence.mapped_count
+        )
+        return f"ACTION REQUIRED: unresolved {unresolved_count}/15"
     if evidence.span_days is not None and evidence.span_days > 5:
         return "drawing_span_exceeds_five_days"
     if evidence.eligibility_status != "playable":
@@ -505,7 +622,10 @@ def _record_path(
 ) -> Path:
     del observed_at
     deadline = evidence.deadline.strftime("%Y%m%dT%H%M%SZ")
-    return config.state_root / f"drawing-{evidence.drawing_id}-{deadline}.json"
+    return config.state_root / (
+        f"drawing-{evidence.drawing_id}-{deadline}-"
+        f"{evidence.drawing_fingerprint[:16]}.json"
+    )
 
 
 def _record(
@@ -526,6 +646,9 @@ def _record(
             "mapped_count": evidence.mapped_count,
             "eligibility_status": evidence.eligibility_status,
             "span_days": evidence.span_days,
+            "unresolved": [
+                item.payload() for item in evidence.unresolved_events
+            ],
         },
         "status": status,
         "reason": reason,
@@ -564,6 +687,11 @@ def _load_record(path: Path) -> dict[str, object] | None:
     ):
         raise ValueError("morning dispatch record integrity mismatch")
     return payload
+
+
+def load_morning_dispatch_record(path: str | Path) -> dict[str, object] | None:
+    """Load one integrity-checked morning dispatch record without mutating it."""
+    return _load_record(Path(path))
 
 
 def _write_record(path: Path, payload: Mapping[str, object]) -> None:
@@ -635,3 +763,454 @@ def _utc(value: datetime, name: str) -> datetime:
 
 def _timestamp(value: datetime) -> str:
     return _utc(value, "timestamp").isoformat().replace("+00:00", "Z")
+
+
+def _parse_timestamp(value: str) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise ValueError("preflight timestamp is invalid") from error
+    return _utc(parsed, "preflight timestamp")
+
+
+@dataclass(frozen=True)
+class _EscalationPaths:
+    attention_path: Path | None
+    retry_plan_path: Path | None
+    review_queue_path: Path | None
+
+
+def _validate_expected_identity(
+    evidence: MorningPreparedDrawing,
+    expected: MorningExpectedIdentity | None,
+) -> None:
+    if expected is None:
+        return
+    if evidence.drawing_id != expected.drawing_id:
+        raise ValueError("preflight drawing ID drift")
+    if evidence.drawing_number != expected.drawing_number:
+        raise ValueError("preflight drawing number drift")
+    if evidence.deadline != expected.deadline:
+        raise ValueError("preflight deadline drift")
+    if evidence.drawing_fingerprint != expected.drawing_fingerprint:
+        raise ValueError("preflight fingerprint drift")
+
+
+def _update_preflight_escalation(
+    config: MorningDispatchConfig,
+    *,
+    evidence: MorningPreparedDrawing,
+    observed_at: datetime,
+    python_command: str | Path | None,
+) -> _EscalationPaths:
+    root = _preflight_root(config, evidence)
+    attention_path = root / "attention.json"
+    if evidence.preparation_status == "ready" and evidence.mapped_count == 15:
+        if attention_path.is_file():
+            prior = _load_json_mapping(attention_path)
+            identity = prior.get("identity")
+            if (
+                isinstance(identity, Mapping)
+                and identity.get("drawing_fingerprint")
+                == evidence.drawing_fingerprint
+            ):
+                attention_path.unlink()
+                (root / "ACTION_REQUIRED.md").unlink(missing_ok=True)
+                resolved = {
+                    "schema_version": PREFLIGHT_ESCALATION_SCHEMA_VERSION,
+                    "status": "RESOLVED: READY 15/15",
+                    "resolved_at": _timestamp(observed_at),
+                    "identity": evidence.identity_payload(),
+                }
+                resolved["record_sha256"] = _record_sha256(resolved)
+                _write_json_idempotent(root / "RESOLVED.json", resolved)
+        return _EscalationPaths(None, None, None)
+    if not evidence.unresolved_events:
+        return _EscalationPaths(None, None, None)
+
+    root.mkdir(parents=True, exist_ok=True)
+    if root.is_symlink():
+        raise ValueError("preflight escalation root cannot be a symlink")
+    prior = (
+        _load_json_mapping(attention_path)
+        if attention_path.is_file()
+        else None
+    )
+    first_seen = (
+        str(prior["first_seen"])
+        if prior is not None
+        else _timestamp(observed_at)
+    )
+    prior_attempts = int(prior.get("attempts", 0)) if prior is not None else 0
+    retry_plan_path = root / "retry-plan.json"
+    if retry_plan_path.is_file():
+        retry_plan = _load_json_mapping(retry_plan_path)
+        identity = retry_plan.get("identity")
+        if (
+            not isinstance(identity, Mapping)
+            or identity.get("drawing_id") != evidence.drawing_id
+            or identity.get("drawing_number") != evidence.drawing_number
+            or identity.get("drawing_fingerprint")
+            != evidence.drawing_fingerprint
+            or identity.get("deadline") != _timestamp(evidence.deadline)
+            or retry_plan.get("passive") is not True
+            or retry_plan.get("activate_evening") is not False
+        ):
+            raise ValueError("existing passive retry plan identity conflicts")
+    else:
+        retry_plan = _retry_plan_payload(
+            config,
+            evidence=evidence,
+            observed_at=observed_at,
+            python_command=python_command,
+        )
+        _write_json_idempotent(retry_plan_path, retry_plan)
+    future_attempts = retry_plan["attempts"]
+    next_retry = (
+        next(
+            (
+                item["scheduled_at"]
+                for item in future_attempts
+                if isinstance(item, Mapping)
+                and _parse_timestamp(str(item["scheduled_at"])) > observed_at
+            ),
+            None,
+        )
+        if isinstance(future_attempts, list)
+        else None
+    )
+    unresolved_payload = [
+        item.payload() for item in evidence.unresolved_events
+    ]
+    attempt = {
+        "schema_version": PREFLIGHT_ESCALATION_SCHEMA_VERSION,
+        "status": (
+            f"ACTION REQUIRED: unresolved "
+            f"{len(evidence.unresolved_events)}/15"
+        ),
+        "identity": evidence.identity_payload(),
+        "captured_at": _timestamp(observed_at),
+        "unresolved": unresolved_payload,
+        "next_retry": next_retry,
+        "passive": True,
+        "activate_evening": False,
+    }
+    attempt["record_sha256"] = _record_sha256(attempt)
+    attempt_id = hashlib.sha256(_canonical(attempt)).hexdigest()[:16]
+    attempt_dir = root / "attempts"
+    attempt_path = attempt_dir / (
+        f"{observed_at.strftime('%Y%m%dT%H%M%S%fZ')}-{attempt_id}.json"
+    )
+    created = _write_json_idempotent(attempt_path, attempt)
+    attempt_report = attempt_path.with_suffix(".md")
+    _write_text_idempotent(
+        attempt_report,
+        _render_attempt_report(attempt),
+    )
+    attempts = prior_attempts + int(created)
+    attention = {
+        "schema_version": PREFLIGHT_ESCALATION_SCHEMA_VERSION,
+        "status": attempt["status"],
+        "identity": evidence.identity_payload(),
+        "first_seen": first_seen,
+        "last_seen": _timestamp(observed_at),
+        "attempts": attempts,
+        "next_retry": next_retry,
+        "unresolved": unresolved_payload,
+        "retry_plan_path": str(retry_plan_path),
+        "passive": True,
+        "activate_evening": False,
+    }
+    attention["record_sha256"] = _record_sha256(attention)
+    _write_atomic(attention_path, attention, replace=attention_path.exists())
+    _replace_text(root / "ACTION_REQUIRED.md", _render_attention_report(attention))
+    _write_text_idempotent(
+        root / "notify.command",
+        (
+            "/usr/bin/osascript -e "
+            f"'display notification \"unresolved "
+            f"{len(evidence.unresolved_events)}/15\" "
+            f"with title \"TotoAI drawing {evidence.drawing_number}\"'\n"
+        ),
+    )
+    missing_schedule_orders = tuple(
+        item.event_order
+        for item in evidence.unresolved_events
+        if item.required_evidence_type == "reviewed_schedule"
+    )
+    queue_suffix = hashlib.sha256(
+        _canonical(missing_schedule_orders)
+    ).hexdigest()[:12]
+    review_queue_path = root / f"reviewed-schedule-queue-{queue_suffix}.json"
+    if review_queue_path.is_file():
+        queue = _load_json_mapping(review_queue_path)
+        identity = queue.get("identity")
+        if (
+            not isinstance(identity, Mapping)
+            or identity.get("drawing_fingerprint")
+            != evidence.drawing_fingerprint
+        ):
+            raise ValueError("existing reviewed schedule queue identity conflicts")
+    else:
+        queue = _review_queue_payload(evidence, observed_at=observed_at)
+        if queue["records"]:
+            _write_json_idempotent(review_queue_path, queue)
+        else:
+            review_queue_path = None
+    return _EscalationPaths(attention_path, retry_plan_path, review_queue_path)
+
+
+def _preflight_root(
+    config: MorningDispatchConfig, evidence: MorningPreparedDrawing
+) -> Path:
+    deadline = evidence.deadline.strftime("%Y%m%dT%H%M%SZ")
+    return (
+        config.state_root
+        / "preflight"
+        / (
+            f"drawing-{evidence.drawing_id}-{deadline}-"
+            f"{evidence.drawing_fingerprint[:16]}"
+        )
+    )
+
+
+def _retry_plan_payload(
+    config: MorningDispatchConfig,
+    *,
+    evidence: MorningPreparedDrawing,
+    observed_at: datetime,
+    python_command: str | Path | None,
+) -> dict[str, object]:
+    hard_stop = evidence.deadline - timedelta(
+        minutes=config.retry_hard_stop_minutes
+    )
+    executable = str(python_command or "python")
+    attempts = []
+    for offset in config.retry_offsets_minutes:
+        scheduled_at = evidence.deadline - timedelta(minutes=offset)
+        if scheduled_at <= observed_at or scheduled_at >= hard_stop:
+            continue
+        command = [
+            executable,
+            "-m",
+            "toto_ai.cli",
+            "morning-dispatch",
+            "--bank",
+            str(config.bank),
+            "--stake",
+            str(config.stake),
+            "--env-file",
+            str(config.env_file),
+            "--project-root",
+            str(config.project_root),
+            "--state-root",
+            str(config.state_root),
+            "--scheduler-root",
+            str(config.scheduler_root),
+            "--db",
+            str(config.db),
+            "--aliases",
+            str(config.aliases),
+            "--expected-drawing-id",
+            str(evidence.drawing_id),
+            "--expected-drawing-number",
+            str(evidence.drawing_number),
+            "--expected-fingerprint",
+            evidence.drawing_fingerprint,
+            "--expected-deadline",
+            _timestamp(evidence.deadline),
+        ]
+        if config.reviewed_schedule_catalog is not None:
+            command.extend(
+                (
+                    "--reviewed-schedule-catalog",
+                    str(config.reviewed_schedule_catalog),
+                )
+            )
+        attempts.append(
+            {
+                "scheduled_at": _timestamp(scheduled_at),
+                "command": command,
+                "status": "planned",
+            }
+        )
+    payload: dict[str, object] = {
+        "schema_version": PREFLIGHT_ESCALATION_SCHEMA_VERSION,
+        "plan_type": "passive_preflight_retry",
+        "identity": evidence.identity_payload(),
+        "created_at": _timestamp(observed_at),
+        "hard_stop": _timestamp(hard_stop),
+        "passive": True,
+        "activate_evening": False,
+        "attempts": attempts,
+    }
+    payload["plan_sha256"] = _record_sha256(payload)
+    return payload
+
+
+def _review_queue_payload(
+    evidence: MorningPreparedDrawing,
+    *,
+    observed_at: datetime,
+) -> dict[str, object]:
+    records = []
+    for item in evidence.unresolved_events:
+        if item.required_evidence_type != "reviewed_schedule":
+            continue
+        template = {
+            "evidence_id": None,
+            "drawing_id": evidence.drawing_id,
+            "drawing_number": evidence.drawing_number,
+            "target_fingerprint": evidence.drawing_fingerprint,
+            "event_order": item.event_order,
+            "target_event_id": item.target_event_id,
+            "reviewer": None,
+            "reviewed_at": None,
+            "claims": [
+                {
+                    "role": "official",
+                    "source_url": None,
+                    "snapshot_path": None,
+                    "snapshot_sha256": None,
+                    "captured_at": None,
+                    "home_name": item.home_team,
+                    "away_name": item.away_team,
+                    "starts_at": None,
+                    "status": "scheduled",
+                },
+                {
+                    "role": "independent",
+                    "source_url": None,
+                    "snapshot_path": None,
+                    "snapshot_sha256": None,
+                    "captured_at": None,
+                    "home_name": item.home_team,
+                    "away_name": item.away_team,
+                    "starts_at": None,
+                    "status": "scheduled",
+                },
+            ],
+        }
+        records.append(
+            {
+                "status": "awaiting_review",
+                "drawing_id": evidence.drawing_id,
+                "drawing_number": evidence.drawing_number,
+                "target_fingerprint": evidence.drawing_fingerprint,
+                "event_order": item.event_order,
+                "target_event_id": item.target_event_id,
+                "home_team": item.home_team,
+                "away_team": item.away_team,
+                "source_fixture_id": None,
+                "requirements": {
+                    "minimum_https_sources": 2,
+                    "required_roles": ["official", "independent"],
+                    "exact_team_and_start_agreement": True,
+                    "snapshot_sha256_required": True,
+                    "freshness_required": True,
+                    "reviewer_required": True,
+                    "fake_api_fixture_ids_forbidden": True,
+                },
+                "template": template,
+            }
+        )
+    payload: dict[str, object] = {
+        "schema_version": PREFLIGHT_ESCALATION_SCHEMA_VERSION,
+        "queue_type": "reviewed_schedule_evidence",
+        "created_at": _timestamp(observed_at),
+        "identity": evidence.identity_payload(),
+        "records": records,
+    }
+    payload["queue_sha256"] = _record_sha256(payload)
+    return payload
+
+
+def _render_attempt_report(payload: Mapping[str, object]) -> str:
+    return _render_attention_report(payload)
+
+
+def _render_attention_report(payload: Mapping[str, object]) -> str:
+    lines = [
+        f"# {payload['status']}",
+        "",
+        f"- First seen: {payload.get('first_seen', payload.get('captured_at'))}",
+        f"- Last seen: {payload.get('last_seen', payload.get('captured_at'))}",
+        f"- Next retry: {payload.get('next_retry') or 'none before hard stop'}",
+        "- Evening activation: disabled",
+        "",
+        "## Unresolved events",
+        "",
+    ]
+    for item in payload.get("unresolved", []):
+        if not isinstance(item, Mapping):
+            continue
+        lines.extend(
+            (
+                f"### #{int(item['event_order']) + 1}: "
+                f"{item['home_team']} — {item['away_team']}",
+                "",
+                f"- Status: `{item['resolution_status']}`",
+                f"- Reason: {item['reason']}",
+                f"- Required evidence: `{item['required_evidence_type']}`",
+                "",
+            )
+        )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _load_json_mapping(path: Path) -> dict[str, object]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("preflight artifact must be an object")
+    return payload
+
+
+def _write_json_idempotent(
+    path: Path, payload: Mapping[str, object]
+) -> bool:
+    expected = _canonical(payload) + b"\n"
+    if path.exists():
+        if path.is_symlink() or not path.is_file() or path.read_bytes() != expected:
+            raise ValueError(f"existing preflight artifact conflicts: {path}")
+        return False
+    _write_atomic(path, payload, replace=False)
+    return True
+
+
+def _write_text_idempotent(path: Path, content: str) -> None:
+    expected = content.encode("utf-8")
+    if path.exists():
+        if path.is_symlink() or not path.is_file() or path.read_bytes() != expected:
+            raise ValueError(f"existing preflight text artifact conflicts: {path}")
+        return
+    _write_bytes(path, expected, replace=False)
+
+
+def _replace_text(path: Path, content: str) -> None:
+    _write_bytes(path, content.encode("utf-8"), replace=path.exists())
+
+
+def _write_bytes(path: Path, content: bytes, *, replace: bool) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.parent / f".{path.name}.{secrets.token_hex(8)}.tmp"
+    descriptor = os.open(
+        temporary,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    )
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        if replace:
+            os.replace(temporary, path)
+        else:
+            os.link(temporary, path)
+        directory = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        temporary.unlink(missing_ok=True)

@@ -212,7 +212,9 @@ from toto_ai.runner import (
     DrawingRunnerConfig,
     DrawingRunPublication,
     MorningDispatchConfig,
+    MorningExpectedIdentity,
     MorningPreparedDrawing,
+    MorningUnresolvedEvent,
     OfflineReplayProvenance,
     PinnedDrawing,
     RunnerTargetMismatch,
@@ -244,6 +246,7 @@ from toto_ai.runner.offline_replay import (
     load_offline_replay_inputs,
     resolve_offline_replay_paths,
 )
+from toto_ai.runner.preflight_status import build_preflight_status
 from toto_ai.sports_stats.operation import (
     collect_and_store_sports_stats,
     parse_historical_as_of,
@@ -2739,7 +2742,7 @@ def morning_preanalysis_plan_command(
     """Generate a non-betting morning sync/preparation launchd candidate."""
     try:
         artifacts = prepare_morning_preanalysis_artifacts(
-            times=tuple(at or ("08:00",)),
+            times=tuple(at or ("08:00", "10:30", "12:00")),
             retry_count=retry_count,
             retry_delay_seconds=retry_delay_seconds,
             output_dir=output_dir,
@@ -2757,6 +2760,39 @@ def morning_preanalysis_plan_command(
     print(f"Wrapper: {artifacts.wrapper_path}")
     print(f"LaunchAgent candidate: {artifacts.launch_agent_path}")
     print("LaunchAgent was generated only; no betting markers are created.")
+
+
+@app.command("preflight-status")
+def preflight_status_command(
+    open_drawing: bool = typer.Option(False, "--open"),
+    db: str = typer.Option("data/toto.db"),
+    community: str = typer.Option("baltbet-main"),
+    state_root: str = typer.Option(
+        "data/scheduler/morning-dispatch", "--state-root"
+    ),
+    scheduler_root: str = typer.Option(
+        "reports/rehearsal", "--scheduler-root"
+    ),
+    at: str | None = typer.Option(None, "--at"),
+) -> None:
+    """Show concise read-only preparation and activation status."""
+    if not open_drawing:
+        raise typer.BadParameter("--open is required")
+    try:
+        payload = build_preflight_status(
+            db=db,
+            community=community,
+            state_root=state_root,
+            scheduler_root=scheduler_root,
+            now=(
+                datetime.now(timezone.utc)
+                if at is None
+                else datetime.fromisoformat(at.replace("Z", "+00:00"))
+            ),
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(payload, ensure_ascii=False, sort_keys=True))
 
 
 def _prepare_current_for_morning(
@@ -2851,9 +2887,25 @@ def _prepare_current_for_morning(
             drawing_fingerprint=prepared.drawing_fingerprint,
             detail_sha256=detail_sha256,
             preparation_status=prepared.status,
-            mapped_count=prepared.mapped_count,
+            mapped_count=sum(
+                item.status == "matched" for item in prepared.events
+            ),
             eligibility_status=prepared.eligibility.status,
             span_days=prepared.eligibility.span_days,
+            unresolved_events=tuple(
+                MorningUnresolvedEvent(
+                    event_order=item.event_order,
+                    target_event_id=item.target_event_id,
+                    home_team=target.events[item.event_order].home_team,
+                    away_team=target.events[item.event_order].away_team,
+                    resolution_status=item.status,
+                    reason=item.reason,
+                    candidate_evidence=item.candidate_evidence,
+                    provider_diagnostics=tuple(schedule.diagnostics),
+                )
+                for item in prepared.events
+                if item.status != "matched"
+            ),
         )
     finally:
         engine.dispose()
@@ -2884,6 +2936,18 @@ def morning_dispatch_command(
         None, "--reviewed-schedule-catalog"
     ),
     activate: bool = typer.Option(False, "--activate"),
+    expected_drawing_id: int | None = typer.Option(
+        None, "--expected-drawing-id", min=1
+    ),
+    expected_drawing_number: int | None = typer.Option(
+        None, "--expected-drawing-number", min=1
+    ),
+    expected_fingerprint: str | None = typer.Option(
+        None, "--expected-fingerprint"
+    ),
+    expected_deadline: datetime | None = typer.Option(  # noqa: B008
+        None, "--expected-deadline"
+    ),
     python_executable: str = typer.Option(sys.executable, "--python-executable"),
 ) -> None:
     """Prepare one current drawing and hand it to one exact evening scheduler."""
@@ -2911,6 +2975,28 @@ def morning_dispatch_command(
         ),
     )
     observed_at = datetime.now(timezone.utc)
+    expected_values = (
+        expected_drawing_id,
+        expected_drawing_number,
+        expected_fingerprint,
+        expected_deadline,
+    )
+    if any(value is not None for value in expected_values) and any(
+        value is None for value in expected_values
+    ):
+        raise typer.BadParameter(
+            "all expected drawing identity options must be supplied together"
+        )
+    expected_identity = (
+        None
+        if expected_drawing_id is None
+        else MorningExpectedIdentity(
+            drawing_id=expected_drawing_id,
+            drawing_number=expected_drawing_number,
+            drawing_fingerprint=expected_fingerprint,
+            deadline=expected_deadline,
+        )
+    )
     try:
         result = dispatch_morning(
             config,
@@ -2939,6 +3025,7 @@ def morning_dispatch_command(
             now=lambda: datetime.now(timezone.utc),
             activate=activate_scheduler_launch_agent if activate else None,
             python_command=python_executable,
+            expected_identity=expected_identity,
         )
     except (
         APISportsError,
@@ -2966,6 +3053,21 @@ def morning_dispatch_command(
                     else str(result.launch_agent_path)
                 ),
                 "activation_status": result.activation_status,
+                "attention_path": (
+                    None
+                    if result.attention_path is None
+                    else str(result.attention_path)
+                ),
+                "retry_plan_path": (
+                    None
+                    if result.retry_plan_path is None
+                    else str(result.retry_plan_path)
+                ),
+                "review_queue_path": (
+                    None
+                    if result.review_queue_path is None
+                    else str(result.review_queue_path)
+                ),
             },
             sort_keys=True,
             separators=(",", ":"),

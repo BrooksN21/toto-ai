@@ -189,7 +189,8 @@ eligibility is playable, and the complete five-tick schedule can still start
 before T−45.
 
 The dispatcher has a process lock and persistent per-drawing state keyed by
-drawing ID and deadline, independent of the morning date. Repeated morning
+drawing ID, deadline, and fingerprint, independent of the morning date.
+Repeated morning
 triggers are idempotent; a deferred preparation may be retried, while
 ambiguous selection, missing identity/deadline, timing spans outside policy,
 conflicting state, or a late dispatch fail closed. Time is reacquired after
@@ -203,6 +204,16 @@ crash verifies and reuses the exact plan, wrapper, and plist bytes before
 invoking activation, then advances only the activation state. A conflicting,
 tampered, or partial artifact set fails closed.
 
+Unresolved preparation is a separate passive preflight state machine. It
+writes a fingerprint-bound attention marker, append-only attempts, candidate
+and provider diagnostics, a strict reviewed-schedule queue when the provider
+has no identity-bearing fixture, and an idempotent retry plan at
+T−360/T−240/T−180/T−120/T−90. Every retry carries exact expected drawing
+identity, stops before T−60, performs no busy sleep, and omits activation.
+`preflight-status --open` reads the current DB and these artifacts without
+schema initialization or mutation. Attention clears only when the same
+fingerprint reaches atomic READY 15/15.
+
 Generation is deliberately separate from activation. Generic morning
 artifacts are passive by default and omit `morning-dispatch --activate`;
 `morning-preanalysis-plan --activate-evening` is the explicit post-drill
@@ -210,7 +221,9 @@ opt-in. A passive recurring job may synchronize, prepare, record diagnostics,
 and generate an exact evening plan, but cannot install that plan. Neither a
 schema-v4 evening scheduler nor automatic bet path is installed. The passive
 generic dispatcher is installed as `com.totoai.morning-dispatcher.v1` at
-08:00/10:30 Moscow time. The five obsolete drawing-specific LaunchAgents were
+08:00/10:30 Moscow time. New generated candidates default to
+08:00/10:30/12:00 and remain uninstalled. The five obsolete drawing-specific
+LaunchAgents were
 removed on 2026-07-28.
 
 ## Emergency pre-bet safety boundary

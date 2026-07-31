@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "aliases": {
     "Англия": "England",
     "Аргентина": "Argentina",
@@ -52,6 +52,13 @@
       "country": "Argentina",
       "context": "Чемпионат",
       "provider_team_id": "434",
+      "reviewer": "totoai-operator",
+      "reviewed_at": "2026-07-29T10:00:00Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/external-odds/team-aliases.json",
+        "provider_team_id": "434"
+      },
       "aliases": [
         "Gimnasia L.P.",
         "Химнасия и Эсгрима ЛП"
@@ -62,9 +69,60 @@
       "country": "Argentina",
       "context": "Чемпионат",
       "provider_team_id": "435",
+      "reviewer": "totoai-operator",
+      "reviewed_at": "2026-07-29T10:00:00Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/external-odds/team-aliases.json",
+        "provider_team_id": "435"
+      },
       "aliases": [
         "River Plate",
         "Ривер Плэйт Буэнос-Айрес"
+      ]
+    },
+    {
+      "canonical_name": "Caracas FC",
+      "country": "",
+      "context": "",
+      "provider_team_id": "2808",
+      "reviewer": "totoai-operator",
+      "reviewed_at": "2026-07-30T08:00:00Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "provider": "api-sports",
+        "provider_team_id": "2808",
+        "sources": [
+          "https://v3.football.api-sports.io/teams?id=2808",
+          "https://caracasfutbolclub.com/"
+        ]
+      },
+      "aliases": [
+        "Caracas FC",
+        "Caracas",
+        "Каракас"
+      ]
+    },
+    {
+      "canonical_name": "Independiente Santa Fe",
+      "country": "",
+      "context": "",
+      "provider_team_id": "1139",
+      "reviewer": "totoai-operator",
+      "reviewed_at": "2026-07-30T08:00:00Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "provider": "api-sports",
+        "provider_team_id": "1139",
+        "sources": [
+          "https://v3.football.api-sports.io/teams?id=1139",
+          "https://independientesantafe.com/"
+        ]
+      },
+      "aliases": [
+        "Independiente Santa Fe",
+        "Santa Fe",
+        "Индепендьенте СФ"
       ]
     }
   ]

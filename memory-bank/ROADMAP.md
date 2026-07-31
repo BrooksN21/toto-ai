@@ -110,6 +110,14 @@ The authoritative full-history audit and remediation plan are stored under
 - [x] Repeat an activation-disabled 15/15 live drill. Drawing 4959 passed on a
   copied DB with 14 API-Sports pins plus one reviewed schedule pin, source
   revalidation 15/15, no activation, and no betting artifacts.
+- [x] `TOTO-PREFLIGHT-ESCALATION-AND-FALLBACK-V1`: add reviewed alias facts,
+  identity-bound unresolved escalation, passive bounded retries, strict
+  reviewed-schedule queue, attention lifecycle, and read-only
+  `preflight-status --open`.
+- [x] Run drawing-4960 network-free regression on an isolated DB copy:
+  initial 13 event matches with atomic 0/15 pins and ACTION REQUIRED; reviewed
+  aliases plus strict rehearsal evidence reach READY 15/15 with 14 API-Sports
+  pins and one reviewed-schedule pin; no activation, package, or bet marker.
 - [ ] Enable automatic evening activation only after that drill passes.
   This remains explicitly out of scope and is not authorized by the drill.
 

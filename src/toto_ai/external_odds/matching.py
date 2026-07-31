@@ -96,25 +96,37 @@ def load_aliases(path: str | Path) -> dict[str, str]:
         {"version", "aliases"}
         if version == 1
         else {"version", "aliases", "identities"}
-        if version == 2
+        if version in (2, 3)
         else None
     )
     if expected_keys is None:
-        raise ValueError("alias file version must be 1 or 2")
+        raise ValueError("alias file version must be 1, 2, or 3")
     if set(payload) != expected_keys:
         raise ValueError("alias file must use the exact schema")
-    if version == 2:
+    if version in (2, 3):
         identities = payload["identities"]
         if not isinstance(identities, list):
             raise ValueError("alias identities must be a list")
         for identity in identities:
-            if not isinstance(identity, dict) or set(identity) != {
+            legacy_fields = {
                 "canonical_name",
                 "country",
                 "context",
                 "provider_team_id",
                 "aliases",
-            }:
+            }
+            reviewed_fields = legacy_fields | {
+                "reviewer",
+                "reviewed_at",
+                "provenance",
+            }
+            expected_identity_fields = (
+                reviewed_fields if version == 3 else legacy_fields
+            )
+            if (
+                not isinstance(identity, dict)
+                or set(identity) != expected_identity_fields
+            ):
                 raise ValueError("reviewed identity must use the exact schema")
             if (
                 any(
@@ -122,17 +134,25 @@ def load_aliases(path: str | Path) -> dict[str, str]:
                     or not identity[field].strip()
                     for field in (
                         "canonical_name",
-                        "country",
-                        "context",
                         "provider_team_id",
                     )
                 )
+                or not isinstance(identity["country"], str)
+                or not isinstance(identity["context"], str)
                 or not isinstance(identity["aliases"], list)
                 or not identity["aliases"]
                 or any(
                     not isinstance(alias, str) or not alias.strip()
                     for alias in identity["aliases"]
                 )
+            ):
+                raise ValueError("reviewed identity values are invalid")
+            if version == 3 and (
+                not isinstance(identity["reviewer"], str)
+                or not identity["reviewer"].strip()
+                or not isinstance(identity["reviewed_at"], str)
+                or not identity["reviewed_at"].strip()
+                or not isinstance(identity["provenance"], dict)
             ):
                 raise ValueError("reviewed identity values are invalid")
     raw_aliases = payload["aliases"]

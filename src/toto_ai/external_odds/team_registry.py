@@ -235,6 +235,7 @@ def upsert_reviewed_alias(
     country: str | None = None,
     context: str | None = None,
     active: bool = True,
+    reviewed_at: str | None = None,
 ) -> ReviewedTeamAlias:
     team_id = _positive_integer(team_id, "team_id")
     alias = _required_text(alias, "alias")
@@ -242,6 +243,11 @@ def upsert_reviewed_alias(
     provider = _required_text(provider, "provider")
     provider_team_id = _optional_identifier(provider_team_id, "provider_team_id")
     reviewer = _required_text(reviewer, "reviewer")
+    requested_reviewed_at = (
+        None
+        if reviewed_at is None
+        else _reviewed_timestamp(reviewed_at, "reviewed_at")
+    )
     confidence = _confidence(confidence)
     if not isinstance(active, bool):
         raise ValueError("active must be a boolean")
@@ -296,6 +302,7 @@ def upsert_reviewed_alias(
 
         now = _utc_now()
         if row is None:
+            effective_reviewed_at = requested_reviewed_at or now
             row = TeamAlias(
                 team_id=team_id,
                 sport=team.sport,
@@ -311,7 +318,7 @@ def upsert_reviewed_alias(
                 confidence=confidence,
                 reviewed=True,
                 reviewer=reviewer,
-                reviewed_at=now,
+                reviewed_at=effective_reviewed_at,
                 active=active,
                 created_at=now,
                 updated_at=now,
@@ -319,6 +326,7 @@ def upsert_reviewed_alias(
             session.add(row)
             session.flush()
         else:
+            effective_reviewed_at = requested_reviewed_at or row.reviewed_at or now
             requested = (
                 alias,
                 transliterated_alias,
@@ -327,6 +335,7 @@ def upsert_reviewed_alias(
                 provenance_text,
                 confidence,
                 reviewer,
+                effective_reviewed_at,
                 active,
             )
             current = (
@@ -337,6 +346,7 @@ def upsert_reviewed_alias(
                 row.provenance,
                 row.confidence,
                 row.reviewer,
+                row.reviewed_at,
                 row.active,
             )
             if requested != current or not row.reviewed:
@@ -348,7 +358,7 @@ def upsert_reviewed_alias(
                 row.confidence = confidence
                 row.reviewed = True
                 row.reviewer = reviewer
-                row.reviewed_at = now
+                row.reviewed_at = effective_reviewed_at
                 row.active = active
                 row.updated_at = now
                 session.flush()
@@ -456,11 +466,12 @@ def seed_reviewed_alias_config(
             {"version", "aliases", "identities"},
         ):
             raise ValueError("alias file must use the exact schema")
-        if payload["version"] not in (1, 2) or not isinstance(
+        if payload["version"] not in (1, 2, 3) or not isinstance(
             payload["aliases"], dict
         ):
             raise ValueError("alias file version and aliases are invalid")
-        if payload["version"] == 1 and "identities" in payload:
+        version = payload["version"]
+        if version == 1 and "identities" in payload:
             raise ValueError("alias file v1 cannot contain identities")
         identities = payload.get("identities", [])
         if not isinstance(identities, list):
@@ -508,13 +519,20 @@ def seed_reviewed_alias_config(
             reviewer="reviewed-alias-config",
         )
     for identity in identities:
-        if not isinstance(identity, dict) or set(identity) != {
+        legacy_fields = {
             "canonical_name",
             "country",
             "context",
             "provider_team_id",
             "aliases",
-        }:
+        }
+        reviewed_fields = legacy_fields | {
+            "reviewer",
+            "reviewed_at",
+            "provenance",
+        }
+        expected_fields = reviewed_fields if version == 3 else legacy_fields
+        if not isinstance(identity, dict) or set(identity) != expected_fields:
             raise ValueError("reviewed identity must use the exact schema")
         identity_aliases = identity["aliases"]
         if not isinstance(identity_aliases, list) or not identity_aliases:
@@ -528,11 +546,27 @@ def seed_reviewed_alias_config(
             country=identity["country"],
             context=identity["context"],
         )
-        provenance = {
-            "source": "reviewed-contextual-identity",
-            "source_path": source_path or "in-memory",
-            "provider_team_id": identity["provider_team_id"],
-        }
+        provenance = (
+            identity["provenance"]
+            if version == 3
+            else {
+                "source": "reviewed-contextual-identity",
+                "source_path": source_path or "in-memory",
+                "provider_team_id": identity["provider_team_id"],
+            }
+        )
+        if version == 3 and not isinstance(provenance, dict):
+            raise ValueError("reviewed identity provenance must be an object")
+        reviewer = (
+            _required_text(identity["reviewer"], "reviewer")
+            if version == 3
+            else "reviewed-alias-config"
+        )
+        reviewed_at = (
+            _reviewed_timestamp(identity["reviewed_at"], "reviewed_at")
+            if version == 3
+            else None
+        )
         for index, alias in enumerate(identity_aliases):
             results.append(
                 upsert_reviewed_alias(
@@ -548,7 +582,8 @@ def seed_reviewed_alias_config(
                     context=identity["context"],
                     provenance=provenance,
                     confidence=1.0,
-                    reviewer="reviewed-alias-config",
+                    reviewer=reviewer,
+                    reviewed_at=reviewed_at,
                 )
             )
     return tuple(results)
@@ -2062,6 +2097,17 @@ def _confidence(value: Any) -> float:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _reviewed_timestamp(value: Any, field_name: str) -> str:
+    value = _required_text(value, field_name)
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise ValueError(f"{field_name} must be an ISO-8601 timestamp") from error
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError(f"{field_name} must be timezone-aware")
+    return parsed.astimezone(timezone.utc).isoformat()
 
 
 # Concise aliases for callers that use repository terminology.

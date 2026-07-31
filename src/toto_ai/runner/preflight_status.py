@@ -1,0 +1,234 @@
+"""Read-only concise status for the exact open-drawing preflight."""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+from zoneinfo import ZoneInfo
+
+from sqlalchemy import func, select
+
+from toto_ai.analytics.api_inspector import resolve_drawing_reference
+from toto_ai.db.models import (
+    DrawingEventPin,
+    DrawingPinSet,
+    DrawingPinSetItem,
+)
+from toto_ai.db.session import get_session_factory, open_readonly_db
+from toto_ai.runner.morning_dispatch import load_morning_dispatch_record
+from toto_ai.runner.scheduler import MORNING_WRAPPER_FILENAME
+
+MOSCOW = ZoneInfo("Europe/Moscow")
+
+
+def build_preflight_status(
+    *,
+    db: str | Path,
+    community: str,
+    state_root: str | Path,
+    scheduler_root: str | Path,
+    now: datetime,
+) -> dict[str, Any]:
+    """Return status using only read-only DB and local generated artifacts."""
+    observed_at = _utc(now)
+    database = Path(db).absolute()
+    state = Path(state_root).absolute()
+    scheduler = Path(scheduler_root).absolute()
+    engine = open_readonly_db(database)
+    try:
+        session_factory = get_session_factory(engine)
+        with session_factory() as session:
+            reference = resolve_drawing_reference(
+                session,
+                open=True,
+                community=community,
+                now=observed_at,
+            )
+        deadline = _parse_timestamp(reference.ended_at)
+        record, record_path = _latest_record(
+            state,
+            drawing_id=reference.drawing_id,
+            drawing_number=reference.number,
+            deadline=deadline,
+        )
+        identity = record.get("identity") if record is not None else None
+        fingerprint = (
+            str(identity.get("drawing_fingerprint"))
+            if isinstance(identity, dict)
+            else None
+        )
+        preparation = (
+            record.get("preparation") if record is not None else None
+        )
+        if not isinstance(preparation, dict):
+            preparation = {}
+        unresolved = preparation.get("unresolved", ())
+        if not isinstance(unresolved, list):
+            unresolved = []
+        pin_count = _pin_count(
+            session_factory,
+            drawing_id=reference.drawing_id,
+            fingerprint=fingerprint,
+        )
+        attention_path, retry_plan_path = _preflight_paths(
+            state,
+            drawing_id=reference.drawing_id,
+            deadline=deadline,
+            fingerprint=fingerprint,
+        )
+        activation = (
+            str(record.get("activation_status", "not_requested"))
+            if record is not None
+            else "not_requested"
+        )
+        morning_state = _morning_activation_state(scheduler)
+        return {
+            "drawing_id": reference.drawing_id,
+            "drawing_number": reference.number,
+            "deadline_utc": _timestamp(deadline),
+            "deadline_msk": deadline.astimezone(MOSCOW).isoformat(),
+            "drawing_fingerprint": fingerprint,
+            "preparation_status": str(
+                preparation.get("status", "not_run")
+            ),
+            "mapped_count": int(preparation.get("mapped_count", 0)),
+            "pin_count": pin_count,
+            "unresolved_count": len(unresolved),
+            "unresolved_event_orders": [
+                int(item["event_order"])
+                for item in unresolved
+                if isinstance(item, dict) and "event_order" in item
+            ],
+            "record_path": None if record_path is None else str(record_path),
+            "attention_path": (
+                str(attention_path) if attention_path.is_file() else None
+            ),
+            "retry_plan_path": (
+                str(retry_plan_path) if retry_plan_path.is_file() else None
+            ),
+            "morning_activation_state": morning_state,
+            "evening_activation_state": activation,
+            "package_generation_state": (
+                "enabled" if activation == "activated" else "disabled"
+            ),
+        }
+    finally:
+        engine.dispose()
+
+
+def _latest_record(
+    state_root: Path,
+    *,
+    drawing_id: int,
+    drawing_number: int | None,
+    deadline: datetime,
+) -> tuple[dict[str, object] | None, Path | None]:
+    prefix = f"drawing-{drawing_id}-{deadline.strftime('%Y%m%dT%H%M%SZ')}"
+    candidates: list[tuple[str, Path, dict[str, object]]] = []
+    if state_root.is_dir() and not state_root.is_symlink():
+        for path in state_root.glob(f"{prefix}*.json"):
+            record = load_morning_dispatch_record(path)
+            if record is None:
+                continue
+            identity = record.get("identity")
+            if (
+                not isinstance(identity, dict)
+                or identity.get("drawing_id") != drawing_id
+                or identity.get("drawing_number") != drawing_number
+                or identity.get("deadline") != _timestamp(deadline)
+            ):
+                continue
+            candidates.append((str(record.get("observed_at", "")), path, record))
+    if not candidates:
+        return None, None
+    _, path, record = max(candidates, key=lambda item: (item[0], str(item[1])))
+    return record, path
+
+
+def _pin_count(
+    session_factory: Any,
+    *,
+    drawing_id: int,
+    fingerprint: str | None,
+) -> int:
+    if fingerprint is None:
+        return 0
+    with session_factory() as session:
+        legacy = int(
+            session.scalar(
+                select(func.count())
+                .select_from(DrawingEventPin)
+                .where(
+                    DrawingEventPin.drawing_id == drawing_id,
+                    DrawingEventPin.drawing_fingerprint == fingerprint,
+                    DrawingEventPin.status == "valid",
+                )
+            )
+            or 0
+        )
+        pin_set_id = session.scalar(
+            select(DrawingPinSet.pin_set_id).where(
+                DrawingPinSet.drawing_id == drawing_id,
+                DrawingPinSet.drawing_fingerprint == fingerprint,
+                DrawingPinSet.status == "ready",
+            )
+        )
+        canonical = (
+            0
+            if pin_set_id is None
+            else int(
+                session.scalar(
+                    select(func.count())
+                    .select_from(DrawingPinSetItem)
+                    .where(DrawingPinSetItem.pin_set_id == pin_set_id)
+                )
+                or 0
+            )
+        )
+    return max(legacy, canonical)
+
+
+def _preflight_paths(
+    state_root: Path,
+    *,
+    drawing_id: int,
+    deadline: datetime,
+    fingerprint: str | None,
+) -> tuple[Path, Path]:
+    if fingerprint is None:
+        root = state_root / "preflight" / "not-prepared"
+    else:
+        root = state_root / "preflight" / (
+            f"drawing-{drawing_id}-{deadline.strftime('%Y%m%dT%H%M%SZ')}-"
+            f"{fingerprint[:16]}"
+        )
+    return root / "attention.json", root / "retry-plan.json"
+
+
+def _morning_activation_state(scheduler_root: Path) -> str:
+    wrapper = scheduler_root / "morning-dispatcher" / MORNING_WRAPPER_FILENAME
+    if not wrapper.is_file() or wrapper.is_symlink():
+        return "not_generated"
+    content = wrapper.read_text(encoding="utf-8")
+    return "activation_enabled_candidate" if "--activate" in content else "passive"
+
+
+def _parse_timestamp(value: str | None) -> datetime:
+    if not isinstance(value, str) or not value:
+        raise ValueError("open drawing deadline is missing")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise ValueError("open drawing deadline is invalid") from error
+    return _utc(parsed)
+
+
+def _utc(value: datetime) -> datetime:
+    if value.tzinfo is None or value.utcoffset() is None:
+        raise ValueError("status time must be timezone-aware")
+    return value.astimezone(timezone.utc)
+
+
+def _timestamp(value: datetime) -> str:
+    return _utc(value).isoformat().replace("+00:00", "Z")

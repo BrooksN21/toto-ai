@@ -165,6 +165,7 @@ post-drill opt-in:
   --stake 30 \
   --at 08:00 \
   --at 10:30 \
+  --at 12:00 \
   --retry-count 2 \
   --retry-delay-seconds 60 \
   --project-root /Users/turshevr/toto-ai \
@@ -174,6 +175,31 @@ post-drill opt-in:
 Do not add `--activate-evening` until an activation-disabled live 15/15 drill
 has passed. Passive installation can collect operational evidence without
 creating an actionable evening job.
+
+When preparation is unresolved, `morning-dispatch` writes a fingerprint-bound
+`ACTION REQUIRED` report, immutable attempt records, a strict reviewed-
+schedule evidence queue where applicable, and a passive retry plan at
+T−360/T−240/T−180/T−120/T−90 with a hard stop before T−60. Retry commands are
+bound to the exact drawing ID, visible number, deadline, and fingerprint and
+abort on drift. They never contain `--activate`, never sleep in-process, and
+cannot create a package or bet marker. Attention clears only after the same
+fingerprint reaches atomic READY 15/15.
+
+When `--at` is omitted, generated morning candidates default to 08:00, 10:30,
+and 12:00 Moscow time. Generation remains passive and does not install a
+LaunchAgent. Current status is available through the read-only command:
+
+```bash
+.venv/bin/python -m toto_ai.cli preflight-status \
+  --open \
+  --db data/toto.db \
+  --state-root data/scheduler/morning-dispatch \
+  --scheduler-root reports/rehearsal
+```
+
+It reports the active drawing and deadline in UTC/MSK, preparation, mapped,
+pin and unresolved counts, attention/retry paths, and morning/evening
+activation state.
 
 ### One-time stale LaunchAgent cleanup
 
@@ -186,6 +212,10 @@ contains neither `--activate` nor a drawing number. The atomic evening
 scheduler remains **not installed**. The
 activation-disabled 4958 drill correctly deferred because one women fixture
 was absent from API-Sports; no plan or package was created.
+
+That paragraph records the historical installed schedule only. The current
+generator defaults to 08:00/10:30/12:00, but this feature does not install or
+modify LaunchAgents.
 
 Production schema-v4 execution is always a short-lived idempotent tick.
 `scheduler-execute --run-id` is supported only with `--simulate`; production

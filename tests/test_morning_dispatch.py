@@ -397,7 +397,7 @@ def test_same_drawing_retries_deferred_preparation_without_duplicate_plan(
                 status="unresolved",
                 mapped=14,
             ),
-            "preparation_not_ready",
+            "ACTION REQUIRED: unresolved 1/15",
         ),
         (
             _prepared(

@@ -14,7 +14,9 @@ from toto_ai.runner.models import (
 from toto_ai.runner.morning_dispatch import (
     MorningDispatchConfig,
     MorningDispatchResult,
+    MorningExpectedIdentity,
     MorningPreparedDrawing,
+    MorningUnresolvedEvent,
     activate_scheduler_launch_agent,
     dispatch_morning,
 )
@@ -88,7 +90,9 @@ __all__ = [
     "MorningPreanalysisArtifacts",
     "MorningDispatchConfig",
     "MorningDispatchResult",
+    "MorningExpectedIdentity",
     "MorningPreparedDrawing",
+    "MorningUnresolvedEvent",
     "activate_scheduler_launch_agent",
     "DEFAULT_MINIMUM_GROSS_EV",
     "PACKAGE_CSV_HEADER",

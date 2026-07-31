@@ -2974,3 +2974,43 @@ Verification:
   `1a6c9f4d62ba2198852066405342769ebbfa8a057b0525661fc1b58f576fd0c9`.
 
 Next task: P0.2 lifecycle-aware collector freshness.
+
+## Preflight escalation and fallback v1 (2026-07-31)
+
+Implemented locally for `TOTO-PREFLIGHT-ESCALATION-AND-FALLBACK-V1`:
+
+- reviewed alias catalog v3 with provenance/reviewer/date and generic Caracas
+  FC/Caracas plus Independiente Santa Fe/Santa Fe team identities;
+- conservative source-absence classification that does not mask
+  identity-bearing ambiguous provider fixtures;
+- fingerprint-bound ACTION REQUIRED JSON/Markdown, immutable attempts,
+  provider/candidate diagnostics, optional notification command, and strict
+  reviewed-schedule evidence queue;
+- passive retry plan at T−360/T−240/T−180/T−120/T−90, hard stop before T−60,
+  exact drawing/deadline/fingerprint drift guard, no busy sleep, no activation;
+- same-fingerprint-only attention resolution after atomic READY 15/15;
+- read-only `preflight-status --open`;
+- passive morning candidates default to 08:00/10:30/12:00. Evening activation
+  remains disabled and this task installs no LaunchAgent.
+
+Network-free drawing-4960 rehearsal:
+
+- isolated DB copy:
+  `reports/rehearsal/preflight-4960-network-free-v1/toto-copy.db`;
+- initial: 13/15 event matches, atomic 0/15 pins, unresolved orders 12/14,
+  `ACTION REQUIRED: unresolved 2/15`;
+- final after reviewed aliases and strict snapshot-backed rehearsal evidence:
+  READY 15/15, playable/two-day, 14 API-Sports pins plus one
+  reviewed-schedule pin;
+- evening candidate generated only, activation not requested, no CSV package
+  and no bet-ready marker;
+- attention cleared and same-fingerprint `RESOLVED.json` written;
+- network calls zero; `data/toto.db` and the source rehearsal DB SHA-256 values
+  remained unchanged;
+- summary:
+  `reports/rehearsal/preflight-4960-network-free-v1/rehearsal-summary.json`.
+
+The `.invalid` source snapshots in this rehearsal validate the strict local
+contract only and are not operational betting evidence. A real
+provider-missing event still requires captured official and independent HTTPS
+sources reviewed before deadline.

@@ -856,6 +856,30 @@
 - Drawing numbers, current team names, and provider fixture IDs are test replay
   data only. Production resolution contains no drawing-4951 or per-team branch.
 
+## Passive preflight escalation
+
+- Missing reviewed aliases and provider-missing schedules are different
+  evidence classes. Aliases are versioned reviewed team facts with provider
+  team IDs, reviewer, review time, and provenance; they are never learned
+  automatically from an unresolved drawing.
+- A complete provider date window may be declared source-missing only when no
+  candidate carries exact, transliterated, reviewed, or provider-ID team
+  identity and the best fuzzy collision has no plausible team side. Strict
+  reviewed schedule evidence may then fill schedule identity; it cannot mask
+  a genuine identity-bearing ambiguous candidate.
+- Every unresolved morning run creates local fingerprint-bound attention and
+  immutable attempt evidence. Passive retries are exact-identity commands,
+  bounded before T−60, idempotent, and contain no evening activation.
+- Attention is resolved only by atomic READY 15/15 for the same fingerprint.
+  A changed fingerprint receives separate state and cannot clear the prior
+  marker.
+- Morning generation defaults to 08:00/10:30/12:00 but does not install
+  launchd. Evening package automation remains disabled until separately
+  authorized; no code places bets.
+- `preflight-status --open` is physically read-only. It reports generated
+  activation candidates and records but does not inspect, install, enable, or
+  execute GUI/launchd state.
+
 ## Sports-statistics audit isolation
 
 - `--historical-as-of` is frozen-input only. It may read only local SQLite,

@@ -55,6 +55,7 @@ class PreparationEventResult:
     reason: str
     confidence: float
     margin: float
+    candidate_evidence: tuple[dict[str, Any], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -317,6 +318,7 @@ def prepare_drawing(
                     ),
                     confidence=1.0,
                     margin=1.0,
+                    candidate_evidence=(),
                 )
             )
             continue
@@ -432,6 +434,9 @@ def prepare_drawing(
                 reason=resolution.reason,
                 confidence=resolution.confidence,
                 margin=resolution.margin,
+                candidate_evidence=tuple(
+                    asdict(item) for item in resolution.candidates
+                ),
             )
         )
 
