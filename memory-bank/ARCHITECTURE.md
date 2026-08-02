@@ -43,6 +43,14 @@ dispatcher uses the same fcntl boundary. Stale metadata is recovered only
 after the OS lock is available. A live lock defers the nightly run without
 network or backup.
 
+After lock acquisition, one timezone-aware eligibility reference instant is
+captured for the whole nightly run. Both read-only selection passes and every
+per-drawing cooldown admission check use that exact instant; elapsed wall time
+cannot add newly eligible drawings to the immutable captured set. The set is
+also bound to a deterministic local drawing/event/result fingerprint before
+backup or network access. Actual drawing/result identity mutation still fails
+closed as selection drift.
+
 No eligible work produces `DEFERRED/NOOP`, zero network calls, and no backup.
 `source_incomplete` and transient per-drawing failures produce `PARTIAL` while
 preserving cooldown/quarantine and allowing the bounded run to continue.

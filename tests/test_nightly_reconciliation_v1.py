@@ -12,7 +12,7 @@ from sqlalchemy import select
 from typer.testing import CliRunner
 
 from toto_ai.cli import app
-from toto_ai.db.models import Drawing, Event, Quote
+from toto_ai.db.models import Drawing, DrawingReconciliationState, Event, Quote
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.operations.nightly_reconciliation import (
     NightlyReconciliationConfig,
@@ -344,6 +344,92 @@ def test_captured_selection_drift_aborts_before_backup_or_network(
         client=client,
         now=lambda: NOW,
         before_apply=mutate_between_selection_and_apply,
+    )
+
+    assert result.classification == "FAILED"
+    assert result.reason == "captured_selection_drift"
+    assert result.network_attempts == 0
+    assert result.backup_path is None
+
+
+def test_cooldown_expiry_during_run_does_not_change_captured_selection(
+    tmp_path: Path,
+) -> None:
+    db_path = _database(tmp_path)
+    factory = get_session_factory(init_db(db_path))
+    with factory.begin() as session:
+        session.add(
+            DrawingReconciliationState(
+                drawing_id=11992,
+                provider="totobrief",
+                source="/drawing-info/11992",
+                last_attempt_at=(NOW - timedelta(minutes=1)).isoformat(),
+                attempt_count=1,
+                last_source_fingerprint="source-incomplete",
+                terminal_count=0,
+                classification="source_incomplete",
+                retry_state="cooldown",
+                next_eligible_at=(NOW + timedelta(minutes=1)).isoformat(),
+                last_error_code=None,
+                unchanged_observation_count=1,
+                transient_error_count=0,
+                updated_at=(NOW - timedelta(minutes=1)).isoformat(),
+            )
+        )
+    client = FakeClient(
+        {11990: _payload(11990, 4960, terminal_count=15)}
+    )
+    config = _config(tmp_path, db_path)
+    clock = {"now": NOW}
+
+    def advance_past_cooldown() -> None:
+        clock["now"] = NOW + timedelta(minutes=2)
+
+    result = run_nightly_reconciliation(
+        config,
+        client=client,
+        now=lambda: clock["now"],
+        before_apply=advance_past_cooldown,
+    )
+
+    assert result.classification == "SUCCESS"
+    assert result.reason == "all_captured_drawings_complete"
+    assert result.captured_drawing_numbers == (4960,)
+    assert result.network_attempts == 1
+    assert client.calls == [11990]
+
+
+def test_result_fingerprint_change_during_run_fails_closed(
+    tmp_path: Path,
+) -> None:
+    db_path = _database(tmp_path)
+    client = FakeClient(
+        {
+            11990: _payload(11990, 4960, terminal_count=15),
+            11992: _payload(11992, 4961, terminal_count=15),
+        }
+    )
+    config = _config(tmp_path, db_path)
+
+    def mutate_result_without_completing_drawing() -> None:
+        factory = get_session_factory(init_db(db_path))
+        with factory.begin() as session:
+            event = session.scalar(
+                select(Event).where(
+                    Event.drawing_id == 11992,
+                    Event.event_order == 0,
+                )
+            )
+            assert event is not None
+            event.result = "1"
+            event.result_status = "resolved"
+            event.score = "1 : 0"
+
+    result = run_nightly_reconciliation(
+        config,
+        client=client,
+        now=lambda: NOW,
+        before_apply=mutate_result_without_completing_drawing,
     )
 
     assert result.classification == "FAILED"

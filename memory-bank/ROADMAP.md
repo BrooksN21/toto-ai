@@ -2,6 +2,10 @@
 
 ## Immediate production blockers
 
+- [x] `TOTO-NIGHTLY-CAPTURED-SELECTION-DRIFT-V1`: freeze one eligibility
+  reference instant and immutable candidate identity per nightly run so
+  in-run cooldown expiry cannot create false drift, while real drawing/result
+  changes still fail closed.
 - [x] `TOTO-SCHEDULER-SCHEMA-V5-TMINUS10`: version the T−10 scheduler as v5,
   bind exact trigger semantics into plan identity/artifact verification, and
   reject stale schema-v4/T−12 plans with an explicit regenerate diagnostic.

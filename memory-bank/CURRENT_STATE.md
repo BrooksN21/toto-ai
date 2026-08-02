@@ -1,5 +1,27 @@
 # Current State
 
+## Nightly captured-selection drift fix (2026-08-02)
+
+`TOTO-NIGHTLY-CAPTURED-SELECTION-DRIFT-V1` fixes the failed scheduled run
+`20260802T002643498108Z-7927-4f7b04`. The run captured eight eligible drawings
+at `00:26:43Z`, but a second dry-run used a later wall clock after cooldowns
+expired and incorrectly classified the changed eligibility view as
+`captured_selection_drift`, performing zero network work.
+
+One nightly run now captures a single timezone-aware eligibility reference
+instant after acquiring the maintenance lock. Initial selection,
+reconfirmation, and per-drawing reconciliation eligibility/cooldown checks all
+use that same instant. The selected candidate tuple is immutable, and its
+local drawing/event/result identity is hashed before and after the optional
+pre-apply boundary. Wall-clock cooldown expiry alone no longer changes the
+captured run, while drawing status and result fingerprint mutations still fail
+closed before backup or network access.
+
+Deterministic regression coverage advances the clock across a cooldown expiry
+and proves only the originally captured drawing is processed. Negative controls
+prove real drawing-status and same-cardinality result changes still produce
+`captured_selection_drift` with zero network attempts and no backup.
+
 ## Scheduler schema v5 and T−10 contract (2026-07-31)
 
 `TOTO-SCHEDULER-SCHEMA-V5-TMINUS10` completes the earlier timezone/T−10 WIP

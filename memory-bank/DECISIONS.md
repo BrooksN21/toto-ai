@@ -37,6 +37,12 @@
   filtering happens only inside that bounded scope.
 - Apply is authorized only for the exact allowlist captured by a physical
   read-only dry-run and confirmed unchanged by a second read-only selection.
+- All eligibility and cooldown decisions within one run use one reference
+  instant captured after the maintenance lock is acquired. Cooldown expiry
+  caused only by elapsed wall time cannot alter the captured allowlist.
+- The captured candidate tuple is immutable and bound to a deterministic
+  drawing/event/result fingerprint. Real local identity or result mutation
+  between selection and apply remains fail-closed selection drift.
 - The default attempt cap is eight drawings, force is disabled, and persistent
   cooldown/quarantine remains authoritative.
 - An empty selection is `DEFERRED/NOOP` with zero network and no backup.

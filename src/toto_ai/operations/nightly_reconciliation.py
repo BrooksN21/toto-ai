@@ -29,7 +29,7 @@ from typing import Any, Literal
 from sqlalchemy import select
 
 from toto_ai.analytics.data_health import audit_data_health
-from toto_ai.db.models import Drawing
+from toto_ai.db.models import Drawing, Event
 from toto_ai.db.session import get_session_factory, init_db, open_readonly_db
 from toto_ai.operations.reconciliation import (
     ReconciliationConfig,
@@ -401,11 +401,12 @@ def run_nightly_reconciliation(
                 config.db_path,
                 limit=config.recent_finished,
             )
+            eligibility_reference = _aware(now())
             selection = _eligible_numbers(
                 config,
                 scope_numbers=scope_numbers,
                 force=force_for_test,
-                now=now,
+                reference_at=eligibility_reference,
             )
             captured = selection[: config.max_network_attempts]
             if not captured:
@@ -424,15 +425,26 @@ def run_nightly_reconciliation(
                     network_attempts=0,
                     stale_lock_recovered=lease.stale_recovered,
                 )
+            selection_fingerprint = _selection_identity_fingerprint(
+                config.db_path,
+                selection,
+            )
             if before_apply is not None:
                 before_apply()
             confirmed = _eligible_numbers(
                 config,
                 scope_numbers=scope_numbers,
                 force=force_for_test,
-                now=now,
+                reference_at=eligibility_reference,
             )
-            if confirmed != selection:
+            confirmed_fingerprint = _selection_identity_fingerprint(
+                config.db_path,
+                confirmed,
+            )
+            if (
+                confirmed != selection
+                or confirmed_fingerprint != selection_fingerprint
+            ):
                 return _finish(
                     config,
                     run_id=run_id,
@@ -489,6 +501,7 @@ def run_nightly_reconciliation(
                         ),
                         drawing_numbers=(number,),
                         force=force_for_test,
+                        eligibility_at=eligibility_reference,
                         now=now,
                         sleep=sleep,
                     )
@@ -723,7 +736,7 @@ def _eligible_numbers(
     *,
     scope_numbers: tuple[int, ...],
     force: bool,
-    now: Callable[[], datetime],
+    reference_at: datetime,
 ) -> tuple[int, ...]:
     if not scope_numbers:
         return ()
@@ -741,7 +754,8 @@ def _eligible_numbers(
             ),
             drawing_numbers=scope_numbers,
             force=force,
-            now=now,
+            eligibility_at=reference_at,
+            now=lambda: reference_at,
         )
     finally:
         engine.dispose()
@@ -750,6 +764,68 @@ def _eligible_numbers(
         for item in report.items
         if item.status in {"would_reconcile", "would_defer_batch"}
     )
+
+
+def _selection_identity_fingerprint(
+    db_path: Path,
+    numbers: tuple[int, ...],
+) -> str:
+    """Hash immutable local drawing/event/result identity for one selection."""
+    engine = open_readonly_db(db_path)
+    try:
+        factory = get_session_factory(engine)
+        with factory() as session:
+            drawings = session.scalars(
+                select(Drawing).where(Drawing.number.in_(numbers))
+            ).all()
+            if len(drawings) != len(numbers):
+                raise ValueError("captured drawing identity is missing or ambiguous")
+            by_number = {drawing.number: drawing for drawing in drawings}
+            if set(by_number) != set(numbers):
+                raise ValueError("captured drawing identity is missing or ambiguous")
+            drawing_ids = tuple(by_number[number].id for number in numbers)
+            events = session.scalars(
+                select(Event)
+                .where(Event.drawing_id.in_(drawing_ids))
+                .order_by(Event.drawing_id, Event.event_order, Event.id)
+            ).all()
+        payload = {
+            "numbers": list(numbers),
+            "drawings": [
+                {
+                    "id": drawing.id,
+                    "number": drawing.number,
+                    "name": drawing.name,
+                    "status": drawing.status,
+                    "started_at": drawing.started_at,
+                    "ended_at": drawing.ended_at,
+                }
+                for drawing in (by_number[number] for number in numbers)
+            ],
+            "events": [
+                {
+                    "id": event.id,
+                    "drawing_id": event.drawing_id,
+                    "event_order": event.event_order,
+                    "name": event.name,
+                    "championship": event.championship,
+                    "sport": event.sport,
+                    "result": event.result,
+                    "result_status": event.result_status,
+                    "score": event.score,
+                }
+                for event in events
+            ],
+        }
+    finally:
+        engine.dispose()
+    raw = json.dumps(
+        payload,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
 
 
 class _NoNetworkClient:

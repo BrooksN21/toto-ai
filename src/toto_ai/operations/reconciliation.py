@@ -268,6 +268,7 @@ def reconcile_finished_drawings(
     last: int | None = None,
     drawing_numbers: tuple[int, ...] | None = None,
     force: bool = False,
+    eligibility_at: datetime | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
     sleep: Callable[[float], None] = time.sleep,
 ) -> ReconciliationReport:
@@ -283,7 +284,7 @@ def reconcile_finished_drawings(
         batch_size=None,
         drawing_numbers=drawing_numbers,
     )
-    observed_at = _aware(now())
+    observed_at = _aware(now() if eligibility_at is None else eligibility_at)
     persisted = _load_persisted_states(session_factory, targets)
     eligible_targets: list[ReconciliationTarget] = []
     items: list[ReconciliationItem] = []
