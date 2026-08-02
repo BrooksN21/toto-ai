@@ -557,7 +557,7 @@ def test_happy_final_package_is_the_only_bet_ready_publication(tmp_path: Path):
     assert status["package_path"] == str(result.package_path)
     assert status["package_sha256"] == result.package_sha256
     assert status["selected_snapshot"] == "final"
-    assert status["published_at"] == "2030-01-02T11:48:00Z"
+    assert status["published_at"] == "2030-01-02T11:50:00Z"
     assert tuple(context.phase for context in calls) == (
         "preflight",
         "fallback",
@@ -634,7 +634,7 @@ def test_deadline_crossed_during_durable_archive_is_zero_cost_no_bet(
 
     assert result.outcome == "no-bet"
     assert result.decision == "NO BET"
-    assert "durable archive completed after T-12" in result.reason
+    assert "durable archive completed after T-10" in result.reason
     assert not (result.run_dir / ".bet-ready").exists()
     assert result.marker_path == result.run_dir / ".no-bet"
     assert result.marker_path.is_file()
@@ -649,7 +649,7 @@ def test_deadline_crossed_during_durable_archive_is_zero_cost_no_bet(
     engine.dispose()
 
 
-def test_bet_ready_marker_crossing_hard_t12_becomes_zero_cost_no_bet(
+def test_bet_ready_marker_crossing_hard_t10_becomes_zero_cost_no_bet(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ):
@@ -781,7 +781,7 @@ def test_final_completion_after_t_minus_10_is_never_bet_ready(tmp_path: Path):
             return SchedulerPhaseResult.completed()
         if context.phase == "fallback":
             return _play(FALLBACK_PACKAGE, context)
-        clock.sleep(8 * 60 + 1)
+        clock.sleep(10 * 60 + 1)
         return _play(FINAL_PACKAGE, context)
 
     result = _execute(plan, run, clock=clock)
@@ -1046,7 +1046,7 @@ def test_exact_offsets_and_phase_start_times_are_ended_at_anchored(tmp_path: Pat
     assert plan.fallback_at == ENDED_AT - timedelta(minutes=30)
     assert plan.final_at == ENDED_AT - timedelta(minutes=20)
     assert plan.retry_at == ENDED_AT - timedelta(minutes=16)
-    assert plan.freeze_at == ENDED_AT - timedelta(minutes=12)
+    assert plan.freeze_at == ENDED_AT - timedelta(minutes=10)
     calls: list[SchedulerPhaseContext] = []
 
     result = _execute(plan, _happy_runner(calls))
@@ -1057,10 +1057,10 @@ def test_exact_offsets_and_phase_start_times_are_ended_at_anchored(tmp_path: Pat
         plan.final_at,
     ]
     phases = _status(result)["phase_timestamps"]
-    assert phases["freeze"]["started_at"] == "2030-01-02T11:48:00Z"
+    assert phases["freeze"]["started_at"] == "2030-01-02T11:50:00Z"
     assert _status(result)["deadlines"] == {
         "ended_at": "2030-01-02T12:00:00Z",
-        "t_minus_12": "2030-01-02T11:48:00Z",
+        "t_minus_10": "2030-01-02T11:50:00Z",
         "t_minus_16": "2030-01-02T11:44:00Z",
         "t_minus_20": "2030-01-02T11:40:00Z",
         "t_minus_30": "2030-01-02T11:30:00Z",

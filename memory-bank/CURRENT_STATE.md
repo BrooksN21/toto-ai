@@ -1,5 +1,36 @@
 # Current State
 
+## Scheduler schema v5 and T−10 contract (2026-07-31)
+
+`TOTO-SCHEDULER-SCHEMA-V5-TMINUS10` completes the earlier timezone/T−10 WIP
+without installing automation or touching the main database:
+
+- `morning-dispatch --expected-deadline` accepts timezone-aware ISO-8601
+  values with `Z` or explicit offsets and normalizes the exact instant to UTC;
+- naive and malformed deadline values fail closed before dispatch;
+- identity comparison remains exact after UTC normalization;
+- the evening publication deadline is uniformly T−10, represented by
+  `t_minus_10` in plans/status and by an 18:50 Moscow launchd trigger for a
+  19:00 Moscow drawing deadline;
+- generated launchd calendar fields are rendered explicitly in
+  `Europe/Moscow`, independent of the caller's local timezone;
+- every new plan and status is schema v5; the LaunchAgent label is versioned
+  v5;
+- the plan ID binds schema v5, `publication_lead_minutes = 10`, and the exact
+  `45/30/20/16/10` trigger vector, so idempotent reuse cannot confuse T−12 and
+  T−10 artifacts;
+- schema-v4/T−12 plans fail closed with an explicit `regenerate schema v5`
+  diagnostic before execution or artifact reuse; they are never silently
+  migrated;
+- automatic betting remains absent and the passive retry hard stop remains
+  T−60.
+
+Drawing 4961 regression identity is `2026-07-31T16:00:00Z`; equivalent
+`+00:00` and `+03:00` representations resolve to that same UTC instant.
+Verification: the expanded relevant scheduler/CLI/operational set is
+`183 passed`; repository-wide Ruff and `git diff --check` pass. No main
+database, launchd, package, or bet path was exercised.
+
 ## Drawing-4961 preflight retry remediation (2026-07-31)
 
 The non-deployed passive retry slice is complete and has a stable
@@ -473,10 +504,12 @@ plan was generated, activation was not requested, and no package or bet marker
 was created. The event-level readiness evidence retains all 14 matched
 candidates plus the explicit source-missing event for diagnosis.
 
-A separate network-free schema-v4 simulation verified all five generated
-launchd triggers (T−45/T−30/T−20/T−16/T−12), package/archive/status/marker
-publication through hard T−12, bank 4980 and stake 30. This is deterministic
-scheduler evidence, not a real PLAY result and not a 15/15 live drill.
+A historical network-free schema-v4 simulation verified all five generated
+launchd triggers (T−45/T−30/T−20/T−16/T−10), package/archive/status/marker
+publication through hard T−10, bank 4980 and stake 30. This is deterministic
+scheduler evidence, not a real PLAY result and not a 15/15 live drill. Schema
+v4 is now explicitly stale; these artifacts must be regenerated as v5 and
+cannot be reused or executed.
 
 Direct verification after combining scheduler and resolver changes:
 `172 passed` for the critical scheduler/resolver set, `1443 passed` for the
@@ -512,12 +545,12 @@ post-preparation time rather than the phase start.
 `FinalInputSnapshot.captured_at` is now sampled immediately after the direct
 detail response returns. Final subprocess timeouts are recomputed from the
 current clock on every attempt and end at
-`T−12 − publication_reserve_seconds`. Final calculation completion and every
+`T−10 − publication_reserve_seconds`. Final calculation completion and every
 retry admission use that same actionable cutoff. Package writing,
 archive-manifest writing, durable archive, recovery, status, and `.bet-ready`
-marker creation may use the reserved interval and enforce the hard T−12
-boundary instead. Recovery at or before hard T−12 may finish publication;
-publication/recovery after hard T−12 removes `package.csv` and
+marker creation may use the reserved interval and enforce the hard T−10
+boundary instead. Recovery at or before hard T−10 may finish publication;
+publication/recovery after hard T−10 removes `package.csv` and
 `package-archive.json` and produces terminal zero-cost `NO BET`. The durable
 audit row and immutable final input may remain non-actionable evidence.
 
@@ -547,9 +580,9 @@ because their text contains `path` or `config`. Typed final-input, manifest,
 package, identity, and hash integrity errors terminate final fail-closed.
 
 Production `scheduler-execute --run-id` is now explicitly rejected for
-schema-v4; `--run-id` remains available for simulation only. Legacy schema-v3
+schema-v5; `--run-id` remains available for simulation only. Legacy schema-v3
 loading preserves its declared `project_root`. Operator-facing scheduler
-messages consistently name the real T−12 cutoff. Generated `reports/` is
+messages consistently name the real T−10 cutoff. Generated `reports/` is
 blanket-ignored by Git. The IL/UZ country mappings, reviewed Uzbek aliases, and
 hard women/male/reserve/youth identity guard remain unchanged.
 
@@ -580,8 +613,8 @@ Canonical computed `NO BET` output now has no coupons, cost, or derived-brief
 placeholders. Immutable exact final-input snapshots bind the actual normalized
 final probabilities and source payload/provenance and reject post-capture
 tampering. Captured payloads can be persisted without a second detail fetch.
-Scheduler plan schema v4 and generated launchd candidates use T−45, T−30,
-T−20, T−16, and T−12, with explicit bounded runtime/retry budgets. Normal
+Scheduler plan schema v5 and generated launchd candidates use T−45, T−30,
+T−20, T−16, and T−10, with explicit bounded runtime/retry budgets. Normal
 execution is a locked short-lived tick over hash-chained persistent state;
 warmup failure does not block final, transient final work has bounded backoff,
 orphan attempts are abandoned, duplicate/concurrent ticks are idempotent, and
@@ -606,8 +639,8 @@ upload, or bet was produced by those verification runs.
 
 The recurring morning candidate is now drawing-neutral. `morning-dispatch`
 selects one fresh current drawing, pins its exact number/internal ID/deadline/
-fingerprint, runs 15/15 preparation, and idempotently creates a schema-v4
-evening plan only while the full T−45/T−30/T−20/T−16/T−12 schedule remains
+fingerprint, runs 15/15 preparation, and idempotently creates a schema-v5
+evening plan only while the full T−45/T−30/T−20/T−16/T−10 schedule remains
 possible. A fixed `--expected-drawing-number` is no longer embedded in the
 cross-day recurring job. Locks, persistent state, deferred retries, ambiguity
 rejection, timing-span policy, and late-dispatch rejection are covered.
@@ -3013,7 +3046,7 @@ Implemented locally for `TOTO-PREFLIGHT-ESCALATION-AND-FALLBACK-V1`:
 - fingerprint-bound ACTION REQUIRED JSON/Markdown, immutable attempts,
   provider/candidate diagnostics, optional notification command, and strict
   reviewed-schedule evidence queue;
-- passive retry plan at T−360/T−240/T−180/T−120/T−90, hard stop before T−60,
+- passive retry plan at T−360/T−240/T−180/T−100/T−90, hard stop before T−60,
   exact drawing/deadline/fingerprint drift guard, no busy sleep, no activation;
 - same-fingerprint-only attention resolution after atomic READY 15/15;
 - read-only `preflight-status --open`;

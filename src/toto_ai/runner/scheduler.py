@@ -1,8 +1,8 @@
-"""Tracked T-45/T-30/T-20/T-16/T-12 production package scheduler.
+"""Tracked T-45/T-30/T-20/T-16/T-10 production package scheduler.
 
 The scheduler deliberately separates a process completing from an actionable
 package becoming ``BET READY``. Package-producing work happens in immutable
-phase scopes; the T-12 cutoff verifies the selected bytes and every pinned
+phase scopes; the T-10 cutoff verifies the selected bytes and every pinned
 scheduler input before an exclusive publication and marker write.
 """
 
@@ -60,10 +60,11 @@ from toto_ai.runner.scheduler_state import (
     transition,
 )
 
-SCHEDULER_SCHEMA_VERSION = 4
+SCHEDULER_SCHEMA_VERSION = 5
 LEGACY_SCHEDULER_SCHEMA_VERSION = 1
 LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION = 2
 LEGACY_ACTIONABLE_SCHEMA_VERSION = 3
+STALE_T12_SCHEDULER_SCHEMA_VERSION = 4
 RUNNER_MANIFEST_SCHEMA_VERSION = 5
 SCHEDULER_PLAN_FILENAME = "scheduler-plan.json"
 SCHEDULER_WRAPPER_FILENAME = "run-scheduler.sh"
@@ -76,6 +77,8 @@ DEFAULT_MINIMUM_GROSS_EV = EVConfig(
     mode="playable",
 ).min_gross_ev
 DEFAULT_PACKAGE_SAFETY_CONFIG = PackageSafetyConfig()
+PUBLICATION_LEAD_MINUTES = 10
+SCHEDULER_TRIGGER_OFFSETS_MINUTES = (45, 30, 20, 16, 10)
 
 SchedulerPhase = Literal["preflight", "fallback", "final", "freeze"]
 PackagePhase = Literal["fallback", "final"]
@@ -116,7 +119,7 @@ class SchedulerPhaseError(SchedulerError):
 
 
 class SchedulerPublicationDeadlineError(SchedulerPhaseError):
-    """Publication crossed the hard T-12 boundary without integrity loss."""
+    """Publication crossed the hard T-10 boundary without integrity loss."""
 
 
 class SchedulerTransientError(SchedulerPhaseError):
@@ -380,11 +383,11 @@ class SchedulerPlan:
 
     @property
     def publish_deadline(self) -> datetime:
-        return self.ended_at - timedelta(minutes=12)
+        return self.ended_at - timedelta(minutes=PUBLICATION_LEAD_MINUTES)
 
     @property
     def actionable_publication_deadline(self) -> datetime:
-        """Latest instant that still preserves the configured T-12 reserve."""
+        """Latest instant that still preserves the configured T-10 reserve."""
         return self.publish_deadline - timedelta(
             seconds=self.publication_reserve_seconds
         )
@@ -402,7 +405,7 @@ class SchedulerPlan:
             "t_minus_30": self.fallback_at,
             "t_minus_20": self.final_at,
             "t_minus_16": self.retry_at,
-            "t_minus_12": self.publish_deadline,
+            "t_minus_10": self.publish_deadline,
         }
 
     @property
@@ -449,6 +452,10 @@ class SchedulerPlan:
                 "publication_reserve_seconds": self.publication_reserve_seconds,
                 "max_final_attempts": self.max_final_attempts,
                 "transient_backoff_seconds": list(self.transient_backoff_seconds),
+                "publication_lead_minutes": PUBLICATION_LEAD_MINUTES,
+                "trigger_offsets_minutes": list(
+                    SCHEDULER_TRIGGER_OFFSETS_MINUTES
+                ),
             },
             "paths": {
                 "project_root": str(self.project_root),
@@ -796,6 +803,11 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         "scheduler plan",
     )
     schema_version = payload["schema_version"]
+    if schema_version == STALE_T12_SCHEDULER_SCHEMA_VERSION:
+        raise ValueError(
+            "stale scheduler schema v4 uses T-12 trigger semantics; "
+            "regenerate schema v5"
+        )
     if type(schema_version) is not int or schema_version not in {
         LEGACY_SCHEDULER_SCHEMA_VERSION,
         LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
@@ -830,6 +842,10 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         "max_final_attempts",
         "transient_backoff_seconds",
     }
+    trigger_config_keys = {
+        "publication_lead_minutes",
+        "trigger_offsets_minutes",
+    }
     raw_config = payload["config"]
     if not isinstance(raw_config, Mapping):
         raise ValueError("config must be a JSON object")
@@ -838,6 +854,8 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         raise ValueError("config scheduler tick fields must be complete")
     if present_tick_keys:
         base_config_keys |= tick_config_keys
+    if schema_version == SCHEDULER_SCHEMA_VERSION:
+        base_config_keys |= trigger_config_keys
     safety_config_keys = {
         "package_near_fixed_share",
         "package_low_probability_threshold",
@@ -851,6 +869,15 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         base_config_keys | present_safety_keys,
         "config",
     )
+    if schema_version == SCHEDULER_SCHEMA_VERSION and (
+        config["publication_lead_minutes"] != PUBLICATION_LEAD_MINUTES
+        or config["trigger_offsets_minutes"]
+        != list(SCHEDULER_TRIGGER_OFFSETS_MINUTES)
+    ):
+        raise ValueError(
+            "scheduler trigger semantics do not match schema v5; "
+            "regenerate schema v5"
+        )
     raw_paths = payload["paths"]
     if not isinstance(raw_paths, Mapping):
         raise ValueError("paths must be a JSON object")
@@ -986,6 +1013,7 @@ def prepare_scheduler_artifacts(
     plan_path = output_dir / SCHEDULER_PLAN_FILENAME
     wrapper_path = output_dir / SCHEDULER_WRAPPER_FILENAME
     launch_agent_path = output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME
+    _reject_stale_t12_scheduler_artifact(plan_path)
     created: list[Path] = []
     try:
         _write_exclusive_atomic(
@@ -1048,6 +1076,7 @@ def verify_scheduler_artifacts(
         wrapper_path=output_dir / SCHEDULER_WRAPPER_FILENAME,
         launch_agent_path=output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME,
     )
+    _reject_stale_t12_scheduler_artifact(artifacts.plan_path)
     expected = {
         artifacts.plan_path: scheduler_plan_json(plan).encode("utf-8"),
         artifacts.wrapper_path: _render_scheduler_wrapper(
@@ -1226,7 +1255,7 @@ def execute_scheduler_plan(
 
     try:
         if _read_now(now) > plan.freeze_at:
-            phase_absences.append("execution began after T-12; no work recalculated")
+            phase_absences.append("execution began after T-10; no work recalculated")
         else:
             _wait_until(plan.preflight_at, now=now, sleep=sleep)
             preflight_started = _read_now(now)
@@ -1474,7 +1503,7 @@ def execute_scheduler_tick(
         if observed >= plan.publish_deadline:
             return _finalize_tick_no_bet(
                 plan, state=state, state_path=state_path, observed_at=observed,
-                reason="T-12 publication deadline was missed",
+                reason="T-10 publication deadline was missed",
             )
 
         phase: str | None = None
@@ -1586,7 +1615,7 @@ def execute_scheduler_tick(
                     observed_at=completed,
                     reason=(
                         "final work completed inside the publication reserve "
-                        "before T-12"
+                        "before T-10"
                     ),
                 )
             if phase != "final":
@@ -1783,7 +1812,7 @@ def _recover_atomic_publication(
             state_path=state_path,
             observed_at=observed_at,
             reason=(
-                "archive recovered after the T-12 publication deadline; "
+                "archive recovered after the T-10 publication deadline; "
                 "publication suppressed"
             ),
         )
@@ -1812,7 +1841,7 @@ def _recover_atomic_publication(
     terminal = {
         "outcome": "bet-ready",
         "decision": "PLAY",
-        "reason": "verified archive recovered no later than T-12",
+        "reason": "verified archive recovered no later than T-10",
         "package_path": package_path,
         "package_sha256": archived.source_bytes_sha256,
         "effective_bank": plan.requested_bank,
@@ -2209,7 +2238,7 @@ class CommandSchedulerPhaseRunner:
         ).total_seconds()
         if timeout_seconds <= 0:
             raise SchedulerTransientError(
-                "run-drawing cannot preserve the publication reserve before T-12",
+                "run-drawing cannot preserve the publication reserve before T-10",
                 category="run_drawing_timeout",
             )
         try:
@@ -2224,7 +2253,7 @@ class CommandSchedulerPhaseRunner:
             )
         except subprocess.TimeoutExpired as error:
             raise SchedulerTransientError(
-                "run-drawing timed out before the T-12 cutoff",
+                "run-drawing timed out before the T-10 cutoff",
                 category="run_drawing_timeout",
             ) from error
         if completed.returncode != 0:
@@ -2459,7 +2488,7 @@ def _execute_package_phase(
                 phase,
                 finished_at=completed_at,
                 status="late",
-                reason="package completed after T-12 and was not captured",
+                reason="package completed after T-10 and was not captured",
             )
             _write_status_atomic(plan.output_dir, status_path, status)
             return None
@@ -2635,7 +2664,7 @@ def _freeze_and_publish(
         )
         return _no_package_terminal(phase_errors, phase_absences)
     if observed_at > publication_deadline:
-        phase_absences.append("T-12 publication deadline was missed")
+        phase_absences.append("T-10 publication deadline was missed")
         return _no_package_terminal(phase_errors, phase_absences)
 
     try:
@@ -2722,16 +2751,16 @@ def _freeze_and_publish(
         )
         if publication_override_sha256 != snapshot.override_sha256:
             raise SchedulerPhaseError(
-                "timing override hash changed during T-12 publication"
+                "timing override hash changed during T-10 publication"
             )
         if publication_final_inputs_sha256 != snapshot.final_inputs_sha256:
             raise SchedulerPhaseError(
-                "final input hash changed during T-12 publication"
+                "final input hash changed during T-10 publication"
             )
         published_at = _read_now(now)
         if published_at > publication_deadline:
             raise SchedulerPublicationDeadlineError(
-                "package publication completed after T-12"
+                "package publication completed after T-10"
             )
         canonical_package_sha256 = hashlib.sha256(
             ",".join(validated_package.coupons).encode("utf-8")
@@ -2772,7 +2801,7 @@ def _freeze_and_publish(
         )
         if _read_now(now) > publication_deadline:
             raise SchedulerPublicationDeadlineError(
-                "archive manifest completed after T-12"
+                "archive manifest completed after T-10"
             )
         archive_engine = init_db(plan.db)
         try:
@@ -2786,7 +2815,7 @@ def _freeze_and_publish(
             archive_engine.dispose()
         if archive_completed_at > publication_deadline:
             raise SchedulerPublicationDeadlineError(
-                "durable archive completed after T-12"
+                "durable archive completed after T-10"
             )
         if (
             archived.drawing_id != plan.drawing_id
@@ -2815,7 +2844,7 @@ def _freeze_and_publish(
         return {
             "outcome": "bet-ready",
             "decision": "PLAY",
-            "reason": "final package verified and published no later than T-12",
+            "reason": "final package verified and published no later than T-10",
             "package_path": package_path,
             "package_sha256": snapshot.sha256,
             "effective_bank": snapshot.effective_bank,
@@ -2877,7 +2906,7 @@ def _no_package_terminal(
         outcome = "no-bet"
         decision = "NO BET"
         reason = (
-            "no valid authoritative final PLAY package at T-12"
+            "no valid authoritative final PLAY package at T-10"
             + (": " + "; ".join(phase_absences) if phase_absences else "")
         )
     return {
@@ -2971,7 +3000,7 @@ def _finalize_status(
             try:
                 if _read_now(now) > publication_deadline:
                     raise SchedulerPublicationDeadlineError(
-                        "bet-ready marker completed after T-12"
+                        "bet-ready marker completed after T-10"
                     )
                 _validate_terminal_package(plan, run_dir, terminal)
                 _validate_status_file(plan, status_path, status)
@@ -2991,7 +3020,7 @@ def _finalize_status(
             failure_outcome = "no-bet" if deadline_missed else "failed"
             failure_decision = "NO BET" if deadline_missed else "FAILED"
             failure_reason = (
-                f"terminal marker publication missed T-12: {_safe_error(error)}"
+                f"terminal marker publication missed T-10: {_safe_error(error)}"
                 if deadline_missed
                 else f"terminal marker publication failed: {_safe_error(error)}"
             )
@@ -4864,17 +4893,20 @@ def _render_launch_agent(
         plan.publish_deadline,
     )
     payload = {
-        "Label": f"com.totoai.production-scheduler.{plan.plan_id}",
+        "Label": (
+            "com.totoai.production-scheduler."
+            f"v{SCHEDULER_SCHEMA_VERSION}.{plan.plan_id}"
+        ),
         "ProgramArguments": [str(wrapper_path)],
         "WorkingDirectory": str(plan.project_root),
         "RunAtLoad": False,
         "StartCalendarInterval": [
             {
-                "Year": local_start.astimezone().year,
-                "Month": local_start.astimezone().month,
-                "Day": local_start.astimezone().day,
-                "Hour": local_start.astimezone().hour,
-                "Minute": local_start.astimezone().minute,
+                "Year": local_start.astimezone(_MOSCOW).year,
+                "Month": local_start.astimezone(_MOSCOW).month,
+                "Day": local_start.astimezone(_MOSCOW).day,
+                "Hour": local_start.astimezone(_MOSCOW).hour,
+                "Minute": local_start.astimezone(_MOSCOW).minute,
             }
             for local_start in local_starts
         ],
@@ -4882,6 +4914,31 @@ def _render_launch_agent(
         "StandardErrorPath": str(logs_dir / "scheduler.stderr.log"),
     }
     return plistlib.dumps(payload, fmt=plistlib.FMT_XML, sort_keys=True)
+
+
+def _reject_stale_t12_scheduler_artifact(plan_path: Path) -> None:
+    """Reject a persisted schema-v4/T-12 plan before reuse or overwrite."""
+
+    if not _path_exists(plan_path):
+        return
+    try:
+        _require_regular_file(
+            plan_path,
+            name="scheduler plan",
+            reject_symlink=True,
+        )
+        payload = _load_strict_json(plan_path, name="scheduler plan")
+    except (OSError, SchedulerError, UnicodeDecodeError, ValueError):
+        return
+    if (
+        isinstance(payload, Mapping)
+        and payload.get("schema_version") == STALE_T12_SCHEDULER_SCHEMA_VERSION
+    ):
+        raise SchedulerIntegrityError(
+            "stale scheduler schema v4 uses T-12 trigger semantics; "
+            "regenerate schema v5",
+            category="stale_scheduler_schema",
+        )
 
 
 def _render_morning_preanalysis_wrapper(

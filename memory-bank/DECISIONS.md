@@ -1,5 +1,25 @@
 # Decisions
 
+## Deadline parsing and publication timing (2026-07-31)
+
+- CLI identity deadlines are strings at the Click/Typer boundary and are
+  parsed by the project as strict timezone-aware ISO-8601. This avoids
+  Click's timezone-incompatible datetime parser.
+- `Z` and explicit offsets preserve exact-instant semantics and normalize to
+  UTC before `MorningExpectedIdentity` comparison. Naive or malformed values
+  are rejected; identity mismatch remains terminal.
+- `PUBLICATION_LEAD_MINUTES = 10` is the single production publication offset.
+  Plans/status use `t_minus_10`, and launchd renders the corresponding
+  `Europe/Moscow` wall-clock trigger deterministically.
+- This timing contract is scheduler schema v5. Its plan identity includes the
+  schema, ten-minute lead, and exact `45/30/20/16/10` trigger offsets;
+  generated LaunchAgent labels and status are v5-bound.
+- Scheduler schema v4 is permanently the stale T−12 contract. It must fail
+  closed with a regenerate-v5 diagnostic and must not be loaded as T−10,
+  migrated, reused, or executed.
+- This timing correction does not authorize automatic betting, does not alter
+  the passive preflight T−60 hard stop, and does not install launchd jobs.
+
 ## Passive preflight retry launchd boundary
 
 - A persisted retry plan may generate only a drawing-ID/fingerprint-specific
@@ -216,18 +236,18 @@
 - `publication_reserve_seconds` defines the actionable calculation cutoff, not
   a second publication deadline. Final calculation, each recomputed subprocess
   timeout, and every retry admission must stop no later than
-  `T−12 − publication_reserve_seconds`.
-- The interval after the actionable cutoff through hard T−12 is reserved only
+  `T−10 − publication_reserve_seconds`.
+- The interval after the actionable cutoff through hard T−10 is reserved only
   for package writing, archive-manifest writing, durable archive, recovery,
   status, and `.bet-ready` marker work. Those steps use
   `plan.publish_deadline`/`plan.freeze_at`, not the actionable cutoff.
 - A recoverable archive without a marker may complete publication during that
-  reserve, including exactly at hard T−12. After hard T−12 it becomes terminal
+  reserve, including exactly at hard T−10. After hard T−10 it becomes terminal
   zero-cost `NO BET`; stale `package.csv` and `package-archive.json` are
   removed so they cannot be mistaken for uploadable coupons. Immutable
   final-input and durable audit evidence may remain.
-- Simulation-only legacy long-running execution retains its historical T−12
-  fixture semantics; production schema-v4 ticks enforce the reserve boundary.
+- Simulation-only legacy long-running execution retains its historical T−10
+  fixture semantics; production schema-v5 ticks enforce the reserve boundary.
 
 ## 2026-07-28: scheduler failures and morning artifacts are typed evidence
 
@@ -248,7 +268,7 @@
 - Morning state is keyed by drawing ID and deadline, not by the date of a
   dispatcher invocation. One drawing spanning two allowed Moscow dates owns
   one plan.
-- Production schema-v4 execution is tick-only. `--run-id` is simulation-only;
+- Production schema-v5 execution is tick-only. `--run-id` is simulation-only;
   the incompatible legacy long-running production mode is rejected.
 - Legacy schema-v3 plans preserve their declared `project_root`.
 - Generated `reports/` are ignored as one directory; no report is an
@@ -275,8 +295,8 @@
 - A computed or uncomputed `NO BET` is always coupon-free, zero-cost, and has
   an empty derived brief. Empty per-event placeholder strings are not a valid
   zero package.
-- The hard manual-publication cutoff is T−12. The configured production phase
-  times are T−45, T−30, T−20, T−16, and T−12.
+- The hard manual-publication cutoff is T−10. The configured production phase
+  times are T−45, T−30, T−20, T−16, and T−10.
 - Scheduler state is persistent evidence, while the process lock is only a
   concurrency primitive. A recovered `running` attempt is marked abandoned
   and a retry receives a new immutable attempt directory.
@@ -295,7 +315,7 @@
   may retry; ambiguous/no drawing, identity conflicts, ineligible timing spans,
   and dispatch after T−45 do not create a partial evening schedule.
 - Scheduler artifact generation never implies installation. The generic
-  dispatcher and schema-v4 evening scheduler require an activation-disabled
+  dispatcher and schema-v5 evening scheduler require an activation-disabled
   live drill before manual installation.
 - The five known obsolete LaunchAgents were explicitly removed. Cleanup must
   remain label-specific; wildcard deletion of unknown `com.totoai.*` jobs is

@@ -122,6 +122,8 @@ def test_legacy_schema_v1_plan_loads_with_inferred_absolute_project_root(
     payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
     payload["schema_version"] = 1
     payload["paths"].pop("project_root")
+    payload["config"].pop("publication_lead_minutes")
+    payload["config"].pop("trigger_offsets_minutes")
     semantic = {
         key: payload[key]
         for key in ("schema_version", "target", "config", "paths")
@@ -152,6 +154,8 @@ def test_genuine_schema_v2_plan_hash_loads_without_new_safety_fields(
     artifacts = prepare_scheduler_artifacts(_plan(tmp_path, env_file))
     payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
     payload["schema_version"] = 2
+    payload["config"].pop("publication_lead_minutes")
+    payload["config"].pop("trigger_offsets_minutes")
     for key in (
         "package_near_fixed_share",
         "package_low_probability_threshold",
@@ -196,6 +200,8 @@ def test_schema_v3_plan_preserves_declared_project_root(tmp_path: Path):
     artifacts = prepare_scheduler_artifacts(plan)
     payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
     payload["schema_version"] = 3
+    payload["config"].pop("publication_lead_minutes")
+    payload["config"].pop("trigger_offsets_minutes")
     semantic = {
         key: payload[key]
         for key in ("schema_version", "target", "config", "paths")

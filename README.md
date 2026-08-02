@@ -118,10 +118,15 @@ without installing either one. When `--env-file` is supplied, it must be a
 regular non-symlink file owned by the current user with permissions no broader
 than `0600`. The generated wrapper repeats those checks at runtime, requires a
 non-empty `API_SPORTS_KEY`, uses `umask 077`, and never prints or embeds the
-secret. The plist contains only the wrapper path. Current schema-v4 candidates
-contain five exact local triggers at T−45, T−30, T−20, T−16, and the T−12
+secret. The plist contains only the wrapper path. Current schema-v5 candidates
+contain five exact local triggers at T−45, T−30, T−20, T−16, and the T−10
 publication cutoff. Generation still does not install or load the LaunchAgent,
 and no command uploads or places a bet.
+
+Schema v5 binds the trigger offsets and ten-minute publication lead into the
+plan identity and versioned LaunchAgent label. Existing schema-v4/T−12 plans
+are stale: execution and artifact reuse fail closed with an explicit request
+to regenerate schema v5; they are never silently migrated.
 
 ```bash
 .venv/bin/python -m toto_ai.cli scheduler-plan \
@@ -143,7 +148,7 @@ existing default of `1.0`.
 wrapper and plist under `reports/rehearsal`. The recurring artifact contains
 no drawing identity. At each configured time it resolves exactly one fresh
 current drawing, prepares it, and—only when it is ready 15/15, playable, and
-still before T−45—creates one exact schema-v4 evening scheduler pinned to its
+still before T−45—creates one exact schema-v5 evening scheduler pinned to its
 visible number, internal ID, deadline, and fingerprint. Repeated morning runs
 reuse the same per-drawing plan, including when one allowed two-day drawing is
 still active the next morning; unresolved preparation may retry. Generated
@@ -179,7 +184,7 @@ creating an actionable evening job.
 When preparation is unresolved, `morning-dispatch` writes a fingerprint-bound
 `ACTION REQUIRED` report, immutable attempt records, a strict reviewed-
 schedule evidence queue where applicable, and a passive retry plan at
-T−360/T−240/T−180/T−120/T−90 with a hard stop before T−60. Retry commands are
+T−360/T−240/T−180/T−100/T−90 with a hard stop before T−60. Retry commands are
 bound to the exact drawing ID, visible number, deadline, and fingerprint and
 abort on drift. They never contain `--activate`, never sleep in-process, and
 cannot create a package or bet marker. Attention clears only after the same
@@ -217,7 +222,7 @@ That paragraph records the historical installed schedule only. The current
 generator defaults to 08:00/10:30/12:00, but this feature does not install or
 modify LaunchAgents.
 
-Production schema-v4 execution is always a short-lived idempotent tick.
+Production schema-v5 execution is always a short-lived idempotent tick.
 `scheduler-execute --run-id` is supported only with `--simulate`; production
 use is rejected rather than entering the incompatible legacy long-running
 path.

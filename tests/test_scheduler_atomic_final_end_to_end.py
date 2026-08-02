@@ -275,7 +275,7 @@ def test_final_completion_inside_publication_reserve_is_no_bet(tmp_path):
     assert not any(plan.output_dir.rglob(".bet-ready"))
 
 
-def test_final_completed_by_cutoff_publishes_inside_reserve_by_hard_t12(
+def test_final_completed_by_cutoff_publishes_inside_reserve_by_hard_t10(
     tmp_path,
     monkeypatch,
 ):
@@ -366,7 +366,7 @@ def test_overlapping_ticks_run_one_final_attempt(tmp_path):
     assert sum(result is not None for result in results) == 1
 
 
-def test_archive_without_marker_is_recovered_at_hard_t12(tmp_path):
+def test_archive_without_marker_is_recovered_at_hard_t10(tmp_path):
     plan = _plan(tmp_path)
     engine = init_db(plan.db)
     with get_session_factory(engine).begin() as session:

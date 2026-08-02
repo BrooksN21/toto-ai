@@ -207,6 +207,7 @@ from toto_ai.package.mvp import generate_mvp_package
 from toto_ai.path_safety import probe_writable_directory, validate_output_paths
 from toto_ai.runner import (
     DEFAULT_MINIMUM_GROSS_EV,
+    SCHEDULER_SCHEMA_VERSION,
     AppliedTimingOverrideEvent,
     CommandSchedulerPhaseRunner,
     DrawingRunnerConfig,
@@ -1992,6 +1993,22 @@ def _utc_now_datetime() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _parse_expected_deadline(value: str) -> datetime:
+    message = "expected-deadline must be a timezone-aware ISO-8601 datetime"
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(message)
+    normalized = value.strip()
+    if normalized.endswith("Z"):
+        normalized = normalized[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as error:
+        raise ValueError(message) from error
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError(message)
+    return parsed.astimezone(timezone.utc)
+
+
 def _require_override_resolution(
     resolution: RunnerTimingResolution | None,
 ) -> RunnerTimingResolution:
@@ -2668,7 +2685,7 @@ def scheduler_plan_command(
     ),
     dry_run: bool = typer.Option(False, "--dry-run"),
 ) -> None:
-    """Prepare a tracked T-45/T-30/T-20/T-16/T-12 scheduler plan."""
+    """Prepare a tracked T-45/T-30/T-20/T-16/T-10 scheduler plan."""
     try:
         plan = build_scheduler_plan(
             drawing=drawing,
@@ -3027,9 +3044,7 @@ def morning_dispatch_command(
     expected_fingerprint: str | None = typer.Option(
         None, "--expected-fingerprint"
     ),
-    expected_deadline: datetime | None = typer.Option(  # noqa: B008
-        None, "--expected-deadline"
-    ),
+    expected_deadline: str | None = typer.Option(None, "--expected-deadline"),
     python_executable: str = typer.Option(sys.executable, "--python-executable"),
 ) -> None:
     """Prepare one current drawing and hand it to one exact evening scheduler."""
@@ -3057,11 +3072,19 @@ def morning_dispatch_command(
         ),
     )
     observed_at = datetime.now(timezone.utc)
+    try:
+        parsed_expected_deadline = (
+            None
+            if expected_deadline is None
+            else _parse_expected_deadline(expected_deadline)
+        )
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
     expected_values = (
         expected_drawing_id,
         expected_drawing_number,
         expected_fingerprint,
-        expected_deadline,
+        parsed_expected_deadline,
     )
     if any(value is not None for value in expected_values) and any(
         value is None for value in expected_values
@@ -3076,7 +3099,7 @@ def morning_dispatch_command(
             drawing_id=expected_drawing_id,
             drawing_number=expected_drawing_number,
             drawing_fingerprint=expected_fingerprint,
-            deadline=expected_deadline,
+            deadline=parsed_expected_deadline,
         )
     )
     try:
@@ -3181,13 +3204,16 @@ def scheduler_execute_command(
         if dry_run:
             typer.echo(scheduler_plan_json(scheduler_plan), nl=False)
             return
-        if not simulate and scheduler_plan.source_schema_version != 4:
+        if (
+            not simulate
+            and scheduler_plan.source_schema_version != SCHEDULER_SCHEMA_VERSION
+        ):
             raise ValueError(
-                "legacy scheduler plan is inspection-only; regenerate schema v4"
+                "legacy scheduler plan is inspection-only; regenerate schema v5"
             )
         if run_id is not None and not simulate:
             raise ValueError(
-                "--run-id is simulation-only; production schema-v4 plans "
+                "--run-id is simulation-only; production schema-v5 plans "
                 "must use idempotent scheduler ticks"
             )
         if simulate:

@@ -1,5 +1,15 @@
 # Roadmap
 
+## Immediate production blockers
+
+- [x] `TOTO-SCHEDULER-SCHEMA-V5-TMINUS10`: version the T−10 scheduler as v5,
+  bind exact trigger semantics into plan identity/artifact verification, and
+  reject stale schema-v4/T−12 plans with an explicit regenerate diagnostic.
+- [x] `TOTO-DEADLINE-TZ-AND-TMINUS10-V1`: accept and UTC-normalize aware
+  `--expected-deadline` values, reject naive/malformed inputs, preserve exact
+  identity mismatch handling, and standardize plan/status/launchd publication
+  at T−10 without enabling automatic betting.
+
 ## Historical data-health remediation
 
 - [x] Fix offline canonical-RAW classification idempotency, isolate it from
@@ -79,14 +89,14 @@ The authoritative full-history audit and remediation plan are stored under
   (434) and River Plate (435), reject domestic/global-friendly crossover, and
   retain Iceland 3. Deild as an explicit source-missing non-match.
 - [x] One immutable final snapshot and canonical probability binding.
-- [x] Independent T−45/T−30/T−20/T−16/T−12 ticks and zero-cost `NO BET`.
+- [x] Independent T−45/T−30/T−20/T−16/T−10 ticks and zero-cost `NO BET`.
 - [x] Dynamic drawing-neutral morning dispatcher.
 - [x] Persist generated state before activation and safely reuse exact
   artifacts after bootstrap failure or process interruption.
 - [x] Reuse one per-drawing plan across a permitted two-day drawing.
 - [x] Typed/status-based retry classification; no message substring matching.
 - [x] Reject incompatible production `--run-id`, preserve schema-v3 root, use
-  correct T−12 diagnostics, and blanket-ignore generated reports.
+  correct T−10 diagnostics, and blanket-ignore generated reports.
 - [x] Reacquire time after morning/preflight network preparation and block
   post-preparation plan generation at or after T−45.
 - [x] Record final snapshot capture at detail-response completion.
@@ -94,9 +104,9 @@ The authoritative full-history audit and remediation plan are stored under
   zero-cost `NO BET`.
 - [x] Enforce the actionable cutoff for final calculation completion,
   recomputed subprocess timeouts, and every retry admission.
-- [x] Reserve the remaining interval through hard T−12 exclusively for
+- [x] Reserve the remaining interval through hard T−10 exclusively for
   package/archive-manifest writing, durable archive, recovery, status, and
-  marker publication; allow recovery through T−12 and fail closed after it.
+  marker publication; allow recovery through T−10 and fail closed after it.
 - [x] Current verification: five exact reserve boundaries, 175 focused
   scheduler/morning tests, 1443 full tests, Ruff, and diff check.
 - [x] Add a lawful provider-neutral schedule fallback for events absent from
@@ -106,8 +116,9 @@ The authoritative full-history audit and remediation plan are stored under
 - [x] Run drawing-4959 activation-disabled morning drill: 14 safe candidates,
   one explicit source-missing event, zero partial pins, no evening plan,
   package, marker, activation, or bet.
-- [x] Run a schema-v4 five-trigger network-free simulation after the
-  2026-07-29 scheduler fixes.
+- [x] Run the historical schema-v4 five-trigger network-free simulation after
+  the 2026-07-29 scheduler fixes; schema v4 is now stale and must be regenerated
+  as v5 before any future execution.
 - [x] Split generic morning automation into passive default and explicit
   post-drill `--activate-evening` mode; full verification is `1444 passed`,
   with Ruff and diff checks green.
@@ -389,8 +400,8 @@ profitability or a proven winning strategy.
 ## Phase 7: Production
 - Atomic-final scheduler remediation is complete: canonical zero-cost
   `NO BET`, immutable one-fetch final detail, snapshot-fed preparation/EV,
-  plan-v4 five-trigger ticks, persistent restart/concurrency state, bounded
-  retry, T−12 cutoff, runner manifest v5, and archive manifest v2 provenance
+  plan-v5 five-trigger ticks, persistent restart/concurrency state, bounded
+  retry, T−10 cutoff, runner manifest v5, and archive manifest v2 provenance
   are implemented and fixture-tested. Terminal `bet_ready` is committed only
   after marker success; marker failures stay package-free/failed, archive
   recovery rechecks current timing overrides, and activation retry verifies
@@ -399,7 +410,7 @@ profitability or a proven winning strategy.
   any manual installation.
 - Dynamic morning dispatcher implementation is complete: the recurring
   candidate contains no drawing number, pins one fresh exact drawing, retries
-  deferred preparation idempotently, and creates one per-drawing schema-v4
+  deferred preparation idempotently, and creates one per-drawing schema-v5
   evening plan only before T−45. The five known obsolete LaunchAgents were
   removed and follow-up inspection found none installed or loaded.
 - Next operational gate: run an activation-disabled morning plus atomic-final
@@ -411,8 +422,8 @@ profitability or a proven winning strategy.
   outcome exposure checks, 4952 is rejected before upload, and morning
   preparation requires fresh playable 15/15 evidence. The earlier actionable
   schema-v3/T-10 contract remains historical compatibility; production
-  schema-v4 now requires durable package archival plus post-archive/pre-marker
-  T−12 checks before `.bet-ready`.
+  schema-v5 now requires durable package archival plus post-archive/pre-marker
+  T−10 checks before `.bet-ready`.
   Result synchronization, settlement, payout/ROI persistence, and a post-draw
   retry scheduler remain pending.
 - Drawing-4952 launchd incident remediation is implemented: scheduler plan v2
@@ -542,7 +553,7 @@ profitability or a proven winning strategy.
   day-five expansion, partial-date failure, confirmed multi-day, and unresolved
   drawings across collection, persistence, audit/report, and playable/research
   output. The multi-day eligibility feature is complete.
-- Automatic T−12 publication scheduling of the fresh prospective command
+- Automatic T−10 publication scheduling of the fresh prospective command
 - Open drawing analysis
 - Package generation
 - Report export

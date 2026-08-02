@@ -1587,7 +1587,7 @@ def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> No
     assert payload["target"]["drawing"] == 5002
     assert payload["config"]["minimum_gross_ev"] == 1.0
     assert payload["deadlines"]["t_minus_45"] == "2030-01-03T11:15:00Z"
-    assert payload["deadlines"]["t_minus_12"] == "2030-01-03T11:48:00Z"
+    assert payload["deadlines"]["t_minus_10"] == "2030-01-03T11:50:00Z"
     assert not output_dir.exists()
 
 
