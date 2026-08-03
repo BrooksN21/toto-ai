@@ -1,23 +1,29 @@
 from __future__ import annotations
 
 import json
+import os
 import plistlib
 import sys
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from toto_ai.runner.morning_dispatch import (
     MorningDispatchConfig,
     MorningPreparedDrawing,
+    activate_scheduler_launch_agent,
     dispatch_morning,
 )
 from toto_ai.runner.scheduler import (
     SCHEDULER_LAUNCH_AGENT_FILENAME,
     SCHEDULER_WRAPPER_FILENAME,
     SchedulerIntegrityError,
+    build_scheduler_plan,
     prepare_morning_preanalysis_artifacts,
+    prepare_scheduler_artifacts,
 )
 
 UTC = timezone.utc
@@ -135,6 +141,163 @@ def test_same_drawing_is_idempotent_and_activates_once(tmp_path):
     assert first.plan_id == second.plan_id
     assert len(activations) == 1
     assert second.activation_status == "activated"
+    candidate = plistlib.loads(first.launch_agent_path.read_bytes())
+    expected_label = candidate["Label"]
+    record = json.loads(first.record_path.read_text(encoding="utf-8"))
+    assert activations[0] == (expected_label, first.launch_agent_path)
+    assert first.launch_agent_label == expected_label
+    assert second.launch_agent_label == expected_label
+    assert record["launch_agent_label"] == expected_label
+
+
+def test_actual_4964_schema_v5_plan_candidate_label_is_installable(
+    tmp_path: Path,
+) -> None:
+    production_plan = build_scheduler_plan(
+        drawing=4964,
+        drawing_id=12003,
+        ended_at="2026-08-03T14:00:00Z",
+        bank=4980,
+        output_dir=(
+            "/Users/turshevr/toto-ai/reports/rehearsal/"
+            "evening-4964-20260803T140000Z"
+        ),
+        project_root="/Users/turshevr/toto-ai",
+        db="/Users/turshevr/toto-ai/data/toto.db",
+        aliases=(
+            "/Users/turshevr/toto-ai/data/external-odds/team-aliases.json"
+        ),
+        reviewed_schedule_catalog=(
+            "/Users/turshevr/toto-ai/data/reviewed-schedule/4964/catalog.json"
+        ),
+        reviewed_catalog_sha256=(
+            "68e98c8f006ddca04e193a1d06d3f23d"
+            "ef57e498f4c02c51d8a9e3c18062895a"
+        ),
+        env_file="/Users/turshevr/toto-ai/.env",
+    )
+    assert production_plan.plan_id == "9e4df82511c1e52a"
+
+    plan = build_scheduler_plan(
+        drawing=4964,
+        drawing_id=12003,
+        ended_at="2026-08-03T14:00:00Z",
+        bank=4980,
+        output_dir=tmp_path / "scheduler",
+        project_root=tmp_path,
+        db=tmp_path / "toto.db",
+        aliases=tmp_path / "aliases.json",
+    )
+    artifacts = prepare_scheduler_artifacts(plan, python_command=sys.executable)
+    candidate_path = artifacts.launch_agent_path
+    candidate = plistlib.loads(candidate_path.read_bytes())
+    calls: list[tuple[str, ...]] = []
+
+    def command_runner(command, **_kwargs):
+        calls.append(tuple(command))
+        return SimpleNamespace(returncode=0, stderr="")
+
+    assert candidate["Label"] == f"com.totoai.production-scheduler.v5.{plan.plan_id}"
+
+    activate_scheduler_launch_agent(
+        candidate["Label"],
+        candidate_path,
+        launch_agents_root=tmp_path / "LaunchAgents",
+        command_runner=command_runner,
+    )
+
+    installed = tmp_path / "LaunchAgents" / f"{candidate['Label']}.plist"
+    assert installed.read_bytes() == candidate_path.read_bytes()
+    assert calls == [
+        (
+            "launchctl",
+            "bootstrap",
+            f"gui/{os.getuid()}",
+            str(installed),
+        )
+    ]
+
+
+@pytest.mark.parametrize(
+    "tamper",
+    (
+        lambda payload: payload.__setitem__("schema_version", 4),
+        lambda payload: payload.__setitem__("plan_id", "0" * 16),
+        lambda payload: payload["target"].__setitem__("drawing", 4965),
+        lambda payload: payload["target"].__setitem__(
+            "ended_at", "2032-01-01T17:01:00Z"
+        ),
+    ),
+)
+def test_scheduler_installer_rejects_tampered_plan_identity(
+    tmp_path: Path,
+    tamper,
+) -> None:
+    plan = build_scheduler_plan(
+        drawing=4964,
+        drawing_id=12003,
+        ended_at=datetime(2032, 1, 1, 17, 0, tzinfo=UTC),
+        bank=4980,
+        output_dir=tmp_path / "scheduler",
+        project_root=tmp_path,
+        db=tmp_path / "toto.db",
+        aliases=tmp_path / "aliases.json",
+    )
+    artifacts = prepare_scheduler_artifacts(plan, python_command=sys.executable)
+    candidate = plistlib.loads(artifacts.launch_agent_path.read_bytes())
+    payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
+    tampered = deepcopy(payload)
+    tamper(tampered)
+    artifacts.plan_path.write_text(
+        json.dumps(tampered, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises((ValueError, SchedulerIntegrityError)):
+        activate_scheduler_launch_agent(
+            candidate["Label"],
+            artifacts.launch_agent_path,
+            launch_agents_root=tmp_path / "LaunchAgents",
+            command_runner=lambda *_args, **_kwargs: SimpleNamespace(
+                returncode=0, stderr=""
+            ),
+        )
+
+    assert not (tmp_path / "LaunchAgents").exists()
+
+
+def test_scheduler_installer_rejects_arbitrary_matching_candidate_label(
+    tmp_path: Path,
+) -> None:
+    plan = build_scheduler_plan(
+        drawing=4964,
+        drawing_id=12003,
+        ended_at=datetime(2032, 1, 1, 17, 0, tzinfo=UTC),
+        bank=4980,
+        output_dir=tmp_path / "scheduler",
+        project_root=tmp_path,
+        db=tmp_path / "toto.db",
+        aliases=tmp_path / "aliases.json",
+    )
+    artifacts = prepare_scheduler_artifacts(plan, python_command=sys.executable)
+    candidate = plistlib.loads(artifacts.launch_agent_path.read_bytes())
+    arbitrary_label = "com.totoai.production-scheduler.v5." + "0" * 16
+    candidate["Label"] = arbitrary_label
+    artifacts.launch_agent_path.write_bytes(
+        plistlib.dumps(candidate, fmt=plistlib.FMT_XML, sort_keys=True)
+    )
+
+    with pytest.raises((ValueError, SchedulerIntegrityError)):
+        activate_scheduler_launch_agent(
+            arbitrary_label,
+            artifacts.launch_agent_path,
+            launch_agents_root=tmp_path / "LaunchAgents",
+            command_runner=lambda *_args, **_kwargs: SimpleNamespace(
+                returncode=0, stderr=""
+            ),
+        )
+
+    assert not (tmp_path / "LaunchAgents").exists()
 
 
 def test_activation_failure_persists_generated_state_and_retry_reuses_artifacts(

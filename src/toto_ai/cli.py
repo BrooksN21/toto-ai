@@ -3166,6 +3166,7 @@ def morning_dispatch_command(
                     if result.launch_agent_path is None
                     else str(result.launch_agent_path)
                 ),
+                "launch_agent_label": result.launch_agent_label,
                 "activation_status": result.activation_status,
                 "attention_path": (
                     None

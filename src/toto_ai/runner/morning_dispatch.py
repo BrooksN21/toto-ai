@@ -18,11 +18,13 @@ from typing import Literal
 from toto_ai.runner.scheduler import (
     SCHEDULER_LAUNCH_AGENT_FILENAME,
     SCHEDULER_PLAN_FILENAME,
+    SCHEDULER_SCHEMA_VERSION,
     SCHEDULER_WRAPPER_FILENAME,
     SchedulerPlan,
     build_scheduler_plan,
     load_scheduler_plan,
     prepare_scheduler_artifacts,
+    scheduler_launch_agent_label,
     verify_scheduler_artifacts,
 )
 from toto_ai.runner.scheduler_state import scheduler_lock
@@ -31,7 +33,8 @@ _SHA256_LENGTH = 64
 MORNING_DISPATCH_SCHEMA_VERSION = 1
 PREFLIGHT_ESCALATION_SCHEMA_VERSION = 1
 _SCHEDULER_LABEL = re.compile(
-    r"com\.totoai\.production-scheduler\.[0-9a-f]{16}\Z"
+    rf"com\.totoai\.production-scheduler\.v{SCHEDULER_SCHEMA_VERSION}\."
+    r"[0-9a-f]{16}\Z"
 )
 
 
@@ -248,6 +251,7 @@ class MorningDispatchResult:
     attention_path: Path | None = None
     retry_plan_path: Path | None = None
     review_queue_path: Path | None = None
+    launch_agent_label: str | None = None
 
 
 def dispatch_morning(
@@ -260,7 +264,7 @@ def dispatch_morning(
     python_command: str | Path | None = None,
     expected_identity: MorningExpectedIdentity | None = None,
 ) -> MorningDispatchResult:
-    """Resolve/prepare once and create at most one exact schema-v4 evening plan."""
+    """Resolve/prepare once and create at most one exact schema-v5 evening plan."""
     if not isinstance(config, MorningDispatchConfig):
         raise ValueError("config must be MorningDispatchConfig")
     observed = _utc(observed_at, "observed_at")
@@ -402,6 +406,7 @@ def _dispatch_morning_locked(
         )
     )
     activation_status: Literal["generated", "activated"] = "generated"
+    launch_agent_label = scheduler_launch_agent_label(plan)
     record = _record(
         evidence=evidence,
         observed_at=observed,
@@ -417,7 +422,7 @@ def _dispatch_morning_locked(
     )
     if activate is not None:
         activate(
-            f"com.totoai.production-scheduler.{plan.plan_id}",
+            launch_agent_label,
             artifacts.launch_agent_path,
         )
         activation_status = "activated"
@@ -432,6 +437,7 @@ def _dispatch_morning_locked(
         artifacts.plan_path,
         artifacts.launch_agent_path,
         activation_status,
+        launch_agent_label=launch_agent_label,
     )
 
 
@@ -452,7 +458,14 @@ def activate_scheduler_launch_agent(
         payload = plistlib.loads(candidate.read_bytes())
     except (OSError, plistlib.InvalidFileException) as error:
         raise ValueError("scheduler LaunchAgent candidate is invalid") from error
-    if not isinstance(payload, dict) or payload.get("Label") != label:
+    plan = load_scheduler_plan(candidate.parent / SCHEDULER_PLAN_FILENAME)
+    artifacts = verify_scheduler_artifacts(plan)
+    expected_label = scheduler_launch_agent_label(plan)
+    if candidate != artifacts.launch_agent_path:
+        raise ValueError("scheduler LaunchAgent candidate path mismatch")
+    if label != expected_label:
+        raise ValueError("scheduler LaunchAgent label does not match plan identity")
+    if not isinstance(payload, dict) or payload.get("Label") != expected_label:
         raise ValueError("scheduler LaunchAgent candidate label mismatch")
     root = (
         Path.home() / "Library" / "LaunchAgents"
@@ -556,6 +569,10 @@ def _reuse_prior(
         or launch_agent_path.is_symlink()
     ):
         raise ValueError("morning dispatch persisted plan does not verify")
+    launch_agent_label = scheduler_launch_agent_label(plan)
+    persisted_label = prior.get("launch_agent_label")
+    if persisted_label not in {None, launch_agent_label}:
+        raise ValueError("morning dispatch LaunchAgent label conflicts")
     artifacts = verify_scheduler_artifacts(
         plan,
         python_command=python_command,
@@ -568,12 +585,18 @@ def _reuse_prior(
     activation_status = str(prior.get("activation_status", "generated"))
     if activation_status not in {"generated", "activated"}:
         raise ValueError("morning dispatch activation status is invalid")
+    if persisted_label is None:
+        updated = dict(prior)
+        updated["launch_agent_label"] = launch_agent_label
+        _replace_record(record_path, updated)
+        prior = updated
     if activate is not None and activation_status != "activated":
         activate(
-            f"com.totoai.production-scheduler.{plan.plan_id}",
+            launch_agent_label,
             artifacts.launch_agent_path,
         )
         updated = dict(prior)
+        updated["launch_agent_label"] = launch_agent_label
         updated["activation_status"] = "activated"
         _replace_record(record_path, updated)
         activation_status = "activated"
@@ -585,6 +608,7 @@ def _reuse_prior(
         artifacts.plan_path,
         artifacts.launch_agent_path,
         activation_status,  # type: ignore[arg-type]
+        launch_agent_label=launch_agent_label,
     )
 
 
@@ -659,6 +683,7 @@ def _record(
         "plan_id": None,
         "plan_path": None,
         "launch_agent_path": None,
+        "launch_agent_label": None,
         "activation_status": activation_status,
     }
     if plan is not None:
@@ -669,6 +694,7 @@ def _record(
                 "launch_agent_path": str(
                     plan.output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME
                 ),
+                "launch_agent_label": scheduler_launch_agent_label(plan),
             }
         )
     payload["record_sha256"] = _record_sha256(payload)

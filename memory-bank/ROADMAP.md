@@ -2,6 +2,10 @@
 
 ## Immediate production blockers
 
+- [x] `TOTO-4964-SCHEDULER-LABEL-FIX`: centralize canonical schema-v5
+  LaunchAgent label derivation across generation, dispatch, installation,
+  records/status and CLI; reject stale or tampered identity before launchd
+  mutation.
 - [x] `TOTO-NIGHTLY-CAPTURED-SELECTION-DRIFT-V1`: freeze one eligibility
   reference instant and immutable candidate identity per nightly run so
   in-run cooldown expiry cannot create false drift, while real drawing/result

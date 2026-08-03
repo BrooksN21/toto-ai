@@ -128,6 +128,11 @@ def build_preflight_status(
             "retry_scheduler": retry_scheduler,
             "morning_activation_state": morning_state,
             "evening_activation_state": activation,
+            "evening_launch_agent_label": (
+                None
+                if record is None
+                else record.get("launch_agent_label")
+            ),
             "package_generation_state": (
                 "enabled" if activation == "activated" else "disabled"
             ),

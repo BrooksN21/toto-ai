@@ -744,6 +744,19 @@ def scheduler_plan_json(plan: SchedulerPlan) -> str:
     return _canonical_json_bytes(plan.to_payload()).decode("utf-8") + "\n"
 
 
+def scheduler_launch_agent_label(plan: SchedulerPlan) -> str:
+    """Return the only LaunchAgent label valid for this schema-v5 plan."""
+    _require_plan(plan)
+    if plan.source_schema_version != SCHEDULER_SCHEMA_VERSION:
+        raise ValueError(
+            "legacy scheduler plans cannot derive a production LaunchAgent label"
+        )
+    return (
+        "com.totoai.production-scheduler."
+        f"v{SCHEDULER_SCHEMA_VERSION}.{plan.plan_id}"
+    )
+
+
 def _infer_scheduler_project_root(
     *,
     output_dir: Path,
@@ -4893,10 +4906,7 @@ def _render_launch_agent(
         plan.publish_deadline,
     )
     payload = {
-        "Label": (
-            "com.totoai.production-scheduler."
-            f"v{SCHEDULER_SCHEMA_VERSION}.{plan.plan_id}"
-        ),
+        "Label": scheduler_launch_agent_label(plan),
         "ProgramArguments": [str(wrapper_path)],
         "WorkingDirectory": str(plan.project_root),
         "RunAtLoad": False,
