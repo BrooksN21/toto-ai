@@ -445,7 +445,10 @@ def _eligibility_payload(result: DrawingRunnerResult) -> dict[str, Any]:
     collection_eligibility = (
         None if result.collection is None else result.collection.eligibility
     )
-    raw_details = _stored_timing_details(collection_eligibility)
+    raw_details = _timing_details_for_status(
+        raw_timing,
+        _stored_timing_details(collection_eligibility),
+    )
     override = result.timing_override
     if override is None:
         effective_details = raw_details
@@ -453,6 +456,10 @@ def _eligibility_payload(result: DrawingRunnerResult) -> dict[str, Any]:
         effective_details = _summary_timing_details(override.overlay_summary)
     else:
         effective_details = _empty_timing_details()
+    effective_details = _timing_details_for_status(
+        effective_timing,
+        effective_details,
+    )
     raw_payload = _timing_eligibility_details(raw_timing, raw_details)
     effective_payload = _timing_eligibility_details(
         effective_timing,
@@ -464,6 +471,17 @@ def _eligibility_payload(result: DrawingRunnerResult) -> dict[str, Any]:
         "effective": effective_payload,
         "override": _timing_override_payload(result),
     }
+
+
+def _timing_details_for_status(
+    timing: object,
+    details: dict[str, Any],
+) -> dict[str, Any]:
+    if timing.status in {"not_checked", "absent"}:
+        return _empty_timing_details(
+            operator_override_count=details.get("operator_override_count")
+        )
+    return details
 
 
 def _timing_eligibility_details(

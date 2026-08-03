@@ -20,7 +20,10 @@ from toto_ai.external_odds.api_sports import FOOTBALL_BASE_URL, _cache_key
 from toto_ai.runner.scheduler import (
     CommandSchedulerPhaseRunner,
     SchedulerError,
+    SchedulerIntegrityError,
     SchedulerPhaseContext,
+    SchedulerTransientError,
+    build_prepare_drawing_command,
     build_scheduler_plan,
     load_scheduler_plan,
     prepare_morning_preanalysis_artifacts,
@@ -368,7 +371,7 @@ def test_evening_scheduler_preflight_succeeds_from_launchd_root_cwd(
         target_payload,
         drawing_id=12001,
         cache_dir=raw_cache,
-        fetched_at=now,
+        fetched_at=now - timedelta(hours=2),
         source="launchd-regression",
         allowed_root=project_root,
     )
@@ -440,17 +443,35 @@ def test_evening_scheduler_preflight_succeeds_from_launchd_root_cwd(
             encoding="utf-8",
         )
 
-    hook_dir = tmp_path / "http-blocker"
+    payload_path = tmp_path / "totobrief-detail.json"
+    payload_path.write_text(json.dumps(target_payload), encoding="utf-8")
+    hook_dir = tmp_path / "totobrief-refresh"
     hook_dir.mkdir()
     (hook_dir / "sitecustomize.py").write_text(
+        "import json\n"
+        "import os\n"
         "import requests.sessions\n"
-        "def blocked(*args, **kwargs):\n"
-        "    raise AssertionError('HTTP prohibited by launchd regression')\n"
-        "requests.sessions.Session.request = blocked\n",
+        "class Response:\n"
+        "    status_code = 200\n"
+        "    def __init__(self, payload): self._payload = payload\n"
+        "    def raise_for_status(self): return None\n"
+        "    def json(self): return self._payload\n"
+        "def refreshed(_session, method, url, **kwargs):\n"
+        "    if 'totobrief.com' not in url:\n"
+        "        raise AssertionError('unexpected external HTTP request')\n"
+        "    with open(os.environ['TOTO_TEST_DRAWING_PAYLOAD']) as stream:\n"
+        "        detail = json.load(stream)\n"
+        "    if url.endswith('/baltbet-main/drawings'):\n"
+        "        return Response({'data': [detail['data']]})\n"
+        "    if url.endswith('/drawing-info/12001'):\n"
+        "        return Response(detail)\n"
+        "    raise AssertionError('unexpected TotoBrief endpoint: ' + url)\n"
+        "requests.sessions.Session.request = refreshed\n",
         encoding="utf-8",
     )
     env = dict(os.environ)
     env["API_SPORTS_KEY"] = "cache-only-test-key"
+    env["TOTO_TEST_DRAWING_PAYLOAD"] = str(payload_path)
     env["PYTHONPATH"] = os.pathsep.join(
         item
         for item in (str(hook_dir), env.get("PYTHONPATH", ""))
@@ -495,6 +516,89 @@ def test_evening_scheduler_preflight_succeeds_from_launchd_root_cwd(
     with get_session_factory(engine)() as session:
         assert session.query(DrawingEventPin).count() == 15
     engine.dispose()
+
+
+def test_scheduler_due_preflight_explicitly_refreshes_totobrief_detail(tmp_path):
+    env_file = _env_file(tmp_path / ".env")
+    plan = _plan(tmp_path, env_file)
+
+    command = build_prepare_drawing_command(plan, tmp_path / "work")
+
+    assert "--refresh-totobrief" in command
+
+
+def test_scheduler_refresh_failure_remains_retryable_fail_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    env_file = _env_file(tmp_path / ".env")
+    plan = _plan(tmp_path, env_file)
+    plan.db.parent.mkdir(parents=True)
+    plan.db.write_bytes(b"db")
+    plan.aliases.parent.mkdir(parents=True)
+    plan.aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
+    context = SchedulerPhaseContext(
+        phase="preflight",
+        plan=plan,
+        run_id="refresh-failed",
+        run_dir=plan.output_dir / "attempts" / "refresh-failed",
+        work_dir=plan.output_dir / "attempts" / "refresh-failed" / "preflight",
+        scheduled_at=plan.preflight_at,
+        started_at=plan.preflight_at,
+    )
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], 2, stdout="", stderr="TotoBrief refresh failed"
+        ),
+    )
+
+    with pytest.raises(SchedulerTransientError, match="did not produce"):
+        CommandSchedulerPhaseRunner(
+            environment={"API_SPORTS_KEY": "test"},
+            target_validator=lambda _plan, _now: None,
+        )(context)
+
+
+def test_scheduler_refreshed_target_drift_remains_permanent_fail_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    env_file = _env_file(tmp_path / ".env")
+    plan = _plan(tmp_path, env_file)
+    plan.db.parent.mkdir(parents=True)
+    plan.db.write_bytes(b"db")
+    plan.aliases.parent.mkdir(parents=True)
+    plan.aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
+    context = SchedulerPhaseContext(
+        phase="preflight",
+        plan=plan,
+        run_id="identity-drift",
+        run_dir=plan.output_dir / "attempts" / "identity-drift",
+        work_dir=plan.output_dir / "attempts" / "identity-drift" / "preflight",
+        scheduled_at=plan.preflight_at,
+        started_at=plan.preflight_at,
+    )
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], 0, stdout="", stderr=""
+        ),
+    )
+
+    def reject_drift(_plan, _now):
+        raise SchedulerIntegrityError(
+            "live open drawing does not match the scheduler target",
+            category="target_identity",
+        )
+
+    with pytest.raises(SchedulerIntegrityError, match="does not match"):
+        CommandSchedulerPhaseRunner(
+            environment={"API_SPORTS_KEY": "test"},
+            target_validator=reject_drift,
+        )(context)
 
 
 @pytest.mark.parametrize("mode", (0o644, 0o604, 0o700))

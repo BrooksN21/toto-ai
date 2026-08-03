@@ -455,6 +455,51 @@ def _terminal_result(*, final_target: TargetDrawing | None) -> DrawingRunnerResu
     )
 
 
+def test_not_checked_timing_does_not_claim_partial_4964_timing_details() -> None:
+    """An early 12/15 NO BET must remain a canonical not-checked payload."""
+
+    result = _runner_result("NO BET")
+    assert result.collection is not None
+    partial = DrawingEligibility(
+        status="unknown",
+        earliest_start=DEADLINE,
+        latest_start=DEADLINE + timedelta(hours=5, minutes=45),
+        span_days=1,
+        missing_event_orders=(5, 8, 10),
+        totobrief_count=0,
+        provider_count=12,
+    )
+    collection = replace(
+        result.collection,
+        snapshot=replace(result.collection.snapshot, eligibility=partial),
+        eligibility=partial,
+    )
+    not_checked = PlayTimingEligibility.not_checked()
+    result = replace(
+        result,
+        collection=collection,
+        timing_eligibility=not_checked,
+        raw_timing_eligibility=not_checked,
+        timing_override=None,
+        terminal_reason=(
+            "pinned revalidation is not ready: matched=12/15; "
+            "provider_failures=(5, 8, 10)"
+        ),
+    )
+
+    payload = runner_reports._eligibility_payload(result)
+
+    for timing in (payload, payload["raw"], payload["effective"]):
+        assert timing["status"] == "not_checked"
+        assert timing["span_days"] is None
+        assert timing["missing_event_orders"] == []
+        assert timing["totobrief_count"] is None
+        assert timing["provider_count"] is None
+        assert timing["operator_override_count"] in (None, 0)
+        assert timing["earliest_start"] is None
+        assert timing["latest_start"] is None
+
+
 def test_publication_skips_ev_child_for_computed_no_bet_and_hides_top_coupon(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

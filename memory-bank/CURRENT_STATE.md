@@ -1,5 +1,20 @@
 # Current State
 
+## Evening stale-detail refresh fix (2026-08-03)
+
+The drawing-4964 warmup and refresh ticks exposed that the scheduler invoked
+`prepare-drawing` against the local operational detail cache without first
+requesting a TotoBrief refresh. Both ticks therefore failed on the unchanged
+60-second freshness limit. Scheduler preflight commands now explicitly use
+`--refresh-totobrief`: a stale cache is re-fetched before freshness is
+enforced, while refresh transport failure remains retryable and refreshed
+target identity/deadline drift remains fail-closed. Atomic final execution
+continues to capture its own immutable fresh TotoBrief detail and retains the
+existing fingerprint checks. No freshness limit, package rule, or validation
+was weakened. Focused verification: 21 scheduler operational tests passed;
+Ruff and `git diff --check` passed. No package, wager, commit, push, or
+LaunchAgent mutation was performed by this change.
+
 ## Scheduler LaunchAgent schema-v5 label fix (2026-08-03)
 
 `TOTO-4964-SCHEDULER-LABEL-FIX` closes the production activation failure found

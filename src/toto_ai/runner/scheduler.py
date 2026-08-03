@@ -2154,6 +2154,7 @@ def build_prepare_drawing_command(
         "toto_ai.cli",
         "prepare-drawing",
         "--open",
+        "--refresh-totobrief",
         "--db",
         str(plan.db),
         "--aliases",
