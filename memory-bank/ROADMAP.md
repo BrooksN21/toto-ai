@@ -601,3 +601,13 @@ profitability or a proven winning strategy.
 Do not build another optimizer before the measurable lifecycle
 `drawing -> package -> archive -> results/VOID -> settlement -> review` is
 closed.
+
+- [x] Add provider-neutral reusable schedule evidence ledger and strict
+  identity/time resolver; integrate it into morning preparation.
+- [ ] Add an automatic evidence collector that writes reviewed observations
+  only after authoritative identity, orientation and kickoff checks succeed.
+- [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
+  10 and 12 through the reusable ledger; retain event-13 material as an audit
+  record only because its official home/away identity is not established.
+- [ ] Resolve 4965 events 7 and 13 only from non-conflicting authoritative
+  evidence; until then keep the drawing fail-closed at 13/15.

@@ -3976,6 +3976,15 @@ def _validate_pinned_revalidation_payload(value: object) -> bool:
                 raise SchedulerPhaseError(
                     "reviewed pin revalidation provenance is incomplete"
                 )
+        elif source_provider == "schedule-evidence":
+            if (
+                method != "schedule-evidence-v1"
+                or not isinstance(row["evidence_id"], str)
+                or not isinstance(row["evidence_hash"], str)
+            ):
+                raise SchedulerPhaseError(
+                    "schedule evidence revalidation provenance is incomplete"
+                )
         elif source_provider == "api-sports":
             if method != "api-sports-fixture-v1":
                 raise SchedulerPhaseError(

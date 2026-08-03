@@ -990,3 +990,24 @@
 - Explicit apply mode owns idempotent schema initialization before its first
   mutation. This separation is tested at the CLI boundary, not only inside the
   reconciliation operation.
+
+## Reusable schedule evidence, not per-drawing exceptions
+
+- New preparation may consume a provider-neutral, append-only reviewed
+  schedule ledger. Its unit of reuse is canonical team identity plus exact
+  schedule observation, never drawing number, fingerprint or event order.
+- Exact normalized/transliterated aliases, same orientation, compatible
+  competition and gender/age class, bounded UTC timing, an official HTTPS
+  claim and a hash-checked local review record are required.
+- Fuzzy similarity is diagnostic only. Conditional pairings, reversed teams,
+  source gaps, stale evidence and conflicts never auto-promote.
+- Missing target starts expand collection to the complete bounded drawing
+  window; they do not collapse the query to the deadline date. The window is
+  defined by `Europe/Moscow` drawing-day boundaries and converted to every
+  intersecting API-Sports UTC request date, including the preceding UTC date
+  when Moscow midnight crosses that boundary. Reviewed alias reuse remains
+  exact after normalization and is gated by sport,
+  competition, orientation, class, kickoff, freshness and immutable hashes.
+- Reusable evidence pins carry both observation and ledger semantic hashes and
+  must revalidate against both before final use. Evidence ingestion is
+  append-only: an existing observation ID cannot be changed in place.

@@ -3153,3 +3153,27 @@ with zero pins, then READY 15/15 with 15 atomic mixed-provider pins, zero
 network requests, zero package/bet-ready artifacts, and unchanged main DB
 SHA-256 `d5ad1ff83f7c93ec14b04a6145ba603ced8f144a87a71f0a1003f621ebb97a73`.
 Artifact: `reports/rehearsal/TOTO-4961-DATE-SCOPED-POLICY-V1-ACCEPTANCE-20260731/rehearsal-summary.json`.
+## Provider-neutral schedule evidence resolver v1 (2026-08-03)
+
+Implemented locally for `TOTO-SCHEDULE-RESOLUTION-V2`: reusable reviewed
+schedule observations are keyed by canonical team identities and kickoff, not
+by drawing/event order. Exact aliases, competition/class, orientation, bounded
+five-day timing and hash-checked review provenance are mandatory. Fuzzy-only,
+conditional, reversed, stale, conflicting or missing evidence stays unresolved.
+Morning preparation automatically uses the repository ledger when present.
+
+Drawing 4965 evidence resolves events 5, 10 and 12. Events 7 and 13 remain
+fail-closed: event 7 has no exact non-conflicting reviewed evidence, while the
+supplied event-13 material does not establish the target home/away identity and
+kickoff. Any official home/away or identity conflict for event 13 is rejected;
+no reverse-orientation inference is allowed. Evidence-only rehearsal therefore
+verified **13/15**, with unresolved events **7 and 13**, not READY; no package or
+bet marker is published.
+
+The resolver now normalizes multilingual diacritics and club designators while
+preserving gender/age class, reuses only reviewed exact aliases across drawing
+IDs, derives the complete bounded date range for drawings with missing starts
+or four/five-day spans from Moscow calendar boundaries to all intersecting UTC
+provider dates, exposes typed source-gap/failure states, and provides
+append-only hash-validated reviewed-observation ingestion. Final pin
+revalidation binds the observation and ledger semantic hashes.

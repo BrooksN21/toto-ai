@@ -888,7 +888,7 @@ def publish_canonical_pin_set(
     reviewed = tuple(
         item
         for item in contents
-        if item["source_provider"] == "reviewed-schedule"
+        if item["source_provider"] in {"reviewed-schedule", "schedule-evidence"}
     )
     if bool(reviewed) != bool(reviewed_catalog_hash):
         raise ValueError(
@@ -1858,7 +1858,7 @@ def _canonical_pin_content_from_spec(
             or schedule_only
         ):
             raise ValueError("API-Sports pin identity is invalid")
-    elif source_provider == "reviewed-schedule":
+    elif source_provider in {"reviewed-schedule", "schedule-evidence"}:
         if (
             source_fixture_id is not None
             or reviewed_evidence_id is None
@@ -1958,7 +1958,9 @@ def _validate_canonical_pin_set(
         )
     if json.loads(pin_set.provider_distribution_json) != distribution:
         raise ValueError("canonical pin provider distribution mismatch")
-    reviewed_count = distribution.get("reviewed-schedule", 0)
+    reviewed_count = distribution.get("reviewed-schedule", 0) + distribution.get(
+        "schedule-evidence", 0
+    )
     if bool(reviewed_count) != bool(pin_set.reviewed_catalog_hash):
         raise ValueError("canonical reviewed catalog binding is invalid")
     payload = {

@@ -37,6 +37,11 @@ from toto_ai.external_odds.eligibility import (
     target_fingerprint,
 )
 from toto_ai.external_odds.matching import MATCHER_VERSION, MatchDecision, match_event
+from toto_ai.external_odds.schedule_evidence import (
+    DEFAULT_SCHEDULE_EVIDENCE_PATH,
+    load_schedule_evidence_ledger,
+    resolve_schedule_evidence,
+)
 from toto_ai.external_odds.schedule_sources import ReviewedCatalogScheduleSource
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.team_registry import DrawingEventPinRecord
@@ -794,6 +799,11 @@ def _match_targets_from_pins(
         observed_at=observed_at,
         reviewed_schedule_catalog=reviewed_schedule_catalog,
     )
+    evidence_results = _schedule_evidence_pin_revalidation(
+        target,
+        pins,
+        observed_at=observed_at,
+    )
     for event, pin in zip(target.events, pins, strict=True):
         if (
             pin.drawing_id != target.drawing_id
@@ -807,7 +817,42 @@ def _match_targets_from_pins(
         pinned_start = _event_datetime(pin.starts_at)
         if pinned_start is None:
             raise ValueError("prepared pin must contain starts_at")
-        if pin.effective_source_provider == "reviewed-schedule":
+        if pin.effective_source_provider in {"reviewed-schedule", "schedule-evidence"}:
+            if pin.effective_source_provider == "schedule-evidence":
+                resolution = evidence_results.get(event.event_order)
+                evidence = None if resolution is None else resolution.observation
+                matched = bool(
+                    resolution is not None
+                    and resolution.state == "RESOLVED"
+                    and evidence is not None
+                    and evidence.observation_id == pin.reviewed_evidence_id
+                    and evidence.starts_at == pinned_start
+                    and evidence.semantic_hash
+                    == pin.provenance.get("evidence_hash")
+                )
+                if not matched:
+                    decision = MatchDecision(
+                        status="provider_failure",
+                        provider_event_id=None,
+                        matcher_version="schedule-evidence-v1",
+                        candidate_ids=(),
+                        reason="schedule evidence revalidation failed",
+                    )
+                    decisions[event.event_order] = _MatchedTarget(decision, None)
+                    continue
+                decision = MatchDecision(
+                    status="matched",
+                    provider_event_id=None,
+                    matcher_version="schedule-evidence-v1",
+                    candidate_ids=(),
+                    reason=(
+                        "exact reusable schedule evidence revalidated; "
+                        f"evidence={evidence.observation_id}"
+                    ),
+                    orientation="same",
+                )
+                decisions[event.event_order] = _MatchedTarget(decision, None)
+                continue
             reviewed = reviewed_results.get(event.event_order)
             if reviewed is None or not reviewed.matched:
                 decision = MatchDecision(
@@ -940,6 +985,38 @@ def _match_targets_from_pins(
     return decisions
 
 
+def _schedule_evidence_pin_revalidation(
+    target: TargetDrawing,
+    pins: tuple[DrawingEventPinRecord, ...],
+    *,
+    observed_at: datetime,
+) -> dict[int, Any]:
+    evidence_pins = tuple(
+        pin for pin in pins if pin.effective_source_provider == "schedule-evidence"
+    )
+    if not evidence_pins or not DEFAULT_SCHEDULE_EVIDENCE_PATH.is_file():
+        return {}
+    try:
+        ledger = load_schedule_evidence_ledger(DEFAULT_SCHEDULE_EVIDENCE_PATH)
+    except ValueError:
+        return {}
+    if any(
+        not isinstance(pin.provenance, dict)
+        or pin.provenance.get("ledger_hash") != ledger.semantic_hash
+        for pin in evidence_pins
+    ):
+        return {}
+    return {
+        event.event_order: resolve_schedule_evidence(
+            event,
+            ledger,
+            evaluated_at=observed_at,
+        )
+        for event, pin in zip(target.events, pins, strict=True)
+        if pin.effective_source_provider == "schedule-evidence"
+    }
+
+
 def _reviewed_pin_revalidation(
     target: TargetDrawing,
     pins: tuple[DrawingEventPinRecord, ...],
@@ -1023,16 +1100,21 @@ def _pinned_revalidation_summary(
             reason=decisions[event.event_order].decision.reason,
             source_provider=pins[event.event_order].effective_source_provider,
             revalidation_method=(
-                "reviewed-catalog-v1"
+                "schedule-evidence-v1"
                 if pins[event.event_order].effective_source_provider
-                == "reviewed-schedule"
-                else "api-sports-fixture-v1"
+                == "schedule-evidence"
+                else (
+                    "reviewed-catalog-v1"
+                    if pins[event.event_order].effective_source_provider
+                    == "reviewed-schedule"
+                    else "api-sports-fixture-v1"
+                )
             ),
             evidence_id=pins[event.event_order].reviewed_evidence_id,
             evidence_hash=(
                 pins[event.event_order].provenance.get("evidence_hash")
                 if pins[event.event_order].effective_source_provider
-                == "reviewed-schedule"
+                in {"reviewed-schedule", "schedule-evidence"}
                 else pins[event.event_order].provenance.get(
                     "provider_payload_hash"
                 )

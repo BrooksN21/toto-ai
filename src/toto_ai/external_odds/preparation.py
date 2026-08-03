@@ -8,7 +8,6 @@ from datetime import date, datetime, timedelta, timezone
 from math import isclose, isfinite
 from pathlib import Path
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from toto_ai.db.models import Drawing
 from toto_ai.external_odds.api_sports import _parse_schedule_payload
@@ -25,6 +24,13 @@ from toto_ai.external_odds.reviewed_schedule import (
     ReviewedScheduleEvidence,
     load_reviewed_schedule_catalog,
     select_reviewed_evidence,
+)
+from toto_ai.external_odds.schedule_evidence import (
+    ScheduleEvidenceLedger,
+    ScheduleObservation,
+    drawing_schedule_dates,
+    load_schedule_evidence_ledger,
+    resolve_schedule_evidence,
 )
 from toto_ai.external_odds.team_registry import (
     DrawingEventPinRecord,
@@ -43,8 +49,6 @@ from toto_ai.external_odds.team_resolution import (
     derive_resolution_context,
     resolve_event_candidate,
 )
-
-_MOSCOW = ZoneInfo("Europe/Moscow")
 
 
 @dataclass(frozen=True)
@@ -101,19 +105,19 @@ def fetch_preparation_schedule(
     """Fetch dates until strict non-publishing resolution is ready or exhausted."""
     if not 1 <= missing_start_horizon_days <= 5:
         raise ValueError("missing_start_horizon_days must be from 1 through 5")
+    drawing_dates = drawing_schedule_dates(
+        target,
+        maximum_span_days=missing_start_horizon_days,
+    )
     required: dict[str, set[date]] = {}
     for event in target.events:
         if event.sport not in {"football", "hockey"}:
             continue
         dates = required.setdefault(event.sport, set())
-        if event.starts_at is not None:
-            dates.add(event.starts_at.astimezone(timezone.utc).date())
-        else:
-            dates.update(
-                _missing_start_dates(
-                    target.deadline, missing_start_horizon_days
-                )
-            )
+        # Fetch every UTC date in the drawing's bounded span.  Sparse known
+        # starts must not create blind intermediate dates, and one missing
+        # start expands the complete horizon rather than a per-event guess.
+        dates.update(drawing_dates)
 
     events_by_identity: dict[tuple[str, str], ProviderEvent] = {}
     diagnostics: list[dict[str, str | None]] = []
@@ -122,9 +126,7 @@ def fetch_preparation_schedule(
     for sport in sorted(required):
         for requested_date in sorted(required[sport]):
             try:
-                events = provider_client.fetch_schedule(
-                    sport, (requested_date,)
-                )
+                events = provider_client.fetch_schedule(sport, (requested_date,))
             except Exception as error:  # provider errors are isolated per date
                 diagnostics.append(
                     {
@@ -156,8 +158,7 @@ def fetch_preparation_schedule(
             ready = (
                 not failed_before_readiness
                 and all(
-                    resolution.status == "matched"
-                    for resolution in preview.resolutions
+                    resolution.status == "matched" for resolution in preview.resolutions
                 )
                 and preview.eligibility.status == "playable"
             )
@@ -180,6 +181,7 @@ def prepare_drawing(
     event_contexts: Mapping[int, ResolutionContext] | None = None,
     schedule_diagnostics: tuple[dict[str, str | None], ...] = (),
     reviewed_schedule_catalog: str | Path | None = None,
+    schedule_evidence_ledger: str | Path | None = None,
     evaluated_at: datetime | None = None,
 ) -> DrawingPreparationResult:
     """Resolve a drawing and atomically publish pins only when all 15 are ready."""
@@ -189,7 +191,7 @@ def prepare_drawing(
     )
     # This also invalidates any valid pins for an older fingerprint.
     try:
-        if reviewed_schedule_catalog is None:
+        if reviewed_schedule_catalog is None and schedule_evidence_ledger is None:
             existing = load_ready_drawing_pins(
                 session_factory,
                 drawing_id=target.drawing_id,
@@ -214,9 +216,7 @@ def prepare_drawing(
             raise
         existing = ()
     if existing:
-        failed_orders = _failed_date_pin_orders(
-            target, existing, schedule_diagnostics
-        )
+        failed_orders = _failed_date_pin_orders(target, existing, schedule_diagnostics)
         if failed_orders:
             raise ValueError(
                 "required preparation schedule UTC date failed for event orders "
@@ -235,6 +235,11 @@ def prepare_drawing(
             tuple(candidates),
             provider=provider,
             reviewed_catalog=reviewed_catalog,
+            schedule_evidence_ledger=(
+                None
+                if schedule_evidence_ledger is None
+                else load_schedule_evidence_ledger(Path(schedule_evidence_ledger))
+            ),
         )
         result = _result_from_existing(target, fingerprint, provider, existing)
         refresh_ready_drawing_preparation_evidence(
@@ -257,6 +262,8 @@ def prepare_drawing(
     candidate_by_id = preview.candidate_by_id
     reviewed_catalog: ReviewedScheduleCatalog | None = None
     reviewed_by_order: dict[int, ReviewedScheduleEvidence] = {}
+    evidence_ledger: ScheduleEvidenceLedger | None = None
+    evidence_by_order: dict[int, ScheduleObservation] = {}
     reviewed_error: str | None = None
     if reviewed_schedule_catalog is not None:
         reference = evaluated_at or datetime.now(timezone.utc)
@@ -277,12 +284,86 @@ def prepare_drawing(
             reviewed_error = str(error) or type(error).__name__
             reviewed_by_order = {}
 
+    if schedule_evidence_ledger is not None:
+        reference = evaluated_at or datetime.now(timezone.utc)
+        evidence_ledger = load_schedule_evidence_ledger(Path(schedule_evidence_ledger))
+        for event, resolution in zip(target.events, resolutions, strict=True):
+            if resolution.status == "matched":
+                continue
+            evidence_resolution = resolve_schedule_evidence(
+                event,
+                evidence_ledger,
+                evaluated_at=reference,
+            )
+            if (
+                evidence_resolution.state == "RESOLVED"
+                and evidence_resolution.observation is not None
+            ):
+                evidence_by_order[event.event_order] = evidence_resolution.observation
+
     pin_specs: list[dict[str, Any]] = []
     canonical_pin_specs: list[dict[str, Any]] = []
     events: list[PreparationEventResult] = []
     for event, resolution in zip(target.events, resolutions, strict=True):
         fixture_id = resolution.provider_event_id
         reviewed_evidence = reviewed_by_order.get(event.event_order)
+        reusable_evidence = evidence_by_order.get(event.event_order)
+        if reusable_evidence is not None:
+            home_team_id = upsert_team_entity(
+                session_factory,
+                sport=event.sport,
+                canonical_name=reusable_evidence.home_entity,
+                context=event.championship,
+            ).id
+            away_team_id = upsert_team_entity(
+                session_factory,
+                sport=event.sport,
+                canonical_name=reusable_evidence.away_entity,
+                context=event.championship,
+            ).id
+            canonical_pin_specs.append(
+                {
+                    "target_event_id": str(event.event_id),
+                    "event_order": event.event_order,
+                    "source_provider": "schedule-evidence",
+                    "source_fixture_id": None,
+                    "reviewed_evidence_id": reusable_evidence.observation_id,
+                    "canonical_home_team_id": home_team_id,
+                    "canonical_away_team_id": away_team_id,
+                    "source_home_team_id": None,
+                    "source_away_team_id": None,
+                    "starts_at": reusable_evidence.starts_at,
+                    "schedule_only": True,
+                    "provenance": {
+                        "resolver": "schedule-evidence-v1",
+                        "evidence_id": reusable_evidence.observation_id,
+                        "evidence_hash": reusable_evidence.semantic_hash,
+                        "ledger_hash": evidence_ledger.semantic_hash,
+                        "reviewer": reusable_evidence.reviewer,
+                        "reviewed_at": reusable_evidence.reviewed_at.isoformat(),
+                        "claims": [
+                            {
+                                "source_name": claim.source_name,
+                                "role": claim.role,
+                                "source_url": claim.source_url,
+                            }
+                            for claim in reusable_evidence.claims
+                        ],
+                    },
+                }
+            )
+            events.append(
+                PreparationEventResult(
+                    event_order=event.event_order,
+                    target_event_id=event.event_id,
+                    status="matched",
+                    provider_fixture_id=None,
+                    reason="exact reusable reviewed schedule evidence",
+                    confidence=1.0,
+                    margin=1.0,
+                )
+            )
+            continue
         if reviewed_evidence is not None:
             home_team_id = upsert_team_entity(
                 session_factory,
@@ -463,8 +544,13 @@ def prepare_drawing(
         )
 
     eligibility = (
-        _eligibility_with_reviewed(target, preview, reviewed_by_order)
-        if reviewed_by_order
+        _eligibility_with_reviewed(
+            target,
+            preview,
+            reviewed_by_order,
+            evidence_by_order=evidence_by_order,
+        )
+        if reviewed_by_order or evidence_by_order
         else preview.eligibility
     )
     date_failure_orders = _failed_date_event_orders(
@@ -473,14 +559,11 @@ def prepare_drawing(
         resolutions=tuple(resolutions),
         candidate_by_id=candidate_by_id,
         reviewed_by_order=reviewed_by_order,
+        evidence_by_order=evidence_by_order,
     )
     unresolved = tuple(
         sorted(
-            {
-                event.event_order
-                for event in events
-                if event.status != "matched"
-            }
+            {event.event_order for event in events if event.status != "matched"}
             | set(date_failure_orders)
         )
     )
@@ -505,7 +588,7 @@ def prepare_drawing(
         pins=(),
         schedule_diagnostics=schedule_diagnostics,
     )
-    if status == "ready" and reviewed_by_order:
+    if status == "ready" and (reviewed_by_order or evidence_by_order):
         pins = publish_canonical_pin_set(
             session_factory,
             drawing_id=target.drawing_id,
@@ -516,7 +599,11 @@ def prepare_drawing(
             readiness_summary=_readiness_summary(draft, target),
             pin_specs=tuple(canonical_pin_specs),
             reviewed_catalog_hash=(
-                None if reviewed_catalog is None else reviewed_catalog.semantic_hash
+                evidence_ledger.semantic_hash
+                if evidence_ledger is not None
+                else (
+                    None if reviewed_catalog is None else reviewed_catalog.semantic_hash
+                )
             ),
         )
     else:
@@ -548,10 +635,7 @@ def _admit_reviewed_fallbacks(
     catalog: ReviewedScheduleCatalog,
     schedule_diagnostics: tuple[dict[str, str | None], ...],
 ) -> dict[int, ReviewedScheduleEvidence]:
-    if any(
-        resolution.status in {"ambiguous", "missing"}
-        for resolution in resolutions
-    ):
+    if any(resolution.status in {"ambiguous", "missing"} for resolution in resolutions):
         raise ValueError(
             "reviewed fallback cannot mask ambiguous or unproven API absence"
         )
@@ -573,9 +657,9 @@ def _admit_reviewed_fallbacks(
             evidence.sport,
             evidence.starts_at.astimezone(timezone.utc).date().isoformat(),
         )
-        relevant_status = _schedule_diagnostic_statuses(
-            schedule_diagnostics
-        ).get(relevant_key)
+        relevant_status = _schedule_diagnostic_statuses(schedule_diagnostics).get(
+            relevant_key
+        )
         if relevant_status != "success":
             raise ValueError(
                 "reviewed fallback requires successful API-Sports fetch for "
@@ -585,19 +669,14 @@ def _admit_reviewed_fallbacks(
             raise ValueError("reviewed evidence sport does not match target")
         if (
             event.starts_at is not None
-            and evidence.starts_at
-            != event.starts_at.astimezone(timezone.utc)
+            and evidence.starts_at != event.starts_at.astimezone(timezone.utc)
         ):
-            raise ValueError(
-                "reviewed evidence start date/time does not match target"
-            )
+            raise ValueError("reviewed evidence start date/time does not match target")
         if evidence.starts_at < target.deadline:
             raise ValueError("reviewed evidence starts before drawing deadline")
         expected_class = _target_gender_age_class(event)
         if evidence.gender_age_class != expected_class:
-            raise ValueError(
-                "reviewed evidence gender/age class does not match target"
-            )
+            raise ValueError("reviewed evidence gender/age class does not match target")
         admitted[event.event_order] = evidence
     return admitted
 
@@ -614,10 +693,7 @@ def _target_gender_age_class(event: Any) -> str:
     ).casefold()
     if any(token in text for token in ("(ж)", "жен", "women", "female")):
         return "women-senior"
-    if any(
-        token in text
-        for token in ("u19", "u-19", "u21", "u-21", "мол", "youth")
-    ):
+    if any(token in text for token in ("u19", "u-19", "u21", "u-21", "мол", "youth")):
         return "men-youth"
     return "men-senior"
 
@@ -626,7 +702,10 @@ def _eligibility_with_reviewed(
     target: TargetDrawing,
     preview: _ResolutionPreview,
     reviewed_by_order: Mapping[int, ReviewedScheduleEvidence],
+    *,
+    evidence_by_order: Mapping[int, ScheduleObservation] | None = None,
 ) -> DrawingEligibility:
+    evidence_by_order = evidence_by_order or {}
     return classify_drawing_eligibility(
         tuple(
             EffectiveEventStart(
@@ -637,7 +716,11 @@ def _eligibility_with_reviewed(
                     else (
                         reviewed_by_order[event.event_order].starts_at
                         if event.event_order in reviewed_by_order
-                        else preview.resolved_starts.get(event.event_order)
+                        else (
+                            evidence_by_order[event.event_order].starts_at
+                            if event.event_order in evidence_by_order
+                            else preview.resolved_starts.get(event.event_order)
+                        )
                     )
                 ),
                 source=(
@@ -646,8 +729,8 @@ def _eligibility_with_reviewed(
                     else (
                         "provider"
                         if event.event_order in reviewed_by_order
-                        or preview.resolved_starts.get(event.event_order)
-                        is not None
+                        or event.event_order in evidence_by_order
+                        or preview.resolved_starts.get(event.event_order) is not None
                         else "unresolved"
                     )
                 ),
@@ -668,9 +751,7 @@ def persist_drawing_identity(
     if not isinstance(target, TargetDrawing):
         raise ValueError("target must be a TargetDrawing")
     if require_visible_number and target.drawing_number is None:
-        raise ValueError(
-            "systematic preparation requires a visible drawing number"
-        )
+        raise ValueError("systematic preparation requires a visible drawing number")
     ended_at = target.deadline.astimezone(timezone.utc).isoformat()
     with session_factory.begin() as session:
         drawing = session.get(Drawing, target.drawing_id)
@@ -688,9 +769,7 @@ def persist_drawing_identity(
             and target.drawing_number is not None
             and drawing.number != target.drawing_number
         ):
-            raise ValueError(
-                "stored drawing number does not match preparation target"
-            )
+            raise ValueError("stored drawing number does not match preparation target")
         if drawing.number is None:
             drawing.number = target.drawing_number
         if drawing.ended_at is not None:
@@ -763,8 +842,7 @@ def _resolve_preparation_candidates(
     resolved_starts = {
         event.event_order: candidate_by_id[resolution.provider_event_id].starts_at
         for event, resolution in zip(target.events, resolutions, strict=True)
-        if resolution.status == "matched"
-        and resolution.provider_event_id is not None
+        if resolution.status == "matched" and resolution.provider_event_id is not None
     }
     starts = tuple(
         EffectiveEventStart(
@@ -812,9 +890,14 @@ def load_local_schedule(
         envelope_fetched_at or payload.get("fetched_at") or payload.get("timestamp")
     )
     if isinstance(payload.get("response"), list):
-        resolved_sport = "hockey" if any(
-            isinstance(item, dict) and "game" in item for item in payload["response"]
-        ) else sport
+        resolved_sport = (
+            "hockey"
+            if any(
+                isinstance(item, dict) and "game" in item
+                for item in payload["response"]
+            )
+            else sport
+        )
         return _parse_schedule_payload(  # type: ignore[arg-type]
             resolved_sport, payload, fetched_at=fetched_at
         )
@@ -936,9 +1019,7 @@ def preparation_probability_sha256(
             or value <= 0
             for value in row
         ):
-            raise ValueError(
-                "preparation probabilities require finite positive values"
-            )
+            raise ValueError("preparation probabilities require finite positive values")
         if not isclose(sum(row), 1.0, rel_tol=0.0, abs_tol=1e-9):
             raise ValueError("preparation probabilities must sum to one")
     payload = json.dumps(
@@ -982,8 +1063,6 @@ def refresh_ready_preparation_for_target(
     )
 
 
-
-
 def _target_oriented_candidate(
     candidate: ProviderEvent, orientation: str | None
 ) -> tuple[tuple[str, str], tuple[str, str]]:
@@ -1005,6 +1084,7 @@ def _validate_existing_pins_against_candidates(
     *,
     provider: str,
     reviewed_catalog: ReviewedScheduleCatalog | None = None,
+    schedule_evidence_ledger: ScheduleEvidenceLedger | None = None,
 ) -> None:
     candidates_by_id: dict[str, list[ProviderEvent]] = {}
     for candidate in candidates:
@@ -1013,6 +1093,28 @@ def _validate_existing_pins_against_candidates(
                 candidate
             )
     for event, pin in zip(target.events, pins, strict=True):
+        if pin.effective_source_provider == "schedule-evidence":
+            if schedule_evidence_ledger is None or pin.reviewed_evidence_id is None:
+                raise ValueError(
+                    "ready schedule-evidence pin cannot be revalidated without ledger"
+                )
+            resolution = resolve_schedule_evidence(
+                event,
+                schedule_evidence_ledger,
+                evaluated_at=datetime.now(timezone.utc),
+            )
+            evidence = resolution.observation
+            if (
+                resolution.state != "RESOLVED"
+                or evidence is None
+                or evidence.observation_id != pin.reviewed_evidence_id
+                or _parse_datetime(pin.starts_at) != evidence.starts_at
+                or pin.provenance.get("evidence_hash") != evidence.semantic_hash
+                or pin.provenance.get("ledger_hash")
+                != schedule_evidence_ledger.semantic_hash
+            ):
+                raise ValueError("ready schedule-evidence pin conflicts with ledger")
+            continue
         if pin.effective_source_provider == "reviewed-schedule":
             if reviewed_catalog is None or pin.reviewed_evidence_id is None:
                 raise ValueError(
@@ -1031,10 +1133,8 @@ def _validate_existing_pins_against_candidates(
             if (
                 evidence.evidence_id != pin.reviewed_evidence_id
                 or _parse_datetime(pin.starts_at) != evidence.starts_at
-                or pin.provenance.get("evidence_hash")
-                != evidence.semantic_hash
-                or pin.provenance.get("catalog_hash")
-                != reviewed_catalog.semantic_hash
+                or pin.provenance.get("evidence_hash") != evidence.semantic_hash
+                or pin.provenance.get("catalog_hash") != reviewed_catalog.semantic_hash
             ):
                 raise ValueError("ready reviewed pin conflicts with catalog")
             continue
@@ -1069,20 +1169,6 @@ def _name_team_id(value: object) -> str:
     return f"name:{normalize_team_name(str(value))}"
 
 
-def _missing_start_dates(
-    deadline: datetime, horizon_days: int
-) -> tuple[date, ...]:
-    local_date = deadline.astimezone(_MOSCOW).date()
-    local_start = datetime.combine(local_date, datetime.min.time(), tzinfo=_MOSCOW)
-    local_end = local_start + timedelta(days=horizon_days)
-    first = local_start.astimezone(timezone.utc).date()
-    last = (local_end - timedelta(microseconds=1)).astimezone(timezone.utc).date()
-    return tuple(
-        first + timedelta(days=offset)
-        for offset in range((last - first).days + 1)
-    )
-
-
 def _failed_date_event_orders(
     target: TargetDrawing,
     diagnostics: tuple[dict[str, str | None], ...],
@@ -1090,11 +1176,10 @@ def _failed_date_event_orders(
     resolutions: tuple[CandidateResolution, ...] = (),
     candidate_by_id: Mapping[str, ProviderEvent] | None = None,
     reviewed_by_order: Mapping[int, ReviewedScheduleEvidence] | None = None,
+    evidence_by_order: Mapping[int, ScheduleObservation] | None = None,
 ) -> tuple[int, ...]:
     statuses = _schedule_diagnostic_statuses(diagnostics)
-    failed = {
-        key for key, status in statuses.items() if status == "failed"
-    }
+    failed = {key for key, status in statuses.items() if status == "failed"}
     if not failed:
         return ()
     resolution_by_order = {
@@ -1103,12 +1188,16 @@ def _failed_date_event_orders(
     }
     candidate_by_id = candidate_by_id or {}
     reviewed_by_order = reviewed_by_order or {}
+    evidence_by_order = evidence_by_order or {}
     orders = []
     for event in target.events:
         effective_start = event.starts_at
         reviewed = reviewed_by_order.get(event.event_order)
+        reusable = evidence_by_order.get(event.event_order)
         if effective_start is None and reviewed is not None:
             effective_start = reviewed.starts_at
+        if effective_start is None and reusable is not None:
+            effective_start = reusable.starts_at
         if effective_start is None:
             resolution = resolution_by_order.get(event.event_order)
             candidate = (
@@ -1121,6 +1210,10 @@ def _failed_date_event_orders(
         if effective_start is None:
             if any(sport == event.sport for sport, _ in failed):
                 orders.append(event.event_order)
+        elif event.event_order in evidence_by_order:
+            # The relevant UTC date is backed by independent reviewed evidence;
+            # an API provider plan gap cannot erase that source observation.
+            continue
         elif (
             event.sport,
             effective_start.astimezone(timezone.utc).date().isoformat(),

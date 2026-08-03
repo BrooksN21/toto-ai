@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-03T18:00:00Z",
+  "observations": [
+    {
+      "observation_id": "uefa-2049106",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига Чемпионов УЕФА. Квалификация",
+        "UEFA Champions League qualifying"
+      ],
+      "home_entity": "Union Saint-Gilloise",
+      "home_aliases": [
+        "Сент-Жиллуаз",
+        "Union Saint-Gilloise",
+        "Union SG",
+        "R. Union Saint-Gilloise"
+      ],
+      "away_entity": "Bodø/Glimt",
+      "away_aliases": [
+        "Боде Глимт",
+        "Bodø/Glimt",
+        "FK Bodø/Glimt",
+        "Bodo Glimt"
+      ],
+      "starts_at": "2026-08-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-03T17:00:00Z",
+      "review_document": "reviews/4965-event-5.md",
+      "review_document_sha256": "a6491b215a35016a56cd5e0d876eafefb4cbea597254e751dd6a505e66291d83",
+      "claims": [
+        {
+          "source_name": "UEFA match API",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches?opponentTeamIds=64125,59333&limit=100&offset=0&order=ASC"
+        },
+        {
+          "source_name": "UEFA draw",
+          "role": "official",
+          "source_url": "https://www.uefa.com/uefachampionsleague/news/02a7-211a524fc0ef-eb55dc7dccd8-1000--uefa-champions-league-third-qualifying-round-draw/"
+        },
+        {
+          "source_name": "Union SG",
+          "role": "official",
+          "source_url": "https://rusg.brussels/en/news/mobility-union-fk-bodoglimt-oostende"
+        }
+      ]
+    },
+    {
+      "observation_id": "cbf-834864",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Бразилия. Кубок",
+        "Copa do Brasil"
+      ],
+      "home_entity": "Clube do Remo",
+      "home_aliases": [
+        "Ремо",
+        "Remo",
+        "Clube do Remo"
+      ],
+      "away_entity": "Santos FC",
+      "away_aliases": [
+        "Сантос",
+        "Santos",
+        "Santos FC",
+        "Santos Futebol Clube"
+      ],
+      "starts_at": "2026-08-05T00:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-03T17:00:00Z",
+      "review_document": "reviews/4965-event-10.md",
+      "review_document_sha256": "a44d5391afef15de97c727bf29e5c07b49c5b4ab6c3f86ddb637db95e19736dc",
+      "claims": [
+        {
+          "source_name": "CBF",
+          "role": "official",
+          "source_url": "https://www.cbf.com.br/futebol-brasileiro/jogos/copa-do-brasil/profissional/2026/remo-x-santos-fc/834864"
+        }
+      ]
+    },
+    {
+      "observation_id": "leagues-cup-charlotte-pumas-2026",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Америка. Кубок Североамериканских лиг",
+        "Leagues Cup"
+      ],
+      "home_entity": "Charlotte FC",
+      "home_aliases": [
+        "Шарлотт ФК",
+        "Charlotte FC"
+      ],
+      "away_entity": "Pumas UNAM",
+      "away_aliases": [
+        "Пумас УНАМ",
+        "Pumas UNAM",
+        "Club Universidad Nacional"
+      ],
+      "starts_at": "2026-08-05T00:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-03T17:00:00Z",
+      "review_document": "reviews/4965-event-12.md",
+      "review_document_sha256": "78b58578053df25fbb8bbdf67ca22e05d0315dd57f0f685f907651026b2fc065",
+      "claims": [
+        {
+          "source_name": "Charlotte FC",
+          "role": "official",
+          "source_url": "https://www.charlottefootballclub.com/news/leagues-cup-2026-tickets-on-sale-as-charlotte-fc-host-three-liga-mx-teams-in-phase-one"
+        },
+        {
+          "source_name": "Pumas",
+          "role": "official",
+          "source_url": "https://pumas.mx/noticias/3463/pumas-con-calendario-listo-para-leagues-cup-2026"
+        },
+        {
+          "source_name": "Leagues Cup",
+          "role": "official",
+          "source_url": "https://www.leaguescup.com/news/leagues-cup-2026-set-to-be-played-august-4-september-6-participating-clubs-announced"
+        }
+      ]
+    }
+  ]
+}

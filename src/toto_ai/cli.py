@@ -115,6 +115,9 @@ from toto_ai.external_odds.reviewed_schedule import (
     revalidate_reviewed_catalog,
     reviewed_catalog_input_paths,
 )
+from toto_ai.external_odds.schedule_evidence import (
+    DEFAULT_SCHEDULE_EVIDENCE_PATH,
+)
 from toto_ai.external_odds.storage import load_current_drawing_eligibility
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.team_registry import (
@@ -2969,6 +2972,11 @@ def _prepare_current_for_morning(
             provider=provider,
             schedule_diagnostics=schedule.diagnostics,
             reviewed_schedule_catalog=reviewed_schedule_catalog,
+            schedule_evidence_ledger=(
+                project_root / DEFAULT_SCHEDULE_EVIDENCE_PATH
+                if (project_root / DEFAULT_SCHEDULE_EVIDENCE_PATH).is_file()
+                else None
+            ),
             evaluated_at=observed_at,
         )
         detail_sha256 = hashlib.sha256(
