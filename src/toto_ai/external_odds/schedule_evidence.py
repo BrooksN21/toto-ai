@@ -71,6 +71,7 @@ class EvidenceResolution:
     reason: str
     observation: ScheduleObservation | None = None
     confidence: Literal["none", "review", "high"] = "none"
+    orientation: Literal["same", "reversed"] | None = None
 
 
 def load_schedule_evidence_ledger(path: Path) -> ScheduleEvidenceLedger:
@@ -222,16 +223,22 @@ def resolve_schedule_evidence(
             "CONFLICT",
             "exact normalized alias belongs to multiple canonical entities",
         )
-    identity_matches: list[ScheduleObservation] = []
+    identity_matches: list[tuple[ScheduleObservation, Literal["same", "reversed"]]] = []
     stale = False
     for observation in ledger.observations:
         if observation.sport != target.sport:
             continue
         if observation.gender_age_class != target_class:
             continue
-        if observation.home_entity not in home_entities:
-            continue
-        if observation.away_entity not in away_entities:
+        same = (
+            observation.home_entity in home_entities
+            and observation.away_entity in away_entities
+        )
+        reversed_pair = (
+            observation.home_entity in away_entities
+            and observation.away_entity in home_entities
+        )
+        if not same and not reversed_pair:
             continue
         if not _competition_compatible(
             target.championship, observation.competition_aliases
@@ -261,7 +268,9 @@ def resolve_schedule_evidence(
                     "SOURCE_MISSING",
                     "relevant evidence-source date is missing",
                 )
-        identity_matches.append(observation)
+        identity_matches.append(
+            (observation, "same" if same else "reversed")
+        )
     if stale and not identity_matches:
         return EvidenceResolution("STALE", "matching reviewed evidence is stale")
     unique = {
@@ -270,20 +279,22 @@ def resolve_schedule_evidence(
             item.away_entity,
             item.starts_at,
             item.gender_age_class,
-        ): item
-        for item in identity_matches
+            orientation,
+        ): (item, orientation)
+        for item, orientation in identity_matches
     }
     if len(unique) > 1:
         return EvidenceResolution(
             "CONFLICT", "reviewed evidence has conflicting exact schedules"
         )
     if len(unique) == 1:
-        observation = next(iter(unique.values()))
+        observation, orientation = next(iter(unique.values()))
         return EvidenceResolution(
             "RESOLVED",
             "exact reusable reviewed identity and kickoff evidence",
             observation,
             "high",
+            orientation,
         )
     if any(
         _fuzzy_pair_hint(target, item)

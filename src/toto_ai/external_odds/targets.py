@@ -110,6 +110,7 @@ def _parse_target_event(
         home_team_en=home_team_en,
         away_team_en=away_team_en,
         bk_probabilities=_normalized_bk_probabilities(raw_event.get("quotes")),
+        pool_probabilities=_normalized_pool_probabilities(raw_event.get("quotes")),
     )
 
 
@@ -122,6 +123,20 @@ def _normalized_bk_probabilities(quotes: object) -> OutcomeTriplet:
     )
     numbers = tuple(
         _finite_positive_number(value, "BK probability") for value in raw_values
+    )
+    total = sum(numbers)
+    return numbers[0] / total, numbers[1] / total, numbers[2] / total
+
+
+def _normalized_pool_probabilities(quotes: object) -> OutcomeTriplet | None:
+    values = _require_mapping(quotes, "quotes")
+    raw = tuple(
+        values.get(key) for key in ("pool_win_1", "pool_draw", "pool_win_2")
+    )
+    if raw == (None, None, None):
+        return None
+    numbers = tuple(
+        _finite_positive_number(value, "pool probability") for value in raw
     )
     total = sum(numbers)
     return numbers[0] / total, numbers[1] / total, numbers[2] / total

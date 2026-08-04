@@ -57,7 +57,12 @@ def _canonical(value: object) -> bytes:
     ).encode()
 
 
-def _plan(path: Path, *, command_suffix: tuple[str, ...] = ()) -> Path:
+def _plan(
+    path: Path,
+    *,
+    command_suffix: tuple[str, ...] = (),
+    activate_evening: bool = False,
+) -> Path:
     identity = {
         "drawing_id": 11993,
         "drawing_number": 4961,
@@ -88,7 +93,7 @@ def _plan(path: Path, *, command_suffix: tuple[str, ...] = ()) -> Path:
         "created_at": "2026-07-31T09:00:00Z",
         "hard_stop": "2026-07-31T15:00:00Z",
         "passive": True,
-        "activate_evening": False,
+        "activate_evening": activate_evening,
         "attempts": [
             {
                 "scheduled_at": "2026-07-31T10:00:00Z",
@@ -196,10 +201,38 @@ def test_status_requires_exact_install_and_load_and_terminal_has_no_next_run(tmp
 
 
 def test_forbidden_activation_or_betting_is_rejected(tmp_path):
-    with pytest.raises(ValueError, match="not passive"):
+    with pytest.raises(
+        ValueError,
+        match="passive retry command cannot activate evening scheduler",
+    ):
         prepare_preflight_retry_artifacts(
             _plan(tmp_path / "retry-plan.json", command_suffix=("--activate",))
         )
+
+
+def test_bootstrap_retry_allows_exact_evening_activation_and_reinstall_is_idempotent(
+    tmp_path,
+):
+    runner = FakeRunner()
+    artifacts = prepare_preflight_retry_artifacts(
+        _plan(
+            tmp_path / "retry-plan.json",
+            command_suffix=("--activate",),
+            activate_evening=True,
+        )
+    )
+    root = tmp_path / "LaunchAgents"
+
+    first = install_preflight_retry_launch_agent(
+        artifacts, launch_agents_root=root, command_runner=runner
+    )
+    second = install_preflight_retry_launch_agent(
+        artifacts, launch_agents_root=root, command_runner=runner
+    )
+
+    assert first["active"] is True
+    assert second["active"] is True
+    assert runner.bootstrap_count == 1
 
 
 def test_retry_wrapper_loads_secure_env_and_fails_before_command_when_key_missing(

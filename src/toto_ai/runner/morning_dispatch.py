@@ -124,6 +124,8 @@ class MorningPreparedDrawing:
     span_days: int | None
     unresolved_events: tuple[MorningUnresolvedEvent, ...] = ()
     not_ready_reason: str | None = None
+    external_coverage_count: int = 15
+    baseline_only_event_orders: tuple[int, ...] = ()
 
     def __post_init__(self) -> None:
         if type(self.drawing_id) is not int or self.drawing_id <= 0:
@@ -139,6 +141,22 @@ class MorningPreparedDrawing:
             raise ValueError("mapped_count must be from 0 through 15")
         if not self.eligibility_status:
             raise ValueError("eligibility_status is required")
+        if (
+            type(self.external_coverage_count) is not int
+            or not 0 <= self.external_coverage_count <= 15
+        ):
+            raise ValueError("external_coverage_count must be from 0 through 15")
+        if (
+            tuple(sorted(self.baseline_only_event_orders))
+            != self.baseline_only_event_orders
+            or len(set(self.baseline_only_event_orders))
+            != len(self.baseline_only_event_orders)
+            or any(order not in range(15) for order in self.baseline_only_event_orders)
+            or self.external_coverage_count
+            + len(self.baseline_only_event_orders)
+            != 15
+        ):
+            raise ValueError("baseline-only coverage evidence is inconsistent")
         if self.span_days is not None and (
             type(self.span_days) is not int or self.span_days <= 0
         ):
@@ -689,6 +707,10 @@ def _record(
         "preparation": {
             "status": evidence.preparation_status,
             "mapped_count": evidence.mapped_count,
+            "external_coverage_count": evidence.external_coverage_count,
+            "baseline_only_event_orders": list(
+                evidence.baseline_only_event_orders
+            ),
             "eligibility_status": evidence.eligibility_status,
             "span_days": evidence.span_days,
             "unresolved": [

@@ -20,7 +20,7 @@ from toto_ai.runner.scheduler import (
 )
 
 _LABEL = re.compile(r"com\.totoai\.preflight-retry\.\d+\.[0-9a-f]{16}\Z")
-_FORBIDDEN = ("--activate", "run-drawing", ".bet-ready")
+_FORBIDDEN = ("run-drawing", ".bet-ready")
 
 
 @dataclass(frozen=True)
@@ -50,6 +50,7 @@ def prepare_preflight_retry_artifacts(
     wrapper = root / "run-preflight-retry"
     candidate = root / f"{label}.plist"
     command = tuple(str(value) for value in plan["attempts"][0]["command"])
+    _verify_activation_contract(command, plan["activate_evening"])
     env_file = Path(_option_value(command, "--env-file")).resolve()
     project_root = Path(_option_value(command, "--project-root")).resolve()
     _require_secure_env_file(env_file)
@@ -262,7 +263,7 @@ def _load_plan(path: Path) -> dict:
     if (
         plan.get("plan_type") != "passive_preflight_retry"
         or plan.get("passive") is not True
-        or plan.get("activate_evening") is not False
+        or type(plan.get("activate_evening")) is not bool
         or not isinstance(identity, Mapping)
         or not isinstance(attempts, list)
         or not attempts
@@ -275,6 +276,10 @@ def _load_plan(path: Path) -> dict:
         _verify_command_identity(
             tuple(str(value) for value in attempt.get("command", ())),
             identity,
+        )
+        _verify_activation_contract(
+            tuple(str(value) for value in attempt.get("command", ())),
+            plan["activate_evening"],
         )
         _parse(str(attempt.get("scheduled_at", "")))
     return plan
@@ -296,6 +301,16 @@ def _verify_command_identity(
         index = command.index(option)
         if index + 1 >= len(command) or command[index + 1] != expected:
             raise ValueError(f"retry command {option} identity drift")
+
+
+def _verify_activation_contract(
+    command: Sequence[str], activate_evening: object
+) -> None:
+    count = command.count("--activate")
+    if activate_evening is True and count != 1:
+        raise ValueError("bootstrap retry command must activate evening scheduler")
+    if activate_evening is False and count:
+        raise ValueError("passive retry command cannot activate evening scheduler")
 
 
 def _option_value(command: Sequence[str], option: str) -> str:

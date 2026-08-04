@@ -13,6 +13,7 @@ import pytest
 
 from toto_ai.runner.morning_dispatch import (
     MorningDispatchConfig,
+    MorningExpectedIdentity,
     MorningPreparedDrawing,
     activate_scheduler_launch_agent,
     dispatch_morning,
@@ -56,8 +57,9 @@ def _prepared(
     mapped: int = 15,
     eligibility: str = "playable",
     span_days: int | None = 1,
+    not_ready_reason: str | None = None,
 ) -> MorningPreparedDrawing:
-    return MorningPreparedDrawing(
+    kwargs = dict(
         drawing_id=drawing_id,
         drawing_number=number,
         deadline=deadline,
@@ -68,6 +70,127 @@ def _prepared(
         eligibility_status=eligibility,
         span_days=span_days,
     )
+    if not_ready_reason is not None:
+        kwargs["not_ready_reason"] = not_ready_reason
+    return MorningPreparedDrawing(**kwargs)
+
+
+def _zero_pool_bootstrap(
+    *,
+    deadline: datetime,
+    fingerprint: str = "a" * 64,
+) -> MorningPreparedDrawing:
+    return _prepared(
+        number=4965,
+        drawing_id=12004,
+        deadline=deadline,
+        fingerprint=fingerprint,
+        status="not_ready",
+        mapped=0,
+        eligibility="unknown",
+        span_days=None,
+        not_ready_reason="totobrief_pool_not_ready",
+    )
+
+
+def test_zero_pool_bootstrap_creates_identity_bound_retry_plan_before_import(
+    tmp_path,
+):
+    config = _config(tmp_path)
+    observed = datetime(2026, 8, 3, 14, 6, 20, tzinfo=UTC)
+    deadline = datetime(2026, 8, 4, 15, 0, tzinfo=UTC)
+    fingerprint = (
+        "559c7615626b624cdd5ebefa782c6b96593ff9fb4dfcdbd18a3e6155f3c17af8"
+    )
+
+    result = dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: _zero_pool_bootstrap(
+            deadline=deadline,
+            fingerprint=fingerprint,
+        ),
+        python_command=sys.executable,
+        expected_identity=MorningExpectedIdentity(
+            drawing_id=12004,
+            drawing_number=4965,
+            deadline=deadline,
+            drawing_fingerprint=fingerprint,
+        ),
+    )
+
+    assert result.status == "deferred"
+    assert result.reason == "totobrief_pool_not_ready"
+    assert result.plan_path is None
+    plan = json.loads(result.retry_plan_path.read_text(encoding="utf-8"))
+    assert plan["identity"]["drawing_id"] == 12004
+    assert plan["identity"]["drawing_number"] == 4965
+    assert plan["identity"]["deadline"] == "2026-08-04T15:00:00Z"
+    assert plan["identity"]["drawing_fingerprint"] == fingerprint
+    assert plan["activate_evening"] is True
+    assert [item["scheduled_at"] for item in plan["attempts"]] == [
+        "2026-08-03T14:17:00Z",
+        "2026-08-03T14:37:00Z",
+        "2026-08-03T15:07:00Z",
+        "2026-08-03T17:07:00Z",
+        "2026-08-04T05:00:00Z",
+        "2026-08-04T07:30:00Z",
+        "2026-08-04T09:00:00Z",
+    ]
+    assert all("--activate" in item["command"] for item in plan["attempts"])
+    assert not tuple(config.scheduler_root.rglob("scheduler-plan.json"))
+
+
+def test_zero_pool_retry_recovers_to_one_activated_evening_scheduler(tmp_path):
+    config = _config(tmp_path)
+    observed = datetime(2026, 8, 3, 14, 6, tzinfo=UTC)
+    deadline = datetime(2026, 8, 4, 15, 0, tzinfo=UTC)
+    fingerprint = (
+        "559c7615626b624cdd5ebefa782c6b96593ff9fb4dfcdbd18a3e6155f3c17af8"
+    )
+    activations: list[tuple[str, Path]] = []
+
+    deferred = dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: _zero_pool_bootstrap(
+            deadline=deadline,
+            fingerprint=fingerprint,
+        ),
+        python_command=sys.executable,
+    )
+    ready = _prepared(
+        number=4965,
+        drawing_id=12004,
+        deadline=deadline,
+        fingerprint=fingerprint,
+    )
+    scheduled = dispatch_morning(
+        config,
+        observed_at=observed + timedelta(minutes=10),
+        now=lambda: observed + timedelta(minutes=10),
+        prepare_current=lambda _now: ready,
+        activate=lambda label, path: activations.append((label, path)),
+        python_command=sys.executable,
+    )
+    reused = dispatch_morning(
+        config,
+        observed_at=observed + timedelta(minutes=11),
+        now=lambda: observed + timedelta(minutes=11),
+        prepare_current=lambda _now: ready,
+        activate=lambda label, path: activations.append((label, path)),
+        python_command=sys.executable,
+    )
+
+    assert deferred.status == "deferred"
+    assert scheduled.status == "scheduled"
+    assert scheduled.activation_status == "activated"
+    assert reused.status == "reused"
+    assert reused.activation_status == "activated"
+    assert len(activations) == 1
+    assert len(tuple(config.scheduler_root.rglob("scheduler-plan.json"))) == 1
 
 
 def test_dynamic_dispatcher_rolls_to_new_drawing_without_stale_identity(tmp_path):

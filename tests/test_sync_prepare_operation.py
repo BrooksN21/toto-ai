@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from toto_ai.api.detail_cache import write_drawing_detail_cache
 from toto_ai.api.rate_limit import TotoBriefRequestError
-from toto_ai.db.models import Drawing, Event
+from toto_ai.db.models import Drawing, Event, Quote
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.external_odds.preparation import (
     load_local_schedule,
@@ -207,6 +207,44 @@ def test_sync_prepare_fails_closed_when_only_stale_probability_cache_exists(
     assert "cache=drawing detail cache is stale" in (
         synchronized.detail.error or ""
     )
+    engine.dispose()
+
+
+def test_sync_prepare_classifies_all_zero_pool_as_retryable_without_detail_writes(
+    tmp_path,
+):
+    target_cache = json.loads(
+        (FIXTURES / "drawing_4951_totobrief_target_cache.json").read_text()
+    )
+    zero_pool_payload = json.loads(json.dumps(target_cache["payload"]))
+    for event in zero_pool_payload["data"]["events"]:
+        event["quotes"].update(
+            {"pool_win_1": 0, "pool_draw": 0, "pool_win_2": 0}
+        )
+    now = datetime(2026, 7, 21, 12, 30, tzinfo=timezone.utc)
+    engine = init_db(tmp_path / "toto.db")
+    factory = get_session_factory(engine)
+    client = FreshDetailClient(zero_pool_payload)
+
+    synchronized = synchronize_open_drawing(
+        client,
+        factory,
+        now=now,
+        raw_cache_dir=tmp_path / "raw",
+        storage_root=tmp_path,
+    )
+
+    assert synchronized.ready is False
+    assert synchronized.detail.status == "deferred"
+    assert synchronized.detail.reason_code == "totobrief_pool_not_ready"
+    assert synchronized.detail.payload == zero_pool_payload
+    assert synchronized.detail.source == "network-not-ready"
+    assert client.page_calls == 1
+    assert client.detail_calls == 1
+    with factory() as session:
+        assert session.scalars(select(Event)).all() == []
+        assert session.scalars(select(Quote)).all() == []
+    assert not (tmp_path / "raw" / "drawing_11968.json").exists()
     engine.dispose()
 
 

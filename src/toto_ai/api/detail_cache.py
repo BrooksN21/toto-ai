@@ -193,6 +193,50 @@ def validate_drawing_detail_payload(
     return payload
 
 
+def is_zero_pool_bootstrap_payload(
+    payload: Any,
+    *,
+    expected_drawing_id: int,
+) -> bool:
+    """Recognize only the early 15-event/15-BK/all-zero-pool API shape.
+
+    This is deliberately separate from ``validate_drawing_detail_payload``:
+    callers may schedule a retry from this payload, but must never cache or
+    persist it as synchronized drawing detail.
+    """
+    _require_positive_int("expected_drawing_id", expected_drawing_id)
+    if not isinstance(payload, dict) or not isinstance(payload.get("data"), dict):
+        return False
+    data = payload["data"]
+    if data.get("id") != expected_drawing_id:
+        return False
+    events = data.get("events")
+    if not isinstance(events, list) or len(events) != 15:
+        return False
+    seen_orders: set[int] = set()
+    for event in events:
+        if not isinstance(event, dict):
+            return False
+        event_id = event.get("id")
+        order = event.get("order")
+        if type(event_id) is not int or event_id <= 0:
+            return False
+        if type(order) is not int or order not in range(15) or order in seen_orders:
+            return False
+        seen_orders.add(order)
+        quotes = event.get("quotes")
+        if not isinstance(quotes, dict):
+            return False
+        try:
+            pool = _quote_numbers(quotes, "pool")
+            bookmaker = _quote_numbers(quotes, "bk")
+        except ValueError:
+            return False
+        if any(pool) or any(value <= 0 for value in bookmaker):
+            return False
+    return seen_orders == set(range(15))
+
+
 def _load_metadata(
     path: Path,
     *,
@@ -284,27 +328,31 @@ def _validate_quotes(value: Any, *, event_order: int) -> None:
     if not isinstance(value, dict):
         raise ValueError(f"drawing detail event {event_order} quotes must be an object")
     for prefix in ("pool", "bk"):
-        numbers = []
-        for suffix in ("win_1", "draw", "win_2"):
-            key = f"{prefix}_{suffix}"
-            raw = value.get(key)
-            if isinstance(raw, bool) or not isinstance(raw, (int, float)):
-                raise ValueError(
-                    f"drawing detail event {event_order} quote {key} "
-                    "must be finite and non-negative"
-                )
-            number = float(raw)
-            if not math.isfinite(number) or number < 0:
-                raise ValueError(
-                    f"drawing detail event {event_order} quote {key} "
-                    "must be finite and non-negative"
-                )
-            numbers.append(number)
+        try:
+            numbers = _quote_numbers(value, prefix)
+        except ValueError as error:
+            raise ValueError(
+                f"drawing detail event {event_order} {error}"
+            ) from error
         if sum(numbers) <= 0:
             raise ValueError(
                 f"drawing detail event {event_order} {prefix} quotes must have "
                 "a positive total"
             )
+
+
+def _quote_numbers(value: dict[str, Any], prefix: str) -> tuple[float, ...]:
+    numbers = []
+    for suffix in ("win_1", "draw", "win_2"):
+        key = f"{prefix}_{suffix}"
+        raw = value.get(key)
+        if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+            raise ValueError(f"quote {key} must be finite and non-negative")
+        number = float(raw)
+        if not math.isfinite(number) or number < 0:
+            raise ValueError(f"quote {key} must be finite and non-negative")
+        numbers.append(number)
+    return tuple(numbers)
 
 
 def _require_positive_int(name: str, value: Any) -> int:

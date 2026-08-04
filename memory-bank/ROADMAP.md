@@ -618,3 +618,9 @@ closed.
   record only because its official home/away identity is not established.
 - [ ] Resolve 4965 events 7 and 13 only from non-conflicting authoritative
   evidence; until then keep the drawing fail-closed at 13/15.
+
+- [x] `TOTO-4965-PARTIAL-ENRICHMENT`: permit explicit per-event baseline-only
+  preparation when all 15 TotoBrief BK/pool rows are valid, while retaining
+  fail-closed identity/probability conflicts and full mixed-source provenance.
+  Production 4965 reached READY 15/15 (13 external; baseline-only 7/13) but was
+  correctly deadline-deferred with no package or bet.

@@ -3030,11 +3030,11 @@ def _prepare_current_for_morning(
             drawing_fingerprint=prepared.drawing_fingerprint,
             detail_sha256=detail_sha256,
             preparation_status=prepared.status,
-            mapped_count=sum(
-                item.status == "matched" for item in prepared.events
-            ),
+            mapped_count=prepared.mapped_count,
             eligibility_status=prepared.eligibility.status,
             span_days=prepared.eligibility.span_days,
+            external_coverage_count=prepared.external_coverage_count,
+            baseline_only_event_orders=prepared.baseline_only_event_orders,
             unresolved_events=tuple(
                 MorningUnresolvedEvent(
                     event_order=item.event_order,
@@ -3047,7 +3047,7 @@ def _prepare_current_for_morning(
                     provider_diagnostics=tuple(schedule.diagnostics),
                 )
                 for item in prepared.events
-                if item.status != "matched"
+                if item.status not in {"matched", "baseline_only"}
             ),
         )
     finally:
@@ -3722,6 +3722,8 @@ def prepare_drawing_command(
                 "provider": result.provider,
                 "status": result.status,
                 "mapped_count": result.mapped_count,
+                "external_coverage_count": result.external_coverage_count,
+                "baseline_only_event_orders": result.baseline_only_event_orders,
                 "unresolved_event_orders": result.unresolved_event_orders,
                 "eligibility_status": result.eligibility.status,
                 "schedule_diagnostics": result.schedule_diagnostics,
@@ -3935,6 +3937,8 @@ def sync_prepare_command(
         "drawing_fingerprint": result.drawing_fingerprint,
         "status": result.status,
         "mapped_count": result.mapped_count,
+        "external_coverage_count": result.external_coverage_count,
+        "baseline_only_event_orders": result.baseline_only_event_orders,
         "unresolved_event_orders": result.unresolved_event_orders,
         "eligibility_status": result.eligibility.status,
         "totobrief_detail_source": synchronized.detail.source,

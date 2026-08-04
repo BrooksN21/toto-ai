@@ -14,6 +14,7 @@ from toto_ai.api.client import TotoBriefClient
 from toto_ai.api.detail_cache import (
     DEFAULT_DETAIL_CACHE_MAX_AGE_SECONDS,
     DrawingDetailCacheRecord,
+    is_zero_pool_bootstrap_payload,
     load_drawing_detail_cache,
     validate_drawing_detail_payload,
     write_drawing_detail_cache,
@@ -38,6 +39,7 @@ class DetailSyncResult:
     quotes_saved: int = 0
     error: str | None = None
     payload: dict[str, Any] | None = None
+    reason_code: str | None = None
 
 
 @dataclass(frozen=True)
@@ -246,10 +248,31 @@ class Collector:
                     expected_drawing_id=drawing_id,
                 )
             else:
-                validate_drawing_detail_payload(
-                    payload,
-                    expected_drawing_id=drawing_id,
-                )
+                try:
+                    validate_drawing_detail_payload(
+                        payload,
+                        expected_drawing_id=drawing_id,
+                    )
+                except ValueError:
+                    if not is_zero_pool_bootstrap_payload(
+                        payload,
+                        expected_drawing_id=drawing_id,
+                    ):
+                        raise
+                    _validate_detail_matches_summary(
+                        payload,
+                        drawing_summary,
+                        strict=strict_summary,
+                        now=self.now(),
+                    )
+                    return DetailSyncResult(
+                        drawing_id=drawing_id,
+                        status="deferred",
+                        source="network-not-ready",
+                        error="TotoBrief pool probabilities are not ready",
+                        payload=payload,
+                        reason_code="totobrief_pool_not_ready",
+                    )
             _validate_detail_matches_summary(
                 payload,
                 drawing_summary,

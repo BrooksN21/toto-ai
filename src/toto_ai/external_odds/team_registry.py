@@ -782,13 +782,33 @@ def _validate_ready_preparation(
         preparation.status != "ready"
         or preparation.mapped_count != 15
         or unresolved != []
-        or preparation.eligibility_status != "playable"
+        or preparation.eligibility_status not in {"playable", "unknown"}
         or not isinstance(summary, dict)
         or summary.get("status") != "ready"
         or summary.get("mapped_count") != 15
         or summary.get("unresolved_event_orders") not in ([], ())
     ):
         raise ValueError("preparation_fail:not_ready_15_of_15")
+    baseline_orders = summary.get("baseline_only_event_orders", [])
+    external_count = summary.get("external_coverage_count", 15)
+    if (
+        not isinstance(baseline_orders, list)
+        or baseline_orders != sorted(baseline_orders)
+        or len(set(baseline_orders)) != len(baseline_orders)
+        or any(
+            type(order) is not int or order not in range(15)
+            for order in baseline_orders
+        )
+        or type(external_count) is not int
+        or external_count + len(baseline_orders) != 15
+        or (
+            baseline_orders
+            and not isinstance(
+                summary.get("baseline_probability_input_sha256"), str
+            )
+        )
+    ):
+        raise ValueError("preparation_fail:invalid_baseline_coverage_evidence")
     if expected_probability_sha256 is not None:
         if summary.get("probability_input_sha256") != expected_probability_sha256:
             raise ValueError("preparation_fail:probability_input_changed_or_missing")
@@ -879,7 +899,11 @@ def publish_canonical_pin_set(
             item["source_provider"],
             item["source_fixture_id"]
             if item["source_fixture_id"] is not None
-            else item["reviewed_evidence_id"],
+            else (
+                item["reviewed_evidence_id"]
+                if item["reviewed_evidence_id"] is not None
+                else item["target_event_id"]
+            ),
         )
         for item in contents
     )
@@ -1056,7 +1080,7 @@ def refresh_ready_drawing_preparation_evidence(
                 or preparation.status != "ready"
                 or preparation.mapped_count != 15
                 or preparation.unresolved_event_orders != "[]"
-                or preparation.eligibility_status != "playable"
+                or preparation.eligibility_status not in {"playable", "unknown"}
             ):
                 raise ValueError("ready drawing preparation cannot be refreshed")
             rows = tuple(
@@ -1870,6 +1894,15 @@ def _canonical_pin_content_from_spec(
                 "reviewed pin requires evidence, forbids fixture identity, "
                 "and forbids provider team identity"
             )
+    elif source_provider == "totobrief-baseline":
+        if (
+            source_fixture_id is not None
+            or reviewed_evidence_id is not None
+            or source_home_team_id is not None
+            or source_away_team_id is not None
+            or not schedule_only
+        ):
+            raise ValueError("TotoBrief baseline pin identity is invalid")
     else:
         raise ValueError("unknown schedule source provider")
     target_event_id = _required_text(
@@ -1883,6 +1916,10 @@ def _canonical_pin_content_from_spec(
     ):
         raise ValueError("event_order must be from 0 through 14")
     starts_at = _optional_datetime(spec.get("starts_at"), "starts_at")
+    if starts_at is None and source_provider == "totobrief-baseline":
+        # The legacy additive table has a NOT NULL text column.  Persist an
+        # explicit non-time sentinel and expose it as None in the record API.
+        starts_at = "baseline-only"
     if starts_at is None:
         raise ValueError("canonical pin starts_at is required")
     provenance = json.loads(_canonical_json(spec.get("provenance"), "provenance"))
@@ -1992,7 +2029,12 @@ def _canonical_pin_record(row: DrawingPinSetItem) -> DrawingEventPinRecord:
         provider_home_team_id=row.source_home_team_id,
         provider_away_team_id=row.source_away_team_id,
         provider_fixture_id=row.source_fixture_id,
-        starts_at=row.starts_at,
+        starts_at=(
+            None
+            if row.source_provider == "totobrief-baseline"
+            and row.starts_at == "baseline-only"
+            else row.starts_at
+        ),
         collection_id=None,
         provenance=json.loads(row.provenance),
         pin_hash=row.pin_hash,

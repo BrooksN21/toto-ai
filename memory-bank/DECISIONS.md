@@ -1011,3 +1011,18 @@
 - Reusable evidence pins carry both observation and ledger semantic hashes and
   must revalidate against both before final use. Evidence ingestion is
   append-only: an existing observation ID cannot be changed in place.
+
+## Per-event enrichment is optional; probability completeness is not
+
+A prospective drawing may be READY when every one of its 15 exact TotoBrief
+events has a complete, finite, positive BK and pool probability row and each
+event is either strictly externally resolved or explicitly recorded as
+`totobrief-baseline`. Baseline-only rows carry no synthetic provider identity
+and use only hash-bound TotoBrief probabilities. Any external identity conflict,
+TotoBrief identity drift, invalid/changed probability input, duplicate/missing
+order, or ineligible multi-day timing remains fail-closed.
+
+Exact reviewed schedule evidence may match the target in reversed source
+orientation only when both canonical entities match exactly; the stored pin
+records that orientation and final revalidation requires it unchanged. Fuzzy or
+ambiguous reversed evidence remains unresolved.

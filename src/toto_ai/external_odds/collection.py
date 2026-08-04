@@ -814,6 +814,26 @@ def _match_targets_from_pins(
             raise ValueError(
                 "prepared pin does not match exact drawing fingerprint/event"
             )
+        if pin.effective_source_provider == "totobrief-baseline":
+            if (
+                pin.provenance.get("reason_code")
+                != "baseline_only_external_unavailable"
+                or pin.provenance.get("bk_probabilities")
+                != list(event.bk_probabilities)
+                or pin.provenance.get("pool_probabilities")
+                != list(event.pool_probabilities or ())
+            ):
+                raise ValueError("TotoBrief baseline probability identity changed")
+            decision = MatchDecision(
+                status="matched",
+                provider_event_id=None,
+                matcher_version="totobrief-baseline-v1",
+                candidate_ids=(),
+                reason="baseline_only_external_unavailable",
+                orientation="same",
+            )
+            decisions[event.event_order] = _MatchedTarget(decision, None)
+            continue
         pinned_start = _event_datetime(pin.starts_at)
         if pinned_start is None:
             raise ValueError("prepared pin must contain starts_at")
@@ -829,6 +849,8 @@ def _match_targets_from_pins(
                     and evidence.starts_at == pinned_start
                     and evidence.semantic_hash
                     == pin.provenance.get("evidence_hash")
+                    and resolution.orientation
+                    == pin.provenance.get("orientation", "same")
                 )
                 if not matched:
                     decision = MatchDecision(
@@ -849,7 +871,7 @@ def _match_targets_from_pins(
                         "exact reusable schedule evidence revalidated; "
                         f"evidence={evidence.observation_id}"
                     ),
-                    orientation="same",
+                    orientation=resolution.orientation or "same",
                 )
                 decisions[event.event_order] = _MatchedTarget(decision, None)
                 continue
@@ -1100,7 +1122,10 @@ def _pinned_revalidation_summary(
             reason=decisions[event.event_order].decision.reason,
             source_provider=pins[event.event_order].effective_source_provider,
             revalidation_method=(
-                "schedule-evidence-v1"
+                "totobrief-baseline-v1"
+                if pins[event.event_order].effective_source_provider
+                == "totobrief-baseline"
+                else "schedule-evidence-v1"
                 if pins[event.event_order].effective_source_provider
                 == "schedule-evidence"
                 else (
@@ -1115,8 +1140,15 @@ def _pinned_revalidation_summary(
                 pins[event.event_order].provenance.get("evidence_hash")
                 if pins[event.event_order].effective_source_provider
                 in {"reviewed-schedule", "schedule-evidence"}
-                else pins[event.event_order].provenance.get(
+                else (
+                    pins[event.event_order].provenance.get(
+                        "baseline_probability_input_sha256"
+                    )
+                    if pins[event.event_order].effective_source_provider
+                    == "totobrief-baseline"
+                    else pins[event.event_order].provenance.get(
                     "provider_payload_hash"
+                    )
                 )
             ),
         )
@@ -1151,7 +1183,11 @@ def _pinned_revalidation_summary(
         for item in schedule_results
         if item.error is not None
     )
-    pin_ids = {pin.provider_fixture_id for pin in pins}
+    pin_ids = {
+        pin.provider_fixture_id
+        for pin in pins
+        if pin.effective_source_provider != "totobrief-baseline"
+    }
     fetched_at = tuple(
         event.fetched_at
         for result in schedule_results
@@ -1168,7 +1204,14 @@ def _pinned_revalidation_summary(
     )
     matched_count = len(matched)
     required_dates_complete = not failed_dates
-    schedule_fresh = matched_count == 15 and not stale and oldest is not None
+    external_count = sum(
+        pin.effective_source_provider != "totobrief-baseline" for pin in pins
+    )
+    schedule_fresh = (
+        matched_count == 15
+        and not stale
+        and (oldest is not None or external_count == 0)
+    )
     provider_checks_passed = matched_count == 15 and not provider_failures_by_identity
     fixture_checks_passed = matched_count == 15 and not fixture_failures
     team_checks_passed = matched_count == 15 and not team_failures

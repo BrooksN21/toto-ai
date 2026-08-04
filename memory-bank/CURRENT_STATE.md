@@ -3195,3 +3195,18 @@ or four/five-day spans from Moscow calendar boundaries to all intersecting UTC
 provider dates, exposes typed source-gap/failure states, and provides
 append-only hash-validated reviewed-observation ingestion. Final pin
 revalidation binds the observation and ledger semantic hashes.
+
+## Safe mixed external enrichment (2026-08-04)
+
+Implemented and verified: preparation now requires valid, hash-bound 15/15
+TotoBrief BK and pool probability rows while allowing explicit per-event
+`totobrief-baseline` pins when external schedule enrichment is unavailable.
+External identity and probability conflicts remain fail-closed; baseline pins
+never synthesize provider fixture/team IDs. Readiness and downstream provenance
+record `external_coverage_count` and `baseline_only_event_orders`.
+
+The production 4965 CLI preparation reached READY 15/15 with 13 externally
+enriched events and baseline-only orders 7 and 13. At 17:59 Moscow it correctly
+deferred as `drawing_not_playable` because the deadline had passed; no package,
+bet-ready marker, or bet was produced. Verification evidence: final 25 focused
+tests passed, an earlier focused run passed 72 tests, and Ruff/diff-check passed.

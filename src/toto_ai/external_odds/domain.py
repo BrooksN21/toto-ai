@@ -25,6 +25,7 @@ class TargetEvent:
     home_team_en: str | None
     away_team_en: str | None
     bk_probabilities: OutcomeTriplet
+    pool_probabilities: OutcomeTriplet | None = None
 
     def __post_init__(self) -> None:
         _require_positive_int("drawing_id", self.drawing_id)
@@ -42,6 +43,8 @@ class TargetEvent:
         _require_optional_text("home_team_en", self.home_team_en)
         _require_optional_text("away_team_en", self.away_team_en)
         _require_probability_triplet(self.bk_probabilities)
+        if self.pool_probabilities is not None:
+            _require_probability_triplet(self.pool_probabilities)
 
 
 @dataclass(frozen=True)

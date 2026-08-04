@@ -77,6 +77,18 @@ class DrawingPreparationResult:
     pins: tuple[DrawingEventPinRecord, ...]
     schedule_diagnostics: tuple[dict[str, str | None], ...] = ()
 
+    @property
+    def baseline_only_event_orders(self) -> tuple[int, ...]:
+        return tuple(
+            item.event_order
+            for item in self.events
+            if item.status == "baseline_only"
+        )
+
+    @property
+    def external_coverage_count(self) -> int:
+        return 15 - len(self.baseline_only_event_orders)
+
 
 @dataclass(frozen=True)
 class PreparationScheduleResult:
@@ -184,7 +196,7 @@ def prepare_drawing(
     schedule_evidence_ledger: str | Path | None = None,
     evaluated_at: datetime | None = None,
 ) -> DrawingPreparationResult:
-    """Resolve a drawing and atomically publish pins only when all 15 are ready."""
+    """Resolve strict external pins and explicit TotoBrief baseline-only rows."""
     persist_drawing_identity(session_factory, target)
     fingerprint = target_fingerprint(
         target.drawing_id, target.drawing_number, target.deadline, target.events
@@ -264,6 +276,7 @@ def prepare_drawing(
     reviewed_by_order: dict[int, ReviewedScheduleEvidence] = {}
     evidence_ledger: ScheduleEvidenceLedger | None = None
     evidence_by_order: dict[int, ScheduleObservation] = {}
+    evidence_conflict_orders: list[int] = []
     reviewed_error: str | None = None
     if reviewed_schedule_catalog is not None:
         reference = evaluated_at or datetime.now(timezone.utc)
@@ -300,6 +313,27 @@ def prepare_drawing(
                 and evidence_resolution.observation is not None
             ):
                 evidence_by_order[event.event_order] = evidence_resolution.observation
+            elif evidence_resolution.state == "CONFLICT":
+                evidence_conflict_orders.append(event.event_order)
+    if evidence_conflict_orders:
+        raise ValueError(
+            "conflicting authoritative schedule identity for event orders "
+            f"{tuple(evidence_conflict_orders)}"
+        )
+
+    baseline_orders = tuple(
+        event.event_order
+        for event, resolution in zip(target.events, resolutions, strict=True)
+        if resolution.status != "matched"
+        and event.event_order not in reviewed_by_order
+        and event.event_order not in evidence_by_order
+    )
+    baseline_probability_hash = (
+        _baseline_probability_input_sha256(target)
+        if baseline_orders
+        and all(event.pool_probabilities is not None for event in target.events)
+        else None
+    )
 
     pin_specs: list[dict[str, Any]] = []
     canonical_pin_specs: list[dict[str, Any]] = []
@@ -309,16 +343,34 @@ def prepare_drawing(
         reviewed_evidence = reviewed_by_order.get(event.event_order)
         reusable_evidence = evidence_by_order.get(event.event_order)
         if reusable_evidence is not None:
+            evidence_orientation = "same"
+            evidence_resolution = resolve_schedule_evidence(
+                event,
+                evidence_ledger,
+                evaluated_at=reference,
+            )
+            if evidence_resolution.orientation == "reversed":
+                evidence_orientation = "reversed"
+            canonical_home_name = (
+                reusable_evidence.home_entity
+                if evidence_orientation == "same"
+                else reusable_evidence.away_entity
+            )
+            canonical_away_name = (
+                reusable_evidence.away_entity
+                if evidence_orientation == "same"
+                else reusable_evidence.home_entity
+            )
             home_team_id = upsert_team_entity(
                 session_factory,
                 sport=event.sport,
-                canonical_name=reusable_evidence.home_entity,
+                canonical_name=canonical_home_name,
                 context=event.championship,
             ).id
             away_team_id = upsert_team_entity(
                 session_factory,
                 sport=event.sport,
-                canonical_name=reusable_evidence.away_entity,
+                canonical_name=canonical_away_name,
                 context=event.championship,
             ).id
             canonical_pin_specs.append(
@@ -336,6 +388,7 @@ def prepare_drawing(
                     "schedule_only": True,
                     "provenance": {
                         "resolver": "schedule-evidence-v1",
+                        "orientation": evidence_orientation,
                         "evidence_id": reusable_evidence.observation_id,
                         "evidence_hash": reusable_evidence.semantic_hash,
                         "ledger_hash": evidence_ledger.semantic_hash,
@@ -449,6 +502,74 @@ def prepare_drawing(
                 ),
                 candidate_evidence=[asdict(item) for item in resolution.candidates],
             )
+            if baseline_probability_hash is None:
+                events.append(
+                    PreparationEventResult(
+                        event_order=event.event_order,
+                        target_event_id=event.event_id,
+                        status=resolution.status,
+                        provider_fixture_id=fixture_id,
+                        reason=resolution.reason,
+                        confidence=resolution.confidence,
+                        margin=resolution.margin,
+                        candidate_evidence=tuple(
+                            asdict(item) for item in resolution.candidates
+                        ),
+                    )
+                )
+                continue
+            home_team_id = upsert_team_entity(
+                session_factory,
+                sport=event.sport,
+                canonical_name=event.home_team,
+                context=event.championship,
+            ).id
+            away_team_id = upsert_team_entity(
+                session_factory,
+                sport=event.sport,
+                canonical_name=event.away_team,
+                context=event.championship,
+            ).id
+            canonical_pin_specs.append(
+                {
+                    "target_event_id": str(event.event_id),
+                    "event_order": event.event_order,
+                    "source_provider": "totobrief-baseline",
+                    "source_fixture_id": None,
+                    "reviewed_evidence_id": None,
+                    "canonical_home_team_id": home_team_id,
+                    "canonical_away_team_id": away_team_id,
+                    "source_home_team_id": None,
+                    "source_away_team_id": None,
+                    "starts_at": event.starts_at,
+                    "schedule_only": True,
+                    "provenance": {
+                        "reason_code": "baseline_only_external_unavailable",
+                        "resolution_status": resolution.status,
+                        "resolution_reason": resolution.reason,
+                        "totobrief_event_order": event.event_order,
+                        "totobrief_event_id": event.event_id,
+                        "bk_probabilities": event.bk_probabilities,
+                        "pool_probabilities": event.pool_probabilities,
+                        "baseline_probability_input_sha256": baseline_probability_hash,
+                    },
+                }
+            )
+            events.append(
+                PreparationEventResult(
+                    event_order=event.event_order,
+                    target_event_id=event.event_id,
+                    status="baseline_only",
+                    provider_fixture_id=None,
+                    reason="baseline_only_external_unavailable",
+                    confidence=0.0,
+                    margin=0.0,
+                    candidate_evidence=tuple(
+                        asdict(item) for item in resolution.candidates
+                    ),
+                )
+            )
+            continue
         else:
             candidate = candidate_by_id[fixture_id]
             provider_home, provider_away = _target_oriented_candidate(
@@ -560,18 +681,28 @@ def prepare_drawing(
         candidate_by_id=candidate_by_id,
         reviewed_by_order=reviewed_by_order,
         evidence_by_order=evidence_by_order,
+        baseline_only_orders=baseline_orders,
     )
+    has_external_coverage = any(event.status == "matched" for event in events)
     unresolved = tuple(
         sorted(
-            {event.event_order for event in events if event.status != "matched"}
+            {
+                event.event_order
+                for event in events
+                if event.status != "matched"
+                and not (
+                    event.status == "baseline_only" and has_external_coverage
+                )
+            }
             | set(date_failure_orders)
         )
     )
     status = (
         "ready"
         if len(canonical_pin_specs) == 15
+        and has_external_coverage
         and not unresolved
-        and eligibility.status == "playable"
+        and eligibility.status != "multi_day"
         and not date_failure_orders
         else "unresolved"
     )
@@ -588,7 +719,11 @@ def prepare_drawing(
         pins=(),
         schedule_diagnostics=schedule_diagnostics,
     )
-    if status == "ready" and (reviewed_by_order or evidence_by_order):
+    if status == "ready" and (
+        reviewed_by_order
+        or evidence_by_order
+        or any(item.status == "baseline_only" for item in events)
+    ):
         pins = publish_canonical_pin_set(
             session_factory,
             drawing_id=target.drawing_id,
@@ -945,9 +1080,23 @@ def _result_from_existing(
     starts = tuple(
         EffectiveEventStart(
             event_order=event.event_order,
-            starts_at=event.starts_at
-            or _parse_datetime(pins[event.event_order].starts_at),
-            source="totobrief" if event.starts_at is not None else "provider",
+            starts_at=(
+                event.starts_at
+                or (
+                    None
+                    if pins[event.event_order].starts_at is None
+                    else _parse_datetime(pins[event.event_order].starts_at)
+                )
+            ),
+            source=(
+                "totobrief"
+                if event.starts_at is not None
+                else (
+                    "unresolved"
+                    if pins[event.event_order].starts_at is None
+                    else "provider"
+                )
+            ),
         )
         for event in target.events
     )
@@ -956,7 +1105,12 @@ def _result_from_existing(
         PreparationEventResult(
             event_order=event.event_order,
             target_event_id=event.event_id,
-            status="matched",
+            status=(
+                "baseline_only"
+                if pins[event.event_order].effective_source_provider
+                == "totobrief-baseline"
+                else "matched"
+            ),
             provider_fixture_id=pins[event.event_order].provider_fixture_id,
             reason="existing exact drawing pin",
             confidence=1.0,
@@ -969,7 +1123,7 @@ def _result_from_existing(
         target.drawing_number,
         fingerprint,
         provider,
-        "ready" if eligibility.status == "playable" else "unresolved",
+        "ready" if eligibility.status != "multi_day" else "unresolved",
         15,
         (),
         eligibility,
@@ -995,6 +1149,13 @@ def _readiness_summary(
             "schedule_diagnostics": result.schedule_diagnostics,
             "target_fetched_at": target.fetched_at.isoformat(),
             "probability_input_sha256": probability_hash,
+            "baseline_probability_input_sha256": (
+                _baseline_probability_input_sha256(target)
+                if result.baseline_only_event_orders
+                else None
+            ),
+            "external_coverage_count": result.external_coverage_count,
+            "baseline_only_event_orders": result.baseline_only_event_orders,
         },
         sort_keys=True,
         default=str,
@@ -1028,6 +1189,29 @@ def preparation_probability_sha256(
         separators=(",", ":"),
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
+
+
+def _baseline_probability_input_sha256(target: TargetDrawing) -> str:
+    rows = []
+    for event in target.events:
+        if event.pool_probabilities is None:
+            raise ValueError(
+                "baseline probabilities require complete TotoBrief pool rows"
+            )
+        rows.append(
+            {
+                "event_order": event.event_order,
+                "event_id": event.event_id,
+                "bk": event.bk_probabilities,
+                "pool": event.pool_probabilities,
+            }
+        )
+    # Reuse the strict finite/positive/normalized validator for both matrices.
+    preparation_probability_sha256(tuple(item["bk"] for item in rows))
+    preparation_probability_sha256(tuple(item["pool"] for item in rows))
+    return hashlib.sha256(
+        json.dumps(rows, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def refresh_ready_preparation_for_target(
@@ -1093,6 +1277,19 @@ def _validate_existing_pins_against_candidates(
                 candidate
             )
     for event, pin in zip(target.events, pins, strict=True):
+        if pin.effective_source_provider == "totobrief-baseline":
+            if (
+                pin.target_event_id != str(event.event_id)
+                or pin.event_order != event.event_order
+                or pin.provenance.get("reason_code")
+                != "baseline_only_external_unavailable"
+                or pin.provenance.get("bk_probabilities")
+                != list(event.bk_probabilities)
+                or pin.provenance.get("pool_probabilities")
+                != list(event.pool_probabilities or ())
+            ):
+                raise ValueError("ready TotoBrief baseline pin conflicts with target")
+            continue
         if pin.effective_source_provider == "schedule-evidence":
             if schedule_evidence_ledger is None or pin.reviewed_evidence_id is None:
                 raise ValueError(
@@ -1109,6 +1306,8 @@ def _validate_existing_pins_against_candidates(
                 or evidence is None
                 or evidence.observation_id != pin.reviewed_evidence_id
                 or _parse_datetime(pin.starts_at) != evidence.starts_at
+                or resolution.orientation
+                != pin.provenance.get("orientation", "same")
                 or pin.provenance.get("evidence_hash") != evidence.semantic_hash
                 or pin.provenance.get("ledger_hash")
                 != schedule_evidence_ledger.semantic_hash
@@ -1177,6 +1376,7 @@ def _failed_date_event_orders(
     candidate_by_id: Mapping[str, ProviderEvent] | None = None,
     reviewed_by_order: Mapping[int, ReviewedScheduleEvidence] | None = None,
     evidence_by_order: Mapping[int, ScheduleObservation] | None = None,
+    baseline_only_orders: tuple[int, ...] = (),
 ) -> tuple[int, ...]:
     statuses = _schedule_diagnostic_statuses(diagnostics)
     failed = {key for key, status in statuses.items() if status == "failed"}
@@ -1191,6 +1391,8 @@ def _failed_date_event_orders(
     evidence_by_order = evidence_by_order or {}
     orders = []
     for event in target.events:
+        if event.event_order in baseline_only_orders:
+            continue
         effective_start = event.starts_at
         reviewed = reviewed_by_order.get(event.event_order)
         reusable = evidence_by_order.get(event.event_order)
@@ -1237,7 +1439,8 @@ def _failed_date_pin_orders(
     return tuple(
         event.event_order
         for event, pin in zip(target.events, pins, strict=True)
-        if (
+        if pin.effective_source_provider != "totobrief-baseline"
+        and (
             event.sport,
             _parse_datetime(pin.starts_at).date().isoformat(),
         )

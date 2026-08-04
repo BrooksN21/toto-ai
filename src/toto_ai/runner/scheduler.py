@@ -3990,6 +3990,15 @@ def _validate_pinned_revalidation_payload(value: object) -> bool:
                 raise SchedulerPhaseError(
                     "API-Sports pin revalidation method is invalid"
                 )
+        elif source_provider == "totobrief-baseline":
+            if (
+                method != "totobrief-baseline-v1"
+                or row["evidence_id"] is not None
+                or not isinstance(row["evidence_hash"], str)
+            ):
+                raise SchedulerPhaseError(
+                    "TotoBrief baseline revalidation provenance is incomplete"
+                )
         else:
             raise SchedulerPhaseError(
                 "pinned revalidation source provider is unknown"

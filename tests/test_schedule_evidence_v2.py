@@ -139,7 +139,9 @@ def test_unseen_localized_and_historical_aliases_resolve_exactly(tmp_path):
     assert reused.confidence == "high"
 
 
-def test_fuzzy_only_and_reversed_orientation_never_auto_promote(tmp_path):
+def test_fuzzy_only_stays_review_required_but_exact_reversed_schedule_resolves(
+    tmp_path,
+):
     ledger = _ledger(tmp_path, [_observation()])
     fuzzy = resolve_schedule_evidence(
         _target("Иберия Сити", "Ларн Таун", "Европа. Лига Европы УЕФА. Квалификация"),
@@ -152,7 +154,8 @@ def test_fuzzy_only_and_reversed_orientation_never_auto_promote(tmp_path):
         evaluated_at=NOW,
     )
     assert fuzzy.state == "REVIEW_REQUIRED"
-    assert reversed_pair.state != "RESOLVED"
+    assert reversed_pair.state == "RESOLVED"
+    assert reversed_pair.orientation == "reversed"
 
 
 def test_womens_marker_is_not_silently_dropped(tmp_path):
