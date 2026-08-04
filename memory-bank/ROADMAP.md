@@ -99,6 +99,8 @@ The authoritative full-history audit and remediation plan are stored under
 - [x] One immutable final snapshot and canonical probability binding.
 - [x] Independent T−45/T−30/T−20/T−16/T−10 ticks and zero-cost `NO BET`.
 - [x] Dynamic drawing-neutral morning dispatcher.
+- [x] Make repeated morning-dispatch automation retries idempotent by reusing
+  persisted exact-drawing state without notification conflicts.
 - [x] Persist generated state before activation and safely reuse exact
   artifacts after bootstrap failure or process interruption.
 - [x] Reuse one per-drawing plan across a permitted two-day drawing.
@@ -568,6 +570,11 @@ profitability or a proven winning strategy.
 - Reproducible backtests
 
 ## Full-history remediation
+
+- [x] Handle an early open drawing whose TotoBrief pool is still `0/0/0`
+  without importing invalid detail: retain exact identity, retry on a bounded
+  schedule, and activate the ordinary evening scheduler only after normal
+  preparation becomes ready.
 
 - [x] `TOTO-REVIEWED-EVIDENCE-DATE-SCOPED-POLICY-V1`: evaluate provider
   completeness per event UTC date, ignore unrelated expansion-date failures,

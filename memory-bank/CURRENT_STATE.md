@@ -1,5 +1,9 @@
 # Current State
 
+## Morning dispatch idempotency fix (2026-08-04)
+
+Repeated production morning-dispatch retries now reuse the persisted exact-drawing state instead of conflicting with an earlier notification; three retries completed at 13/15 without a notify conflict. Verification: 12 focused tests passed, with Ruff and diff checks green.
+
 ## Evening stale-detail refresh fix (2026-08-03)
 
 The drawing-4964 warmup and refresh ticks exposed that the scheduler invoked
@@ -3153,6 +3157,20 @@ with zero pins, then READY 15/15 with 15 atomic mixed-provider pins, zero
 network requests, zero package/bet-ready artifacts, and unchanged main DB
 SHA-256 `d5ad1ff83f7c93ec14b04a6145ba603ced8f144a87a71f0a1003f621ebb97a73`.
 Artifact: `reports/rehearsal/TOTO-4961-DATE-SCOPED-POLICY-V1-ACCEPTANCE-20260731/rehearsal-summary.json`.
+
+## Zero-pool bootstrap retry (2026-08-03)
+
+Implemented locally, not committed: an early 15-event TotoBrief payload with
+complete positive BK probabilities but pool `0/0/0` is classified as
+`totobrief_pool_not_ready`. It is not cached or imported as synchronized
+drawing detail. Morning dispatch preserves the exact drawing identity and
+creates a bounded retry plan at approximately +10/+30/+60/+180 minutes and
+08:00/10:30/12:00 Moscow time when these instants precede the hard stop.
+Only this explicit bootstrap plan may contain exactly one `--activate` per
+attempt, allowing the normal evening scheduler to be installed after the pool
+becomes valid; ordinary passive retry plans still reject activation. Identity
+or deadline drift remains fail-closed, and no automatic bet placement exists.
+
 ## Provider-neutral schedule evidence resolver v1 (2026-08-03)
 
 Implemented locally for `TOTO-SCHEDULE-RESOLUTION-V2`: reusable reviewed

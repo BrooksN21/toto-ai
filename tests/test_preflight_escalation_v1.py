@@ -5,9 +5,12 @@ import plistlib
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
+from typer.testing import CliRunner
 
+from toto_ai import cli
 from toto_ai.runner.morning_dispatch import (
     MorningDispatchConfig,
     MorningExpectedIdentity,
@@ -112,6 +115,143 @@ def _ready() -> MorningPreparedDrawing:
         span_days=2,
         unresolved_events=(),
     )
+
+
+def _unresolved_count(count: int) -> MorningPreparedDrawing:
+    return MorningPreparedDrawing(
+        **{
+            **_unresolved().__dict__,
+            "mapped_count": 15 - count,
+            "unresolved_events": tuple(
+                MorningUnresolvedEvent(
+                    event_order=order,
+                    target_event_id=178900 + order,
+                    home_team=f"Home {order}",
+                    away_team=f"Away {order}",
+                    resolution_status="source_missing_competition",
+                    reason="source schedule has no candidate",
+                    candidate_evidence=(),
+                    provider_diagnostics=(),
+                )
+                for order in range(count)
+            ),
+        }
+    )
+
+
+def test_real_morning_dispatch_cli_passes_repository_schedule_evidence_ledger(
+    tmp_path, monkeypatch
+):
+    env_file = _env(tmp_path / ".env")
+    captured: list[Path] = []
+
+    def fake_prepare(**kwargs):
+        captured.append(kwargs["schedule_evidence_ledger"])
+        return _unresolved()
+
+    def fake_dispatch(_config, *, prepare_current, observed_at, **_kwargs):
+        prepare_current(observed_at)
+        return SimpleNamespace(
+            status="scheduled",
+            reason="READY 15/15",
+            record_path=tmp_path / "record.json",
+            plan_id="plan",
+            plan_path=None,
+            launch_agent_path=None,
+            launch_agent_label=None,
+            activation_status="not_requested",
+            attention_path=None,
+            retry_plan_path=None,
+            review_queue_path=None,
+        )
+
+    monkeypatch.setattr(cli, "_prepare_current_for_morning", fake_prepare)
+    monkeypatch.setattr(cli, "dispatch_morning", fake_dispatch)
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert captured == [tmp_path / "data/schedule-evidence/ledger.json"]
+
+
+def test_generated_attention_and_notification_refresh_without_stale_counts(
+    tmp_path,
+):
+    config = _config(tmp_path)
+    first_at = datetime(2026, 7, 30, 7, 35, tzinfo=UTC)
+
+    first = dispatch_morning(
+        config,
+        observed_at=first_at,
+        now=lambda: first_at,
+        prepare_current=lambda _now: _unresolved_count(5),
+        python_command=sys.executable,
+    )
+    second = dispatch_morning(
+        config,
+        observed_at=first_at + timedelta(minutes=1),
+        now=lambda: first_at + timedelta(minutes=1),
+        prepare_current=lambda _now: _unresolved_count(2),
+        python_command=sys.executable,
+    )
+
+    report = (second.attention_path.parent / "ACTION_REQUIRED.md").read_text()
+    notify = (second.attention_path.parent / "notify.command").read_text()
+    assert first.attention_path == second.attention_path
+    assert "unresolved 2/15" in report
+    assert "unresolved 5/15" not in report
+    assert "unresolved 2/15" in notify
+    assert "unresolved 5/15" not in notify
+    attention = json.loads(second.attention_path.read_text())
+    assert attention["status"] == "ACTION REQUIRED: unresolved 2/15"
+    assert len(attention["unresolved"]) == 2
+
+
+@pytest.mark.parametrize("artifact_name", ("ACTION_REQUIRED.md", "notify.command"))
+@pytest.mark.parametrize("conflict_kind", ("foreign", "symlink"))
+def test_generated_preflight_text_conflicts_still_fail_closed(
+    tmp_path, artifact_name, conflict_kind
+):
+    config = _config(tmp_path)
+    observed = datetime(2026, 7, 30, 7, 35, tzinfo=UTC)
+    first = dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: _unresolved_count(5),
+        python_command=sys.executable,
+    )
+    artifact = first.attention_path.parent / artifact_name
+    artifact.unlink()
+    if conflict_kind == "foreign":
+        artifact.write_text("foreign operator file\n")
+    else:
+        target = tmp_path / "foreign-target"
+        target.write_text("foreign operator file\n")
+        artifact.symlink_to(target)
+
+    with pytest.raises(ValueError, match="text artifact conflicts"):
+        dispatch_morning(
+            config,
+            observed_at=observed + timedelta(minutes=1),
+            now=lambda: observed + timedelta(minutes=1),
+            prepare_current=lambda _now: _unresolved_count(2),
+            python_command=sys.executable,
+        )
 
 
 def test_4960_deferred_writes_attention_retry_and_reviewed_queue(tmp_path):

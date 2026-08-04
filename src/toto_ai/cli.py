@@ -2911,6 +2911,7 @@ def _prepare_current_for_morning(
     api_sports_max_retries: int,
     expansion_horizon_days: int,
     project_root: Path,
+    schedule_evidence_ledger: Path,
     reviewed_schedule_catalog: Path | None = None,
 ) -> MorningPreparedDrawing:
     """Synchronize and prepare the exact selected drawing from one detail view."""
@@ -2934,6 +2935,42 @@ def _prepare_current_for_morning(
             ),
             storage_root=project_root,
         )
+        if (
+            synchronized.detail.reason_code == "totobrief_pool_not_ready"
+            and synchronized.detail.payload is not None
+        ):
+            target = parse_target_drawing(
+                synchronized.detail.payload,
+                fetched_at=observed_at,
+            )
+            if target.drawing_number is None:
+                raise ValueError("current drawing visible number is required")
+            fingerprint = target_fingerprint(
+                target.drawing_id,
+                target.drawing_number,
+                target.deadline,
+                target.events,
+            )
+            detail_sha256 = hashlib.sha256(
+                json.dumps(
+                    synchronized.detail.payload,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=True,
+                ).encode("utf-8")
+            ).hexdigest()
+            return MorningPreparedDrawing(
+                drawing_id=target.drawing_id,
+                drawing_number=target.drawing_number,
+                deadline=target.deadline,
+                drawing_fingerprint=fingerprint,
+                detail_sha256=detail_sha256,
+                preparation_status="not_ready",
+                mapped_count=0,
+                eligibility_status="unknown",
+                span_days=None,
+                not_ready_reason="totobrief_pool_not_ready",
+            )
         if not synchronized.ready or synchronized.detail.payload is None:
             raise ValueError(
                 synchronized.detail.error or "current TotoBrief detail is unavailable"
@@ -2972,11 +3009,10 @@ def _prepare_current_for_morning(
             provider=provider,
             schedule_diagnostics=schedule.diagnostics,
             reviewed_schedule_catalog=reviewed_schedule_catalog,
-            schedule_evidence_ledger=(
-                project_root / DEFAULT_SCHEDULE_EVIDENCE_PATH
-                if (project_root / DEFAULT_SCHEDULE_EVIDENCE_PATH).is_file()
-                else None
-            ),
+            # Morning/preflight must always evaluate the repository-owned
+            # reusable evidence ledger.  A missing or invalid ledger is a
+            # fail-closed input error, never permission to reuse stale counts.
+            schedule_evidence_ledger=schedule_evidence_ledger,
             evaluated_at=observed_at,
         )
         detail_sha256 = hashlib.sha256(
@@ -3064,6 +3100,10 @@ def morning_dispatch_command(
         totobrief_rate_state, allowed_root=root
     )
     resolved_cache_root = resolve_contained_path(cache_root, allowed_root=root)
+    resolved_schedule_evidence_ledger = resolve_contained_path(
+        DEFAULT_SCHEDULE_EVIDENCE_PATH,
+        allowed_root=root,
+    )
     config = MorningDispatchConfig(
         project_root=root,
         state_root=Path(state_root),
@@ -3127,6 +3167,7 @@ def morning_dispatch_command(
                 api_sports_max_retries=api_sports_max_retries,
                 expansion_horizon_days=expansion_horizon_days,
                 project_root=root,
+                schedule_evidence_ledger=resolved_schedule_evidence_ledger,
                 reviewed_schedule_catalog=(
                     None
                     if reviewed_schedule_catalog is None

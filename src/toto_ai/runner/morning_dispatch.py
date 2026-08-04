@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 from toto_ai.runner.scheduler import (
     SCHEDULER_LAUNCH_AGENT_FILENAME,
@@ -30,6 +31,8 @@ from toto_ai.runner.scheduler import (
 from toto_ai.runner.scheduler_state import scheduler_lock
 
 _SHA256_LENGTH = 64
+_MOSCOW = ZoneInfo("Europe/Moscow")
+_ZERO_POOL_NOT_READY = "totobrief_pool_not_ready"
 MORNING_DISPATCH_SCHEMA_VERSION = 1
 PREFLIGHT_ESCALATION_SCHEMA_VERSION = 1
 _SCHEDULER_LABEL = re.compile(
@@ -120,6 +123,7 @@ class MorningPreparedDrawing:
     eligibility_status: str
     span_days: int | None
     unresolved_events: tuple[MorningUnresolvedEvent, ...] = ()
+    not_ready_reason: str | None = None
 
     def __post_init__(self) -> None:
         if type(self.drawing_id) is not int or self.drawing_id <= 0:
@@ -146,6 +150,17 @@ class MorningPreparedDrawing:
             )
         if self.preparation_status == "ready" and self.unresolved_events:
             raise ValueError("ready preparation cannot contain unresolved events")
+        if self.not_ready_reason is not None:
+            if self.not_ready_reason != _ZERO_POOL_NOT_READY:
+                raise ValueError("not_ready_reason is unsupported")
+            if (
+                self.preparation_status != "not_ready"
+                or self.mapped_count != 0
+                or self.eligibility_status != "unknown"
+                or self.span_days is not None
+                or self.unresolved_events
+            ):
+                raise ValueError("zero-pool not-ready evidence is inconsistent")
 
     def identity_payload(self) -> dict[str, object]:
         return {
@@ -627,6 +642,8 @@ def _same_drawing_identity(
 
 
 def _ineligibility_reason(evidence: MorningPreparedDrawing) -> str | None:
+    if evidence.not_ready_reason is not None:
+        return evidence.not_ready_reason
     if evidence.preparation_status != "ready" or evidence.mapped_count != 15:
         unresolved_count = (
             len(evidence.unresolved_events)
@@ -677,6 +694,7 @@ def _record(
             "unresolved": [
                 item.payload() for item in evidence.unresolved_events
             ],
+            "not_ready_reason": evidence.not_ready_reason,
         },
         "status": status,
         "reason": reason,
@@ -855,7 +873,8 @@ def _update_preflight_escalation(
                 resolved["record_sha256"] = _record_sha256(resolved)
                 _write_json_idempotent(root / "RESOLVED.json", resolved)
         return _EscalationPaths(None, None, None)
-    if not evidence.unresolved_events:
+    bootstrap_not_ready = evidence.not_ready_reason == _ZERO_POOL_NOT_READY
+    if not evidence.unresolved_events and not bootstrap_not_ready:
         return _EscalationPaths(None, None, None)
 
     root.mkdir(parents=True, exist_ok=True)
@@ -884,7 +903,7 @@ def _update_preflight_escalation(
             != evidence.drawing_fingerprint
             or identity.get("deadline") != _timestamp(evidence.deadline)
             or retry_plan.get("passive") is not True
-            or retry_plan.get("activate_evening") is not False
+            or retry_plan.get("activate_evening") is not bootstrap_not_ready
         ):
             raise ValueError("existing passive retry plan identity conflicts")
     else:
@@ -909,21 +928,21 @@ def _update_preflight_escalation(
         if isinstance(future_attempts, list)
         else None
     )
-    unresolved_payload = [
-        item.payload() for item in evidence.unresolved_events
-    ]
+    unresolved_payload = [item.payload() for item in evidence.unresolved_events]
+    attention_status = (
+        _ZERO_POOL_NOT_READY
+        if bootstrap_not_ready
+        else f"ACTION REQUIRED: unresolved {len(evidence.unresolved_events)}/15"
+    )
     attempt = {
         "schema_version": PREFLIGHT_ESCALATION_SCHEMA_VERSION,
-        "status": (
-            f"ACTION REQUIRED: unresolved "
-            f"{len(evidence.unresolved_events)}/15"
-        ),
+        "status": attention_status,
         "identity": evidence.identity_payload(),
         "captured_at": _timestamp(observed_at),
         "unresolved": unresolved_payload,
         "next_retry": next_retry,
         "passive": True,
-        "activate_evening": False,
+        "activate_evening": bootstrap_not_ready,
     }
     attempt["record_sha256"] = _record_sha256(attempt)
     attempt_id = hashlib.sha256(_canonical(attempt)).hexdigest()[:16]
@@ -953,15 +972,15 @@ def _update_preflight_escalation(
     }
     attention["record_sha256"] = _record_sha256(attention)
     _write_atomic(attention_path, attention, replace=attention_path.exists())
-    _replace_text(root / "ACTION_REQUIRED.md", _render_attention_report(attention))
-    _write_text_idempotent(
+    _refresh_generated_report(
+        root / "ACTION_REQUIRED.md", _render_attention_report(attention)
+    )
+    _refresh_generated_notify_command(
         root / "notify.command",
-        (
-            "/usr/bin/osascript -e "
-            f"'display notification \"unresolved "
-            f"{len(evidence.unresolved_events)}/15\" "
-            f"with title \"TotoAI drawing {evidence.drawing_number}\"'\n"
-        ),
+        "/usr/bin/osascript -e "
+        f"'display notification \"{attention_status}\" "
+        f"with title \"TotoAI drawing {evidence.drawing_number}\"'\n",
+        drawing_number=evidence.drawing_number,
     )
     missing_schedule_orders = tuple(
         item.event_order
@@ -1015,9 +1034,17 @@ def _retry_plan_payload(
         minutes=config.retry_hard_stop_minutes
     )
     executable = str(python_command or "python")
+    activate_evening = evidence.not_ready_reason == _ZERO_POOL_NOT_READY
     attempts = []
-    for offset in config.retry_offsets_minutes:
-        scheduled_at = evidence.deadline - timedelta(minutes=offset)
+    scheduled_times = (
+        _zero_pool_retry_times(observed_at, hard_stop)
+        if activate_evening
+        else tuple(
+            evidence.deadline - timedelta(minutes=offset)
+            for offset in config.retry_offsets_minutes
+        )
+    )
+    for scheduled_at in scheduled_times:
         if scheduled_at <= observed_at or scheduled_at >= hard_stop:
             continue
         command = [
@@ -1057,6 +1084,8 @@ def _retry_plan_payload(
                     str(config.reviewed_schedule_catalog),
                 )
             )
+        if activate_evening:
+            command.append("--activate")
         attempts.append(
             {
                 "scheduled_at": _timestamp(scheduled_at),
@@ -1071,11 +1100,48 @@ def _retry_plan_payload(
         "created_at": _timestamp(observed_at),
         "hard_stop": _timestamp(hard_stop),
         "passive": True,
-        "activate_evening": False,
+        "activate_evening": activate_evening,
         "attempts": attempts,
     }
     payload["plan_sha256"] = _record_sha256(payload)
     return payload
+
+
+def _zero_pool_retry_times(
+    observed_at: datetime,
+    hard_stop: datetime,
+) -> tuple[datetime, ...]:
+    observed = _utc(observed_at, "observed_at")
+    stop = _utc(hard_stop, "hard_stop")
+    local_observed = observed.astimezone(_MOSCOW)
+    rounded = local_observed.replace(second=0, microsecond=0)
+    if rounded < local_observed:
+        rounded += timedelta(minutes=1)
+    candidates = [
+        rounded + timedelta(minutes=delay) for delay in (10, 30, 60, 180)
+    ]
+    next_day = local_observed.date() + timedelta(days=1)
+    candidates.extend(
+        datetime(
+            next_day.year,
+            next_day.month,
+            next_day.day,
+            hour,
+            minute,
+            tzinfo=_MOSCOW,
+        )
+        for hour, minute in ((8, 0), (10, 30), (12, 0))
+    )
+    return tuple(
+        sorted(
+            {
+                value.astimezone(timezone.utc)
+                for value in candidates
+                if value.date() in {local_observed.date(), next_day}
+                and observed < value.astimezone(timezone.utc) < stop
+            }
+        )
+    )
 
 
 def _review_queue_payload(
@@ -1216,8 +1282,42 @@ def _write_text_idempotent(path: Path, content: str) -> None:
     _write_bytes(path, expected, replace=False)
 
 
-def _replace_text(path: Path, content: str) -> None:
-    _write_bytes(path, content.encode("utf-8"), replace=path.exists())
+def _refresh_generated_report(path: Path, content: str) -> None:
+    expected = content.encode("utf-8")
+    if path.exists():
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"existing preflight text artifact conflicts: {path}")
+        existing = path.read_bytes()
+        if existing == expected:
+            return
+        if not (
+            existing.startswith(b"# ACTION REQUIRED: unresolved ")
+            or existing.startswith(b"# totobrief_pool_not_ready\n")
+        ):
+            raise ValueError(f"existing preflight text artifact conflicts: {path}")
+    _write_bytes(path, expected, replace=path.exists())
+
+
+def _refresh_generated_notify_command(
+    path: Path,
+    content: str,
+    *,
+    drawing_number: int,
+) -> None:
+    expected = content.encode("utf-8")
+    if path.exists():
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"existing preflight text artifact conflicts: {path}")
+        existing = path.read_bytes()
+        if existing == expected:
+            return
+        prefix = b"/usr/bin/osascript -e 'display notification \""
+        suffix = (
+            f"\" with title \"TotoAI drawing {drawing_number}\"'\n".encode()
+        )
+        if not existing.startswith(prefix) or not existing.endswith(suffix):
+            raise ValueError(f"existing preflight text artifact conflicts: {path}")
+    _write_bytes(path, expected, replace=path.exists())
 
 
 def _write_bytes(path: Path, content: bytes, *, replace: bool) -> None:
