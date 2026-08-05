@@ -1,0 +1,278 @@
+{
+  "cache_kind": "totobrief-target",
+  "drawing_id": 11968,
+  "drawing_number": 4951,
+  "fetched_at": "2026-07-21T10:43:35.149133+00:00",
+  "payload": {
+    "data": {
+      "ended_at": "2026-07-21T16:00:00.000000Z",
+      "events": [
+        {
+          "championship": "Европа. Лига Чемпионов УЕФА. Квалификация",
+          "id": 32851,
+          "name": "Арарат-Армения — Шамрок Роверс",
+          "name_en": null,
+          "order": 0,
+          "quotes": {
+            "bk_draw": 27.0,
+            "bk_win_1": 45.0,
+            "bk_win_2": 28.0,
+            "pool_draw": 23.0,
+            "pool_win_1": 54.0,
+            "pool_win_2": 23.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Европа. Лига Чемпионов УЕФА. Квалификация",
+          "id": 32852,
+          "name": "АГФ Орхус — Лех Познань",
+          "name_en": null,
+          "order": 1,
+          "quotes": {
+            "bk_draw": 29.0,
+            "bk_win_1": 43.0,
+            "bk_win_2": 27.0,
+            "pool_draw": 26.0,
+            "pool_win_1": 51.0,
+            "pool_win_2": 23.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Европа. Лига Чемпионов УЕФА. Квалификация",
+          "id": 32853,
+          "name": "Тун — Динамо Загреб",
+          "name_en": null,
+          "order": 2,
+          "quotes": {
+            "bk_draw": 25.0,
+            "bk_win_1": 27.0,
+            "bk_win_2": 48.0,
+            "pool_draw": 19.0,
+            "pool_win_1": 18.0,
+            "pool_win_2": 63.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Европа. Лига Чемпионов УЕФА. Квалификация",
+          "id": 32854,
+          "name": "Клаксвик — Кауно Жальгирис",
+          "name_en": null,
+          "order": 3,
+          "quotes": {
+            "bk_draw": 28.0,
+            "bk_win_1": 43.0,
+            "bk_win_2": 29.0,
+            "pool_draw": 27.0,
+            "pool_win_1": 51.0,
+            "pool_win_2": 22.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Европа. Лига Чемпионов УЕФА. Квалификация",
+          "id": 32855,
+          "name": "Викингур Рейкьявик — Хапоэль Беэр-Шева",
+          "name_en": null,
+          "order": 4,
+          "quotes": {
+            "bk_draw": 27.0,
+            "bk_win_1": 36.0,
+            "bk_win_2": 37.0,
+            "pool_draw": 28.0,
+            "pool_win_1": 35.0,
+            "pool_win_2": 37.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Европа. Лига конференций УЕФА. Квалификация",
+          "id": 32856,
+          "name": "Флориана — Дрита",
+          "name_en": null,
+          "order": 5,
+          "quotes": {
+            "bk_draw": 26.0,
+            "bk_win_1": 28.0,
+            "bk_win_2": 46.0,
+            "pool_draw": 23.0,
+            "pool_win_1": 26.0,
+            "pool_win_2": 51.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Бразилия. Серия A",
+          "id": 32857,
+          "name": "Атлетико Минейро — Байя",
+          "name_en": null,
+          "order": 6,
+          "quotes": {
+            "bk_draw": 29.0,
+            "bk_win_1": 45.0,
+            "bk_win_2": 27.0,
+            "pool_draw": 23.0,
+            "pool_win_1": 57.0,
+            "pool_win_2": 20.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Бразилия. Серия B",
+          "id": 32858,
+          "name": "Аваи — Америка Минейро",
+          "name_en": null,
+          "order": 7,
+          "quotes": {
+            "bk_draw": 30.0,
+            "bk_win_1": 42.0,
+            "bk_win_2": 28.0,
+            "pool_draw": 31.0,
+            "pool_win_1": 48.0,
+            "pool_win_2": 21.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Бразилия. Серия B",
+          "id": 32859,
+          "name": "Гремио Новоризонтино — Крициума",
+          "name_en": null,
+          "order": 8,
+          "quotes": {
+            "bk_draw": 32.0,
+            "bk_win_1": 41.0,
+            "bk_win_2": 28.0,
+            "pool_draw": 32.0,
+            "pool_win_1": 42.0,
+            "pool_win_2": 25.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Финляндия. 1-й дивизион",
+          "id": 32860,
+          "name": "КяПа — Клуби 04",
+          "name_en": null,
+          "order": 9,
+          "quotes": {
+            "bk_draw": 26.0,
+            "bk_win_1": 39.0,
+            "bk_win_2": 35.0,
+            "pool_draw": 26.0,
+            "pool_win_1": 47.0,
+            "pool_win_2": 27.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Швеция. Суперэттан",
+          "id": 32861,
+          "name": "Фалкенберг — Хельсингборг",
+          "name_en": null,
+          "order": 10,
+          "quotes": {
+            "bk_draw": 28.0,
+            "bk_win_1": 46.0,
+            "bk_win_2": 26.0,
+            "pool_draw": 21.0,
+            "pool_win_1": 59.0,
+            "pool_win_2": 20.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Шотландия. Кубок Лиги",
+          "id": 32862,
+          "name": "Росс Каунти — ФК Данди",
+          "name_en": null,
+          "order": 11,
+          "quotes": {
+            "bk_draw": 26.0,
+            "bk_win_1": 29.0,
+            "bk_win_2": 44.0,
+            "pool_draw": 25.0,
+            "pool_win_1": 30.0,
+            "pool_win_2": 45.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Шотландия. Кубок Лиги",
+          "id": 32863,
+          "name": "Инвернесс — Сент-Джонстон",
+          "name_en": null,
+          "order": 12,
+          "quotes": {
+            "bk_draw": 25.0,
+            "bk_win_1": 25.0,
+            "bk_win_2": 49.0,
+            "pool_draw": 21.0,
+            "pool_win_1": 20.0,
+            "pool_win_2": 59.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Эквадор. Серия A",
+          "id": 32864,
+          "name": "Либертад Лоха — Дельфин",
+          "name_en": null,
+          "order": 13,
+          "quotes": {
+            "bk_draw": 36.0,
+            "bk_win_1": 40.0,
+            "bk_win_2": 24.0,
+            "pool_draw": 35.0,
+            "pool_win_1": 40.0,
+            "pool_win_2": 26.0
+          },
+          "sport": "football",
+          "start_at": null
+        },
+        {
+          "championship": "Южная Америка. Южноамериканский Кубок",
+          "id": 32865,
+          "name": "Насиональ Монтевидео — Тигре",
+          "name_en": null,
+          "order": 14,
+          "quotes": {
+            "bk_draw": 33.0,
+            "bk_win_1": 40.0,
+            "bk_win_2": 27.0,
+            "pool_draw": 33.0,
+            "pool_win_1": 45.0,
+            "pool_win_2": 22.0
+          },
+          "sport": "football",
+          "start_at": null
+        }
+      ],
+      "id": 11968,
+      "jackpot": 12606415.0,
+      "name": "baltbet-main",
+      "number": 4951,
+      "pool_sum": 2878475.0,
+      "started_at": null,
+      "status": "active"
+    }
+  },
+  "payload_sha256": "f70f84c9deb54d0556e85f0475e88f66b5b24462691ce595d25398a1be49e779",
+  "provider": "totobrief",
+  "schema_version": 1
+}

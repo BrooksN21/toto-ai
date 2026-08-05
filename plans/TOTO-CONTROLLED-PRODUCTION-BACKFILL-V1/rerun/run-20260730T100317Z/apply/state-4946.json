@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempts": 1,
+      "classification": "source_incomplete",
+      "drawing_id": 11955,
+      "drawing_number": 4946,
+      "last_error_code": null,
+      "next_eligible_at": "2026-07-30T16:05:22.722261+00:00",
+      "raw_snapshot_sha256": "f1883050c649fcd857790c5a4d5e894a69067323c4f1f6e9d39286bf624cfe83",
+      "reason": "source_payload_incomplete",
+      "recorded_at": "2026-07-30T10:05:23.227188+00:00",
+      "retry_state": "cooldown",
+      "status": "source_incomplete",
+      "terminal_results": 14
+    }
+  ],
+  "drawings": {
+    "11955": {
+      "attempts": 1,
+      "classification": "source_incomplete",
+      "drawing_id": 11955,
+      "drawing_number": 4946,
+      "last_error_code": null,
+      "next_eligible_at": "2026-07-30T16:05:22.722261+00:00",
+      "raw_snapshot_sha256": "f1883050c649fcd857790c5a4d5e894a69067323c4f1f6e9d39286bf624cfe83",
+      "reason": "source_payload_incomplete",
+      "retry_state": "cooldown",
+      "status": "source_incomplete",
+      "terminal_results": 14
+    }
+  },
+  "schema_version": 1,
+  "state_sha256": "8d78dbd143ca01df537902d2b3da915edf80170dc785f220f9ea64aa5176fcca",
+  "updated_at": "2026-07-30T10:05:23.227768+00:00"
+}

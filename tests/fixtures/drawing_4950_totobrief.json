@@ -1,0 +1,255 @@
+{
+  "fixture": "sanitized TotoBrief drawing 4950 pre-drawing payload",
+  "data": {
+    "id": 11964,
+    "name": "baltbet-main",
+    "number": 4950,
+    "status": "active",
+    "ended_at": "2026-07-20T14:30:00.000000Z",
+    "jackpot": 1000000,
+    "pool_sum": 81445,
+    "events": [
+      {
+        "id": 178563,
+        "name": "Ботев Пловдив — Локомотив София",
+        "name_en": null,
+        "championship": "Болгария. Чемпионат",
+        "order": 0,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 57,
+          "pool_draw": 22,
+          "pool_win_2": 21,
+          "bk_win_1": 53,
+          "bk_draw": 26,
+          "bk_win_2": 21
+        }
+      },
+      {
+        "id": 178564,
+        "name": "Атлетико Сукре — Атлетико Хуниорс",
+        "name_en": null,
+        "championship": "Боливия. Насьональ B",
+        "order": 1,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 51,
+          "pool_draw": 21,
+          "pool_win_2": 27,
+          "bk_win_1": 47,
+          "bk_draw": 25,
+          "bk_win_2": 29
+        }
+      },
+      {
+        "id": 178565,
+        "name": "Кеблавик — Акранес",
+        "name_en": null,
+        "championship": "Исландия. Чемпионат",
+        "order": 2,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 39,
+          "pool_draw": 29,
+          "pool_win_2": 32,
+          "bk_win_1": 40,
+          "bk_draw": 25,
+          "bk_win_2": 35
+        }
+      },
+      {
+        "id": 178566,
+        "name": "Хафнарфьордюр — Брейдаблик",
+        "name_en": null,
+        "championship": "Исландия. Чемпионат",
+        "order": 3,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 23,
+          "pool_draw": 20,
+          "pool_win_2": 57,
+          "bk_win_1": 33,
+          "bk_draw": 22,
+          "bk_win_2": 45
+        }
+      },
+      {
+        "id": 178567,
+        "name": "Гриндавик/Ньярдвик(ж) — Троттур Рейкьявик(ж)",
+        "name_en": null,
+        "championship": "Исландия. Чемпионат. Женщины",
+        "order": 4,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 31,
+          "pool_draw": 28,
+          "pool_win_2": 41,
+          "bk_win_1": 38,
+          "bk_draw": 23,
+          "bk_win_2": 39
+        }
+      },
+      {
+        "id": 178568,
+        "name": "Супер Нова — Гробина",
+        "name_en": null,
+        "championship": "Латвия. Чемпионат",
+        "order": 5,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 47,
+          "pool_draw": 30,
+          "pool_win_2": 23,
+          "bk_win_1": 39,
+          "bk_draw": 28,
+          "bk_win_2": 33
+        }
+      },
+      {
+        "id": 178569,
+        "name": "Джвайя — Аль Ахед Бейрут",
+        "name_en": null,
+        "championship": "Ливан. Премьер Лига",
+        "order": 6,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 33,
+          "pool_draw": 40,
+          "pool_win_2": 27,
+          "bk_win_1": 36,
+          "bk_draw": 30,
+          "bk_win_2": 34
+        }
+      },
+      {
+        "id": 178570,
+        "name": "Аль-Ансар — Неджме",
+        "name_en": null,
+        "championship": "Ливан. Премьер Лига",
+        "order": 7,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 49,
+          "pool_draw": 23,
+          "pool_win_2": 29,
+          "bk_win_1": 47,
+          "bk_draw": 29,
+          "bk_win_2": 25
+        }
+      },
+      {
+        "id": 178571,
+        "name": "Такуари Асунсьон — Депортиво Капиата",
+        "name_en": null,
+        "championship": "Парагвай. 2-й дивизион",
+        "order": 8,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 30,
+          "pool_draw": 27,
+          "pool_win_2": 43,
+          "bk_win_1": 32,
+          "bk_draw": 27,
+          "bk_win_2": 41
+        }
+      },
+      {
+        "id": 178572,
+        "name": "Хунедоара — Чиксереда",
+        "name_en": null,
+        "championship": "Румыния. Чемпионат",
+        "order": 9,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 43,
+          "pool_draw": 31,
+          "pool_win_2": 25,
+          "bk_win_1": 43,
+          "bk_draw": 29,
+          "bk_win_2": 28
+        }
+      },
+      {
+        "id": 178573,
+        "name": "Рапид Бухарест — Сепси",
+        "name_en": null,
+        "championship": "Румыния. Чемпионат",
+        "order": 10,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 56,
+          "pool_draw": 20,
+          "pool_win_2": 24,
+          "bk_win_1": 51,
+          "bk_draw": 26,
+          "bk_win_2": 22
+        }
+      },
+      {
+        "id": 178574,
+        "name": "ТПС — Ильвес",
+        "name_en": null,
+        "championship": "Финляндия. Чемпионат",
+        "order": 11,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 23,
+          "pool_draw": 29,
+          "pool_win_2": 48,
+          "bk_win_1": 36,
+          "bk_draw": 27,
+          "bk_win_2": 37
+        }
+      },
+      {
+        "id": 178575,
+        "name": "Кальмар — Мальме",
+        "name_en": null,
+        "championship": "Швеция. Чемпионат",
+        "order": 12,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 26,
+          "pool_draw": 31,
+          "pool_win_2": 43,
+          "bk_win_1": 35,
+          "bk_draw": 25,
+          "bk_win_2": 40
+        }
+      },
+      {
+        "id": 178576,
+        "name": "Норрбю — Сундсваль",
+        "name_en": null,
+        "championship": "Швеция. Суперэттан",
+        "order": 13,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 51,
+          "pool_draw": 26,
+          "pool_win_2": 22,
+          "bk_win_1": 49,
+          "bk_draw": 29,
+          "bk_win_2": 22
+        }
+      },
+      {
+        "id": 178577,
+        "name": "Мушук Руна — Оренсе",
+        "name_en": null,
+        "championship": "Эквадор. Серия A",
+        "order": 14,
+        "start_at": null,
+        "quotes": {
+          "pool_win_1": 47,
+          "pool_draw": 21,
+          "pool_win_2": 32,
+          "bk_win_1": 43,
+          "bk_draw": 27,
+          "bk_win_2": 30
+        }
+      }
+    ]
+  },
+  "version": "1.0"
+}

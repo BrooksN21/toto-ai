@@ -1,0 +1,55 @@
+{
+  "catalog_id": "reviewed-schedule-4959-20260729T115147Z",
+  "generated_at": "2026-07-29T11:52:00Z",
+  "records": [
+    {
+      "claims": [
+        {
+          "away_name": "Reynir Sandgerdi",
+          "captured_at": "2026-07-29T11:51:47Z",
+          "competition": "Iceland 3. Deild",
+          "gender_age_class": "men-senior",
+          "home_name": "KV Vesturbaer",
+          "native_away_team_id": null,
+          "native_fixture_id": null,
+          "native_home_team_id": null,
+          "role": "official",
+          "snapshot_path": "ksi-7025551.html",
+          "snapshot_sha256": "78cf1c1f05ed063992e76b21bcea3de7d51448fc079e0f5599733b032d8d75ce",
+          "source_name": "ksi.is",
+          "source_url": "https://www.ksi.is/oll-mot/mot?id=7025551",
+          "sport": "football",
+          "starts_at": "2026-07-29T19:15:00Z",
+          "status": "scheduled"
+        },
+        {
+          "away_name": "Reynir Sandgerdi",
+          "captured_at": "2026-07-29T11:51:47Z",
+          "competition": "Iceland 3. Deild",
+          "gender_age_class": "men-senior",
+          "home_name": "KV Vesturbaer",
+          "native_away_team_id": null,
+          "native_fixture_id": null,
+          "native_home_team_id": null,
+          "role": "independent",
+          "snapshot_path": "sofascore-BBjsPWq.html",
+          "snapshot_sha256": "dcafdb3dfa682262670d2a1d400e61c8b22d2619fb9b16f8c6e4203be0537ba5",
+          "source_name": "sofascore.com",
+          "source_url": "https://www.sofascore.com/football/match/kv-vesturbaer-reynir-sandgerdi/BBjsPWq",
+          "sport": "football",
+          "starts_at": "2026-07-29T19:15:00Z",
+          "status": "scheduled"
+        }
+      ],
+      "drawing_id": 11988,
+      "drawing_number": 4959,
+      "event_order": 8,
+      "evidence_id": "reviewed-11988-bed25208-order8-event178931-v1",
+      "reviewed_at": "2026-07-29T11:52:00Z",
+      "reviewer": "operator-manual-review",
+      "target_event_id": 178931,
+      "target_fingerprint": "bed25208171b25e39a3fab84fb18b12e741af9b52f9863810d0a7a1d2d8e0c15"
+    }
+  ],
+  "schema_version": 1
+}

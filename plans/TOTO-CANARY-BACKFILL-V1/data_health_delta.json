@@ -1,0 +1,265 @@
+{
+  "range_summary_after": {
+    "duplicate_number_count": 0,
+    "exit_status": "pass",
+    "gap_count": 0,
+    "healthy_drawings": 3,
+    "inventory_counts": {
+      "actionable_package_drawings": 0,
+      "complete_bk_drawings": 12,
+      "event_rows": 195,
+      "finished_drawings": 13,
+      "finished_incomplete_result_drawings": 7,
+      "missing_terminal_results_in_finished": 77,
+      "raw_snapshot_drawings": 4,
+      "result_snapshot_drawings": 3,
+      "unsettled_actionable_package_drawings": 0,
+      "valid_pool_drawings": 12
+    },
+    "observed_reason_counts": {
+      "all_results_missing": 5,
+      "empty_event_names": 1,
+      "incomplete_bk": 1,
+      "incomplete_results": 2,
+      "missing_quotes": 1,
+      "missing_raw_snapshot": 9,
+      "missing_result_snapshot": 10
+    },
+    "passed": false,
+    "reason_counts": {
+      "all_results_missing": 5,
+      "empty_event_names": 1,
+      "incomplete_bk": 1,
+      "incomplete_results": 2,
+      "missing_quotes": 1,
+      "missing_raw_snapshot": 9,
+      "missing_result_snapshot": 10
+    },
+    "strict": false,
+    "total_drawings": 13,
+    "unhealthy_drawings": 10,
+    "use_case_totals": {
+      "backtest_probability": {
+        "healthy": 6,
+        "unhealthy": 7
+      },
+      "historical_inventory": {
+        "healthy": 3,
+        "unhealthy": 10
+      },
+      "prospective_generation": {
+        "healthy": 12,
+        "unhealthy": 1
+      },
+      "result_settlement": {
+        "healthy": 3,
+        "unhealthy": 10
+      }
+    }
+  },
+  "range_summary_before": {
+    "duplicate_number_count": 0,
+    "exit_status": "pass",
+    "gap_count": 0,
+    "healthy_drawings": 0,
+    "inventory_counts": {
+      "actionable_package_drawings": 0,
+      "complete_bk_drawings": 10,
+      "event_rows": 195,
+      "finished_drawings": 13,
+      "finished_incomplete_result_drawings": 8,
+      "missing_terminal_results_in_finished": 92,
+      "raw_snapshot_drawings": 0,
+      "result_snapshot_drawings": 0,
+      "unsettled_actionable_package_drawings": 0,
+      "valid_pool_drawings": 10
+    },
+    "observed_reason_counts": {
+      "all_results_missing": 6,
+      "empty_event_names": 3,
+      "incomplete_bk": 3,
+      "incomplete_results": 2,
+      "missing_quotes": 3,
+      "missing_raw_snapshot": 13,
+      "missing_result_snapshot": 13
+    },
+    "passed": false,
+    "reason_counts": {
+      "all_results_missing": 6,
+      "empty_event_names": 3,
+      "incomplete_bk": 3,
+      "incomplete_results": 2,
+      "missing_quotes": 3,
+      "missing_raw_snapshot": 13,
+      "missing_result_snapshot": 13
+    },
+    "strict": false,
+    "total_drawings": 13,
+    "unhealthy_drawings": 13,
+    "use_case_totals": {
+      "backtest_probability": {
+        "healthy": 3,
+        "unhealthy": 10
+      },
+      "historical_inventory": {
+        "healthy": 0,
+        "unhealthy": 13
+      },
+      "prospective_generation": {
+        "healthy": 10,
+        "unhealthy": 3
+      },
+      "result_settlement": {
+        "healthy": 0,
+        "unhealthy": 13
+      }
+    }
+  },
+  "selected": [
+    {
+      "after": {
+        "complete_bk_count": 15,
+        "complete_result_snapshot_count": 0,
+        "nonblank_name_count": 15,
+        "quote_count": 15,
+        "raw_snapshot_present": true,
+        "result_snapshot_count": 0,
+        "selected_reason_codes": [
+          "incomplete_results",
+          "missing_result_snapshot"
+        ],
+        "selected_status": "unhealthy",
+        "terminal_result_count": 14,
+        "valid_pool_count": 15,
+        "void_result_count": 0
+      },
+      "before": {
+        "complete_bk_count": 15,
+        "complete_result_snapshot_count": 0,
+        "nonblank_name_count": 15,
+        "quote_count": 15,
+        "raw_snapshot_present": false,
+        "result_snapshot_count": 0,
+        "selected_reason_codes": [
+          "incomplete_results",
+          "missing_raw_snapshot",
+          "missing_result_snapshot"
+        ],
+        "selected_status": "unhealthy",
+        "terminal_result_count": 14,
+        "valid_pool_count": 15,
+        "void_result_count": 0
+      },
+      "drawing_number": 4946
+    },
+    {
+      "after": {
+        "complete_bk_count": 15,
+        "complete_result_snapshot_count": 1,
+        "nonblank_name_count": 15,
+        "quote_count": 15,
+        "raw_snapshot_present": true,
+        "result_snapshot_count": 2,
+        "selected_reason_codes": [
+          "healthy"
+        ],
+        "selected_status": "healthy",
+        "terminal_result_count": 15,
+        "valid_pool_count": 15,
+        "void_result_count": 0
+      },
+      "before": {
+        "complete_bk_count": 0,
+        "complete_result_snapshot_count": 0,
+        "nonblank_name_count": 0,
+        "quote_count": 0,
+        "raw_snapshot_present": false,
+        "result_snapshot_count": 1,
+        "selected_reason_codes": [
+          "empty_event_names",
+          "missing_quotes",
+          "incomplete_bk",
+          "missing_raw_snapshot",
+          "missing_result_snapshot"
+        ],
+        "selected_status": "unhealthy",
+        "terminal_result_count": 15,
+        "valid_pool_count": 0,
+        "void_result_count": 0
+      },
+      "drawing_number": 4955
+    },
+    {
+      "after": {
+        "complete_bk_count": 15,
+        "complete_result_snapshot_count": 1,
+        "nonblank_name_count": 15,
+        "quote_count": 15,
+        "raw_snapshot_present": true,
+        "result_snapshot_count": 2,
+        "selected_reason_codes": [
+          "healthy"
+        ],
+        "selected_status": "healthy",
+        "terminal_result_count": 15,
+        "valid_pool_count": 15,
+        "void_result_count": 0
+      },
+      "before": {
+        "complete_bk_count": 0,
+        "complete_result_snapshot_count": 0,
+        "nonblank_name_count": 0,
+        "quote_count": 0,
+        "raw_snapshot_present": false,
+        "result_snapshot_count": 1,
+        "selected_reason_codes": [
+          "empty_event_names",
+          "missing_quotes",
+          "incomplete_bk",
+          "missing_raw_snapshot",
+          "missing_result_snapshot"
+        ],
+        "selected_status": "unhealthy",
+        "terminal_result_count": 15,
+        "valid_pool_count": 0,
+        "void_result_count": 0
+      },
+      "drawing_number": 4956
+    },
+    {
+      "after": {
+        "complete_bk_count": 15,
+        "complete_result_snapshot_count": 1,
+        "nonblank_name_count": 15,
+        "quote_count": 15,
+        "raw_snapshot_present": true,
+        "result_snapshot_count": 1,
+        "selected_reason_codes": [
+          "healthy"
+        ],
+        "selected_status": "healthy",
+        "terminal_result_count": 15,
+        "valid_pool_count": 15,
+        "void_result_count": 0
+      },
+      "before": {
+        "complete_bk_count": 15,
+        "complete_result_snapshot_count": 0,
+        "nonblank_name_count": 15,
+        "quote_count": 15,
+        "raw_snapshot_present": false,
+        "result_snapshot_count": 0,
+        "selected_reason_codes": [
+          "all_results_missing",
+          "missing_raw_snapshot",
+          "missing_result_snapshot"
+        ],
+        "selected_status": "unhealthy",
+        "terminal_result_count": 0,
+        "valid_pool_count": 15,
+        "void_result_count": 0
+      },
+      "drawing_number": 4958
+    }
+  ]
+}

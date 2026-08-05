@@ -1,0 +1,131 @@
+{
+  "version": 3,
+  "aliases": {
+    "Англия": "England",
+    "Аргентина": "Argentina",
+    "Аттерт Биссен": "Atert Bissen",
+    "Клаксвик": "KI Klaksvik",
+    "Дечич": "Dečić",
+    "ФК Лиепая": "FK Liepaja",
+    "Майами ФК": "Miami FC",
+    "Инди Элевен": "Indy Eleven",
+    "Готэм(ж)": "NJ/NY Gotham FC W",
+    "Вашингтон Спирит(ж)": "Washington Spirit W",
+    "Полония Варшава": "Polonia Warszawa",
+    "Злин": "Zlin",
+    "Рапид Вена": "Rapid Vienna",
+    "Панатинаикос": "Panathinaikos",
+    "Зальцбург": "Red Bull Salzburg",
+    "Истанбул Башакшехир": "Başakşehir",
+    "Липно Стешев": "Lipno Stęszew",
+    "Уния Сважендз": "Unia Swarzędz",
+    "Кордоба": "Cordoba",
+    "Орландо Пайретс": "Orlando Pirates",
+    "Либертад Лоха": "Libertad",
+    "Текнико Университарио": "Tecnico Universitario",
+    "Леонес дель Норте": "Leones del Norte",
+    "Депортиво Куэнка": "Deportivo Cuenca",
+    "Универсидад Католика Кито": "Universidad Catolica",
+    "ЛДУ Кито": "LDU de Quito",
+    "Джвайя": "Jwaaya FC",
+    "Аль Ахед Бейрут": "Al Ahed",
+    "Аль-Ансар": "Al Ansar",
+    "Неджме": "Al Nejmeh",
+    "Такуари Асунсьон": "Tacuary",
+    "Депортиво Капиата": "Deportivo Capiata",
+    "Рапид Бухарест": "Rapid",
+    "Сепси": "Sepsi OSK Sfantu Gheorghe",
+    "ТНС": "The New Saints",
+    "Феникс Пилар": "Fénix",
+    "Эстер": "Osters IF",
+    "Варберг": "Varbergs BoIS FC",
+    "Хорезм": "Xorazm",
+    "Термез Сурхан": "Surkhon",
+    "ТПС": "Turku PS",
+    "Ильвес": "Ilves",
+    "Кальмар": "Kalmar FF",
+    "Мальме": "Malmo FF",
+    "Эребру": "Orebro SK",
+    "Вернамо": "IFK Varnamo"
+  },
+  "identities": [
+    {
+      "canonical_name": "Gimnasia L.P.",
+      "country": "Argentina",
+      "context": "Чемпионат",
+      "provider_team_id": "434",
+      "reviewer": "totoai-operator",
+      "reviewed_at": "2026-07-29T10:00:00Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/external-odds/team-aliases.json",
+        "provider_team_id": "434"
+      },
+      "aliases": [
+        "Gimnasia L.P.",
+        "Химнасия и Эсгрима ЛП"
+      ]
+    },
+    {
+      "canonical_name": "River Plate",
+      "country": "Argentina",
+      "context": "Чемпионат",
+      "provider_team_id": "435",
+      "reviewer": "totoai-operator",
+      "reviewed_at": "2026-07-29T10:00:00Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/external-odds/team-aliases.json",
+        "provider_team_id": "435"
+      },
+      "aliases": [
+        "River Plate",
+        "Ривер Плэйт Буэнос-Айрес"
+      ]
+    },
+    {
+      "canonical_name": "Caracas FC",
+      "country": "",
+      "context": "",
+      "provider_team_id": "2808",
+      "reviewer": "totoai-operator",
+      "reviewed_at": "2026-07-30T08:00:00Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "provider": "api-sports",
+        "provider_team_id": "2808",
+        "sources": [
+          "https://v3.football.api-sports.io/teams?id=2808",
+          "https://caracasfutbolclub.com/"
+        ]
+      },
+      "aliases": [
+        "Caracas FC",
+        "Caracas",
+        "Каракас"
+      ]
+    },
+    {
+      "canonical_name": "Independiente Santa Fe",
+      "country": "",
+      "context": "",
+      "provider_team_id": "1139",
+      "reviewer": "totoai-operator",
+      "reviewed_at": "2026-07-30T08:00:00Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "provider": "api-sports",
+        "provider_team_id": "1139",
+        "sources": [
+          "https://v3.football.api-sports.io/teams?id=1139",
+          "https://independientesantafe.com/"
+        ]
+      },
+      "aliases": [
+        "Independiente Santa Fe",
+        "Santa Fe",
+        "Индепендьенте СФ"
+      ]
+    }
+  ]
+}

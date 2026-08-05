@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "captured_at_utc": "2026-07-30T10:04:16.240956+00:00",
+  "database": "/Users/turshevr/toto-ai/data/toto.db",
+  "quick_check": [
+    "ok"
+  ],
+  "foreign_key_violation_count": 0,
+  "foreign_key_violations": [],
+  "logical_sha256": "1e207b8e4f12873e9240248483a17d2abb37268aa0399a7b95ea1885ccda166b",
+  "tables": {
+    "archived_packages": {
+      "row_count": 1,
+      "sha256": "6a244e5be034d3372eba03a4061c53ce67bd5b3aee384d5672ec0534b225738e",
+      "primary_key": [
+        "archive_sha256"
+      ]
+    },
+    "drawing_event_pins": {
+      "row_count": 30,
+      "sha256": "6d94d39fa1a48eb676bc8da06386421d63f60e15e9b900b3ba5e1c3645381311",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "drawing_pin_set_items": {
+      "row_count": 0,
+      "sha256": "c29668475b9c80588776a255a10e44c0ed6e4259c97647c42af1f4bc29d58e08",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "drawing_pin_sets": {
+      "row_count": 0,
+      "sha256": "0ec7d85108cdcc8bc725b7b97e8dd525089d3f034b8e831478f121c81137ba7b",
+      "primary_key": [
+        "pin_set_id"
+      ]
+    },
+    "drawing_preparations": {
+      "row_count": 6,
+      "sha256": "72e956ff182eacef07be6197dd08a036bb14c2916cf38105ac433c9d221b62b9",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "drawing_raw_snapshots": {
+      "row_count": 3,
+      "sha256": "c10d33f83af8893d53ceba6d533725123fd41e72c70dbfd711b60edb894803d7",
+      "primary_key": [
+        "snapshot_sha256"
+      ]
+    },
+    "drawing_reconciliation_states": {
+      "row_count": 0,
+      "sha256": "2396b2a0cf468101a834c19edd9ee41abcad8977607b7c92cbfa95a385f133e5",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "drawing_result_snapshots": {
+      "row_count": 4,
+      "sha256": "6bdf2d47546d65fdc656d665004ff8f64b8d1eac7e44034e648ca36230c326ed",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "drawings": {
+      "row_count": 2200,
+      "sha256": "90cb0159640cb70bb36d8ea8afcad64bd89d0c6bcd6e9e10eae2c5d631e9b3dd",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "events": {
+      "row_count": 33000,
+      "sha256": "18b08a8787c4ff10f731f4b8d05bce8e93686b77606eea738ac7200f2bf33878",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "external_bookmaker_quotes": {
+      "row_count": 130193,
+      "sha256": "3fba7f48c2ee3a2db3cec669566701cb9b60e396c98689881f13add31e0d563e",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "external_collection_runs": {
+      "row_count": 37,
+      "sha256": "9a64dd74d478641896964c75dca4355e54f0373e471dd97ac35665d9cb60c82c",
+      "primary_key": [
+        "collection_id"
+      ]
+    },
+    "external_event_dispositions": {
+      "row_count": 555,
+      "sha256": "482ee34fdc3287549c5a4cf4dc9a5e7ba6b8c7ba16bec16d18127a0a3d8752ef",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "package_settlements": {
+      "row_count": 0,
+      "sha256": "5b5a4d8b36843e23acc52ed3f17fd6f1d670c1a0bdcbb7c7fd41b748e636fd6c",
+      "primary_key": [
+        "settlement_sha256"
+      ]
+    },
+    "quotes": {
+      "row_count": 32955,
+      "sha256": "99cd395c0027aca0505adfe5e043cd4b18bd30d50747ca3665ee083b395d0669",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "sports_event_feature_snapshots": {
+      "row_count": 45,
+      "sha256": "051005adb495f48877e2d260bbfb656c71543e8a20d2bdd692e7c93fc78ffc06",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "sports_stats_runs": {
+      "row_count": 3,
+      "sha256": "e9ff56c32dd5a48160711139999529f583b5e00e22703c540d07d64df143fced",
+      "primary_key": [
+        "run_id"
+      ]
+    },
+    "team_aliases": {
+      "row_count": 104,
+      "sha256": "1608128e28b123a89d5196ae29c0d739639cd73148c1797a03a6868342604064",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "team_entities": {
+      "row_count": 191,
+      "sha256": "d918a7bdcf0ccaffa94ecf7e4c354f527e5b66f9490482b7a5a8025cc6e3ae53",
+      "primary_key": [
+        "id"
+      ]
+    },
+    "team_registry_reviews": {
+      "row_count": 12,
+      "sha256": "42ad34f9b16c1b7e8b539d9cf75ee7ee76fd9042c4b2941adb0e26abc9b7a530",
+      "primary_key": [
+        "id"
+      ]
+    }
+  }
+}

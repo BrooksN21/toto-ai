@@ -1,0 +1,8 @@
+year,drawings,min_drawing,max_drawing,events,event_structure_complete_drawings,blank_name_drawings,pool_complete_drawings,bk_complete_drawings,norm_complete_drawings,result_complete_drawings,result_incomplete_drawings,missing_result_events,raw_available_drawings,result_snapshot_drawings,preparation_drawings,package_drawings,settled_drawings,health_pass,health_warn,health_fail
+2020,174,2759,2932,2610,174,0,174,174,0,123,51,130,0,0,0,0,0,0,123,51
+2021,364,2933,3296,5460,364,0,344,364,0,297,67,107,0,0,0,0,0,0,283,81
+2022,365,3297,3661,5475,365,0,318,365,0,295,70,142,0,0,0,0,0,0,256,109
+2023,362,3662,4025,5430,362,0,275,362,0,314,48,60,0,0,0,0,0,0,239,123
+2024,363,4026,4388,5445,363,0,321,363,0,315,48,70,0,0,0,0,0,0,283,80
+2025,362,4389,4750,5430,362,0,348,362,0,317,45,72,0,0,0,0,0,0,306,56
+2026,209,4751,4959,3135,209,3,201,206,2,167,42,194,15,4,5,1,0,1,160,48

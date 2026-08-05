@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTO-CONTROLLED-PRODUCTION-BACKFILL-WAVE2",
+  "frozen_at_utc": "2026-07-30T10:40:31Z",
+  "network_drawings": [
+    4940,
+    4945,
+    4949,
+    4950,
+    4951,
+    4952,
+    4957
+  ],
+  "offline_repair_drawings": [
+    4954
+  ],
+  "excluded_drawings": {
+    "4946": "source_incomplete_cooldown",
+    "4955": "already_recovered",
+    "4956": "already_recovered",
+    "4958": "already_recovered"
+  },
+  "network_limit": 8,
+  "selection_mode": "one_exact_visible_drawing_per_command",
+  "apply_requires_dry_run_proof": true
+}

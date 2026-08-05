@@ -1,0 +1,2206 @@
+{
+  "4946": {
+    "events": {
+      "field_change_counts": {
+        "result_status": 14
+      },
+      "rows": [
+        {
+          "event_order": 0,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 1,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 2,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 3,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 4,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 5,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 6,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 7,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 8,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 9,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 10,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 12,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 13,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 14,
+          "kind": "modified",
+          "changed_columns": [
+            "result_status"
+          ],
+          "before": {
+            "result_status": null
+          },
+          "after": {
+            "result_status": "resolved"
+          }
+        }
+      ],
+      "added_rows": 0,
+      "removed_rows": 0
+    },
+    "quotes": {
+      "field_change_counts": {},
+      "rows": [],
+      "added_rows": 0,
+      "removed_rows": 0
+    }
+  },
+  "4955": {
+    "events": {
+      "field_change_counts": {
+        "championship": 15,
+        "name": 15,
+        "result_status": 15
+      },
+      "rows": [
+        {
+          "event_order": 0,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Факел — Динамо Махачкала",
+            "championship": "Россия. Премьер Лига",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 1,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Эстудиантес Рио Куарто — Тигре",
+            "championship": "Аргентина. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 2,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Ньюэлз Олд Бойз — Тальерес Кордоба",
+            "championship": "Аргентина. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 3,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Браун Адроге — Архентино Мерло",
+            "championship": "Аргентина. Примера B",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 4,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Комуникасьонес БА — Реал Пилар",
+            "championship": "Аргентина. Примера B",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 5,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Архентино Кильмес — Вилла Дальмин",
+            "championship": "Аргентина. Примера B",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 6,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Атлас Атлетико — Депортиво Эспаньол",
+            "championship": "Аргентина. Примера C",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 7,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Атлетико Лугано — Сентро Эспаньол",
+            "championship": "Аргентина. Примера C",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 8,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "АГФ Орхус — Брондбю",
+            "championship": "Дания. Суперлига",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 9,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Слайго Роверс — Дроэда Юнайтед",
+            "championship": "Ирландия. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 10,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Лонгфорд — Вексфорд",
+            "championship": "Ирландия. 1-й дивизион",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 11,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Серветт — Базель",
+            "championship": "Швейцария. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 12,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Тренчин — Комарно",
+            "championship": "Словакия. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 13,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Питтсбург Риверхаундс — Род Айленд",
+            "championship": "США. USL. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 14,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Бруклин ФК — Сан Антонио ФК",
+            "championship": "США. USL. Чемпионат",
+            "result_status": "resolved"
+          }
+        }
+      ],
+      "added_rows": 0,
+      "removed_rows": 0
+    },
+    "quotes": {
+      "field_change_counts": {},
+      "rows": [
+        {
+          "event_order": 0,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 1,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 2,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 3,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 4,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 5,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 6,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 7,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 8,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 9,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 10,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 11,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 12,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 13,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 14,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        }
+      ],
+      "added_rows": 15,
+      "removed_rows": 0
+    }
+  },
+  "4956": {
+    "events": {
+      "field_change_counts": {
+        "championship": 15,
+        "name": 15,
+        "result_status": 15
+      },
+      "rows": [
+        {
+          "event_order": 0,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Оренбург — Ростов",
+            "championship": "Россия. Премьер Лига",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 1,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Рубин — ФК Краснодар",
+            "championship": "Россия. Премьер Лига",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 2,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Арсенал Дзержинск — Неман",
+            "championship": "Беларусь. Кубок",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 3,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Славия Мозырь — Динамо Брест",
+            "championship": "Беларусь. Кубок",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 4,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Сан Бернардо ФК — Сеара",
+            "championship": "Бразилия. Серия B",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 5,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Дьирмот — Чаквари",
+            "championship": "Венгрия. 2-й дивизион",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 6,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "КФУМ — Мольде",
+            "championship": "Норвегия. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 7,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Висла Краков — Катовице",
+            "championship": "Польша. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 8,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Уния Скерневице — Сталь Мелец",
+            "championship": "Польша. 1-й дивизион",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 9,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Пуща Неполомице — Полония Варшава",
+            "championship": "Польша. 1-й дивизион",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 10,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Сепси — Университатя Клуж",
+            "championship": "Румыния. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 11,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Младост Лучани — Нови Пазар",
+            "championship": "Сербия. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 12,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Ружомберок — ДАК 1904 Дунайска-Стреда",
+            "championship": "Словакия. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 13,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Яблонец — Сигма Оломоуц",
+            "championship": "Чехия. Чемпионат",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 14,
+          "kind": "modified",
+          "changed_columns": [
+            "name",
+            "championship",
+            "result_status"
+          ],
+          "before": {
+            "name": null,
+            "championship": null,
+            "result_status": null
+          },
+          "after": {
+            "name": "Норрбю — Эстерсунд",
+            "championship": "Швеция. Суперэттан",
+            "result_status": "resolved"
+          }
+        }
+      ],
+      "added_rows": 0,
+      "removed_rows": 0
+    },
+    "quotes": {
+      "field_change_counts": {},
+      "rows": [
+        {
+          "event_order": 0,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 1,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 2,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 3,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 4,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 5,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 6,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 7,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 8,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 9,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 10,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 11,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 12,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 13,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        },
+        {
+          "event_order": 14,
+          "kind": "added",
+          "changed_columns": [
+            "bk_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "drawing_id",
+            "event_order",
+            "id",
+            "norm_draw",
+            "norm_win_1",
+            "norm_win_2",
+            "pin_draw",
+            "pin_win_1",
+            "pin_win_2",
+            "pool_draw",
+            "pool_win_1",
+            "pool_win_2"
+          ]
+        }
+      ],
+      "added_rows": 15,
+      "removed_rows": 0
+    }
+  },
+  "4958": {
+    "events": {
+      "field_change_counts": {
+        "result": 15,
+        "result_status": 15,
+        "score": 15
+      },
+      "rows": [
+        {
+          "event_order": 0,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "2",
+            "score": "0 : 2",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 1,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "X",
+            "score": "0 : 0",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 2,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "1",
+            "score": "1 : 0",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 3,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "1",
+            "score": "3 : 2",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 4,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "1",
+            "score": "1 : 0",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 5,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "X",
+            "score": "1 : 1",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 6,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "1",
+            "score": "3 : 1",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 7,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "X",
+            "score": "1 : 1",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 8,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "1",
+            "score": "2 : 1",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 9,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "2",
+            "score": "0 : 1",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 10,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "X",
+            "score": "1 : 1",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 11,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "1",
+            "score": "1 : 0",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 12,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "X",
+            "score": "1 : 1",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 13,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "2",
+            "score": "0 : 1",
+            "result_status": "resolved"
+          }
+        },
+        {
+          "event_order": 14,
+          "kind": "modified",
+          "changed_columns": [
+            "result",
+            "score",
+            "result_status"
+          ],
+          "before": {
+            "result": "",
+            "score": "",
+            "result_status": null
+          },
+          "after": {
+            "result": "2",
+            "score": "1 : 2",
+            "result_status": "resolved"
+          }
+        }
+      ],
+      "added_rows": 0,
+      "removed_rows": 0
+    },
+    "quotes": {
+      "field_change_counts": {
+        "bk_draw": 11,
+        "bk_win_1": 15,
+        "bk_win_2": 12,
+        "norm_draw": 9,
+        "norm_win_1": 9,
+        "norm_win_2": 7,
+        "pool_draw": 11,
+        "pool_win_1": 13,
+        "pool_win_2": 13
+      },
+      "rows": [
+        {
+          "event_order": 0,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_win_2",
+            "bk_win_1"
+          ],
+          "before": {
+            "pool_win_1": 37.0,
+            "pool_win_2": 36.0,
+            "bk_win_1": 34.0
+          },
+          "after": {
+            "pool_win_1": 35.0,
+            "pool_win_2": 37.0,
+            "bk_win_1": 33.0
+          }
+        },
+        {
+          "event_order": 1,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_draw",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_win_2",
+            "norm_win_1",
+            "norm_draw",
+            "norm_win_2"
+          ],
+          "before": {
+            "pool_win_1": 58.0,
+            "pool_draw": 24.0,
+            "pool_win_2": 18.0,
+            "bk_win_1": 50.0,
+            "bk_win_2": 23.0,
+            "norm_win_1": 1.892,
+            "norm_draw": 3.31,
+            "norm_win_2": 4.02
+          },
+          "after": {
+            "pool_win_1": 62.0,
+            "pool_draw": 23.0,
+            "pool_win_2": 15.0,
+            "bk_win_1": 56.0,
+            "bk_win_2": 17.0,
+            "norm_win_1": 1.869,
+            "norm_draw": 3.35,
+            "norm_win_2": 4.08
+          }
+        },
+        {
+          "event_order": 2,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_draw",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_draw",
+            "bk_win_2"
+          ],
+          "before": {
+            "pool_win_1": 52.0,
+            "pool_draw": 26.0,
+            "pool_win_2": 22.0,
+            "bk_win_1": 46.0,
+            "bk_draw": 31.0,
+            "bk_win_2": 23.0
+          },
+          "after": {
+            "pool_win_1": 54.0,
+            "pool_draw": 28.0,
+            "pool_win_2": 18.0,
+            "bk_win_1": 48.0,
+            "bk_draw": 30.0,
+            "bk_win_2": 22.0
+          }
+        },
+        {
+          "event_order": 3,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_draw",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_draw",
+            "bk_win_2",
+            "norm_win_1",
+            "norm_draw"
+          ],
+          "before": {
+            "pool_draw": 31.0,
+            "pool_win_2": 16.0,
+            "bk_win_1": 47.0,
+            "bk_draw": 31.0,
+            "bk_win_2": 22.0,
+            "norm_win_1": 2.08,
+            "norm_draw": 2.99
+          },
+          "after": {
+            "pool_draw": 33.0,
+            "pool_win_2": 14.0,
+            "bk_win_1": 43.0,
+            "bk_draw": 32.0,
+            "bk_win_2": 24.0,
+            "norm_win_1": 2.1,
+            "norm_draw": 3.0
+          }
+        },
+        {
+          "event_order": 4,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_draw",
+            "bk_win_1",
+            "bk_win_2",
+            "norm_win_1",
+            "norm_draw",
+            "norm_win_2"
+          ],
+          "before": {
+            "pool_win_1": 18.0,
+            "pool_draw": 22.0,
+            "bk_win_1": 23.0,
+            "bk_win_2": 49.0,
+            "norm_win_1": 3.9,
+            "norm_draw": 3.34,
+            "norm_win_2": 1.84
+          },
+          "after": {
+            "pool_win_1": 16.0,
+            "pool_draw": 24.0,
+            "bk_win_1": 22.0,
+            "bk_win_2": 50.0,
+            "norm_win_1": 3.81,
+            "norm_draw": 3.23,
+            "norm_win_2": 1.826
+          }
+        },
+        {
+          "event_order": 5,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_draw",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_win_2",
+            "norm_win_1",
+            "norm_draw",
+            "norm_win_2"
+          ],
+          "before": {
+            "pool_win_1": 24.0,
+            "pool_draw": 25.0,
+            "pool_win_2": 52.0,
+            "bk_win_1": 23.0,
+            "bk_win_2": 48.0,
+            "norm_win_1": 4.32,
+            "norm_draw": 3.3,
+            "norm_win_2": 1.952
+          },
+          "after": {
+            "pool_win_1": 19.0,
+            "pool_draw": 24.0,
+            "pool_win_2": 57.0,
+            "bk_win_1": 26.0,
+            "bk_win_2": 45.0,
+            "norm_win_1": 4.27,
+            "norm_draw": 3.27,
+            "norm_win_2": 2.0
+          }
+        },
+        {
+          "event_order": 6,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_draw",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_draw",
+            "bk_win_2"
+          ],
+          "before": {
+            "pool_win_1": 52.0,
+            "pool_draw": 28.0,
+            "pool_win_2": 20.0,
+            "bk_win_1": 42.0,
+            "bk_draw": 29.0,
+            "bk_win_2": 29.0
+          },
+          "after": {
+            "pool_win_1": 50.0,
+            "pool_draw": 27.0,
+            "pool_win_2": 22.0,
+            "bk_win_1": 48.0,
+            "bk_draw": 28.0,
+            "bk_win_2": 24.0
+          }
+        },
+        {
+          "event_order": 7,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_draw",
+            "bk_win_2",
+            "norm_win_1",
+            "norm_draw",
+            "norm_win_2"
+          ],
+          "before": {
+            "pool_win_1": 20.0,
+            "pool_win_2": 46.0,
+            "bk_win_1": 26.0,
+            "bk_draw": 34.0,
+            "bk_win_2": 39.0,
+            "norm_win_1": 3.66,
+            "norm_draw": 2.67,
+            "norm_win_2": 2.49
+          },
+          "after": {
+            "pool_win_1": 21.0,
+            "pool_win_2": 45.0,
+            "bk_win_1": 29.0,
+            "bk_draw": 33.0,
+            "bk_win_2": 38.0,
+            "norm_win_1": 3.73,
+            "norm_draw": 2.75,
+            "norm_win_2": 2.4
+          }
+        },
+        {
+          "event_order": 8,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_draw",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_draw",
+            "bk_win_2",
+            "norm_win_1",
+            "norm_draw"
+          ],
+          "before": {
+            "pool_win_1": 27.0,
+            "pool_draw": 30.0,
+            "pool_win_2": 43.0,
+            "bk_win_1": 24.0,
+            "bk_draw": 30.0,
+            "bk_win_2": 46.0,
+            "norm_win_1": 3.99,
+            "norm_draw": 3.13
+          },
+          "after": {
+            "pool_win_1": 21.0,
+            "pool_draw": 29.0,
+            "pool_win_2": 50.0,
+            "bk_win_1": 20.0,
+            "bk_draw": 29.0,
+            "bk_win_2": 51.0,
+            "norm_win_1": 4.01,
+            "norm_draw": 3.15
+          }
+        },
+        {
+          "event_order": 9,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_draw",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_draw",
+            "bk_win_2",
+            "norm_win_1",
+            "norm_draw",
+            "norm_win_2"
+          ],
+          "before": {
+            "pool_win_1": 63.0,
+            "pool_draw": 20.0,
+            "pool_win_2": 18.0,
+            "bk_win_1": 41.0,
+            "bk_draw": 28.0,
+            "bk_win_2": 31.0,
+            "norm_win_1": 2.23,
+            "norm_draw": 3.1,
+            "norm_win_2": 2.82
+          },
+          "after": {
+            "pool_win_1": 53.0,
+            "pool_draw": 25.0,
+            "pool_win_2": 22.0,
+            "bk_win_1": 42.0,
+            "bk_draw": 29.0,
+            "bk_win_2": 29.0,
+            "norm_win_1": 2.29,
+            "norm_draw": 3.04,
+            "norm_win_2": 2.79
+          }
+        },
+        {
+          "event_order": 10,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_draw",
+            "bk_win_1",
+            "bk_draw",
+            "bk_win_2",
+            "norm_win_1",
+            "norm_draw",
+            "norm_win_2"
+          ],
+          "before": {
+            "pool_win_1": 38.0,
+            "pool_draw": 31.0,
+            "bk_win_1": 39.0,
+            "bk_draw": 28.0,
+            "bk_win_2": 33.0,
+            "norm_win_1": 1.943,
+            "norm_draw": 3.27,
+            "norm_win_2": 4.1
+          },
+          "after": {
+            "pool_win_1": 36.0,
+            "pool_draw": 33.0,
+            "bk_win_1": 32.0,
+            "bk_draw": 36.0,
+            "bk_win_2": 32.0,
+            "norm_win_1": 2.55,
+            "norm_draw": 2.82,
+            "norm_win_2": 2.65
+          }
+        },
+        {
+          "event_order": 11,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_draw",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_draw"
+          ],
+          "before": {
+            "pool_draw": 27.0,
+            "pool_win_2": 22.0,
+            "bk_win_1": 46.0,
+            "bk_draw": 29.0
+          },
+          "after": {
+            "pool_draw": 30.0,
+            "pool_win_2": 20.0,
+            "bk_win_1": 45.0,
+            "bk_draw": 30.0
+          }
+        },
+        {
+          "event_order": 12,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_draw",
+            "bk_win_2"
+          ],
+          "before": {
+            "pool_win_1": 53.0,
+            "pool_win_2": 24.0,
+            "bk_win_1": 42.0,
+            "bk_draw": 26.0,
+            "bk_win_2": 32.0
+          },
+          "after": {
+            "pool_win_1": 50.0,
+            "pool_win_2": 27.0,
+            "bk_win_1": 44.0,
+            "bk_draw": 27.0,
+            "bk_win_2": 30.0
+          }
+        },
+        {
+          "event_order": 13,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_draw",
+            "bk_win_2",
+            "norm_win_1",
+            "norm_draw",
+            "norm_win_2"
+          ],
+          "before": {
+            "pool_win_1": 24.0,
+            "pool_win_2": 55.0,
+            "bk_win_1": 30.0,
+            "bk_draw": 26.0,
+            "bk_win_2": 44.0,
+            "norm_win_1": 3.3,
+            "norm_draw": 3.73,
+            "norm_win_2": 2.11
+          },
+          "after": {
+            "pool_win_1": 26.0,
+            "pool_win_2": 53.0,
+            "bk_win_1": 32.0,
+            "bk_draw": 29.0,
+            "bk_win_2": 38.0,
+            "norm_win_1": 3.34,
+            "norm_draw": 3.74,
+            "norm_win_2": 2.09
+          }
+        },
+        {
+          "event_order": 14,
+          "kind": "modified",
+          "changed_columns": [
+            "pool_win_1",
+            "pool_draw",
+            "pool_win_2",
+            "bk_win_1",
+            "bk_draw"
+          ],
+          "before": {
+            "pool_win_1": 63.0,
+            "pool_draw": 20.0,
+            "pool_win_2": 16.0,
+            "bk_win_1": 46.0,
+            "bk_draw": 29.0
+          },
+          "after": {
+            "pool_win_1": 57.0,
+            "pool_draw": 25.0,
+            "pool_win_2": 18.0,
+            "bk_win_1": 44.0,
+            "bk_draw": 32.0
+          }
+        }
+      ],
+      "added_rows": 0,
+      "removed_rows": 0
+    }
+  }
+}

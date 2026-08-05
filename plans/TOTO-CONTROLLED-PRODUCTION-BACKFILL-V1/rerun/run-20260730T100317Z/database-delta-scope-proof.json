@@ -1,0 +1,1088 @@
+{
+  "allowlist_drawing_ids": [
+    11955,
+    11977,
+    11981,
+    11986
+  ],
+  "allowlist_numbers": [
+    4946,
+    4955,
+    4956,
+    4958
+  ],
+  "changed_tables": {
+    "drawing_raw_snapshots": {
+      "added": 4,
+      "removed": 0,
+      "modified": 0,
+      "entries": [
+        {
+          "kind": "added",
+          "key": [
+            "0cb9e471657f99d382e1d0249221543ea737a8c1ff5c14a7637e1de20e33df97"
+          ],
+          "drawing_id": 11977,
+          "drawing_number": 4955,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            "744a1529de767409052454ee4c07447d5cb4ff70bf69e27a54db2c66d3d70b5d"
+          ],
+          "drawing_id": 11981,
+          "drawing_number": 4956,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            "de4dadd1be6fdee9341f11e570ba6f0bb7f253fb97d69a4d303a8bdb7a932788"
+          ],
+          "drawing_id": 11986,
+          "drawing_number": 4958,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            "f1883050c649fcd857790c5a4d5e894a69067323c4f1f6e9d39286bf624cfe83"
+          ],
+          "drawing_id": 11955,
+          "drawing_number": 4946,
+          "within_allowlist": true
+        }
+      ]
+    },
+    "drawing_reconciliation_states": {
+      "added": 4,
+      "removed": 0,
+      "modified": 0,
+      "entries": [
+        {
+          "kind": "added",
+          "key": [
+            1
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            2
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            3
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            4
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        }
+      ]
+    },
+    "drawing_result_snapshots": {
+      "added": 3,
+      "removed": 0,
+      "modified": 0,
+      "entries": [
+        {
+          "kind": "added",
+          "key": [
+            5
+          ],
+          "drawing_id": 11977,
+          "drawing_number": 4955,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            6
+          ],
+          "drawing_id": 11981,
+          "drawing_number": 4956,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            7
+          ],
+          "drawing_id": 11986,
+          "drawing_number": 4958,
+          "within_allowlist": true
+        }
+      ]
+    },
+    "events": {
+      "added": 0,
+      "removed": 0,
+      "modified": 59,
+      "entries": [
+        {
+          "kind": "modified",
+          "key": [
+            32836
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32837
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32838
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32839
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32840
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32841
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32842
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32843
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32844
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32845
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32846
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32848
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32849
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32850
+          ],
+          "drawing_id": 11955,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32896
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32897
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32898
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32899
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32900
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32901
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32902
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32903
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32904
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32905
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32906
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32907
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32908
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32909
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32910
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32911
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32912
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32913
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32914
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32915
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32916
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32917
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32918
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32919
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32920
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32921
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32922
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32923
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32924
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32925
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32956
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32957
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32958
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32959
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32960
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32961
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32962
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32963
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32964
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32965
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32966
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32967
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32968
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32969
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32970
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        }
+      ]
+    },
+    "quotes": {
+      "added": 30,
+      "removed": 0,
+      "modified": 15,
+      "entries": [
+        {
+          "kind": "added",
+          "key": [
+            32956
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32957
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32958
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32959
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32960
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32961
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32962
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32963
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32964
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32965
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32966
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32967
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32968
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32969
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32970
+          ],
+          "drawing_id": 11977,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32971
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32972
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32973
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32974
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32975
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32976
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32977
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32978
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32979
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32980
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32981
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32982
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32983
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32984
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "added",
+          "key": [
+            32985
+          ],
+          "drawing_id": 11981,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32911
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32912
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32913
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32914
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32915
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32916
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32917
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32918
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32919
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32920
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32921
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32922
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32923
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32924
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        },
+        {
+          "kind": "modified",
+          "key": [
+            32925
+          ],
+          "drawing_id": 11986,
+          "drawing_number": null,
+          "within_allowlist": true
+        }
+      ]
+    }
+  },
+  "violations": [],
+  "pass": true
+}

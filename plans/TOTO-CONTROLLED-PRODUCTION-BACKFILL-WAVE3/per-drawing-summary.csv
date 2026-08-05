@@ -1,0 +1,9 @@
+drawing_number,drawing_id,before_terminal_results,after_terminal_results,status,classification,retry_state,next_eligible_at,http_attempts,http_errors,named_events,championship_events,quote_rows,valid_pool_rows,complete_bk_rows,void_results,raw_snapshot_count,result_snapshot_count,raw_snapshot_sha256
+4939,11938,0,15,repaired,complete,complete,,1,0,15,15,15,15,15,0,1,1,b4736f6d92365463fa20c772b9b9b40c5c2e7adfc74f28330ebbf3c67e1a31c3
+4499,10683,0,0,source_incomplete,source_incomplete,cooldown,2026-07-30T17:33:31.680969+00:00,1,0,15,15,15,0,15,0,1,0,3f073846902a5c439c2b443929f0493e88d01ab277769293f09172dc9b03bfb1
+3643,8149,0,0,source_incomplete,source_incomplete,cooldown,2026-07-30T17:34:12.528987+00:00,1,0,15,15,15,15,15,0,1,0,19803983b85ddfb267efdfd8ad7f64f300243b9da6e191690962c6d3e8924617
+3351,7294,0,0,source_incomplete,source_incomplete,cooldown,2026-07-30T17:34:13.222126+00:00,1,0,15,15,15,15,15,0,1,0,808e731c0fd71c9dfd6cdd1ed8980faad340ef85efeb14fecd093af6e7e74da4
+3341,7246,0,0,source_incomplete,source_incomplete,cooldown,2026-07-30T17:34:15.249857+00:00,1,0,15,15,15,15,15,0,1,0,5c0c630fe2ec9192b125a72967968ab05e1ee1c7e7f98817141bb6c094667d2b
+3292,7028,0,0,source_incomplete,source_incomplete,cooldown,2026-07-30T17:34:17.263356+00:00,1,0,15,15,15,15,15,0,1,0,308d6b020cc3c63fff4438fe4090f581210617c53a691a9362fa7ff58418109a
+2763,206,0,0,source_incomplete,source_incomplete,cooldown,2026-07-30T17:34:19.354264+00:00,1,0,15,15,15,15,15,0,1,0,4843d1462c6e3fb33af213075fff99f58aea2fae94472c3967b5a9b54920532c
+2762,205,0,0,source_incomplete,source_incomplete,cooldown,2026-07-30T17:34:21.362289+00:00,1,0,15,15,15,15,15,0,1,0,fa90bd75df67c13629c30e6bfc5c76bfe05c2ce16318eba80ef0a7706a4478b8

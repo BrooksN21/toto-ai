@@ -1,0 +1,405 @@
+{
+  "use_case_health_delta": {
+    "historical_inventory": {
+      "healthy_before": 0,
+      "healthy_after": 3,
+      "healthy_delta": 3,
+      "unhealthy_before": 13,
+      "unhealthy_after": 10,
+      "unhealthy_delta": -3,
+      "inventory_delta": {
+        "finished_incomplete_result_drawings": {
+          "before": 8,
+          "after": 7,
+          "delta": -1
+        },
+        "missing_terminal_results_in_finished": {
+          "before": 92,
+          "after": 77,
+          "delta": -15
+        },
+        "valid_pool_drawings": {
+          "before": 10,
+          "after": 12,
+          "delta": 2
+        },
+        "complete_bk_drawings": {
+          "before": 10,
+          "after": 12,
+          "delta": 2
+        },
+        "raw_snapshot_drawings": {
+          "before": 6,
+          "after": 9,
+          "delta": 3
+        },
+        "result_snapshot_drawings": {
+          "before": 0,
+          "after": 3,
+          "delta": 3
+        },
+        "reconciliation_tracked_drawings": {
+          "before": 0,
+          "after": 4,
+          "delta": 4
+        },
+        "reconciliation_cooldown_drawings": {
+          "before": 0,
+          "after": 1,
+          "delta": 1
+        },
+        "reconciliation_complete_drawings": {
+          "before": 0,
+          "after": 3,
+          "delta": 3
+        }
+      }
+    },
+    "backtest_probability": {
+      "healthy_before": 3,
+      "healthy_after": 6,
+      "healthy_delta": 3,
+      "unhealthy_before": 10,
+      "unhealthy_after": 7,
+      "unhealthy_delta": -3
+    },
+    "result_settlement": {
+      "healthy_before": 0,
+      "healthy_after": 3,
+      "healthy_delta": 3,
+      "unhealthy_before": 13,
+      "unhealthy_after": 10,
+      "unhealthy_delta": -3
+    },
+    "prospective_generation": {
+      "healthy_before": 10,
+      "healthy_after": 12,
+      "healthy_delta": 2,
+      "unhealthy_before": 3,
+      "unhealthy_after": 1,
+      "unhealthy_delta": -2
+    }
+  },
+  "per_drawing_data_health_delta": {
+    "4946": {
+      "nonblank_name_count": {
+        "before": 15,
+        "after": 15
+      },
+      "quote_count": {
+        "before": 15,
+        "after": 15
+      },
+      "valid_pool_count": {
+        "before": 15,
+        "after": 15
+      },
+      "complete_bk_count": {
+        "before": 15,
+        "after": 15
+      },
+      "terminal_result_count": {
+        "before": 14,
+        "after": 14
+      },
+      "void_result_count": {
+        "before": 0,
+        "after": 0
+      },
+      "result_snapshot_count": {
+        "before": 0,
+        "after": 0
+      },
+      "complete_result_snapshot_count": {
+        "before": 0,
+        "after": 0
+      },
+      "raw_snapshot_present": {
+        "before": false,
+        "after": true
+      },
+      "reconciliation_state_count": {
+        "before": 0,
+        "after": 1
+      },
+      "reconciliation_attempt_count": {
+        "before": 0,
+        "after": 1
+      },
+      "reconciliation_next_eligible_at": {
+        "before": null,
+        "after": "2026-07-30T16:05:22.722261+00:00"
+      },
+      "reconciliation_classifications": {
+        "before": [],
+        "after": [
+          "source_incomplete"
+        ]
+      },
+      "reconciliation_retry_states": {
+        "before": [],
+        "after": [
+          "cooldown"
+        ]
+      },
+      "selected_status": {
+        "before": "unhealthy",
+        "after": "unhealthy"
+      },
+      "selected_reason_codes": {
+        "before": [
+          "incomplete_results",
+          "missing_raw_snapshot",
+          "missing_result_snapshot"
+        ],
+        "after": [
+          "incomplete_results",
+          "missing_result_snapshot"
+        ]
+      }
+    },
+    "4955": {
+      "nonblank_name_count": {
+        "before": 0,
+        "after": 15
+      },
+      "quote_count": {
+        "before": 0,
+        "after": 15
+      },
+      "valid_pool_count": {
+        "before": 0,
+        "after": 15
+      },
+      "complete_bk_count": {
+        "before": 0,
+        "after": 15
+      },
+      "terminal_result_count": {
+        "before": 15,
+        "after": 15
+      },
+      "void_result_count": {
+        "before": 0,
+        "after": 0
+      },
+      "result_snapshot_count": {
+        "before": 1,
+        "after": 2
+      },
+      "complete_result_snapshot_count": {
+        "before": 0,
+        "after": 1
+      },
+      "raw_snapshot_present": {
+        "before": false,
+        "after": true
+      },
+      "reconciliation_state_count": {
+        "before": 0,
+        "after": 1
+      },
+      "reconciliation_attempt_count": {
+        "before": 0,
+        "after": 1
+      },
+      "reconciliation_next_eligible_at": {
+        "before": null,
+        "after": null
+      },
+      "reconciliation_classifications": {
+        "before": [],
+        "after": [
+          "complete"
+        ]
+      },
+      "reconciliation_retry_states": {
+        "before": [],
+        "after": [
+          "complete"
+        ]
+      },
+      "selected_status": {
+        "before": "unhealthy",
+        "after": "healthy"
+      },
+      "selected_reason_codes": {
+        "before": [
+          "empty_event_names",
+          "missing_quotes",
+          "incomplete_bk",
+          "missing_raw_snapshot",
+          "missing_result_snapshot"
+        ],
+        "after": [
+          "healthy"
+        ]
+      }
+    },
+    "4956": {
+      "nonblank_name_count": {
+        "before": 0,
+        "after": 15
+      },
+      "quote_count": {
+        "before": 0,
+        "after": 15
+      },
+      "valid_pool_count": {
+        "before": 0,
+        "after": 15
+      },
+      "complete_bk_count": {
+        "before": 0,
+        "after": 15
+      },
+      "terminal_result_count": {
+        "before": 15,
+        "after": 15
+      },
+      "void_result_count": {
+        "before": 0,
+        "after": 0
+      },
+      "result_snapshot_count": {
+        "before": 1,
+        "after": 2
+      },
+      "complete_result_snapshot_count": {
+        "before": 0,
+        "after": 1
+      },
+      "raw_snapshot_present": {
+        "before": false,
+        "after": true
+      },
+      "reconciliation_state_count": {
+        "before": 0,
+        "after": 1
+      },
+      "reconciliation_attempt_count": {
+        "before": 0,
+        "after": 1
+      },
+      "reconciliation_next_eligible_at": {
+        "before": null,
+        "after": null
+      },
+      "reconciliation_classifications": {
+        "before": [],
+        "after": [
+          "complete"
+        ]
+      },
+      "reconciliation_retry_states": {
+        "before": [],
+        "after": [
+          "complete"
+        ]
+      },
+      "selected_status": {
+        "before": "unhealthy",
+        "after": "healthy"
+      },
+      "selected_reason_codes": {
+        "before": [
+          "empty_event_names",
+          "missing_quotes",
+          "incomplete_bk",
+          "missing_raw_snapshot",
+          "missing_result_snapshot"
+        ],
+        "after": [
+          "healthy"
+        ]
+      }
+    },
+    "4958": {
+      "nonblank_name_count": {
+        "before": 15,
+        "after": 15
+      },
+      "quote_count": {
+        "before": 15,
+        "after": 15
+      },
+      "valid_pool_count": {
+        "before": 15,
+        "after": 15
+      },
+      "complete_bk_count": {
+        "before": 15,
+        "after": 15
+      },
+      "terminal_result_count": {
+        "before": 0,
+        "after": 15
+      },
+      "void_result_count": {
+        "before": 0,
+        "after": 0
+      },
+      "result_snapshot_count": {
+        "before": 0,
+        "after": 1
+      },
+      "complete_result_snapshot_count": {
+        "before": 0,
+        "after": 1
+      },
+      "raw_snapshot_present": {
+        "before": true,
+        "after": true
+      },
+      "reconciliation_state_count": {
+        "before": 0,
+        "after": 1
+      },
+      "reconciliation_attempt_count": {
+        "before": 0,
+        "after": 1
+      },
+      "reconciliation_next_eligible_at": {
+        "before": null,
+        "after": null
+      },
+      "reconciliation_classifications": {
+        "before": [],
+        "after": [
+          "complete"
+        ]
+      },
+      "reconciliation_retry_states": {
+        "before": [],
+        "after": [
+          "complete"
+        ]
+      },
+      "selected_status": {
+        "before": "unhealthy",
+        "after": "healthy"
+      },
+      "selected_reason_codes": {
+        "before": [
+          "all_results_missing",
+          "missing_result_snapshot"
+        ],
+        "after": [
+          "healthy"
+        ]
+      }
+    }
+  },
+  "network": {
+    "first_apply_http_drawing_requests": 4,
+    "first_apply_retries": 0,
+    "idempotency_http_requests": 0,
+    "api_errors": 0
+  },
+  "allowlist": [
+    4946,
+    4955,
+    4956,
+    4958
+  ]
+}

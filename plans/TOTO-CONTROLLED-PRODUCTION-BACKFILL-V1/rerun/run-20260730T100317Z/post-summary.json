@@ -1,0 +1,26 @@
+{
+  "main_database": "/Users/turshevr/toto-ai/data/toto.db",
+  "main_sha256": "f2f2c2ede3fc6bd8f0ba7f52240d3800fa31a7516775fd4361a2e3e38905110c",
+  "quick_check": "ok",
+  "foreign_key_violations": 0,
+  "wal": "absent",
+  "shm": "absent",
+  "allowlist": [4946, 4955, 4956, 4958],
+  "scope_proof": "PASS: no changed row outside allowlist",
+  "range_health_4946_4958": {
+    "historical_inventory_healthy": 3,
+    "backtest_probability_healthy": 6,
+    "result_settlement_healthy": 3,
+    "prospective_generation_healthy": 12,
+    "missing_terminal_results": 77,
+    "valid_pool_drawings": 12,
+    "complete_bk_drawings": 12
+  },
+  "network": {
+    "first_apply_http_requests": 4,
+    "first_apply_retries": 0,
+    "idempotency_http_requests": 0,
+    "api_errors": 0,
+    "tls_bypass": false
+  }
+}

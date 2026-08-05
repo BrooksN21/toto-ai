@@ -1,0 +1,57 @@
+# Oracle Benchmarks
+
+Oracle benchmarks use actual results after the fact. They are research tools,
+not playable prediction methods.
+
+Implemented commands:
+- `brief-oracle`: finds the smallest BK-ranked oracle brief that contains the
+  actual result string.
+- `budget-oracle`: searches oracle candidate briefs, runs the Cover Engine under
+  a user budget, and compares best coupon hits against the baseline generator.
+
+Current budget-oracle outputs:
+- Oracle average best hits.
+- Oracle hit13/hit14/hit15 counts and rates.
+- Average singles, doubles, triples.
+- Average package size and cost.
+- Baseline generator average best hits.
+- Oracle vs baseline hit gap.
+- Progress state for long runs.
+- Per-drawing timing diagnostics.
+- Processed, skipped, and timed-out counts.
+- Optional workload diagnostics via `--profile-workload`:
+  - generated and unique candidate counts
+  - Cover Engine calls
+  - cache hits and misses
+  - average and maximum brief variant count
+  - average Cover Engine call duration
+  - slowest 10 candidate briefs
+  - pruning counters for cost, dominance, and incumbent bounds
+  - Cover Engine calls after pruning
+
+Exports:
+- `reports/budget_oracle_last_<N>.csv`
+- `reports/budget_oracle_last_<N>.md`
+
+Operational notes:
+- `--max-candidates` is an explicit limit only; omitted means full search.
+- `--timeout-per-drawing` keeps the best oracle candidate found so far.
+- Partial CSV progress is written every 10 drawings.
+- A timed-out row is usable as partial oracle evidence, not an exhaustive oracle
+  optimum.
+- Workload profiling is observational only and must not alter oracle scoring,
+  candidate order, or default search space.
+- Candidate evaluation sorts by potential best hits descending, lower-bound cost
+  ascending, brief size ascending, and original order.
+- Incumbent pruning only skips a candidate when its maximum possible hit count
+  is strictly below the incumbent's actual hit count.
+- Dominance and full-cover cost pruning are disabled because they changed
+  oracle results. Regression tests compare optimized and exhaustive selection.
+- A July 2026 local smoke on `data/toto.db` evaluated 426 candidates before two
+  drawing timeouts; all pruning counters were zero and all three processed
+  drawings found a 15-hit package. Timed-out rows remain partial oracle evidence.
+
+Related:
+- [../skills/backtesting.md](../skills/backtesting.md)
+- [../memory-bank/DECISIONS.md](../memory-bank/DECISIONS.md)
+- [../memory-bank/ROADMAP.md](../memory-bank/ROADMAP.md)

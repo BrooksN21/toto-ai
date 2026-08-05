@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "checks": {
+    "manifest_file_hashes": true,
+    "database_sha_matches_manifest": true,
+    "database_quick_check": true,
+    "database_fk_clean": true,
+    "database_sidecars_absent": true,
+    "backup_exists": true,
+    "backup_mode_0600": true,
+    "backup_sha_matches": true
+  },
+  "database_sha256": "49c21d9762ee68b218323e095355cf251511d170fb19b973c796f40e4585a4c0",
+  "backup_sha256": "205d948dfb8da8bd9b7b08efa5b8f4959e3ec03e40315529222cc1114066acfa",
+  "manifest_file_count": 357
+}

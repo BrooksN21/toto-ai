@@ -1,0 +1,1076 @@
+from __future__ import annotations
+
+import csv
+import hashlib
+import json
+import math
+import time
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from random import Random
+from statistics import mean
+from typing import Any
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from toto_ai.analytics.data_health import (
+    DATA_HEALTH_CONTRACT_VERSION,
+    require_data_health,
+)
+from toto_ai.analytics.history import normalize_result
+from toto_ai.db.models import Drawing, Event, Quote
+from toto_ai.optimizer.brief import (
+    EventBriefAnalysis,
+    analyze_event,
+    build_baseline_brief,
+)
+from toto_ai.optimizer.brief_backtest import best_coupon_hits, build_result_string
+from toto_ai.optimizer.coupon_candidates import (
+    generate_candidate_coupons,
+    sample_scenarios,
+)
+from toto_ai.optimizer.coupon_probabilities import (
+    OUTCOMES,
+    ProbabilityMatrix,
+    normalize_probability_matrix,
+    top_probability_coupons,
+)
+from toto_ai.optimizer.cover import category_max_errors
+from toto_ai.optimizer.direct_package import (
+    estimate_package_coverage,
+    select_weighted_package,
+)
+
+
+@dataclass(frozen=True)
+class StrategyConfig:
+    bank: int = 5000
+    stake: int = 30
+    category: int = 13
+    seed: int = 42
+    top_count: int = 1000
+    candidate_samples: int = 3000
+    mutation_limit: int = 1000
+    optimization_samples: int = 2000
+    validation_samples: int = 5000
+    timeout_per_drawing: float | None = 30.0
+
+    @property
+    def max_coupons(self) -> int:
+        return self.bank // self.stake
+
+
+@dataclass(frozen=True)
+class StrategyPackage:
+    strategy: str
+    coupons: list[str]
+    estimated_coverage: float
+    candidate_count: int
+    runtime_seconds: float
+    timed_out: bool
+
+
+@dataclass(frozen=True)
+class StrategyBacktestRow:
+    drawing_id: int
+    drawing_number: int | None
+    segment: str
+    strategy: str
+    best_hits: int
+    hit_13: bool
+    hit_14: bool
+    hit_15: bool
+    package_size: int
+    package_cost: int
+    estimated_coverage: float
+    candidate_count: int
+    runtime_seconds: float
+    package_hash: str
+
+
+@dataclass(frozen=True)
+class StrategyBacktestResult:
+    rows: list[StrategyBacktestRow]
+    summary: dict[str, object]
+    config: StrategyConfig
+
+
+def build_packages_for_probabilities(
+    probabilities: ProbabilityMatrix,
+    analyses: list[EventBriefAnalysis],
+    drawing_id: int,
+    config: StrategyConfig,
+    baseline_builder: Callable[..., dict[str, Any]] = build_baseline_brief,
+) -> list[StrategyPackage]:
+    _validate_strategy_config(config)
+    _validate_analyses_probabilities(analyses, probabilities)
+    drawing_started = time.perf_counter()
+    drawing_deadline = (
+        None
+        if config.timeout_per_drawing is None
+        else drawing_started + config.timeout_per_drawing
+    )
+    max_coupons = config.max_coupons
+
+    validation_seed = config.seed ^ drawing_id ^ 0x5A5A
+    validation_scenarios = sample_scenarios(
+        probabilities,
+        count=config.validation_samples,
+        seed=validation_seed,
+    )
+
+    baseline_started = time.perf_counter()
+    baseline_timeout = (
+        None
+        if drawing_deadline is None
+        else max(drawing_deadline - baseline_started, 1e-12)
+    )
+    baseline_result = baseline_builder(
+        analyses,
+        category=config.category,
+        bank=config.bank,
+        stake=config.stake,
+        timeout_per_drawing=baseline_timeout,
+    )
+    baseline_coupons = list(baseline_result["selected_coupons"])
+    if len(baseline_coupons) > max_coupons:
+        raise ValueError("Baseline package exceeds the configured budget.")
+    baseline_package = StrategyPackage(
+        strategy="baseline_brief",
+        coupons=baseline_coupons,
+        estimated_coverage=estimate_package_coverage(
+            baseline_coupons,
+            validation_scenarios,
+            config.category,
+        ),
+        candidate_count=int(
+            baseline_result.get("candidate_count", len(baseline_coupons))
+        ),
+        runtime_seconds=time.perf_counter() - baseline_started,
+        timed_out=bool(baseline_result.get("timed_out", False)),
+    )
+
+    top_started = time.perf_counter()
+    top_coupons = top_probability_coupons(probabilities, limit=max_coupons)
+    top_package = StrategyPackage(
+        strategy="top_probability",
+        coupons=top_coupons,
+        estimated_coverage=estimate_package_coverage(
+            top_coupons,
+            validation_scenarios,
+            config.category,
+        ),
+        candidate_count=len(top_coupons),
+        runtime_seconds=time.perf_counter() - top_started,
+        timed_out=False,
+    )
+
+    weighted_started = time.perf_counter()
+    candidate_seed = config.seed ^ drawing_id ^ 0xC3C3
+    candidates = generate_candidate_coupons(
+        probabilities,
+        max_coupons=max_coupons,
+        top_count=config.top_count,
+        sample_count=config.candidate_samples,
+        mutation_limit=config.mutation_limit,
+        seed=candidate_seed,
+    )
+    optimization_seed = config.seed ^ drawing_id ^ 0xA5A5
+    optimization_scenarios = sample_scenarios(
+        probabilities,
+        count=config.optimization_samples,
+        seed=optimization_seed,
+    )
+    weighted_result = select_weighted_package(
+        candidates=candidates,
+        scenarios=optimization_scenarios,
+        probabilities=probabilities,
+        category=config.category,
+        max_coupons=max_coupons,
+        deadline=drawing_deadline,
+    )
+    weighted_package = StrategyPackage(
+        strategy="weighted_coverage",
+        coupons=weighted_result.selected_coupons,
+        estimated_coverage=estimate_package_coverage(
+            weighted_result.selected_coupons,
+            validation_scenarios,
+            config.category,
+        ),
+        candidate_count=len(candidates),
+        runtime_seconds=time.perf_counter() - weighted_started,
+        timed_out=weighted_result.timed_out,
+    )
+
+    return [baseline_package, top_package, weighted_package]
+
+
+def select_eligible_strategy_drawings(
+    session: Session,
+    last: int,
+    community: str = "baltbet-main",
+) -> list[Drawing]:
+    drawings, _ = _scan_eligible_strategy_drawings(session, last, community)
+    return drawings
+
+
+def split_development_holdout(
+    drawings: list[Drawing],
+    holdout_size: int,
+) -> dict[int, str]:
+    if holdout_size < 0 or holdout_size > len(drawings):
+        raise ValueError("holdout_size must be between zero and drawing count.")
+    ordered = sorted(
+        drawings,
+        key=lambda drawing: (
+            drawing.number if drawing.number is not None else drawing.id,
+            drawing.id,
+        ),
+    )
+    development_count = len(ordered) - holdout_size
+    return {
+        drawing.id: (
+            "development" if index < development_count else "holdout"
+        )
+        for index, drawing in enumerate(ordered)
+    }
+
+
+def run_strategy_backtest(
+    session: Session,
+    last: int,
+    holdout_size: int,
+    config: StrategyConfig,
+    community: str = "baltbet-main",
+    progress_callback=None,
+    package_builder=build_packages_for_probabilities,
+    drawing_ids: list[int] | None = None,
+    allow_unhealthy_research: bool = False,
+) -> StrategyBacktestResult:
+    if last <= 0:
+        raise ValueError("last must be positive.")
+    _validate_strategy_config(config)
+
+    started_at = time.perf_counter()
+    if drawing_ids is None:
+        drawings, eligibility_skipped = _scan_eligible_strategy_drawings(
+            session,
+            last,
+            community,
+        )
+    else:
+        if len(drawing_ids) != last:
+            raise ValueError("Manifest drawing count must match last.")
+        drawings = _load_exact_strategy_drawings(session, drawing_ids, community)
+        eligibility_skipped = 0
+    gate = require_data_health(
+        session,
+        use_case="backtest_probability",
+        drawing_ids=tuple(drawing.id for drawing in drawings),
+        allow_unhealthy_research=allow_unhealthy_research,
+    )
+    segments = split_development_holdout(drawings, holdout_size)
+    input_data_hash = _strategy_input_data_hash(session, drawings)
+    configuration_hash = _configuration_hash(config)
+    rows = []
+    generation_skipped = 0
+    generation_errors = 0
+    invalid_package_sets = 0
+    timed_out_drawings = 0
+    holdout_timed_out = False
+    holdout_generation_failed = False
+
+    for index, drawing in enumerate(drawings, start=1):
+        events, quotes = _load_strategy_events_and_quotes(session, drawing.id)
+        analyses = [
+            analyze_event(event, quotes[event.event_order])
+            for event in events
+            if event.event_order is not None
+        ]
+        probabilities = normalize_probability_matrix(
+            [analysis.bk for analysis in analyses]
+        )
+
+        try:
+            packages = package_builder(
+                probabilities=probabilities,
+                analyses=analyses,
+                drawing_id=drawing.id,
+                config=config,
+            )
+        except ValueError:
+            generation_skipped += 1
+            generation_errors += 1
+            holdout_generation_failed = (
+                holdout_generation_failed or segments[drawing.id] == "holdout"
+            )
+            _emit_strategy_progress(
+                progress_callback,
+                drawing,
+                index,
+                len(drawings),
+                len(drawings),
+                eligibility_skipped + generation_skipped,
+                started_at,
+            )
+            continue
+
+        if len(packages) != 3 or {package.strategy for package in packages} != {
+            "baseline_brief",
+            "top_probability",
+            "weighted_coverage",
+        }:
+            generation_skipped += 1
+            invalid_package_sets += 1
+            holdout_generation_failed = (
+                holdout_generation_failed or segments[drawing.id] == "holdout"
+            )
+            _emit_strategy_progress(
+                progress_callback,
+                drawing,
+                index,
+                len(drawings),
+                len(drawings),
+                eligibility_skipped + generation_skipped,
+                started_at,
+            )
+            continue
+        if any(package.timed_out for package in packages):
+            generation_skipped += 1
+            timed_out_drawings += 1
+            holdout_timed_out = holdout_timed_out or segments[drawing.id] == "holdout"
+            _emit_strategy_progress(
+                progress_callback,
+                drawing,
+                index,
+                len(drawings),
+                len(drawings),
+                eligibility_skipped + generation_skipped,
+                started_at,
+            )
+            continue
+
+        result_string = build_result_string(events)
+        for package in packages:
+            best_hits = best_coupon_hits(package.coupons, result_string)
+            rows.append(
+                StrategyBacktestRow(
+                    drawing_id=drawing.id,
+                    drawing_number=drawing.number,
+                    segment=segments[drawing.id],
+                    strategy=package.strategy,
+                    best_hits=best_hits,
+                    hit_13=best_hits >= 13,
+                    hit_14=best_hits >= 14,
+                    hit_15=best_hits == 15,
+                    package_size=len(package.coupons),
+                    package_cost=len(package.coupons) * config.stake,
+                    estimated_coverage=package.estimated_coverage,
+                    candidate_count=package.candidate_count,
+                    runtime_seconds=package.runtime_seconds,
+                    package_hash=hashlib.sha256(
+                        ",".join(package.coupons).encode("utf-8")
+                    ).hexdigest(),
+                )
+            )
+
+        _emit_strategy_progress(
+            progress_callback,
+            drawing,
+            index,
+            len(drawings),
+            len(drawings),
+            eligibility_skipped + generation_skipped,
+            started_at,
+        )
+
+    evaluated_ids = {row.drawing_id for row in rows}
+    development_count = len(
+        {row.drawing_id for row in rows if row.segment == "development"}
+    )
+    holdout_count = len(
+        {row.drawing_id for row in rows if row.segment == "holdout"}
+    )
+    summary = summarize_strategy_backtest(
+        rows,
+        config=config,
+        development_count=development_count,
+        holdout_count=holdout_count,
+        skipped=eligibility_skipped + generation_skipped,
+    )
+    summary.update(
+        {
+        "requested_drawings": last,
+        "eligible_drawings": len(drawings),
+        "evaluated_drawings": len(evaluated_ids),
+        "timed_out_drawings": timed_out_drawings,
+        "operationally_inconclusive": (
+            holdout_timed_out or holdout_generation_failed
+        ),
+        "skip_reasons": {
+            "eligibility": eligibility_skipped,
+            "generation_error": generation_errors,
+            "invalid_package_set": invalid_package_sets,
+            "timeout": timed_out_drawings,
+        },
+        "selected_drawing_ids": [drawing.id for drawing in drawings],
+        "selected_drawing_numbers": [drawing.number for drawing in drawings],
+        "input_data_hash": input_data_hash,
+        "configuration_hash": configuration_hash,
+        "data_health_contract_version": DATA_HEALTH_CONTRACT_VERSION,
+        "data_health_override": gate.override_applied,
+        "execution_time_seconds": round(time.perf_counter() - started_at, 4),
+        }
+    )
+    if holdout_timed_out or holdout_generation_failed:
+        summary["strategy_status"] = "operationally_inconclusive"
+    return StrategyBacktestResult(rows=rows, summary=summary, config=config)
+
+
+def paired_bootstrap_hit13(
+    rows: list[StrategyBacktestRow],
+    seed: int = 42,
+    samples: int = 10000,
+) -> dict[str, float]:
+    if samples <= 0:
+        raise ValueError("samples must be positive.")
+
+    paired = _paired_holdout_hit13(rows)
+    if not paired:
+        return {"difference_pp": 0.0, "ci_low_pp": 0.0, "ci_high_pp": 0.0}
+
+    rng = Random(seed)
+    differences = []
+    for _ in range(samples):
+        sample = [paired[rng.randrange(len(paired))] for _ in paired]
+        differences.append(
+            100
+            * sum(weighted - baseline for weighted, baseline in sample)
+            / len(sample)
+        )
+    differences.sort()
+    observed = 100 * sum(w - b for w, b in paired) / len(paired)
+    return {
+        "difference_pp": round(observed, 4),
+        "ci_low_pp": round(differences[int(0.025 * (samples - 1))], 4),
+        "ci_high_pp": round(differences[int(0.975 * (samples - 1))], 4),
+    }
+
+
+def _paired_holdout_hit13(
+    rows: list[StrategyBacktestRow],
+) -> list[tuple[int, int]]:
+    holdout = [row for row in rows if row.segment == "holdout"]
+    drawing_ids = sorted({row.drawing_id for row in holdout})
+    paired = []
+    expected = {
+        "baseline_brief",
+        "top_probability",
+        "weighted_coverage",
+    }
+    for drawing_id in drawing_ids:
+        drawing_rows = [row for row in holdout if row.drawing_id == drawing_id]
+        counts = {
+            strategy: sum(row.strategy == strategy for row in drawing_rows)
+            for strategy in expected
+        }
+        if set(row.strategy for row in drawing_rows) != expected or any(
+            count != 1 for count in counts.values()
+        ):
+            raise ValueError(
+                "Holdout drawings must contain exactly one row per strategy."
+            )
+        by_strategy = {row.strategy: row for row in drawing_rows}
+        paired.append(
+            (
+                int(by_strategy["weighted_coverage"].hit_13),
+                int(by_strategy["baseline_brief"].hit_13),
+            )
+        )
+    return paired
+
+
+def summarize_strategy_backtest(
+    rows: list[StrategyBacktestRow],
+    config: StrategyConfig,
+    development_count: int,
+    holdout_count: int,
+    skipped: int,
+    bootstrap_samples: int = 10000,
+    bootstrap_seed: int = 42,
+) -> dict[str, object]:
+    development = _summarize_segment(rows, "development")
+    holdout = _summarize_segment(rows, "holdout")
+    paired = paired_bootstrap_hit13(
+        rows,
+        seed=bootstrap_seed,
+        samples=bootstrap_samples,
+    )
+
+    paired_count = len(_paired_holdout_hit13(rows))
+    if paired_count == 0:
+        status = "not_evaluated"
+    else:
+        baseline = holdout["baseline_brief"]
+        weighted = holdout["weighted_coverage"]
+        point_passes = (
+            weighted["hit13_count"] > baseline["hit13_count"]
+            and weighted["average_best_hits"] >= baseline["average_best_hits"]
+        )
+        if not point_passes:
+            status = "rejected"
+        elif paired["ci_low_pp"] <= 0:
+            status = "preliminary"
+        else:
+            status = "proven"
+
+    return {
+        "configuration": asdict(config),
+        "development_drawings": development_count,
+        "holdout_drawings": holdout_count,
+        "skipped_drawings": skipped,
+        "development": development,
+        "holdout": holdout,
+        "paired_hit13_difference_pp": paired["difference_pp"],
+        "paired_hit13_ci_low_pp": paired["ci_low_pp"],
+        "paired_hit13_ci_high_pp": paired["ci_high_pp"],
+        "paired_drawing_count": paired_count,
+        "strategy_status": status,
+    }
+
+
+def write_strategy_backtest_reports(
+    result: StrategyBacktestResult,
+    last: int,
+    report_dir: str | Path = "reports",
+) -> tuple[Path, Path]:
+    output_dir = Path(report_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stem = f"strategy_backtest_last_{last}_bank_{result.config.bank}"
+    csv_path = output_dir / f"{stem}.csv"
+    markdown_path = output_dir / f"{stem}.md"
+
+    fieldnames = list(StrategyBacktestRow.__dataclass_fields__)
+    with csv_path.open("w", newline="", encoding="utf-8") as output:
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(asdict(row) for row in result.rows)
+
+    markdown_path.write_text(_strategy_report_markdown(result), encoding="utf-8")
+    return csv_path, markdown_path
+
+
+def write_strategy_experiment_manifest(
+    result: StrategyBacktestResult,
+    last: int,
+    holdout_size: int,
+    code_version: str,
+    output_path: str | Path,
+) -> Path:
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": 1,
+        "code_version": code_version,
+        "last": last,
+        "holdout_size": holdout_size,
+        "drawing_ids": result.summary["selected_drawing_ids"],
+        "drawing_numbers": result.summary["selected_drawing_numbers"],
+        "input_data_hash": result.summary["input_data_hash"],
+        "configuration_hash": result.summary["configuration_hash"],
+        "protocol_hash": strategy_protocol_hash(result.config),
+        "config": asdict(result.config),
+    }
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def load_strategy_experiment_manifest(
+    path: str | Path,
+) -> dict[str, object]:
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    required = {
+        "schema_version",
+        "code_version",
+        "last",
+        "holdout_size",
+        "drawing_ids",
+        "input_data_hash",
+        "configuration_hash",
+        "protocol_hash",
+        "config",
+    }
+    if not isinstance(payload, dict) or not required.issubset(payload):
+        raise ValueError("Invalid strategy experiment manifest.")
+    if payload["schema_version"] != 1:
+        raise ValueError("Unsupported strategy experiment manifest version.")
+    if not isinstance(payload["drawing_ids"], list) or not all(
+        isinstance(drawing_id, int) for drawing_id in payload["drawing_ids"]
+    ):
+        raise ValueError("Manifest drawing_ids must be integers.")
+    return payload
+
+
+def verify_strategy_experiment_manifest_data(
+    session: Session,
+    manifest: dict[str, object],
+    community: str = "baltbet-main",
+) -> list[int]:
+    drawing_ids = list(manifest["drawing_ids"])
+    drawings = _load_exact_strategy_drawings(session, drawing_ids, community)
+    actual_hash = _strategy_input_data_hash(session, drawings)
+    if actual_hash != manifest["input_data_hash"]:
+        raise ValueError("Manifest input data hash does not match the database.")
+    return drawing_ids
+
+
+def freeze_strategy_experiment_manifest(
+    session: Session,
+    last: int,
+    holdout_size: int,
+    config: StrategyConfig,
+    code_version: str,
+    output_path: str | Path,
+    community: str = "baltbet-main",
+    exclude_latest: int = 0,
+) -> Path:
+    if exclude_latest < 0:
+        raise ValueError("exclude_latest must be non-negative.")
+    drawings, _ = _scan_eligible_strategy_drawings(
+        session,
+        last,
+        community,
+        skip_eligible=exclude_latest,
+    )
+    if len(drawings) != last:
+        raise ValueError("Not enough eligible drawings to freeze the experiment.")
+    split_development_holdout(drawings, holdout_size)
+    result = StrategyBacktestResult(
+        rows=[],
+        summary={
+            "selected_drawing_ids": [drawing.id for drawing in drawings],
+            "selected_drawing_numbers": [drawing.number for drawing in drawings],
+            "input_data_hash": _strategy_input_data_hash(session, drawings),
+            "configuration_hash": _configuration_hash(config),
+        },
+        config=config,
+    )
+    return write_strategy_experiment_manifest(
+        result,
+        last=last,
+        holdout_size=holdout_size,
+        code_version=code_version,
+        output_path=output_path,
+    )
+
+
+def strategy_protocol_hash(config: StrategyConfig) -> str:
+    protocol = asdict(config)
+    protocol.pop("bank")
+    encoded = json.dumps(
+        protocol,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _summarize_segment(
+    rows: list[StrategyBacktestRow],
+    segment: str,
+) -> dict[str, dict[str, float | int]]:
+    summary = {}
+    for strategy in (
+        "baseline_brief",
+        "top_probability",
+        "weighted_coverage",
+    ):
+        selected = [
+            row for row in rows if row.segment == segment and row.strategy == strategy
+        ]
+        count = len(selected)
+        hit13 = sum(row.hit_13 for row in selected)
+        hit14 = sum(row.hit_14 for row in selected)
+        hit15 = sum(row.hit_15 for row in selected)
+        summary[strategy] = {
+            "drawing_count": count,
+            "hit13_count": hit13,
+            "hit13_rate": _percentage(hit13, count),
+            "hit14_count": hit14,
+            "hit14_rate": _percentage(hit14, count),
+            "hit15_count": hit15,
+            "hit15_rate": _percentage(hit15, count),
+            "average_best_hits": _mean_or_zero(
+                [row.best_hits for row in selected]
+            ),
+            "average_package_size": _mean_or_zero(
+                [row.package_size for row in selected]
+            ),
+            "average_package_cost": _mean_or_zero(
+                [row.package_cost for row in selected]
+            ),
+            "average_estimated_coverage": _mean_or_zero(
+                [row.estimated_coverage for row in selected]
+            ),
+            "average_candidate_count": _mean_or_zero(
+                [row.candidate_count for row in selected]
+            ),
+            "average_runtime_seconds": _mean_or_zero(
+                [row.runtime_seconds for row in selected]
+            ),
+        }
+    return summary
+
+
+def _strategy_report_markdown(result: StrategyBacktestResult) -> str:
+    summary = result.summary
+    config = result.config
+    eligible = summary.get(
+        "eligible_drawings",
+        len({row.drawing_id for row in result.rows}),
+    )
+    skip_reasons = summary.get("skip_reasons", {})
+    lines = [
+        "# Strategy Backtest",
+        "",
+        "## Configuration",
+        "",
+        f"- bank: {config.bank}",
+        f"- stake: {config.stake}",
+        f"- category: {config.category}",
+        f"- seed: {config.seed}",
+        f"- top_count: {config.top_count}",
+        f"- candidate_samples: {config.candidate_samples}",
+        f"- mutation_limit: {config.mutation_limit}",
+        f"- optimization_samples: {config.optimization_samples}",
+        f"- validation_samples: {config.validation_samples}",
+        f"- timeout_per_drawing: {config.timeout_per_drawing}",
+        f"- configuration_hash: {summary.get('configuration_hash', '')}",
+        f"- input_data_hash: {summary.get('input_data_hash', '')}",
+        "- data_health_contract_version: "
+        f"{summary.get('data_health_contract_version', '')}",
+        f"- data_health_override: {summary.get('data_health_override', False)}",
+        "",
+        "## Eligibility And Split",
+        "",
+        f"- eligible: {eligible}",
+        f"- skipped: {summary.get('skipped_drawings', 0)}",
+        f"- development: {summary.get('development_drawings', 0)}",
+        f"- holdout: {summary.get('holdout_drawings', 0)}",
+        "",
+    ]
+    for segment in ("development", "holdout"):
+        lines.extend(
+            [
+                f"## {segment.title()}",
+                "",
+                "| Strategy | Drawings | Hit13 | Hit14 | Hit15 | "
+                "Avg Best Hits | Avg Cost |",
+                "|---|---:|---:|---:|---:|---:|---:|",
+            ]
+        )
+        segment_summary = summary[segment]
+        for strategy in (
+            "baseline_brief",
+            "top_probability",
+            "weighted_coverage",
+        ):
+            metrics = segment_summary[strategy]
+            lines.append(
+                f"| {strategy} | {metrics['drawing_count']} | "
+                f"{metrics['hit13_count']} | {metrics['hit14_count']} | "
+                f"{metrics['hit15_count']} | {metrics['average_best_hits']} | "
+                f"{metrics['average_package_cost']} |"
+            )
+        lines.append("")
+
+    lines.extend(
+        [
+            "## Paired Holdout Decision",
+            "",
+            f"- hit13 difference (pp): {summary['paired_hit13_difference_pp']}",
+            f"- 95% interval: [{summary['paired_hit13_ci_low_pp']}, "
+            f"{summary['paired_hit13_ci_high_pp']}]",
+            f"- strategy status: {summary['strategy_status']}",
+            f"- operationally inconclusive: "
+            f"{summary.get('operationally_inconclusive', False)}",
+            "- acceptance: weighted holdout hit13 count must exceed baseline, "
+            "average best hits must not be lower, and the interval lower bound "
+            "must exceed zero for proven status.",
+            "",
+            "## Skips And Timing",
+            "",
+            f"- skipped drawings: {summary.get('skipped_drawings', 0)}",
+            f"- eligibility skips: {skip_reasons.get('eligibility', 0)}",
+            f"- generation errors: {skip_reasons.get('generation_error', 0)}",
+            f"- invalid package sets: {skip_reasons.get('invalid_package_set', 0)}",
+            f"- timed out drawings: {summary.get('timed_out_drawings', 0)}",
+            f"- execution seconds: {summary.get('execution_time_seconds', 0)}",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _mean_or_zero(values: list[float | int]) -> float:
+    return round(mean(values), 4) if values else 0.0
+
+
+def _percentage(count: int, total: int) -> float:
+    return round(100 * count / total, 4) if total else 0.0
+
+
+def _validate_strategy_config(config: StrategyConfig) -> None:
+    if config.bank <= 0:
+        raise ValueError("bank must be positive.")
+    if config.stake <= 0:
+        raise ValueError("stake must be positive.")
+    category_max_errors(config.category)
+    if config.max_coupons <= 0:
+        raise ValueError("Budget must fund at least one coupon.")
+    if config.top_count < config.max_coupons:
+        raise ValueError("top_count must be at least the package coupon limit.")
+    for field_name in (
+        "candidate_samples",
+        "optimization_samples",
+        "validation_samples",
+    ):
+        if getattr(config, field_name) <= 0:
+            raise ValueError(f"{field_name} must be positive.")
+    if config.mutation_limit < 0:
+        raise ValueError("mutation_limit must be non-negative.")
+    if config.timeout_per_drawing is not None and (
+        not math.isfinite(config.timeout_per_drawing)
+        or config.timeout_per_drawing <= 0
+    ):
+        raise ValueError("timeout_per_drawing must be positive and finite.")
+
+
+def _validate_analyses_probabilities(
+    analyses: list[EventBriefAnalysis],
+    probabilities: ProbabilityMatrix,
+) -> None:
+    if not analyses:
+        return
+    if len(analyses) != len(probabilities):
+        raise ValueError("Analysis and probability matrix lengths must match.")
+    for analysis, row in zip(analyses, probabilities, strict=True):
+        if any(
+            not math.isclose(
+                analysis.bk[outcome],
+                row[index],
+                rel_tol=1e-12,
+                abs_tol=1e-12,
+            )
+            for index, outcome in enumerate(OUTCOMES)
+        ):
+            raise ValueError("Analysis BK probabilities must match the matrix.")
+
+
+def _scan_eligible_strategy_drawings(
+    session: Session,
+    last: int,
+    community: str,
+    skip_eligible: int = 0,
+) -> tuple[list[Drawing], int]:
+    if last <= 0:
+        raise ValueError("last must be positive.")
+
+    candidates = session.scalars(
+        select(Drawing)
+        .where(Drawing.name == community)
+        .where(Drawing.status == "finished")
+        .order_by(Drawing.number.desc(), Drawing.id.desc())
+    ).all()
+    selected = []
+    skipped = 0
+    eligible_seen = 0
+    for drawing in candidates:
+        events, quotes = _load_strategy_events_and_quotes(session, drawing.id)
+        event_orders = {
+            event.event_order for event in events if event.event_order is not None
+        }
+        if (
+            not _has_supported_results(events)
+            or event_orders != set(range(15))
+            or set(quotes) != event_orders
+        ):
+            skipped += 1
+            continue
+        try:
+            analyses = [
+                analyze_event(event, quotes[event.event_order])
+                for event in events
+                if event.event_order is not None
+            ]
+        except (KeyError, ValueError):
+            skipped += 1
+            continue
+        if len(analyses) != 15:
+            skipped += 1
+            continue
+        if eligible_seen < skip_eligible:
+            eligible_seen += 1
+            continue
+        selected.append(drawing)
+        if len(selected) == last:
+            break
+
+    selected.sort(
+        key=lambda drawing: (
+            drawing.number if drawing.number is not None else drawing.id,
+            drawing.id,
+        )
+    )
+    return selected, skipped
+
+
+def _load_exact_strategy_drawings(
+    session: Session,
+    drawing_ids: list[int],
+    community: str,
+) -> list[Drawing]:
+    drawings = []
+    for drawing_id in drawing_ids:
+        drawing = session.get(Drawing, drawing_id)
+        if (
+            drawing is None
+            or drawing.name != community
+            or drawing.status != "finished"
+        ):
+            raise ValueError(f"Manifest drawing {drawing_id} is not eligible.")
+        events, quotes = _load_strategy_events_and_quotes(session, drawing_id)
+        event_orders = {
+            event.event_order for event in events if event.event_order is not None
+        }
+        if (
+            not _has_supported_results(events)
+            or event_orders != set(range(15))
+            or set(quotes) != event_orders
+        ):
+            raise ValueError(f"Manifest drawing {drawing_id} is not eligible.")
+        try:
+            for event in events:
+                if event.event_order is not None:
+                    analyze_event(event, quotes[event.event_order])
+        except (KeyError, ValueError) as error:
+            raise ValueError(
+                f"Manifest drawing {drawing_id} is not eligible."
+            ) from error
+        drawings.append(drawing)
+
+    return sorted(
+        drawings,
+        key=lambda drawing: (
+            drawing.number if drawing.number is not None else drawing.id,
+            drawing.id,
+        ),
+    )
+
+
+def _strategy_input_data_hash(
+    session: Session,
+    drawings: list[Drawing],
+) -> str:
+    payload = []
+    for drawing in drawings:
+        events, quotes = _load_strategy_events_and_quotes(session, drawing.id)
+        payload.append(
+            {
+                "drawing_id": drawing.id,
+                "drawing_number": drawing.number,
+                "events": [
+                    {
+                        "event_order": event.event_order,
+                        "result": normalize_result(event.result),
+                        "pool": [
+                            quotes[event.event_order].pool_win_1,
+                            quotes[event.event_order].pool_draw,
+                            quotes[event.event_order].pool_win_2,
+                        ],
+                        "bk": [
+                            quotes[event.event_order].bk_win_1,
+                            quotes[event.event_order].bk_draw,
+                            quotes[event.event_order].bk_win_2,
+                        ],
+                    }
+                    for event in events
+                    if event.event_order is not None
+                ],
+            }
+        )
+    encoded = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _configuration_hash(config: StrategyConfig) -> str:
+    encoded = json.dumps(
+        asdict(config),
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _load_strategy_events_and_quotes(
+    session: Session,
+    drawing_id: int,
+) -> tuple[list[Event], dict[int, Quote]]:
+    events = list(
+        session.scalars(
+            select(Event)
+            .where(Event.drawing_id == drawing_id)
+            .order_by(Event.event_order)
+        ).all()
+    )
+    quotes = {
+        quote.event_order: quote
+        for quote in session.scalars(
+            select(Quote)
+            .where(Quote.drawing_id == drawing_id)
+            .order_by(Quote.event_order)
+        ).all()
+        if quote.event_order is not None
+    }
+    return events, quotes
+
+
+def _has_supported_results(events: list[Event]) -> bool:
+    return len(events) == 15 and all(
+        normalize_result(event.result) is not None for event in events
+    )
+
+
+def _emit_strategy_progress(
+    callback,
+    drawing: Drawing,
+    index: int,
+    total: int,
+    eligible: int,
+    skipped: int,
+    started_at: float,
+) -> None:
+    if callback is None:
+        return
+    elapsed = time.perf_counter() - started_at
+    average = elapsed / index
+    callback(
+        {
+            "drawing_number": drawing.number,
+            "drawing_index": index,
+            "drawing_total": total,
+            "eligible": eligible,
+            "skipped": skipped,
+            "elapsed_time": elapsed,
+            "eta_seconds": average * (total - index),
+        }
+    )

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTO-CONTROLLED-PRODUCTION-BACKFILL-V1",
+  "status": "aborted",
+  "reason": "dry_run_mutated_database_schema",
+  "allowlist": [4946, 4955, 4956, 4958],
+  "selected": [4946, 4955, 4956, 4958],
+  "network_calls": 0,
+  "pre": {
+    "physical_sha256": "5242945ace687adc59f2a6472bcf3c836075dbc88f47496a45756de6fe4f41fb",
+    "logical_sha256": "ed0ec833114176f89628fd8bb49fca4f37dddac5fa57e900d5b6daf413b7142e",
+    "quick_check": "ok",
+    "foreign_key_violations": 0
+  },
+  "post_dry_run": {
+    "physical_sha256": "d94738e26cb35d1f7768a8621f30d0111c2945851bb7165dc6490c57863d2c42",
+    "logical_sha256": "1e207b8e4f12873e9240248483a17d2abb37268aa0399a7b95ea1885ccda166b",
+    "quick_check": "ok",
+    "foreign_key_violations": 0
+  },
+  "delta": {
+    "added_tables": ["drawing_reconciliation_states"],
+    "added_table_rows": 0,
+    "removed_tables": [],
+    "changed_preexisting_tables": [],
+    "raw_observations": 0,
+    "reconciliation_state_rows": 0
+  },
+  "backup": {
+    "path": "/Users/turshevr/toto-ai/data/backups/toto-before-controlled-backfill-20260730T092227Z.db",
+    "sha256": "a117f28fe1d9e61f862191f179f3fcb8b05421e65b808fe9027ead71459ccc94",
+    "size_bytes": 100835328,
+    "mode": "0600"
+  },
+  "decision": "NO-GO"
+}

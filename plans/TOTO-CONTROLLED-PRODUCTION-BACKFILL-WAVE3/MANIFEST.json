@@ -1,0 +1,1836 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTO-CONTROLLED-PRODUCTION-BACKFILL-WAVE3",
+  "created_at_utc": "2026-07-30T11:39:31.875099+00:00",
+  "backup": {
+    "path": "/Users/turshevr/toto-ai/data/backups/toto-before-controlled-backfill-wave3-20260730T113035Z.db",
+    "sha256": "205d948dfb8da8bd9b7b08efa5b8f4959e3ec03e40315529222cc1114066acfa",
+    "size_bytes": 100933632,
+    "mode": "0o600",
+    "quick_check": [
+      "ok"
+    ],
+    "fk_violations": 0
+  },
+  "database": {
+    "before_sha256": "4a77aa7fb1b6a5417c7c466231419fc03bd40a5177dc04f659fef4e22afcfeff",
+    "after_sha256": "49c21d9762ee68b218323e095355cf251511d170fb19b973c796f40e4585a4c0",
+    "quick_check": "ok",
+    "foreign_key_violations": 0
+  },
+  "network": {
+    "first_pass_http_requests": 8,
+    "first_pass_http_retries": 0,
+    "first_pass_http_errors": 0,
+    "repeat_http_requests": 0,
+    "repeat_http_errors": 0,
+    "tls_bypass": false
+  },
+  "allowlist": [
+    4939,
+    4499,
+    3643,
+    3351,
+    3341,
+    3292,
+    2763,
+    2762
+  ],
+  "decision": {
+    "bounded_nightly_reconciliation": "GO",
+    "unrestricted_historical_backfill": "NO_GO",
+    "reason": "Three controlled waves now show exact allowlist scoping, RAW-first evidence, safe cooldown, read-only dry-run, and zero-request idempotency. Nightly must remain bounded, no-force, low-rate, non-betting, and fail-closed."
+  },
+  "files": [
+    {
+      "path": "ALLOWLIST.md",
+      "size": 1018,
+      "sha256": "63bc8aafd4d7e6b1ed009a3e250f401d010d5e40d148e5f476730be45a887781"
+    },
+    {
+      "path": "COMMANDS.md",
+      "size": 1422,
+      "sha256": "f5dfe4458fb0ee639b2812ac81dff62e6b120be5581c3f6f84f4088525c72860"
+    },
+    {
+      "path": "FINAL_VERIFICATION.json",
+      "size": 519,
+      "sha256": "366a5d7fae071a986a6c02f197fe1fb7a66a6cf4128cf183483673227d2b2e87"
+    },
+    {
+      "path": "REPORT.md",
+      "size": 4122,
+      "sha256": "344fb44980455c4cd0118041962e1a7cb68f655218085705a299a87ec91423c5"
+    },
+    {
+      "path": "RUN_ID",
+      "size": 16,
+      "sha256": "64621090389d902f794e3bb3e6991b87b3e3aabaca53166554caa4927d4cc94d"
+    },
+    {
+      "path": "SUMMARY.json",
+      "size": 33904,
+      "sha256": "3712834f77b8e6f53a6a47cb68557f3708f6b84aefa8cbefecf344f800198869"
+    },
+    {
+      "path": "allowlist.json",
+      "size": 4639,
+      "sha256": "96303033e04640bf4798a1cc6f19210cfad9645c8f60b167b236401ca46492b3"
+    },
+    {
+      "path": "per-drawing-summary.csv",
+      "size": 1716,
+      "sha256": "1df197aee26240a5f59cf52f6bde3e02ac48c80942b57e1d8775d499d228bd65"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/db-audit-after.json",
+      "size": 4150,
+      "sha256": "45cd3698c76ae8ba8baf859a9c3c11b97ef01683a1276bea2959dcd23cb6b3ae"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/db-audit-after.log",
+      "size": 4150,
+      "sha256": "45cd3698c76ae8ba8baf859a9c3c11b97ef01683a1276bea2959dcd23cb6b3ae"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/drawings-after.json",
+      "size": 5843782,
+      "sha256": "3b6d1b762b2e8aa142ce78f28f8f080e2bead624ace4207e9da45aceda63a7dc"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/exit-codes.txt",
+      "size": 56,
+      "sha256": "9c886e21bce536bcb2946ca7f946871aacac038fce6f0194230332e21621d396"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/reconcile-2762.log",
+      "size": 586,
+      "sha256": "d2c5d28af5b4ab82a66752616c4feb7b1e5f3d66cc68a8eaf6e7f4406036c81b"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/reconcile-2763.log",
+      "size": 586,
+      "sha256": "2e3d8bae6e6329bc7c93b9ddfb0e6b992cc9a5254884a4720c19fa58ae8fdc1c"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/reconcile-3292.log",
+      "size": 587,
+      "sha256": "b492914362473b49bffd9ffeb4aac18e6093591f55890650ab7c26297cdbf75d"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/reconcile-3341.log",
+      "size": 587,
+      "sha256": "6c6cfaddac6c6be082f2b9d7d3b36feab99a827037a8fe53d43364c3c7656606"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/reconcile-3351.log",
+      "size": 587,
+      "sha256": "c3f9318b1cdddd93eb54babec98af1e036e330baa6945cb223a3d237830fed92"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/reconcile-3643.log",
+      "size": 587,
+      "sha256": "52309a3ace288badd1f0f9b8d682bd93b67af76a13e712de05382ad6d2baa23a"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/reconcile-4499.log",
+      "size": 588,
+      "sha256": "bc15adc17ba012bd4a00e3eb944513785737307ee65efe946097294beff1af19"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/reconcile-4939.log",
+      "size": 533,
+      "sha256": "170a75ea697f6f121abd123af013ea57d2e330d3261162d068783fce6bb11432"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/state-2762.json",
+      "size": 1202,
+      "sha256": "4eca84e75368cee119f0042562af2b0a80225cbf32cf96362bf52a8ec44d6faa"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/state-2763.json",
+      "size": 1202,
+      "sha256": "4fe4ccf577a688d34f1dbfca29ac2b5b2809f57c57422d57e6bf8f57fe3026d4"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/state-3292.json",
+      "size": 1205,
+      "sha256": "039e81ba19d3aa59f2c8f541b67fe358d269c69b3f46779cd66e17f3bb73ed7d"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/state-3341.json",
+      "size": 1205,
+      "sha256": "8ea1f8d92787b7537947339b1ce90d8746ffe1ce92b7ea9d24a56e0c4e2c626a"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/state-3351.json",
+      "size": 1205,
+      "sha256": "4ef209575ca1529502d32c11efef8ff268e9828867d9e2a61479272cfd403f17"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/state-3643.json",
+      "size": 1205,
+      "sha256": "b0e2ea6ed02f27b490d683ff3446b85eb737c682de05b2f55f56d62144a85f87"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/state-4499.json",
+      "size": 1208,
+      "sha256": "f1e35323289dc668ed78b482e38c1580f33c0847515a53fdb3241d77703473eb"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/state-4939.json",
+      "size": 1098,
+      "sha256": "b5137f22fbba92b543e274e7c4c3bcfe48a5be0926f86f2b999c888940e0d837"
+    },
+    {
+      "path": "run-20260730T113035Z/apply/state-after.json",
+      "size": 48891,
+      "sha256": "911a93f4bc17c2d8ea3de333b0c4973614aaaa89050f958f20f0fd8ba93cc572"
+    },
+    {
+      "path": "run-20260730T113035Z/baseline/backup-manifest.json",
+      "size": 866,
+      "sha256": "3981de93aed8907d4ccd906da61f971c39f9e7d9eac2ba7946aafd55c7d4c172"
+    },
+    {
+      "path": "run-20260730T113035Z/baseline/backup-path.txt",
+      "size": 71,
+      "sha256": "20600f5f14b536156a84647a7caf00694757946b8bc75ee1f56f2136f305298d"
+    },
+    {
+      "path": "run-20260730T113035Z/baseline/backup.log",
+      "size": 866,
+      "sha256": "3981de93aed8907d4ccd906da61f971c39f9e7d9eac2ba7946aafd55c7d4c172"
+    },
+    {
+      "path": "run-20260730T113035Z/baseline/db-audit-before.json",
+      "size": 4150,
+      "sha256": "c8be8c1fa958792667679cf8b1c3e8f46da98227cb997459c8dc40b1afae1dd5"
+    },
+    {
+      "path": "run-20260730T113035Z/baseline/db-audit-before.log",
+      "size": 4150,
+      "sha256": "c8be8c1fa958792667679cf8b1c3e8f46da98227cb997459c8dc40b1afae1dd5"
+    },
+    {
+      "path": "run-20260730T113035Z/baseline/drawings-before.json",
+      "size": 5843782,
+      "sha256": "33c332585e40d94ab3277711826ed575b4af38d430128409f70d9eb95975c5f8"
+    },
+    {
+      "path": "run-20260730T113035Z/baseline/state-before.json",
+      "size": 45275,
+      "sha256": "a436b835b398969efc7c615859bd964f5d00d3a6b7dd2e0bf8c3f3bb6e512703"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/db-audit-after.json",
+      "size": 4150,
+      "sha256": "688df53a178dd645f0dc22558a6c6d1db49a1a1c716f59608c0bd60b272c17a3"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/db-audit-after.log",
+      "size": 4150,
+      "sha256": "688df53a178dd645f0dc22558a6c6d1db49a1a1c716f59608c0bd60b272c17a3"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/drawings-after.json",
+      "size": 5843782,
+      "sha256": "33c332585e40d94ab3277711826ed575b4af38d430128409f70d9eb95975c5f8"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/exit-codes.txt",
+      "size": 56,
+      "sha256": "91fddd63089f2b060ad61e8a73517f75be6df61add0c07b63817a8c9038570ed"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/reconcile-2762.log",
+      "size": 469,
+      "sha256": "080c5b96ea875a41ac91c5f5b3c1b0447677b12e22801bf68e4898a130f9b67d"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/reconcile-2763.log",
+      "size": 469,
+      "sha256": "4d99e376f2aef56846b3f751e95c222276b9a17d281ca071cf2440131e3fd22f"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/reconcile-3292.log",
+      "size": 470,
+      "sha256": "abbdf914ae66b6ad49ef34b37a8f92dd2a95f30b1930473034386df8a41d5d32"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/reconcile-3341.log",
+      "size": 470,
+      "sha256": "c4d7fd4112cc8e1966d915bc6c157a3cdcba4ff58c856c34cb7d0030cd19c35f"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/reconcile-3351.log",
+      "size": 470,
+      "sha256": "a538d545a89795b18d7913fd3906a05f3908aa4f2d09858f0a6556ac5c835197"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/reconcile-3643.log",
+      "size": 470,
+      "sha256": "ace9e3ba37f97bb363b15f3353eca11aa45642c13e56629393838ca0f8070b74"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/reconcile-4499.log",
+      "size": 471,
+      "sha256": "ccb23f28a117c4b6a81b8e71dc43b899bac32be6d635b45924c31156204b7bf0"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/reconcile-4939.log",
+      "size": 471,
+      "sha256": "15f38b2d3147f05139ba39ad67f6157929d48b66b90ca3e7a1764f78be364997"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run/state-after.json",
+      "size": 45275,
+      "sha256": "a436b835b398969efc7c615859bd964f5d00d3a6b7dd2e0bf8c3f3bb6e512703"
+    },
+    {
+      "path": "run-20260730T113035Z/dry-run-proof.json",
+      "size": 752,
+      "sha256": "5769b68982f193ef49f17e4e892cc8065ed9431830c441ff7e1b853eda78b6fa"
+    },
+    {
+      "path": "run-20260730T113035Z/health-delta.json",
+      "size": 23979,
+      "sha256": "4163e9ae6e8bbb44af91242c468c356e7ceef63d60eed0c870d242c3b920b498"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/backtest_probability/data_health_v1.csv",
+      "size": 1811458,
+      "sha256": "4485b8698ef0f9746dc5c7176a9649028db5acab87a1b5f3e0935e10f6ebbb65"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/backtest_probability/data_health_v1.json",
+      "size": 3097958,
+      "sha256": "374fec3951fccdd4d9b6ca90a46b3c66a0f098e6e7885d43238d5b31ec9ba8e5"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/backtest_probability/data_health_v1.md",
+      "size": 183267,
+      "sha256": "c4b88d9eeb7dbdea76b1d09ada9ac51824daed617d94c480a995f102f6d8b863"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/backtest_probability.log",
+      "size": 1986,
+      "sha256": "10ef4761ca8b8fe147b8b578d076644cb3f71a1b22104b7c7d80a9559ac33bbe"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/historical_inventory/data_health_v1.csv",
+      "size": 2086829,
+      "sha256": "0982ef53a0cddc66df200a1b16884ab088566bd3305126b82feebef5d29e118d"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/historical_inventory/data_health_v1.json",
+      "size": 3216308,
+      "sha256": "96d7def1407b0aa2acc081932b45bdb68bb46f010d8fe47f8f13370d70f630d8"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/historical_inventory/data_health_v1.md",
+      "size": 274445,
+      "sha256": "f74b23bc48c056e99b6145e1c6d890b7f5037dd938170ba2d1fb2443e1e00bd6"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/historical_inventory.log",
+      "size": 2259,
+      "sha256": "ae4703a119d2a88363457cf6939a2e91c2a08e239e067fa202b717843bd36053"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/prospective_generation/data_health_v1.csv",
+      "size": 1692016,
+      "sha256": "f94b14b37d5dfa9d35aff3898502bca123d4871d5ba7ad4b756731099fce01c8"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/prospective_generation/data_health_v1.json",
+      "size": 3092401,
+      "sha256": "fccc81b4e94e2a9d455db2526b16f65b53db4e2522981370148e16701429b811"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/prospective_generation/data_health_v1.md",
+      "size": 178128,
+      "sha256": "c2d955ed44b43a64d73700ff9f7d6906d2be40c3f9de709284845e3d3f339be5"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/prospective_generation.log",
+      "size": 1920,
+      "sha256": "2d958402514df0d05528e7bb635d9baf5c4a5c3499afe287c3d8ad27ed0b0bd1"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/result_settlement/data_health_v1.csv",
+      "size": 1907484,
+      "sha256": "3988bfae3db21fe12a1ab0e8e1b9fe2e31a66a7bf1b3b68212201ab000222da3"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/result_settlement/data_health_v1.json",
+      "size": 3140402,
+      "sha256": "68f24f2bbd2de43b53c131d8fd89c1442c0fec741534a02f6c9d08f421d54e5b"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/result_settlement/data_health_v1.md",
+      "size": 222447,
+      "sha256": "1f5feee3a48941f1f0e3146c5a93d90dce3e572e0f9eb96a79f419e260b50162"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/full/result_settlement.log",
+      "size": 2038,
+      "sha256": "1c0a6504760f2cfda5d0e59948abe98b5920c78a02ed033d3ccd09fb77f1b96c"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/backtest_probability/data_health_v1.csv",
+      "size": 1701,
+      "sha256": "8b9c78b08b2bc431d3024a294bb3ebeb87a5ce75cc14c3bff5f55262ab46734a"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/backtest_probability/data_health_v1.json",
+      "size": 3312,
+      "sha256": "aa470623d67e15cddad53986717a60725f8501474f26cc4199fab4a7abbe3c98"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/backtest_probability/data_health_v1.md",
+      "size": 1413,
+      "sha256": "7db78834dd8cd1dab89aa3c094ef89820113db0409a83ded5a62b421a60a4bee"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/historical_inventory/data_health_v1.csv",
+      "size": 1755,
+      "sha256": "950b499b0654a8995c6e70b4a8ae5d934e78153001f667a2369f31b032dd4f54"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/historical_inventory/data_health_v1.json",
+      "size": 3383,
+      "sha256": "140123b4f5dd10848e6fc991214fd8e7cf442c4040ce6a70ba604df871146765"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/historical_inventory/data_health_v1.md",
+      "size": 1470,
+      "sha256": "e6657fc2c2ac8db1771d5e28f978ad9045f66bf3acfcb7cc05979afd4c9bf8b8"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/prospective_generation/data_health_v1.csv",
+      "size": 1662,
+      "sha256": "488a28958b12e1fe98a77aad4b4a727f37dba39c6077190cb2c794f6e1c3d9e4"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/prospective_generation/data_health_v1.json",
+      "size": 3263,
+      "sha256": "78f0f48cc5402759f1bc021f3cb2c27fff872ab7cba834d465539724f2e3a0f6"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/prospective_generation/data_health_v1.md",
+      "size": 1389,
+      "sha256": "ded4aa34f3647deca677ea14f2efb696de1613e95d227d6c81180fd61a9078c7"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/result_settlement/data_health_v1.csv",
+      "size": 1752,
+      "sha256": "30f6652ce911b4bcde50636e533587a5520e3be8b3f84eb12a387c1a34c9f31d"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/result_settlement/data_health_v1.json",
+      "size": 3380,
+      "sha256": "ff119fed405f4eefb9b61fe5736c7e62ab9462c213ede0253f484cc1af062e5b"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762/result_settlement/data_health_v1.md",
+      "size": 1467,
+      "sha256": "ebebb9f622ac2951a217c0ef9ebde2db0eb19760a4c9ae8a52c84f9e343de6a7"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762-backtest_probability.log",
+      "size": 1891,
+      "sha256": "a4976a96d598de3bc26c43656d3fb4f83f35bdf871b3f0681b67d21c1d2335bf"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762-historical_inventory.log",
+      "size": 2030,
+      "sha256": "fd93e5d29ee5c6dba7bee47ba5e2513bb918317a8531e1da82f7a5f1488d8993"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762-prospective_generation.log",
+      "size": 1884,
+      "sha256": "b4f91d2e5f37a6402b5eae5f40fb7bebe2db14f3e45c67deecbed1a2766284e1"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2762-result_settlement.log",
+      "size": 1943,
+      "sha256": "67f806893d2e2f1bf2e4243a5d7d0e68f36b5357544dbdc4cac5e202bc321354"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/backtest_probability/data_health_v1.csv",
+      "size": 1701,
+      "sha256": "9f3d927a9f58d68479fbf63313b30bf1aade813c30d2874424ee4b38101d2beb"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/backtest_probability/data_health_v1.json",
+      "size": 3312,
+      "sha256": "26bf9b900461bd1d860dc9a76d53a49a7cfda4d289a681437ab6f03d6ff75a62"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/backtest_probability/data_health_v1.md",
+      "size": 1413,
+      "sha256": "40ada7f1af52699ccc026b44d540b3ff05876c43ef5d40bd7f413baedd9941b8"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/historical_inventory/data_health_v1.csv",
+      "size": 1755,
+      "sha256": "2237edacf7f7b047375463fe1bc684eb2185fee41ab8077ff0c3262116ec014a"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/historical_inventory/data_health_v1.json",
+      "size": 3383,
+      "sha256": "0006d85456fb8125e5fc92f69376fb3d405fe920ee0eaf068691eb5af3442b0e"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/historical_inventory/data_health_v1.md",
+      "size": 1470,
+      "sha256": "14160e9e3fcbd01d4f41ce94cd1b824d0484d9805f720a59137a1ecf88d58ed3"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/prospective_generation/data_health_v1.csv",
+      "size": 1662,
+      "sha256": "12cdaced54ab1ecb0f24d615d0a995d814dd125ec5240a4beb36f796ccdc1264"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/prospective_generation/data_health_v1.json",
+      "size": 3263,
+      "sha256": "150928de797f16c1ad16831377c88395816287a336e3ca3e69d5f493abb9ae0f"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/prospective_generation/data_health_v1.md",
+      "size": 1389,
+      "sha256": "92bebfbdbbd0938bc3568a5478fa2b97b31c6a6ddd3ac9edfc5f6894d6668c3a"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/result_settlement/data_health_v1.csv",
+      "size": 1752,
+      "sha256": "f78495671979da44228270df12edf868d3421e7dd94572a58c95b4fae9018d4d"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/result_settlement/data_health_v1.json",
+      "size": 3380,
+      "sha256": "8df95681034ba87440c3cb0774097dccefaa8e7b3e29a1492ae8213b577f7875"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763/result_settlement/data_health_v1.md",
+      "size": 1467,
+      "sha256": "dc83194bd28ade8075c494317e1ed9d1f03c77b747c9264d84a9054c3b210577"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763-backtest_probability.log",
+      "size": 1891,
+      "sha256": "9228f5a5d34a4a463a2896e00566f9c50848b655077ac5dd4a99c950c2ce79b0"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763-historical_inventory.log",
+      "size": 2030,
+      "sha256": "2197f393a916f2a076ef2fea58c1d5bec5f39c77c0148e718a0eaad923fc3437"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763-prospective_generation.log",
+      "size": 1884,
+      "sha256": "21acf318632d9e818a5375a2662beeefb31fcc0f52501779e83725a8cb1284a3"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/2763-result_settlement.log",
+      "size": 1943,
+      "sha256": "808b1d694485729b5d7e758c5beacb3e643a511bc2ff95cda9a5b40aec6741d5"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/backtest_probability/data_health_v1.csv",
+      "size": 1702,
+      "sha256": "2541463943f796c44f757d73421ac5d1bb8464112e0b11ca56ca6ded4437f475"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/backtest_probability/data_health_v1.json",
+      "size": 3313,
+      "sha256": "6d453ee08319793b66570d9fc24ba9bafe5531e7a70af77eebab2e545a2c5f3e"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/backtest_probability/data_health_v1.md",
+      "size": 1414,
+      "sha256": "21af5b81dcce0e14d7abb0b9db1f3d3c9b42d592a1df2292f2a668a47eac3afe"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/historical_inventory/data_health_v1.csv",
+      "size": 1756,
+      "sha256": "e7cf2fad614588d18fbb580913670b977f240ac22cdec42cfff1a61033527e29"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/historical_inventory/data_health_v1.json",
+      "size": 3384,
+      "sha256": "7e8eec8214d655f7ed85d0e691d916d8b9ea4bacdde231b8f47cdf438f06de57"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/historical_inventory/data_health_v1.md",
+      "size": 1471,
+      "sha256": "314e3ea64667549d03862fdd8b77ebf4e2f098d506fd97886464e444b666ba7e"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/prospective_generation/data_health_v1.csv",
+      "size": 1663,
+      "sha256": "bd187ae3c4462c8ebe77623a9531cc5aa0fa40a8e2839475091f5224f33b630a"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/prospective_generation/data_health_v1.json",
+      "size": 3264,
+      "sha256": "ca07b2bb1041b183565db96352069c79184d57ea18494eb10ae329fe0ec85ae3"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/prospective_generation/data_health_v1.md",
+      "size": 1390,
+      "sha256": "3b42501d35671d14d28e2068c6ea9787920025c096252671dc064512d3cada87"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/result_settlement/data_health_v1.csv",
+      "size": 1753,
+      "sha256": "1411997d5831cecc93a6d1336cbb9b3db25977911f80476aa0e37169c7beb9b7"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/result_settlement/data_health_v1.json",
+      "size": 3381,
+      "sha256": "a4a869bd0aada2a054abdf9704676627788871b4dd9298613743c1e783827513"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292/result_settlement/data_health_v1.md",
+      "size": 1468,
+      "sha256": "c1409e7811f294339e0092fd711e5ba1294f4cfb7e24c1c3d8edea08922406d6"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292-backtest_probability.log",
+      "size": 1891,
+      "sha256": "48223455dda163930a09168e89b671ef8a3eaef08b10808c12453512d869b250"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292-historical_inventory.log",
+      "size": 2030,
+      "sha256": "bfef461929a8b68b341a637fa7ad7d2b92716c40a65bdae7d70090ebbe8287ef"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292-prospective_generation.log",
+      "size": 1884,
+      "sha256": "6ec0e79f2024aab0278f33df675588bed68f8e7b6689b43d176db74e86de0baf"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3292-result_settlement.log",
+      "size": 1943,
+      "sha256": "0cfa92eb8391ca5e81cbb851ffdab85bc5a49b33bb5c9be52a4184984d20e1c5"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/backtest_probability/data_health_v1.csv",
+      "size": 1702,
+      "sha256": "7baa761a0a3585d0fbbad5c1718593d0749458b13ef6b2f31c296b827805d204"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/backtest_probability/data_health_v1.json",
+      "size": 3313,
+      "sha256": "c78edbead48032bd324b21256c7dae3671a854ab89b3d1ed2cec6910f5938df2"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/backtest_probability/data_health_v1.md",
+      "size": 1414,
+      "sha256": "3dd6793899422c184ce7b5b670b3dac71db7016d0a762e5fb9b654b963473eb3"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/historical_inventory/data_health_v1.csv",
+      "size": 1756,
+      "sha256": "a279062dc1ff6b43e16594b3afafa6c2ee71dab715b8eac9206e7d6d097595ad"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/historical_inventory/data_health_v1.json",
+      "size": 3384,
+      "sha256": "7fa1ce06fe4159b601b35c4373cf5347a933a9c57b69b755d552d537e1376bb5"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/historical_inventory/data_health_v1.md",
+      "size": 1471,
+      "sha256": "1ef7bc698de5aa76a9d7984fa3abb7d302c2de277d704bbc4d756739ea2f87ca"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/prospective_generation/data_health_v1.csv",
+      "size": 1663,
+      "sha256": "56f35adbca0ae79465bd55b2f358cad201f05eaa43076d48b9dbd275ba2ebdb4"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/prospective_generation/data_health_v1.json",
+      "size": 3264,
+      "sha256": "8b79d4b6a2535330432ef1e16e488ab02c58a7de5f1e6630bdfadab823505eae"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/prospective_generation/data_health_v1.md",
+      "size": 1390,
+      "sha256": "eff0e2822e0f27731cbe3bc6d4e11c8ff5a3097136fb28a7dbbf0e81fdcc52c6"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/result_settlement/data_health_v1.csv",
+      "size": 1753,
+      "sha256": "eed6e4fa436bccfc06ff8a2c398151f12fcd00f2dc06b56e0e31e189f9b99e4c"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/result_settlement/data_health_v1.json",
+      "size": 3381,
+      "sha256": "ea7591bf177020295c11237f7512c2824c2f4cab317136089e9ca295bdfef1b4"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341/result_settlement/data_health_v1.md",
+      "size": 1468,
+      "sha256": "74e34aa3fa29cf977f03a862bc462bd2bfcc8b00dab46852d784eef5a1d58739"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341-backtest_probability.log",
+      "size": 1891,
+      "sha256": "742d9873742395c5cf280a2c988943563239a53d1499012ec572c613f9cc46b0"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341-historical_inventory.log",
+      "size": 2030,
+      "sha256": "0b774ca6a6f3df7fbeaea769faf0c514c165b2c018125aea0b3b5405bf59ecbf"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341-prospective_generation.log",
+      "size": 1884,
+      "sha256": "e26e534cdecb51eac119fcc202c7a1f29ed7efe514248856e08a86025c1618fe"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3341-result_settlement.log",
+      "size": 1943,
+      "sha256": "4920272456a072959871d7361291227f1cbab7ce8ad1787d0b3a824caefa523c"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/backtest_probability/data_health_v1.csv",
+      "size": 1702,
+      "sha256": "d71fc593d45f6f71abd3e8c53d5133c331dc268d5f53e222e7c6bee1bb143fb5"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/backtest_probability/data_health_v1.json",
+      "size": 3313,
+      "sha256": "7da48d28bce5ca45ceb12d8cb0e44f0e0fcbb45558865bddd1f5741f70a2cd94"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/backtest_probability/data_health_v1.md",
+      "size": 1414,
+      "sha256": "42ca099d603ba31c2b26601a6c4b617d1327be22255bb09bbda48c5f60afee65"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/historical_inventory/data_health_v1.csv",
+      "size": 1756,
+      "sha256": "b533247e3ab556e323df5460834afdae7956a86d7c6af03d5a24501655c0a41a"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/historical_inventory/data_health_v1.json",
+      "size": 3384,
+      "sha256": "395222b8beec61c987d37f354e69f9e9af2b63cc21b6984de79ed58595be738a"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/historical_inventory/data_health_v1.md",
+      "size": 1471,
+      "sha256": "bd5b3b882b85b632c525c1973a7f6b229b29e7f17f28429106a1fe6387ad6c0a"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/prospective_generation/data_health_v1.csv",
+      "size": 1663,
+      "sha256": "6609234c68dcc2378630392e48ceda74eec1fcb8a170e77c95c9d4e8bbb30450"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/prospective_generation/data_health_v1.json",
+      "size": 3264,
+      "sha256": "da6944386ee631d9b9a1f6a7220505067f908156fd01e2d1420604b4ae7625b6"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/prospective_generation/data_health_v1.md",
+      "size": 1390,
+      "sha256": "c11f34ac602df10977df964d6e2e30af1d1d3719f31ece212b928863d03cec95"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/result_settlement/data_health_v1.csv",
+      "size": 1753,
+      "sha256": "b8628407fa8bef0839e63f0b44d6b63123ca99f7ae41163189834c044b3f1fe6"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/result_settlement/data_health_v1.json",
+      "size": 3381,
+      "sha256": "55f83accdc58c3ed5303548e4f7d3d1b83057eda21a8031fbfabb4ac170f2d50"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351/result_settlement/data_health_v1.md",
+      "size": 1468,
+      "sha256": "5dd75fa3dcb1599e623222bed9dbded05208a21fbeace003661d16a6a46bfd1e"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351-backtest_probability.log",
+      "size": 1891,
+      "sha256": "c2f95822b686a113929c5313744f937b532c5541989b27f376e8e129e7351166"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351-historical_inventory.log",
+      "size": 2030,
+      "sha256": "d12d838a04118c82388975b4933e9e7503d1a9d3b62d5ce3e8f4a8761b767a74"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351-prospective_generation.log",
+      "size": 1884,
+      "sha256": "fc480466585308fce32f4d2192c0ef01d87abd0cd4507f45e7683dee1c1eae27"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3351-result_settlement.log",
+      "size": 1943,
+      "sha256": "e29a179e0f341fc70d15687f7e5a83f409eb77e1035d91c816cb8b3142bbe06e"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/backtest_probability/data_health_v1.csv",
+      "size": 1702,
+      "sha256": "f6ce7b3207b59502290f3d4018b96fcdbfae33c2cb74f02f86edc8217c081601"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/backtest_probability/data_health_v1.json",
+      "size": 3313,
+      "sha256": "d3406a9bcf50f64f2542c0aedfdd03989895005c6294f6969a8b6837e64c8d73"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/backtest_probability/data_health_v1.md",
+      "size": 1414,
+      "sha256": "aaa640535e20246a12e82f92cc6c08d841fb77fa501d9ca202e4cacc46d84156"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/historical_inventory/data_health_v1.csv",
+      "size": 1756,
+      "sha256": "7b0d20674a928561172afd1639bc231608f0345aeb59db7e22bbeb04853a3de6"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/historical_inventory/data_health_v1.json",
+      "size": 3384,
+      "sha256": "8bf97600fd5de46f443fad02938544add7a233215be614e434412f2116632ae3"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/historical_inventory/data_health_v1.md",
+      "size": 1471,
+      "sha256": "fb5ecffb3fdae44a324f72e16e66c7a3e8a6ef3f37c9a8325a559097d36b1407"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/prospective_generation/data_health_v1.csv",
+      "size": 1663,
+      "sha256": "9b128935320001e4cf5c17c3af92efbc618b06abb1503a92b0440f0b6ee4b0be"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/prospective_generation/data_health_v1.json",
+      "size": 3264,
+      "sha256": "7f777f18cf0617c561ff67e18e8c08f22242ad5e907f7792598391f38a4dcfed"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/prospective_generation/data_health_v1.md",
+      "size": 1390,
+      "sha256": "0ad3230fa4de8b1af9de406c66edab17f997bbff7b9b7906d86b630b5bf36806"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/result_settlement/data_health_v1.csv",
+      "size": 1753,
+      "sha256": "51dba8bac5392f9c04d6083f3308dd446ef8ef28747dbf9ccc3e1840555dac0c"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/result_settlement/data_health_v1.json",
+      "size": 3381,
+      "sha256": "ddcfa50cae64b2b0a1d01ab02503ca39b26fdb827babc9e2d55dd5279d994b35"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643/result_settlement/data_health_v1.md",
+      "size": 1468,
+      "sha256": "6fd9f906cdd2554126d08896fefdf327569db4f1884674be91abbea6ec63f032"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643-backtest_probability.log",
+      "size": 1891,
+      "sha256": "312deb1b453af8035f709af1a86be4cda7a2ddf8287402d23cb08714f1eeddc3"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643-historical_inventory.log",
+      "size": 2030,
+      "sha256": "bf46f5ffa37cb6e474708e7a70c051261a17397b318f939708c38d99d6fd54d0"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643-prospective_generation.log",
+      "size": 1884,
+      "sha256": "52acc65bbd9597d08e7138927302af1fb96f887496394948401c6de552c71cc8"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/3643-result_settlement.log",
+      "size": 1943,
+      "sha256": "92a93f667ffe288d51dcd09497b50d62afa3a147acc43253c5fb95fb81d9f4ce"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/backtest_probability/data_health_v1.csv",
+      "size": 1764,
+      "sha256": "69e8459349b6e3b772b7624e6cec664344497b010d764772dc4cf770b20824bc"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/backtest_probability/data_health_v1.json",
+      "size": 3433,
+      "sha256": "38d5171d43861901c1452d70da33b4f85185b7f01430d9c3d33638f226b26049"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/backtest_probability/data_health_v1.md",
+      "size": 1459,
+      "sha256": "fd62a4fac8dd7660eb8b8ba3317bc1d86619b59bf2b240e208f85e736f94cab3"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/historical_inventory/data_health_v1.csv",
+      "size": 1818,
+      "sha256": "fb33cf861824cbbb8d02e2fb7001e3b9fbc57f47e55232c9e8d592038758157b"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/historical_inventory/data_health_v1.json",
+      "size": 3504,
+      "sha256": "31cbcfefca6cd8b4b404af08098f7c19aff181768ec7779b8cd70824c0aa1c93"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/historical_inventory/data_health_v1.md",
+      "size": 1516,
+      "sha256": "924bcb1c3995015a19350e409a3f364ccc701b8238315b629edba787dae1b3d3"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/prospective_generation/data_health_v1.csv",
+      "size": 1720,
+      "sha256": "3a4c7b798ba8644a956b3d0ec1465c0704e026ccc5f75d8b992d76ea09b582e4"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/prospective_generation/data_health_v1.json",
+      "size": 3372,
+      "sha256": "e36cf3ff6c9c4adfe525d67b3ccfc7e977483fe912038904febca9d4d8620d15"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/prospective_generation/data_health_v1.md",
+      "size": 1412,
+      "sha256": "1bb64247c31f979acea78ae6edf1026445b5cf79e1e2cc116b6bc897ba151413"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/result_settlement/data_health_v1.csv",
+      "size": 1773,
+      "sha256": "22a8e8be4f377fcb3f21d7213693dc7e872f7da3d20c88a7b4d3b0411cc4bb24"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/result_settlement/data_health_v1.json",
+      "size": 3442,
+      "sha256": "ce81410516071456cef172475e886bdda9b6c4f98ea0e5a655f1ae68d067fad8"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499/result_settlement/data_health_v1.md",
+      "size": 1468,
+      "sha256": "bfbb9b3d0768eef2e184b68bd76302e4715b185ce2ad5b716d8cacd4a39e65aa"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499-backtest_probability.log",
+      "size": 1952,
+      "sha256": "7c94abcdbfa12ffd12a458b41e0a62c65bd1ed08b875221f8244cd2405af65f8"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499-historical_inventory.log",
+      "size": 2094,
+      "sha256": "eb9c10ef18483ed0ddfba88cbbd2b1fb3afcd3a5e4d5b4d12479a31b59479eaa"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499-prospective_generation.log",
+      "size": 1947,
+      "sha256": "2a03a5267fb9b31e5f2ed7d74bad3d36d61dfead203d44eb67bbaa91c39409fd"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4499-result_settlement.log",
+      "size": 1943,
+      "sha256": "a017b02e5ba319b04e33887ba4534e7e0fe3c115d307c9bbaacbeba4839c7f69"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/backtest_probability/data_health_v1.csv",
+      "size": 1575,
+      "sha256": "57ea2a6167fcfa2189d32f95ce5074c5e78d849a189531b5b2310fc13731530d"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/backtest_probability/data_health_v1.json",
+      "size": 3077,
+      "sha256": "3aaa67ab4a0f6d45bea57175c2647de3045d83623a1fe7476f9d1f1b13137bc6"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/backtest_probability/data_health_v1.md",
+      "size": 1389,
+      "sha256": "51b31720a3a4beabecff386920e4140f55fd0d6f6f58e53fc34ba3a648d1682c"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/historical_inventory/data_health_v1.csv",
+      "size": 1575,
+      "sha256": "d62aded2b5262a4fe6339555cc63d9f3de49098b2a0a5dce90b4337563cfe987"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/historical_inventory/data_health_v1.json",
+      "size": 3077,
+      "sha256": "64970b534a6a990d357c89189563deebd271030dd64f9d67b955ccab5fbc8645"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/historical_inventory/data_health_v1.md",
+      "size": 1389,
+      "sha256": "bfbbb7a52b5348dabc87c62cbceec8443a51a96a5192738c874f6d1155e5393e"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/prospective_generation/data_health_v1.csv",
+      "size": 1577,
+      "sha256": "c4cbd35bb1776e30aa412c609b4148e0a0c064e0fc20c26ade07fe32ac261e50"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/prospective_generation/data_health_v1.json",
+      "size": 3079,
+      "sha256": "967ff018da30336a57305da0fa99bf38e540bab3db4b5033336287f4497d4365"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/prospective_generation/data_health_v1.md",
+      "size": 1391,
+      "sha256": "77af36c95a43df40f0ced8ae635e371f4e9170fb54a69c2f9af26b59239cce91"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/result_settlement/data_health_v1.csv",
+      "size": 1572,
+      "sha256": "76c6460c2d2d649e13f366c2f2ff67d6f496fab6bc9f687f2c6b4e5bd20a7ca8"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/result_settlement/data_health_v1.json",
+      "size": 3074,
+      "sha256": "1f8f6843d9e0d4865d532a5a031dfa7d9688cf4eb8d7d95975eb42313f63cd14"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939/result_settlement/data_health_v1.md",
+      "size": 1386,
+      "sha256": "ef1c5599dd468021689c0db685071c6090708c72a2549154747c368b6a42fb1c"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939-backtest_probability.log",
+      "size": 1830,
+      "sha256": "89804040e1b2e1e4a3aa0b7c79e748611ffd9af8fd404e758e2d67b436540d30"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939-historical_inventory.log",
+      "size": 1830,
+      "sha256": "8281283cbe05a5b43497ea76f7a14369094480ac9aabf6be2c492a6e048d9d11"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939-prospective_generation.log",
+      "size": 1884,
+      "sha256": "436f43e7bbe8b2698e1360a63dcddf953e3251dbb2b098454b662b698b06bd24"
+    },
+    {
+      "path": "run-20260730T113035Z/post-health/selected/4939-result_settlement.log",
+      "size": 1749,
+      "sha256": "b6a02063b5c2d8daac89047a2fad06985f83b24ef7c622b7361e53c18044d59e"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/backtest_probability/data_health_v1.csv",
+      "size": 1809056,
+      "sha256": "435d576cca905592990864ee03df4e277032e492c9aaf74131bafb2b3aa7c620"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/backtest_probability/data_health_v1.json",
+      "size": 3097587,
+      "sha256": "04e8ef75d49cb72b521cf61efc9a00670b7c187211f84270ccdf8136e4641b7c"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/backtest_probability/data_health_v1.md",
+      "size": 183223,
+      "sha256": "fde743699ff719d0cf5cd63225cf3275560d61097bb5b151ebd59976c2846d5f"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/backtest_probability.log",
+      "size": 1983,
+      "sha256": "9c799cd3d467c134e58c1a9e1f794127e1c1d481a6b1ee79e91d1121c6e4842d"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/historical_inventory/data_health_v1.csv",
+      "size": 2084598,
+      "sha256": "07d37841e8c588c8dc35a4570f8a5c312253a80ea65064e07d1f846e528f0c23"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/historical_inventory/data_health_v1.json",
+      "size": 3216196,
+      "sha256": "675cbcac85384811cea05ca425f8edb8947805ea837c4b627e58c4192370e3e5"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/historical_inventory/data_health_v1.md",
+      "size": 274580,
+      "sha256": "ead4a34f65fb468b03a33cb93a7dd9831739028734fb26d7ec1a7b264ebfdf59"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/historical_inventory.log",
+      "size": 2256,
+      "sha256": "0d62e5acc1a05ec5ccdf76a7978056f889376e5ba0159c3f5f1c4ff1a30a1fe5"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/prospective_generation/data_health_v1.csv",
+      "size": 1689600,
+      "sha256": "4a144e358d223edd6877d80a5dd142b73a43e3795350fd2ecc5e48ae9e8a1244"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/prospective_generation/data_health_v1.json",
+      "size": 3092016,
+      "sha256": "39a2f112f3296209eb476ed6642099dadfae045097f3f58f5d52607bb231c8fc"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/prospective_generation/data_health_v1.md",
+      "size": 178070,
+      "sha256": "1fd93d9b583709c77362f380d9d0765233a2af2a1e93214d687a6ab4b5d0f521"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/prospective_generation.log",
+      "size": 1917,
+      "sha256": "7c48177a23f67cfb3535f029520313522dfdcf818642c43af3a3bdff23b6adf9"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/result_settlement/data_health_v1.csv",
+      "size": 1905106,
+      "sha256": "5940f6b5adb18f9058298076b9dac5f7495d05713f3de4920f20846ab0c1c34a"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/result_settlement/data_health_v1.json",
+      "size": 3140066,
+      "sha256": "ace25d61423e6ad33072aeb691c7470eddfdfe75d438226db8642dbd89db1e1c"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/result_settlement/data_health_v1.md",
+      "size": 222428,
+      "sha256": "3c6850ef3f0f88e08d551675abe7fbb13bba3cc49fef6472c47e0f78f0dc486e"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/full/result_settlement.log",
+      "size": 2035,
+      "sha256": "9085846f0e70caf9ceba8a3c530f873e7185c47cd52dc384ebba67386584186b"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/backtest_probability/data_health_v1.csv",
+      "size": 1666,
+      "sha256": "08ba9abf81fca26ff3bc124f46c5def68ba8c14bb122abb7fbe0b8fce2797659"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/backtest_probability/data_health_v1.json",
+      "size": 3287,
+      "sha256": "b798b8c8edd012e11bbaf667cfeb521de62300aaa363f7abcc7182f821dc53a1"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/backtest_probability/data_health_v1.md",
+      "size": 1406,
+      "sha256": "54b9ccb5a56d1d0ff7c448941ddc9eb77d57b7dbdbaf614d5ef1a996052357ea"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/historical_inventory/data_health_v1.csv",
+      "size": 1768,
+      "sha256": "2d20d7bfc282f7059aca22cf4e92939918fa046c8259c42a141c09eab5f7f584"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/historical_inventory/data_health_v1.json",
+      "size": 3423,
+      "sha256": "cb4280b9b63c47213e2bb9333958cc6f421a8661c928a99447553ad770d65e34"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/historical_inventory/data_health_v1.md",
+      "size": 1514,
+      "sha256": "1d304de720ad6f7774f588220a4acd2c73bf95a66ee812887468cc2bafbb7ace"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/prospective_generation/data_health_v1.csv",
+      "size": 1627,
+      "sha256": "9a772f921cad4feae4e9bca3f8cd3f33de1d132990c525bcc329a382ff1a7d3f"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/prospective_generation/data_health_v1.json",
+      "size": 3238,
+      "sha256": "9bc3911e2fba5ae5c4e373e63f7d7a9c5da8974147719aca1c1854b4e8ecf458"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/prospective_generation/data_health_v1.md",
+      "size": 1382,
+      "sha256": "031d70e8a20faaf10e33fa26d9e6412cae960c931369fe37b9b6317f8276bf81"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/result_settlement/data_health_v1.csv",
+      "size": 1717,
+      "sha256": "51ef945d5fb15bc39d43690a268cbb98eb1708cf9d9e3992f47a6aa2d2187838"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/result_settlement/data_health_v1.json",
+      "size": 3355,
+      "sha256": "2286862c784d7dbf36e5c2c66ee25f7bbcc050aa73af03a6d78844112dd71024"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762/result_settlement/data_health_v1.md",
+      "size": 1460,
+      "sha256": "76ebcfac5a816b81bb1a8daa45b6ef0c9a031a9d75563c69c97a0e776f47a06e"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762-backtest_probability.log",
+      "size": 1888,
+      "sha256": "f386d4fc4c2afe7857e7f2e66814dd4c69463a99241a5b938622116af0ce89e2"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762-historical_inventory.log",
+      "size": 2091,
+      "sha256": "ee47c4bed665810a967d4375896621957d2234de27125c0c80612aed9b315877"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762-prospective_generation.log",
+      "size": 1881,
+      "sha256": "91beebfca74d3479003cd2e5d4b8aa68cf0fef2c5235e49da74c8d60a8955371"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2762-result_settlement.log",
+      "size": 1940,
+      "sha256": "549a4df644be00fa5d0c92fa971730d91c4277f76973fc7aa4b88bac6c7c8cb3"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/backtest_probability/data_health_v1.csv",
+      "size": 1666,
+      "sha256": "136384a0d87dbab3cc1e4d3f52e24b3e55f94d6a1b7e5282719010028ab57290"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/backtest_probability/data_health_v1.json",
+      "size": 3287,
+      "sha256": "8213954d8772df023073ad2250ecd7b86ea6008acd50ad80764c0846b2be93b1"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/backtest_probability/data_health_v1.md",
+      "size": 1406,
+      "sha256": "193c8b1ecf4005d11add5abbf40f94f24e803ea607a92c1f288c83adf3c88bb6"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/historical_inventory/data_health_v1.csv",
+      "size": 1768,
+      "sha256": "7c5b571ee196d960514241151c5482cd781bae337d278d52a7dffe984a0f7e7f"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/historical_inventory/data_health_v1.json",
+      "size": 3423,
+      "sha256": "459a1650c7f532d75dab2a5e4858243730958f314f5da5d0c59820b63899a5a2"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/historical_inventory/data_health_v1.md",
+      "size": 1514,
+      "sha256": "215016d80cedf2122850065336c589c3e8474dcc7950649aede2938796367d06"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/prospective_generation/data_health_v1.csv",
+      "size": 1627,
+      "sha256": "7d7050570c64cd6320d3b732f29dd306d9fe23d3acd191b8914a2e0aed3c3534"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/prospective_generation/data_health_v1.json",
+      "size": 3238,
+      "sha256": "2e316771bd39a6aa4e15fbb010256e39a186295294c87f3f080ff35cc4c5fa1f"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/prospective_generation/data_health_v1.md",
+      "size": 1382,
+      "sha256": "39ff36b5d2f9e7de299f379b198a9bd16608b8716524857defd6ec86024acdd3"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/result_settlement/data_health_v1.csv",
+      "size": 1717,
+      "sha256": "ef9c62f799c315bdf3ca59c2e55a08e707c218705163bd1f479530bfd903c055"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/result_settlement/data_health_v1.json",
+      "size": 3355,
+      "sha256": "32d89c8d96341963a1f8126e0a64a7586da5301c5b08e31062102816b17d26e1"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763/result_settlement/data_health_v1.md",
+      "size": 1460,
+      "sha256": "571c8b2620643d10f293b7060f584772923881e2f2d57f8b81cc322a9ae65205"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763-backtest_probability.log",
+      "size": 1888,
+      "sha256": "a601b60fc2c531158295fb370935032c750e287c83f99313e53eed3f1055271c"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763-historical_inventory.log",
+      "size": 2091,
+      "sha256": "6d73356edce0fb949f9cb4bf46681a83b0c3bbf23cb43f1380ed3ceda742bb87"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763-prospective_generation.log",
+      "size": 1881,
+      "sha256": "8675e138943209739607e3abe6d04148b0f849212539fcff55d15325c67193e2"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/2763-result_settlement.log",
+      "size": 1940,
+      "sha256": "697f970937bdf7e0bf147798535c275c161f22ddd9a1524483441ed2edcf6314"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/backtest_probability/data_health_v1.csv",
+      "size": 1667,
+      "sha256": "53c93138cd86a09fce7da5a3f6f0507cb27d6e1a7cf18bda0dbf57731e089d89"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/backtest_probability/data_health_v1.json",
+      "size": 3288,
+      "sha256": "f0fe5d4b4f53a5139797b83aa3ffba727141d195e75bd7c202d3adbd055f011b"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/backtest_probability/data_health_v1.md",
+      "size": 1407,
+      "sha256": "f575ae594bff2f5dc7c0c3d4ed5d5c77c217806320a81d0254ab5e7c6f8df4cf"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/historical_inventory/data_health_v1.csv",
+      "size": 1769,
+      "sha256": "e18d07e61bcfca3aac8aa836bc05d516b301b1e274698f433a7f841f11778e93"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/historical_inventory/data_health_v1.json",
+      "size": 3424,
+      "sha256": "9e245181dce354c3978fe70525387032b064ede5f36480337391f9cfcf99f8cf"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/historical_inventory/data_health_v1.md",
+      "size": 1515,
+      "sha256": "978a704c79a01f33a9ce58620ef7d2e2d2af35e8033ee9b2c6c38303880bf19e"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/prospective_generation/data_health_v1.csv",
+      "size": 1628,
+      "sha256": "1f0c95ca8951ece03e90feb5306ae8d71fd8edb1df6203832c8b912dacf77397"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/prospective_generation/data_health_v1.json",
+      "size": 3239,
+      "sha256": "c8e7ffd61740845244361424d4c0f24364266e3bbee01d84edf215b40a1f29b6"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/prospective_generation/data_health_v1.md",
+      "size": 1383,
+      "sha256": "93c253ae12aaa866a8394a609100896d91dbc3abd272f4167e46fe3376884f12"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/result_settlement/data_health_v1.csv",
+      "size": 1718,
+      "sha256": "99e455ea63c3ad24062bb8727352b2586b13c9511fc35775cffec8e60c3588cb"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/result_settlement/data_health_v1.json",
+      "size": 3356,
+      "sha256": "ec6fa0fdda986e2be39f51ca48d49923f35f3a85373d5b275704ef1719e31e1c"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292/result_settlement/data_health_v1.md",
+      "size": 1461,
+      "sha256": "773f8517c1d7b5ee921fa6ab84bc52a882e341f03d4aa339e9765aaaf806d9cd"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292-backtest_probability.log",
+      "size": 1888,
+      "sha256": "6a26327f837605ecea4cfd6144c036945b0d38712eaaa8e3c4377a1d099b593d"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292-historical_inventory.log",
+      "size": 2091,
+      "sha256": "b2605334db5b9fa5131f740e25b65267e91b3704cd41d4e647e7486300243e9e"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292-prospective_generation.log",
+      "size": 1881,
+      "sha256": "3395120170aa7dd0c8141242de05706cadf0bba60672b8428823d5e847a1bc32"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3292-result_settlement.log",
+      "size": 1940,
+      "sha256": "f2d2c7e05c8752149018a3a4b9ed99ba4adb8eb3920bb44a32c8fd9630b70008"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/backtest_probability/data_health_v1.csv",
+      "size": 1667,
+      "sha256": "61f7a520c4edd92f449833ba27b906bebc456b3a13492fe640846360fce733e3"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/backtest_probability/data_health_v1.json",
+      "size": 3288,
+      "sha256": "605641bf3c38b041facd260abcd8c4dc7afb47d0538b0d651a26508eabf5b087"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/backtest_probability/data_health_v1.md",
+      "size": 1407,
+      "sha256": "ea90d0de98c5d5c576878b7eb633f0311d9f8ff5e45d60458434721ef240a058"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/historical_inventory/data_health_v1.csv",
+      "size": 1769,
+      "sha256": "f604b91d87739b65929b6215877c87ca52f61ecbefb64c750516520ead38ff1a"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/historical_inventory/data_health_v1.json",
+      "size": 3424,
+      "sha256": "b0110468e042e02ee3a74110d04d591f6092bbed7a831bdde59be64db7413d33"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/historical_inventory/data_health_v1.md",
+      "size": 1515,
+      "sha256": "79c25f9640fce54382e403eb69ce2735c7bdfa6a2133d8c0ba469805102c954b"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/prospective_generation/data_health_v1.csv",
+      "size": 1628,
+      "sha256": "b23dfb2c8736e66c57d6e58564533fd578431331470fec7ad0ee7001f911887c"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/prospective_generation/data_health_v1.json",
+      "size": 3239,
+      "sha256": "cf9daf75aa345e46c40ac8088ec48a86c378977d89ceb75bd0eaac75b0a3f293"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/prospective_generation/data_health_v1.md",
+      "size": 1383,
+      "sha256": "75e8b6af702fe67b9ed697f5184400c3df373c92ef33dcedc7a246100eaec251"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/result_settlement/data_health_v1.csv",
+      "size": 1718,
+      "sha256": "651c8366f79b245e56bb48691d4677b4c30c4bdf42885fb36993c8912ae6c4f8"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/result_settlement/data_health_v1.json",
+      "size": 3356,
+      "sha256": "737ba4f93165b8699c828cd52e27be82efda17003a9f0b8c5f772c8e4fe2e318"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341/result_settlement/data_health_v1.md",
+      "size": 1461,
+      "sha256": "c7a0046cede70f0f9451d42f7760b6d3b2bbbb443b9fcd7844a46d4389b8023e"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341-backtest_probability.log",
+      "size": 1888,
+      "sha256": "97d555504a7e6ff43778f076a54a1512169c782be14c0ab24e5c4194f896cf65"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341-historical_inventory.log",
+      "size": 2091,
+      "sha256": "3b3395b6901c506d7b85be590bfd7eeb46e4e6f402c1bb38dadb2677eb5b7303"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341-prospective_generation.log",
+      "size": 1881,
+      "sha256": "e85941aca807d07443f64e7fe3d21cf223ed1507361d0d3c1baaf2b462686cf5"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3341-result_settlement.log",
+      "size": 1940,
+      "sha256": "78cb6dcb0786ac781f51afd25c972542cbef07070d1e2fe1a95560fada5804d7"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/backtest_probability/data_health_v1.csv",
+      "size": 1667,
+      "sha256": "74307258ca8251ddb8abefa5d535fa23ff04ad05497fcf0c3cc648690da33aea"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/backtest_probability/data_health_v1.json",
+      "size": 3288,
+      "sha256": "7e6c5680a426fe2cd2dfe807155b6de64f8bf638a2fc2dbf1baef0d18c802085"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/backtest_probability/data_health_v1.md",
+      "size": 1407,
+      "sha256": "64c8ac7bffecc774da076cfc3d25d2a4cf21f54f109f58bdc0e76c3698c14716"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/historical_inventory/data_health_v1.csv",
+      "size": 1769,
+      "sha256": "b6fff1c243f0ed9f13d953027266b7b6dce3f232b1d76a0d97accb9089154d72"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/historical_inventory/data_health_v1.json",
+      "size": 3424,
+      "sha256": "5c27e0a90700c16216390655c8e2baf27cf2e48552e0e7aaa458c1077be242e7"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/historical_inventory/data_health_v1.md",
+      "size": 1515,
+      "sha256": "d233bcf4b57f8f143d5025adf37d98b8949db382be64c429699590683e74ded9"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/prospective_generation/data_health_v1.csv",
+      "size": 1628,
+      "sha256": "8093b6b80940d06ae7496630e73e5af164beec4eb941fd38f13781741a457b76"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/prospective_generation/data_health_v1.json",
+      "size": 3239,
+      "sha256": "ce1bf5669a3ce1ea34f0153e29d14e32b58b1f488fe717b4b7c19baea1e0b545"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/prospective_generation/data_health_v1.md",
+      "size": 1383,
+      "sha256": "2d7fad6479721593ede67519e86ee2f0c4e5590e0a69dc93d19cb7901ccc8bc4"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/result_settlement/data_health_v1.csv",
+      "size": 1718,
+      "sha256": "0f4374350a71ade9224e729adbd0abf83844631123b93db917b65898d25bf3ec"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/result_settlement/data_health_v1.json",
+      "size": 3356,
+      "sha256": "ff0e92f5003f74a12f759684c6e9e06e16c6c776d82854e2dead7207cfeb12a3"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351/result_settlement/data_health_v1.md",
+      "size": 1461,
+      "sha256": "4eb466d66861d7c7cb97af1eef421b85bc6da207d316e89cfbeb7082521c91c7"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351-backtest_probability.log",
+      "size": 1888,
+      "sha256": "99cb9439d7d80331405e67235c1f685eafdf086fb96853a9ca62e51560cadc7d"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351-historical_inventory.log",
+      "size": 2091,
+      "sha256": "312d1f049ff570a7edfccf37f284fe164a236f559d8fac7e3f6c731e8e483d72"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351-prospective_generation.log",
+      "size": 1881,
+      "sha256": "613d383a7b1564ac67eda13704c92955a7ab87b5d8d64559dccf4e8e7426cdac"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3351-result_settlement.log",
+      "size": 1940,
+      "sha256": "e9463e77fe83f6e5ba0f1a0834e8eb61234e0bcb5abe6896924a150be612c387"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/backtest_probability/data_health_v1.csv",
+      "size": 1667,
+      "sha256": "69328a0f4a7db1eda14cecd1f0a8c1fcedb9a3b0c3985ae5b4f0fb76e054499d"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/backtest_probability/data_health_v1.json",
+      "size": 3288,
+      "sha256": "f67686660f308961d488cd5b07c06d4c3503503710005e99387ba7957e19f1fc"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/backtest_probability/data_health_v1.md",
+      "size": 1407,
+      "sha256": "d9fc168c5ac6c836682f12c93a8f9e974bb000f5f4f06afadcffe8eb1325c1a9"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/historical_inventory/data_health_v1.csv",
+      "size": 1769,
+      "sha256": "7e9f67e90cc6ff917249133c0ce46835f302ada75c91269f274db411bd9be9a5"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/historical_inventory/data_health_v1.json",
+      "size": 3424,
+      "sha256": "3d23854589a1291cf794336a0bc7bc0cff5b4d58c2a7916ef2882572535c9147"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/historical_inventory/data_health_v1.md",
+      "size": 1515,
+      "sha256": "f937823597489054d5d215ed65c54f333296cfc7fca38593c49e528bd189a19a"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/prospective_generation/data_health_v1.csv",
+      "size": 1628,
+      "sha256": "09f0b0cd4003cdc864ab3cc90442990d032fae3910008638c7124ae6a62f6c6b"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/prospective_generation/data_health_v1.json",
+      "size": 3239,
+      "sha256": "7ddabb23aaecc3e45650258ce3c692e2007d5e1833139ce91f6ba1ca90f5edc1"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/prospective_generation/data_health_v1.md",
+      "size": 1383,
+      "sha256": "f40af555225115913faf0721ffb41263ff78a0fa6afd436cbcd7cc79292a060c"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/result_settlement/data_health_v1.csv",
+      "size": 1718,
+      "sha256": "c8ebf3d797567ba00ef14a61a28b3f8d51f3087daa0102ad493d16d85454b61b"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/result_settlement/data_health_v1.json",
+      "size": 3356,
+      "sha256": "3caf89eb1db63605c8fb91e2c11ecbbc9b9fb3cc8ae4e3b496780b7352fd4058"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643/result_settlement/data_health_v1.md",
+      "size": 1461,
+      "sha256": "935361f37d9d6489023596fd75650b5ade8bb75da7f49069136baa2f1158b5d1"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643-backtest_probability.log",
+      "size": 1888,
+      "sha256": "e011164c75b71da8a2204be8e59caf6593ffa1cd2919ce7259f79e88468a2cac"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643-historical_inventory.log",
+      "size": 2091,
+      "sha256": "fa9999794fa9479255ce1b8252dfda981cac30dcf80ee2e32c85e92e3e72214c"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643-prospective_generation.log",
+      "size": 1881,
+      "sha256": "8342d2d36fbd07905e151a0a070878a8088eb3c1edba184d92af4e69ed12272c"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/3643-result_settlement.log",
+      "size": 1940,
+      "sha256": "d74edeef9357efcf32ccd913da88c678958ebd8abe717230fd84d69aa2b25d61"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/backtest_probability/data_health_v1.csv",
+      "size": 1729,
+      "sha256": "0de493e1919a4d9b19f048016e37f063d337bf154b11f99f497192396e318565"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/backtest_probability/data_health_v1.json",
+      "size": 3408,
+      "sha256": "e75fb3a8fea860ab39b1ecb4271c38d2a3724e9b89db5b5269c38be429d21377"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/backtest_probability/data_health_v1.md",
+      "size": 1452,
+      "sha256": "ba138735504e6d8c9ff34581be3ba06a7d281605433bb0c6f558f137a0496724"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/historical_inventory/data_health_v1.csv",
+      "size": 1831,
+      "sha256": "39c53abe4ed83fa50f27aac4fb26232bcf59455e8ca62791895b95c707f3b507"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/historical_inventory/data_health_v1.json",
+      "size": 3544,
+      "sha256": "71b3fc915ccba93073163dbed6bec1316bc762f1a83fbbc1c404ead423b0e870"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/historical_inventory/data_health_v1.md",
+      "size": 1560,
+      "sha256": "fbd629d82fed08c3b3bbeefd0025cb7bc8acbefbb2ca7300d83da85d9c5b5453"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/prospective_generation/data_health_v1.csv",
+      "size": 1685,
+      "sha256": "8d1da8ee770802a203b28026b8edf55d6c9cefbbecf252adbc30e9a0da00f2b1"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/prospective_generation/data_health_v1.json",
+      "size": 3347,
+      "sha256": "9f6c4de00cea676d154211f00a6f78906f88a0303bb6c683f144499de754c2e0"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/prospective_generation/data_health_v1.md",
+      "size": 1405,
+      "sha256": "8a4975eac544e20a4ac162f0a54942a2c2ff217606a21788640f3f29b12c960a"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/result_settlement/data_health_v1.csv",
+      "size": 1738,
+      "sha256": "f2fbcaf9a384248b77396cd4bdbbe19e7f184f523eef4c9a6426e8d220f4288a"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/result_settlement/data_health_v1.json",
+      "size": 3417,
+      "sha256": "e969cac6d626e3bdf786b9cf66f2e7e5f9c3d3456a30a848b14f184a988d425d"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499/result_settlement/data_health_v1.md",
+      "size": 1461,
+      "sha256": "c6d3b04eeb860ce7f13c8acd625d063f31f11932073271e771f2af23827e99f4"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499-backtest_probability.log",
+      "size": 1949,
+      "sha256": "778fcadc3db9a9c62d905dc2277de1fb935c0907d724a5b62b234eb8700af536"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499-historical_inventory.log",
+      "size": 2155,
+      "sha256": "016134e78049906327596740c5735afbd79a0495c4bd6ef6cd839502247ba26a"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499-prospective_generation.log",
+      "size": 1944,
+      "sha256": "28352a9e1d3530ffeeddc4c86f75e731fd1c863c647f1880c50e11da2d983d0b"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4499-result_settlement.log",
+      "size": 1940,
+      "sha256": "68a1103101cb73a63440ff7865baccee93d46246b82a0c4fb4087b1a958d5a44"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/backtest_probability/data_health_v1.csv",
+      "size": 1646,
+      "sha256": "ba2bf44ca15b7ec7040f7f68a2c7b987bc0b94bfbacbfee51a4d454ae2a3e171"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/backtest_probability/data_health_v1.json",
+      "size": 3223,
+      "sha256": "684293c1c8cc336a12530fd489910ad7c7a245951ce864109ad04cedf2b40b4c"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/backtest_probability/data_health_v1.md",
+      "size": 1408,
+      "sha256": "b74f9710c017360f0820ce4f22f44e2f2a77279e8b2cb749dfac91c672b58af4"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/historical_inventory/data_health_v1.csv",
+      "size": 1700,
+      "sha256": "c13b2224500fcf9983ce66987055694ecc659c47bf7cd54c179ccd9bcd182b8d"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/historical_inventory/data_health_v1.json",
+      "size": 3294,
+      "sha256": "7143b73186e0ab5a1e2a6e93e6c7317cbc07c70504fb72a3b190ae10cd7ec2a1"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/historical_inventory/data_health_v1.md",
+      "size": 1465,
+      "sha256": "42b9f15cd0aa6d8e1073ecda35303d62c7bf898d2295507715044fe85654213f"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/prospective_generation/data_health_v1.csv",
+      "size": 1607,
+      "sha256": "eb2473324057369b8b2c84a1b6bb65bf34b95ba41112791f6ca7686f9e53b59b"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/prospective_generation/data_health_v1.json",
+      "size": 3174,
+      "sha256": "cd56a3f3ab7648f390bd9387d0d2fdfe53587790cef8b627d682df56b2025bd1"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/prospective_generation/data_health_v1.md",
+      "size": 1384,
+      "sha256": "6c629961681dc5c4cd509b00781bf09b936bd59bc73d129097d5018497182ffa"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/result_settlement/data_health_v1.csv",
+      "size": 1697,
+      "sha256": "86f34e1b56eee4ce2b186a4452b63b230e5fc91a6993fb7415b5f9062b88980c"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/result_settlement/data_health_v1.json",
+      "size": 3291,
+      "sha256": "d3c52bcaca7ea62b104f81ac727a47855ddd0cdee88150790b20f5cad71ba26f"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939/result_settlement/data_health_v1.md",
+      "size": 1462,
+      "sha256": "7c83e9e502567461372b8b43088597c4e1b1107575b13882ef393d5089eee1d3"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939 4499 3643 3351 3341 3292 2763 2762-historical_inventory.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939-backtest_probability.log",
+      "size": 1888,
+      "sha256": "d5bcedb6b55c1fc90709627d2985856519a95bead1a5426981f9084b1d5b9c1d"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939-historical_inventory.log",
+      "size": 2027,
+      "sha256": "eef04511eed7ed452b37aad9bb7c985a89871b38106306b53e2daf7fd2a19a24"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939-prospective_generation.log",
+      "size": 1881,
+      "sha256": "8531faf97a2aa0f0e6c7a1f9012ff106f5722ce4a75994ed1beba29dacd87106"
+    },
+    {
+      "path": "run-20260730T113035Z/pre-health/selected/4939-result_settlement.log",
+      "size": 1940,
+      "sha256": "c65486fad5a4643c2e6538675dbb2181cc0c01c95f6cfc627eda6d137df470e5"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/db-audit-after.json",
+      "size": 4150,
+      "sha256": "cefa7a2b60489b7054bbd5fd0846c245c2e3a05208b0d65930f96872aded65a4"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/db-audit-after.log",
+      "size": 4150,
+      "sha256": "cefa7a2b60489b7054bbd5fd0846c245c2e3a05208b0d65930f96872aded65a4"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/drawings-after.json",
+      "size": 5843782,
+      "sha256": "3b6d1b762b2e8aa142ce78f28f8f080e2bead624ace4207e9da45aceda63a7dc"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/exit-codes.txt",
+      "size": 56,
+      "sha256": "91fddd63089f2b060ad61e8a73517f75be6df61add0c07b63817a8c9038570ed"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/reconcile-2762.log",
+      "size": 510,
+      "sha256": "89f32f72010b077cb75c29dc7beb0e0435bb8d4fdc4695257d7b7413bc912d64"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/reconcile-2763.log",
+      "size": 510,
+      "sha256": "ab7abaf80508426216811666489808961c580fead8d78745daf8286aedbfe2bb"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/reconcile-3292.log",
+      "size": 511,
+      "sha256": "12745ff092ac23a39e6a86c5fb35372b5a0de29f3a50257cc4a2f9d40f8b5d9a"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/reconcile-3341.log",
+      "size": 511,
+      "sha256": "82e30d81be2384900c9e796a4df853d48a72fb986af096467d22f92997035455"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/reconcile-3351.log",
+      "size": 511,
+      "sha256": "7b3e66a9287ca0ebef33835a2fb4677fb1461398870365f08e950f6b4b897902"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/reconcile-3643.log",
+      "size": 511,
+      "sha256": "76842627d02a7822520f5e27cfddb5bad9ce936c40c4529c434e7068dd8e4f34"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/reconcile-4499.log",
+      "size": 512,
+      "sha256": "d8d671ab8ec354f1729384bda6ca19cf319ec850db7e66ddc2dd4d9ae88029ca"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/reconcile-4939.log",
+      "size": 197,
+      "sha256": "7a9f72452c59c2fab993c27d770ecd6336112d098e0496852e1bc709965341c1"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat/state-after.json",
+      "size": 48891,
+      "sha256": "911a93f4bc17c2d8ea3de333b0c4973614aaaa89050f958f20f0fd8ba93cc572"
+    },
+    {
+      "path": "run-20260730T113035Z/repeat-proof.json",
+      "size": 906,
+      "sha256": "fb410014578d5efa822092b4e4abe4712b0421c41dff75e9df50a9be96f251db"
+    },
+    {
+      "path": "run-20260730T113035Z/validation/non-betting-boundaries.json",
+      "size": 2746,
+      "sha256": "036c08ff37c5760106cafab740098e1da28dcbb6814a64bc77e68d2d219320ad"
+    },
+    {
+      "path": "run-20260730T113035Z/validation/per-drawing-after-apply.json",
+      "size": 13443,
+      "sha256": "3c26af64b745e284b9f2d0b40fabd395b9efdf16840ec0363f6c08752268609d"
+    },
+    {
+      "path": "run-20260730T113035Z/validation/raw-verification.json",
+      "size": 3180,
+      "sha256": "8283c55e53682901555e3a531d9f26611d82e5819457e42e5df9c9b98c0ddf60"
+    },
+    {
+      "path": "selection-candidates.json",
+      "size": 130744,
+      "sha256": "ea5fb032e3bca0cc8fba29b68fc5c750574e47637e147406ce22757ec083530b"
+    }
+  ]
+}
