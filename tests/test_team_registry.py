@@ -627,6 +627,7 @@ def test_publish_and_load_atomic_mixed_provider_pin_set(session_factory):
             drawing_id=11988,
             drawing_fingerprint="f" * 64,
             expected_probability_sha256=probability_hash,
+            expected_reviewed_catalog_hash="c" * 64,
             as_of=datetime(2026, 7, 29, 12, 30, tzinfo=timezone.utc),
         )
         == pins
@@ -634,6 +635,44 @@ def test_publish_and_load_atomic_mixed_provider_pin_set(session_factory):
     with session_factory() as session:
         assert session.scalar(select(func.count(DrawingPinSet.pin_set_id))) == 1
         assert session.scalar(select(func.count(DrawingPinSetItem.id))) == 15
+
+
+def test_mixed_pin_set_rejects_missing_or_mismatched_reviewed_catalog_hash(
+    session_factory,
+):
+    publish_canonical_pin_set(
+        session_factory,
+        drawing_id=11988,
+        drawing_number=4959,
+        drawing_fingerprint="f" * 64,
+        provider="api-sports",
+        eligibility_status="playable",
+        readiness_summary=(
+            '{"mapped_count":15,"probability_input_sha256":"'
+            + "a" * 64
+            + '","status":"ready","target_fetched_at":'
+            '"2026-07-29T12:00:00+00:00","unresolved_event_orders":[]}'
+        ),
+        pin_specs=_canonical_specs(session_factory),
+        reviewed_catalog_hash="c" * 64,
+    )
+
+    with pytest.raises(ValueError, match="reviewed catalog hash is required"):
+        load_ready_pin_set(
+            session_factory,
+            drawing_id=11988,
+            drawing_fingerprint="f" * 64,
+            expected_reviewed_catalog_hash=None,
+            as_of=datetime(2026, 7, 29, 12, 30, tzinfo=timezone.utc),
+        )
+    with pytest.raises(ValueError, match="reviewed catalog hash mismatch"):
+        load_ready_pin_set(
+            session_factory,
+            drawing_id=11988,
+            drawing_fingerprint="f" * 64,
+            expected_reviewed_catalog_hash="d" * 64,
+            as_of=datetime(2026, 7, 29, 12, 30, tzinfo=timezone.utc),
+        )
 
 
 def test_mixed_pin_set_requires_ready_fresh_probability_evidence(session_factory):

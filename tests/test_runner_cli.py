@@ -56,6 +56,9 @@ def _target_payload(drawing_id: int = 11953) -> dict[str, object]:
                         "bk_win_1": 0.2,
                         "bk_draw": 0.3,
                         "bk_win_2": 0.5,
+                        "pool_win_1": 0.3,
+                        "pool_draw": 0.3,
+                        "pool_win_2": 0.4,
                     },
                 }
                 for order in range(15)
@@ -220,7 +223,7 @@ def _wire_runner(monkeypatch, *, result: _RunnerResult):
     monkeypatch.setattr(cli, "load_aliases", lambda aliases: {"aliases": aliases})
     monkeypatch.setattr(
         cli,
-        "load_ready_drawing_pins",
+        "load_ready_pin_set",
         lambda *_args, **_kwargs: tuple(f"pin-{index}" for index in range(15)),
     )
     monkeypatch.setattr(
@@ -643,6 +646,7 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "--aliases",
         "--timing-overrides",
         "--reviewed-schedule-catalog",
+        "--expected-reviewed-catalog-hash",
         "--quota-reserve",
         "--max-passes",
         "--max-expansion-passes",
@@ -690,9 +694,10 @@ def test_run_drawing_exposes_exact_approved_option_surface():
             "report_dir": None,
         "provider": "api-sports",
         "aliases": "data/external-odds/team-aliases.json",
-        "timing_overrides": None,
-        "reviewed_schedule_catalog": None,
-        "quota_reserve": 10,
+            "timing_overrides": None,
+            "reviewed_schedule_catalog": None,
+            "expected_reviewed_catalog_hash": None,
+            "quota_reserve": 10,
         "max_passes": 3,
         "max_expansion_passes": 3,
         "retry_delay_seconds": 65.0,

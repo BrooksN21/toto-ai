@@ -611,6 +611,9 @@ closed.
 
 - [x] Add provider-neutral reusable schedule evidence ledger and strict
   identity/time resolver; integrate it into morning preparation.
+- [x] Wire the canonical schedule-evidence ledger through real
+  `morning-dispatch`, preserve it in passive retries, and allow only atomic
+  baseline-only-to-reviewed schedule enrichment for an unchanged drawing.
 - [ ] Add an automatic evidence collector that writes reviewed observations
   only after authoritative identity, orientation and kickoff checks succeed.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,

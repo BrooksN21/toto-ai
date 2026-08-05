@@ -70,6 +70,23 @@ class PageOnlyClient:
         raise AssertionError(f"unexpected detail request {drawing_id}")
 
 
+def prepared_result(target, *, fingerprint: str):
+    """Return the complete preparation-result contract used by CLI tests."""
+    return SimpleNamespace(
+        drawing_id=target.drawing_id,
+        drawing_number=target.drawing_number,
+        drawing_fingerprint=fingerprint,
+        provider="api-sports",
+        status="ready",
+        mapped_count=15,
+        external_coverage_count=15,
+        baseline_only_event_orders=(),
+        unresolved_event_orders=(),
+        eligibility=SimpleNamespace(status="playable"),
+        schedule_diagnostics=(),
+    )
+
+
 def test_sync_prepare_cli_uses_one_page_and_cached_detail(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     now = datetime.now(timezone.utc)
@@ -89,14 +106,9 @@ def test_sync_prepare_cli_uses_one_page_and_cached_detail(monkeypatch, tmp_path)
     monkeypatch.setattr(
         cli,
         "prepare_drawing",
-        lambda target, *_a, **_k: SimpleNamespace(
-            drawing_id=target.drawing_id,
-            drawing_number=target.drawing_number,
-            drawing_fingerprint="a" * 64,
-            status="ready",
-            mapped_count=15,
-            unresolved_event_orders=(),
-            eligibility=SimpleNamespace(status="playable"),
+        lambda target, *_a, **_k: prepared_result(
+            target,
+            fingerprint="a" * 64,
         ),
     )
     schedule = tmp_path / "schedule.json"
@@ -270,16 +282,9 @@ def test_prepare_drawing_uses_synced_local_cache_without_totobrief_client(
     monkeypatch.setattr(
         cli,
         "prepare_drawing",
-        lambda target, *_a, **_k: SimpleNamespace(
-            drawing_id=target.drawing_id,
-            drawing_number=target.drawing_number,
-            drawing_fingerprint="b" * 64,
-            provider="api-sports",
-            status="ready",
-            mapped_count=15,
-            unresolved_event_orders=(),
-            eligibility=SimpleNamespace(status="playable"),
-            schedule_diagnostics=(),
+        lambda target, *_a, **_k: prepared_result(
+            target,
+            fingerprint="b" * 64,
         ),
     )
     schedule = tmp_path / "schedule.json"

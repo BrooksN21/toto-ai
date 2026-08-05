@@ -1026,3 +1026,31 @@ Exact reviewed schedule evidence may match the target in reversed source
 orientation only when both canonical entities match exactly; the stored pin
 records that orientation and final revalidation requires it unchanged. Fuzzy or
 ambiguous reversed evidence remains unresolved.
+
+## Dynamic TotoBrief pool and immutable BK pins (2026-08-04)
+
+- TotoBrief pool percentages are dynamic crowd observations and may change
+  normally between morning preparation and final package generation.
+- Canonical preparation safety pins bind event identity, order/orientation,
+  schedule/provider evidence, reviewed-catalog hashes, and the normalized BK
+  matrix. A later BK matrix is not silently accepted as a refresh.
+- A newer valid pool snapshot may advance readiness evidence without replacing
+  or invalidating canonical pins. An older snapshot or conflicting evidence at
+  the same capture timestamp remains invalid.
+- Baseline-only pin provenance retains its creation-time pool for audit only;
+  it is not the final package input. Final EV and coupon selection consume the
+  pool from the fresh atomic TotoBrief final payload.
+
+## Monotonic schedule-evidence enrichment (2026-08-04)
+
+- The project-owned schedule-evidence ledger is the default morning schedule
+  fallback and must resolve beneath `project_root`; an explicit override must
+  remain contained and is preserved in passive retry commands.
+- The legacy `reviewed-schedule-catalog` is a different per-drawing schema and
+  must never be passed as the reusable ledger.
+- A canonical ready pin set may change for an unchanged drawing fingerprint
+  only through one atomic monotonic transition from `totobrief-baseline` to a
+  strict reviewed schedule source for the same target event/order.
+- Provider pins, target identity/order, reviewed evidence validation and all
+  unrelated canonical pin content remain immutable. Any non-monotonic change,
+  invalid ledger schema/hash, ambiguity or conflict fails closed.

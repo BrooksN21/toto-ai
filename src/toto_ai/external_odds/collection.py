@@ -818,12 +818,8 @@ def _match_targets_from_pins(
             if (
                 pin.provenance.get("reason_code")
                 != "baseline_only_external_unavailable"
-                or pin.provenance.get("bk_probabilities")
-                != list(event.bk_probabilities)
-                or pin.provenance.get("pool_probabilities")
-                != list(event.pool_probabilities or ())
             ):
-                raise ValueError("TotoBrief baseline probability identity changed")
+                raise ValueError("TotoBrief baseline source semantics changed")
             decision = MatchDecision(
                 status="matched",
                 provider_event_id=None,

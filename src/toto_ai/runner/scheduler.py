@@ -199,6 +199,7 @@ class SchedulerPlan:
     timing_overrides: Path | None = None
     reviewed_schedule_catalog: Path | None = None
     reviewed_catalog_sha256: str | None = None
+    reviewed_catalog_hash: str | None = None
     env_file: Path | None = None
     provider: str = "api-sports"
     quota_reserve: int = 10
@@ -316,6 +317,10 @@ class SchedulerPlan:
         elif self.reviewed_catalog_sha256 is not None:
             raise ValueError(
                 "reviewed_catalog_sha256 requires reviewed schedule catalog"
+            )
+        if self.reviewed_catalog_hash is not None:
+            _require_sha256(
+                "reviewed_catalog_hash", self.reviewed_catalog_hash
             )
         if self.env_file is not None:
             object.__setattr__(
@@ -455,6 +460,11 @@ class SchedulerPlan:
                 "publication_lead_minutes": PUBLICATION_LEAD_MINUTES,
                 "trigger_offsets_minutes": list(
                     SCHEDULER_TRIGGER_OFFSETS_MINUTES
+                ),
+                **(
+                    {}
+                    if self.reviewed_catalog_hash is None
+                    else {"reviewed_catalog_hash": self.reviewed_catalog_hash}
                 ),
             },
             "paths": {
@@ -672,6 +682,7 @@ def build_scheduler_plan(
     timing_overrides: str | Path | None = None,
     reviewed_schedule_catalog: str | Path | None = None,
     reviewed_catalog_sha256: str | None = None,
+    reviewed_catalog_hash: str | None = None,
     env_file: str | Path | None = None,
     provider: str = "api-sports",
     quota_reserve: int = 10,
@@ -724,6 +735,7 @@ def build_scheduler_plan(
             else Path(reviewed_schedule_catalog)
         ),
         reviewed_catalog_sha256=reviewed_catalog_sha256,
+        reviewed_catalog_hash=reviewed_catalog_hash,
         env_file=None if env_file is None else Path(env_file),
         provider=provider,
         quota_reserve=quota_reserve,
@@ -877,9 +889,14 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
     present_safety_keys = safety_config_keys & set(raw_config)
     if present_safety_keys and present_safety_keys != safety_config_keys:
         raise ValueError("config package safety thresholds must be complete")
+    optional_binding_keys = (
+        {"reviewed_catalog_hash"}
+        if "reviewed_catalog_hash" in raw_config
+        else set()
+    )
     config = _exact_mapping(
         raw_config,
-        base_config_keys | present_safety_keys,
+        base_config_keys | present_safety_keys | optional_binding_keys,
         "config",
     )
     if schema_version == SCHEDULER_SCHEMA_VERSION and (
@@ -947,6 +964,7 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         timing_overrides=paths["timing_overrides"],
         reviewed_schedule_catalog=paths.get("reviewed_schedule_catalog"),
         reviewed_catalog_sha256=paths.get("reviewed_catalog_sha256"),
+        reviewed_catalog_hash=config.get("reviewed_catalog_hash"),
         env_file=paths.get("env_file"),
         provider=config["provider"],
         quota_reserve=config["quota_reserve"],
@@ -2136,6 +2154,13 @@ def build_run_drawing_phase_command(
             (
                 "--reviewed-schedule-catalog",
                 str(plan.reviewed_schedule_catalog),
+            )
+        )
+    if plan.reviewed_catalog_hash is not None:
+        command.extend(
+            (
+                "--expected-reviewed-catalog-hash",
+                plan.reviewed_catalog_hash,
             )
         )
     return tuple(command)

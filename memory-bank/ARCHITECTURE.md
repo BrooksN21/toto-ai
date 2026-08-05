@@ -237,6 +237,17 @@ network preparation before the T−45 plan-generation gate. The recurring
 wrapper never contains a drawing number. The generated evening plan owns the
 exact drawing identity and its independent T−45/T−30/T−20/T−16/T−10 ticks.
 
+The canonical reusable schedule-evidence input is
+`data/schedule-evidence/ledger.json` under the validated `project_root`.
+`morning-dispatch` consumes it by default and supports a contained explicit
+override; passive retries carry the exact resolved path. This input is not the
+legacy per-drawing reviewed-schedule catalog and the two schemas are never
+interchanged. A ready baseline-only pin set may be monotonically enriched when
+new exact ledger evidence becomes available: replacement is one transaction,
+permits only baseline-only to reviewed schedule transitions for the same
+target event/order, and rebinds the canonical reviewed hash. Any other pin,
+identity, schema, hash or ambiguity change remains fail-closed.
+
 Plan, wrapper, and plist bytes are generated once. The dispatcher persists
 `scheduled/generated` before activation. A retry after bootstrap failure or a
 crash verifies and reuses the exact plan, wrapper, and plist bytes before
@@ -290,6 +301,15 @@ removed on 2026-07-28.
   source fetch time. Production resource loading requires ready 15/15 pins,
   no unresolved orders, playable eligibility, a matching probability hash,
   and input age within 24 hours.
+- The preparation probability hash is the immutable 15-row TotoBrief BK
+  matrix. Pool rows are live crowd observations: a newer synchronized pool may
+  replace the morning snapshot without changing the canonical identity,
+  schedule, or BK pins. Baseline-only pin revalidation therefore compares BK
+  and event identity, while the readiness summary atomically advances the
+  latest combined BK/pool evidence hash. Final EV/package construction reads
+  the pool from the same fresh final TotoBrief payload, never from pin
+  provenance. BK drift, equal-time conflicting pool evidence, stale refreshes,
+  identity/order/schedule drift, and reviewed-hash drift remain fail-closed.
 - Unsafe but structurally valid packages become zero-cost `NO BET`.
   Invalid/stale operational evidence raises a machine-readable
   `preparation_fail:*` failure and produces no package.

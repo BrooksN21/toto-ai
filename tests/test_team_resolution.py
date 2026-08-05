@@ -365,7 +365,7 @@ def test_prepare_persists_ambiguous_event_to_review_queue(session_factory):
         assert session.scalar(select(func.count(DrawingEventPin.id))) == 15
 
 
-def test_prepare_reused_pins_refresh_probability_readiness_evidence(
+def test_prepare_reused_pins_accept_newer_bk_probability_drift(
     session_factory,
 ):
     events = tuple(
@@ -441,18 +441,17 @@ def test_prepare_reused_pins_refresh_probability_readiness_evidence(
         },
     )
 
-    assert result.drawing_fingerprint == original_fingerprint
-    assert tuple(pin.pin_hash for pin in result.pins) == original_pin_hashes
     with session_factory() as session:
         preparation = session.scalar(select(DrawingPreparation))
         assert preparation is not None
         summary = json.loads(preparation.readiness_summary)
         assert summary["probability_input_sha256"] == new_hash
         assert summary["target_fetched_at"] == refreshed.fetched_at.isoformat()
-        for key in ("probability_input_sha256", "target_fetched_at"):
-            summary.pop(key)
-            original_summary.pop(key)
-        assert summary == original_summary
+        assert summary["probability_outcome_order"] == ["1", "X", "2"]
+        assert summary["market_evidence_version"] == 2
+        assert len(summary["market_evidence_history"]) == 2
+    assert new_hash != original_summary["probability_input_sha256"]
+    assert result.drawing_fingerprint == original_fingerprint
     assert (
         tuple(
             pin.pin_hash
@@ -470,6 +469,9 @@ def test_prepare_reused_pins_refresh_probability_readiness_evidence(
 
 
 def _readiness_summary_for_assertion(prepared, target):
+    probability_hash = preparation_probability_sha256(
+        tuple(event.bk_probabilities for event in target.events)
+    )
     with_probability_evidence = {
         "status": prepared.status,
         "mapped_count": prepared.mapped_count,
@@ -478,9 +480,19 @@ def _readiness_summary_for_assertion(prepared, target):
         "events": [event.__dict__ for event in prepared.events],
         "schedule_diagnostics": prepared.schedule_diagnostics,
         "target_fetched_at": target.fetched_at.isoformat(),
-        "probability_input_sha256": preparation_probability_sha256(
-            tuple(event.bk_probabilities for event in target.events)
-        ),
+        "probability_input_sha256": probability_hash,
+        "market_probability_input_sha256": None,
+        "probability_outcome_order": ["1", "X", "2"],
+        "market_evidence_version": 1,
+        "market_evidence_history": [
+            {
+                "version": 1,
+                "target_fetched_at": target.fetched_at.isoformat(),
+                "probability_input_sha256": probability_hash,
+                "market_probability_input_sha256": None,
+                "probability_outcome_order": ["1", "X", "2"],
+            }
+        ],
     }
     return json.dumps(
         with_probability_evidence,
@@ -523,13 +535,8 @@ def test_refresh_probability_evidence_is_monotonic_and_equal_time_fail_closed(
             for order in range(15)
         },
     )
-    original_hash = preparation_probability_sha256(
-        tuple(event.bk_probabilities for event in events)
-    )
-    newer_hash = "a" * 64
     newer_at = NOW - timedelta(hours=1)
     newer_summary = json.loads(_readiness_summary_for_assertion(prepared, target))
-    newer_summary["probability_input_sha256"] = newer_hash
     newer_summary["target_fetched_at"] = newer_at.isoformat()
     refresh_ready_drawing_preparation_evidence(
         session_factory,
@@ -544,7 +551,6 @@ def test_refresh_probability_evidence_is_monotonic_and_equal_time_fail_closed(
         after_newer = (row.readiness_summary, row.updated_at)
 
     older_summary = dict(newer_summary)
-    older_summary["probability_input_sha256"] = original_hash
     older_summary["target_fetched_at"] = target.fetched_at.isoformat()
     with pytest.raises(ValueError, match="older probability evidence"):
         refresh_ready_drawing_preparation_evidence(
@@ -571,6 +577,34 @@ def test_refresh_probability_evidence_is_monotonic_and_equal_time_fail_closed(
             drawing_fingerprint=prepared.drawing_fingerprint,
             provider="api-sports",
             readiness_summary=json.dumps(mismatched),
+        )
+
+    wrong_outcome_order = dict(newer_summary)
+    wrong_outcome_order["target_fetched_at"] = (
+        newer_at + timedelta(minutes=1)
+    ).isoformat()
+    wrong_outcome_order["probability_outcome_order"] = ["2", "X", "1"]
+    with pytest.raises(ValueError, match="outcome order"):
+        refresh_ready_drawing_preparation_evidence(
+            session_factory,
+            drawing_id=1,
+            drawing_fingerprint=prepared.drawing_fingerprint,
+            provider="api-sports",
+            readiness_summary=json.dumps(wrong_outcome_order),
+        )
+
+    invalid_hash = dict(newer_summary)
+    invalid_hash["target_fetched_at"] = (
+        newer_at + timedelta(minutes=1)
+    ).isoformat()
+    invalid_hash["probability_input_sha256"] = "not-a-hash"
+    with pytest.raises(ValueError, match="invalid ready preparation evidence"):
+        refresh_ready_drawing_preparation_evidence(
+            session_factory,
+            drawing_id=1,
+            drawing_fingerprint=prepared.drawing_fingerprint,
+            provider="api-sports",
+            readiness_summary=json.dumps(invalid_hash),
         )
 
     with session_factory() as session:
@@ -618,7 +652,6 @@ def test_concurrent_probability_refresh_keeps_newest_evidence(tmp_path):
     newer = {
         **base,
         "target_fetched_at": (NOW - timedelta(hours=1)).isoformat(),
-        "probability_input_sha256": "c" * 64,
     }
 
     def refresh(summary):
@@ -646,6 +679,58 @@ def test_concurrent_probability_refresh_keeps_newest_evidence(tmp_path):
             == newer["probability_input_sha256"]
         )
     engine.dispose()
+
+
+def test_probability_refresh_rejects_tampered_market_evidence_history(
+    session_factory,
+):
+    events = tuple(
+        TargetEvent(
+            **{
+                **_target(f"Home {order}", f"Away {order}").__dict__,
+                "event_id": 100 + order,
+                "event_order": order,
+            }
+        )
+        for order in range(15)
+    )
+    target = TargetDrawing(1, 1, NOW, NOW - timedelta(hours=2), events)
+    candidates = tuple(
+        _candidate(
+            str(order),
+            f"Home {order}",
+            f"Away {order}",
+            home_id=f"home-{order}",
+            away_id=f"away-{order}",
+        )
+        for order in range(15)
+    )
+    prepared = prepare_drawing(
+        target,
+        candidates,
+        session_factory=session_factory,
+        event_contexts={
+            order: ResolutionContext("api-sports", league="Premier League")
+            for order in range(15)
+        },
+    )
+    with session_factory.begin() as session:
+        row = session.scalar(select(DrawingPreparation))
+        assert row is not None
+        summary = json.loads(row.readiness_summary)
+        summary["market_evidence_history"][0]["probability_input_sha256"] = "bad"
+        row.readiness_summary = json.dumps(summary)
+
+    newer_summary = json.loads(_readiness_summary_for_assertion(prepared, target))
+    newer_summary["target_fetched_at"] = (NOW - timedelta(hours=1)).isoformat()
+    with pytest.raises(ValueError, match="invalid stored ready preparation evidence"):
+        refresh_ready_drawing_preparation_evidence(
+            session_factory,
+            drawing_id=1,
+            drawing_fingerprint=prepared.drawing_fingerprint,
+            provider="api-sports",
+            readiness_summary=json.dumps(newer_summary),
+        )
 
 
 @pytest.mark.parametrize(

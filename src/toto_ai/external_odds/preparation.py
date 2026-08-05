@@ -11,7 +11,11 @@ from typing import Any
 
 from toto_ai.db.models import Drawing
 from toto_ai.external_odds.api_sports import _parse_schedule_payload
-from toto_ai.external_odds.domain import ProviderEvent, TargetDrawing
+from toto_ai.external_odds.domain import (
+    TOTO_BRIEF_OUTCOME_ORDER,
+    ProviderEvent,
+    TargetDrawing,
+)
 from toto_ai.external_odds.eligibility import (
     DrawingEligibility,
     EffectiveEventStart,
@@ -201,6 +205,12 @@ def prepare_drawing(
     fingerprint = target_fingerprint(
         target.drawing_id, target.drawing_number, target.deadline, target.events
     )
+    reference = evaluated_at or datetime.now(timezone.utc)
+    evidence_ledger = (
+        None
+        if schedule_evidence_ledger is None
+        else load_schedule_evidence_ledger(Path(schedule_evidence_ledger))
+    )
     # This also invalidates any valid pins for an older fingerprint.
     try:
         if reviewed_schedule_catalog is None and schedule_evidence_ledger is None:
@@ -247,21 +257,26 @@ def prepare_drawing(
             tuple(candidates),
             provider=provider,
             reviewed_catalog=reviewed_catalog,
-            schedule_evidence_ledger=(
-                None
-                if schedule_evidence_ledger is None
-                else load_schedule_evidence_ledger(Path(schedule_evidence_ledger))
-            ),
+            schedule_evidence_ledger=evidence_ledger,
         )
-        result = _result_from_existing(target, fingerprint, provider, existing)
-        refresh_ready_drawing_preparation_evidence(
-            session_factory,
-            drawing_id=target.drawing_id,
-            drawing_fingerprint=fingerprint,
-            provider=provider,
-            readiness_summary=_readiness_summary(result, target),
+        schedule_evidence_upgrade_orders = _baseline_schedule_evidence_upgrade_orders(
+            target,
+            existing,
+            evidence_ledger,
+            evaluated_at=reference,
         )
-        return result
+        if not schedule_evidence_upgrade_orders:
+            result = _result_from_existing(target, fingerprint, provider, existing)
+            refresh_ready_drawing_preparation_evidence(
+                session_factory,
+                drawing_id=target.drawing_id,
+                drawing_fingerprint=fingerprint,
+                provider=provider,
+                readiness_summary=_readiness_summary(result, target),
+            )
+            return result
+    else:
+        schedule_evidence_upgrade_orders = ()
 
     preview = _resolve_preparation_candidates(
         target,
@@ -274,7 +289,6 @@ def prepare_drawing(
     candidate_by_id = preview.candidate_by_id
     reviewed_catalog: ReviewedScheduleCatalog | None = None
     reviewed_by_order: dict[int, ReviewedScheduleEvidence] = {}
-    evidence_ledger: ScheduleEvidenceLedger | None = None
     evidence_by_order: dict[int, ScheduleObservation] = {}
     evidence_conflict_orders: list[int] = []
     reviewed_error: str | None = None
@@ -298,8 +312,7 @@ def prepare_drawing(
             reviewed_by_order = {}
 
     if schedule_evidence_ledger is not None:
-        reference = evaluated_at or datetime.now(timezone.utc)
-        evidence_ledger = load_schedule_evidence_ledger(Path(schedule_evidence_ledger))
+        assert evidence_ledger is not None
         for event, resolution in zip(target.events, resolutions, strict=True):
             if resolution.status == "matched":
                 continue
@@ -724,6 +737,22 @@ def prepare_drawing(
         or evidence_by_order
         or any(item.status == "baseline_only" for item in events)
     ):
+        selected_reviewed_hashes = {
+            str(item["provenance"][hash_field])
+            for item in canonical_pin_specs
+            for source_provider, hash_field in (
+                ("reviewed-schedule", "catalog_hash"),
+                ("schedule-evidence", "ledger_hash"),
+            )
+            if item["source_provider"] == source_provider
+        }
+        if len(selected_reviewed_hashes) > 1:
+            raise ValueError(
+                "selected reviewed pins require conflicting reviewed catalog hashes"
+            )
+        selected_reviewed_catalog_hash = next(
+            iter(selected_reviewed_hashes), None
+        )
         pins = publish_canonical_pin_set(
             session_factory,
             drawing_id=target.drawing_id,
@@ -733,12 +762,9 @@ def prepare_drawing(
             eligibility_status=eligibility.status,
             readiness_summary=_readiness_summary(draft, target),
             pin_specs=tuple(canonical_pin_specs),
-            reviewed_catalog_hash=(
-                evidence_ledger.semantic_hash
-                if evidence_ledger is not None
-                else (
-                    None if reviewed_catalog is None else reviewed_catalog.semantic_hash
-                )
+            reviewed_catalog_hash=selected_reviewed_catalog_hash,
+            allow_baseline_schedule_enrichment=bool(
+                schedule_evidence_upgrade_orders
             ),
         )
     else:
@@ -760,6 +786,38 @@ def prepare_drawing(
             "pins": tuple(sorted(pins, key=lambda pin: pin.event_order)),
         }
     )
+
+
+def _baseline_schedule_evidence_upgrade_orders(
+    target: TargetDrawing,
+    pins: tuple[DrawingEventPinRecord, ...],
+    ledger: ScheduleEvidenceLedger | None,
+    *,
+    evaluated_at: datetime,
+) -> tuple[int, ...]:
+    """Identify strict reviewed evidence that can replace baseline-only pins."""
+    if ledger is None:
+        return ()
+    upgrades: list[int] = []
+    conflicts: list[int] = []
+    for event, pin in zip(target.events, pins, strict=True):
+        if pin.effective_source_provider != "totobrief-baseline":
+            continue
+        resolution = resolve_schedule_evidence(
+            event,
+            ledger,
+            evaluated_at=evaluated_at,
+        )
+        if resolution.state == "RESOLVED":
+            upgrades.append(event.event_order)
+        elif resolution.state == "CONFLICT":
+            conflicts.append(event.event_order)
+    if conflicts:
+        raise ValueError(
+            "conflicting authoritative schedule identity for event orders "
+            f"{tuple(conflicts)}"
+        )
+    return tuple(upgrades)
 
 
 def _admit_reviewed_fallbacks(
@@ -1139,6 +1197,18 @@ def _readiness_summary(
     probability_hash = preparation_probability_sha256(
         tuple(event.bk_probabilities for event in target.events)
     )
+    market_probability_hash = (
+        _baseline_probability_input_sha256(target)
+        if all(event.pool_probabilities is not None for event in target.events)
+        else None
+    )
+    evidence_entry = {
+        "version": 1,
+        "target_fetched_at": target.fetched_at.isoformat(),
+        "probability_input_sha256": probability_hash,
+        "market_probability_input_sha256": market_probability_hash,
+        "probability_outcome_order": list(TOTO_BRIEF_OUTCOME_ORDER),
+    }
     return json.dumps(
         {
             "status": result.status,
@@ -1149,8 +1219,12 @@ def _readiness_summary(
             "schedule_diagnostics": result.schedule_diagnostics,
             "target_fetched_at": target.fetched_at.isoformat(),
             "probability_input_sha256": probability_hash,
+            "market_probability_input_sha256": market_probability_hash,
+            "probability_outcome_order": list(TOTO_BRIEF_OUTCOME_ORDER),
+            "market_evidence_version": 1,
+            "market_evidence_history": [evidence_entry],
             "baseline_probability_input_sha256": (
-                _baseline_probability_input_sha256(target)
+                market_probability_hash
                 if result.baseline_only_event_orders
                 else None
             ),
@@ -1220,7 +1294,11 @@ def refresh_ready_preparation_for_target(
     session_factory: Any,
     provider: str,
 ) -> None:
-    """Bind unchanged authoritative pins to a newly captured target."""
+    """Bind immutable pins to the latest complete TotoBrief market snapshot."""
+    market_probability_hash = _baseline_probability_input_sha256(target)
+    probability_hash = preparation_probability_sha256(
+        tuple(event.bk_probabilities for event in target.events)
+    )
     refresh_ready_drawing_preparation_evidence(
         session_factory,
         drawing_id=target.drawing_id,
@@ -1237,9 +1315,22 @@ def refresh_ready_preparation_for_target(
                 "mapped_count": 15,
                 "unresolved_event_orders": [],
                 "target_fetched_at": target.fetched_at.isoformat(),
-                "probability_input_sha256": preparation_probability_sha256(
-                    tuple(event.bk_probabilities for event in target.events)
-                ),
+                "probability_input_sha256": probability_hash,
+                "market_probability_input_sha256": market_probability_hash,
+                "baseline_probability_input_sha256": market_probability_hash,
+                "probability_outcome_order": list(TOTO_BRIEF_OUTCOME_ORDER),
+                "market_evidence_version": 1,
+                "market_evidence_history": [
+                    {
+                        "version": 1,
+                        "target_fetched_at": target.fetched_at.isoformat(),
+                        "probability_input_sha256": probability_hash,
+                        "market_probability_input_sha256": market_probability_hash,
+                        "probability_outcome_order": list(
+                            TOTO_BRIEF_OUTCOME_ORDER
+                        ),
+                    }
+                ],
             },
             sort_keys=True,
             separators=(",", ":"),
@@ -1283,10 +1374,6 @@ def _validate_existing_pins_against_candidates(
                 or pin.event_order != event.event_order
                 or pin.provenance.get("reason_code")
                 != "baseline_only_external_unavailable"
-                or pin.provenance.get("bk_probabilities")
-                != list(event.bk_probabilities)
-                or pin.provenance.get("pool_probabilities")
-                != list(event.pool_probabilities or ())
             ):
                 raise ValueError("ready TotoBrief baseline pin conflicts with target")
             continue

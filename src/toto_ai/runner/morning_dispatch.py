@@ -126,6 +126,7 @@ class MorningPreparedDrawing:
     not_ready_reason: str | None = None
     external_coverage_count: int = 15
     baseline_only_event_orders: tuple[int, ...] = ()
+    reviewed_catalog_hash: str | None = None
 
     def __post_init__(self) -> None:
         if type(self.drawing_id) is not int or self.drawing_id <= 0:
@@ -135,6 +136,8 @@ class MorningPreparedDrawing:
         object.__setattr__(self, "deadline", _utc(self.deadline, "deadline"))
         _sha256(self.drawing_fingerprint, "drawing_fingerprint")
         _sha256(self.detail_sha256, "detail_sha256")
+        if self.reviewed_catalog_hash is not None:
+            _sha256(self.reviewed_catalog_hash, "reviewed_catalog_hash")
         if not self.preparation_status:
             raise ValueError("preparation_status is required")
         if type(self.mapped_count) is not int or not 0 <= self.mapped_count <= 15:
@@ -187,6 +190,7 @@ class MorningPreparedDrawing:
             "deadline": _timestamp(self.deadline),
             "drawing_fingerprint": self.drawing_fingerprint,
             "detail_sha256": self.detail_sha256,
+            "reviewed_catalog_hash": self.reviewed_catalog_hash,
         }
 
 
@@ -205,6 +209,9 @@ class MorningDispatchConfig:
     )
     timing_overrides: Path | None = None
     reviewed_schedule_catalog: Path | None = None
+    schedule_evidence_ledger: Path = Path(
+        "data/schedule-evidence/ledger.json"
+    )
     retry_offsets_minutes: tuple[int, ...] = (360, 240, 180, 120, 90)
     retry_hard_stop_minutes: int = 60
 
@@ -220,6 +227,7 @@ class MorningDispatchConfig:
             "db",
             "aliases",
             "maintenance_lock",
+            "schedule_evidence_ledger",
         ):
             value = Path(getattr(self, field))
             if not value.is_absolute():
@@ -351,7 +359,9 @@ def _dispatch_morning_locked(
             )
         if prior.get("status") != "deferred":
             raise ValueError("morning dispatch record status is invalid")
-        if not _same_drawing_identity(prior, evidence):
+        if not _same_drawing_identity(
+            prior, evidence
+        ) and not _allows_deferred_reviewed_hash_transition(prior, evidence):
             raise ValueError("morning dispatch identity conflict")
         replace_prior = True
     reason = _ineligibility_reason(evidence)
@@ -395,6 +405,7 @@ def _dispatch_morning_locked(
         aliases=config.aliases,
         timing_overrides=config.timing_overrides,
         reviewed_schedule_catalog=config.reviewed_schedule_catalog,
+        reviewed_catalog_hash=evidence.reviewed_catalog_hash,
         env_file=config.env_file,
     )
     if observed >= plan.preflight_at:
@@ -569,6 +580,7 @@ def _reuse_prior(
             "drawing_number",
             "deadline",
             "drawing_fingerprint",
+            "reviewed_catalog_hash",
         )
     ):
         raise ValueError("morning dispatch identity conflict")
@@ -655,7 +667,54 @@ def _same_drawing_identity(
     expected = evidence.identity_payload()
     return all(
         identity.get(field) == expected[field]
-        for field in ("drawing_id", "drawing_number", "deadline")
+        for field in (
+            "drawing_id",
+            "drawing_number",
+            "deadline",
+            "drawing_fingerprint",
+            "reviewed_catalog_hash",
+        )
+    )
+
+
+def _allows_deferred_reviewed_hash_transition(
+    prior: Mapping[str, object],
+    evidence: MorningPreparedDrawing,
+) -> bool:
+    """Allow only artifact-free null-to-validated reviewed hash enrichment."""
+    if (
+        prior.get("status") != "deferred"
+        or prior.get("activation_status") != "not_requested"
+        or evidence.reviewed_catalog_hash is None
+    ):
+        return False
+    protected_artifact_fields = (
+        "plan_id",
+        "plan_path",
+        "launch_agent_path",
+        "launch_agent_label",
+        "package_path",
+        "package_sha256",
+        "package_manifest_path",
+        "archive_manifest_path",
+        "bet_ready_path",
+    )
+    if any(prior.get(field) is not None for field in protected_artifact_fields):
+        return False
+    identity = prior.get("identity")
+    if not isinstance(identity, Mapping):
+        return False
+    expected = evidence.identity_payload()
+    if identity.get("reviewed_catalog_hash") is not None:
+        return False
+    return all(
+        identity.get(field) == expected[field]
+        for field in (
+            "drawing_id",
+            "drawing_number",
+            "deadline",
+            "drawing_fingerprint",
+        )
     )
 
 
@@ -1106,6 +1165,12 @@ def _retry_plan_payload(
                     str(config.reviewed_schedule_catalog),
                 )
             )
+        command.extend(
+            (
+                "--schedule-evidence-ledger",
+                str(config.schedule_evidence_ledger),
+            )
+        )
         if activate_evening:
             command.append("--activate")
         attempts.append(

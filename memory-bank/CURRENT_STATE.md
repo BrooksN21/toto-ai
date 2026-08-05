@@ -1,5 +1,29 @@
 # Current State
 
+## Canonical ledger morning-dispatch integration (2026-08-04)
+
+`local-totoai-ledger-morning-dispatch-fix` closes the production gap exposed by
+drawing 4966. `morning-dispatch` now resolves the canonical
+`data/schedule-evidence/ledger.json` beneath `project_root` by default, accepts
+an explicit contained `--schedule-evidence-ledger` override, and carries that
+exact path into passive retry commands. The obsolete
+`--reviewed-schedule-catalog` remains a separate schema and is not used as a
+ledger substitute.
+
+Preparation no longer short-circuits when an existing ready pin set contains
+`totobrief-baseline` rows and newly available exact ledger evidence can supply
+their kickoffs. Such rows may be replaced atomically only by strict
+`reviewed-schedule`/`schedule-evidence` rows for the same target event/order;
+all other canonical pin changes remain fail-closed. Invalid schema/hash,
+ambiguous/conflicting evidence and paths outside the project root remain
+rejected.
+
+Verification: RED reproduced both the stale baseline-only reuse and missing
+CLI override; focused integration/regression suite `93 passed`; full suite
+`1621 passed in 259.46s`; repository Ruff and final diff check passed after
+this documentation update. No live rehearsal, scheduler activation, package,
+wager, Git publication or network operation was performed.
+
 ## Morning dispatch idempotency fix (2026-08-04)
 
 Repeated production morning-dispatch retries now reuse the persisted exact-drawing state instead of conflicting with an earlier notification; three retries completed at 13/15 without a notify conflict. Verification: 12 focused tests passed, with Ruff and diff checks green.
@@ -3210,3 +3234,37 @@ enriched events and baseline-only orders 7 and 13. At 17:59 Moscow it correctly
 deferred as `drawing_not_playable` because the deadline had passed; no package,
 bet-ready marker, or bet was produced. Verification evidence: final 25 focused
 tests passed, an earlier focused run passed 72 tests, and Ruff/diff-check passed.
+
+## Reviewed catalog hash handoff (2026-08-04)
+
+Implemented locally: morning preparation now reads the validated canonical pin
+set's `reviewed_catalog_hash`, binds it into `MorningPreparedDrawing` and the
+schema-v5 scheduler plan, and forwards the exact value to `run-drawing` as
+`--expected-reviewed-catalog-hash`. Runner preflight passes that binding to
+`load_ready_pin_set`; missing or mismatched reviewed-input hashes fail closed.
+Targeted verification passed: 71 morning/runner/registry tests plus 155
+scheduler/atomic-final tests. The stale sync/prepare CLI test doubles were
+updated to implement the complete preparation-result contract without adding
+runtime fallbacks. A real 4966 rehearsal then exposed a separate preparation
+boundary bug: merely loading the schedule-evidence ledger attached its hash to
+a canonical pin set even when none of the 15 selected pins used reviewed or
+schedule-evidence input. Preparation now derives the reviewed catalog binding
+only from the source and provenance of the actually selected canonical pins;
+zero selected reviewed/evidence pins persist a null hash, while selected pins
+still require one exact hash and missing/conflicting/mismatched bindings remain
+fail-closed. The integration regression covers a present but unused ledger
+with API-Sports plus TotoBrief baseline-only pins. Full local verification
+passed: 1614 tests and Ruff. No network rehearsal or scheduler activation was
+performed after this fix.
+
+## Dynamic pool refresh semantics (2026-08-04)
+
+Implemented locally for `local-totoai-dynamic-pool-pin-fix`: a later valid
+TotoBrief pool snapshot no longer conflicts with an otherwise unchanged ready
+pin set. Canonical pins and their hashes remain unchanged; the preparation
+summary advances its latest combined BK/pool evidence hash, and final EV input
+uses the pool from the fresh final payload. BK matrix drift and drawing/event
+fingerprint drift remain fail-closed. Regression coverage includes the mixed
+13-external/2-baseline preparation path, pinned collection revalidation,
+latest-pool EV input, immutable BK rejection, and participant-fingerprint
+rejection. External rehearsal/scheduler activation was not run for this task.

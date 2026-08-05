@@ -22,6 +22,7 @@ from toto_ai.db.models import (
     TeamRegistryReview,
 )
 from toto_ai.external_odds.countries import countries_equivalent
+from toto_ai.external_odds.domain import TOTO_BRIEF_OUTCOME_ORDER
 from toto_ai.external_odds.matching import normalize_team_name
 
 _CYRILLIC_TO_LATIN = {
@@ -59,6 +60,9 @@ _CYRILLIC_TO_LATIN = {
     "ь": "",
     "ъ": "",
 }
+
+_EXPECTED_REVIEWED_CATALOG_HASH_UNSET = object()
+_SHA256_RE = re.compile(r"[0-9a-f]{64}")
 
 
 @dataclass(frozen=True)
@@ -729,6 +733,7 @@ def load_ready_drawing_pins(
         drawing_fingerprint=drawing_fingerprint,
         provider=provider,
         expected_probability_sha256=expected_probability_sha256,
+        expected_market_probability_sha256=None,
         as_of=as_of,
         max_probability_age=max_probability_age,
     )
@@ -750,6 +755,7 @@ def _validate_ready_preparation(
     drawing_fingerprint: str,
     provider: str,
     expected_probability_sha256: str | None,
+    expected_market_probability_sha256: str | None,
     as_of: datetime | None,
     max_probability_age: timedelta,
 ) -> None:
@@ -812,6 +818,18 @@ def _validate_ready_preparation(
     if expected_probability_sha256 is not None:
         if summary.get("probability_input_sha256") != expected_probability_sha256:
             raise ValueError("preparation_fail:probability_input_changed_or_missing")
+        if (
+            expected_market_probability_sha256 is not None
+            and summary.get("market_probability_input_sha256")
+            != expected_market_probability_sha256
+        ):
+            raise ValueError("preparation_fail:market_input_changed_or_missing")
+        if (
+            expected_market_probability_sha256 is not None
+            and summary.get("probability_outcome_order")
+            != list(TOTO_BRIEF_OUTCOME_ORDER)
+        ):
+            raise ValueError("preparation_fail:probability_outcome_order_changed")
         fetched_at_value = summary.get("target_fetched_at")
         try:
             fetched_at = datetime.fromisoformat(str(fetched_at_value))
@@ -832,6 +850,10 @@ def load_ready_pin_set(
     drawing_id: int,
     drawing_fingerprint: str,
     expected_probability_sha256: str | None = None,
+    expected_market_probability_sha256: str | None = None,
+    expected_reviewed_catalog_hash: str | None | object = (
+        _EXPECTED_REVIEWED_CATALOG_HASH_UNSET
+    ),
     as_of: datetime | None = None,
     max_probability_age: timedelta = timedelta(hours=24),
 ) -> tuple[DrawingEventPinRecord, ...]:
@@ -842,6 +864,7 @@ def load_ready_pin_set(
         drawing_fingerprint=drawing_fingerprint,
         provider="api-sports",
         expected_probability_sha256=expected_probability_sha256,
+        expected_market_probability_sha256=expected_market_probability_sha256,
         as_of=as_of,
         max_probability_age=max_probability_age,
     )
@@ -862,6 +885,29 @@ def load_ready_pin_set(
                 )
             )
             _validate_canonical_pin_set(pin_set, rows)
+            if (
+                expected_reviewed_catalog_hash
+                is not _EXPECTED_REVIEWED_CATALOG_HASH_UNSET
+            ):
+                if (
+                    expected_reviewed_catalog_hash is not None
+                    and (
+                        not isinstance(expected_reviewed_catalog_hash, str)
+                        or not re.fullmatch(
+                            r"[0-9a-f]{64}", expected_reviewed_catalog_hash
+                        )
+                    )
+                ):
+                    raise ValueError("expected reviewed catalog hash is invalid")
+                if (
+                    pin_set.reviewed_catalog_hash is not None
+                    and expected_reviewed_catalog_hash is None
+                ):
+                    raise ValueError(
+                        "expected reviewed catalog hash is required for reviewed pins"
+                    )
+                if pin_set.reviewed_catalog_hash != expected_reviewed_catalog_hash:
+                    raise ValueError("reviewed catalog hash mismatch")
             return tuple(_canonical_pin_record(row) for row in rows)
     pins = load_drawing_pins(
         session_factory,
@@ -869,9 +915,43 @@ def load_ready_pin_set(
         drawing_fingerprint=drawing_fingerprint,
         provider="api-sports",
     )
+    if (
+        expected_reviewed_catalog_hash
+        is not _EXPECTED_REVIEWED_CATALOG_HASH_UNSET
+        and expected_reviewed_catalog_hash is not None
+    ):
+        raise ValueError("reviewed catalog hash mismatch")
     if len(pins) != 15:
         raise ValueError("ready drawing preparation has no complete pin set")
     return pins
+
+
+def load_ready_pin_set_reviewed_catalog_hash(
+    session_factory: Any,
+    *,
+    drawing_id: int,
+    drawing_fingerprint: str,
+) -> str | None:
+    """Return the validated reviewed-input binding for one canonical pin set."""
+    with session_factory() as session:
+        pin_set = session.scalar(
+            select(DrawingPinSet).where(
+                DrawingPinSet.drawing_id == drawing_id,
+                DrawingPinSet.drawing_fingerprint == drawing_fingerprint,
+                DrawingPinSet.status == "ready",
+            )
+        )
+        if pin_set is None:
+            return None
+        rows = tuple(
+            session.scalars(
+                select(DrawingPinSetItem)
+                .where(DrawingPinSetItem.pin_set_id == pin_set.pin_set_id)
+                .order_by(DrawingPinSetItem.event_order)
+            )
+        )
+        _validate_canonical_pin_set(pin_set, rows)
+        return pin_set.reviewed_catalog_hash
 
 
 def publish_canonical_pin_set(
@@ -885,6 +965,7 @@ def publish_canonical_pin_set(
     readiness_summary: str,
     pin_specs: tuple[Mapping[str, Any], ...],
     reviewed_catalog_hash: str | None,
+    allow_baseline_schedule_enrichment: bool = False,
 ) -> tuple[DrawingEventPinRecord, ...]:
     """Atomically publish exactly one complete canonical 15-pin set."""
     if len(pin_specs) != 15:
@@ -963,7 +1044,22 @@ def publish_canonical_pin_set(
             )
         )
         if conflicting is not None:
-            raise ValueError("conflicting immutable canonical pin set")
+            rows = tuple(
+                session.scalars(
+                    select(DrawingPinSetItem)
+                    .where(DrawingPinSetItem.pin_set_id == conflicting.pin_set_id)
+                    .order_by(DrawingPinSetItem.event_order)
+                )
+            )
+            _validate_canonical_pin_set(conflicting, rows)
+            if not allow_baseline_schedule_enrichment or not (
+                _is_safe_baseline_schedule_enrichment(rows, contents)
+            ):
+                raise ValueError("conflicting immutable canonical pin set")
+            for row in rows:
+                session.delete(row)
+            session.delete(conflicting)
+            session.flush()
         pin_set = DrawingPinSet(
             pin_set_id=pin_set_id,
             drawing_id=drawing_id,
@@ -1031,6 +1127,31 @@ def publish_canonical_pin_set(
         return tuple(_canonical_pin_record(row) for row in rows)
 
 
+def _is_safe_baseline_schedule_enrichment(
+    existing: tuple[DrawingPinSetItem, ...],
+    replacement: tuple[Mapping[str, Any], ...],
+) -> bool:
+    """Allow only monotonic baseline-only to reviewed schedule transitions."""
+    if len(existing) != 15 or len(replacement) != 15:
+        return False
+    changed = False
+    for old, new in zip(existing, replacement, strict=True):
+        old_content = _canonical_pin_content(old)
+        if old_content == new:
+            continue
+        if (
+            old.source_provider != "totobrief-baseline"
+            or new["source_provider"]
+            not in {"reviewed-schedule", "schedule-evidence"}
+            or old.target_event_id != new["target_event_id"]
+            or old.event_order != new["event_order"]
+            or not new["schedule_only"]
+        ):
+            return False
+        changed = True
+    return changed
+
+
 def refresh_ready_drawing_preparation_evidence(
     session_factory: Any,
     *,
@@ -1058,7 +1179,20 @@ def refresh_ready_drawing_preparation_evidence(
         or not isinstance(summary.get("target_fetched_at"), str)
     ):
         raise ValueError("invalid ready preparation evidence")
+    if summary.get("probability_outcome_order") != list(
+        TOTO_BRIEF_OUTCOME_ORDER
+    ):
+        raise ValueError("probability outcome order is invalid")
     incoming_hash = summary["probability_input_sha256"]
+    incoming_market_hash = summary.get("market_probability_input_sha256")
+    if _SHA256_RE.fullmatch(incoming_hash) is None or (
+        incoming_market_hash is not None
+        and (
+            not isinstance(incoming_market_hash, str)
+            or _SHA256_RE.fullmatch(incoming_market_hash) is None
+        )
+    ):
+        raise ValueError("invalid ready preparation evidence")
     try:
         incoming_fetched_at = datetime.fromisoformat(summary["target_fetched_at"])
     except ValueError as error:
@@ -1145,19 +1279,90 @@ def refresh_ready_drawing_preparation_evidence(
         if (
             not isinstance(stored_summary, dict)
             or not isinstance(stored_hash, str)
+            or _SHA256_RE.fullmatch(stored_hash) is None
             or stored_fetched_at.tzinfo is None
+        ):
+            raise ValueError("invalid stored ready preparation evidence")
+        stored_outcome_order = stored_summary.get(
+            "probability_outcome_order", list(TOTO_BRIEF_OUTCOME_ORDER)
+        )
+        if stored_outcome_order != list(TOTO_BRIEF_OUTCOME_ORDER):
+            raise ValueError("stored probability outcome order is invalid")
+        baseline_orders = stored_summary.get("baseline_only_event_orders", [])
+        if not isinstance(baseline_orders, list):
+            raise ValueError("invalid stored ready preparation evidence")
+        incoming_baseline_hash = summary.get(
+            "baseline_probability_input_sha256"
+        )
+        if baseline_orders and (
+            not isinstance(incoming_baseline_hash, str)
+            or incoming_baseline_hash != incoming_market_hash
+        ):
+            raise ValueError("invalid ready preparation evidence")
+        stored_market_hash = stored_summary.get(
+            "market_probability_input_sha256",
+            stored_summary.get("baseline_probability_input_sha256"),
+        )
+        if stored_market_hash is not None and (
+            not isinstance(stored_market_hash, str)
+            or _SHA256_RE.fullmatch(stored_market_hash) is None
         ):
             raise ValueError("invalid stored ready preparation evidence")
         if incoming_fetched_at < stored_fetched_at:
             raise ValueError("older probability evidence cannot replace newer evidence")
         if incoming_fetched_at == stored_fetched_at:
-            if incoming_hash != stored_hash:
+            if (
+                incoming_hash != stored_hash
+                or incoming_market_hash != stored_market_hash
+            ):
                 raise ValueError("conflicting probability evidence at equal timestamp")
             return
 
         refreshed_summary = dict(stored_summary)
-        refreshed_summary["probability_input_sha256"] = incoming_hash
+        stored_version = stored_summary.get("market_evidence_version", 1)
+        if type(stored_version) is not int or stored_version <= 0:
+            raise ValueError("invalid stored ready preparation evidence")
+        history = stored_summary.get("market_evidence_history")
+        if history is None:
+            history = [
+                {
+                    "version": stored_version,
+                    "target_fetched_at": stored_summary["target_fetched_at"],
+                    "probability_input_sha256": stored_hash,
+                    "market_probability_input_sha256": stored_market_hash,
+                    "probability_outcome_order": list(TOTO_BRIEF_OUTCOME_ORDER),
+                }
+            ]
+        _validate_market_evidence_history(
+            history,
+            current_version=stored_version,
+            current_fetched_at=stored_summary["target_fetched_at"],
+            current_probability_hash=stored_hash,
+            current_market_hash=stored_market_hash,
+        )
+        new_version = stored_version + 1
+        history = [
+            *history,
+            {
+                "version": new_version,
+                "target_fetched_at": summary["target_fetched_at"],
+                "probability_input_sha256": incoming_hash,
+                "market_probability_input_sha256": incoming_market_hash,
+                "probability_outcome_order": list(TOTO_BRIEF_OUTCOME_ORDER),
+            },
+        ][-64:]
         refreshed_summary["target_fetched_at"] = summary["target_fetched_at"]
+        refreshed_summary["probability_input_sha256"] = incoming_hash
+        refreshed_summary["market_probability_input_sha256"] = incoming_market_hash
+        refreshed_summary["probability_outcome_order"] = list(
+            TOTO_BRIEF_OUTCOME_ORDER
+        )
+        refreshed_summary["market_evidence_version"] = new_version
+        refreshed_summary["market_evidence_history"] = history
+        if baseline_orders:
+            refreshed_summary["baseline_probability_input_sha256"] = (
+                incoming_baseline_hash
+            )
         refreshed_text = json.dumps(
             refreshed_summary,
             sort_keys=True,
@@ -1179,6 +1384,61 @@ def refresh_ready_drawing_preparation_evidence(
             )
             if result.rowcount == 1:
                 return
+
+
+def _validate_market_evidence_history(
+    history: object,
+    *,
+    current_version: int,
+    current_fetched_at: str,
+    current_probability_hash: str,
+    current_market_hash: str | None,
+) -> None:
+    if not isinstance(history, list) or not history or len(history) > 64:
+        raise ValueError("invalid stored ready preparation evidence")
+    previous_version = 0
+    previous_fetched_at: datetime | None = None
+    for entry in history:
+        if not isinstance(entry, dict):
+            raise ValueError("invalid stored ready preparation evidence")
+        version = entry.get("version")
+        probability_hash = entry.get("probability_input_sha256")
+        market_hash = entry.get("market_probability_input_sha256")
+        if (
+            type(version) is not int
+            or version <= previous_version
+            or not isinstance(probability_hash, str)
+            or _SHA256_RE.fullmatch(probability_hash) is None
+            or (
+                market_hash is not None
+                and (
+                    not isinstance(market_hash, str)
+                    or _SHA256_RE.fullmatch(market_hash) is None
+                )
+            )
+            or entry.get("probability_outcome_order")
+            != list(TOTO_BRIEF_OUTCOME_ORDER)
+        ):
+            raise ValueError("invalid stored ready preparation evidence")
+        try:
+            fetched_at = datetime.fromisoformat(str(entry.get("target_fetched_at")))
+        except ValueError as error:
+            raise ValueError("invalid stored ready preparation evidence") from error
+        if (
+            fetched_at.tzinfo is None
+            or (previous_fetched_at is not None and fetched_at <= previous_fetched_at)
+        ):
+            raise ValueError("invalid stored ready preparation evidence")
+        previous_version = version
+        previous_fetched_at = fetched_at
+    latest = history[-1]
+    if (
+        latest.get("version") != current_version
+        or latest.get("target_fetched_at") != current_fetched_at
+        or latest.get("probability_input_sha256") != current_probability_hash
+        or latest.get("market_probability_input_sha256") != current_market_hash
+    ):
+        raise ValueError("invalid stored ready preparation evidence")
 
 
 def publish_drawing_preparation(

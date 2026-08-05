@@ -98,6 +98,7 @@ from toto_ai.external_odds.collection import (
 from toto_ai.external_odds.eligibility import DrawingEligibility, target_fingerprint
 from toto_ai.external_odds.matching import load_aliases
 from toto_ai.external_odds.preparation import (
+    _baseline_probability_input_sha256,
     fetch_preparation_schedule,
     load_local_schedule,
     persist_drawing_identity,
@@ -122,8 +123,8 @@ from toto_ai.external_odds.storage import load_current_drawing_eligibility
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.team_registry import (
     DrawingEventPinRecord,
-    load_ready_drawing_pins,
     load_ready_pin_set,
+    load_ready_pin_set_reviewed_catalog_hash,
     seed_reviewed_alias_config,
 )
 from toto_ai.external_odds.timing_overrides import (
@@ -1892,6 +1893,7 @@ def _prepare_runner_resources(
     provider_factory: Callable[[Path], object],
     timing_overrides: str | Path | None = None,
     reviewed_schedule_catalog: str | Path | None = None,
+    expected_reviewed_catalog_hash: str | None = None,
     systematic_resolution: bool = True,
     refresh_probability_evidence: bool = False,
 ) -> _RunnerResources:
@@ -1908,6 +1910,18 @@ def _prepare_runner_resources(
         ()
         if reviewed_catalog is None
         else reviewed_catalog_input_paths(reviewed_catalog)
+    )
+    if (
+        reviewed_catalog is not None
+        and expected_reviewed_catalog_hash is not None
+        and reviewed_catalog.semantic_hash != expected_reviewed_catalog_hash
+    ):
+        raise ValueError("reviewed catalog hash mismatch")
+    expected_pin_set_hash = (
+        reviewed_catalog.semantic_hash
+        if reviewed_catalog is not None
+        and expected_reviewed_catalog_hash is None
+        else expected_reviewed_catalog_hash
     )
     candidate_paths = drawing_run_candidate_paths(
         config,
@@ -1952,22 +1966,19 @@ def _prepare_runner_resources(
     readonly_engine = open_readonly_db(db)
     readonly_session_factory = get_session_factory(readonly_engine)
     if systematic_resolution:
-        loader = (
-            load_ready_drawing_pins
-            if reviewed_schedule_catalog is None
-            else load_ready_pin_set
-        )
         loader_kwargs = {
             "drawing_id": target.target.drawing_id,
             "drawing_fingerprint": target.fingerprint,
             "expected_probability_sha256": preparation_probability_sha256(
                 tuple(event.bk_probabilities for event in target.target.events)
             ),
+            "expected_market_probability_sha256": (
+                _baseline_probability_input_sha256(target.target)
+            ),
             "as_of": preflight_at,
+            "expected_reviewed_catalog_hash": expected_pin_set_hash,
         }
-        if reviewed_schedule_catalog is None:
-            loader_kwargs["provider"] = "api-sports"
-        prepared_pins = loader(session_factory, **loader_kwargs)
+        prepared_pins = load_ready_pin_set(session_factory, **loader_kwargs)
     else:
         prepared_pins = None
     if systematic_resolution and not prepared_pins:
@@ -2270,6 +2281,9 @@ def run_drawing_command(
     reviewed_schedule_catalog: str | None = typer.Option(
         None, "--reviewed-schedule-catalog"
     ),
+    expected_reviewed_catalog_hash: str | None = typer.Option(
+        None, "--expected-reviewed-catalog-hash"
+    ),
     quota_reserve: int = typer.Option(10, min=0),
     max_passes: int = typer.Option(3, min=1),
     max_expansion_passes: int = typer.Option(3, min=1),
@@ -2394,6 +2408,7 @@ def run_drawing_command(
                 provider_factory=provider_factory,
                 timing_overrides=timing_overrides,
                 reviewed_schedule_catalog=reviewed_schedule_catalog,
+                expected_reviewed_catalog_hash=expected_reviewed_catalog_hash,
                 systematic_resolution=systematic_resolution,
                 refresh_probability_evidence=atomic_snapshot is not None,
             )
@@ -3035,6 +3050,11 @@ def _prepare_current_for_morning(
             span_days=prepared.eligibility.span_days,
             external_coverage_count=prepared.external_coverage_count,
             baseline_only_event_orders=prepared.baseline_only_event_orders,
+            reviewed_catalog_hash=load_ready_pin_set_reviewed_catalog_hash(
+                session_factory,
+                drawing_id=target.drawing_id,
+                drawing_fingerprint=prepared.drawing_fingerprint,
+            ),
             unresolved_events=tuple(
                 MorningUnresolvedEvent(
                     event_order=item.event_order,
@@ -3078,6 +3098,10 @@ def morning_dispatch_command(
     reviewed_schedule_catalog: str | None = typer.Option(
         None, "--reviewed-schedule-catalog"
     ),
+    schedule_evidence_ledger: str = typer.Option(
+        str(DEFAULT_SCHEDULE_EVIDENCE_PATH),
+        "--schedule-evidence-ledger",
+    ),
     activate: bool = typer.Option(False, "--activate"),
     expected_drawing_id: int | None = typer.Option(
         None, "--expected-drawing-id", min=1
@@ -3101,7 +3125,7 @@ def morning_dispatch_command(
     )
     resolved_cache_root = resolve_contained_path(cache_root, allowed_root=root)
     resolved_schedule_evidence_ledger = resolve_contained_path(
-        DEFAULT_SCHEDULE_EVIDENCE_PATH,
+        schedule_evidence_ledger,
         allowed_root=root,
     )
     config = MorningDispatchConfig(
@@ -3118,6 +3142,7 @@ def morning_dispatch_command(
             if reviewed_schedule_catalog is None
             else Path(reviewed_schedule_catalog)
         ),
+        schedule_evidence_ledger=resolved_schedule_evidence_ledger,
     )
     observed_at = datetime.now(timezone.utc)
     try:
@@ -3167,7 +3192,7 @@ def morning_dispatch_command(
                 api_sports_max_retries=api_sports_max_retries,
                 expansion_horizon_days=expansion_horizon_days,
                 project_root=root,
-                schedule_evidence_ledger=resolved_schedule_evidence_ledger,
+                schedule_evidence_ledger=config.schedule_evidence_ledger,
                 reviewed_schedule_catalog=(
                     None
                     if reviewed_schedule_catalog is None

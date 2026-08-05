@@ -6,6 +6,7 @@ from math import isclose, isfinite
 from typing import Literal, Protocol
 
 OutcomeTriplet = tuple[float, float, float]
+TOTO_BRIEF_OUTCOME_ORDER = ("1", "X", "2")
 Sport = Literal["football", "hockey", "unknown"]
 _SPORTS = frozenset(("football", "hockey", "unknown"))
 

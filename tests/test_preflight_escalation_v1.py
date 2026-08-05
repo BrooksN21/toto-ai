@@ -11,6 +11,9 @@ import pytest
 from typer.testing import CliRunner
 
 from toto_ai import cli
+from toto_ai.external_odds.schedule_evidence import (
+    load_schedule_evidence_ledger,
+)
 from toto_ai.runner.morning_dispatch import (
     MorningDispatchConfig,
     MorningExpectedIdentity,
@@ -188,6 +191,305 @@ def test_real_morning_dispatch_cli_passes_repository_schedule_evidence_ledger(
     assert captured == [tmp_path / "data/schedule-evidence/ledger.json"]
 
 
+def test_morning_dispatch_accepts_contained_schedule_evidence_ledger_override(
+    tmp_path, monkeypatch
+):
+    env_file = _env(tmp_path / ".env")
+    custom_ledger = tmp_path / "evidence" / "ledger.json"
+    custom_ledger.parent.mkdir()
+    custom_ledger.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "generated_at": "2026-07-30T07:00:00Z",
+                "observations": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    captured: list[Path] = []
+
+    def fake_prepare(**kwargs):
+        captured.append(kwargs["schedule_evidence_ledger"])
+        return _unresolved()
+
+    def fake_dispatch(_config, *, prepare_current, observed_at, **_kwargs):
+        prepare_current(observed_at)
+        return SimpleNamespace(
+            status="scheduled",
+            reason="READY 15/15",
+            record_path=tmp_path / "record.json",
+            plan_id="plan",
+            plan_path=None,
+            launch_agent_path=None,
+            launch_agent_label=None,
+            activation_status="not_requested",
+            attention_path=None,
+            retry_plan_path=None,
+            review_queue_path=None,
+        )
+
+    monkeypatch.setattr(cli, "_prepare_current_for_morning", fake_prepare)
+    monkeypatch.setattr(cli, "dispatch_morning", fake_dispatch)
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+            "--schedule-evidence-ledger",
+            str(custom_ledger),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert captured == [custom_ledger]
+
+
+def test_morning_dispatch_rejects_invalid_schedule_evidence_ledger(
+    tmp_path, monkeypatch
+):
+    env_file = _env(tmp_path / ".env")
+    ledger = tmp_path / "data" / "schedule-evidence" / "ledger.json"
+    ledger.parent.mkdir(parents=True)
+    ledger.write_text('{"schema_version": 999}', encoding="utf-8")
+
+    def fake_prepare(**kwargs):
+        load_schedule_evidence_ledger(kwargs["schedule_evidence_ledger"])
+        raise AssertionError("invalid ledger must fail before preparation")
+
+    def fake_dispatch(_config, *, prepare_current, observed_at, **_kwargs):
+        prepare_current(observed_at)
+        raise AssertionError("invalid ledger must not produce a dispatch result")
+
+    monkeypatch.setattr(cli, "_prepare_current_for_morning", fake_prepare)
+    monkeypatch.setattr(cli, "dispatch_morning", fake_dispatch)
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "schedule evidence ledger fields are invalid" in result.output
+
+
+def test_real_morning_dispatch_wrapper_uses_ledger_kickoffs_for_eligibility(
+    tmp_path, monkeypatch
+):
+    import hashlib
+
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    from toto_ai.db.models import Base
+    from toto_ai.external_odds.domain import (
+        ProviderEvent,
+        TargetDrawing,
+        TargetEvent,
+    )
+    from toto_ai.external_odds.preparation import prepare_drawing
+    from toto_ai.external_odds.team_registry import backfill_accepted_matches
+
+    env_file = _env(tmp_path / ".env")
+    starts_at = DEADLINE + timedelta(hours=2)
+    target = TargetDrawing(
+        drawing_id=11990,
+        drawing_number=4960,
+        deadline=DEADLINE,
+        fetched_at=DEADLINE - timedelta(hours=1),
+        events=tuple(
+            TargetEvent(
+                drawing_id=11990,
+                drawing_number=4960,
+                event_id=178900 + order,
+                event_order=order,
+                sport="football",
+                championship="Test Competition",
+                starts_at=None,
+                deadline=DEADLINE,
+                home_team=f"Home {order}",
+                away_team=f"Away {order}",
+                home_team_en=None,
+                away_team_en=None,
+                bk_probabilities=(0.4, 0.3, 0.3),
+                pool_probabilities=(0.4, 0.3, 0.3),
+            )
+            for order in range(15)
+        ),
+    )
+    candidate = ProviderEvent(
+        provider="api-sports",
+        provider_event_id="fixture-0",
+        sport="football",
+        league="Test Competition",
+        starts_at=starts_at,
+        home_team="Provider Home 0",
+        away_team="Provider Away 0",
+        fetched_at=target.fetched_at,
+        payload_hash="fixture-hash-0",
+        country="Test",
+        provider_home_team_id="provider-home-0",
+        provider_away_team_id="provider-away-0",
+    )
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    session_factory = sessionmaker(engine, expire_on_commit=False)
+    assert backfill_accepted_matches(
+        session_factory,
+        [
+            {
+                "drawing_id": target.drawing_id,
+                "target_event_id": target.events[0].event_id,
+                "provider_fixture_id": candidate.provider_event_id,
+                "sport": "football",
+                "target_home": target.events[0].home_team,
+                "target_away": target.events[0].away_team,
+                "provider_home": candidate.home_team,
+                "provider_away": candidate.away_team,
+                "provider_home_team_id": candidate.provider_home_team_id,
+                "provider_away_team_id": candidate.provider_away_team_id,
+                "country": "Test",
+                "league": candidate.league,
+                "reviewed": True,
+            }
+        ],
+    ) == 2
+    baseline = prepare_drawing(
+        target,
+        (candidate,),
+        session_factory=session_factory,
+    )
+    assert baseline.eligibility.status == "unknown"
+
+    evidence_root = tmp_path / "data" / "schedule-evidence"
+    evidence_root.mkdir(parents=True)
+    review = evidence_root / "review.md"
+    review.write_text("reviewed official schedule", encoding="utf-8")
+    review_hash = hashlib.sha256(review.read_bytes()).hexdigest()
+    ledger = evidence_root / "ledger.json"
+    ledger.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "generated_at": target.fetched_at.isoformat(),
+                "observations": [
+                    {
+                        "observation_id": f"event-{order}",
+                        "sport": "football",
+                        "gender_age_class": "men-senior",
+                        "competition_aliases": ["Test Competition"],
+                        "home_entity": f"Home {order}",
+                        "home_aliases": [f"Home {order}"],
+                        "away_entity": f"Away {order}",
+                        "away_aliases": [f"Away {order}"],
+                        "starts_at": starts_at.isoformat(),
+                        "status": "scheduled",
+                        "conditional": False,
+                        "reviewer": "test-reviewer",
+                        "reviewed_at": target.fetched_at.isoformat(),
+                        "review_document": review.name,
+                        "review_document_sha256": review_hash,
+                        "claims": [
+                            {
+                                "source_name": "official",
+                                "role": "official",
+                                "source_url": "https://example.test/schedule",
+                            }
+                        ],
+                    }
+                    for order in range(1, 15)
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    observed: list[MorningPreparedDrawing] = []
+
+    def fake_prepare(**kwargs):
+        refreshed = prepare_drawing(
+            target,
+            (candidate,),
+            session_factory=session_factory,
+            schedule_evidence_ledger=kwargs["schedule_evidence_ledger"],
+            evaluated_at=target.fetched_at,
+        )
+        evidence = MorningPreparedDrawing(
+            drawing_id=target.drawing_id,
+            drawing_number=target.drawing_number,
+            deadline=target.deadline,
+            drawing_fingerprint=refreshed.drawing_fingerprint,
+            detail_sha256="d" * 64,
+            preparation_status=refreshed.status,
+            mapped_count=refreshed.mapped_count,
+            eligibility_status=refreshed.eligibility.status,
+            span_days=refreshed.eligibility.span_days,
+        )
+        observed.append(evidence)
+        return evidence
+
+    def fake_dispatch(_config, *, prepare_current, observed_at, **_kwargs):
+        prepare_current(observed_at)
+        return SimpleNamespace(
+            status="scheduled",
+            reason="READY 15/15",
+            record_path=tmp_path / "record.json",
+            plan_id="plan",
+            plan_path=None,
+            launch_agent_path=None,
+            launch_agent_label=None,
+            activation_status="not_requested",
+            attention_path=None,
+            retry_plan_path=None,
+            review_queue_path=None,
+        )
+
+    monkeypatch.setattr(cli, "_prepare_current_for_morning", fake_prepare)
+    monkeypatch.setattr(cli, "dispatch_morning", fake_dispatch)
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert len(observed) == 1
+    assert observed[0].preparation_status == "ready"
+    assert observed[0].eligibility_status == "playable"
+    assert observed[0].span_days == 1
+    engine.dispose()
+
+
 def test_generated_attention_and_notification_refresh_without_stale_counts(
     tmp_path,
 ):
@@ -299,6 +601,8 @@ def test_4960_deferred_writes_attention_retry_and_reviewed_queue(tmp_path):
         assert "--expected-drawing-number" in command
         assert "--expected-fingerprint" in command
         assert "--expected-deadline" in command
+        ledger_index = command.index("--schedule-evidence-ledger")
+        assert command[ledger_index + 1] == str(config.schedule_evidence_ledger)
         assert "--activate" not in command
 
     queue = json.loads(result.review_queue_path.read_text(encoding="utf-8"))

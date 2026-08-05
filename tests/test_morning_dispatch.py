@@ -15,6 +15,7 @@ from toto_ai.runner.morning_dispatch import (
     MorningDispatchConfig,
     MorningExpectedIdentity,
     MorningPreparedDrawing,
+    _allows_deferred_reviewed_hash_transition,
     activate_scheduler_launch_agent,
     dispatch_morning,
 )
@@ -22,7 +23,10 @@ from toto_ai.runner.scheduler import (
     SCHEDULER_LAUNCH_AGENT_FILENAME,
     SCHEDULER_WRAPPER_FILENAME,
     SchedulerIntegrityError,
+    SchedulerPhaseContext,
+    build_run_drawing_phase_command,
     build_scheduler_plan,
+    load_scheduler_plan,
     prepare_morning_preanalysis_artifacts,
     prepare_scheduler_artifacts,
 )
@@ -58,6 +62,7 @@ def _prepared(
     eligibility: str = "playable",
     span_days: int | None = 1,
     not_ready_reason: str | None = None,
+    reviewed_catalog_hash: str | None = None,
 ) -> MorningPreparedDrawing:
     kwargs = dict(
         drawing_id=drawing_id,
@@ -69,10 +74,54 @@ def _prepared(
         mapped_count=mapped,
         eligibility_status=eligibility,
         span_days=span_days,
+        reviewed_catalog_hash=reviewed_catalog_hash,
     )
     if not_ready_reason is not None:
         kwargs["not_ready_reason"] = not_ready_reason
     return MorningPreparedDrawing(**kwargs)
+
+
+def test_activated_morning_dispatch_forwards_exact_reviewed_catalog_hash(
+    tmp_path,
+):
+    config = _config(tmp_path)
+    now = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    reviewed_catalog_hash = "c" * 64
+    activations: list[tuple[str, Path]] = []
+
+    result = dispatch_morning(
+        config,
+        observed_at=now,
+        now=lambda: now,
+        prepare_current=lambda _now: _prepared(
+            number=4966,
+            drawing_id=12007,
+            deadline=now + timedelta(hours=10),
+            reviewed_catalog_hash=reviewed_catalog_hash,
+        ),
+        activate=lambda label, path: activations.append((label, path)),
+        python_command=sys.executable,
+    )
+
+    assert result.status == "scheduled"
+    assert result.activation_status == "activated"
+    assert len(activations) == 1
+    plan = load_scheduler_plan(result.plan_path)
+    context = SchedulerPhaseContext(
+        phase="final",
+        plan=plan,
+        run_id="test-run",
+        run_dir=tmp_path / "run",
+        work_dir=tmp_path / "work",
+        scheduled_at=now,
+        started_at=now,
+    )
+    command = build_run_drawing_phase_command(
+        context,
+        python_executable=sys.executable,
+    )
+    option = command.index("--expected-reviewed-catalog-hash")
+    assert command[option + 1] == reviewed_catalog_hash
 
 
 def _zero_pool_bootstrap(
@@ -670,6 +719,135 @@ def test_same_drawing_retries_deferred_preparation_without_duplicate_plan(
     assert reused.status == "reused"
     assert scheduled.plan_id == reused.plan_id
     assert len(tuple(config.scheduler_root.rglob("scheduler-plan.json"))) == 1
+
+
+def test_deferred_artifact_free_record_accepts_validated_reviewed_hash(
+    tmp_path,
+):
+    config = _config(tmp_path)
+    now = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    deadline = now + timedelta(hours=10)
+    fingerprint = "a" * 64
+
+    deferred = dispatch_morning(
+        config,
+        observed_at=now,
+        now=lambda: now,
+        prepare_current=lambda _now: _prepared(
+            number=4966,
+            drawing_id=12007,
+            deadline=deadline,
+            fingerprint=fingerprint,
+            eligibility="unknown",
+            span_days=None,
+        ),
+        python_command=sys.executable,
+    )
+    scheduled = dispatch_morning(
+        config,
+        observed_at=now + timedelta(minutes=30),
+        now=lambda: now + timedelta(minutes=30),
+        prepare_current=lambda _now: _prepared(
+            number=4966,
+            drawing_id=12007,
+            deadline=deadline,
+            fingerprint=fingerprint,
+            reviewed_catalog_hash="c" * 64,
+        ),
+        python_command=sys.executable,
+    )
+
+    assert deferred.status == "deferred"
+    assert scheduled.status == "scheduled"
+    assert scheduled.record_path == deferred.record_path
+    assert len(tuple(config.scheduler_root.rglob("scheduler-plan.json"))) == 1
+    persisted = json.loads(
+        scheduled.record_path.read_text(encoding="utf-8")
+    )
+    assert persisted["identity"]["reviewed_catalog_hash"] == "c" * 64
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        lambda prior, _evidence: prior.__setitem__("status", "scheduled"),
+        lambda prior, _evidence: prior.__setitem__(
+            "activation_status", "activated"
+        ),
+        lambda prior, _evidence: prior.__setitem__("plan_id", "plan-id"),
+        lambda prior, _evidence: prior.__setitem__(
+            "package_path", "/tmp/package.csv"
+        ),
+        lambda prior, _evidence: prior["identity"].__setitem__(
+            "reviewed_catalog_hash", "b" * 64
+        ),
+        lambda prior, _evidence: prior["identity"].__setitem__(
+            "drawing_fingerprint", "d" * 64
+        ),
+        lambda prior, _evidence: prior["identity"].__setitem__(
+            "drawing_id", 12008
+        ),
+        lambda prior, _evidence: prior["identity"].__setitem__(
+            "deadline", "2032-01-01T18:00:00Z"
+        ),
+    ),
+)
+def test_deferred_reviewed_hash_transition_rejects_unsafe_state_or_identity(
+    mutation,
+):
+    evidence = _prepared(
+        number=4966,
+        drawing_id=12007,
+        deadline=datetime(2032, 1, 1, 17, 0, tzinfo=UTC),
+        reviewed_catalog_hash="c" * 64,
+    )
+    prior = {
+        "status": "deferred",
+        "activation_status": "not_requested",
+        "plan_id": None,
+        "plan_path": None,
+        "launch_agent_path": None,
+        "launch_agent_label": None,
+        "identity": {
+            **evidence.identity_payload(),
+            "reviewed_catalog_hash": None,
+        },
+    }
+    mutation(prior, evidence)
+
+    assert not _allows_deferred_reviewed_hash_transition(prior, evidence)
+
+
+def test_scheduled_record_rejects_reviewed_hash_mutation(tmp_path):
+    config = _config(tmp_path)
+    now = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    deadline = now + timedelta(hours=10)
+
+    dispatch_morning(
+        config,
+        observed_at=now,
+        now=lambda: now,
+        prepare_current=lambda _now: _prepared(
+            number=4966,
+            drawing_id=12007,
+            deadline=deadline,
+        ),
+        python_command=sys.executable,
+    )
+
+    with pytest.raises(ValueError, match="morning dispatch identity conflict"):
+        dispatch_morning(
+            config,
+            observed_at=now + timedelta(minutes=30),
+            now=lambda: now + timedelta(minutes=30),
+            prepare_current=lambda _now: _prepared(
+                number=4966,
+                drawing_id=12007,
+                deadline=deadline,
+                reviewed_catalog_hash="c" * 64,
+            ),
+            python_command=sys.executable,
+        )
 
 
 @pytest.mark.parametrize(

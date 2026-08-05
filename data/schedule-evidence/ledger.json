@@ -128,6 +128,261 @@
           "source_url": "https://www.leaguescup.com/news/leagues-cup-2026-set-to-be-played-august-4-september-6-participating-clubs-announced"
         }
       ]
+    },
+    {
+      "observation_id": "liga-profesional-tigre-belgrano-20260805",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Аргентина. Чемпионат",
+        "Liga Profesional de Fútbol"
+      ],
+      "home_entity": "Club Atlético Tigre",
+      "home_aliases": [
+        "Тигре",
+        "Tigre",
+        "Club Atlético Tigre"
+      ],
+      "away_entity": "Club Atlético Belgrano",
+      "away_aliases": [
+        "Белграно",
+        "Belgrano",
+        "Club Atlético Belgrano"
+      ],
+      "starts_at": "2026-08-06T00:15:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-04T17:30:00Z",
+      "review_document": "reviews/4966-event-3.md",
+      "review_document_sha256": "1240ea0046019ed5f3b2a99d5224c2a67d391f0e1a20579d4e5c9831e7e9ab44",
+      "claims": [
+        {
+          "source_name": "Liga Profesional Argentina",
+          "role": "official",
+          "source_url": "https://www.ligaprofesional.ar/notas/primera/2026/06/25/agenda-para-las-primeras-tres-fechas-2/"
+        }
+      ]
+    },
+    {
+      "observation_id": "cbf-834859",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Бразилия. Кубок",
+        "Copa do Brasil"
+      ],
+      "home_entity": "Fluminense FC",
+      "home_aliases": [
+        "Флуминенсе",
+        "Fluminense",
+        "Fluminense FC",
+        "Fluminense Football Club"
+      ],
+      "away_entity": "CR Vasco da Gama",
+      "away_aliases": [
+        "Васко да Гама",
+        "Vasco da Gama",
+        "CR Vasco da Gama",
+        "Club de Regatas Vasco da Gama"
+      ],
+      "starts_at": "2026-08-06T00:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-04T17:30:00Z",
+      "review_document": "reviews/4966-event-6.md",
+      "review_document_sha256": "9eaa60ed44866c349ad70408a430081446de3b7b123be1f05ed1667eb8edddfe",
+      "claims": [
+        {
+          "source_name": "CBF",
+          "role": "official",
+          "source_url": "https://www.cbf.com.br/futebol-brasileiro/jogos/copa-do-brasil/profissional/2026/fluminense-x-vasco-da-gama-saf/834859"
+        }
+      ]
+    },
+    {
+      "observation_id": "orlando-city-monterrey-leagues-cup-20260805",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Америка. Кубок Североамериканских лиг",
+        "Leagues Cup"
+      ],
+      "home_entity": "Orlando City SC",
+      "home_aliases": [
+        "Орландо Сити",
+        "Orlando City",
+        "Orlando City SC"
+      ],
+      "away_entity": "CF Monterrey",
+      "away_aliases": [
+        "Монтеррей",
+        "Monterrey",
+        "CF Monterrey",
+        "Club de Fútbol Monterrey"
+      ],
+      "starts_at": "2026-08-05T23:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-04T17:30:00Z",
+      "review_document": "reviews/4966-event-9.md",
+      "review_document_sha256": "496e3bcccf56b832bdf6bf1b3cfcec4a043369e12cc3ce1a4178755c1cf8dad8",
+      "claims": [
+        {
+          "source_name": "Orlando City SC",
+          "role": "official",
+          "source_url": "https://www.orlandocitysc.com/news/kickoff-times-set-for-orlando-city-s-league-cup-2026-phase-one-matches"
+        }
+      ]
+    },
+    {
+      "observation_id": "chivas-lafc-leagues-cup-20260805",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Америка. Кубок Североамериканских лиг",
+        "Leagues Cup"
+      ],
+      "home_entity": "Los Angeles FC",
+      "home_aliases": [
+        "Лос-Анджелес ФК",
+        "Los Angeles FC",
+        "LAFC"
+      ],
+      "away_entity": "Club Deportivo Guadalajara",
+      "away_aliases": [
+        "Гвадалахара Чивас",
+        "Guadalajara",
+        "Chivas",
+        "Chivas Guadalajara",
+        "Club Deportivo Guadalajara"
+      ],
+      "starts_at": "2026-08-06T02:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-04T17:30:00Z",
+      "review_document": "reviews/4966-event-10.md",
+      "review_document_sha256": "1da9f618103fc4a822a4f8377c9bed5a76149f13d5517a8f8362ad16346138b8",
+      "claims": [
+        {
+          "source_name": "Club Deportivo Guadalajara",
+          "role": "official",
+          "source_url": "https://www.chivasdecorazon.com.mx/es/noticias/40986/Chivas-regresar-a-San-Jos-en-agosto"
+        }
+      ]
+    },
+    {
+      "observation_id": "fc-tulsa-sacramento-republic-rescheduled-20260805",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "США. USL. Чемпионат",
+        "USL Championship"
+      ],
+      "home_entity": "FC Tulsa",
+      "home_aliases": [
+        "Талса",
+        "FC Tulsa",
+        "Tulsa"
+      ],
+      "away_entity": "Sacramento Republic FC",
+      "away_aliases": [
+        "Сакраменто Репаблик",
+        "Sacramento Republic",
+        "Sacramento Republic FC"
+      ],
+      "starts_at": "2026-08-06T00:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-04T17:30:00Z",
+      "review_document": "reviews/4966-event-11.md",
+      "review_document_sha256": "2affc3ddcea231bcdd5e48ec84912c32e86ede94429dd48eac62dce2bff70338",
+      "claims": [
+        {
+          "source_name": "FC Tulsa",
+          "role": "official",
+          "source_url": "https://www.fctulsa.com/news/2026/07/14/fc-tulsa-match-against-sacramento-republic-fc-rescheduled-for-august-5/"
+        }
+      ]
+    },
+    {
+      "observation_id": "las-vegas-lights-oakland-roots-20260805",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "США. USL. Чемпионат",
+        "USL Championship"
+      ],
+      "home_entity": "Las Vegas Lights FC",
+      "home_aliases": [
+        "Лас-Вегас Лайтс",
+        "Las Vegas Lights",
+        "Las Vegas Lights FC"
+      ],
+      "away_entity": "Oakland Roots SC",
+      "away_aliases": [
+        "Окленд Рутс",
+        "Oakland Roots",
+        "Oakland Roots SC"
+      ],
+      "starts_at": "2026-08-06T02:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-04T17:30:00Z",
+      "review_document": "reviews/4966-event-12.md",
+      "review_document_sha256": "48ec1b4c9a01e234b3ea882ed8b65659b6752484ecfa5afcffc7b0c25a2e532c",
+      "claims": [
+        {
+          "source_name": "Las Vegas Lights FC",
+          "role": "official",
+          "source_url": "https://www.lasvegaslightsfc.com/schedule/"
+        },
+        {
+          "source_name": "Oakland Roots SC",
+          "role": "official",
+          "source_url": "https://www.oaklandrootssc.com/schedule/"
+        }
+      ]
+    },
+    {
+      "observation_id": "campeonato-chileno-iquique-limache-20260805",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Чили. Кубок",
+        "Copa Chile"
+      ],
+      "home_entity": "Deportes Iquique",
+      "home_aliases": [
+        "Икике",
+        "Deportes Iquique",
+        "Club de Deportes Iquique"
+      ],
+      "away_entity": "Deportes Limache",
+      "away_aliases": [
+        "Депортес Лимаче",
+        "Deportes Limache",
+        "Club de Deportes Limache"
+      ],
+      "starts_at": "2026-08-06T00:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-04T17:30:00Z",
+      "review_document": "reviews/4966-event-15.md",
+      "review_document_sha256": "feea9415fa2fab970912bf2e6b9a4c569eab3d365a21a412e06ccd15aa9b35a7",
+      "claims": [
+        {
+          "source_name": "Campeonato Chileno",
+          "role": "official",
+          "source_url": "https://www.campeonatochileno.cl/match/deportes-iquique-deportes-limache-2026-08-05/"
+        }
+      ]
     }
   ]
 }
