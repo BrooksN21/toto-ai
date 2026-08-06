@@ -322,6 +322,20 @@ def test_evening_scheduler_preflight_succeeds_from_launchd_root_cwd(
     provider_cache.mkdir(parents=True)
     aliases.parent.mkdir(parents=True)
     aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
+    schedule_evidence_ledger = (
+        project_root / "data" / "schedule-evidence" / "ledger.json"
+    )
+    schedule_evidence_ledger.parent.mkdir(parents=True)
+    schedule_evidence_ledger.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "generated_at": "2026-08-06T00:00:00Z",
+                "observations": [],
+            }
+        ),
+        encoding="utf-8",
+    )
 
     now = datetime.now(timezone.utc).replace(microsecond=0)
     deadline = now + timedelta(days=2)

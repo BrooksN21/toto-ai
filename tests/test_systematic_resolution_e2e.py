@@ -131,6 +131,20 @@ def test_morning_4953_zero_mapped_is_terminal_fail_without_package(
     )
     aliases = tmp_path / "aliases.json"
     aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
+    schedule_evidence_ledger = (
+        tmp_path / "data" / "schedule-evidence" / "ledger.json"
+    )
+    schedule_evidence_ledger.parent.mkdir(parents=True)
+    schedule_evidence_ledger.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "generated_at": "2026-08-06T00:00:00Z",
+                "observations": [],
+            }
+        ),
+        encoding="utf-8",
+    )
     db = tmp_path / "unresolved.sqlite"
     engine = init_db(db)
     with get_session_factory(engine)() as session:

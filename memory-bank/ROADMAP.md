@@ -1,5 +1,13 @@
 # Roadmap
 
+## Completed: scheduler canonical-ledger forwarding
+
+- [x] Pass the canonical contained schedule-evidence ledger in every future
+  scheduler `prepare-drawing` command.
+- [x] Expose and forward the ledger through the real `prepare-drawing` CLI.
+- [x] Cover scheduler construction and local-cache/local-schedule CLI wiring.
+- [x] Preserve scheduler plan schema and all existing pin-set safety rules.
+
 ## Completed: drawing 4967 canonical pin upgrade
 
 - [x] Reproduce the persisted `conflicting immutable canonical pin set` path.

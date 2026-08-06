@@ -3557,12 +3557,20 @@ def prepare_drawing_command(
     reviewed_schedule_catalog: str | None = typer.Option(
         None, "--reviewed-schedule-catalog"
     ),
+    schedule_evidence_ledger: str = typer.Option(
+        str(DEFAULT_SCHEDULE_EVIDENCE_PATH),
+        "--schedule-evidence-ledger",
+    ),
 ) -> None:
     """Prepare exact immutable fixture/team/time pins for one drawing."""
     if open == (drawing_id is not None):
         raise typer.BadParameter("choose exactly one of --open or --drawing-id")
     if provider != "api-sports":
         raise typer.BadParameter("provider must be api-sports")
+    resolved_schedule_evidence_ledger = resolve_contained_path(
+        schedule_evidence_ledger,
+        allowed_root=Path.cwd(),
+    )
     fetched_at = datetime.now(timezone.utc)
     try:
         engine = init_db(db)
@@ -3720,6 +3728,7 @@ def prepare_drawing_command(
             provider=provider,
             schedule_diagnostics=schedule_diagnostics,
             reviewed_schedule_catalog=reviewed_schedule_catalog,
+            schedule_evidence_ledger=resolved_schedule_evidence_ledger,
             evaluated_at=fetched_at,
         )
     except (APISportsError, OSError, SQLAlchemyError, TypeError, ValueError) as error:

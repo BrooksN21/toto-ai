@@ -1,5 +1,31 @@
 # Current State
 
+## Scheduler canonical-ledger forwarding (2026-08-06)
+
+`URGENT-4967-PINSET` closes the scheduler preparation-entrypoint gap.
+Every schema-v5 preparation command now passes the canonical contained
+`data/schedule-evidence/ledger.json` beneath its validated project root.
+The real `prepare-drawing` CLI resolves that option beneath its current
+project directory and forwards the resolved path to `prepare_drawing()`.
+
+No scheduler plan schema or identity changes. Strict provider pins, reviewed
+hash binding, reversed schedule-only semantics, BK ordering, atomic upgrades,
+and contradictory-identity fail-closed behavior remain unchanged.
+
+Regression verification covered the scheduler argv and real CLI forwarding;
+the focused preparation/safety set passed `32 passed in 5.38s`. The first full
+run exposed two temporary-project fixtures without the newly required canonical
+ledger; adding empty schema-v1 ledgers to those fixtures preserved production
+behavior and the final full run passed `1648 passed in 274.96s (0:04:34)`.
+Full Ruff passed and `git diff --check` was clean.
+
+The live non-betting check started at `2026-08-06T17:54:21+03:00` against
+drawing 4967 with the production database, raw/provider caches and canonical
+ledger. `prepare-drawing` returned `ready`, `15/15`, `playable`, with 15 external
+pins and no baseline-only or unresolved orders. The plan deadline was 18:00 MSK
+and its publication cutoff was already 17:50 MSK, so package generation was not
+invoked: `NO BET`, no PLAY/TXT, upload, launchd change or bet.
+
 ## Drawing 4967 monotonic canonical pin upgrade (2026-08-06)
 
 `local-totoai-4967-pin-upgrade-fix` closes the production rejection of an

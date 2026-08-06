@@ -279,18 +279,21 @@ def test_prepare_drawing_uses_synced_local_cache_without_totobrief_client(
     )
     monkeypatch.setattr(cli, "seed_reviewed_alias_config", lambda *_a, **_k: None)
     monkeypatch.setattr(cli, "load_local_schedule", lambda *_a, **_k: ())
-    monkeypatch.setattr(
-        cli,
-        "prepare_drawing",
-        lambda target, *_a, **_k: prepared_result(
+    captured: list[dict[str, object]] = []
+
+    def fake_prepare_drawing(target, *_args, **kwargs):
+        captured.append(kwargs)
+        return prepared_result(
             target,
             fingerprint="b" * 64,
-        ),
-    )
+        )
+
+    monkeypatch.setattr(cli, "prepare_drawing", fake_prepare_drawing)
     schedule = tmp_path / "schedule.json"
     schedule.write_text("{}")
     aliases = tmp_path / "aliases.json"
     aliases.write_text('{"version":1,"aliases":{}}')
+    ledger = tmp_path / "data" / "schedule-evidence" / "ledger.json"
 
     result = CliRunner().invoke(
         cli.app,
@@ -310,6 +313,7 @@ def test_prepare_drawing_uses_synced_local_cache_without_totobrief_client(
     )
 
     assert result.exit_code == 0, result.output
+    assert [item["schedule_evidence_ledger"] for item in captured] == [ledger]
     engine.dispose()
 
 

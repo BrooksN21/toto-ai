@@ -30,12 +30,16 @@ from zoneinfo import ZoneInfo
 
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.api.rate_limit import TotoBriefRequestError
+from toto_ai.api.safe_paths import resolve_contained_path
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.ev.models import EVConfig, validate_config_bank
 from toto_ai.external_odds.matching import load_aliases
 from toto_ai.external_odds.reviewed_schedule import (
     load_reviewed_schedule_catalog,
+)
+from toto_ai.external_odds.schedule_evidence import (
+    DEFAULT_SCHEDULE_EVIDENCE_PATH,
 )
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.timing_overrides import (
@@ -2216,6 +2220,10 @@ def build_prepare_drawing_command(
     python_executable: str | Path = sys.executable,
 ) -> tuple[str, ...]:
     """Build the mandatory systematic-resolution scheduler preflight."""
+    schedule_evidence_ledger = resolve_contained_path(
+        DEFAULT_SCHEDULE_EVIDENCE_PATH,
+        allowed_root=plan.project_root,
+    )
     command = [
         _validated_python_executable(python_executable),
         "-m",
@@ -2237,6 +2245,8 @@ def build_prepare_drawing_command(
         str(plan.quota_reserve),
         "--expansion-horizon-days",
         "5",
+        "--schedule-evidence-ledger",
+        str(schedule_evidence_ledger),
     ]
     if plan.reviewed_schedule_catalog is not None:
         command.extend(

@@ -1348,8 +1348,12 @@ def test_prepare_command_uses_absolute_raw_and_reusable_provider_cache(
     assert command[command.index("--cache-root") + 1] == str(
         tmp_path / "data" / "external-cache" / "api-sports"
     )
+    assert command[command.index("--schedule-evidence-ledger") + 1] == str(
+        tmp_path / "data" / "schedule-evidence" / "ledger.json"
+    )
     assert Path(command[command.index("--raw-cache-dir") + 1]).is_absolute()
     assert Path(command[command.index("--cache-root") + 1]).is_absolute()
+    assert Path(command[command.index("--schedule-evidence-ledger") + 1]).is_absolute()
 
 
 def test_package_phases_keep_run_isolated_cache(tmp_path: Path):
