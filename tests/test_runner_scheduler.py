@@ -1042,6 +1042,9 @@ def test_scheduler_plan_rejects_non_finite_minimum_gross_ev(
 
 def test_exact_offsets_and_phase_start_times_are_ended_at_anchored(tmp_path: Path):
     plan = _plan(tmp_path)
+    assert plan.tls_preflight_at == ENDED_AT - timedelta(minutes=120)
+    assert plan.api_preflight_at == ENDED_AT - timedelta(minutes=90)
+    assert plan.freshness_preflight_at == ENDED_AT - timedelta(minutes=60)
     assert plan.preflight_at == ENDED_AT - timedelta(minutes=45)
     assert plan.fallback_at == ENDED_AT - timedelta(minutes=30)
     assert plan.final_at == ENDED_AT - timedelta(minutes=20)
@@ -1060,6 +1063,9 @@ def test_exact_offsets_and_phase_start_times_are_ended_at_anchored(tmp_path: Pat
     assert phases["freeze"]["started_at"] == "2030-01-02T11:50:00Z"
     assert _status(result)["deadlines"] == {
         "ended_at": "2030-01-02T12:00:00Z",
+        "t_minus_120": "2030-01-02T10:00:00Z",
+        "t_minus_90": "2030-01-02T10:30:00Z",
+        "t_minus_60": "2030-01-02T11:00:00Z",
         "t_minus_10": "2030-01-02T11:50:00Z",
         "t_minus_16": "2030-01-02T11:44:00Z",
         "t_minus_20": "2030-01-02T11:40:00Z",
@@ -1099,7 +1105,7 @@ def test_generated_artifacts_are_credential_free_generic_and_exclusive(
     launch_agent = plistlib.loads(artifacts.launch_agent_path.read_bytes())
     assert launch_agent["ProgramArguments"] == [str(artifacts.wrapper_path)]
     assert launch_agent["Label"].startswith("com.totoai.production-scheduler.")
-    assert len(launch_agent["StartCalendarInterval"]) == 5
+    assert len(launch_agent["StartCalendarInterval"]) == 8
     with pytest.raises(FileExistsError, match="refusing to overwrite"):
         prepare_scheduler_artifacts(plan)
 

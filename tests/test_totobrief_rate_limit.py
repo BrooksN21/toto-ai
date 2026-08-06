@@ -1,4 +1,6 @@
 import json
+import socket
+import ssl
 import subprocess
 import sys
 
@@ -10,6 +12,7 @@ from toto_ai.api.rate_limit import (
     RequestDiagnostic,
     TotoBriefRequestCoordinator,
     TotoBriefRequestError,
+    classify_transport_error,
 )
 
 
@@ -125,6 +128,81 @@ def test_repeated_429_exhausts_cleanly_with_safe_diagnostics(tmp_path):
     assert exc.value.attempts == 2
     assert [item.event for item in diagnostics].count("failure") == 1
     assert all("totobrief.com" not in (item.reason or "") for item in diagnostics)
+
+
+def test_tls_verification_failure_is_classified_and_redacted(tmp_path):
+    clock = FakeClock()
+    secret = "super-secret-token"
+    original = requests.exceptions.SSLError(
+        "certificate verify failed "
+        f"https://totobrief.com/path?api_key={secret} "
+        f"Authorization: Bearer {secret}"
+    )
+    limiter = coordinator(
+        tmp_path,
+        clock,
+        minimum_interval=0,
+        max_retries=0,
+    )
+
+    with pytest.raises(TotoBriefRequestError) as captured:
+        limiter.request(lambda: (_ for _ in ()).throw(original), endpoint="/safe")
+
+    error = captured.value
+    assert error.category == "ssl_verify"
+    assert error.attempts == 1
+    assert error.__cause__ is original
+    assert error.exception_chain == ("SSLError",)
+    assert secret not in error.original_transport_message
+    assert "Authorization: Bearer" not in error.original_transport_message
+    assert "api_key=" not in error.original_transport_message
+
+
+def test_tls_handshake_reset_is_distinct_from_certificate_verification(tmp_path):
+    clock = FakeClock()
+    original = requests.exceptions.SSLError(
+        ssl.SSLError("TLS handshake EOF after connection reset")
+    )
+    limiter = coordinator(
+        tmp_path,
+        clock,
+        minimum_interval=0,
+        max_retries=0,
+    )
+
+    with pytest.raises(TotoBriefRequestError) as captured:
+        limiter.request(
+            lambda: (_ for _ in ()).throw(original),
+            endpoint="/drawing-info/1",
+        )
+
+    assert captured.value.category == "ssl_handshake"
+    assert captured.value.exception_chain[0] == "SSLError"
+
+
+@pytest.mark.parametrize(
+    ("cause", "expected"),
+    (
+        (socket.gaierror(socket.EAI_NONAME, "name not known"), "dns"),
+        (requests.Timeout("read timed out"), "timeout"),
+        (requests.ConnectionError("connection refused"), "connect"),
+    ),
+)
+def test_transport_categories_follow_exception_chain(cause, expected):
+    wrapper = requests.ConnectionError("request failed")
+    wrapper.__cause__ = cause
+
+    assert classify_transport_error(wrapper) == expected
+
+
+def test_client_keeps_tls_verification_enabled_for_injected_session():
+    session = SequenceSession([FakeResponse(200, {"data": []})])
+    session.verify = False
+    client = TotoBriefClient(session=session)
+
+    assert client.session.verify is True
+    client.drawings()
+    assert client.session.verify is True
 
 
 def test_shared_state_enforces_interval_between_independent_coordinators(tmp_path):

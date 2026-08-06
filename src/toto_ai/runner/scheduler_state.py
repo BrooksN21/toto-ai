@@ -14,7 +14,15 @@ from pathlib import Path
 from typing import Any
 
 STATE_SCHEMA_VERSION = 1
-PHASES = ("warmup", "refresh", "final", "publish")
+PHASES = (
+    "tls_preflight",
+    "api_preflight",
+    "freshness_preflight",
+    "warmup",
+    "refresh",
+    "final",
+    "publish",
+)
 
 
 def initial_state(plan_id: str, now: datetime) -> dict[str, Any]:
@@ -25,10 +33,12 @@ def initial_state(plan_id: str, now: datetime) -> dict[str, Any]:
         "revision": 0,
         "updated_at": timestamp,
         "phases": {
-            "warmup": {"status": "pending", "attempts": []},
-            "refresh": {"status": "pending", "attempts": []},
-            "final": {"status": "pending", "attempts": []},
-            "publish": {"status": "pending", "attempts": []},
+            phase: {
+                "status": "pending",
+                "attempts": [],
+                "failure_details": [],
+            }
+            for phase in PHASES
         },
         "terminal": None,
         "transitions": [],
@@ -73,6 +83,7 @@ def transition(
     attempt_id: str | None = None,
     reason: str | None = None,
     terminal: str | None = None,
+    failure_detail: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     if phase not in PHASES:
         raise ValueError("unknown scheduler phase")
@@ -86,12 +97,17 @@ def transition(
         attempts = updated["phases"][phase]["attempts"]
         if attempt_id not in attempts:
             attempts.append(attempt_id)
+    if failure_detail is not None:
+        updated["phases"][phase].setdefault("failure_details", []).append(
+            json.loads(json.dumps(failure_detail))
+        )
     record = {
         "phase": phase,
         "status": status,
         "observed_at": _timestamp(observed_at),
         "attempt_id": attempt_id,
         "reason": reason,
+        "failure_detail": failure_detail,
         "previous_state_sha256": previous_hash,
     }
     updated["transitions"].append(record)

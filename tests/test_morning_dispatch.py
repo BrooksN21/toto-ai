@@ -348,7 +348,7 @@ def test_actual_4964_schema_v5_plan_candidate_label_is_installable(
         ),
         env_file="/Users/turshevr/toto-ai/.env",
     )
-    assert production_plan.plan_id == "9e4df82511c1e52a"
+    assert production_plan.plan_id == "56ce06d2bb0eabb5"
 
     plan = build_scheduler_plan(
         drawing=4964,

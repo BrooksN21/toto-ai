@@ -1,5 +1,24 @@
 # Roadmap
 
+## Completed: drawing 4967 canonical pin upgrade
+
+- [x] Reproduce the persisted `conflicting immutable canonical pin set` path.
+- [x] Preserve all 11 strict provider pins while upgrading baseline-only rows
+  2, 9, 14 and 15 through validated schedule evidence.
+- [x] Preserve TotoBrief orientation for reversed schedule-only event 14.
+- [x] Enforce exact selected-evidence hash binding and atomic rollback.
+- [x] Cover downgrade, provider identity drift, kickoff conflict, hash mismatch
+  and ambiguous-ledger rejection with integration regressions.
+- [x] Verify focused and full test suites without live activation or network.
+
+## Completed: TotoBrief TLS resilience and early preflight
+
+- [x] Preserve redacted structured transport causes, categories, and attempts.
+- [x] Persist and log every scheduler-stage failure detail.
+- [x] Add idempotent T−120/T−90/T−60 diagnostics under shared rate limiting.
+- [x] Keep TLS verification mandatory and final input fresh-network-only.
+- [x] Fail closed with coupon-free `NO BET` when final transport is unavailable.
+
 ## Immediate production blockers
 
 - [x] `TOTO-4964-SCHEDULER-LABEL-FIX`: centralize canonical schema-v5

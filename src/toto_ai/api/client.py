@@ -36,6 +36,9 @@ class TotoBriefClient:
         self.base_url = base_url.rstrip("/")
         supplied_session = session is not None
         self.session = session or requests.Session()
+        # TLS verification is an invariant, including for injected sessions.
+        # No TotoBrief path may weaken it with verify=False.
+        self.session.verify = True
         self.timeout = timeout
         if coordinator is not None:
             self.coordinator = coordinator
@@ -69,23 +72,29 @@ class TotoBriefClient:
         )
         try:
             response.raise_for_status()
-        except requests.RequestException:
+        except requests.RequestException as error:
             raise TotoBriefRequestError(
                 f"TotoBrief request returned HTTP "
                 f"{getattr(response, 'status_code', None)}",
                 endpoint=sanitize_endpoint(path),
                 attempts=self.coordinator.last_request_attempts,
                 status_code=getattr(response, "status_code", None),
-            ) from None
+                category="http",
+                original_transport_message=str(error),
+                exception_chain=(type(error).__name__,),
+            ) from error
         try:
             return response.json()
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as error:
             raise TotoBriefRequestError(
                 "TotoBrief returned malformed JSON",
                 endpoint=sanitize_endpoint(path),
                 attempts=self.coordinator.last_request_attempts,
                 status_code=getattr(response, "status_code", None),
-            ) from None
+                category="http",
+                original_transport_message=str(error),
+                exception_chain=(type(error).__name__,),
+            ) from error
 
     def supported_drawings(self) -> Any:
         return self.get_json("/supported-drawings")

@@ -5,10 +5,15 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import sessionmaker
 
-from toto_ai.db.models import Base, DrawingPinSet, DrawingPreparation
+from toto_ai.db.models import (
+    Base,
+    DrawingPinSet,
+    DrawingPinSetItem,
+    DrawingPreparation,
+)
 from toto_ai.ev.drawing import ev_input_from_payload
 from toto_ai.external_odds.collection import (
     ScheduleDateResult,
@@ -38,17 +43,23 @@ def session_factory():
     engine.dispose()
 
 
-def _target(*, missing_pool_order: int | None = None, number: int = 4965):
+def _target(
+    *,
+    missing_pool_order: int | None = None,
+    number: int = 4965,
+    drawing_id: int = 12004,
+    event_id_base: int = 179163,
+):
     return TargetDrawing(
-        drawing_id=12004,
+        drawing_id=drawing_id,
         drawing_number=number,
         deadline=DEADLINE,
         fetched_at=FETCHED_AT,
         events=tuple(
             TargetEvent(
-                drawing_id=12004,
+                drawing_id=drawing_id,
                 drawing_number=number,
-                event_id=179163 + order,
+                event_id=event_id_base + order,
                 event_order=order,
                 sport="football",
                 championship="Test. Competition",
@@ -68,7 +79,7 @@ def _target(*, missing_pool_order: int | None = None, number: int = 4965):
     )
 
 
-def _candidates():
+def _candidates(*, event_orders: tuple[int, ...] = tuple(range(13))):
     return tuple(
         ProviderEvent(
             provider="api-sports",
@@ -84,17 +95,23 @@ def _candidates():
             provider_home_team_id=f"home-{order}",
             provider_away_team_id=f"away-{order}",
         )
-        for order in range(13)
+        for order in event_orders
     )
 
 
-def _seed(session_factory):
+def _seed(
+    session_factory,
+    *,
+    drawing_id: int = 12004,
+    event_id_base: int = 179163,
+    event_orders: tuple[int, ...] = tuple(range(13)),
+):
     assert backfill_accepted_matches(
         session_factory,
         [
             {
-                "drawing_id": 12004,
-                "target_event_id": 179163 + order,
+                "drawing_id": drawing_id,
+                "target_event_id": event_id_base + order,
                 "provider_fixture_id": f"fixture-{order}",
                 "sport": "football",
                 "target_home": f"Target Home {order}",
@@ -107,9 +124,9 @@ def _seed(session_factory):
                 "league": "Competition",
                 "reviewed": True,
             }
-            for order in range(13)
+            for order in event_orders
         ],
-    ) == 26
+    ) == len(event_orders) * 2
 
 
 def _empty_ledger(tmp_path: Path) -> Path:
@@ -132,6 +149,7 @@ def _schedule_evidence_ledger(
     target: TargetDrawing,
     *,
     event_orders: tuple[int, ...],
+    reversed_orders: tuple[int, ...] = (),
 ) -> Path:
     review = tmp_path / "review.md"
     review.write_text("reviewed official schedule", encoding="utf-8")
@@ -150,10 +168,26 @@ def _schedule_evidence_ledger(
                         "competition_aliases": [
                             target.events[event_order].championship
                         ],
-                        "home_entity": target.events[event_order].home_team,
-                        "home_aliases": [target.events[event_order].home_team],
-                        "away_entity": target.events[event_order].away_team,
-                        "away_aliases": [target.events[event_order].away_team],
+                        "home_entity": (
+                            target.events[event_order].away_team
+                            if event_order in reversed_orders
+                            else target.events[event_order].home_team
+                        ),
+                        "home_aliases": [
+                            target.events[event_order].away_team
+                            if event_order in reversed_orders
+                            else target.events[event_order].home_team
+                        ],
+                        "away_entity": (
+                            target.events[event_order].home_team
+                            if event_order in reversed_orders
+                            else target.events[event_order].away_team
+                        ),
+                        "away_aliases": [
+                            target.events[event_order].home_team
+                            if event_order in reversed_orders
+                            else target.events[event_order].away_team
+                        ],
                         "starts_at": (
                             DEADLINE + timedelta(hours=2)
                         ).isoformat(),
@@ -261,6 +295,147 @@ def test_new_schedule_evidence_upgrades_existing_baseline_only_pin_set(
         pin_set = session.scalar(select(DrawingPinSet))
         assert pin_set is not None
         assert pin_set.reviewed_catalog_hash is not None
+
+
+def test_drawing_4967_atomically_upgrades_four_persisted_baseline_pins(
+    session_factory,
+    tmp_path: Path,
+):
+    drawing_id = 12010
+    event_id_base = 179253
+    external_orders = tuple(order for order in range(15) if order not in {1, 8, 13, 14})
+    target = _target(
+        number=4967,
+        drawing_id=drawing_id,
+        event_id_base=event_id_base,
+    )
+    original_bk = tuple(event.bk_probabilities for event in target.events)
+    _seed(
+        session_factory,
+        drawing_id=drawing_id,
+        event_id_base=event_id_base,
+        event_orders=external_orders,
+    )
+    morning = prepare_drawing(
+        target,
+        _candidates(event_orders=external_orders),
+        session_factory=session_factory,
+    )
+    assert morning.status == "ready"
+    assert morning.eligibility.status == "unknown"
+    assert morning.baseline_only_event_orders == (1, 8, 13, 14)
+    old_by_order = {pin.event_order: pin for pin in morning.pins}
+
+    ledger = _schedule_evidence_ledger(
+        tmp_path,
+        target,
+        event_orders=(1, 8, 13, 14),
+        reversed_orders=(13,),
+    )
+    refreshed = prepare_drawing(
+        target,
+        tuple(
+            replace(
+                candidate,
+                fetched_at=FETCHED_AT + timedelta(hours=1),
+                payload_hash=f"refreshed-{candidate.payload_hash}",
+            )
+            for candidate in _candidates(event_orders=external_orders)
+        ),
+        session_factory=session_factory,
+        schedule_evidence_ledger=ledger,
+        evaluated_at=FETCHED_AT,
+    )
+
+    assert refreshed.status == "ready"
+    assert refreshed.eligibility.status == "playable"
+    assert refreshed.baseline_only_event_orders == ()
+    refreshed_by_order = {pin.event_order: pin for pin in refreshed.pins}
+    assert tuple(
+        refreshed_by_order[order].pin_hash for order in external_orders
+    ) == tuple(old_by_order[order].pin_hash for order in external_orders)
+    assert tuple(
+        refreshed_by_order[order].effective_source_provider
+        for order in (1, 8, 13, 14)
+    ) == ("schedule-evidence",) * 4
+    reversed_pin = refreshed_by_order[13]
+    assert reversed_pin.provenance["orientation"] == "reversed"
+    assert reversed_pin.provider_fixture_id is None
+    assert reversed_pin.provider_home_team_id is None
+    assert reversed_pin.provider_away_team_id is None
+    assert (
+        reversed_pin.canonical_home_team_id
+        == old_by_order[13].canonical_home_team_id
+    )
+    assert (
+        reversed_pin.canonical_away_team_id
+        == old_by_order[13].canonical_away_team_id
+    )
+    assert tuple(event.bk_probabilities for event in target.events) == original_bk
+    with session_factory() as session:
+        pin_sets = tuple(session.scalars(select(DrawingPinSet)))
+        assert len(pin_sets) == 1
+        assert pin_sets[0].reviewed_catalog_hash is not None
+
+
+def test_drawing_4967_rejects_ambiguous_schedule_ledger_without_mutation(
+    session_factory,
+    tmp_path: Path,
+):
+    drawing_id = 12010
+    event_id_base = 179253
+    external_orders = tuple(order for order in range(15) if order not in {1, 8, 13, 14})
+    target = _target(
+        number=4967,
+        drawing_id=drawing_id,
+        event_id_base=event_id_base,
+    )
+    _seed(
+        session_factory,
+        drawing_id=drawing_id,
+        event_id_base=event_id_base,
+        event_orders=external_orders,
+    )
+    morning = prepare_drawing(
+        target,
+        _candidates(event_orders=external_orders),
+        session_factory=session_factory,
+    )
+    old_pin_set_id = morning.pins[0].pin_set_id
+
+    ledger = _schedule_evidence_ledger(
+        tmp_path,
+        target,
+        event_orders=(1, 8, 13, 14),
+        reversed_orders=(13,),
+    )
+    document = json.loads(ledger.read_text(encoding="utf-8"))
+    conflicting = {
+        **document["observations"][0],
+        "observation_id": "event-1-conflicting-kickoff",
+        "starts_at": (DEADLINE + timedelta(hours=3)).isoformat(),
+    }
+    document["observations"].append(conflicting)
+    ledger.write_text(json.dumps(document), encoding="utf-8")
+
+    with pytest.raises(
+        ValueError,
+        match="conflicting authoritative schedule identity",
+    ):
+        prepare_drawing(
+            target,
+            _candidates(event_orders=external_orders),
+            session_factory=session_factory,
+            schedule_evidence_ledger=ledger,
+            evaluated_at=FETCHED_AT,
+        )
+
+    with session_factory() as session:
+        pin_set = session.scalar(select(DrawingPinSet))
+        assert pin_set is not None
+        assert pin_set.pin_set_id == old_pin_set_id
+        assert session.scalar(select(func.count(DrawingPinSet.pin_set_id))) == 1
+        assert session.scalar(select(func.count(DrawingPinSetItem.id))) == 15
 
 
 def test_dynamic_bk_and_pool_refresh_reuses_pins_and_drives_latest_ev_input(

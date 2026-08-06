@@ -999,6 +999,7 @@ def publish_canonical_pin_set(
         raise ValueError(
             "reviewed catalog hash is required exactly when reviewed pins exist"
         )
+    _validate_selected_reviewed_hash(reviewed, reviewed_catalog_hash)
     distribution: dict[str, int] = {}
     for item in contents:
         source = item["source_provider"]
@@ -1052,6 +1053,8 @@ def publish_canonical_pin_set(
                 )
             )
             _validate_canonical_pin_set(conflicting, rows)
+            if conflicting.drawing_number != drawing_number:
+                raise ValueError("conflicting canonical drawing identity")
             if not allow_baseline_schedule_enrichment or not (
                 _is_safe_baseline_schedule_enrichment(rows, contents)
             ):
@@ -1145,11 +1148,42 @@ def _is_safe_baseline_schedule_enrichment(
             not in {"reviewed-schedule", "schedule-evidence"}
             or old.target_event_id != new["target_event_id"]
             or old.event_order != new["event_order"]
+            or old.canonical_home_team_id != new["canonical_home_team_id"]
+            or old.canonical_away_team_id != new["canonical_away_team_id"]
             or not new["schedule_only"]
+        ):
+            return False
+        if old.starts_at not in {"baseline-only", None} and (
+            old.starts_at != new["starts_at"]
         ):
             return False
         changed = True
     return changed
+
+
+def _validate_selected_reviewed_hash(
+    reviewed: tuple[Mapping[str, Any], ...],
+    reviewed_catalog_hash: str | None,
+) -> None:
+    if not reviewed:
+        return
+    if (
+        not isinstance(reviewed_catalog_hash, str)
+        or _SHA256_RE.fullmatch(reviewed_catalog_hash) is None
+    ):
+        raise ValueError("reviewed catalog hash is invalid")
+    for item in reviewed:
+        try:
+            provenance = json.loads(str(item["provenance"]))
+        except (TypeError, json.JSONDecodeError) as error:
+            raise ValueError("reviewed pin provenance is invalid") from error
+        hash_field = (
+            "catalog_hash"
+            if item["source_provider"] == "reviewed-schedule"
+            else "ledger_hash"
+        )
+        if provenance.get(hash_field) != reviewed_catalog_hash:
+            raise ValueError("reviewed catalog hash does not match selected evidence")
 
 
 def refresh_ready_drawing_preparation_evidence(

@@ -383,6 +383,151 @@
           "source_url": "https://www.campeonatochileno.cl/match/deportes-iquique-deportes-limache-2026-08-05/"
         }
       ]
+    },
+    {
+      "observation_id": "uefa-2049126",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига Европы УЕФА. Квалификация",
+        "UEFA Europa League qualifying"
+      ],
+      "home_entity": "Jagiellonia Białystok",
+      "home_aliases": [
+        "Ягеллония Белосток",
+        "Jagiellonia Białystok",
+        "Jagiellonia Bialystok"
+      ],
+      "away_entity": "Rangers FC",
+      "away_aliases": [
+        "Рейнджерс",
+        "Rangers",
+        "Rangers FC"
+      ],
+      "starts_at": "2026-08-06T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-05T17:04:04Z",
+      "review_document": "reviews/4967-event-2.md",
+      "review_document_sha256": "ac33864380902c7d8a9f3c959aa6a48d6d07d2a73b6660d9691a6b6cae9c4e8d",
+      "claims": [
+        {
+          "source_name": "UEFA",
+          "role": "official",
+          "source_url": "https://www.uefa.com/uefaeuropaleague/match/2049126--jagiellonia-vs-rangers/matchinfo/"
+        },
+        {
+          "source_name": "Rangers FC",
+          "role": "official",
+          "source_url": "https://www.rangers.co.uk/article/fixture-update-jagiellonia-bialystok/3Bfskw09sRmIBR39OSeaBW"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-2049165",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League qualifying"
+      ],
+      "home_entity": "Raków Częstochowa",
+      "home_aliases": [
+        "Ракув",
+        "Raków",
+        "Rakow",
+        "Raków Częstochowa"
+      ],
+      "away_entity": "Hammarby IF",
+      "away_aliases": [
+        "Хаммарбю",
+        "Hammarby",
+        "Hammarby IF"
+      ],
+      "starts_at": "2026-08-06T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-05T17:04:04Z",
+      "review_document": "reviews/4967-event-9.md",
+      "review_document_sha256": "1e8fa7d54345ff9ab1fbfa038fde968ecb5185f86fe6d81fd14d333ebda1da5e",
+      "claims": [
+        {
+          "source_name": "UEFA",
+          "role": "official",
+          "source_url": "https://www.uefa.com/uefaconferenceleague/match/2049165--rakow-vs-hammarby/matchinfo/"
+        }
+      ]
+    },
+    {
+      "observation_id": "philadelphia-union-cruz-azul-leagues-cup-20260806",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Америка. Кубок Североамериканских лиг",
+        "Leagues Cup"
+      ],
+      "home_entity": "Philadelphia Union",
+      "home_aliases": [
+        "Филадельфия Юнион",
+        "Philadelphia Union"
+      ],
+      "away_entity": "Cruz Azul",
+      "away_aliases": [
+        "Крус Асуль",
+        "Cruz Azul",
+        "Club de Futbol Cruz Azul"
+      ],
+      "starts_at": "2026-08-07T00:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-05T17:04:04Z",
+      "review_document": "reviews/4967-event-14.md",
+      "review_document_sha256": "3e7b62a32cbc0e9f6e30fa84f8c426a15973cb0eddf2736912f75aed154adb6f",
+      "claims": [
+        {
+          "source_name": "Philadelphia Union",
+          "role": "official",
+          "source_url": "https://www.philadelphiaunion.com/news/preview-union-face-cruz-azul-in-leagues-cup-opener"
+        }
+      ]
+    },
+    {
+      "observation_id": "austin-fc-club-tijuana-leagues-cup-20260806",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Америка. Кубок Североамериканских лиг",
+        "Leagues Cup"
+      ],
+      "home_entity": "Austin FC",
+      "home_aliases": [
+        "ФК Остин",
+        "Austin FC"
+      ],
+      "away_entity": "Club Tijuana",
+      "away_aliases": [
+        "Тихуана",
+        "Tijuana",
+        "Club Tijuana",
+        "Xolos de Tijuana"
+      ],
+      "starts_at": "2026-08-07T01:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-05T17:04:04Z",
+      "review_document": "reviews/4967-event-15.md",
+      "review_document_sha256": "a9e3c70e4f1b5e13de727cfb4c05a945e76b40a4e5debf68f70dfc67cbf21e64",
+      "claims": [
+        {
+          "source_name": "Austin FC",
+          "role": "official",
+          "source_url": "https://www.austinfc.com/news/leagues-cup-announces-kickoff-times-for-austin-fc-phase-one-matches-at-q2-stadium"
+        }
+      ]
     }
   ]
 }

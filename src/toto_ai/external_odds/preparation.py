@@ -314,7 +314,10 @@ def prepare_drawing(
     if schedule_evidence_ledger is not None:
         assert evidence_ledger is not None
         for event, resolution in zip(target.events, resolutions, strict=True):
-            if resolution.status == "matched":
+            if (
+                resolution.status == "matched"
+                and event.event_order not in schedule_evidence_upgrade_orders
+            ):
                 continue
             evidence_resolution = resolve_schedule_evidence(
                 event,
@@ -737,6 +740,14 @@ def prepare_drawing(
         or evidence_by_order
         or any(item.status == "baseline_only" for item in events)
     ):
+        if existing and schedule_evidence_upgrade_orders:
+            canonical_pin_specs = list(
+                _merge_monotonic_schedule_upgrade_specs(
+                    existing,
+                    tuple(canonical_pin_specs),
+                    upgrade_orders=schedule_evidence_upgrade_orders,
+                )
+            )
         selected_reviewed_hashes = {
             str(item["provenance"][hash_field])
             for item in canonical_pin_specs
@@ -818,6 +829,76 @@ def _baseline_schedule_evidence_upgrade_orders(
             f"{tuple(conflicts)}"
         )
     return tuple(upgrades)
+
+
+def _merge_monotonic_schedule_upgrade_specs(
+    existing: tuple[DrawingEventPinRecord, ...],
+    proposed: tuple[Mapping[str, Any], ...],
+    *,
+    upgrade_orders: tuple[int, ...],
+) -> tuple[dict[str, Any], ...]:
+    """Preserve immutable pins while enriching baseline-only schedule rows."""
+    existing_by_order = {pin.event_order: pin for pin in existing}
+    proposed_by_order = {
+        int(spec["event_order"]): dict(spec) for spec in proposed
+    }
+    if (
+        tuple(sorted(existing_by_order)) != tuple(range(15))
+        or tuple(sorted(proposed_by_order)) != tuple(range(15))
+        or not upgrade_orders
+        or any(order not in existing_by_order for order in upgrade_orders)
+    ):
+        raise ValueError("invalid monotonic schedule upgrade inputs")
+
+    upgrade_set = set(upgrade_orders)
+    merged: list[dict[str, Any]] = []
+    for order in range(15):
+        old = existing_by_order[order]
+        new = proposed_by_order[order]
+        if str(new.get("target_event_id")) != old.target_event_id:
+            raise ValueError("schedule upgrade target event identity changed")
+        if order not in upgrade_set:
+            merged.append(_canonical_spec_from_existing_pin(old))
+            continue
+        if (
+            old.effective_source_provider != "totobrief-baseline"
+            or new.get("source_provider")
+            not in {"reviewed-schedule", "schedule-evidence"}
+            or new.get("event_order") != old.event_order
+            or new.get("schedule_only") is not True
+        ):
+            raise ValueError("schedule upgrade is not monotonic")
+        old_start = old.starts_at
+        new_start = new.get("starts_at")
+        if old_start not in {None, "baseline-only"} and (
+            _parse_datetime(old_start) != new_start
+        ):
+            raise ValueError("schedule upgrade conflicts with existing kickoff")
+        new["target_event_id"] = old.target_event_id
+        new["canonical_home_team_id"] = old.canonical_home_team_id
+        new["canonical_away_team_id"] = old.canonical_away_team_id
+        merged.append(new)
+    return tuple(merged)
+
+
+def _canonical_spec_from_existing_pin(
+    pin: DrawingEventPinRecord,
+) -> dict[str, Any]:
+    return {
+        "target_event_id": pin.target_event_id,
+        "event_order": pin.event_order,
+        "source_provider": pin.effective_source_provider,
+        "source_fixture_id": pin.effective_source_fixture_id,
+        "reviewed_evidence_id": pin.reviewed_evidence_id,
+        "canonical_home_team_id": pin.canonical_home_team_id,
+        "canonical_away_team_id": pin.canonical_away_team_id,
+        "source_home_team_id": pin.provider_home_team_id,
+        "source_away_team_id": pin.provider_away_team_id,
+        "starts_at": pin.starts_at,
+        "source_identity_hash": pin.source_identity_hash,
+        "schedule_only": pin.schedule_only,
+        "provenance": pin.provenance,
+    }
 
 
 def _admit_reviewed_fallbacks(

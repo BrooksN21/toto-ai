@@ -74,6 +74,7 @@ def _canonical_specs(session_factory, *, reviewed_orders=(14,)):
                 {
                     "evidence_id": f"evidence-{order}",
                     "evidence_hash": f"{order:064x}",
+                    "catalog_hash": "c" * 64,
                 }
                 if order in reviewed_orders
                 else {"payload_hash": f"{order:064x}", "orientation": "same"}
@@ -81,6 +82,102 @@ def _canonical_specs(session_factory, *, reviewed_orders=(14,)):
         }
         for order in range(15)
     )
+
+
+def _4967_persisted_specs(
+    session_factory,
+    *,
+    upgraded: bool,
+    baseline_start: datetime | None = None,
+):
+    home, away = _teams(session_factory)
+    upgrade_orders = {1, 8, 13, 14}
+    specs = []
+    for order in range(15):
+        if order not in upgrade_orders:
+            specs.append(
+                {
+                    "target_event_id": str(179253 + order),
+                    "event_order": order,
+                    "source_provider": "api-sports",
+                    "source_fixture_id": f"fixture-{order}",
+                    "reviewed_evidence_id": None,
+                    "canonical_home_team_id": home.id,
+                    "canonical_away_team_id": away.id,
+                    "source_home_team_id": f"home-{order}",
+                    "source_away_team_id": f"away-{order}",
+                    "starts_at": datetime(
+                        2026, 8, 6, 15 + order // 5, order % 5, tzinfo=timezone.utc
+                    ),
+                    "schedule_only": False,
+                    "provenance": {
+                        "orientation": "same",
+                        "payload_hash": f"{order:064x}",
+                    },
+                }
+            )
+            continue
+        if not upgraded:
+            specs.append(
+                {
+                    "target_event_id": str(179253 + order),
+                    "event_order": order,
+                    "source_provider": "totobrief-baseline",
+                    "source_fixture_id": None,
+                    "reviewed_evidence_id": None,
+                    "canonical_home_team_id": home.id,
+                    "canonical_away_team_id": away.id,
+                    "source_home_team_id": None,
+                    "source_away_team_id": None,
+                    "starts_at": baseline_start,
+                    "schedule_only": True,
+                    "provenance": {
+                        "reason_code": "baseline_only_external_unavailable",
+                        "totobrief_event_id": 179253 + order,
+                        "totobrief_event_order": order,
+                        "bk_probabilities": [0.4, 0.3, 0.3],
+                    },
+                }
+            )
+            continue
+        specs.append(
+            {
+                "target_event_id": str(179253 + order),
+                "event_order": order,
+                "source_provider": "schedule-evidence",
+                "source_fixture_id": None,
+                "reviewed_evidence_id": f"4967-event-{order + 1}",
+                "canonical_home_team_id": home.id,
+                "canonical_away_team_id": away.id,
+                "source_home_team_id": None,
+                "source_away_team_id": None,
+                "starts_at": datetime(
+                    2026, 8, 6, 16 + order // 5, order % 5, tzinfo=timezone.utc
+                ),
+                "schedule_only": True,
+                "provenance": {
+                    "orientation": "reversed" if order == 13 else "same",
+                    "evidence_id": f"4967-event-{order + 1}",
+                    "evidence_hash": f"{order + 100:064x}",
+                    "ledger_hash": "e" * 64,
+                },
+            }
+        )
+    return tuple(specs)
+
+
+def _stored_canonical_state(session_factory):
+    with session_factory() as session:
+        pin_set = session.scalar(select(DrawingPinSet))
+        assert pin_set is not None
+        items = tuple(
+            session.scalars(
+                select(DrawingPinSetItem)
+                .where(DrawingPinSetItem.pin_set_id == pin_set.pin_set_id)
+                .order_by(DrawingPinSetItem.event_order)
+            )
+        )
+    return pin_set.pin_set_id, tuple(item.pin_hash for item in items)
 
 
 @pytest.fixture
@@ -635,6 +732,192 @@ def test_publish_and_load_atomic_mixed_provider_pin_set(session_factory):
     with session_factory() as session:
         assert session.scalar(select(func.count(DrawingPinSet.pin_set_id))) == 1
         assert session.scalar(select(func.count(DrawingPinSetItem.id))) == 15
+
+
+def test_persisted_4967_pin_set_accepts_only_atomic_monotonic_schedule_upgrade(
+    session_factory,
+):
+    old = publish_canonical_pin_set(
+        session_factory,
+        drawing_id=12010,
+        drawing_number=4967,
+        drawing_fingerprint="4" * 64,
+        provider="api-sports",
+        eligibility_status="unknown",
+        readiness_summary="{}",
+        pin_specs=_4967_persisted_specs(session_factory, upgraded=False),
+        reviewed_catalog_hash=None,
+    )
+    upgraded = publish_canonical_pin_set(
+        session_factory,
+        drawing_id=12010,
+        drawing_number=4967,
+        drawing_fingerprint="4" * 64,
+        provider="api-sports",
+        eligibility_status="playable",
+        readiness_summary="{}",
+        pin_specs=_4967_persisted_specs(session_factory, upgraded=True),
+        reviewed_catalog_hash="e" * 64,
+        allow_baseline_schedule_enrichment=True,
+    )
+
+    old_by_order = {pin.event_order: pin for pin in old}
+    upgraded_by_order = {pin.event_order: pin for pin in upgraded}
+    strict_orders = tuple(order for order in range(15) if order not in {1, 8, 13, 14})
+    assert tuple(upgraded_by_order[order].pin_hash for order in strict_orders) == tuple(
+        old_by_order[order].pin_hash for order in strict_orders
+    )
+    reversed_pin = upgraded_by_order[13]
+    assert reversed_pin.provenance["orientation"] == "reversed"
+    assert reversed_pin.provider_fixture_id is None
+    assert reversed_pin.provider_home_team_id is None
+    assert reversed_pin.provider_away_team_id is None
+    with session_factory() as session:
+        assert session.scalar(select(func.count(DrawingPinSet.pin_set_id))) == 1
+        assert session.scalar(select(func.count(DrawingPinSetItem.id))) == 15
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (
+        ("source_fixture_id", "drifted-fixture"),
+        ("source_home_team_id", "drifted-home"),
+        ("source_away_team_id", "drifted-away"),
+    ),
+)
+def test_persisted_4967_upgrade_rejects_strict_provider_identity_drift_atomically(
+    session_factory,
+    field,
+    value,
+):
+    old = publish_canonical_pin_set(
+        session_factory,
+        drawing_id=12010,
+        drawing_number=4967,
+        drawing_fingerprint="4" * 64,
+        provider="api-sports",
+        eligibility_status="unknown",
+        readiness_summary="{}",
+        pin_specs=_4967_persisted_specs(session_factory, upgraded=False),
+        reviewed_catalog_hash=None,
+    )
+    replacement = list(_4967_persisted_specs(session_factory, upgraded=True))
+    replacement[0] = {**replacement[0], field: value}
+
+    with pytest.raises(ValueError, match="conflicting immutable canonical pin set"):
+        publish_canonical_pin_set(
+            session_factory,
+            drawing_id=12010,
+            drawing_number=4967,
+            drawing_fingerprint="4" * 64,
+            provider="api-sports",
+            eligibility_status="playable",
+            readiness_summary="{}",
+            pin_specs=tuple(replacement),
+            reviewed_catalog_hash="e" * 64,
+            allow_baseline_schedule_enrichment=True,
+        )
+    assert _stored_canonical_state(session_factory) == (
+        old[0].pin_set_id,
+        tuple(pin.pin_hash for pin in old),
+    )
+
+
+def test_persisted_4967_upgrade_rejects_schedule_conflict_and_hash_mismatch(
+    session_factory,
+):
+    known_start = datetime(2026, 8, 6, 12, tzinfo=timezone.utc)
+    old = publish_canonical_pin_set(
+        session_factory,
+        drawing_id=12010,
+        drawing_number=4967,
+        drawing_fingerprint="4" * 64,
+        provider="api-sports",
+        eligibility_status="unknown",
+        readiness_summary="{}",
+        pin_specs=_4967_persisted_specs(
+            session_factory,
+            upgraded=False,
+            baseline_start=known_start,
+        ),
+        reviewed_catalog_hash=None,
+    )
+    replacement = _4967_persisted_specs(session_factory, upgraded=True)
+    with pytest.raises(ValueError, match="conflicting immutable canonical pin set"):
+        publish_canonical_pin_set(
+            session_factory,
+            drawing_id=12010,
+            drawing_number=4967,
+            drawing_fingerprint="4" * 64,
+            provider="api-sports",
+            eligibility_status="playable",
+            readiness_summary="{}",
+            pin_specs=replacement,
+            reviewed_catalog_hash="e" * 64,
+            allow_baseline_schedule_enrichment=True,
+        )
+    with pytest.raises(
+        ValueError, match="reviewed catalog hash does not match selected evidence"
+    ):
+        publish_canonical_pin_set(
+            session_factory,
+            drawing_id=12010,
+            drawing_number=4967,
+            drawing_fingerprint="4" * 64,
+            provider="api-sports",
+            eligibility_status="playable",
+            readiness_summary="{}",
+            pin_specs=replacement,
+            reviewed_catalog_hash="f" * 64,
+            allow_baseline_schedule_enrichment=True,
+        )
+    assert _stored_canonical_state(session_factory) == (
+        old[0].pin_set_id,
+        tuple(pin.pin_hash for pin in old),
+    )
+
+
+def test_persisted_4967_upgrade_rejects_downgrade_atomically(session_factory):
+    publish_canonical_pin_set(
+        session_factory,
+        drawing_id=12010,
+        drawing_number=4967,
+        drawing_fingerprint="4" * 64,
+        provider="api-sports",
+        eligibility_status="unknown",
+        readiness_summary="{}",
+        pin_specs=_4967_persisted_specs(session_factory, upgraded=False),
+        reviewed_catalog_hash=None,
+    )
+    upgraded = publish_canonical_pin_set(
+        session_factory,
+        drawing_id=12010,
+        drawing_number=4967,
+        drawing_fingerprint="4" * 64,
+        provider="api-sports",
+        eligibility_status="playable",
+        readiness_summary="{}",
+        pin_specs=_4967_persisted_specs(session_factory, upgraded=True),
+        reviewed_catalog_hash="e" * 64,
+        allow_baseline_schedule_enrichment=True,
+    )
+    with pytest.raises(ValueError, match="conflicting immutable canonical pin set"):
+        publish_canonical_pin_set(
+            session_factory,
+            drawing_id=12010,
+            drawing_number=4967,
+            drawing_fingerprint="4" * 64,
+            provider="api-sports",
+            eligibility_status="unknown",
+            readiness_summary="{}",
+            pin_specs=_4967_persisted_specs(session_factory, upgraded=False),
+            reviewed_catalog_hash=None,
+            allow_baseline_schedule_enrichment=True,
+        )
+    assert _stored_canonical_state(session_factory) == (
+        upgraded[0].pin_set_id,
+        tuple(pin.pin_hash for pin in upgraded),
+    )
 
 
 def test_mixed_pin_set_rejects_missing_or_mismatched_reviewed_catalog_hash(

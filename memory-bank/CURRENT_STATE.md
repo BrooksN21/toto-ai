@@ -1,5 +1,41 @@
 # Current State
 
+## Drawing 4967 monotonic canonical pin upgrade (2026-08-06)
+
+`local-totoai-4967-pin-upgrade-fix` closes the production rejection of an
+existing ready pin-set containing 11 strict provider pins and four
+`totobrief-baseline` rows. A later preparation may now atomically replace only
+those baseline rows with validated reviewed/schedule-evidence rows while
+preserving every existing strict pin byte-for-byte.
+
+The transition requires the same drawing fingerprint, drawing number, all 15
+target event IDs/orders and canonical target team orientation. A reversed
+schedule-only observation keeps the TotoBrief target orientation, carries no
+provider fixture/team identity and does not alter the `1/X/2` probability
+order. Selected reviewed rows must all bind to the exact supplied ledger or
+catalog hash. Downgrades, ambiguous evidence, kickoff conflicts, fixture/team
+identity drift and unrelated hash changes fail closed without replacing the
+persisted pin-set.
+
+Verification: focused preparation/registry suite `30 passed`; full suite
+`1648 passed in 277.95s`. No network, live activation, scheduler mutation,
+package, bet, Git or publication action was performed.
+
+## TotoBrief TLS resilience and new drawing preflight (2026-08-05)
+
+- TotoBrief failures now retain redacted original transport diagnostics,
+  structural exception chains, categories, status codes, safe endpoints, and
+  real attempt counts without headers or credentials.
+- TLS certificate verification remains mandatory for default and injected
+  sessions; no request path uses `verify=False`.
+- Scheduler schema-v5 plans now include T−120 TLS, T−90 API, and T−60
+  freshness diagnostics before the existing T−45/T−30/T−20/T−16/T−10 stages.
+  Each stage is persistent, deduplicated, and rate-limit coordinated.
+- Every failed stage persists and logs its safe structured failure detail.
+- Diagnostic success and stale cache never authorize a coupon. Final PLAY still
+  requires one fresh verified-network TotoBrief detail snapshot; otherwise the
+  scheduler reaches coupon-free `NO BET`.
+
 ## Canonical ledger morning-dispatch integration (2026-08-04)
 
 `local-totoai-ledger-morning-dispatch-fix` closes the production gap exposed by
