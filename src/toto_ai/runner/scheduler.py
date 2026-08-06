@@ -1,4 +1,4 @@
-"""Tracked T-45/T-30/T-20/T-16/T-10 production package scheduler.
+"""Tracked T-120/T-90/T-60/T-45/T-30/T-20/T-16/T-10 scheduler.
 
 The scheduler deliberately separates a process completing from an actionable
 package becoming ``BET READY``. Package-producing work happens in immutable
@@ -78,7 +78,7 @@ DEFAULT_MINIMUM_GROSS_EV = EVConfig(
 ).min_gross_ev
 DEFAULT_PACKAGE_SAFETY_CONFIG = PackageSafetyConfig()
 PUBLICATION_LEAD_MINUTES = 10
-SCHEDULER_TRIGGER_OFFSETS_MINUTES = (45, 30, 20, 16, 10)
+SCHEDULER_TRIGGER_OFFSETS_MINUTES = (120, 90, 60, 45, 30, 20, 16, 10)
 
 SchedulerPhase = Literal["preflight", "fallback", "final", "freeze"]
 PackagePhase = Literal["fallback", "final"]
@@ -371,6 +371,18 @@ class SchedulerPlan:
             raise ValueError("transient_backoff_seconds must be non-negative integers")
 
     @property
+    def tls_preflight_at(self) -> datetime:
+        return self.ended_at - timedelta(minutes=120)
+
+    @property
+    def api_preflight_at(self) -> datetime:
+        return self.ended_at - timedelta(minutes=90)
+
+    @property
+    def freshness_preflight_at(self) -> datetime:
+        return self.ended_at - timedelta(minutes=60)
+
+    @property
     def preflight_at(self) -> datetime:
         return self.ended_at - timedelta(minutes=45)
 
@@ -406,6 +418,9 @@ class SchedulerPlan:
     def deadlines(self) -> dict[str, datetime]:
         return {
             "ended_at": self.ended_at,
+            "t_minus_120": self.tls_preflight_at,
+            "t_minus_90": self.api_preflight_at,
+            "t_minus_60": self.freshness_preflight_at,
             "t_minus_45": self.preflight_at,
             "t_minus_30": self.fallback_at,
             "t_minus_20": self.final_at,
@@ -1346,7 +1361,7 @@ def execute_scheduler_plan(
             if _read_now(now) < plan.freeze_at:
                 try:
                     # Pin scheduler inputs during the atomic-final phase, never
-                    # during T-45/T-30 warmup or refresh. This intentionally
+                    # during T-120 through T-30 diagnostics. This intentionally
                     # permits a structurally valid operator catalog update
                     # during the review window.
                     _wait_until(plan.final_at, now=now, sleep=sleep)
@@ -1540,6 +1555,7 @@ def execute_scheduler_tick(
         phase: str | None = None
         runner_phase: Literal["preflight", "final"] | None = None
         scheduled_at: datetime | None = None
+        # Select the latest due diagnostic stage; missed older stages never replay.
         if (
             observed >= plan.retry_at
             and state["phases"]["final"]["status"]
@@ -1561,6 +1577,27 @@ def execute_scheduler_tick(
             and state["phases"]["warmup"]["status"] == "pending"
         ):
             phase, runner_phase, scheduled_at = "warmup", "preflight", plan.preflight_at
+        elif (
+            observed >= plan.freshness_preflight_at
+            and state["phases"]["freshness_preflight"]["status"] == "pending"
+        ):
+            phase, runner_phase, scheduled_at = (
+                "freshness_preflight", "preflight", plan.freshness_preflight_at
+            )
+        elif (
+            observed >= plan.api_preflight_at
+            and state["phases"]["api_preflight"]["status"] == "pending"
+        ):
+            phase, runner_phase, scheduled_at = (
+                "api_preflight", "preflight", plan.api_preflight_at
+            )
+        elif (
+            observed >= plan.tls_preflight_at
+            and state["phases"]["tls_preflight"]["status"] == "pending"
+        ):
+            phase, runner_phase, scheduled_at = (
+                "tls_preflight", "preflight", plan.tls_preflight_at
+            )
         if phase is None or runner_phase is None or scheduled_at is None:
             return None
 
@@ -1721,10 +1758,16 @@ def execute_scheduler_tick(
             status = "integrity_failed" if permanent and phase == "final" else (
                 "permanent_failed" if permanent else "retryable_failed"
             )
+            detail = _scheduler_failure_detail(error)
+            print(
+                json.dumps({"scheduler_failure": detail}, sort_keys=True),
+                file=sys.stderr,
+            )
             state = transition(
                 state, phase=phase, status=status, observed_at=completed,
                 attempt_id=attempt_id, reason=_safe_error(error),
                 terminal="failed" if permanent and phase == "final" else None,
+                failure_detail=detail,
             )
             save_state(state_path, state)
             if permanent and phase == "final":
@@ -4943,6 +4986,9 @@ def _render_launch_agent(
     logs_dir: Path,
 ) -> bytes:
     local_starts = (
+        plan.tls_preflight_at,
+        plan.api_preflight_at,
+        plan.freshness_preflight_at,
         plan.preflight_at,
         plan.fallback_at,
         plan.final_at,
@@ -6211,3 +6257,45 @@ def _exact_mapping(
 def _safe_error(error: BaseException) -> str:
     message = str(error).strip()
     return message or type(error).__name__
+
+
+def _scheduler_failure_detail(error: BaseException) -> dict[str, Any]:
+    current: BaseException | None = error
+    visited: set[int] = set()
+    chain: list[str] = []
+    category = getattr(error, "category", None)
+    status_code = getattr(error, "status_code", None)
+    attempt_count = 1
+    original_transport_message = _safe_error(error)
+
+    while current is not None and id(current) not in visited:
+        visited.add(id(current))
+        chain.append(type(current).__name__)
+        if isinstance(current, TotoBriefRequestError):
+            category = current.category
+            status_code = current.status_code
+            attempt_count = current.attempts
+            original_transport_message = current.original_transport_message
+            if current.exception_chain:
+                chain.extend(
+                    item for item in current.exception_chain if item not in chain
+                )
+            break
+        current = current.__cause__ or current.__context__
+
+    if category not in {
+        "ssl_verify",
+        "ssl_handshake",
+        "dns",
+        "connect",
+        "timeout",
+        "http",
+    }:
+        category = "timeout" if isinstance(error, TimeoutError) else "connect"
+    return {
+        "category": category,
+        "attempt_count": attempt_count,
+        "status_code": status_code,
+        "original_transport_message": original_transport_message,
+        "exception_chain": chain,
+    }

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
+import requests
 
 import toto_ai.runner.scheduler as scheduler
 from toto_ai.api.rate_limit import TotoBriefRequestError
@@ -110,6 +111,102 @@ def _playing_runner(plan, payload):
         )
 
     return runner
+
+
+def test_early_tls_api_and_freshness_plan_is_ordered_and_idempotent(tmp_path):
+    plan = _plan(tmp_path)
+    calls = []
+
+    def runner(context):
+        calls.append((context.scheduled_at, context.run_id))
+        return SchedulerPhaseResult.failed("diagnostic-only unavailable")
+
+    assert _tick(plan, runner, plan.tls_preflight_at) is None
+    assert _tick(plan, runner, plan.tls_preflight_at) is None
+    assert _tick(plan, runner, plan.api_preflight_at) is None
+    assert _tick(plan, runner, plan.api_preflight_at) is None
+    assert _tick(plan, runner, plan.freshness_preflight_at) is None
+    assert _tick(plan, runner, plan.freshness_preflight_at) is None
+
+    assert [scheduled for scheduled, _attempt in calls] == [
+        plan.tls_preflight_at,
+        plan.api_preflight_at,
+        plan.freshness_preflight_at,
+    ]
+    assert len({attempt for _scheduled, attempt in calls}) == 3
+
+    state = load_state(
+        plan.output_dir / "scheduler-state.json",
+        plan_id=plan.plan_id,
+        now=plan.freshness_preflight_at,
+    )
+    assert state["phases"]["tls_preflight"]["status"] == "retryable_failed"
+    assert state["phases"]["api_preflight"]["status"] == "retryable_failed"
+    assert state["phases"]["freshness_preflight"]["status"] == "retryable_failed"
+
+
+def test_transport_failure_detail_is_persisted_and_logged(tmp_path, capsys):
+    plan = _plan(tmp_path)
+    original = requests.exceptions.SSLError(
+        "certificate verify failed https://host/path?token=do-not-log"
+    )
+    error = TotoBriefRequestError(
+        "TotoBrief request failed",
+        endpoint="/drawing-info/12100",
+        attempts=4,
+        category="ssl_verify",
+        original_transport_message=str(original),
+        exception_chain=("SSLError",),
+    )
+    error.__cause__ = original
+
+    def failing(_context):
+        raise error
+
+    assert _tick(plan, failing, plan.final_at) is None
+    state = load_state(
+        plan.output_dir / "scheduler-state.json",
+        plan_id=plan.plan_id,
+        now=plan.final_at,
+    )
+    detail = state["phases"]["final"]["failure_details"][-1]
+    assert detail["category"] == "ssl_verify"
+    assert detail["attempt_count"] == 4
+    assert detail["exception_chain"] == ["TotoBriefRequestError", "SSLError"]
+    assert "do-not-log" not in json.dumps(state)
+    assert "do-not-log" not in capsys.readouterr().err
+
+
+def test_stale_early_success_cannot_produce_play_without_fresh_final_network(
+    tmp_path,
+):
+    plan = _plan(tmp_path)
+    calls = []
+
+    def runner(context):
+        calls.append(context.phase)
+        if context.phase == "preflight":
+            return SchedulerPhaseResult.failed("cached preparation is stale")
+        raise TotoBriefRequestError(
+            "fresh final TotoBrief transport unavailable",
+            endpoint=f"/drawing-info/{plan.drawing_id}",
+            attempts=4,
+            category="timeout",
+            original_transport_message="read timed out",
+            exception_chain=("Timeout",),
+        )
+
+    assert _tick(plan, runner, plan.tls_preflight_at) is None
+    assert _tick(plan, runner, plan.api_preflight_at) is None
+    assert _tick(plan, runner, plan.freshness_preflight_at) is None
+    assert _tick(plan, runner, plan.final_at) is None
+    result = _tick(plan, runner, plan.publish_deadline)
+
+    assert result is not None
+    assert result.outcome == "no-bet"
+    assert result.package_path is None
+    assert not list(plan.output_dir.rglob(".bet-ready"))
+    assert calls[-1] == "final"
 
 
 def test_warmup_failure_does_not_block_independent_final(tmp_path):

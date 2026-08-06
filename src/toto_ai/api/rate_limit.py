@@ -6,6 +6,9 @@ import json
 import math
 import os
 import random as random_module
+import re
+import socket
+import ssl
 import time
 import uuid
 from collections.abc import Callable
@@ -34,6 +37,24 @@ _RETRYABLE_TRANSPORT_EXCEPTIONS = (
     requests.exceptions.ContentDecodingError,
 )
 
+TRANSPORT_CATEGORIES = frozenset(
+    {
+        "ssl_verify",
+        "ssl_handshake",
+        "dns",
+        "connect",
+        "timeout",
+        "http",
+    }
+)
+
+_SECRET_ASSIGNMENT_PATTERN = re.compile(
+    r"(?i)\b(authorization|proxy-authorization|cookie|set-cookie|"
+    r"x-api-key|api[_-]?key|token|secret|password)\b\s*[:=]\s*"
+    r"(?:bearer\s+)?[^,\s;]+"
+)
+_URL_QUERY_PATTERN = re.compile(r"(https?://[^\s?]+)\?[^\s]*", re.IGNORECASE)
+
 
 class TotoBriefRequestError(RuntimeError):
     """A sanitized, bounded TotoBrief transport failure."""
@@ -45,11 +66,34 @@ class TotoBriefRequestError(RuntimeError):
         endpoint: str,
         attempts: int,
         status_code: int | None = None,
+        category: str = "http",
+        original_transport_message: str | None = None,
+        exception_chain: tuple[str, ...] = (),
     ) -> None:
+        if category not in TRANSPORT_CATEGORIES:
+            raise ValueError("unsupported TotoBrief transport category")
+        safe_original = sanitize_transport_message(
+            original_transport_message
+            if original_transport_message is not None
+            else message
+        )
         super().__init__(message)
         self.endpoint = endpoint
         self.attempts = attempts
         self.status_code = status_code
+        self.category = category
+        self.original_transport_message = safe_original
+        self.exception_chain = tuple(exception_chain)
+
+    def failure_detail(self) -> dict[str, Any]:
+        return {
+            "category": self.category,
+            "attempt_count": self.attempts,
+            "status_code": self.status_code,
+            "endpoint": self.endpoint,
+            "original_transport_message": self.original_transport_message,
+            "exception_chain": list(self.exception_chain),
+        }
 
 
 @dataclass(frozen=True)
@@ -166,6 +210,9 @@ class TotoBriefRequestCoordinator:
             except _RETRYABLE_TRANSPORT_EXCEPTIONS as error:
                 delay = self._backoff_delay(attempt)
                 self._publish_block(delay, source="backoff")
+                category = classify_transport_error(error)
+                original_message = sanitize_transport_message(str(error))
+                chain = exception_chain_types(error)
                 if attempt >= attempts_allowed:
                     self._emit(
                         "failure",
@@ -178,7 +225,10 @@ class TotoBriefRequestCoordinator:
                         f"{type(error).__name__}",
                         endpoint=safe_endpoint,
                         attempts=attempt,
-                    ) from None
+                        category=category,
+                        original_transport_message=original_message,
+                        exception_chain=chain,
+                    ) from error
                 self._emit(
                     "retry",
                     safe_endpoint,
@@ -215,7 +265,10 @@ class TotoBriefRequestCoordinator:
                         endpoint=safe_endpoint,
                         attempts=attempt,
                         status_code=last_status,
-                    ) from None
+                        category="http",
+                        original_transport_message=f"HTTP {last_status}",
+                        exception_chain=(),
+                    )
                 self._emit(
                     "retry",
                     safe_endpoint,
@@ -228,7 +281,7 @@ class TotoBriefRequestCoordinator:
 
             try:
                 response.raise_for_status()
-            except requests.RequestException:
+            except requests.RequestException as error:
                 status_code = getattr(response, "status_code", last_status)
                 self._emit(
                     "failure",
@@ -242,7 +295,10 @@ class TotoBriefRequestCoordinator:
                     endpoint=safe_endpoint,
                     attempts=attempt,
                     status_code=status_code,
-                ) from None
+                    category="http",
+                    original_transport_message=str(error),
+                    exception_chain=exception_chain_types(error),
+                ) from error
 
             self._emit(
                 "success",
@@ -549,6 +605,76 @@ def sanitize_endpoint(endpoint: str) -> str:
     # Query strings may contain caller-controlled data and are unnecessary for
     # operator diagnostics. TotoBrief itself has no credentials in the path.
     return endpoint.split("?", 1)[0]
+
+
+def sanitize_transport_message(message: object) -> str:
+    """Return bounded transport diagnostics without URLs, headers, or secrets."""
+    text = str(message).replace("\r", " ").replace("\n", " ").strip()
+    text = _URL_QUERY_PATTERN.sub(r"\1?[REDACTED]", text)
+    text = _SECRET_ASSIGNMENT_PATTERN.sub(r"\1=[REDACTED]", text)
+    text = re.sub(r"\s+", " ", text)
+    return (text or "transport failure")[:512]
+
+
+def exception_chain_types(error: BaseException) -> tuple[str, ...]:
+    """Preserve safe structural cause evidence without exception messages."""
+    result: list[str] = []
+    current: BaseException | None = error
+    visited: set[int] = set()
+    while current is not None and id(current) not in visited:
+        visited.add(id(current))
+        result.append(type(current).__name__)
+        current = current.__cause__ or current.__context__
+    return tuple(result)
+
+
+def classify_transport_error(error: BaseException) -> str:
+    """Classify a transport chain structurally, inspecting SSL text only locally."""
+    current: BaseException | None = error
+    visited: set[int] = set()
+    chain: list[BaseException] = []
+    while current is not None and id(current) not in visited:
+        visited.add(id(current))
+        chain.append(current)
+        current = current.__cause__ or current.__context__
+
+    if any(isinstance(item, (requests.Timeout, TimeoutError)) for item in chain):
+        return "timeout"
+    if any(isinstance(item, socket.gaierror) for item in chain):
+        return "dns"
+
+    ssl_errors = [
+        item
+        for item in chain
+        if isinstance(item, (requests.exceptions.SSLError, ssl.SSLError))
+    ]
+    if ssl_errors:
+        ssl_text = " ".join(str(item).casefold() for item in ssl_errors)
+        verify_markers = (
+            "certificate verify failed",
+            "certificate_verify_failed",
+            "hostname mismatch",
+            "self signed certificate",
+            "unable to get local issuer",
+        )
+        if any(marker in ssl_text for marker in verify_markers):
+            return "ssl_verify"
+        return "ssl_handshake"
+
+    if any(
+        isinstance(
+            item,
+            (
+                requests.ConnectionError,
+                ConnectionError,
+                ConnectionResetError,
+                ConnectionRefusedError,
+            ),
+        )
+        for item in chain
+    ):
+        return "connect"
+    return "connect"
 
 
 def utc_now_epoch() -> float:

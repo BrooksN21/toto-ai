@@ -169,8 +169,13 @@ def test_4961_scheduler_round_trips_deadline_and_triggers_at_t_minus_10(
     assert SCHEDULER_SCHEMA_VERSION == 5
     assert payload["schema_version"] == 5
     assert payload["config"]["publication_lead_minutes"] == 10
-    assert payload["config"]["trigger_offsets_minutes"] == [45, 30, 20, 16, 10]
+    assert payload["config"]["trigger_offsets_minutes"] == [
+        120, 90, 60, 45, 30, 20, 16, 10
+    ]
     assert payload["target"]["ended_at"] == "2026-07-31T16:00:00Z"
+    assert payload["deadlines"]["t_minus_120"] == "2026-07-31T14:00:00Z"
+    assert payload["deadlines"]["t_minus_90"] == "2026-07-31T14:30:00Z"
+    assert payload["deadlines"]["t_minus_60"] == "2026-07-31T15:00:00Z"
     assert payload["deadlines"]["t_minus_10"] == "2026-07-31T15:50:00Z"
     assert "t_minus_12" not in payload["deadlines"]
     assert loaded.ended_at == DRAWING_4961_DEADLINE
@@ -266,7 +271,7 @@ def test_schema_v4_t_minus_12_plan_fails_closed_with_regenerate_diagnostic(
     ("field", "value"),
     (
         ("publication_lead_minutes", 12),
-        ("trigger_offsets_minutes", [45, 30, 20, 16, 12]),
+        ("trigger_offsets_minutes", [120, 90, 60, 45, 30, 20, 16, 12]),
     ),
 )
 def test_schema_v5_trigger_semantics_are_identity_bound_and_fail_closed(

@@ -1,5 +1,44 @@
 # Decisions
 
+## Monotonic pin-set upgrade boundary (2026-08-06)
+
+- A canonical ready pin-set is not rebuilt from fresh provider provenance when
+  only missing schedule evidence improves. Existing strict rows are reused
+  exactly after revalidation.
+- Only `totobrief-baseline` rows may transition to strict reviewed schedule
+  rows for the same target event/order and canonical target team orientation.
+- A reversed reviewed fixture is schedule-only metadata. It must not create an
+  external provider identity or swap TotoBrief `1/X/2` probabilities.
+- A known baseline kickoff may be enriched only by the same kickoff; a
+  different time is a conflict. An unknown `baseline-only` sentinel may gain a
+  validated kickoff.
+- The supplied reviewed hash must equal the hash embedded in every selected
+  reviewed row. Mixed, missing, unrelated or ambiguous evidence is rejected.
+- Upgrade publication remains a single transaction; downgrade or any strict
+  fixture/team/identity drift preserves the old complete set.
+
+## TotoBrief TLS resilience and early scheduler preflight (2026-08-05)
+
+- The schema-v5 scheduler trigger identity is extended to
+  `120/90/60/45/30/20/16/10`. T−120, T−90, and T−60 are diagnostic,
+  non-package-producing TotoBrief TLS/API/freshness preflights.
+- Early preflights are plan-scoped, persistent, idempotent, and execute at most
+  once per stage. A missed older diagnostic is not replayed from a later tick.
+  All requests continue through the shared TotoBrief coordinator.
+- Early success or cached preparation never authorizes PLAY. The final phase
+  still requires a fresh direct TotoBrief detail response; unavailability
+  remains coupon-free, zero-cost `NO BET`.
+- TotoBrief TLS verification is invariant and cannot be disabled. `verify=False`
+  is prohibited.
+- Transport failures retain only a redacted original message, structural
+  exception-type chain, category (`ssl_verify`, `ssl_handshake`, `dns`,
+  `connect`, `timeout`, or `http`), status, endpoint without query data, and
+  attempt count. Headers, credentials, query secrets, and bearer values are
+  never persisted or logged.
+- Scheduler state and stderr JSON logs retain the same safe failure detail for
+  every failed stage. Exception causes are preserved where an underlying
+  transport or decoding exception exists.
+
 ## Deadline parsing and publication timing (2026-07-31)
 
 - CLI identity deadlines are strings at the Click/Typer boundary and are

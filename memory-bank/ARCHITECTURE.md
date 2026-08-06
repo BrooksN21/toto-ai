@@ -1,5 +1,24 @@
 # Architecture
 
+## Atomic monotonic canonical pin enrichment
+
+A ready canonical pin-set is immutable except for one transactionally guarded
+upgrade: an unchanged 15-event drawing may replace a `totobrief-baseline`
+no-schedule row with a validated `reviewed-schedule` or `schedule-evidence`
+row. The preparation merge reuses all non-upgraded rows exactly, including
+their source identity hashes and provenance, so a later provider fetch cannot
+rewrite strict fixture/team identity merely because transport metadata changed.
+
+For each upgraded order, target event ID/order and canonical home/away team IDs
+remain in TotoBrief orientation. A reversed official fixture is represented
+only by `provenance.orientation=reversed`; it remains schedule-only and has no
+external fixture/team or odds/statistics identity. The publication boundary
+independently verifies that every selected reviewed row carries the exact
+catalog/ledger hash supplied for the new set. The old rows and parent set are
+deleted only inside the same transaction that validates and inserts all 15 new
+rows, so any downgrade, ambiguity, schedule conflict or identity/hash drift
+leaves the previous ready set intact.
+
 ## Deadline identity and publication boundary
 
 Expected drawing deadlines cross the CLI as strict timezone-aware ISO-8601
@@ -15,11 +34,19 @@ is reserved for durable package publication and a manual-upload marker. No
 automatic bet placement exists.
 
 Scheduler schema v5 binds `publication_lead_minutes = 10` and the complete
-`45/30/20/16/10` trigger-offset vector into the semantic payload and plan ID.
+`120/90/60/45/30/20/16/10` trigger-offset vector into the semantic payload and
+plan ID. T−120/T−90/T−60 are diagnostic TLS/API/freshness preflights; they
+cannot publish a package. Each stage is persisted and idempotent, while all
+TotoBrief requests retain shared cross-process pacing.
 Generated LaunchAgent labels are explicitly versioned `v5`, while status uses
 schema v5 and the same exact deadline map. Schema v4 is the stale T−12
 contract and is rejected with a regenerate-v5 diagnostic before execution or
 artifact reuse; no implicit migration is allowed.
+
+Every scheduler failure records a redacted transport message, structural
+exception-type chain, transport category, HTTP status when present, and attempt
+count. The final phase always requires fresh verified-network TotoBrief detail;
+stale cache and successful diagnostic preflights cannot authorize PLAY.
 
 ## Passive nightly reconciliation
 
