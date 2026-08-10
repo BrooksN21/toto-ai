@@ -5,7 +5,7 @@ from dataclasses import replace
 from datetime import datetime, timedelta
 from math import isfinite
 
-from toto_ai.ev.drawing import EVPackageRun
+from toto_ai.ev.drawing import EVPackageRun, paper_only_ev_run
 from toto_ai.ev.models import PlayTimingEligibility
 from toto_ai.external_odds.audit import CoverageAudit
 from toto_ai.external_odds.collection import pinned_revalidation_is_ready
@@ -604,6 +604,9 @@ def run_drawing(
             raw_timing_eligibility=timing_resolution.raw,
             timing_override=timing_resolution.override,
         )
+
+    if ev_run.package.decision == "PLAY":
+        ev_run = paper_only_ev_run(ev_run)
 
     decision = ev_run.package.decision
     terminal_reason = {

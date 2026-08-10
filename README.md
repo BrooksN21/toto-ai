@@ -30,9 +30,16 @@ print(client.drawing_info(12345))
 ## Development
 
 ```bash
+# Default/release suite; heavy research tests are excluded by project config.
 python -m pytest
 python -m ruff check .
+
+# Explicit opt-in/nightly heavy research validation.
+python -m pytest -o addopts='' -m heavy
 ```
+
+See [`docs/testing.md`](docs/testing.md) for marker policy, CI commands, and
+full-suite commands.
 
 ## Morning Synchronization and Preparation
 

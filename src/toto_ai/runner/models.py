@@ -1,12 +1,12 @@
 """Immutable runner configuration, target, and terminal result records."""
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from math import isfinite
 from typing import Literal
 
-from toto_ai.ev.drawing import EVPackageRun
+from toto_ai.ev.drawing import EVPackageRun, paper_only_ev_run
 from toto_ai.ev.models import (
     EVConfig,
     EVMode,
@@ -197,12 +197,8 @@ class TimingOverrideAudit:
                 raise ValueError("applied timing override audit is incomplete")
             if self.overlay_summary.status == "unknown":
                 raise ValueError("applied override cannot retain unknown timing")
-            if set(applied_orders) | set(self.preserved_event_orders) != set(
-                range(15)
-            ):
-                raise ValueError(
-                    "applied override must account for all event orders"
-                )
+            if set(applied_orders) | set(self.preserved_event_orders) != set(range(15)):
+                raise ValueError("applied override must account for all event orders")
         if self.package_catalog_sha256 is not None and (
             self.package_catalog_sha256 != self.preflight_catalog_sha256
             or self.status != "applied"
@@ -259,6 +255,17 @@ class DrawingRunnerConfig:
     package_low_probability_threshold: float = 0.20
     package_material_probability_threshold: float = 0.20
     package_safety_enabled: bool = True
+    package_exposure_floor_scale: float = 0.15
+    package_exposure_floor_exponent: float = 1.0
+    package_concentration_headroom_share: float = 0.03
+    package_diversity_close_distance: int = 2
+    package_quality_repair_iterations: int = 12
+    package_quality_candidate_count: int = 512
+    package_probability_samples: int = 8_192
+    package_optimization_probability_samples: int = 2_048
+    package_category_probability_tolerance: float = 1e-12
+    package_diversity_tolerance: float = 1e-12
+    package_robust_ev_tolerance: float = 1e-12
     final_lead_minutes: int = 20
     safety_stop_minutes: int = 5
 
@@ -285,6 +292,23 @@ class DrawingRunnerConfig:
             package_material_probability_threshold=(
                 self.package_material_probability_threshold
             ),
+            package_exposure_floor_scale=self.package_exposure_floor_scale,
+            package_exposure_floor_exponent=self.package_exposure_floor_exponent,
+            package_concentration_headroom_share=(
+                self.package_concentration_headroom_share
+            ),
+            package_diversity_close_distance=self.package_diversity_close_distance,
+            package_quality_repair_iterations=(self.package_quality_repair_iterations),
+            package_quality_candidate_count=self.package_quality_candidate_count,
+            package_probability_samples=self.package_probability_samples,
+            package_optimization_probability_samples=(
+                self.package_optimization_probability_samples
+            ),
+            package_category_probability_tolerance=(
+                self.package_category_probability_tolerance
+            ),
+            package_diversity_tolerance=self.package_diversity_tolerance,
+            package_robust_ev_tolerance=self.package_robust_ev_tolerance,
         )
         _require_positive_int("final_lead_minutes", self.final_lead_minutes)
         _require_positive_int("safety_stop_minutes", self.safety_stop_minutes)
@@ -303,6 +327,26 @@ class DrawingRunnerConfig:
             package_low_probability_threshold=self.package_low_probability_threshold,
             package_material_probability_threshold=(
                 self.package_material_probability_threshold
+            ),
+            package_exposure_floor_scale=self.package_exposure_floor_scale,
+            package_exposure_floor_exponent=self.package_exposure_floor_exponent,
+            package_concentration_headroom_share=(
+                self.package_concentration_headroom_share
+            ),
+            package_diversity_close_distance=self.package_diversity_close_distance,
+            package_quality_repair_iterations=(self.package_quality_repair_iterations),
+            package_quality_candidate_count=self.package_quality_candidate_count,
+            package_probability_samples=self.package_probability_samples,
+            package_optimization_probability_samples=(
+                self.package_optimization_probability_samples
+            ),
+            package_category_probability_tolerance=(
+                self.package_category_probability_tolerance
+            ),
+            package_diversity_tolerance=self.package_diversity_tolerance,
+            package_robust_ev_tolerance=self.package_robust_ev_tolerance,
+            package_provenance_required=(
+                self.mode == "playable" and self.package_safety_enabled
             ),
         )
 
@@ -424,9 +468,7 @@ class DrawingRunnerResult:
                 self.timing_eligibility,
             )
         if not isinstance(self.raw_timing_eligibility, PlayTimingEligibility):
-            raise ValueError(
-                "raw_timing_eligibility must be a PlayTimingEligibility"
-            )
+            raise ValueError("raw_timing_eligibility must be a PlayTimingEligibility")
         if self.timing_override is not None and not isinstance(
             self.timing_override,
             TimingOverrideAudit,
@@ -458,6 +500,17 @@ class DrawingRunnerResult:
             raise ValueError("audit must be a CoverageAudit")
         if self.ev_run is not None and not isinstance(self.ev_run, EVPackageRun):
             raise ValueError("ev_run must be an EVPackageRun")
+        if self.decision == "PLAY" or (
+            self.ev_run is not None and self.ev_run.package.decision == "PLAY"
+        ):
+            object.__setattr__(self, "decision", "NO BET")
+            object.__setattr__(
+                self,
+                "terminal_reason",
+                "real-money release gate is closed; PLAY result suppressed",
+            )
+            if self.ev_run is not None:
+                object.__setattr__(self, "ev_run", paper_only_ev_run(self.ev_run))
         if self.offline_replay is not None:
             if not isinstance(self.offline_replay, OfflineReplayProvenance):
                 raise ValueError("offline_replay provenance is invalid")
@@ -467,9 +520,7 @@ class DrawingRunnerResult:
             not isinstance(self.final_fingerprint, str)
             or not _FINGERPRINT_PATTERN.fullmatch(self.final_fingerprint)
         ):
-            raise ValueError(
-                "final_fingerprint must be a lowercase SHA-256 hex digest"
-            )
+            raise ValueError("final_fingerprint must be a lowercase SHA-256 hex digest")
         if self.final_fingerprint is not None and self.final_started_at is None:
             raise ValueError("final fingerprint requires final_started_at")
         if self.final_started_at is not None and self.final_fingerprint is None:
@@ -527,9 +578,9 @@ class DrawingRunnerResult:
                 )
             )
         )
-        publishable_ev_exists = (
-            self.ev_run is not None
-            or self.decision in ("PLAY", "RESEARCH ONLY")
+        publishable_ev_exists = self.ev_run is not None or self.decision in (
+            "PLAY",
+            "RESEARCH ONLY",
         )
         if (
             subsequent_phase_exists or publishable_ev_exists
@@ -572,9 +623,7 @@ class DrawingRunnerResult:
 
         if self.ev_run is not None:
             ev_input = self.ev_run.ev_input
-            ev_timing_fingerprint = (
-                self.ev_run.timing_eligibility.target_fingerprint
-            )
+            ev_timing_fingerprint = self.ev_run.timing_eligibility.target_fingerprint
             if (
                 ev_input.drawing_id != target.drawing_id
                 or ev_input.drawing_number != target.drawing_number
@@ -621,16 +670,28 @@ class DrawingRunnerResult:
                 or package is None
                 or package.decision != "RESEARCH ONLY"
             ):
-                raise ValueError(
-                    "RESEARCH ONLY requires an EV research package"
-                )
+                raise ValueError("RESEARCH ONLY requires an EV research package")
             return
         if package is not None and (
-            package.decision != "NO BET"
-            or package.cost != 0
-            or bool(package.coupons)
+            package.decision != "NO BET" or package.cost != 0 or bool(package.coupons)
         ):
             raise ValueError("NO BET cannot retain an actionable EV package")
+
+
+def enforce_paper_only_result(result: DrawingRunnerResult) -> DrawingRunnerResult:
+    """Defense-in-depth publication boundary for manually injected PLAY state."""
+    if not isinstance(result, DrawingRunnerResult):
+        raise ValueError("result must be a DrawingRunnerResult")
+    if result.decision != "PLAY" and (
+        result.ev_run is None or result.ev_run.package.decision != "PLAY"
+    ):
+        return result
+    return replace(
+        result,
+        decision="NO BET",
+        terminal_reason="real-money release gate is closed; PLAY result suppressed",
+        ev_run=None if result.ev_run is None else paper_only_ev_run(result.ev_run),
+    )
 
 
 def pin_drawing(target: TargetDrawing) -> PinnedDrawing:
@@ -688,9 +749,7 @@ def validate_timing_resolution_for_runner(
         or raw_snapshot.ended_at != pinned_target.deadline
         or raw_snapshot.pinned_at != pinned_target.fetched_at
     ):
-        raise ValueError(
-            "timing override collection does not match the pinned drawing"
-        )
+        raise ValueError("timing override collection does not match the pinned drawing")
 
     raw_summary = classify_timing_snapshot(raw_snapshot)
     if (
@@ -735,9 +794,7 @@ def validate_timing_resolution_for_runner(
         raise ValueError("timing override summary does not match exact overlay")
     if audit.preserved_event_orders != expected_overlay.preserved_event_orders:
         raise ValueError("timing override did not preserve the exact known starts")
-    expected_record_events = {
-        event.event_order: event for event in record.events
-    }
+    expected_record_events = {event.event_order: event for event in record.events}
     expected_applied_events = tuple(
         (
             order,

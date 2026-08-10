@@ -200,6 +200,7 @@ def test_scheduler_old_plan_without_ledger_binding_fails_closed(tmp_path: Path):
     payload["paths"].pop("schedule_evidence_ledger")
     payload["config"].pop("schedule_evidence_ledger_sha256")
     payload["config"].pop("schedule_evidence_semantic_hash")
+    payload["config"].pop("quality_v2")
     artifacts.plan_path.write_text(
         json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
         encoding="utf-8",
@@ -347,6 +348,9 @@ def test_legacy_schema_v1_plan_loads_with_inferred_absolute_project_root(
     payload["config"].pop("trigger_offsets_minutes")
     payload["config"].pop("schedule_evidence_ledger_sha256")
     payload["config"].pop("schedule_evidence_semantic_hash")
+    payload["config"].pop("quality_v2")
+    payload["config"].pop("selection_context")
+    payload["config"].pop("selection_context_sha256")
     payload["paths"].pop("schedule_evidence_ledger")
     semantic = {
         key: payload[key]
@@ -382,6 +386,9 @@ def test_genuine_schema_v2_plan_hash_loads_without_new_safety_fields(
     payload["config"].pop("trigger_offsets_minutes")
     payload["config"].pop("schedule_evidence_ledger_sha256")
     payload["config"].pop("schedule_evidence_semantic_hash")
+    payload["config"].pop("quality_v2")
+    payload["config"].pop("selection_context")
+    payload["config"].pop("selection_context_sha256")
     payload["paths"].pop("schedule_evidence_ledger")
     for key in (
         "package_near_fixed_share",
@@ -431,6 +438,9 @@ def test_schema_v3_plan_preserves_declared_project_root(tmp_path: Path):
     payload["config"].pop("trigger_offsets_minutes")
     payload["config"].pop("schedule_evidence_ledger_sha256")
     payload["config"].pop("schedule_evidence_semantic_hash")
+    payload["config"].pop("quality_v2")
+    payload["config"].pop("selection_context")
+    payload["config"].pop("selection_context_sha256")
     payload["paths"].pop("schedule_evidence_ledger")
     semantic = {
         key: payload[key]

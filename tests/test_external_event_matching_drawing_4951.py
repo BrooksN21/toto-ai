@@ -23,6 +23,8 @@ from toto_ai.external_odds.team_registry import (
     seed_reviewed_alias_config,
 )
 
+pytestmark = [pytest.mark.heavy, pytest.mark.research]
+
 TARGET_PAIRS = (
     ("Арарат-Армения", "Шамрок Роверс"),
     ("АГФ Орхус", "Лех Познань"),

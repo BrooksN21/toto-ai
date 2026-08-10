@@ -71,6 +71,8 @@ def _manifest(tmp_path: Path) -> dict[str, object]:
     return json.loads(manifests[0].read_text(encoding="utf-8"))
 
 
+@pytest.mark.heavy
+@pytest.mark.research
 def test_offline_replay_4951_runs_real_pipeline_without_network_or_markers(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -217,6 +219,8 @@ def test_offline_replay_rejects_schedule_for_another_target(tmp_path: Path):
     assert "does not match exact target identity" in result.output
 
 
+@pytest.mark.heavy
+@pytest.mark.research
 def test_offline_replay_rejects_stale_schedule_before_runner_output(
     tmp_path: Path,
 ):

@@ -3,6 +3,7 @@ from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
 from sqlalchemy import func, select
 from typer.testing import CliRunner
 
@@ -237,6 +238,8 @@ def test_morning_4953_zero_mapped_is_terminal_fail_without_package(
     assert not (scheduled.run_dir / "package.csv").exists()
 
 
+@pytest.mark.heavy
+@pytest.mark.research
 def test_scheduler_prepare_final_pin_use_and_stale_fail_closed(tmp_path: Path):
     plan = _plan(tmp_path, suffix="ready")
     engine = init_db(plan.db)
@@ -297,9 +300,12 @@ def test_scheduler_prepare_final_pin_use_and_stale_fail_closed(tmp_path: Path):
         sleep=clock.sleep,
         run_id="ready-e2e-shared-clock",
     )
-    assert result.outcome == "bet-ready"
-    assert result.marker_path.name == ".bet-ready"
+    assert result.outcome == "no-bet"
+    assert result.decision == "NO BET"
+    assert "real-money release gate closed" in result.reason
+    assert result.marker_path.name == ".no-bet"
     assert result.marker_path.is_file()
+    assert not (result.run_dir / ".bet-ready").exists()
     assert final_snapshots
     with session_factory() as session:
         stored_drawing = session.get(Drawing, target.drawing_id)
@@ -307,9 +313,7 @@ def test_scheduler_prepare_final_pin_use_and_stale_fail_closed(tmp_path: Path):
         assert stored_drawing.number == target.drawing_number
         assert datetime.fromisoformat(stored_drawing.ended_at) == target.deadline
         archived = session.scalar(select(ArchivedPackage))
-        assert archived is not None
-        assert archived.drawing_id == target.drawing_id
-        assert archived.drawing_number == target.drawing_number
+        assert archived is None
 
     stale_plan = _plan(tmp_path, suffix="stale")
     stale_target = replace(

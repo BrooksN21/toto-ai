@@ -24,6 +24,7 @@ from toto_ai.ev.models import (
     PlayTimingEligibility,
     RankedCoupon,
 )
+from toto_ai.ev.package_quality import PackageSelectionProvenance
 
 
 @pytest.fixture
@@ -575,7 +576,11 @@ def test_final_package_safety_veto_remains_after_safety_aware_selection(
             derived_brief=("1",) * 15,
         )
 
-    def fake_select(surface, config, *, probabilities=None):
+    def fake_select(surface, config, *, probabilities=None, provenance=None):
+        assert provenance is None or isinstance(
+            provenance,
+            PackageSelectionProvenance,
+        )
         selected_probabilities.append(probabilities)
         return unsafe_package(config)
 
@@ -584,9 +589,18 @@ def test_final_package_safety_veto_remains_after_safety_aware_selection(
         config,
         *,
         probabilities=None,
+        provenance=None,
         diagnostic_limit=20,
     ):
-        return fake_select(surface, config, probabilities=probabilities), ()
+        return (
+            fake_select(
+                surface,
+                config,
+                probabilities=probabilities,
+                provenance=provenance,
+            ),
+            (),
+        )
 
     monkeypatch.setattr(drawing_module, "select_ev_package", fake_select)
     monkeypatch.setattr(
@@ -1273,7 +1287,13 @@ def test_cli_prints_snapshot_package_top_coupons_and_report_paths(
         "resolve_open_drawing_from_api",
         lambda client: type("Reference", (), {"drawing_id": 9000})(),
     )
-    monkeypatch.setattr(cli_module, "build_open_ev_package", lambda **kwargs: run)
+    build_calls = []
+
+    def build_package(**kwargs):
+        build_calls.append(kwargs)
+        return run
+
+    monkeypatch.setattr(cli_module, "build_open_ev_package", build_package)
     readonly_calls = []
     readonly_engine = object()
     session_factory = object()
@@ -1313,6 +1333,7 @@ def test_cli_prints_snapshot_package_top_coupons_and_report_paths(
     )
 
     assert result.exit_code == 0
+    assert build_calls[0]["config"].package_provenance_required is True
     assert readonly_calls == ["readonly.sqlite"]
     for expected in (
         "EV Input Snapshot",

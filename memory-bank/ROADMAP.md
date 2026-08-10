@@ -679,3 +679,32 @@ closed.
   fail-closed identity/probability conflicts and full mixed-source provenance.
   Production 4965 reached READY 15/15 (13 external; baseline-only 7/13) but was
   correctly deadline-deferred with no package or bet.
+
+- [x] `TOTOAI-FIX-4971-PACKAGE-QUALITY-20260810`: continuous probability-aware
+  exposure floors, concentration headroom, deterministic Hamming diversity,
+  explicit package P(9+/13+/14+/15) objective, provenance-bound diagnostics,
+  frozen 4967/4969/4970 plus prospective 4971 comparison, and paper-only
+  release gate.
+- [x] Close quality-v2 independent-review blockers: top-level `NO BET` plus
+  `STRUCTURAL_PASS`, true P13+/P14+/P15/P9+/diversity/robust-EV lexicographic
+  comparison, domain-separated MC streams, artifact-backed schema-v6
+  provenance, complete configuration binding, dynamic 4,980/9,960/alternate
+  bank tests, and a full bank-4,980 four-sensitivity runtime budget.
+- [x] Refresh only the quality-v2 golden hash/payout/hit/probability fields for
+  4967/4969/4970 from separate actual frozen-node outputs. Old and safety-v1
+  historical assertions remain unchanged; prospective 4971 remains explicitly
+  marked as a stale historical row until a separately requested rerun.
+- [x] Split quality-v2 verification into a practical default/release suite and
+  retained opt-in/nightly `heavy` research suite. Fast golden-contract tests
+  verify refreshed artifacts without recomputing `3**15` surfaces.
+- [ ] Predeclare prospective holdout size, calibration/category/diversity/
+  exposure thresholds, and stopping rules before collecting release evidence.
+- [ ] Keep quality-v2 paper-only until that prospective gate is independently
+  met; three retrospective drawings and one unfinished prospective drawing are
+  insufficient for any profitability or real-money claim.
+- [x] Harden the model/direct-report boundary against manually injected
+  `PLAY`, and bind the complete canonical selection context through selector
+  provenance, schema-v6 SchedulerPlan, diagnostics, and runner manifests.
+- [x] Close the lower-level EV report bypass by sharing the paper-only EV-run
+  sanitizer with direct CSV/Markdown export and retaining only clearly labelled
+  training/paper coupon diagnostics.

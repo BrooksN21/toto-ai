@@ -21,6 +21,7 @@ from toto_ai.ev.models import (
     PlayTimingEligibility,
     RankedCoupon,
 )
+from toto_ai.ev.package_quality import PackageSelectionProvenance
 from toto_ai.external_odds.audit import audit_external_coverage
 from toto_ai.external_odds.domain import ProviderEvent, QuotaState
 from toto_ai.external_odds.matching import load_aliases
@@ -259,18 +260,34 @@ def _install_operational_ev_replay(monkeypatch: pytest.MonkeyPatch) -> None:
             derived_brief=("1",) * 15 if coupons else (),
         )
 
-    monkeypatch.setattr(
-        drawing_module,
-        "select_ev_package",
-        lambda surface, config, probabilities=None: package(config),
-    )
+    def select_package(surface, config, *, probabilities=None, provenance=None):
+        assert provenance is None or isinstance(
+            provenance,
+            PackageSelectionProvenance,
+        )
+        return package(config)
+
+    def select_package_with_top_coupons(
+        surface,
+        config,
+        *,
+        probabilities=None,
+        provenance=None,
+        diagnostic_limit=20,
+    ):
+        selected = select_package(
+            surface,
+            config,
+            probabilities=probabilities,
+            provenance=provenance,
+        )
+        return selected, selected.coupons[:diagnostic_limit]
+
+    monkeypatch.setattr(drawing_module, "select_ev_package", select_package)
     monkeypatch.setattr(
         drawing_module,
         "select_ev_package_with_top_coupons",
-        lambda surface, config, probabilities=None, diagnostic_limit=20: (
-            package(config),
-            package(config).coupons[:diagnostic_limit],
-        ),
+        select_package_with_top_coupons,
     )
 
 
@@ -390,7 +407,7 @@ def test_drawing_4950_reviewed_timing_override_operational_readiness_replay(
         build_package=build_package,
     )
     assert timing_resolution is not None
-    assert result.decision == "PLAY"
+    assert result.decision == "NO BET"
     assert result.raw_timing_eligibility.status == "unknown"
     assert result.timing_eligibility.status == "playable"
     assert result.timing_override is not None
@@ -432,8 +449,12 @@ def test_drawing_4950_reviewed_timing_override_operational_readiness_replay(
     assert result.ev_run.config.stake == 30
     assert result.ev_run.ev_input.pool_sum == 81_445
     assert result.ev_run.effective_budget == 810
-    assert result.ev_run.package.coupons
-    assert 0 < result.ev_run.package.cost <= 810
+    assert result.ev_run.package.decision == "NO BET"
+    assert result.ev_run.package.coupons == ()
+    assert result.ev_run.package.cost == 0
+    assert result.ev_run.package.artifact_class == "TRAINING/PAPER"
+    assert result.ev_run.package.paper_coupons
+    assert 0 < result.ev_run.package.paper_cost <= 810
 
     publication = publish_drawing_run_artifacts(
         result,
@@ -465,7 +486,14 @@ def test_drawing_4950_reviewed_timing_override_operational_readiness_replay(
     )
     assert manifest["ev"]["requested_bank"] == 4980
     assert manifest["ev"]["effective_budget"] == 810
-    assert 0 < manifest["ev"]["selected_cost"] <= 810
+    assert manifest["ev"]["selected_cost"] == 0
+    package = manifest["ev"]["package"]
+    assert package["decision"] == "NO BET"
+    assert package["coupons"] == []
+    assert package["cost"] == 0
+    assert package["artifact_class"] == "TRAINING/PAPER"
+    assert package["paper_coupons"]
+    assert 0 < package["paper_cost"] <= 810
 
     context.engine.dispose()
     context.readonly_engine.dispose()

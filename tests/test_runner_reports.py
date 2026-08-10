@@ -532,7 +532,7 @@ def test_publication_skips_ev_child_for_computed_no_bet_and_hides_top_coupon(
     assert payload["report_links"]["ev"] == []
 
 
-def test_publication_rolls_back_actionable_children_when_deadline_closes(
+def test_publication_sanitizes_injected_play_before_any_actionable_writer(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -542,35 +542,23 @@ def test_publication_rolls_back_actionable_children_when_deadline_closes(
         _write_stub_external_reports,
     )
     result = _runner_result("PLAY", coupon="ACTIONABLE-COUPON-MUST-NOT-LEAK")
-    readings = iter(
-        (
-            DEADLINE - timedelta(minutes=6),
-            DEADLINE - timedelta(minutes=5),
-        )
-    )
-    latest = DEADLINE - timedelta(minutes=5)
-
-    def now() -> datetime:
-        return next(readings, latest)
-
     publication = publish_drawing_run_artifacts(
         result,
         report_dir=tmp_path,
         protected_paths=(),
         protected_roots=(),
-        now=now,
+        now=lambda: DEADLINE - timedelta(minutes=6),
     )
 
     assert publication.result.decision == "NO BET"
-    assert publication.result.ev_run is None
-    assert publication.result.terminal_reason == (
-        "safety cutoff reached before publication"
-    )
+    assert publication.result.ev_run is not None
+    assert publication.result.ev_run.package.decision == "NO BET"
+    assert publication.result.ev_run.package.paper_coupons
+    assert "release gate is closed" in publication.result.terminal_reason
     assert publication.ev == ()
-    for path in publication.paths:
-        assert "ACTIONABLE-COUPON-MUST-NOT-LEAK" not in path.read_text(
-            encoding="utf-8"
-        )
+    payload = json.loads(publication.runner[0].read_text(encoding="utf-8"))
+    assert payload["ev"]["package"]["coupons"] == []
+    assert payload["ev"]["package"]["artifact_class"] == "TRAINING/PAPER"
     assert not tuple(tmp_path.glob("ev_package_*"))
 
 
@@ -606,7 +594,7 @@ def test_publication_rolls_back_installed_children_on_runner_base_exception(
     assert tuple(path for path in tmp_path.rglob("*") if path.is_file()) == ()
 
 
-def test_publication_rolls_back_when_child_writer_returns_then_interrupts(
+def test_publication_never_calls_ev_writer_for_injected_play(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -616,28 +604,22 @@ def test_publication_rolls_back_when_child_writer_returns_then_interrupts(
         "write_external_coverage_reports",
         _write_stub_external_reports,
     )
-    real_write_ev = runner_reports.write_ev_package_reports
-
-    def interrupt_after_ev(*args, **kwargs):
-        real_write_ev(*args, **kwargs)
-        raise KeyboardInterrupt("interrupted after child writer return")
-
     monkeypatch.setattr(
         runner_reports,
         "write_ev_package_reports",
-        interrupt_after_ev,
+        lambda *_args, **_kwargs: pytest.fail("actionable EV writer must not run"),
     )
 
-    with pytest.raises(KeyboardInterrupt, match="after child writer return"):
-        publish_drawing_run_artifacts(
-            result,
-            report_dir=tmp_path,
-            protected_paths=(),
-            protected_roots=(),
-            now=lambda: DEADLINE - timedelta(minutes=6),
-        )
+    publication = publish_drawing_run_artifacts(
+        result,
+        report_dir=tmp_path,
+        protected_paths=(),
+        protected_roots=(),
+        now=lambda: DEADLINE - timedelta(minutes=6),
+    )
 
-    assert tuple(path for path in tmp_path.rglob("*") if path.is_file()) == ()
+    assert publication.result.decision == "NO BET"
+    assert publication.ev == ()
 
 
 def test_publication_rechecks_symlink_swap_before_replacing_inputs(
@@ -825,11 +807,31 @@ def test_json_is_canonical_and_repeated_report_bytes_are_identical(tmp_path):
     )
 
 
+def test_model_and_direct_writer_suppress_manually_injected_play(tmp_path):
+    result = _runner_result("PLAY", coupon="INJECTED-WAGER-COUPON")
+
+    assert result.decision == "NO BET"
+    assert result.ev_run is not None
+    assert result.ev_run.package.decision == "NO BET"
+    assert result.ev_run.package.coupons == ()
+    assert result.ev_run.package.paper_coupons[0].coupon == "INJECTED-WAGER-COUPON"
+
+    json_path, markdown_path = write_drawing_run_reports(
+        result,
+        report_dir=tmp_path,
+    )
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+
+    assert payload["decision"] == "NO BET"
+    assert payload["ev"]["package"]["coupons"] == []
+    assert payload["ev"]["package"]["artifact_class"] == "TRAINING/PAPER"
+    assert "INJECTED-WAGER-COUPON" not in markdown_path.read_text(encoding="utf-8")
+
+
 def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
     result = _runner_result("PLAY", coupon="SELECTED-COUPON")
     links = RunnerReportLinks(
         external=(Path("reports/external.csv"), Path("reports/external.md")),
-        ev=(Path("reports/ev.csv"), Path("reports/ev.md")),
     )
 
     json_path, markdown_path = write_drawing_run_reports(
@@ -842,7 +844,7 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
 
     assert payload["schema_version"] == 4
     assert payload["run_id"] == drawing_run_id(result)
-    assert payload["decision"] == "PLAY"
+    assert payload["decision"] == "NO BET"
     assert payload["command_status"] == "success"
     assert payload["config"]["provider"] == "api-sports"
     assert payload["target"] == {
@@ -863,9 +865,10 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
     assert payload["coverage"]["gate_decision"] == "PENDING"
     assert payload["ev"]["requested_bank"] == 4980
     assert payload["ev"]["effective_budget"] == 90
-    assert payload["ev"]["selected_cost"] == 30
-    assert payload["ev"]["unused_requested_bank"] == 4950
-    assert payload["ev"]["package"]["coupons"] == [
+    assert payload["ev"]["selected_cost"] == 0
+    assert payload["ev"]["unused_requested_bank"] == 4980
+    assert payload["ev"]["package"]["coupons"] == []
+    assert payload["ev"]["package"]["paper_coupons"] == [
         {
             "coupon": "SELECTED-COUPON",
             "gross_ev": 1.1,
@@ -874,7 +877,7 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
         }
     ]
     assert payload["report_links"] == {
-        "ev": ["reports/ev.csv", "reports/ev.md"],
+        "ev": [],
         "external": ["reports/external.csv", "reports/external.md"],
     }
     for heading in (
@@ -890,7 +893,7 @@ def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):
         "## Associated Reports",
     ):
         assert heading in markdown
-    assert "SELECTED-COUPON" in markdown
+    assert "SELECTED-COUPON" not in markdown
     assert "api-sports" in markdown
     assert "PENDING" in markdown
     assert "schema version: 4" in markdown
@@ -932,8 +935,9 @@ def test_schema_v4_has_stable_timing_and_budget_shapes_with_or_without_override(
     assert non_override["eligibility"]["override"] is None
     assert non_override["ev"]["requested_bank"] == 4980
     assert non_override["ev"]["effective_budget"] == 90
-    assert non_override["ev"]["selected_cost"] == 30
-    assert non_override["ev"]["unused_requested_bank"] == 4950
+    assert non_override["ev"]["selected_cost"] == 0
+    assert non_override["ev"]["unused_requested_bank"] == 4980
+    assert non_override["ev"]["package"]["paper_selected_count"] == 1
     assert computed["schema_version"] == 4
     assert computed["ev"]["computed"] is True
     assert computed["ev"]["input_fetched_at"] == (
@@ -946,26 +950,12 @@ def test_schema_v4_has_stable_timing_and_budget_shapes_with_or_without_override(
     )
     assert computed["ev"]["requested_bank"] == 4980
     assert computed["ev"]["effective_budget"] == 90
-    assert computed["ev"]["selected_cost"] == 30
-    assert computed["ev"]["unused_requested_bank"] == 4950
-    assert computed["ev"]["package"] == {
-        "decision": "PLAY",
-        "decision_reason": None,
-        "coupons": [
-            {
-                "coupon": "SELECTED-COUPON",
-                "gross_ev": 1.1,
-                "net_ev": 0.1,
-                "rank": 1,
-            }
-        ],
-        "selected_count": 1,
-        "cost": 30,
-        "unused_bank": 4950,
-        "expected_payout": 33.0,
-        "modeled_roi": 0.1,
-        "derived_brief": ["1"] * 15,
-    }
+    assert computed["ev"]["selected_cost"] == 0
+    assert computed["ev"]["unused_requested_bank"] == 4980
+    assert computed["ev"]["package"]["decision"] == "NO BET"
+    assert computed["ev"]["package"]["coupons"] == []
+    assert computed["ev"]["package"]["paper_selected_count"] == 1
+    assert computed["ev"]["package"]["paper_cost"] == 30
 
     assert suppressed["schema_version"] == 4
     assert suppressed["eligibility"]["raw"] == suppressed["eligibility"]["effective"]
@@ -978,10 +968,11 @@ def test_schema_v4_has_stable_timing_and_budget_shapes_with_or_without_override(
         "possible_winnings_source": None,
         "jackpot_source": None,
         "self_dilution_ratio": None,
-            "model_supported": None,
-            "model_warning": None,
-            "package_safety": None,
-            "requested_bank": 4980,
+        "model_supported": None,
+        "model_warning": None,
+        "package_safety": None,
+        "selection_diagnostics": None,
+        "requested_bank": 4980,
         "effective_budget": None,
         "selected_cost": None,
         "unused_requested_bank": None,
@@ -995,6 +986,14 @@ def test_schema_v4_has_stable_timing_and_budget_shapes_with_or_without_override(
             "expected_payout": None,
             "modeled_roi": None,
             "derived_brief": [],
+            "structural_status": "NOT_EVALUATED",
+            "artifact_class": "NONE",
+            "paper_coupons": [],
+            "paper_selected_count": 0,
+            "paper_cost": 0,
+            "paper_expected_payout": 0.0,
+            "paper_modeled_roi": None,
+            "paper_derived_brief": [],
         },
         "sensitivity": [],
     }
@@ -1064,24 +1063,28 @@ def test_schema_v4_preserves_drawing_4950_exact_effective_cap_810(tmp_path):
     assert payload["target"]["drawing_number"] == 4950
     assert payload["ev"]["requested_bank"] == 4980
     assert payload["ev"]["effective_budget"] == 810
-    assert payload["ev"]["selected_cost"] == 30
-    assert payload["ev"]["unused_requested_bank"] == 4950
-    assert payload["ev"]["package"]["selected_count"] == 1
+    assert payload["ev"]["selected_cost"] == 0
+    assert payload["ev"]["unused_requested_bank"] == 4980
+    assert payload["ev"]["package"]["selected_count"] == 0
+    assert payload["ev"]["package"]["paper_selected_count"] == 1
 
 
 @pytest.mark.parametrize("effective_budget", [None, 0])
-def test_schema_v4_rejects_play_without_positive_explicit_effective_budget(
+def test_schema_v4_sanitizes_play_without_positive_explicit_effective_budget(
     tmp_path,
     effective_budget,
 ):
     result = _runner_result("PLAY", effective_budget=effective_budget)
 
-    with pytest.raises(ValueError, match="effective budget"):
-        write_drawing_run_reports(result, report_dir=tmp_path)
+    json_path, _ = write_drawing_run_reports(result, report_dir=tmp_path)
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    assert payload["decision"] == "NO BET"
+    assert payload["ev"]["package"]["coupons"] == []
+    assert payload["ev"]["package"]["paper_selected_count"] == 1
 
 
 def test_schema_v4_rejects_selected_cost_count_mismatch(tmp_path):
-    result = _runner_result("PLAY")
+    result = _runner_result("RESEARCH ONLY")
     assert result.ev_run is not None
     bad_package = replace(
         result.ev_run.package,

@@ -32,6 +32,11 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+addopts = "-m 'not heavy'"
+markers = [
+    "heavy: multi-minute full-surface or real-pipeline validation; opt-in/nightly",
+    "research: non-release frozen or offline research validation",
+]
 
 [tool.ruff]
 line-length = 88

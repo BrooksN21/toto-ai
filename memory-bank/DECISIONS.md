@@ -1,5 +1,14 @@
 # Decisions
 
+## Repository-local tooling boundary (2026-08-10)
+
+The authoritative durable boundary is [Tooling Policy](TOOLING_POLICY.md).
+Only its explicit public/generic allowlist and project-local tools are
+authorized. Yandex/Arcadia/internal tooling is always denied, catalog presence
+does not grant permission, non-allowlisted tools require user approval, and no
+repository content or secret may be transmitted externally without explicit
+approval. Version control uses `git`/`gh`, never `arc`.
+
 ## Safety-aware EV selection boundary (2026-08-10)
 
 - Keep true/crowd probability, category payout, EV-surface, threshold and
@@ -1130,3 +1139,70 @@ ambiguous reversed evidence remains unresolved.
 - Provider pins, target identity/order, reviewed evidence validation and all
   unrelated canonical pin content remain immutable. Any non-monotonic change,
   invalid ledger schema/hash, ambiguity or conflict fails closed.
+
+## Package quality-v2 objective and release boundary (2026-08-10)
+
+- The selector-side exposure floor is `floor(K*s*p**alpha)` with
+  `0 < s <= 1` and `alpha >= 1`. This is the configurable probability-aware
+  safety policy; probability 0.20 has no special selector branch.
+- The existing strict `share >= near_fixed_share` veto and its integer hard
+  cap remain unchanged. Soft concentration headroom is a higher objective tier
+  than quality and may never weaken the hard cap or a lower exposure bound.
+- Hard safety remains mandatory and soft-headroom violation may not worsen.
+  After those constraints, the deterministic objective is a true
+  lexicographic comparison of P(13+), P(14+), P(15), independently sampled
+  P(9+), Hamming diversity and robust log-EV, followed by stable rank. Explicit
+  per-tier deadbands apply; no lower tier can buy back a meaningful higher-tier
+  loss. The nested category probabilities are never added and no weighted
+  category score remains.
+- P(13+/14+/15) are exact Hamming-ball unions. P(9+) is deterministic Monte
+  Carlo. Optimization and evaluation use separately derived stream names,
+  seeds and sample sets; both are always reported with diagnostic precision.
+- Required selector provenance consists of probability snapshot SHA-256,
+  canonical probability-input SHA-256, ledger byte/semantic hashes, and a
+  canonical schema-v6 scheduler-plan artifact/hash. The complete selector
+  configuration, NumPy/RNG protocol, MC streams and release protocol are also
+  bound. Arbitrary digest strings, arbitrary files, symlinks, mutation, absence
+  or mismatch fail closed at selection and manifest boundaries.
+- Quality-v2 remains paper-only. Structural feasibility is `STRUCTURAL_PASS`,
+  never top-level `PLAY`; all public/machine decisions remain `NO BET`, and
+  coupons live only in `TRAINING/PAPER` fields. No trusted local prospective
+  evidence registry exists, so self-declared evidence cannot authorize money.
+- The exposure integer boundary is explicitly IEEE-754 expression evaluation
+  followed by `floor`, without an epsilon. The boundary policy is documented,
+  hashed and tested.
+- Exact cardinality remains `bank // stake`; 4,980/30, 9,960/30 and 2,500/25
+  are regression cases. Union probabilities are monotone for explicit nested
+  coupon sets. Independently optimized bank sizes are not guaranteed to be
+  strict prefixes and must be compared by reported hashes and probabilities.
+- Multi-minute full-surface frozen recomputations, the full bank-4,980
+  sensitivity build, and real drawing-4951 offline replay/pinning scenarios
+  are retained under the
+  `heavy` and `research` markers. Default/release pytest excludes `heavy` and
+  checks frozen hash-bound artifacts plus small contract surfaces. This is a
+  test-execution split only; no production objective, safety rule, or candidate
+  universe is reduced.
+- Generic runner compatibility may still receive a legacy package object whose
+  internal decision is `PLAY`, but it must convert that object to top-level
+  `NO BET` before completion. Original coupons may survive only in explicit
+  `TRAINING/PAPER` fields. The CLI repeats this suppression before displaying
+  progress or publishing artifacts; neither boundary trusts an injected
+  runner result.
+
+## Decision: enforce paper-only at the model/report boundary and bind selection context completely (2026-08-10)
+
+- A public `DrawingRunnerResult` may not represent `PLAY` while no trusted
+  independently validated evidence registry exists. Construction sanitizes
+  legacy/manual `PLAY`; report writers enforce the rule again.
+- Paper coupons remain auditable only under `TRAINING/PAPER`; actionable fields
+  and EV wager-ready child reports remain absent.
+- Direct EV package exports share the same sanitizer as runner boundaries.
+  Injected `PLAY` cannot emit coupon rows; a legitimate structural-pass paper
+  package remains reportable as explicitly non-wager training evidence.
+- Selector authorization is exact configuration identity, not merely a valid
+  collection of hashes. The canonical selection context includes bank, stake,
+  requested/effective capacities, EV threshold, concentration/probability
+  policy, safety/provenance flags, and the complete quality-v2 payload.
+- Provenance, SchedulerPlan, manifest, diagnostics, and current selector inputs
+  must agree on the canonical object and SHA-256. Partial or self-consistently
+  forged contexts fail closed rather than inheriting plan authority.
