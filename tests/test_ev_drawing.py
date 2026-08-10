@@ -549,6 +549,90 @@ def test_playable_timing_verdict_preserves_selected_package(
     assert all(row.decision == "PLAY" for row in playable.sensitivity)
 
 
+def test_final_package_safety_veto_remains_after_safety_aware_selection(
+    monkeypatch,
+    open_drawing_payload,
+):
+    import toto_ai.ev.drawing as drawing_module
+
+    _install_fast_ev_engine(monkeypatch)
+    selected_probabilities = []
+
+    def unsafe_package(config):
+        coupon = RankedCoupon(
+            rank=1,
+            coupon="1" * 15,
+            gross_ev=1.1,
+            net_ev=0.1,
+        )
+        return EVPackage(
+            decision="PLAY",
+            coupons=(coupon,),
+            cost=30,
+            unused_bank=config.bank - 30,
+            expected_payout=33.0,
+            modeled_roi=0.1,
+            derived_brief=("1",) * 15,
+        )
+
+    def fake_select(surface, config, *, probabilities=None):
+        selected_probabilities.append(probabilities)
+        return unsafe_package(config)
+
+    def fake_select_with_top(
+        surface,
+        config,
+        *,
+        probabilities=None,
+        diagnostic_limit=20,
+    ):
+        return fake_select(surface, config, probabilities=probabilities), ()
+
+    monkeypatch.setattr(drawing_module, "select_ev_package", fake_select)
+    monkeypatch.setattr(
+        drawing_module,
+        "select_ev_package_with_top_coupons",
+        fake_select_with_top,
+    )
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == 9000
+            return open_drawing_payload
+
+    result = build_open_ev_package(
+        client=Client(),
+        drawing_id=9000,
+        config=EVConfig(
+            bank=30,
+            stake=30,
+            mode="playable",
+            prize_fund_factor=0.9,
+            package_safety_enabled=True,
+        ),
+        timing_eligibility_resolver=lambda payload: PlayTimingEligibility(
+            status="playable",
+            reason="stored eligibility matches the fresh target",
+            target_fingerprint="c" * 64,
+            fingerprint_match=True,
+        ),
+        fetched_at="2026-08-10T10:00:00+00:00",
+    )
+
+    assert selected_probabilities
+    assert all(
+        probabilities == result.ev_input.true_probabilities
+        for probabilities in selected_probabilities
+    )
+    assert result.package.decision == "NO BET"
+    assert result.package.coupons == ()
+    assert result.package.decision_reason is not None
+    assert result.package.decision_reason.startswith("package_safety:")
+    assert result.package_safety is not None
+    assert result.package_safety.decision == "NO BET"
+    assert result.package_safety.evaluated_coupons == ("1" * 15,)
+
+
 def test_playable_without_timing_resolver_fails_closed(
     monkeypatch,
     open_drawing_payload,

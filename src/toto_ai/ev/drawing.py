@@ -310,13 +310,27 @@ def build_open_ev_package(
             possible_winnings=None,
         )
         if factor == main_factor:
-            factor_package, top_coupons = select_ev_package_with_top_coupons(
-                surface,
-                factor_config,
-            )
+            if factor_config.package_safety_enabled:
+                factor_package, top_coupons = select_ev_package_with_top_coupons(
+                    surface,
+                    factor_config,
+                    probabilities=ev_input.true_probabilities,
+                )
+            else:
+                factor_package, top_coupons = select_ev_package_with_top_coupons(
+                    surface,
+                    factor_config,
+                )
             main_surface = surface
         else:
-            factor_package = select_ev_package(surface, factor_config)
+            if factor_config.package_safety_enabled:
+                factor_package = select_ev_package(
+                    surface,
+                    factor_config,
+                    probabilities=ev_input.true_probabilities,
+                )
+            else:
+                factor_package = select_ev_package(surface, factor_config)
         factor_package = _suppress_below_stake_budget(
             factor_package,
             config=factor_config,
@@ -366,10 +380,17 @@ def build_open_ev_package(
             ev_input.possible_winnings,
             ev_input.jackpot,
         )
-        main_package, top_coupons = select_ev_package_with_top_coupons(
-            main_surface,
-            selection_config,
-        )
+        if selection_config.package_safety_enabled:
+            main_package, top_coupons = select_ev_package_with_top_coupons(
+                main_surface,
+                selection_config,
+                probabilities=ev_input.true_probabilities,
+            )
+        else:
+            main_package, top_coupons = select_ev_package_with_top_coupons(
+                main_surface,
+                selection_config,
+            )
         main_package = _suppress_below_stake_budget(
             main_package,
             config=selection_config,

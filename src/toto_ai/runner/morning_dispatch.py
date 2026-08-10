@@ -406,6 +406,7 @@ def _dispatch_morning_locked(
         timing_overrides=config.timing_overrides,
         reviewed_schedule_catalog=config.reviewed_schedule_catalog,
         reviewed_catalog_hash=evidence.reviewed_catalog_hash,
+        schedule_evidence_ledger=config.schedule_evidence_ledger,
         env_file=config.env_file,
     )
     if observed >= plan.preflight_at:

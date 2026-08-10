@@ -12,6 +12,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from typer.testing import CliRunner
 
+from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai import cli
 from toto_ai.api.detail_cache import write_drawing_detail_cache
 from toto_ai.db.models import Drawing, DrawingEventPin
@@ -40,6 +41,7 @@ def _env_file(path: Path, content: str = f"API_SPORTS_KEY={SECRET}\n") -> Path:
 
 
 def _plan(tmp_path: Path, env_file: Path):
+    write_empty_schedule_evidence_ledger(tmp_path)
     return build_scheduler_plan(
         drawing=5001,
         drawing_id=12001,
@@ -51,6 +53,219 @@ def _plan(tmp_path: Path, env_file: Path):
         aliases=tmp_path / "data" / "external-odds" / "team-aliases.json",
         env_file=env_file,
     )
+
+
+def test_drawing_4967_plan_binds_canonical_ledger_path_and_hashes(
+    tmp_path: Path,
+):
+    env_file = _env_file(tmp_path / ".env")
+    ledger_path = write_empty_schedule_evidence_ledger(tmp_path)
+    plan = build_scheduler_plan(
+        drawing=4967,
+        drawing_id=11996,
+        ended_at="2030-01-02T12:00:00Z",
+        bank=4980,
+        output_dir=tmp_path / "reports" / "rehearsal" / "evening-4967",
+        project_root=tmp_path,
+        db=tmp_path / "data" / "toto.db",
+        aliases=tmp_path / "data" / "external-odds" / "team-aliases.json",
+        env_file=env_file,
+    )
+
+    artifacts = prepare_scheduler_artifacts(plan)
+    loaded = load_scheduler_plan(artifacts.plan_path)
+    payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
+
+    assert loaded.schedule_evidence_ledger == ledger_path.resolve()
+    assert loaded.schedule_evidence_ledger_sha256 == hashlib.sha256(
+        ledger_path.read_bytes()
+    ).hexdigest()
+    assert len(loaded.schedule_evidence_semantic_hash) == 64
+    assert payload["paths"]["schedule_evidence_ledger"] == str(
+        ledger_path.resolve()
+    )
+    assert payload["config"]["schedule_evidence_ledger_sha256"] == (
+        loaded.schedule_evidence_ledger_sha256
+    )
+    assert payload["config"]["schedule_evidence_semantic_hash"] == (
+        loaded.schedule_evidence_semantic_hash
+    )
+
+
+def test_scheduler_plan_id_changes_for_ledger_path_bytes_or_semantics(
+    tmp_path: Path,
+):
+    env_file = _env_file(tmp_path / ".env")
+    canonical = write_empty_schedule_evidence_ledger(tmp_path)
+
+    def build(path: Path):
+        return build_scheduler_plan(
+            drawing=4967,
+            drawing_id=11996,
+            ended_at="2030-01-02T12:00:00Z",
+            bank=4980,
+            output_dir=tmp_path / "scheduler",
+            project_root=tmp_path,
+            db=tmp_path / "data" / "toto.db",
+            aliases=tmp_path / "data" / "aliases.json",
+            env_file=env_file,
+            schedule_evidence_ledger=path,
+        )
+
+    original = build(canonical)
+    same_semantics = tmp_path / "data" / "schedule-evidence" / "copy.json"
+    same_semantics.write_text(
+        json.dumps(json.loads(canonical.read_text()), indent=2) + "\n",
+        encoding="utf-8",
+    )
+    different_path = build(same_semantics)
+    canonical.write_text(
+        json.dumps(json.loads(canonical.read_text()), indent=4) + "\n",
+        encoding="utf-8",
+    )
+    different_bytes = build(canonical)
+    canonical.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "generated_at": "2026-08-07T00:00:00Z",
+                "observations": [],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    different_semantics = build(canonical)
+
+    assert original.plan_id != different_path.plan_id
+    assert original.plan_id != different_bytes.plan_id
+    assert different_bytes.plan_id != different_semantics.plan_id
+    assert original.schedule_evidence_semantic_hash == (
+        different_bytes.schedule_evidence_semantic_hash
+    )
+    assert different_bytes.schedule_evidence_semantic_hash != (
+        different_semantics.schedule_evidence_semantic_hash
+    )
+
+
+@pytest.mark.parametrize("mutation", ("tamper", "missing"))
+def test_scheduler_bound_ledger_change_is_terminal_before_subprocess(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+):
+    env_file = _env_file(tmp_path / ".env")
+    plan = _plan(tmp_path, env_file)
+    plan.db.parent.mkdir(parents=True, exist_ok=True)
+    plan.db.write_bytes(b"db")
+    plan.aliases.parent.mkdir(parents=True, exist_ok=True)
+    plan.aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
+    if mutation == "tamper":
+        plan.schedule_evidence_ledger.write_text(
+            '{"schema_version":1,"generated_at":"2026-08-07T00:00:00Z",'
+            '"observations":[]}\n',
+            encoding="utf-8",
+        )
+    else:
+        plan.schedule_evidence_ledger.unlink()
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("subprocess must not run after ledger integrity failure")
+        ),
+    )
+    context = SchedulerPhaseContext(
+        phase="preflight",
+        plan=plan,
+        run_id="ledger-integrity",
+        run_dir=plan.output_dir / "attempts" / "ledger-integrity",
+        work_dir=plan.output_dir / "attempts" / "ledger-integrity" / "preflight",
+        scheduled_at=plan.preflight_at,
+        started_at=plan.preflight_at,
+    )
+
+    with pytest.raises(SchedulerIntegrityError, match="schedule evidence ledger"):
+        CommandSchedulerPhaseRunner(
+            environment={"API_SPORTS_KEY": "test"},
+            target_validator=lambda _plan, _now: None,
+        )(context)
+
+
+def test_scheduler_old_plan_without_ledger_binding_fails_closed(tmp_path: Path):
+    env_file = _env_file(tmp_path / ".env")
+    artifacts = prepare_scheduler_artifacts(_plan(tmp_path, env_file))
+    payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
+    payload["schema_version"] = 5
+    payload["paths"].pop("schedule_evidence_ledger")
+    payload["config"].pop("schedule_evidence_ledger_sha256")
+    payload["config"].pop("schedule_evidence_semantic_hash")
+    artifacts.plan_path.write_text(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="lacks canonical schedule-evidence binding"):
+        load_scheduler_plan(artifacts.plan_path)
+
+
+def test_prepare_drawing_integrity_exit_is_permanent_not_retryable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    env_file = _env_file(tmp_path / ".env")
+    plan = _plan(tmp_path, env_file)
+    plan.db.parent.mkdir(parents=True, exist_ok=True)
+    plan.db.write_bytes(b"db")
+    plan.aliases.parent.mkdir(parents=True, exist_ok=True)
+    plan.aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
+    context = SchedulerPhaseContext(
+        phase="preflight",
+        plan=plan,
+        run_id="identity-conflict",
+        run_dir=plan.output_dir / "attempts" / "identity-conflict",
+        work_dir=plan.output_dir / "attempts" / "identity-conflict" / "preflight",
+        scheduled_at=plan.preflight_at,
+        started_at=plan.preflight_at,
+    )
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], 78, stdout="", stderr="preparation integrity failure"
+        ),
+    )
+
+    with pytest.raises(SchedulerIntegrityError, match="integrity"):
+        CommandSchedulerPhaseRunner(
+            environment={"API_SPORTS_KEY": "test"},
+            target_validator=lambda _plan, _now: None,
+        )(context)
+
+
+def test_prepare_drawing_missing_bound_ledger_exits_with_integrity_code(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "prepare-drawing",
+            "--open",
+            "--schedule-evidence-ledger",
+            "data/schedule-evidence/missing.json",
+            "--expected-schedule-evidence-sha256",
+            "0" * 64,
+            "--expected-schedule-evidence-semantic-hash",
+            "1" * 64,
+        ],
+    )
+
+    assert result.exit_code == 78
+    assert "preparation integrity failure" in result.output
+    assert "regular file" in result.output
 
 
 def test_scheduler_wrapper_securely_sources_env_and_plist_only_runs_wrapper(
@@ -83,6 +298,7 @@ def test_scheduler_wrapper_securely_sources_env_and_plist_only_runs_wrapper(
 
 def test_scheduler_plan_cli_accepts_secure_env_file(tmp_path):
     env_file = _env_file(tmp_path / ".env")
+    ledger = write_empty_schedule_evidence_ledger(tmp_path)
     output_dir = tmp_path / "reports" / "rehearsal" / "evening-cli"
 
     result = CliRunner().invoke(
@@ -107,6 +323,8 @@ def test_scheduler_plan_cli_accepts_secure_env_file(tmp_path):
             str(tmp_path / "data" / "aliases.json"),
             "--env-file",
             str(env_file),
+            "--schedule-evidence-ledger",
+            str(ledger),
         ],
     )
 
@@ -127,6 +345,9 @@ def test_legacy_schema_v1_plan_loads_with_inferred_absolute_project_root(
     payload["paths"].pop("project_root")
     payload["config"].pop("publication_lead_minutes")
     payload["config"].pop("trigger_offsets_minutes")
+    payload["config"].pop("schedule_evidence_ledger_sha256")
+    payload["config"].pop("schedule_evidence_semantic_hash")
+    payload["paths"].pop("schedule_evidence_ledger")
     semantic = {
         key: payload[key]
         for key in ("schema_version", "target", "config", "paths")
@@ -159,6 +380,9 @@ def test_genuine_schema_v2_plan_hash_loads_without_new_safety_fields(
     payload["schema_version"] = 2
     payload["config"].pop("publication_lead_minutes")
     payload["config"].pop("trigger_offsets_minutes")
+    payload["config"].pop("schedule_evidence_ledger_sha256")
+    payload["config"].pop("schedule_evidence_semantic_hash")
+    payload["paths"].pop("schedule_evidence_ledger")
     for key in (
         "package_near_fixed_share",
         "package_low_probability_threshold",
@@ -205,6 +429,9 @@ def test_schema_v3_plan_preserves_declared_project_root(tmp_path: Path):
     payload["schema_version"] = 3
     payload["config"].pop("publication_lead_minutes")
     payload["config"].pop("trigger_offsets_minutes")
+    payload["config"].pop("schedule_evidence_ledger_sha256")
+    payload["config"].pop("schedule_evidence_semantic_hash")
+    payload["paths"].pop("schedule_evidence_ledger")
     semantic = {
         key: payload[key]
         for key in ("schema_version", "target", "config", "paths")
@@ -322,6 +549,20 @@ def test_evening_scheduler_preflight_succeeds_from_launchd_root_cwd(
     provider_cache.mkdir(parents=True)
     aliases.parent.mkdir(parents=True)
     aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
+    schedule_evidence_ledger = (
+        project_root / "data" / "schedule-evidence" / "ledger.json"
+    )
+    schedule_evidence_ledger.parent.mkdir(parents=True)
+    schedule_evidence_ledger.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "generated_at": "2026-08-06T00:00:00Z",
+                "observations": [],
+            }
+        ),
+        encoding="utf-8",
+    )
 
     now = datetime.now(timezone.utc).replace(microsecond=0)
     deadline = now + timedelta(days=2)
@@ -533,7 +774,7 @@ def test_scheduler_refresh_failure_remains_retryable_fail_closed(
 ):
     env_file = _env_file(tmp_path / ".env")
     plan = _plan(tmp_path, env_file)
-    plan.db.parent.mkdir(parents=True)
+    plan.db.parent.mkdir(parents=True, exist_ok=True)
     plan.db.write_bytes(b"db")
     plan.aliases.parent.mkdir(parents=True)
     plan.aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
@@ -567,7 +808,7 @@ def test_scheduler_refreshed_target_drift_remains_permanent_fail_closed(
 ):
     env_file = _env_file(tmp_path / ".env")
     plan = _plan(tmp_path, env_file)
-    plan.db.parent.mkdir(parents=True)
+    plan.db.parent.mkdir(parents=True, exist_ok=True)
     plan.db.write_bytes(b"db")
     plan.aliases.parent.mkdir(parents=True)
     plan.aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")

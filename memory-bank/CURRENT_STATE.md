@@ -1,5 +1,87 @@
 # Current State
 
+## Safety-aware EV coupon reselection (2026-08-10)
+
+`TOTOAI-SAFETY-AWARE-SELECTOR-20260810` changes only playable coupon selection.
+The complete EV ranking and current probability/payout formulas are unchanged.
+An exact-cardinality deterministic repair now enforces the existing material
+outcome floor and strict concentration boundary before the unchanged final
+safety veto. It expands a broad ranked candidate prefix when necessary and
+fails closed to coupon-free `NO BET` with pre/post exposure, replacement,
+hash, EV-delta and feasibility diagnostics.
+
+Frozen no-leakage regressions use separately stored pre-cutoff inputs and
+finished results for drawings 4967, 4969 and 4970. Safe 166-coupon packages
+were produced for all three; each independently passed the existing final
+safety evaluator with maximum exposure 157/166. Drawing 4967 reproduced the
+old postmortem package hash exactly before reselection. Retrospective best hits
+were 5->5, 8->9 and 8->8 respectively; this tiny sample is not profitability
+evidence. Focused EV tests passed `110 passed`; the three frozen regressions
+passed in `236.59s`. The first complete-suite run exposed eight legacy test
+mocks that did not accept the new optional probability argument; only those
+mock signatures were updated, and both affected runner files then passed
+`32 passed`. The final full suite passed `1668 passed in 509.23s (0:08:29)`.
+Full repository Ruff passed and `git diff --check` was clean.
+
+No live scheduler/runtime database, wager, commit, push or publication action
+was performed. Existing scheduler-ledger worktree changes were preserved.
+
+## Scheduler immutable ledger binding (2026-08-10)
+
+`TOTOAI-LEDGER-BINDING-20260810` upgrades the evening scheduler to schema v6.
+Every plan and generated artifact now binds the canonical contained
+schedule-evidence ledger path, exact content SHA-256 and semantic hash into
+the plan identity. Schema-v5 plans are rejected clearly because they lack this
+binding; older inspection schemas remain non-actionable and production
+execution stays fail-closed.
+
+All scheduler stages revalidate the same bound ledger before phase work.
+`prepare-drawing` and `run-drawing` receive the exact plan path and both hashes,
+validate before provider/package work, and final prospective collection
+revalidates before every pass. Missing, malformed or changed ledgers and
+schedule-evidence pin identity conflicts are typed terminal integrity failures
+using child exit code 78; transport/TLS/quota/refresh failures remain
+retryable. Drawing-4967 regressions preserve the atomic four-pin monotonic
+upgrade, reversed schedule-only orientation and original BK `1/X/2` order.
+
+No live scheduler, runtime database, package, wager, network, commit, push or
+PR operation was performed.
+
+Verification covered 60 scheduler operational/atomic/preflight tests, four
+drawing-4967 and exact-command regressions, and the two final synchronized
+cache fixture corrections. The full suite checkpoint reached `1654 passed`
+with two fixture-only failures caused by the new pre-provider ledger check;
+both fixtures were supplied a valid local ledger and their targeted rerun
+passed `2 passed`. Per the operator's checkpoint instruction, the complete
+suite was not started again. Repository Ruff passed and `git diff --check` was
+clean after the final corrections.
+
+## Scheduler canonical-ledger forwarding (2026-08-06)
+
+`URGENT-4967-PINSET` closes the scheduler preparation-entrypoint gap.
+Every schema-v5 preparation command now passes the canonical contained
+`data/schedule-evidence/ledger.json` beneath its validated project root.
+The real `prepare-drawing` CLI resolves that option beneath its current
+project directory and forwards the resolved path to `prepare_drawing()`.
+
+No scheduler plan schema or identity changes. Strict provider pins, reviewed
+hash binding, reversed schedule-only semantics, BK ordering, atomic upgrades,
+and contradictory-identity fail-closed behavior remain unchanged.
+
+Regression verification covered the scheduler argv and real CLI forwarding;
+the focused preparation/safety set passed `32 passed in 5.38s`. The first full
+run exposed two temporary-project fixtures without the newly required canonical
+ledger; adding empty schema-v1 ledgers to those fixtures preserved production
+behavior and the final full run passed `1648 passed in 274.96s (0:04:34)`.
+Full Ruff passed and `git diff --check` was clean.
+
+The live non-betting check started at `2026-08-06T17:54:21+03:00` against
+drawing 4967 with the production database, raw/provider caches and canonical
+ledger. `prepare-drawing` returned `ready`, `15/15`, `playable`, with 15 external
+pins and no baseline-only or unresolved orders. The plan deadline was 18:00 MSK
+and its publication cutoff was already 17:50 MSK, so package generation was not
+invoked: `NO BET`, no PLAY/TXT, upload, launchd change or bet.
+
 ## Drawing 4967 monotonic canonical pin upgrade (2026-08-06)
 
 `local-totoai-4967-pin-upgrade-fix` closes the production rejection of an

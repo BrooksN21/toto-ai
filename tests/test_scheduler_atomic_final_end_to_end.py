@@ -9,6 +9,7 @@ import pytest
 import requests
 
 import toto_ai.runner.scheduler as scheduler
+from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai.api.rate_limit import TotoBriefRequestError
 from toto_ai.db.models import Drawing
 from toto_ai.db.session import get_session_factory, init_db
@@ -28,6 +29,7 @@ ENDED_AT = datetime(2032, 2, 3, 12, 0, tzinfo=timezone.utc)
 def _plan(tmp_path: Path, *, timing_overrides: Path | None = None):
     (tmp_path / "data").mkdir(exist_ok=True)
     (tmp_path / "data" / "aliases.json").write_text("{}")
+    write_empty_schedule_evidence_ledger(tmp_path)
     return build_scheduler_plan(
         drawing=5100,
         drawing_id=12100,
@@ -315,6 +317,26 @@ def test_typed_integrity_error_is_terminal_without_message_matching(tmp_path):
         now=plan.final_at,
     )
     assert state["phases"]["final"]["status"] == "integrity_failed"
+    assert state["terminal"] == "failed"
+
+
+def test_bound_ledger_tamper_is_terminal_during_warmup_without_retry(
+    tmp_path,
+):
+    plan = _plan(tmp_path)
+    plan.schedule_evidence_ledger.write_text("{}\n", encoding="utf-8")
+    calls = []
+
+    with pytest.raises(SchedulerIntegrityError, match="ledger integrity"):
+        _tick(plan, lambda context: calls.append(context), plan.preflight_at)
+
+    state = load_state(
+        plan.output_dir / "scheduler-state.json",
+        plan_id=plan.plan_id,
+        now=plan.preflight_at,
+    )
+    assert calls == []
+    assert state["phases"]["warmup"]["status"] == "integrity_failed"
     assert state["terminal"] == "failed"
 
 

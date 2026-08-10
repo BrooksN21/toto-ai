@@ -38,8 +38,8 @@ from toto_ai.external_odds.eligibility import (
 )
 from toto_ai.external_odds.matching import MATCHER_VERSION, MatchDecision, match_event
 from toto_ai.external_odds.schedule_evidence import (
-    DEFAULT_SCHEDULE_EVIDENCE_PATH,
-    load_schedule_evidence_ledger,
+    ScheduleEvidenceIntegrityError,
+    ScheduleEvidenceLedger,
     resolve_schedule_evidence,
 )
 from toto_ai.external_odds.schedule_sources import ReviewedCatalogScheduleSource
@@ -222,6 +222,7 @@ def build_external_collection(
     *,
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
     reviewed_schedule_catalog: str | None = None,
+    schedule_evidence_ledger: ScheduleEvidenceLedger | None = None,
     stop_at: datetime | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> ExternalCollectionSnapshot:
@@ -245,6 +246,7 @@ def build_external_collection(
         prepared_pins=prepared_pins,
         observed_at=observed_at,
         reviewed_schedule_catalog=reviewed_schedule_catalog,
+        schedule_evidence_ledger=schedule_evidence_ledger,
     )
     pinned_revalidation = (
         _pinned_revalidation_summary(
@@ -704,6 +706,7 @@ def _match_targets(
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
     observed_at: datetime | None = None,
     reviewed_schedule_catalog: str | None = None,
+    schedule_evidence_ledger: ScheduleEvidenceLedger | None = None,
 ) -> dict[int, _MatchedTarget]:
     if prepared_pins is not None:
         if observed_at is None:
@@ -714,6 +717,7 @@ def _match_targets(
             prepared_pins,
             observed_at=observed_at,
             reviewed_schedule_catalog=reviewed_schedule_catalog,
+            schedule_evidence_ledger=schedule_evidence_ledger,
         )
     schedules = _successful_schedule_events(schedule_results)
     failures = {
@@ -780,6 +784,7 @@ def _match_targets_from_pins(
     *,
     observed_at: datetime,
     reviewed_schedule_catalog: str | None = None,
+    schedule_evidence_ledger: ScheduleEvidenceLedger | None = None,
 ) -> dict[int, _MatchedTarget]:
     fingerprint = target_fingerprint(
         target.drawing_id, target.drawing_number, target.deadline, target.events
@@ -803,6 +808,7 @@ def _match_targets_from_pins(
         target,
         pins,
         observed_at=observed_at,
+        schedule_evidence_ledger=schedule_evidence_ledger,
     )
     for event, pin in zip(target.events, pins, strict=True):
         if (
@@ -849,15 +855,10 @@ def _match_targets_from_pins(
                     == pin.provenance.get("orientation", "same")
                 )
                 if not matched:
-                    decision = MatchDecision(
-                        status="provider_failure",
-                        provider_event_id=None,
-                        matcher_version="schedule-evidence-v1",
-                        candidate_ids=(),
-                        reason="schedule evidence revalidation failed",
+                    raise ScheduleEvidenceIntegrityError(
+                        "prepared schedule-evidence pin conflicts with the "
+                        "bound ledger"
                     )
-                    decisions[event.event_order] = _MatchedTarget(decision, None)
-                    continue
                 decision = MatchDecision(
                     status="matched",
                     provider_event_id=None,
@@ -1008,26 +1009,31 @@ def _schedule_evidence_pin_revalidation(
     pins: tuple[DrawingEventPinRecord, ...],
     *,
     observed_at: datetime,
+    schedule_evidence_ledger: ScheduleEvidenceLedger | None,
 ) -> dict[int, Any]:
     evidence_pins = tuple(
         pin for pin in pins if pin.effective_source_provider == "schedule-evidence"
     )
-    if not evidence_pins or not DEFAULT_SCHEDULE_EVIDENCE_PATH.is_file():
+    if not evidence_pins:
         return {}
-    try:
-        ledger = load_schedule_evidence_ledger(DEFAULT_SCHEDULE_EVIDENCE_PATH)
-    except ValueError:
-        return {}
+    if schedule_evidence_ledger is None:
+        raise ScheduleEvidenceIntegrityError(
+            "schedule-evidence pins require the bound ledger"
+        )
     if any(
         not isinstance(pin.provenance, dict)
-        or pin.provenance.get("ledger_hash") != ledger.semantic_hash
+        or pin.provenance.get("ledger_hash")
+        != schedule_evidence_ledger.semantic_hash
         for pin in evidence_pins
     ):
-        return {}
+        raise ScheduleEvidenceIntegrityError(
+            "prepared schedule-evidence pin ledger hash conflicts with the "
+            "bound ledger"
+        )
     return {
         event.event_order: resolve_schedule_evidence(
             event,
-            ledger,
+            schedule_evidence_ledger,
             evaluated_at=observed_at,
         )
         for event, pin in zip(target.events, pins, strict=True)

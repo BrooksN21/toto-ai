@@ -118,6 +118,8 @@ from toto_ai.external_odds.reviewed_schedule import (
 )
 from toto_ai.external_odds.schedule_evidence import (
     DEFAULT_SCHEDULE_EVIDENCE_PATH,
+    ScheduleEvidenceIntegrityError,
+    load_bound_schedule_evidence_ledger,
 )
 from toto_ai.external_odds.storage import load_current_drawing_eligibility
 from toto_ai.external_odds.targets import parse_target_drawing
@@ -211,6 +213,7 @@ from toto_ai.package.mvp import generate_mvp_package
 from toto_ai.path_safety import probe_writable_directory, validate_output_paths
 from toto_ai.runner import (
     DEFAULT_MINIMUM_GROSS_EV,
+    SCHEDULER_INTEGRITY_EXIT_CODE,
     SCHEDULER_SCHEMA_VERSION,
     AppliedTimingOverrideEvent,
     CommandSchedulerPhaseRunner,
@@ -226,6 +229,7 @@ from toto_ai.runner import (
     RunnerTargetMismatch,
     RunnerTimingResolution,
     SchedulerError,
+    SchedulerIntegrityError,
     SimulatedSchedulerPhaseRunner,
     TimingOverrideAudit,
     VirtualSchedulerClock,
@@ -1879,6 +1883,9 @@ class _RunnerResources:
     reviewed_catalog_path: Path | None
     reviewed_catalog_hash: str | None
     reviewed_input_paths: tuple[Path, ...]
+    schedule_evidence_ledger: Path
+    schedule_evidence_ledger_sha256: str
+    schedule_evidence_semantic_hash: str
 
 
 def _prepare_runner_resources(
@@ -1894,9 +1901,20 @@ def _prepare_runner_resources(
     timing_overrides: str | Path | None = None,
     reviewed_schedule_catalog: str | Path | None = None,
     expected_reviewed_catalog_hash: str | None = None,
+    schedule_evidence_ledger: str | Path = DEFAULT_SCHEDULE_EVIDENCE_PATH,
+    expected_schedule_evidence_sha256: str | None = None,
+    expected_schedule_evidence_semantic_hash: str | None = None,
     systematic_resolution: bool = True,
     refresh_probability_evidence: bool = False,
 ) -> _RunnerResources:
+    bound_ledger = load_bound_schedule_evidence_ledger(
+        Path(schedule_evidence_ledger),
+        expected_content_sha256=expected_schedule_evidence_sha256,
+        expected_semantic_hash=expected_schedule_evidence_semantic_hash,
+    )
+    ledger_content_sha256 = hashlib.sha256(
+        bound_ledger.path.read_bytes()
+    ).hexdigest()
     reviewed_catalog = (
         None
         if reviewed_schedule_catalog is None
@@ -1931,7 +1949,13 @@ def _prepare_runner_resources(
     )
     protected_paths = tuple(
         path
-        for path in (db, aliases, timing_overrides, *reviewed_input_paths)
+        for path in (
+            db,
+            aliases,
+            timing_overrides,
+            bound_ledger.path,
+            *reviewed_input_paths,
+        )
         if path is not None
     )
     validate_output_paths(
@@ -2000,6 +2024,9 @@ def _prepare_runner_resources(
             None if reviewed_catalog is None else reviewed_catalog.semantic_hash
         ),
         reviewed_input_paths=reviewed_input_paths,
+        schedule_evidence_ledger=bound_ledger.path,
+        schedule_evidence_ledger_sha256=ledger_content_sha256,
+        schedule_evidence_semantic_hash=bound_ledger.semantic_hash,
     )
 
 
@@ -2284,6 +2311,16 @@ def run_drawing_command(
     expected_reviewed_catalog_hash: str | None = typer.Option(
         None, "--expected-reviewed-catalog-hash"
     ),
+    schedule_evidence_ledger: str = typer.Option(
+        str(DEFAULT_SCHEDULE_EVIDENCE_PATH),
+        "--schedule-evidence-ledger",
+    ),
+    expected_schedule_evidence_sha256: str | None = typer.Option(
+        None, "--expected-schedule-evidence-sha256"
+    ),
+    expected_schedule_evidence_semantic_hash: str | None = typer.Option(
+        None, "--expected-schedule-evidence-semantic-hash"
+    ),
     quota_reserve: int = typer.Option(10, min=0),
     max_passes: int = typer.Option(3, min=1),
     max_expansion_passes: int = typer.Option(3, min=1),
@@ -2336,6 +2373,19 @@ def run_drawing_command(
             "--drawing-id/--target-cache/--schedule-cache/--replay-as-of/"
             "--replay-root require --offline-replay"
         )
+    if (expected_schedule_evidence_sha256 is None) != (
+        expected_schedule_evidence_semantic_hash is None
+    ):
+        raise typer.BadParameter(
+            "both expected schedule-evidence hashes must be supplied together"
+        )
+    try:
+        resolved_schedule_evidence_ledger = resolve_contained_path(
+            schedule_evidence_ledger,
+            allowed_root=Path.cwd(),
+        )
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
     final_input = os.environ.get("TOTO_FINAL_INPUT")
     scheduler_plan = os.environ.get("TOTO_SCHEDULER_PLAN")
     if (final_input is None) != (scheduler_plan is None):
@@ -2374,13 +2424,34 @@ def run_drawing_command(
     result = None
     publication: DrawingRunPublication | None = None
     try:
+        bound_scheduler_plan = (
+            None
+            if scheduler_plan is None
+            else load_scheduler_plan(scheduler_plan)
+        )
+        if bound_scheduler_plan is not None and (
+            resolved_schedule_evidence_ledger
+            != bound_scheduler_plan.schedule_evidence_ledger
+            or expected_schedule_evidence_sha256
+            != bound_scheduler_plan.schedule_evidence_ledger_sha256
+            or expected_schedule_evidence_semantic_hash
+            != bound_scheduler_plan.schedule_evidence_semantic_hash
+        ):
+            raise ScheduleEvidenceIntegrityError(
+                "run-drawing ledger arguments conflict with scheduler plan binding"
+            )
+        load_bound_schedule_evidence_ledger(
+            resolved_schedule_evidence_ledger,
+            expected_content_sha256=expected_schedule_evidence_sha256,
+            expected_semantic_hash=expected_schedule_evidence_semantic_hash,
+        )
         client = TotoBriefClient()
         atomic_snapshot = (
             None
             if final_input is None
             else load_final_input(
                 Path(final_input),
-                expected_plan=load_scheduler_plan(scheduler_plan),
+                expected_plan=bound_scheduler_plan,
             )
         )
         provider_factory = _api_sports_provider_factory(api_key, quota_reserve)
@@ -2409,6 +2480,13 @@ def run_drawing_command(
                 timing_overrides=timing_overrides,
                 reviewed_schedule_catalog=reviewed_schedule_catalog,
                 expected_reviewed_catalog_hash=expected_reviewed_catalog_hash,
+                schedule_evidence_ledger=resolved_schedule_evidence_ledger,
+                expected_schedule_evidence_sha256=(
+                    expected_schedule_evidence_sha256
+                ),
+                expected_schedule_evidence_semantic_hash=(
+                    expected_schedule_evidence_semantic_hash
+                ),
                 systematic_resolution=systematic_resolution,
                 refresh_probability_evidence=atomic_snapshot is not None,
             )
@@ -2452,6 +2530,13 @@ def run_drawing_command(
                 aliases=prepared.reviewed_aliases,
                 prepared_pins=prepared.prepared_pins,
                 reviewed_schedule_catalog=reviewed_schedule_catalog,
+                schedule_evidence_ledger=prepared.schedule_evidence_ledger,
+                expected_schedule_evidence_sha256=(
+                    prepared.schedule_evidence_ledger_sha256
+                ),
+                expected_schedule_evidence_semantic_hash=(
+                    prepared.schedule_evidence_semantic_hash
+                ),
                 cache_root=Path(cache_root),
                 target=target,
                 stop_at=stop_at,
@@ -2563,6 +2648,9 @@ def run_drawing_command(
                     **runner_kwargs, snapshot=atomic_snapshot
                 )
             )
+    except (ScheduleEvidenceIntegrityError, SchedulerIntegrityError) as error:
+        typer.echo(f"scheduler integrity failure: {error}", err=True)
+        raise typer.Exit(code=SCHEDULER_INTEGRITY_EXIT_CODE) from error
     except KeyboardInterrupt:
         command_error = typer.BadParameter(
             "Drawing runner interrupted; no final manifest was published"
@@ -2613,6 +2701,9 @@ def run_drawing_command(
 
     try:
         reviewed_inputs = () if resources is None else resources.reviewed_input_paths
+        ledger_input = (
+            None if resources is None else resources.schedule_evidence_ledger
+        )
         publication = publish_drawing_run_artifacts(
             result,
             report_dir=report_dir,
@@ -2622,6 +2713,7 @@ def run_drawing_command(
                     db,
                     aliases,
                     timing_overrides,
+                    ledger_input,
                     *reviewed_inputs,
                 )
                 if path is not None
@@ -2688,6 +2780,10 @@ def scheduler_plan_command(
     reviewed_schedule_catalog: str | None = typer.Option(
         None, "--reviewed-schedule-catalog"
     ),
+    schedule_evidence_ledger: str = typer.Option(
+        str(DEFAULT_SCHEDULE_EVIDENCE_PATH),
+        "--schedule-evidence-ledger",
+    ),
     env_file: str | None = typer.Option(None, "--env-file"),
     quota_reserve: int = typer.Option(10, min=0),
     max_passes: int = typer.Option(3, min=1),
@@ -2723,6 +2819,7 @@ def scheduler_plan_command(
             aliases=aliases,
             timing_overrides=timing_overrides,
             reviewed_schedule_catalog=reviewed_schedule_catalog,
+            schedule_evidence_ledger=schedule_evidence_ledger,
             env_file=env_file,
             quota_reserve=quota_reserve,
             max_passes=max_passes,
@@ -3284,11 +3381,13 @@ def scheduler_execute_command(
             and scheduler_plan.source_schema_version != SCHEDULER_SCHEMA_VERSION
         ):
             raise ValueError(
-                "legacy scheduler plan is inspection-only; regenerate schema v5"
+                "legacy scheduler plan is inspection-only; regenerate schema "
+                f"v{SCHEDULER_SCHEMA_VERSION}"
             )
         if run_id is not None and not simulate:
             raise ValueError(
-                "--run-id is simulation-only; production schema-v5 plans "
+                "--run-id is simulation-only; production schema-"
+                f"v{SCHEDULER_SCHEMA_VERSION} plans "
                 "must use idempotent scheduler ticks"
             )
         if simulate:
@@ -3557,12 +3656,41 @@ def prepare_drawing_command(
     reviewed_schedule_catalog: str | None = typer.Option(
         None, "--reviewed-schedule-catalog"
     ),
+    schedule_evidence_ledger: str = typer.Option(
+        str(DEFAULT_SCHEDULE_EVIDENCE_PATH),
+        "--schedule-evidence-ledger",
+    ),
+    expected_schedule_evidence_sha256: str | None = typer.Option(
+        None, "--expected-schedule-evidence-sha256"
+    ),
+    expected_schedule_evidence_semantic_hash: str | None = typer.Option(
+        None, "--expected-schedule-evidence-semantic-hash"
+    ),
 ) -> None:
     """Prepare exact immutable fixture/team/time pins for one drawing."""
     if open == (drawing_id is not None):
         raise typer.BadParameter("choose exactly one of --open or --drawing-id")
     if provider != "api-sports":
         raise typer.BadParameter("provider must be api-sports")
+    if (expected_schedule_evidence_sha256 is None) != (
+        expected_schedule_evidence_semantic_hash is None
+    ):
+        raise typer.BadParameter(
+            "both expected schedule-evidence hashes must be supplied together"
+        )
+    resolved_schedule_evidence_ledger = resolve_contained_path(
+        schedule_evidence_ledger,
+        allowed_root=Path.cwd(),
+    )
+    try:
+        load_bound_schedule_evidence_ledger(
+            resolved_schedule_evidence_ledger,
+            expected_content_sha256=expected_schedule_evidence_sha256,
+            expected_semantic_hash=expected_schedule_evidence_semantic_hash,
+        )
+    except ScheduleEvidenceIntegrityError as error:
+        typer.echo(f"preparation integrity failure: {error}", err=True)
+        raise typer.Exit(code=SCHEDULER_INTEGRITY_EXIT_CODE) from error
     fetched_at = datetime.now(timezone.utc)
     try:
         engine = init_db(db)
@@ -3713,15 +3841,30 @@ def prepare_drawing_command(
             )
             candidates = schedule.candidates
             schedule_diagnostics = schedule.diagnostics
-        result = prepare_drawing(
-            target,
-            candidates,
-            session_factory=session_factory,
-            provider=provider,
-            schedule_diagnostics=schedule_diagnostics,
-            reviewed_schedule_catalog=reviewed_schedule_catalog,
-            evaluated_at=fetched_at,
-        )
+        try:
+            result = prepare_drawing(
+                target,
+                candidates,
+                session_factory=session_factory,
+                provider=provider,
+                schedule_diagnostics=schedule_diagnostics,
+                reviewed_schedule_catalog=reviewed_schedule_catalog,
+                schedule_evidence_ledger=resolved_schedule_evidence_ledger,
+                expected_schedule_evidence_sha256=(
+                    expected_schedule_evidence_sha256
+                ),
+                expected_schedule_evidence_semantic_hash=(
+                    expected_schedule_evidence_semantic_hash
+                ),
+                evaluated_at=fetched_at,
+            )
+        except (TypeError, ValueError) as error:
+            raise ScheduleEvidenceIntegrityError(
+                str(error) or "drawing preparation integrity failure"
+            ) from error
+    except ScheduleEvidenceIntegrityError as error:
+        typer.echo(f"preparation integrity failure: {error}", err=True)
+        raise typer.Exit(code=SCHEDULER_INTEGRITY_EXIT_CODE) from error
     except (APISportsError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
 

@@ -13,6 +13,7 @@ from sqlalchemy import select
 
 import toto_ai.runner.scheduler as scheduler
 from tests.pinned_revalidation_helpers import ready_pinned_revalidation
+from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from tests.test_package_audit import DRAWING_4952_PROBABILITIES
 from toto_ai.db.models import ArchivedPackage, Drawing
 from toto_ai.db.session import get_session_factory, init_db
@@ -59,6 +60,7 @@ def _plan(
     package_low_probability_threshold: float = 0.20,
     package_material_probability_threshold: float = 0.20,
 ):
+    write_empty_schedule_evidence_ledger(tmp_path)
     return build_scheduler_plan(
         drawing=5001,
         drawing_id=12001,
@@ -1077,6 +1079,7 @@ def test_exact_offsets_and_phase_start_times_are_ended_at_anchored(tmp_path: Pat
 def test_generated_artifacts_are_credential_free_generic_and_exclusive(
     tmp_path: Path,
 ):
+    write_empty_schedule_evidence_ledger(tmp_path)
     plan = build_scheduler_plan(
         drawing=5003,
         drawing_id=12003,
@@ -1113,6 +1116,7 @@ def test_generated_artifacts_are_credential_free_generic_and_exclusive(
 def test_generated_artifacts_quote_paths_without_shell_injection(
     tmp_path: Path,
 ):
+    write_empty_schedule_evidence_ledger(tmp_path)
     plan = build_scheduler_plan(
         drawing=5004,
         drawing_id=12004,
@@ -1348,8 +1352,18 @@ def test_prepare_command_uses_absolute_raw_and_reusable_provider_cache(
     assert command[command.index("--cache-root") + 1] == str(
         tmp_path / "data" / "external-cache" / "api-sports"
     )
+    assert command[command.index("--schedule-evidence-ledger") + 1] == str(
+        tmp_path / "data" / "schedule-evidence" / "ledger.json"
+    )
+    assert command[
+        command.index("--expected-schedule-evidence-sha256") + 1
+    ] == plan.schedule_evidence_ledger_sha256
+    assert command[
+        command.index("--expected-schedule-evidence-semantic-hash") + 1
+    ] == plan.schedule_evidence_semantic_hash
     assert Path(command[command.index("--raw-cache-dir") + 1]).is_absolute()
     assert Path(command[command.index("--cache-root") + 1]).is_absolute()
+    assert Path(command[command.index("--schedule-evidence-ledger") + 1]).is_absolute()
 
 
 def test_package_phases_keep_run_isolated_cache(tmp_path: Path):
@@ -1360,6 +1374,15 @@ def test_package_phases_keep_run_isolated_cache(tmp_path: Path):
     assert command[command.index("--cache-root") + 1] == str(
         context.work_dir / "cache"
     )
+    assert command[command.index("--schedule-evidence-ledger") + 1] == str(
+        context.plan.schedule_evidence_ledger
+    )
+    assert command[
+        command.index("--expected-schedule-evidence-sha256") + 1
+    ] == context.plan.schedule_evidence_ledger_sha256
+    assert command[
+        command.index("--expected-schedule-evidence-semantic-hash") + 1
+    ] == context.plan.schedule_evidence_semantic_hash
     assert command[command.index("--cache-root") + 1] != str(
         context.plan.project_root
         / "data"

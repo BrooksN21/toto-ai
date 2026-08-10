@@ -6,6 +6,7 @@ from pathlib import Path
 from sqlalchemy import func, select
 from typer.testing import CliRunner
 
+from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from tests.test_external_event_matching_drawing_4951 import (
     EXPECTED_PROVIDER_IDS,
     _provider_events,
@@ -58,6 +59,7 @@ class ReplayProvider:
 
 
 def _plan(tmp_path: Path, *, suffix: str):
+    write_empty_schedule_evidence_ledger(tmp_path)
     aliases = tmp_path / "aliases.json"
     aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
     db = tmp_path / "toto.sqlite"
@@ -131,6 +133,20 @@ def test_morning_4953_zero_mapped_is_terminal_fail_without_package(
     )
     aliases = tmp_path / "aliases.json"
     aliases.write_text('{"version":1,"aliases":{}}\n', encoding="utf-8")
+    schedule_evidence_ledger = (
+        tmp_path / "data" / "schedule-evidence" / "ledger.json"
+    )
+    schedule_evidence_ledger.parent.mkdir(parents=True)
+    schedule_evidence_ledger.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "generated_at": "2026-08-06T00:00:00Z",
+                "observations": [],
+            }
+        ),
+        encoding="utf-8",
+    )
     db = tmp_path / "unresolved.sqlite"
     engine = init_db(db)
     with get_session_factory(engine)() as session:
@@ -173,6 +189,7 @@ def test_morning_4953_zero_mapped_is_terminal_fail_without_package(
         assert session.scalar(select(func.count(DrawingEventPin.id))) == 0
     engine.dispose()
 
+    write_empty_schedule_evidence_ledger(tmp_path)
     plan = build_scheduler_plan(
         drawing=4953,
         drawing_id=11971,

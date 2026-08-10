@@ -10,6 +10,7 @@ from types import SimpleNamespace
 import pytest
 from typer.testing import CliRunner
 
+from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai import cli
 from toto_ai.external_odds.schedule_evidence import (
     load_schedule_evidence_ledger,
@@ -39,6 +40,7 @@ def _env(path: Path) -> Path:
 
 
 def _config(tmp_path: Path) -> MorningDispatchConfig:
+    write_empty_schedule_evidence_ledger(tmp_path)
     return MorningDispatchConfig(
         project_root=tmp_path,
         state_root=tmp_path / "data" / "scheduler" / "morning-dispatch",

@@ -14,6 +14,10 @@ from toto_ai.ev.models import (
     EVSurface,
     PlayTimingEligibility,
     RankedCoupon,
+    SafetyAwareSelectionDiagnostics,
+    SafetyMaterialRepair,
+    SafetySelectionExposure,
+    SafetySelectionReplacement,
 )
 from toto_ai.ev.reports import ev_package_report_paths, write_ev_package_reports
 
@@ -130,6 +134,53 @@ def test_report_exposes_requested_bank_effective_cap_and_unused_request(tmp_path
         "selected cost: 30",
         "unused requested bank: 4950",
         "self-dilution ratio: 0.000368346737",
+    ):
+        assert expected in markdown
+
+
+def test_report_exposes_safety_aware_reselection_diagnostics(tmp_path):
+    base = fixture_run(decision="PLAY")
+    diagnostics = SafetyAwareSelectionDiagnostics(
+        required_coupon_count=2,
+        eligible_candidate_count=9,
+        candidate_universe_count=9,
+        candidate_universe_exhaustive=True,
+        concentration_maximum_count=1,
+        pre_exposures=(
+            SafetySelectionExposure(1, (2, 0, 0), "1", 2, 1.0),
+        ),
+        post_exposures=(
+            SafetySelectionExposure(1, (1, 0, 1), "1", 1, 0.5),
+        ),
+        material_outcomes_repaired=(
+            SafetyMaterialRepair(1, "2", 0.3, 0, 1),
+        ),
+        replacements=(
+            SafetySelectionReplacement(2, "1" * 15, 9.0, 3, "2" * 15, 8.0, -1.0),
+        ),
+        gross_ev_delta=-1.0,
+        pre_package_sha256="a" * 64,
+        post_package_sha256="b" * 64,
+        constraint_feasible=True,
+        infeasibility_reasons=(),
+    )
+    run = replace(
+        base,
+        package=replace(base.package, selection_diagnostics=diagnostics),
+    )
+
+    _, markdown_path = write_ev_package_reports(run, tmp_path)
+    markdown = markdown_path.read_text(encoding="utf-8")
+
+    for expected in (
+        "## Safety-aware Reselection",
+        "constraint feasible: yes",
+        "candidate universe: 9 / 9 (exhaustive: yes)",
+        "concentration maximum count: 1",
+        "material outcomes repaired: E1 2 (0->1)",
+        "replacements: 1",
+        "gross EV delta: -1.000000000000",
+        "| 1 | 1:2/0/0 (100.0000%) | 1:1/0/1 (50.0000%) |",
     ):
         assert expected in markdown
 
