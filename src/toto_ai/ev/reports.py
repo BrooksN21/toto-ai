@@ -11,7 +11,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from toto_ai.ev.backtest import EVBacktestResult, EVBacktestRow
-from toto_ai.ev.drawing import EVPackageRun
+from toto_ai.ev.drawing import EVPackageRun, paper_only_ev_run
 
 CSV_FIELDS = ("rank", "coupon", "gross_ev", "net_ev")
 EV_BACKTEST_CSV_FIELDS = tuple(EVBacktestRow.__dataclass_fields__)
@@ -51,6 +51,7 @@ def write_ev_package_reports(
     input_paths: Iterable[str | Path] = (),
 ) -> tuple[Path, Path]:
     """Render and atomically publish the exact package and model report."""
+    result = paper_only_ev_run(result)
     csv_path, markdown_path = ev_package_report_paths(result, report_dir)
     output_paths = {csv_path.resolve(), markdown_path.resolve()}
     resolved_inputs = {Path(path).resolve() for path in input_paths}
@@ -222,12 +223,20 @@ def _render_markdown(result: EVPackageRun) -> str:
     modeled_roi = (
         "n/a" if package.modeled_roi is None else f"{package.modeled_roi:.12f}"
     )
+    paper_roi = (
+        "n/a"
+        if package.paper_modeled_roi is None
+        else f"{package.paper_modeled_roi:.12f}"
+    )
     lines = [
         f"# EV Package {ev_input.drawing_number or ev_input.drawing_id}",
         "",
         "## Decision",
         "",
         f"- decision: {package.decision}",
+        f"- structural status: {package.structural_status}",
+        f"- artifact class: {package.artifact_class}",
+        "- real-money status: NO BET / PAPER ONLY",
         f"- decision reason: {package.decision_reason or 'n/a'}",
         f"- mode: {config.mode}",
         f"- minimum gross EV: {config.min_gross_ev:.12f}",
@@ -241,6 +250,11 @@ def _render_markdown(result: EVPackageRun) -> str:
         f"- expected payout: {package.expected_payout:.12f}",
         f"- modeled ROI: {modeled_roi}",
         "- modeled ROI is not observed ROI",
+        f"- paper selected count: {len(package.paper_coupons)}",
+        f"- paper cost: {package.paper_cost}",
+        f"- paper expected payout: {package.paper_expected_payout:.12f}",
+        f"- paper modeled ROI: {paper_roi}",
+        "- paper coupons are training diagnostics, never wager-ready output",
         "",
         "## Package Safety",
         "",
@@ -256,9 +270,7 @@ def _render_markdown(result: EVPackageRun) -> str:
             if safety is not None
             else "- reason codes: n/a"
         ),
-        (
-            f"- near-fixed share: {config.package_near_fixed_share:.12f}"
-        ),
+        (f"- near-fixed share: {config.package_near_fixed_share:.12f}"),
         (
             "- low-probability threshold: "
             f"{config.package_low_probability_threshold:.12f}"
@@ -300,11 +312,28 @@ def _render_markdown(result: EVPackageRun) -> str:
     if result.model_warning is not None:
         lines.append(f"- model warning: {result.model_warning}")
 
+    if package.paper_coupons:
+        lines.extend(
+            [
+                "",
+                "## Training/Paper Coupons",
+                "",
+                "Each row is a training diagnostic only; not a wager-ready export.",
+                "",
+                "| Rank | Coupon | Gross EV | Net EV |",
+                "| ---: | --- | ---: | ---: |",
+            ]
+        )
+        for row in package.paper_coupons:
+            lines.append(
+                f"| {row.rank} | {row.coupon} | {row.gross_ev:.12f} | "
+                f"{row.net_ev:.12f} |"
+            )
+
     selection = package.selection_diagnostics
     if selection is not None:
         repaired = ", ".join(
-            f"E{item.event} {item.outcome} "
-            f"({item.before_count}->{item.after_count})"
+            f"E{item.event} {item.outcome} ({item.before_count}->{item.after_count})"
             for item in selection.material_outcomes_repaired
         )
         reasons = ", ".join(selection.infeasibility_reasons)
@@ -328,11 +357,55 @@ def _render_markdown(result: EVPackageRun) -> str:
                     "- concentration maximum count: "
                     f"{selection.concentration_maximum_count}"
                 ),
+                (
+                    "- concentration soft maximum count: "
+                    f"{selection.concentration_soft_maximum_count} "
+                    f"(headroom {selection.concentration_headroom_count})"
+                ),
+                (
+                    "- continuous exposure floor: "
+                    f"scale={selection.exposure_floor_scale:.6f}, "
+                    f"exponent={selection.exposure_floor_exponent:.6f}"
+                ),
+                f"- headroom violation count: {selection.headroom_violation_count}",
                 f"- material outcomes repaired: {repaired or 'none'}",
                 f"- replacements: {len(selection.replacements)}",
+                f"- quality repairs: {selection.quality_repair_count}",
                 f"- gross EV delta: {selection.gross_ev_delta:.12f}",
+                (
+                    "- robust log-EV score delta: "
+                    f"{selection.robust_ev_score_delta:.12f}"
+                ),
                 f"- pre-package SHA-256: {selection.pre_package_sha256}",
                 f"- post-package SHA-256: {selection.post_package_sha256}",
+                (
+                    "- probability snapshot SHA-256: "
+                    f"{selection.probability_snapshot_sha256 or 'missing'}"
+                ),
+                (
+                    "- selector probability input SHA-256: "
+                    f"{selection.probability_input_sha256 or 'missing'}"
+                ),
+                (
+                    "- schedule-evidence ledger SHA-256: "
+                    f"{selection.schedule_evidence_ledger_sha256 or 'missing'}"
+                ),
+                (
+                    "- schedule-evidence semantic hash: "
+                    f"{selection.schedule_evidence_semantic_hash or 'missing'}"
+                ),
+                (
+                    "- provenance complete: "
+                    + ("yes" if selection.provenance_complete else "no")
+                ),
+                f"- diagnostics SHA-256: {selection.diagnostics_sha256 or 'missing'}",
+                "- objective order: " + " > ".join(selection.objective_order),
+                f"- real-money release gate: {selection.release_gate_decision}",
+                (
+                    "- real-money actionable: "
+                    + ("yes" if selection.real_money_actionable else "no")
+                ),
+                f"- release gate reason: {selection.release_gate_reason}",
                 f"- infeasibility reasons: {reasons or 'none'}",
                 "",
                 "| Event | Pre maximum/counts | Post maximum/counts |",
@@ -368,6 +441,61 @@ def _render_markdown(result: EVPackageRun) -> str:
                     f"{replacement.incoming_coupon} | "
                     f"{replacement.gross_ev_delta:.12f} |"
                 )
+
+        if selection.pre_diversity is not None and selection.post_diversity is not None:
+            lines.extend(
+                [
+                    "",
+                    "### Diversity",
+                    "",
+                    (
+                        "- close Hamming pairs: "
+                        f"{selection.pre_diversity.close_pair_count} -> "
+                        f"{selection.post_diversity.close_pair_count}"
+                    ),
+                    (
+                        "- mean pairwise Hamming: "
+                        f"{selection.pre_diversity.mean_pairwise_hamming:.6f} -> "
+                        f"{selection.post_diversity.mean_pairwise_hamming:.6f}"
+                    ),
+                    (
+                        "- effective pattern count: "
+                        f"{selection.pre_diversity.effective_pattern_count:.6f} -> "
+                        f"{selection.post_diversity.effective_pattern_count:.6f}"
+                    ),
+                    (
+                        "- post pairwise-distance distribution: "
+                        + ", ".join(
+                            f"d{distance}={count}"
+                            for distance, count in (
+                                selection.post_diversity.pairwise_distance_distribution
+                            )
+                        )
+                    ),
+                ]
+            )
+        category = selection.post_category_probabilities
+        if category is not None:
+            lines.extend(
+                [
+                    "",
+                    "### Modeled Package Category Probabilities",
+                    "",
+                    f"- P(at least 9 hits): {category.probability_at_least_9:.12f}",
+                    f"- P(at least 13 hits): {category.probability_at_least_13:.12f}",
+                    f"- P(at least 14 hits): {category.probability_at_least_14:.12f}",
+                    f"- P(15 hits): {category.probability_at_least_15:.12f}",
+                    (
+                        "- P(9+) method: "
+                        f"{category.probability_9_method}; "
+                        f"samples={category.monte_carlo_samples}; "
+                        f"seed={category.monte_carlo_seed}; "
+                        "worst-case 95% Monte Carlo error="
+                        f"{category.monte_carlo_worst_case_95_error:.6f}"
+                    ),
+                    (f"- P(13+/14+/15) method: {category.probability_13_15_method}"),
+                ]
+            )
 
     lines.extend(
         [

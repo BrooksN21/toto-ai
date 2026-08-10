@@ -41,6 +41,7 @@ from toto_ai.ev.models import (
     EVSurface,
     RankedCoupon,
 )
+from toto_ai.ev.package_quality import PackageSelectionProvenance
 from toto_ai.external_odds.api_sports import APISportsError
 from toto_ai.external_odds.audit import audit_external_coverage
 from toto_ai.external_odds.domain import ProviderEvent, ProviderMarket, QuotaState
@@ -311,7 +312,11 @@ def _fast_ev_and_no_real_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
             for index in range(config.max_coupons)
         )
 
-    def fixed_package(surface, config, *, probabilities=None):
+    def fixed_package(surface, config, *, probabilities=None, provenance=None):
+        assert provenance is None or isinstance(
+            provenance,
+            PackageSelectionProvenance,
+        )
         del probabilities
         if not np.any(surface.gross_ev >= config.min_gross_ev):
             return EVPackage(
@@ -341,13 +346,26 @@ def _fast_ev_and_no_real_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
         "select_ev_package",
         fixed_package,
     )
+    def fixed_package_with_top_coupons(
+        surface,
+        config,
+        *,
+        probabilities=None,
+        provenance=None,
+        diagnostic_limit=20,
+    ):
+        package = fixed_package(
+            surface,
+            config,
+            probabilities=probabilities,
+            provenance=provenance,
+        )
+        return package, fixture_coupons(config)[:diagnostic_limit]
+
     monkeypatch.setattr(
         drawing_module,
         "select_ev_package_with_top_coupons",
-        lambda surface, config, probabilities=None, diagnostic_limit=20: (
-            fixed_package(surface, config, probabilities=probabilities),
-            fixture_coupons(config)[:diagnostic_limit],
-        ),
+        fixed_package_with_top_coupons,
     )
     monkeypatch.setattr(
         drawing_module,
@@ -566,8 +584,8 @@ def _run_acceptance_scenario(
 @pytest.mark.parametrize(
     ("launch_at", "expected_decision", "provider_calls"),
     (
-        (T_MINUS_21, "PLAY", 1),
-        (T_MINUS_19, "PLAY", 1),
+        (T_MINUS_21, "NO BET", 1),
+        (T_MINUS_19, "NO BET", 1),
         (T_MINUS_5, "NO BET", 0),
     ),
 )
@@ -587,7 +605,7 @@ def test_safe_runner_operator_boundary(
     assert result.decision == expected_decision
     assert len(observed_provider_calls) == provider_calls
     assert all(path.exists() for path in report_paths)
-    if expected_decision == "PLAY":
+    if provider_calls:
         manifest = _runner_manifest_payload(report_paths)
         assert manifest["schema_version"] == 4
         _assert_stable_non_override_timing(manifest)
@@ -596,14 +614,16 @@ def test_safe_runner_operator_boundary(
         assert ev["computed"] is True
         assert ev["requested_bank"] == 4800
         assert ev["effective_budget"] == 4800
-        assert ev["selected_cost"] == 4800
-        assert ev["unused_requested_bank"] == 0
-        assert package["decision"] == "PLAY"
-        assert package["selected_count"] == len(package["coupons"]) == 160
-        assert package["cost"] == ev["selected_cost"] == 4800
-        assert package["unused_bank"] == ev["unused_requested_bank"] == 0
-        assert package["cost"] == package["selected_count"] * 30
-        assert 0 < package["cost"] <= ev["effective_budget"] <= ev["requested_bank"]
+        assert ev["selected_cost"] == 0
+        assert ev["unused_requested_bank"] == 4800
+        assert package["decision"] == "NO BET"
+        assert package["selected_count"] == len(package["coupons"]) == 0
+        assert package["cost"] == ev["selected_cost"] == 0
+        assert package["unused_bank"] == ev["unused_requested_bank"] == 4800
+        assert package["structural_status"] == "NOT_EVALUATED"
+        assert package["artifact_class"] == "TRAINING/PAPER"
+        assert package["paper_selected_count"] == len(package["paper_coupons"]) == 160
+        assert package["paper_cost"] == 4800
         assert result.collection is not None
         assert len(result.collection.snapshot.events) == 15
         assert result.collection.snapshot.target_fingerprint == (
@@ -620,7 +640,8 @@ def test_safe_runner_operator_boundary(
         assert result.ev_run.ev_input.probability_sources == (
             "totobrief_bk",
         ) * 15
-        assert result.ev_run.package.cost == 4800
+        assert result.ev_run.package.cost == 0
+        assert result.ev_run.package.paper_cost == 4800
     else:
         assert result.collection is None
         assert result.ev_run is None
@@ -1216,6 +1237,7 @@ def _assert_suppressed_package_summary(
         "model_supported": None,
         "model_warning": None,
         "package_safety": None,
+        "selection_diagnostics": None,
         "package": {
             "decision": "NO BET",
             "decision_reason": payload["terminal_reason"],
@@ -1226,6 +1248,14 @@ def _assert_suppressed_package_summary(
             "expected_payout": None,
             "modeled_roi": None,
             "derived_brief": [],
+            "structural_status": "NOT_EVALUATED",
+            "artifact_class": "NONE",
+            "paper_coupons": [],
+            "paper_selected_count": 0,
+            "paper_cost": 0,
+            "paper_expected_payout": 0.0,
+            "paper_modeled_roi": None,
+            "paper_derived_brief": [],
         },
         "sensitivity": [],
     }

@@ -445,7 +445,7 @@ def _complete_result(
     )
 
 
-def test_normal_playable_run_orders_every_phase():
+def test_injected_legacy_play_is_converted_to_paper_only_no_bet():
     target = _target()
     pinned = pin_drawing(target)
     collection = _collection(target)
@@ -472,15 +472,25 @@ def test_normal_playable_run_orders_every_phase():
         progress_callback=updates.append,
     )
 
-    assert result.decision == "PLAY"
+    assert result.decision == "NO BET"
+    assert result.terminal_reason == (
+        "real-money release gate is closed; legacy PLAY package suppressed"
+    )
     assert result.target == pinned
     assert result.final_fingerprint == pinned.fingerprint
     assert result.collection == collection
     assert result.audit == audit
-    assert result.ev_run == ev_run
+    assert result.ev_run is not None
+    assert result.ev_run != ev_run
     assert result.ev_run.effective_budget == 90
-    assert result.ev_run.selected_cost == 30
-    assert result.ev_run.unused_requested_bank == 4950
+    assert result.ev_run.selected_cost == 0
+    assert result.ev_run.unused_requested_bank == 4980
+    assert result.ev_run.package.decision == "NO BET"
+    assert result.ev_run.package.coupons == ()
+    assert result.ev_run.package.cost == 0
+    assert result.ev_run.package.artifact_class == "TRAINING/PAPER"
+    assert result.ev_run.package.paper_coupons == ev_run.package.coupons
+    assert result.ev_run.package.paper_cost == ev_run.package.cost
     assert result.elapsed_seconds == 4.0
     assert calls == ["preflight", "final", "collect", "timing", "audit", "ev"]
     assert sleeps == []
@@ -493,6 +503,7 @@ def test_normal_playable_run_orders_every_phase():
         "ev",
         "complete",
     ]
+    assert updates[-1]["decision"] == "NO BET"
 
 
 def test_preflight_check_failure_stops_before_wait_and_provider_access():
@@ -553,7 +564,7 @@ def test_launch_before_final_window_waits_with_injected_sleep():
         progress_callback=updates.append,
     )
 
-    assert result.decision == "PLAY"
+    assert result.decision == "NO BET"
     assert sleeps == [30.0]
     assert [update["phase"] for update in updates] == [
         "preflight",
@@ -594,7 +605,7 @@ def test_immediate_final_window_launch_does_not_sleep():
         sleep=sleeps.append,
     )
 
-    assert result.decision == "PLAY"
+    assert result.decision == "NO BET"
     assert sleeps == []
 
 
@@ -788,7 +799,7 @@ def test_coverage_is_diagnostic_and_does_not_change_ev_input_or_decision(
     )
 
     assert result.audit.gate.decision == coverage_decision
-    assert result.decision == "PLAY"
+    assert result.decision == "NO BET"
     assert built_for == [pinned]
 
 
@@ -1179,36 +1190,39 @@ def test_ev_no_bet_retains_zero_cost_run_and_actual_gate_reason(
     assert result.ev_run.top_coupons
 
 
-def test_result_rejects_play_without_a_play_package():
+def test_result_sanitizes_play_without_a_play_package():
     target = _target(fetched_at=T_MINUS_19)
-    with pytest.raises(ValueError, match="PLAY requires"):
-        _complete_result(
-            decision="PLAY",
-            target=target,
-            ev_run=_ev_run(target, decision="NO BET"),
-        )
+    result = _complete_result(
+        decision="PLAY",
+        target=target,
+        ev_run=_ev_run(target, decision="NO BET"),
+    )
+    assert result.decision == "NO BET"
+    assert result.ev_run.package.decision == "NO BET"
 
 
-def test_result_rejects_play_without_exact_playable_timing():
+def test_result_sanitizes_play_without_exact_playable_timing():
     target = _target(fetched_at=T_MINUS_19)
 
-    with pytest.raises(ValueError, match="PLAY requires playable timing"):
-        _complete_result(
-            decision="PLAY",
-            target=target,
-            timing=_timing(target, "unknown"),
-        )
+    result = _complete_result(
+        decision="PLAY",
+        target=target,
+        timing=_timing(target, "unknown"),
+    )
+    assert result.decision == "NO BET"
+    assert result.ev_run.package.coupons == ()
 
 
-def test_result_rejects_play_when_ev_run_timing_is_not_playable():
+def test_result_sanitizes_play_when_ev_run_timing_is_not_playable():
     target = _target(fetched_at=T_MINUS_19)
     ev_run = replace(
         _ev_run(target),
         timing_eligibility=_timing(target, "unknown"),
     )
 
-    with pytest.raises(ValueError, match="EV playable timing"):
-        _complete_result(decision="PLAY", target=target, ev_run=ev_run)
+    result = _complete_result(decision="PLAY", target=target, ev_run=ev_run)
+    assert result.decision == "NO BET"
+    assert result.ev_run.package.coupons == ()
 
 
 def test_result_rejects_research_only_without_a_research_package():

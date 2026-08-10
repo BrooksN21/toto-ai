@@ -528,6 +528,59 @@
           "source_url": "https://www.austinfc.com/news/leagues-cup-announces-kickoff-times-for-austin-fc-phase-one-matches-at-q2-stadium"
         }
       ]
+    },
+    {
+      "observation_id": "ligaportugal-benfica-b-leixoes-20260810",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Португалия. 2-й дивизион",
+        "Liga Portugal Meu Super",
+        "Liga Portugal 2",
+        "Segunda Liga"
+      ],
+      "home_entity": "SL Benfica B",
+      "home_aliases": [
+        "Бенфика Б",
+        "SL Benfica B",
+        "Benfica B"
+      ],
+      "away_entity": "Leixões SC",
+      "away_aliases": [
+        "Лейшойнш",
+        "Leixões SC",
+        "Leixoes",
+        "Leixões"
+      ],
+      "starts_at": "2026-08-10T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-10T09:21:20Z",
+      "review_document": "reviews/4971-event-8.md",
+      "review_document_sha256": "e4ac1964143b3d26d11f5b3a230d15e8f74cfb1948b67a0ab2891f2dc5205a87",
+      "claims": [
+        {
+          "source_name": "Liga Portugal match page",
+          "role": "official",
+          "source_url": "https://www.ligaportugal.pt/match/20262027/ligaportugalmeusuper/1/2"
+        },
+        {
+          "source_name": "Liga Portugal official calendar",
+          "role": "official",
+          "source_url": "https://www.ligaportugal.pt/calendars-ics/sl_benfica_b.ics"
+        },
+        {
+          "source_name": "FotMob",
+          "role": "independent",
+          "source_url": "https://www.fotmob.com/pt-BR/matches/leixoes-vs-vasco-da-gama/1dey8s"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/pt/football/match/sl-benficau21-leixoes-sc/tkbspOE"
+        }
+      ]
     }
   ]
 }

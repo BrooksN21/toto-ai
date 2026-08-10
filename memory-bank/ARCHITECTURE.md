@@ -27,6 +27,35 @@ size and feasibility reasons. Frozen chronological regressions separate
 pre-cutoff quote fixtures from finished outcomes and reproduce the exact old
 drawing-4967 package hash before retrospective scoring.
 
+Quality-v2 replaces the binary selector-side material floor with the
+configurable continuous target `K*s*p**alpha` and integer floor, constrained by
+`0 < s <= 1` and `alpha >= 1` for per-event sum feasibility. The hard safety
+cap remains unchanged. A lower soft cap creates concentration headroom and is
+optimized before package quality; unresolved headroom is reported.
+
+Within the unchanged deterministic candidate universe, quality repair uses
+incremental exposure, pairwise-Hamming, independently sampled P(9+), and exact
+weighted-outcome-union P(13+/14+/15) statistics. After hard safety and
+non-worsening headroom, the comparison is genuinely lexicographic: P(13+),
+P(14+), P(15), evaluation-independent optimization-stream P(9+), diversity,
+robust log-EV, then stable rank. Per-tier deadbands prevent numerical noise;
+lower tiers never compensate for a meaningful higher-tier loss. Nested
+category unions are never added or collapsed into a weighted score.
+
+Optimization and evaluation use domain-separated deterministic MC streams and
+report both seeds/sample counts. Diagnostics and manifests bind the exact
+probability snapshot, normalized input, ledger byte/semantic hashes, canonical
+schema-v6 plan bytes, complete selector configuration, package hash and
+self-hash. Missing, mutated, arbitrary or syntactic-only provenance fails
+closed. The independent final safety veto remains authoritative.
+
+Quality-v2 produces only a `STRUCTURAL_PASS`/`STRUCTURAL_FAIL` assessment and
+explicit `TRAINING/PAPER` coupon fields. Every actionable top-level decision is
+`NO BET`; scheduler publication cannot create a wager-ready marker. There is
+no trusted local prospective-evidence registry, so release IDs/hashes cannot be
+self-declared. A separate independently validated registry/protocol would be a
+future architecture change, not a selector field toggle.
+
 ## Immutable scheduler ledger binding
 
 Scheduler schema v6 binds the canonical contained schedule-evidence ledger
@@ -916,6 +945,18 @@ API-Sports free-plan denials are represented as
 cannot affect bookmaker probabilities or PLAY until a separately frozen
 chronological out-of-sample gate passes.
 
+## Test execution tiers
+
+Project pytest configuration excludes `heavy` by default. The release tier
+uses small deterministic contract surfaces and hash-bound frozen artifacts.
+The three full 4967/4969/4970 selector recomputations, full bank-4,980
+four-sensitivity runtime build, and real offline replay remain executable in
+the opt-in/nightly `heavy` research tier. Historical drawing-4951 pinning and
+stale-schedule and scheduler prepare/final pipeline replays use the same tier.
+Marker selection changes test
+orchestration only; production safety, objective ordering, provenance and the
+candidate universe are identical.
+
 ## Data-health contract v1
 
 `toto_ai.analytics.data_health` is the reusable read-only quality boundary for
@@ -938,3 +979,23 @@ MVP/baseline/strategy backtests call the same API. Generation always fails
 closed. Historical commands may continue only through the explicit
 `--allow-unhealthy-research` override, which is persisted in summaries and
 printed as research-only.
+
+## Public result and bound-selection-context boundaries (2026-08-10)
+
+`DrawingRunnerResult` normalizes any legacy/manual `PLAY` package before the
+object can cross a public boundary. Actionable coupon/cost/payout fields become
+empty `NO BET`; retained diagnostics are explicitly `TRAINING/PAPER`. Direct
+runner report writing and transactional aggregate publication repeat this
+normalization, so bypassing orchestration cannot create a wager-ready artifact.
+The direct EV package writer calls the same sanitizer before rendering: its
+coupon CSV is header-only and any retained coupons are confined to an explicit
+training/paper Markdown section. Valid `NO BET`/`STRUCTURAL_PASS` artifacts are
+not discarded or relabelled.
+
+`bound_selection_context(EVConfig)` is the canonical selector authorization
+object. It binds requested bank/stake/capacity, effective budget/capacity,
+minimum EV, concentration/probability policy, safety/provenance enablement, and
+the complete nested quality-v2 algorithm configuration. Provenance validates
+the exact object and canonical hash against current selector inputs and the
+referenced SchedulerPlan; the runner manifest and selector diagnostics must
+match the same plan context. Any absence or mismatch is fail-closed.

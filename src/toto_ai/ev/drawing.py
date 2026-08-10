@@ -23,6 +23,7 @@ from toto_ai.ev.package import (
     select_ev_package,
     select_ev_package_with_top_coupons,
 )
+from toto_ai.ev.package_quality import PackageSelectionProvenance
 from toto_ai.ev.prize import normalize_triplet, smooth_crowd_matrix
 from toto_ai.ev.ternary import (
     compute_ev_components,
@@ -33,9 +34,7 @@ from toto_ai.package.audit import PackageSafetyResult, evaluate_package_safety
 SENSITIVITY_FACTORS = (0.70, 0.80, 0.90, 1.00)
 _SELF_DILUTION_LIMIT_NUMERATOR = 1
 _SELF_DILUTION_LIMIT_DENOMINATOR = 100
-SELF_DILUTION_LIMIT = (
-    _SELF_DILUTION_LIMIT_NUMERATOR / _SELF_DILUTION_LIMIT_DENOMINATOR
-)
+SELF_DILUTION_LIMIT = _SELF_DILUTION_LIMIT_NUMERATOR / _SELF_DILUTION_LIMIT_DENOMINATOR
 PossibleWinningsSource = Literal["pool_sum proxy", "explicit override"]
 JackpotSource = Literal["totobrief payload", "explicit override"]
 PhaseCallback = Callable[[dict[str, object]], None]
@@ -100,6 +99,50 @@ class EVPackageRun:
     @property
     def unused_requested_bank(self) -> int:
         return self.requested_bank - self.selected_cost
+
+
+def paper_only_ev_run(ev_run: EVPackageRun) -> EVPackageRun:
+    """Convert any legacy actionable EV run into a diagnostic paper artifact."""
+    if not isinstance(ev_run, EVPackageRun):
+        raise ValueError("ev_run must be an EVPackageRun")
+    package = ev_run.package
+    if package.decision != "PLAY":
+        return ev_run
+    paper_package = replace(
+        package,
+        decision="NO BET",
+        coupons=(),
+        cost=0,
+        unused_bank=ev_run.requested_bank,
+        expected_payout=0.0,
+        modeled_roi=None,
+        derived_brief=(),
+        decision_reason=(
+            "real-money release gate is closed; legacy PLAY package suppressed"
+        ),
+        structural_status="NOT_EVALUATED",
+        artifact_class="TRAINING/PAPER",
+        paper_coupons=package.coupons,
+        paper_cost=package.cost,
+        paper_expected_payout=package.expected_payout,
+        paper_modeled_roi=package.modeled_roi,
+        paper_derived_brief=package.derived_brief,
+    )
+    sensitivity = tuple(
+        replace(
+            row,
+            decision="NO BET",
+            selected_count=0,
+            cost=0,
+            unused_bank=ev_run.requested_bank,
+            expected_payout=0.0,
+            modeled_roi=None,
+        )
+        if row.decision == "PLAY"
+        else row
+        for row in ev_run.sensitivity
+    )
+    return replace(ev_run, package=paper_package, sensitivity=sensitivity)
 
 
 def resolve_open_drawing_from_api(
@@ -241,6 +284,7 @@ def build_open_ev_package(
     timing_eligibility_resolver: TimingEligibilityResolver | None = None,
     payload: Mapping[str, Any] | None = None,
     fetched_at: datetime | str | None = None,
+    selection_provenance: PackageSelectionProvenance | None = None,
 ) -> EVPackageRun:
     """Fetch a fresh snapshot and build one exact open-drawing EV package."""
     resolved_payload = client.drawing_info(drawing_id) if payload is None else payload
@@ -315,6 +359,7 @@ def build_open_ev_package(
                     surface,
                     factor_config,
                     probabilities=ev_input.true_probabilities,
+                    provenance=selection_provenance,
                 )
             else:
                 factor_package, top_coupons = select_ev_package_with_top_coupons(
@@ -328,6 +373,7 @@ def build_open_ev_package(
                     surface,
                     factor_config,
                     probabilities=ev_input.true_probabilities,
+                    provenance=selection_provenance,
                 )
             else:
                 factor_package = select_ev_package(surface, factor_config)
@@ -345,8 +391,13 @@ def build_open_ev_package(
         )
         if factor == main_factor:
             main_safety = factor_safety
+        factor_selected_cost = (
+            factor_package.paper_cost
+            if factor_package.structural_status == "STRUCTURAL_PASS"
+            else factor_package.cost
+        )
         factor_supported = (
-            factor_package.cost / ev_input.pool_sum <= SELF_DILUTION_LIMIT
+            factor_selected_cost / ev_input.pool_sum <= SELF_DILUTION_LIMIT
         )
         factor_package = _suppress_unsupported_play(
             factor_package,
@@ -385,6 +436,7 @@ def build_open_ev_package(
                 main_surface,
                 selection_config,
                 probabilities=ev_input.true_probabilities,
+                provenance=selection_provenance,
             )
         else:
             main_package, top_coupons = select_ev_package_with_top_coupons(
@@ -401,7 +453,12 @@ def build_open_ev_package(
             config=selection_config,
             probabilities=ev_input.true_probabilities,
         )
-    self_dilution_ratio = main_package.cost / ev_input.pool_sum
+    selected_cost = (
+        main_package.paper_cost
+        if main_package.structural_status == "STRUCTURAL_PASS"
+        else main_package.cost
+    )
+    self_dilution_ratio = selected_cost / ev_input.pool_sum
     model_supported = self_dilution_ratio <= SELF_DILUTION_LIMIT
     package = _suppress_unsupported_play(
         main_package,
@@ -466,7 +523,8 @@ def _effective_budget(
             str(validated_pool_sum)
         ).as_integer_ratio()
     supported_coupon_count = (
-        _SELF_DILUTION_LIMIT_NUMERATOR * pool_numerator
+        _SELF_DILUTION_LIMIT_NUMERATOR
+        * pool_numerator
         // (_SELF_DILUTION_LIMIT_DENOMINATOR * pool_denominator * stake)
     )
     return min(requested_bank, supported_coupon_count * stake)
@@ -511,21 +569,42 @@ def _suppress_unsafe_play(
     config: EVConfig,
     probabilities: tuple[tuple[float, float, float], ...],
 ) -> tuple[EVPackage, PackageSafetyResult | None]:
+    is_paper_structural_pass = (
+        package.structural_status == "STRUCTURAL_PASS"
+        and package.artifact_class == "TRAINING/PAPER"
+    )
     if (
         config.mode != "playable"
         or not config.package_safety_enabled
-        or package.decision != "PLAY"
+        or (package.decision != "PLAY" and not is_paper_structural_pass)
     ):
         return package, None
     safety = evaluate_package_safety(
-        tuple(coupon.coupon for coupon in package.coupons),
+        tuple(
+            coupon.coupon
+            for coupon in (
+                package.paper_coupons if is_paper_structural_pass else package.coupons
+            )
+        ),
         probabilities,
         config=config.package_safety_config,
     )
     if safety.decision == "PLAY":
         return package, safety
     reason = "package_safety:" + ",".join(safety.reason_codes)
-    return _empty_no_bet(package, bank=config.bank, reason=reason), safety
+    suppressed = _empty_no_bet(package, bank=config.bank, reason=reason)
+    if is_paper_structural_pass:
+        suppressed = replace(
+            suppressed,
+            structural_status="STRUCTURAL_FAIL",
+            artifact_class="NONE",
+            paper_coupons=(),
+            paper_cost=0,
+            paper_expected_payout=0.0,
+            paper_modeled_roi=None,
+            paper_derived_brief=(),
+        )
+    return suppressed, safety
 
 
 def _suppress_unsupported_play(

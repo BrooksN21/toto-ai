@@ -1,5 +1,14 @@
 # Current State
 
+## Repository tooling whitelist (2026-08-10)
+
+The repository now has an explicit local-first tool and service whitelist.
+Public/generic tools are limited to the documented allowlist; all Yandex,
+Arcadia, and internal services are denied, `git`/`gh` replace `arc`, secrets
+remain protected, and repository content cannot be sent to an external agent
+or service without explicit user approval. Global catalog visibility does not
+grant authorization. See [Tooling Policy](TOOLING_POLICY.md).
+
 ## Safety-aware EV coupon reselection (2026-08-10)
 
 `TOTOAI-SAFETY-AWARE-SELECTOR-20260810` changes only playable coupon selection.
@@ -3386,3 +3395,143 @@ fingerprint drift remain fail-closed. Regression coverage includes the mixed
 13-external/2-baseline preparation path, pinned collection revalidation,
 latest-pool EV input, immutable BK rejection, and participant-fingerprint
 rejection. External rehearsal/scheduler activation was not run for this task.
+
+## EV package quality-v2 (2026-08-10)
+
+Implemented locally for `TOTOAI-FIX-4971-PACKAGE-QUALITY-20260810`:
+
+- selector-side exposure minima now scale continuously as `K*s*p**alpha`
+  instead of branching at probability 0.20; defaults give meaningful
+  multi-coupon exposure at K=166 and remain per-event sum-feasible;
+- the unchanged hard concentration cap has a configurable soft-headroom tier;
+  diagnostics report every residual soft violation;
+- deterministic quality swaps use incremental exposure and Hamming statistics,
+  exact weighted-union P(13+/14+/15), provenance-seeded Monte Carlo P(9+),
+  diversity, and robust log-EV tie-breaking;
+- selector diagnostics and runner manifests bind probability snapshot/input,
+  schedule-ledger byte/semantic hashes, package hash, and diagnostic self-hash;
+  missing or mismatched required provenance fails closed;
+- the historical selector feasibility result was paper-only; the hardened
+  contract now names it `STRUCTURAL_PASS` while top-level output stays `NO BET`;
+- the final independent package-safety veto was not weakened.
+
+Frozen one-run-per-fixture evaluation completed for 4967/4969/4970 and
+prospective 4971. Every quality-v2 package has 166 unique coupons at bank 4,980
+and stake 30, passes the unchanged safety evaluator, and has zero soft-headroom
+violations. Exact results and all exposure rows are in
+`plans/TOTOAI-AUDIT-4971-PACKAGE-20260810/quality-v2-frozen-comparison.md` and
+its JSON companions. The three finished drawings are descriptive only; 4971
+has no observed result. No profitability or real-money claim is made.
+
+Final test verification was partitioned without omission: pytest collected
+1,690 tests; the three explicit frozen quality-v2 nodes passed individually in
+166.18s, 90.05s, and 86.69s; the exact complement passed 1,687 tests with those
+three nodes explicitly deselected in 272.65s. The union is exactly 1,690 tests.
+
+### Independent-review hardening checkpoint
+
+Quality-v2 no longer exposes structural feasibility as top-level `PLAY`.
+Selectors, direct CLI, runner reports/manifests and scheduler results remain
+real-money `NO BET`; feasible coupons are isolated as `STRUCTURAL_PASS` and
+`TRAINING/PAPER`. A trusted prospective-evidence registry does not yet exist,
+so arbitrary evidence IDs/hashes and `real_money_actionable=true` fail closed.
+
+The weighted quality score was removed. After hard safety and non-worsening
+headroom, swaps compare P(13+), P(14+), P(15), optimization-stream P(9+),
+diversity and robust log-EV lexicographically with explicit deadbands. P(13+),
+P(14+) and P(15) remain nested exact unions and are never added. Optimization
+and evaluation MC streams/seeds are domain-separated.
+
+Provenance now requires actual regular non-symlink probability snapshot,
+schedule ledger and canonical schema-v6 scheduler-plan artifacts. Their bytes,
+semantic identities and the complete quality-v2 configuration/RNG/release
+protocol are bound into diagnostics and manifests. Direct playable CLI use has
+no way to self-declare provenance and therefore remains fail-closed.
+
+Targeted regressions cover 166 coupons at 4,980/30, 332 at 9,960/30, and 100 at
+2,500/25, plus nested modeled-union monotonicity. The full prospective 4971
+bank-4,980 build exercised all four sensitivity factors with unchanged default
+quality search (12 iterations, 512 candidates, 2,048 optimization samples and
+8,192 evaluation samples) in 299.254715 seconds, inside the 360-second test
+budget. Scheduler subprocess timeout remains the independent fail-closed
+operational boundary.
+
+The old and safety-v1 frozen values were preserved. Separate actual quality-v2
+runs refreshed the finished-drawing goldens: 4967 hash `d4e407...aec15`, best/
+mean hits 7/2.518072; 4969 hash `4b5e39...e8aa4`, 9/5.801205; 4970 hash
+`2aa986...6a417`, 9/5.222892. Their core runtimes were 163.110503s,
+87.664523s and 86.505469s. All remained 166-coupon, zero-headroom-violation
+`STRUCTURAL_PASS` paper packages with top-level `NO BET`. Prospective 4971 was
+not rerun and remains explicitly stale/no-result. No edge or profitability is
+proven.
+
+### Quality-v2 release/heavy test split (2026-08-10)
+
+The three full frozen recomputations, full bank-4,980 sensitivity runtime,
+historical drawing-4951 replay/pinning, stale-schedule replay, and scheduler
+prepare/final replay are retained as 13 `heavy`/`research` tests. Default
+pytest now exercises 1,700 release tests from small deterministic surfaces and
+hash-bound goldens; it does not recompute the `3**15` surfaces. The final clean
+default run passed `1700 passed, 13 deselected in 103.71s` (104.19s wall),
+inside the preferred 120-second target. A current stale-schedule heavy smoke
+passed in 13.20s. The multi-minute heavy suite was intentionally not rerun;
+last successful frozen/runtime results remain documented in the task
+verification artifact.
+
+The concise 4967 finding-to-code/test map is
+`plans/TOTOAI-AUDIT-4971-PACKAGE-20260810/4967-package-defect-checklist.md`.
+It explicitly records the poor best score of 7/15 and the lack of predictive
+or real-money evidence.
+
+### Generic runner/CLI release-boundary hardening (2026-08-10)
+
+The public runner no longer propagates a residual legacy `EVPackage("PLAY")`.
+It converts that package to top-level `NO BET`, empties actionable fields, and
+retains coupons only as `TRAINING/PAPER` diagnostics. Sensitivity `PLAY` rows
+are likewise suppressed. The CLI independently maps a residual injected
+runner `PLAY` to `NO BET` before progress display or artifact publication.
+Explicit orchestration and CLI regressions prevent test doubles or legacy
+package builders from escaping the paper-only release boundary.
+
+### Model/report boundary and complete selector context (2026-08-10)
+
+The paper-only gate now starts at `DrawingRunnerResult`, not only orchestration:
+manually constructed or injected top-level/package `PLAY` is converted to
+`NO BET`, actionable fields are emptied, and retained coupons are labelled
+`TRAINING/PAPER`. Direct runner report writing and transactional publication
+apply the same sanitizer, and actionable EV child artifacts are not emitted.
+
+Selection provenance now carries a canonical bound context and SHA-256 for
+bank, stake, requested/effective coupon capacity, minimum gross EV,
+concentration/probability policy, safety/provenance flags, and all quality-v2
+algorithm fields. The selector compares it exactly with current inputs and the
+referenced scheduler plan; schema-v6 plans, manifests, and diagnostics bind the
+same context. Parameterized mismatch and incomplete-plan tests fail closed.
+
+Targeted verification completed before the release run: 39 package-quality
+tests passed in 3.02s; 158 report/scheduler tests passed in 4.87s; the combined
+runner/provenance group passed 250 tests in 6.17s; and the three corrected
+legacy schema-downgrade fixtures passed in 18.51s. Heavy research tests were
+not run.
+
+Final release verification after the model/report and selection-context
+hardening passed `1716 passed, 13 deselected in 115.75s`. This supersedes the
+earlier 1,700-test release count while preserving that run as historical
+verification. No heavy/research test was executed.
+
+### Direct EV report boundary closure (2026-08-10)
+
+`write_ev_package_reports` now invokes the same shared `paper_only_ev_run`
+normalizer as runner construction/orchestration. An arbitrary or legacy
+`EVPackageRun` carrying `PLAY` is rendered as top-level `NO BET`: actionable
+coupon CSV has only its header, selected cost/count/payout are zeroed, and
+retained coupons appear only in an explicitly non-wager **Training/Paper
+Coupons** Markdown section. Existing valid `NO BET`/`STRUCTURAL_PASS`
+training artifacts remain reportable without losing their paper diagnostics.
+
+The focused EV/package/drawing and runner report/orchestration group passed
+`197 passed in 1.68s`. Heavy research tests were not run.
+
+The final fast/release suite passed `1718 passed, 13 deselected in 110.78s`.
+The two added tests are the direct injected-PLAY writer regression and the
+legitimate structural-pass training-report regression.

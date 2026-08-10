@@ -13,6 +13,11 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from toto_ai.ev.package_quality import (
+    bound_selection_context,
+    quality_v2_config_payload,
+    selection_context_sha256,
+)
 from toto_ai.ev.reports import (
     ev_package_report_paths,
     ev_package_report_paths_for_config,
@@ -32,6 +37,7 @@ from toto_ai.runner.models import (
     DrawingRunnerConfig,
     DrawingRunnerResult,
     PinnedDrawing,
+    enforce_paper_only_result,
 )
 
 RUNNER_REPORT_SCHEMA_VERSION = 5
@@ -99,9 +105,7 @@ def drawing_run_report_paths_for_target(
     _require_preflight_identity(config, target, preflight_at)
     target_value = target.target
     drawing_label = target_value.drawing_number or target_value.drawing_id
-    deadline = target_value.deadline.astimezone(timezone.utc).strftime(
-        "%Y%m%dT%H%M%SZ"
-    )
+    deadline = target_value.deadline.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     identity = _run_identity_values(config, target, preflight_at)
     encoded = _canonical_json(identity).encode("utf-8")
     run_id = hashlib.sha256(encoded).hexdigest()[:12]
@@ -162,6 +166,7 @@ def write_drawing_run_reports(
 ) -> tuple[Path, Path]:
     """Render and publish one rollback-safe manifest and Markdown pair."""
     _require_result(result)
+    result = enforce_paper_only_result(result)
     if not isinstance(links, RunnerReportLinks):
         raise ValueError("links must be RunnerReportLinks")
 
@@ -195,7 +200,7 @@ def publish_drawing_run_artifacts(
     _require_result(result)
     protected = _normalize_protected_paths(protected_paths)
     roots = _normalize_protected_paths(protected_roots)
-    current = result
+    current = enforce_paper_only_result(result)
 
     while True:
         if current.decision != "NO BET":
@@ -316,6 +321,9 @@ def _report_payload(
     target = result.target.target
     config = result.config
     warnings = _warnings(result)
+    selection_config = (
+        result.ev_run.config if result.ev_run is not None else config.ev_config
+    )
     return {
         "schema_version": (
             RUNNER_REPORT_SCHEMA_VERSION
@@ -340,6 +348,11 @@ def _report_payload(
             "final_lead_minutes": config.final_lead_minutes,
             "safety_stop_minutes": config.safety_stop_minutes,
             "provider": RUNNER_PROVIDER,
+            "quality_v2": (
+                quality_v2_config_payload(selection_config)
+            ),
+            "selection_context": bound_selection_context(selection_config),
+            "selection_context_sha256": selection_context_sha256(selection_config),
         },
         "replay": _offline_replay_payload(result),
         "final_input": _final_input_payload(result),
@@ -418,12 +431,8 @@ def _collection_payload(result: DrawingRunnerResult) -> dict[str, Any] | None:
         "stop_reason": collection.stop_reason,
         "total_requests": collection.total_requests,
         "total_cache_hits": collection.total_cache_hits,
-        "requested_schedule_date_count": (
-            collection.total_requested_schedule_dates
-        ),
-        "successful_schedule_date_count": (
-            collection.total_successful_schedule_dates
-        ),
+        "requested_schedule_date_count": (collection.total_requested_schedule_dates),
+        "successful_schedule_date_count": (collection.total_successful_schedule_dates),
         "failed_schedule_date_count": collection.total_failed_schedule_dates,
         "elapsed_seconds": float(collection.elapsed_seconds),
         "pinned_revalidation": _pinned_revalidation_payload(
@@ -604,6 +613,7 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
             "model_supported": None,
             "model_warning": None,
             "package_safety": None,
+            "selection_diagnostics": None,
             "package": {
                 "decision": "NO BET",
                 "decision_reason": result.terminal_reason,
@@ -614,15 +624,21 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
                 "expected_payout": None,
                 "modeled_roi": None,
                 "derived_brief": [],
+                "structural_status": "NOT_EVALUATED",
+                "artifact_class": "NONE",
+                "paper_coupons": [],
+                "paper_selected_count": 0,
+                "paper_cost": 0,
+                "paper_expected_payout": 0.0,
+                "paper_modeled_roi": None,
+                "paper_derived_brief": [],
             },
             "sensitivity": [],
         }
     package = ev_run.package
     _validate_computed_ev_payload(result)
     selected_coupons = (
-        package.coupons
-        if result.decision in ("PLAY", "RESEARCH ONLY")
-        else ()
+        package.coupons if result.decision in ("PLAY", "RESEARCH ONLY") else ()
     )
     decision_reason = package.decision_reason
     if package.decision == "NO BET" and decision_reason is None:
@@ -642,9 +658,12 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
         "model_supported": ev_run.model_supported,
         "model_warning": ev_run.model_warning,
         "package_safety": (
+            None if ev_run.package_safety is None else ev_run.package_safety.to_dict()
+        ),
+        "selection_diagnostics": (
             None
-            if ev_run.package_safety is None
-            else ev_run.package_safety.to_dict()
+            if package.selection_diagnostics is None
+            else asdict(package.selection_diagnostics)
         ),
         "package": {
             "decision": package.decision,
@@ -664,6 +683,22 @@ def _ev_payload(result: DrawingRunnerResult) -> dict[str, Any]:
             "expected_payout": package.expected_payout,
             "modeled_roi": package.modeled_roi,
             "derived_brief": list(package.derived_brief),
+            "structural_status": package.structural_status,
+            "artifact_class": package.artifact_class,
+            "paper_coupons": [
+                {
+                    "rank": coupon.rank,
+                    "coupon": coupon.coupon,
+                    "gross_ev": coupon.gross_ev,
+                    "net_ev": coupon.net_ev,
+                }
+                for coupon in package.paper_coupons
+            ],
+            "paper_selected_count": len(package.paper_coupons),
+            "paper_cost": package.paper_cost,
+            "paper_expected_payout": package.paper_expected_payout,
+            "paper_modeled_roi": package.paper_modeled_roi,
+            "paper_derived_brief": list(package.paper_derived_brief),
         },
         "sensitivity": [
             {
@@ -718,9 +753,7 @@ def _validate_computed_ev_payload(result: DrawingRunnerResult) -> None:
         raise ValueError(
             "PLAY requires a positive explicit effective budget and selected package"
         )
-    if package.decision == "NO BET" and (
-        selected_count != 0 or selected_cost != 0
-    ):
+    if package.decision == "NO BET" and (selected_count != 0 or selected_cost != 0):
         raise ValueError("NO BET must not contain a selected package")
 
 
@@ -777,8 +810,7 @@ def _render_markdown(payload: dict[str, Any]) -> str:
         "",
         f"- preflight at: {timeline['preflight_at']}",
         f"- final started at: {_display(timeline['final_started_at'])}",
-        "- collection finished at: "
-        f"{_display(timeline['collection_finished_at'])}",
+        f"- collection finished at: {_display(timeline['collection_finished_at'])}",
         f"- timing finished at: {_display(timeline['timing_finished_at'])}",
         f"- audit finished at: {_display(timeline['audit_finished_at'])}",
         f"- EV finished at: {_display(timeline['ev_finished_at'])}",
@@ -808,11 +840,7 @@ def _render_markdown(payload: dict[str, Any]) -> str:
     lines.extend(_link_markdown("EV", links["ev"]))
     lines.extend(["", "## Warnings", ""])
     warnings = payload["warnings"]
-    lines.extend(
-        [f"- {warning}" for warning in warnings]
-        if warnings
-        else ["- none"]
-    )
+    lines.extend([f"- {warning}" for warning in warnings] if warnings else ["- none"])
     lines.append("")
     return "\n".join(lines)
 
@@ -840,8 +868,7 @@ def _collection_markdown(collection: dict[str, Any] | None) -> list[str]:
         return ["- collection not run"]
     return [
         f"- final collection ID: {collection['final_collection_id']}",
-        "- collection IDs: "
-        f"{_display_list(collection['collection_ids'])}",
+        f"- collection IDs: {_display_list(collection['collection_ids'])}",
         f"- pass count: {collection['pass_count']}",
         f"- base pass count: {collection['base_pass_count']}",
         f"- expansion pass count: {collection['expansion_pass_count']}",
@@ -850,12 +877,9 @@ def _collection_markdown(collection: dict[str, Any] | None) -> list[str]:
         f"- stop reason: {collection['stop_reason']}",
         f"- total requests: {collection['total_requests']}",
         f"- total cache hits: {collection['total_cache_hits']}",
-        "- requested schedule dates: "
-        f"{collection['requested_schedule_date_count']}",
-        "- successful schedule dates: "
-        f"{collection['successful_schedule_date_count']}",
-        "- failed schedule dates: "
-        f"{collection['failed_schedule_date_count']}",
+        f"- requested schedule dates: {collection['requested_schedule_date_count']}",
+        f"- successful schedule dates: {collection['successful_schedule_date_count']}",
+        f"- failed schedule dates: {collection['failed_schedule_date_count']}",
         f"- elapsed seconds: {collection['elapsed_seconds']}",
     ]
 
@@ -871,23 +895,17 @@ def _timing_eligibility_markdown(eligibility: dict[str, Any]) -> list[str]:
         f"- raw span days: {_display(raw['span_days'])}",
         f"- raw TotoBrief timing count: {_display(raw['totobrief_count'])}",
         f"- raw provider timing count: {_display(raw['provider_count'])}",
-        "- raw operator override count: "
-        f"{_display(raw['operator_override_count'])}",
-        "- raw missing event orders: "
-        f"{_display_list(raw['missing_event_orders'])}",
+        f"- raw operator override count: {_display(raw['operator_override_count'])}",
+        f"- raw missing event orders: {_display_list(raw['missing_event_orders'])}",
         f"- raw earliest start: {_display(raw['earliest_start'])}",
         f"- raw latest start: {_display(raw['latest_start'])}",
         f"- effective status: {effective['status']}",
         f"- effective reason: {effective['reason']}",
-        "- effective fingerprint match: "
-        f"{_yes_no(effective['fingerprint_match'])}",
-        "- effective target fingerprint: "
-        f"{_display(effective['target_fingerprint'])}",
+        f"- effective fingerprint match: {_yes_no(effective['fingerprint_match'])}",
+        f"- effective target fingerprint: {_display(effective['target_fingerprint'])}",
         f"- effective span days: {_display(effective['span_days'])}",
-        "- effective TotoBrief timing count: "
-        f"{_display(effective['totobrief_count'])}",
-        "- effective provider timing count: "
-        f"{_display(effective['provider_count'])}",
+        f"- effective TotoBrief timing count: {_display(effective['totobrief_count'])}",
+        f"- effective provider timing count: {_display(effective['provider_count'])}",
         "- effective operator override count: "
         f"{_display(effective['operator_override_count'])}",
         "- effective missing event orders: "
@@ -924,10 +942,8 @@ def _timing_override_markdown(override: dict[str, Any] | None) -> list[str]:
         f"- status: {override['status']}",
         "- preflight catalog SHA-256: "
         f"{_display(override['preflight_catalog_sha256'])}",
-        "- timing catalog SHA-256: "
-        f"{_display(override['timing_catalog_sha256'])}",
-        "- package catalog SHA-256: "
-        f"{_display(override['package_catalog_sha256'])}",
+        f"- timing catalog SHA-256: {_display(override['timing_catalog_sha256'])}",
+        f"- package catalog SHA-256: {_display(override['package_catalog_sha256'])}",
         f"- override ID: {_display(override['override_id'])}",
         f"- reviewer: {_display(override['reviewer'])}",
         f"- reviewed at: {_display(override['reviewed_at'])}",
@@ -966,8 +982,7 @@ def _ev_markdown(ev: dict[str, Any]) -> list[str]:
         f"- selected count: {_display(package['selected_count'])}",
         f"- selected cost: {_display(ev['selected_cost'])}",
         f"- cost: {_display(package['cost'])}",
-        "- unused requested bank: "
-        f"{_display(ev['unused_requested_bank'])}",
+        f"- unused requested bank: {_display(ev['unused_requested_bank'])}",
         f"- unused bank: {_display(package['unused_bank'])}",
         f"- expected payout: {_display(package['expected_payout'])}",
         f"- modeled ROI: {_display(package['modeled_roi'])}",
@@ -1157,9 +1172,9 @@ def _suppress_for_publication(
     observed_at: datetime,
 ) -> DrawingRunnerResult:
     finished_at = max(result.finished_at, observed_at)
-    elapsed_seconds = result.elapsed_seconds + (
-        finished_at - result.finished_at
-    ).total_seconds()
+    elapsed_seconds = (
+        result.elapsed_seconds + (finished_at - result.finished_at).total_seconds()
+    )
     return replace(
         result,
         finished_at=finished_at,

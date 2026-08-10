@@ -105,6 +105,57 @@ def test_reports_use_deterministic_paths_and_disclose_model(tmp_path):
         assert expected in markdown
 
 
+def test_direct_ev_writer_sanitizes_injected_play_to_training_paper(tmp_path):
+    run = fixture_run(decision="PLAY")
+
+    csv_path, markdown_path = write_ev_package_reports(run, tmp_path)
+
+    assert csv_path.read_text(encoding="utf-8").splitlines() == [
+        "rank,coupon,gross_ev,net_ev"
+    ]
+    markdown = markdown_path.read_text(encoding="utf-8")
+    assert "- decision: NO BET" in markdown
+    assert "- artifact class: TRAINING/PAPER" in markdown
+    assert "- selected count: 0" in markdown
+    assert "- selected cost: 0" in markdown
+    assert "## Training/Paper Coupons" in markdown
+    assert "training diagnostic only; not a wager-ready export" in markdown
+    assert "1X21X21X21X21X2" in markdown
+
+
+def test_direct_ev_writer_preserves_legitimate_structural_pass_training_report(
+    tmp_path,
+):
+    base = fixture_run()
+    ranked = base.top_coupons[0]
+    run = replace(
+        base,
+        package=replace(
+            base.package,
+            structural_status="STRUCTURAL_PASS",
+            artifact_class="TRAINING/PAPER",
+            decision_reason="quality-v2 paper-only release gate",
+            paper_coupons=(ranked,),
+            paper_cost=30,
+            paper_expected_payout=28.5,
+            paper_modeled_roi=-0.05,
+            paper_derived_brief=tuple(ranked.coupon),
+        ),
+    )
+
+    csv_path, markdown_path = write_ev_package_reports(run, tmp_path)
+
+    assert csv_path.read_text(encoding="utf-8").splitlines() == [
+        "rank,coupon,gross_ev,net_ev"
+    ]
+    markdown = markdown_path.read_text(encoding="utf-8")
+    assert "- decision: NO BET" in markdown
+    assert "- structural status: STRUCTURAL_PASS" in markdown
+    assert "- artifact class: TRAINING/PAPER" in markdown
+    assert "## Training/Paper Coupons" in markdown
+    assert ranked.coupon in markdown
+
+
 def test_report_exposes_requested_bank_effective_cap_and_unused_request(tmp_path):
     base = fixture_run(decision="PLAY")
     run = replace(
@@ -131,8 +182,9 @@ def test_report_exposes_requested_bank_effective_cap_and_unused_request(tmp_path
     for expected in (
         "requested bank: 4980",
         "effective cap: 810",
-        "selected cost: 30",
-        "unused requested bank: 4950",
+        "selected cost: 0",
+        "unused requested bank: 4980",
+        "paper cost: 30",
         "self-dilution ratio: 0.000368346737",
     ):
         assert expected in markdown

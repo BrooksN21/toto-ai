@@ -17,6 +17,12 @@ from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai.db.models import Drawing
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.models import PlayTimingEligibility
+from toto_ai.ev.package_quality import (
+    EVALUATION_MC_STREAM,
+    OPTIMIZATION_MC_STREAM,
+    deterministic_outcome_seed,
+    diagnostics_payload_sha256,
+)
 from toto_ai.external_odds.eligibility import DrawingEligibility
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.package.audit import evaluate_package_safety
@@ -160,9 +166,7 @@ def test_run_drawing_requires_open_and_api_key(monkeypatch):
     assert "--open is required" in missing_open.output
 
     monkeypatch.delenv("API_SPORTS_KEY", raising=False)
-    missing_key = runner.invoke(
-        cli.app, ["run-drawing", "--open", "--bank", "4980"]
-    )
+    missing_key = runner.invoke(cli.app, ["run-drawing", "--open", "--bank", "4980"])
 
     assert missing_key.exit_code != 0
     assert "API_SPORTS_KEY is required" in missing_key.output
@@ -500,12 +504,10 @@ def test_run_drawing_wires_only_approved_options_and_fresh_dependencies(monkeypa
         "aliases.json",
         cli.DEFAULT_SCHEDULE_EVIDENCE_PATH.resolve(),
     )
-    assert "--reuse-cache" not in runner.invoke(
-        cli.app, ["run-drawing", "--help"]
-    ).output
-    assert "--min-gross-ev" in runner.invoke(
-        cli.app, ["run-drawing", "--help"]
-    ).output
+    assert (
+        "--reuse-cache" not in runner.invoke(cli.app, ["run-drawing", "--help"]).output
+    )
+    assert "--min-gross-ev" in runner.invoke(cli.app, ["run-drawing", "--help"]).output
 
 
 def test_run_drawing_pins_optional_timing_catalog_and_protects_input(
@@ -687,39 +689,37 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         name: parameter.default
         for name, parameter in parameters.items()
         if name != "bank"
-        } == {
-            "open": False,
-            "offline_replay": False,
-            "drawing_id": None,
-            "target_cache": None,
-            "schedule_cache": None,
-            "replay_as_of": None,
-            "replay_root": None,
-            "stake": 30,
-            "mode": "playable",
-            "minimum_gross_ev": 1.0,
-            "package_near_fixed_share": 0.95,
-            "package_low_probability_threshold": 0.20,
-            "package_material_probability_threshold": 0.20,
-            "final_lead_minutes": 20,
-            "safety_stop_minutes": 5,
-            "db": None,
-            "report_dir": None,
+    } == {
+        "open": False,
+        "offline_replay": False,
+        "drawing_id": None,
+        "target_cache": None,
+        "schedule_cache": None,
+        "replay_as_of": None,
+        "replay_root": None,
+        "stake": 30,
+        "mode": "playable",
+        "minimum_gross_ev": 1.0,
+        "package_near_fixed_share": 0.95,
+        "package_low_probability_threshold": 0.20,
+        "package_material_probability_threshold": 0.20,
+        "final_lead_minutes": 20,
+        "safety_stop_minutes": 5,
+        "db": None,
+        "report_dir": None,
         "provider": "api-sports",
         "aliases": "data/external-odds/team-aliases.json",
-            "timing_overrides": None,
-            "reviewed_schedule_catalog": None,
-            "expected_reviewed_catalog_hash": None,
-            "schedule_evidence_ledger": str(
-                cli.DEFAULT_SCHEDULE_EVIDENCE_PATH
-            ),
-            "expected_schedule_evidence_sha256": None,
-            "expected_schedule_evidence_semantic_hash": None,
-            "quota_reserve": 10,
+        "timing_overrides": None,
+        "reviewed_schedule_catalog": None,
+        "expected_reviewed_catalog_hash": None,
+        "schedule_evidence_ledger": str(cli.DEFAULT_SCHEDULE_EVIDENCE_PATH),
+        "expected_schedule_evidence_sha256": None,
+        "expected_schedule_evidence_semantic_hash": None,
+        "quota_reserve": 10,
         "max_passes": 3,
         "max_expansion_passes": 3,
         "retry_delay_seconds": 65.0,
-            "cache_root": None,
+        "cache_root": None,
     }
 
 
@@ -763,13 +763,17 @@ def test_scheduler_generated_run_drawing_argv_matches_cli_contract(
 
 
 @pytest.mark.parametrize(
-    ("decision", "mode"),
-    [("PLAY", "playable"), ("RESEARCH ONLY", "research")],
+    ("decision", "mode", "expected_decision"),
+    [
+        ("PLAY", "playable", "NO BET"),
+        ("RESEARCH ONLY", "research", "RESEARCH ONLY"),
+    ],
 )
 def test_run_drawing_prints_actionable_decisions_and_rich_progress(
     monkeypatch,
     decision,
     mode,
+    expected_decision,
 ):
     captured = _wire_runner(monkeypatch, result=_RunnerResult(decision))
 
@@ -796,7 +800,8 @@ def test_run_drawing_prints_actionable_decisions_and_rich_progress(
     )
 
     assert result.exit_code == 0, result.output
-    assert f"Decision: {decision}" in result.output
+    assert f"Decision: {expected_decision}" in result.output
+    assert captured["publication_result"].decision == expected_decision
     assert captured["progress_descriptions"] == [
         "Preflighting open drawing",
         "Preflighting open drawing",
@@ -806,8 +811,24 @@ def test_run_drawing_prints_actionable_decisions_and_rich_progress(
         "Checking exact timing eligibility",
         "Auditing latest 30 collections",
         "Building exact EV package",
-        f"Runner complete: {decision}",
+        f"Runner complete: {expected_decision}",
     ]
+
+
+def test_run_drawing_cli_cannot_publish_injected_legacy_play(monkeypatch):
+    captured = _wire_runner(monkeypatch, result=_RunnerResult("PLAY"))
+
+    result = runner.invoke(
+        cli.app,
+        ["run-drawing", "--open", "--bank", "4980", "--mode", "playable"],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Decision: NO BET" in result.output
+    assert "Decision: PLAY" not in result.output
+    published = captured["publication_result"]
+    assert published.decision == "NO BET"
+    assert published.ev_run is None
 
 
 @pytest.mark.parametrize(
@@ -1096,9 +1117,7 @@ def test_keyboard_interrupt_before_publication_is_nonzero(monkeypatch):
         "run_drawing",
         lambda **kwargs: (_ for _ in ()).throw(KeyboardInterrupt()),
     )
-    interrupted = runner.invoke(
-        cli.app, ["run-drawing", "--open", "--bank", "4980"]
-    )
+    interrupted = runner.invoke(cli.app, ["run-drawing", "--open", "--bank", "4980"])
 
     assert interrupted.exit_code != 0
     assert "interrupted" in interrupted.output.lower()
@@ -1108,6 +1127,13 @@ def _local_scheduler_manifest(
     *,
     final_lead_minutes: int,
     safety_stop_minutes: int = 10,
+    probability_snapshot_sha256: str,
+    probability_input_sha256: str,
+    schedule_evidence_ledger_sha256: str,
+    schedule_evidence_semantic_hash: str,
+    quality_v2_config: dict[str, object],
+    selection_context: dict[str, object],
+    selection_context_sha256: str,
 ) -> dict[str, object]:
     fingerprint = "b" * 64
     coupons = [
@@ -1128,12 +1154,54 @@ def _local_scheduler_manifest(
         tuple(str(row["coupon"]) for row in coupons),
         ((0.45, 0.45, 0.10),) * 15,
     ).to_dict()
+    assert safety["probability_input_sha256"] == probability_input_sha256
+    selection_diagnostics = {
+        "post_package_sha256": hashlib.sha256(
+            ",".join(str(row["coupon"]) for row in coupons).encode("utf-8")
+        ).hexdigest(),
+        "probability_snapshot_sha256": probability_snapshot_sha256,
+        "probability_input_sha256": probability_input_sha256,
+        "schedule_evidence_ledger_sha256": schedule_evidence_ledger_sha256,
+        "schedule_evidence_semantic_hash": schedule_evidence_semantic_hash,
+        "provenance_complete": True,
+        "monte_carlo_seed_material_sha256": "4" * 64,
+        "optimization_monte_carlo_seed": deterministic_outcome_seed(
+            seed_material="4" * 64, stream=OPTIMIZATION_MC_STREAM
+        ),
+        "evaluation_monte_carlo_seed": deterministic_outcome_seed(
+            seed_material="4" * 64, stream=EVALUATION_MC_STREAM
+        ),
+        "optimization_monte_carlo_samples": quality_v2_config["optimization_samples"],
+        "evaluation_monte_carlo_samples": quality_v2_config["evaluation_samples"],
+        "optimization_monte_carlo_stream": OPTIMIZATION_MC_STREAM,
+        "evaluation_monte_carlo_stream": EVALUATION_MC_STREAM,
+        "numpy_version": quality_v2_config["numpy_version"],
+        "quality_v2_config_sha256": hashlib.sha256(
+            json.dumps(
+                quality_v2_config,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode()
+        ).hexdigest(),
+        "selection_context_sha256": selection_context_sha256,
+        "release_protocol_version": "quality-v2-paper-only-v1",
+        "release_evidence_id": None,
+        "release_evidence_sha256": None,
+        "release_gate_decision": "NO BET",
+        "release_gate_reason": "trusted prospective evidence registry absent",
+        "real_money_actionable": False,
+        "diagnostics_sha256": "",
+    }
+    selection_diagnostics["diagnostics_sha256"] = diagnostics_payload_sha256(
+        selection_diagnostics
+    )
     return {
         "schema_version": 5,
         "run_id": f"local-{final_lead_minutes}",
         "command_status": "success",
-        "decision": "PLAY",
-        "terminal_reason": "local production-parser fixture",
+        "decision": "NO BET",
+        "terminal_reason": "quality-v2 paper-only release gate",
         "target": {
             "drawing_id": 12001,
             "drawing_number": 5001,
@@ -1148,6 +1216,9 @@ def _local_scheduler_manifest(
             "final_lead_minutes": final_lead_minutes,
             "safety_stop_minutes": safety_stop_minutes,
             "provider": "api-sports",
+            "quality_v2": quality_v2_config,
+            "selection_context": selection_context,
+            "selection_context_sha256": selection_context_sha256,
         },
         "timeline": {
             "preflight_at": "2030-01-02T11:15:00Z",
@@ -1175,9 +1246,7 @@ def _local_scheduler_manifest(
             "failed_schedule_date_count": 0,
             "elapsed_seconds": 1.0,
             "pinned_revalidation": asdict(
-                ready_pinned_revalidation(
-                    datetime(2030, 1, 2, 11, 46, tzinfo=UTC)
-                )
+                ready_pinned_revalidation(datetime(2030, 1, 2, 11, 46, tzinfo=UTC))
             ),
         },
         "eligibility": {
@@ -1235,8 +1304,8 @@ def _local_scheduler_manifest(
             "computed": True,
             "requested_bank": 4980,
             "effective_budget": 60,
-            "selected_cost": 60,
-            "unused_requested_bank": 4920,
+            "selected_cost": 0,
+            "unused_requested_bank": 4980,
             "input_fetched_at": "2030-01-02T11:45:00Z",
             "minimum_gross_ev": 1.0,
             "prize_fund_factor": 1.0,
@@ -1246,16 +1315,25 @@ def _local_scheduler_manifest(
             "model_supported": True,
             "model_warning": None,
             "package_safety": safety,
+            "selection_diagnostics": selection_diagnostics,
             "package": {
-                "decision": "PLAY",
-                "decision_reason": None,
-                "coupons": coupons,
-                "selected_count": 2,
-                "cost": 60,
-                "unused_bank": 4920,
-                "expected_payout": 69.0,
-                "modeled_roi": 69.0 / 60.0 - 1.0,
-                "derived_brief": ["1X"] * 15,
+                "decision": "NO BET",
+                "decision_reason": "quality_v2_real_money_release_gate_closed",
+                "coupons": [],
+                "selected_count": 0,
+                "cost": 0,
+                "unused_bank": 4980,
+                "expected_payout": 0.0,
+                "modeled_roi": None,
+                "derived_brief": [],
+                "structural_status": "STRUCTURAL_PASS",
+                "artifact_class": "TRAINING/PAPER",
+                "paper_coupons": coupons,
+                "paper_selected_count": 2,
+                "paper_cost": 60,
+                "paper_expected_payout": 69.0,
+                "paper_modeled_roi": 69.0 / 60.0 - 1.0,
+                "paper_derived_brief": ["1X"] * 15,
             },
             "sensitivity": [],
         },
@@ -1355,20 +1433,17 @@ def test_scheduler_cli_plan_simulated_execute_and_operator_pickup_are_offline(
     )
 
     assert executed.exit_code == 0, executed.output
-    assert "Outcome: bet-ready" in executed.output
-    assert "Decision: PLAY" in executed.output
+    assert "Outcome: no-bet" in executed.output
+    assert "Decision: NO BET" in executed.output
     run_dir = output_dir / "runs" / "5001" / "cli-acceptance"
     status_path = run_dir / "status.json"
-    package_path = run_dir / "package.csv"
     status = json.loads(status_path.read_text(encoding="utf-8"))
-    package = package_path.read_bytes()
-    assert status["outcome"] == "bet-ready"
-    assert status["decision"] == "PLAY"
-    assert status["package_path"] == str(package_path)
-    assert status["package_sha256"] == hashlib.sha256(package).hexdigest()
-    assert package.startswith(b"rank,coupon,gross_ev,net_ev\n")
-    assert package.count(b"\n") >= 3
-    assert (run_dir / ".bet-ready").is_file()
+    assert status["outcome"] == "no-bet"
+    assert status["decision"] == "NO BET"
+    assert status["package_path"] is None
+    assert status["package_sha256"] is None
+    assert not (run_dir / "package.csv").exists()
+    assert (run_dir / ".no-bet").is_file()
     assert not (run_dir / ".success").exists()
 
 
@@ -1510,12 +1585,26 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
     def local_subprocess(command, **kwargs):
         command = tuple(command)
         report_dir = Path(command[command.index("--report-dir") + 1])
-        report_dir.mkdir(parents=True)
+        report_dir.mkdir(parents=True, exist_ok=True)
         final_input_path = Path(kwargs["env"]["TOTO_FINAL_INPUT"])
         final_input = json.loads(final_input_path.read_text(encoding="utf-8"))
+        plan_config = json.loads(
+            (output_dir / "scheduler-plan.json").read_text(encoding="utf-8")
+        )["config"]
         manifest = _local_scheduler_manifest(
             final_lead_minutes=20,
             safety_stop_minutes=12,
+            probability_snapshot_sha256=final_input["snapshot_sha256"],
+            probability_input_sha256=final_input["probability_input_sha256"],
+            schedule_evidence_ledger_sha256=plan_config[
+                "schedule_evidence_ledger_sha256"
+            ],
+            schedule_evidence_semantic_hash=plan_config[
+                "schedule_evidence_semantic_hash"
+            ],
+            quality_v2_config=plan_config["quality_v2"],
+            selection_context=plan_config["selection_context"],
+            selection_context_sha256=plan_config["selection_context_sha256"],
         )
         fingerprint = final_input["target_fingerprint"]
         manifest["run_id"] = final_input["attempt_id"]
@@ -1527,17 +1616,13 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
         )
         manifest["eligibility"]["target_fingerprint"] = fingerprint
         manifest["eligibility"]["raw"]["target_fingerprint"] = fingerprint
-        manifest["eligibility"]["effective"][
-            "target_fingerprint"
-        ] = fingerprint
+        manifest["eligibility"]["effective"]["target_fingerprint"] = fingerprint
         manifest["final_input"] = {
             "path": str(final_input_path),
             "captured_at": final_input["captured_at"],
             "snapshot_sha256": final_input["snapshot_sha256"],
             "detail_payload_sha256": final_input["detail_payload_sha256"],
-            "probability_input_sha256": final_input[
-                "probability_input_sha256"
-            ],
+            "probability_input_sha256": final_input["probability_input_sha256"],
             "attempt_id": final_input["attempt_id"],
         }
         manifest["timeline"]["final_started_at"] = "2030-01-02T11:40:00Z"
@@ -1547,7 +1632,7 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
             encoding="utf-8",
         )
         clock.sleep(60)
-        return SimpleNamespace(returncode=0, stdout="Decision: PLAY\n", stderr="")
+        return SimpleNamespace(returncode=0, stdout="Decision: NO BET\n", stderr="")
 
     monkeypatch.setattr(scheduler_module.subprocess, "run", local_subprocess)
 
@@ -1561,26 +1646,21 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
     )
 
     assert executed.exit_code == 0, executed.output
-    assert "Outcome: bet-ready" in executed.output
+    assert "Outcome: no-bet" in executed.output
     assert detail_calls == 1
     attempts = tuple((output_dir / "attempts").iterdir())
     assert len(attempts) == 1
     attempt = attempts[0]
-    final_input = json.loads(
-        (attempt / "final-input.json").read_text(encoding="utf-8")
-    )
-    archive = json.loads(
-        (attempt / "package-archive.json").read_text(encoding="utf-8")
-    )
-    status = json.loads((attempt / "status.json").read_text(encoding="utf-8"))
-    assert archive["schema_version"] == 2
-    assert archive["final_input_sha256"] == final_input["snapshot_sha256"]
-    assert (
-        archive["probability_input_sha256"]
-        == final_input["probability_input_sha256"]
-    )
-    assert status["final_inputs_sha256"]
-    assert (attempt / ".bet-ready").is_file()
+    final_input = json.loads((attempt / "final-input.json").read_text(encoding="utf-8"))
+    assert final_input["snapshot_sha256"]
+    status_path = next(output_dir.glob("runs/5001/*/status.json"))
+    run_dir = status_path.parent
+    status = json.loads(status_path.read_text(encoding="utf-8"))
+    assert not (run_dir / "package-archive.json").exists()
+    assert status["decision"] == "NO BET"
+    assert status["package_path"] is None
+    assert (run_dir / ".no-bet").is_file()
+    assert not (run_dir / ".bet-ready").exists()
 
 
 def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> None:

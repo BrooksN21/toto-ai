@@ -1,0 +1,524 @@
+{
+  "artifact_status": "refreshed_quality_v2_golden_verified",
+  "current_code_objective_order": [
+    "probability_at_least_13",
+    "probability_at_least_14",
+    "probability_at_least_15",
+    "independent_probability_at_least_9",
+    "diversity",
+    "robust_ev"
+  ],
+  "current_code_status": "golden_verified_by_separate_node",
+  "drawing": 4969,
+  "headroom_violation_count": 0,
+  "objective_order_status": "current_true_lexicographic",
+  "packages": {
+    "old": {
+      "cost": 4980,
+      "count": 166,
+      "expected_payout": 397868.94289579464,
+      "exposure": {
+        "counts": [
+          [
+            143,
+            23,
+            0
+          ],
+          [
+            44,
+            118,
+            4
+          ],
+          [
+            0,
+            165,
+            1
+          ],
+          [
+            0,
+            0,
+            166
+          ],
+          [
+            153,
+            11,
+            2
+          ],
+          [
+            100,
+            18,
+            48
+          ],
+          [
+            0,
+            88,
+            78
+          ],
+          [
+            23,
+            143,
+            0
+          ],
+          [
+            2,
+            1,
+            163
+          ],
+          [
+            0,
+            10,
+            156
+          ],
+          [
+            37,
+            35,
+            94
+          ],
+          [
+            144,
+            10,
+            12
+          ],
+          [
+            0,
+            0,
+            166
+          ],
+          [
+            13,
+            153,
+            0
+          ],
+          [
+            0,
+            30,
+            136
+          ]
+        ],
+        "maximum_count": 166,
+        "maximum_share": 1.0,
+        "minimum_positive_count": 1
+      },
+      "hamming": {
+        "close_pair_count": 2374,
+        "close_pair_share": 0.1733479372033589,
+        "effective_pattern_count": 1.9668644677898395,
+        "maximum_pairwise_hamming": 6,
+        "mean_pairwise_hamming": 3.5336254107338445,
+        "median_pairwise_hamming": 4.0,
+        "minimum_pairwise_hamming": 1,
+        "pairwise_distance_distribution": [
+          [
+            1,
+            472
+          ],
+          [
+            2,
+            1902
+          ],
+          [
+            3,
+            4109
+          ],
+          [
+            4,
+            4586
+          ],
+          [
+            5,
+            2310
+          ],
+          [
+            6,
+            316
+          ]
+        ]
+      },
+      "modeled_probabilities": {
+        "mc_samples": 8192,
+        "mc_seed": 18168223791388896026,
+        "mc_worst_case_95_error": 0.010827572586919009,
+        "p13_15_method": "exact_hamming_union",
+        "p13_plus": 0.0012047903289031019,
+        "p14_plus": 0.00011923241960252696,
+        "p15": 5.474694879493121e-06,
+        "p9_method": "deterministic_monte_carlo",
+        "p9_plus": 0.2320556640625
+      },
+      "observed": {
+        "best_hits": 8,
+        "hit13": false,
+        "hit14": false,
+        "hit15": false,
+        "mean_hits": 5.427710843373494,
+        "result_available": true
+      },
+      "package_sha256": "85edc33d52e29b7dd51689e8a75bef12edfd69b73e915a4533972ddd882135ba",
+      "safety_decision": "NO BET"
+    },
+    "quality_v2": {
+      "artifact_class": "TRAINING/PAPER",
+      "cost": 4980,
+      "count": 166,
+      "expected_payout": 313605.66267582466,
+      "exposure": {
+        "counts": [
+          [
+            144,
+            8,
+            14
+          ],
+          [
+            34,
+            125,
+            7
+          ],
+          [
+            9,
+            145,
+            12
+          ],
+          [
+            11,
+            5,
+            150
+          ],
+          [
+            150,
+            8,
+            8
+          ],
+          [
+            119,
+            7,
+            40
+          ],
+          [
+            9,
+            97,
+            60
+          ],
+          [
+            9,
+            141,
+            16
+          ],
+          [
+            14,
+            6,
+            146
+          ],
+          [
+            10,
+            7,
+            149
+          ],
+          [
+            23,
+            13,
+            130
+          ],
+          [
+            152,
+            7,
+            7
+          ],
+          [
+            10,
+            7,
+            149
+          ],
+          [
+            13,
+            145,
+            8
+          ],
+          [
+            9,
+            13,
+            144
+          ]
+        ],
+        "maximum_count": 152,
+        "maximum_share": 0.9156626506024096,
+        "minimum_positive_count": 5
+      },
+      "hamming": {
+        "close_pair_count": 1531,
+        "close_pair_share": 0.1117926250456371,
+        "effective_pattern_count": 2.148655003142466,
+        "maximum_pairwise_hamming": 10,
+        "mean_pairwise_hamming": 4.03723986856517,
+        "median_pairwise_hamming": 4.0,
+        "minimum_pairwise_hamming": 1,
+        "pairwise_distance_distribution": [
+          [
+            1,
+            193
+          ],
+          [
+            2,
+            1338
+          ],
+          [
+            3,
+            3348
+          ],
+          [
+            4,
+            4414
+          ],
+          [
+            5,
+            2671
+          ],
+          [
+            6,
+            1043
+          ],
+          [
+            7,
+            440
+          ],
+          [
+            8,
+            205
+          ],
+          [
+            9,
+            42
+          ],
+          [
+            10,
+            1
+          ]
+        ]
+      },
+      "modeled_probabilities": {
+        "mc_samples": 8192,
+        "mc_seed": 15792024792245213970,
+        "mc_worst_case_95_error": 0.010827572586919009,
+        "p13_15_method": "exact_hamming_union",
+        "p13_plus": 0.0017519996337899562,
+        "p14_plus": 0.00017069665909453304,
+        "p15": 7.449402048703076e-06,
+        "p9_method": "deterministic_monte_carlo",
+        "p9_plus": 0.324462890625
+      },
+      "observed": {
+        "best_hits": 9,
+        "hit13": false,
+        "hit14": false,
+        "hit15": false,
+        "mean_hits": 5.801204819277109,
+        "result_available": true
+      },
+      "package_sha256": "4b5e39208c0c8a437d86b244eb8242bbce4189a030d36bfbb6151926ba4e8aa4",
+      "safety_decision": "PLAY",
+      "structural_status": "STRUCTURAL_PASS",
+      "top_level_decision": "NO BET"
+    },
+    "safety_v1": {
+      "cost": 4980,
+      "count": 166,
+      "expected_payout": 382668.74215943314,
+      "exposure": {
+        "counts": [
+          [
+            146,
+            19,
+            1
+          ],
+          [
+            38,
+            125,
+            3
+          ],
+          [
+            1,
+            157,
+            8
+          ],
+          [
+            1,
+            8,
+            157
+          ],
+          [
+            155,
+            10,
+            1
+          ],
+          [
+            106,
+            15,
+            45
+          ],
+          [
+            1,
+            95,
+            70
+          ],
+          [
+            21,
+            144,
+            1
+          ],
+          [
+            8,
+            1,
+            157
+          ],
+          [
+            1,
+            8,
+            157
+          ],
+          [
+            33,
+            29,
+            104
+          ],
+          [
+            146,
+            9,
+            11
+          ],
+          [
+            1,
+            8,
+            157
+          ],
+          [
+            11,
+            154,
+            1
+          ],
+          [
+            1,
+            26,
+            139
+          ]
+        ],
+        "maximum_count": 157,
+        "maximum_share": 0.9457831325301205,
+        "minimum_positive_count": 1
+      },
+      "hamming": {
+        "close_pair_count": 2181,
+        "close_pair_share": 0.1592552026286966,
+        "effective_pattern_count": 2.010099286350409,
+        "maximum_pairwise_hamming": 7,
+        "mean_pairwise_hamming": 3.658196422051844,
+        "median_pairwise_hamming": 4.0,
+        "minimum_pairwise_hamming": 1,
+        "pairwise_distance_distribution": [
+          [
+            1,
+            420
+          ],
+          [
+            2,
+            1761
+          ],
+          [
+            3,
+            3868
+          ],
+          [
+            4,
+            4439
+          ],
+          [
+            5,
+            2506
+          ],
+          [
+            6,
+            640
+          ],
+          [
+            7,
+            61
+          ]
+        ]
+      },
+      "modeled_probabilities": {
+        "mc_samples": 8192,
+        "mc_seed": 18168223791388896026,
+        "mc_worst_case_95_error": 0.010827572586919009,
+        "p13_15_method": "exact_hamming_union",
+        "p13_plus": 0.0012869726556609246,
+        "p14_plus": 0.0001252432210379649,
+        "p15": 5.61079464704459e-06,
+        "p9_method": "deterministic_monte_carlo",
+        "p9_plus": 0.246337890625
+      },
+      "observed": {
+        "best_hits": 9,
+        "hit13": false,
+        "hit14": false,
+        "hit15": false,
+        "mean_hits": 5.554216867469879,
+        "result_available": true
+      },
+      "package_sha256": "f4fde79d9bd1a8bd7f3725439f9b8f5fcf8da7dcadbe6e6240e3399743706ae0",
+      "safety_decision": "PLAY"
+    }
+  },
+  "preserved_baselines": [
+    "old",
+    "safety_v1"
+  ],
+  "prospective": false,
+  "provenance": {
+    "probability_input_sha256": "13366c5afa778de40a8a48d085edb259f277423343d498aa570ba4b49e2f7f34",
+    "probability_snapshot_sha256": "72bd4b060710244a68676871ab465dcdf73f0c190df174b3b8a4918522452e54",
+    "quality_v2_config_sha256": "79469d8afb31363450038000e813c362583edf64458e55dfd5064ec2f1607ee3",
+    "schedule_evidence_ledger_sha256": "9be0293c55cd986242b88659c17f5d8c90636ac7b4491484918cb764096106b9",
+    "schedule_evidence_semantic_hash": "ab76c45580e90e687f70aab8cf4038c1f74aeabe621d570774497e64701f4300",
+    "scheduler_plan_sha256": "9d005e34cb026eb35e9e0a72bbe7b61d5c068b1e5f74ff95ebef63bf159ccd11"
+  },
+  "quality_objective": {
+    "definition": "lexicographic(P13+, P14+, P15, independent-MC P9+, diversity, robust log-EV); nested category probabilities are not added",
+    "order": [
+      "probability_at_least_13",
+      "probability_at_least_14",
+      "probability_at_least_15",
+      "independent_probability_at_least_9",
+      "diversity",
+      "robust_ev"
+    ],
+    "post": [
+      0.0017519996337899547,
+      0.0001706966590945333,
+      7.449402048703075e-06,
+      0.3212890625,
+      0.15735669952537423,
+      683.8976971985326
+    ],
+    "pre": [
+      0.0013605302063606829,
+      0.0001415907428190216,
+      6.848993187762867e-06,
+      0.2294921875,
+      0.07802360958987464,
+      693.0320478440757
+    ],
+    "robust_ev_score_delta": -45.04244332457699,
+    "tolerances": [
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12,
+      1e-12
+    ]
+  },
+  "quality_v2_runtime_seconds": 87.66452316599316,
+  "real_money_actionable": false,
+  "release_gate_decision": "NO BET",
+  "result": "2X221121XX21X11",
+  "selector_diagnostics_sha256": "1b2b65680f10c824b78d68f5f1096bdd47e37bac915365b03d6806c127979da2",
+  "stale_quality_v2_fields": []
+}

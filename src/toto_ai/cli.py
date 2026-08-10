@@ -88,6 +88,12 @@ from toto_ai.ev.drawing import (
     resolve_open_drawing_from_api,
 )
 from toto_ai.ev.models import EVConfig, PlayTimingEligibility
+from toto_ai.ev.package_quality import (
+    PackageSelectionProvenance,
+    bound_selection_context,
+    selection_context_sha256,
+    selection_probability_input_sha256,
+)
 from toto_ai.ev.reports import write_ev_backtest_reports, write_ev_package_reports
 from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
 from toto_ai.external_odds.audit import CoverageAudit, audit_external_coverage
@@ -605,9 +611,7 @@ def nightly_reconciliation_run_command(
         )
     except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
-    typer.echo(
-        json.dumps(result.to_dict(), ensure_ascii=False, sort_keys=True)
-    )
+    typer.echo(json.dumps(result.to_dict(), ensure_ascii=False, sort_keys=True))
     if result.classification == "FAILED":
         raise typer.Exit(code=1)
     if result.classification == "PARTIAL":
@@ -1837,6 +1841,8 @@ def _build_runner_package(
     timing_eligibility_resolver: Callable[
         [Mapping[str, object]], PlayTimingEligibility
     ],
+    schedule_evidence_ledger_sha256: str | None = None,
+    schedule_evidence_semantic_hash: str | None = None,
 ) -> EVPackageRun:
     payload = client.drawing_info(expected.target.drawing_id)
     observed = pin_drawing(parse_target_drawing(payload, fetched_at=fetched_at))
@@ -1855,6 +1861,28 @@ def _build_runner_package(
         timing_eligibility_resolver=timing_eligibility_resolver,
         payload=payload,
         fetched_at=fetched_at,
+        selection_provenance=(
+            None
+            if schedule_evidence_ledger_sha256 is None
+            or schedule_evidence_semantic_hash is None
+            else PackageSelectionProvenance(
+                probability_snapshot_sha256=hashlib.sha256(
+                    json.dumps(
+                        payload,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ).encode("utf-8")
+                ).hexdigest(),
+                probability_input_sha256=selection_probability_input_sha256(
+                    tuple(event.bk_probabilities for event in observed.target.events)
+                ),
+                schedule_evidence_ledger_sha256=(schedule_evidence_ledger_sha256),
+                schedule_evidence_semantic_hash=(schedule_evidence_semantic_hash),
+                selection_context=bound_selection_context(config),
+                selection_context_sha256=selection_context_sha256(config),
+            )
+        ),
     )
 
 
@@ -1912,9 +1940,7 @@ def _prepare_runner_resources(
         expected_content_sha256=expected_schedule_evidence_sha256,
         expected_semantic_hash=expected_schedule_evidence_semantic_hash,
     )
-    ledger_content_sha256 = hashlib.sha256(
-        bound_ledger.path.read_bytes()
-    ).hexdigest()
+    ledger_content_sha256 = hashlib.sha256(bound_ledger.path.read_bytes()).hexdigest()
     reviewed_catalog = (
         None
         if reviewed_schedule_catalog is None
@@ -1937,8 +1963,7 @@ def _prepare_runner_resources(
         raise ValueError("reviewed catalog hash mismatch")
     expected_pin_set_hash = (
         reviewed_catalog.semantic_hash
-        if reviewed_catalog is not None
-        and expected_reviewed_catalog_hash is None
+        if reviewed_catalog is not None and expected_reviewed_catalog_hash is None
         else expected_reviewed_catalog_hash
     )
     candidate_paths = drawing_run_candidate_paths(
@@ -2425,9 +2450,7 @@ def run_drawing_command(
     publication: DrawingRunPublication | None = None
     try:
         bound_scheduler_plan = (
-            None
-            if scheduler_plan is None
-            else load_scheduler_plan(scheduler_plan)
+            None if scheduler_plan is None else load_scheduler_plan(scheduler_plan)
         )
         if bound_scheduler_plan is not None and (
             resolved_schedule_evidence_ledger
@@ -2439,6 +2462,43 @@ def run_drawing_command(
         ):
             raise ScheduleEvidenceIntegrityError(
                 "run-drawing ledger arguments conflict with scheduler plan binding"
+            )
+        if bound_scheduler_plan is not None:
+            config = replace(
+                config,
+                package_exposure_floor_scale=(
+                    bound_scheduler_plan.package_exposure_floor_scale
+                ),
+                package_exposure_floor_exponent=(
+                    bound_scheduler_plan.package_exposure_floor_exponent
+                ),
+                package_concentration_headroom_share=(
+                    bound_scheduler_plan.package_concentration_headroom_share
+                ),
+                package_diversity_close_distance=(
+                    bound_scheduler_plan.package_diversity_close_distance
+                ),
+                package_quality_repair_iterations=(
+                    bound_scheduler_plan.package_quality_repair_iterations
+                ),
+                package_quality_candidate_count=(
+                    bound_scheduler_plan.package_quality_candidate_count
+                ),
+                package_probability_samples=(
+                    bound_scheduler_plan.package_probability_samples
+                ),
+                package_optimization_probability_samples=(
+                    bound_scheduler_plan.package_optimization_probability_samples
+                ),
+                package_category_probability_tolerance=(
+                    bound_scheduler_plan.package_category_probability_tolerance
+                ),
+                package_diversity_tolerance=(
+                    bound_scheduler_plan.package_diversity_tolerance
+                ),
+                package_robust_ev_tolerance=(
+                    bound_scheduler_plan.package_robust_ev_tolerance
+                ),
             )
         load_bound_schedule_evidence_ledger(
             resolved_schedule_evidence_ledger,
@@ -2481,9 +2541,7 @@ def run_drawing_command(
                 reviewed_schedule_catalog=reviewed_schedule_catalog,
                 expected_reviewed_catalog_hash=expected_reviewed_catalog_hash,
                 schedule_evidence_ledger=resolved_schedule_evidence_ledger,
-                expected_schedule_evidence_sha256=(
-                    expected_schedule_evidence_sha256
-                ),
+                expected_schedule_evidence_sha256=(expected_schedule_evidence_sha256),
                 expected_schedule_evidence_semantic_hash=(
                     expected_schedule_evidence_semantic_hash
                 ),
@@ -2569,6 +2627,9 @@ def run_drawing_command(
                     remaining = float(update.get("seconds_until_final", 0.0))
                     description = f"Waiting for T-{remaining / 60:.1f} final window"
                 else:
+                    terminal_decision = update.get("decision")
+                    if terminal_decision == "PLAY":
+                        terminal_decision = "NO BET"
                     descriptions = {
                         "preflight": "Preflighting open drawing",
                         "final": "Revalidating pinned drawing",
@@ -2576,7 +2637,7 @@ def run_drawing_command(
                         "timing": "Checking exact timing eligibility",
                         "audit": "Auditing latest 30 collections",
                         "ev": "Building exact EV package",
-                        "complete": f"Runner complete: {update.get('decision')}",
+                        "complete": f"Runner complete: {terminal_decision}",
                     }
                     description = descriptions.get(phase, "Running drawing")
                 progress.update(task_id, description=description)
@@ -2604,6 +2665,12 @@ def run_drawing_command(
                                 ).effective
                             )
                         ),
+                        schedule_evidence_ledger_sha256=(
+                            require_resources().schedule_evidence_ledger_sha256
+                        ),
+                        schedule_evidence_semantic_hash=(
+                            require_resources().schedule_evidence_semantic_hash
+                        ),
                     )
                     if atomic_snapshot is None
                     else build_open_ev_package(
@@ -2622,6 +2689,17 @@ def run_drawing_command(
                         ),
                         payload=atomic_snapshot.payload,
                         fetched_at=atomic_snapshot.captured_at,
+                        selection_provenance=PackageSelectionProvenance.from_artifacts(
+                            probability_snapshot_path=Path(final_input),
+                            probability_input_sha256=(
+                                atomic_snapshot.probability_input_sha256
+                            ),
+                            schedule_evidence_ledger_path=(
+                                require_resources().schedule_evidence_ledger
+                            ),
+                            scheduler_plan_path=Path(scheduler_plan),
+                            selection_config=config.ev_config,
+                        ),
                     )
                 ),
                 now=_utc_now_datetime,
@@ -2699,11 +2777,19 @@ def run_drawing_command(
                 ev_run=None,
             )
 
+    if result.decision == "PLAY":
+        result = replace(
+            result,
+            decision="NO BET",
+            terminal_reason=(
+                "real-money release gate is closed; legacy PLAY result suppressed"
+            ),
+            ev_run=None,
+        )
+
     try:
         reviewed_inputs = () if resources is None else resources.reviewed_input_paths
-        ledger_input = (
-            None if resources is None else resources.schedule_evidence_ledger
-        )
+        ledger_input = None if resources is None else resources.schedule_evidence_ledger
         publication = publish_drawing_run_artifacts(
             result,
             report_dir=report_dir,
@@ -2900,12 +2986,8 @@ def preflight_status_command(
     open_drawing: bool = typer.Option(False, "--open"),
     db: str = typer.Option("data/toto.db"),
     community: str = typer.Option("baltbet-main"),
-    state_root: str = typer.Option(
-        "data/scheduler/morning-dispatch", "--state-root"
-    ),
-    scheduler_root: str = typer.Option(
-        "reports/rehearsal", "--scheduler-root"
-    ),
+    state_root: str = typer.Option("data/scheduler/morning-dispatch", "--state-root"),
+    scheduler_root: str = typer.Option("reports/rehearsal", "--scheduler-root"),
     at: str | None = typer.Option(None, "--at"),
 ) -> None:
     """Show concise read-only preparation and activation status."""
@@ -2935,9 +3017,7 @@ def preflight_retry_run_command(
     """Run one passive identity-bound preflight retry tick."""
     from toto_ai.runner.preflight_retry_scheduler import run_preflight_retry
 
-    raise typer.Exit(
-        run_preflight_retry(plan, now=datetime.now(timezone.utc))
-    )
+    raise typer.Exit(run_preflight_retry(plan, now=datetime.now(timezone.utc)))
 
 
 @app.command("preflight-retry-install")
@@ -2997,8 +3077,7 @@ def preflight_retry_rehearsal_command(
                 drawing_number=drawing_number,
                 rehearsal_at=datetime.fromisoformat(at.replace("Z", "+00:00")),
                 failed_schedule_dates=tuple(
-                    date.fromisoformat(value)
-                    for value in failed_schedule_date
+                    date.fromisoformat(value) for value in failed_schedule_date
                 ),
                 bank=bank,
                 stake=stake,
@@ -3206,9 +3285,7 @@ def morning_dispatch_command(
     expected_drawing_number: int | None = typer.Option(
         None, "--expected-drawing-number", min=1
     ),
-    expected_fingerprint: str | None = typer.Option(
-        None, "--expected-fingerprint"
-    ),
+    expected_fingerprint: str | None = typer.Option(None, "--expected-fingerprint"),
     expected_deadline: str | None = typer.Option(None, "--expected-deadline"),
     python_executable: str = typer.Option(sys.executable, "--python-executable"),
 ) -> None:
@@ -3464,6 +3541,7 @@ def ev_package_command(
             mode=mode,
             min_gross_ev=min_gross_ev,
             package_safety_enabled=True,
+            package_provenance_required=(mode == "playable"),
             package_near_fixed_share=package_near_fixed_share,
             package_low_probability_threshold=package_low_probability_threshold,
             package_material_probability_threshold=(
@@ -3850,9 +3928,7 @@ def prepare_drawing_command(
                 schedule_diagnostics=schedule_diagnostics,
                 reviewed_schedule_catalog=reviewed_schedule_catalog,
                 schedule_evidence_ledger=resolved_schedule_evidence_ledger,
-                expected_schedule_evidence_sha256=(
-                    expected_schedule_evidence_sha256
-                ),
+                expected_schedule_evidence_sha256=(expected_schedule_evidence_sha256),
                 expected_schedule_evidence_semantic_hash=(
                     expected_schedule_evidence_semantic_hash
                 ),
@@ -5468,6 +5544,8 @@ def _ev_package_summary_table(result: EVPackageRun) -> Table:
     table.add_column("Value", justify="right")
     rows = (
         ("decision", package.decision),
+        ("structural status", package.structural_status),
+        ("artifact class", package.artifact_class),
         ("requested bank", result.requested_bank),
         ("effective cap", result.effective_budget),
         ("selected coupons", len(package.coupons)),

@@ -19,6 +19,14 @@ def surface(values, event_count=2):
     )
 
 
+def paper_coupons(package):
+    assert package.decision == "NO BET"
+    assert package.structural_status == "STRUCTURAL_PASS"
+    assert package.artifact_class == "TRAINING/PAPER"
+    assert package.coupons == ()
+    return package.paper_coupons
+
+
 def test_research_mode_fills_comparison_package_even_below_one():
     package = select_ev_package(
         surface([0.8, 0.9, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]),
@@ -246,9 +254,8 @@ def test_safety_aware_selection_repairs_zero_exposure_with_lowest_ev_loss():
         probabilities=((0.6, 0.1, 0.3), (0.6, 0.4, 0.0)),
     )
 
-    assert package.decision == "PLAY"
-    assert [row.coupon for row in package.coupons] == ["11", "2X"]
-    assert package.cost == 60
+    assert [row.coupon for row in paper_coupons(package)] == ["11", "2X"]
+    assert package.paper_cost == 60
     diagnostics = package.selection_diagnostics
     assert diagnostics is not None
     assert diagnostics.constraint_feasible is True
@@ -262,7 +269,7 @@ def test_safety_aware_selection_repairs_zero_exposure_with_lowest_ev_loss():
     assert diagnostics.gross_ev_delta == pytest.approx(-1.0)
 
 
-def test_safety_aware_selection_repairs_concentration_without_material_floor():
+def test_safety_aware_selection_repairs_concentration_with_soft_headroom():
     values = [0.1] * 27
     for index, value in ((0, 10.0), (1, 9.9), (2, 9.8), (3, 9.7), (10, 9.6)):
         values[index] = value
@@ -280,12 +287,12 @@ def test_safety_aware_selection_repairs_concentration_without_material_floor():
         probabilities=((0.8, 0.1, 0.1),) * 3,
     )
 
-    assert package.decision == "PLAY"
-    assert len(package.coupons) == 4
+    assert len(paper_coupons(package)) == 4
     diagnostics = package.selection_diagnostics
     assert diagnostics is not None
     assert diagnostics.pre_exposures[0].maximum_count == 4
-    assert diagnostics.post_exposures[0].maximum_count == 3
+    assert diagnostics.post_exposures[0].maximum_count <= 3
+    assert diagnostics.headroom_violation_count == 0
     assert all(exposure.maximum_share < 0.95 for exposure in diagnostics.post_exposures)
 
 
@@ -307,11 +314,11 @@ def test_safety_aware_selection_uses_dynamic_bank_capacity(bank):
         probabilities=((0.5, 0.5, 0.0),) * 3,
     )
 
-    assert package.decision == "PLAY"
-    assert len(package.coupons) == bank // 30
-    assert len({row.coupon for row in package.coupons}) == bank // 30
-    assert package.cost == bank
-    assert package.unused_bank == 0
+    coupons = paper_coupons(package)
+    assert len(coupons) == bank // 30
+    assert len({row.coupon for row in coupons}) == bank // 30
+    assert package.paper_cost == bank
+    assert package.unused_bank == bank
     assert package.selection_diagnostics is not None
     assert package.selection_diagnostics.constraint_feasible is True
 
@@ -343,10 +350,11 @@ def test_safety_aware_selection_is_repeatable_with_stable_hashes():
     assert first == second
     diagnostics = first.selection_diagnostics
     assert diagnostics is not None
-    coupons = tuple(row.coupon for row in first.coupons)
-    assert diagnostics.post_package_sha256 == hashlib.sha256(
-        ",".join(coupons).encode("utf-8")
-    ).hexdigest()
+    coupons = tuple(row.coupon for row in paper_coupons(first))
+    assert (
+        diagnostics.post_package_sha256
+        == hashlib.sha256(",".join(coupons).encode("utf-8")).hexdigest()
+    )
 
 
 def test_safety_aware_selection_fails_closed_with_infeasibility_diagnostics():

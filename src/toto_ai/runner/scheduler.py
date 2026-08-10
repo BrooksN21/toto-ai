@@ -33,6 +33,17 @@ from toto_ai.api.rate_limit import TotoBriefRequestError
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.ev.models import EVConfig, validate_config_bank
+from toto_ai.ev.package_quality import (
+    EVALUATION_MC_STREAM,
+    OPTIMIZATION_MC_STREAM,
+    QUALITY_RELEASE_PROTOCOL_VERSION,
+    bound_selection_context,
+    deterministic_outcome_seed,
+    diagnostics_payload_sha256,
+    quality_v2_config_payload,
+    quality_v2_config_sha256,
+    selection_context_sha256,
+)
 from toto_ai.external_odds.matching import load_aliases
 from toto_ai.external_odds.reviewed_schedule import (
     load_reviewed_schedule_catalog,
@@ -84,6 +95,11 @@ DEFAULT_MINIMUM_GROSS_EV = EVConfig(
     mode="playable",
 ).min_gross_ev
 DEFAULT_PACKAGE_SAFETY_CONFIG = PackageSafetyConfig()
+DEFAULT_QUALITY_V2_CONFIG = EVConfig(
+    bank=30,
+    mode="playable",
+    package_safety_enabled=True,
+)
 PUBLICATION_LEAD_MINUTES = 10
 SCHEDULER_TRIGGER_OFFSETS_MINUTES = (120, 90, 60, 45, 30, 20, 16, 10)
 
@@ -192,14 +208,45 @@ class SchedulerPlan:
     drawing_id: int | None = None
     stake: int = 30
     minimum_gross_ev: float = DEFAULT_MINIMUM_GROSS_EV
-    package_near_fixed_share: float = (
-        DEFAULT_PACKAGE_SAFETY_CONFIG.near_fixed_share
-    )
+    package_near_fixed_share: float = DEFAULT_PACKAGE_SAFETY_CONFIG.near_fixed_share
     package_low_probability_threshold: float = (
         DEFAULT_PACKAGE_SAFETY_CONFIG.low_probability_threshold
     )
     package_material_probability_threshold: float = (
         DEFAULT_PACKAGE_SAFETY_CONFIG.material_probability_threshold
+    )
+    package_exposure_floor_scale: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_exposure_floor_scale
+    )
+    package_exposure_floor_exponent: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_exposure_floor_exponent
+    )
+    package_concentration_headroom_share: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_concentration_headroom_share
+    )
+    package_diversity_close_distance: int = (
+        DEFAULT_QUALITY_V2_CONFIG.package_diversity_close_distance
+    )
+    package_quality_repair_iterations: int = (
+        DEFAULT_QUALITY_V2_CONFIG.package_quality_repair_iterations
+    )
+    package_quality_candidate_count: int = (
+        DEFAULT_QUALITY_V2_CONFIG.package_quality_candidate_count
+    )
+    package_probability_samples: int = (
+        DEFAULT_QUALITY_V2_CONFIG.package_probability_samples
+    )
+    package_optimization_probability_samples: int = (
+        DEFAULT_QUALITY_V2_CONFIG.package_optimization_probability_samples
+    )
+    package_category_probability_tolerance: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_category_probability_tolerance
+    )
+    package_diversity_tolerance: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_diversity_tolerance
+    )
+    package_robust_ev_tolerance: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_robust_ev_tolerance
     )
     db: Path = Path("data/toto.db")
     aliases: Path = Path("data/external-odds/team-aliases.json")
@@ -265,6 +312,7 @@ class SchedulerPlan:
             "package_material_probability_threshold",
             safety_config.material_probability_threshold,
         )
+        _ = self.quality_v2_ev_config
         project_root = _validated_project_root(self.project_root)
         object.__setattr__(self, "project_root", project_root)
         object.__setattr__(
@@ -311,11 +359,14 @@ class SchedulerPlan:
                 reject_symlink=True,
             )
             ledger = load_schedule_evidence_ledger(schedule_evidence_ledger)
-            if _read_regular_file(
-                schedule_evidence_ledger,
-                name="schedule evidence ledger",
-                reject_symlink=True,
-            ) != ledger_bytes:
+            if (
+                _read_regular_file(
+                    schedule_evidence_ledger,
+                    name="schedule evidence ledger",
+                    reject_symlink=True,
+                )
+                != ledger_bytes
+            ):
                 raise ValueError("schedule evidence ledger changed while binding")
         except (OSError, SchedulerError, TypeError, ValueError) as error:
             raise ValueError(
@@ -332,12 +383,8 @@ class SchedulerPlan:
             and self.schedule_evidence_semantic_hash != ledger.semantic_hash
         ):
             raise ValueError("schedule evidence ledger semantic hash mismatch")
-        object.__setattr__(
-            self, "schedule_evidence_ledger", schedule_evidence_ledger
-        )
-        object.__setattr__(
-            self, "schedule_evidence_ledger_sha256", content_sha256
-        )
+        object.__setattr__(self, "schedule_evidence_ledger", schedule_evidence_ledger)
+        object.__setattr__(self, "schedule_evidence_ledger_sha256", content_sha256)
         object.__setattr__(
             self, "schedule_evidence_semantic_hash", ledger.semantic_hash
         )
@@ -359,26 +406,20 @@ class SchedulerPlan:
             )
             catalog_path = self.reviewed_schedule_catalog
             if not catalog_path.is_file() or catalog_path.is_symlink():
-                raise ValueError(
-                    "reviewed schedule catalog must be a regular file"
-                )
+                raise ValueError("reviewed schedule catalog must be a regular file")
             observed_hash = hashlib.sha256(catalog_path.read_bytes()).hexdigest()
             if (
                 self.reviewed_catalog_sha256 is not None
                 and self.reviewed_catalog_sha256 != observed_hash
             ):
                 raise ValueError("reviewed schedule catalog content changed")
-            object.__setattr__(
-                self, "reviewed_catalog_sha256", observed_hash
-            )
+            object.__setattr__(self, "reviewed_catalog_sha256", observed_hash)
         elif self.reviewed_catalog_sha256 is not None:
             raise ValueError(
                 "reviewed_catalog_sha256 requires reviewed schedule catalog"
             )
         if self.reviewed_catalog_hash is not None:
-            _require_sha256(
-                "reviewed_catalog_hash", self.reviewed_catalog_hash
-            )
+            _require_sha256("reviewed_catalog_hash", self.reviewed_catalog_hash)
         if self.env_file is not None:
             object.__setattr__(
                 self,
@@ -389,9 +430,7 @@ class SchedulerPlan:
             raise ValueError("provider must be api-sports")
         _require_non_negative_int("quota_reserve", self.quota_reserve)
         _require_positive_int("max_passes", self.max_passes)
-        _require_positive_int(
-            "max_expansion_passes", self.max_expansion_passes
-        )
+        _require_positive_int("max_expansion_passes", self.max_expansion_passes)
         if (
             not isinstance(self.retry_delay_seconds, (int, float))
             or isinstance(self.retry_delay_seconds, bool)
@@ -496,6 +535,41 @@ class SchedulerPlan:
         )
 
     @property
+    def quality_v2_ev_config(self) -> EVConfig:
+        return EVConfig(
+            bank=self.requested_bank,
+            stake=self.stake,
+            mode="playable",
+            min_gross_ev=self.minimum_gross_ev,
+            package_safety_enabled=True,
+            package_near_fixed_share=self.package_near_fixed_share,
+            package_low_probability_threshold=(
+                self.package_low_probability_threshold
+            ),
+            package_material_probability_threshold=(
+                self.package_material_probability_threshold
+            ),
+            package_exposure_floor_scale=self.package_exposure_floor_scale,
+            package_exposure_floor_exponent=self.package_exposure_floor_exponent,
+            package_concentration_headroom_share=(
+                self.package_concentration_headroom_share
+            ),
+            package_diversity_close_distance=self.package_diversity_close_distance,
+            package_quality_repair_iterations=(self.package_quality_repair_iterations),
+            package_quality_candidate_count=self.package_quality_candidate_count,
+            package_probability_samples=self.package_probability_samples,
+            package_optimization_probability_samples=(
+                self.package_optimization_probability_samples
+            ),
+            package_category_probability_tolerance=(
+                self.package_category_probability_tolerance
+            ),
+            package_diversity_tolerance=self.package_diversity_tolerance,
+            package_robust_ev_tolerance=self.package_robust_ev_tolerance,
+            package_provenance_required=True,
+        )
+
+    @property
     def plan_id(self) -> str:
         return hashlib.sha256(
             _canonical_json_bytes(self.semantic_payload())
@@ -520,6 +594,13 @@ class SchedulerPlan:
                 "package_material_probability_threshold": (
                     self.package_material_probability_threshold
                 ),
+                "quality_v2": quality_v2_config_payload(self.quality_v2_ev_config),
+                "selection_context": bound_selection_context(
+                    self.quality_v2_ev_config
+                ),
+                "selection_context_sha256": selection_context_sha256(
+                    self.quality_v2_ev_config
+                ),
                 "provider": self.provider,
                 "quota_reserve": self.quota_reserve,
                 "max_passes": self.max_passes,
@@ -530,9 +611,7 @@ class SchedulerPlan:
                 "max_final_attempts": self.max_final_attempts,
                 "transient_backoff_seconds": list(self.transient_backoff_seconds),
                 "publication_lead_minutes": PUBLICATION_LEAD_MINUTES,
-                "trigger_offsets_minutes": list(
-                    SCHEDULER_TRIGGER_OFFSETS_MINUTES
-                ),
+                "trigger_offsets_minutes": list(SCHEDULER_TRIGGER_OFFSETS_MINUTES),
                 "schedule_evidence_ledger_sha256": (
                     self.schedule_evidence_ledger_sha256
                 ),
@@ -550,9 +629,7 @@ class SchedulerPlan:
                 "output_dir": str(self.output_dir),
                 "db": str(self.db),
                 "aliases": str(self.aliases),
-                "schedule_evidence_ledger": str(
-                    self.schedule_evidence_ledger
-                ),
+                "schedule_evidence_ledger": str(self.schedule_evidence_ledger),
                 "timing_overrides": (
                     None
                     if self.timing_overrides is None
@@ -565,16 +642,10 @@ class SchedulerPlan:
                         "reviewed_schedule_catalog": str(
                             self.reviewed_schedule_catalog
                         ),
-                        "reviewed_catalog_sha256": (
-                            self.reviewed_catalog_sha256
-                        ),
+                        "reviewed_catalog_sha256": (self.reviewed_catalog_sha256),
                     }
                 ),
-                **(
-                    {}
-                    if self.env_file is None
-                    else {"env_file": str(self.env_file)}
-                ),
+                **({} if self.env_file is None else {"env_file": str(self.env_file)}),
             },
         }
 
@@ -621,15 +692,11 @@ class SchedulerPhaseResult:
 
     def __post_init__(self) -> None:
         if self.status not in ("complete", "failed", "ignored"):
-            raise ValueError(
-                "phase result status must be complete, failed, or ignored"
-            )
+            raise ValueError("phase result status must be complete, failed, or ignored")
         if self.decision not in (None, "PLAY", "NO BET"):
             raise ValueError("phase decision must be PLAY, NO BET, or absent")
         _require_text("reason", self.reason)
-        if self.package_bytes is not None and not isinstance(
-            self.package_bytes, bytes
-        ):
+        if self.package_bytes is not None and not isinstance(self.package_bytes, bytes):
             raise ValueError("package_bytes must be bytes")
         if self.package_path is not None:
             object.__setattr__(self, "package_path", Path(self.package_path))
@@ -646,9 +713,7 @@ class SchedulerPhaseResult:
         if self.override_sha256 is not None:
             _require_sha256("override_sha256", self.override_sha256)
         if self.final_inputs_sha256 is not None:
-            _require_sha256(
-                "final_inputs_sha256", self.final_inputs_sha256
-            )
+            _require_sha256("final_inputs_sha256", self.final_inputs_sha256)
 
     @classmethod
     def completed(cls, reason: str = "phase completed") -> SchedulerPhaseResult:
@@ -749,14 +814,45 @@ def build_scheduler_plan(
     drawing_id: int | None = None,
     stake: int = 30,
     minimum_gross_ev: float = DEFAULT_MINIMUM_GROSS_EV,
-    package_near_fixed_share: float = (
-        DEFAULT_PACKAGE_SAFETY_CONFIG.near_fixed_share
-    ),
+    package_near_fixed_share: float = (DEFAULT_PACKAGE_SAFETY_CONFIG.near_fixed_share),
     package_low_probability_threshold: float = (
         DEFAULT_PACKAGE_SAFETY_CONFIG.low_probability_threshold
     ),
     package_material_probability_threshold: float = (
         DEFAULT_PACKAGE_SAFETY_CONFIG.material_probability_threshold
+    ),
+    package_exposure_floor_scale: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_exposure_floor_scale
+    ),
+    package_exposure_floor_exponent: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_exposure_floor_exponent
+    ),
+    package_concentration_headroom_share: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_concentration_headroom_share
+    ),
+    package_diversity_close_distance: int = (
+        DEFAULT_QUALITY_V2_CONFIG.package_diversity_close_distance
+    ),
+    package_quality_repair_iterations: int = (
+        DEFAULT_QUALITY_V2_CONFIG.package_quality_repair_iterations
+    ),
+    package_quality_candidate_count: int = (
+        DEFAULT_QUALITY_V2_CONFIG.package_quality_candidate_count
+    ),
+    package_probability_samples: int = (
+        DEFAULT_QUALITY_V2_CONFIG.package_probability_samples
+    ),
+    package_optimization_probability_samples: int = (
+        DEFAULT_QUALITY_V2_CONFIG.package_optimization_probability_samples
+    ),
+    package_category_probability_tolerance: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_category_probability_tolerance
+    ),
+    package_diversity_tolerance: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_diversity_tolerance
+    ),
+    package_robust_ev_tolerance: float = (
+        DEFAULT_QUALITY_V2_CONFIG.package_robust_ev_tolerance
     ),
     db: str | Path = "data/toto.db",
     aliases: str | Path = "data/external-odds/team-aliases.json",
@@ -790,9 +886,7 @@ def build_scheduler_plan(
     normalized_db = _normalized_path(db)
     normalized_aliases = _normalized_path(aliases)
     root = _normalized_path(
-        Path(__file__).resolve().parents[3]
-        if project_root is None
-        else project_root
+        Path(__file__).resolve().parents[3] if project_root is None else project_root
     )
     ledger_path = Path(schedule_evidence_ledger)
     if not ledger_path.is_absolute():
@@ -806,9 +900,18 @@ def build_scheduler_plan(
         minimum_gross_ev=minimum_gross_ev,
         package_near_fixed_share=package_near_fixed_share,
         package_low_probability_threshold=package_low_probability_threshold,
-        package_material_probability_threshold=(
-            package_material_probability_threshold
-        ),
+        package_material_probability_threshold=(package_material_probability_threshold),
+        package_exposure_floor_scale=package_exposure_floor_scale,
+        package_exposure_floor_exponent=package_exposure_floor_exponent,
+        package_concentration_headroom_share=package_concentration_headroom_share,
+        package_diversity_close_distance=package_diversity_close_distance,
+        package_quality_repair_iterations=package_quality_repair_iterations,
+        package_quality_candidate_count=package_quality_candidate_count,
+        package_probability_samples=package_probability_samples,
+        package_optimization_probability_samples=package_optimization_probability_samples,
+        package_category_probability_tolerance=package_category_probability_tolerance,
+        package_diversity_tolerance=package_diversity_tolerance,
+        package_robust_ev_tolerance=package_robust_ev_tolerance,
         output_dir=normalized_output,
         project_root=root,
         db=normalized_db,
@@ -816,9 +919,7 @@ def build_scheduler_plan(
         schedule_evidence_ledger=ledger_path,
         schedule_evidence_ledger_sha256=schedule_evidence_ledger_sha256,
         schedule_evidence_semantic_hash=schedule_evidence_semantic_hash,
-        timing_overrides=(
-            None if timing_overrides is None else Path(timing_overrides)
-        ),
+        timing_overrides=(None if timing_overrides is None else Path(timing_overrides)),
         reviewed_schedule_catalog=(
             None
             if reviewed_schedule_catalog is None
@@ -870,9 +971,7 @@ def validate_schedule_evidence_binding(
             name="schedule evidence ledger",
             reject_symlink=True,
         )
-        if hashlib.sha256(before).hexdigest() != (
-            plan.schedule_evidence_ledger_sha256
-        ):
+        if hashlib.sha256(before).hexdigest() != (plan.schedule_evidence_ledger_sha256):
             raise ValueError("schedule evidence ledger content hash mismatch")
         ledger = load_schedule_evidence_ledger(plan.schedule_evidence_ledger)
         after = _read_regular_file(
@@ -903,10 +1002,7 @@ def scheduler_launch_agent_label(plan: SchedulerPlan) -> str:
         raise ValueError(
             "legacy scheduler plans cannot derive a production LaunchAgent label"
         )
-    return (
-        "com.totoai.production-scheduler."
-        f"v{SCHEDULER_SCHEMA_VERSION}.{plan.plan_id}"
-    )
+    return f"com.totoai.production-scheduler.v{SCHEDULER_SCHEMA_VERSION}.{plan.plan_id}"
 
 
 def _infer_scheduler_project_root(
@@ -922,18 +1018,14 @@ def _infer_scheduler_project_root(
     """
 
     try:
-        common = Path(
-            os.path.commonpath((str(output_dir), str(db), str(aliases)))
-        )
+        common = Path(os.path.commonpath((str(output_dir), str(db), str(aliases))))
     except ValueError as error:
         raise ValueError(
             "legacy scheduler plan project_root cannot be inferred"
         ) from error
     root = _normalized_path(common)
     if root == Path(root.anchor):
-        raise ValueError(
-            "legacy scheduler plan project_root inference is too broad"
-        )
+        raise ValueError("legacy scheduler plan project_root inference is too broad")
     return root
 
 
@@ -1037,7 +1129,15 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
     if present_tick_keys:
         base_config_keys |= tick_config_keys
     if schema_version == SCHEDULER_SCHEMA_VERSION:
-        base_config_keys |= trigger_config_keys | ledger_binding_config_keys
+        base_config_keys |= (
+            trigger_config_keys
+            | ledger_binding_config_keys
+            | {
+                "quality_v2",
+                "selection_context",
+                "selection_context_sha256",
+            }
+        )
     safety_config_keys = {
         "package_near_fixed_share",
         "package_low_probability_threshold",
@@ -1047,19 +1147,97 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
     if present_safety_keys and present_safety_keys != safety_config_keys:
         raise ValueError("config package safety thresholds must be complete")
     optional_binding_keys = (
-        {"reviewed_catalog_hash"}
-        if "reviewed_catalog_hash" in raw_config
-        else set()
+        {"reviewed_catalog_hash"} if "reviewed_catalog_hash" in raw_config else set()
     )
     config = _exact_mapping(
         raw_config,
         base_config_keys | present_safety_keys | optional_binding_keys,
         "config",
     )
+    quality_v2 = (
+        quality_v2_config_payload(DEFAULT_QUALITY_V2_CONFIG)
+        if schema_version != SCHEDULER_SCHEMA_VERSION
+        else _exact_mapping(
+            config["quality_v2"],
+            set(quality_v2_config_payload(DEFAULT_QUALITY_V2_CONFIG)),
+            "quality_v2 config",
+        )
+    )
+    if schema_version == SCHEDULER_SCHEMA_VERSION:
+        expected_selection_context = bound_selection_context(
+            EVConfig(
+                bank=_strict_int("requested_bank", config["requested_bank"]),
+                stake=_strict_int("stake", config["stake"]),
+                mode="playable",
+                min_gross_ev=float(config["minimum_gross_ev"]),
+                package_safety_enabled=True,
+                package_near_fixed_share=float(config["package_near_fixed_share"]),
+                package_low_probability_threshold=float(
+                    config["package_low_probability_threshold"]
+                ),
+                package_material_probability_threshold=float(
+                    config["package_material_probability_threshold"]
+                ),
+                package_exposure_floor_scale=float(quality_v2["exposure_floor_scale"]),
+                package_exposure_floor_exponent=float(
+                    quality_v2["exposure_floor_exponent"]
+                ),
+                package_concentration_headroom_share=float(
+                    quality_v2["concentration_headroom_share"]
+                ),
+                package_diversity_close_distance=_strict_int(
+                    "quality_v2 diversity_close_distance",
+                    quality_v2["diversity_close_distance"],
+                ),
+                package_quality_repair_iterations=_strict_int(
+                    "quality_v2 repair_iterations", quality_v2["repair_iterations"]
+                ),
+                package_quality_candidate_count=_strict_int(
+                    "quality_v2 candidate_count", quality_v2["candidate_count"]
+                ),
+                package_probability_samples=_strict_int(
+                    "quality_v2 evaluation_samples", quality_v2["evaluation_samples"]
+                ),
+                package_optimization_probability_samples=_strict_int(
+                    "quality_v2 optimization_samples",
+                    quality_v2["optimization_samples"],
+                ),
+                package_category_probability_tolerance=float(
+                    quality_v2["objective_tolerances"][0]
+                ),
+                package_diversity_tolerance=float(
+                    quality_v2["objective_tolerances"][4]
+                ),
+                package_robust_ev_tolerance=float(
+                    quality_v2["objective_tolerances"][5]
+                ),
+                package_provenance_required=True,
+            )
+        )
+        if config["selection_context"] != expected_selection_context:
+            raise ValueError("scheduler plan selection context mismatch")
+        if (
+            config["selection_context_sha256"]
+            != selection_context_sha256(expected_selection_context)
+        ):
+            raise ValueError("scheduler plan selection context hash mismatch")
+    if (
+        quality_v2["objective_order"]
+        != quality_v2_config_payload(DEFAULT_QUALITY_V2_CONFIG)["objective_order"]
+        or quality_v2["optimization_stream"] != "quality-v2-optimization"
+        or quality_v2["evaluation_stream"] != "quality-v2-evaluation"
+        or quality_v2["release_protocol_version"] != QUALITY_RELEASE_PROTOCOL_VERSION
+        or quality_v2["rng"] != "numpy.random.Generator(PCG64)"
+    ):
+        raise ValueError("scheduler quality-v2 protocol mismatch")
+    if (
+        not isinstance(quality_v2["objective_tolerances"], list)
+        or len(quality_v2["objective_tolerances"]) != 6
+    ):
+        raise ValueError("scheduler quality-v2 tolerances are malformed")
     if schema_version == SCHEDULER_SCHEMA_VERSION and (
         config["publication_lead_minutes"] != PUBLICATION_LEAD_MINUTES
-        or config["trigger_offsets_minutes"]
-        != list(SCHEDULER_TRIGGER_OFFSETS_MINUTES)
+        or config["trigger_offsets_minutes"] != list(SCHEDULER_TRIGGER_OFFSETS_MINUTES)
     ):
         raise ValueError(
             f"scheduler trigger semantics do not match schema "
@@ -1071,9 +1249,7 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         raise ValueError("paths must be a JSON object")
     path_keys = {"output_dir", "db", "aliases", "timing_overrides"}
     if "reviewed_schedule_catalog" in raw_paths:
-        path_keys.update(
-            ("reviewed_schedule_catalog", "reviewed_catalog_sha256")
-        )
+        path_keys.update(("reviewed_schedule_catalog", "reviewed_catalog_sha256"))
     if schema_version in {
         LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
         LEGACY_ACTIONABLE_SCHEMA_VERSION,
@@ -1109,6 +1285,17 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
             "package_material_probability_threshold",
             DEFAULT_PACKAGE_SAFETY_CONFIG.material_probability_threshold,
         ),
+        package_exposure_floor_scale=quality_v2["exposure_floor_scale"],
+        package_exposure_floor_exponent=quality_v2["exposure_floor_exponent"],
+        package_concentration_headroom_share=quality_v2["concentration_headroom_share"],
+        package_diversity_close_distance=quality_v2["diversity_close_distance"],
+        package_quality_repair_iterations=quality_v2["repair_iterations"],
+        package_quality_candidate_count=quality_v2["candidate_count"],
+        package_probability_samples=quality_v2["evaluation_samples"],
+        package_optimization_probability_samples=quality_v2["optimization_samples"],
+        package_category_probability_tolerance=quality_v2["objective_tolerances"][0],
+        package_diversity_tolerance=quality_v2["objective_tolerances"][4],
+        package_robust_ev_tolerance=quality_v2["objective_tolerances"][5],
         output_dir=paths["output_dir"],
         project_root=(
             paths["project_root"]
@@ -1129,12 +1316,8 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         schedule_evidence_ledger=paths.get(
             "schedule_evidence_ledger", DEFAULT_SCHEDULE_EVIDENCE_PATH
         ),
-        schedule_evidence_ledger_sha256=config.get(
-            "schedule_evidence_ledger_sha256"
-        ),
-        schedule_evidence_semantic_hash=config.get(
-            "schedule_evidence_semantic_hash"
-        ),
+        schedule_evidence_ledger_sha256=config.get("schedule_evidence_ledger_sha256"),
+        schedule_evidence_semantic_hash=config.get("schedule_evidence_semantic_hash"),
         timing_overrides=paths["timing_overrides"],
         reviewed_schedule_catalog=paths.get("reviewed_schedule_catalog"),
         reviewed_catalog_sha256=paths.get("reviewed_catalog_sha256"),
@@ -1145,19 +1328,13 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         max_passes=config["max_passes"],
         max_expansion_passes=config["max_expansion_passes"],
         retry_delay_seconds=config["retry_delay_seconds"],
-        minimum_final_runtime_seconds=config.get(
-            "minimum_final_runtime_seconds", 180
-        ),
-        publication_reserve_seconds=config.get(
-            "publication_reserve_seconds", 45
-        ),
+        minimum_final_runtime_seconds=config.get("minimum_final_runtime_seconds", 180),
+        publication_reserve_seconds=config.get("publication_reserve_seconds", 45),
         max_final_attempts=config.get("max_final_attempts", 2),
         transient_backoff_seconds=tuple(
             config.get("transient_backoff_seconds", (2, 5, 10))
         ),
-        _allow_missing_drawing_id=(
-            schema_version != SCHEDULER_SCHEMA_VERSION
-        ),
+        _allow_missing_drawing_id=(schema_version != SCHEDULER_SCHEMA_VERSION),
         _actionable_safety_bound=(
             schema_version == SCHEDULER_SCHEMA_VERSION
             and present_safety_keys == safety_config_keys
@@ -1707,7 +1884,10 @@ def execute_scheduler_tick(
             return None
         if observed >= plan.publish_deadline:
             return _finalize_tick_no_bet(
-                plan, state=state, state_path=state_path, observed_at=observed,
+                plan,
+                state=state,
+                state_path=state_path,
+                observed_at=observed,
                 reason="T-10 publication deadline was missed",
             )
 
@@ -1715,11 +1895,10 @@ def execute_scheduler_tick(
         runner_phase: Literal["preflight", "final"] | None = None
         scheduled_at: datetime | None = None
         # Select the latest due diagnostic stage; missed older stages never replay.
-        if (
-            observed >= plan.retry_at
-            and state["phases"]["final"]["status"]
-            in {"pending", "retryable_failed"}
-        ):
+        if observed >= plan.retry_at and state["phases"]["final"]["status"] in {
+            "pending",
+            "retryable_failed",
+        }:
             phase, runner_phase, scheduled_at = "final", "final", plan.retry_at
         elif (
             observed >= plan.final_at
@@ -1741,21 +1920,27 @@ def execute_scheduler_tick(
             and state["phases"]["freshness_preflight"]["status"] == "pending"
         ):
             phase, runner_phase, scheduled_at = (
-                "freshness_preflight", "preflight", plan.freshness_preflight_at
+                "freshness_preflight",
+                "preflight",
+                plan.freshness_preflight_at,
             )
         elif (
             observed >= plan.api_preflight_at
             and state["phases"]["api_preflight"]["status"] == "pending"
         ):
             phase, runner_phase, scheduled_at = (
-                "api_preflight", "preflight", plan.api_preflight_at
+                "api_preflight",
+                "preflight",
+                plan.api_preflight_at,
             )
         elif (
             observed >= plan.tls_preflight_at
             and state["phases"]["tls_preflight"]["status"] == "pending"
         ):
             phase, runner_phase, scheduled_at = (
-                "tls_preflight", "preflight", plan.tls_preflight_at
+                "tls_preflight",
+                "preflight",
+                plan.tls_preflight_at,
             )
         if phase is None or runner_phase is None or scheduled_at is None:
             return None
@@ -1764,7 +1949,10 @@ def execute_scheduler_tick(
         if phase == "final":
             if len(attempts) >= plan.max_final_attempts:
                 return _finalize_tick_no_bet(
-                    plan, state=state, state_path=state_path, observed_at=observed,
+                    plan,
+                    state=state,
+                    state_path=state_path,
+                    observed_at=observed,
                     reason="final attempt limit exhausted",
                 )
             remaining = (
@@ -1772,10 +1960,12 @@ def execute_scheduler_tick(
             ).total_seconds()
             if remaining < plan.minimum_final_runtime_seconds:
                 return _finalize_tick_no_bet(
-                    plan, state=state, state_path=state_path, observed_at=observed,
+                    plan,
+                    state=state,
+                    state_path=state_path,
+                    observed_at=observed,
                     reason=(
-                        "insufficient final runtime budget before the "
-                        "actionable cutoff"
+                        "insufficient final runtime budget before the actionable cutoff"
                     ),
                 )
 
@@ -1783,7 +1973,10 @@ def execute_scheduler_tick(
         run_dir = plan.output_dir / "attempts" / attempt_id
         _create_output_directory_exclusive(plan.output_dir, run_dir)
         state = transition(
-            state, phase=phase, status="running", observed_at=observed,
+            state,
+            phase=phase,
+            status="running",
+            observed_at=observed,
             attempt_id=attempt_id,
         )
         save_state(state_path, state)
@@ -1805,36 +1998,27 @@ def execute_scheduler_tick(
             atomic_final=phase == "final",
         )
         try:
-            retry_delays = (
-                plan.transient_backoff_seconds if phase == "final" else ()
-            )
+            retry_delays = plan.transient_backoff_seconds if phase == "final" else ()
             for retry_index in range(len(retry_delays) + 1):
                 try:
                     result = _call_phase_runner(phase_runner, context)
                     break
                 except Exception as phase_error:
-                    if (
-                        _permanent_tick_error(phase_error)
-                        or retry_index >= len(retry_delays)
+                    if _permanent_tick_error(phase_error) or retry_index >= len(
+                        retry_delays
                     ):
                         raise
                     delay = retry_delays[retry_index]
                     remaining = (
                         plan.actionable_publication_deadline - _read_now(now)
                     ).total_seconds()
-                    if (
-                        delay + plan.minimum_final_runtime_seconds
-                        > remaining
-                    ):
+                    if delay + plan.minimum_final_runtime_seconds > remaining:
                         raise
                     sleep(delay)
             completed = _read_now(now)
             if result.status != "complete":
                 raise SchedulerPhaseError(result.reason)
-            if (
-                phase == "final"
-                and completed > plan.actionable_publication_deadline
-            ):
+            if phase == "final" and completed > plan.actionable_publication_deadline:
                 return _finalize_tick_no_bet(
                     plan,
                     state=state,
@@ -1847,16 +2031,22 @@ def execute_scheduler_tick(
                 )
             if phase != "final":
                 state = transition(
-                    state, phase=phase, status="complete",
-                    observed_at=completed, attempt_id=attempt_id,
+                    state,
+                    phase=phase,
+                    status="complete",
+                    observed_at=completed,
+                    attempt_id=attempt_id,
                     reason=result.reason,
                 )
                 save_state(state_path, state)
                 return None
             if result.decision == "NO BET":
                 return _finalize_tick_no_bet(
-                    plan, state=state, state_path=state_path,
-                    observed_at=completed, reason=result.reason,
+                    plan,
+                    state=state,
+                    state_path=state_path,
+                    observed_at=completed,
+                    reason=result.reason,
                 )
             if result.decision != "PLAY":
                 raise SchedulerIntegrityError(
@@ -1883,12 +2073,16 @@ def execute_scheduler_tick(
             status = _base_status(plan, attempt_id, run_dir, phase_state)
             status_path = run_dir / "status.json"
             _write_exclusive_atomic(
-                plan.output_dir, status_path,
+                plan.output_dir,
+                status_path,
                 _canonical_json_bytes(status) + b"\n",
             )
             terminal = _freeze_and_publish(
-                plan, run_id=attempt_id, run_dir=run_dir,
-                snapshots={"final": snapshot}, phase_errors=[],
+                plan,
+                run_id=attempt_id,
+                run_dir=run_dir,
+                snapshots={"final": snapshot},
+                phase_errors=[],
                 phase_absences=[],
                 final_inputs_sha256=snapshot.final_inputs_sha256,
                 final_override_sha256=context.override_sha256,
@@ -1896,11 +2090,16 @@ def execute_scheduler_tick(
             )
             completed = _read_now(now)
             finalized = _finalize_status(
-                plan, run_id=attempt_id, run_dir=run_dir,
-                status_path=status_path, status=status, terminal=terminal,
+                plan,
+                run_id=attempt_id,
+                run_dir=run_dir,
+                status_path=status_path,
+                status=status,
+                terminal=terminal,
                 final_inputs_sha256=snapshot.final_inputs_sha256,
                 final_override_sha256=context.override_sha256,
-                completed_at=completed, now=now,
+                completed_at=completed,
+                now=now,
             )
             state = _transition_after_tick_publication(
                 state,
@@ -1915,8 +2114,10 @@ def execute_scheduler_tick(
             completed = _read_now(now)
             integrity = _integrity_tick_error(error)
             permanent = _permanent_tick_error(error)
-            status = "integrity_failed" if integrity else (
-                "permanent_failed" if permanent else "retryable_failed"
+            status = (
+                "integrity_failed"
+                if integrity
+                else ("permanent_failed" if permanent else "retryable_failed")
             )
             detail = _scheduler_failure_detail(error)
             print(
@@ -1924,12 +2125,14 @@ def execute_scheduler_tick(
                 file=sys.stderr,
             )
             state = transition(
-                state, phase=phase, status=status, observed_at=completed,
-                attempt_id=attempt_id, reason=_safe_error(error),
+                state,
+                phase=phase,
+                status=status,
+                observed_at=completed,
+                attempt_id=attempt_id,
+                reason=_safe_error(error),
                 terminal=(
-                    "failed"
-                    if integrity or (permanent and phase == "final")
-                    else None
+                    "failed" if integrity or (permanent and phase == "final") else None
                 ),
                 failure_detail=detail,
             )
@@ -1954,10 +2157,7 @@ def _permanent_tick_error(error: Exception) -> bool:
             status = current.status_code
             if status is None:
                 return False
-            return (
-                400 <= status < 500
-                and status not in {408, 409, 425, 429}
-            )
+            return 400 <= status < 500 and status not in {408, 409, 425, 429}
         if isinstance(
             current,
             (
@@ -2030,14 +2230,11 @@ def _recover_atomic_publication(
     final_input_path = run_dir / "final-input.json"
     final_input = load_final_input(final_input_path, expected_plan=plan)
     if final_input.attempt_id != attempt_id:
-        raise SchedulerError(
-            "recoverable archive final-input attempt mismatch"
-        )
+        raise SchedulerError("recoverable archive final-input attempt mismatch")
     current_override_sha256 = _current_override_sha256(plan)
     if final_input.timing_override_sha256 != current_override_sha256:
         raise SchedulerIntegrityError(
-            "recoverable archive timing override changed after atomic-final "
-            "capture",
+            "recoverable archive timing override changed after atomic-final capture",
             category="timing_override_integrity",
         )
     final_inputs_sha256 = _final_inputs_sha256(
@@ -2170,9 +2367,7 @@ def _transition_after_tick_publication(
             terminal="no_bet",
         )
     if result.outcome == "failed":
-        final_status = (
-            "complete" if intended_outcome == "bet-ready" else "no_bet"
-        )
+        final_status = "complete" if intended_outcome == "bet-ready" else "no_bet"
         updated = transition(
             state,
             phase="final",
@@ -2215,18 +2410,31 @@ def _finalize_tick_no_bet(
     )
     terminal = _no_package_terminal([], [reason])
     updated = transition(
-        state, phase="final", status="no_bet", observed_at=observed_at,
+        state,
+        phase="final",
+        status="no_bet",
+        observed_at=observed_at,
         reason=reason,
     )
     updated = transition(
-        updated, phase="publish", status="no_bet", observed_at=observed_at,
-        reason=reason, terminal="no_bet",
+        updated,
+        phase="publish",
+        status="no_bet",
+        observed_at=observed_at,
+        reason=reason,
+        terminal="no_bet",
     )
     save_state(state_path, updated)
     return _finalize_status(
-        plan, run_id=run_id, run_dir=run_dir, status_path=status_path,
-        status=status, terminal=terminal, final_inputs_sha256=None,
-        final_override_sha256=None, completed_at=observed_at,
+        plan,
+        run_id=run_id,
+        run_dir=run_dir,
+        status_path=status_path,
+        status=status,
+        terminal=terminal,
+        final_inputs_sha256=None,
+        final_override_sha256=None,
+        completed_at=observed_at,
         now=lambda: observed_at,
     )
 
@@ -2450,8 +2658,7 @@ class CommandSchedulerPhaseRunner:
         *,
         python_executable: str | Path = sys.executable,
         environment: Mapping[str, str] | None = None,
-        target_validator: Callable[[SchedulerPlan, datetime], object]
-        | None = None,
+        target_validator: Callable[[SchedulerPlan, datetime], object] | None = None,
         now: Callable[[], datetime] | None = None,
     ) -> None:
         self.python_executable = _validated_python_executable(python_executable)
@@ -2510,8 +2717,7 @@ class CommandSchedulerPhaseRunner:
             )
         subprocess_started_at = _read_now(self.now)
         timeout_seconds = (
-            context.plan.actionable_publication_deadline
-            - subprocess_started_at
+            context.plan.actionable_publication_deadline - subprocess_started_at
         ).total_seconds()
         if timeout_seconds <= 0:
             raise SchedulerTransientError(
@@ -2542,8 +2748,7 @@ class CommandSchedulerPhaseRunner:
             suffix = f": {detail}" if detail else ""
             if completed.returncode == SCHEDULER_INTEGRITY_EXIT_CODE:
                 raise SchedulerIntegrityError(
-                    "run-drawing reported a terminal integrity failure"
-                    f"{suffix}",
+                    f"run-drawing reported a terminal integrity failure{suffix}",
                     category="run_drawing_integrity",
                 )
             raise SchedulerTransientError(
@@ -2581,9 +2786,9 @@ class CommandSchedulerPhaseRunner:
             plan.db, os.R_OK | os.W_OK
         ):
             raise SchedulerPhaseError("database must be a readable, writable file")
-        if not _is_regular_file(
-            plan.aliases, reject_symlink=True
-        ) or not os.access(plan.aliases, os.R_OK):
+        if not _is_regular_file(plan.aliases, reject_symlink=True) or not os.access(
+            plan.aliases, os.R_OK
+        ):
             raise SchedulerPhaseError("aliases must be a readable file")
         load_aliases(plan.aliases)
         if not self.environment.get("API_SPORTS_KEY", "").strip():
@@ -2618,13 +2823,11 @@ class CommandSchedulerPhaseRunner:
             suffix = f": {detail[-1000:]}" if detail else ""
             if completed.returncode == SCHEDULER_INTEGRITY_EXIT_CODE:
                 raise SchedulerIntegrityError(
-                    "prepare-drawing reported a terminal integrity failure"
-                    f"{suffix}",
+                    f"prepare-drawing reported a terminal integrity failure{suffix}",
                     category="preparation_integrity",
                 )
             raise SchedulerTransientError(
-                "prepare-drawing did not produce a ready 15/15 preparation"
-                f"{suffix}",
+                f"prepare-drawing did not produce a ready 15/15 preparation{suffix}",
                 category="preparation_unavailable",
             )
 
@@ -2718,9 +2921,7 @@ def _execute_package_phase(
     _write_status_atomic(plan.output_dir, status_path, status)
     _validate_status_file(plan, status_path, status)
     phase_override_sha256 = (
-        _current_override_sha256(plan)
-        if override_sha256 is None
-        else override_sha256
+        _current_override_sha256(plan) if override_sha256 is None else override_sha256
     )
     context = _phase_context(
         plan,
@@ -2747,6 +2948,18 @@ def _execute_package_phase(
             raise _NonProductionArtifact(result.reason)
         if result.status == "failed":
             raise SchedulerPhaseError(result.reason)
+        if result.decision == "PLAY":
+            _phase_finished(
+                phase_state,
+                phase,
+                finished_at=completed_at,
+                status="complete",
+                reason=(
+                    "real-money release gate closed: quality-v2 is TRAINING/PAPER only"
+                ),
+            )
+            _write_status_atomic(plan.output_dir, status_path, status)
+            return None
         if result.decision == "NO BET":
             if any(
                 value is not None
@@ -2848,10 +3061,7 @@ def _capture_snapshot(
         expected_cost=result.selected_cost,
     )
     observed_sha256 = _sha256_bytes(package_bytes)
-    if (
-        result.package_sha256 is not None
-        and result.package_sha256 != observed_sha256
-    ):
+    if result.package_sha256 is not None and result.package_sha256 != observed_sha256:
         raise SchedulerPhaseError("phase package SHA-256 did not verify")
     if result.effective_bank is None:
         raise SchedulerPhaseError("PLAY phase must report effective_bank")
@@ -2877,9 +3087,7 @@ def _capture_snapshot(
             result.final_inputs_sha256 is not None
             and result.final_inputs_sha256 != final_inputs_sha256
         ):
-            raise SchedulerPhaseError(
-                "phase final-input binding did not verify"
-            )
+            raise SchedulerPhaseError("phase final-input binding did not verify")
     elif result.final_inputs_sha256 is not None:
         raise SchedulerPhaseError(
             "non-atomic phase cannot return a final-input binding"
@@ -3072,12 +3280,8 @@ def _freeze_and_publish(
             archive_payload.update(
                 {
                     "final_input_sha256": final_input.snapshot_sha256,
-                    "probability_input_sha256": (
-                        final_input.probability_input_sha256
-                    ),
-                    "final_input_captured_at": _timestamp(
-                        final_input.captured_at
-                    ),
+                    "probability_input_sha256": (final_input.probability_input_sha256),
+                    "final_input_captured_at": _timestamp(final_input.captured_at),
                 }
             )
         archive_payload["archive_manifest_sha256"] = _sha256_bytes(
@@ -3118,8 +3322,7 @@ def _freeze_and_publish(
             or (
                 final_input is not None
                 and (
-                    archived.final_input_sha256
-                    != final_input.snapshot_sha256
+                    archived.final_input_sha256 != final_input.snapshot_sha256
                     or archived.probability_input_sha256
                     != final_input.probability_input_sha256
                     or archived.final_input_captured_at
@@ -3127,9 +3330,7 @@ def _freeze_and_publish(
                 )
             )
         ):
-            raise SchedulerPhaseError(
-                "durable pre-bet package archive did not verify"
-            )
+            raise SchedulerPhaseError("durable pre-bet package archive did not verify")
         return {
             "outcome": "bet-ready",
             "decision": "PLAY",
@@ -3194,9 +3395,8 @@ def _no_package_terminal(
     else:
         outcome = "no-bet"
         decision = "NO BET"
-        reason = (
-            "no valid authoritative final PLAY package at T-10"
-            + (": " + "; ".join(phase_absences) if phase_absences else "")
+        reason = "no valid authoritative final PLAY package at T-10" + (
+            ": " + "; ".join(phase_absences) if phase_absences else ""
         )
     return {
         "outcome": outcome,
@@ -3230,9 +3430,7 @@ def _finalize_status(
         _validate_terminal_package(plan, run_dir, terminal)
     status.update(
         {
-            "state": (
-                "ignored" if terminal["outcome"] == "ignored" else "complete"
-            ),
+            "state": ("ignored" if terminal["outcome"] == "ignored" else "complete"),
             "outcome": terminal["outcome"],
             "decision": terminal["decision"],
             "reason": terminal["reason"],
@@ -3349,15 +3547,166 @@ def _finalize_status(
     return _execution_result_from_status(status, run_dir, status_path)
 
 
+def _validate_selector_diagnostics(
+    payload: object,
+    *,
+    plan: SchedulerPlan,
+    final_input: FinalInputSnapshot | None,
+    package_safety: object,
+) -> Mapping[str, object]:
+    if not isinstance(payload, Mapping):
+        raise SchedulerPhaseError("selector diagnostics must be a JSON object")
+    required = {
+        "post_package_sha256",
+        "probability_snapshot_sha256",
+        "probability_input_sha256",
+        "schedule_evidence_ledger_sha256",
+        "schedule_evidence_semantic_hash",
+        "provenance_complete",
+        "release_gate_decision",
+        "release_gate_reason",
+        "real_money_actionable",
+        "release_protocol_version",
+        "release_evidence_id",
+        "release_evidence_sha256",
+        "quality_v2_config_sha256",
+        "selection_context_sha256",
+        "monte_carlo_seed_material_sha256",
+        "optimization_monte_carlo_seed",
+        "evaluation_monte_carlo_seed",
+        "optimization_monte_carlo_samples",
+        "evaluation_monte_carlo_samples",
+        "optimization_monte_carlo_stream",
+        "evaluation_monte_carlo_stream",
+        "numpy_version",
+        "diagnostics_sha256",
+    }
+    missing = required - set(payload)
+    if missing:
+        raise SchedulerPhaseError(
+            "selector diagnostics are missing provenance fields: "
+            + ", ".join(sorted(missing))
+        )
+    declared_hash = _strict_sha256(
+        "selector diagnostics_sha256",
+        payload["diagnostics_sha256"],
+    )
+    if diagnostics_payload_sha256(dict(payload)) != declared_hash:
+        raise SchedulerPhaseError("selector diagnostics hash mismatch")
+    if payload["provenance_complete"] is not True:
+        raise SchedulerPhaseError("selector diagnostics provenance is incomplete")
+    if _strict_sha256(
+        "selector quality_v2_config_sha256",
+        payload["quality_v2_config_sha256"],
+    ) != quality_v2_config_sha256(plan.quality_v2_ev_config):
+        raise SchedulerPhaseError("selector quality-v2 config mismatch")
+    if _strict_sha256(
+        "selector selection_context_sha256",
+        payload["selection_context_sha256"],
+    ) != selection_context_sha256(plan.quality_v2_ev_config):
+        raise SchedulerPhaseError("selector selection context mismatch")
+    seed_material = _strict_sha256(
+        "selector monte_carlo_seed_material_sha256",
+        payload["monte_carlo_seed_material_sha256"],
+    )
+    if (
+        payload["optimization_monte_carlo_stream"] != OPTIMIZATION_MC_STREAM
+        or payload["evaluation_monte_carlo_stream"] != EVALUATION_MC_STREAM
+        or payload["optimization_monte_carlo_seed"]
+        != deterministic_outcome_seed(
+            seed_material=seed_material,
+            stream=OPTIMIZATION_MC_STREAM,
+        )
+        or payload["evaluation_monte_carlo_seed"]
+        != deterministic_outcome_seed(
+            seed_material=seed_material,
+            stream=EVALUATION_MC_STREAM,
+        )
+        or payload["optimization_monte_carlo_samples"]
+        != plan.package_optimization_probability_samples
+        or payload["evaluation_monte_carlo_samples"] != plan.package_probability_samples
+        or payload["numpy_version"]
+        != quality_v2_config_payload(plan.quality_v2_ev_config)["numpy_version"]
+    ):
+        raise SchedulerPhaseError("selector Monte Carlo/config binding mismatch")
+    probability_snapshot_sha256 = _strict_sha256(
+        "selector probability_snapshot_sha256",
+        payload["probability_snapshot_sha256"],
+    )
+    probability_input_sha256 = _strict_sha256(
+        "selector probability_input_sha256",
+        payload["probability_input_sha256"],
+    )
+    if (
+        _strict_sha256(
+            "selector schedule_evidence_ledger_sha256",
+            payload["schedule_evidence_ledger_sha256"],
+        )
+        != plan.schedule_evidence_ledger_sha256
+        or _strict_sha256(
+            "selector schedule_evidence_semantic_hash",
+            payload["schedule_evidence_semantic_hash"],
+        )
+        != plan.schedule_evidence_semantic_hash
+    ):
+        raise SchedulerPhaseError(
+            "selector diagnostics schedule-evidence provenance mismatch"
+        )
+    if final_input is not None and (
+        probability_snapshot_sha256 != final_input.snapshot_sha256
+        or probability_input_sha256 != final_input.probability_input_sha256
+    ):
+        raise SchedulerPhaseError(
+            "selector diagnostics do not match atomic final input"
+        )
+    if not isinstance(package_safety, Mapping):
+        raise SchedulerPhaseError(
+            "selector diagnostics require package safety evidence"
+        )
+    if probability_input_sha256 != package_safety.get("probability_input_sha256"):
+        raise SchedulerPhaseError("selector and safety probability provenance mismatch")
+    evaluated_coupons = package_safety.get("evaluated_coupons")
+    if not isinstance(evaluated_coupons, list):
+        raise SchedulerPhaseError("package safety coupons are malformed")
+    selector_package_sha256 = hashlib.sha256(
+        ",".join(str(coupon) for coupon in evaluated_coupons).encode("utf-8")
+    ).hexdigest()
+    if (
+        _strict_sha256(
+            "selector post_package_sha256",
+            payload["post_package_sha256"],
+        )
+        != selector_package_sha256
+    ):
+        raise SchedulerPhaseError("selector diagnostics package hash mismatch")
+    _strict_text("selector release_gate_decision", payload["release_gate_decision"])
+    _strict_text("selector release_gate_reason", payload["release_gate_reason"])
+    if type(payload["real_money_actionable"]) is not bool:
+        raise SchedulerPhaseError("selector real_money_actionable must be a boolean")
+    if payload["release_protocol_version"] != "quality-v2-paper-only-v1":
+        raise SchedulerPhaseError("selector release protocol mismatch")
+    if payload["real_money_actionable"] is not False:
+        raise SchedulerPhaseError(
+            "quality-v2 cannot self-declare real-money actionability"
+        )
+    if (
+        payload["release_gate_decision"] != "NO BET"
+        or payload["release_evidence_id"] is not None
+        or payload["release_evidence_sha256"] is not None
+    ):
+        raise SchedulerPhaseError(
+            "quality-v2 release evidence is not backed by a trusted registry"
+        )
+    return payload
+
+
 def _parse_runner_manifest_phase_result_strict(
     context: SchedulerPhaseContext, manifest_path: Path
 ) -> SchedulerPhaseResult:
     """Parse one production runner manifest into a fail-closed phase result."""
 
     if context.phase not in ("fallback", "final"):
-        raise SchedulerPhaseError(
-            "runner manifests are valid only for package phases"
-        )
+        raise SchedulerPhaseError("runner manifests are valid only for package phases")
     normalized_manifest = _normalized_path(manifest_path)
     try:
         _require_contained_path(
@@ -3402,8 +3751,7 @@ def _parse_runner_manifest_phase_result_strict(
         or payload["schema_version"] != RUNNER_MANIFEST_SCHEMA_VERSION
     ):
         raise SchedulerPhaseError(
-            "runner manifest schema_version must be "
-            f"{RUNNER_MANIFEST_SCHEMA_VERSION}"
+            f"runner manifest schema_version must be {RUNNER_MANIFEST_SCHEMA_VERSION}"
         )
     if payload["command_status"] != "success":
         raise SchedulerPhaseError("runner command_status must be success")
@@ -3476,6 +3824,9 @@ def _parse_runner_manifest_phase_result_strict(
             "final_lead_minutes",
             "safety_stop_minutes",
             "provider",
+            "quality_v2",
+            "selection_context",
+            "selection_context_sha256",
         },
         "runner config",
     )
@@ -3539,6 +3890,7 @@ def _parse_runner_manifest_phase_result_strict(
             "model_supported",
             "model_warning",
             "package_safety",
+            "selection_diagnostics",
             "package",
             "sensitivity",
         },
@@ -3556,10 +3908,19 @@ def _parse_runner_manifest_phase_result_strict(
             "expected_payout",
             "modeled_roi",
             "derived_brief",
+            "structural_status",
+            "artifact_class",
+            "paper_coupons",
+            "paper_selected_count",
+            "paper_cost",
+            "paper_expected_payout",
+            "paper_modeled_roi",
+            "paper_derived_brief",
         },
         "runner EV package",
     )
     package_safety = ev["package_safety"]
+    selection_diagnostics = ev["selection_diagnostics"]
     recomputed_safety = None
     if package_safety is not None:
         safety = _exact_phase_mapping(
@@ -3616,8 +3977,7 @@ def _parse_runner_manifest_phase_result_strict(
             ) from error
         if json.loads(json.dumps(recomputed_safety.to_dict())) != package_safety:
             raise SchedulerPhaseError(
-                "runner package safety evidence does not match canonical "
-                "recomputation"
+                "runner package safety evidence does not match canonical recomputation"
             )
         if (
             final_input_snapshot is not None
@@ -3627,6 +3987,14 @@ def _parse_runner_manifest_phase_result_strict(
             raise SchedulerPhaseError(
                 "package safety probabilities do not match final input"
             )
+    validated_selection_diagnostics = None
+    if selection_diagnostics is not None:
+        validated_selection_diagnostics = _validate_selector_diagnostics(
+            selection_diagnostics,
+            plan=context.plan,
+            final_input=final_input_snapshot,
+            package_safety=package_safety,
+        )
     plan = context.plan
     manifest_drawing_id = _strict_int("runner drawing_id", target["drawing_id"])
     manifest_drawing_number = _strict_int(
@@ -3636,12 +4004,8 @@ def _parse_runner_manifest_phase_result_strict(
         raise SchedulerPhaseError("runner target IDs must be positive")
     if (
         manifest_drawing_number != plan.drawing
-        or (
-            plan.drawing_id is not None
-            and manifest_drawing_id != plan.drawing_id
-        )
-        or _parse_utc_datetime("runner deadline", target["deadline"])
-        != plan.ended_at
+        or (plan.drawing_id is not None and manifest_drawing_id != plan.drawing_id)
+        or _parse_utc_datetime("runner deadline", target["deadline"]) != plan.ended_at
     ):
         raise SchedulerPhaseError(
             "runner manifest target does not match scheduler plan"
@@ -3661,17 +4025,14 @@ def _parse_runner_manifest_phase_result_strict(
         or _strict_int("runner stake", config["stake"]) != plan.stake
         or config["mode"] != "playable"
         or config["provider"] != plan.provider
-        or _strict_int(
-            "runner final_lead_minutes", config["final_lead_minutes"]
-        )
-        != (
-            30
-            if context.phase == "fallback"
-            else (20 if context.atomic_final else 15)
-        )
-        or _strict_int(
-            "runner safety_stop_minutes", config["safety_stop_minutes"]
-        )
+        or config["quality_v2"] != quality_v2_config_payload(plan.quality_v2_ev_config)
+        or config["selection_context"]
+        != bound_selection_context(plan.quality_v2_ev_config)
+        or config["selection_context_sha256"]
+        != selection_context_sha256(plan.quality_v2_ev_config)
+        or _strict_int("runner final_lead_minutes", config["final_lead_minutes"])
+        != (30 if context.phase == "fallback" else (20 if context.atomic_final else 15))
+        or _strict_int("runner safety_stop_minutes", config["safety_stop_minutes"])
         != (12 if context.atomic_final else 10)
     ):
         raise SchedulerPhaseError(
@@ -3691,6 +4052,13 @@ def _parse_runner_manifest_phase_result_strict(
         require_playable=decision == "PLAY",
     )
     if decision == "NO BET":
+        if (
+            package["structural_status"] == "STRUCTURAL_PASS"
+            and validated_selection_diagnostics is None
+        ):
+            raise SchedulerPhaseError(
+                "STRUCTURAL_PASS manifest lacks probability-bound selector diagnostics"
+            )
         _validate_no_bet_manifest(plan, ev, package)
         return SchedulerPhaseResult.no_bet(reason)
     if not _manifest_pinned_revalidation_ready(payload["collection"]):
@@ -3703,6 +4071,10 @@ def _parse_runner_manifest_phase_result_strict(
         )
     if package_safety is None or safety["decision"] != "PLAY":
         raise SchedulerPhaseError("PLAY runner manifest lacks a passing safety gate")
+    if validated_selection_diagnostics is None:
+        raise SchedulerPhaseError(
+            "PLAY runner manifest lacks probability-bound selector diagnostics"
+        )
     if safety["reason_codes"] or safety["reasons"]:
         raise SchedulerPhaseError("PLAY runner manifest retains safety reasons")
     if ev["computed"] is not True:
@@ -3723,10 +4095,7 @@ def _parse_runner_manifest_phase_result_strict(
         raise SchedulerPhaseError("PLAY runner final fingerprint is absent")
     if preflight_fingerprint != final_fingerprint:
         raise SchedulerPhaseError("runner target fingerprint changed")
-    if (
-        validated_effective_eligibility.target_fingerprint
-        != final_fingerprint
-    ):
+    if validated_effective_eligibility.target_fingerprint != final_fingerprint:
         raise SchedulerPhaseError(
             "effective timing fingerprint does not match final target"
         )
@@ -3743,9 +4112,7 @@ def _parse_runner_manifest_phase_result_strict(
     if effective_bank > requested_bank:
         raise SchedulerPhaseError("EV effective_budget exceeds requested bank")
 
-    selected_count = _strict_int(
-        "package selected_count", package["selected_count"]
-    )
+    selected_count = _strict_int("package selected_count", package["selected_count"])
     package_cost = _strict_int("package cost", package["cost"])
     unused_bank = _strict_non_negative_int(
         "package unused_bank", package["unused_bank"]
@@ -3764,12 +4131,8 @@ def _parse_runner_manifest_phase_result_strict(
             "runner package bank, stake, count, and cost fields are inconsistent"
         )
 
-    minimum_gross_ev = _finite_metric(
-        "EV minimum_gross_ev", ev["minimum_gross_ev"]
-    )
-    prize_fund_factor = _finite_metric(
-        "EV prize_fund_factor", ev["prize_fund_factor"]
-    )
+    minimum_gross_ev = _finite_metric("EV minimum_gross_ev", ev["minimum_gross_ev"])
+    prize_fund_factor = _finite_metric("EV prize_fund_factor", ev["prize_fund_factor"])
     self_dilution_ratio = _finite_metric(
         "EV self_dilution_ratio", ev["self_dilution_ratio"]
     )
@@ -3777,16 +4140,10 @@ def _parse_runner_manifest_phase_result_strict(
         "package expected_payout", package["expected_payout"]
     )
     modeled_roi = _finite_metric("package modeled_roi", package["modeled_roi"])
-    if (
-        prize_fund_factor < 0
-        or self_dilution_ratio < 0
-        or expected_payout < 0
-    ):
+    if prize_fund_factor < 0 or self_dilution_ratio < 0 or expected_payout < 0:
         raise SchedulerPhaseError("runner EV metrics must be non-negative")
     if minimum_gross_ev != plan.minimum_gross_ev:
-        raise SchedulerPhaseError(
-            "EV minimum_gross_ev does not match scheduler plan"
-        )
+        raise SchedulerPhaseError("EV minimum_gross_ev does not match scheduler plan")
     if self_dilution_ratio > 0.01:
         raise SchedulerPhaseError("PLAY self-dilution ratio is unsupported")
     if ev["model_warning"] is not None:
@@ -3831,9 +4188,7 @@ def _parse_runner_manifest_phase_result_strict(
         rows.append((rank, coupon, gross_ev, net_ev))
     if len(rows) != selected_count:
         raise SchedulerPhaseError("runner coupon row count is inconsistent")
-    computed_expected_payout = sum(
-        gross_ev * plan.stake for _, _, gross_ev, _ in rows
-    )
+    computed_expected_payout = sum(gross_ev * plan.stake for _, _, gross_ev, _ in rows)
     if not math.isclose(
         expected_payout,
         computed_expected_payout,
@@ -3865,28 +4220,12 @@ def _parse_runner_manifest_phase_result_strict(
         effective_bank=effective_bank,
     )
 
-    observed_override = (
-        None
-        if validated_override is None
-        else validated_override.package_catalog_sha256
+    release_reason = _strict_text(
+        "selector release_gate_reason",
+        validated_selection_diagnostics["release_gate_reason"],
     )
-    return SchedulerPhaseResult.play(
-        package_bytes,
-        reason=reason,
-        effective_bank=effective_bank,
-        selected_count=selected_count,
-        selected_cost=selected_cost,
-        override_sha256=observed_override,
-        final_inputs_sha256=(
-            None
-            if final_input_snapshot is None
-            else _final_inputs_sha256(
-                context.plan,
-                observed_override,
-                final_input_snapshot,
-            )
-        ),
-        package_sha256=_sha256_bytes(package_bytes),
+    return SchedulerPhaseResult.no_bet(
+        "quality-v2 is structurally evaluated but paper-only: " + release_reason
     )
 
 
@@ -4059,9 +4398,7 @@ def _validate_runner_manifest_diagnostics(payload: Mapping[str, Any]) -> None:
             "successful_schedule_date_count",
             "failed_schedule_date_count",
         ):
-            _strict_non_negative_int(
-                f"collection {field}", collection_payload[field]
-            )
+            _strict_non_negative_int(f"collection {field}", collection_payload[field])
         _strict_text("collection stop_reason", collection_payload["stop_reason"])
         if (
             _finite_metric(
@@ -4070,12 +4407,8 @@ def _validate_runner_manifest_diagnostics(payload: Mapping[str, Any]) -> None:
             )
             < 0
         ):
-            raise SchedulerPhaseError(
-                "collection elapsed_seconds must be non-negative"
-            )
-        _validate_pinned_revalidation_payload(
-            collection_payload["pinned_revalidation"]
-        )
+            raise SchedulerPhaseError("collection elapsed_seconds must be non-negative")
+        _validate_pinned_revalidation_payload(collection_payload["pinned_revalidation"])
 
     coverage = payload["coverage"]
     if coverage is not None:
@@ -4135,9 +4468,7 @@ def _validate_runner_manifest_diagnostics(payload: Mapping[str, Any]) -> None:
 def _manifest_pinned_revalidation_ready(value: object) -> bool:
     if not isinstance(value, Mapping):
         return False
-    return _validate_pinned_revalidation_payload(
-        value.get("pinned_revalidation")
-    )
+    return _validate_pinned_revalidation_payload(value.get("pinned_revalidation"))
 
 
 def _validate_pinned_revalidation_payload(value: object) -> bool:
@@ -4239,9 +4570,7 @@ def _validate_pinned_revalidation_payload(value: object) -> bool:
         source_provider = _strict_text(
             "pinned revalidation source_provider", row["source_provider"]
         )
-        method = _strict_text(
-            "pinned revalidation method", row["revalidation_method"]
-        )
+        method = _strict_text("pinned revalidation method", row["revalidation_method"])
         if source_provider == "reviewed-schedule":
             if (
                 method != "reviewed-catalog-v1"
@@ -4275,15 +4604,11 @@ def _validate_pinned_revalidation_payload(value: object) -> bool:
                     "TotoBrief baseline revalidation provenance is incomplete"
                 )
         else:
-            raise SchedulerPhaseError(
-                "pinned revalidation source provider is unknown"
-            )
+            raise SchedulerPhaseError("pinned revalidation source provider is unknown")
         if row["status"] == "matched":
             matched_orders.append(expected_order)
     if matched != len(matched_orders):
-        raise SchedulerPhaseError(
-            "pinned revalidation matched count is inconsistent"
-        )
+        raise SchedulerPhaseError("pinned revalidation matched count is inconsistent")
     boolean_fields = (
         "schedule_fresh",
         "provider_checks_passed",
@@ -4301,9 +4626,13 @@ def _validate_pinned_revalidation_payload(value: object) -> bool:
         if summary[field] is not None:
             _parse_utc_datetime(f"pinned revalidation {field}", summary[field])
     maximum_age = summary["maximum_schedule_age_seconds"]
-    if maximum_age is not None and _finite_metric(
-        "pinned revalidation maximum_schedule_age_seconds", maximum_age
-    ) < 0:
+    if (
+        maximum_age is not None
+        and _finite_metric(
+            "pinned revalidation maximum_schedule_age_seconds", maximum_age
+        )
+        < 0
+    ):
         raise SchedulerPhaseError(
             "pinned revalidation maximum schedule age must be non-negative"
         )
@@ -4315,9 +4644,7 @@ def _validate_pinned_revalidation_payload(value: object) -> bool:
         and all(bool(summary[field]) for field in boolean_fields[:-1])
     )
     if ready != derived_ready:
-        raise SchedulerPhaseError(
-            "pinned revalidation ready status is inconsistent"
-        )
+        raise SchedulerPhaseError("pinned revalidation ready status is inconsistent")
     return ready
 
 
@@ -4341,16 +4668,13 @@ def _validate_timing_payload(
     if type(fingerprint_match) is not bool:
         raise SchedulerPhaseError(f"{name} fingerprint_match must be boolean")
     if fingerprint_match and fingerprint is None:
-        raise SchedulerPhaseError(
-            f"{name} cannot match an absent target fingerprint"
-        )
+        raise SchedulerPhaseError(f"{name} cannot match an absent target fingerprint")
 
     missing_orders_value = value["missing_event_orders"]
     if not isinstance(missing_orders_value, list):
         raise SchedulerPhaseError(f"{name} missing_event_orders must be a list")
     if any(
-        type(order) is not int or not 0 <= order < 15
-        for order in missing_orders_value
+        type(order) is not int or not 0 <= order < 15 for order in missing_orders_value
     ):
         raise SchedulerPhaseError(f"{name} contains invalid missing event orders")
     if missing_orders_value != sorted(set(missing_orders_value)):
@@ -4410,9 +4734,7 @@ def _validate_timing_payload(
                 f"{name} unavailable timing details are inconsistent"
             )
         if status not in {"unknown", "absent", "not_checked"}:
-            raise SchedulerPhaseError(
-                f"{name} status requires complete timing details"
-            )
+            raise SchedulerPhaseError(f"{name} status requires complete timing details")
     else:
         assert totobrief_count is not None
         assert provider_count is not None
@@ -4420,10 +4742,7 @@ def _validate_timing_payload(
         if span_days is None:
             raise SchedulerPhaseError(f"{name} span_days must be present")
         known_count = 15 - len(missing_orders)
-        if (
-            totobrief_count + provider_count + operator_override_count
-            != known_count
-        ):
+        if totobrief_count + provider_count + operator_override_count != known_count:
             raise SchedulerPhaseError(
                 f"{name} source counts and missing event orders are inconsistent"
             )
@@ -4560,9 +4879,7 @@ def _validate_override_payload(value: object) -> _ValidatedOverrideAudit | None:
         )
         if order >= 15:
             raise SchedulerPhaseError("timing override event_order is invalid")
-        event_id = _strict_int(
-            "timing override event_id", event_payload["event_id"]
-        )
+        event_id = _strict_int("timing override event_id", event_payload["event_id"])
         if event_id <= 0:
             raise SchedulerPhaseError("timing override event_id must be positive")
         events.append(
@@ -4588,12 +4905,9 @@ def _validate_override_payload(value: object) -> _ValidatedOverrideAudit | None:
 
     preserved_value = override["preserved_event_orders"]
     if not isinstance(preserved_value, list) or any(
-        type(order) is not int or not 0 <= order < 15
-        for order in preserved_value
+        type(order) is not int or not 0 <= order < 15 for order in preserved_value
     ):
-        raise SchedulerPhaseError(
-            "timing override preserved_event_orders is invalid"
-        )
+        raise SchedulerPhaseError("timing override preserved_event_orders is invalid")
     if preserved_value != sorted(set(preserved_value)):
         raise SchedulerPhaseError(
             "timing override preserved event orders must be ordered and unique"
@@ -4654,9 +4968,7 @@ def _validate_timing_relationships(
                 "runner top-level eligibility must exactly match effective timing"
             )
     if raw.details_available and raw.operator_override_count != 0:
-        raise SchedulerPhaseError(
-            "raw timing cannot contain operator override starts"
-        )
+        raise SchedulerPhaseError("raw timing cannot contain operator override starts")
     if require_playable and (
         effective.status != "playable"
         or not effective.details_available
@@ -4734,10 +5046,7 @@ def _validate_applied_override(
     if (
         override.preflight_catalog_sha256 != pinned_hash
         or override.timing_catalog_sha256 != pinned_hash
-        or (
-            require_package_hash
-            and override.package_catalog_sha256 != pinned_hash
-        )
+        or (require_package_hash and override.package_catalog_sha256 != pinned_hash)
         or (
             override.package_catalog_sha256 is not None
             and override.package_catalog_sha256 != pinned_hash
@@ -4763,16 +5072,11 @@ def _validate_applied_override(
         )
     record = records[0]
     drawing_id = _strict_int("runner drawing_id", target["drawing_id"])
-    drawing_number = _strict_int(
-        "runner drawing_number", target["drawing_number"]
-    )
+    drawing_number = _strict_int("runner drawing_number", target["drawing_number"])
     final_fingerprint = target["final_fingerprint"]
     if (
         record.target_fingerprint != final_fingerprint
-        or (
-            record.drawing_id is not None
-            and record.drawing_id != drawing_id
-        )
+        or (record.drawing_id is not None and record.drawing_id != drawing_id)
         or (
             record.drawing_number is not None
             and record.drawing_number != drawing_number
@@ -4813,9 +5117,7 @@ def _validate_applied_override(
         raise SchedulerPhaseError(
             "applied timing override requires complete raw and effective counts"
         )
-    applied_orders = tuple(
-        event.event_order for event in override.applied_events
-    )
+    applied_orders = tuple(event.event_order for event in override.applied_events)
     expected_preserved = tuple(
         order for order in range(15) if order not in raw.missing_event_orders
     )
@@ -4826,8 +5128,10 @@ def _validate_applied_override(
         raise SchedulerPhaseError(
             "timing override applied/preserved orders contradict raw timing"
         )
-    if effective.status == "playable" and raw.status != "playable" and (
-        raw.status != "unknown" or not raw.missing_event_orders
+    if (
+        effective.status == "playable"
+        and raw.status != "playable"
+        and (raw.status != "unknown" or not raw.missing_event_orders)
     ):
         raise SchedulerPhaseError(
             "a playable overlay can only repair incomplete raw timing"
@@ -4846,9 +5150,7 @@ def _validate_applied_override(
         )
 
     known_bounds = [
-        value
-        for value in (raw.earliest_start, raw.latest_start)
-        if value is not None
+        value for value in (raw.earliest_start, raw.latest_start) if value is not None
     ]
     known_bounds.extend(event.starts_at for event in override.applied_events)
     if (
@@ -4984,6 +5286,70 @@ def _validate_no_bet_manifest(
         raise SchedulerPhaseError("NO BET runner manifest is not coupon-free")
     if not isinstance(package["derived_brief"], list) or package["derived_brief"]:
         raise SchedulerPhaseError("NO BET runner manifest is not zero-cost")
+    structural_status = package["structural_status"]
+    artifact_class = package["artifact_class"]
+    if structural_status not in {
+        "STRUCTURAL_PASS",
+        "STRUCTURAL_FAIL",
+        "NOT_EVALUATED",
+    }:
+        raise SchedulerPhaseError("NO BET structural status is invalid")
+    if artifact_class not in {"TRAINING/PAPER", "NONE"}:
+        raise SchedulerPhaseError("NO BET artifact class is invalid")
+    paper_coupons = package["paper_coupons"]
+    if not isinstance(paper_coupons, list):
+        raise SchedulerPhaseError("paper coupons must be a list")
+    paper_count = _strict_non_negative_int(
+        "paper selected_count", package["paper_selected_count"]
+    )
+    paper_cost = _strict_non_negative_int("paper cost", package["paper_cost"])
+    if structural_status == "STRUCTURAL_PASS":
+        if artifact_class != "TRAINING/PAPER" or not paper_coupons:
+            raise SchedulerPhaseError(
+                "STRUCTURAL_PASS requires a nonempty TRAINING/PAPER artifact"
+            )
+        if paper_count != len(paper_coupons) or paper_cost != paper_count * plan.stake:
+            raise SchedulerPhaseError("paper package count/cost is inconsistent")
+        _finite_metric("paper expected_payout", package["paper_expected_payout"])
+        _finite_metric("paper modeled_roi", package["paper_modeled_roi"])
+        paper_values = []
+        for row in paper_coupons:
+            item = _exact_phase_mapping(
+                row,
+                {"rank", "coupon", "gross_ev", "net_ev"},
+                "paper coupon row",
+            )
+            _strict_int("paper coupon rank", item["rank"])
+            coupon = _strict_text("paper coupon", item["coupon"])
+            if _COUPON_PATTERN.fullmatch(coupon) is None:
+                raise SchedulerPhaseError(
+                    "paper coupon must contain exactly 15 characters from 1/X/2"
+                )
+            gross_ev = _finite_metric("paper coupon gross_ev", item["gross_ev"])
+            net_ev = _finite_metric("paper coupon net_ev", item["net_ev"])
+            if not math.isclose(
+                net_ev,
+                gross_ev - 1.0,
+                rel_tol=1e-12,
+                abs_tol=1e-12,
+            ):
+                raise SchedulerPhaseError("paper coupon EV fields are inconsistent")
+            if gross_ev < plan.minimum_gross_ev:
+                raise SchedulerPhaseError(
+                    "paper coupon minimum gross EV does not match scheduler plan"
+                )
+            paper_values.append(coupon)
+        _validate_derived_brief(package["paper_derived_brief"], paper_values)
+    elif (
+        artifact_class != "NONE"
+        or paper_coupons
+        or paper_count
+        or paper_cost
+        or package["paper_expected_payout"] not in (0, 0.0, None)
+        or package["paper_modeled_roi"] is not None
+        or package["paper_derived_brief"] != []
+    ):
+        raise SchedulerPhaseError("non-passing structural result retains paper data")
     computed = ev["computed"]
     if type(computed) is not bool:
         raise SchedulerPhaseError("NO BET computed flag must be boolean")
@@ -5033,9 +5399,7 @@ def _validate_no_bet_manifest(
     selected_count = _strict_non_negative_int(
         "NO BET package selected_count", package["selected_count"]
     )
-    package_cost = _strict_non_negative_int(
-        "NO BET package cost", package["cost"]
-    )
+    package_cost = _strict_non_negative_int("NO BET package cost", package["cost"])
     unused_bank = _strict_non_negative_int(
         "NO BET package unused_bank", package["unused_bank"]
     )
@@ -5053,9 +5417,7 @@ def _validate_no_bet_manifest(
     ):
         raise SchedulerPhaseError("computed NO BET manifest must be zero-cost")
     _parse_utc_datetime("NO BET input_fetched_at", ev["input_fetched_at"])
-    minimum_gross_ev = _finite_metric(
-        "NO BET minimum_gross_ev", ev["minimum_gross_ev"]
-    )
+    minimum_gross_ev = _finite_metric("NO BET minimum_gross_ev", ev["minimum_gross_ev"])
     if minimum_gross_ev != plan.minimum_gross_ev:
         raise SchedulerPhaseError(
             "NO BET minimum_gross_ev does not match scheduler plan"
@@ -5065,16 +5427,10 @@ def _validate_no_bet_manifest(
     )
     if prize_fund_factor < 0:
         raise SchedulerPhaseError("NO BET prize_fund_factor must be non-negative")
-    _strict_text(
-        "NO BET possible_winnings_source", ev["possible_winnings_source"]
-    )
+    _strict_text("NO BET possible_winnings_source", ev["possible_winnings_source"])
     _strict_text("NO BET jackpot_source", ev["jackpot_source"])
-    if _finite_metric(
-        "NO BET self_dilution_ratio", ev["self_dilution_ratio"]
-    ) < 0:
-        raise SchedulerPhaseError(
-            "NO BET self_dilution_ratio must be non-negative"
-        )
+    if _finite_metric("NO BET self_dilution_ratio", ev["self_dilution_ratio"]) < 0:
+        raise SchedulerPhaseError("NO BET self_dilution_ratio must be non-negative")
     if type(ev["model_supported"]) is not bool:
         raise SchedulerPhaseError("NO BET model_supported must be boolean")
     if ev["model_warning"] is not None:
@@ -5132,9 +5488,7 @@ def _validate_sensitivity_rows(
             "sensitivity selected_count", row["selected_count"]
         )
         cost = _strict_non_negative_int("sensitivity cost", row["cost"])
-        unused = _strict_non_negative_int(
-            "sensitivity unused_bank", row["unused_bank"]
-        )
+        unused = _strict_non_negative_int("sensitivity unused_bank", row["unused_bank"])
         _finite_metric("sensitivity expected_payout", row["expected_payout"])
         if row["modeled_roi"] is not None:
             _finite_metric("sensitivity modeled_roi", row["modeled_roi"])
@@ -5182,7 +5536,7 @@ def _render_scheduler_wrapper(
         )
         + f"cd {shlex.quote(str(project_root))}\n"
         + f"exec {executable_arg} -m toto_ai.cli scheduler-execute "
-        f"--plan {plan_arg} \"$@\"\n"
+        f'--plan {plan_arg} "$@"\n'
     )
 
 
@@ -5285,12 +5639,7 @@ def _render_morning_preanalysis_wrapper(
         "--raw-cache-dir",
         str(project_root / "data" / "raw"),
         "--totobrief-rate-state",
-        str(
-            project_root
-            / "data"
-            / "totobrief-cache"
-            / "request-state.json"
-        ),
+        str(project_root / "data" / "totobrief-cache" / "request-state.json"),
         "--cache-root",
         str(project_root / "data" / "external-cache" / "api-sports"),
     ]
@@ -5308,10 +5657,7 @@ def _render_morning_preanalysis_wrapper(
                 str(reviewed_schedule_catalog),
             )
         )
-    command = " ".join(
-        shlex.quote(value)
-        for value in command_values
-    )
+    command = " ".join(shlex.quote(value) for value in command_values)
     return (
         "#!/bin/sh\n"
         "set -eu\n"
@@ -5328,8 +5674,8 @@ def _render_morning_preanalysis_wrapper(
         + "  else\n"
         + "    status=$?\n"
         + "  fi\n"
-        + f"  if [ \"$attempt\" -ge {retry_count} ]; then\n"
-        + "    exit \"$status\"\n"
+        + f'  if [ "$attempt" -ge {retry_count} ]; then\n'
+        + '    exit "$status"\n'
         + "  fi\n"
         + "  attempt=$((attempt + 1))\n"
         + f"  {executable} -c 'import time; time.sleep({retry_delay_seconds!r})'\n"
@@ -5385,8 +5731,8 @@ def _render_secure_env_prelude(
         "if stat.S_IMODE(metadata.st_mode) & ~0o600:\n"
         "    raise SystemExit('scheduler env file mode must be no broader than 0600')\n"
         "PY\n"
-        ". \"$ENV_FILE\"\n"
-        "if [ -z \"${API_SPORTS_KEY:-}\" ]; then\n"
+        '. "$ENV_FILE"\n'
+        'if [ -z "${API_SPORTS_KEY:-}" ]; then\n'
         "  echo 'API_SPORTS_KEY is required in scheduler env file' >&2\n"
         "  exit 78\n"
         "fi\n"
@@ -5418,9 +5764,7 @@ def _validate_preflight_inputs(plan: SchedulerPlan) -> None:
         )
 
 
-def _validate_live_scheduler_target(
-    plan: SchedulerPlan, observed_at: datetime
-) -> None:
+def _validate_live_scheduler_target(plan: SchedulerPlan, observed_at: datetime) -> None:
     """Validate the exact open target during the production T-45 preflight."""
 
     client = TotoBriefClient()
@@ -5479,9 +5823,7 @@ def _final_inputs_sha256(
                 "captured_at": _timestamp(final_input.captured_at),
                 "snapshot_sha256": final_input.snapshot_sha256,
                 "detail_payload_sha256": final_input.detail_payload_sha256,
-                "probability_input_sha256": (
-                    final_input.probability_input_sha256
-                ),
+                "probability_input_sha256": (final_input.probability_input_sha256),
             }
         ),
     }
@@ -5535,9 +5877,7 @@ def _base_status(
         "completed_at": None,
         "final_inputs_sha256": None,
         "final_override_sha256": None,
-        "deadlines": {
-            key: _timestamp(value) for key, value in plan.deadlines.items()
-        },
+        "deadlines": {key: _timestamp(value) for key, value in plan.deadlines.items()},
         "phase_timestamps": phase_state,
     }
 
@@ -5987,9 +6327,7 @@ def _require_utc_datetime(name: str, value: object) -> datetime:
 
 
 def _timestamp(value: datetime) -> str:
-    return _require_utc_datetime("timestamp", value).isoformat().replace(
-        "+00:00", "Z"
-    )
+    return _require_utc_datetime("timestamp", value).isoformat().replace("+00:00", "Z")
 
 
 def _normalized_path(value: object) -> Path:
@@ -6137,9 +6475,7 @@ def _require_secure_env_file(path: Path) -> None:
     if metadata.st_uid != os.getuid():
         raise SchedulerError("scheduler env file must be owned by current user")
     if stat.S_IMODE(metadata.st_mode) & ~0o600:
-        raise SchedulerError(
-            "scheduler env file mode must be no broader than 0600"
-        )
+        raise SchedulerError("scheduler env file mode must be no broader than 0600")
 
 
 def _parse_morning_time(value: object) -> tuple[int, int]:
@@ -6453,9 +6789,7 @@ def _require_exact_keys(
         raise ValueError(f"{name} fields must be exactly {sorted(expected)}")
 
 
-def _exact_mapping(
-    value: object, expected: set[str], name: str
-) -> Mapping[str, Any]:
+def _exact_mapping(value: object, expected: set[str], name: str) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
         raise ValueError(f"{name} must be an object")
     _require_exact_keys(value, expected, name)
