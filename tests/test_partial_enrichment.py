@@ -26,6 +26,10 @@ from toto_ai.external_odds.preparation import (
     preparation_probability_sha256,
     prepare_drawing,
 )
+from toto_ai.external_odds.schedule_evidence import (
+    ScheduleEvidenceIntegrityError,
+    load_schedule_evidence_ledger,
+)
 from toto_ai.external_odds.team_registry import (
     backfill_accepted_matches,
     load_ready_pin_set,
@@ -372,6 +376,26 @@ def test_drawing_4967_atomically_upgrades_four_persisted_baseline_pins(
         == old_by_order[13].canonical_away_team_id
     )
     assert tuple(event.bk_probabilities for event in target.events) == original_bk
+    final_decisions = _match_targets_from_pins(
+        target,
+        (
+            ScheduleDateResult(
+                sport="football",
+                requested_date=DEADLINE.date(),
+                events=_candidates(event_orders=external_orders),
+                error=None,
+            ),
+        ),
+        refreshed.pins,
+        observed_at=FETCHED_AT,
+        schedule_evidence_ledger=load_schedule_evidence_ledger(ledger),
+    )
+    assert all(
+        decision.decision.status == "matched"
+        for decision in final_decisions.values()
+    )
+    assert final_decisions[13].decision.orientation == "reversed"
+    assert final_decisions[13].decision.provider_event_id is None
     with session_factory() as session:
         pin_sets = tuple(session.scalars(select(DrawingPinSet)))
         assert len(pin_sets) == 1
@@ -419,7 +443,7 @@ def test_drawing_4967_rejects_ambiguous_schedule_ledger_without_mutation(
     ledger.write_text(json.dumps(document), encoding="utf-8")
 
     with pytest.raises(
-        ValueError,
+        ScheduleEvidenceIntegrityError,
         match="conflicting authoritative schedule identity",
     ):
         prepare_drawing(

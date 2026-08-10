@@ -11,6 +11,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai.runner.morning_dispatch import (
     MorningDispatchConfig,
     MorningExpectedIdentity,
@@ -21,6 +22,7 @@ from toto_ai.runner.morning_dispatch import (
 )
 from toto_ai.runner.scheduler import (
     SCHEDULER_LAUNCH_AGENT_FILENAME,
+    SCHEDULER_SCHEMA_VERSION,
     SCHEDULER_WRAPPER_FILENAME,
     SchedulerIntegrityError,
     SchedulerPhaseContext,
@@ -41,6 +43,7 @@ def _env(path: Path) -> Path:
 
 
 def _config(tmp_path: Path) -> MorningDispatchConfig:
+    write_empty_schedule_evidence_ledger(tmp_path)
     return MorningDispatchConfig(
         project_root=tmp_path,
         state_root=tmp_path / "data" / "scheduler" / "morning-dispatch",
@@ -322,7 +325,7 @@ def test_same_drawing_is_idempotent_and_activates_once(tmp_path):
     assert record["launch_agent_label"] == expected_label
 
 
-def test_actual_4964_schema_v5_plan_candidate_label_is_installable(
+def test_actual_4964_current_plan_candidate_label_is_installable(
     tmp_path: Path,
 ) -> None:
     production_plan = build_scheduler_plan(
@@ -348,8 +351,10 @@ def test_actual_4964_schema_v5_plan_candidate_label_is_installable(
         ),
         env_file="/Users/turshevr/toto-ai/.env",
     )
-    assert production_plan.plan_id == "56ce06d2bb0eabb5"
+    assert len(production_plan.plan_id) == 16
+    assert production_plan.schedule_evidence_ledger_sha256 is not None
 
+    write_empty_schedule_evidence_ledger(tmp_path)
     plan = build_scheduler_plan(
         drawing=4964,
         drawing_id=12003,
@@ -369,7 +374,10 @@ def test_actual_4964_schema_v5_plan_candidate_label_is_installable(
         calls.append(tuple(command))
         return SimpleNamespace(returncode=0, stderr="")
 
-    assert candidate["Label"] == f"com.totoai.production-scheduler.v5.{plan.plan_id}"
+    assert candidate["Label"] == (
+        f"com.totoai.production-scheduler.v{SCHEDULER_SCHEMA_VERSION}."
+        f"{plan.plan_id}"
+    )
 
     activate_scheduler_launch_agent(
         candidate["Label"],
@@ -405,6 +413,7 @@ def test_scheduler_installer_rejects_tampered_plan_identity(
     tmp_path: Path,
     tamper,
 ) -> None:
+    write_empty_schedule_evidence_ledger(tmp_path)
     plan = build_scheduler_plan(
         drawing=4964,
         drawing_id=12003,
@@ -441,6 +450,7 @@ def test_scheduler_installer_rejects_tampered_plan_identity(
 def test_scheduler_installer_rejects_arbitrary_matching_candidate_label(
     tmp_path: Path,
 ) -> None:
+    write_empty_schedule_evidence_ledger(tmp_path)
     plan = build_scheduler_plan(
         drawing=4964,
         drawing_id=12003,
@@ -453,7 +463,10 @@ def test_scheduler_installer_rejects_arbitrary_matching_candidate_label(
     )
     artifacts = prepare_scheduler_artifacts(plan, python_command=sys.executable)
     candidate = plistlib.loads(artifacts.launch_agent_path.read_bytes())
-    arbitrary_label = "com.totoai.production-scheduler.v5." + "0" * 16
+    arbitrary_label = (
+        f"com.totoai.production-scheduler.v{SCHEDULER_SCHEMA_VERSION}."
+        + "0" * 16
+    )
     candidate["Label"] = arbitrary_label
     artifacts.launch_agent_path.write_bytes(
         plistlib.dumps(candidate, fmt=plistlib.FMT_XML, sort_keys=True)
@@ -620,6 +633,7 @@ def test_existing_exact_artifacts_are_reused_after_crash_before_record_write(
         db=config.db,
         aliases=config.aliases,
         timing_overrides=config.timing_overrides,
+        schedule_evidence_ledger=config.schedule_evidence_ledger,
         env_file=config.env_file,
     )
     prepare_scheduler_artifacts(plan, python_command=sys.executable)

@@ -262,12 +262,12 @@ def _install_operational_ev_replay(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         drawing_module,
         "select_ev_package",
-        lambda surface, config: package(config),
+        lambda surface, config, probabilities=None: package(config),
     )
     monkeypatch.setattr(
         drawing_module,
         "select_ev_package_with_top_coupons",
-        lambda surface, config, diagnostic_limit=20: (
+        lambda surface, config, probabilities=None, diagnostic_limit=20: (
             package(config),
             package(config).coupons[:diagnostic_limit],
         ),

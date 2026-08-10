@@ -1,0 +1,183 @@
+{
+  "captured_at": "2026-08-06T14:40:29.924513Z",
+  "drawing_id": 12010,
+  "drawing_number": 4967,
+  "payload": {
+    "data": {
+      "events": [
+        {
+          "order": 0,
+          "quotes": {
+            "bk_draw": 29,
+            "bk_win_1": 27,
+            "bk_win_2": 44,
+            "pool_draw": 28,
+            "pool_win_1": 31,
+            "pool_win_2": 41
+          }
+        },
+        {
+          "order": 1,
+          "quotes": {
+            "bk_draw": 31,
+            "bk_win_1": 30,
+            "bk_win_2": 39,
+            "pool_draw": 26,
+            "pool_win_1": 33,
+            "pool_win_2": 42
+          }
+        },
+        {
+          "order": 2,
+          "quotes": {
+            "bk_draw": 29,
+            "bk_win_1": 35,
+            "bk_win_2": 35,
+            "pool_draw": 27,
+            "pool_win_1": 29,
+            "pool_win_2": 44
+          }
+        },
+        {
+          "order": 3,
+          "quotes": {
+            "bk_draw": 27,
+            "bk_win_1": 42,
+            "bk_win_2": 31,
+            "pool_draw": 22,
+            "pool_win_1": 54,
+            "pool_win_2": 24
+          }
+        },
+        {
+          "order": 4,
+          "quotes": {
+            "bk_draw": 29,
+            "bk_win_1": 29,
+            "bk_win_2": 42,
+            "pool_draw": 26,
+            "pool_win_1": 43,
+            "pool_win_2": 31
+          }
+        },
+        {
+          "order": 5,
+          "quotes": {
+            "bk_draw": 28,
+            "bk_win_1": 32,
+            "bk_win_2": 41,
+            "pool_draw": 28,
+            "pool_win_1": 27,
+            "pool_win_2": 45
+          }
+        },
+        {
+          "order": 6,
+          "quotes": {
+            "bk_draw": 27,
+            "bk_win_1": 24,
+            "bk_win_2": 50,
+            "pool_draw": 23,
+            "pool_win_1": 26,
+            "pool_win_2": 51
+          }
+        },
+        {
+          "order": 7,
+          "quotes": {
+            "bk_draw": 26,
+            "bk_win_1": 24,
+            "bk_win_2": 49,
+            "pool_draw": 20,
+            "pool_win_1": 18,
+            "pool_win_2": 62
+          }
+        },
+        {
+          "order": 8,
+          "quotes": {
+            "bk_draw": 30,
+            "bk_win_1": 39,
+            "bk_win_2": 31,
+            "pool_draw": 24,
+            "pool_win_1": 53,
+            "pool_win_2": 23
+          }
+        },
+        {
+          "order": 9,
+          "quotes": {
+            "bk_draw": 28,
+            "bk_win_1": 45,
+            "bk_win_2": 27,
+            "pool_draw": 25,
+            "pool_win_1": 51,
+            "pool_win_2": 24
+          }
+        },
+        {
+          "order": 10,
+          "quotes": {
+            "bk_draw": 30,
+            "bk_win_1": 41,
+            "bk_win_2": 29,
+            "pool_draw": 26,
+            "pool_win_1": 41,
+            "pool_win_2": 33
+          }
+        },
+        {
+          "order": 11,
+          "quotes": {
+            "bk_draw": 33,
+            "bk_win_1": 39,
+            "bk_win_2": 28,
+            "pool_draw": 35,
+            "pool_win_1": 44,
+            "pool_win_2": 21
+          }
+        },
+        {
+          "order": 12,
+          "quotes": {
+            "bk_draw": 30,
+            "bk_win_1": 38,
+            "bk_win_2": 32,
+            "pool_draw": 33,
+            "pool_win_1": 37,
+            "pool_win_2": 31
+          }
+        },
+        {
+          "order": 13,
+          "quotes": {
+            "bk_draw": 27,
+            "bk_win_1": 37,
+            "bk_win_2": 36,
+            "pool_draw": 23,
+            "pool_win_1": 54,
+            "pool_win_2": 23
+          }
+        },
+        {
+          "order": 14,
+          "quotes": {
+            "bk_draw": 27,
+            "bk_win_1": 38,
+            "bk_win_2": 35,
+            "pool_draw": 27,
+            "pool_win_1": 42,
+            "pool_win_2": 31
+          }
+        }
+      ],
+      "id": 12010,
+      "jackpot": 19847415,
+      "number": 4967,
+      "pool_sum": 8004369
+    }
+  },
+  "schema_version": 1,
+  "selection_cutoff_at": "2026-08-06T14:50:00Z",
+  "source_snapshot_sha256": "bda3a737bcc0142f6ba06ea3709d8125407076d102bda19253252db14fc5c171"
+}

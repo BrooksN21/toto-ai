@@ -65,6 +65,10 @@ class ScheduleEvidenceLedger:
     observations: tuple[ScheduleObservation, ...]
 
 
+class ScheduleEvidenceIntegrityError(ValueError):
+    """The immutable ledger path, bytes, semantics, or identity changed."""
+
+
 @dataclass(frozen=True)
 class EvidenceResolution:
     state: ResolutionState
@@ -104,6 +108,44 @@ def load_schedule_evidence_ledger(path: Path) -> ScheduleEvidenceLedger:
         semantic_hash=_sha256_json(canonical),
         observations=observations,
     )
+
+
+def load_bound_schedule_evidence_ledger(
+    path: Path,
+    *,
+    expected_content_sha256: str | None,
+    expected_semantic_hash: str | None,
+) -> ScheduleEvidenceLedger:
+    """Load one exact ledger while enforcing optional immutable plan hashes."""
+    raw_path = Path(path)
+    try:
+        if raw_path.is_symlink():
+            raise ValueError("schedule evidence ledger must not be a symlink")
+        path = raw_path.resolve()
+        if not path.is_file():
+            raise ValueError("schedule evidence ledger must be a regular file")
+        before = path.read_bytes()
+        content_sha256 = hashlib.sha256(before).hexdigest()
+        if (
+            expected_content_sha256 is not None
+            and content_sha256 != expected_content_sha256
+        ):
+            raise ValueError("schedule evidence ledger content hash mismatch")
+        ledger = load_schedule_evidence_ledger(path)
+        if path.read_bytes() != before:
+            raise ValueError("schedule evidence ledger changed during validation")
+        if (
+            expected_semantic_hash is not None
+            and ledger.semantic_hash != expected_semantic_hash
+        ):
+            raise ValueError("schedule evidence ledger semantic hash mismatch")
+        return ledger
+    except ScheduleEvidenceIntegrityError:
+        raise
+    except (OSError, TypeError, ValueError) as error:
+        raise ScheduleEvidenceIntegrityError(
+            str(error) or "schedule evidence ledger integrity failure"
+        ) from error
 
 
 def ingest_reviewed_observation(

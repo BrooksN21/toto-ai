@@ -1,5 +1,56 @@
 # Architecture
 
+## Deterministic safety-aware EV package selection
+
+Playable EV selection keeps the complete coupon EV surface, ranking,
+threshold, payout and probability mathematics unchanged. When package safety
+is enabled, selection starts from exactly `selection_budget // stake`
+highest-ranked eligible coupons and applies deterministic constrained swaps.
+Each material event/outcome receives at least one coupon, and every
+event/outcome count is bounded by
+`ceil(near_fixed_share * coupon_count) - 1`, matching the existing safety
+gate's strict `share >= near_fixed_share` rejection boundary.
+
+The candidate prefix is drawing-neutral and bank-neutral: at least 32,768
+eligible coupons and 128 candidates per requested coupon, expanding fourfold
+to at most one million or the complete eligible set. Repair reduces integer
+constraint violation first, minimizes gross-EV loss within each deterministic
+step, and then restores higher-ranked coupons through feasible one-swap local
+improvements. A bounded search that cannot find a feasible exact-cardinality
+package returns coupon-free `NO BET` with diagnostics; it never weakens or
+bypasses safety. The existing independent final package-safety veto remains
+unchanged and authoritative.
+
+Selection diagnostics bind pre/post package hashes, pre/post concentrations,
+material-outcome repairs, replacements, gross-EV delta, candidate-universe
+size and feasibility reasons. Frozen chronological regressions separate
+pre-cutoff quote fixtures from finished outcomes and reproduce the exact old
+drawing-4967 package hash before retrospective scoring.
+
+## Immutable scheduler ledger binding
+
+Scheduler schema v6 binds the canonical contained schedule-evidence ledger
+path, its exact content SHA-256 and its canonical semantic hash into the plan
+payload and `plan_id`. Plan creation and loading require a regular,
+non-symlink ledger. Schema v5 is permanently unbound and is rejected with an
+explicit regenerate-v6 diagnostic rather than being reinterpreted.
+
+Every scheduler tick and phase runner revalidates the bound path, bytes and
+semantic identity before phase work. Generated `prepare-drawing` and
+`run-drawing` commands carry the same path and both expected hashes. The child
+commands validate that binding before provider/package work, and prospective
+collection validates it again before every pass. Schedule-evidence pins are
+revalidated only against the supplied bound ledger; missing ledgers, hash or
+semantic drift, malformed content and immutable pin conflicts are typed
+integrity failures.
+
+Child integrity failures use exit code 78 and become
+`SchedulerIntegrityError`. They terminalize scheduler state at any stage and
+are never retried. Network, TLS, quota and refresh transport failures retain
+their existing transient classification. Monotonic baseline-to-reviewed
+upgrades, strict provider pins, reversed schedule-only orientation, TotoBrief
+`1/X/2` ordering and final fail-closed package safety remain unchanged.
+
 ## Atomic monotonic canonical pin enrichment
 
 A ready canonical pin-set is immutable except for one transactionally guarded
@@ -33,15 +84,16 @@ T−10 minus the configured publication reserve, while the remaining interval
 is reserved for durable package publication and a manual-upload marker. No
 automatic bet placement exists.
 
-Scheduler schema v5 binds `publication_lead_minutes = 10` and the complete
+Scheduler schema v6 binds `publication_lead_minutes = 10` and the complete
 `120/90/60/45/30/20/16/10` trigger-offset vector into the semantic payload and
-plan ID. T−120/T−90/T−60 are diagnostic TLS/API/freshness preflights; they
-cannot publish a package. Each stage is persisted and idempotent, while all
-TotoBrief requests retain shared cross-process pacing.
-Generated LaunchAgent labels are explicitly versioned `v5`, while status uses
-schema v5 and the same exact deadline map. Schema v4 is the stale T−12
-contract and is rejected with a regenerate-v5 diagnostic before execution or
-artifact reuse; no implicit migration is allowed.
+plan ID alongside the ledger binding. T−120/T−90/T−60 are diagnostic
+TLS/API/freshness preflights; they cannot publish a package. Each stage is
+persisted and idempotent, while all TotoBrief requests retain shared
+cross-process pacing. Generated LaunchAgent labels are explicitly versioned
+`v6`, while status uses schema v6 and the same exact deadline map. Schema v4
+is the stale T−12 contract and schema v5 lacks ledger identity; both are
+rejected with regenerate-v6 diagnostics before production execution or
+artifact reuse. No implicit migration is allowed.
 
 Every scheduler failure records a redacted transport message, structural
 exception-type chain, transport category, HTTP status when present, and attempt

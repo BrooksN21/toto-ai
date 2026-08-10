@@ -13,6 +13,7 @@ import toto_ai.cli as cli
 import toto_ai.runner.reports as runner_reports
 import toto_ai.runner.scheduler as scheduler_module
 from tests.pinned_revalidation_helpers import ready_pinned_revalidation
+from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai.db.models import Drawing
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.models import PlayTimingEligibility
@@ -139,6 +140,11 @@ def _invoke_command_direct() -> None:
         provider="api-sports",
         aliases="aliases.json",
         timing_overrides=None,
+        reviewed_schedule_catalog=None,
+        expected_reviewed_catalog_hash=None,
+        schedule_evidence_ledger=str(cli.DEFAULT_SCHEDULE_EVIDENCE_PATH),
+        expected_schedule_evidence_sha256=None,
+        expected_schedule_evidence_semantic_hash=None,
         quota_reserve=10,
         max_passes=3,
         max_expansion_passes=3,
@@ -492,6 +498,7 @@ def test_run_drawing_wires_only_approved_options_and_fresh_dependencies(monkeypa
     assert captured["runner_report"]["input_paths"] == (
         "custom.db",
         "aliases.json",
+        cli.DEFAULT_SCHEDULE_EVIDENCE_PATH.resolve(),
     )
     assert "--reuse-cache" not in runner.invoke(
         cli.app, ["run-drawing", "--help"]
@@ -537,11 +544,13 @@ def test_run_drawing_pins_optional_timing_catalog_and_protects_input(
         "data/toto.db",
         "data/external-odds/team-aliases.json",
         str(catalog_path),
+        cli.DEFAULT_SCHEDULE_EVIDENCE_PATH.resolve(),
     )
     assert captured["runner_report"]["input_paths"] == (
         "data/toto.db",
         "data/external-odds/team-aliases.json",
         str(catalog_path),
+        cli.DEFAULT_SCHEDULE_EVIDENCE_PATH.resolve(),
     )
 
 
@@ -605,6 +614,7 @@ def test_run_drawing_protects_reviewed_snapshots_and_fails_closed_on_toctou(
     assert protected == (
         "data/toto.db",
         "data/external-odds/team-aliases.json",
+        cli.DEFAULT_SCHEDULE_EVIDENCE_PATH.resolve(),
         catalog_path.resolve(),
         independent_path.resolve(),
         official_path.resolve(),
@@ -647,6 +657,9 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "--timing-overrides",
         "--reviewed-schedule-catalog",
         "--expected-reviewed-catalog-hash",
+        "--schedule-evidence-ledger",
+        "--expected-schedule-evidence-sha256",
+        "--expected-schedule-evidence-semantic-hash",
         "--quota-reserve",
         "--max-passes",
         "--max-expansion-passes",
@@ -697,6 +710,11 @@ def test_run_drawing_exposes_exact_approved_option_surface():
             "timing_overrides": None,
             "reviewed_schedule_catalog": None,
             "expected_reviewed_catalog_hash": None,
+            "schedule_evidence_ledger": str(
+                cli.DEFAULT_SCHEDULE_EVIDENCE_PATH
+            ),
+            "expected_schedule_evidence_sha256": None,
+            "expected_schedule_evidence_semantic_hash": None,
             "quota_reserve": 10,
         "max_passes": 3,
         "max_expansion_passes": 3,
@@ -710,6 +728,7 @@ def test_scheduler_generated_run_drawing_argv_matches_cli_contract(
     tmp_path,
 ):
     captured = _wire_runner(monkeypatch, result=_RunnerResult("NO BET"))
+    write_empty_schedule_evidence_ledger(tmp_path)
     plan = build_scheduler_plan(
         drawing=5001,
         drawing_id=12001,
@@ -734,6 +753,7 @@ def test_scheduler_generated_run_drawing_argv_matches_cli_contract(
     command = build_run_drawing_phase_command(context)
     argv = list(command[command.index("run-drawing") :])
 
+    monkeypatch.chdir(tmp_path)
     result = runner.invoke(cli.app, argv)
 
     assert result.exit_code == 0, result.output
@@ -1278,6 +1298,7 @@ def test_scheduler_cli_plan_simulated_execute_and_operator_pickup_are_offline(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    write_empty_schedule_evidence_ledger(tmp_path)
     output_dir = tmp_path / "production-scheduler"
     monkeypatch.delenv("API_SPORTS_KEY", raising=False)
     monkeypatch.setattr(
@@ -1354,6 +1375,7 @@ def test_scheduler_cli_plan_simulated_execute_and_operator_pickup_are_offline(
 def test_scheduler_cli_rejects_production_run_id_for_schema_v4(
     tmp_path: Path,
 ) -> None:
+    write_empty_schedule_evidence_ledger(tmp_path)
     output_dir = tmp_path / "production-parser-scheduler"
     plan_result = runner.invoke(
         cli.app,
@@ -1405,6 +1427,7 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    write_empty_schedule_evidence_ledger(tmp_path)
     output_dir = tmp_path / "atomic-production-scheduler"
     deadline = datetime(2030, 1, 2, 12, 0, tzinfo=UTC)
     detail_payload = {
@@ -1561,6 +1584,7 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
 
 
 def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> None:
+    write_empty_schedule_evidence_ledger(tmp_path)
     output_dir = tmp_path / "dry-run-scheduler"
 
     result = runner.invoke(
@@ -1626,6 +1650,7 @@ def test_scheduler_cli_rejects_null_ended_at_before_artifact_creation(
 def test_scheduler_cli_rejects_shell_script_python_executable(
     tmp_path: Path,
 ) -> None:
+    write_empty_schedule_evidence_ledger(tmp_path)
     output_dir = tmp_path / "unsafe-executable-scheduler"
     executable = tmp_path / "python-probe"
     executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")

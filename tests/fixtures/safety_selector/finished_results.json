@@ -1,0 +1,21 @@
+{
+  "drawings": [
+    {
+      "drawing_number": 4967,
+      "result": "X1XX2222X121111",
+      "source_finished_snapshot_sha256": "1f938b513e9dcecfb4a2a0f8733d17f654b62076c33724af66e5033d8c2af6c8"
+    },
+    {
+      "drawing_number": 4969,
+      "result": "2X221121XX21X11",
+      "source_finished_snapshot_sha256": "f34c986fc86a667de400355f1b6ffeedf55113331920f0b9bbcdb6af8a5bf70b"
+    },
+    {
+      "drawing_number": 4970,
+      "result": "122212112X1X11X",
+      "source_finished_snapshot_sha256": "36460bf16d63b32e1a443607f434a810ab6307ed90ecbc50804baa0eb09c3904"
+    }
+  ],
+  "notice": "Loaded only after package hashes are computed; never used for selection.",
+  "schema_version": 1
+}

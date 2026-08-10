@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai.package.audit import (
     canonical_probability_input_sha256,
     evaluate_package_safety,
@@ -50,6 +51,7 @@ def _plan(tmp_path: Path):
     root.mkdir(parents=True, exist_ok=True)
     (root / "data").mkdir()
     (root / "data" / "aliases.json").write_text("{}")
+    write_empty_schedule_evidence_ledger(root)
     return build_scheduler_plan(
         drawing=5001,
         drawing_id=12001,

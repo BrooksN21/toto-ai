@@ -30,10 +30,11 @@ from toto_ai.external_odds.reviewed_schedule import (
     select_reviewed_evidence,
 )
 from toto_ai.external_odds.schedule_evidence import (
+    ScheduleEvidenceIntegrityError,
     ScheduleEvidenceLedger,
     ScheduleObservation,
     drawing_schedule_dates,
-    load_schedule_evidence_ledger,
+    load_bound_schedule_evidence_ledger,
     resolve_schedule_evidence,
 )
 from toto_ai.external_odds.team_registry import (
@@ -198,6 +199,8 @@ def prepare_drawing(
     schedule_diagnostics: tuple[dict[str, str | None], ...] = (),
     reviewed_schedule_catalog: str | Path | None = None,
     schedule_evidence_ledger: str | Path | None = None,
+    expected_schedule_evidence_sha256: str | None = None,
+    expected_schedule_evidence_semantic_hash: str | None = None,
     evaluated_at: datetime | None = None,
 ) -> DrawingPreparationResult:
     """Resolve strict external pins and explicit TotoBrief baseline-only rows."""
@@ -209,7 +212,11 @@ def prepare_drawing(
     evidence_ledger = (
         None
         if schedule_evidence_ledger is None
-        else load_schedule_evidence_ledger(Path(schedule_evidence_ledger))
+        else load_bound_schedule_evidence_ledger(
+            Path(schedule_evidence_ledger),
+            expected_content_sha256=expected_schedule_evidence_sha256,
+            expected_semantic_hash=expected_schedule_evidence_semantic_hash,
+        )
     )
     # This also invalidates any valid pins for an older fingerprint.
     try:
@@ -332,7 +339,7 @@ def prepare_drawing(
             elif evidence_resolution.state == "CONFLICT":
                 evidence_conflict_orders.append(event.event_order)
     if evidence_conflict_orders:
-        raise ValueError(
+        raise ScheduleEvidenceIntegrityError(
             "conflicting authoritative schedule identity for event orders "
             f"{tuple(evidence_conflict_orders)}"
         )
@@ -824,7 +831,7 @@ def _baseline_schedule_evidence_upgrade_orders(
         elif resolution.state == "CONFLICT":
             conflicts.append(event.event_order)
     if conflicts:
-        raise ValueError(
+        raise ScheduleEvidenceIntegrityError(
             "conflicting authoritative schedule identity for event orders "
             f"{tuple(conflicts)}"
         )
@@ -1480,7 +1487,9 @@ def _validate_existing_pins_against_candidates(
                 or pin.provenance.get("ledger_hash")
                 != schedule_evidence_ledger.semantic_hash
             ):
-                raise ValueError("ready schedule-evidence pin conflicts with ledger")
+                raise ScheduleEvidenceIntegrityError(
+                    "ready schedule-evidence pin conflicts with ledger"
+                )
             continue
         if pin.effective_source_provider == "reviewed-schedule":
             if reviewed_catalog is None or pin.reviewed_evidence_id is None:

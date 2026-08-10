@@ -311,7 +311,8 @@ def _fast_ev_and_no_real_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
             for index in range(config.max_coupons)
         )
 
-    def fixed_package(surface, config):
+    def fixed_package(surface, config, *, probabilities=None):
+        del probabilities
         if not np.any(surface.gross_ev >= config.min_gross_ev):
             return EVPackage(
                 decision="NO BET",
@@ -343,8 +344,8 @@ def _fast_ev_and_no_real_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         drawing_module,
         "select_ev_package_with_top_coupons",
-        lambda surface, config, diagnostic_limit=20: (
-            fixed_package(surface, config),
+        lambda surface, config, probabilities=None, diagnostic_limit=20: (
+            fixed_package(surface, config, probabilities=probabilities),
             fixture_coupons(config)[:diagnostic_limit],
         ),
     )

@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import typer
 from typer.testing import CliRunner
 
+from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai import cli
 from toto_ai.api.detail_cache import write_drawing_detail_cache
 from toto_ai.db.models import Drawing
@@ -293,7 +294,7 @@ def test_prepare_drawing_uses_synced_local_cache_without_totobrief_client(
     schedule.write_text("{}")
     aliases = tmp_path / "aliases.json"
     aliases.write_text('{"version":1,"aliases":{}}')
-    ledger = tmp_path / "data" / "schedule-evidence" / "ledger.json"
+    ledger = write_empty_schedule_evidence_ledger(tmp_path)
 
     result = CliRunner().invoke(
         cli.app,
@@ -331,6 +332,7 @@ def test_prepare_drawing_explicit_operational_cache_requires_sidecar(
     )
     schedule = tmp_path / "schedule.json"
     schedule.write_text("{}", encoding="utf-8")
+    write_empty_schedule_evidence_ledger(tmp_path)
 
     result = CliRunner().invoke(
         cli.app,

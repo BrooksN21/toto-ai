@@ -1,5 +1,42 @@
 # Decisions
 
+## Safety-aware EV selection boundary (2026-08-10)
+
+- Keep true/crowd probability, category payout, EV-surface, threshold and
+  complete-ranking mathematics unchanged; safety acts only on package choice.
+- In safety-enabled playable mode, require exactly
+  `selection_budget // stake` unique eligible coupons.
+- Translate the existing safety policy directly into integer selection bounds:
+  at least one coupon for every material outcome and at most
+  `ceil(near_fixed_share * K) - 1` coupons for every event/outcome.
+- Use a deterministic expanding ranked candidate prefix and EV-loss-aware
+  constrained swaps, followed by feasible one-swap EV improvement. Stable
+  complete-ranking order resolves ties and package hashes remain canonical.
+- Treat bounded-search exhaustion or structural impossibility as fail-closed
+  `NO BET` with explicit diagnostics. Never relax constraints or bypass the
+  existing independent final safety veto.
+- Keep finished outcomes outside selection fixtures and load them only after
+  package hashes exist. Three finished drawings are regression evidence only,
+  not a basis for payout or profitability claims.
+
+## Scheduler ledger integrity boundary (2026-08-10)
+
+- Scheduler schema v6 identity includes the canonical schedule-evidence
+  ledger path, exact content SHA-256 and canonical semantic hash.
+- Schema v5 is permanently unbound and must be regenerated; it is never
+  silently interpreted as a v6 plan. Legacy inspection plans remain
+  non-actionable in production.
+- Every scheduler stage and both child entrypoints must consume the exact plan
+  binding. Final collection reloads the binding before every provider pass.
+- Missing, malformed, changed or semantically different ledger content and
+  immutable schedule-evidence pin conflicts are terminal integrity failures,
+  represented structurally rather than by parsing error text.
+- Child commands reserve exit code 78 for integrity failure. Scheduler state
+  records `integrity_failed`, becomes terminal at any phase and does not retry.
+- Network, TLS, quota and refresh transport errors remain transient. The
+  monotonic upgrade boundary, strict pins, schedule-only reversal semantics,
+  BK outcome ordering and final safety veto are unchanged.
+
 ## Monotonic pin-set upgrade boundary (2026-08-06)
 
 - A canonical ready pin-set is not rebuilt from fresh provider provenance when

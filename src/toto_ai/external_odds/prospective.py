@@ -17,6 +17,10 @@ from toto_ai.external_odds.collection import (
 )
 from toto_ai.external_odds.domain import ExternalOddsProvider, TargetDrawing
 from toto_ai.external_odds.eligibility import DrawingEligibility
+from toto_ai.external_odds.schedule_evidence import (
+    ScheduleEvidenceLedger,
+    load_bound_schedule_evidence_ledger,
+)
 from toto_ai.external_odds.storage import save_collection
 from toto_ai.external_odds.team_registry import DrawingEventPinRecord
 
@@ -105,6 +109,9 @@ def collect_fresh_open_external_odds(
     cache_root: Path,
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
     reviewed_schedule_catalog: str | None = None,
+    schedule_evidence_ledger: Path | None = None,
+    expected_schedule_evidence_sha256: str | None = None,
+    expected_schedule_evidence_semantic_hash: str | None = None,
     target: TargetDrawing | None = None,
     stop_at: datetime | None = None,
     max_passes: int = 3,
@@ -152,6 +159,13 @@ def collect_fresh_open_external_odds(
             aliases=aliases,
             prepared_pins=prepared_pins,
             reviewed_schedule_catalog=reviewed_schedule_catalog,
+            schedule_evidence_ledger=schedule_evidence_ledger,
+            expected_schedule_evidence_sha256=(
+                expected_schedule_evidence_sha256
+            ),
+            expected_schedule_evidence_semantic_hash=(
+                expected_schedule_evidence_semantic_hash
+            ),
             phase="base",
             phase_pass_number=pass_index + 1,
             horizon_days=_BASE_HORIZON_DAYS,
@@ -201,6 +215,13 @@ def collect_fresh_open_external_odds(
                 aliases=aliases,
                 prepared_pins=prepared_pins,
                 reviewed_schedule_catalog=reviewed_schedule_catalog,
+                schedule_evidence_ledger=schedule_evidence_ledger,
+                expected_schedule_evidence_sha256=(
+                    expected_schedule_evidence_sha256
+                ),
+                expected_schedule_evidence_semantic_hash=(
+                    expected_schedule_evidence_semantic_hash
+                ),
                 phase="expansion",
                 phase_pass_number=pass_index + 1,
                 horizon_days=expansion_horizon_days,
@@ -265,6 +286,9 @@ def _run_pass(
     aliases: dict[str, str],
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None,
     reviewed_schedule_catalog: str | None,
+    schedule_evidence_ledger: Path | None,
+    expected_schedule_evidence_sha256: str | None,
+    expected_schedule_evidence_semantic_hash: str | None,
     phase: ProspectivePhase,
     phase_pass_number: int,
     horizon_days: int,
@@ -273,6 +297,15 @@ def _run_pass(
     monotonic: Callable[[], float],
 ) -> ProspectiveCollectionPass:
     pass_started = monotonic()
+    bound_ledger = (
+        None
+        if schedule_evidence_ledger is None
+        else load_bound_schedule_evidence_ledger(
+            schedule_evidence_ledger,
+            expected_content_sha256=expected_schedule_evidence_sha256,
+            expected_semantic_hash=expected_schedule_evidence_semantic_hash,
+        )
+    )
     arguments = {
         "missing_start_horizon_days": horizon_days,
         "stop_at": stop_at,
@@ -282,6 +315,8 @@ def _run_pass(
         arguments["prepared_pins"] = prepared_pins
     if reviewed_schedule_catalog is not None:
         arguments["reviewed_schedule_catalog"] = reviewed_schedule_catalog
+    if bound_ledger is not None:
+        arguments["schedule_evidence_ledger"] = bound_ledger
     snapshot = _collect_target_pass(
         target,
         provider_factory(cache_dir),
@@ -309,6 +344,7 @@ def _collect_target_pass(
     now: Callable[[], datetime],
     prepared_pins: tuple[DrawingEventPinRecord, ...] | None = None,
     reviewed_schedule_catalog: str | None = None,
+    schedule_evidence_ledger: ScheduleEvidenceLedger | None = None,
 ) -> ExternalCollectionSnapshot:
     snapshot = build_external_collection(
         target,
@@ -317,6 +353,7 @@ def _collect_target_pass(
         missing_start_horizon_days=missing_start_horizon_days,
         prepared_pins=prepared_pins,
         reviewed_schedule_catalog=reviewed_schedule_catalog,
+        schedule_evidence_ledger=schedule_evidence_ledger,
         stop_at=stop_at,
         now=now,
     )

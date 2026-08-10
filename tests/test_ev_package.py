@@ -1,3 +1,5 @@
+import hashlib
+
 import numpy as np
 import pytest
 
@@ -224,3 +226,149 @@ def test_derive_brief_unions_outcomes_in_display_order():
 
 def test_derive_brief_empty_package_uses_the_supplied_event_count():
     assert derive_brief((), event_count=15) == ("",) * 15
+
+
+def test_safety_aware_selection_repairs_zero_exposure_with_lowest_ev_loss():
+    values = [0.1] * 9
+    values[0] = 10.0  # 11
+    values[1] = 9.0  # 1X
+    values[7] = 8.0  # 2X
+
+    package = select_ev_package(
+        surface(values),
+        EVConfig(
+            bank=60,
+            stake=30,
+            mode="playable",
+            min_gross_ev=0.0,
+            package_safety_enabled=True,
+        ),
+        probabilities=((0.6, 0.1, 0.3), (0.6, 0.4, 0.0)),
+    )
+
+    assert package.decision == "PLAY"
+    assert [row.coupon for row in package.coupons] == ["11", "2X"]
+    assert package.cost == 60
+    diagnostics = package.selection_diagnostics
+    assert diagnostics is not None
+    assert diagnostics.constraint_feasible is True
+    assert diagnostics.pre_exposures[0].counts == (2, 0, 0)
+    assert diagnostics.post_exposures[0].counts == (1, 0, 1)
+    assert [
+        (repair.event, repair.outcome, repair.before_count, repair.after_count)
+        for repair in diagnostics.material_outcomes_repaired
+    ] == [(1, "2", 0, 1)]
+    assert len(diagnostics.replacements) == 1
+    assert diagnostics.gross_ev_delta == pytest.approx(-1.0)
+
+
+def test_safety_aware_selection_repairs_concentration_without_material_floor():
+    values = [0.1] * 27
+    for index, value in ((0, 10.0), (1, 9.9), (2, 9.8), (3, 9.7), (10, 9.6)):
+        values[index] = value
+
+    package = select_ev_package(
+        surface(values, event_count=3),
+        EVConfig(
+            bank=120,
+            stake=30,
+            mode="playable",
+            min_gross_ev=0.0,
+            package_safety_enabled=True,
+            package_material_probability_threshold=0.9,
+        ),
+        probabilities=((0.8, 0.1, 0.1),) * 3,
+    )
+
+    assert package.decision == "PLAY"
+    assert len(package.coupons) == 4
+    diagnostics = package.selection_diagnostics
+    assert diagnostics is not None
+    assert diagnostics.pre_exposures[0].maximum_count == 4
+    assert diagnostics.post_exposures[0].maximum_count == 3
+    assert all(exposure.maximum_share < 0.95 for exposure in diagnostics.post_exposures)
+
+
+@pytest.mark.parametrize("bank", [60, 90, 120])
+def test_safety_aware_selection_uses_dynamic_bank_capacity(bank):
+    values = [0.1] * 27
+    for index, value in ((0, 10.0), (1, 9.0), (2, 8.0), (13, 7.5)):
+        values[index] = value
+
+    package = select_ev_package(
+        surface(values, event_count=3),
+        EVConfig(
+            bank=bank,
+            stake=30,
+            mode="playable",
+            min_gross_ev=0.0,
+            package_safety_enabled=True,
+        ),
+        probabilities=((0.5, 0.5, 0.0),) * 3,
+    )
+
+    assert package.decision == "PLAY"
+    assert len(package.coupons) == bank // 30
+    assert len({row.coupon for row in package.coupons}) == bank // 30
+    assert package.cost == bank
+    assert package.unused_bank == 0
+    assert package.selection_diagnostics is not None
+    assert package.selection_diagnostics.constraint_feasible is True
+
+
+def test_safety_aware_selection_is_repeatable_with_stable_hashes():
+    values = [0.1] * 27
+    for index, value in ((0, 10.0), (1, 9.0), (2, 8.0), (13, 7.5)):
+        values[index] = value
+    config = EVConfig(
+        bank=90,
+        stake=30,
+        mode="playable",
+        min_gross_ev=0.0,
+        package_safety_enabled=True,
+    )
+    probabilities = ((0.5, 0.5, 0.0),) * 3
+
+    first = select_ev_package(
+        surface(values, event_count=3),
+        config,
+        probabilities=probabilities,
+    )
+    second = select_ev_package(
+        surface(values, event_count=3),
+        config,
+        probabilities=probabilities,
+    )
+
+    assert first == second
+    diagnostics = first.selection_diagnostics
+    assert diagnostics is not None
+    coupons = tuple(row.coupon for row in first.coupons)
+    assert diagnostics.post_package_sha256 == hashlib.sha256(
+        ",".join(coupons).encode("utf-8")
+    ).hexdigest()
+
+
+def test_safety_aware_selection_fails_closed_with_infeasibility_diagnostics():
+    package = select_ev_package(
+        surface([3.0, 2.0, 1.0], event_count=1),
+        EVConfig(
+            bank=30,
+            stake=30,
+            mode="playable",
+            min_gross_ev=0.0,
+            package_safety_enabled=True,
+        ),
+        probabilities=((0.8, 0.1, 0.1),),
+    )
+
+    assert package.decision == "NO BET"
+    assert package.coupons == ()
+    assert package.cost == 0
+    assert package.decision_reason == "safety_reselection_infeasible"
+    diagnostics = package.selection_diagnostics
+    assert diagnostics is not None
+    assert diagnostics.constraint_feasible is False
+    assert diagnostics.infeasibility_reasons == (
+        "event_1_concentration_capacity_below_package_size",
+    )

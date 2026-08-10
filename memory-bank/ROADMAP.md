@@ -1,5 +1,30 @@
 # Roadmap
 
+## Completed: safety-aware EV coupon reselection
+
+- [x] Preserve EV/probability mathematics and the final safety veto.
+- [x] Select exact dynamic-bank cardinality from a broad deterministic
+  candidate universe.
+- [x] Repair material-outcome gaps and concentration violations with stable,
+  EV-loss-aware swaps and canonical hashes.
+- [x] Fail closed with explicit infeasibility diagnostics.
+- [x] Cover zero exposure, concentration, repeatability, dynamic banks,
+  infeasibility and unchanged final-veto behavior.
+- [x] Freeze pre-cutoff no-leakage regressions for drawings 4967, 4969 and 4970
+  and record measured structural/hit evidence without profit claims.
+
+## Completed: scheduler immutable ledger binding
+
+- [x] Bind canonical ledger path, content SHA-256 and semantic hash into
+  schema-v6 plan identity and artifacts.
+- [x] Revalidate the exact binding before every scheduler stage, preparation
+  and final collection pass.
+- [x] Make missing/tampered/malformed ledgers and immutable pin conflicts
+  terminal integrity failures while preserving transient transport retries.
+- [x] Reject unbound schema-v5 plans with an explicit regenerate-v6 diagnostic.
+- [x] Cover drawing 4967, path/byte/semantic identity, tamper, missing ledger,
+  old plan and retry classification without live runtime mutation.
+
 ## Completed: scheduler canonical-ledger forwarding
 
 - [x] Pass the canonical contained schedule-evidence ledger in every future

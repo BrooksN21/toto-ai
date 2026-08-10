@@ -30,7 +30,6 @@ from zoneinfo import ZoneInfo
 
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.api.rate_limit import TotoBriefRequestError
-from toto_ai.api.safe_paths import resolve_contained_path
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.ev.models import EVConfig, validate_config_bank
@@ -40,6 +39,8 @@ from toto_ai.external_odds.reviewed_schedule import (
 )
 from toto_ai.external_odds.schedule_evidence import (
     DEFAULT_SCHEDULE_EVIDENCE_PATH,
+    ScheduleEvidenceLedger,
+    load_schedule_evidence_ledger,
 )
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.timing_overrides import (
@@ -64,12 +65,14 @@ from toto_ai.runner.scheduler_state import (
     transition,
 )
 
-SCHEDULER_SCHEMA_VERSION = 5
+SCHEDULER_SCHEMA_VERSION = 6
 LEGACY_SCHEDULER_SCHEMA_VERSION = 1
 LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION = 2
 LEGACY_ACTIONABLE_SCHEMA_VERSION = 3
 STALE_T12_SCHEDULER_SCHEMA_VERSION = 4
+UNBOUND_LEDGER_SCHEDULER_SCHEMA_VERSION = 5
 RUNNER_MANIFEST_SCHEMA_VERSION = 5
+SCHEDULER_INTEGRITY_EXIT_CODE = 78
 SCHEDULER_PLAN_FILENAME = "scheduler-plan.json"
 SCHEDULER_WRAPPER_FILENAME = "run-scheduler.sh"
 SCHEDULER_LAUNCH_AGENT_FILENAME = "totoai-scheduler.plist"
@@ -200,6 +203,9 @@ class SchedulerPlan:
     )
     db: Path = Path("data/toto.db")
     aliases: Path = Path("data/external-odds/team-aliases.json")
+    schedule_evidence_ledger: Path = DEFAULT_SCHEDULE_EVIDENCE_PATH
+    schedule_evidence_ledger_sha256: str | None = None
+    schedule_evidence_semantic_hash: str | None = None
     timing_overrides: Path | None = None
     reviewed_schedule_catalog: Path | None = None
     reviewed_catalog_sha256: str | None = None
@@ -287,6 +293,53 @@ class SchedulerPlan:
                 self.aliases,
                 name="scheduler aliases",
             ),
+        )
+        schedule_evidence_ledger = _validated_project_path(
+            project_root,
+            self.schedule_evidence_ledger,
+            name="schedule evidence ledger",
+        )
+        try:
+            _require_regular_file(
+                schedule_evidence_ledger,
+                name="schedule evidence ledger",
+                reject_symlink=True,
+            )
+            ledger_bytes = _read_regular_file(
+                schedule_evidence_ledger,
+                name="schedule evidence ledger",
+                reject_symlink=True,
+            )
+            ledger = load_schedule_evidence_ledger(schedule_evidence_ledger)
+            if _read_regular_file(
+                schedule_evidence_ledger,
+                name="schedule evidence ledger",
+                reject_symlink=True,
+            ) != ledger_bytes:
+                raise ValueError("schedule evidence ledger changed while binding")
+        except (OSError, SchedulerError, TypeError, ValueError) as error:
+            raise ValueError(
+                f"schedule evidence ledger binding failed: {_safe_error(error)}"
+            ) from error
+        content_sha256 = hashlib.sha256(ledger_bytes).hexdigest()
+        if (
+            self.schedule_evidence_ledger_sha256 is not None
+            and self.schedule_evidence_ledger_sha256 != content_sha256
+        ):
+            raise ValueError("schedule evidence ledger content hash mismatch")
+        if (
+            self.schedule_evidence_semantic_hash is not None
+            and self.schedule_evidence_semantic_hash != ledger.semantic_hash
+        ):
+            raise ValueError("schedule evidence ledger semantic hash mismatch")
+        object.__setattr__(
+            self, "schedule_evidence_ledger", schedule_evidence_ledger
+        )
+        object.__setattr__(
+            self, "schedule_evidence_ledger_sha256", content_sha256
+        )
+        object.__setattr__(
+            self, "schedule_evidence_semantic_hash", ledger.semantic_hash
         )
         if self.timing_overrides is not None:
             object.__setattr__(
@@ -480,6 +533,12 @@ class SchedulerPlan:
                 "trigger_offsets_minutes": list(
                     SCHEDULER_TRIGGER_OFFSETS_MINUTES
                 ),
+                "schedule_evidence_ledger_sha256": (
+                    self.schedule_evidence_ledger_sha256
+                ),
+                "schedule_evidence_semantic_hash": (
+                    self.schedule_evidence_semantic_hash
+                ),
                 **(
                     {}
                     if self.reviewed_catalog_hash is None
@@ -491,6 +550,9 @@ class SchedulerPlan:
                 "output_dir": str(self.output_dir),
                 "db": str(self.db),
                 "aliases": str(self.aliases),
+                "schedule_evidence_ledger": str(
+                    self.schedule_evidence_ledger
+                ),
                 "timing_overrides": (
                     None
                     if self.timing_overrides is None
@@ -698,6 +760,9 @@ def build_scheduler_plan(
     ),
     db: str | Path = "data/toto.db",
     aliases: str | Path = "data/external-odds/team-aliases.json",
+    schedule_evidence_ledger: str | Path = DEFAULT_SCHEDULE_EVIDENCE_PATH,
+    schedule_evidence_ledger_sha256: str | None = None,
+    schedule_evidence_semantic_hash: str | None = None,
     timing_overrides: str | Path | None = None,
     reviewed_schedule_catalog: str | Path | None = None,
     reviewed_catalog_sha256: str | None = None,
@@ -729,6 +794,9 @@ def build_scheduler_plan(
         if project_root is None
         else project_root
     )
+    ledger_path = Path(schedule_evidence_ledger)
+    if not ledger_path.is_absolute():
+        ledger_path = root / ledger_path
     return SchedulerPlan(
         drawing=drawing,
         drawing_id=drawing_id,
@@ -745,6 +813,9 @@ def build_scheduler_plan(
         project_root=root,
         db=normalized_db,
         aliases=normalized_aliases,
+        schedule_evidence_ledger=ledger_path,
+        schedule_evidence_ledger_sha256=schedule_evidence_ledger_sha256,
+        schedule_evidence_semantic_hash=schedule_evidence_semantic_hash,
         timing_overrides=(
             None if timing_overrides is None else Path(timing_overrides)
         ),
@@ -775,8 +846,58 @@ def scheduler_plan_json(plan: SchedulerPlan) -> str:
     return _canonical_json_bytes(plan.to_payload()).decode("utf-8") + "\n"
 
 
+def validate_schedule_evidence_binding(
+    plan: SchedulerPlan,
+) -> ScheduleEvidenceLedger:
+    """Revalidate the exact ledger path, bytes and semantics bound by a plan."""
+    _require_plan(plan)
+    try:
+        _require_sha256(
+            "schedule_evidence_ledger_sha256",
+            plan.schedule_evidence_ledger_sha256,
+        )
+        _require_sha256(
+            "schedule_evidence_semantic_hash",
+            plan.schedule_evidence_semantic_hash,
+        )
+        _require_regular_file(
+            plan.schedule_evidence_ledger,
+            name="schedule evidence ledger",
+            reject_symlink=True,
+        )
+        before = _read_regular_file(
+            plan.schedule_evidence_ledger,
+            name="schedule evidence ledger",
+            reject_symlink=True,
+        )
+        if hashlib.sha256(before).hexdigest() != (
+            plan.schedule_evidence_ledger_sha256
+        ):
+            raise ValueError("schedule evidence ledger content hash mismatch")
+        ledger = load_schedule_evidence_ledger(plan.schedule_evidence_ledger)
+        after = _read_regular_file(
+            plan.schedule_evidence_ledger,
+            name="schedule evidence ledger",
+            reject_symlink=True,
+        )
+        if after != before:
+            raise ValueError("schedule evidence ledger changed during validation")
+        if ledger.path != plan.schedule_evidence_ledger:
+            raise ValueError("schedule evidence ledger canonical path mismatch")
+        if ledger.semantic_hash != plan.schedule_evidence_semantic_hash:
+            raise ValueError("schedule evidence ledger semantic hash mismatch")
+        return ledger
+    except SchedulerIntegrityError:
+        raise
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise SchedulerIntegrityError(
+            f"schedule evidence ledger integrity failed: {_safe_error(error)}",
+            category="schedule_evidence_integrity",
+        ) from error
+
+
 def scheduler_launch_agent_label(plan: SchedulerPlan) -> str:
-    """Return the only LaunchAgent label valid for this schema-v5 plan."""
+    """Return the only LaunchAgent label valid for this ledger-bound plan."""
     _require_plan(plan)
     if plan.source_schema_version != SCHEDULER_SCHEMA_VERSION:
         raise ValueError(
@@ -850,7 +971,12 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
     if schema_version == STALE_T12_SCHEDULER_SCHEMA_VERSION:
         raise ValueError(
             "stale scheduler schema v4 uses T-12 trigger semantics; "
-            "regenerate schema v5"
+            f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}"
+        )
+    if schema_version == UNBOUND_LEDGER_SCHEDULER_SCHEMA_VERSION:
+        raise ValueError(
+            "scheduler schema v5 lacks canonical schedule-evidence binding; "
+            f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}"
         )
     if type(schema_version) is not int or schema_version not in {
         LEGACY_SCHEDULER_SCHEMA_VERSION,
@@ -890,16 +1016,28 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         "publication_lead_minutes",
         "trigger_offsets_minutes",
     }
+    ledger_binding_config_keys = {
+        "schedule_evidence_ledger_sha256",
+        "schedule_evidence_semantic_hash",
+    }
     raw_config = payload["config"]
     if not isinstance(raw_config, Mapping):
         raise ValueError("config must be a JSON object")
+    if (
+        schema_version == SCHEDULER_SCHEMA_VERSION
+        and not ledger_binding_config_keys.issubset(raw_config)
+    ):
+        raise ValueError(
+            "scheduler plan lacks canonical schedule-evidence binding; "
+            f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}"
+        )
     present_tick_keys = tick_config_keys & set(raw_config)
     if present_tick_keys and present_tick_keys != tick_config_keys:
         raise ValueError("config scheduler tick fields must be complete")
     if present_tick_keys:
         base_config_keys |= tick_config_keys
     if schema_version == SCHEDULER_SCHEMA_VERSION:
-        base_config_keys |= trigger_config_keys
+        base_config_keys |= trigger_config_keys | ledger_binding_config_keys
     safety_config_keys = {
         "package_near_fixed_share",
         "package_low_probability_threshold",
@@ -924,8 +1062,9 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         != list(SCHEDULER_TRIGGER_OFFSETS_MINUTES)
     ):
         raise ValueError(
-            "scheduler trigger semantics do not match schema v5; "
-            "regenerate schema v5"
+            f"scheduler trigger semantics do not match schema "
+            f"v{SCHEDULER_SCHEMA_VERSION}; "
+            f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}"
         )
     raw_paths = payload["paths"]
     if not isinstance(raw_paths, Mapping):
@@ -941,6 +1080,13 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         SCHEDULER_SCHEMA_VERSION,
     }:
         path_keys.add("project_root")
+    if schema_version == SCHEDULER_SCHEMA_VERSION:
+        if "schedule_evidence_ledger" not in raw_paths:
+            raise ValueError(
+                "scheduler plan lacks canonical schedule-evidence binding; "
+                f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}"
+            )
+        path_keys.add("schedule_evidence_ledger")
     if "env_file" in raw_paths:
         path_keys.add("env_file")
     paths = _exact_mapping(raw_paths, path_keys, "paths")
@@ -980,6 +1126,15 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         ),
         db=paths["db"],
         aliases=paths["aliases"],
+        schedule_evidence_ledger=paths.get(
+            "schedule_evidence_ledger", DEFAULT_SCHEDULE_EVIDENCE_PATH
+        ),
+        schedule_evidence_ledger_sha256=config.get(
+            "schedule_evidence_ledger_sha256"
+        ),
+        schedule_evidence_semantic_hash=config.get(
+            "schedule_evidence_semantic_hash"
+        ),
         timing_overrides=paths["timing_overrides"],
         reviewed_schedule_catalog=paths.get("reviewed_schedule_catalog"),
         reviewed_catalog_sha256=paths.get("reviewed_catalog_sha256"),
@@ -1758,8 +1913,9 @@ def execute_scheduler_tick(
             return finalized
         except Exception as error:
             completed = _read_now(now)
+            integrity = _integrity_tick_error(error)
             permanent = _permanent_tick_error(error)
-            status = "integrity_failed" if permanent and phase == "final" else (
+            status = "integrity_failed" if integrity else (
                 "permanent_failed" if permanent else "retryable_failed"
             )
             detail = _scheduler_failure_detail(error)
@@ -1770,11 +1926,15 @@ def execute_scheduler_tick(
             state = transition(
                 state, phase=phase, status=status, observed_at=completed,
                 attempt_id=attempt_id, reason=_safe_error(error),
-                terminal="failed" if permanent and phase == "final" else None,
+                terminal=(
+                    "failed"
+                    if integrity or (permanent and phase == "final")
+                    else None
+                ),
                 failure_detail=detail,
             )
             save_state(state_path, state)
-            if permanent and phase == "final":
+            if integrity or (permanent and phase == "final"):
                 raise
             return None
 
@@ -1809,6 +1969,18 @@ def _permanent_tick_error(error: Exception) -> bool:
             return False
         current = current.__cause__ or current.__context__
     # Unknown failures remain retryable and are bounded by max_final_attempts.
+    return False
+
+
+def _integrity_tick_error(error: Exception) -> bool:
+    """Return whether a structural cause is a terminal integrity failure."""
+    current: BaseException | None = error
+    visited: set[int] = set()
+    while current is not None and id(current) not in visited:
+        visited.add(id(current))
+        if isinstance(current, SchedulerIntegrityError):
+            return True
+        current = current.__cause__ or current.__context__
     return False
 
 
@@ -2210,6 +2382,17 @@ def build_run_drawing_phase_command(
                 plan.reviewed_catalog_hash,
             )
         )
+    validate_schedule_evidence_binding(plan)
+    command.extend(
+        (
+            "--schedule-evidence-ledger",
+            str(plan.schedule_evidence_ledger),
+            "--expected-schedule-evidence-sha256",
+            str(plan.schedule_evidence_ledger_sha256),
+            "--expected-schedule-evidence-semantic-hash",
+            str(plan.schedule_evidence_semantic_hash),
+        )
+    )
     return tuple(command)
 
 
@@ -2220,10 +2403,7 @@ def build_prepare_drawing_command(
     python_executable: str | Path = sys.executable,
 ) -> tuple[str, ...]:
     """Build the mandatory systematic-resolution scheduler preflight."""
-    schedule_evidence_ledger = resolve_contained_path(
-        DEFAULT_SCHEDULE_EVIDENCE_PATH,
-        allowed_root=plan.project_root,
-    )
+    validate_schedule_evidence_binding(plan)
     command = [
         _validated_python_executable(python_executable),
         "-m",
@@ -2246,7 +2426,11 @@ def build_prepare_drawing_command(
         "--expansion-horizon-days",
         "5",
         "--schedule-evidence-ledger",
-        str(schedule_evidence_ledger),
+        str(plan.schedule_evidence_ledger),
+        "--expected-schedule-evidence-sha256",
+        str(plan.schedule_evidence_ledger_sha256),
+        "--expected-schedule-evidence-semantic-hash",
+        str(plan.schedule_evidence_semantic_hash),
     ]
     if plan.reviewed_schedule_catalog is not None:
         command.extend(
@@ -2277,6 +2461,7 @@ class CommandSchedulerPhaseRunner:
         self.now = now or (lambda: datetime.now(timezone.utc))
 
     def __call__(self, context: SchedulerPhaseContext) -> SchedulerPhaseResult:
+        validate_schedule_evidence_binding(context.plan)
         if context.phase == "preflight":
             self._preflight(context.plan, context.work_dir)
             self.target_validator(context.plan, _read_now(self.now))
@@ -2355,6 +2540,12 @@ class CommandSchedulerPhaseRunner:
                 detail = detail.replace(secret, "[REDACTED]")
             detail = detail[-1000:]
             suffix = f": {detail}" if detail else ""
+            if completed.returncode == SCHEDULER_INTEGRITY_EXIT_CODE:
+                raise SchedulerIntegrityError(
+                    "run-drawing reported a terminal integrity failure"
+                    f"{suffix}",
+                    category="run_drawing_integrity",
+                )
             raise SchedulerTransientError(
                 f"run-drawing exited with code {completed.returncode}{suffix}",
                 category="run_drawing_process",
@@ -2425,6 +2616,12 @@ class CommandSchedulerPhaseRunner:
             if secret:
                 detail = detail.replace(secret, "[REDACTED]")
             suffix = f": {detail[-1000:]}" if detail else ""
+            if completed.returncode == SCHEDULER_INTEGRITY_EXIT_CODE:
+                raise SchedulerIntegrityError(
+                    "prepare-drawing reported a terminal integrity failure"
+                    f"{suffix}",
+                    category="preparation_integrity",
+                )
             raise SchedulerTransientError(
                 "prepare-drawing did not produce a ready 15/15 preparation"
                 f"{suffix}",
@@ -5046,7 +5243,7 @@ def _reject_stale_t12_scheduler_artifact(plan_path: Path) -> None:
     ):
         raise SchedulerIntegrityError(
             "stale scheduler schema v4 uses T-12 trigger semantics; "
-            "regenerate schema v5",
+            f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}",
             category="stale_scheduler_schema",
         )
 
@@ -5374,6 +5571,7 @@ def _phase_context(
 def _call_phase_runner(
     phase_runner: SchedulerPhaseRunner, context: SchedulerPhaseContext
 ) -> SchedulerPhaseResult:
+    validate_schedule_evidence_binding(context.plan)
     result = phase_runner(context)
     if not isinstance(result, SchedulerPhaseResult):
         raise SchedulerIntegrityError(

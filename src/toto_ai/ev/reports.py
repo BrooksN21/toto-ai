@@ -300,6 +300,75 @@ def _render_markdown(result: EVPackageRun) -> str:
     if result.model_warning is not None:
         lines.append(f"- model warning: {result.model_warning}")
 
+    selection = package.selection_diagnostics
+    if selection is not None:
+        repaired = ", ".join(
+            f"E{item.event} {item.outcome} "
+            f"({item.before_count}->{item.after_count})"
+            for item in selection.material_outcomes_repaired
+        )
+        reasons = ", ".join(selection.infeasibility_reasons)
+        lines.extend(
+            [
+                "",
+                "## Safety-aware Reselection",
+                "",
+                "- constraint feasible: "
+                + ("yes" if selection.constraint_feasible else "no"),
+                f"- required coupons: {selection.required_coupon_count}",
+                (
+                    "- candidate universe: "
+                    f"{selection.candidate_universe_count} / "
+                    f"{selection.eligible_candidate_count} "
+                    "(exhaustive: "
+                    + ("yes" if selection.candidate_universe_exhaustive else "no")
+                    + ")"
+                ),
+                (
+                    "- concentration maximum count: "
+                    f"{selection.concentration_maximum_count}"
+                ),
+                f"- material outcomes repaired: {repaired or 'none'}",
+                f"- replacements: {len(selection.replacements)}",
+                f"- gross EV delta: {selection.gross_ev_delta:.12f}",
+                f"- pre-package SHA-256: {selection.pre_package_sha256}",
+                f"- post-package SHA-256: {selection.post_package_sha256}",
+                f"- infeasibility reasons: {reasons or 'none'}",
+                "",
+                "| Event | Pre maximum/counts | Post maximum/counts |",
+                "| ---: | --- | --- |",
+            ]
+        )
+        for before, after in zip(
+            selection.pre_exposures,
+            selection.post_exposures,
+            strict=True,
+        ):
+            before_counts = "/".join(str(value) for value in before.counts)
+            after_counts = "/".join(str(value) for value in after.counts)
+            lines.append(
+                f"| {before.event} | {before.maximum_outcome}:{before_counts} "
+                f"({before.maximum_share:.4%}) | "
+                f"{after.maximum_outcome}:{after_counts} "
+                f"({after.maximum_share:.4%}) |"
+            )
+        if selection.replacements:
+            lines.extend(
+                [
+                    "",
+                    "| Out rank/coupon | In rank/coupon | Gross EV delta |",
+                    "| --- | --- | ---: |",
+                ]
+            )
+            for replacement in selection.replacements:
+                lines.append(
+                    f"| {replacement.outgoing_rank} "
+                    f"{replacement.outgoing_coupon} | "
+                    f"{replacement.incoming_rank} "
+                    f"{replacement.incoming_coupon} | "
+                    f"{replacement.gross_ev_delta:.12f} |"
+                )
+
     lines.extend(
         [
             "",

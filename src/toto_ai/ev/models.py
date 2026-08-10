@@ -216,6 +216,53 @@ class RankedCoupon:
 
 
 @dataclass(frozen=True)
+class SafetySelectionExposure:
+    event: int
+    counts: tuple[int, int, int]
+    maximum_outcome: str
+    maximum_count: int
+    maximum_share: float
+
+
+@dataclass(frozen=True)
+class SafetyMaterialRepair:
+    event: int
+    outcome: str
+    probability: float
+    before_count: int
+    after_count: int
+
+
+@dataclass(frozen=True)
+class SafetySelectionReplacement:
+    outgoing_rank: int
+    outgoing_coupon: str
+    outgoing_gross_ev: float
+    incoming_rank: int
+    incoming_coupon: str
+    incoming_gross_ev: float
+    gross_ev_delta: float
+
+
+@dataclass(frozen=True)
+class SafetyAwareSelectionDiagnostics:
+    required_coupon_count: int
+    eligible_candidate_count: int
+    candidate_universe_count: int
+    candidate_universe_exhaustive: bool
+    concentration_maximum_count: int
+    pre_exposures: tuple[SafetySelectionExposure, ...]
+    post_exposures: tuple[SafetySelectionExposure, ...]
+    material_outcomes_repaired: tuple[SafetyMaterialRepair, ...]
+    replacements: tuple[SafetySelectionReplacement, ...]
+    gross_ev_delta: float
+    pre_package_sha256: str
+    post_package_sha256: str
+    constraint_feasible: bool
+    infeasibility_reasons: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class EVPackage:
     decision: Literal["PLAY", "NO BET", "RESEARCH ONLY"]
     coupons: tuple[RankedCoupon, ...]
@@ -225,6 +272,7 @@ class EVPackage:
     modeled_roi: float | None
     derived_brief: tuple[str, ...]
     decision_reason: str | None = None
+    selection_diagnostics: SafetyAwareSelectionDiagnostics | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "coupons", tuple(self.coupons))

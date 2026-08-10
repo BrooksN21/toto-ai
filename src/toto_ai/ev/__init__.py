@@ -9,6 +9,10 @@ from toto_ai.ev.models import (
     EVSurface,
     ProbabilityMatrix,
     RankedCoupon,
+    SafetyAwareSelectionDiagnostics,
+    SafetyMaterialRepair,
+    SafetySelectionExposure,
+    SafetySelectionReplacement,
 )
 from toto_ai.ev.prize import (
     CROWD_JOINT_MODEL,
@@ -28,6 +32,10 @@ __all__ = [
     "EVSurface",
     "ProbabilityMatrix",
     "RankedCoupon",
+    "SafetyAwareSelectionDiagnostics",
+    "SafetyMaterialRepair",
+    "SafetySelectionExposure",
+    "SafetySelectionReplacement",
     "category_funds",
     "normalize_triplet",
     "smooth_crowd_matrix",

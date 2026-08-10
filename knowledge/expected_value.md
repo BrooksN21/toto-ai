@@ -13,6 +13,9 @@ Core definitions:
 - The package bank is any positive multiple of the configurable stake.
 - A playable run may return `NO BET`; it never lowers the EV threshold merely
   to spend the bank.
+- Safety-enabled playable selection repairs the top-EV package against the
+  existing material-outcome and concentration policy before the unchanged
+  final veto. It never changes the coupon EV values themselves.
 - Modeled EV is not observed ROI while historical winner and category-payout
   data are unavailable.
 - External consensus remains prospective-only during the API-Sports coverage
@@ -67,3 +70,5 @@ frozen hybrid holdout is not available for that development.
 
 The complete design and formulas are in
 [`2026-07-14-expected-value-package-engine-design.md`](../docs/superpowers/specs/2026-07-14-expected-value-package-engine-design.md).
+Safety-aware selection behavior and frozen drawing evidence are recorded in
+[`safety_aware_ev_selector.md`](safety_aware_ev_selector.md).
