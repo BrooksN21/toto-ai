@@ -549,6 +549,14 @@ Sufficient observed provider coverage may distinguish
 `source_missing_competition` from a generic missing candidate, but both remain
 unresolved and publish no pin.
 
+Systematic resolver v3 also has small code-owned reviewed identity taxonomies
+for reusable exact team aliases and translated domestic competition labels.
+Both are keyed by stable country identity and contain no drawing/event/fixture
+coordinates. Taxonomy-assisted acceptance retains the existing sport, gender,
+country, date-window, uniqueness, and margin checks and additionally requires
+same orientation plus strong identity evidence for both teams. Reversed,
+ambiguous, cross-country, and out-of-window candidates remain unresolved.
+
 Deterministic offline replay uses the same identity boundary without live
 adapters:
 

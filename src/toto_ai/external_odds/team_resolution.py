@@ -6,12 +6,14 @@ from datetime import timedelta
 from difflib import SequenceMatcher
 from typing import Any, Literal
 
+from toto_ai.external_odds.competition_taxonomy import equivalent_competitions
 from toto_ai.external_odds.countries import (
     countries_equivalent,
     country_identity,
 )
 from toto_ai.external_odds.domain import ProviderEvent, TargetEvent
 from toto_ai.external_odds.matching import normalize_team_name
+from toto_ai.external_odds.team_aliases import canonical_team_alias_identity
 from toto_ai.external_odds.team_registry import (
     ReviewedTeamAlias,
     lookup_reviewed_alias,
@@ -19,7 +21,7 @@ from toto_ai.external_odds.team_registry import (
     transliterate_team_name,
 )
 
-RESOLVER_VERSION = "systematic-team-v2"
+RESOLVER_VERSION = "systematic-team-v3"
 MAX_KNOWN_START_DELTA = timedelta(hours=3)
 MAX_MISSING_START_HORIZON = timedelta(days=5)
 MIN_PAIR_SCORE = 0.62
@@ -120,8 +122,11 @@ class CandidateEvidence:
     away_score: float
     exact_team_count: int
     transliterated_equal_count: int
+    canonical_alias_count: int
     reviewed_team_count: int
     provider_id_count: int
+    home_identity: bool
+    away_identity: bool
     context_evidence: tuple[str, ...]
     rejected_reasons: tuple[str, ...]
 
@@ -144,6 +149,7 @@ class _TeamEvidence:
     score: float
     exact: bool
     transliterated_equal: bool
+    canonical_alias: bool
     reviewed: bool
     provider_id: bool
     team_id: int | None
@@ -196,6 +202,7 @@ def resolve_event_candidate(
                 target_alias=target_home,
                 provider_name=provider_home_name,
                 provider_team_id=provider_home_id,
+                target_country=context.country,
                 provider_country=candidate.country,
                 provider_league=candidate.league,
             )
@@ -208,6 +215,7 @@ def resolve_event_candidate(
                 target_alias=target_away,
                 provider_name=provider_away_name,
                 provider_team_id=provider_away_id,
+                target_country=context.country,
                 provider_country=candidate.country,
                 provider_league=candidate.league,
             )
@@ -221,8 +229,13 @@ def resolve_event_candidate(
                 transliterated_equal_count=(
                     int(home.transliterated_equal) + int(away.transliterated_equal)
                 ),
+                canonical_alias_count=(
+                    int(home.canonical_alias) + int(away.canonical_alias)
+                ),
                 reviewed_team_count=int(home.reviewed) + int(away.reviewed),
                 provider_id_count=int(home.provider_id) + int(away.provider_id),
+                home_identity=_has_strong_team_identity(home),
+                away_identity=_has_strong_team_identity(away),
                 context_evidence=context_evidence,
                 rejected_reasons=rejected_reasons,
             )
@@ -299,12 +312,24 @@ def resolve_event_candidate(
         or max(best.home_score, best.away_score) >= MIN_HIGH_CONFIDENCE_TEAM_SCORE
     )
     strong_context = bool(
-        {"country", "league", "competition"}.intersection(best.context_evidence)
+        {"country", "league", "league-alias", "competition"}.intersection(
+            best.context_evidence
+        )
+    )
+    league_alias = "league-alias" in best.context_evidence
+    league_alias_safe = (
+        best.orientation == "same"
+        and best.home_identity
+        and best.away_identity
+        and "country" in best.context_evidence
+        and bool({"date", "date-window"}.intersection(best.context_evidence))
     )
 
     accepted = False
     reason = ""
-    if exact_identity and unique_fixture:
+    if league_alias and not league_alias_safe:
+        reason = "country-aware league alias lacks exact oriented identity evidence"
+    elif exact_identity and unique_fixture:
         accepted = True
         reason = "unique reviewed/provider-ID exact pair"
     elif unique_fixture and strong_context and strong_pair and one_side_identity:
@@ -373,6 +398,7 @@ def _source_missing_without_identity(
         or item.reviewed_team_count
         or item.exact_team_count
         or item.transliterated_equal_count
+        or item.canonical_alias_count
         for item in evidence
     ):
         return False
@@ -426,7 +452,24 @@ def _candidate_context(
             accepted.append("country")
 
     if context.league is not None:
-        if _competition_level_conflicts(context.league, candidate.league):
+        league_alias = (
+            expected_country is not None
+            and candidate.country is not None
+            and not _is_global_scope(candidate.country)
+            and _countries_equivalent(expected_country, candidate.country)
+            and equivalent_competitions(
+                context.league,
+                candidate.league,
+                country=expected_country,
+            )
+        )
+        if league_alias:
+            accepted.append("league-alias")
+        elif _competition_level_conflicts(
+            context.league,
+            candidate.league,
+            country=expected_country,
+        ):
             rejected.append("league mismatch")
         elif (
             _context_similarity(context.league, candidate.league) >= 0.58
@@ -515,6 +558,7 @@ def _team_evidence(
     target_alias: ReviewedTeamAlias | None,
     provider_name: str,
     provider_team_id: str | None,
+    target_country: str | None,
     provider_country: str | None,
     provider_league: str,
 ) -> _TeamEvidence:
@@ -558,12 +602,30 @@ def _team_evidence(
         transliterate_team_name(name) == transliterate_team_name(provider_name)
         for name in names
     )
+    canonical_alias = False
+    if (
+        target_country
+        and provider_country
+        and _countries_equivalent(target_country, provider_country)
+    ):
+        provider_alias_identity = canonical_team_alias_identity(
+            provider_name,
+            country=provider_country,
+        )
+        canonical_alias = provider_alias_identity is not None and any(
+            provider_alias_identity
+            == canonical_team_alias_identity(name, country=target_country)
+            for name in names
+        )
+    if canonical_alias:
+        score = 1.0
     if reviewed_exact:
         score = 1.0
     return _TeamEvidence(
         score=score,
         exact=exact,
         transliterated_equal=transliterated_equal,
+        canonical_alias=canonical_alias,
         reviewed=reviewed_exact,
         provider_id=provider_id_exact,
         team_id=target_identity or provider_identity,
@@ -673,7 +735,14 @@ def _context_anchor_similarity(left: str, right: str) -> float:
     )
 
 
-def _competition_level_conflicts(left: str, right: str) -> bool:
+def _competition_level_conflicts(
+    left: str,
+    right: str,
+    *,
+    country: str | None = None,
+) -> bool:
+    if equivalent_competitions(left, right, country=country):
+        return False
     left_levels = _competition_level_tokens(left)
     right_levels = _competition_level_tokens(right)
     return bool(left_levels and right_levels and left_levels.isdisjoint(right_levels))
@@ -728,22 +797,41 @@ def _source_missing_domestic_competition(
         and _countries_equivalent(context.country, candidate.country)
     )
     return bool(domestic) and not any(
-        _competition_level_tokens(candidate.league)
-        == _competition_level_tokens(context.league)
-        and (
-            _context_similarity(context.league, candidate.league) >= 0.58
-            or _context_anchor_similarity(context.league, candidate.league) >= 0.62
+        equivalent_competitions(
+            context.league,
+            candidate.league,
+            country=context.country,
+        )
+        or (
+            _competition_level_tokens(candidate.league)
+            == _competition_level_tokens(context.league)
+            and (
+                _context_similarity(context.league, candidate.league) >= 0.58
+                or _context_anchor_similarity(context.league, candidate.league)
+                >= 0.62
+            )
         )
         for candidate in domestic
     )
 
 
-def _identity_rank(item: CandidateEvidence) -> tuple[int, int, int, int]:
+def _identity_rank(item: CandidateEvidence) -> tuple[int, int, int, int, int]:
     return (
         item.provider_id_count,
         item.reviewed_team_count,
         item.exact_team_count,
+        item.canonical_alias_count,
         item.transliterated_equal_count,
+    )
+
+
+def _has_strong_team_identity(evidence: _TeamEvidence) -> bool:
+    return bool(
+        evidence.provider_id
+        or evidence.reviewed
+        or evidence.exact
+        or evidence.transliterated_equal
+        or evidence.canonical_alias
     )
 
 

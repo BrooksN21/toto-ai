@@ -1,5 +1,20 @@
 # Roadmap
 
+## Completed: drawing 4972 country-scoped matcher coverage
+
+- [x] Add reusable country-scoped exact team identity families for the four
+  observed provider naming gaps without drawing or fixture hardcodes.
+- [x] Add country-scoped translated competition taxonomy for Colombia, Chile,
+  and Finland without weakening global league-level comparison.
+- [x] Require same orientation, two strong team identities, country agreement,
+  date evidence, and unique-fixture margin for taxonomy-assisted acceptance.
+- [x] Keep reversed, ambiguous, wrong-country, out-of-window, and truly missing
+  cases fail-closed with baseline-only fallback where appropriate.
+- [x] Freeze drawing 4972 at fresh 15/15 provider coverage, playable timing,
+  and an exact two-day Moscow span.
+- [x] Preserve immutable ready pin behavior; provider refresh is not a new
+  monotonic-upgrade path.
+
 ## Completed: safety-aware EV coupon reselection
 
 - [x] Preserve EV/probability mathematics and the final safety veto.

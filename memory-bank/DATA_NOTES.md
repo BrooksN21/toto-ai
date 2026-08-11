@@ -97,6 +97,13 @@
   returned 1096 fixtures containing all 15 target pairs. Matcher v3 produced
   0/15 because its exact path had no aliases for the new Cyrillic team names;
   the runner correctly failed closed with zero coupons and zero cost.
+- Frozen drawing 4972 (`id=12024`) has 15 saved API-Sports schedule fixtures.
+  Country-scoped reusable team identities and domestic competition taxonomy
+  resolve all 15 in the same orientation without drawing/order/fixture
+  production branches. Their effective starts span exactly two Moscow calendar
+  dates and are `playable`. Removing provider fixture `1520801` leaves event
+  order 6 as explicit baseline-only timing `unknown`, demonstrating that the
+  taxonomy does not invent a match.
 - Matcher v4 replay over the complete saved drawing-4947 schedule resolves the
   exact 15 expected provider IDs and yields 15 provider-derived effective
   starts with `eligibility=playable`. Replay over drawing 4945 preserves its
