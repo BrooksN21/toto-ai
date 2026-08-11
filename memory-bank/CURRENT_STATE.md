@@ -3563,3 +3563,18 @@ The focused EV/package/drawing and runner report/orchestration group passed
 The final fast/release suite passed `1718 passed, 13 deselected in 110.78s`.
 The two added tests are the direct injected-PLAY writer regression and the
 legitimate structural-pass training-report regression.
+
+## Drawing 4971 frozen-package postmortem (2026-08-11)
+
+The complete result was `X2111X111X121X2`. Read-only scoring of the frozen
+old and safety-v1 packages produced a best coupon of only 7/15 and zero 13+.
+The frozen quality-v2 artifact did not retain its 166 coupon strings, so only
+its exposure-derived mean (`5.144578`) can be recovered exactly; best, median,
+and category counts must remain unknown rather than be regenerated after the
+result.
+
+Quality-v2 removed all zero-exposure actual outcomes and improved structural
+concentration/diversity, but this is not evidence of predictive edge or
+profitability. The durable postmortem is
+`reports/analysis/drawing_4971_quality_v2_actual_evaluation.md`; the project
+remains `NO BET / TRAINING/PAPER`.
