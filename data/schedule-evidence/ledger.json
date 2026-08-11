@@ -581,6 +581,198 @@
           "source_url": "https://www.sofascore.com/pt/football/match/sl-benficau21-leixoes-sc/tkbspOE"
         }
       ]
+    },
+    {
+      "observation_id": "uefa-super-cup-psg-aston-villa-20260812",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Суперкубок УЕФА",
+        "UEFA Super Cup"
+      ],
+      "home_entity": "Paris Saint-Germain",
+      "home_aliases": [
+        "ПСЖ",
+        "Paris Saint-Germain",
+        "Paris SG",
+        "PSG"
+      ],
+      "away_entity": "Aston Villa FC",
+      "away_aliases": [
+        "Астон Вилла",
+        "Aston Villa",
+        "Aston Villa FC"
+      ],
+      "starts_at": "2026-08-12T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-11T17:20:00Z",
+      "review_document": "reviews/4973-event-1.md",
+      "claims": [
+        {
+          "source_name": "UEFA",
+          "role": "official",
+          "source_url": "https://www.uefa.com/uefasupercup/news/02a4-2056c25ced6f-cc7862c2721f-1000--2026-uefa-super-cup-in-salzburg-all-you-need-to-know/"
+        }
+      ],
+      "review_document_sha256": "1384662b52e55e42d9381b9a79ace84d67a78873c91d95ef0c55a24c9edeaa9c"
+    },
+    {
+      "observation_id": "seattle-chivas-leagues-cup-20260812",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Америка. Кубок Североамериканских лиг",
+        "Leagues Cup"
+      ],
+      "home_entity": "Seattle Sounders FC",
+      "home_aliases": [
+        "Сиэтл Саундерс",
+        "Seattle Sounders",
+        "Seattle Sounders FC"
+      ],
+      "away_entity": "Club Deportivo Guadalajara",
+      "away_aliases": [
+        "Гвадалахара Чивас",
+        "Guadalajara Chivas",
+        "Chivas de Guadalajara",
+        "Club Deportivo Guadalajara",
+        "Chivas"
+      ],
+      "starts_at": "2026-08-13T02:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-11T17:20:00Z",
+      "review_document": "reviews/4973-event-9.md",
+      "claims": [
+        {
+          "source_name": "Seattle Sounders FC",
+          "role": "official",
+          "source_url": "https://www.soundersfc.com/Tickets/Single-Match-Tickets"
+        },
+        {
+          "source_name": "El País México",
+          "role": "independent",
+          "source_url": "https://elpais.com/mexico/2026-08-04/leagues-cup-2026-calendario-horarios-y-donde-ver-los-partidos-de-primera-fase.html"
+        }
+      ],
+      "review_document_sha256": "0dec9bbed7972a848a506edb3fa8a71cea310bd3b1727a37c714de76170aba18"
+    },
+    {
+      "observation_id": "campeonato-chileno-magallanes-cobreloa-20260812",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Чили. 2-й дивизион",
+        "Liga de Ascenso Caixun",
+        "Campeonato de Ascenso Caixun 2026"
+      ],
+      "home_entity": "Club Deportivo Magallanes",
+      "home_aliases": [
+        "Магальянес",
+        "Magallanes",
+        "Club Deportivo Magallanes"
+      ],
+      "away_entity": "Club de Deportes Cobreloa",
+      "away_aliases": [
+        "Кобрелоа",
+        "Cobreloa",
+        "Club de Deportes Cobreloa"
+      ],
+      "starts_at": "2026-08-12T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-11T17:20:00Z",
+      "review_document": "reviews/4973-event-11.md",
+      "claims": [
+        {
+          "source_name": "Campeonato Chileno",
+          "role": "official",
+          "source_url": "https://www.campeonatochileno.cl/match/magallanes-cobreloa-2026-08-12/"
+        }
+      ],
+      "review_document_sha256": "38a2c60e221998d1d550123cac330a0d16876ce0974408559a353be26ac50581"
+    },
+    {
+      "observation_id": "conmebol-libertadores-cruzeiro-flamengo-20260812",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Южная Америка. Кубок Либертадорес",
+        "CONMEBOL Libertadores",
+        "Copa Libertadores"
+      ],
+      "home_entity": "Cruzeiro Esporte Clube",
+      "home_aliases": [
+        "Крузейро",
+        "Cruzeiro",
+        "Cruzeiro Esporte Clube"
+      ],
+      "away_entity": "Clube de Regatas do Flamengo",
+      "away_aliases": [
+        "Фламенго РЖ",
+        "Фламенго",
+        "Flamengo",
+        "Clube de Regatas do Flamengo"
+      ],
+      "starts_at": "2026-08-13T00:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-11T17:20:00Z",
+      "review_document": "reviews/4973-event-14.md",
+      "claims": [
+        {
+          "source_name": "CONMEBOL Libertadores schedule",
+          "role": "official",
+          "source_url": "https://gol.conmebol.com/libertadores/en/news/fechas-y-horarios-asi-se-jugaran-los-octavos-de-final-de-la-conmebol-libertadores"
+        },
+        {
+          "source_name": "CONMEBOL match page",
+          "role": "official",
+          "source_url": "https://gol.conmebol.com/libertadores/en/fixture/view/1602"
+        }
+      ],
+      "review_document_sha256": "c80f71ce048c347580244baab2aa203b4f043dd139c5f7990d9b2c8a233c4eae"
+    },
+    {
+      "observation_id": "campeonato-chileno-magallanes-cobreloa-20260812-totobrief-division",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Чили. 1-й дивизион",
+        "Liga de Ascenso Caixun",
+        "Campeonato de Ascenso Caixun 2026"
+      ],
+      "home_entity": "Club Deportivo Magallanes",
+      "home_aliases": [
+        "Магальянес",
+        "Magallanes",
+        "Club Deportivo Magallanes"
+      ],
+      "away_entity": "Club de Deportes Cobreloa",
+      "away_aliases": [
+        "Кобрелоа",
+        "Cobreloa",
+        "Club de Deportes Cobreloa"
+      ],
+      "starts_at": "2026-08-12T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "operator-reviewed-official-evidence",
+      "reviewed_at": "2026-08-11T17:20:00Z",
+      "review_document": "reviews/4973-event-11.md",
+      "review_document_sha256": "38a2c60e221998d1d550123cac330a0d16876ce0974408559a353be26ac50581",
+      "claims": [
+        {
+          "source_name": "Campeonato Chileno",
+          "role": "official",
+          "source_url": "https://www.campeonatochileno.cl/match/magallanes-cobreloa-2026-08-12/"
+        }
+      ]
     }
   ]
 }

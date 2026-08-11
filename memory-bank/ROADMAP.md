@@ -723,6 +723,9 @@ closed.
   baseline-only-to-reviewed schedule enrichment for an unchanged drawing.
 - [ ] Add an automatic evidence collector that writes reviewed observations
   only after authoritative identity, orientation and kickoff checks succeed.
+- [x] Make repeated preparation preserve already validated schedule-evidence
+  pins when API-Sports cannot serve their kickoff UTC date; verify the live
+  4973 READY/PLAYABLE re-run and install its schema-v6 evening scheduler.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
   10 and 12 through the reusable ledger; retain event-13 material as an audit
   record only because its official home/away identity is not established.

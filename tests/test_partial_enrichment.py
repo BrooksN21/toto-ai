@@ -154,6 +154,7 @@ def _schedule_evidence_ledger(
     *,
     event_orders: tuple[int, ...],
     reversed_orders: tuple[int, ...] = (),
+    starts_at_offset: timedelta = timedelta(hours=2),
 ) -> Path:
     review = tmp_path / "review.md"
     review.write_text("reviewed official schedule", encoding="utf-8")
@@ -193,7 +194,7 @@ def _schedule_evidence_ledger(
                             else target.events[event_order].away_team
                         ],
                         "starts_at": (
-                            DEADLINE + timedelta(hours=2)
+                            DEADLINE + starts_at_offset
                         ).isoformat(),
                         "status": "scheduled",
                         "conditional": False,
@@ -216,6 +217,58 @@ def _schedule_evidence_ledger(
         encoding="utf-8",
     )
     return ledger
+
+
+def test_existing_schedule_evidence_pin_survives_provider_plan_gap(
+    session_factory,
+    tmp_path: Path,
+):
+    target = _target()
+    _seed(session_factory)
+    ledger = _schedule_evidence_ledger(
+        tmp_path,
+        target,
+        event_orders=(13, 14),
+        starts_at_offset=timedelta(days=1, hours=2),
+    )
+    diagnostics = (
+        {
+            "sport": "football",
+            "date": DEADLINE.date().isoformat(),
+            "status": "success",
+            "reason": None,
+        },
+        {
+            "sport": "football",
+            "date": (DEADLINE + timedelta(days=1)).date().isoformat(),
+            "status": "failed",
+            "reason": "provider plan gap",
+        },
+    )
+
+    first = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        schedule_evidence_ledger=ledger,
+        schedule_diagnostics=diagnostics,
+        evaluated_at=FETCHED_AT,
+    )
+    repeated = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        schedule_evidence_ledger=ledger,
+        schedule_diagnostics=diagnostics,
+        evaluated_at=FETCHED_AT,
+    )
+
+    assert first.status == repeated.status == "ready"
+    assert repeated.eligibility.status == "playable"
+    assert repeated.baseline_only_event_orders == ()
+    assert tuple(
+        pin.effective_source_provider for pin in repeated.pins[13:]
+    ) == ("schedule-evidence", "schedule-evidence")
 
 
 def test_thirteen_external_and_two_baseline_only_are_ready(session_factory):

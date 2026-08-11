@@ -1616,7 +1616,8 @@ def _failed_date_pin_orders(
     return tuple(
         event.event_order
         for event, pin in zip(target.events, pins, strict=True)
-        if pin.effective_source_provider != "totobrief-baseline"
+        if pin.effective_source_provider
+        not in {"totobrief-baseline", "schedule-evidence"}
         and (
             event.sport,
             _parse_datetime(pin.starts_at).date().isoformat(),
