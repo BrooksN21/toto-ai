@@ -1,5 +1,62 @@
 # Decisions
 
+## Scheduler last-known-good invariant (2026-08-11)
+
+- A fully validated pre-final candidate is persisted as an immutable,
+  drawing-fingerprint-bound checkpoint; only its small pointer is replaced
+  atomically.
+- Final is an optional freshness upgrade, not the only path to package
+  availability. Warmup must publish the operator artifact early. The first
+  final has a deadline before the retry trigger and retry may not consume the
+  manual-upload reserve, but no exact launchd-overlap or lock-acquisition
+  guarantee is claimed from the in-process regressions.
+- HTTP 429, timeout, network, and stale-cache failures never erase a valid LKG.
+- Fallback is explicitly `LAST_KNOWN_GOOD_DEGRADED`, includes actual staleness,
+  is non-actionable `NO BET`, and cannot create `.bet-ready` or wager.
+- Without a valid LKG, the scheduler writes deterministic `NO_BET` before T-10.
+
+## 2026-08-11: sports probability provider is implemented shadow-only
+
+- The current outcome matrix is exclusively normalized TotoBrief BK.
+- TotoBrief pool probabilities are crowd/EV input, not sports analytics.
+- API-Sports identity, schedule, eligibility, form, goals, standings, and
+  bookmaker consensus remain audit evidence and do not affect packages.
+- Injuries, lineups, xG, and Elo are not implemented.
+- The implemented provider emits frozen pre-deadline sports `1/X/2`
+  probabilities in a machine-readable `NOT_ACTIVATED` shadow artifact with
+  explicit event-level BK fallback, features, and source provenance.
+- The sports estimate is an untrained Jeffreys-smoothed venue-only W-D-L
+  projection: home-team home W-D-L plus away-team away W-D-L. Both venue
+  windows must contain pre-as-of evidence. Aggregate W-D-L is diagnostic only;
+  it is never used as a fallback, never labelled venue-aware, and never counts
+  toward sports coverage. Missing venue evidence uses normalized BK fallback.
+  The candidate blend is weighted by matched venue observations against BK;
+  it is experimental and does not claim fitted or trained coefficients.
+- Strict hash/as-of/deadline, target fingerprint, event identity, orientation,
+  pin, source chronology, and pre-match checks are mandatory. Failure uses BK
+  for that event and is visible in the artifact/evaluator.
+- Historical evaluation uses BK rows embedded in a hash-bound, independently
+  sourced authoritative drawing snapshot captured at or before `as_of`; it
+  never rereads mutable current `Quote` rows. Missing or late authority fails
+  closed.
+- Missing/mismatched orientation, fingerprint/integrity drift, and future
+  source evidence are blocking activation failures. Ordinary missing sports
+  history is a non-leakage BK fallback that counts against coverage.
+- Activation policy has non-reducible minima of 30 drawings, 450 events, and
+  70% sports coverage. Calibration tolerance 0.02 is a maximum; CLI/config may
+  make requirements stricter but never weaker.
+- Production remains exclusively BK. The shadow provider and evaluator are not
+  passed into `EVInput` and cannot alter packages or scheduler decisions.
+- Activation or blending requires chronological OOS evidence on at least 30
+  drawings / 450 events, at least 70% sports coverage, strict candidate-blend
+  improvement over BK in log loss and Brier, calibration within tolerance,
+  and zero leakage/fingerprint/validation failures. A gate pass still requires
+  a separate reviewed architecture change.
+- Quality-v2 remains `NO BET / TRAINING-PAPER`. Neither model probabilities nor
+  structural improvements prove profitability.
+- Scheduler schema v6 is authoritative. Schema-v5 and wager-ready-marker
+  entries below are historical and must not be read as active behavior.
+
 ## Country-scoped matcher taxonomy boundary (2026-08-11)
 
 - Reusable team aliases are exact reviewed identity families keyed by stable

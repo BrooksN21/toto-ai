@@ -22,7 +22,7 @@ import stat
 import subprocess
 import sys
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Literal, Protocol
@@ -44,6 +44,7 @@ from toto_ai.ev.package_quality import (
     quality_v2_config_sha256,
     selection_context_sha256,
 )
+from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.matching import load_aliases
 from toto_ai.external_odds.reviewed_schedule import (
     load_reviewed_schedule_catalog,
@@ -102,6 +103,7 @@ DEFAULT_QUALITY_V2_CONFIG = EVConfig(
 )
 PUBLICATION_LEAD_MINUTES = 10
 SCHEDULER_TRIGGER_OFFSETS_MINUTES = (120, 90, 60, 45, 30, 20, 16, 10)
+LKG_MAX_SOURCE_AGE_SECONDS = 45 * 60
 
 SchedulerPhase = Literal["preflight", "fallback", "final", "freeze"]
 PackagePhase = Literal["fallback", "final"]
@@ -543,9 +545,7 @@ class SchedulerPlan:
             min_gross_ev=self.minimum_gross_ev,
             package_safety_enabled=True,
             package_near_fixed_share=self.package_near_fixed_share,
-            package_low_probability_threshold=(
-                self.package_low_probability_threshold
-            ),
+            package_low_probability_threshold=(self.package_low_probability_threshold),
             package_material_probability_threshold=(
                 self.package_material_probability_threshold
             ),
@@ -595,9 +595,7 @@ class SchedulerPlan:
                     self.package_material_probability_threshold
                 ),
                 "quality_v2": quality_v2_config_payload(self.quality_v2_ev_config),
-                "selection_context": bound_selection_context(
-                    self.quality_v2_ev_config
-                ),
+                "selection_context": bound_selection_context(self.quality_v2_ev_config),
                 "selection_context_sha256": selection_context_sha256(
                     self.quality_v2_ev_config
                 ),
@@ -672,6 +670,8 @@ class SchedulerPhaseContext:
     override_sha256: str | None = None
     final_inputs_sha256: str | None = None
     atomic_final: bool = False
+    scheduler_phase: str | None = None
+    phase_deadline: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -689,6 +689,9 @@ class SchedulerPhaseResult:
     selected_cost: int | None = None
     override_sha256: str | None = None
     final_inputs_sha256: str | None = None
+    drawing_fingerprint: str | None = None
+    probability_input_sha256: str | None = None
+    source_captured_at: datetime | None = None
 
     def __post_init__(self) -> None:
         if self.status not in ("complete", "failed", "ignored"):
@@ -714,6 +717,16 @@ class SchedulerPhaseResult:
             _require_sha256("override_sha256", self.override_sha256)
         if self.final_inputs_sha256 is not None:
             _require_sha256("final_inputs_sha256", self.final_inputs_sha256)
+        if self.drawing_fingerprint is not None:
+            _require_sha256("drawing_fingerprint", self.drawing_fingerprint)
+        if self.probability_input_sha256 is not None:
+            _require_sha256("probability_input_sha256", self.probability_input_sha256)
+        if self.source_captured_at is not None:
+            object.__setattr__(
+                self,
+                "source_captured_at",
+                _require_utc_datetime("source_captured_at", self.source_captured_at),
+            )
 
     @classmethod
     def completed(cls, reason: str = "phase completed") -> SchedulerPhaseResult:
@@ -722,6 +735,39 @@ class SchedulerPhaseResult:
     @classmethod
     def no_bet(cls, reason: str) -> SchedulerPhaseResult:
         return cls(decision="NO BET", reason=reason)
+
+    @classmethod
+    def candidate_package(
+        cls,
+        package: bytes | Path,
+        *,
+        reason: str,
+        effective_bank: int,
+        selected_count: int,
+        selected_cost: int,
+        drawing_fingerprint: str,
+        probability_input_sha256: str,
+        source_captured_at: datetime,
+        override_sha256: str | None = None,
+        final_inputs_sha256: str | None = None,
+        package_sha256: str | None = None,
+    ) -> SchedulerPhaseResult:
+        """Return a validated operator candidate without authorizing PLAY."""
+        return cls(
+            decision="NO BET",
+            reason=reason,
+            package_bytes=package if isinstance(package, bytes) else None,
+            package_path=package if isinstance(package, Path) else None,
+            package_sha256=package_sha256,
+            effective_bank=effective_bank,
+            selected_count=selected_count,
+            selected_cost=selected_cost,
+            override_sha256=override_sha256,
+            final_inputs_sha256=final_inputs_sha256,
+            drawing_fingerprint=drawing_fingerprint,
+            probability_input_sha256=probability_input_sha256,
+            source_captured_at=source_captured_at,
+        )
 
     @classmethod
     def play(
@@ -773,6 +819,21 @@ class PackageSnapshot:
     selected_cost: int
     override_sha256: str | None
     final_inputs_sha256: str | None
+
+
+@dataclass(frozen=True)
+class LastKnownGoodPackage:
+    path: Path
+    sha256: str
+    checkpoint_id: str
+    completed_at: datetime
+    source_captured_at: datetime
+    effective_bank: int
+    selected_count: int
+    selected_cost: int
+    drawing_fingerprint: str
+    probability_input_sha256: str
+    source_phase: str
 
 
 @dataclass(frozen=True)
@@ -1216,9 +1277,8 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         )
         if config["selection_context"] != expected_selection_context:
             raise ValueError("scheduler plan selection context mismatch")
-        if (
-            config["selection_context_sha256"]
-            != selection_context_sha256(expected_selection_context)
+        if config["selection_context_sha256"] != selection_context_sha256(
+            expected_selection_context
         ):
             raise ValueError("scheduler plan selection context hash mismatch")
     if (
@@ -1948,7 +2008,7 @@ def execute_scheduler_tick(
         attempts = state["phases"][phase]["attempts"]
         if phase == "final":
             if len(attempts) >= plan.max_final_attempts:
-                return _finalize_tick_no_bet(
+                return _finalize_tick_from_lkg_or_no_bet(
                     plan,
                     state=state,
                     state_path=state_path,
@@ -1959,7 +2019,7 @@ def execute_scheduler_tick(
                 plan.actionable_publication_deadline - observed
             ).total_seconds()
             if remaining < plan.minimum_final_runtime_seconds:
-                return _finalize_tick_no_bet(
+                return _finalize_tick_from_lkg_or_no_bet(
                     plan,
                     state=state,
                     state_path=state_path,
@@ -1996,6 +2056,27 @@ def execute_scheduler_tick(
             # the immutable snapshot and package-safety probabilities.
             final_inputs_sha256=None,
             atomic_final=phase == "final",
+            scheduler_phase=phase,
+            phase_deadline=(
+                min(
+                    plan.actionable_publication_deadline,
+                    plan.retry_at - timedelta(seconds=plan.publication_reserve_seconds),
+                )
+                if phase == "final" and scheduled_at < plan.retry_at
+                else (
+                    plan.actionable_publication_deadline
+                    if phase == "final"
+                    else (
+                        plan.fallback_at - timedelta(seconds=5)
+                        if phase == "warmup"
+                        else (
+                            plan.final_at - timedelta(seconds=5)
+                            if phase == "refresh"
+                            else None
+                        )
+                    )
+                )
+            ),
         )
         try:
             retry_delays = plan.transient_backoff_seconds if phase == "final" else ()
@@ -2009,9 +2090,12 @@ def execute_scheduler_tick(
                     ):
                         raise
                     delay = retry_delays[retry_index]
-                    remaining = (
-                        plan.actionable_publication_deadline - _read_now(now)
-                    ).total_seconds()
+                    retry_deadline = (
+                        context.phase_deadline
+                        if context.phase_deadline is not None
+                        else plan.actionable_publication_deadline
+                    )
+                    remaining = (retry_deadline - _read_now(now)).total_seconds()
                     if delay + plan.minimum_final_runtime_seconds > remaining:
                         raise
                     sleep(delay)
@@ -2019,7 +2103,7 @@ def execute_scheduler_tick(
             if result.status != "complete":
                 raise SchedulerPhaseError(result.reason)
             if phase == "final" and completed > plan.actionable_publication_deadline:
-                return _finalize_tick_no_bet(
+                return _finalize_tick_from_lkg_or_no_bet(
                     plan,
                     state=state,
                     state_path=state_path,
@@ -2030,6 +2114,24 @@ def execute_scheduler_tick(
                     ),
                 )
             if phase != "final":
+                if result.package_bytes is not None or result.package_path is not None:
+                    lkg = _persist_last_known_good(
+                        plan,
+                        context=context,
+                        result=result,
+                        completed_at=completed,
+                        provenance="PRE_FINAL_CHECKPOINT",
+                    )
+                    _write_operator_result(
+                        plan,
+                        package=lkg,
+                        operator_status="LAST_KNOWN_GOOD_DEGRADED",
+                        provenance="PRE_FINAL_CHECKPOINT",
+                        reason=(
+                            f"validated {phase} package available before final refresh"
+                        ),
+                        completed_at=completed,
+                    )
                 state = transition(
                     state,
                     phase=phase,
@@ -2041,6 +2143,24 @@ def execute_scheduler_tick(
                 save_state(state_path, state)
                 return None
             if result.decision == "NO BET":
+                if result.package_bytes is not None or result.package_path is not None:
+                    lkg = _persist_last_known_good(
+                        plan,
+                        context=context,
+                        result=result,
+                        completed_at=completed,
+                        provenance="FINAL_FRESH",
+                    )
+                    return _finalize_tick_operator_package(
+                        plan,
+                        state=state,
+                        state_path=state_path,
+                        observed_at=completed,
+                        package=lkg,
+                        operator_status="FINAL_FRESH",
+                        provenance="FINAL_FRESH",
+                        reason=result.reason,
+                    )
                 return _finalize_tick_no_bet(
                     plan,
                     state=state,
@@ -2139,6 +2259,14 @@ def execute_scheduler_tick(
             save_state(state_path, state)
             if integrity or (permanent and phase == "final"):
                 raise
+            if phase == "final" and scheduled_at >= plan.retry_at:
+                return _finalize_tick_from_lkg_or_no_bet(
+                    plan,
+                    state=state,
+                    state_path=state_path,
+                    observed_at=completed,
+                    reason=_safe_error(error),
+                )
             return None
 
 
@@ -2391,6 +2519,476 @@ def _transition_after_tick_publication(
     )
 
 
+def _persist_last_known_good(
+    plan: SchedulerPlan,
+    *,
+    context: SchedulerPhaseContext,
+    result: SchedulerPhaseResult,
+    completed_at: datetime,
+    provenance: str,
+) -> LastKnownGoodPackage:
+    if (
+        result.drawing_fingerprint is None
+        or result.probability_input_sha256 is None
+        or result.source_captured_at is None
+        or result.effective_bank is None
+        or result.selected_count is None
+        or result.selected_cost is None
+    ):
+        raise SchedulerIntegrityError(
+            "candidate package lacks immutable input provenance",
+            category="lkg_integrity",
+        )
+    if result.package_bytes is not None:
+        content = result.package_bytes
+    elif result.package_path is not None:
+        _require_contained_path(
+            context.work_dir, result.package_path, name="candidate package"
+        )
+        content = _read_regular_file(
+            result.package_path, name="candidate package", reject_symlink=True
+        )
+    else:
+        raise SchedulerIntegrityError(
+            "candidate package bytes are absent", category="lkg_integrity"
+        )
+    validated = _validate_package_csv(
+        content,
+        stake=plan.stake,
+        minimum_gross_ev=plan.minimum_gross_ev,
+        expected_count=result.selected_count,
+        expected_cost=result.selected_cost,
+    )
+    if (
+        validated.cost > result.effective_bank
+        or result.effective_bank > plan.requested_bank
+    ):
+        raise SchedulerIntegrityError(
+            "candidate package bank contract failed", category="lkg_integrity"
+        )
+    source_hash = _sha256_bytes(content)
+    if result.package_sha256 is not None and result.package_sha256 != source_hash:
+        raise SchedulerIntegrityError(
+            "candidate package hash mismatch", category="lkg_integrity"
+        )
+    if not (
+        plan.preflight_at <= result.source_captured_at <= completed_at
+        and completed_at <= plan.publish_deadline
+        and (completed_at - result.source_captured_at).total_seconds()
+        <= LKG_MAX_SOURCE_AGE_SECONDS
+    ):
+        raise SchedulerIntegrityError(
+            "candidate package source chronology/age is invalid",
+            category="lkg_integrity",
+        )
+    upload_content = _render_baltbet_upload(
+        validated.coupons,
+        stake=plan.stake,
+    )
+    _validate_baltbet_upload(
+        upload_content,
+        stake=plan.stake,
+        expected_count=validated.count,
+        expected_cost=validated.cost,
+        expected_coupons=validated.coupons,
+    )
+    upload_hash = _sha256_bytes(upload_content)
+    checkpoint_id = f"{context.run_id}-{upload_hash[:12]}"
+    root = plan.output_dir / "last-known-good"
+    authority_path = root / "authoritative-drawing.json"
+    authority_bytes = _authoritative_drawing_bytes(
+        plan, result.drawing_fingerprint
+    )
+    if not authority_path.exists() or _read_regular_file(
+        authority_path,
+        name="LKG authoritative drawing",
+        reject_symlink=True,
+    ) != authority_bytes:
+        raise SchedulerIntegrityError(
+            "candidate package fingerprint differs from independent frozen authority",
+            category="lkg_integrity",
+        )
+    checkpoint = root / "checkpoints" / checkpoint_id
+    _create_output_directory_exclusive(plan.output_dir, checkpoint)
+    source_package_path = checkpoint / "package.csv"
+    operator_package_path = checkpoint / "baltbet-upload.txt"
+    manifest_path = checkpoint / "manifest.json"
+    _write_exclusive_atomic(plan.output_dir, source_package_path, content)
+    _write_exclusive_atomic(plan.output_dir, operator_package_path, upload_content)
+    manifest = {
+        "schema_version": 1,
+        "checkpoint_id": checkpoint_id,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "ended_at": _timestamp(plan.ended_at),
+        "stake": plan.stake,
+        "requested_bank": plan.requested_bank,
+        "effective_bank": result.effective_bank,
+        "selected_count": validated.count,
+        "selected_cost": validated.cost,
+        "source_package_path": str(source_package_path),
+        "source_package_sha256": source_hash,
+        "package_path": str(operator_package_path),
+        "package_sha256": upload_hash,
+        "manifest_path": str(manifest_path),
+        "authority_path": str(authority_path),
+        "drawing_fingerprint": result.drawing_fingerprint,
+        "probability_input_sha256": result.probability_input_sha256,
+        "source_phase": context.scheduler_phase or context.phase,
+        "source_captured_at": _timestamp(result.source_captured_at),
+        "completed_at": _timestamp(completed_at),
+        "provenance": provenance,
+        "automatic_wagering": False,
+        "actionable": False,
+    }
+    manifest["manifest_sha256"] = _sha256_bytes(_canonical_json_bytes(manifest))
+    manifest_bytes = _canonical_json_bytes(manifest) + b"\n"
+    _write_exclusive_atomic(plan.output_dir, manifest_path, manifest_bytes)
+    pointer = {
+        "schema_version": 1,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "checkpoint_id": checkpoint_id,
+        "manifest_path": str(manifest_path),
+        "manifest_sha256": _sha256_bytes(manifest_bytes),
+    }
+    _write_replace_atomic(
+        plan.output_dir,
+        root / "current.json",
+        _canonical_json_bytes(pointer) + b"\n",
+    )
+    return _load_last_known_good(plan)
+
+
+def _authoritative_drawing_bytes(
+    plan: SchedulerPlan, drawing_fingerprint: str
+) -> bytes:
+    fingerprint = _strict_sha256(
+        "authoritative drawing fingerprint", drawing_fingerprint
+    )
+    unsigned = {
+        "schema_version": 1,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "ended_at": _timestamp(plan.ended_at),
+        "drawing_fingerprint": fingerprint,
+    }
+    payload = {
+        **unsigned,
+        "authority_sha256": _sha256_bytes(_canonical_json_bytes(unsigned)),
+    }
+    return _canonical_json_bytes(payload) + b"\n"
+
+
+def _freeze_authoritative_drawing(
+    plan: SchedulerPlan, drawing_fingerprint: str
+) -> None:
+    root = plan.output_dir / "last-known-good"
+    _ensure_output_directory(plan.output_dir, root)
+    path = root / "authoritative-drawing.json"
+    content = _authoritative_drawing_bytes(plan, drawing_fingerprint)
+    if path.exists():
+        if _read_regular_file(
+            path, name="LKG authoritative drawing", reject_symlink=True
+        ) != content:
+            raise SchedulerIntegrityError(
+                "independent drawing authority changed",
+                category="lkg_integrity",
+            )
+        return
+    _write_exclusive_atomic(plan.output_dir, path, content)
+
+
+def _load_last_known_good(plan: SchedulerPlan) -> LastKnownGoodPackage:
+    path = plan.output_dir / "last-known-good" / "current.json"
+    pointer = _load_strict_json(path, name="last-known-good pointer")
+    if not isinstance(pointer, Mapping):
+        raise SchedulerIntegrityError(
+            "LKG pointer is invalid", category="lkg_integrity"
+        )
+    if set(pointer) != {
+        "schema_version",
+        "plan_id",
+        "drawing",
+        "checkpoint_id",
+        "manifest_path",
+        "manifest_sha256",
+    }:
+        raise SchedulerIntegrityError(
+            "LKG pointer fields are invalid", category="lkg_integrity"
+        )
+    checkpoint_id = _strict_text("LKG checkpoint_id", pointer["checkpoint_id"])
+    expected_manifest_path = (
+        plan.output_dir
+        / "last-known-good"
+        / "checkpoints"
+        / checkpoint_id
+        / "manifest.json"
+    )
+    manifest_path = _require_contained_path(
+        plan.output_dir,
+        Path(str(pointer["manifest_path"])),
+        name="LKG manifest",
+    )
+    if manifest_path != expected_manifest_path:
+        raise SchedulerIntegrityError(
+            "LKG pointer checkpoint mismatch", category="lkg_integrity"
+        )
+    manifest_bytes = _read_regular_file(
+        manifest_path, name="LKG manifest", reject_symlink=True
+    )
+    if _strict_sha256(
+        "LKG manifest file hash", pointer["manifest_sha256"]
+    ) != _sha256_bytes(manifest_bytes):
+        raise SchedulerIntegrityError(
+            "LKG immutable manifest hash mismatch", category="lkg_integrity"
+        )
+    payload = _load_strict_json(manifest_path, name="last-known-good manifest")
+    if not isinstance(payload, Mapping):
+        raise SchedulerIntegrityError(
+            "LKG manifest is invalid", category="lkg_integrity"
+        )
+    unsigned = dict(payload)
+    manifest_hash = unsigned.pop("manifest_sha256", None)
+    if (
+        manifest_hash != _sha256_bytes(_canonical_json_bytes(unsigned))
+        or pointer.get("schema_version") != 1
+        or pointer.get("plan_id") != plan.plan_id
+        or pointer.get("drawing") != plan.drawing
+        or payload.get("schema_version") != 1
+        or payload.get("plan_id") != plan.plan_id
+        or payload.get("drawing") != plan.drawing
+        or payload.get("drawing_id") != plan.drawing_id
+        or payload.get("checkpoint_id") != checkpoint_id
+        or payload.get("manifest_path") != str(manifest_path)
+        or payload.get("stake") != plan.stake
+        or payload.get("requested_bank") != plan.requested_bank
+        or payload.get("actionable") is not False
+        or payload.get("automatic_wagering") is not False
+    ):
+        raise SchedulerIntegrityError(
+            "LKG identity/hash mismatch", category="lkg_integrity"
+        )
+    authority_path = _require_contained_path(
+        plan.output_dir,
+        Path(str(payload["authority_path"])),
+        name="LKG authoritative drawing",
+    )
+    expected_authority_path = (
+        plan.output_dir / "last-known-good" / "authoritative-drawing.json"
+    )
+    if authority_path != expected_authority_path:
+        raise SchedulerIntegrityError(
+            "LKG authority path mismatch", category="lkg_integrity"
+        )
+    authority = _load_strict_json(authority_path, name="LKG authoritative drawing")
+    if not isinstance(authority, Mapping):
+        raise SchedulerIntegrityError(
+            "LKG authority is invalid", category="lkg_integrity"
+        )
+    authority_unsigned = dict(authority)
+    authority_hash = authority_unsigned.pop("authority_sha256", None)
+    if (
+        authority_hash != _sha256_bytes(_canonical_json_bytes(authority_unsigned))
+        or authority.get("plan_id") != plan.plan_id
+        or authority.get("drawing") != plan.drawing
+        or authority.get("drawing_id") != plan.drawing_id
+        or authority.get("ended_at") != _timestamp(plan.ended_at)
+        or authority.get("drawing_fingerprint") != payload.get("drawing_fingerprint")
+    ):
+        raise SchedulerIntegrityError(
+            "LKG authoritative fingerprint mismatch", category="lkg_integrity"
+        )
+    package_path = _require_contained_path(
+        plan.output_dir, Path(str(payload["package_path"])), name="LKG package"
+    )
+    selected_count = _strict_int("LKG selected_count", payload["selected_count"])
+    selected_cost = _strict_int("LKG selected_cost", payload["selected_cost"])
+    package_hash = _strict_sha256("LKG package_sha256", payload["package_sha256"])
+    source_package_path = _require_contained_path(
+        plan.output_dir,
+        Path(str(payload["source_package_path"])),
+        name="LKG source package",
+    )
+    source_content = _read_regular_file(
+        source_package_path, name="LKG source package", reject_symlink=True
+    )
+    if _sha256_bytes(source_content) != _strict_sha256(
+        "LKG source package hash", payload["source_package_sha256"]
+    ):
+        raise SchedulerIntegrityError(
+            "LKG source package hash mismatch", category="lkg_integrity"
+        )
+    source_validated = _validate_package_csv(
+        source_content,
+        stake=plan.stake,
+        minimum_gross_ev=plan.minimum_gross_ev,
+        expected_count=selected_count,
+        expected_cost=selected_cost,
+    )
+    upload_content = _read_regular_file(
+        package_path, name="LKG operator package", reject_symlink=True
+    )
+    if _sha256_bytes(upload_content) != package_hash:
+        raise SchedulerIntegrityError(
+            "LKG operator package hash mismatch", category="lkg_integrity"
+        )
+    _validate_baltbet_upload(
+        upload_content,
+        stake=plan.stake,
+        expected_count=selected_count,
+        expected_cost=selected_cost,
+        expected_coupons=source_validated.coupons,
+    )
+    effective_bank = _strict_int("LKG effective_bank", payload["effective_bank"])
+    if (
+        selected_cost != selected_count * plan.stake
+        or selected_cost > effective_bank
+        or effective_bank > plan.requested_bank
+        or effective_bank % plan.stake != 0
+    ):
+        raise SchedulerIntegrityError(
+            "LKG dynamic bank contract failed", category="lkg_integrity"
+        )
+    source_captured_at = _parse_utc_datetime(
+        "LKG source_captured_at", payload["source_captured_at"]
+    )
+    completed_at = _parse_utc_datetime("LKG completed_at", payload["completed_at"])
+    if not (
+        plan.preflight_at <= source_captured_at <= completed_at
+        and completed_at <= plan.publish_deadline
+        and (completed_at - source_captured_at).total_seconds()
+        <= LKG_MAX_SOURCE_AGE_SECONDS
+    ):
+        raise SchedulerIntegrityError(
+            "LKG source chronology/age is invalid", category="lkg_integrity"
+        )
+    return LastKnownGoodPackage(
+        path=package_path,
+        sha256=package_hash,
+        checkpoint_id=_strict_text("LKG checkpoint_id", payload["checkpoint_id"]),
+        completed_at=completed_at,
+        source_captured_at=source_captured_at,
+        effective_bank=effective_bank,
+        selected_count=selected_count,
+        selected_cost=selected_cost,
+        drawing_fingerprint=_strict_sha256(
+            "LKG drawing_fingerprint", payload["drawing_fingerprint"]
+        ),
+        probability_input_sha256=_strict_sha256(
+            "LKG probability_input_sha256", payload["probability_input_sha256"]
+        ),
+        source_phase=_strict_text("LKG source_phase", payload["source_phase"]),
+    )
+
+
+def _finalize_tick_from_lkg_or_no_bet(
+    plan: SchedulerPlan,
+    *,
+    state: Mapping[str, Any],
+    state_path: Path,
+    observed_at: datetime,
+    reason: str,
+) -> SchedulerExecutionResult:
+    try:
+        package = _load_last_known_good(plan)
+    except (KeyError, OSError, SchedulerError, TypeError, ValueError):
+        return _finalize_tick_no_bet(
+            plan,
+            state=state,
+            state_path=state_path,
+            observed_at=observed_at,
+            reason=f"{reason}; no valid last-known-good package",
+            operator_status="NO_BET",
+        )
+    return _finalize_tick_operator_package(
+        plan,
+        state=state,
+        state_path=state_path,
+        observed_at=observed_at,
+        package=package,
+        operator_status="LAST_KNOWN_GOOD_DEGRADED",
+        provenance="LAST_KNOWN_GOOD",
+        reason=reason,
+    )
+
+
+def _finalize_tick_operator_package(
+    plan: SchedulerPlan,
+    *,
+    state: Mapping[str, Any],
+    state_path: Path,
+    observed_at: datetime,
+    package: LastKnownGoodPackage,
+    operator_status: str,
+    provenance: str,
+    reason: str,
+) -> SchedulerExecutionResult:
+    run_id = f"operator-{_new_run_id(observed_at)}"
+    run_dir = plan.output_dir / "runs" / str(plan.drawing) / run_id
+    _create_output_directory_exclusive(plan.output_dir, run_dir)
+    phase_state = _initial_phase_state(plan)
+    status = _base_status(plan, run_id, run_dir, phase_state)
+    status_path = run_dir / "status.json"
+    _write_exclusive_atomic(
+        plan.output_dir, status_path, _canonical_json_bytes(status) + b"\n"
+    )
+    staleness = max(0.0, (observed_at - package.source_captured_at).total_seconds())
+    terminal = {
+        "outcome": "no-bet",
+        "decision": "NO BET",
+        "reason": reason,
+        "package_path": package.path,
+        "package_sha256": package.sha256,
+        "effective_bank": package.effective_bank,
+        "selected_count": package.selected_count,
+        "selected_cost": package.selected_cost,
+        "selected_snapshot": package.source_phase,
+        "published_at": observed_at,
+        "operator_status": operator_status,
+        "provenance": provenance,
+        "staleness_seconds": staleness,
+    }
+    updated = transition(
+        state,
+        phase="final",
+        status="no_bet",
+        observed_at=observed_at,
+        reason=reason,
+    )
+    updated = transition(
+        updated,
+        phase="publish",
+        status="complete",
+        observed_at=observed_at,
+        reason=operator_status,
+        terminal="no_bet",
+    )
+    save_state(state_path, updated)
+    _write_operator_result(
+        plan,
+        package=package,
+        operator_status=operator_status,
+        provenance=provenance,
+        reason=reason,
+        completed_at=observed_at,
+    )
+    return _finalize_status(
+        plan,
+        run_id=run_id,
+        run_dir=run_dir,
+        status_path=status_path,
+        status=status,
+        terminal=terminal,
+        final_inputs_sha256=None,
+        final_override_sha256=None,
+        completed_at=observed_at,
+        now=lambda: observed_at,
+    )
+
+
 def _finalize_tick_no_bet(
     plan: SchedulerPlan,
     *,
@@ -2398,6 +2996,7 @@ def _finalize_tick_no_bet(
     state_path: Path,
     observed_at: datetime,
     reason: str,
+    operator_status: str = "NO_BET",
 ) -> SchedulerExecutionResult:
     run_id = f"no-bet-{_new_run_id(observed_at)}"
     run_dir = plan.output_dir / "runs" / str(plan.drawing) / run_id
@@ -2409,6 +3008,9 @@ def _finalize_tick_no_bet(
         plan.output_dir, status_path, _canonical_json_bytes(status) + b"\n"
     )
     terminal = _no_package_terminal([], [reason])
+    terminal["operator_status"] = operator_status
+    terminal["provenance"] = None
+    terminal["staleness_seconds"] = None
     updated = transition(
         state,
         phase="final",
@@ -2425,6 +3027,11 @@ def _finalize_tick_no_bet(
         terminal="no_bet",
     )
     save_state(state_path, updated)
+    _write_operator_no_bet(
+        plan,
+        reason=reason,
+        completed_at=observed_at,
+    )
     return _finalize_status(
         plan,
         run_id=run_id,
@@ -2436,6 +3043,84 @@ def _finalize_tick_no_bet(
         final_override_sha256=None,
         completed_at=observed_at,
         now=lambda: observed_at,
+    )
+
+
+def _write_operator_result(
+    plan: SchedulerPlan,
+    *,
+    package: LastKnownGoodPackage,
+    operator_status: str,
+    provenance: str,
+    reason: str,
+    completed_at: datetime,
+) -> None:
+    validated = _load_last_known_good(plan)
+    if validated != package:
+        raise SchedulerIntegrityError(
+            "operator package differs from current validated LKG",
+            category="lkg_integrity",
+        )
+    payload = {
+        "schema_version": 1,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "operator_status": operator_status,
+        "decision": "NO BET",
+        "reason": reason,
+        "provenance": provenance,
+        "staleness_seconds": max(
+            0.0,
+            (completed_at - package.source_captured_at).total_seconds(),
+        ),
+        "coupon_path": str(package.path),
+        "package_sha256": package.sha256,
+        "stake": plan.stake,
+        "requested_bank": plan.requested_bank,
+        "effective_bank": package.effective_bank,
+        "selected_count": package.selected_count,
+        "selected_cost": package.selected_cost,
+        "completed_at": _timestamp(completed_at),
+        "automatic_wagering": False,
+        "actionable": False,
+    }
+    _write_replace_atomic(
+        plan.output_dir,
+        plan.output_dir / "operator-result.json",
+        _canonical_json_bytes(payload) + b"\n",
+    )
+
+
+def _write_operator_no_bet(
+    plan: SchedulerPlan,
+    *,
+    reason: str,
+    completed_at: datetime,
+) -> None:
+    payload = {
+        "schema_version": 1,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "operator_status": "NO_BET",
+        "decision": "NO BET",
+        "reason": reason,
+        "provenance": None,
+        "staleness_seconds": None,
+        "coupon_path": None,
+        "package_sha256": None,
+        "stake": plan.stake,
+        "requested_bank": plan.requested_bank,
+        "effective_bank": None,
+        "selected_count": None,
+        "selected_cost": None,
+        "completed_at": _timestamp(completed_at),
+        "automatic_wagering": False,
+        "actionable": False,
+    }
+    _write_replace_atomic(
+        plan.output_dir,
+        plan.output_dir / "operator-result.json",
+        _canonical_json_bytes(payload) + b"\n",
     )
 
 
@@ -2672,6 +3357,15 @@ class CommandSchedulerPhaseRunner:
         if context.phase == "preflight":
             self._preflight(context.plan, context.work_dir)
             self.target_validator(context.plan, _read_now(self.now))
+            if context.scheduler_phase in {"warmup", "refresh"}:
+                return self(
+                    replace(
+                        context,
+                        phase="fallback",
+                        work_dir=context.run_dir / "fallback",
+                        atomic_final=False,
+                    )
+                )
             return SchedulerPhaseResult.completed(
                 "target, data access, configuration, and override catalog validated"
             )
@@ -2705,6 +3399,9 @@ class CommandSchedulerPhaseRunner:
                     "persisted final input attempt identity mismatch",
                     category="final_input_identity",
                 )
+            _freeze_authoritative_drawing(
+                context.plan, atomic_input.target_fingerprint
+            )
         command = build_run_drawing_phase_command(
             context,
             python_executable=self.python_executable,
@@ -2716,9 +3413,12 @@ class CommandSchedulerPhaseRunner:
                 context.plan.output_dir / SCHEDULER_PLAN_FILENAME
             )
         subprocess_started_at = _read_now(self.now)
-        timeout_seconds = (
-            context.plan.actionable_publication_deadline - subprocess_started_at
-        ).total_seconds()
+        phase_deadline = (
+            context.phase_deadline
+            if context.phase_deadline is not None
+            else context.plan.actionable_publication_deadline
+        )
+        timeout_seconds = (phase_deadline - subprocess_started_at).total_seconds()
         if timeout_seconds <= 0:
             raise SchedulerTransientError(
                 "run-drawing cannot preserve the publication reserve before T-10",
@@ -2920,6 +3620,31 @@ def _execute_package_phase(
     )
     _write_status_atomic(plan.output_dir, status_path, status)
     _validate_status_file(plan, status_path, status)
+    if status.get("operator_status") is not None:
+        _write_replace_atomic(
+            plan.output_dir,
+            plan.output_dir / "operator-result.json",
+            _canonical_json_bytes(
+                {
+                    "schema_version": 1,
+                    "plan_id": plan.plan_id,
+                    "drawing": plan.drawing,
+                    "operator_status": status["operator_status"],
+                    "decision": status["decision"],
+                    "reason": status["reason"],
+                    "provenance": status["provenance"],
+                    "staleness_seconds": status["staleness_seconds"],
+                    "coupon_path": status["package_path"],
+                    "package_sha256": status["package_sha256"],
+                    "selected_count": status["selected_count"],
+                    "selected_cost": status["selected_cost"],
+                    "completed_at": status["completed_at"],
+                    "automatic_wagering": False,
+                    "actionable": False,
+                }
+            )
+            + b"\n",
+        )
     phase_override_sha256 = (
         _current_override_sha256(plan) if override_sha256 is None else override_sha256
     )
@@ -3453,6 +4178,9 @@ def _finalize_status(
             "completed_at": _timestamp(completed_at),
             "final_inputs_sha256": final_inputs_sha256,
             "final_override_sha256": final_override_sha256,
+            "operator_status": terminal.get("operator_status"),
+            "provenance": terminal.get("provenance"),
+            "staleness_seconds": terminal.get("staleness_seconds"),
         }
     )
     _write_status_atomic(plan.output_dir, status_path, status)
@@ -4060,6 +4788,51 @@ def _parse_runner_manifest_phase_result_strict(
                 "STRUCTURAL_PASS manifest lacks probability-bound selector diagnostics"
             )
         _validate_no_bet_manifest(plan, ev, package)
+        if (
+            context.scheduler_phase is not None
+            and package["structural_status"] == "STRUCTURAL_PASS"
+            and _manifest_pinned_revalidation_ready(payload["collection"])
+            and final_fingerprint is not None
+            and preflight_fingerprint == final_fingerprint
+            and validated_effective_eligibility.status == "playable"
+            and recomputed_safety is not None
+            and safety["decision"] == "PLAY"
+        ):
+            paper_rows = _validated_candidate_rows(package["paper_coupons"])
+            paper_bytes = _render_package_csv(paper_rows)
+            paper_count = _strict_int(
+                "paper selected_count", package["paper_selected_count"]
+            )
+            paper_cost = _strict_int("paper cost", package["paper_cost"])
+            validated_paper = _validate_package_csv(
+                paper_bytes,
+                stake=plan.stake,
+                minimum_gross_ev=plan.minimum_gross_ev,
+                expected_count=paper_count,
+                expected_cost=paper_cost,
+            )
+            if recomputed_safety.uploadable_coupons != validated_paper.coupons:
+                raise SchedulerPhaseError(
+                    "paper candidate differs from safety-approved coupons"
+                )
+            effective_bank = _strict_int("EV effective_budget", ev["effective_budget"])
+            validate_config_bank(effective_bank, plan.stake)
+            if paper_cost > effective_bank or effective_bank > plan.requested_bank:
+                raise SchedulerPhaseError("paper candidate exceeds approved bank")
+            return SchedulerPhaseResult.candidate_package(
+                paper_bytes,
+                reason=reason,
+                effective_bank=effective_bank,
+                selected_count=paper_count,
+                selected_cost=paper_cost,
+                drawing_fingerprint=final_fingerprint,
+                probability_input_sha256=safety["probability_input_sha256"],
+                source_captured_at=_parse_utc_datetime(
+                    "EV input_fetched_at", ev["input_fetched_at"]
+                ),
+                override_sha256=context.override_sha256,
+                package_sha256=_sha256_bytes(paper_bytes),
+            )
         return SchedulerPhaseResult.no_bet(reason)
     if not _manifest_pinned_revalidation_ready(payload["collection"]):
         return SchedulerPhaseResult.no_bet(
@@ -4224,9 +4997,46 @@ def _parse_runner_manifest_phase_result_strict(
         "selector release_gate_reason",
         validated_selection_diagnostics["release_gate_reason"],
     )
-    return SchedulerPhaseResult.no_bet(
-        "quality-v2 is structurally evaluated but paper-only: " + release_reason
+    if context.scheduler_phase is None:
+        return SchedulerPhaseResult.no_bet(
+            "quality-v2 is structurally evaluated but paper-only: " + release_reason
+        )
+    return SchedulerPhaseResult.candidate_package(
+        package_bytes,
+        reason="quality-v2 is structurally evaluated but paper-only: " + release_reason,
+        effective_bank=effective_bank,
+        selected_count=selected_count,
+        selected_cost=selected_cost,
+        drawing_fingerprint=final_fingerprint,
+        probability_input_sha256=safety["probability_input_sha256"],
+        source_captured_at=_parse_utc_datetime(
+            "EV input_fetched_at", ev["input_fetched_at"]
+        ),
+        override_sha256=context.override_sha256,
+        package_sha256=_sha256_bytes(package_bytes),
     )
+
+
+def _validated_candidate_rows(
+    values: object,
+) -> list[tuple[int, str, float, float]]:
+    if not isinstance(values, list) or not values:
+        raise SchedulerPhaseError("candidate package must contain coupons")
+    rows: list[tuple[int, str, float, float]] = []
+    for value in values:
+        item = _exact_phase_mapping(
+            value,
+            {"rank", "coupon", "gross_ev", "net_ev"},
+            "candidate coupon row",
+        )
+        rank = _strict_int("candidate rank", item["rank"])
+        coupon = _strict_text("candidate coupon", item["coupon"])
+        gross_ev = _finite_metric("candidate gross_ev", item["gross_ev"])
+        net_ev = _finite_metric("candidate net_ev", item["net_ev"])
+        if not math.isclose(net_ev, gross_ev - 1.0, rel_tol=1e-12, abs_tol=1e-12):
+            raise SchedulerPhaseError("candidate EV metrics are inconsistent")
+        rows.append((rank, coupon, gross_ev, net_ev))
+    return rows
 
 
 def parse_runner_manifest_phase_result(
@@ -5267,6 +6077,73 @@ def _validate_package_csv(
     return _ValidatedPackageCSV(count=count, cost=cost, coupons=tuple(coupons))
 
 
+def _render_baltbet_upload(coupons: Sequence[str], *, stake: int) -> bytes:
+    _require_positive_int("BaltBet stake", stake)
+    lines: list[str] = []
+    for coupon in coupons:
+        if _COUPON_PATTERN.fullmatch(coupon) is None:
+            raise SchedulerIntegrityError(
+                "BaltBet coupon must contain exactly 15 outcomes",
+                category="lkg_integrity",
+            )
+        lines.append(f"{stake}; " + "; ".join(coupon))
+    if not lines or len(lines) != len(set(lines)):
+        raise SchedulerIntegrityError(
+            "BaltBet operator package must contain unique coupons",
+            category="lkg_integrity",
+        )
+    return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+def _validate_baltbet_upload(
+    content: bytes,
+    *,
+    stake: int,
+    expected_count: int,
+    expected_cost: int,
+    expected_coupons: Sequence[str],
+) -> tuple[str, ...]:
+    try:
+        text = content.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise SchedulerIntegrityError(
+            "BaltBet operator package must be UTF-8",
+            category="lkg_integrity",
+        ) from error
+    if not text.endswith("\n") or "\r" in text or "\x00" in text:
+        raise SchedulerIntegrityError(
+            "BaltBet operator package line encoding is invalid",
+            category="lkg_integrity",
+        )
+    lines = text.splitlines()
+    coupons: list[str] = []
+    for line in lines:
+        fields = line.split("; ")
+        if len(fields) != 16 or fields[0] != str(stake):
+            raise SchedulerIntegrityError(
+                "BaltBet operator line must be '<stake>; <15 outcomes>'",
+                category="lkg_integrity",
+            )
+        coupon = "".join(fields[1:])
+        if _COUPON_PATTERN.fullmatch(coupon) is None:
+            raise SchedulerIntegrityError(
+                "BaltBet operator line has invalid outcomes",
+                category="lkg_integrity",
+            )
+        coupons.append(coupon)
+    if (
+        len(coupons) != expected_count
+        or len(set(coupons)) != len(coupons)
+        or expected_cost != expected_count * stake
+        or tuple(coupons) != tuple(expected_coupons)
+    ):
+        raise SchedulerIntegrityError(
+            "BaltBet operator package count/cost/uniqueness mismatch",
+            category="lkg_integrity",
+        )
+    return tuple(coupons)
+
+
 def _validate_no_bet_manifest(
     plan: SchedulerPlan,
     ev: Mapping[str, Any],
@@ -5789,6 +6666,15 @@ def _validate_live_scheduler_target(plan: SchedulerPlan, observed_at: datetime) 
             "live open drawing does not match the scheduler target",
             category="target_identity",
         )
+    _freeze_authoritative_drawing(
+        plan,
+        target_fingerprint(
+            drawing_id=target.drawing_id,
+            drawing_number=target.drawing_number,
+            deadline=target.deadline,
+            events=target.events,
+        ),
+    )
 
 
 def _current_override_sha256(plan: SchedulerPlan) -> str | None:
@@ -6064,6 +6950,37 @@ def _write_exclusive_atomic(
                 f"refusing to overwrite existing artifact: {target}"
             ) from error
         _require_regular_file(target, name="published artifact", reject_symlink=True)
+        _fsync_directory(target.parent)
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+        _unlink_output_path(output_root, temp_path, missing_ok=True)
+
+
+def _write_replace_atomic(
+    output_root: Path,
+    path: Path,
+    content: bytes,
+    mode: int = 0o644,
+) -> None:
+    """Atomically replace a mutable pointer while keeping checkpoints immutable."""
+    if not isinstance(content, bytes):
+        raise TypeError("artifact content must be bytes")
+    target = _require_contained_path(output_root, path, name="artifact path")
+    _ensure_output_directory(output_root, target.parent)
+    if target.exists():
+        _require_regular_file(target, name="replace target", reject_symlink=True)
+    temp_path = target.parent / f".{target.name}.{secrets.token_hex(8)}.tmp"
+    descriptor: int | None = None
+    try:
+        descriptor = _open_exclusive_regular(temp_path, mode=mode)
+        with os.fdopen(descriptor, "wb") as output:
+            descriptor = None
+            output.write(content)
+            output.flush()
+            os.fsync(output.fileno())
+        os.replace(temp_path, target)
+        _require_regular_file(target, name="replaced artifact", reject_symlink=True)
         _fsync_directory(target.parent)
     finally:
         if descriptor is not None:

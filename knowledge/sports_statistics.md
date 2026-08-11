@@ -37,11 +37,54 @@ event features and report bytes.
 
 ## Activation policy
 
-The evidence is `AUDIT ONLY`. It has no package influence and falls back to the
-bookmaker market prior. A sports model or blend is allowed only after frozen
-chronological out-of-sample evaluation on at least 30 drawings / 450 events,
-with adequate feature coverage and no reproducible degradation versus the
-bookmaker baseline.
+The evidence has no production package influence. The current production
+probability matrix remains exclusively normalized TotoBrief BK; pool
+probabilities are crowd/EV input.
+
+The shadow sports-probability provider, evaluator, and CLI are implemented.
+They emit `NOT_ACTIVATED` machine-readable artifacts containing BK,
+sports-shadow, candidate blend, raw feature summaries, content/source
+provenance, and explicit fallback reasons. They are deliberately not connected
+to `EVInput`, package selection, scheduler decisions, or betting state.
+
+The experimental sports estimate is a Jeffreys-smoothed venue-only W-D-L
+projection. It uses the home team's home W-D-L and the away team's away W-D-L,
+and is untrained. Both venue windows must contain pre-as-of observations.
+Missing or invalid venue data is labelled `non_venue_unavailable` and falls
+back to normalized BK; aggregate W-D-L is retained as a diagnostic but is never
+substituted, never described as venue evidence, and cannot satisfy the
+activation coverage gate. The candidate blend weights sports evidence against
+BK using only the matched venue observation count and requested-history prior;
+it does not claim fitted coefficients. Goals, overall form, rest, and standings
+remain visible in the artifact as diagnostics until lawful data and OOS
+evidence support a trained model.
+
+Every event validates immutable content hashes, as-of/deadline and pre-match
+boundaries, drawing fingerprint, target event identity, provider fixture/team
+orientation, canonical pins, and source timestamps. Any unproved event uses
+normalized BK unchanged.
+
+OOS BK probabilities come only from the hash-bound frozen authoritative
+drawing snapshot embedded in the shadow artifact and captured no later than
+`as_of`; mutable current quote rows are forbidden. Missing/late authority,
+fingerprint drift, future sources, and missing/mismatched orientation are
+blocking integrity failures. Ordinary missing sports history is instead a BK
+fallback that lowers coverage without being classified as leakage.
+
+The chronological evaluator reports multiclass log loss, Brier score,
+confidence ECE, drawing/event counts, sports coverage, fallback, and validation
+failures for BK, sports-shadow, and candidate blend. The fail-closed gate needs
+at least 30 drawings / 450 events, at least 70% sports coverage, strict blend
+improvement over BK in log loss and Brier, calibration within tolerance, and
+zero leakage/fingerprint/validation failures. Even a pass is
+`PASS_REVIEW_REQUIRED`; production remains `NOT_ACTIVATED` until a separate
+reviewed architecture change. No profitability is proven.
+
+The sample and coverage values are non-reducible hard minima. The documented
+calibration tolerance of 0.02 is a maximum; callers may request stricter values
+only.
+
+Injuries, lineups, xG, and Elo are not implemented.
 
 ## API-Sports free-plan finding
 

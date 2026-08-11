@@ -10,10 +10,13 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from typer.testing import CliRunner
 
 from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
+from toto_ai import cli
 from toto_ai.runner.morning_dispatch import (
     MorningDispatchConfig,
+    MorningDispatchResult,
     MorningExpectedIdentity,
     MorningPreparedDrawing,
     _allows_deferred_reviewed_hash_transition,
@@ -735,7 +738,7 @@ def test_same_drawing_retries_deferred_preparation_without_duplicate_plan(
     assert len(tuple(config.scheduler_root.rglob("scheduler-plan.json"))) == 1
 
 
-def test_deferred_artifact_free_record_accepts_validated_reviewed_hash(
+def test_prepared_artifact_free_record_accepts_validated_reviewed_hash(
     tmp_path,
 ):
     config = _config(tmp_path)
@@ -743,7 +746,7 @@ def test_deferred_artifact_free_record_accepts_validated_reviewed_hash(
     deadline = now + timedelta(hours=10)
     fingerprint = "a" * 64
 
-    deferred = dispatch_morning(
+    prepared = dispatch_morning(
         config,
         observed_at=now,
         now=lambda: now,
@@ -771,9 +774,9 @@ def test_deferred_artifact_free_record_accepts_validated_reviewed_hash(
         python_command=sys.executable,
     )
 
-    assert deferred.status == "deferred"
+    assert prepared.status == "prepared"
     assert scheduled.status == "scheduled"
-    assert scheduled.record_path == deferred.record_path
+    assert scheduled.record_path == prepared.record_path
     assert len(tuple(config.scheduler_root.rglob("scheduler-plan.json"))) == 1
     persisted = json.loads(
         scheduled.record_path.read_text(encoding="utf-8")
@@ -865,7 +868,7 @@ def test_scheduled_record_rejects_reviewed_hash_mutation(tmp_path):
 
 
 @pytest.mark.parametrize(
-    ("evidence", "reason"),
+    ("evidence", "status", "reason"),
     [
         (
             _prepared(
@@ -875,6 +878,7 @@ def test_scheduled_record_rejects_reviewed_hash_mutation(tmp_path):
                 status="unresolved",
                 mapped=14,
             ),
+            "deferred",
             "ACTION REQUIRED: unresolved 1/15",
         ),
         (
@@ -885,6 +889,7 @@ def test_scheduled_record_rejects_reviewed_hash_mutation(tmp_path):
                 eligibility="multi_day",
                 span_days=4,
             ),
+            "prepared",
             "drawing_not_playable",
         ),
         (
@@ -895,6 +900,7 @@ def test_scheduled_record_rejects_reviewed_hash_mutation(tmp_path):
                 eligibility="unknown",
                 span_days=6,
             ),
+            "deferred",
             "drawing_span_exceeds_five_days",
         ),
     ],
@@ -902,6 +908,7 @@ def test_scheduled_record_rejects_reviewed_hash_mutation(tmp_path):
 def test_ineligible_preparation_never_creates_evening_plan(
     tmp_path,
     evidence,
+    status,
     reason,
 ):
     config = _config(tmp_path)
@@ -913,10 +920,89 @@ def test_ineligible_preparation_never_creates_evening_plan(
         python_command=sys.executable,
     )
 
-    assert result.status == "deferred"
+    assert result.status == status
     assert result.reason == reason
     assert result.plan_path is None
     assert not tuple(config.scheduler_root.rglob("scheduler-plan.json"))
+
+
+def test_ready_non_playable_morning_is_preserved_as_prepared(tmp_path):
+    config = _config(tmp_path)
+    observed = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+
+    result = dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: _prepared(
+            number=4972,
+            drawing_id=12024,
+            deadline=observed + timedelta(hours=11),
+            eligibility="unknown",
+            span_days=1,
+        ),
+        python_command=sys.executable,
+    )
+
+    assert result.status == "prepared"
+    assert result.reason == "drawing_not_playable"
+    assert result.plan_path is None
+    assert result.activation_status == "not_requested"
+    assert not tuple(config.scheduler_root.rglob("scheduler-plan.json"))
+    record = json.loads(result.record_path.read_text(encoding="utf-8"))
+    assert record["status"] == "prepared"
+    assert record["preparation"] == {
+        "baseline_only_event_orders": [],
+        "external_coverage_count": 15,
+        "eligibility_status": "unknown",
+        "mapped_count": 15,
+        "not_ready_reason": None,
+        "span_days": 1,
+        "status": "ready",
+        "unresolved": [],
+    }
+    assert record["playability"] == {
+        "playable": False,
+        "reason": "drawing_not_playable",
+        "span_days": 1,
+        "status": "unknown",
+    }
+
+
+def test_prepared_morning_cli_result_exits_zero(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        cli,
+        "dispatch_morning",
+        lambda *_args, **_kwargs: MorningDispatchResult(
+            status="prepared",
+            reason="drawing_not_playable",
+            record_path=tmp_path / "prepared.json",
+            plan_id=None,
+            plan_path=None,
+            launch_agent_path=None,
+            activation_status="not_requested",
+        ),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(tmp_path / ".env"),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output)["status"] == "prepared"
 
 
 def test_dispatch_after_t_minus_45_does_not_create_partial_schedule(tmp_path):

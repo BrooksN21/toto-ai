@@ -1,5 +1,65 @@
 # Architecture
 
+## Last-known-good package boundary
+
+Schema-v6 tick execution now has an append-only `last-known-good/checkpoints/`
+store plus an atomically replaced `last-known-good/current.json` pointer.
+Checkpoint validation binds plan/drawing identity, deadline, stake/bank,
+coupon count/cost/uniqueness, package hash, drawing fingerprint, probability
+input hash, capture time, and explicit non-actionability. `operator-result.json`
+exposes `FINAL_FRESH`, `LAST_KNOWN_GOOD_DEGRADED`, or `NO_BET`; a validated
+package uses a separate BaltBet upload-text path. Warmup publication establishes
+operator availability before final work. Final and retry have phase-local
+deadlines, but the tests do not model exact launchd process overlap or prove
+that a running final can never delay acquisition of the scheduler lock.
+
+## Current prediction boundary
+
+The package probability matrix is currently the normalized 15-by-3 TotoBrief
+BK matrix. TotoBrief pool probabilities are a separate crowd model used by EV
+and payout assumptions; they are not sports-performance probabilities.
+
+API-Sports currently contributes event identity, kickoff/schedule evidence,
+eligibility, and immutable audit snapshots. Form, goals, and standings are
+collected but are not passed into `EVInput` and cannot change coupon ranking or
+selection. API-Sports bookmaker consensus is audit evidence only. Injuries,
+lineups, xG, and Elo are not implemented.
+
+The provider-neutral sports probability provider is implemented in shadow
+mode. It derives a 15-by-3 experimental matrix from frozen pre-deadline
+evidence, keeps event-level BK fallback, and publishes source provenance in a
+machine-readable `NOT_ACTIVATED` artifact. It is not connected to `EVInput`.
+
+The shadow projection is an untrained Jeffreys-smoothed venue-only W-D-L
+estimate. It uses the home team's home W-D-L and the away team's away W-D-L;
+aggregate W-D-L is never substituted when either required venue window is
+empty. Such an event is explicitly labelled `non_venue_unavailable` and uses
+BK fallback, so it cannot count as venue-model coverage. Its candidate blend
+uses only the matched venue sample count for evidence weighting against
+normalized BK. Aggregate form, goals, rest, and standings are retained in the
+artifact as diagnostics, not fitted coefficients. Strict
+as-of/deadline, content hash, target fingerprint, event identity, fixture/team
+orientation, pin, and source chronology checks fail back to BK per event.
+
+The chronological evaluator compares BK, sports-shadow, and candidate blend by
+multiclass log loss, Brier, confidence ECE, coverage, fallback, and validation
+counts. OOS BK rows come only from the hash-bound frozen authoritative drawing
+snapshot embedded in each pre-`as_of` shadow artifact; mutable current `Quote`
+rows are never prediction input. Missing/late authority, fingerprint drift,
+future sources, and missing/mismatched orientation are blocking. Ordinary
+missing sports history may fall back to BK and lowers coverage without being
+mislabeled as leakage. The hard floor of 30 drawings, 450 events, and 70%
+sports coverage cannot be weakened by CLI/config; calibration tolerance may
+only be stricter than the documented 0.02 maximum. The gate cannot activate
+production: even a pass is only `PASS_REVIEW_REQUIRED`, while the artifact
+remains `NOT_ACTIVATED`.
+
+The active scheduler contract is schema v6. Quality-v2 is fail-closed
+`NO BET / TRAINING-PAPER` and cannot publish an actionable wager-ready marker.
+Legacy schema-v5 and marker descriptions later in this file are retained only
+as implementation history and are not current behavior. No profitability is
+proven.
+
 ## Deterministic safety-aware EV package selection
 
 Playable EV selection keeps the complete coupon EV surface, ranking,
