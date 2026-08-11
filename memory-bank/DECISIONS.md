@@ -1216,6 +1216,11 @@ ambiguous reversed evidence remains unresolved.
 - Provider pins, target identity/order, reviewed evidence validation and all
   unrelated canonical pin content remain immutable. Any non-monotonic change,
   invalid ledger schema/hash, ambiguity or conflict fails closed.
+- Once an exact `schedule-evidence` pin has been validated against its bound
+  observation and ledger, a later API-Sports plan gap for that kickoff UTC date
+  does not invalidate it. This matches first-preparation semantics and applies
+  only to provider-neutral schedule-evidence pins; ordinary API-Sports and
+  per-drawing reviewed-schedule pins retain their existing fail-closed rules.
 
 ## Package quality-v2 objective and release boundary (2026-08-10)
 

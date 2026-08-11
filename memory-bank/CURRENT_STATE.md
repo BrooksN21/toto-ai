@@ -3665,3 +3665,32 @@ concentration/diversity, but this is not evidence of predictive edge or
 profitability. The durable postmortem is
 `reports/analysis/drawing_4971_quality_v2_actual_evaluation.md`; the project
 remains `NO BET / TRAINING/PAPER`.
+
+## Drawing 4973 preparation and scheduler activation (2026-08-11)
+
+The next open BaltBet drawing was discovered immediately after 4972 and bound
+as drawing ID 12027 / visible number 4973, deadline 2026-08-12 17:00 MSK,
+fingerprint `955d243b...20c`. Four API-Sports gaps were resolved from reviewed
+official schedule evidence; the final canonical pin set is READY/PLAYABLE with
+15/15 external schedule coverage (11 API-Sports, 4 schedule-evidence) and no
+baseline-only events.
+
+The schema-v6 evening scheduler is installed as
+`com.totoai.production-scheduler.v6.9bd0e77f4fdc9257`, plan ID
+`9bd0e77f4fdc9257`, bank 4,980 and stake 30. Its Moscow triggers are
+15:00/15:30/16:00/16:15/16:30/16:40/16:44/16:50, with T-10 at 16:50.
+An immediate wrapper smoke returned exit 0 / `no due scheduler phase`.
+
+The daily morning dispatcher was replaced by an activating candidate with
+08:00/10:30/12:00 plus post-deadline discovery attempts at
+17:05/17:12/17:20. A live control run rediscovered 4973 and idempotently reused
+the exact evening plan. This is operational evidence only; no package or
+profitability result exists yet, and the release boundary remains
+`NO BET / TRAINING-PAPER`.
+
+The live setup exposed a repeat-preparation defect: a provider plan gap on the
+UTC date of an already validated `schedule-evidence` pin incorrectly rejected
+that pin, although first preparation already treats independent schedule
+evidence as authoritative for that date. The repeat-pin check now applies the
+same exemption. A regression performs first and repeated preparation across a
+provider date failure and requires identical READY/PLAYABLE results.
