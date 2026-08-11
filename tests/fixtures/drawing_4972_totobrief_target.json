@@ -1,0 +1,324 @@
+{
+  "data": {
+    "ended_at": "2026-08-11T15:00:00.000000Z",
+    "events": [
+      {
+        "championship": "Европа. Лига Чемпионов УЕФА. Квалификация",
+        "id": 179463,
+        "name": "Кайрат-Алматы — Левски София",
+        "name_en": null,
+        "order": 0,
+        "quotes": {
+          "bk_draw": 29,
+          "bk_win_1": 37,
+          "bk_win_2": 34,
+          "norm_draw": 3.07,
+          "norm_win_1": 2.75,
+          "norm_win_2": 2.78,
+          "pool_draw": 28,
+          "pool_win_1": 41,
+          "pool_win_2": 32
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Европа. Лига Чемпионов УЕФА. Квалификация",
+        "id": 179464,
+        "name": "Сабах — АГФ Орхус",
+        "name_en": null,
+        "order": 1,
+        "quotes": {
+          "bk_draw": 27,
+          "bk_win_1": 48,
+          "bk_win_2": 25,
+          "pool_draw": 24,
+          "pool_win_1": 53,
+          "pool_win_2": 22
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Европа. Лига Чемпионов УЕФА. Квалификация",
+        "id": 179465,
+        "name": "Неймеген — Олимпиакос",
+        "name_en": null,
+        "order": 2,
+        "quotes": {
+          "bk_draw": 29,
+          "bk_win_1": 35,
+          "bk_win_2": 36,
+          "norm_draw": 3.35,
+          "norm_win_1": 2.72,
+          "norm_win_2": 2.61,
+          "pool_draw": 29,
+          "pool_win_1": 33,
+          "pool_win_2": 39
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Европа. Лига Чемпионов УЕФА. Квалификация",
+        "id": 179466,
+        "name": "Штурм — Фенербахче",
+        "name_en": null,
+        "order": 3,
+        "quotes": {
+          "bk_draw": 25,
+          "bk_win_1": 24,
+          "bk_win_2": 51,
+          "norm_draw": 3.88,
+          "norm_win_1": 4.11,
+          "norm_win_2": 1.813,
+          "pool_draw": 25,
+          "pool_win_1": 25,
+          "pool_win_2": 50
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Европа. Лига конференций УЕФА. Квалификация",
+        "id": 179467,
+        "name": "Аполлон Лимассол — Бранн",
+        "name_en": null,
+        "order": 4,
+        "quotes": {
+          "bk_draw": 27,
+          "bk_win_1": 41,
+          "bk_win_2": 32,
+          "norm_draw": 3.35,
+          "norm_win_1": 2.17,
+          "norm_win_2": 3.13,
+          "pool_draw": 23,
+          "pool_win_1": 47,
+          "pool_win_2": 30
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Аргентина. Чемпионат",
+        "id": 179468,
+        "name": "Тальерес Кордоба — Ланус",
+        "name_en": null,
+        "order": 5,
+        "quotes": {
+          "bk_draw": 32,
+          "bk_win_1": 39,
+          "bk_win_2": 29,
+          "norm_draw": 2.99,
+          "norm_win_1": 2.45,
+          "norm_win_2": 3.38,
+          "pool_draw": 31,
+          "pool_win_1": 43,
+          "pool_win_2": 26
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Бразилия. Серия B",
+        "id": 179469,
+        "name": "Аваи — Клуб Регатас Бразил",
+        "name_en": null,
+        "order": 6,
+        "quotes": {
+          "bk_draw": 31,
+          "bk_win_1": 34,
+          "bk_win_2": 35,
+          "pool_draw": 24,
+          "pool_win_1": 40,
+          "pool_win_2": 36
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Колумбия. 1-й дивизион",
+        "id": 179470,
+        "name": "Реал Сантандер — Барранкилья",
+        "name_en": null,
+        "order": 7,
+        "quotes": {
+          "bk_draw": 30,
+          "bk_win_1": 36,
+          "bk_win_2": 33,
+          "norm_draw": 3.59,
+          "norm_win_1": 3.13,
+          "norm_win_2": 2.3,
+          "pool_draw": 33,
+          "pool_win_1": 37,
+          "pool_win_2": 31
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Чили. 1-й дивизион",
+        "id": 179471,
+        "name": "Пуэрто Монтт — Унион Эспаньола",
+        "name_en": null,
+        "order": 8,
+        "quotes": {
+          "bk_draw": 29,
+          "bk_win_1": 46,
+          "bk_win_2": 25,
+          "norm_draw": 3.21,
+          "norm_win_1": 2.01,
+          "norm_win_2": 3.52,
+          "pool_draw": 28,
+          "pool_win_1": 49,
+          "pool_win_2": 23
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Финляндия. 2-й дивизион",
+        "id": 179472,
+        "name": "ЯЮК — Тампере Юнайтед",
+        "name_en": null,
+        "order": 9,
+        "quotes": {
+          "bk_draw": 24,
+          "bk_win_1": 32,
+          "bk_win_2": 44,
+          "norm_draw": 3.91,
+          "norm_win_1": 2.8,
+          "norm_win_2": 2.15,
+          "pool_draw": 21,
+          "pool_win_1": 27,
+          "pool_win_2": 52
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Швеция. Суперэттан",
+        "id": 179473,
+        "name": "Хельсингборг — Вернамо",
+        "name_en": null,
+        "order": 10,
+        "quotes": {
+          "bk_draw": 26,
+          "bk_win_1": 43,
+          "bk_win_2": 31,
+          "norm_draw": 3.72,
+          "norm_win_1": 2.27,
+          "norm_win_2": 2.99,
+          "pool_draw": 20,
+          "pool_win_1": 54,
+          "pool_win_2": 26
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "ЮАР. Чемпионат",
+        "id": 179474,
+        "name": "Чиппа Юнайтед — Ричардс Бэй",
+        "name_en": null,
+        "order": 11,
+        "quotes": {
+          "bk_draw": 36,
+          "bk_win_1": 32,
+          "bk_win_2": 32,
+          "norm_draw": 2.59,
+          "norm_win_1": 2.89,
+          "norm_win_2": 2.89,
+          "pool_draw": 34,
+          "pool_win_1": 39,
+          "pool_win_2": 27
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "ЮАР. Чемпионат",
+        "id": 179475,
+        "name": "Марумо Галлантс — Крюгер Юнайтед",
+        "name_en": null,
+        "order": 12,
+        "quotes": {
+          "bk_draw": 35,
+          "bk_win_1": 38,
+          "bk_win_2": 27,
+          "norm_draw": 2.67,
+          "norm_win_1": 2.45,
+          "norm_win_2": 3.39,
+          "pool_draw": 27,
+          "pool_win_1": 49,
+          "pool_win_2": 24
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "ЮАР. Чемпионат",
+        "id": 179476,
+        "name": "Полокване Сити — Стелленбош ФК",
+        "name_en": null,
+        "order": 13,
+        "quotes": {
+          "bk_draw": 35,
+          "bk_win_1": 37,
+          "bk_win_2": 28,
+          "norm_draw": 2.66,
+          "norm_win_1": 2.5,
+          "norm_win_2": 3.32,
+          "pool_draw": 33,
+          "pool_win_1": 43,
+          "pool_win_2": 24
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      },
+      {
+        "championship": "Южная Америка. Кубок Либертадорес",
+        "id": 179477,
+        "name": "Депортес Толима — Индепендьенте дель Валье",
+        "name_en": null,
+        "order": 14,
+        "quotes": {
+          "bk_draw": 30,
+          "bk_win_1": 32,
+          "bk_win_2": 37,
+          "norm_draw": 3.03,
+          "norm_win_1": 3.02,
+          "norm_win_2": 2.62,
+          "pool_draw": 29,
+          "pool_win_1": 28,
+          "pool_win_2": 43
+        },
+        "result": "",
+        "score": "",
+        "start_at": null
+      }
+    ],
+    "id": 12024,
+    "jackpot": 1455328,
+    "name": "baltbet-main",
+    "number": 4972,
+    "payments": null,
+    "pool_sum": 1110662,
+    "status": "active"
+  },
+  "version": "1.0"
+}

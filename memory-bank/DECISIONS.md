@@ -1,5 +1,25 @@
 # Decisions
 
+## Country-scoped matcher taxonomy boundary (2026-08-11)
+
+- Reusable team aliases are exact reviewed identity families keyed by stable
+  country identity. Short provider acronyms have no global meaning, and the
+  table may not contain drawing numbers, event orders, or fixture IDs.
+- Translated domestic competition labels are explicit country-scoped taxonomy
+  families. An unknown label or a known label under a different country is not
+  equivalent.
+- Country-aware league equivalence never bypasses the normal date, country,
+  sport, gender, uniqueness, or orientation gates. It is auto-acceptable only
+  in the same home/away orientation with strong identity evidence for both
+  teams, country agreement, and date/date-window evidence.
+- Duplicate candidates remain ambiguous. Reversed, wrong-country, and
+  out-of-window candidates remain fail-closed even when their names belong to
+  known alias families.
+- The matcher may make a fresh preparation 15/15, but it does not authorize a
+  provider refresh to rewrite an already ready baseline canonical pin set.
+  The existing atomic baseline-to-reviewed-schedule transition remains the
+  only enrichment exception.
+
 ## Repository-local tooling boundary (2026-08-10)
 
 The authoritative durable boundary is [Tooling Policy](TOOLING_POLICY.md).

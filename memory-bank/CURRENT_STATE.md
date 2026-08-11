@@ -1,5 +1,33 @@
 # Current State
 
+## Drawing 4972 matcher v3 completion (2026-08-11)
+
+The systematic resolver now recognizes a small reviewed set of reusable team
+identities and translated domestic competition tiers without introducing a
+drawing, event-order, or fixture-ID exception. Team and competition aliases
+are exact after the existing deterministic normalization and are scoped by
+stable country identity. A country-aware competition alias is admissible only
+with same home/away orientation, strong identity evidence for both teams,
+country agreement, and existing date-window evidence.
+
+The frozen drawing-4972 TotoBrief/API-Sports preparation resolves all 15
+events to provider fixtures, derives all 15 effective starts, and classifies
+the drawing as `playable` across exactly two Moscow calendar dates. Removing a
+genuinely missing provider fixture preserves one explicit TotoBrief
+baseline-only row and `unknown` timing. Reversed, duplicate/ambiguous,
+wrong-country, and out-of-window candidates remain rejected. An already ready
+baseline pin set also remains immutable: a later provider refresh cannot
+rewrite it; only the separately established reviewed-schedule enrichment path
+is allowed.
+
+Verification before the final repository release run: the isolated 4972
+module passed `17 passed`; the focused resolver/preparation/eligibility matrix
+passed `107 passed`; and the broad external-odds/preparation/matcher suite
+passed `366 passed, 6 deselected`. A production-source scan found no drawing
+4972, internal drawing ID, or fixture-ID hardcode. No network, commit, push,
+merge, live database, scheduler, package, or wager action was used.
+The final fast/release suite passed `1735 passed, 13 deselected in 112.71s`.
+
 ## Repository tooling whitelist (2026-08-10)
 
 The repository now has an explicit local-first tool and service whitelist.

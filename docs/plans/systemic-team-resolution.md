@@ -5,6 +5,13 @@
   to atomic prepared pins; legacy name matching
   is explicit opt-in only. Manifest schema v4 carries mandatory fresh 15/15
   pinned revalidation and the scheduler fails closed to `.no-bet`.
+- **Matcher v3 drawing-4972 regression (2026-08-11): complete.** Reusable
+  country-scoped exact team identities and translated domestic competition
+  taxonomy resolve the frozen schedule 15/15 with playable two-day timing.
+  Reversed, ambiguous, wrong-country, out-of-window, and genuinely absent
+  candidates remain fail-closed. Production code contains no drawing/order/
+  fixture-ID special case, and ready baseline pins remain immutable against a
+  later provider refresh.
 - **Deterministic replay:** `run-drawing --offline-replay` accepts strict saved
   TotoBrief target and API-Sports schedule envelopes plus an injected aware
   `--replay-as-of`. It runs the same prepare/pin/revalidate/runner/manifest-v4
