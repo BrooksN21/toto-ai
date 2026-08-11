@@ -1,5 +1,45 @@
 # Roadmap
 
+- [x] Reproduce and remediate the 4972 HTTP-429/final-timeout incident with an
+  immutable LKG checkpoint, phase-local final/retry budgets, pre-T-10 degraded
+  fallback, deterministic early NO_BET, and operator-facing artifacts. Current
+  verification is in-process; exact launchd overlap remains unclaimed.
+
+## Implemented: shadow sports probability provider
+
+- [x] Convert frozen API-Sports form/goals/standings snapshots into
+  experimental per-event `1/X/2` shadow probabilities without changing
+  current packages.
+- [x] Preserve explicit event-level normalized TotoBrief BK fallback and
+  record exact feature, orientation, hash, chronology, and source provenance.
+- [x] Emit machine-readable `NOT_ACTIVATED` artifacts with BK, sports-shadow,
+  candidate blend, features, fallback reasons, and evidence identity.
+- [x] Implement chronological OOS comparison using multiclass log loss,
+  Brier, ECE, counts, coverage, fallback, and validation failures.
+- [x] Implement a fail-closed activation gate that cannot activate production.
+- [x] Harden shadow OOS evaluation: immutable pre-`as_of` authoritative BK,
+  independent fingerprint authority, strict orientation, blocking integrity /
+  leakage reasons, and non-weakening 30/450/70% activation minima.
+- [x] Correct the experimental model to use only home-team home W-D-L and
+  away-team away W-D-L. Missing venue history now uses explicit BK fallback;
+  aggregate W-D-L remains diagnostic and cannot count as sports coverage.
+- [ ] Prospectively collect at least 30 drawings / 450 events with at least
+  70% valid non-fallback sports coverage.
+- [ ] Run and freeze the chronological OOS report. Require strict candidate
+  blend improvement over BK in log loss and Brier, calibration within the
+  declared tolerance, and zero leakage/fingerprint/validation failures.
+- [ ] Consider production influence only as a separate reviewed architecture
+  change after the evidence gate passes.
+- [x] Keep quality-v2 `NO BET / TRAINING-PAPER`; no profitability is proven.
+
+Current production baseline: normalized TotoBrief BK supplies all outcome
+probabilities and pool supplies crowd/EV input. Sports probabilities exist only
+in the shadow artifact/evaluator and remain `NOT_ACTIVATED`. Injuries, lineups,
+xG, and Elo are not implemented.
+
+Older scheduler-v5 and wager-ready items below are historical implementation
+records, superseded operationally by schema v6 and the paper-only boundary.
+
 ## Completed: drawing 4972 country-scoped matcher coverage
 
 - [x] Add reusable country-scoped exact team identity families for the four
@@ -707,8 +747,8 @@ closed.
   bank tests, and a full bank-4,980 four-sensitivity runtime budget.
 - [x] Refresh only the quality-v2 golden hash/payout/hit/probability fields for
   4967/4969/4970 from separate actual frozen-node outputs. Old and safety-v1
-  historical assertions remain unchanged; prospective 4971 remains explicitly
-  marked as a stale historical row until a separately requested rerun.
+  historical assertions remain unchanged; 4971 is covered by the separate
+  frozen-package postmortem and its quality-v2 coupon strings are unavailable.
 - [x] Split quality-v2 verification into a practical default/release suite and
   retained opt-in/nightly `heavy` research suite. Fast golden-contract tests
   verify refreshed artifacts without recomputing `3**15` surfaces.

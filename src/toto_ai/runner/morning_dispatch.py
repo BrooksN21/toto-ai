@@ -282,7 +282,7 @@ class MorningDispatchConfig:
 
 @dataclass(frozen=True)
 class MorningDispatchResult:
-    status: Literal["scheduled", "reused", "deferred"]
+    status: Literal["scheduled", "reused", "prepared", "deferred"]
     reason: str
     record_path: Path
     plan_id: str | None
@@ -357,7 +357,7 @@ def _dispatch_morning_locked(
                 activate=activate,
                 python_command=python_command,
             )
-        if prior.get("status") != "deferred":
+        if prior.get("status") not in {"prepared", "deferred"}:
             raise ValueError("morning dispatch record status is invalid")
         if not _same_drawing_identity(
             prior, evidence
@@ -366,10 +366,17 @@ def _dispatch_morning_locked(
         replace_prior = True
     reason = _ineligibility_reason(evidence)
     if reason is not None:
+        status: Literal["prepared", "deferred"] = (
+            "prepared"
+            if reason == "drawing_not_playable"
+            and evidence.preparation_status == "ready"
+            and evidence.mapped_count == 15
+            else "deferred"
+        )
         record = _record(
             evidence=evidence,
             observed_at=observed,
-            status="deferred",
+            status=status,
             reason=reason,
         )
         (
@@ -378,7 +385,7 @@ def _dispatch_morning_locked(
             else _write_record(record_path, record)
         )
         return MorningDispatchResult(
-            "deferred",
+            status,
             reason,
             record_path,
             None,
@@ -684,7 +691,7 @@ def _allows_deferred_reviewed_hash_transition(
 ) -> bool:
     """Allow only artifact-free null-to-validated reviewed hash enrichment."""
     if (
-        prior.get("status") != "deferred"
+        prior.get("status") not in {"prepared", "deferred"}
         or prior.get("activation_status") != "not_requested"
         or evidence.reviewed_catalog_hash is None
     ):
@@ -731,6 +738,10 @@ def _ineligibility_reason(evidence: MorningPreparedDrawing) -> str | None:
         return f"ACTION REQUIRED: unresolved {unresolved_count}/15"
     if evidence.span_days is not None and evidence.span_days > 5:
         return "drawing_span_exceeds_five_days"
+    return _playability_reason(evidence)
+
+
+def _playability_reason(evidence: MorningPreparedDrawing) -> str | None:
     if evidence.eligibility_status != "playable":
         return "drawing_not_playable"
     if evidence.span_days is None or evidence.span_days > 2:
@@ -777,6 +788,16 @@ def _record(
                 item.payload() for item in evidence.unresolved_events
             ],
             "not_ready_reason": evidence.not_ready_reason,
+        },
+        "playability": {
+            "status": evidence.eligibility_status,
+            "span_days": evidence.span_days,
+            "playable": (
+                evidence.eligibility_status == "playable"
+                and evidence.span_days is not None
+                and evidence.span_days <= 2
+            ),
+            "reason": _playability_reason(evidence),
         },
         "status": status,
         "reason": reason,

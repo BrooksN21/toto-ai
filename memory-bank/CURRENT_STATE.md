@@ -1,5 +1,91 @@
 # Current State
 
+## 2026-08-11: scheduler last-known-good remediation
+
+The drawing-4972 failure mode is covered by local deterministic regressions.
+Warmup and refresh may now persist an immutable validated candidate package
+and a separate BaltBet upload-text operator artifact. The first final attempt
+has a phase deadline before the retry trigger, and retry is bounded by the
+actionable publication cutoff. Operator availability does not depend on retry:
+a failed final/429/timeout keeps the warmup checkpoint intact and exposes one
+operator result:
+`FINAL_FRESH`, `LAST_KNOWN_GOOD_DEGRADED`, or `NO_BET`. Degraded packages carry
+their actual staleness and absolute coupon path, remain `NO BET`, and never
+create `.bet-ready` or place a wager.
+
+Verification is local and in-process, not an exact launchd-overlap test. The
+LKG/dynamic-bank/production-like CLI regressions passed `7 passed`; the focused
+scheduler/runner CLI suite passed `209 passed`. No network, wager, commit,
+push, or PR action was performed.
+
+## Authoritative snapshot (2026-08-11)
+
+- PR #4 (quality-v2) and PR #5 (systematic matcher) are merged. Commit
+  `c3b273f` implemented the drawing-4971 postmortem; PR #6 is merged as
+  `17a6bb4f`.
+- Drawing 4967 had three 166-coupon packages. The best coupon reached only
+  6/15; no category 9-15 was won.
+- Drawing 4971 finished `X2111X111X121X2`. Old and safety-v1 packages reached
+  only 7/15. Quality-v2 improved exposure structure and recoverable mean hit
+  count, but its frozen artifact lacks coupon strings, so no predictive edge
+  or profitability is proven.
+- Drawing 4972 has a paper package of 166 coupons for RUB 4,980. It is
+  `STRUCTURAL_PASS` but top-level `NO BET`; model-only unvalidated estimates
+  are P13+ 0.2197%, P14+ 0.01985%, and P15 0.000807%.
+- A schema-v6 scheduler snapshot exists for 4972. Its recorded
+  loaded/runs=0/paper-only state is historical and does not prove current
+  launchd state.
+- Production outcome probabilities remain exclusively normalized TotoBrief BK.
+  Pool is crowd/EV input. The sports probability provider, machine-readable
+  artifact, chronological evaluator, and CLI are implemented, but are strictly
+  shadow-only `NOT_ACTIVATED`; they cannot change EV, coupon ranking, packages,
+  scheduler decisions, or betting state. Injuries, lineups, xG, and Elo remain
+  absent.
+- Quality-v2 is fail-closed `NO BET / TRAINING-PAPER`; it cannot create an
+  actionable wager-ready artifact.
+- Next: collect prospective immutable pre-match sports snapshots and evaluate
+  BK, sports-shadow, and the candidate blend chronologically on at least 30
+  drawings / 450 events. Activation remains prohibited unless strict log-loss
+  and Brier improvements, calibration tolerance, coverage, fingerprint, and
+  leakage gates all pass and a separate reviewed architecture change follows.
+- Reviewed fail-closed semantics bind OOS BK rows to the hash-bound frozen
+  authoritative drawing snapshot captured no later than `as_of`; mutable
+  current `Quote` rows are excluded. Missing/late authority, fingerprint or
+  integrity drift, future sources, and absent/mismatched orientation block the
+  gate. Ordinary missing sports history remains a BK coverage fallback. The
+  30-drawing / 450-event / 70%-coverage minima and 0.02 maximum calibration
+  tolerance cannot be weakened by CLI/config.
+
+## Implemented: shadow sports probability provider (2026-08-11)
+
+- `sports-probability-shadow` emits a content-bound JSON artifact containing
+  BK, sports-shadow, candidate-blend probabilities, feature values,
+  provenance, fallback reasons, and status `NOT_ACTIVATED`.
+- Sports-shadow is an explicitly untrained, experimental, Jeffreys-smoothed
+  venue-only W-D-L projection. It uses only the home team's home record and the
+  away team's away record. Missing venue history causes explicit BK fallback;
+  aggregate W-D-L is diagnostic only and is never substituted or counted as
+  venue-model coverage. The candidate blend weight uses only matched venue
+  observations versus the requested-history prior; no trained coefficients
+  are claimed or invented.
+- Exact snapshot hash/as-of/deadline, target fingerprint, event identity,
+  provider orientation, fixture/team pins, source chronology, and pre-match
+  boundaries are validated. Any event that cannot prove them uses normalized
+  BK unchanged.
+- `evaluate-sports-probability-shadow` performs chronological OOS comparison
+  of BK, sports-shadow, and candidate blend using multiclass log loss, Brier,
+  confidence ECE, counts, sports coverage, fallback, and validation failures.
+- The activation gate is fail-closed and cannot activate production. It needs
+  at least 30 drawings / 450 events, at least 70% sports coverage, strict blend
+  improvement over BK in log loss and Brier, calibration within tolerance,
+  and zero validation/fingerprint/leakage failures. A pass is only
+  `PASS_REVIEW_REQUIRED`; top-level status remains `NOT_ACTIVATED`.
+- Verification outputs for the current local diff are recorded in its task
+  report; production remains `NOT_ACTIVATED` regardless of test outcome.
+
+Older entries below are an implementation history. Any schema-v5 or legacy
+wager-ready-marker description is superseded by this snapshot and schema v6.
+
 ## Drawing 4972 matcher v3 completion (2026-08-11)
 
 The systematic resolver now recognizes a small reviewed set of reusable team
@@ -3443,13 +3529,14 @@ Implemented locally for `TOTOAI-FIX-4971-PACKAGE-QUALITY-20260810`:
   contract now names it `STRUCTURAL_PASS` while top-level output stays `NO BET`;
 - the final independent package-safety veto was not weakened.
 
-Frozen one-run-per-fixture evaluation completed for 4967/4969/4970 and
-prospective 4971. Every quality-v2 package has 166 unique coupons at bank 4,980
+Frozen one-run-per-fixture evaluation completed for 4967/4969/4970 and the
+then-prospective 4971 package. Every quality-v2 package has 166 unique coupons at bank 4,980
 and stake 30, passes the unchanged safety evaluator, and has zero soft-headroom
 violations. Exact results and all exposure rows are in
 `plans/TOTOAI-AUDIT-4971-PACKAGE-20260810/quality-v2-frozen-comparison.md` and
-its JSON companions. The three finished drawings are descriptive only; 4971
-has no observed result. No profitability or real-money claim is made.
+its JSON companions. The pre-result comparison was descriptive only. The later
+4971 result is recorded in the authoritative snapshot and postmortem below.
+No profitability or real-money claim is made.
 
 Final test verification was partitioned without omission: pytest collected
 1,690 tests; the three explicit frozen quality-v2 nodes passed individually in
@@ -3489,9 +3576,9 @@ runs refreshed the finished-drawing goldens: 4967 hash `d4e407...aec15`, best/
 mean hits 7/2.518072; 4969 hash `4b5e39...e8aa4`, 9/5.801205; 4970 hash
 `2aa986...6a417`, 9/5.222892. Their core runtimes were 163.110503s,
 87.664523s and 86.505469s. All remained 166-coupon, zero-headroom-violation
-`STRUCTURAL_PASS` paper packages with top-level `NO BET`. Prospective 4971 was
-not rerun and remains explicitly stale/no-result. No edge or profitability is
-proven.
+`STRUCTURAL_PASS` paper packages with top-level `NO BET`. The frozen 4971
+quality-v2 artifact was not rerun and lacks coupon strings; its actual result
+is known from the separate postmortem. No edge or profitability is proven.
 
 ### Quality-v2 release/heavy test split (2026-08-10)
 

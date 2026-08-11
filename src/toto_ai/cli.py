@@ -267,6 +267,10 @@ from toto_ai.sports_stats.operation import (
     collect_and_store_sports_stats,
     parse_historical_as_of,
 )
+from toto_ai.sports_stats.shadow_operation import (
+    build_and_write_sports_probability_shadow,
+    evaluate_stored_sports_probability_shadow,
+)
 
 app = typer.Typer(help="TotoBrief API commands.")
 
@@ -4488,6 +4492,104 @@ def collect_sports_stats_command(
                 "unsupported_count": snapshot.unsupported_count,
                 "requests_made": snapshot.requests_made,
                 "cache_hits": snapshot.cache_hits,
+                "reports": [str(path) for path in paths],
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+
+
+@app.command("sports-probability-shadow")
+def sports_probability_shadow_command(
+    drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
+    drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
+    as_of: str = typer.Option(..., "--as-of"),
+    db: str = typer.Option("data/toto.db"),
+    raw_cache_dir: str = typer.Option("data/raw", "--raw-cache-dir"),
+    report_dir: str = typer.Option(
+        "reports/sports-probability-shadow",
+        "--report-dir",
+    ),
+) -> None:
+    """Build a machine-readable NOT_ACTIVATED sports probability shadow."""
+    try:
+        parsed_as_of = parse_historical_as_of(as_of)
+        if parsed_as_of is None:
+            raise ValueError("--as-of is required")
+        artifact, path = build_and_write_sports_probability_shadow(
+            db=db,
+            drawing_id=drawing_id,
+            drawing_number=drawing_number,
+            as_of=parsed_as_of,
+            raw_cache_dir=raw_cache_dir,
+            report_dir=report_dir,
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": artifact.status,
+                "model_status": artifact.model_status,
+                "drawing_id": artifact.drawing_id,
+                "drawing_number": artifact.drawing_number,
+                "sports_coverage_count": artifact.sports_coverage_count,
+                "fallback_count": artifact.fallback_count,
+                "artifact": str(path),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+
+
+@app.command("evaluate-sports-probability-shadow")
+def evaluate_sports_probability_shadow_command(
+    db: str = typer.Option("data/toto.db"),
+    last: int = typer.Option(100, "--last", min=1),
+    minimum_drawings: int = typer.Option(30, "--minimum-drawings", min=30),
+    minimum_events: int = typer.Option(450, "--minimum-events", min=450),
+    minimum_sports_coverage: float = typer.Option(
+        0.70,
+        "--minimum-sports-coverage",
+        min=0.70,
+        max=1.0,
+    ),
+    calibration_tolerance: float = typer.Option(
+        0.02,
+        "--calibration-tolerance",
+        min=0.0,
+        max=0.02,
+    ),
+    report_dir: str = typer.Option(
+        "reports/sports-probability-shadow",
+        "--report-dir",
+    ),
+) -> None:
+    """Run chronological OOS shadow evaluation; never activate production."""
+    try:
+        result, paths = evaluate_stored_sports_probability_shadow(
+            db=db,
+            last=last,
+            report_dir=report_dir,
+            minimum_drawings=minimum_drawings,
+            minimum_events=minimum_events,
+            minimum_sports_coverage=minimum_sports_coverage,
+            calibration_tolerance=calibration_tolerance,
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": result.status,
+                "gate_status": result.activation_gate.status,
+                "gate_passed": result.activation_gate.passed,
+                "drawing_count": result.drawing_count,
+                "event_count": result.event_count,
+                "sports_coverage_count": result.sports_coverage_count,
+                "fallback_count": result.fallback_count,
                 "reports": [str(path) for path in paths],
             },
             sort_keys=True,

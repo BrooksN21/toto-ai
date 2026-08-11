@@ -1576,6 +1576,7 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
     production_runner = LocalCommandRunner(
         environment={},
         target_validator=lambda _plan, _started_at: None,
+        now=clock.now,
     )
     monkeypatch.setattr(cli, "CommandSchedulerPhaseRunner", lambda: production_runner)
     monkeypatch.setattr(cli, "_utc_now_datetime", clock.now)
@@ -1658,7 +1659,24 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
     status = json.loads(status_path.read_text(encoding="utf-8"))
     assert not (run_dir / "package-archive.json").exists()
     assert status["decision"] == "NO BET"
-    assert status["package_path"] is None
+    package_path = Path(status["package_path"])
+    assert package_path.name == "baltbet-upload.txt"
+    upload_lines = package_path.read_text(encoding="utf-8").splitlines()
+    assert upload_lines == [
+        "30; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1",
+        "30; X; X; X; X; X; X; X; X; X; X; X; X; X; X; X",
+    ]
+    operator = json.loads(
+        (output_dir / "operator-result.json").read_text(encoding="utf-8")
+    )
+    assert operator["coupon_path"] == str(package_path)
+    assert operator["selected_count"] == 2
+    assert operator["selected_cost"] == 60
+    assert operator["stake"] == 30
+    assert operator["requested_bank"] == 4980
+    assert operator["effective_bank"] == 60
+    assert operator["automatic_wagering"] is False
+    assert operator["actionable"] is False
     assert (run_dir / ".no-bet").is_file()
     assert not (run_dir / ".bet-ready").exists()
 

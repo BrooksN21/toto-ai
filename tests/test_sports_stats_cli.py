@@ -18,6 +18,40 @@ def test_collect_sports_stats_help_exposes_safe_selectors():
     assert "AUDIT ONLY" in result.output
 
 
+def test_sports_probability_cli_help_exposes_shadow_only_contract():
+    shadow = CliRunner().invoke(app, ["sports-probability-shadow", "--help"])
+    evaluation = CliRunner().invoke(
+        app,
+        ["evaluate-sports-probability-shadow", "--help"],
+    )
+
+    assert shadow.exit_code == 0
+    assert "NOT_ACTIVATED" in shadow.output
+    assert "--as-of" in shadow.output
+    assert evaluation.exit_code == 0
+    assert "chronological" in evaluation.output.lower()
+    assert "--minimum-drawings" in evaluation.output
+    assert "--minimum-events" in evaluation.output
+    assert "30" in evaluation.output
+    assert "450" in evaluation.output
+
+
+def test_sports_probability_cli_rejects_weakened_activation_policy():
+    runner = CliRunner()
+
+    for option, value in (
+        ("--minimum-drawings", "29"),
+        ("--minimum-events", "449"),
+        ("--minimum-sports-coverage", "0.699"),
+        ("--calibration-tolerance", "0.021"),
+    ):
+        result = runner.invoke(
+            app,
+            ["evaluate-sports-probability-shadow", option, value],
+        )
+        assert result.exit_code == 2
+
+
 def test_secure_env_key_is_read_without_mutating_environment(monkeypatch, tmp_path):
     monkeypatch.delenv("API_SPORTS_KEY", raising=False)
     path = tmp_path / ".env"
