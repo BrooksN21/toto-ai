@@ -726,6 +726,35 @@ closed.
 - [x] Make repeated preparation preserve already validated schedule-evidence
   pins when API-Sports cannot serve their kickoff UTC date; verify the live
   4973 READY/PLAYABLE re-run and install its schema-v6 evening scheduler.
+- [x] Propagate revalidated reviewed/schedule-evidence kickoff times through
+  final collection, persistence and eligibility; exercise the real 4973
+  atomic-final path to 166 coupons / 4,980 / `STRUCTURAL_PASS`.
+- [x] Give the T-20 primary final the complete runtime through T-10 minus the
+  publication reserve instead of truncating it at T-16; preserve the T-30 LKG
+  fallback without reducing package-search quality.
+- [x] Fix the drawing-4973 T-45 deterministic timeout: the warmup child now
+  starts at T-45 instead of waiting for the T-30 fallback boundary while its
+  parent deadline expires.
+- [x] Fix drawing-4973 `safety_reselection_infeasible`: scheduler fallback
+  phases now provide the immutable snapshot, ledger and scheduler-plan
+  artifacts required by quality-v2 provenance instead of hash-only metadata.
+- [x] Resolve the drawing-4973 runner-manifest schema mismatch: artifact-bound
+  warmup/refresh now emit schema v5, and scheduler fallback ingestion accepts
+  that current schema. Keep legacy schema v4 rejected.
+- [x] Profile and repair the 506-second package runtime without reducing search
+  quality, samples, candidates, or bank. Exact swap-delta vectorization reduced
+  the identical 4973 cProfile run from 444.8 to 260.0 seconds and preserved the
+  selected-package hash.
+- [x] Verify DNS resilience after restoring warmup/refresh LKG: bounded
+  final/retry failures retain the validated 166-coupon package before T-10 with
+  degraded provenance and no automatic wager marker.
+- [x] Remove the manual emergency-plan hash omission path; recovery now clones
+  the exact original scheduler-plan inputs and reviewed evidence binding.
+- [x] Raise the measured final-runtime admission floor to 300 seconds and
+  recheck it after final-input capture. Scheduler-bound manual runs cannot
+  start heavy work after the safe latest-start boundary.
+- [x] Prove publication/output suppression at and after every actionable and
+  hard T-10 boundary, including a completed package arriving too late.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
   10 and 12 through the reusable ledger; retain event-13 material as an audit
   record only because its official home/away identity is not established.

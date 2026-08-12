@@ -1288,3 +1288,89 @@ ambiguous reversed evidence remains unresolved.
 - Provenance, SchedulerPlan, manifest, diagnostics, and current selector inputs
   must agree on the canonical object and SHA-256. Partial or self-consistently
   forged contexts fail closed rather than inheriting plan authority.
+
+## 2026-08-12: reviewed kickoff propagation and one full final window
+
+- A successfully revalidated `reviewed-schedule` or `schedule-evidence` pin is
+  authoritative schedule timing even though it intentionally has no external
+  fixture ID. Its exact pinned start must propagate through final collection,
+  event provenance, eligibility, persistence, and reload. It remains classified
+  in the existing provider-derived timing count; this changes no probability
+  source and creates no synthetic fixture identity.
+- The T-20 primary final owns the complete runtime through the actionable
+  cutoff at T-10 minus the publication reserve. T-16 remains a retry trigger
+  only when the earlier attempt has returned and left final state retryable;
+  the process-scoped scheduler lock prevents an overlapping retry.
+- The T-30 package remains the validated last-known-good fallback. Runtime is
+  not reduced by lowering quality samples, candidates, or bank.
+
+## 2026-08-12: scheduler child lead follows the triggering phase
+
+- A warmup tick triggered at T-45 must invoke `run-drawing` with a T-45 lead.
+  It may reuse the non-atomic fallback execution path, but it must not inherit
+  that path's ordinary T-30 wait boundary.
+- Refresh remains T-30 and atomic final remains T-20. Parent phase deadlines
+  must never precede the child's configured start boundary.
+
+## 2026-08-12: immutable provenance for every scheduler package phase
+
+- T-45 warmup, T-30 refresh, and T-20 final package calculations all require a
+  run-scoped persisted TotoBrief snapshot plus the exact scheduler-plan and
+  schedule-evidence artifacts. Hash-only selector provenance is insufficient.
+- Warmup and refresh may remain operational fallback phases, but their child
+  process receives `TOTO_FINAL_INPUT` and `TOTO_SCHEDULER_PLAN` and therefore
+  uses the same artifact-backed provenance constructor as atomic final.
+- Artifact-bound scheduler package reports use runner manifest schema v5.
+  Accepting legacy schema v4 for fallback would hide missing provenance and is
+  explicitly rejected.
+
+## 2026-08-12: exact vectorization of safety swap deltas
+
+- Optimize the measured `_pair_deltas` bottleneck with exact `int16` matrix
+  multiplication. The candidate universe, repair iterations, quality samples,
+  bank, constraints, and lexicographic objective remain unchanged.
+- Performance changes must preserve the frozen selected-package SHA-256. For
+  drawing 4973 the expected and optimized package hash is
+  `dcb53918dc62f21749d17c38a925a9baa54220afbcc9cd1883230794b29364a7`.
+
+## 2026-08-12: DNS failure uses validated LKG, never synthetic freshness
+
+- External DNS availability cannot be guaranteed or bypassed. Retain bounded
+  TotoBrief retries and explicit typed DNS diagnostics.
+- When final and retry both fail DNS resolution, preserve the validated
+  refresh/warmup package as `LAST_KNOWN_GOOD_DEGRADED`. Never label it fresh;
+  without LKG, fail closed as zero-cost `NO BET`.
+
+## 2026-08-12: emergency recovery clones immutable scheduler input
+
+- Never rebuild an emergency scheduler plan by re-entering target, bank,
+  probability, reviewed-catalog, or ledger parameters.
+- `scheduler-recover-plan` accepts only the source plan and a fresh output
+  directory. Every semantic field and hash binding is copied automatically;
+  only the output scope changes.
+- Recovery from a legacy plan is rejected. Current schema validation and all
+  bound files are rechecked while constructing the clone.
+
+## 2026-08-12: measured final-runtime admission
+
+- New plans reserve at least 300 seconds for a full final calculation. This is
+  above the optimized 4973 end-to-end observation of 282.9 seconds and replaces
+  the obsolete 180-second default.
+- Admission is checked both by the scheduler tick and immediately before the
+  heavy child starts, after immutable snapshot capture. A late snapshot may not
+  spend the publication reserve.
+- The same bound applies to scheduler-bound manual playable `run-drawing`
+  invocations. Emergency operation must use scheduler recovery, not bypass the
+  plan's runtime contract.
+
+## 2026-08-12: operator upload artifacts expire at hard T-10
+
+- Scheduler source CSV and diagnostics may remain for audit, but a
+  non-actionable `baltbet-upload.txt` is an operator surface and must be
+  deleted at T-10. Its current pointer is removed and `operator-result.json`
+  becomes coupon-free `NO_BET`.
+- A prior cryptographically valid `.bet-ready` publication remains governed by
+  the existing atomic recovery path. This expiry applies to paper/LKG operator
+  output, not to rewriting history.
+- Ad-hoc coupon files assembled from research reports are not scheduler
+  publications and must never be presented as a valid final package.

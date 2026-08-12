@@ -44,6 +44,7 @@ _SAFETY_INITIAL_CANDIDATES = 1 << 15
 _SAFETY_CANDIDATES_PER_COUPON = 128
 _SAFETY_CANDIDATE_EXPANSION = 4
 _SAFETY_MAX_CANDIDATES = 1_000_000
+_OUTCOME_ONE_HOT = np.eye(3, dtype=np.int16)
 
 
 def rank_coupon_indices(surface: EVSurface) -> np.ndarray:
@@ -1410,17 +1411,17 @@ def _pair_deltas(
     incoming_digits: np.ndarray,
     selected_digits: np.ndarray,
 ) -> np.ndarray:
-    deltas = np.zeros(
-        (incoming_digits.shape[0], selected_digits.shape[0]),
-        dtype=np.int16,
+    event_count = incoming_digits.shape[1]
+    event_indices = np.arange(event_count)[None, :]
+    incoming_scores = delta_tables[
+        event_indices,
+        incoming_digits,
+        :,
+    ].reshape(incoming_digits.shape[0], event_count * 3)
+    selected_outcomes = _OUTCOME_ONE_HOT[selected_digits].reshape(
+        selected_digits.shape[0], event_count * 3
     )
-    for event in range(incoming_digits.shape[1]):
-        deltas += delta_tables[
-            event,
-            incoming_digits[:, event, None],
-            selected_digits[None, :, event],
-        ]
-    return deltas
+    return incoming_scores @ selected_outcomes.T
 
 
 def _apply_swap(

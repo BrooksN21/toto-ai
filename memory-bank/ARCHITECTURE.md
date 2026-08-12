@@ -8,10 +8,35 @@ Checkpoint validation binds plan/drawing identity, deadline, stake/bank,
 coupon count/cost/uniqueness, package hash, drawing fingerprint, probability
 input hash, capture time, and explicit non-actionability. `operator-result.json`
 exposes `FINAL_FRESH`, `LAST_KNOWN_GOOD_DEGRADED`, or `NO_BET`; a validated
-package uses a separate BaltBet upload-text path. Warmup publication establishes
-operator availability before final work. Final and retry have phase-local
-deadlines, but the tests do not model exact launchd process overlap or prove
-that a running final can never delay acquisition of the scheduler lock.
+package uses a separate BaltBet upload-text path. The T-45 warmup child receives
+`final_lead_minutes = 45` and starts immediately at the triggering phase; it
+must not inherit the T-30 fallback lead and wait past its parent deadline.
+Every scheduler package phase, including the T-45 warmup and T-30 refresh
+fallback paths, captures a run-scoped immutable probability snapshot and binds
+that snapshot, the schedule-evidence ledger, and the scheduler plan into
+selector provenance. Non-atomic fallback execution is not allowed to pass only
+digest values without their referenced artifacts. Because these phases now
+produce `FinalInputProvenance`, their runner reports use current manifest
+schema v5; scheduler ingestion keeps one current schema contract for warmup,
+refresh, and final package phases.
+Warmup publication establishes operator availability before final work. The
+T-20 primary final owns the full runtime through T-10 minus the publication
+reserve. T-16 can retry only after the earlier process releases the scheduler
+lock and leaves retryable state; it cannot truncate or overlap a running T-20
+calculation.
+
+An authoritative final DNS/transport outage never turns cached data into a
+fresh final result. TotoBrief retains its bounded transport retries; after they
+fail, scheduler execution preserves and publishes only a previously validated
+T-45/T-30 last-known-good package with explicit degraded provenance. If no LKG
+exists, the result remains zero-cost `NO BET`.
+
+The safety-repair swap-delta kernel preserves exact integer lexicographic
+semantics while evaluating all event/outcome contributions as one `int16`
+matrix product. It does not prune candidates, lower sample counts, change the
+bank, or reorder tie-breaking. The full 4973 offline profile uses the same
+512 quality candidates, 2,048 optimization samples, 8,192 evaluation samples,
+and four sensitivity scenarios.
 
 ## Current prediction boundary
 
@@ -133,6 +158,12 @@ revalidated only against the supplied bound ledger; missing ledgers, hash or
 semantic drift, malformed content and immutable pin conflicts are typed
 integrity failures.
 
+Emergency retries use `scheduler-recover-plan --source-plan ... --output-dir
+...`. The recovery builder clones the current immutable `SchedulerPlan` and
+changes only its output scope; it does not expose manual target, bank,
+probability, ledger, or reviewed-catalog inputs. This prevents a retry from
+silently dropping `reviewed_catalog_hash` or another future plan field.
+
 Child integrity failures use exit code 78 and become
 `SchedulerIntegrityError`. They terminalize scheduler state at any stage and
 are never retried. Network, TLS, quota and refresh transport failures retain
@@ -172,6 +203,18 @@ rendered explicitly in `Europe/Moscow`. The actionable computation cutoff is
 T−10 minus the configured publication reserve, while the remaining interval
 is reserved for durable package publication and a manual-upload marker. No
 automatic bet placement exists.
+
+New plans bind a 300-second minimum final runtime, based on the measured
+optimized full 4973 run. Admission is checked before a final attempt and again
+after immutable final-input capture, immediately before the heavy subprocess.
+The scheduler-bound `run-drawing` CLI repeats the check so a manual invocation
+cannot bypass the latest safe start.
+
+At the hard T-10 tick, any non-actionable LKG operator upload text expires even
+when scheduler state is already terminal. The scheduler deletes the upload
+text and current LKG pointer, rewrites the operator result without coupons, and
+retains only the source CSV/diagnostics for audit. A manually copied file
+outside the plan tree is never a scheduler publication.
 
 Scheduler schema v6 binds `publication_lead_minutes = 10` and the complete
 `120/90/60/45/30/20/16/10` trigger-offset vector into the semantic payload and
@@ -954,6 +997,8 @@ Important CLI commands:
   wrapper that validates and sources a user-owned regular non-symlink file
   whose mode is no broader than `0600`; the plist contains only the wrapper
   path and no credentials.
+- `scheduler-recover-plan`: clone one current immutable scheduler plan into a
+  fresh output scope while preserving every target/config/evidence binding.
 - `morning-preanalysis-plan`: generate, but never install, a separate launchd
   candidate beneath `reports/rehearsal`. Its wrapper uses the same secure env
   contract and invokes drawing-neutral `morning-dispatch` at configured times.

@@ -4,7 +4,7 @@ import json
 import os
 import plistlib
 import subprocess
-from dataclasses import asdict, replace
+from dataclasses import asdict, fields, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -43,6 +43,7 @@ from toto_ai.runner.scheduler import (
     build_prepare_drawing_command,
     build_run_drawing_phase_command,
     build_scheduler_plan,
+    clone_scheduler_plan_for_recovery,
     execute_scheduler_plan,
     execute_scheduler_tick,
     find_prior_bet_ready,
@@ -82,6 +83,40 @@ def _plan(
         aliases=tmp_path / "aliases.json",
         timing_overrides=timing_overrides,
     )
+
+
+def test_recovery_plan_clone_preserves_every_semantic_input_except_output_dir(
+    tmp_path: Path,
+) -> None:
+    source = replace(
+        _plan(tmp_path),
+        reviewed_catalog_hash="c" * 64,
+    )
+
+    recovered = clone_scheduler_plan_for_recovery(
+        source,
+        output_dir=tmp_path / "scheduler-recovery",
+    )
+
+    assert recovered.output_dir == (tmp_path / "scheduler-recovery").resolve()
+    for field in fields(source):
+        if field.name != "output_dir":
+            assert getattr(recovered, field.name) == getattr(source, field.name)
+
+    context = SchedulerPhaseContext(
+        phase="final",
+        plan=recovered,
+        run_id="recovery-regression",
+        run_dir=tmp_path / "recovery-run",
+        work_dir=tmp_path / "recovery-work",
+        scheduled_at=recovered.final_at,
+        started_at=recovered.final_at,
+        atomic_final=True,
+        scheduler_phase="final",
+    )
+    command = build_run_drawing_phase_command(context)
+    option = command.index("--expected-reviewed-catalog-hash")
+    assert command[option + 1] == "c" * 64
 
 
 def _atomic_final_payload(plan):
@@ -1333,6 +1368,7 @@ def test_command_final_subprocess_timeout_preserves_publication_reserve(
 ):
     plan = _plan(tmp_path)
     assert plan.requested_bank == 4_980
+    assert plan.minimum_final_runtime_seconds == 300
     payload = _atomic_final_payload(plan)
     recorded_timeouts = []
 
@@ -1380,6 +1416,59 @@ def test_command_final_subprocess_timeout_preserves_publication_reserve(
     assert result is None
     assert len(recorded_timeouts) >= 2
     assert recorded_timeouts == sorted(recorded_timeouts, reverse=True)
+
+
+def test_command_final_rechecks_runtime_budget_after_snapshot_capture(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    plan = _plan(tmp_path)
+    payload = _atomic_final_payload(plan)
+    subprocess_calls = []
+
+    class Clock:
+        current = plan.retry_at
+
+        def now(self):
+            return self.current
+
+        def advance(self, seconds):
+            self.current += timedelta(seconds=seconds)
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == plan.drawing_id
+            clock.advance(20)
+            return payload
+
+    def must_not_start(command, **_kwargs):
+        subprocess_calls.append(command)
+        raise AssertionError("heavy final subprocess must not start")
+
+    clock = Clock()
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(scheduler.subprocess, "run", must_not_start)
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"},
+        now=clock.now,
+    )
+
+    result = execute_scheduler_tick(
+        plan,
+        phase_runner=runner,
+        now=clock.now,
+        sleep=clock.advance,
+    )
+
+    assert result is not None
+    assert result.outcome == "no-bet"
+    assert "insufficient final runtime budget" in result.reason
+    assert subprocess_calls == []
+    state = json.loads(
+        (plan.output_dir / "scheduler-state.json").read_text(encoding="utf-8")
+    )
+    assert state["phases"]["final"]["status"] == "no_bet"
+    assert state["terminal"] == "no_bet"
 
 
 def test_prepare_command_uses_absolute_raw_and_reusable_provider_cache(
@@ -1507,6 +1596,45 @@ def test_atomic_final_subprocess_retry_reuses_persisted_snapshot(
     assert detail_calls == 1
     assert subprocess_calls == 2
     assert (context.run_dir / "final-input.json").is_file()
+
+
+def test_fallback_subprocess_binds_snapshot_ledger_and_scheduler_plan(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    context = replace(
+        _manifest_context(tmp_path, phase="fallback"),
+        scheduler_phase="refresh",
+    )
+    prepare_scheduler_artifacts(context.plan)
+    captured_environment = {}
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == context.plan.drawing_id
+            return _atomic_final_payload(context.plan)
+
+    def completed(command, **kwargs):
+        captured_environment.update(kwargs["env"])
+        _write_runner_manifest(context, _valid_runner_manifest(context))
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(scheduler.subprocess, "run", completed)
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"}
+    )
+
+    result = runner(context)
+
+    snapshot = context.run_dir / "final-input.json"
+    plan_path = context.plan.output_dir / "scheduler-plan.json"
+    assert result.decision == "NO BET"
+    assert snapshot.is_file()
+    assert captured_environment["TOTO_FINAL_INPUT"] == str(snapshot)
+    assert captured_environment["TOTO_SCHEDULER_PLAN"] == str(plan_path)
+    manifest_path = context.work_dir / "reports" / "drawing_run_fixture.json"
+    assert json.loads(manifest_path.read_text())["schema_version"] == 5
 
 
 def test_production_manifest_parser_accepts_strict_paper_only_structural_pass(

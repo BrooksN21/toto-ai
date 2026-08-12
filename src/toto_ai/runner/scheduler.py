@@ -104,6 +104,7 @@ DEFAULT_QUALITY_V2_CONFIG = EVConfig(
 PUBLICATION_LEAD_MINUTES = 10
 SCHEDULER_TRIGGER_OFFSETS_MINUTES = (120, 90, 60, 45, 30, 20, 16, 10)
 LKG_MAX_SOURCE_AGE_SECONDS = 45 * 60
+DEFAULT_MINIMUM_FINAL_RUNTIME_SECONDS = 300
 
 SchedulerPhase = Literal["preflight", "fallback", "final", "freeze"]
 PackagePhase = Literal["fallback", "final"]
@@ -265,7 +266,7 @@ class SchedulerPlan:
     max_passes: int = 3
     max_expansion_passes: int = 3
     retry_delay_seconds: float = 65.0
-    minimum_final_runtime_seconds: int = 180
+    minimum_final_runtime_seconds: int = DEFAULT_MINIMUM_FINAL_RUNTIME_SECONDS
     publication_reserve_seconds: int = 45
     max_final_attempts: int = 2
     transient_backoff_seconds: tuple[int, ...] = (2, 5, 10)
@@ -930,7 +931,7 @@ def build_scheduler_plan(
     max_passes: int = 3,
     max_expansion_passes: int = 3,
     retry_delay_seconds: float = 65.0,
-    minimum_final_runtime_seconds: int = 180,
+    minimum_final_runtime_seconds: int = DEFAULT_MINIMUM_FINAL_RUNTIME_SECONDS,
     publication_reserve_seconds: int = 45,
     max_final_attempts: int = 2,
     transient_backoff_seconds: tuple[int, ...] = (2, 5, 10),
@@ -1006,6 +1007,47 @@ def build_scheduler_plan(
 def scheduler_plan_json(plan: SchedulerPlan) -> str:
     _require_plan(plan)
     return _canonical_json_bytes(plan.to_payload()).decode("utf-8") + "\n"
+
+
+def clone_scheduler_plan_for_recovery(
+    source_plan: SchedulerPlan,
+    *,
+    output_dir: str | Path,
+) -> SchedulerPlan:
+    """Clone a current immutable plan into a fresh recovery output scope.
+
+    Recovery deliberately exposes no target, probability, budget, evidence, or
+    reviewed-catalog options. ``dataclasses.replace`` carries every current and
+    future plan field forward and changes only the output scope.
+    """
+
+    _require_plan(source_plan)
+    if source_plan.source_schema_version != SCHEDULER_SCHEMA_VERSION:
+        raise ValueError(
+            "recovery requires a current scheduler plan; regenerate schema "
+            f"v{SCHEDULER_SCHEMA_VERSION}"
+        )
+    destination = _normalized_path(output_dir)
+    if destination == source_plan.output_dir:
+        raise ValueError("recovery output_dir must differ from source output_dir")
+    return replace(source_plan, output_dir=destination)
+
+
+def validate_scheduler_final_runtime_budget(
+    plan: SchedulerPlan,
+    observed_at: datetime,
+) -> float:
+    """Return remaining actionable seconds or reject a too-late heavy run."""
+
+    _require_plan(plan)
+    observed = _require_utc_datetime("observed_at", observed_at)
+    remaining = (plan.actionable_publication_deadline - observed).total_seconds()
+    if remaining < plan.minimum_final_runtime_seconds:
+        raise SchedulerTransientError(
+            "insufficient final runtime budget before the actionable cutoff",
+            category="run_drawing_timeout",
+        )
+    return remaining
 
 
 def validate_schedule_evidence_binding(
@@ -1388,7 +1430,14 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         max_passes=config["max_passes"],
         max_expansion_passes=config["max_expansion_passes"],
         retry_delay_seconds=config["retry_delay_seconds"],
-        minimum_final_runtime_seconds=config.get("minimum_final_runtime_seconds", 180),
+        minimum_final_runtime_seconds=config.get(
+            "minimum_final_runtime_seconds",
+            (
+                DEFAULT_MINIMUM_FINAL_RUNTIME_SECONDS
+                if schema_version == SCHEDULER_SCHEMA_VERSION
+                else 180
+            ),
+        ),
         publication_reserve_seconds=config.get("publication_reserve_seconds", 45),
         max_final_attempts=config.get("max_final_attempts", 2),
         transient_backoff_seconds=tuple(
@@ -1940,6 +1989,7 @@ def execute_scheduler_tick(
         )
         if recovered is not None:
             return recovered
+        _expire_operator_package_at_t10(plan, observed_at=observed)
         if state["terminal"] is not None:
             return None
         if observed >= plan.publish_deadline:
@@ -2058,22 +2108,15 @@ def execute_scheduler_tick(
             atomic_final=phase == "final",
             scheduler_phase=phase,
             phase_deadline=(
-                min(
-                    plan.actionable_publication_deadline,
-                    plan.retry_at - timedelta(seconds=plan.publication_reserve_seconds),
-                )
-                if phase == "final" and scheduled_at < plan.retry_at
+                plan.actionable_publication_deadline
+                if phase == "final"
                 else (
-                    plan.actionable_publication_deadline
-                    if phase == "final"
+                    plan.fallback_at - timedelta(seconds=5)
+                    if phase == "warmup"
                     else (
-                        plan.fallback_at - timedelta(seconds=5)
-                        if phase == "warmup"
-                        else (
-                            plan.final_at - timedelta(seconds=5)
-                            if phase == "refresh"
-                            else None
-                        )
+                        plan.final_at - timedelta(seconds=5)
+                        if phase == "refresh"
+                        else None
                     )
                 )
             ),
@@ -3124,6 +3167,61 @@ def _write_operator_no_bet(
     )
 
 
+def _expire_operator_package_at_t10(
+    plan: SchedulerPlan,
+    *,
+    observed_at: datetime,
+) -> None:
+    """Remove a non-actionable upload surface when the hard T-10 passes."""
+
+    if observed_at < plan.publish_deadline:
+        return
+    operator_path = plan.output_dir / "operator-result.json"
+    if not operator_path.exists():
+        return
+    payload = _load_strict_json(operator_path, name="operator result")
+    if not isinstance(payload, Mapping):
+        raise SchedulerIntegrityError(
+            "operator result is not a JSON object",
+            category="operator_artifact_integrity",
+        )
+    if (
+        payload.get("plan_id") != plan.plan_id
+        or payload.get("drawing") != plan.drawing
+        or payload.get("decision") != "NO BET"
+        or payload.get("automatic_wagering") is not False
+        or payload.get("actionable") is not False
+    ):
+        raise SchedulerIntegrityError(
+            "operator result identity or release boundary mismatch",
+            category="operator_artifact_integrity",
+        )
+    value = payload.get("coupon_path")
+    if value is None:
+        return
+    package_path = _require_contained_path(
+        plan.output_dir / "last-known-good",
+        Path(str(value)),
+        name="expiring operator package",
+    )
+    if package_path.name != "baltbet-upload.txt":
+        raise SchedulerIntegrityError(
+            "operator result does not reference the canonical upload artifact",
+            category="operator_artifact_integrity",
+        )
+    _unlink_output_path(plan.output_dir, package_path, missing_ok=True)
+    _unlink_output_path(
+        plan.output_dir,
+        plan.output_dir / "last-known-good" / "current.json",
+        missing_ok=True,
+    )
+    _write_operator_no_bet(
+        plan,
+        reason="operator package expired at T-10; audit source retained",
+        completed_at=observed_at,
+    )
+
+
 def find_prior_bet_ready(plan: SchedulerPlan) -> SchedulerExecutionResult | None:
     """Return only a cryptographically valid prior ``.bet-ready`` run.
 
@@ -3213,7 +3311,11 @@ def build_run_drawing_phase_command(
     validated_executable = _validated_python_executable(python_executable)
     plan = context.plan
     atomic_final = context.phase == "final" and context.atomic_final
-    lead_minutes = 30 if context.phase == "fallback" else (20 if atomic_final else 15)
+    lead_minutes = (
+        45
+        if context.scheduler_phase == "warmup"
+        else (30 if context.phase == "fallback" else (20 if atomic_final else 15))
+    )
     report_dir = context.work_dir / "reports"
     cache_root = context.work_dir / "cache"
     command = [
@@ -3372,7 +3474,9 @@ class CommandSchedulerPhaseRunner:
 
         context.work_dir.mkdir(parents=True, exist_ok=True)
         atomic_input = None
-        if context.phase == "final" and context.atomic_final:
+        if context.phase == "fallback" or (
+            context.phase == "final" and context.atomic_final
+        ):
             final_input_path = context.run_dir / "final-input.json"
             try:
                 atomic_input = (
@@ -3419,11 +3523,7 @@ class CommandSchedulerPhaseRunner:
             else context.plan.actionable_publication_deadline
         )
         timeout_seconds = (phase_deadline - subprocess_started_at).total_seconds()
-        if timeout_seconds <= 0:
-            raise SchedulerTransientError(
-                "run-drawing cannot preserve the publication reserve before T-10",
-                category="run_drawing_timeout",
-            )
+        validate_scheduler_final_runtime_budget(context.plan, subprocess_started_at)
         try:
             completed = subprocess.run(
                 command,

@@ -3694,3 +3694,188 @@ that pin, although first preparation already treats independent schedule
 evidence as authoritative for that date. The repeat-pin check now applies the
 same exemption. A regression performs first and repeated preparation across a
 provider date failure and requires identical READY/PLAYABLE results.
+
+## Drawing 4972 settlement and morning 4973 status (2026-08-12)
+
+The daily morning dispatcher ran successfully twice on 2026-08-12, exited 0,
+and idempotently reused/activated the exact drawing-4973 evening plan
+`9bd0e77f4fdc9257`. Its production scheduler is installed for drawing 4973;
+the first evening trigger is 15:00 MSK and T-10 is 16:50 MSK.
+
+Drawing 4972 is now reconciled as `21X2222*2X2XXX*`. Events 8 and 15 are
+reviewed voids after API-Sports returned `PST / Match Postponed`. The evening
+scheduler had produced no authoritative final package (`NO BET`, final run
+timed out at T-10). The pre-existing factor-1.00 preliminary paper file was
+archived only for audit and settled: 166 unique coupons, hypothetical cost
+4,980, best 11/15, zero 13+/14+/15. No bet was placed and actual cash loss is
+zero. An alternative pre-existing factor-0.80 paper scenario had one 13-hit
+coupon, but that is retrospective sensitivity evidence, not a valid strategy
+selection claim. The durable report is
+`reports/analysis/drawing_4972_preliminary_package_evaluation.md`.
+
+## Drawing 4973 full-path rehearsal and timing fix (2026-08-12)
+
+An immediate atomic-final rehearsal exposed a gap between preparation and the
+final collection boundary: four exact `schedule-evidence` pins revalidated as
+matched and carried reviewed kickoff times, but collection discarded those
+times because no API-Sports fixture object exists for schedule-only evidence.
+The final eligibility therefore became `unknown` for orders 0/8/10/13 despite
+the same canonical pin set being READY/PLAYABLE. Collection now carries the
+revalidated reviewed start through event records, eligibility classification,
+storage validation, and reload. A regression covers a mixed 11-provider / four
+schedule-evidence final collection and persistence round trip.
+
+The corrected live drawing-4973 rehearsal completed exit 0 in 506.34 seconds:
+raw/effective timing were both `playable`; the package contained 166 unique
+paper coupons for 4,980; package safety approved all 166; and structural status
+was `STRUCTURAL_PASS`. The top-level decision remained `NO BET` solely because
+the quality-v2 prospective real-money release gate is closed. This is an
+operational package-generation result, not profitability evidence or betting
+authorization.
+
+The rehearsal also proved the old primary-final timeout unsafe: the T-20
+attempt was capped at T-16 minus 45 seconds, only 195 seconds, while the live
+full-quality run required 506 seconds. The primary T-20 attempt now owns the
+complete window through the actionable cutoff at T-10 minus the 45-second
+publication reserve. The T-30 checkpoint remains the last-known-good fallback;
+a later tick cannot overlap because the scheduler lock is process-scoped. No
+search quality, samples, candidate count, or bank was reduced.
+
+## Drawing 4973 evening incident: fix 1, T-45 child timeout (2026-08-12)
+
+The T-45 warmup timeout was deterministic rather than a generic performance
+failure. Warmup recursively used the fallback runner path, and command
+construction selected `final_lead_minutes = 30` from that internal path. The
+child therefore waited for T-30 while the parent deadline was T-30 minus five
+seconds, guaranteeing termination immediately before work could start.
+
+Command construction now gives a scheduler `warmup` phase a lead of 45 while
+preserving refresh at 30 and atomic final at 20. A parameterized regression
+binds all three phase-to-lead mappings. The next incident item is the separate
+T-30 `safety_reselection_infeasible` failure; it has not been changed by this
+fix.
+
+## Drawing 4973 evening incident: fix 2, fallback provenance (2026-08-12)
+
+The T-30 `safety_reselection_infeasible` result was not caused by an
+infeasible coupon/exposure search. Its stored diagnostics named three missing
+references: probability snapshot, schedule-evidence ledger, and scheduler
+plan. The fallback CLI path constructed hash-only provenance, while quality-v2
+correctly requires the referenced immutable artifacts.
+
+Every scheduler fallback package phase now captures or reuses a run-scoped
+immutable TotoBrief input and passes both `TOTO_FINAL_INPUT` and
+`TOTO_SCHEDULER_PLAN` to `run-drawing`. This selects the existing
+artifact-backed provenance path and retains the exact ledger binding. A
+regression proves that refresh creates the snapshot and passes both artifact
+paths. Related scheduler/runner/selector verification passed 264 tests. Full
+release verification passed `1779 passed, 13 deselected in 111.15s`; Ruff also
+passed.
+
+## Drawing 4973 evening incident: fix 3, runner schema contract (2026-08-12)
+
+The observed schema-v4 fallback report and schema-v5 scheduler expectation had
+the same upstream cause as fix 2: the old fallback path had no final-input
+provenance, and runner reports without that provenance are legacy schema v4.
+Artifact-bound fallback now returns a result with `FinalInputProvenance`, so the
+normal report writer emits current schema v5 and the existing strict scheduler
+parser accepts it.
+
+Regressions now prove both ends of the contract: an artifact-bound runner
+result serializes as schema v5, and a refresh fallback captures its immutable
+input, emits a schema-v5 manifest, and passes real scheduler parsing. The
+previous proposal to weaken scheduler parsing by accepting v4 fallback was
+discarded because it would conceal incomplete provenance. Related verification
+passed 208 tests; full release verification passed
+`1780 passed, 13 deselected in 109.31s`; Ruff passed.
+
+## Drawing 4973 evening incident: fix 4, EV runtime (2026-08-12)
+
+The exact saved 4973 run spent 430.741 of 506.342 seconds in EV. An offline
+profile with the same snapshot and production quality settings took 444.760
+seconds; `_pair_deltas` alone consumed 290.605 seconds across 12,106 calls.
+The kernel's event loop was replaced by exact `int16` matrix multiplication.
+No candidate, sample, sensitivity scenario, bank unit, safety constraint, or
+objective tier was removed.
+
+The identical cProfile run now takes 259.966 seconds (1.71x overall speedup),
+with `_pair_deltas` reduced to 102.301 seconds. A realistic kernel benchmark
+requires exact array equality and a material median speedup; related selector
+verification passed 72 tests. A second full unprofiled run returned
+`STRUCTURAL_PASS`, 166 coupons, four sensitivity scenarios, and the exact same
+selected-package SHA-256 as the frozen pre-change 4973 report:
+`dcb53918dc62f21749d17c38a925a9baa54220afbcc9cd1883230794b29364a7`.
+Full release verification passed `1781 passed, 13 deselected in 123.04s`;
+Ruff passed.
+
+## Drawing 4973 evening incident: fix 5, DNS resilience (2026-08-12)
+
+The emergency final recorded a real external DNS failure resolving
+`totobrief.com`. The client already exhausted four bounded attempts. The
+missing package was not caused by insufficient DNS retries: no valid LKG
+existed because the earlier warmup/refresh phases had failed for issues 1–3.
+
+After those upstream fixes, the existing LKG architecture is the correct
+resilience mechanism. A dedicated regression establishes a valid 166-coupon
+refresh package, injects four-attempt DNS failures across both final scheduler
+attempts, and proves that the same package remains
+available before T-10 as `LAST_KNOWN_GOOD_DEGRADED`; no `.bet-ready` marker is
+created. No DNS bypass or stale-to-fresh relabelling was added. Full release
+verification passed `1782 passed, 13 deselected in 119.67s`; Ruff passed.
+
+## Drawing 4973 evening incident: fix 6, emergency-plan binding (2026-08-12)
+
+The second emergency attempt failed because a new plan was manually rebuilt
+without the original plan's `reviewed_catalog_hash`. The scheduler then
+correctly rejected the canonical reviewed pins as unbound. Emergency recovery
+must no longer reconstruct target, bank, probability, or evidence arguments.
+
+`scheduler-recover-plan` now loads one current immutable source plan and clones
+every field except the fresh output directory. The implementation uses
+`dataclasses.replace`, so future plan fields are preserved by default rather
+than maintained in a second manual copy list. Regressions compare every
+dataclass field, verify CLI artifact generation, and prove that the exact
+reviewed hash reaches the final child command. Against the real original 4973
+plan, source plan, recovery plan, and command all retained
+`7b789a9d0d4372ac7e6644af15b79612bdf4771944c8b88382044cf1f56b4469`.
+Scheduler/CLI verification passed 160 tests. Full release verification passed
+`1784 passed, 13 deselected in 110.98s`; Ruff passed.
+
+## Drawing 4973 evening incident: fix 7, late final admission (2026-08-12)
+
+The emergency direct final started at `13:45:57Z` with only about 197 seconds
+left before the actionable publication cutoff. It nevertheless entered a full
+calculation and finished 282.9 seconds later at `13:50:40Z`. The scheduler's
+old 180-second minimum was below the measured workload, and the command runner
+did not recheck that minimum after final-input capture.
+
+New scheduler plans bind a 300-second minimum final runtime. The production
+phase runner rechecks the remaining budget immediately after immutable input
+capture and before spawning `run-drawing`. A scheduler-bound manual playable
+`run-drawing` applies the same gate, so bypassing the wrapper cannot start a
+known-too-late network/EV run. Exact T-16 admission remains possible only while
+at least 300 seconds remain; input capture consuming that margin causes an
+immediate LKG/`NO BET` path instead of late computation.
+Scheduler/CLI/LKG verification passed 226 tests. The actual 4973 late-start
+timestamp is rejected by the new bound before network access. Full release
+verification passed `1786 passed, 13 deselected in 111.35s`; Ruff passed.
+
+## Drawing 4973 evening incident: fix 8, post-deadline operator artifact (2026-08-12)
+
+`reports/rehearsal/evening-4973-final-1644-package.txt` was manually created at
+`16:59:32+03:00`, after the 16:50 T-10 boundary, outside the scheduler plan
+directory and publication protocol. It was not a successful scheduler
+publication. Existing atomic publication already rejects a final calculation
+inside the reserve, removes late archives, and refuses package recovery after
+T-10.
+
+A real operator-surface gap nevertheless existed: a pre-deadline LKG
+`baltbet-upload.txt` and its `operator-result.json` pointer remained visible
+after a terminal `NO BET`, because the T-10 tick returned early for terminal
+state. The T-10 tick now expires this non-actionable surface before the
+terminal return: the upload text and current LKG pointer are deleted,
+`operator-result.json` is replaced with coupon-free `NO_BET`, and the source
+CSV is retained only for audit. Project instructions now forbid manually
+constructing or displaying upload packages from research/expired artifacts.
+Scheduler publication/LKG verification passed 189 tests. Full release
+verification passed `1786 passed, 13 deselected in 111.71s`; Ruff passed.

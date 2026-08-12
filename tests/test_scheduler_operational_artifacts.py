@@ -25,6 +25,7 @@ from toto_ai.runner.scheduler import (
     SchedulerPhaseContext,
     SchedulerTransientError,
     build_prepare_drawing_command,
+    build_run_drawing_phase_command,
     build_scheduler_plan,
     load_scheduler_plan,
     prepare_morning_preanalysis_artifacts,
@@ -53,6 +54,46 @@ def _plan(tmp_path: Path, env_file: Path):
         aliases=tmp_path / "data" / "external-odds" / "team-aliases.json",
         env_file=env_file,
     )
+
+
+@pytest.mark.parametrize(
+    ("phase", "scheduler_phase", "atomic_final", "expected_lead"),
+    [
+        ("fallback", "warmup", False, "45"),
+        ("fallback", "refresh", False, "30"),
+        ("final", "final", True, "20"),
+    ],
+)
+def test_scheduler_child_lead_matches_triggering_phase(
+    tmp_path: Path,
+    phase: str,
+    scheduler_phase: str,
+    atomic_final: bool,
+    expected_lead: str,
+):
+    plan = _plan(tmp_path, _env_file(tmp_path / ".env"))
+    context = SchedulerPhaseContext(
+        phase=phase,
+        scheduler_phase=scheduler_phase,
+        plan=plan,
+        run_id=f"{scheduler_phase}-deadline",
+        run_dir=plan.output_dir / "attempts" / f"{scheduler_phase}-deadline",
+        work_dir=(
+            plan.output_dir
+            / "attempts"
+            / f"{scheduler_phase}-deadline"
+            / phase
+        ),
+        scheduled_at=plan.preflight_at,
+        started_at=plan.preflight_at,
+        phase_deadline=plan.fallback_at - timedelta(seconds=5),
+        atomic_final=atomic_final,
+    )
+
+    command = build_run_drawing_phase_command(context)
+    lead_index = command.index("--final-lead-minutes") + 1
+
+    assert command[lead_index] == expected_lead
 
 
 def test_drawing_4967_plan_binds_canonical_ledger_path_and_hashes(

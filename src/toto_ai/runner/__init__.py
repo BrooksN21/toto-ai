@@ -58,6 +58,7 @@ from toto_ai.runner.scheduler import (
     build_prepare_drawing_command,
     build_run_drawing_phase_command,
     build_scheduler_plan,
+    clone_scheduler_plan_for_recovery,
     execute_scheduler_plan,
     execute_scheduler_tick,
     find_prior_bet_ready,
@@ -67,6 +68,7 @@ from toto_ai.runner.scheduler import (
     prepare_scheduler_artifacts,
     scheduler_launch_agent_label,
     scheduler_plan_json,
+    validate_scheduler_final_runtime_budget,
     verify_scheduler_artifacts,
 )
 from toto_ai.runner.timing import (
@@ -121,6 +123,7 @@ __all__ = [
     "build_run_drawing_phase_command",
     "build_prepare_drawing_command",
     "build_scheduler_plan",
+    "clone_scheduler_plan_for_recovery",
     "drawing_run_candidate_paths",
     "drawing_run_id",
     "drawing_run_report_paths",
@@ -139,6 +142,7 @@ __all__ = [
     "runner_window",
     "scheduler_launch_agent_label",
     "scheduler_plan_json",
+    "validate_scheduler_final_runtime_budget",
     "verify_scheduler_artifacts",
     "wait_for_final_window",
     "write_drawing_run_reports",
