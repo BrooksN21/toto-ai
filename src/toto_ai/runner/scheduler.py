@@ -1989,6 +1989,7 @@ def execute_scheduler_tick(
         )
         if recovered is not None:
             return recovered
+        _expire_operator_package_at_t10(plan, observed_at=observed)
         if state["terminal"] is not None:
             return None
         if observed >= plan.publish_deadline:
@@ -3163,6 +3164,61 @@ def _write_operator_no_bet(
         plan.output_dir,
         plan.output_dir / "operator-result.json",
         _canonical_json_bytes(payload) + b"\n",
+    )
+
+
+def _expire_operator_package_at_t10(
+    plan: SchedulerPlan,
+    *,
+    observed_at: datetime,
+) -> None:
+    """Remove a non-actionable upload surface when the hard T-10 passes."""
+
+    if observed_at < plan.publish_deadline:
+        return
+    operator_path = plan.output_dir / "operator-result.json"
+    if not operator_path.exists():
+        return
+    payload = _load_strict_json(operator_path, name="operator result")
+    if not isinstance(payload, Mapping):
+        raise SchedulerIntegrityError(
+            "operator result is not a JSON object",
+            category="operator_artifact_integrity",
+        )
+    if (
+        payload.get("plan_id") != plan.plan_id
+        or payload.get("drawing") != plan.drawing
+        or payload.get("decision") != "NO BET"
+        or payload.get("automatic_wagering") is not False
+        or payload.get("actionable") is not False
+    ):
+        raise SchedulerIntegrityError(
+            "operator result identity or release boundary mismatch",
+            category="operator_artifact_integrity",
+        )
+    value = payload.get("coupon_path")
+    if value is None:
+        return
+    package_path = _require_contained_path(
+        plan.output_dir / "last-known-good",
+        Path(str(value)),
+        name="expiring operator package",
+    )
+    if package_path.name != "baltbet-upload.txt":
+        raise SchedulerIntegrityError(
+            "operator result does not reference the canonical upload artifact",
+            category="operator_artifact_integrity",
+        )
+    _unlink_output_path(plan.output_dir, package_path, missing_ok=True)
+    _unlink_output_path(
+        plan.output_dir,
+        plan.output_dir / "last-known-good" / "current.json",
+        missing_ok=True,
+    )
+    _write_operator_no_bet(
+        plan,
+        reason="operator package expired at T-10; audit source retained",
+        completed_at=observed_at,
     )
 
 

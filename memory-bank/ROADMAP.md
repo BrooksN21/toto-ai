@@ -753,7 +753,7 @@ closed.
 - [x] Raise the measured final-runtime admission floor to 300 seconds and
   recheck it after final-input capture. Scheduler-bound manual runs cannot
   start heavy work after the safe latest-start boundary.
-- [ ] Prove publication/output suppression at and after every actionable and
+- [x] Prove publication/output suppression at and after every actionable and
   hard T-10 boundary, including a completed package arriving too late.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
   10 and 12 through the reusable ledger; retain event-13 material as an audit

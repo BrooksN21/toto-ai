@@ -1362,3 +1362,15 @@ ambiguous reversed evidence remains unresolved.
 - The same bound applies to scheduler-bound manual playable `run-drawing`
   invocations. Emergency operation must use scheduler recovery, not bypass the
   plan's runtime contract.
+
+## 2026-08-12: operator upload artifacts expire at hard T-10
+
+- Scheduler source CSV and diagnostics may remain for audit, but a
+  non-actionable `baltbet-upload.txt` is an operator surface and must be
+  deleted at T-10. Its current pointer is removed and `operator-result.json`
+  becomes coupon-free `NO_BET`.
+- A prior cryptographically valid `.bet-ready` publication remains governed by
+  the existing atomic recovery path. This expiry applies to paper/LKG operator
+  output, not to rewriting history.
+- Ad-hoc coupon files assembled from research reports are not scheduler
+  publications and must never be presented as a valid final package.

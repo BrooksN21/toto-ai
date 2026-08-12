@@ -251,6 +251,18 @@ def test_final_dns_outage_preserves_refresh_lkg_before_t10(tmp_path: Path):
     assert status["provenance"] == "LAST_KNOWN_GOOD"
     assert not tuple(plan.output_dir.rglob(".bet-ready"))
 
+    source_package_path = package_path.parent / "package.csv"
+    assert source_package_path.is_file()
+    clock.current = plan.publish_deadline
+    assert _tick(plan, runner, clock) is None
+
+    expired = _operator_payload(plan)
+    assert expired["operator_status"] == "NO_BET"
+    assert expired["coupon_path"] is None
+    assert "expired at T-10" in expired["reason"]
+    assert not package_path.exists()
+    assert source_package_path.is_file()
+
 
 def test_no_lkg_emits_early_no_bet_on_retry_failure(tmp_path: Path):
     plan = _plan(tmp_path)

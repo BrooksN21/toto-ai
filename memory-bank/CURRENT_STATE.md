@@ -3859,3 +3859,23 @@ immediate LKG/`NO BET` path instead of late computation.
 Scheduler/CLI/LKG verification passed 226 tests. The actual 4973 late-start
 timestamp is rejected by the new bound before network access. Full release
 verification passed `1786 passed, 13 deselected in 111.35s`; Ruff passed.
+
+## Drawing 4973 evening incident: fix 8, post-deadline operator artifact (2026-08-12)
+
+`reports/rehearsal/evening-4973-final-1644-package.txt` was manually created at
+`16:59:32+03:00`, after the 16:50 T-10 boundary, outside the scheduler plan
+directory and publication protocol. It was not a successful scheduler
+publication. Existing atomic publication already rejects a final calculation
+inside the reserve, removes late archives, and refuses package recovery after
+T-10.
+
+A real operator-surface gap nevertheless existed: a pre-deadline LKG
+`baltbet-upload.txt` and its `operator-result.json` pointer remained visible
+after a terminal `NO BET`, because the T-10 tick returned early for terminal
+state. The T-10 tick now expires this non-actionable surface before the
+terminal return: the upload text and current LKG pointer are deleted,
+`operator-result.json` is replaced with coupon-free `NO_BET`, and the source
+CSV is retained only for audit. Project instructions now forbid manually
+constructing or displaying upload packages from research/expired artifacts.
+Scheduler publication/LKG verification passed 189 tests. Full release
+verification passed `1786 passed, 13 deselected in 111.71s`; Ruff passed.

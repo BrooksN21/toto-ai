@@ -90,6 +90,10 @@ Maintenance rules:
   definitions change.
 - Update `memory-bank/ROADMAP.md` when a phase or task is completed.
 - Do not silently change category, cover, budget, or probability definitions.
+- Never manually synthesize, copy, display, or recommend a BaltBet upload
+  package from research reports or expired artifacts. Operator-facing coupons
+  may come only from the current scheduler-owned `operator-result.json` before
+  its bound T-10 deadline; after T-10 they are expired.
 - Run pytest and ruff before committing.
 - Keep answers and implementation notes concise.
 - Do not claim profitability without backtest evidence.

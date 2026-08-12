@@ -210,6 +210,12 @@ after immutable final-input capture, immediately before the heavy subprocess.
 The scheduler-bound `run-drawing` CLI repeats the check so a manual invocation
 cannot bypass the latest safe start.
 
+At the hard T-10 tick, any non-actionable LKG operator upload text expires even
+when scheduler state is already terminal. The scheduler deletes the upload
+text and current LKG pointer, rewrites the operator result without coupons, and
+retains only the source CSV/diagnostics for audit. A manually copied file
+outside the plan tree is never a scheduler publication.
+
 Scheduler schema v6 binds `publication_lead_minutes = 10` and the complete
 `120/90/60/45/30/20/16/10` trigger-offset vector into the semantic payload and
 plan ID alongside the ledger binding. T−120/T−90/T−60 are diagnostic
