@@ -3788,3 +3788,22 @@ previous proposal to weaken scheduler parsing by accepting v4 fallback was
 discarded because it would conceal incomplete provenance. Related verification
 passed 208 tests; full release verification passed
 `1780 passed, 13 deselected in 109.31s`; Ruff passed.
+
+## Drawing 4973 evening incident: fix 4, EV runtime (2026-08-12)
+
+The exact saved 4973 run spent 430.741 of 506.342 seconds in EV. An offline
+profile with the same snapshot and production quality settings took 444.760
+seconds; `_pair_deltas` alone consumed 290.605 seconds across 12,106 calls.
+The kernel's event loop was replaced by exact `int16` matrix multiplication.
+No candidate, sample, sensitivity scenario, bank unit, safety constraint, or
+objective tier was removed.
+
+The identical cProfile run now takes 259.966 seconds (1.71x overall speedup),
+with `_pair_deltas` reduced to 102.301 seconds. A realistic kernel benchmark
+requires exact array equality and a material median speedup; related selector
+verification passed 72 tests. A second full unprofiled run returned
+`STRUCTURAL_PASS`, 166 coupons, four sensitivity scenarios, and the exact same
+selected-package SHA-256 as the frozen pre-change 4973 report:
+`dcb53918dc62f21749d17c38a925a9baa54220afbcc9cd1883230794b29364a7`.
+Full release verification passed `1781 passed, 13 deselected in 123.04s`;
+Ruff passed.

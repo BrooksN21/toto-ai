@@ -1,5 +1,6 @@
 import hashlib
 import json
+import statistics
 import time
 from dataclasses import replace
 from pathlib import Path
@@ -824,3 +825,41 @@ def test_4971_scale_repair_swap_stays_within_practical_iteration_budget():
 
     assert pair is not None
     assert elapsed < 2.0
+
+
+def test_pair_delta_kernel_is_exact_and_materially_faster_than_event_loop():
+    rng = np.random.default_rng(4973)
+    event_count = 15
+    incoming = rng.integers(0, 3, size=(2_048, event_count), dtype=np.int8)
+    outgoing = rng.integers(0, 3, size=(166, event_count), dtype=np.int8)
+    tables = rng.integers(-2, 3, size=(event_count, 3, 3), dtype=np.int16)
+
+    def event_loop() -> np.ndarray:
+        result = np.zeros((incoming.shape[0], outgoing.shape[0]), dtype=np.int16)
+        for event in range(event_count):
+            result += tables[
+                event,
+                incoming[:, event, None],
+                outgoing[None, :, event],
+            ]
+        return result
+
+    expected = event_loop()
+    actual = package_module._pair_deltas(tables, incoming, outgoing)
+    assert np.array_equal(actual, expected)
+
+    package_module._pair_deltas(tables, incoming, outgoing)
+    event_loop()
+    optimized_samples = []
+    reference_samples = []
+    for _ in range(7):
+        started = time.perf_counter()
+        package_module._pair_deltas(tables, incoming, outgoing)
+        optimized_samples.append(time.perf_counter() - started)
+        started = time.perf_counter()
+        event_loop()
+        reference_samples.append(time.perf_counter() - started)
+
+    assert statistics.median(optimized_samples) < (
+        statistics.median(reference_samples) * 0.75
+    )

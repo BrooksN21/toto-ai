@@ -741,8 +741,12 @@ closed.
 - [x] Resolve the drawing-4973 runner-manifest schema mismatch: artifact-bound
   warmup/refresh now emit schema v5, and scheduler fallback ingestion accepts
   that current schema. Keep legacy schema v4 rejected.
-- [ ] Measure and repair the remaining 506-second package runtime/deadline
-  mismatch without reducing search quality, samples, candidates, or bank.
+- [x] Profile and repair the 506-second package runtime without reducing search
+  quality, samples, candidates, or bank. Exact swap-delta vectorization reduced
+  the identical 4973 cProfile run from 444.8 to 260.0 seconds and preserved the
+  selected-package hash.
+- [ ] Harden network/DNS handling for scheduler and emergency execution without
+  hiding an unavailable authoritative source.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
   10 and 12 through the reusable ledger; retain event-13 material as an audit
   record only because its official home/away identity is not established.

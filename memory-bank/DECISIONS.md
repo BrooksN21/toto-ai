@@ -1323,3 +1323,12 @@ ambiguous reversed evidence remains unresolved.
 - Artifact-bound scheduler package reports use runner manifest schema v5.
   Accepting legacy schema v4 for fallback would hide missing provenance and is
   explicitly rejected.
+
+## 2026-08-12: exact vectorization of safety swap deltas
+
+- Optimize the measured `_pair_deltas` bottleneck with exact `int16` matrix
+  multiplication. The candidate universe, repair iterations, quality samples,
+  bank, constraints, and lexicographic objective remain unchanged.
+- Performance changes must preserve the frozen selected-package SHA-256. For
+  drawing 4973 the expected and optimized package hash is
+  `dcb53918dc62f21749d17c38a925a9baa54220afbcc9cd1883230794b29364a7`.

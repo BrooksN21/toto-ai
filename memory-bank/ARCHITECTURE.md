@@ -25,6 +25,13 @@ reserve. T-16 can retry only after the earlier process releases the scheduler
 lock and leaves retryable state; it cannot truncate or overlap a running T-20
 calculation.
 
+The safety-repair swap-delta kernel preserves exact integer lexicographic
+semantics while evaluating all event/outcome contributions as one `int16`
+matrix product. It does not prune candidates, lower sample counts, change the
+bank, or reorder tie-breaking. The full 4973 offline profile uses the same
+512 quality candidates, 2,048 optimization samples, 8,192 evaluation samples,
+and four sensitivity scenarios.
+
 ## Current prediction boundary
 
 The package probability matrix is currently the normalized 15-by-3 TotoBrief
