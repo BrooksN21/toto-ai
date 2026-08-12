@@ -3807,3 +3807,18 @@ selected-package SHA-256 as the frozen pre-change 4973 report:
 `dcb53918dc62f21749d17c38a925a9baa54220afbcc9cd1883230794b29364a7`.
 Full release verification passed `1781 passed, 13 deselected in 123.04s`;
 Ruff passed.
+
+## Drawing 4973 evening incident: fix 5, DNS resilience (2026-08-12)
+
+The emergency final recorded a real external DNS failure resolving
+`totobrief.com`. The client already exhausted four bounded attempts. The
+missing package was not caused by insufficient DNS retries: no valid LKG
+existed because the earlier warmup/refresh phases had failed for issues 1–3.
+
+After those upstream fixes, the existing LKG architecture is the correct
+resilience mechanism. A dedicated regression establishes a valid 166-coupon
+refresh package, injects four-attempt DNS failures across both final scheduler
+attempts (eight modeled failed calls), and proves that the same package remains
+available before T-10 as `LAST_KNOWN_GOOD_DEGRADED`; no `.bet-ready` marker is
+created. No DNS bypass or stale-to-fresh relabelling was added. Full release
+verification passed `1782 passed, 13 deselected in 119.67s`; Ruff passed.

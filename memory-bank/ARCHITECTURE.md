@@ -25,6 +25,12 @@ reserve. T-16 can retry only after the earlier process releases the scheduler
 lock and leaves retryable state; it cannot truncate or overlap a running T-20
 calculation.
 
+An authoritative final DNS/transport outage never turns cached data into a
+fresh final result. TotoBrief retains its bounded transport retries; after they
+fail, scheduler execution preserves and publishes only a previously validated
+T-45/T-30 last-known-good package with explicit degraded provenance. If no LKG
+exists, the result remains zero-cost `NO BET`.
+
 The safety-repair swap-delta kernel preserves exact integer lexicographic
 semantics while evaluating all event/outcome contributions as one `int16`
 matrix product. It does not prune candidates, lower sample counts, change the

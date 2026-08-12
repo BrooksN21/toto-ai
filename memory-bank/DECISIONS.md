@@ -1332,3 +1332,11 @@ ambiguous reversed evidence remains unresolved.
 - Performance changes must preserve the frozen selected-package SHA-256. For
   drawing 4973 the expected and optimized package hash is
   `dcb53918dc62f21749d17c38a925a9baa54220afbcc9cd1883230794b29364a7`.
+
+## 2026-08-12: DNS failure uses validated LKG, never synthetic freshness
+
+- External DNS availability cannot be guaranteed or bypassed. Retain bounded
+  TotoBrief retries and explicit typed DNS diagnostics.
+- When final and retry both fail DNS resolution, preserve the validated
+  refresh/warmup package as `LAST_KNOWN_GOOD_DEGRADED`. Never label it fresh;
+  without LKG, fail closed as zero-cost `NO BET`.

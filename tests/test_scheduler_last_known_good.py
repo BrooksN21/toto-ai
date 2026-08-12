@@ -199,6 +199,57 @@ def test_4972_refresh_429_and_slow_final_deliver_lkg_before_t10(tmp_path: Path):
     assert not tuple(plan.output_dir.rglob(".bet-ready"))
 
 
+def test_final_dns_outage_preserves_refresh_lkg_before_t10(tmp_path: Path):
+    plan = _plan(tmp_path)
+    clock = _Clock(plan.fallback_at)
+    dns_calls = 0
+
+    def runner(context):
+        nonlocal dns_calls
+        if context.scheduler_phase == "refresh":
+            return _candidate()
+        if context.scheduler_phase == "final":
+            dns_calls += 1
+            raise TotoBriefRequestError(
+                "TotoBrief request failed after 4 attempt(s): ConnectionError",
+                endpoint=f"/drawing-info/{plan.drawing_id}",
+                attempts=4,
+                category="dns",
+                original_transport_message="failed to resolve totobrief.com",
+                exception_chain=(
+                    "ConnectionError",
+                    "MaxRetryError",
+                    "NameResolutionError",
+                    "gaierror",
+                ),
+            )
+        return SchedulerPhaseResult.completed("diagnostic ok")
+
+    assert _tick(plan, runner, clock) is None
+    before_dns = _operator_payload(plan)
+    package_path = Path(before_dns["coupon_path"])
+    _upload_lines(package_path, stake=30, expected_count=166)
+
+    clock.current = plan.final_at
+    assert _tick(plan, runner, clock) is None
+    after_final = _operator_payload(plan)
+    assert after_final["operator_status"] == "LAST_KNOWN_GOOD_DEGRADED"
+    assert after_final["coupon_path"] == str(package_path)
+
+    clock.current = plan.retry_at
+    result = _tick(plan, runner, clock)
+
+    assert result is not None
+    assert result.outcome == "no-bet"
+    assert result.package_path == package_path
+    assert dns_calls == 8
+    assert clock.current < plan.publish_deadline
+    status = json.loads(result.status_path.read_text(encoding="utf-8"))
+    assert status["operator_status"] == "LAST_KNOWN_GOOD_DEGRADED"
+    assert status["provenance"] == "LAST_KNOWN_GOOD"
+    assert not tuple(plan.output_dir.rglob(".bet-ready"))
+
+
 def test_no_lkg_emits_early_no_bet_on_retry_failure(tmp_path: Path):
     plan = _plan(tmp_path)
     clock = _Clock(plan.retry_at)
