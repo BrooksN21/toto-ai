@@ -1320,3 +1320,6 @@ ambiguous reversed evidence remains unresolved.
 - Warmup and refresh may remain operational fallback phases, but their child
   process receives `TOTO_FINAL_INPUT` and `TOTO_SCHEDULER_PLAN` and therefore
   uses the same artifact-backed provenance constructor as atomic final.
+- Artifact-bound scheduler package reports use runner manifest schema v5.
+  Accepting legacy schema v4 for fallback would hide missing provenance and is
+  explicitly rejected.

@@ -15,7 +15,10 @@ Every scheduler package phase, including the T-45 warmup and T-30 refresh
 fallback paths, captures a run-scoped immutable probability snapshot and binds
 that snapshot, the schedule-evidence ledger, and the scheduler plan into
 selector provenance. Non-atomic fallback execution is not allowed to pass only
-digest values without their referenced artifacts.
+digest values without their referenced artifacts. Because these phases now
+produce `FinalInputProvenance`, their runner reports use current manifest
+schema v5; scheduler ingestion keeps one current schema contract for warmup,
+refresh, and final package phases.
 Warmup publication establishes operator availability before final work. The
 T-20 primary final owns the full runtime through T-10 minus the publication
 reserve. T-16 can retry only after the earlier process releases the scheduler

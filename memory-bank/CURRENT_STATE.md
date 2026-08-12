@@ -3771,3 +3771,20 @@ regression proves that refresh creates the snapshot and passes both artifact
 paths. Related scheduler/runner/selector verification passed 264 tests. Full
 release verification passed `1779 passed, 13 deselected in 111.15s`; Ruff also
 passed.
+
+## Drawing 4973 evening incident: fix 3, runner schema contract (2026-08-12)
+
+The observed schema-v4 fallback report and schema-v5 scheduler expectation had
+the same upstream cause as fix 2: the old fallback path had no final-input
+provenance, and runner reports without that provenance are legacy schema v4.
+Artifact-bound fallback now returns a result with `FinalInputProvenance`, so the
+normal report writer emits current schema v5 and the existing strict scheduler
+parser accepts it.
+
+Regressions now prove both ends of the contract: an artifact-bound runner
+result serializes as schema v5, and a refresh fallback captures its immutable
+input, emits a schema-v5 manifest, and passes real scheduler parsing. The
+previous proposal to weaken scheduler parsing by accepting v4 fallback was
+discarded because it would conceal incomplete provenance. Related verification
+passed 208 tests; full release verification passed
+`1780 passed, 13 deselected in 109.31s`; Ruff passed.

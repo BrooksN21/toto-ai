@@ -49,6 +49,7 @@ from toto_ai.runner import (
     TimingOverrideAudit,
     pin_drawing,
 )
+from toto_ai.runner.models import FinalInputProvenance
 from toto_ai.runner.reports import (
     DrawingRunPublication,
     RunnerReportLinks,
@@ -826,6 +827,26 @@ def test_model_and_direct_writer_suppress_manually_injected_play(tmp_path):
     assert payload["ev"]["package"]["coupons"] == []
     assert payload["ev"]["package"]["artifact_class"] == "TRAINING/PAPER"
     assert "INJECTED-WAGER-COUPON" not in markdown_path.read_text(encoding="utf-8")
+
+
+def test_artifact_bound_result_uses_current_runner_manifest_schema(tmp_path):
+    result = replace(
+        _runner_result("NO BET"),
+        final_input=FinalInputProvenance(
+            path=str(tmp_path / "final-input.json"),
+            captured_at=FINAL_STARTED_AT,
+            snapshot_sha256="1" * 64,
+            detail_payload_sha256="2" * 64,
+            probability_input_sha256="3" * 64,
+            attempt_id="refresh-artifact-bound",
+        ),
+    )
+
+    json_path, _ = write_drawing_run_reports(result, report_dir=tmp_path)
+    payload = json.loads(json_path.read_text())
+
+    assert payload["schema_version"] == 5
+    assert payload["final_input"]["attempt_id"] == "refresh-artifact-bound"
 
 
 def test_manifest_and_markdown_contain_complete_operator_facts(tmp_path):

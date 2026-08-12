@@ -738,9 +738,11 @@ closed.
 - [x] Fix drawing-4973 `safety_reselection_infeasible`: scheduler fallback
   phases now provide the immutable snapshot, ledger and scheduler-plan
   artifacts required by quality-v2 provenance instead of hash-only metadata.
-- [ ] Verify and fix the drawing-4973 runner-manifest schema contract next;
-  artifact-backed fallback may already remove the observed schema-v4 output,
-  but that must be proven independently.
+- [x] Resolve the drawing-4973 runner-manifest schema mismatch: artifact-bound
+  warmup/refresh now emit schema v5, and scheduler fallback ingestion accepts
+  that current schema. Keep legacy schema v4 rejected.
+- [ ] Measure and repair the remaining 506-second package runtime/deadline
+  mismatch without reducing search quality, samples, candidates, or bank.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
   10 and 12 through the reusable ledger; retain event-13 material as an audit
   record only because its official home/away identity is not established.

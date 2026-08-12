@@ -1527,18 +1527,11 @@ def test_fallback_subprocess_binds_snapshot_ledger_and_scheduler_plan(
 
     def completed(command, **kwargs):
         captured_environment.update(kwargs["env"])
-        report_dir = context.work_dir / "reports"
-        report_dir.mkdir(parents=True, exist_ok=True)
-        (report_dir / "drawing_run_fallback.json").write_text("{}")
+        _write_runner_manifest(context, _valid_runner_manifest(context))
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
     monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
     monkeypatch.setattr(scheduler.subprocess, "run", completed)
-    monkeypatch.setattr(
-        scheduler,
-        "parse_runner_manifest_phase_result",
-        lambda _context, _path: SchedulerPhaseResult.no_bet("safe fallback"),
-    )
     runner = CommandSchedulerPhaseRunner(
         environment={"API_SPORTS_KEY": "not-persisted"}
     )
@@ -1551,6 +1544,8 @@ def test_fallback_subprocess_binds_snapshot_ledger_and_scheduler_plan(
     assert snapshot.is_file()
     assert captured_environment["TOTO_FINAL_INPUT"] == str(snapshot)
     assert captured_environment["TOTO_SCHEDULER_PLAN"] == str(plan_path)
+    manifest_path = context.work_dir / "reports" / "drawing_run_fixture.json"
+    assert json.loads(manifest_path.read_text())["schema_version"] == 5
 
 
 def test_production_manifest_parser_accepts_strict_paper_only_structural_pass(
