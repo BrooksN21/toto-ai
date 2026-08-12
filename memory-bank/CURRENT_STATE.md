@@ -3754,3 +3754,20 @@ preserving refresh at 30 and atomic final at 20. A parameterized regression
 binds all three phase-to-lead mappings. The next incident item is the separate
 T-30 `safety_reselection_infeasible` failure; it has not been changed by this
 fix.
+
+## Drawing 4973 evening incident: fix 2, fallback provenance (2026-08-12)
+
+The T-30 `safety_reselection_infeasible` result was not caused by an
+infeasible coupon/exposure search. Its stored diagnostics named three missing
+references: probability snapshot, schedule-evidence ledger, and scheduler
+plan. The fallback CLI path constructed hash-only provenance, while quality-v2
+correctly requires the referenced immutable artifacts.
+
+Every scheduler fallback package phase now captures or reuses a run-scoped
+immutable TotoBrief input and passes both `TOTO_FINAL_INPUT` and
+`TOTO_SCHEDULER_PLAN` to `run-drawing`. This selects the existing
+artifact-backed provenance path and retains the exact ledger binding. A
+regression proves that refresh creates the snapshot and passes both artifact
+paths. Related scheduler/runner/selector verification passed 264 tests. Full
+release verification passed `1779 passed, 13 deselected in 111.15s`; Ruff also
+passed.

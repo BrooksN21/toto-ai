@@ -11,6 +11,11 @@ exposes `FINAL_FRESH`, `LAST_KNOWN_GOOD_DEGRADED`, or `NO_BET`; a validated
 package uses a separate BaltBet upload-text path. The T-45 warmup child receives
 `final_lead_minutes = 45` and starts immediately at the triggering phase; it
 must not inherit the T-30 fallback lead and wait past its parent deadline.
+Every scheduler package phase, including the T-45 warmup and T-30 refresh
+fallback paths, captures a run-scoped immutable probability snapshot and binds
+that snapshot, the schedule-evidence ledger, and the scheduler plan into
+selector provenance. Non-atomic fallback execution is not allowed to pass only
+digest values without their referenced artifacts.
 Warmup publication establishes operator availability before final work. The
 T-20 primary final owns the full runtime through T-10 minus the publication
 reserve. T-16 can retry only after the earlier process releases the scheduler

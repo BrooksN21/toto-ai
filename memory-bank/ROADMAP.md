@@ -735,8 +735,12 @@ closed.
 - [x] Fix the drawing-4973 T-45 deterministic timeout: the warmup child now
   starts at T-45 instead of waiting for the T-30 fallback boundary while its
   parent deadline expires.
-- [ ] Diagnose and fix drawing-4973 `safety_reselection_infeasible` as the next
-  incident item; do not mix it with the scheduler timing fix.
+- [x] Fix drawing-4973 `safety_reselection_infeasible`: scheduler fallback
+  phases now provide the immutable snapshot, ledger and scheduler-plan
+  artifacts required by quality-v2 provenance instead of hash-only metadata.
+- [ ] Verify and fix the drawing-4973 runner-manifest schema contract next;
+  artifact-backed fallback may already remove the observed schema-v4 output,
+  but that must be proven independently.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
   10 and 12 through the reusable ledger; retain event-13 material as an audit
   record only because its official home/away identity is not established.

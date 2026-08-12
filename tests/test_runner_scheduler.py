@@ -1509,6 +1509,50 @@ def test_atomic_final_subprocess_retry_reuses_persisted_snapshot(
     assert (context.run_dir / "final-input.json").is_file()
 
 
+def test_fallback_subprocess_binds_snapshot_ledger_and_scheduler_plan(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    context = replace(
+        _manifest_context(tmp_path, phase="fallback"),
+        scheduler_phase="refresh",
+    )
+    prepare_scheduler_artifacts(context.plan)
+    captured_environment = {}
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == context.plan.drawing_id
+            return _atomic_final_payload(context.plan)
+
+    def completed(command, **kwargs):
+        captured_environment.update(kwargs["env"])
+        report_dir = context.work_dir / "reports"
+        report_dir.mkdir(parents=True, exist_ok=True)
+        (report_dir / "drawing_run_fallback.json").write_text("{}")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(scheduler.subprocess, "run", completed)
+    monkeypatch.setattr(
+        scheduler,
+        "parse_runner_manifest_phase_result",
+        lambda _context, _path: SchedulerPhaseResult.no_bet("safe fallback"),
+    )
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"}
+    )
+
+    result = runner(context)
+
+    snapshot = context.run_dir / "final-input.json"
+    plan_path = context.plan.output_dir / "scheduler-plan.json"
+    assert result.decision == "NO BET"
+    assert snapshot.is_file()
+    assert captured_environment["TOTO_FINAL_INPUT"] == str(snapshot)
+    assert captured_environment["TOTO_SCHEDULER_PLAN"] == str(plan_path)
+
+
 def test_production_manifest_parser_accepts_strict_paper_only_structural_pass(
     tmp_path: Path,
 ):

@@ -3369,7 +3369,9 @@ class CommandSchedulerPhaseRunner:
 
         context.work_dir.mkdir(parents=True, exist_ok=True)
         atomic_input = None
-        if context.phase == "final" and context.atomic_final:
+        if context.phase == "fallback" or (
+            context.phase == "final" and context.atomic_final
+        ):
             final_input_path = context.run_dir / "final-input.json"
             try:
                 atomic_input = (

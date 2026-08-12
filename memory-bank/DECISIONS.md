@@ -1311,3 +1311,12 @@ ambiguous reversed evidence remains unresolved.
   that path's ordinary T-30 wait boundary.
 - Refresh remains T-30 and atomic final remains T-20. Parent phase deadlines
   must never precede the child's configured start boundary.
+
+## 2026-08-12: immutable provenance for every scheduler package phase
+
+- T-45 warmup, T-30 refresh, and T-20 final package calculations all require a
+  run-scoped persisted TotoBrief snapshot plus the exact scheduler-plan and
+  schedule-evidence artifacts. Hash-only selector provenance is insufficient.
+- Warmup and refresh may remain operational fallback phases, but their child
+  process receives `TOTO_FINAL_INPUT` and `TOTO_SCHEDULER_PLAN` and therefore
+  uses the same artifact-backed provenance constructor as atomic final.
