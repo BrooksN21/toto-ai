@@ -9,9 +9,10 @@ coupon count/cost/uniqueness, package hash, drawing fingerprint, probability
 input hash, capture time, and explicit non-actionability. `operator-result.json`
 exposes `FINAL_FRESH`, `LAST_KNOWN_GOOD_DEGRADED`, or `NO_BET`; a validated
 package uses a separate BaltBet upload-text path. Warmup publication establishes
-operator availability before final work. Final and retry have phase-local
-deadlines, but the tests do not model exact launchd process overlap or prove
-that a running final can never delay acquisition of the scheduler lock.
+operator availability before final work. The T-20 primary final owns the full
+runtime through T-10 minus the publication reserve. T-16 can retry only after
+the earlier process releases the scheduler lock and leaves retryable state;
+it cannot truncate or overlap a running T-20 calculation.
 
 ## Current prediction boundary
 

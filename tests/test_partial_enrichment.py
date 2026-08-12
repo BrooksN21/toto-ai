@@ -18,8 +18,14 @@ from toto_ai.ev.drawing import ev_input_from_payload
 from toto_ai.external_odds.collection import (
     ScheduleDateResult,
     _match_targets_from_pins,
+    build_external_collection,
 )
-from toto_ai.external_odds.domain import ProviderEvent, TargetDrawing, TargetEvent
+from toto_ai.external_odds.domain import (
+    ProviderEvent,
+    QuotaState,
+    TargetDrawing,
+    TargetEvent,
+)
 from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.preparation import (
     _baseline_probability_input_sha256,
@@ -29,6 +35,10 @@ from toto_ai.external_odds.preparation import (
 from toto_ai.external_odds.schedule_evidence import (
     ScheduleEvidenceIntegrityError,
     load_schedule_evidence_ledger,
+)
+from toto_ai.external_odds.storage import (
+    load_latest_complete_collections,
+    save_collection,
 )
 from toto_ai.external_odds.team_registry import (
     backfill_accepted_matches,
@@ -453,6 +463,85 @@ def test_drawing_4967_atomically_upgrades_four_persisted_baseline_pins(
         pin_sets = tuple(session.scalars(select(DrawingPinSet)))
         assert len(pin_sets) == 1
         assert pin_sets[0].reviewed_catalog_hash is not None
+
+
+def test_final_collection_uses_revalidated_schedule_evidence_start_for_eligibility(
+    session_factory,
+    tmp_path: Path,
+):
+    drawing_id = 12010
+    event_id_base = 179253
+    evidence_orders = (1, 8, 13, 14)
+    external_orders = tuple(
+        order for order in range(15) if order not in evidence_orders
+    )
+    target = _target(
+        number=4967,
+        drawing_id=drawing_id,
+        event_id_base=event_id_base,
+    )
+    candidates = _candidates(event_orders=external_orders)
+    _seed(
+        session_factory,
+        drawing_id=drawing_id,
+        event_id_base=event_id_base,
+        event_orders=external_orders,
+    )
+    prepare_drawing(target, candidates, session_factory=session_factory)
+    ledger_path = _schedule_evidence_ledger(
+        tmp_path,
+        target,
+        event_orders=evidence_orders,
+    )
+    ledger = load_schedule_evidence_ledger(ledger_path)
+    prepared = prepare_drawing(
+        target,
+        candidates,
+        session_factory=session_factory,
+        schedule_evidence_ledger=ledger_path,
+        evaluated_at=FETCHED_AT,
+    )
+
+    class Provider:
+        provider_name = "api-sports"
+        quota_state = QuotaState(100, 90, 10, 9)
+
+        def fetch_schedule(self, sport, dates):
+            return tuple(
+                candidate
+                for candidate in candidates
+                if candidate.sport == sport and candidate.starts_at.date() in dates
+            )
+
+        def fetch_event_markets(self, sport, provider_event_id):
+            return ()
+
+    collection = build_external_collection(
+        target,
+        Provider(),
+        aliases={},
+        prepared_pins=prepared.pins,
+        schedule_evidence_ledger=ledger,
+        now=lambda: FETCHED_AT,
+    )
+
+    assert collection.eligibility.status == "playable"
+    assert collection.eligibility.missing_event_orders == ()
+    assert collection.eligibility.provider_count == 15
+    save_collection(session_factory, collection)
+    stored = load_latest_complete_collections(session_factory, last=1)
+    assert len(stored) == 1
+    assert stored[0].eligibility == collection.eligibility
+    for order in evidence_orders:
+        assert (
+            collection.events[order].effective_starts_at
+            == prepared.pins[order].starts_at
+        )
+        assert collection.events[order].effective_start_source == "provider"
+        assert (
+            stored[0].events[order].effective_starts_at
+            == prepared.pins[order].starts_at
+        )
 
 
 def test_drawing_4967_rejects_ambiguous_schedule_ledger_without_mutation(

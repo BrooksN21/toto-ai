@@ -3694,3 +3694,49 @@ that pin, although first preparation already treats independent schedule
 evidence as authoritative for that date. The repeat-pin check now applies the
 same exemption. A regression performs first and repeated preparation across a
 provider date failure and requires identical READY/PLAYABLE results.
+
+## Drawing 4972 settlement and morning 4973 status (2026-08-12)
+
+The daily morning dispatcher ran successfully twice on 2026-08-12, exited 0,
+and idempotently reused/activated the exact drawing-4973 evening plan
+`9bd0e77f4fdc9257`. Its production scheduler is installed for drawing 4973;
+the first evening trigger is 15:00 MSK and T-10 is 16:50 MSK.
+
+Drawing 4972 is now reconciled as `21X2222*2X2XXX*`. Events 8 and 15 are
+reviewed voids after API-Sports returned `PST / Match Postponed`. The evening
+scheduler had produced no authoritative final package (`NO BET`, final run
+timed out at T-10). The pre-existing factor-1.00 preliminary paper file was
+archived only for audit and settled: 166 unique coupons, hypothetical cost
+4,980, best 11/15, zero 13+/14+/15. No bet was placed and actual cash loss is
+zero. An alternative pre-existing factor-0.80 paper scenario had one 13-hit
+coupon, but that is retrospective sensitivity evidence, not a valid strategy
+selection claim. The durable report is
+`reports/analysis/drawing_4972_preliminary_package_evaluation.md`.
+
+## Drawing 4973 full-path rehearsal and timing fix (2026-08-12)
+
+An immediate atomic-final rehearsal exposed a gap between preparation and the
+final collection boundary: four exact `schedule-evidence` pins revalidated as
+matched and carried reviewed kickoff times, but collection discarded those
+times because no API-Sports fixture object exists for schedule-only evidence.
+The final eligibility therefore became `unknown` for orders 0/8/10/13 despite
+the same canonical pin set being READY/PLAYABLE. Collection now carries the
+revalidated reviewed start through event records, eligibility classification,
+storage validation, and reload. A regression covers a mixed 11-provider / four
+schedule-evidence final collection and persistence round trip.
+
+The corrected live drawing-4973 rehearsal completed exit 0 in 506.34 seconds:
+raw/effective timing were both `playable`; the package contained 166 unique
+paper coupons for 4,980; package safety approved all 166; and structural status
+was `STRUCTURAL_PASS`. The top-level decision remained `NO BET` solely because
+the quality-v2 prospective real-money release gate is closed. This is an
+operational package-generation result, not profitability evidence or betting
+authorization.
+
+The rehearsal also proved the old primary-final timeout unsafe: the T-20
+attempt was capped at T-16 minus 45 seconds, only 195 seconds, while the live
+full-quality run required 506 seconds. The primary T-20 attempt now owns the
+complete window through the actionable cutoff at T-10 minus the 45-second
+publication reserve. The T-30 checkpoint remains the last-known-good fallback;
+a later tick cannot overlap because the scheduler lock is process-scoped. No
+search quality, samples, candidate count, or bank was reduced.

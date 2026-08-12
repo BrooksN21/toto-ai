@@ -2058,22 +2058,15 @@ def execute_scheduler_tick(
             atomic_final=phase == "final",
             scheduler_phase=phase,
             phase_deadline=(
-                min(
-                    plan.actionable_publication_deadline,
-                    plan.retry_at - timedelta(seconds=plan.publication_reserve_seconds),
-                )
-                if phase == "final" and scheduled_at < plan.retry_at
+                plan.actionable_publication_deadline
+                if phase == "final"
                 else (
-                    plan.actionable_publication_deadline
-                    if phase == "final"
+                    plan.fallback_at - timedelta(seconds=5)
+                    if phase == "warmup"
                     else (
-                        plan.fallback_at - timedelta(seconds=5)
-                        if phase == "warmup"
-                        else (
-                            plan.final_at - timedelta(seconds=5)
-                            if phase == "refresh"
-                            else None
-                        )
+                        plan.final_at - timedelta(seconds=5)
+                        if phase == "refresh"
+                        else None
                     )
                 )
             ),

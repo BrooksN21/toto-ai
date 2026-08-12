@@ -726,6 +726,12 @@ closed.
 - [x] Make repeated preparation preserve already validated schedule-evidence
   pins when API-Sports cannot serve their kickoff UTC date; verify the live
   4973 READY/PLAYABLE re-run and install its schema-v6 evening scheduler.
+- [x] Propagate revalidated reviewed/schedule-evidence kickoff times through
+  final collection, persistence and eligibility; exercise the real 4973
+  atomic-final path to 166 coupons / 4,980 / `STRUCTURAL_PASS`.
+- [x] Give the T-20 primary final the complete runtime through T-10 minus the
+  publication reserve instead of truncating it at T-16; preserve the T-30 LKG
+  fallback without reducing package-search quality.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
   10 and 12 through the reusable ledger; retain event-13 material as an audit
   record only because its official home/away identity is not established.

@@ -199,6 +199,7 @@ class _MatchedTarget:
     decision: MatchDecision
     provider_event: ProviderEvent | None
     fallback_reason: str | None = None
+    reviewed_start: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -357,6 +358,7 @@ def build_external_collection(
                     decision,
                     provider_event,
                     market_result.fallback_reason,
+                    reviewed_start=matched_target.reviewed_start,
                 )
             )
             continue
@@ -374,6 +376,7 @@ def build_external_collection(
                 provider_event,
                 consensus,
                 observed_at,
+                reviewed_start=matched_target.reviewed_start,
             )
         )
 
@@ -391,6 +394,7 @@ def build_external_collection(
             _effective_event_start(
                 event,
                 decisions[event.event_order].provider_event,
+                reviewed_start=decisions[event.event_order].reviewed_start,
             )
             for event in target.events
         )
@@ -870,7 +874,11 @@ def _match_targets_from_pins(
                     ),
                     orientation=resolution.orientation or "same",
                 )
-                decisions[event.event_order] = _MatchedTarget(decision, None)
+                decisions[event.event_order] = _MatchedTarget(
+                    decision,
+                    None,
+                    reviewed_start=pinned_start,
+                )
                 continue
             reviewed = reviewed_results.get(event.event_order)
             if reviewed is None or not reviewed.matched:
@@ -901,7 +909,11 @@ def _match_targets_from_pins(
                 ),
                 orientation="same",
             )
-            decisions[event.event_order] = _MatchedTarget(decision, None)
+            decisions[event.event_order] = _MatchedTarget(
+                decision,
+                None,
+                reviewed_start=pinned_start,
+            )
             continue
         failure = failures.get((event.sport, pinned_start.date()))
         if failure is not None:
@@ -1318,6 +1330,8 @@ def _fallback_disposition(
     decision: MatchDecision,
     provider_event: ProviderEvent | None,
     reason: str,
+    *,
+    reviewed_start: datetime | None = None,
 ) -> ExternalEventDispositionRecord:
     payload = _event_payload(
         event=event,
@@ -1329,6 +1343,7 @@ def _fallback_disposition(
         odds_age_hours=None,
         fallback_reason=reason,
         quotes=(),
+        reviewed_start=reviewed_start,
     )
     return _event_record(
         event=event,
@@ -1341,6 +1356,7 @@ def _fallback_disposition(
         fallback_reason=reason,
         payload_hash=_hash_payload(payload),
         quotes=(),
+        reviewed_start=reviewed_start,
     )
 
 
@@ -1350,6 +1366,8 @@ def _consensus_disposition(
     provider_event: ProviderEvent | None,
     consensus: ConsensusResult,
     observed_at: datetime,
+    *,
+    reviewed_start: datetime | None = None,
 ) -> ExternalEventDispositionRecord:
     quotes = _assessment_quotes(consensus)
     if consensus.probabilities is None:
@@ -1374,6 +1392,7 @@ def _consensus_disposition(
         odds_age_hours=odds_age_hours,
         fallback_reason=fallback_reason,
         quotes=quotes,
+        reviewed_start=reviewed_start,
     )
     return _event_record(
         event=event,
@@ -1386,6 +1405,7 @@ def _consensus_disposition(
         fallback_reason=fallback_reason,
         payload_hash=_hash_payload(payload),
         quotes=quotes,
+        reviewed_start=reviewed_start,
     )
 
 
@@ -1401,8 +1421,13 @@ def _event_record(
     fallback_reason: str | None,
     payload_hash: str,
     quotes: tuple[ExternalBookmakerQuoteRecord, ...],
+    reviewed_start: datetime | None = None,
 ) -> ExternalEventDispositionRecord:
-    effective_start = _effective_event_start(event, provider_event)
+    effective_start = _effective_event_start(
+        event,
+        provider_event,
+        reviewed_start=reviewed_start,
+    )
     return ExternalEventDispositionRecord(
         drawing_id=event.drawing_id,
         event_order=event.event_order,
@@ -1440,7 +1465,11 @@ def _event_record(
         provider_starts_at=(
             _iso_datetime(provider_event.starts_at)
             if provider_event is not None
-            else None
+            else (
+                _iso_datetime(reviewed_start)
+                if reviewed_start is not None
+                else None
+            )
         ),
         effective_starts_at=(
             _iso_datetime(effective_start.starts_at)
@@ -1496,8 +1525,13 @@ def _event_payload(
     odds_age_hours: float | None,
     fallback_reason: str | None,
     quotes: tuple[ExternalBookmakerQuoteRecord, ...],
+    reviewed_start: datetime | None = None,
 ) -> dict[str, object]:
-    effective_start = _effective_event_start(event, provider_event)
+    effective_start = _effective_event_start(
+        event,
+        provider_event,
+        reviewed_start=reviewed_start,
+    )
     return {
         "target": _target_event_payload(event),
         "match": {
@@ -1844,6 +1878,8 @@ def _missing_start_request_dates(
 def _effective_event_start(
     event: TargetEvent,
     provider_event: ProviderEvent | None,
+    *,
+    reviewed_start: datetime | None = None,
 ) -> EffectiveEventStart:
     if event.starts_at is not None:
         return EffectiveEventStart(
@@ -1855,6 +1891,12 @@ def _effective_event_start(
         return EffectiveEventStart(
             event_order=event.event_order,
             starts_at=provider_event.starts_at,
+            source="provider",
+        )
+    if reviewed_start is not None:
+        return EffectiveEventStart(
+            event_order=event.event_order,
+            starts_at=reviewed_start,
             source="provider",
         )
     return EffectiveEventStart(

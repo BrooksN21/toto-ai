@@ -169,7 +169,7 @@ def test_4972_refresh_429_and_slow_final_deliver_lkg_before_t10(tmp_path: Path):
     clock.current = plan.final_at
     assert _tick(plan, runner, clock) is None
     assert final_deadlines == [
-        plan.retry_at - timedelta(seconds=plan.publication_reserve_seconds)
+        plan.actionable_publication_deadline
     ]
     # Availability is established by warmup and survives a failed final;
     # it does not depend on a retry acquiring the scheduler lock.
@@ -185,7 +185,10 @@ def test_4972_refresh_429_and_slow_final_deliver_lkg_before_t10(tmp_path: Path):
     assert result.decision == "NO BET"
     assert result.package_path is not None and result.package_path.is_file()
     assert clock.current < plan.publish_deadline
-    assert final_deadlines[-1] == plan.actionable_publication_deadline
+    assert final_deadlines == [
+        plan.actionable_publication_deadline,
+        plan.actionable_publication_deadline,
+    ]
     status = json.loads(result.status_path.read_text(encoding="utf-8"))
     assert status["operator_status"] == "LAST_KNOWN_GOOD_DEGRADED"
     assert status["provenance"] == "LAST_KNOWN_GOOD"

@@ -1288,3 +1288,18 @@ ambiguous reversed evidence remains unresolved.
 - Provenance, SchedulerPlan, manifest, diagnostics, and current selector inputs
   must agree on the canonical object and SHA-256. Partial or self-consistently
   forged contexts fail closed rather than inheriting plan authority.
+
+## 2026-08-12: reviewed kickoff propagation and one full final window
+
+- A successfully revalidated `reviewed-schedule` or `schedule-evidence` pin is
+  authoritative schedule timing even though it intentionally has no external
+  fixture ID. Its exact pinned start must propagate through final collection,
+  event provenance, eligibility, persistence, and reload. It remains classified
+  in the existing provider-derived timing count; this changes no probability
+  source and creates no synthetic fixture identity.
+- The T-20 primary final owns the complete runtime through the actionable
+  cutoff at T-10 minus the publication reserve. T-16 remains a retry trigger
+  only when the earlier attempt has returned and left final state retryable;
+  the process-scoped scheduler lock prevents an overlapping retry.
+- The T-30 package remains the validated last-known-good fallback. Runtime is
+  not reduced by lowering quality samples, candidates, or bank.
