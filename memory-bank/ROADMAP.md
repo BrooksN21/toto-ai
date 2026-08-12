@@ -748,8 +748,8 @@ closed.
 - [x] Verify DNS resilience after restoring warmup/refresh LKG: eight modeled
   final/retry failures retain the validated 166-coupon package before T-10 with
   degraded provenance and no automatic wager marker.
-- [ ] Remove the manual emergency-plan hash omission path; recovery must reuse
-  the exact original scheduler-plan identity and reviewed evidence binding.
+- [x] Remove the manual emergency-plan hash omission path; recovery now clones
+  the exact original scheduler-plan inputs and reviewed evidence binding.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
   10 and 12 through the reusable ledger; retain event-13 material as an audit
   record only because its official home/away identity is not established.

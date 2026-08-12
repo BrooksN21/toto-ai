@@ -158,6 +158,12 @@ revalidated only against the supplied bound ledger; missing ledgers, hash or
 semantic drift, malformed content and immutable pin conflicts are typed
 integrity failures.
 
+Emergency retries use `scheduler-recover-plan --source-plan ... --output-dir
+...`. The recovery builder clones the current immutable `SchedulerPlan` and
+changes only its output scope; it does not expose manual target, bank,
+probability, ledger, or reviewed-catalog inputs. This prevents a retry from
+silently dropping `reviewed_catalog_hash` or another future plan field.
+
 Child integrity failures use exit code 78 and become
 `SchedulerIntegrityError`. They terminalize scheduler state at any stage and
 are never retried. Network, TLS, quota and refresh transport failures retain
@@ -979,6 +985,8 @@ Important CLI commands:
   wrapper that validates and sources a user-owned regular non-symlink file
   whose mode is no broader than `0600`; the plist contains only the wrapper
   path and no credentials.
+- `scheduler-recover-plan`: clone one current immutable scheduler plan into a
+  fresh output scope while preserving every target/config/evidence binding.
 - `morning-preanalysis-plan`: generate, but never install, a separate launchd
   candidate beneath `reports/rehearsal`. Its wrapper uses the same secure env
   contract and invokes drawing-neutral `morning-dispatch` at configured times.

@@ -1340,3 +1340,13 @@ ambiguous reversed evidence remains unresolved.
 - When final and retry both fail DNS resolution, preserve the validated
   refresh/warmup package as `LAST_KNOWN_GOOD_DEGRADED`. Never label it fresh;
   without LKG, fail closed as zero-cost `NO BET`.
+
+## 2026-08-12: emergency recovery clones immutable scheduler input
+
+- Never rebuild an emergency scheduler plan by re-entering target, bank,
+  probability, reviewed-catalog, or ledger parameters.
+- `scheduler-recover-plan` accepts only the source plan and a fresh output
+  directory. Every semantic field and hash binding is copied automatically;
+  only the output scope changes.
+- Recovery from a legacy plan is rejected. Current schema validation and all
+  bound files are rechecked while constructing the clone.

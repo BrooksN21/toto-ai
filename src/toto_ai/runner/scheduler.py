@@ -1008,6 +1008,30 @@ def scheduler_plan_json(plan: SchedulerPlan) -> str:
     return _canonical_json_bytes(plan.to_payload()).decode("utf-8") + "\n"
 
 
+def clone_scheduler_plan_for_recovery(
+    source_plan: SchedulerPlan,
+    *,
+    output_dir: str | Path,
+) -> SchedulerPlan:
+    """Clone a current immutable plan into a fresh recovery output scope.
+
+    Recovery deliberately exposes no target, probability, budget, evidence, or
+    reviewed-catalog options. ``dataclasses.replace`` carries every current and
+    future plan field forward and changes only the output scope.
+    """
+
+    _require_plan(source_plan)
+    if source_plan.source_schema_version != SCHEDULER_SCHEMA_VERSION:
+        raise ValueError(
+            "recovery requires a current scheduler plan; regenerate schema "
+            f"v{SCHEDULER_SCHEMA_VERSION}"
+        )
+    destination = _normalized_path(output_dir)
+    if destination == source_plan.output_dir:
+        raise ValueError("recovery output_dir must differ from source output_dir")
+    return replace(source_plan, output_dir=destination)
+
+
 def validate_schedule_evidence_binding(
     plan: SchedulerPlan,
 ) -> ScheduleEvidenceLedger:

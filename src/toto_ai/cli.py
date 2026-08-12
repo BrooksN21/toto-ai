@@ -241,6 +241,7 @@ from toto_ai.runner import (
     VirtualSchedulerClock,
     activate_scheduler_launch_agent,
     build_scheduler_plan,
+    clone_scheduler_plan_for_recovery,
     dispatch_morning,
     drawing_run_candidate_paths,
     execute_scheduler_plan,
@@ -2930,6 +2931,42 @@ def scheduler_plan_command(
     print(f"Wrapper: {artifacts.wrapper_path}")
     print(f"LaunchAgent candidate: {artifacts.launch_agent_path}")
     print("LaunchAgent was generated only; install/load it manually if desired.")
+
+
+@app.command("scheduler-recover-plan")
+def scheduler_recover_plan_command(
+    source_plan: str = typer.Option(..., "--source-plan"),
+    output_dir: str = typer.Option(..., "--output-dir"),
+    python_executable: str = typer.Option(
+        sys.executable,
+        "--python-executable",
+        help=(
+            "Current Python executable or exact project .venv interpreter "
+            "used by generated scheduler artifacts."
+        ),
+    ),
+) -> None:
+    """Clone an immutable scheduler plan for an audited emergency retry."""
+    try:
+        source = load_scheduler_plan(source_plan)
+        recovery = clone_scheduler_plan_for_recovery(
+            source,
+            output_dir=output_dir,
+        )
+        artifacts = prepare_scheduler_artifacts(
+            recovery,
+            python_command=python_executable,
+        )
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    print(f"Source plan: {Path(source_plan).resolve()}")
+    print(f"Source plan id: {source.plan_id}")
+    print(f"Recovery plan: {artifacts.plan_path}")
+    print(f"Recovery plan id: {recovery.plan_id}")
+    print(f"Wrapper: {artifacts.wrapper_path}")
+    print(f"LaunchAgent candidate: {artifacts.launch_agent_path}")
+    print("All target, budget, probability, and evidence bindings were preserved.")
 
 
 @app.command("morning-preanalysis-plan")

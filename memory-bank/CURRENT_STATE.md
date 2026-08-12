@@ -3822,3 +3822,21 @@ attempts (eight modeled failed calls), and proves that the same package remains
 available before T-10 as `LAST_KNOWN_GOOD_DEGRADED`; no `.bet-ready` marker is
 created. No DNS bypass or stale-to-fresh relabelling was added. Full release
 verification passed `1782 passed, 13 deselected in 119.67s`; Ruff passed.
+
+## Drawing 4973 evening incident: fix 6, emergency-plan binding (2026-08-12)
+
+The second emergency attempt failed because a new plan was manually rebuilt
+without the original plan's `reviewed_catalog_hash`. The scheduler then
+correctly rejected the canonical reviewed pins as unbound. Emergency recovery
+must no longer reconstruct target, bank, probability, or evidence arguments.
+
+`scheduler-recover-plan` now loads one current immutable source plan and clones
+every field except the fresh output directory. The implementation uses
+`dataclasses.replace`, so future plan fields are preserved by default rather
+than maintained in a second manual copy list. Regressions compare every
+dataclass field, verify CLI artifact generation, and prove that the exact
+reviewed hash reaches the final child command. Against the real original 4973
+plan, source plan, recovery plan, and command all retained
+`7b789a9d0d4372ac7e6644af15b79612bdf4771944c8b88382044cf1f56b4469`.
+Scheduler/CLI verification passed 160 tests. Full release verification passed
+`1784 passed, 13 deselected in 110.98s`; Ruff passed.

@@ -4,7 +4,7 @@ import json
 import os
 import plistlib
 import subprocess
-from dataclasses import asdict, replace
+from dataclasses import asdict, fields, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -43,6 +43,7 @@ from toto_ai.runner.scheduler import (
     build_prepare_drawing_command,
     build_run_drawing_phase_command,
     build_scheduler_plan,
+    clone_scheduler_plan_for_recovery,
     execute_scheduler_plan,
     execute_scheduler_tick,
     find_prior_bet_ready,
@@ -82,6 +83,40 @@ def _plan(
         aliases=tmp_path / "aliases.json",
         timing_overrides=timing_overrides,
     )
+
+
+def test_recovery_plan_clone_preserves_every_semantic_input_except_output_dir(
+    tmp_path: Path,
+) -> None:
+    source = replace(
+        _plan(tmp_path),
+        reviewed_catalog_hash="c" * 64,
+    )
+
+    recovered = clone_scheduler_plan_for_recovery(
+        source,
+        output_dir=tmp_path / "scheduler-recovery",
+    )
+
+    assert recovered.output_dir == (tmp_path / "scheduler-recovery").resolve()
+    for field in fields(source):
+        if field.name != "output_dir":
+            assert getattr(recovered, field.name) == getattr(source, field.name)
+
+    context = SchedulerPhaseContext(
+        phase="final",
+        plan=recovered,
+        run_id="recovery-regression",
+        run_dir=tmp_path / "recovery-run",
+        work_dir=tmp_path / "recovery-work",
+        scheduled_at=recovered.final_at,
+        started_at=recovered.final_at,
+        atomic_final=True,
+        scheduler_phase="final",
+    )
+    command = build_run_drawing_phase_command(context)
+    option = command.index("--expected-reviewed-catalog-hash")
+    assert command[option + 1] == "c" * 64
 
 
 def _atomic_final_payload(plan):
