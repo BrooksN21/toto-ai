@@ -1303,3 +1303,11 @@ ambiguous reversed evidence remains unresolved.
   the process-scoped scheduler lock prevents an overlapping retry.
 - The T-30 package remains the validated last-known-good fallback. Runtime is
   not reduced by lowering quality samples, candidates, or bank.
+
+## 2026-08-12: scheduler child lead follows the triggering phase
+
+- A warmup tick triggered at T-45 must invoke `run-drawing` with a T-45 lead.
+  It may reuse the non-atomic fallback execution path, but it must not inherit
+  that path's ordinary T-30 wait boundary.
+- Refresh remains T-30 and atomic final remains T-20. Parent phase deadlines
+  must never precede the child's configured start boundary.

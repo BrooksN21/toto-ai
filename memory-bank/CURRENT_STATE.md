@@ -3740,3 +3740,17 @@ complete window through the actionable cutoff at T-10 minus the 45-second
 publication reserve. The T-30 checkpoint remains the last-known-good fallback;
 a later tick cannot overlap because the scheduler lock is process-scoped. No
 search quality, samples, candidate count, or bank was reduced.
+
+## Drawing 4973 evening incident: fix 1, T-45 child timeout (2026-08-12)
+
+The T-45 warmup timeout was deterministic rather than a generic performance
+failure. Warmup recursively used the fallback runner path, and command
+construction selected `final_lead_minutes = 30` from that internal path. The
+child therefore waited for T-30 while the parent deadline was T-30 minus five
+seconds, guaranteeing termination immediately before work could start.
+
+Command construction now gives a scheduler `warmup` phase a lead of 45 while
+preserving refresh at 30 and atomic final at 20. A parameterized regression
+binds all three phase-to-lead mappings. The next incident item is the separate
+T-30 `safety_reselection_infeasible` failure; it has not been changed by this
+fix.

@@ -732,6 +732,11 @@ closed.
 - [x] Give the T-20 primary final the complete runtime through T-10 minus the
   publication reserve instead of truncating it at T-16; preserve the T-30 LKG
   fallback without reducing package-search quality.
+- [x] Fix the drawing-4973 T-45 deterministic timeout: the warmup child now
+  starts at T-45 instead of waiting for the T-30 fallback boundary while its
+  parent deadline expires.
+- [ ] Diagnose and fix drawing-4973 `safety_reselection_infeasible` as the next
+  incident item; do not mix it with the scheduler timing fix.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
   10 and 12 through the reusable ledger; retain event-13 material as an audit
   record only because its official home/away identity is not established.

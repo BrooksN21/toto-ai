@@ -3206,7 +3206,11 @@ def build_run_drawing_phase_command(
     validated_executable = _validated_python_executable(python_executable)
     plan = context.plan
     atomic_final = context.phase == "final" and context.atomic_final
-    lead_minutes = 30 if context.phase == "fallback" else (20 if atomic_final else 15)
+    lead_minutes = (
+        45
+        if context.scheduler_phase == "warmup"
+        else (30 if context.phase == "fallback" else (20 if atomic_final else 15))
+    )
     report_dir = context.work_dir / "reports"
     cache_root = context.work_dir / "cache"
     command = [
