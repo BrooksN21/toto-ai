@@ -242,7 +242,9 @@ def test_final_dns_outage_preserves_refresh_lkg_before_t10(tmp_path: Path):
     assert result is not None
     assert result.outcome == "no-bet"
     assert result.package_path == package_path
-    assert dns_calls == 8
+    # The 300-second final-runtime floor suppresses the last retry that could
+    # not finish before the actionable publication cutoff.
+    assert dns_calls == 7
     assert clock.current < plan.publish_deadline
     status = json.loads(result.status_path.read_text(encoding="utf-8"))
     assert status["operator_status"] == "LAST_KNOWN_GOOD_DEGRADED"

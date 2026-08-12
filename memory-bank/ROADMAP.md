@@ -745,11 +745,16 @@ closed.
   quality, samples, candidates, or bank. Exact swap-delta vectorization reduced
   the identical 4973 cProfile run from 444.8 to 260.0 seconds and preserved the
   selected-package hash.
-- [x] Verify DNS resilience after restoring warmup/refresh LKG: eight modeled
+- [x] Verify DNS resilience after restoring warmup/refresh LKG: bounded
   final/retry failures retain the validated 166-coupon package before T-10 with
   degraded provenance and no automatic wager marker.
 - [x] Remove the manual emergency-plan hash omission path; recovery now clones
   the exact original scheduler-plan inputs and reviewed evidence binding.
+- [x] Raise the measured final-runtime admission floor to 300 seconds and
+  recheck it after final-input capture. Scheduler-bound manual runs cannot
+  start heavy work after the safe latest-start boundary.
+- [ ] Prove publication/output suppression at and after every actionable and
+  hard T-10 boundary, including a completed package arriving too late.
 - [x] Apply current non-conflicting authoritative evidence for 4965 events 5,
   10 and 12 through the reusable ledger; retain event-13 material as an audit
   record only because its official home/away identity is not established.

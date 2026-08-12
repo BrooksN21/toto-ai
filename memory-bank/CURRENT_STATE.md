@@ -3818,7 +3818,7 @@ existed because the earlier warmup/refresh phases had failed for issues 1–3.
 After those upstream fixes, the existing LKG architecture is the correct
 resilience mechanism. A dedicated regression establishes a valid 166-coupon
 refresh package, injects four-attempt DNS failures across both final scheduler
-attempts (eight modeled failed calls), and proves that the same package remains
+attempts, and proves that the same package remains
 available before T-10 as `LAST_KNOWN_GOOD_DEGRADED`; no `.bet-ready` marker is
 created. No DNS bypass or stale-to-fresh relabelling was added. Full release
 verification passed `1782 passed, 13 deselected in 119.67s`; Ruff passed.
@@ -3840,3 +3840,22 @@ plan, source plan, recovery plan, and command all retained
 `7b789a9d0d4372ac7e6644af15b79612bdf4771944c8b88382044cf1f56b4469`.
 Scheduler/CLI verification passed 160 tests. Full release verification passed
 `1784 passed, 13 deselected in 110.98s`; Ruff passed.
+
+## Drawing 4973 evening incident: fix 7, late final admission (2026-08-12)
+
+The emergency direct final started at `13:45:57Z` with only about 197 seconds
+left before the actionable publication cutoff. It nevertheless entered a full
+calculation and finished 282.9 seconds later at `13:50:40Z`. The scheduler's
+old 180-second minimum was below the measured workload, and the command runner
+did not recheck that minimum after final-input capture.
+
+New scheduler plans bind a 300-second minimum final runtime. The production
+phase runner rechecks the remaining budget immediately after immutable input
+capture and before spawning `run-drawing`. A scheduler-bound manual playable
+`run-drawing` applies the same gate, so bypassing the wrapper cannot start a
+known-too-late network/EV run. Exact T-16 admission remains possible only while
+at least 300 seconds remain; input capture consuming that margin causes an
+immediate LKG/`NO BET` path instead of late computation.
+Scheduler/CLI/LKG verification passed 226 tests. The actual 4973 late-start
+timestamp is rejected by the new bound before network access. Full release
+verification passed `1786 passed, 13 deselected in 111.35s`; Ruff passed.

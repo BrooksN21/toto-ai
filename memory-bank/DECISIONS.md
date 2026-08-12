@@ -1350,3 +1350,15 @@ ambiguous reversed evidence remains unresolved.
   only the output scope changes.
 - Recovery from a legacy plan is rejected. Current schema validation and all
   bound files are rechecked while constructing the clone.
+
+## 2026-08-12: measured final-runtime admission
+
+- New plans reserve at least 300 seconds for a full final calculation. This is
+  above the optimized 4973 end-to-end observation of 282.9 seconds and replaces
+  the obsolete 180-second default.
+- Admission is checked both by the scheduler tick and immediately before the
+  heavy child starts, after immutable snapshot capture. A late snapshot may not
+  spend the publication reserve.
+- The same bound applies to scheduler-bound manual playable `run-drawing`
+  invocations. Emergency operation must use scheduler recovery, not bypass the
+  plan's runtime contract.

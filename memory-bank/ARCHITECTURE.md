@@ -204,6 +204,12 @@ T−10 minus the configured publication reserve, while the remaining interval
 is reserved for durable package publication and a manual-upload marker. No
 automatic bet placement exists.
 
+New plans bind a 300-second minimum final runtime, based on the measured
+optimized full 4973 run. Admission is checked before a final attempt and again
+after immutable final-input capture, immediately before the heavy subprocess.
+The scheduler-bound `run-drawing` CLI repeats the check so a manual invocation
+cannot bypass the latest safe start.
+
 Scheduler schema v6 binds `publication_lead_minutes = 10` and the complete
 `120/90/60/45/30/20/16/10` trigger-offset vector into the semantic payload and
 plan ID alongside the ledger binding. T−120/T−90/T−60 are diagnostic

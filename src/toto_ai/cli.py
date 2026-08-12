@@ -254,6 +254,7 @@ from toto_ai.runner import (
     run_drawing,
     run_drawing_from_final_input,
     scheduler_plan_json,
+    validate_scheduler_final_runtime_budget,
     write_drawing_run_reports,
 )
 from toto_ai.runner.final_input import load_final_input
@@ -2457,6 +2458,11 @@ def run_drawing_command(
         bound_scheduler_plan = (
             None if scheduler_plan is None else load_scheduler_plan(scheduler_plan)
         )
+        if bound_scheduler_plan is not None and mode == "playable":
+            validate_scheduler_final_runtime_budget(
+                bound_scheduler_plan,
+                _utc_now_datetime(),
+            )
         if bound_scheduler_plan is not None and (
             resolved_schedule_evidence_ledger
             != bound_scheduler_plan.schedule_evidence_ledger
@@ -2745,6 +2751,7 @@ def run_drawing_command(
         OSError,
         OverflowError,
         requests.RequestException,
+        SchedulerError,
         SQLAlchemyError,
         TypeError,
         ValueError,

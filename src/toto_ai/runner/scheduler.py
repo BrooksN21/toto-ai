@@ -104,6 +104,7 @@ DEFAULT_QUALITY_V2_CONFIG = EVConfig(
 PUBLICATION_LEAD_MINUTES = 10
 SCHEDULER_TRIGGER_OFFSETS_MINUTES = (120, 90, 60, 45, 30, 20, 16, 10)
 LKG_MAX_SOURCE_AGE_SECONDS = 45 * 60
+DEFAULT_MINIMUM_FINAL_RUNTIME_SECONDS = 300
 
 SchedulerPhase = Literal["preflight", "fallback", "final", "freeze"]
 PackagePhase = Literal["fallback", "final"]
@@ -265,7 +266,7 @@ class SchedulerPlan:
     max_passes: int = 3
     max_expansion_passes: int = 3
     retry_delay_seconds: float = 65.0
-    minimum_final_runtime_seconds: int = 180
+    minimum_final_runtime_seconds: int = DEFAULT_MINIMUM_FINAL_RUNTIME_SECONDS
     publication_reserve_seconds: int = 45
     max_final_attempts: int = 2
     transient_backoff_seconds: tuple[int, ...] = (2, 5, 10)
@@ -930,7 +931,7 @@ def build_scheduler_plan(
     max_passes: int = 3,
     max_expansion_passes: int = 3,
     retry_delay_seconds: float = 65.0,
-    minimum_final_runtime_seconds: int = 180,
+    minimum_final_runtime_seconds: int = DEFAULT_MINIMUM_FINAL_RUNTIME_SECONDS,
     publication_reserve_seconds: int = 45,
     max_final_attempts: int = 2,
     transient_backoff_seconds: tuple[int, ...] = (2, 5, 10),
@@ -1030,6 +1031,23 @@ def clone_scheduler_plan_for_recovery(
     if destination == source_plan.output_dir:
         raise ValueError("recovery output_dir must differ from source output_dir")
     return replace(source_plan, output_dir=destination)
+
+
+def validate_scheduler_final_runtime_budget(
+    plan: SchedulerPlan,
+    observed_at: datetime,
+) -> float:
+    """Return remaining actionable seconds or reject a too-late heavy run."""
+
+    _require_plan(plan)
+    observed = _require_utc_datetime("observed_at", observed_at)
+    remaining = (plan.actionable_publication_deadline - observed).total_seconds()
+    if remaining < plan.minimum_final_runtime_seconds:
+        raise SchedulerTransientError(
+            "insufficient final runtime budget before the actionable cutoff",
+            category="run_drawing_timeout",
+        )
+    return remaining
 
 
 def validate_schedule_evidence_binding(
@@ -1412,7 +1430,14 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         max_passes=config["max_passes"],
         max_expansion_passes=config["max_expansion_passes"],
         retry_delay_seconds=config["retry_delay_seconds"],
-        minimum_final_runtime_seconds=config.get("minimum_final_runtime_seconds", 180),
+        minimum_final_runtime_seconds=config.get(
+            "minimum_final_runtime_seconds",
+            (
+                DEFAULT_MINIMUM_FINAL_RUNTIME_SECONDS
+                if schema_version == SCHEDULER_SCHEMA_VERSION
+                else 180
+            ),
+        ),
         publication_reserve_seconds=config.get("publication_reserve_seconds", 45),
         max_final_attempts=config.get("max_final_attempts", 2),
         transient_backoff_seconds=tuple(
@@ -3442,11 +3467,7 @@ class CommandSchedulerPhaseRunner:
             else context.plan.actionable_publication_deadline
         )
         timeout_seconds = (phase_deadline - subprocess_started_at).total_seconds()
-        if timeout_seconds <= 0:
-            raise SchedulerTransientError(
-                "run-drawing cannot preserve the publication reserve before T-10",
-                category="run_drawing_timeout",
-            )
+        validate_scheduler_final_runtime_budget(context.plan, subprocess_started_at)
         try:
             completed = subprocess.run(
                 command,

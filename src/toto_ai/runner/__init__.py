@@ -68,6 +68,7 @@ from toto_ai.runner.scheduler import (
     prepare_scheduler_artifacts,
     scheduler_launch_agent_label,
     scheduler_plan_json,
+    validate_scheduler_final_runtime_budget,
     verify_scheduler_artifacts,
 )
 from toto_ai.runner.timing import (
@@ -141,6 +142,7 @@ __all__ = [
     "runner_window",
     "scheduler_launch_agent_label",
     "scheduler_plan_json",
+    "validate_scheduler_final_runtime_budget",
     "verify_scheduler_artifacts",
     "wait_for_final_window",
     "write_drawing_run_reports",

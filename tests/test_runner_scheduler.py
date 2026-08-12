@@ -1368,6 +1368,7 @@ def test_command_final_subprocess_timeout_preserves_publication_reserve(
 ):
     plan = _plan(tmp_path)
     assert plan.requested_bank == 4_980
+    assert plan.minimum_final_runtime_seconds == 300
     payload = _atomic_final_payload(plan)
     recorded_timeouts = []
 
@@ -1415,6 +1416,59 @@ def test_command_final_subprocess_timeout_preserves_publication_reserve(
     assert result is None
     assert len(recorded_timeouts) >= 2
     assert recorded_timeouts == sorted(recorded_timeouts, reverse=True)
+
+
+def test_command_final_rechecks_runtime_budget_after_snapshot_capture(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    plan = _plan(tmp_path)
+    payload = _atomic_final_payload(plan)
+    subprocess_calls = []
+
+    class Clock:
+        current = plan.retry_at
+
+        def now(self):
+            return self.current
+
+        def advance(self, seconds):
+            self.current += timedelta(seconds=seconds)
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == plan.drawing_id
+            clock.advance(20)
+            return payload
+
+    def must_not_start(command, **_kwargs):
+        subprocess_calls.append(command)
+        raise AssertionError("heavy final subprocess must not start")
+
+    clock = Clock()
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(scheduler.subprocess, "run", must_not_start)
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"},
+        now=clock.now,
+    )
+
+    result = execute_scheduler_tick(
+        plan,
+        phase_runner=runner,
+        now=clock.now,
+        sleep=clock.advance,
+    )
+
+    assert result is not None
+    assert result.outcome == "no-bet"
+    assert "insufficient final runtime budget" in result.reason
+    assert subprocess_calls == []
+    state = json.loads(
+        (plan.output_dir / "scheduler-state.json").read_text(encoding="utf-8")
+    )
+    assert state["phases"]["final"]["status"] == "no_bet"
+    assert state["terminal"] == "no_bet"
 
 
 def test_prepare_command_uses_absolute_raw_and_reusable_provider_cache(

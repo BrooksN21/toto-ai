@@ -1713,6 +1713,7 @@ def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> No
     payload = json.loads(result.output)
     assert payload["target"]["drawing"] == 5002
     assert payload["config"]["minimum_gross_ev"] == 1.0
+    assert payload["config"]["minimum_final_runtime_seconds"] == 300
     assert payload["deadlines"]["t_minus_45"] == "2030-01-03T11:15:00Z"
     assert payload["deadlines"]["t_minus_10"] == "2030-01-03T11:50:00Z"
     assert not output_dir.exists()
@@ -1763,6 +1764,57 @@ def test_scheduler_recover_plan_clones_reviewed_binding_without_manual_input(
     assert recovered.drawing_id == source.drawing_id
     assert recovered.output_dir == recovery_dir.resolve()
     assert "Recovery plan:" in result.output
+
+
+def test_bound_playable_run_rejects_late_manual_final_before_network(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    write_empty_schedule_evidence_ledger(tmp_path)
+    output_dir = tmp_path / "late-final-scheduler"
+    plan = build_scheduler_plan(
+        drawing=5002,
+        drawing_id=12002,
+        ended_at="2030-01-03T12:00:00Z",
+        bank=4980,
+        output_dir=output_dir,
+        project_root=tmp_path,
+        db=tmp_path / "data" / "toto.db",
+        aliases=tmp_path / "data" / "aliases.json",
+    )
+    scheduler_module.prepare_scheduler_artifacts(plan)
+    monkeypatch.setenv("API_SPORTS_KEY", SENTINEL_SECRET)
+    monkeypatch.setenv("TOTO_FINAL_INPUT", str(tmp_path / "unused-final-input.json"))
+    monkeypatch.setenv(
+        "TOTO_SCHEDULER_PLAN",
+        str(output_dir / "scheduler-plan.json"),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_utc_now_datetime",
+        lambda: plan.actionable_publication_deadline - timedelta(seconds=299),
+    )
+    monkeypatch.setattr(
+        cli,
+        "TotoBriefClient",
+        lambda: (_ for _ in ()).throw(AssertionError("network must not start")),
+    )
+
+    result = runner.invoke(
+        cli.app,
+        [
+            "run-drawing",
+            "--open",
+            "--bank",
+            "4980",
+            "--mode",
+            "playable",
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "insufficient final runtime budget" in result.output
+    assert not (tmp_path / "unused-final-input.json").exists()
 
 
 def test_scheduler_cli_rejects_null_ended_at_before_artifact_creation(
