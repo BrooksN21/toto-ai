@@ -222,12 +222,16 @@ def match_event(
     target: TargetEvent,
     candidates: tuple[ProviderEvent, ...] | list[ProviderEvent],
     aliases: dict[str, str],
+    *,
+    matcher_version: str = MATCHER_VERSION,
 ) -> MatchDecision:
+    if not isinstance(matcher_version, str) or not matcher_version.strip():
+        raise ValueError("matcher_version must be non-empty")
     if target.sport == "unknown":
         return MatchDecision(
             status="unknown_sport",
             provider_event_id=None,
-            matcher_version=MATCHER_VERSION,
+            matcher_version=matcher_version,
             candidate_ids=(),
             reason="unknown sport",
         )
@@ -267,7 +271,7 @@ def match_event(
         return MatchDecision(
             status="matched",
             provider_event_id=candidate.provider_event_id,
-            matcher_version=MATCHER_VERSION,
+            matcher_version=matcher_version,
             candidate_ids=(candidate.provider_event_id,),
             reason=(
                 (
@@ -289,7 +293,12 @@ def match_event(
         )
 
     if not oriented_matches and _requires_transliterated_matching(target):
-        transliterated = _match_transliterated_pair(target, candidates, aliases)
+        transliterated = _match_transliterated_pair(
+            target,
+            candidates,
+            aliases,
+            matcher_version=matcher_version,
+        )
         if transliterated is not None:
             return transliterated
 
@@ -299,7 +308,7 @@ def match_event(
     return MatchDecision(
         status="missing" if not oriented_matches else "ambiguous",
         provider_event_id=None,
-        matcher_version=MATCHER_VERSION,
+        matcher_version=matcher_version,
         candidate_ids=candidate_ids,
         reason=f"{len(oriented_matches)} exact candidates",
     )
@@ -309,6 +318,8 @@ def _match_transliterated_pair(
     target: TargetEvent,
     candidates: tuple[ProviderEvent, ...] | list[ProviderEvent],
     aliases: dict[str, str],
+    *,
+    matcher_version: str,
 ) -> MatchDecision | None:
     home_options = _target_team_options(target.home_team, None, aliases)
     away_options = _target_team_options(target.away_team, None, aliases)
@@ -371,7 +382,7 @@ def _match_transliterated_pair(
     return MatchDecision(
         status="matched",
         provider_event_id=best[2],
-        matcher_version=MATCHER_VERSION,
+        matcher_version=matcher_version,
         candidate_ids=(best[2],),
         reason=(
             "unique high-confidence transliterated match"

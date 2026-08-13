@@ -1,5 +1,18 @@
 # Current State
 
+## The Odds API provider transport implemented (2026-08-13)
+
+The first implementation stage is complete locally. The new provider uses the
+official zero-credit sports/events discovery endpoints, performs one paid EU
+`h2h` request per matched sport key, preserves 1xBet and Pinnacle as distinct
+bookmakers, reuses a bulk response for all same-league target events, and
+tracks credit headers. Hockey two-way moneyline rows are rejected from the
+regulation three-way consensus. The protected key is excluded from cache
+bytes, request fingerprints, and sanitized errors. External collection loads
+and audits can now be filtered by provider, and matcher version is explicitly
+bound to `the-odds-api-v1` without changing the API-Sports default. Focused
+verification passed 152 tests and Ruff.
+
 ## The Odds API implementation plan approved (2026-08-13)
 
 The approved sports-analytics specification is now decomposed into a concrete

@@ -238,6 +238,29 @@ def test_collection_persists_exactly_fifteen_dispositions(session_factory):
     assert stored[0].events[0].effective_start_source == "totobrief"
 
 
+def test_latest_complete_collections_can_be_filtered_by_provider(session_factory):
+    api_sports = build_external_collection(
+        target_drawing(), CompleteProvider(), aliases={}
+    )
+    the_odds_api = replace(
+        api_sports,
+        collection_id="the-odds-api-collection",
+        provider="the-odds-api",
+    )
+    save_collection(session_factory, api_sports)
+    save_collection(session_factory, the_odds_api)
+
+    loaded = load_latest_complete_collections(
+        session_factory,
+        last=10,
+        provider="the-odds-api",
+    )
+
+    assert len(loaded) == 1
+    assert loaded[0].collection_id == "the-odds-api-collection"
+    assert loaded[0].provider == "the-odds-api"
+
+
 def test_same_canonical_inputs_are_idempotent(session_factory):
     result = build_external_collection(target_drawing(), CompleteProvider(), aliases={})
 

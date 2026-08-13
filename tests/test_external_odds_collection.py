@@ -22,10 +22,36 @@ from toto_ai.external_odds.domain import (
     TargetDrawing,
     TargetEvent,
 )
+from toto_ai.external_odds.matching import match_event
 
 
 def aware_now() -> datetime:
     return datetime(2026, 7, 15, 12, 0, tzinfo=timezone.utc)
+
+
+def test_matcher_version_can_be_bound_to_the_odds_api_provider():
+    target = target_drawing().events[0]
+    candidate = ProviderEvent(
+        provider="the-odds-api",
+        provider_event_id="the-odds-event",
+        sport=target.sport,
+        league=target.championship,
+        starts_at=target.starts_at,
+        home_team=target.home_team,
+        away_team=target.away_team,
+        fetched_at=aware_now(),
+        payload_hash="provider-event-hash",
+    )
+
+    decision = match_event(
+        target,
+        (candidate,),
+        {},
+        matcher_version="the-odds-api-v1",
+    )
+
+    assert decision.status == "matched"
+    assert decision.matcher_version == "the-odds-api-v1"
 
 
 def target_drawing() -> TargetDrawing:

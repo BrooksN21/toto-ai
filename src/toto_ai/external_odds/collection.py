@@ -232,6 +232,11 @@ def build_external_collection(
     _bind_provider_safety_boundary(provider, stop_at=stop_at, now=now)
     request_counter = _RequestCounter(provider, stop_at=stop_at, now=now)
     provider_name = provider.provider_name
+    matcher_version = (
+        "the-odds-api-v1"
+        if provider_name == "the-odds-api"
+        else MATCHER_VERSION
+    )
     observed_at = now()
     schedule_fetch = _fetch_schedules(
         target,
@@ -248,6 +253,7 @@ def build_external_collection(
         observed_at=observed_at,
         reviewed_schedule_catalog=reviewed_schedule_catalog,
         schedule_evidence_ledger=schedule_evidence_ledger,
+        matcher_version=matcher_version,
     )
     pinned_revalidation = (
         _pinned_revalidation_summary(
@@ -711,6 +717,7 @@ def _match_targets(
     observed_at: datetime | None = None,
     reviewed_schedule_catalog: str | None = None,
     schedule_evidence_ledger: ScheduleEvidenceLedger | None = None,
+    matcher_version: str = MATCHER_VERSION,
 ) -> dict[int, _MatchedTarget]:
     if prepared_pins is not None:
         if observed_at is None:
@@ -736,7 +743,12 @@ def _match_targets(
     decisions: dict[int, _MatchedTarget] = {}
     for event in target.events:
         if event.sport not in {"football", "hockey"}:
-            decision = match_event(event, (), aliases)
+            decision = match_event(
+                event,
+                (),
+                aliases,
+                matcher_version=matcher_version,
+            )
             decisions[event.event_order] = _MatchedTarget(decision, None)
             continue
         if (
@@ -761,6 +773,7 @@ def _match_targets(
             event,
             schedules.get(event.sport, ()),
             aliases,
+            matcher_version=matcher_version,
         )
         fallback_reason = None
         if (

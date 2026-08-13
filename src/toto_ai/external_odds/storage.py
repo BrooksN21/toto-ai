@@ -61,14 +61,21 @@ def load_latest_complete_collections(
     session_factory: Any,
     *,
     last: int,
+    provider: str | None = None,
 ) -> tuple[ExternalCollectionSnapshot, ...]:
     if not isinstance(last, int) or isinstance(last, bool) or last <= 0:
         raise ValueError("last must be a positive integer")
     loaded: list[ExternalCollectionSnapshot] = []
     with session_factory() as session:
+        query = select(ExternalCollectionRun).where(
+            ExternalCollectionRun.status == "complete"
+        )
+        if provider is not None:
+            if not isinstance(provider, str) or not provider.strip():
+                raise ValueError("provider must be non-empty or None")
+            query = query.where(ExternalCollectionRun.provider == provider)
         runs = session.scalars(
-            select(ExternalCollectionRun)
-            .where(ExternalCollectionRun.status == "complete")
+            query
             .order_by(
                 ExternalCollectionRun.fetched_at.desc(),
                 literal_column("rowid").desc(),

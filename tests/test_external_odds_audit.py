@@ -71,6 +71,25 @@ def test_gate_requires_all_registered_thresholds():
     assert audit.gate.decision == "GO"
 
 
+def test_audit_filters_collections_by_provider():
+    api_sports = _collection(1, ())
+    the_odds_api = replace(
+        _collection(2, ()),
+        provider="the-odds-api",
+    )
+
+    audit = audit_external_coverage(
+        _snapshot_session_factory((api_sports, the_odds_api)),
+        last=30,
+        minimum_bookmakers=3,
+        provider="the-odds-api",
+    )
+
+    assert audit.provider == "the-odds-api"
+    assert audit.drawings == 1
+    assert {row.drawing_id for row in audit.dispositions} == {the_odds_api.drawing_id}
+
+
 @pytest.mark.parametrize(
     ("change", "reason"),
     [

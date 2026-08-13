@@ -843,7 +843,7 @@ closed.
   prohibition in the sports analytics specification.
 - [x] Record the implementation sequence in
   `docs/superpowers/plans/2026-08-13-the-odds-api-shadow-audit.md`.
-- [ ] Implement fail-closed provider parsing and secret-safe transport.
+- [x] Implement fail-closed provider parsing and secret-safe transport.
 - [ ] Persist provider-neutral provenance and quota evidence.
 - [ ] Add the current-drawing `NOT_ACTIVATED` shadow command and reports.
 - [ ] Run one current-drawing live probe with the protected key.

@@ -1465,3 +1465,15 @@ ambiguous reversed evidence remains unresolved.
   owner-authored policy edit committed to the repository.
 - Globally distributed `claude-plugins-official` instruction bundles are not
   used for TotoAI. Engineering procedures must be project-local.
+
+## 2026-08-13: The Odds API collection is bulk, quota-bound, and shadow-only
+
+- Discover active football/hockey competitions through zero-credit `/sports`
+  and `/events` calls, then request paid EU `h2h` odds once per matched sport
+  key rather than once per event.
+- Keep 1xBet, Pinnacle, and broader EU consensus as separate evidence views.
+- Accept hockey `h2h` only when the bookmaker row contains an explicit draw;
+  a two-way including-overtime market is not regulation 1/X/2.
+- Stop before a paid request at the configured remaining-credit reserve.
+- The provider remains `NOT_ACTIVATED` and cannot alter scheduler or package
+  inputs during the prospective audit.
