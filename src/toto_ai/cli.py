@@ -249,6 +249,8 @@ from toto_ai.runner import (
     execute_scheduler_plan,
     execute_scheduler_tick,
     export_operator_package,
+    export_paper_package,
+    load_paper_package,
     load_scheduler_plan,
     pin_drawing,
     prepare_morning_preanalysis_artifacts,
@@ -3614,6 +3616,35 @@ def operator_export_command(
     except (OSError, SchedulerError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
     typer.echo(f"Operator package: {destination}")
+
+
+@app.command("paper-package-show")
+def paper_package_show_command(
+    plan: str = typer.Option(..., "--plan"),
+    output: str | None = typer.Option(None, "--output"),
+) -> None:
+    """Show an explicitly non-actionable scheduler-owned PAPER package."""
+
+    try:
+        scheduler_plan = load_scheduler_plan(plan)
+        result = load_paper_package(scheduler_plan)
+        if result.paper_path is None:
+            raise SchedulerIntegrityError(
+                "paper package has no coupon payload",
+                category="paper_package_unavailable",
+            )
+        if output is None:
+            sys.stdout.buffer.write(result.paper_path.read_bytes())
+            sys.stdout.buffer.flush()
+        else:
+            export_paper_package(scheduler_plan, destination=output)
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    print(
+        "PAPER / NO BET / DO NOT WAGER — "
+        f"drawing={scheduler_plan.drawing} coupons={result.count} cost={result.cost}",
+        file=sys.stderr,
+    )
 
 
 @app.command("ev-package")

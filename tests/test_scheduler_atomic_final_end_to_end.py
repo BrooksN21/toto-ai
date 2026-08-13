@@ -23,6 +23,7 @@ from toto_ai.runner.scheduler import (
     build_scheduler_plan,
     execute_scheduler_tick,
     export_operator_package,
+    load_paper_package,
 )
 from toto_ai.runner.scheduler_state import initial_state, load_state, save_state
 
@@ -650,7 +651,10 @@ def test_t10_tick_expires_operator_upload_but_retains_audit_archive(tmp_path):
     upload = published.run_dir / "baltbet-upload.txt"
     archive = published.run_dir / "package-archive.json"
     marker = published.run_dir / ".bet-ready"
+    paper_before = load_paper_package(plan)
     assert upload.is_file()
+    assert paper_before.actionable is False
+    assert paper_before.paper_path is not None and paper_before.paper_path.is_file()
 
     repeated = _tick(
         plan,
@@ -668,6 +672,17 @@ def test_t10_tick_expires_operator_upload_but_retains_audit_archive(tmp_path):
     assert operator["decision"] == "NO BET"
     assert operator["actionable"] is False
     assert operator["coupon_path"] is None
+    paper_after = load_paper_package(plan)
+    assert paper_after == paper_before
+    assert paper_after.paper_path is not None and paper_after.paper_path.is_file()
+    assert paper_after.source_package_path is not None
+    assert paper_after.source_package_path.is_file()
+    with pytest.raises(SchedulerIntegrityError, match="expired at T-10"):
+        export_operator_package(
+            plan,
+            destination=tmp_path / "expired-paper-must-not-export.txt",
+            observed_at=plan.publish_deadline + timedelta(seconds=1),
+        )
 
 
 def test_overlapping_ticks_run_one_final_attempt(tmp_path):

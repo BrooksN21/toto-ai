@@ -1,5 +1,26 @@
 # Current State
 
+## Exact durable PAPER package completed (2026-08-13)
+
+Tasks 1-3 of the approved paper/post-draw plan are implemented. The scheduler
+now has a strict renderer/validator for the exact BaltBet text-editor shape,
+immutable scheduler-owned paper checkpoints, a hash-bound
+`paper-package-result.json`, and `paper-package-show`. Payload bytes preserve
+source coupon order and contain only `<stake>; <15 outcomes>` lines with final
+LF. PAPER/NO BET warnings stay on stderr/status.
+
+Computed terminal `NO BET` packages remain inspectable after T-10, while
+package-free `NO BET` has no coupon payload. Actionable PLAY publication is
+unchanged: paper artifacts are always `actionable=false`, cannot create
+`.bet-ready`, and are rejected by `operator-export`. The historical 4974 paper
+artifact is covered by a 166-unique-coupon / 4,980-cost safety regression; it
+is not promoted or displayed as an operator package.
+
+Verification after implementation: 52 focused tests and 247 relevant
+scheduler/operator tests passed. Full verification passed
+`1817 passed, 13 deselected in 113.58s`; full Ruff and `git diff --check`
+passed.
+
 ## Next product focus: visible paper packages and sports analytics (2026-08-13)
 
 The user approved two mandatory lifecycle changes. Every terminal calculation
@@ -9,6 +30,12 @@ reconciliation must check for complete 15/15 terminal outcomes; incomplete
 drawings retry every three hours. Once complete, the durable workflow asks the
 user whether to review the package and records the answer before producing an
 immutable postmortem.
+
+The package presentation contract is exact: a clean text file with one coupon
+per line in the form `30; 1; X; ...` (configured stake plus 15 outcomes).
+Warnings and diagnostics are shown separately and never embedded in the
+copyable package. The existing 4974 paper artifact validates as 166 unique
+lines with implied cost 4,980, but remains expired/non-actionable evidence.
 
 The next main research phase is sports-analytics probability improvement. BK
 remains the production control. Existing API-Sports evidence and evaluated

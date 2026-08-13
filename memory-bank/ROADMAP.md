@@ -736,7 +736,7 @@ Do not build another optimizer before the measurable lifecycle
 `drawing -> package -> archive -> results/VOID -> settlement -> review` is
 closed.
 
-- [ ] Expose every final computed package, including `NO BET`, through a
+- [x] Expose every final computed package, including `NO BET`, through a
   validated `PAPER / DO NOT WAGER` report and read-only display command.
 - [ ] Schedule post-draw result checks for 12:00 Moscow next day with
   three-hour retries; create a durable user review request after 15/15 terminal

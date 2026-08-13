@@ -3037,6 +3037,17 @@ def _finalize_tick_operator_package(
         terminal="no_bet",
     )
     save_state(state_path, updated)
+    persist_paper_package_artifacts(
+        plan,
+        source_package=package.path.parent / "package.csv",
+        decision="NO BET",
+        reason=reason,
+        completed_at=observed_at,
+        probability_input_sha256=package.probability_input_sha256,
+        provenance=provenance,
+        expected_count=package.selected_count,
+        expected_cost=package.selected_cost,
+    )
     _write_operator_result(
         plan,
         package=package,
@@ -3097,6 +3108,17 @@ def _finalize_tick_no_bet(
         terminal="no_bet",
     )
     save_state(state_path, updated)
+    persist_paper_package_artifacts(
+        plan,
+        source_package=None,
+        decision="NO BET",
+        reason=reason,
+        completed_at=observed_at,
+        probability_input_sha256=None,
+        provenance=None,
+        expected_count=0,
+        expected_cost=0,
+    )
     _write_operator_no_bet(
         plan,
         reason=reason,
@@ -4829,6 +4851,27 @@ def _finalize_status(
                 raise SchedulerPublicationDeadlineError(
                     "bet-ready marker deadline crossed after durable archive"
                 )
+            final_input_path = run_dir / "final-input.json"
+            paper_probability_hash = None
+            if final_input_path.is_file() and not final_input_path.is_symlink():
+                paper_probability_hash = load_final_input(
+                    final_input_path, expected_plan=plan
+                ).probability_input_sha256
+            persist_paper_package_artifacts(
+                plan,
+                source_package=run_dir / "package.csv",
+                decision="PLAY",
+                reason=str(terminal["reason"]),
+                completed_at=completed_at,
+                probability_input_sha256=paper_probability_hash,
+                provenance="FINAL_FRESH",
+                expected_count=_strict_int(
+                    "paper selected_count", terminal["selected_count"]
+                ),
+                expected_cost=_strict_int(
+                    "paper selected_cost", terminal["selected_cost"]
+                ),
+            )
             if operator_window_open:
                 _publish_actionable_operator_result(
                     plan,
@@ -5724,6 +5767,35 @@ class _ValidatedPackageCSV:
     count: int
     cost: int
     coupons: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class PaperPackageSummary:
+    """Validated, explicitly non-actionable BaltBet-shaped paper payload."""
+
+    count: int
+    cost: int
+    coupons: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class PaperPackageResult:
+    """Durable scheduler-owned paper package binding."""
+
+    result_path: Path
+    source_package_path: Path | None
+    paper_path: Path | None
+    source_package_sha256: str | None
+    paper_sha256: str | None
+    decision: Literal["PLAY", "NO BET"]
+    reason: str
+    actionable: bool
+    count: int
+    cost: int
+    stake: int
+    probability_input_sha256: str | None
+    provenance: str | None
+    completed_at: datetime
 
 
 @dataclass(frozen=True)
@@ -6743,6 +6815,493 @@ def _render_baltbet_upload(coupons: Sequence[str], *, stake: int) -> bytes:
             category="lkg_integrity",
         )
     return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+def render_paper_package(coupons: Sequence[str], *, stake: int) -> bytes:
+    """Render coupons for inspection without creating an actionable package.
+
+    The byte shape intentionally matches BaltBet's text editor, but this pure
+    function does not publish an operator result or a ``.bet-ready`` marker.
+    Empty input represents a package-free paper result and renders as empty
+    bytes rather than embedding a warning in the payload.
+    """
+
+    _require_positive_int("paper package stake", stake)
+    normalized = tuple(coupons)
+    for coupon in normalized:
+        if not isinstance(coupon, str) or _COUPON_PATTERN.fullmatch(coupon) is None:
+            raise SchedulerIntegrityError(
+                "paper coupon must contain exactly 15 outcomes",
+                category="paper_package_integrity",
+            )
+    if len(set(normalized)) != len(normalized):
+        raise SchedulerIntegrityError(
+            "paper package must contain unique coupons",
+            category="paper_package_integrity",
+        )
+    if not normalized:
+        return b""
+    text = "\n".join(
+        f"{stake}; " + "; ".join(coupon) for coupon in normalized
+    )
+    return (text + "\n").encode("utf-8")
+
+
+def validate_paper_package(
+    content: bytes,
+    *,
+    stake: int,
+    expected_coupons: Sequence[str],
+    expected_count: int,
+    expected_cost: int,
+) -> PaperPackageSummary:
+    """Validate exact paper bytes and their binding to source coupon order."""
+
+    _require_positive_int("paper package stake", stake)
+    _require_non_negative_int("paper package expected_count", expected_count)
+    _require_non_negative_int("paper package expected_cost", expected_cost)
+    if not isinstance(content, bytes):
+        raise SchedulerIntegrityError(
+            "paper package must be bytes",
+            category="paper_package_integrity",
+        )
+    try:
+        text = content.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise SchedulerIntegrityError(
+            "paper package must be UTF-8",
+            category="paper_package_integrity",
+        ) from error
+    if content:
+        if not text.endswith("\n") or "\r" in text or "\x00" in text:
+            raise SchedulerIntegrityError(
+                "paper package line encoding is invalid",
+                category="paper_package_integrity",
+            )
+        lines = text.splitlines()
+    else:
+        lines = []
+
+    coupons: list[str] = []
+    for line in lines:
+        fields = line.split("; ")
+        if len(fields) != 16 or fields[0] != str(stake):
+            raise SchedulerIntegrityError(
+                "paper package line must be '<stake>; <15 outcomes>'",
+                category="paper_package_integrity",
+            )
+        coupon = "".join(fields[1:])
+        if _COUPON_PATTERN.fullmatch(coupon) is None:
+            raise SchedulerIntegrityError(
+                "paper package line has invalid outcomes",
+                category="paper_package_integrity",
+            )
+        coupons.append(coupon)
+
+    if len(set(coupons)) != len(coupons):
+        raise SchedulerIntegrityError(
+            "paper package coupons must be unique",
+            category="paper_package_integrity",
+        )
+    if len(coupons) != expected_count:
+        raise SchedulerIntegrityError(
+            "paper package count mismatch",
+            category="paper_package_integrity",
+        )
+    if expected_cost != len(coupons) * stake:
+        raise SchedulerIntegrityError(
+            "paper package cost mismatch",
+            category="paper_package_integrity",
+        )
+    if tuple(coupons) != tuple(expected_coupons):
+        raise SchedulerIntegrityError(
+            "paper package coupon order mismatch",
+            category="paper_package_integrity",
+        )
+    return PaperPackageSummary(
+        count=len(coupons),
+        cost=len(coupons) * stake,
+        coupons=tuple(coupons),
+    )
+
+
+def persist_paper_package_artifacts(
+    plan: SchedulerPlan,
+    *,
+    source_package: Path | None,
+    decision: Literal["PLAY", "NO BET"],
+    reason: str,
+    completed_at: datetime,
+    probability_input_sha256: str | None,
+    provenance: str | None,
+    expected_count: int,
+    expected_cost: int,
+) -> PaperPackageResult:
+    """Persist an immutable paper view and publish its non-actionable binding."""
+
+    _require_plan(plan)
+    if decision not in {"PLAY", "NO BET"}:
+        raise ValueError("paper package decision must be PLAY or NO BET")
+    resolved_reason = _strict_text("paper package reason", reason)
+    resolved_completed_at = _require_utc_datetime(
+        "paper package completed_at", completed_at
+    )
+    _require_non_negative_int("paper package expected_count", expected_count)
+    _require_non_negative_int("paper package expected_cost", expected_cost)
+    resolved_probability_hash = (
+        None
+        if probability_input_sha256 is None
+        else _strict_sha256(
+            "paper package probability_input_sha256", probability_input_sha256
+        )
+    )
+    resolved_provenance = (
+        None
+        if provenance is None
+        else _strict_text("paper package provenance", provenance)
+    )
+
+    source_bytes: bytes | None = None
+    source_hash: str | None = None
+    paper_bytes: bytes | None = None
+    paper_hash: str | None = None
+    if source_package is None:
+        if expected_count != 0 or expected_cost != 0:
+            raise SchedulerIntegrityError(
+                "package-free paper result must have zero count and cost",
+                category="paper_package_integrity",
+            )
+    else:
+        source = _require_contained_path(
+            plan.output_dir,
+            _normalized_path(source_package),
+            name="paper source package",
+        )
+        source_bytes = _read_regular_file(
+            source, name="paper source package", reject_symlink=True
+        )
+        validated = _validate_package_csv(
+            source_bytes,
+            stake=plan.stake,
+            minimum_gross_ev=plan.minimum_gross_ev,
+            expected_count=expected_count,
+            expected_cost=expected_cost,
+        )
+        source_hash = _sha256_bytes(source_bytes)
+        paper_bytes = render_paper_package(validated.coupons, stake=plan.stake)
+        summary = validate_paper_package(
+            paper_bytes,
+            stake=plan.stake,
+            expected_coupons=validated.coupons,
+            expected_count=expected_count,
+            expected_cost=expected_cost,
+        )
+        if summary.cost > plan.requested_bank:
+            raise SchedulerIntegrityError(
+                "paper package exceeds requested bank",
+                category="paper_package_integrity",
+            )
+        paper_hash = _sha256_bytes(paper_bytes)
+
+    identity = {
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "decision": decision,
+        "reason": resolved_reason,
+        "completed_at": _timestamp(resolved_completed_at),
+        "source_package_sha256": source_hash,
+        "paper_sha256": paper_hash,
+        "count": expected_count,
+        "cost": expected_cost,
+        "probability_input_sha256": resolved_probability_hash,
+        "provenance": resolved_provenance,
+    }
+    checkpoint_id = _sha256_bytes(_canonical_json_bytes(identity))[:24]
+    root = plan.output_dir / "paper-package"
+    checkpoint = root / "checkpoints" / checkpoint_id
+    _ensure_output_directory(plan.output_dir, root)
+    checkpoints = root / "checkpoints"
+    _ensure_output_directory(plan.output_dir, checkpoints)
+    if not checkpoint.exists():
+        _create_output_directory_exclusive(plan.output_dir, checkpoint)
+    else:
+        _require_output_directory(plan.output_dir, checkpoint)
+
+    durable_source = checkpoint / "source-package.csv"
+    durable_paper = checkpoint / "paper-package.txt"
+    if source_bytes is not None and paper_bytes is not None:
+        _write_or_verify_paper_artifact(
+            plan, durable_source, source_bytes, name="paper source package"
+        )
+        _write_or_verify_paper_artifact(
+            plan, durable_paper, paper_bytes, name="paper coupon payload"
+        )
+    elif durable_source.exists() or durable_paper.exists():
+        raise SchedulerIntegrityError(
+            "package-free paper checkpoint contains coupon artifacts",
+            category="paper_package_integrity",
+        )
+
+    result_path = plan.output_dir / "paper-package-result.json"
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "checkpoint_id": checkpoint_id,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "ended_at": _timestamp(plan.ended_at),
+        "decision": decision,
+        "reason": resolved_reason,
+        "actionable": False,
+        "automatic_wagering": False,
+        "stake": plan.stake,
+        "requested_bank": plan.requested_bank,
+        "count": expected_count,
+        "cost": expected_cost,
+        "source_package_path": (
+            None if source_bytes is None else str(durable_source)
+        ),
+        "source_package_sha256": source_hash,
+        "paper_path": None if paper_bytes is None else str(durable_paper),
+        "paper_sha256": paper_hash,
+        "probability_input_sha256": resolved_probability_hash,
+        "provenance": resolved_provenance,
+        "completed_at": _timestamp(resolved_completed_at),
+    }
+    payload["record_sha256"] = _paper_result_sha256(payload)
+    _write_replace_atomic(
+        plan.output_dir,
+        result_path,
+        _canonical_json_bytes(payload) + b"\n",
+    )
+    return load_paper_package(plan)
+
+
+def _write_or_verify_paper_artifact(
+    plan: SchedulerPlan,
+    path: Path,
+    content: bytes,
+    *,
+    name: str,
+) -> None:
+    if path.exists():
+        if _read_regular_file(path, name=name, reject_symlink=True) != content:
+            raise SchedulerIntegrityError(
+                f"existing {name} conflicts with immutable checkpoint",
+                category="paper_package_integrity",
+            )
+        return
+    _write_exclusive_atomic(plan.output_dir, path, content)
+
+
+def _paper_result_sha256(payload: Mapping[str, object]) -> str:
+    unsigned = dict(payload)
+    unsigned.pop("record_sha256", None)
+    return _sha256_bytes(_canonical_json_bytes(unsigned))
+
+
+def load_paper_package(plan: SchedulerPlan) -> PaperPackageResult:
+    """Load and fully revalidate the current durable paper-package binding."""
+
+    _require_plan(plan)
+    result_path = plan.output_dir / "paper-package-result.json"
+    payload = _load_strict_json(result_path, name="paper package result")
+    if not isinstance(payload, Mapping):
+        raise SchedulerIntegrityError(
+            "paper package result is not an object",
+            category="paper_package_integrity",
+        )
+    expected_fields = {
+        "schema_version",
+        "checkpoint_id",
+        "plan_id",
+        "drawing",
+        "drawing_id",
+        "ended_at",
+        "decision",
+        "reason",
+        "actionable",
+        "automatic_wagering",
+        "stake",
+        "requested_bank",
+        "count",
+        "cost",
+        "source_package_path",
+        "source_package_sha256",
+        "paper_path",
+        "paper_sha256",
+        "probability_input_sha256",
+        "provenance",
+        "completed_at",
+        "record_sha256",
+    }
+    if set(payload) != expected_fields:
+        raise SchedulerIntegrityError(
+            "paper package result fields are invalid",
+            category="paper_package_integrity",
+        )
+    if payload.get("record_sha256") != _paper_result_sha256(payload):
+        raise SchedulerIntegrityError(
+            "paper package result integrity hash mismatch",
+            category="paper_package_integrity",
+        )
+    decision = payload.get("decision")
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("plan_id") != plan.plan_id
+        or payload.get("drawing") != plan.drawing
+        or payload.get("drawing_id") != plan.drawing_id
+        or payload.get("ended_at") != _timestamp(plan.ended_at)
+        or decision not in {"PLAY", "NO BET"}
+        or payload.get("actionable") is not False
+        or payload.get("automatic_wagering") is not False
+        or payload.get("stake") != plan.stake
+        or payload.get("requested_bank") != plan.requested_bank
+    ):
+        raise SchedulerIntegrityError(
+            "paper package identity or release boundary mismatch",
+            category="paper_package_integrity",
+        )
+    checkpoint_id = _strict_text(
+        "paper package checkpoint_id", payload.get("checkpoint_id")
+    )
+    checkpoint = plan.output_dir / "paper-package" / "checkpoints" / checkpoint_id
+    _require_output_directory(plan.output_dir, checkpoint)
+    count = _strict_int("paper package count", payload.get("count"))
+    cost = _strict_int("paper package cost", payload.get("cost"))
+    if count < 0 or cost != count * plan.stake or cost > plan.requested_bank:
+        raise SchedulerIntegrityError(
+            "paper package dynamic bank contract failed",
+            category="paper_package_integrity",
+        )
+    source_value = payload.get("source_package_path")
+    paper_value = payload.get("paper_path")
+    source_path: Path | None = None
+    paper_path: Path | None = None
+    source_hash: str | None = None
+    paper_hash: str | None = None
+    if source_value is None or paper_value is None:
+        if not (
+            source_value is None
+            and paper_value is None
+            and payload.get("source_package_sha256") is None
+            and payload.get("paper_sha256") is None
+            and count == 0
+            and cost == 0
+        ):
+            raise SchedulerIntegrityError(
+                "paper package coupon artifact fields are incomplete",
+                category="paper_package_integrity",
+            )
+    else:
+        source_path = _require_contained_path(
+            checkpoint,
+            Path(str(source_value)),
+            name="paper source package",
+        )
+        paper_path = _require_contained_path(
+            checkpoint,
+            Path(str(paper_value)),
+            name="paper coupon payload",
+        )
+        if (
+            source_path != checkpoint / "source-package.csv"
+            or paper_path != checkpoint / "paper-package.txt"
+        ):
+            raise SchedulerIntegrityError(
+                "paper package artifact path is not canonical",
+                category="paper_package_integrity",
+            )
+        source_hash = _strict_sha256(
+            "paper source hash", payload.get("source_package_sha256")
+        )
+        paper_hash = _strict_sha256(
+            "paper payload hash", payload.get("paper_sha256")
+        )
+        source_bytes = _read_regular_file(
+            source_path, name="paper source package", reject_symlink=True
+        )
+        paper_bytes = _read_regular_file(
+            paper_path, name="paper coupon payload", reject_symlink=True
+        )
+        if (
+            _sha256_bytes(source_bytes) != source_hash
+            or _sha256_bytes(paper_bytes) != paper_hash
+        ):
+            raise SchedulerIntegrityError(
+                "paper package artifact hash mismatch",
+                category="paper_package_integrity",
+            )
+        source_summary = _validate_package_csv(
+            source_bytes,
+            stake=plan.stake,
+            minimum_gross_ev=plan.minimum_gross_ev,
+            expected_count=count,
+            expected_cost=cost,
+        )
+        validate_paper_package(
+            paper_bytes,
+            stake=plan.stake,
+            expected_coupons=source_summary.coupons,
+            expected_count=count,
+            expected_cost=cost,
+        )
+    probability_value = payload.get("probability_input_sha256")
+    probability_hash = (
+        None
+        if probability_value is None
+        else _strict_sha256("paper probability input hash", probability_value)
+    )
+    provenance_value = payload.get("provenance")
+    provenance = (
+        None
+        if provenance_value is None
+        else _strict_text("paper package provenance", provenance_value)
+    )
+    return PaperPackageResult(
+        result_path=result_path,
+        source_package_path=source_path,
+        paper_path=paper_path,
+        source_package_sha256=source_hash,
+        paper_sha256=paper_hash,
+        decision=decision,
+        reason=_strict_text("paper package reason", payload.get("reason")),
+        actionable=False,
+        count=count,
+        cost=cost,
+        stake=plan.stake,
+        probability_input_sha256=probability_hash,
+        provenance=provenance,
+        completed_at=_parse_utc_datetime(
+            "paper package completed_at", payload.get("completed_at")
+        ),
+    )
+
+
+def export_paper_package(
+    plan: SchedulerPlan,
+    *,
+    destination: str | Path,
+) -> Path:
+    """Copy only a validated paper payload to an explicit local destination."""
+
+    result = load_paper_package(plan)
+    if result.paper_path is None:
+        raise SchedulerIntegrityError(
+            "paper package has no coupon payload",
+            category="paper_package_unavailable",
+        )
+    payload = _read_regular_file(
+        result.paper_path, name="paper coupon payload", reject_symlink=True
+    )
+    output = _validated_project_path(
+        plan.project_root,
+        Path(destination),
+        name="paper package destination",
+    )
+    _write_exclusive_atomic(plan.project_root, output, payload, mode=0o600)
+    return output
 
 
 def _validate_baltbet_upload(

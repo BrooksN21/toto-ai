@@ -32,14 +32,32 @@ Every terminal scheduler result must expose exactly one final package summary:
 reason, `actionable=false`, source package path and SHA-256 when present,
 coupon count, stake, selected cost, probability-input hash, provenance, and
 completion time. The referenced paper CSV remains the existing
-`rank,coupon,gross_ev,net_ev` research format; it is never converted to the
-BaltBet upload format.
+`rank,coupon,gross_ev,net_ev` research evidence.
+
+Every computed package also has a separate display/download text artifact in
+the exact BaltBet text-editor syntax requested by the user. It contains no
+header, warning, Markdown, rank, or EV columns. Each coupon occupies one line:
+
+```text
+30; 1; X; 2; 1; 1; 2; X; 2; 1; X; 2; 2; 1; X; 2
+```
+
+The first field is the configured stake and exactly 15 semicolon-separated
+outcomes follow. Coupon order matches the validated source package. The text
+artifact must contain exactly `selected_count` unique lines and its implied
+cost must equal `selected_count * stake`.
+
+For `NO BET`, warnings such as `PAPER / NO BET / DO NOT WAGER` are shown in
+the surrounding CLI/status response only. They are never inserted into the
+copyable text artifact, so its format stays valid and deterministic. The
+artifact is still non-actionable and must not be exposed through
+`operator-export` or `.bet-ready`.
 
 Add a read-only `paper-package-show --plan ...` command. It validates all
-bindings and prints the terminal summary plus every coupon when requested.
-The output must begin and end with `PAPER / NO BET / DO NOT WAGER` for a
-non-actionable package. T-10 deletes only operator-upload surfaces; the paper
-artifact remains available for audit and learning.
+bindings, prints the terminal summary and warning to stderr, and writes only
+the exact BaltBet-format coupon lines to stdout or an explicit output file.
+T-10 deletes only actionable operator-upload surfaces; the non-actionable
+paper text artifact remains available for audit and learning.
 
 ## Post-draw schedule
 
@@ -111,8 +129,8 @@ may diagnose a defect but cannot activate a model or establish profitability.
 
 ## Verification
 
-Acceptance requires tests for PLAY and NO BET paper visibility, package-free
-NO BET, T-10 operator expiry without paper deletion, exact 12:00/three-hour
+Acceptance requires tests for PLAY and NO BET paper visibility, exact
+`stake; 15 outcomes` text syntax and pure stdout/file content, package-free NO
+BET, T-10 operator expiry without paper deletion, exact 12:00/three-hour
 cadence, incomplete and VOID results, idempotent settlement, notification
 failure, review-state transitions, and tampered package/result rejection.
-

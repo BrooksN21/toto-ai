@@ -21,6 +21,21 @@ ordinary scheduler command no longer prints internal/audit package paths as
 operator packages. At T-10 the upload surface is deleted and the operator
 result becomes non-actionable; archive/marker bytes remain audit evidence.
 
+The separate paper-package path is always non-actionable:
+
+```text
+validated terminal source package.csv
+-> immutable paper checkpoint/source-package.csv
+-> exact paper-package.txt (`stake; 15 outcomes`, one coupon per line)
+-> hash-bound paper-package-result.json written last
+-> paper-package-show revalidates every binding before display/copy
+```
+
+The paper payload contains no header, rank, EV, warning, or Markdown. Warnings
+are emitted separately. Package-free `NO BET` records zero count/cost and no
+coupon path. T-10 does not remove paper checkpoints, but neither
+`operator-export` nor `.bet-ready` accepts or references them.
+
 Morning preparation keeps identity coverage and kickoff evidence distinct.
 A baseline-only identity row with no kickoff produces a `timing_unknown`
 dependency even when preparation is READY 15/15. It enters the same

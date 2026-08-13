@@ -3,8 +3,12 @@
 ## 2026-08-13: every final calculation remains visible for learning
 
 - `NO BET` continues to mean non-actionable and must never be converted into
-  a BaltBet upload file, but its validated computed package is always exposed
-  as a clearly labelled paper artifact.
+  an actionable BaltBet upload, but its validated computed package is always
+  exposed as a clearly labelled paper artifact.
+- The copyable package payload itself always uses the exact BaltBet text-editor
+  format: one coupon per line, configured stake first, then exactly 15
+  semicolon-separated `1`/`X`/`2` outcomes. PAPER/NO BET warnings are outside
+  the payload so they cannot corrupt paste/file import.
 - Post-draw reconciliation starts at 12:00 Europe/Moscow on the next calendar
   day and retries incomplete results every three hours.
 - Complete settlement creates an explicit pending review request. The user is
