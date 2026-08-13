@@ -20,6 +20,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import urlsplit
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -41,6 +42,10 @@ RESULT_ENDPOINT_TEMPLATE = "/drawing-info/{drawing_id}"
 LEGACY_RESULT_SNAPSHOT_HASH_SCHEMA_VERSION = 1
 TIMED_RESULT_SNAPSHOT_HASH_SCHEMA_VERSION = 2
 RESULT_SNAPSHOT_HASH_SCHEMA_VERSION = 3
+POST_DRAW_PLAN_SCHEMA_VERSION = 2
+POST_DRAW_STATE_SCHEMA_VERSION = 2
+POST_DRAW_REVIEW_SCHEMA_VERSION = 1
+POST_DRAW_TIMEZONE = ZoneInfo("Europe/Moscow")
 
 
 @dataclass(frozen=True)
@@ -138,7 +143,7 @@ class PostDrawRetryConfig:
 @dataclass(frozen=True)
 class PostDrawState:
     schema_version: int
-    status: Literal["complete", "pending", "failed"]
+    status: Literal["complete", "pending", "failed", "blocked"]
     drawing_id: int
     drawing_number: int
     attempts: int
@@ -148,6 +153,11 @@ class PostDrawState:
     result_snapshot_sha256: str | None
     settlement_sha256: str | None
     reason: str
+    attempted_slots: tuple[str, ...] = ()
+    due_slot: str | None = None
+    error_type: str | None = None
+    archive_sha256: str | None = None
+    review_request_sha256: str | None = None
     state_sha256: str = ""
 
     def to_dict(self) -> dict[str, Any]:
@@ -826,7 +836,7 @@ def prepare_post_draw_scheduler_artifacts(
     drawing_id: int | None,
     drawing_number: int | None,
     ended_at: str,
-    package_file: str | Path,
+    package_file: str | Path | None,
     stake: int,
     db: str | Path,
     state_file: str | Path,
@@ -836,6 +846,9 @@ def prepare_post_draw_scheduler_artifacts(
     max_attempts: int,
     initial_delay_seconds: float,
     max_delay_seconds: float,
+    paper_result_file: str | Path | None = None,
+    void_event_orders: Sequence[int] = (),
+    void_source: str | None = None,
 ) -> tuple[Path, Path, Path]:
     """Generate, but never install, a local launchd wrapper and plist candidate."""
     if (drawing_id is None) == (drawing_number is None):
@@ -864,92 +877,716 @@ def prepare_post_draw_scheduler_artifacts(
     plist = output / f"com.toto-ai.post-draw-{target_label}.plist"
     plan = output / f"post-draw-{target_label}.json"
     ended = stored_ended
-    first_run = ended + timedelta(seconds=1)
-    plan.write_text(
-        json.dumps(
-            {
-                "schema_version": 1,
-                "drawing_id": resolved_id,
-                "drawing_number": resolved_number,
-                "ended_at": ended.isoformat(),
-                "first_run_at": first_run.isoformat(),
-                "package_file": str(Path(package_file).resolve()),
-                "db": str(Path(db).resolve()),
-                "state_file": str(Path(state_file).resolve()),
-            },
-            sort_keys=True,
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
+    first_local_date = ended.astimezone(POST_DRAW_TIMEZONE).date() + timedelta(days=1)
+    first_run = datetime.combine(
+        first_local_date,
+        datetime.min.time().replace(hour=12),
+        tzinfo=POST_DRAW_TIMEZONE,
     )
+    due_slots = tuple(
+        first_run + timedelta(hours=3 * index) for index in range(max_attempts)
+    )
+    package_binding = _build_post_draw_package_binding(
+        package_file=package_file,
+        paper_result_file=paper_result_file,
+        stake=stake,
+    )
+    void_orders, reviewed_void_source = _normalize_void_event_orders(
+        void_event_orders,
+        void_source=void_source,
+    )
+    plan_payload: dict[str, Any] = {
+        "schema_version": POST_DRAW_PLAN_SCHEMA_VERSION,
+        "drawing_id": resolved_id,
+        "drawing_number": resolved_number,
+        "ended_at": ended.isoformat(),
+        "timezone": "Europe/Moscow",
+        "first_run_at": first_run.isoformat(),
+        "interval_hours": 3,
+        "due_slots": [value.isoformat() for value in due_slots],
+        "expires_at": due_slots[-1].isoformat(),
+        "max_attempts": max_attempts,
+        "package_binding": package_binding,
+        "db": str(Path(db).resolve()),
+        "state_file": str(Path(state_file).resolve()),
+        "review_request_file": str((output / "review-request.json").resolve()),
+        "postmortem_file": str((output / "postmortem.md").resolve()),
+        "raw_archive_root": None,
+        "void_event_orders": list(void_orders),
+        "void_source": reviewed_void_source,
+        "automatic_wagering": False,
+        "automation_installation": False,
+    }
+    plan_payload["plan_sha256"] = _sha256_json(plan_payload)
+    plan_bytes = (
+        json.dumps(plan_payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    ).encode("utf-8")
+    _write_immutable_file(plan, plan_bytes, name="post-draw plan")
     argv = [
         str(Path(python_executable)),
         "-m",
         "toto_ai.cli",
         "post-draw-run",
-        "--drawing-id",
-        str(resolved_id),
-        "--package-file",
-        str(Path(package_file).resolve()),
-        "--stake",
-        str(stake),
-        "--db",
-        str(Path(db).resolve()),
-        "--state-file",
-        str(Path(state_file).resolve()),
-        "--max-attempts",
-        str(max_attempts),
-        "--initial-delay-seconds",
-        str(initial_delay_seconds),
-        "--max-delay-seconds",
-        str(max_delay_seconds),
+        "--plan",
+        str(plan.resolve()),
     ]
     command = "exec " + shlex.join(argv)
-    barrier = shlex.join(
-        [
-            str(Path(python_executable)),
-            "-c",
-            (
-                "import time; target="
-                f"{first_run.timestamp()!r}; "
-                "time.sleep(max(0.0, target-time.time()))"
-            ),
-        ]
-    )
-    wrapper.write_text(
+    wrapper_bytes = (
         "#!/bin/sh\nset -eu\n"
         f"cd {shlex.quote(str(root))}\n"
-        f"{barrier}\n"
-        f"{command}\n",
-        encoding="utf-8",
-    )
+        f"{command}\n"
+    ).encode()
+    _write_immutable_file(wrapper, wrapper_bytes, name="post-draw wrapper")
     wrapper.chmod(0o700)
-    # launchd has minute precision and interprets calendar fields in local time.
-    # launchd is only a wake-up hint. The wrapper's absolute epoch barrier is
-    # authoritative across seconds, timezone offsets, and DST transitions.
-    start = first_run.astimezone()
-    if start.second or start.microsecond:
-        start = (start + timedelta(minutes=1)).replace(second=0, microsecond=0)
-    plist.write_bytes(
-        plistlib.dumps(
-            {
-                "Label": f"com.toto-ai.post-draw-{target_label}",
-                "ProgramArguments": [str(wrapper)],
-                "WorkingDirectory": str(root),
-                "StartCalendarInterval": {
-                    "Year": start.year,
-                    "Month": start.month,
-                    "Day": start.day,
-                    "Hour": start.hour,
-                    "Minute": start.minute,
-                },
-            },
-            fmt=plistlib.FMT_XML,
-            sort_keys=False,
-        )
+    plist_bytes = plistlib.dumps(
+        {
+            "Label": f"com.toto-ai.post-draw-{target_label}",
+            "ProgramArguments": [str(wrapper)],
+            "WorkingDirectory": str(root),
+            "StartCalendarInterval": [
+                {
+                    "Year": value.year,
+                    "Month": value.month,
+                    "Day": value.day,
+                    "Hour": value.hour,
+                    "Minute": value.minute,
+                }
+                for value in due_slots
+            ],
+        },
+        fmt=plistlib.FMT_XML,
+        sort_keys=False,
     )
+    _write_immutable_file(plist, plist_bytes, name="post-draw launchd candidate")
     return plan, wrapper, plist
+
+
+def _write_immutable_file(path: Path, content: bytes, *, name: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        if path.is_symlink() or not path.is_file() or path.read_bytes() != content:
+            raise ValueError(f"{name} conflicts with immutable artifact")
+        return
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        temporary.write_bytes(content)
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _build_post_draw_package_binding(
+    *,
+    package_file: str | Path | None,
+    paper_result_file: str | Path | None,
+    stake: int,
+) -> dict[str, Any]:
+    if type(stake) is not int or stake < 1:
+        raise ValueError("stake must be a positive integer")
+    if package_file is None:
+        if paper_result_file is None:
+            raise ValueError("package-free NO BET requires paper_result_file")
+        paper_path = Path(paper_result_file).resolve()
+        if paper_path.is_symlink() or not paper_path.is_file():
+            raise ValueError("paper result must be a regular file")
+        paper_bytes = paper_path.read_bytes()
+        try:
+            payload = json.loads(paper_bytes)
+        except (TypeError, ValueError) as error:
+            raise ValueError("paper result is malformed") from error
+        if not (
+            isinstance(payload, dict)
+            and payload.get("decision") == "NO BET"
+            and payload.get("actionable") is False
+            and payload.get("count") == 0
+        ):
+            raise ValueError("package-free binding requires zero-coupon NO BET")
+        return {
+            "kind": "package_free_no_bet",
+            "source_path": None,
+            "source_bytes_sha256": None,
+            "package_sha256": None,
+            "paper_result_path": str(paper_path),
+            "paper_result_sha256": hashlib.sha256(paper_bytes).hexdigest(),
+            "stake": stake,
+            "coupon_count": 0,
+            "cost": 0,
+        }
+    if paper_result_file is not None:
+        raise ValueError("paper_result_file is only valid for package-free NO BET")
+    source = Path(package_file).resolve()
+    if source.is_symlink() or not source.is_file():
+        raise ValueError("package source must be a regular file")
+    source_bytes = source.read_bytes()
+    coupons, declared_stakes = _parse_package_source(source_bytes)
+    if declared_stakes and declared_stakes != {stake}:
+        raise ValueError("package declared stake mismatch")
+    return {
+        "kind": "package",
+        "source_path": str(source),
+        "source_bytes_sha256": hashlib.sha256(source_bytes).hexdigest(),
+        "package_sha256": _sha256_text(",".join(coupons)),
+        "paper_result_path": None,
+        "paper_result_sha256": None,
+        "stake": stake,
+        "coupon_count": len(coupons),
+        "cost": len(coupons) * stake,
+    }
+
+
+def load_post_draw_plan(path: str | Path) -> dict[str, Any]:
+    source = Path(path)
+    try:
+        if source.is_symlink() or not source.is_file():
+            raise ValueError("plan must be a regular file")
+        payload = json.loads(source.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("plan must be an object")
+        unsigned = dict(payload)
+        plan_hash = unsigned.pop("plan_sha256", None)
+        if payload.get("schema_version") != POST_DRAW_PLAN_SCHEMA_VERSION:
+            raise ValueError("unsupported post-draw plan schema")
+        if plan_hash != _sha256_json(unsigned):
+            raise ValueError("post-draw plan hash mismatch")
+        if payload.get("timezone") != "Europe/Moscow":
+            raise ValueError("post-draw timezone mismatch")
+        due_slots = tuple(
+            _parse_timestamp_required(value) for value in payload.get("due_slots", [])
+        )
+        if not due_slots or len(due_slots) != payload.get("max_attempts"):
+            raise ValueError("post-draw due slots are invalid")
+        if any(
+            (right - left).total_seconds() != 10_800
+            for left, right in zip(due_slots, due_slots[1:], strict=False)
+        ):
+            raise ValueError("post-draw cadence is invalid")
+        first = datetime.fromisoformat(payload["first_run_at"])
+        if first.tzinfo is None or first.astimezone(POST_DRAW_TIMEZONE).hour != 12:
+            raise ValueError("post-draw first run is invalid")
+        if _parse_timestamp_required(payload["first_run_at"]) != due_slots[0]:
+            raise ValueError("post-draw first run does not match due slots")
+        if _parse_timestamp_required(payload["expires_at"]) != due_slots[-1]:
+            raise ValueError("post-draw expiry does not match due slots")
+        if payload.get("automatic_wagering") is not False:
+            raise ValueError("post-draw plan cannot enable wagering")
+        _validate_post_draw_package_binding(payload.get("package_binding"))
+        return payload
+    except (KeyError, OSError, TypeError, ValueError) as error:
+        raise ValueError("post-draw plan is malformed or violates integrity") from error
+
+
+def _validate_post_draw_package_binding(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ValueError("package binding must be an object")
+    kind = value.get("kind")
+    if kind == "package":
+        source = Path(value["source_path"])
+        if source.is_symlink() or not source.is_file():
+            raise ValueError("bound package source is unavailable")
+        source_bytes = source.read_bytes()
+        if hashlib.sha256(source_bytes).hexdigest() != value.get(
+            "source_bytes_sha256"
+        ):
+            raise ValueError("bound package source hash mismatch")
+        coupons, declared_stakes = _parse_package_source(source_bytes)
+        if declared_stakes and declared_stakes != {value.get("stake")}:
+            raise ValueError("bound package stake mismatch")
+        if _sha256_text(",".join(coupons)) != value.get("package_sha256"):
+            raise ValueError("bound canonical package hash mismatch")
+        if value.get("coupon_count") != len(coupons):
+            raise ValueError("bound package coupon count mismatch")
+        if value.get("cost") != len(coupons) * value.get("stake"):
+            raise ValueError("bound package cost mismatch")
+    elif kind == "package_free_no_bet":
+        paper = Path(value["paper_result_path"])
+        if paper.is_symlink() or not paper.is_file():
+            raise ValueError("bound paper result is unavailable")
+        if hashlib.sha256(paper.read_bytes()).hexdigest() != value.get(
+            "paper_result_sha256"
+        ):
+            raise ValueError("bound paper result hash mismatch")
+        if any(
+            value.get(name) not in (None, 0)
+            for name in (
+                "source_path",
+                "source_bytes_sha256",
+                "package_sha256",
+                "coupon_count",
+                "cost",
+            )
+        ):
+            raise ValueError("package-free binding contains package evidence")
+    else:
+        raise ValueError("unsupported post-draw package binding")
+    return value
+
+
+def due_post_draw_attempts(
+    plan: Mapping[str, Any],
+    *,
+    now: datetime,
+    attempted_slots: Sequence[str] = (),
+) -> tuple[str, ...]:
+    current = _aware_utc(now)
+    attempted = set(attempted_slots)
+    return tuple(
+        value
+        for value in plan["due_slots"]
+        if value not in attempted and _parse_timestamp_required(value) <= current
+    )
+
+
+def run_post_draw_plan(
+    session_factory: sessionmaker[Session],
+    client: Any,
+    *,
+    plan_path: str | Path,
+    now: Callable[[], datetime] | None = None,
+    notifier: Callable[[str], None] | None = None,
+) -> PostDrawState:
+    """Execute at most one due slot from a hash-bound post-draw plan."""
+
+    clock = now or (lambda: datetime.now(timezone.utc))
+    try:
+        plan = load_post_draw_plan(plan_path)
+    except ValueError as error:
+        try:
+            unsafe = json.loads(Path(plan_path).read_text(encoding="utf-8"))
+        except (OSError, TypeError, ValueError):
+            unsafe = {}
+        return PostDrawState(
+            schema_version=POST_DRAW_STATE_SCHEMA_VERSION,
+            status="blocked",
+            drawing_id=int(unsafe.get("drawing_id") or 0),
+            drawing_number=int(unsafe.get("drawing_number") or 0),
+            attempts=0,
+            max_attempts=int(unsafe.get("max_attempts") or 0),
+            updated_at=_aware_utc(clock()).isoformat(),
+            package_sha256=None,
+            result_snapshot_sha256=None,
+            settlement_sha256=None,
+            reason="REVIEW_BLOCKED_INTEGRITY",
+            error_type=type(error).__name__,
+        )
+    state_path = Path(plan["state_file"])
+    lock_path = state_path.with_name(f"{state_path.name}.lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            return _run_post_draw_plan_locked(
+                session_factory,
+                client,
+                plan=plan,
+                state_path=state_path,
+                now=clock,
+                notifier=notifier,
+            )
+        finally:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+
+
+def _run_post_draw_plan_locked(
+    session_factory: sessionmaker[Session],
+    client: Any,
+    *,
+    plan: Mapping[str, Any],
+    state_path: Path,
+    now: Callable[[], datetime],
+    notifier: Callable[[str], None] | None,
+) -> PostDrawState:
+    current = _aware_utc(now())
+    binding = _validate_post_draw_package_binding(plan["package_binding"])
+    previous = _load_state(state_path)
+    if previous is not None:
+        if (
+            previous.drawing_id != plan["drawing_id"]
+            or previous.drawing_number != plan["drawing_number"]
+            or previous.package_sha256 != binding.get("package_sha256")
+        ):
+            blocked = _post_draw_plan_state(
+                plan,
+                status="blocked",
+                reason="REVIEW_BLOCKED_INTEGRITY",
+                updated_at=current,
+                attempted_slots=previous.attempted_slots,
+                error_type="StateIdentityConflict",
+            )
+            _write_state(state_path, blocked)
+            return blocked
+        if previous.status in {"complete", "blocked"}:
+            if previous.review_request_sha256 is not None:
+                request = load_review_request(plan["review_request_file"])
+                if request["request_sha256"] != previous.review_request_sha256:
+                    raise ValueError("review request binding mismatch")
+            if previous.settlement_sha256 is not None:
+                with session_factory() as session:
+                    _verified_settlement(session, previous.settlement_sha256)
+            return previous
+
+    attempted = () if previous is None else previous.attempted_slots
+    due = due_post_draw_attempts(plan, now=current, attempted_slots=attempted)
+    if not due:
+        reason = (
+            "POST_DRAW_SCHEDULE_EXHAUSTED"
+            if current > _parse_timestamp_required(plan["expires_at"])
+            else "POST_DRAW_NOT_DUE"
+        )
+        state = _post_draw_plan_state(
+            plan,
+            status="pending",
+            reason=reason,
+            updated_at=current,
+            attempted_slots=attempted,
+        )
+        _write_state(state_path, state)
+        return state
+    due_slot = due[-1]
+    attempted = (*attempted, due_slot)
+    try:
+        synced = sync_finished_drawing(
+            session_factory,
+            client,
+            drawing_id=plan["drawing_id"],
+            retrieved_at=current,
+            void_event_orders=plan.get("void_event_orders", ()),
+            void_source=plan.get("void_source"),
+            raw_archive_root=plan.get("raw_archive_root"),
+        )
+        archive: PackageArchive | None = None
+        settlement: Settlement | None = None
+        if binding["kind"] == "package":
+            try:
+                with session_factory() as session:
+                    existing_archive = _verified_archive_for_source(
+                        session,
+                        binding["source_path"],
+                        drawing_id=plan["drawing_id"],
+                        drawing_number=plan["drawing_number"],
+                        stake=binding["stake"],
+                    )
+            except ValueError:
+                archive = archive_package(
+                    session_factory,
+                    binding["source_path"],
+                    drawing_id=plan["drawing_id"],
+                    drawing_number=plan["drawing_number"],
+                    stake=binding["stake"],
+                    provenance="legacy_import",
+                )
+            else:
+                archive = _archive_result(existing_archive, created=False)
+            if archive.package_sha256 != binding["package_sha256"]:
+                raise ValueError("archived package binding mismatch")
+            settlement = settle_archived_package(
+                session_factory,
+                snapshot_sha256=synced.snapshot_sha256,
+                archive_sha256=archive.archive_sha256,
+                settled_at=current,
+            )
+        request = create_review_request(
+            plan["review_request_file"],
+            drawing_id=plan["drawing_id"],
+            drawing_number=plan["drawing_number"],
+            package_kind=binding["kind"],
+            settlement=(None if settlement is None else settlement.to_dict()),
+            snapshot_sha256=synced.snapshot_sha256,
+            actual=synced.actual,
+            void_event_orders=synced.void_event_orders,
+            requested_at=current,
+            notifier=notifier,
+        )
+    except Exception as error:  # classified into durable retry/integrity state
+        reason, status = _classify_post_draw_error(error)
+        state = _post_draw_plan_state(
+            plan,
+            status=status,
+            reason=reason,
+            updated_at=current,
+            attempted_slots=attempted,
+            due_slot=due_slot,
+            error_type=type(error).__name__,
+        )
+        _write_state(state_path, state)
+        return state
+
+    state = _post_draw_plan_state(
+        plan,
+        status="complete",
+        reason=(
+            "PACKAGE_FREE_NO_BET_COMPLETE"
+            if settlement is None
+            else "SETTLEMENT_COMPLETE"
+        ),
+        updated_at=current,
+        attempted_slots=attempted,
+        due_slot=due_slot,
+        archive_sha256=None if archive is None else archive.archive_sha256,
+        result_snapshot_sha256=synced.snapshot_sha256,
+        settlement_sha256=(
+            None if settlement is None else settlement.settlement_sha256
+        ),
+        review_request_sha256=request["request_sha256"],
+    )
+    _write_state(state_path, state)
+    return state
+
+
+def _post_draw_plan_state(
+    plan: Mapping[str, Any],
+    *,
+    status: Literal["complete", "pending", "failed", "blocked"],
+    reason: str,
+    updated_at: datetime,
+    attempted_slots: Sequence[str],
+    due_slot: str | None = None,
+    error_type: str | None = None,
+    archive_sha256: str | None = None,
+    result_snapshot_sha256: str | None = None,
+    settlement_sha256: str | None = None,
+    review_request_sha256: str | None = None,
+) -> PostDrawState:
+    binding = plan["package_binding"]
+    return PostDrawState(
+        schema_version=POST_DRAW_STATE_SCHEMA_VERSION,
+        status=status,
+        drawing_id=plan["drawing_id"],
+        drawing_number=plan["drawing_number"],
+        attempts=len(attempted_slots),
+        max_attempts=plan["max_attempts"],
+        updated_at=updated_at.isoformat(),
+        package_sha256=binding.get("package_sha256"),
+        result_snapshot_sha256=result_snapshot_sha256,
+        settlement_sha256=settlement_sha256,
+        reason=reason,
+        attempted_slots=tuple(attempted_slots),
+        due_slot=due_slot,
+        error_type=error_type,
+        archive_sha256=archive_sha256,
+        review_request_sha256=review_request_sha256,
+    )
+
+
+def _classify_post_draw_error(
+    error: BaseException,
+) -> tuple[str, Literal["pending", "blocked", "failed"]]:
+    message = _safe_reason(error).lower()
+    if isinstance(error, (ConnectionError, TimeoutError, OSError)) or any(
+        token in message
+        for token in ("network", "offline", "timeout", "unavailable", "transport")
+    ):
+        return "PENDING_TRANSPORT", "pending"
+    if any(
+        token in message
+        for token in ("15/15", "unresolved", "not finished", "result", "postpon")
+    ):
+        return "PENDING_RESULTS", "pending"
+    if isinstance(error, (ValueError, KeyError, TypeError)):
+        return "REVIEW_BLOCKED_INTEGRITY", "blocked"
+    return "POST_DRAW_FAILED", "failed"
+
+
+def create_review_request(
+    path: str | Path,
+    *,
+    drawing_id: int,
+    drawing_number: int,
+    package_kind: Literal["package", "package_free_no_bet"],
+    settlement: Mapping[str, Any] | None,
+    requested_at: datetime,
+    snapshot_sha256: str | None = None,
+    actual: str | None = None,
+    void_event_orders: Sequence[int] = (),
+    notifier: Callable[[str], None] | None = None,
+) -> dict[str, Any]:
+    destination = Path(path)
+    if destination.exists():
+        existing = load_review_request(destination)
+        if (
+            existing["drawing_id"] != drawing_id
+            or existing["drawing_number"] != drawing_number
+            or existing["package_kind"] != package_kind
+        ):
+            raise ValueError("existing review request identity conflict")
+        return existing
+    if package_kind == "package" and settlement is None:
+        raise ValueError("package review requires settlement")
+    if settlement is not None:
+        snapshot_sha256 = str(settlement["snapshot_sha256"])
+        actual = str(settlement["actual"])
+        void_event_orders = settlement.get("void_event_orders", ())
+    if snapshot_sha256 is None or actual is None:
+        raise ValueError("review request requires result snapshot and actual result")
+    question = f"Разбираем пакет тиража {drawing_number}?"
+    notification: dict[str, Any] = {"status": "not_attempted", "error": None}
+    if notifier is not None:
+        try:
+            notifier(question)
+        except Exception as error:  # notification is advisory only
+            notification = {"status": "failed", "error": _safe_reason(error)}
+        else:
+            notification = {"status": "sent", "error": None}
+    payload: dict[str, Any] = {
+        "schema_version": POST_DRAW_REVIEW_SCHEMA_VERSION,
+        "status": "AWAITING_USER_REVIEW",
+        "drawing_id": drawing_id,
+        "drawing_number": drawing_number,
+        "package_kind": package_kind,
+        "package_sha256": None if settlement is None else settlement["package_sha256"],
+        "snapshot_sha256": snapshot_sha256,
+        "settlement_sha256": (
+            None if settlement is None else settlement["settlement_sha256"]
+        ),
+        "actual": actual,
+        "void_event_orders": list(void_event_orders),
+        "hit_distribution": (
+            None if settlement is None else settlement["hit_distribution"]
+        ),
+        "best_hits": None if settlement is None else settlement["best_hits"],
+        "best_coupon_ranks": (
+            [] if settlement is None else list(settlement["best_coupon_ranks"])
+        ),
+        "category_counts": (
+            None if settlement is None else settlement["category_counts"]
+        ),
+        "cost": 0 if settlement is None else settlement["cost"],
+        "fixed_miss_events": (
+            [] if settlement is None else list(settlement["fixed_miss_events"])
+        ),
+        "zero_exposure_miss_events": (
+            []
+            if settlement is None
+            else list(settlement["zero_exposure_miss_events"])
+        ),
+        "known_return": None if settlement is None else settlement["known_return"],
+        "roi": None if settlement is None else settlement["roi"],
+        "return_status": (
+            "package_free_no_bet"
+            if settlement is None
+            else settlement["return_status"]
+        ),
+        "question": question,
+        "requested_at": _aware_utc(requested_at).isoformat(),
+        "transitioned_at": None,
+        "postmortem_path": None,
+        "postmortem_sha256": None,
+        "notification": notification,
+    }
+    payload["request_sha256"] = _review_request_sha256(payload)
+    _write_json_replace(destination, payload)
+    return load_review_request(destination)
+
+
+def _review_request_sha256(payload: Mapping[str, Any]) -> str:
+    unsigned = dict(payload)
+    unsigned.pop("request_sha256", None)
+    normalized = json.loads(json.dumps(unsigned, ensure_ascii=False))
+    return _sha256_json(normalized)
+
+
+def _write_json_replace(path: Path, payload: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        temporary.write_text(
+            json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def load_review_request(path: str | Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(Path(path).read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("review request must be an object")
+        if payload.get("schema_version") != POST_DRAW_REVIEW_SCHEMA_VERSION:
+            raise ValueError("unsupported review request schema")
+        if payload.get("request_sha256") != _review_request_sha256(payload):
+            raise ValueError("review request hash mismatch")
+        if payload.get("status") == "REVIEW_COMPLETE":
+            postmortem = Path(payload["postmortem_path"])
+            if postmortem.is_symlink() or not postmortem.is_file():
+                raise ValueError("completed review postmortem is unavailable")
+            if hashlib.sha256(postmortem.read_bytes()).hexdigest() != payload.get(
+                "postmortem_sha256"
+            ):
+                raise ValueError("postmortem hash mismatch")
+        return payload
+    except (KeyError, OSError, TypeError, ValueError) as error:
+        if isinstance(error, ValueError) and "postmortem hash" in str(error):
+            raise
+        raise ValueError("review request is malformed") from error
+
+
+def transition_review_request(
+    path: str | Path,
+    *,
+    transition: Literal["request", "skip"],
+    transitioned_at: datetime,
+) -> dict[str, Any]:
+    payload = load_review_request(path)
+    if payload["status"] != "AWAITING_USER_REVIEW":
+        raise ValueError("review transition is not allowed from current status")
+    if transition not in {"request", "skip"}:
+        raise ValueError("unsupported review transition")
+    payload["status"] = (
+        "REVIEW_REQUESTED" if transition == "request" else "REVIEW_SKIPPED"
+    )
+    payload["transitioned_at"] = _aware_utc(transitioned_at).isoformat()
+    payload["request_sha256"] = _review_request_sha256(payload)
+    _write_json_replace(Path(path), payload)
+    return load_review_request(path)
+
+
+def complete_post_draw_review(
+    path: str | Path,
+    *,
+    postmortem_path: str | Path,
+    completed_at: datetime,
+) -> dict[str, Any]:
+    payload = load_review_request(path)
+    destination = Path(postmortem_path).resolve()
+    if payload["status"] == "REVIEW_COMPLETE":
+        if Path(payload["postmortem_path"]) != destination:
+            raise ValueError("completed review postmortem path conflict")
+        return payload
+    if payload["status"] not in {"REVIEW_REQUESTED", "REVIEW_SKIPPED"}:
+        raise ValueError("review completion transition is not allowed")
+    postmortem = _render_postmortem(payload).encode("utf-8")
+    _write_immutable_file(destination, postmortem, name="post-draw postmortem")
+    payload["status"] = "REVIEW_COMPLETE"
+    payload["transitioned_at"] = _aware_utc(completed_at).isoformat()
+    payload["postmortem_path"] = str(destination)
+    payload["postmortem_sha256"] = hashlib.sha256(postmortem).hexdigest()
+    payload["request_sha256"] = _review_request_sha256(payload)
+    _write_json_replace(Path(path), payload)
+    return load_review_request(path)
+
+
+def _render_postmortem(payload: Mapping[str, Any]) -> str:
+    return (
+        f"# Post-draw review: drawing {payload['drawing_number']}\n\n"
+        f"- Package kind: `{payload['package_kind']}`\n"
+        f"- Actual/VOID: `{payload['actual']}` / {payload['void_event_orders']}\n"
+        f"- Best hits/ranks: {payload['best_hits']} / {payload['best_coupon_ranks']}\n"
+        f"- Hit distribution: {payload['hit_distribution']}\n"
+        f"- Categories 13/14/15: {payload['category_counts']}\n"
+        f"- Fixed misses: {payload['fixed_miss_events']}\n"
+        f"- Zero-exposure misses: {payload['zero_exposure_miss_events']}\n"
+        f"- Cost / known return / ROI: {payload['cost']} / "
+        f"{payload['known_return']} / {payload['roi']} "
+        f"(`{payload['return_status']}`)\n\n"
+        "## Probability comparison\n\n"
+        "BK / pool / Pin / sports-shadow / selected probabilities: "
+        "not embedded in this settlement artifact; inspect the bound scheduler "
+        "evidence before attributing errors.\n\n"
+        "## Interpretation boundary\n\n"
+        "This report is deterministic evidence for error analysis; one drawing "
+        "cannot establish causality or profitability.\n"
+    )
 
 
 def _resolve_explicit_drawing(
@@ -1658,6 +2295,8 @@ def _load_state(path: str | Path) -> PostDrawState | None:
         unsigned.pop("state_sha256")
         if _sha256_json(unsigned) != state_hash:
             raise ValueError("state hash mismatch")
+        if isinstance(data.get("attempted_slots"), list):
+            data["attempted_slots"] = tuple(data["attempted_slots"])
         return PostDrawState(**data)
     except (OSError, TypeError, ValueError) as error:
         raise ValueError("post-draw state is malformed") from error

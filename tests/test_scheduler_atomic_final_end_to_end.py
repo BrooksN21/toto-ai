@@ -762,6 +762,11 @@ def test_archive_without_marker_is_recovered_at_hard_t10(tmp_path):
 
     published = _tick(plan, runner, plan.final_at)
     assert published is not None and published.outcome == "bet-ready"
+    post_draw_plan = plan.output_dir / "post-draw" / f"post-draw-{plan.drawing_id}.json"
+    assert post_draw_plan.is_file()
+    post_draw = json.loads(post_draw_plan.read_text())
+    assert post_draw["package_binding"]["kind"] == "package"
+    assert post_draw["automatic_wagering"] is False
     assert published.marker_path is not None
     published.marker_path.unlink()
     save_state(

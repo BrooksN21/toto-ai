@@ -36,6 +36,28 @@ are emitted separately. Package-free `NO BET` records zero count/cost and no
 coupon path. T-10 does not remove paper checkpoints, but neither
 `operator-export` nor `.bet-ready` accepts or references them.
 
+## Automatic post-draw review boundary
+
+Every terminal scheduler result now produces an uninstalled post-draw
+candidate only after a durable non-actionable paper state exists:
+
+```text
+terminal scheduler status/marker
+-> validated paper package OR zero-cost package-free paper result
+-> hash-bound post-draw plan
+-> next Moscow calendar day 12:00
+-> three-hour result retries within bounded slots
+-> existing result sync + reviewed VOID + archive/settlement
+-> durable review-request.json
+-> explicit user review transition + immutable postmortem
+```
+
+Post-draw generation is advisory and fail-safe. A missing database row,
+artifact conflict, or generation error is written to
+`post-draw/generation-error.json` and cannot mutate or replace the primary
+scheduler result. Generated launchd artifacts are candidates only; the code
+does not install them and never places a wager.
+
 Morning preparation keeps identity coverage and kickoff evidence distinct.
 A baseline-only identity row with no kickoff produces a `timing_unknown`
 dependency even when preparation is READY 15/15. It enters the same

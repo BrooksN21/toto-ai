@@ -730,7 +730,9 @@ profitability or a proven winning strategy.
 - [ ] Continue the controlled
   historical backlog.
 - [ ] Install/schedule nightly listing/detail/result reconciliation and health report only after canary acceptance.
-- [ ] Complete actionable package settlement and mandatory post-draw report.
+- [x] Complete package/package-free settlement scheduling and mandatory
+  post-draw review-request lifecycle. Actionable package settlement continues
+  to use the same archive and result evidence boundary.
 
 Do not build another optimizer before the measurable lifecycle
 `drawing -> package -> archive -> results/VOID -> settlement -> review` is
@@ -738,10 +740,10 @@ closed.
 
 - [x] Expose every final computed package, including `NO BET`, through a
   validated `PAPER / DO NOT WAGER` report and read-only display command.
-- [ ] Schedule post-draw result checks for 12:00 Moscow next day with
+- [x] Schedule post-draw result checks for 12:00 Moscow next day with
   three-hour retries; create a durable user review request after 15/15 terminal
   outcomes and settlement.
-- [ ] Generate immutable package postmortems covering event exposure, actual
+- [x] Generate immutable package postmortems covering event exposure, actual
   outcomes/VOID, BK/pool/Pin/sports probabilities, category hits and payout
   status.
 - [ ] Audit free sports-data source coverage on Toto competitions and freeze

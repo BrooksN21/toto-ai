@@ -4965,7 +4965,141 @@ def _finalize_status(
             )
         else:
             raise
+    _ensure_post_draw_plan_candidate(
+        plan,
+        run_dir=run_dir,
+        terminal_status=status,
+        completed_at=completed_at,
+    )
     return _execution_result_from_status(status, run_dir, status_path)
+
+
+def _ensure_terminal_paper_result(
+    plan: SchedulerPlan,
+    *,
+    run_dir: Path,
+    terminal_status: Mapping[str, Any],
+    completed_at: datetime,
+) -> PaperPackageResult:
+    """Load or create the non-actionable paper state for one terminal run."""
+
+    result_path = plan.output_dir / "paper-package-result.json"
+    if _path_exists(result_path):
+        return load_paper_package(plan)
+
+    source_value = terminal_status.get("package_path")
+    source_package: Path | None = None
+    expected_count = 0
+    expected_cost = 0
+    probability_input_sha256: str | None = None
+    if source_value is not None:
+        if not isinstance(source_value, str) or not source_value:
+            raise SchedulerIntegrityError(
+                "terminal paper source path is invalid",
+                category="paper_package_integrity",
+            )
+        source_package = _normalized_path(source_value)
+        expected_count = _strict_int(
+            "terminal paper selected_count",
+            terminal_status.get("selected_count"),
+        )
+        expected_cost = _strict_int(
+            "terminal paper selected_cost",
+            terminal_status.get("selected_cost"),
+        )
+        final_input_path = run_dir / "final-input.json"
+        if _path_exists(final_input_path):
+            probability_input_sha256 = load_final_input(
+                final_input_path,
+                expected_plan=plan,
+            ).probability_input_sha256
+
+    decision: Literal["PLAY", "NO BET"] = (
+        "PLAY"
+        if terminal_status.get("outcome") == "bet-ready"
+        and terminal_status.get("decision") == "PLAY"
+        and source_package is not None
+        else "NO BET"
+    )
+    provenance_value = terminal_status.get("provenance")
+    provenance = provenance_value if isinstance(provenance_value, str) else None
+    reason_value = terminal_status.get("reason")
+    reason = (
+        reason_value
+        if isinstance(reason_value, str) and reason_value
+        else decision
+    )
+    return persist_paper_package_artifacts(
+        plan,
+        source_package=source_package,
+        decision=decision,
+        reason=reason,
+        completed_at=completed_at,
+        probability_input_sha256=probability_input_sha256,
+        provenance=provenance,
+        expected_count=expected_count,
+        expected_cost=expected_cost,
+    )
+
+
+def _ensure_post_draw_plan_candidate(
+    plan: SchedulerPlan,
+    *,
+    run_dir: Path,
+    terminal_status: Mapping[str, Any],
+    completed_at: datetime,
+) -> None:
+    """Best-effort generation that cannot alter the primary terminal result."""
+
+    output = plan.output_dir / "post-draw"
+    try:
+        from toto_ai.operations.finished_draw import (
+            prepare_post_draw_scheduler_artifacts,
+        )
+
+        paper = _ensure_terminal_paper_result(
+            plan,
+            run_dir=run_dir,
+            terminal_status=terminal_status,
+            completed_at=completed_at,
+        )
+        prepare_post_draw_scheduler_artifacts(
+            drawing_id=plan.drawing_id,
+            drawing_number=None if plan.drawing_id is not None else plan.drawing,
+            ended_at=_timestamp(plan.ended_at),
+            package_file=paper.source_package_path,
+            paper_result_file=(
+                paper.result_path if paper.source_package_path is None else None
+            ),
+            stake=paper.stake,
+            db=plan.db,
+            state_file=output / "post-draw-state.json",
+            output_dir=output,
+            project_root=plan.project_root,
+            python_executable=sys.executable,
+            max_attempts=6,
+            initial_delay_seconds=0,
+            max_delay_seconds=0,
+        )
+    except Exception as error:
+        error_payload = {
+            "schema_version": 1,
+            "drawing": plan.drawing,
+            "drawing_id": plan.drawing_id,
+            "completed_at": _timestamp(completed_at),
+            "automatic_wagering": False,
+            "error": _safe_error(error),
+        }
+        try:
+            _ensure_output_directory(plan.output_dir, output)
+            _write_replace_atomic(
+                plan.output_dir,
+                output / "generation-error.json",
+                _canonical_json_bytes(error_payload) + b"\n",
+            )
+        except Exception:
+            # Advisory reporting must never trigger a second primary finalization.
+            return
 
 
 def _validate_selector_diagnostics(

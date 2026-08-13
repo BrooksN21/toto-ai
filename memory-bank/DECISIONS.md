@@ -14,6 +14,19 @@
 - Complete settlement creates an explicit pending review request. The user is
   asked whether to analyze it; no package is silently marked reviewed.
 
+## 2026-08-13: post-draw automation is advisory to scheduler finalization
+
+- The first post-draw check is 12:00 Europe/Moscow on the next Moscow calendar
+  day after the drawing deadline, followed by bounded three-hour retries.
+- The workflow reuses authoritative result sync, reviewed VOID handling,
+  package archive, and settlement; it does not implement parallel hit or payout
+  mathematics.
+- A terminal scheduler result always wins over secondary post-draw automation.
+  Missing package evidence creates only a package-free paper/review path;
+  generation failures are diagnostics and cannot rewrite the primary marker.
+- Generated launchd files are candidates only. Installation and wagering are
+  outside this feature and never happen automatically.
+
 ## 2026-08-13: sports evidence adjusts, but does not replace, the market prior
 
 - TotoBrief BK remains the production control. Pool is crowd/payout evidence;

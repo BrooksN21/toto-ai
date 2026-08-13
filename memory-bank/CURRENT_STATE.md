@@ -1,5 +1,28 @@
 # Current State
 
+## Automatic post-draw review lifecycle completed (2026-08-13)
+
+The scheduler now creates an uninstalled, non-betting post-draw candidate for
+every terminal outcome. The first result check is 12:00 Europe/Moscow on the
+next Moscow calendar day after the drawing deadline; incomplete drawings retry
+at three-hour intervals within the plan's bounded attempt window.
+
+The workflow reuses the existing authoritative result synchronization,
+reviewed VOID handling, immutable package archive, and settlement algorithms.
+It supports package-bound and package-free `NO BET` lifecycles, persists typed
+pending/transport/integrity states, and creates a hash-bound
+`review-request.json` after complete results. Review transitions are explicit:
+`AWAITING_USER_REVIEW -> REVIEW_REQUESTED|REVIEW_SKIPPED -> REVIEW_COMPLETE`.
+
+Post-draw preparation is advisory to the primary scheduler. Missing paper
+state is normalized to a zero-cost package-free paper result when no validated
+package exists; any post-draw generation failure is recorded separately and
+cannot change the terminal scheduler status/marker or create a second
+finalization failure. No LaunchAgent is installed and no wager is placed.
+
+Verification after the fail-safe boundary repair passed `1830 passed, 13
+deselected in 120.89s`; full Ruff and `git diff --check` passed.
+
 ## Exact durable PAPER package completed (2026-08-13)
 
 Tasks 1-3 of the approved paper/post-draw plan are implemented. The scheduler

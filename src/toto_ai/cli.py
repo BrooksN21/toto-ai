@@ -150,12 +150,16 @@ from toto_ai.external_odds.timing_overrides import (
 from toto_ai.operations.finished_draw import (
     PostDrawRetryConfig,
     archive_package,
+    complete_post_draw_review,
     import_prebet_package_manifest,
+    load_review_request,
     prepare_post_draw_scheduler_artifacts,
     resolve_explicit_drawing,
     run_post_draw,
+    run_post_draw_plan,
     settle_package_file,
     sync_finished_drawing,
+    transition_review_request,
 )
 from toto_ai.operations.nightly_reconciliation import (
     DEFAULT_BACKUP_RETENTION,
@@ -739,8 +743,9 @@ def archive_package_command(
 
 @app.command("post-draw-run")
 def post_draw_run_command(
-    package_file: str = typer.Option(..., "--package-file"),
-    state_file: str = typer.Option(..., "--state-file"),
+    plan: str | None = typer.Option(None, "--plan"),
+    package_file: str | None = typer.Option(None, "--package-file"),
+    state_file: str | None = typer.Option(None, "--state-file"),
     drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
     drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
     stake: int = typer.Option(30, "--stake", min=1),
@@ -767,8 +772,30 @@ def post_draw_run_command(
     ),
 ) -> None:
     """Boundedly poll and settle one explicit ended drawing; never places bets."""
+    if plan is not None:
+        if any(
+            value is not None
+            for value in (package_file, state_file, drawing_id, drawing_number)
+        ):
+            raise typer.BadParameter(
+                "--plan cannot be combined with package/identity/state options"
+            )
+        try:
+            state = run_post_draw_plan(
+                get_session_factory(init_db(db)),
+                TotoBriefClient(),
+                plan_path=plan,
+            )
+        except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
+            raise typer.BadParameter(str(error)) from error
+        typer.echo(json.dumps(state.to_dict(), ensure_ascii=False, sort_keys=True))
+        if state.status != "complete":
+            raise typer.Exit(code=2 if state.status == "pending" else 1)
+        return
     if (drawing_id is None) == (drawing_number is None):
         raise typer.BadParameter("use exactly one of --drawing-id or --drawing-number")
+    if package_file is None or state_file is None:
+        raise typer.BadParameter("legacy mode requires --package-file and --state-file")
     try:
         state = run_post_draw(
             get_session_factory(init_db(db)),
@@ -795,7 +822,8 @@ def post_draw_run_command(
 
 @app.command("post-draw-plan")
 def post_draw_plan_command(
-    package_file: str = typer.Option(..., "--package-file"),
+    package_file: str | None = typer.Option(None, "--package-file"),
+    paper_result_file: str | None = typer.Option(None, "--paper-result-file"),
     ended_at: str = typer.Option(..., "--ended-at"),
     state_file: str = typer.Option(..., "--state-file"),
     output_dir: str = typer.Option(..., "--output-dir"),
@@ -838,6 +866,7 @@ def post_draw_plan_command(
             max_attempts=max_attempts,
             initial_delay_seconds=initial_delay_seconds,
             max_delay_seconds=max_delay_seconds,
+            paper_result_file=paper_result_file,
         )
     except (OSError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
@@ -845,6 +874,57 @@ def post_draw_plan_command(
     print(f"Wrapper: {wrapper}")
     print(f"LaunchAgent candidate: {plist}")
     print("Artifacts were generated only; nothing was installed and no bet is placed.")
+
+
+@app.command("post-draw-review-status")
+def post_draw_review_status_command(
+    request_file: str = typer.Option(..., "--request-file"),
+) -> None:
+    """Show one hash-verified post-draw review request."""
+
+    try:
+        request = load_review_request(request_file)
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    payload = {
+        **request,
+        "unacknowledged": request["status"] == "AWAITING_USER_REVIEW",
+    }
+    typer.echo(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+
+
+@app.command("post-draw-review-transition")
+def post_draw_review_transition_command(
+    request_file: str = typer.Option(..., "--request-file"),
+    action: str = typer.Option(..., "--action"),
+    at: str = typer.Option(..., "--at"),
+    postmortem_file: str | None = typer.Option(None, "--postmortem-file"),
+) -> None:
+    """Explicitly request, skip, or complete one post-draw review."""
+
+    try:
+        transitioned_at = datetime.fromisoformat(at.replace("Z", "+00:00"))
+        if transitioned_at.tzinfo is None or transitioned_at.utcoffset() is None:
+            raise ValueError("--at must be timezone-aware")
+        if action in {"request", "skip"}:
+            result = transition_review_request(
+                request_file,
+                transition=action,
+                transitioned_at=transitioned_at,
+            )
+        elif action == "complete":
+            if postmortem_file is None:
+                raise ValueError("complete requires --postmortem-file")
+            result = complete_post_draw_review(
+                request_file,
+                postmortem_path=postmortem_file,
+                completed_at=transitioned_at,
+            )
+        else:
+            raise ValueError("--action must be request, skip, or complete")
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(result, ensure_ascii=False, sort_keys=True))
 
 
 @app.command()
