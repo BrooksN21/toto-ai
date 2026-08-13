@@ -1,5 +1,15 @@
 # Current State
 
+## The Odds API implementation plan approved (2026-08-13)
+
+The approved sports-analytics specification is now decomposed into a concrete
+The Odds API shadow plan at
+`docs/superpowers/plans/2026-08-13-the-odds-api-shadow-audit.md`. The first
+delivery is a current-drawing, quota-aware, `NOT_ACTIVATED` market snapshot
+that preserves separate 1xBet, Pinnacle, and EU-consensus views and cannot
+affect the scheduler or a package. Implementation proceeds with local TDD and
+no model-backed subagents.
+
 ## Absolute local-only model boundary enforced (2026-08-13)
 
 TotoAI now permanently prohibits Claude, Anthropic APIs/SDKs/CLIs, Eliza,

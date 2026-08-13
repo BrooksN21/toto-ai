@@ -837,3 +837,14 @@ closed.
 - [x] Close the lower-level EV report bypass by sharing the paper-only EV-run
   sanitizer with direct CSV/Markdown export and retaining only clearly labelled
   training/paper coupon diagnostics.
+# 2026-08-13 immediate implementation: The Odds API shadow audit
+
+- [x] Approve provider role, quota boundary, matching semantics, and activation
+  prohibition in the sports analytics specification.
+- [x] Record the implementation sequence in
+  `docs/superpowers/plans/2026-08-13-the-odds-api-shadow-audit.md`.
+- [ ] Implement fail-closed provider parsing and secret-safe transport.
+- [ ] Persist provider-neutral provenance and quota evidence.
+- [ ] Add the current-drawing `NOT_ACTIVATED` shadow command and reports.
+- [ ] Run one current-drawing live probe with the protected key.
+- [ ] Start the 30-drawing / 450-event prospective audit.

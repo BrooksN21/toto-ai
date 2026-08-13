@@ -106,6 +106,11 @@ model code.
 
 ## Stage 1 — BK control and free-source coverage audit
 
+The approved first external market-source implementation is detailed in
+`docs/superpowers/plans/2026-08-13-the-odds-api-shadow-audit.md`. Complete its
+current-drawing shadow probe and start its quota-bounded prospective audit
+before using any external market probability in model research.
+
 **Files:** extend `sports_stats/domain.py`, `provider.py`, `collection.py`,
 `operation.py`, `storage.py`; add `sources.py` and tests such as
 `tests/test_sports_source_coverage.py`.
