@@ -1481,3 +1481,14 @@ ambiguous reversed evidence remains unresolved.
   reject the provider after one drawing, but it confirms that coverage is a
   hard prospective gate: missing events stay on explicit frozen BK fallback,
   and no production connection is considered before 30 drawings/450 events.
+- Prospective collection supports exactly three checkpoint names: `morning`,
+  `control`, and `t10`. The command is intentionally uninstalled and separate
+  from the production scheduler. Same-input reuse makes no provider call;
+  input/evidence drift fails closed.
+- Each optional The Odds API checkpoint first refreshes credit headers using
+  the documented zero-credit sports catalog. Remaining credits at or below the
+  reserve produce an immutable `SKIPPED_QUOTA_RESERVE` manifest and no
+  collection or paid odds request.
+- Provider coverage counts unique drawings, not checkpoint runs. When multiple
+  complete observations exist for one drawing, the audit selects the latest
+  append-ordered collection and counts that drawing once toward 30/450.

@@ -205,6 +205,42 @@ def test_free_catalog_and_events_parse_provenance_without_serializing_key(
     assert tuple(item.credit_cost for item in client.request_evidence) == (0, 0)
 
 
+def test_refresh_credit_state_is_free_and_reuses_validated_catalog(
+    tmp_path: Path,
+) -> None:
+    from toto_ai.external_odds.the_odds_api import TheOddsAPIClient
+
+    session = FakeSession(
+        [
+            FakeResponse(
+                sports_payload(),
+                quota_headers(remaining=50, used=450, last=0),
+            ),
+            FakeResponse(
+                [event_payload()],
+                quota_headers(remaining=50, used=450, last=0),
+            ),
+        ]
+    )
+    client = TheOddsAPIClient(
+        "secret-key",
+        session=session,
+        cache_dir=tmp_path,
+    )
+
+    state = client.refresh_credit_state()
+    events = client.fetch_schedule("football", (date(2026, 8, 13),))
+
+    assert state.remaining == 50
+    assert state.used == 450
+    assert state.last_cost == 0
+    assert client.credits_spent == 0
+    assert len(events) == 1
+    assert len(session.calls) == 2
+    assert session.calls[0]["url"].endswith("/v4/sports")
+    assert session.calls[1]["url"].endswith("/v4/sports/soccer_epl/events")
+
+
 def test_bulk_eu_h2h_preserves_one_xbet_pinnacle_and_quota(tmp_path: Path) -> None:
     from toto_ai.external_odds.the_odds_api import TheOddsAPIClient
 

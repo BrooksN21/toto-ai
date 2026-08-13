@@ -149,6 +149,17 @@ class TheOddsAPIClient:
     def request_evidence(self) -> tuple[RequestEvidence, ...]:
         return tuple(self._request_evidence)
 
+    def refresh_credit_state(self) -> CreditState:
+        """Refresh credit headers through the documented zero-cost catalog call."""
+        payload = self._get_json(
+            "/v4/sports",
+            {},
+            paid=False,
+            cache_ttl=None,
+        )
+        self._catalog = _parse_sports(payload.body)
+        return self._credit_state
+
     def bind_safety_boundary(
         self,
         *,

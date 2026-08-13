@@ -848,4 +848,8 @@ closed.
 - [x] Add the current-drawing `NOT_ACTIVATED` shadow command and reports.
 - [x] Run one current-drawing live probe with the protected key: drawing 4975,
   4/15 matched, 3 credits spent, 497 remaining, zero secret leakage.
-- [ ] Start the 30-drawing / 450-event prospective audit.
+- [x] Add the uninstalled, idempotent morning/control/T-10 checkpoint command
+  and provider-scoped audit; no production scheduler hook was added.
+- [ ] Collect 30 consecutive completed drawings / 450 events prospectively.
+- [ ] Add post-settlement log-loss/Brier/calibration and unchanged-package
+  replay once settled checkpoint evidence exists.

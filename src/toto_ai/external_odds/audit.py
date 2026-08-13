@@ -203,7 +203,7 @@ def audit_external_coverage(
         for collection in collections
         for row in _dispositions_for_collection(collection)
     )
-    provider = collections[0].provider if collections else "none"
+    provider = collections[0].provider if collections else provider or "none"
     total = _metrics("overall", "all", dispositions, minimum_bookmakers)
     by_sport = _grouped_metrics("sport", dispositions, minimum_bookmakers)
     by_league = _grouped_metrics("league", dispositions, minimum_bookmakers)

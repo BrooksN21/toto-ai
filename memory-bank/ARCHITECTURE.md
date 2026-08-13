@@ -124,6 +124,13 @@ command stores provider-neutral 15-event dispositions plus endpoint,
 request-fingerprint, raw-response and quota-credit evidence, then publishes
 separate BK, 1xBet, Pinnacle and broader-consensus views. It has no import edge
 into `EVInput`, the scheduler, package selection, `PLAY`, or operator export.
+The prospective wrapper recognizes only morning/control/T-10, binds complete
+target rows and report hashes in an immutable manifest, and is not installed
+or called by the scheduler. It refreshes quota through a zero-credit catalog
+call before collection and records `SKIPPED_QUOTA_RESERVE` instead of starting
+the checkpoint when remaining credits are at or below the reserve. Coverage
+audits count at most one latest complete provider collection per drawing, so
+multiple checkpoints cannot inflate the prospective sample floor.
 
 The shadow projection is an untrained Jeffreys-smoothed venue-only W-D-L
 estimate. It uses the home team's home W-D-L and the away team's away W-D-L;

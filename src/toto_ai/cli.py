@@ -100,6 +100,7 @@ from toto_ai.external_odds.audit import CoverageAudit, audit_external_coverage
 from toto_ai.external_odds.collection import (
     collect_open_external_odds,
     pinned_revalidation_is_ready,
+    resolve_open_target,
 )
 from toto_ai.external_odds.domain import TargetDrawing
 from toto_ai.external_odds.eligibility import DrawingEligibility, target_fingerprint
@@ -138,6 +139,7 @@ from toto_ai.external_odds.team_registry import (
     seed_reviewed_alias_config,
 )
 from toto_ai.external_odds.the_odds_api import TheOddsAPIClient, TheOddsAPIError
+from toto_ai.external_odds.the_odds_checkpoints import collect_shadow_checkpoint
 from toto_ai.external_odds.the_odds_shadow import (
     load_the_odds_api_key,
     write_the_odds_shadow_reports,
@@ -4591,23 +4593,105 @@ def collect_the_odds_api_shadow_command(
     )
 
 
+@app.command("collect-the-odds-api-checkpoint")
+def collect_the_odds_api_checkpoint_command(
+    open: bool = typer.Option(False),  # noqa: A002
+    checkpoint: str = typer.Option(...),
+    db: str = typer.Option("data/toto.db"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    quota_reserve: int = typer.Option(50, min=0),
+    env_file: str = typer.Option(".env"),
+    cache_root: str = typer.Option("data/external-cache/the-odds-api"),
+    report_dir: str = typer.Option("reports/the-odds-api-shadow"),
+) -> None:
+    """Collect one idempotent NOT_ACTIVATED prospective checkpoint."""
+    if not open:
+        raise typer.BadParameter("--open is required")
+    api_key = ""
+    try:
+        api_key = load_the_odds_api_key(env_file)
+        engine = init_db(db)
+        session_factory = get_session_factory(engine)
+        reviewed_aliases = load_aliases(aliases)
+        target = resolve_open_target(
+            TotoBriefClient(),
+            fetched_at=datetime.now(timezone.utc),
+        )
+        result = collect_shadow_checkpoint(
+            target=target,
+            checkpoint=checkpoint,
+            provider_factory=lambda: TheOddsAPIClient(
+                api_key,
+                cache_dir=Path(cache_root),
+                quota_reserve=quota_reserve,
+            ),
+            session_factory=session_factory,
+            aliases=reviewed_aliases,
+            quota_reserve=quota_reserve,
+            report_dir=report_dir,
+        )
+    except (
+        TheOddsAPIError,
+        OSError,
+        SQLAlchemyError,
+        TotoBriefRequestError,
+        ValueError,
+    ) as error:
+        raise typer.BadParameter(
+            _external_error_message(error, secret=api_key)
+        ) from error
+
+    typer.echo(
+        json.dumps(
+            {
+                "activation_status": "NOT_ACTIVATED",
+                "actionable": False,
+                "drawing_id": target.drawing_id,
+                "drawing_number": target.drawing_number,
+                "checkpoint": checkpoint,
+                "checkpoint_id": result.checkpoint_id,
+                "collection_id": result.collection_id,
+                "status": result.status,
+                "credits_spent": result.credits_spent,
+                "credits_spent_this_run": result.credits_spent_this_run,
+                "reused": result.reused,
+                "manifest_path": str(result.manifest_path),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+
+
 @app.command("audit-external-coverage")
 def audit_external_coverage_command(
     db: str = typer.Option("data/toto.db"),
     last: int = typer.Option(30, min=1),
     min_bookmakers: int = typer.Option(3, min=1),
+    provider: str = typer.Option("api-sports"),
     report_dir: str = typer.Option("reports"),
 ) -> None:
     """Audit stored external-odds coverage without provider network access."""
     try:
         engine = open_readonly_db(db)
         session_factory = get_session_factory(engine)
+        if provider not in {"api-sports", "the-odds-api"}:
+            raise ValueError("provider must be api-sports or the-odds-api")
         audit = audit_external_coverage(
             session_factory,
             last=last,
             minimum_bookmakers=min_bookmakers,
+            provider=provider,
         )
-        paths = write_external_coverage_reports(audit, report_dir=report_dir)
+        scoped_report_dir = (
+            Path(report_dir)
+            if provider == "api-sports"
+            else Path(report_dir) / provider
+        )
+        paths = write_external_coverage_reports(
+            audit,
+            report_dir=scoped_report_dir,
+        )
     except (OSError, SQLAlchemyError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
 

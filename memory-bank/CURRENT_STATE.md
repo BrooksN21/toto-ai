@@ -15,8 +15,21 @@ for those four events, and used explicit TotoBrief-BK fallback for the other
 occurrences. This 26.67% one-drawing identity/market coverage is diagnostic;
 it is far below activation evidence and proves no forecasting or profit gain.
 
-Full verification after the probe: 1853 tests passed, 13 were deselected,
-Ruff passed, CLI help passed, and `git diff --check` passed.
+Full verification after the checkpoint implementation: 1866 tests passed, 13
+were deselected, Ruff passed, both CLI help smokes passed, and
+`git diff --check` passed.
+
+An uninstalled prospective checkpoint command is now implemented for exactly
+`morning`, `control`, and `t10`. Its immutable manifest binds the complete
+target event/BK/pool rows, aliases, target fingerprint, quota reserve,
+collection ID, report hashes, and `NOT_ACTIVATED` state. Repeating the same
+checkpoint reuses it without constructing the provider or consuming credits;
+input or evidence drift fails closed. A fresh zero-credit quota preflight
+durably skips the whole checkpoint at the configured reserve. Provider-scoped
+coverage audit is available with `--provider the-odds-api`, remains `PENDING`
+at 1 drawing/15 events, cannot mix API-Sports collections, and deduplicates
+morning/control/T-10 observations to the latest complete collection per
+drawing.
 
 ## The Odds API provider transport implemented (2026-08-13)
 

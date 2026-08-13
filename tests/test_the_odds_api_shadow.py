@@ -232,3 +232,64 @@ def test_shadow_cli_is_hard_labeled_not_activated(monkeypatch, tmp_path: Path) -
     assert "NOT_ACTIVATED" in result.output
     assert "secret-key" not in result.output
     assert captured["key"] == "secret-key"
+
+
+def test_checkpoint_cli_reuses_without_constructing_provider(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    import toto_ai.cli as cli
+
+    captured: dict[str, object] = {}
+    target = type(
+        "Target",
+        (),
+        {"drawing_id": 9000, "drawing_number": 5000},
+    )()
+    result_record = type(
+        "Checkpoint",
+        (),
+        {
+            "checkpoint_id": "checkpoint-id",
+            "input_sha256": "a" * 64,
+            "manifest_path": tmp_path / "manifest.json",
+            "collection_id": "collection-id",
+            "status": "COLLECTED",
+            "credits_spent": 0,
+            "credits_spent_this_run": 0,
+            "reused": True,
+        },
+    )()
+    monkeypatch.setattr(cli, "load_the_odds_api_key", lambda _path: "secret-key")
+    monkeypatch.setattr(cli, "init_db", lambda _path: "engine")
+    monkeypatch.setattr(cli, "get_session_factory", lambda _engine: "factory")
+    monkeypatch.setattr(cli, "load_aliases", lambda _path: {})
+    monkeypatch.setattr(cli, "TotoBriefClient", lambda: "totobrief")
+    monkeypatch.setattr(cli, "resolve_open_target", lambda *args, **kwargs: target)
+
+    def fake_checkpoint(**kwargs):
+        captured.update(kwargs)
+        return result_record
+
+    monkeypatch.setattr(cli, "collect_shadow_checkpoint", fake_checkpoint)
+
+    result = runner.invoke(
+        app,
+        [
+            "collect-the-odds-api-checkpoint",
+            "--open",
+            "--checkpoint",
+            "control",
+            "--db",
+            str(tmp_path / "toto.db"),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "NOT_ACTIVATED" in result.output
+    assert '"reused":true' in result.output
+    assert '"credits_spent_this_run":0' in result.output
+    assert "secret-key" not in result.output
+    assert captured["target"] is target
+    assert captured["checkpoint"] == "control"
+    assert callable(captured["provider_factory"])

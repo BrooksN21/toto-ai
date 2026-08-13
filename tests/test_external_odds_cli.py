@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from types import SimpleNamespace
 
 from typer.testing import CliRunner
@@ -64,6 +65,41 @@ def test_audit_cli_reads_stored_data_without_api_key(monkeypatch, tmp_path):
     assert "Reports written to" in result.output
     assert (tmp_path / "external_coverage_last_1_min_bookmakers_3.csv").exists()
     assert (tmp_path / "external_coverage_last_1_min_bookmakers_3.md").exists()
+
+
+def test_audit_cli_can_scope_the_odds_api_without_mixing_providers(tmp_path):
+    db_path = tmp_path / "toto.db"
+    engine = init_db(db_path)
+    factory = get_session_factory(engine)
+    save_collection(factory, _collection(1, ()))
+    save_collection(
+        factory,
+        replace(
+            _collection(2, ()),
+            collection_id="the-odds-api-collection",
+            provider="the-odds-api",
+        ),
+    )
+    engine.dispose()
+
+    result = runner.invoke(
+        app,
+        [
+            "audit-external-coverage",
+            "--db",
+            str(db_path),
+            "--last",
+            "30",
+            "--provider",
+            "the-odds-api",
+            "--report-dir",
+            str(tmp_path / "reports"),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "the-odds-api" in result.output
+    assert (tmp_path / "reports" / "the-odds-api").is_dir()
 
 
 def test_external_odds_cli_help_lists_approved_commands():
