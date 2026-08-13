@@ -1,5 +1,83 @@
 # Decisions
 
+## 2026-08-13: every final calculation remains visible for learning
+
+- `NO BET` continues to mean non-actionable and must never be converted into
+  an actionable BaltBet upload, but its validated computed package is always
+  exposed as a clearly labelled paper artifact.
+- The copyable package payload itself always uses the exact BaltBet text-editor
+  format: one coupon per line, configured stake first, then exactly 15
+  semicolon-separated `1`/`X`/`2` outcomes. PAPER/NO BET warnings are outside
+  the payload so they cannot corrupt paste/file import.
+- Post-draw reconciliation starts at 12:00 Europe/Moscow on the next calendar
+  day and retries incomplete results every three hours.
+- Complete settlement creates an explicit pending review request. The user is
+  asked whether to analyze it; no package is silently marked reviewed.
+
+## 2026-08-13: post-draw automation is advisory to scheduler finalization
+
+- The first post-draw check is 12:00 Europe/Moscow on the next Moscow calendar
+  day after the drawing deadline, followed by bounded three-hour retries.
+- The workflow reuses authoritative result sync, reviewed VOID handling,
+  package archive, and settlement; it does not implement parallel hit or payout
+  mathematics.
+- A terminal scheduler result always wins over secondary post-draw automation.
+  Missing package evidence creates only a package-free paper/review path;
+  generation failures are diagnostics and cannot rewrite the primary marker.
+- Generated launchd files are candidates only. Installation and wagering are
+  outside this feature and never happen automatically.
+
+## 2026-08-13: sports evidence adjusts, but does not replace, the market prior
+
+- TotoBrief BK remains the production control. Pool is crowd/payout evidence;
+  TotoBrief Pin is a separate market benchmark when present.
+- The first trained sports candidate is a regularized multinomial residual
+  correction around log BK probabilities, not a standalone form heuristic.
+- API-Sports remains one source; free public fallbacks are evaluated
+  provider-by-provider and missing coverage falls back explicitly to BK.
+- Sports analytics stays shadow-only until chronological and prospective gates
+  improve event probabilities and do not degrade package outcomes.
+
+## 2026-08-13: scheduler child lead has one command/parser definition
+
+- The expected `final_lead_minutes` in a runner manifest must be derived by
+  the same canonical function that builds the `run-drawing` command.
+- Warmup is 45, refresh/fallback is 30, atomic final is 20, and legacy
+  non-atomic final is 15. Duplicating this phase mapping in validation is
+  prohibited because it caused drawing 4974 to fail after successful work.
+- An integrity-failed immutable plan is never edited or reset. Recovery clones
+  all semantic bindings into a fresh output scope via `scheduler-recover-plan`.
+
+## 2026-08-13: operator files require a single scheduler-owned export gateway
+
+- A file is operator-actionable only when current schema-v6 scheduler state is
+  `bet-ready / PLAY`, its run-scoped `.bet-ready`, status, source package,
+  BaltBet upload, archive manifest, and durable SQLite archive all verify, and
+  export begins before T-10.
+- Research reports, manually synthesized files, LKG `NO BET`, stale paths, and
+  internal package CSVs are never operator inputs. `scheduler-execute` does
+  not print them as uploadable packages.
+- `operator-export` copies already published canonical upload bytes; it never
+  derives coupons from research artifacts and never places a wager.
+- At T-10 the operator upload expires even if the audit archive and historical
+  BET READY marker remain. This separates historical publication evidence
+  from present permission to place a manual bet.
+
+## 2026-08-13: baseline-only identity is not kickoff evidence
+
+- READY 15/15 describes event/probability preparation, not complete timing.
+  Every baseline-only event whose kickoff remains absent is materialized as
+  `timing_unknown`; eligibility remains unknown and no evening plan is created.
+- `timing_unknown` requires reviewed schedule evidence. Retries remain bound
+  to drawing ID/number/deadline/fingerprint and stop before T-60. They may use
+  `--activate` only so a later fully playable pass can create the ordinary
+  evening plan; unresolved evidence itself never authorizes activation.
+- Attention resolves only when the same drawing is READY 15/15, has no timing
+  dependency, and is fully playable.
+- Repeated retries must refresh the same `timing_unknown` report atomically;
+  an already generated attention document is retry state, not a conflicting
+  foreign artifact.
+
 ## Scheduler last-known-good invariant (2026-08-11)
 
 - A fully validated pre-final candidate is persisted as an immutable,
@@ -1374,3 +1452,43 @@ ambiguous reversed evidence remains unresolved.
   output, not to rewriting history.
 - Ad-hoc coupon files assembled from research reports are not scheduler
   publications and must never be presented as a valid final package.
+# 2026-08-13: external model execution is permanently prohibited
+
+- TotoAI never invokes Claude, Anthropic APIs/SDKs/CLIs, Eliza, external LLM
+  proxies, external coding agents, or model-backed subagents.
+- The prohibition covers direct calls and indirect routing through skills,
+  plugins, MCP servers, connectors, wrappers, model overrides, and subagents.
+- Repository context, prompts, paths, Git state, diffs, derived data, and
+  secrets are never sent to an external LLM or agent, including for read-only
+  or planning work.
+- No runtime approval can override the rule. Changing it requires a deliberate
+  owner-authored policy edit committed to the repository.
+- Globally distributed `claude-plugins-official` instruction bundles are not
+  used for TotoAI. Engineering procedures must be project-local.
+
+## 2026-08-13: The Odds API collection is bulk, quota-bound, and shadow-only
+
+- Discover active football/hockey competitions through zero-credit `/sports`
+  and `/events` calls, then request paid EU `h2h` odds once per matched sport
+  key rather than once per event.
+- Keep 1xBet, Pinnacle, and broader EU consensus as separate evidence views.
+- Accept hockey `h2h` only when the bookmaker row contains an explicit draw;
+  a two-way including-overtime market is not regulation 1/X/2.
+- Stop before a paid request at the configured remaining-credit reserve.
+- The provider remains `NOT_ACTIVATED` and cannot alter scheduler or package
+  inputs during the prospective audit.
+- The first current-drawing probe matched only 4/15 events. This does not
+  reject the provider after one drawing, but it confirms that coverage is a
+  hard prospective gate: missing events stay on explicit frozen BK fallback,
+  and no production connection is considered before 30 drawings/450 events.
+- Prospective collection supports exactly three checkpoint names: `morning`,
+  `control`, and `t10`. The command is intentionally uninstalled and separate
+  from the production scheduler. Same-input reuse makes no provider call;
+  input/evidence drift fails closed.
+- Each optional The Odds API checkpoint first refreshes credit headers using
+  the documented zero-credit sports catalog. Remaining credits at or below the
+  reserve produce an immutable `SKIPPED_QUOTA_RESERVE` manifest and no
+  collection or paid odds request.
+- Provider coverage counts unique drawings, not checkpoint runs. When multiple
+  complete observations exist for one drawing, the audit selects the latest
+  append-ordered collection and counts that drawing once toward 30/450.

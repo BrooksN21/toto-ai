@@ -193,9 +193,12 @@ When preparation is unresolved, `morning-dispatch` writes a fingerprint-bound
 schedule evidence queue where applicable, and a passive retry plan at
 T−360/T−240/T−180/T−100/T−90 with a hard stop before T−60. Retry commands are
 bound to the exact drawing ID, visible number, deadline, and fingerprint and
-abort on drift. They never contain `--activate`, never sleep in-process, and
-cannot create a package or bet marker. Attention clears only after the same
-fingerprint reaches atomic READY 15/15.
+abort on drift. Identity-ambiguous retries remain passive. A zero-pool or
+`timing_unknown` retry may contain `--activate`, but it can create an evening
+plan only after the same drawing becomes fully READY and playable; unresolved
+evidence itself never authorizes a package or bet marker. Attention clears
+only after the same fingerprint has READY 15/15, no unresolved kickoff, and
+playable timing.
 
 When `--at` is omitted, generated morning candidates default to 08:00, 10:30,
 and 12:00 Moscow time. Generation remains passive and does not install a
@@ -229,10 +232,26 @@ That paragraph records the historical installed schedule only. The current
 generator defaults to 08:00/10:30/12:00, but this feature does not install or
 modify LaunchAgents.
 
-Production schema-v5 execution is always a short-lived idempotent tick.
+Production schema-v6 execution is always a short-lived idempotent tick.
 `scheduler-execute --run-id` is supported only with `--simulate`; production
 use is rejected rather than entering the incompatible legacy long-running
 path.
+
+### Manual operator export
+
+Never upload a research CSV/TXT or a package path printed by another command.
+Before T-10, a genuinely actionable scheduler result is exported through the
+single verification gateway:
+
+```bash
+.venv/bin/python -m toto_ai.cli operator-export \
+  --plan reports/rehearsal/<drawing>/scheduler-plan.json \
+  --output reports/operator/<drawing>-baltbet-upload.txt
+```
+
+The command writes nothing unless the current scheduler result is
+`bet-ready / PLAY`, all run/marker/hash/archive/bank bindings verify, and the
+T-10 deadline has not arrived. It never places a bet automatically.
 
 The code does not perform this migration automatically. If the obsolete jobs
 reappear on another machine, inspect and remove only these exact labels. These

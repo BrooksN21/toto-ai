@@ -1,5 +1,230 @@
 # Current State
 
+## The Odds API current-drawing shadow probe completed (2026-08-13)
+
+The provider-neutral transport, immutable raw captures, generic quota and
+endpoint/request provenance, secure `.env` loader, and standalone
+`collect-the-odds-api-shadow` command are implemented. JSON/CSV/Markdown
+reports are hard-labelled `NOT_ACTIVATED`, non-actionable, and cannot feed the
+scheduler or package selection.
+
+The first live probe covered open drawing 4975. It spent 3 credits and left
+497, matched 4/15 events, produced separate de-vigged 1xBet and Pinnacle rows
+for those four events, and used explicit TotoBrief-BK fallback for the other
+11 (`0 exact candidates`). Generated report/cache bytes contained zero API-key
+occurrences. This 26.67% one-drawing identity/market coverage is diagnostic;
+it is far below activation evidence and proves no forecasting or profit gain.
+
+Full verification after the checkpoint implementation: 1866 tests passed, 13
+were deselected, Ruff passed, both CLI help smokes passed, and
+`git diff --check` passed.
+
+An uninstalled prospective checkpoint command is now implemented for exactly
+`morning`, `control`, and `t10`. Its immutable manifest binds the complete
+target event/BK/pool rows, aliases, target fingerprint, quota reserve,
+collection ID, report hashes, and `NOT_ACTIVATED` state. Repeating the same
+checkpoint reuses it without constructing the provider or consuming credits;
+input or evidence drift fails closed. A fresh zero-credit quota preflight
+durably skips the whole checkpoint at the configured reserve. Provider-scoped
+coverage audit is available with `--provider the-odds-api`, remains `PENDING`
+at 1 drawing/15 events, cannot mix API-Sports collections, and deduplicates
+morning/control/T-10 observations to the latest complete collection per
+drawing.
+
+## The Odds API provider transport implemented (2026-08-13)
+
+The first implementation stage is complete locally. The new provider uses the
+official zero-credit sports/events discovery endpoints, performs one paid EU
+`h2h` request per matched sport key, preserves 1xBet and Pinnacle as distinct
+bookmakers, reuses a bulk response for all same-league target events, and
+tracks credit headers. Hockey two-way moneyline rows are rejected from the
+regulation three-way consensus. The protected key is excluded from cache
+bytes, request fingerprints, and sanitized errors. External collection loads
+and audits can now be filtered by provider, and matcher version is explicitly
+bound to `the-odds-api-v1` without changing the API-Sports default. Focused
+verification passed 152 tests and Ruff.
+
+## The Odds API implementation plan approved (2026-08-13)
+
+The approved sports-analytics specification is now decomposed into a concrete
+The Odds API shadow plan at
+`docs/superpowers/plans/2026-08-13-the-odds-api-shadow-audit.md`. The first
+delivery is a current-drawing, quota-aware, `NOT_ACTIVATED` market snapshot
+that preserves separate 1xBet, Pinnacle, and EU-consensus views and cannot
+affect the scheduler or a package. Implementation proceeds with local TDD and
+no model-backed subagents.
+
+## Absolute local-only model boundary enforced (2026-08-13)
+
+TotoAI now permanently prohibits Claude, Anthropic APIs/SDKs/CLIs, Eliza,
+external LLM proxies, external coding agents, and model-backed subagents. The
+rule covers both direct calls and indirect routing through tools, skills,
+plugins, MCP servers, connectors, wrappers, and model overrides. Repository
+context may not be sent to an external LLM even for read-only work. A focused
+policy regression protects the durable wording in `AGENTS.md` and
+`memory-bank/TOOLING_POLICY.md`.
+
+## Automatic post-draw review lifecycle completed (2026-08-13)
+
+The scheduler now creates an uninstalled, non-betting post-draw candidate for
+every terminal outcome. The first result check is 12:00 Europe/Moscow on the
+next Moscow calendar day after the drawing deadline; incomplete drawings retry
+at three-hour intervals within the plan's bounded attempt window.
+
+The workflow reuses the existing authoritative result synchronization,
+reviewed VOID handling, immutable package archive, and settlement algorithms.
+It supports package-bound and package-free `NO BET` lifecycles, persists typed
+pending/transport/integrity states, and creates a hash-bound
+`review-request.json` after complete results. Review transitions are explicit:
+`AWAITING_USER_REVIEW -> REVIEW_REQUESTED|REVIEW_SKIPPED -> REVIEW_COMPLETE`.
+
+Post-draw preparation is advisory to the primary scheduler. Missing paper
+state is normalized to a zero-cost package-free paper result when no validated
+package exists; any post-draw generation failure is recorded separately and
+cannot change the terminal scheduler status/marker or create a second
+finalization failure. No LaunchAgent is installed and no wager is placed.
+
+Verification after the fail-safe boundary repair passed `1830 passed, 13
+deselected in 120.89s`; full Ruff and `git diff --check` passed.
+
+## Exact durable PAPER package completed (2026-08-13)
+
+Tasks 1-3 of the approved paper/post-draw plan are implemented. The scheduler
+now has a strict renderer/validator for the exact BaltBet text-editor shape,
+immutable scheduler-owned paper checkpoints, a hash-bound
+`paper-package-result.json`, and `paper-package-show`. Payload bytes preserve
+source coupon order and contain only `<stake>; <15 outcomes>` lines with final
+LF. PAPER/NO BET warnings stay on stderr/status.
+
+Computed terminal `NO BET` packages remain inspectable after T-10, while
+package-free `NO BET` has no coupon payload. Actionable PLAY publication is
+unchanged: paper artifacts are always `actionable=false`, cannot create
+`.bet-ready`, and are rejected by `operator-export`. The historical 4974 paper
+artifact is covered by a 166-unique-coupon / 4,980-cost safety regression; it
+is not promoted or displayed as an operator package.
+
+Verification after implementation: 52 focused tests and 247 relevant
+scheduler/operator tests passed. Full verification passed
+`1817 passed, 13 deselected in 113.58s`; full Ruff and `git diff --check`
+passed.
+
+## Next product focus: visible paper packages and sports analytics (2026-08-13)
+
+The user approved two mandatory lifecycle changes. Every terminal calculation
+must be shown, including a computed `NO BET` package clearly labelled
+`PAPER / DO NOT WAGER`. At 12:00 Moscow time on the next calendar day, result
+reconciliation must check for complete 15/15 terminal outcomes; incomplete
+drawings retry every three hours. Once complete, the durable workflow asks the
+user whether to review the package and records the answer before producing an
+immutable postmortem.
+
+The package presentation contract is exact: a clean text file with one coupon
+per line in the form `30; 1; X; ...` (configured stake plus 15 outcomes).
+Warnings and diagnostics are shown separately and never embedded in the
+copyable package. The existing 4974 paper artifact validates as 166 unique
+lines with implied cost 4,980, but remains expired/non-actionable evidence.
+
+The next main research phase is sports-analytics probability improvement. BK
+remains the production control. Existing API-Sports evidence and evaluated
+free public fallbacks feed leakage-safe features; a regularized sports residual
+model adjusts BK only in shadow mode. No sports model reaches package selection
+until chronological event metrics, end-to-end package outcomes, prospective
+coverage, and the predeclared activation gate all pass. Designs are recorded
+in `docs/superpowers/specs/2026-08-13-paper-package-and-post-draw-review-design.md`
+and `docs/superpowers/specs/2026-08-13-sports-analytics-probability-design.md`.
+
+## Drawing 4974 evening run: warmup contract fix and terminal result (2026-08-13)
+
+The 16:15 warmup failed closed because the child command correctly used the
+T-45 `final_lead_minutes=45`, while strict runner-manifest validation still
+expected the ordinary fallback value 30. A regression reproduced this exact
+command/parser disagreement. Both paths now use one canonical
+`_runner_final_lead_minutes()` function; the scheduler test suite passed 129
+tests and Ruff passed.
+
+The failed immutable plan was replaced through `scheduler-recover-plan`, which
+preserved drawing 4974, bank 4,980, stake 30, probability configuration, and
+all reviewed schedule-evidence bindings. The automatic 16:30 refresh completed,
+the automatic 16:40 final completed at 16:46:59 MSK, and the 16:50 terminal
+tick was a clean no-op. Final operator state is `NO BET`, `FINAL_FRESH`,
+`actionable=false`, reason `quality_v2_real_money_release_gate_closed`. A
+166-coupon paper package costing 4,980 was retained for audit, not authorized
+for wagering.
+
+## 2026-08-13: drawing 4974 timing evidence resolved
+
+- The repeated `timing_unknown` retry defect was caused by the report refresh
+  allowlist accepting `unresolved` and `totobrief_pool_not_ready`, but not the
+  already generated `ACTION REQUIRED: timing unknown` report. The refresh is
+  now idempotent for that status and a two-dispatch regression covers attempt
+  count plus `Last seen` replacement.
+- Drawing 4974 events 8 (`Ригас Футбола Скола — Яблонец`) and 15
+  (`Абха — Аль Хазм`) were reviewed against two current HTTPS sources each,
+  including one official and one independent source. Immutable source
+  snapshots and hash-checked review records are stored under
+  `data/schedule-evidence/`; the reusable ledger resolves both events exactly.
+- Canonical kickoffs are event 8 at `2026-08-13T16:30:00Z` (19:30 MSK) and
+  event 15 at `2026-08-13T16:15:00Z` (19:15 MSK). No guessed kickoff, fuzzy
+  identity, or single-source fallback was accepted.
+- The identity-bound morning dispatch for drawing id 12031 / visible 4974 was
+  rerun through the secure `.env` prelude. It is now READY with 15/15 pins,
+  zero unresolved events, and evening plan `3551ef6898d8f474` activated for a
+  RUB 4,980 bank / RUB 30 stake. The plan binds ledger content SHA-256
+  `af200ed9e83dff74036ee896deef74e90a945b96165e7c333011c436c1909490`
+  and semantic hash
+  `831aad0476f4d51e68c7ff1b7d6767e2fb836fe6df8a030f3631200ccc632d7e`.
+- Current preflight status is `preparation_status=ready`, `mapped_count=15`,
+  `pin_count=15`, `unresolved_count=0`, evening activation `activated` and
+  package generation `enabled`. This is scheduler readiness only; it is not a
+  profit claim or permission to wager. Quality-v2 remains paper-only unless a
+  future scheduler publication itself passes the existing `PLAY` boundary.
+- Verification: focused timing/evidence suite `28 passed`; full pytest
+  `1798 passed, 13 deselected in 115.71s`; full Ruff and `git diff --check`
+  passed.
+
+## 2026-08-13: operator export boundary and missing-kickoff escalation
+
+- The installed 12:00 morning run for drawing 4974 exposed one production
+  shape omitted by the first timing regression: eligibility can be `unknown`
+  while the 13 already timed events still yield a partial `span_days=1`.
+  `MorningPreparedDrawing` now accepts that partial span only under the
+  existing strict `timing_unknown`/baseline-only/unknown-eligibility
+  invariants. The exact `span_days=1` regression passes. The failed 12:00 job
+  made three attempts and installed no evening plan. No manual dispatch was
+  run. A separate calendar job was moved from 13:00 to 12:30 MSK without a
+  manual kickstart. Its first attempt correctly materialized
+  `ACTION REQUIRED: timing unknown 2/15` for events 8 and 15, wrote the
+  attention/review/retry artifacts, installed no evening plan, and returned
+  deferred. The wrapper then made its two configured retries, which exposed a
+  separate idempotency defect: rewriting `ACTION_REQUIRED.md` conflicted with
+  the existing text artifact. That defect and the two missing kickoff records
+  are resolved by the newer drawing-4974 state above.
+- A scheduler-owned `bet-ready / PLAY` publication now creates a run-scoped
+  `baltbet-upload.txt` and hash-bound actionable `operator-result.json` before
+  writing `.bet-ready`. The public `operator-export --plan ... --output ...`
+  command revalidates the schema-v6 plan, exact run/status/marker, source CSV,
+  upload bytes, archive manifest, SQLite archive row, bank/stake/count/cost,
+  and T-10 expiry before copying bytes. `NO BET`, LKG/research, expired,
+  tampered, foreign, or unarchived files cannot be exported.
+- `scheduler-execute` no longer labels an internal/audit package path as an
+  operator package. At T-10 the operator upload is removed and
+  `operator-result.json` becomes non-actionable while the audit archive and
+  historical `.bet-ready` marker remain.
+- A READY 15/15 preparation with baseline-only events that still lack kickoff
+  times is no longer silently reported as generic `drawing_not_playable`.
+  Missing kickoffs become explicit `timing_unknown` items, ACTION_REQUIRED
+  attention, reviewed-schedule queue records, and exact-identity retries that
+  stop before T-60. Such retries may request evening activation only if a
+  later pass becomes fully playable.
+- Drawing 4973 is frozen as failure evidence. The unbound 166-coupon file was
+  created after T-10, had no scheduler/archive/settlement identity, scored at
+  most 7/15, and is permanently non-actionable. The canonical quality-v2 paper
+  candidate scored at most 8/15. Neither produced a 10+ result or any evidence
+  of profitability.
+- Release verification passed: `1797 passed, 13 deselected in 112.49s`; full
+  Ruff passed. No push, PR, live scheduler change, network call, package
+  recommendation, or wager was made.
+
 ## 2026-08-11: scheduler last-known-good remediation
 
 The drawing-4972 failure mode is covered by local deterministic regressions.

@@ -182,6 +182,7 @@ def audit_external_coverage(
     *,
     last: int = 30,
     minimum_bookmakers: int = 3,
+    provider: str | None = None,
 ) -> CoverageAudit:
     if not isinstance(last, int) or isinstance(last, bool) or last <= 0:
         raise ValueError("last must be a positive integer")
@@ -192,13 +193,17 @@ def audit_external_coverage(
     ):
         raise ValueError("minimum_bookmakers must be a positive integer")
 
-    collections = _latest_complete_collections(session_factory, last)
+    collections = _latest_complete_collections(
+        session_factory,
+        last,
+        provider=provider,
+    )
     dispositions = tuple(
         row
         for collection in collections
         for row in _dispositions_for_collection(collection)
     )
-    provider = collections[0].provider if collections else "none"
+    provider = collections[0].provider if collections else provider or "none"
     total = _metrics("overall", "all", dispositions, minimum_bookmakers)
     by_sport = _grouped_metrics("sport", dispositions, minimum_bookmakers)
     by_league = _grouped_metrics("league", dispositions, minimum_bookmakers)
@@ -267,14 +272,21 @@ def audit_external_coverage(
 def _latest_complete_collections(
     session_factory: Any,
     last: int,
+    *,
+    provider: str | None = None,
 ) -> tuple[ExternalCollectionSnapshot, ...]:
     test_collections = getattr(session_factory, "_external_collections_for_test", None)
     if test_collections is not None:
-        source = tuple(test_collections)
+        source = tuple(
+            collection
+            for collection in test_collections
+            if provider is None or collection.provider == provider
+        )
     else:
         source = load_latest_complete_collections(
             session_factory,
             last=max(last, count_complete_runs(session_factory)),
+            provider=provider,
         )
     selected: list[ExternalCollectionSnapshot] = []
     seen_drawings: set[int] = set()

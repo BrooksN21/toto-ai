@@ -4,6 +4,7 @@ import plistlib
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 import pytest
 from sqlalchemy import select, update
@@ -861,12 +862,33 @@ def test_post_draw_scheduler_plan_is_strictly_after_exact_end(tmp_path):
     assert plan["drawing_number"] == 4952
     ended = datetime.fromisoformat(plan["ended_at"])
     first = datetime.fromisoformat(plan["first_run_at"])
+    moscow = ZoneInfo("Europe/Moscow")
     assert first > ended
-    assert (first - ended).total_seconds() == 1
-    assert "--drawing-id 11970" in wrapper.read_text()
-    assert "--open" not in wrapper.read_text()
-    assert "target-time.time()" in wrapper.read_text()
-    assert "<key>StartCalendarInterval</key>" in plist.read_text()
+    assert first == datetime(2026, 10, 26, 12, 0, tzinfo=moscow)
+    assert first.date() == ended.astimezone(moscow).date().replace(day=26)
+    assert plan["timezone"] == "Europe/Moscow"
+    assert plan["interval_hours"] == 3
+    assert plan["due_slots"] == [
+        "2026-10-26T12:00:00+03:00",
+        "2026-10-26T15:00:00+03:00",
+        "2026-10-26T18:00:00+03:00",
+    ]
+    assert plan["expires_at"] == plan["due_slots"][-1]
+    wrapper_text = wrapper.read_text()
+    assert "post-draw-run --plan" in wrapper_text
+    assert str(plan_path.resolve()) in wrapper_text
+    assert "--drawing-id" not in wrapper_text
+    assert "--open" not in wrapper_text
+    assert "target-time.time()" not in wrapper_text
+    assert "launchctl" not in wrapper_text
+    with plist.open("rb") as source:
+        launchd = plistlib.load(source)
+    assert launchd["ProgramArguments"] == [str(wrapper)]
+    assert launchd["StartCalendarInterval"] == [
+        {"Year": 2026, "Month": 10, "Day": 26, "Hour": 12, "Minute": 0},
+        {"Year": 2026, "Month": 10, "Day": 26, "Hour": 15, "Minute": 0},
+        {"Year": 2026, "Month": 10, "Day": 26, "Hour": 18, "Minute": 0},
+    ]
 
 
 @pytest.mark.parametrize(

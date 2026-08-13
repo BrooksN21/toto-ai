@@ -655,6 +655,21 @@ def test_structurally_playable_phase_is_forced_to_paper_only_no_bet(tmp_path: Pa
         "fallback",
         "final",
     )
+    paper = scheduler.load_paper_package(plan)
+    assert paper.decision == "NO BET"
+    assert paper.actionable is False
+    assert paper.count == 0
+    assert paper.cost == 0
+    assert paper.source_package_path is None
+    assert paper.paper_path is None
+    post_draw = json.loads(
+        (
+            plan.output_dir
+            / "post-draw"
+            / f"post-draw-{plan.drawing_id}.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert post_draw["package_binding"]["kind"] == "package_free_no_bet"
 
 
 def test_final_exception_never_promotes_diagnostic_fallback(tmp_path: Path):
@@ -672,6 +687,54 @@ def test_final_exception_never_promotes_diagnostic_fallback(tmp_path: Path):
     assert result.outcome == "failed"
     assert result.package_path is None
     assert not (result.run_dir / "package.csv").exists()
+    assert result.marker_path.name == ".failed"
+    assert result.marker_path.is_file()
+    paper = scheduler.load_paper_package(plan)
+    assert paper.decision == "NO BET"
+    assert paper.actionable is False
+    assert paper.count == 0
+    assert paper.cost == 0
+    assert paper.source_package_path is None
+    assert paper.paper_path is None
+
+
+def test_post_draw_generation_error_never_changes_primary_terminal_result(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    plan = _plan(tmp_path)
+
+    def fail_post_draw_generation(**_kwargs):
+        raise RuntimeError("post-draw database unavailable")
+
+    monkeypatch.setattr(
+        "toto_ai.operations.finished_draw.prepare_post_draw_scheduler_artifacts",
+        fail_post_draw_generation,
+    )
+
+    result = _execute(plan, _happy_runner([]), run_id="advisory-failure")
+
+    assert result.outcome == "no-bet"
+    assert result.decision == "NO BET"
+    assert result.marker_path.name == ".no-bet"
+    assert result.marker_path.is_file()
+    assert not (result.run_dir / ".failed").exists()
+    status = _status(result)
+    assert status["outcome"] == "no-bet"
+    assert status["decision"] == "NO BET"
+    paper = scheduler.load_paper_package(plan)
+    assert paper.decision == "NO BET"
+    assert paper.count == 0
+    assert paper.cost == 0
+    generation_error = json.loads(
+        (plan.output_dir / "post-draw" / "generation-error.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert generation_error["drawing"] == plan.drawing
+    assert generation_error["drawing_id"] == plan.drawing_id
+    assert generation_error["automatic_wagering"] is False
+    assert "post-draw database unavailable" in generation_error["error"]
 
 
 def test_archive_failure_is_terminal_failed_without_bet_ready(
@@ -1940,6 +2003,25 @@ def test_custom_plan_safety_config_is_forwarded_and_accepts_matching_manifest(
         command[command.index("--package-material-probability-threshold") + 1]
         == "0.29999999999999999"
     )
+
+
+def test_warmup_manifest_uses_same_45_minute_lead_as_command(tmp_path: Path):
+    context = replace(
+        _manifest_context(tmp_path, phase="fallback"),
+        scheduler_phase="warmup",
+    )
+    payload = _valid_runner_manifest(context)
+    config = payload["config"]
+    assert isinstance(config, dict)
+    config["final_lead_minutes"] = 45
+    manifest = _write_runner_manifest(context, payload)
+
+    command = build_run_drawing_phase_command(context)
+    result = parse_runner_manifest_phase_result(context, manifest)
+
+    option = command.index("--final-lead-minutes")
+    assert command[option + 1] == "45"
+    assert result.decision == "NO BET"
 
 
 def test_production_manifest_parser_ignores_offline_replay_as_non_production(

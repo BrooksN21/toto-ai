@@ -1,5 +1,25 @@
 # Roadmap
 
+## Completed: operator-safe publication and timing escalation (2026-08-13)
+
+- [x] Add one mandatory `operator-export` gateway for current scheduler-owned,
+  archived, hash-bound, pre-T-10 `PLAY` packages.
+- [x] Suppress misleading operator-path output for `NO BET` and internal audit
+  artifacts; expire the canonical upload at T-10.
+- [x] Turn baseline-only missing kickoffs into explicit `timing_unknown`
+  attention, reviewed-schedule queue entries, and identity-bound retries.
+- [x] Make repeated `timing_unknown` attention refresh idempotent and resolve
+  drawing-4974 events 8/15 from hash-checked official plus independent
+  evidence; rerun the bound preflight to READY 15/15 and activate its evening
+  scheduler.
+- [x] Freeze the failed unbound drawing-4973 file as non-actionable regression
+  evidence without copying its coupon strings.
+- [ ] Exercise the gateway on the next prospective scheduler result. Export is
+  allowed only if the result is genuinely `PLAY`; current quality-v2 release
+  policy remains paper-only `NO BET`.
+- [ ] Complete the prospective package lifecycle: canonical package -> result
+  or VOID -> immutable settlement -> mandatory post-draw review.
+
 - [x] Reproduce and remediate the 4972 HTTP-429/final-timeout incident with an
   immutable LKG checkpoint, phase-local final/retry budgets, pre-T-10 degraded
   fallback, deterministic early NO_BET, and operator-facing artifacts. Current
@@ -710,11 +730,30 @@ profitability or a proven winning strategy.
 - [ ] Continue the controlled
   historical backlog.
 - [ ] Install/schedule nightly listing/detail/result reconciliation and health report only after canary acceptance.
-- [ ] Complete actionable package settlement and mandatory post-draw report.
+- [x] Complete package/package-free settlement scheduling and mandatory
+  post-draw review-request lifecycle. Actionable package settlement continues
+  to use the same archive and result evidence boundary.
 
 Do not build another optimizer before the measurable lifecycle
 `drawing -> package -> archive -> results/VOID -> settlement -> review` is
 closed.
+
+- [x] Expose every final computed package, including `NO BET`, through a
+  validated `PAPER / DO NOT WAGER` report and read-only display command.
+- [x] Schedule post-draw result checks for 12:00 Moscow next day with
+  three-hour retries; create a durable user review request after 15/15 terminal
+  outcomes and settlement.
+- [x] Generate immutable package postmortems covering event exposure, actual
+  outcomes/VOID, BK/pool/Pin/sports probabilities, category hits and payout
+  status.
+- [ ] Audit free sports-data source coverage on Toto competitions and freeze
+  source provenance before expanding sports features.
+- [ ] Implement leakage-safe Elo, venue, form, goals, rest, table and
+  congestion features with explicit per-event BK fallback.
+- [ ] Train and walk-forward evaluate a regularized sports residual adjustment
+  around BK; compare BK, Pin, calibrated BK, venue shadow and ensemble.
+- [ ] Run every candidate through unchanged dynamic-bank package selection and
+  finished settlement before any activation review.
 
 - [x] Add provider-neutral reusable schedule evidence ledger and strict
   identity/time resolver; integrate it into morning preparation.
@@ -735,6 +774,9 @@ closed.
 - [x] Fix the drawing-4973 T-45 deterministic timeout: the warmup child now
   starts at T-45 instead of waiting for the T-30 fallback boundary while its
   parent deadline expires.
+- [x] Fix the drawing-4974 T-45 command/parser contract: command generation and
+  strict manifest validation now share the canonical phase-to-lead mapping;
+  automatic recovery refresh/final/T-10 runs completed with terminal `NO BET`.
 - [x] Fix drawing-4973 `safety_reselection_infeasible`: scheduler fallback
   phases now provide the immutable snapshot, ledger and scheduler-plan
   artifacts required by quality-v2 provenance instead of hash-only metadata.
@@ -795,3 +837,19 @@ closed.
 - [x] Close the lower-level EV report bypass by sharing the paper-only EV-run
   sanitizer with direct CSV/Markdown export and retaining only clearly labelled
   training/paper coupon diagnostics.
+# 2026-08-13 immediate implementation: The Odds API shadow audit
+
+- [x] Approve provider role, quota boundary, matching semantics, and activation
+  prohibition in the sports analytics specification.
+- [x] Record the implementation sequence in
+  `docs/superpowers/plans/2026-08-13-the-odds-api-shadow-audit.md`.
+- [x] Implement fail-closed provider parsing and secret-safe transport.
+- [x] Persist provider-neutral provenance and quota evidence.
+- [x] Add the current-drawing `NOT_ACTIVATED` shadow command and reports.
+- [x] Run one current-drawing live probe with the protected key: drawing 4975,
+  4/15 matched, 3 credits spent, 497 remaining, zero secret leakage.
+- [x] Add the uninstalled, idempotent morning/control/T-10 checkpoint command
+  and provider-scoped audit; no production scheduler hook was added.
+- [ ] Collect 30 consecutive completed drawings / 450 events prospectively.
+- [ ] Add post-settlement log-loss/Brier/calibration and unchanged-package
+  replay once settled checkpoint evidence exists.

@@ -100,10 +100,13 @@ from toto_ai.external_odds.audit import CoverageAudit, audit_external_coverage
 from toto_ai.external_odds.collection import (
     collect_open_external_odds,
     pinned_revalidation_is_ready,
+    resolve_open_target,
 )
+from toto_ai.external_odds.domain import TargetDrawing
 from toto_ai.external_odds.eligibility import DrawingEligibility, target_fingerprint
 from toto_ai.external_odds.matching import load_aliases
 from toto_ai.external_odds.preparation import (
+    DrawingPreparationResult,
     _baseline_probability_input_sha256,
     fetch_preparation_schedule,
     load_local_schedule,
@@ -135,6 +138,12 @@ from toto_ai.external_odds.team_registry import (
     load_ready_pin_set_reviewed_catalog_hash,
     seed_reviewed_alias_config,
 )
+from toto_ai.external_odds.the_odds_api import TheOddsAPIClient, TheOddsAPIError
+from toto_ai.external_odds.the_odds_checkpoints import collect_shadow_checkpoint
+from toto_ai.external_odds.the_odds_shadow import (
+    load_the_odds_api_key,
+    write_the_odds_shadow_reports,
+)
 from toto_ai.external_odds.timing_overrides import (
     PinnedTimingOverrideCatalog,
     TimingOverrideRecord,
@@ -148,12 +157,16 @@ from toto_ai.external_odds.timing_overrides import (
 from toto_ai.operations.finished_draw import (
     PostDrawRetryConfig,
     archive_package,
+    complete_post_draw_review,
     import_prebet_package_manifest,
+    load_review_request,
     prepare_post_draw_scheduler_artifacts,
     resolve_explicit_drawing,
     run_post_draw,
+    run_post_draw_plan,
     settle_package_file,
     sync_finished_drawing,
+    transition_review_request,
 )
 from toto_ai.operations.nightly_reconciliation import (
     DEFAULT_BACKUP_RETENTION,
@@ -246,6 +259,9 @@ from toto_ai.runner import (
     drawing_run_candidate_paths,
     execute_scheduler_plan,
     execute_scheduler_tick,
+    export_operator_package,
+    export_paper_package,
+    load_paper_package,
     load_scheduler_plan,
     pin_drawing,
     prepare_morning_preanalysis_artifacts,
@@ -734,8 +750,9 @@ def archive_package_command(
 
 @app.command("post-draw-run")
 def post_draw_run_command(
-    package_file: str = typer.Option(..., "--package-file"),
-    state_file: str = typer.Option(..., "--state-file"),
+    plan: str | None = typer.Option(None, "--plan"),
+    package_file: str | None = typer.Option(None, "--package-file"),
+    state_file: str | None = typer.Option(None, "--state-file"),
     drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
     drawing_number: int | None = typer.Option(None, "--drawing-number", min=1),
     stake: int = typer.Option(30, "--stake", min=1),
@@ -762,8 +779,30 @@ def post_draw_run_command(
     ),
 ) -> None:
     """Boundedly poll and settle one explicit ended drawing; never places bets."""
+    if plan is not None:
+        if any(
+            value is not None
+            for value in (package_file, state_file, drawing_id, drawing_number)
+        ):
+            raise typer.BadParameter(
+                "--plan cannot be combined with package/identity/state options"
+            )
+        try:
+            state = run_post_draw_plan(
+                get_session_factory(init_db(db)),
+                TotoBriefClient(),
+                plan_path=plan,
+            )
+        except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
+            raise typer.BadParameter(str(error)) from error
+        typer.echo(json.dumps(state.to_dict(), ensure_ascii=False, sort_keys=True))
+        if state.status != "complete":
+            raise typer.Exit(code=2 if state.status == "pending" else 1)
+        return
     if (drawing_id is None) == (drawing_number is None):
         raise typer.BadParameter("use exactly one of --drawing-id or --drawing-number")
+    if package_file is None or state_file is None:
+        raise typer.BadParameter("legacy mode requires --package-file and --state-file")
     try:
         state = run_post_draw(
             get_session_factory(init_db(db)),
@@ -790,7 +829,8 @@ def post_draw_run_command(
 
 @app.command("post-draw-plan")
 def post_draw_plan_command(
-    package_file: str = typer.Option(..., "--package-file"),
+    package_file: str | None = typer.Option(None, "--package-file"),
+    paper_result_file: str | None = typer.Option(None, "--paper-result-file"),
     ended_at: str = typer.Option(..., "--ended-at"),
     state_file: str = typer.Option(..., "--state-file"),
     output_dir: str = typer.Option(..., "--output-dir"),
@@ -833,6 +873,7 @@ def post_draw_plan_command(
             max_attempts=max_attempts,
             initial_delay_seconds=initial_delay_seconds,
             max_delay_seconds=max_delay_seconds,
+            paper_result_file=paper_result_file,
         )
     except (OSError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
@@ -840,6 +881,57 @@ def post_draw_plan_command(
     print(f"Wrapper: {wrapper}")
     print(f"LaunchAgent candidate: {plist}")
     print("Artifacts were generated only; nothing was installed and no bet is placed.")
+
+
+@app.command("post-draw-review-status")
+def post_draw_review_status_command(
+    request_file: str = typer.Option(..., "--request-file"),
+) -> None:
+    """Show one hash-verified post-draw review request."""
+
+    try:
+        request = load_review_request(request_file)
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    payload = {
+        **request,
+        "unacknowledged": request["status"] == "AWAITING_USER_REVIEW",
+    }
+    typer.echo(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+
+
+@app.command("post-draw-review-transition")
+def post_draw_review_transition_command(
+    request_file: str = typer.Option(..., "--request-file"),
+    action: str = typer.Option(..., "--action"),
+    at: str = typer.Option(..., "--at"),
+    postmortem_file: str | None = typer.Option(None, "--postmortem-file"),
+) -> None:
+    """Explicitly request, skip, or complete one post-draw review."""
+
+    try:
+        transitioned_at = datetime.fromisoformat(at.replace("Z", "+00:00"))
+        if transitioned_at.tzinfo is None or transitioned_at.utcoffset() is None:
+            raise ValueError("--at must be timezone-aware")
+        if action in {"request", "skip"}:
+            result = transition_review_request(
+                request_file,
+                transition=action,
+                transitioned_at=transitioned_at,
+            )
+        elif action == "complete":
+            if postmortem_file is None:
+                raise ValueError("complete requires --postmortem-file")
+            result = complete_post_draw_review(
+                request_file,
+                postmortem_path=postmortem_file,
+                completed_at=transitioned_at,
+            )
+        else:
+            raise ValueError("--action must be request, skip, or complete")
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(result, ensure_ascii=False, sort_keys=True))
 
 
 @app.command()
@@ -3136,6 +3228,49 @@ def preflight_retry_rehearsal_command(
     typer.echo(json.dumps(summary, ensure_ascii=False, sort_keys=True))
 
 
+def _morning_unresolved_events(
+    *,
+    target: TargetDrawing,
+    prepared: DrawingPreparationResult,
+    schedule_diagnostics: tuple[Mapping[str, object], ...],
+) -> tuple[MorningUnresolvedEvent, ...]:
+    """Expose every unresolved identity or baseline-only kickoff dependency."""
+
+    target_events = target.events
+    prepared_events = prepared.events
+    unresolved = [
+        MorningUnresolvedEvent(
+            event_order=item.event_order,
+            target_event_id=item.target_event_id,
+            home_team=target_events[item.event_order].home_team,
+            away_team=target_events[item.event_order].away_team,
+            resolution_status=item.status,
+            reason=item.reason,
+            candidate_evidence=item.candidate_evidence,
+            provider_diagnostics=schedule_diagnostics,
+        )
+        for item in prepared_events
+        if item.status not in {"matched", "baseline_only"}
+    ]
+    if prepared.eligibility.status == "unknown":
+        unresolved.extend(
+            MorningUnresolvedEvent(
+                event_order=order,
+                target_event_id=target_events[order].event_id,
+                home_team=target_events[order].home_team,
+                away_team=target_events[order].away_team,
+                resolution_status="timing_unknown",
+                reason="baseline-only event start time is unavailable",
+                candidate_evidence=(),
+                provider_diagnostics=schedule_diagnostics,
+            )
+            for order in prepared.baseline_only_event_orders
+            if target_events[order].starts_at is None
+        )
+    unresolved.sort(key=lambda item: item.event_order)
+    return tuple(unresolved)
+
+
 def _prepare_current_for_morning(
     *,
     observed_at: datetime,
@@ -3262,6 +3397,11 @@ def _prepare_current_for_morning(
                 ensure_ascii=True,
             ).encode("utf-8")
         ).hexdigest()
+        unresolved_events = _morning_unresolved_events(
+            target=target,
+            prepared=prepared,
+            schedule_diagnostics=tuple(schedule.diagnostics),
+        )
         return MorningPreparedDrawing(
             drawing_id=target.drawing_id,
             drawing_number=target.drawing_number,
@@ -3279,20 +3419,7 @@ def _prepare_current_for_morning(
                 drawing_id=target.drawing_id,
                 drawing_fingerprint=prepared.drawing_fingerprint,
             ),
-            unresolved_events=tuple(
-                MorningUnresolvedEvent(
-                    event_order=item.event_order,
-                    target_event_id=item.target_event_id,
-                    home_team=target.events[item.event_order].home_team,
-                    away_team=target.events[item.event_order].away_team,
-                    resolution_status=item.status,
-                    reason=item.reason,
-                    candidate_evidence=item.candidate_evidence,
-                    provider_diagnostics=tuple(schedule.diagnostics),
-                )
-                for item in prepared.events
-                if item.status not in {"matched", "baseline_only"}
-            ),
+            unresolved_events=unresolved_events,
         )
     finally:
         engine.dispose()
@@ -3550,11 +3677,61 @@ def scheduler_execute_command(
     print(f"Decision: {result.decision}")
     print(f"Reason: {result.reason}")
     print(f"Status: {result.status_path}")
-    if result.package_path is not None:
-        print(f"Operator package: {result.package_path}")
-        print(f"Package SHA-256: {result.package_sha256}")
+    if result.outcome == "bet-ready":
+        print(
+            "Operator export: use `operator-export --plan <scheduler-plan.json> "
+            "--output <destination.txt>` before T-10"
+        )
     if result.outcome == "failed":
         raise typer.Exit(code=1)
+
+
+@app.command("operator-export")
+def operator_export_command(
+    plan: str = typer.Option(..., "--plan"),
+    output: str = typer.Option(..., "--output"),
+) -> None:
+    """Export the current verified scheduler-owned PLAY package for BaltBet."""
+
+    try:
+        scheduler_plan = load_scheduler_plan(plan)
+        destination = export_operator_package(
+            scheduler_plan,
+            destination=output,
+            now=_utc_now_datetime,
+        )
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(f"Operator package: {destination}")
+
+
+@app.command("paper-package-show")
+def paper_package_show_command(
+    plan: str = typer.Option(..., "--plan"),
+    output: str | None = typer.Option(None, "--output"),
+) -> None:
+    """Show an explicitly non-actionable scheduler-owned PAPER package."""
+
+    try:
+        scheduler_plan = load_scheduler_plan(plan)
+        result = load_paper_package(scheduler_plan)
+        if result.paper_path is None:
+            raise SchedulerIntegrityError(
+                "paper package has no coupon payload",
+                category="paper_package_unavailable",
+            )
+        if output is None:
+            sys.stdout.buffer.write(result.paper_path.read_bytes())
+            sys.stdout.buffer.flush()
+        else:
+            export_paper_package(scheduler_plan, destination=output)
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    print(
+        "PAPER / NO BET / DO NOT WAGER — "
+        f"drawing={scheduler_plan.drawing} coupons={result.count} cost={result.cost}",
+        file=sys.stderr,
+    )
 
 
 @app.command("ev-package")
@@ -4335,23 +4512,186 @@ def collect_external_odds_command(
     print(_external_collection_table(result, prospective_result))
 
 
+@app.command("collect-the-odds-api-shadow")
+def collect_the_odds_api_shadow_command(
+    open: bool = typer.Option(False),  # noqa: A002
+    db: str = typer.Option("data/toto.db"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    quota_reserve: int = typer.Option(50, min=0),
+    env_file: str = typer.Option(".env"),
+    cache_root: str = typer.Option("data/external-cache/the-odds-api"),
+    report_dir: str = typer.Option("reports/the-odds-api-shadow"),
+) -> None:
+    """Collect an isolated NOT_ACTIVATED The Odds API shadow snapshot."""
+    if not open:
+        raise typer.BadParameter("--open is required")
+    api_key = ""
+    try:
+        api_key = load_the_odds_api_key(env_file)
+        engine = init_db(db)
+        session_factory = get_session_factory(engine)
+        reviewed_aliases = load_aliases(aliases)
+        provider_client = TheOddsAPIClient(
+            api_key,
+            cache_dir=Path(cache_root),
+            quota_reserve=quota_reserve,
+        )
+        snapshot = collect_open_external_odds(
+            TotoBriefClient(),
+            provider_client,
+            session_factory,
+            reviewed_aliases,
+            fetched_at=datetime.now(timezone.utc),
+        )
+        paths = write_the_odds_shadow_reports(
+            snapshot,
+            request_evidence=provider_client.request_evidence,
+            credit_state=provider_client.credit_state,
+            credits_spent=provider_client.credits_spent,
+            report_dir=report_dir,
+        )
+    except (
+        TheOddsAPIError,
+        OSError,
+        SQLAlchemyError,
+        TotoBriefRequestError,
+        ValueError,
+    ) as error:
+        raise typer.BadParameter(
+            _external_error_message(error, secret=api_key)
+        ) from error
+
+    consensus_count = sum(
+        event.probability_source == "external_consensus"
+        for event in snapshot.events
+    )
+    fallback_count = len(snapshot.events) - consensus_count
+    typer.echo(
+        json.dumps(
+            {
+                "activation_status": "NOT_ACTIVATED",
+                "actionable": False,
+                "drawing_id": snapshot.drawing_id,
+                "drawing_number": snapshot.drawing_number,
+                "collection_id": snapshot.collection_id,
+                "matched_events": sum(
+                    event.match_status == "matched" for event in snapshot.events
+                ),
+                "external_consensus_events": consensus_count,
+                "fallback_events": fallback_count,
+                "requests_made": snapshot.requests_made,
+                "cache_hits": snapshot.cache_hits,
+                "credits_spent": provider_client.credits_spent,
+                "credits_remaining": provider_client.credit_state.remaining,
+                "json_report": str(paths.json_path),
+                "csv_report": str(paths.csv_path),
+                "markdown_report": str(paths.markdown_path),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+
+
+@app.command("collect-the-odds-api-checkpoint")
+def collect_the_odds_api_checkpoint_command(
+    open: bool = typer.Option(False),  # noqa: A002
+    checkpoint: str = typer.Option(...),
+    db: str = typer.Option("data/toto.db"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    quota_reserve: int = typer.Option(50, min=0),
+    env_file: str = typer.Option(".env"),
+    cache_root: str = typer.Option("data/external-cache/the-odds-api"),
+    report_dir: str = typer.Option("reports/the-odds-api-shadow"),
+) -> None:
+    """Collect one idempotent NOT_ACTIVATED prospective checkpoint."""
+    if not open:
+        raise typer.BadParameter("--open is required")
+    api_key = ""
+    try:
+        api_key = load_the_odds_api_key(env_file)
+        engine = init_db(db)
+        session_factory = get_session_factory(engine)
+        reviewed_aliases = load_aliases(aliases)
+        target = resolve_open_target(
+            TotoBriefClient(),
+            fetched_at=datetime.now(timezone.utc),
+        )
+        result = collect_shadow_checkpoint(
+            target=target,
+            checkpoint=checkpoint,
+            provider_factory=lambda: TheOddsAPIClient(
+                api_key,
+                cache_dir=Path(cache_root),
+                quota_reserve=quota_reserve,
+            ),
+            session_factory=session_factory,
+            aliases=reviewed_aliases,
+            quota_reserve=quota_reserve,
+            report_dir=report_dir,
+        )
+    except (
+        TheOddsAPIError,
+        OSError,
+        SQLAlchemyError,
+        TotoBriefRequestError,
+        ValueError,
+    ) as error:
+        raise typer.BadParameter(
+            _external_error_message(error, secret=api_key)
+        ) from error
+
+    typer.echo(
+        json.dumps(
+            {
+                "activation_status": "NOT_ACTIVATED",
+                "actionable": False,
+                "drawing_id": target.drawing_id,
+                "drawing_number": target.drawing_number,
+                "checkpoint": checkpoint,
+                "checkpoint_id": result.checkpoint_id,
+                "collection_id": result.collection_id,
+                "status": result.status,
+                "credits_spent": result.credits_spent,
+                "credits_spent_this_run": result.credits_spent_this_run,
+                "reused": result.reused,
+                "manifest_path": str(result.manifest_path),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+
+
 @app.command("audit-external-coverage")
 def audit_external_coverage_command(
     db: str = typer.Option("data/toto.db"),
     last: int = typer.Option(30, min=1),
     min_bookmakers: int = typer.Option(3, min=1),
+    provider: str = typer.Option("api-sports"),
     report_dir: str = typer.Option("reports"),
 ) -> None:
     """Audit stored external-odds coverage without provider network access."""
     try:
         engine = open_readonly_db(db)
         session_factory = get_session_factory(engine)
+        if provider not in {"api-sports", "the-odds-api"}:
+            raise ValueError("provider must be api-sports or the-odds-api")
         audit = audit_external_coverage(
             session_factory,
             last=last,
             minimum_bookmakers=min_bookmakers,
+            provider=provider,
         )
-        paths = write_external_coverage_reports(audit, report_dir=report_dir)
+        scoped_report_dir = (
+            Path(report_dir)
+            if provider == "api-sports"
+            else Path(report_dir) / provider
+        )
+        paths = write_external_coverage_reports(
+            audit,
+            report_dir=scoped_report_dir,
+        )
     except (OSError, SQLAlchemyError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
 

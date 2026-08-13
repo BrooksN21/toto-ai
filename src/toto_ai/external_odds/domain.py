@@ -81,6 +81,8 @@ class ProviderMarket:
     home_price: float | None
     draw_price: float | None
     away_price: float | None
+    source_endpoint: str | None = None
+    request_fingerprint: str | None = None
 
     def __post_init__(self) -> None:
         _require_text("provider", self.provider)
@@ -93,6 +95,8 @@ class ProviderMarket:
         _require_decimal_price("home_price", self.home_price)
         _require_decimal_price("draw_price", self.draw_price)
         _require_decimal_price("away_price", self.away_price)
+        _require_optional_text("source_endpoint", self.source_endpoint)
+        _require_optional_text("request_fingerprint", self.request_fingerprint)
 
 
 @dataclass(frozen=True)
@@ -110,6 +114,8 @@ class ProviderEvent:
     country: str | None = None
     provider_home_team_id: str | None = None
     provider_away_team_id: str | None = None
+    source_endpoint: str | None = None
+    request_fingerprint: str | None = None
 
     def __post_init__(self) -> None:
         _require_text("provider", self.provider)
@@ -124,6 +130,8 @@ class ProviderEvent:
         _require_optional_text("country", self.country)
         _require_optional_text("provider_home_team_id", self.provider_home_team_id)
         _require_optional_text("provider_away_team_id", self.provider_away_team_id)
+        _require_optional_text("source_endpoint", self.source_endpoint)
+        _require_optional_text("request_fingerprint", self.request_fingerprint)
         if not isinstance(self.markets, tuple):
             raise ValueError("markets must be a tuple")
         if any(market.provider != self.provider for market in self.markets):

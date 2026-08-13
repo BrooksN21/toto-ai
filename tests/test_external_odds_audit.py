@@ -71,6 +71,38 @@ def test_gate_requires_all_registered_thresholds():
     assert audit.gate.decision == "GO"
 
 
+def test_audit_filters_collections_by_provider():
+    api_sports = _collection(1, ())
+    the_odds_api = replace(
+        _collection(2, ()),
+        provider="the-odds-api",
+    )
+
+    audit = audit_external_coverage(
+        _snapshot_session_factory((api_sports, the_odds_api)),
+        last=30,
+        minimum_bookmakers=3,
+        provider="the-odds-api",
+    )
+
+    assert audit.provider == "the-odds-api"
+    assert audit.drawings == 1
+    assert {row.drawing_id for row in audit.dispositions} == {the_odds_api.drawing_id}
+
+
+def test_empty_provider_scoped_audit_keeps_requested_provider():
+    audit = audit_external_coverage(
+        _snapshot_session_factory(()),
+        last=30,
+        minimum_bookmakers=3,
+        provider="the-odds-api",
+    )
+
+    assert audit.provider == "the-odds-api"
+    assert audit.drawings == 0
+    assert audit.gate.decision == "PENDING"
+
+
 @pytest.mark.parametrize(
     ("change", "reason"),
     [
@@ -472,6 +504,50 @@ def test_same_timestamp_append_order_wins_exact_lookup_and_audit_dedup(
         older.collection_id,
     )
     assert same_base.collection_id not in {
+        item.collection_id for item in audit.collections
+    }
+    engine.dispose()
+
+
+def test_provider_audit_counts_latest_checkpoint_per_drawing_only(tmp_path):
+    engine = create_engine(f"sqlite+pysqlite:///{tmp_path / 'checkpoints.sqlite'}")
+    Base.metadata.create_all(engine)
+    factory = sessionmaker(engine, expire_on_commit=False)
+    drawing_one_morning = replace(
+        _modern_collection(_collection(1, ()), scope="ordinary_two_day"),
+        collection_id="drawing-one-morning",
+        provider="the-odds-api",
+    )
+    drawing_one_control = replace(
+        drawing_one_morning,
+        collection_id="drawing-one-control",
+        fetched_at=(
+            datetime.fromisoformat(drawing_one_morning.fetched_at)
+            + timedelta(minutes=5)
+        ).isoformat(),
+    )
+    drawing_two = replace(
+        _modern_collection(_collection(2, ()), scope="ordinary_two_day"),
+        collection_id="drawing-two-control",
+        provider="the-odds-api",
+    )
+    for collection in (drawing_one_morning, drawing_two, drawing_one_control):
+        save_collection(factory, collection)
+
+    audit = audit_external_coverage(
+        factory,
+        last=30,
+        minimum_bookmakers=3,
+        provider="the-odds-api",
+    )
+
+    assert audit.drawings == 2
+    assert len(audit.dispositions) == 30
+    assert {item.collection_id for item in audit.collections} == {
+        "drawing-one-control",
+        "drawing-two-control",
+    }
+    assert "drawing-one-morning" not in {
         item.collection_id for item in audit.collections
     }
     engine.dispose()

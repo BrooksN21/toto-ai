@@ -28,8 +28,11 @@ from pathlib import Path
 from typing import Any, Literal, Protocol
 from zoneinfo import ZoneInfo
 
+from sqlalchemy import select
+
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.api.rate_limit import TotoBriefRequestError
+from toto_ai.db.models import ArchivedPackage
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.ev.models import EVConfig, validate_config_bank
@@ -1977,6 +1980,7 @@ def execute_scheduler_tick(
             load_state(state_path, plan_id=plan.plan_id, now=observed), observed
         )
         save_state(state_path, state)
+        _expire_operator_package_at_t10(plan, observed_at=observed)
         prior = find_prior_bet_ready(plan)
         if prior is not None:
             return prior
@@ -1989,7 +1993,6 @@ def execute_scheduler_tick(
         )
         if recovered is not None:
             return recovered
-        _expire_operator_package_at_t10(plan, observed_at=observed)
         if state["terminal"] is not None:
             return None
         if observed >= plan.publish_deadline:
@@ -2370,6 +2373,23 @@ def _remove_actionable_publication_artifacts(
         run_dir / "package-archive.json",
         missing_ok=True,
     )
+    _unlink_output_path(
+        plan.output_dir,
+        run_dir / "baltbet-upload.txt",
+        missing_ok=True,
+    )
+    operator_path = plan.output_dir / "operator-result.json"
+    if operator_path.is_file() and not operator_path.is_symlink():
+        try:
+            payload = _load_strict_json(operator_path, name="operator result")
+        except (OSError, SchedulerError, TypeError, ValueError):
+            payload = None
+        if (
+            isinstance(payload, Mapping)
+            and payload.get("actionable") is True
+            and payload.get("run_id") == run_dir.name
+        ):
+            _unlink_output_path(plan.output_dir, operator_path, missing_ok=True)
 
 
 def _recover_atomic_publication(
@@ -2422,6 +2442,11 @@ def _recover_atomic_publication(
         != final_input.probability_input_sha256
     ):
         raise SchedulerError("recoverable archive final-input provenance mismatch")
+    archived_at = _parse_utc_datetime(
+        "recoverable archive archived_at", payload.get("archived_at")
+    )
+    if archived_at > observed_at or archived_at > plan.publish_deadline:
+        raise SchedulerError("recoverable archive publication chronology is invalid")
     if observed_at > plan.publish_deadline:
         _remove_actionable_publication_artifacts(plan, run_dir)
         return _finalize_tick_no_bet(
@@ -2466,7 +2491,7 @@ def _recover_atomic_publication(
         "selected_count": archived.coupon_count,
         "selected_cost": archived.cost,
         "selected_snapshot": "final",
-        "published_at": observed_at,
+        "published_at": archived_at,
     }
     finalized = _finalize_status(
         plan,
@@ -2488,6 +2513,8 @@ def _recover_atomic_publication(
         attempt_id=attempt_id,
     )
     save_state(state_path, updated)
+    if observed_at >= plan.publish_deadline:
+        _expire_operator_package_at_t10(plan, observed_at=observed_at)
     return finalized
 
 
@@ -3010,6 +3037,17 @@ def _finalize_tick_operator_package(
         terminal="no_bet",
     )
     save_state(state_path, updated)
+    persist_paper_package_artifacts(
+        plan,
+        source_package=package.path.parent / "package.csv",
+        decision="NO BET",
+        reason=reason,
+        completed_at=observed_at,
+        probability_input_sha256=package.probability_input_sha256,
+        provenance=provenance,
+        expected_count=package.selected_count,
+        expected_cost=package.selected_cost,
+    )
     _write_operator_result(
         plan,
         package=package,
@@ -3070,6 +3108,17 @@ def _finalize_tick_no_bet(
         terminal="no_bet",
     )
     save_state(state_path, updated)
+    persist_paper_package_artifacts(
+        plan,
+        source_package=None,
+        decision="NO BET",
+        reason=reason,
+        completed_at=observed_at,
+        probability_input_sha256=None,
+        provenance=None,
+        expected_count=0,
+        expected_cost=0,
+    )
     _write_operator_no_bet(
         plan,
         reason=reason,
@@ -3167,6 +3216,427 @@ def _write_operator_no_bet(
     )
 
 
+def _operator_result_sha256(payload: Mapping[str, object]) -> str:
+    unsigned = dict(payload)
+    unsigned.pop("record_sha256", None)
+    return _sha256_bytes(_canonical_json_bytes(unsigned))
+
+
+def _publish_actionable_operator_result(
+    plan: SchedulerPlan,
+    *,
+    run_id: str,
+    run_dir: Path,
+    status_path: Path,
+    marker_path: Path,
+    terminal: Mapping[str, Any],
+    completed_at: datetime,
+) -> None:
+    """Publish a marker-gated BaltBet upload candidate for one verified PLAY."""
+
+    source_path = run_dir / "package.csv"
+    archive_path = run_dir / "package-archive.json"
+    upload_path = run_dir / "baltbet-upload.txt"
+    source_bytes = _read_regular_file(
+        source_path,
+        name="operator source package",
+        reject_symlink=True,
+    )
+    selected_count = _strict_int(
+        "operator selected_count", terminal["selected_count"]
+    )
+    selected_cost = _strict_int(
+        "operator selected_cost", terminal["selected_cost"]
+    )
+    validated = _validate_package_csv(
+        source_bytes,
+        stake=plan.stake,
+        minimum_gross_ev=plan.minimum_gross_ev,
+        expected_count=selected_count,
+        expected_cost=selected_cost,
+    )
+    upload_bytes = _render_baltbet_upload(validated.coupons, stake=plan.stake)
+    _validate_baltbet_upload(
+        upload_bytes,
+        stake=plan.stake,
+        expected_count=selected_count,
+        expected_cost=selected_cost,
+        expected_coupons=validated.coupons,
+    )
+    if upload_path.exists():
+        if _read_regular_file(
+            upload_path,
+            name="existing operator upload",
+            reject_symlink=True,
+        ) != upload_bytes:
+            raise SchedulerIntegrityError(
+                "existing operator upload conflicts with verified PLAY",
+                category="operator_artifact_integrity",
+            )
+    else:
+        _write_exclusive_atomic(plan.output_dir, upload_path, upload_bytes)
+
+    archive = _load_strict_json(archive_path, name="package archive")
+    if not isinstance(archive, Mapping):
+        raise SchedulerIntegrityError(
+            "package archive is not an object",
+            category="operator_artifact_integrity",
+        )
+    archive_hash = _strict_sha256(
+        "operator archive manifest hash",
+        archive.get("archive_manifest_sha256"),
+    )
+    payload: dict[str, object] = {
+        "schema_version": 2,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "run_id": run_id,
+        "operator_status": "FINAL_FRESH",
+        "decision": "PLAY",
+        "reason": terminal["reason"],
+        "provenance": "FINAL_FRESH",
+        "staleness_seconds": 0.0,
+        "coupon_path": str(upload_path),
+        "package_sha256": _sha256_bytes(upload_bytes),
+        "source_package_path": str(source_path),
+        "source_package_sha256": _sha256_bytes(source_bytes),
+        "archive_manifest_path": str(archive_path),
+        "archive_manifest_sha256": archive_hash,
+        "status_path": str(status_path),
+        "marker_path": str(marker_path),
+        "stake": plan.stake,
+        "requested_bank": plan.requested_bank,
+        "effective_bank": terminal["effective_bank"],
+        "selected_count": selected_count,
+        "selected_cost": selected_cost,
+        "published_at": _timestamp(terminal["published_at"]),
+        "expires_at": _timestamp(plan.publish_deadline),
+        "completed_at": _timestamp(completed_at),
+        "automatic_wagering": False,
+        "actionable": True,
+    }
+    payload["record_sha256"] = _operator_result_sha256(payload)
+    _write_replace_atomic(
+        plan.output_dir,
+        plan.output_dir / "operator-result.json",
+        _canonical_json_bytes(payload) + b"\n",
+    )
+
+
+def _validated_actionable_operator_upload(
+    plan: SchedulerPlan,
+    *,
+    observed_at: datetime,
+    allow_at_deadline: bool,
+) -> bytes:
+    observed = _require_utc_datetime("observed_at", observed_at)
+    if (
+        observed > plan.publish_deadline
+        if allow_at_deadline
+        else observed >= plan.publish_deadline
+    ):
+        raise SchedulerIntegrityError(
+            "operator package expired at T-10",
+            category="operator_package_expired",
+        )
+    result_path = plan.output_dir / "operator-result.json"
+    payload = _load_strict_json(result_path, name="operator result")
+    if not isinstance(payload, Mapping):
+        raise SchedulerIntegrityError(
+            "operator result is not an object",
+            category="operator_artifact_integrity",
+        )
+    if (
+        payload.get("schema_version") != 2
+        or payload.get("plan_id") != plan.plan_id
+        or payload.get("drawing") != plan.drawing
+        or payload.get("drawing_id") != plan.drawing_id
+        or payload.get("decision") != "PLAY"
+        or payload.get("operator_status") != "FINAL_FRESH"
+        or payload.get("provenance") != "FINAL_FRESH"
+        or payload.get("automatic_wagering") is not False
+        or payload.get("actionable") is not True
+    ):
+        raise SchedulerIntegrityError(
+            "operator result is not actionable",
+            category="operator_release_boundary",
+        )
+    if payload.get("record_sha256") != _operator_result_sha256(payload):
+        raise SchedulerIntegrityError(
+            "operator result integrity hash mismatch",
+            category="operator_artifact_integrity",
+        )
+    expires_at = _parse_utc_datetime("operator expires_at", payload.get("expires_at"))
+    if expires_at != plan.publish_deadline:
+        raise SchedulerIntegrityError(
+            "operator result expiry does not match the plan",
+            category="operator_artifact_integrity",
+        )
+    published_at = _parse_utc_datetime(
+        "operator published_at", payload.get("published_at")
+    )
+    completed_at = _parse_utc_datetime(
+        "operator completed_at", payload.get("completed_at")
+    )
+    if not (
+        published_at <= completed_at <= plan.publish_deadline
+        and published_at <= observed
+    ):
+        raise SchedulerIntegrityError(
+            "operator publication chronology is invalid",
+            category="operator_artifact_integrity",
+        )
+    run_id = _strict_text("operator run_id", payload.get("run_id"))
+    if _RUN_ID_PATTERN.fullmatch(run_id) is None:
+        raise SchedulerIntegrityError(
+            "operator run_id is invalid",
+            category="operator_artifact_integrity",
+        )
+    declared_source = _require_contained_path(
+        plan.output_dir,
+        Path(str(payload.get("source_package_path"))),
+        name="operator source_package_path",
+    )
+    run_dir = declared_source.parent
+    allowed_run_dirs = {
+        plan.output_dir / "attempts" / run_id,
+        plan.output_dir / "runs" / str(plan.drawing) / run_id,
+    }
+    if run_dir not in allowed_run_dirs:
+        raise SchedulerIntegrityError(
+            "operator run directory is outside scheduler-owned run scopes",
+            category="operator_artifact_integrity",
+        )
+    expected_paths = {
+        "coupon_path": run_dir / "baltbet-upload.txt",
+        "source_package_path": run_dir / "package.csv",
+        "archive_manifest_path": run_dir / "package-archive.json",
+        "status_path": run_dir / "status.json",
+        "marker_path": run_dir / ".bet-ready",
+    }
+    paths: dict[str, Path] = {}
+    for field, expected in expected_paths.items():
+        path = _require_contained_path(
+            plan.output_dir,
+            Path(str(payload.get(field))),
+            name=f"operator {field}",
+        )
+        if path != expected:
+            raise SchedulerIntegrityError(
+                f"operator {field} is not run-scoped",
+                category="operator_artifact_integrity",
+            )
+        paths[field] = path
+
+    status = _load_strict_json(paths["status_path"], name="operator status")
+    marker = _load_strict_json(paths["marker_path"], name="BET READY marker")
+    if (
+        not isinstance(status, Mapping)
+        or status.get("plan_id") != plan.plan_id
+        or status.get("run_id") != run_id
+        or status.get("outcome") != "bet-ready"
+        or status.get("decision") != "PLAY"
+        or status.get("package_path") != str(paths["source_package_path"])
+        or status.get("published_at") != _timestamp(published_at)
+        or status.get("completed_at") != _timestamp(completed_at)
+        or not isinstance(marker, Mapping)
+        or marker.get("drawing") != plan.drawing
+        or marker.get("run_id") != run_id
+        or marker.get("outcome") != "bet-ready"
+        or marker.get("decision") != "PLAY"
+        or marker.get("status_path") != str(paths["status_path"])
+        or marker.get("package_path") != str(paths["source_package_path"])
+        or marker.get("package_sha256") != status.get("package_sha256")
+        or marker.get("completed_at") != _timestamp(completed_at)
+    ):
+        raise SchedulerIntegrityError(
+            "operator status or BET READY marker mismatch",
+            category="operator_artifact_integrity",
+        )
+    selected_count = _strict_int(
+        "operator selected_count", payload.get("selected_count")
+    )
+    selected_cost = _strict_int("operator selected_cost", payload.get("selected_cost"))
+    effective_bank = _strict_int(
+        "operator effective_bank", payload.get("effective_bank")
+    )
+    if (
+        payload.get("stake") != plan.stake
+        or payload.get("requested_bank") != plan.requested_bank
+        or selected_cost != selected_count * plan.stake
+        or selected_cost > effective_bank
+        or effective_bank > plan.requested_bank
+        or status.get("selected_count") != selected_count
+        or status.get("selected_cost") != selected_cost
+        or status.get("effective_bank") != effective_bank
+    ):
+        raise SchedulerIntegrityError(
+            "operator bank, stake, or coupon count mismatch",
+            category="operator_artifact_integrity",
+        )
+    source_bytes = _read_regular_file(
+        paths["source_package_path"],
+        name="operator source package",
+        reject_symlink=True,
+    )
+    source_hash = _sha256_bytes(source_bytes)
+    if (
+        source_hash != payload.get("source_package_sha256")
+        or source_hash != status.get("package_sha256")
+    ):
+        raise SchedulerIntegrityError(
+            "operator source package hash mismatch",
+            category="operator_artifact_integrity",
+        )
+    validated = _validate_package_csv(
+        source_bytes,
+        stake=plan.stake,
+        minimum_gross_ev=plan.minimum_gross_ev,
+        expected_count=selected_count,
+        expected_cost=selected_cost,
+    )
+    upload_bytes = _read_regular_file(
+        paths["coupon_path"],
+        name="operator upload package",
+        reject_symlink=True,
+    )
+    if _sha256_bytes(upload_bytes) != payload.get("package_sha256"):
+        raise SchedulerIntegrityError(
+            "operator upload package hash mismatch",
+            category="operator_artifact_integrity",
+        )
+    _validate_baltbet_upload(
+        upload_bytes,
+        stake=plan.stake,
+        expected_count=selected_count,
+        expected_cost=selected_cost,
+        expected_coupons=validated.coupons,
+    )
+    archive = _load_strict_json(
+        paths["archive_manifest_path"], name="operator package archive"
+    )
+    if not isinstance(archive, Mapping):
+        raise SchedulerIntegrityError(
+            "operator package archive is not an object",
+            category="operator_artifact_integrity",
+        )
+    unsigned_archive = dict(archive)
+    declared_archive_hash = unsigned_archive.pop("archive_manifest_sha256", None)
+    if (
+        declared_archive_hash != payload.get("archive_manifest_sha256")
+        or _sha256_bytes(_canonical_json_bytes(unsigned_archive))
+        != declared_archive_hash
+        or archive.get("drawing_id") != plan.drawing_id
+        or archive.get("drawing_number") != plan.drawing
+        or archive.get("stake") != plan.stake
+        or archive.get("coupon_count") != selected_count
+        or archive.get("cost") != selected_cost
+        or archive.get("source_path") != str(paths["source_package_path"])
+        or archive.get("source_bytes_sha256") != source_hash
+        or archive.get("provenance") != "pre_bet_runner"
+        or archive.get("archived_at") != _timestamp(published_at)
+    ):
+        raise SchedulerIntegrityError(
+            "operator package archive mismatch",
+            category="operator_artifact_integrity",
+        )
+    canonical_hash = hashlib.sha256(
+        ",".join(validated.coupons).encode("utf-8")
+    ).hexdigest()
+    if archive.get("canonical_package_sha256") != canonical_hash:
+        raise SchedulerIntegrityError(
+            "operator canonical package hash mismatch",
+            category="operator_artifact_integrity",
+        )
+    archive_engine = init_db(plan.db)
+    try:
+        with get_session_factory(archive_engine)() as session:
+            rows = session.scalars(
+                select(ArchivedPackage)
+                .where(ArchivedPackage.drawing_id == plan.drawing_id)
+                .where(ArchivedPackage.drawing_number == plan.drawing)
+                .where(ArchivedPackage.stake == plan.stake)
+                .where(ArchivedPackage.package_sha256 == canonical_hash)
+                .where(ArchivedPackage.source_bytes_sha256 == source_hash)
+                .where(
+                    ArchivedPackage.archive_manifest_sha256
+                    == declared_archive_hash
+                )
+            ).all()
+    finally:
+        archive_engine.dispose()
+    if (
+        len(rows) != 1
+        or rows[0].coupon_count != selected_count
+        or rows[0].cost != selected_cost
+        or rows[0].source_bytes != source_bytes
+        or rows[0].provenance != "pre_bet_runner"
+        or _parse_utc_datetime(
+            "durable archive archived_at", rows[0].archived_at
+        )
+        != published_at
+    ):
+        raise SchedulerIntegrityError(
+            "operator package is not bound to one durable archive",
+            category="operator_artifact_integrity",
+        )
+    return upload_bytes
+
+
+def export_operator_package(
+    plan: SchedulerPlan,
+    *,
+    destination: str | Path,
+    observed_at: datetime | None = None,
+    now: Callable[[], datetime] | None = None,
+) -> Path:
+    """Export only the current scheduler-owned actionable PLAY upload."""
+
+    _require_plan(plan)
+    if observed_at is not None and now is not None:
+        raise ValueError("provide observed_at or now, not both")
+    clock = now or (lambda: datetime.now(timezone.utc))
+    initial_observed = (
+        _require_utc_datetime("observed_at", observed_at)
+        if observed_at is not None
+        else _read_now(clock)
+    )
+    try:
+        upload_bytes = _validated_actionable_operator_upload(
+            plan,
+            observed_at=initial_observed,
+            allow_at_deadline=False,
+        )
+    except SchedulerIntegrityError:
+        raise
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise SchedulerIntegrityError(
+            f"operator package validation failed: {_safe_error(error)}",
+            category="operator_artifact_integrity",
+        ) from error
+    output = _validated_project_path(
+        plan.project_root,
+        Path(destination),
+        name="operator export destination",
+    )
+    before_write = initial_observed if observed_at is not None else _read_now(clock)
+    if before_write >= plan.publish_deadline:
+        raise SchedulerIntegrityError(
+            "operator package expired at T-10",
+            category="operator_package_expired",
+        )
+    _write_exclusive_atomic(plan.project_root, output, upload_bytes, mode=0o600)
+    after_write = before_write if observed_at is not None else _read_now(clock)
+    if after_write >= plan.publish_deadline:
+        _unlink_output_path(plan.project_root, output, missing_ok=True)
+        raise SchedulerIntegrityError(
+            "operator package expired at T-10",
+            category="operator_package_expired",
+        )
+    return output
+
+
 def _expire_operator_package_at_t10(
     plan: SchedulerPlan,
     *,
@@ -3185,6 +3655,74 @@ def _expire_operator_package_at_t10(
             "operator result is not a JSON object",
             category="operator_artifact_integrity",
         )
+    if (
+        payload.get("schema_version") == 2
+        or payload.get("decision") == "PLAY"
+        or payload.get("actionable") is True
+    ):
+        run_id = _strict_text("operator run_id", payload.get("run_id"))
+        source_path = _require_contained_path(
+            plan.output_dir,
+            Path(str(payload.get("source_package_path"))),
+            name="operator source_package_path",
+        )
+        run_dir = source_path.parent
+        if run_dir not in {
+            plan.output_dir / "attempts" / run_id,
+            plan.output_dir / "runs" / str(plan.drawing) / run_id,
+        }:
+            raise SchedulerIntegrityError(
+                "operator run directory is outside scheduler-owned run scopes",
+                category="operator_artifact_integrity",
+            )
+        marker_path = run_dir / ".bet-ready"
+        archive_path = run_dir / "package-archive.json"
+        if not marker_path.exists() and archive_path.is_file():
+            # Fail closed before atomic recovery: the archive remains eligible
+            # for audit-marker recovery, but the raw operator upload must not
+            # survive the hard T-10 boundary.
+            _unlink_output_path(
+                plan.output_dir,
+                run_dir / "baltbet-upload.txt",
+                missing_ok=True,
+            )
+            _write_operator_no_bet(
+                plan,
+                reason=(
+                    "operator package expired at T-10 during marker recovery; "
+                    "audit archive retained"
+                ),
+                completed_at=observed_at,
+            )
+            return
+        _validated_actionable_operator_upload(
+            plan,
+            observed_at=plan.publish_deadline,
+            allow_at_deadline=True,
+        )
+        value = payload.get("coupon_path")
+        if value is None:
+            raise SchedulerIntegrityError(
+                "actionable operator result has no upload path",
+                category="operator_artifact_integrity",
+            )
+        package_path = _require_contained_path(
+            plan.output_dir,
+            Path(str(value)),
+            name="expiring actionable operator package",
+        )
+        if package_path.name != "baltbet-upload.txt":
+            raise SchedulerIntegrityError(
+                "actionable operator result does not reference canonical upload",
+                category="operator_artifact_integrity",
+            )
+        _unlink_output_path(plan.output_dir, package_path, missing_ok=True)
+        _write_operator_no_bet(
+            plan,
+            reason="operator package expired at T-10; audit archive retained",
+            completed_at=observed_at,
+        )
+        return
     if (
         payload.get("plan_id") != plan.plan_id
         or payload.get("drawing") != plan.drawing
@@ -3311,11 +3849,7 @@ def build_run_drawing_phase_command(
     validated_executable = _validated_python_executable(python_executable)
     plan = context.plan
     atomic_final = context.phase == "final" and context.atomic_final
-    lead_minutes = (
-        45
-        if context.scheduler_phase == "warmup"
-        else (30 if context.phase == "fallback" else (20 if atomic_final else 15))
-    )
+    lead_minutes = _runner_final_lead_minutes(context)
     report_dir = context.work_dir / "reports"
     cache_root = context.work_dir / "cache"
     command = [
@@ -3389,6 +3923,16 @@ def build_run_drawing_phase_command(
         )
     )
     return tuple(command)
+
+
+def _runner_final_lead_minutes(context: SchedulerPhaseContext) -> int:
+    """Return the canonical run-drawing lead bound for one scheduler phase."""
+
+    if context.scheduler_phase == "warmup":
+        return 45
+    if context.phase == "fallback":
+        return 30
+    return 20 if context.atomic_final else 15
 
 
 def build_prepare_drawing_command(
@@ -4251,6 +4795,7 @@ def _finalize_status(
     now: Callable[[], datetime],
 ) -> SchedulerExecutionResult:
     publication_deadline = plan.freeze_at
+    operator_window_open = completed_at < plan.publish_deadline
     if terminal["outcome"] == "bet-ready":
         _validate_terminal_package(plan, run_dir, terminal)
     status.update(
@@ -4306,6 +4851,48 @@ def _finalize_status(
                 raise SchedulerPublicationDeadlineError(
                     "bet-ready marker deadline crossed after durable archive"
                 )
+            final_input_path = run_dir / "final-input.json"
+            paper_probability_hash = None
+            if final_input_path.is_file() and not final_input_path.is_symlink():
+                paper_probability_hash = load_final_input(
+                    final_input_path, expected_plan=plan
+                ).probability_input_sha256
+            persist_paper_package_artifacts(
+                plan,
+                source_package=run_dir / "package.csv",
+                decision="PLAY",
+                reason=str(terminal["reason"]),
+                completed_at=completed_at,
+                probability_input_sha256=paper_probability_hash,
+                provenance="FINAL_FRESH",
+                expected_count=_strict_int(
+                    "paper selected_count", terminal["selected_count"]
+                ),
+                expected_cost=_strict_int(
+                    "paper selected_cost", terminal["selected_cost"]
+                ),
+            )
+            if operator_window_open:
+                _publish_actionable_operator_result(
+                    plan,
+                    run_id=run_id,
+                    run_dir=run_dir,
+                    status_path=status_path,
+                    marker_path=marker_path,
+                    terminal=terminal,
+                    completed_at=completed_at,
+                )
+            else:
+                _unlink_output_path(
+                    plan.output_dir,
+                    run_dir / "baltbet-upload.txt",
+                    missing_ok=True,
+                )
+                _write_operator_no_bet(
+                    plan,
+                    reason="operator package expired at T-10; audit marker retained",
+                    completed_at=completed_at,
+                )
         _write_exclusive_atomic(
             plan.output_dir,
             marker_path,
@@ -4319,6 +4906,12 @@ def _finalize_status(
                     )
                 _validate_terminal_package(plan, run_dir, terminal)
                 _validate_status_file(plan, status_path, status)
+                if operator_window_open:
+                    _validated_actionable_operator_upload(
+                        plan,
+                        observed_at=_read_now(now),
+                        allow_at_deadline=True,
+                    )
             except Exception:
                 _unlink_output_path(
                     plan.output_dir,
@@ -4372,7 +4965,141 @@ def _finalize_status(
             )
         else:
             raise
+    _ensure_post_draw_plan_candidate(
+        plan,
+        run_dir=run_dir,
+        terminal_status=status,
+        completed_at=completed_at,
+    )
     return _execution_result_from_status(status, run_dir, status_path)
+
+
+def _ensure_terminal_paper_result(
+    plan: SchedulerPlan,
+    *,
+    run_dir: Path,
+    terminal_status: Mapping[str, Any],
+    completed_at: datetime,
+) -> PaperPackageResult:
+    """Load or create the non-actionable paper state for one terminal run."""
+
+    result_path = plan.output_dir / "paper-package-result.json"
+    if _path_exists(result_path):
+        return load_paper_package(plan)
+
+    source_value = terminal_status.get("package_path")
+    source_package: Path | None = None
+    expected_count = 0
+    expected_cost = 0
+    probability_input_sha256: str | None = None
+    if source_value is not None:
+        if not isinstance(source_value, str) or not source_value:
+            raise SchedulerIntegrityError(
+                "terminal paper source path is invalid",
+                category="paper_package_integrity",
+            )
+        source_package = _normalized_path(source_value)
+        expected_count = _strict_int(
+            "terminal paper selected_count",
+            terminal_status.get("selected_count"),
+        )
+        expected_cost = _strict_int(
+            "terminal paper selected_cost",
+            terminal_status.get("selected_cost"),
+        )
+        final_input_path = run_dir / "final-input.json"
+        if _path_exists(final_input_path):
+            probability_input_sha256 = load_final_input(
+                final_input_path,
+                expected_plan=plan,
+            ).probability_input_sha256
+
+    decision: Literal["PLAY", "NO BET"] = (
+        "PLAY"
+        if terminal_status.get("outcome") == "bet-ready"
+        and terminal_status.get("decision") == "PLAY"
+        and source_package is not None
+        else "NO BET"
+    )
+    provenance_value = terminal_status.get("provenance")
+    provenance = provenance_value if isinstance(provenance_value, str) else None
+    reason_value = terminal_status.get("reason")
+    reason = (
+        reason_value
+        if isinstance(reason_value, str) and reason_value
+        else decision
+    )
+    return persist_paper_package_artifacts(
+        plan,
+        source_package=source_package,
+        decision=decision,
+        reason=reason,
+        completed_at=completed_at,
+        probability_input_sha256=probability_input_sha256,
+        provenance=provenance,
+        expected_count=expected_count,
+        expected_cost=expected_cost,
+    )
+
+
+def _ensure_post_draw_plan_candidate(
+    plan: SchedulerPlan,
+    *,
+    run_dir: Path,
+    terminal_status: Mapping[str, Any],
+    completed_at: datetime,
+) -> None:
+    """Best-effort generation that cannot alter the primary terminal result."""
+
+    output = plan.output_dir / "post-draw"
+    try:
+        from toto_ai.operations.finished_draw import (
+            prepare_post_draw_scheduler_artifacts,
+        )
+
+        paper = _ensure_terminal_paper_result(
+            plan,
+            run_dir=run_dir,
+            terminal_status=terminal_status,
+            completed_at=completed_at,
+        )
+        prepare_post_draw_scheduler_artifacts(
+            drawing_id=plan.drawing_id,
+            drawing_number=None if plan.drawing_id is not None else plan.drawing,
+            ended_at=_timestamp(plan.ended_at),
+            package_file=paper.source_package_path,
+            paper_result_file=(
+                paper.result_path if paper.source_package_path is None else None
+            ),
+            stake=paper.stake,
+            db=plan.db,
+            state_file=output / "post-draw-state.json",
+            output_dir=output,
+            project_root=plan.project_root,
+            python_executable=sys.executable,
+            max_attempts=6,
+            initial_delay_seconds=0,
+            max_delay_seconds=0,
+        )
+    except Exception as error:
+        error_payload = {
+            "schema_version": 1,
+            "drawing": plan.drawing,
+            "drawing_id": plan.drawing_id,
+            "completed_at": _timestamp(completed_at),
+            "automatic_wagering": False,
+            "error": _safe_error(error),
+        }
+        try:
+            _ensure_output_directory(plan.output_dir, output)
+            _write_replace_atomic(
+                plan.output_dir,
+                output / "generation-error.json",
+                _canonical_json_bytes(error_payload) + b"\n",
+            )
+        except Exception:
+            # Advisory reporting must never trigger a second primary finalization.
+            return
 
 
 def _validate_selector_diagnostics(
@@ -4859,7 +5586,7 @@ def _parse_runner_manifest_phase_result_strict(
         or config["selection_context_sha256"]
         != selection_context_sha256(plan.quality_v2_ev_config)
         or _strict_int("runner final_lead_minutes", config["final_lead_minutes"])
-        != (30 if context.phase == "fallback" else (20 if context.atomic_final else 15))
+        != _runner_final_lead_minutes(context)
         or _strict_int("runner safety_stop_minutes", config["safety_stop_minutes"])
         != (12 if context.atomic_final else 10)
     ):
@@ -5174,6 +5901,35 @@ class _ValidatedPackageCSV:
     count: int
     cost: int
     coupons: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class PaperPackageSummary:
+    """Validated, explicitly non-actionable BaltBet-shaped paper payload."""
+
+    count: int
+    cost: int
+    coupons: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class PaperPackageResult:
+    """Durable scheduler-owned paper package binding."""
+
+    result_path: Path
+    source_package_path: Path | None
+    paper_path: Path | None
+    source_package_sha256: str | None
+    paper_sha256: str | None
+    decision: Literal["PLAY", "NO BET"]
+    reason: str
+    actionable: bool
+    count: int
+    cost: int
+    stake: int
+    probability_input_sha256: str | None
+    provenance: str | None
+    completed_at: datetime
 
 
 @dataclass(frozen=True)
@@ -6193,6 +6949,493 @@ def _render_baltbet_upload(coupons: Sequence[str], *, stake: int) -> bytes:
             category="lkg_integrity",
         )
     return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+def render_paper_package(coupons: Sequence[str], *, stake: int) -> bytes:
+    """Render coupons for inspection without creating an actionable package.
+
+    The byte shape intentionally matches BaltBet's text editor, but this pure
+    function does not publish an operator result or a ``.bet-ready`` marker.
+    Empty input represents a package-free paper result and renders as empty
+    bytes rather than embedding a warning in the payload.
+    """
+
+    _require_positive_int("paper package stake", stake)
+    normalized = tuple(coupons)
+    for coupon in normalized:
+        if not isinstance(coupon, str) or _COUPON_PATTERN.fullmatch(coupon) is None:
+            raise SchedulerIntegrityError(
+                "paper coupon must contain exactly 15 outcomes",
+                category="paper_package_integrity",
+            )
+    if len(set(normalized)) != len(normalized):
+        raise SchedulerIntegrityError(
+            "paper package must contain unique coupons",
+            category="paper_package_integrity",
+        )
+    if not normalized:
+        return b""
+    text = "\n".join(
+        f"{stake}; " + "; ".join(coupon) for coupon in normalized
+    )
+    return (text + "\n").encode("utf-8")
+
+
+def validate_paper_package(
+    content: bytes,
+    *,
+    stake: int,
+    expected_coupons: Sequence[str],
+    expected_count: int,
+    expected_cost: int,
+) -> PaperPackageSummary:
+    """Validate exact paper bytes and their binding to source coupon order."""
+
+    _require_positive_int("paper package stake", stake)
+    _require_non_negative_int("paper package expected_count", expected_count)
+    _require_non_negative_int("paper package expected_cost", expected_cost)
+    if not isinstance(content, bytes):
+        raise SchedulerIntegrityError(
+            "paper package must be bytes",
+            category="paper_package_integrity",
+        )
+    try:
+        text = content.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise SchedulerIntegrityError(
+            "paper package must be UTF-8",
+            category="paper_package_integrity",
+        ) from error
+    if content:
+        if not text.endswith("\n") or "\r" in text or "\x00" in text:
+            raise SchedulerIntegrityError(
+                "paper package line encoding is invalid",
+                category="paper_package_integrity",
+            )
+        lines = text.splitlines()
+    else:
+        lines = []
+
+    coupons: list[str] = []
+    for line in lines:
+        fields = line.split("; ")
+        if len(fields) != 16 or fields[0] != str(stake):
+            raise SchedulerIntegrityError(
+                "paper package line must be '<stake>; <15 outcomes>'",
+                category="paper_package_integrity",
+            )
+        coupon = "".join(fields[1:])
+        if _COUPON_PATTERN.fullmatch(coupon) is None:
+            raise SchedulerIntegrityError(
+                "paper package line has invalid outcomes",
+                category="paper_package_integrity",
+            )
+        coupons.append(coupon)
+
+    if len(set(coupons)) != len(coupons):
+        raise SchedulerIntegrityError(
+            "paper package coupons must be unique",
+            category="paper_package_integrity",
+        )
+    if len(coupons) != expected_count:
+        raise SchedulerIntegrityError(
+            "paper package count mismatch",
+            category="paper_package_integrity",
+        )
+    if expected_cost != len(coupons) * stake:
+        raise SchedulerIntegrityError(
+            "paper package cost mismatch",
+            category="paper_package_integrity",
+        )
+    if tuple(coupons) != tuple(expected_coupons):
+        raise SchedulerIntegrityError(
+            "paper package coupon order mismatch",
+            category="paper_package_integrity",
+        )
+    return PaperPackageSummary(
+        count=len(coupons),
+        cost=len(coupons) * stake,
+        coupons=tuple(coupons),
+    )
+
+
+def persist_paper_package_artifacts(
+    plan: SchedulerPlan,
+    *,
+    source_package: Path | None,
+    decision: Literal["PLAY", "NO BET"],
+    reason: str,
+    completed_at: datetime,
+    probability_input_sha256: str | None,
+    provenance: str | None,
+    expected_count: int,
+    expected_cost: int,
+) -> PaperPackageResult:
+    """Persist an immutable paper view and publish its non-actionable binding."""
+
+    _require_plan(plan)
+    if decision not in {"PLAY", "NO BET"}:
+        raise ValueError("paper package decision must be PLAY or NO BET")
+    resolved_reason = _strict_text("paper package reason", reason)
+    resolved_completed_at = _require_utc_datetime(
+        "paper package completed_at", completed_at
+    )
+    _require_non_negative_int("paper package expected_count", expected_count)
+    _require_non_negative_int("paper package expected_cost", expected_cost)
+    resolved_probability_hash = (
+        None
+        if probability_input_sha256 is None
+        else _strict_sha256(
+            "paper package probability_input_sha256", probability_input_sha256
+        )
+    )
+    resolved_provenance = (
+        None
+        if provenance is None
+        else _strict_text("paper package provenance", provenance)
+    )
+
+    source_bytes: bytes | None = None
+    source_hash: str | None = None
+    paper_bytes: bytes | None = None
+    paper_hash: str | None = None
+    if source_package is None:
+        if expected_count != 0 or expected_cost != 0:
+            raise SchedulerIntegrityError(
+                "package-free paper result must have zero count and cost",
+                category="paper_package_integrity",
+            )
+    else:
+        source = _require_contained_path(
+            plan.output_dir,
+            _normalized_path(source_package),
+            name="paper source package",
+        )
+        source_bytes = _read_regular_file(
+            source, name="paper source package", reject_symlink=True
+        )
+        validated = _validate_package_csv(
+            source_bytes,
+            stake=plan.stake,
+            minimum_gross_ev=plan.minimum_gross_ev,
+            expected_count=expected_count,
+            expected_cost=expected_cost,
+        )
+        source_hash = _sha256_bytes(source_bytes)
+        paper_bytes = render_paper_package(validated.coupons, stake=plan.stake)
+        summary = validate_paper_package(
+            paper_bytes,
+            stake=plan.stake,
+            expected_coupons=validated.coupons,
+            expected_count=expected_count,
+            expected_cost=expected_cost,
+        )
+        if summary.cost > plan.requested_bank:
+            raise SchedulerIntegrityError(
+                "paper package exceeds requested bank",
+                category="paper_package_integrity",
+            )
+        paper_hash = _sha256_bytes(paper_bytes)
+
+    identity = {
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "decision": decision,
+        "reason": resolved_reason,
+        "completed_at": _timestamp(resolved_completed_at),
+        "source_package_sha256": source_hash,
+        "paper_sha256": paper_hash,
+        "count": expected_count,
+        "cost": expected_cost,
+        "probability_input_sha256": resolved_probability_hash,
+        "provenance": resolved_provenance,
+    }
+    checkpoint_id = _sha256_bytes(_canonical_json_bytes(identity))[:24]
+    root = plan.output_dir / "paper-package"
+    checkpoint = root / "checkpoints" / checkpoint_id
+    _ensure_output_directory(plan.output_dir, root)
+    checkpoints = root / "checkpoints"
+    _ensure_output_directory(plan.output_dir, checkpoints)
+    if not checkpoint.exists():
+        _create_output_directory_exclusive(plan.output_dir, checkpoint)
+    else:
+        _require_output_directory(plan.output_dir, checkpoint)
+
+    durable_source = checkpoint / "source-package.csv"
+    durable_paper = checkpoint / "paper-package.txt"
+    if source_bytes is not None and paper_bytes is not None:
+        _write_or_verify_paper_artifact(
+            plan, durable_source, source_bytes, name="paper source package"
+        )
+        _write_or_verify_paper_artifact(
+            plan, durable_paper, paper_bytes, name="paper coupon payload"
+        )
+    elif durable_source.exists() or durable_paper.exists():
+        raise SchedulerIntegrityError(
+            "package-free paper checkpoint contains coupon artifacts",
+            category="paper_package_integrity",
+        )
+
+    result_path = plan.output_dir / "paper-package-result.json"
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "checkpoint_id": checkpoint_id,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "ended_at": _timestamp(plan.ended_at),
+        "decision": decision,
+        "reason": resolved_reason,
+        "actionable": False,
+        "automatic_wagering": False,
+        "stake": plan.stake,
+        "requested_bank": plan.requested_bank,
+        "count": expected_count,
+        "cost": expected_cost,
+        "source_package_path": (
+            None if source_bytes is None else str(durable_source)
+        ),
+        "source_package_sha256": source_hash,
+        "paper_path": None if paper_bytes is None else str(durable_paper),
+        "paper_sha256": paper_hash,
+        "probability_input_sha256": resolved_probability_hash,
+        "provenance": resolved_provenance,
+        "completed_at": _timestamp(resolved_completed_at),
+    }
+    payload["record_sha256"] = _paper_result_sha256(payload)
+    _write_replace_atomic(
+        plan.output_dir,
+        result_path,
+        _canonical_json_bytes(payload) + b"\n",
+    )
+    return load_paper_package(plan)
+
+
+def _write_or_verify_paper_artifact(
+    plan: SchedulerPlan,
+    path: Path,
+    content: bytes,
+    *,
+    name: str,
+) -> None:
+    if path.exists():
+        if _read_regular_file(path, name=name, reject_symlink=True) != content:
+            raise SchedulerIntegrityError(
+                f"existing {name} conflicts with immutable checkpoint",
+                category="paper_package_integrity",
+            )
+        return
+    _write_exclusive_atomic(plan.output_dir, path, content)
+
+
+def _paper_result_sha256(payload: Mapping[str, object]) -> str:
+    unsigned = dict(payload)
+    unsigned.pop("record_sha256", None)
+    return _sha256_bytes(_canonical_json_bytes(unsigned))
+
+
+def load_paper_package(plan: SchedulerPlan) -> PaperPackageResult:
+    """Load and fully revalidate the current durable paper-package binding."""
+
+    _require_plan(plan)
+    result_path = plan.output_dir / "paper-package-result.json"
+    payload = _load_strict_json(result_path, name="paper package result")
+    if not isinstance(payload, Mapping):
+        raise SchedulerIntegrityError(
+            "paper package result is not an object",
+            category="paper_package_integrity",
+        )
+    expected_fields = {
+        "schema_version",
+        "checkpoint_id",
+        "plan_id",
+        "drawing",
+        "drawing_id",
+        "ended_at",
+        "decision",
+        "reason",
+        "actionable",
+        "automatic_wagering",
+        "stake",
+        "requested_bank",
+        "count",
+        "cost",
+        "source_package_path",
+        "source_package_sha256",
+        "paper_path",
+        "paper_sha256",
+        "probability_input_sha256",
+        "provenance",
+        "completed_at",
+        "record_sha256",
+    }
+    if set(payload) != expected_fields:
+        raise SchedulerIntegrityError(
+            "paper package result fields are invalid",
+            category="paper_package_integrity",
+        )
+    if payload.get("record_sha256") != _paper_result_sha256(payload):
+        raise SchedulerIntegrityError(
+            "paper package result integrity hash mismatch",
+            category="paper_package_integrity",
+        )
+    decision = payload.get("decision")
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("plan_id") != plan.plan_id
+        or payload.get("drawing") != plan.drawing
+        or payload.get("drawing_id") != plan.drawing_id
+        or payload.get("ended_at") != _timestamp(plan.ended_at)
+        or decision not in {"PLAY", "NO BET"}
+        or payload.get("actionable") is not False
+        or payload.get("automatic_wagering") is not False
+        or payload.get("stake") != plan.stake
+        or payload.get("requested_bank") != plan.requested_bank
+    ):
+        raise SchedulerIntegrityError(
+            "paper package identity or release boundary mismatch",
+            category="paper_package_integrity",
+        )
+    checkpoint_id = _strict_text(
+        "paper package checkpoint_id", payload.get("checkpoint_id")
+    )
+    checkpoint = plan.output_dir / "paper-package" / "checkpoints" / checkpoint_id
+    _require_output_directory(plan.output_dir, checkpoint)
+    count = _strict_int("paper package count", payload.get("count"))
+    cost = _strict_int("paper package cost", payload.get("cost"))
+    if count < 0 or cost != count * plan.stake or cost > plan.requested_bank:
+        raise SchedulerIntegrityError(
+            "paper package dynamic bank contract failed",
+            category="paper_package_integrity",
+        )
+    source_value = payload.get("source_package_path")
+    paper_value = payload.get("paper_path")
+    source_path: Path | None = None
+    paper_path: Path | None = None
+    source_hash: str | None = None
+    paper_hash: str | None = None
+    if source_value is None or paper_value is None:
+        if not (
+            source_value is None
+            and paper_value is None
+            and payload.get("source_package_sha256") is None
+            and payload.get("paper_sha256") is None
+            and count == 0
+            and cost == 0
+        ):
+            raise SchedulerIntegrityError(
+                "paper package coupon artifact fields are incomplete",
+                category="paper_package_integrity",
+            )
+    else:
+        source_path = _require_contained_path(
+            checkpoint,
+            Path(str(source_value)),
+            name="paper source package",
+        )
+        paper_path = _require_contained_path(
+            checkpoint,
+            Path(str(paper_value)),
+            name="paper coupon payload",
+        )
+        if (
+            source_path != checkpoint / "source-package.csv"
+            or paper_path != checkpoint / "paper-package.txt"
+        ):
+            raise SchedulerIntegrityError(
+                "paper package artifact path is not canonical",
+                category="paper_package_integrity",
+            )
+        source_hash = _strict_sha256(
+            "paper source hash", payload.get("source_package_sha256")
+        )
+        paper_hash = _strict_sha256(
+            "paper payload hash", payload.get("paper_sha256")
+        )
+        source_bytes = _read_regular_file(
+            source_path, name="paper source package", reject_symlink=True
+        )
+        paper_bytes = _read_regular_file(
+            paper_path, name="paper coupon payload", reject_symlink=True
+        )
+        if (
+            _sha256_bytes(source_bytes) != source_hash
+            or _sha256_bytes(paper_bytes) != paper_hash
+        ):
+            raise SchedulerIntegrityError(
+                "paper package artifact hash mismatch",
+                category="paper_package_integrity",
+            )
+        source_summary = _validate_package_csv(
+            source_bytes,
+            stake=plan.stake,
+            minimum_gross_ev=plan.minimum_gross_ev,
+            expected_count=count,
+            expected_cost=cost,
+        )
+        validate_paper_package(
+            paper_bytes,
+            stake=plan.stake,
+            expected_coupons=source_summary.coupons,
+            expected_count=count,
+            expected_cost=cost,
+        )
+    probability_value = payload.get("probability_input_sha256")
+    probability_hash = (
+        None
+        if probability_value is None
+        else _strict_sha256("paper probability input hash", probability_value)
+    )
+    provenance_value = payload.get("provenance")
+    provenance = (
+        None
+        if provenance_value is None
+        else _strict_text("paper package provenance", provenance_value)
+    )
+    return PaperPackageResult(
+        result_path=result_path,
+        source_package_path=source_path,
+        paper_path=paper_path,
+        source_package_sha256=source_hash,
+        paper_sha256=paper_hash,
+        decision=decision,
+        reason=_strict_text("paper package reason", payload.get("reason")),
+        actionable=False,
+        count=count,
+        cost=cost,
+        stake=plan.stake,
+        probability_input_sha256=probability_hash,
+        provenance=provenance,
+        completed_at=_parse_utc_datetime(
+            "paper package completed_at", payload.get("completed_at")
+        ),
+    )
+
+
+def export_paper_package(
+    plan: SchedulerPlan,
+    *,
+    destination: str | Path,
+) -> Path:
+    """Copy only a validated paper payload to an explicit local destination."""
+
+    result = load_paper_package(plan)
+    if result.paper_path is None:
+        raise SchedulerIntegrityError(
+            "paper package has no coupon payload",
+            category="paper_package_unavailable",
+        )
+    payload = _read_regular_file(
+        result.paper_path, name="paper coupon payload", reject_symlink=True
+    )
+    output = _validated_project_path(
+        plan.project_root,
+        Path(destination),
+        name="paper package destination",
+    )
+    _write_exclusive_atomic(plan.project_root, output, payload, mode=0o600)
+    return output
 
 
 def _validate_baltbet_upload(

@@ -1,5 +1,69 @@
 # Architecture
 
+## Operator export gateway
+
+The only operator-facing package flow is:
+
+```text
+fresh final PLAY
+-> run-scoped package.csv
+-> durable package-archive.json + SQLite ArchivedPackage
+-> run-scoped baltbet-upload.txt + actionable operator-result.json
+-> .bet-ready written last
+-> operator-export revalidates all bindings before T-10
+-> explicit project-local output file for manual BaltBet upload
+```
+
+`operator-export` is read-only with respect to package selection and never
+places a wager. It rejects `NO BET`, paper/research/LKG files, missing or
+foreign paths, hash/identity drift, archive mismatch, and T-10 expiry. The
+ordinary scheduler command no longer prints internal/audit package paths as
+operator packages. At T-10 the upload surface is deleted and the operator
+result becomes non-actionable; archive/marker bytes remain audit evidence.
+
+The separate paper-package path is always non-actionable:
+
+```text
+validated terminal source package.csv
+-> immutable paper checkpoint/source-package.csv
+-> exact paper-package.txt (`stake; 15 outcomes`, one coupon per line)
+-> hash-bound paper-package-result.json written last
+-> paper-package-show revalidates every binding before display/copy
+```
+
+The paper payload contains no header, rank, EV, warning, or Markdown. Warnings
+are emitted separately. Package-free `NO BET` records zero count/cost and no
+coupon path. T-10 does not remove paper checkpoints, but neither
+`operator-export` nor `.bet-ready` accepts or references them.
+
+## Automatic post-draw review boundary
+
+Every terminal scheduler result now produces an uninstalled post-draw
+candidate only after a durable non-actionable paper state exists:
+
+```text
+terminal scheduler status/marker
+-> validated paper package OR zero-cost package-free paper result
+-> hash-bound post-draw plan
+-> next Moscow calendar day 12:00
+-> three-hour result retries within bounded slots
+-> existing result sync + reviewed VOID + archive/settlement
+-> durable review-request.json
+-> explicit user review transition + immutable postmortem
+```
+
+Post-draw generation is advisory and fail-safe. A missing database row,
+artifact conflict, or generation error is written to
+`post-draw/generation-error.json` and cannot mutate or replace the primary
+scheduler result. Generated launchd artifacts are candidates only; the code
+does not install them and never places a wager.
+
+Morning preparation keeps identity coverage and kickoff evidence distinct.
+A baseline-only identity row with no kickoff produces a `timing_unknown`
+dependency even when preparation is READY 15/15. It enters the same
+fingerprint-bound attention/review/retry system, requires reviewed schedule
+evidence, and cannot create an evening plan until a retry is fully playable.
+
 ## Last-known-good package boundary
 
 Schema-v6 tick execution now has an append-only `last-known-good/checkpoints/`
@@ -54,6 +118,19 @@ The provider-neutral sports probability provider is implemented in shadow
 mode. It derives a 15-by-3 experimental matrix from frozen pre-deadline
 evidence, keeps event-level BK fallback, and publishes source provenance in a
 machine-readable `NOT_ACTIVATED` artifact. It is not connected to `EVInput`.
+
+The separate The Odds API market audit is also shadow-only. Its standalone
+command stores provider-neutral 15-event dispositions plus endpoint,
+request-fingerprint, raw-response and quota-credit evidence, then publishes
+separate BK, 1xBet, Pinnacle and broader-consensus views. It has no import edge
+into `EVInput`, the scheduler, package selection, `PLAY`, or operator export.
+The prospective wrapper recognizes only morning/control/T-10, binds complete
+target rows and report hashes in an immutable manifest, and is not installed
+or called by the scheduler. It refreshes quota through a zero-credit catalog
+call before collection and records `SKIPPED_QUOTA_RESERVE` instead of starting
+the checkpoint when remaining credits are at or below the reserve. Coverage
+audits count at most one latest complete provider collection per drawing, so
+multiple checkpoints cannot inflate the prospective sample floor.
 
 The shadow projection is an untrained Jeffreys-smoothed venue-only W-D-L
 estimate. It uses the home team's home W-D-L and the away team's away W-D-L;

@@ -45,11 +45,20 @@ RUN_PROVENANCE_COLUMNS = {
     "eligibility_missing_event_orders",
     "eligibility_totobrief_count",
     "eligibility_provider_count",
+    "quota_limit",
+    "quota_remaining",
+    "quota_used",
+    "quota_last_cost",
 }
 EVENT_TIMING_COLUMNS = {
     "provider_starts_at",
     "effective_starts_at",
     "effective_start_source",
+    "provider_event_source_endpoint",
+    "provider_event_request_fingerprint",
+    "target_bk_probability_1",
+    "target_bk_probability_x",
+    "target_bk_probability_2",
 }
 
 
@@ -156,6 +165,36 @@ class ReversedProvider(CompleteProvider):
         return tuple(reversed(super().fetch_event_markets(sport, provider_event_id)))
 
 
+class TheOddsProvider(CompleteProvider):
+    provider_name = "the-odds-api"
+    credit_state = type(
+        "CreditState",
+        (),
+        {"limit": 500, "remaining": 487, "used": 13, "last_cost": 1},
+    )()
+
+    def fetch_schedule(self, sport, dates):
+        return tuple(
+            replace(
+                event,
+                source_endpoint="/v4/sports/soccer_test/events",
+                request_fingerprint="schedule-request",
+            )
+            for event in super().fetch_schedule(sport, dates)
+        )
+
+    def fetch_event_markets(self, sport, provider_event_id):
+        return tuple(
+            replace(
+                market,
+                market_name="1X2",
+                source_endpoint="/v4/sports/soccer_test/odds",
+                request_fingerprint="odds-request",
+            )
+            for market in super().fetch_event_markets(sport, provider_event_id)
+        )
+
+
 class CachedCompleteProvider(CompleteProvider):
     def fetch_schedule(self, sport, dates):
         events = super().fetch_schedule(sport, dates)
@@ -236,6 +275,29 @@ def test_collection_persists_exactly_fifteen_dispositions(session_factory):
         aware_now() + timedelta(hours=6)
     ).isoformat()
     assert stored[0].events[0].effective_start_source == "totobrief"
+
+
+def test_latest_complete_collections_can_be_filtered_by_provider(session_factory):
+    api_sports = build_external_collection(
+        target_drawing(), CompleteProvider(), aliases={}
+    )
+    the_odds_api = replace(
+        api_sports,
+        collection_id="the-odds-api-collection",
+        provider="the-odds-api",
+    )
+    save_collection(session_factory, api_sports)
+    save_collection(session_factory, the_odds_api)
+
+    loaded = load_latest_complete_collections(
+        session_factory,
+        last=10,
+        provider="the-odds-api",
+    )
+
+    assert len(loaded) == 1
+    assert loaded[0].collection_id == "the-odds-api-collection"
+    assert loaded[0].provider == "the-odds-api"
 
 
 def test_same_canonical_inputs_are_idempotent(session_factory):
@@ -436,6 +498,42 @@ def test_provider_provenance_round_trips_and_binds_collection_identity(
     assert event.effective_starts_at == (aware_now() + timedelta(hours=6)).isoformat()
     assert event.effective_start_source == "totobrief"
     assert _canonical_collection(stored) == _canonical_collection(baseline)
+
+
+def test_the_odds_api_quota_endpoint_and_bk_provenance_round_trip(
+    session_factory,
+):
+    result = build_external_collection(
+        target_drawing(),
+        TheOddsProvider(),
+        aliases={},
+    )
+
+    save_collection(session_factory, result)
+    stored = load_latest_complete_collections(
+        session_factory,
+        last=1,
+        provider="the-odds-api",
+    )[0]
+
+    assert (
+        stored.quota_limit,
+        stored.quota_remaining,
+        stored.quota_used,
+        stored.quota_last_cost,
+    ) == (500, 487, 13, 1)
+    event = stored.events[0]
+    assert event.provider_event_source_endpoint.endswith("/events")
+    assert event.provider_event_request_fingerprint == "schedule-request"
+    assert (
+        event.target_bk_probability_1,
+        event.target_bk_probability_x,
+        event.target_bk_probability_2,
+    ) == pytest.approx((0.5, 0.25, 0.25))
+    source = event.bookmaker_quotes[0].source_provenance[0]
+    assert source.source_endpoint.endswith("/odds")
+    assert source.request_fingerprint == "odds-request"
+    assert _canonical_collection(stored) == _canonical_collection(result)
 
 
 def test_schedule_metadata_changes_identity_and_is_append_only(session_factory):

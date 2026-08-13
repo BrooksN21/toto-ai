@@ -1,7 +1,10 @@
 # Pinnacle and External Odds
 
-Pinnacle is not integrated in the current repository. Direct API access is not
-assumed, and scraping or bypassing access restrictions is out of scope.
+Direct Pinnacle API access is not assumed, and scraping or bypassing access
+restrictions is out of scope. The repository now records Pinnacle as a
+separate bookmaker view when it is lawfully present in The Odds API EU `h2h`
+responses. It remains delayed/third-party shadow evidence, not direct
+Pinnacle access and not a production probability input.
 
 Current relevant code:
 - `study-bk` compares TotoBrief `bk_*` probabilities with `norm_*` odds-derived
@@ -10,8 +13,10 @@ Current relevant code:
 
 The current external-source candidate is a lawful third-party market feed,
 starting with an API-Sports feasibility experiment for football and hockey.
-The Odds API is another candidate but its documented competition coverage maps
-poorly to the historical BaltBet mix.
+The first The Odds API live probe matched 4/15 events in drawing 4975 and used
+explicit BK fallback for 11. This confirms the expected coverage risk; only a
+30-drawing/450-event prospective audit can determine whether the source is
+useful enough to keep.
 
 External data must be integrated through a provider-neutral event-level
 interface. A high-confidence external match may replace or blend with TotoBrief

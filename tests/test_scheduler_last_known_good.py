@@ -13,6 +13,7 @@ from toto_ai.runner.scheduler import (
     _load_last_known_good,
     build_scheduler_plan,
     execute_scheduler_tick,
+    load_paper_package,
 )
 
 ENDED_AT = datetime(2032, 2, 3, 12, 0, tzinfo=timezone.utc)
@@ -262,6 +263,12 @@ def test_final_dns_outage_preserves_refresh_lkg_before_t10(tmp_path: Path):
     assert "expired at T-10" in expired["reason"]
     assert not package_path.exists()
     assert source_package_path.is_file()
+    paper = load_paper_package(plan)
+    assert paper.actionable is False
+    assert paper.paper_path is not None and paper.paper_path.is_file()
+    assert paper.source_package_path is not None and paper.source_package_path.is_file()
+    assert paper.count == 166
+    assert paper.cost == 4980
 
 
 def test_no_lkg_emits_early_no_bet_on_retry_failure(tmp_path: Path):
@@ -282,6 +289,12 @@ def test_no_lkg_emits_early_no_bet_on_retry_failure(tmp_path: Path):
     status = json.loads(result.status_path.read_text(encoding="utf-8"))
     assert status["operator_status"] == "NO_BET"
     assert "last-known-good" in status["reason"]
+    paper = load_paper_package(plan)
+    assert paper.actionable is False
+    assert paper.paper_path is None
+    assert paper.source_package_path is None
+    assert paper.count == 0
+    assert paper.cost == 0
 
 
 def test_fresh_final_atomically_upgrades_lkg_without_play(tmp_path: Path):
@@ -312,6 +325,12 @@ def test_fresh_final_atomically_upgrades_lkg_without_play(tmp_path: Path):
     operator = _operator_payload(plan)
     assert operator["operator_status"] == "FINAL_FRESH"
     _upload_lines(Path(operator["coupon_path"]), stake=30, expected_count=166)
+    paper = load_paper_package(plan)
+    assert paper.decision == "NO BET"
+    assert paper.actionable is False
+    assert paper.paper_path is not None and paper.paper_path.is_file()
+    assert paper.count == 166
+    assert paper.cost == 4980
     assert not tuple(plan.output_dir.rglob(".bet-ready"))
 
 
