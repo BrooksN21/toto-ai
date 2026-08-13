@@ -95,6 +95,10 @@ def _add_missing_columns(engine: Engine) -> None:
                 "eligibility_totobrief_count": "INTEGER",
                 "eligibility_provider_count": "INTEGER",
                 "pinned_revalidation_summary": "TEXT",
+                "quota_limit": "INTEGER",
+                "quota_remaining": "INTEGER",
+                "quota_used": "INTEGER",
+                "quota_last_cost": "INTEGER",
             }
             for column_name, column_type in required_run_columns.items():
                 if column_name not in run_columns:
@@ -143,6 +147,11 @@ def _add_missing_columns(engine: Engine) -> None:
                 "provider_starts_at": "VARCHAR",
                 "effective_starts_at": "VARCHAR",
                 "effective_start_source": "VARCHAR",
+                "provider_event_source_endpoint": "VARCHAR",
+                "provider_event_request_fingerprint": "VARCHAR",
+                "target_bk_probability_1": "FLOAT",
+                "target_bk_probability_x": "FLOAT",
+                "target_bk_probability_2": "FLOAT",
             }
             for column_name, column_type in required_disposition_columns.items():
                 if column_name not in disposition_columns:

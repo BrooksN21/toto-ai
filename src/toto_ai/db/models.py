@@ -241,6 +241,10 @@ class ExternalCollectionRun(Base):
     daily_limit: Mapped[int | None] = mapped_column(Integer)
     daily_remaining: Mapped[int | None] = mapped_column(Integer)
     minute_remaining: Mapped[int | None] = mapped_column(Integer)
+    quota_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    quota_remaining: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    quota_used: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    quota_last_cost: Mapped[int | None] = mapped_column(Integer, nullable=True)
     status: Mapped[str] = mapped_column(String)
     target_fingerprint: Mapped[str | None] = mapped_column(String, nullable=True)
     missing_start_horizon_days: Mapped[int | None] = mapped_column(
@@ -304,6 +308,12 @@ class ExternalEventDisposition(Base):
     provider_event_id: Mapped[str | None] = mapped_column(String)
     provider_event_fetched_at: Mapped[str | None] = mapped_column(String)
     provider_event_payload_hash: Mapped[str | None] = mapped_column(String)
+    provider_event_source_endpoint: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    provider_event_request_fingerprint: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
     matcher_version: Mapped[str] = mapped_column(String)
     match_candidate_ids: Mapped[str] = mapped_column(String)
     match_reason: Mapped[str] = mapped_column(String)
@@ -311,6 +321,15 @@ class ExternalEventDisposition(Base):
     probability_1: Mapped[float] = mapped_column(Float)
     probability_x: Mapped[float] = mapped_column(Float)
     probability_2: Mapped[float] = mapped_column(Float)
+    target_bk_probability_1: Mapped[float | None] = mapped_column(
+        Float, nullable=True
+    )
+    target_bk_probability_x: Mapped[float | None] = mapped_column(
+        Float, nullable=True
+    )
+    target_bk_probability_2: Mapped[float | None] = mapped_column(
+        Float, nullable=True
+    )
     eligible_bookmaker_count: Mapped[int] = mapped_column(Integer)
     odds_age_hours: Mapped[float | None] = mapped_column(Float)
     fallback_reason: Mapped[str | None] = mapped_column(String)

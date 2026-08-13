@@ -1,5 +1,23 @@
 # Current State
 
+## The Odds API current-drawing shadow probe completed (2026-08-13)
+
+The provider-neutral transport, immutable raw captures, generic quota and
+endpoint/request provenance, secure `.env` loader, and standalone
+`collect-the-odds-api-shadow` command are implemented. JSON/CSV/Markdown
+reports are hard-labelled `NOT_ACTIVATED`, non-actionable, and cannot feed the
+scheduler or package selection.
+
+The first live probe covered open drawing 4975. It spent 3 credits and left
+497, matched 4/15 events, produced separate de-vigged 1xBet and Pinnacle rows
+for those four events, and used explicit TotoBrief-BK fallback for the other
+11 (`0 exact candidates`). Generated report/cache bytes contained zero API-key
+occurrences. This 26.67% one-drawing identity/market coverage is diagnostic;
+it is far below activation evidence and proves no forecasting or profit gain.
+
+Full verification after the probe: 1853 tests passed, 13 were deselected,
+Ruff passed, CLI help passed, and `git diff --check` passed.
+
 ## The Odds API provider transport implemented (2026-08-13)
 
 The first implementation stage is complete locally. The new provider uses the

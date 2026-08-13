@@ -1477,3 +1477,7 @@ ambiguous reversed evidence remains unresolved.
 - Stop before a paid request at the configured remaining-credit reserve.
 - The provider remains `NOT_ACTIVATED` and cannot alter scheduler or package
   inputs during the prospective audit.
+- The first current-drawing probe matched only 4/15 events. This does not
+  reject the provider after one drawing, but it confirms that coverage is a
+  hard prospective gate: missing events stay on explicit frozen BK fallback,
+  and no production connection is considered before 30 drawings/450 events.

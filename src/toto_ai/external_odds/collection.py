@@ -72,6 +72,8 @@ class ExternalMarketProvenanceRecord:
     home_price: float | None
     draw_price: float | None
     away_price: float | None
+    source_endpoint: str | None = None
+    request_fingerprint: str | None = None
 
 
 @dataclass(frozen=True)
@@ -166,6 +168,11 @@ class ExternalEventDispositionRecord:
     provider_starts_at: str | None = None
     effective_starts_at: str | None = None
     effective_start_source: str = "unresolved"
+    provider_event_source_endpoint: str | None = None
+    provider_event_request_fingerprint: str | None = None
+    target_bk_probability_1: float | None = None
+    target_bk_probability_x: float | None = None
+    target_bk_probability_2: float | None = None
 
 
 @dataclass(frozen=True)
@@ -192,6 +199,10 @@ class ExternalCollectionSnapshot:
     failed_schedule_dates: tuple[ScheduleDateResult, ...] = ()
     eligibility: DrawingEligibility = _UNKNOWN_ELIGIBILITY
     pinned_revalidation: PinnedRevalidationSummary | None = None
+    quota_limit: int | None = None
+    quota_remaining: int | None = None
+    quota_used: int | None = None
+    quota_last_cost: int | None = None
 
 
 @dataclass(frozen=True)
@@ -389,6 +400,27 @@ def build_external_collection(
     ordered_rows = tuple(sorted(rows, key=lambda row: row.event_order))
     status = "complete" if len(ordered_rows) == 15 else "partial"
     quota = provider.quota_state
+    credit_state = getattr(provider, "credit_state", None)
+    quota_limit = (
+        getattr(credit_state, "limit", None)
+        if provider_name == "the-odds-api"
+        else None
+    )
+    quota_remaining = (
+        getattr(credit_state, "remaining", None)
+        if provider_name == "the-odds-api"
+        else None
+    )
+    quota_used = (
+        getattr(credit_state, "used", None)
+        if provider_name == "the-odds-api"
+        else None
+    )
+    quota_last_cost = (
+        getattr(credit_state, "last_cost", None)
+        if provider_name == "the-odds-api"
+        else None
+    )
     target_identity = target_fingerprint(
         target.drawing_id,
         target.drawing_number,
@@ -421,6 +453,10 @@ def build_external_collection(
         daily_limit=quota.daily_limit,
         daily_remaining=quota.daily_remaining,
         minute_remaining=quota.minute_remaining,
+        quota_limit=quota_limit,
+        quota_remaining=quota_remaining,
+        quota_used=quota_used,
+        quota_last_cost=quota_last_cost,
         target_fingerprint_value=target_identity,
         missing_start_horizon_days=missing_start_horizon_days,
         requested_schedule_dates=schedule_results,
@@ -453,6 +489,10 @@ def build_external_collection(
         failed_schedule_dates=failed_schedule_dates,
         eligibility=eligibility,
         pinned_revalidation=pinned_revalidation,
+        quota_limit=quota_limit,
+        quota_remaining=quota_remaining,
+        quota_used=quota_used,
+        quota_last_cost=quota_last_cost,
     )
 
 
@@ -1462,6 +1502,12 @@ def _event_record(
         provider_event_payload_hash=(
             provider_event.payload_hash if provider_event is not None else None
         ),
+        provider_event_source_endpoint=(
+            provider_event.source_endpoint if provider_event is not None else None
+        ),
+        provider_event_request_fingerprint=(
+            provider_event.request_fingerprint if provider_event is not None else None
+        ),
         matcher_version=decision.matcher_version,
         match_candidate_ids=decision.candidate_ids,
         match_reason=decision.reason,
@@ -1490,6 +1536,21 @@ def _event_record(
             else None
         ),
         effective_start_source=effective_start.source,
+        target_bk_probability_1=(
+            event.bk_probabilities[0]
+            if decision.matcher_version == "the-odds-api-v1"
+            else None
+        ),
+        target_bk_probability_x=(
+            event.bk_probabilities[1]
+            if decision.matcher_version == "the-odds-api-v1"
+            else None
+        ),
+        target_bk_probability_2=(
+            event.bk_probabilities[2]
+            if decision.matcher_version == "the-odds-api-v1"
+            else None
+        ),
     )
 
 
@@ -1560,6 +1621,15 @@ def _event_payload(
                 "fetched_at": _iso_datetime(provider_event.fetched_at),
                 "payload_hash": provider_event.payload_hash,
                 "starts_at": _iso_datetime(provider_event.starts_at),
+                **(
+                    {
+                        "source_endpoint": provider_event.source_endpoint,
+                        "request_fingerprint": provider_event.request_fingerprint,
+                    }
+                    if provider_event.source_endpoint is not None
+                    or provider_event.request_fingerprint is not None
+                    else {}
+                ),
             }
             if provider_event is not None
             else None
@@ -1569,7 +1639,7 @@ def _event_payload(
         "eligible_bookmaker_count": eligible_bookmaker_count,
         "odds_age_hours": odds_age_hours,
         "fallback_reason": fallback_reason,
-        "quotes": tuple(asdict(quote) for quote in quotes),
+        "quotes": tuple(_quote_identity_payload(quote) for quote in quotes),
         "effective_start": {
             "starts_at": (
                 _iso_datetime(effective_start.starts_at)
@@ -1592,6 +1662,10 @@ def _collection_identity_payload(
     daily_limit: int | None,
     daily_remaining: int | None,
     minute_remaining: int | None,
+    quota_limit: int | None,
+    quota_remaining: int | None,
+    quota_used: int | None,
+    quota_last_cost: int | None,
     target_fingerprint_value: str,
     missing_start_horizon_days: int,
     requested_schedule_dates: tuple[ScheduleDateResult, ...],
@@ -1615,7 +1689,17 @@ def _collection_identity_payload(
             "daily_limit": daily_limit,
             "daily_remaining": daily_remaining,
             "minute_remaining": minute_remaining,
-        },
+        }
+        | (
+            {
+                "quota_limit": quota_limit,
+                "quota_remaining": quota_remaining,
+                "quota_used": quota_used,
+                "quota_last_cost": quota_last_cost,
+            }
+            if provider == "the-odds-api"
+            else {}
+        ),
         "target_fingerprint": target_fingerprint_value,
         "missing_start_horizon_days": missing_start_horizon_days,
         "schedule_dates": {
@@ -1643,10 +1727,21 @@ def _collection_identity_payload(
                 key: value
                 for key, value in event.__dict__.items()
                 if key != "bookmaker_quotes"
+                and not (
+                    key
+                    in {
+                        "provider_event_source_endpoint",
+                        "provider_event_request_fingerprint",
+                        "target_bk_probability_1",
+                        "target_bk_probability_x",
+                        "target_bk_probability_2",
+                    }
+                    and value is None
+                )
             }
             | {
                 "bookmaker_quotes": tuple(
-                    asdict(quote)
+                    _quote_identity_payload(quote)
                     for quote in _canonical_quotes(event.bookmaker_quotes)
                 )
             }
@@ -1748,7 +1843,8 @@ def _assessment_quotes(
                 payload_hash=_hash_payload(
                     {
                         "duplicate_market_provenance": tuple(
-                            asdict(source) for source in provenance
+                            _market_provenance_identity_payload(source)
+                            for source in provenance
                         )
                     }
                 ),
@@ -1772,7 +1868,35 @@ def _market_provenance(market: ProviderMarket) -> ExternalMarketProvenanceRecord
         home_price=market.home_price,
         draw_price=market.draw_price,
         away_price=market.away_price,
+        source_endpoint=market.source_endpoint,
+        request_fingerprint=market.request_fingerprint,
     )
+
+
+def _market_provenance_identity_payload(
+    source: ExternalMarketProvenanceRecord,
+) -> dict[str, object]:
+    payload = asdict(source)
+    return {
+        key: value
+        for key, value in payload.items()
+        if key not in {"source_endpoint", "request_fingerprint"} or value is not None
+    }
+
+
+def _quote_identity_payload(
+    quote: ExternalBookmakerQuoteRecord,
+) -> dict[str, object]:
+    payload = {
+        key: value
+        for key, value in asdict(quote).items()
+        if key != "source_provenance"
+    }
+    payload["source_provenance"] = tuple(
+        _market_provenance_identity_payload(source)
+        for source in quote.source_provenance
+    )
+    return payload
 
 
 def _canonical_market_provenance(

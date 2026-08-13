@@ -119,6 +119,12 @@ mode. It derives a 15-by-3 experimental matrix from frozen pre-deadline
 evidence, keeps event-level BK fallback, and publishes source provenance in a
 machine-readable `NOT_ACTIVATED` artifact. It is not connected to `EVInput`.
 
+The separate The Odds API market audit is also shadow-only. Its standalone
+command stores provider-neutral 15-event dispositions plus endpoint,
+request-fingerprint, raw-response and quota-credit evidence, then publishes
+separate BK, 1xBet, Pinnacle and broader-consensus views. It has no import edge
+into `EVInput`, the scheduler, package selection, `PLAY`, or operator export.
+
 The shadow projection is an untrained Jeffreys-smoothed venue-only W-D-L
 estimate. It uses the home team's home W-D-L and the away team's away W-D-L;
 aggregate W-D-L is never substituted when either required venue window is

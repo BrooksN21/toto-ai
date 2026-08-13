@@ -51,6 +51,19 @@ class CreditState:
 
 
 @dataclass(frozen=True)
+class RequestEvidence:
+    endpoint: str
+    params: tuple[tuple[str, str], ...]
+    request_fingerprint: str
+    response_hash: str
+    fetched_at: datetime
+    credit_remaining: int | None
+    credit_used: int | None
+    credit_cost: int | None
+    cache_hit: bool
+
+
+@dataclass(frozen=True)
 class _SportDefinition:
     key: str
     group: str
@@ -104,6 +117,7 @@ class TheOddsAPIClient:
         self._events_by_sport_key: dict[str, dict[str, ProviderEvent]] = {}
         self._event_sport_keys: dict[str, str] = {}
         self._markets_by_sport_key: dict[str, tuple[ProviderMarket, ...]] = {}
+        self._request_evidence: list[RequestEvidence] = []
         self.bind_safety_boundary(stop_at=stop_at, now=now)
 
     @property
@@ -130,6 +144,10 @@ class TheOddsAPIClient:
     @property
     def credits_spent(self) -> int:
         return self._credits_spent
+
+    @property
+    def request_evidence(self) -> tuple[RequestEvidence, ...]:
+        return tuple(self._request_evidence)
 
     def bind_safety_boundary(
         self,
@@ -260,6 +278,7 @@ class TheOddsAPIClient:
             cached = self._load_cache(fingerprint, cache_ttl=cache_ttl)
             if cached is not None:
                 self._cache_hits += 1
+                self._record_request_evidence(cached, cache_hit=True)
                 return cached
         if paid:
             self._ensure_paid_quota_available()
@@ -319,6 +338,8 @@ class TheOddsAPIClient:
             )
             if cache_ttl is not None:
                 self._write_cache(payload)
+            self._write_raw_capture(payload)
+            self._record_request_evidence(payload, cache_hit=False)
             return payload
         raise TheOddsAPIError("The Odds API request failed")
 
@@ -448,6 +469,81 @@ class TheOddsAPIClient:
                     temporary_path.unlink(missing_ok=True)
                 except OSError:
                     pass
+
+    def _write_raw_capture(self, payload: _Payload) -> None:
+        raw_dir = self._cache_dir / "raw"
+        raw_identity = _payload_hash(
+            {
+                "request_fingerprint": payload.request_fingerprint,
+                "payload_hash": payload.payload_hash,
+                "fetched_at": payload.fetched_at.isoformat(),
+            }
+        )
+        final_path = raw_dir / f"{raw_identity}.json"
+        if final_path.exists():
+            return
+        body = {
+            "credit_state": {
+                "remaining": payload.credit_state.remaining,
+                "used": payload.credit_state.used,
+                "last_cost": payload.credit_state.last_cost,
+            },
+            "endpoint": payload.endpoint,
+            "fetched_at": payload.fetched_at.isoformat(),
+            "params": payload.params,
+            "payload": payload.body,
+            "payload_hash": payload.payload_hash,
+            "request_fingerprint": payload.request_fingerprint,
+        }
+        temporary_path: Path | None = None
+        try:
+            raw_dir.mkdir(parents=True, exist_ok=True)
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                delete=False,
+                dir=raw_dir,
+                prefix=f".{final_path.name}.",
+                suffix=".tmp",
+            ) as output:
+                temporary_path = Path(output.name)
+                output.write(
+                    json.dumps(
+                        body,
+                        sort_keys=True,
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    )
+                )
+            temporary_path.replace(final_path)
+        except (OSError, TypeError, ValueError):
+            raise TheOddsAPIError("The Odds API raw capture write failed") from None
+        finally:
+            if temporary_path is not None:
+                try:
+                    temporary_path.unlink(missing_ok=True)
+                except OSError:
+                    pass
+
+    def _record_request_evidence(
+        self,
+        payload: _Payload,
+        *,
+        cache_hit: bool,
+    ) -> None:
+        self._request_evidence.append(
+            RequestEvidence(
+                endpoint=payload.endpoint,
+                params=payload.params,
+                request_fingerprint=payload.request_fingerprint,
+                response_hash=payload.payload_hash,
+                fetched_at=payload.fetched_at,
+                credit_remaining=payload.credit_state.remaining,
+                credit_used=payload.credit_state.used,
+                credit_cost=payload.credit_state.last_cost,
+                cache_hit=cache_hit,
+            )
+        )
 
 
 def credit_state_from_headers(headers: Mapping[str, str]) -> CreditState:

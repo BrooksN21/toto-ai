@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -201,6 +201,8 @@ def test_free_catalog_and_events_parse_provenance_without_serializing_key(
     )
     assert "secret-key" not in serialized
     assert "secret-key" not in events[0].request_fingerprint
+    assert tuple(item.cache_hit for item in client.request_evidence) == (False, False)
+    assert tuple(item.credit_cost for item in client.request_evidence) == (0, 0)
 
 
 def test_bulk_eu_h2h_preserves_one_xbet_pinnacle_and_quota(tmp_path: Path) -> None:
@@ -241,6 +243,62 @@ def test_bulk_eu_h2h_preserves_one_xbet_pinnacle_and_quota(tmp_path: Path) -> No
     assert paid_call["params"]["regions"] == "eu"
     assert paid_call["params"]["markets"] == "h2h"
     assert paid_call["params"]["oddsFormat"] == "decimal"
+    assert client.request_evidence[-1].endpoint == "/v4/sports/soccer_epl/odds"
+    assert client.request_evidence[-1].credit_cost == 1
+    assert client.request_evidence[-1].cache_hit is False
+    raw_paths = tuple((tmp_path / "raw").glob("*.json"))
+    assert len(raw_paths) == 3
+    assert all(
+        "secret-key" not in path.read_text(encoding="utf-8")
+        for path in raw_paths
+    )
+
+
+def test_free_cache_hit_is_visible_but_paid_odds_are_never_reused(
+    tmp_path: Path,
+) -> None:
+    from toto_ai.external_odds.the_odds_api import TheOddsAPIClient
+
+    now = datetime(2026, 8, 13, 16, 0, tzinfo=timezone.utc)
+    first_session = FakeSession(
+        [
+            FakeResponse(sports_payload(), quota_headers(last=0, used=0)),
+            FakeResponse([event_payload()], quota_headers(last=0, used=0)),
+            FakeResponse(odds_payload(), quota_headers()),
+        ]
+    )
+    first = TheOddsAPIClient(
+        "secret-key",
+        session=first_session,
+        cache_dir=tmp_path,
+        now=lambda: now,
+    )
+    first.fetch_schedule("football", (date(2026, 8, 13),))
+    first.fetch_event_markets("football", "event-1")
+
+    second_session = FakeSession(
+        [
+            FakeResponse(sports_payload(), quota_headers(last=0, used=1)),
+            FakeResponse(odds_payload(), quota_headers(remaining=498, used=2)),
+        ]
+    )
+    second = TheOddsAPIClient(
+        "secret-key",
+        session=second_session,
+        cache_dir=tmp_path,
+        now=lambda: now + timedelta(minutes=5),
+    )
+    second.fetch_schedule("football", (date(2026, 8, 13),))
+    second.fetch_event_markets("football", "event-1")
+
+    assert second.cache_hits == 2
+    assert tuple(item.cache_hit for item in second.request_evidence[:2]) == (
+        True,
+        True,
+    )
+    assert second.request_evidence[-1].cache_hit is False
+    assert second.request_evidence[-1].endpoint.endswith("/odds")
+    assert len(second_session.calls) == 2
 
 
 def test_bulk_odds_are_reused_for_two_events_in_same_sport_key(

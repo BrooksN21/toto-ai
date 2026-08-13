@@ -844,7 +844,8 @@ closed.
 - [x] Record the implementation sequence in
   `docs/superpowers/plans/2026-08-13-the-odds-api-shadow-audit.md`.
 - [x] Implement fail-closed provider parsing and secret-safe transport.
-- [ ] Persist provider-neutral provenance and quota evidence.
-- [ ] Add the current-drawing `NOT_ACTIVATED` shadow command and reports.
-- [ ] Run one current-drawing live probe with the protected key.
+- [x] Persist provider-neutral provenance and quota evidence.
+- [x] Add the current-drawing `NOT_ACTIVATED` shadow command and reports.
+- [x] Run one current-drawing live probe with the protected key: drawing 4975,
+  4/15 matched, 3 credits spent, 497 remaining, zero secret leakage.
 - [ ] Start the 30-drawing / 450-event prospective audit.

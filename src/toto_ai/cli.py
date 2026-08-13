@@ -137,6 +137,11 @@ from toto_ai.external_odds.team_registry import (
     load_ready_pin_set_reviewed_catalog_hash,
     seed_reviewed_alias_config,
 )
+from toto_ai.external_odds.the_odds_api import TheOddsAPIClient, TheOddsAPIError
+from toto_ai.external_odds.the_odds_shadow import (
+    load_the_odds_api_key,
+    write_the_odds_shadow_reports,
+)
 from toto_ai.external_odds.timing_overrides import (
     PinnedTimingOverrideCatalog,
     TimingOverrideRecord,
@@ -4503,6 +4508,87 @@ def collect_external_odds_command(
         raise sanitized_error
 
     print(_external_collection_table(result, prospective_result))
+
+
+@app.command("collect-the-odds-api-shadow")
+def collect_the_odds_api_shadow_command(
+    open: bool = typer.Option(False),  # noqa: A002
+    db: str = typer.Option("data/toto.db"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
+    quota_reserve: int = typer.Option(50, min=0),
+    env_file: str = typer.Option(".env"),
+    cache_root: str = typer.Option("data/external-cache/the-odds-api"),
+    report_dir: str = typer.Option("reports/the-odds-api-shadow"),
+) -> None:
+    """Collect an isolated NOT_ACTIVATED The Odds API shadow snapshot."""
+    if not open:
+        raise typer.BadParameter("--open is required")
+    api_key = ""
+    try:
+        api_key = load_the_odds_api_key(env_file)
+        engine = init_db(db)
+        session_factory = get_session_factory(engine)
+        reviewed_aliases = load_aliases(aliases)
+        provider_client = TheOddsAPIClient(
+            api_key,
+            cache_dir=Path(cache_root),
+            quota_reserve=quota_reserve,
+        )
+        snapshot = collect_open_external_odds(
+            TotoBriefClient(),
+            provider_client,
+            session_factory,
+            reviewed_aliases,
+            fetched_at=datetime.now(timezone.utc),
+        )
+        paths = write_the_odds_shadow_reports(
+            snapshot,
+            request_evidence=provider_client.request_evidence,
+            credit_state=provider_client.credit_state,
+            credits_spent=provider_client.credits_spent,
+            report_dir=report_dir,
+        )
+    except (
+        TheOddsAPIError,
+        OSError,
+        SQLAlchemyError,
+        TotoBriefRequestError,
+        ValueError,
+    ) as error:
+        raise typer.BadParameter(
+            _external_error_message(error, secret=api_key)
+        ) from error
+
+    consensus_count = sum(
+        event.probability_source == "external_consensus"
+        for event in snapshot.events
+    )
+    fallback_count = len(snapshot.events) - consensus_count
+    typer.echo(
+        json.dumps(
+            {
+                "activation_status": "NOT_ACTIVATED",
+                "actionable": False,
+                "drawing_id": snapshot.drawing_id,
+                "drawing_number": snapshot.drawing_number,
+                "collection_id": snapshot.collection_id,
+                "matched_events": sum(
+                    event.match_status == "matched" for event in snapshot.events
+                ),
+                "external_consensus_events": consensus_count,
+                "fallback_events": fallback_count,
+                "requests_made": snapshot.requests_made,
+                "cache_hits": snapshot.cache_hits,
+                "credits_spent": provider_client.credits_spent,
+                "credits_remaining": provider_client.credit_state.remaining,
+                "json_report": str(paths.json_path),
+                "csv_report": str(paths.csv_path),
+                "markdown_report": str(paths.markdown_path),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
 
 
 @app.command("audit-external-coverage")
