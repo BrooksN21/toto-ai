@@ -43,9 +43,60 @@ for every observation.
 5. StatsBomb Open Data is research-only because it covers selected
    competitions, but it can validate feature/model ideas on richer event data.
 
+The Odds API is the first external market-odds provider to be evaluated. It is
+not a sports-statistics source and does not replace the hierarchy above. Its
+role is to provide independently collected pre-match 1/X/2 prices from 1xBet,
+Pinnacle where available, and a broader bookmaker consensus for comparison
+with the frozen TotoBrief BK control.
+
 No website scraping, unofficial credential reuse, or fabricated fixture/team
 matching is allowed. Provider gaps are explicit. The system may fall back per
 event to the frozen BK row.
+
+## The Odds API shadow audit
+
+The integration remains read-only and `NOT_ACTIVATED`. It must not alter
+production probabilities, package selection, scheduler eligibility, `PLAY`,
+or operator exports during the audit.
+
+For every eligible open drawing, capture up to three immutable observations:
+
+- morning/pre-analysis;
+- the existing control checkpoint before the final run;
+- final T-10.
+
+Requests are quota-aware. Query only sports represented in the target drawing,
+the European bookmaker region, and the head-to-head market needed for full-time
+1/X/2. Record request-credit headers and stop optional calls before exhausting
+the configured reserve. Exhausted quota, timeout, HTTP errors, malformed data,
+or missing bookmaker coverage are typed missing evidence and must not block the
+existing TotoBrief-BK package path.
+
+An event is accepted only after deterministic identity validation of sport,
+competition where available, normalized participants, home/away orientation,
+and kickoff tolerance. Reversed or ambiguous matches remain diagnostics and
+cannot provide an odds row. Football must use full-time 1/X/2; hockey must use
+the regulation-time three-way market expected by the target Toto event rather
+than a two-way moneyline including overtime.
+
+Each accepted snapshot stores provider event ID, bookmaker key, raw decimal
+prices, normalized overround-free probabilities, bookmaker update time, local
+retrieval time, source endpoint identity, request fingerprint, response hash,
+target fingerprint, orientation, matching disposition, freshness, and quota
+cost. Persist 1xBet, Pinnacle, and bookmaker consensus as separate views; never
+substitute one silently for another.
+
+The first live probe is a current-drawing shadow rehearsal. The prospective
+audit then covers at least 30 consecutive completed drawings / 450 events.
+Reports compare exact event and bookmaker coverage, freshness, failures and
+quota cost, followed after settlement by log loss, Brier score, calibration,
+and unchanged-package shadow replay against TotoBrief BK. Coverage alone cannot
+activate the source. Any later production use requires the existing activation
+gate and a separate explicit decision.
+
+The API key is read only from the protected environment variable
+`THE_ODDS_API_KEY`. Its value must never appear in logs, reports, fixtures,
+exceptions, documentation, Git history, or request fingerprints.
 
 ## Market baseline
 
@@ -149,4 +200,3 @@ and ambiguous fixtures, timestamp leakage, sparse/new teams, deterministic
 Elo/features/training, probability normalization, walk-forward separation,
 model artifact hashes, BK fallback, dynamic banks, and unchanged package
 selection when the sports model is not activated.
-
