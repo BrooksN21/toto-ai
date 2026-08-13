@@ -28,8 +28,11 @@ from pathlib import Path
 from typing import Any, Literal, Protocol
 from zoneinfo import ZoneInfo
 
+from sqlalchemy import select
+
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.api.rate_limit import TotoBriefRequestError
+from toto_ai.db.models import ArchivedPackage
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.ev.models import EVConfig, validate_config_bank
@@ -1977,6 +1980,7 @@ def execute_scheduler_tick(
             load_state(state_path, plan_id=plan.plan_id, now=observed), observed
         )
         save_state(state_path, state)
+        _expire_operator_package_at_t10(plan, observed_at=observed)
         prior = find_prior_bet_ready(plan)
         if prior is not None:
             return prior
@@ -1989,7 +1993,6 @@ def execute_scheduler_tick(
         )
         if recovered is not None:
             return recovered
-        _expire_operator_package_at_t10(plan, observed_at=observed)
         if state["terminal"] is not None:
             return None
         if observed >= plan.publish_deadline:
@@ -2370,6 +2373,23 @@ def _remove_actionable_publication_artifacts(
         run_dir / "package-archive.json",
         missing_ok=True,
     )
+    _unlink_output_path(
+        plan.output_dir,
+        run_dir / "baltbet-upload.txt",
+        missing_ok=True,
+    )
+    operator_path = plan.output_dir / "operator-result.json"
+    if operator_path.is_file() and not operator_path.is_symlink():
+        try:
+            payload = _load_strict_json(operator_path, name="operator result")
+        except (OSError, SchedulerError, TypeError, ValueError):
+            payload = None
+        if (
+            isinstance(payload, Mapping)
+            and payload.get("actionable") is True
+            and payload.get("run_id") == run_dir.name
+        ):
+            _unlink_output_path(plan.output_dir, operator_path, missing_ok=True)
 
 
 def _recover_atomic_publication(
@@ -2422,6 +2442,11 @@ def _recover_atomic_publication(
         != final_input.probability_input_sha256
     ):
         raise SchedulerError("recoverable archive final-input provenance mismatch")
+    archived_at = _parse_utc_datetime(
+        "recoverable archive archived_at", payload.get("archived_at")
+    )
+    if archived_at > observed_at or archived_at > plan.publish_deadline:
+        raise SchedulerError("recoverable archive publication chronology is invalid")
     if observed_at > plan.publish_deadline:
         _remove_actionable_publication_artifacts(plan, run_dir)
         return _finalize_tick_no_bet(
@@ -2466,7 +2491,7 @@ def _recover_atomic_publication(
         "selected_count": archived.coupon_count,
         "selected_cost": archived.cost,
         "selected_snapshot": "final",
-        "published_at": observed_at,
+        "published_at": archived_at,
     }
     finalized = _finalize_status(
         plan,
@@ -2488,6 +2513,8 @@ def _recover_atomic_publication(
         attempt_id=attempt_id,
     )
     save_state(state_path, updated)
+    if observed_at >= plan.publish_deadline:
+        _expire_operator_package_at_t10(plan, observed_at=observed_at)
     return finalized
 
 
@@ -3167,6 +3194,427 @@ def _write_operator_no_bet(
     )
 
 
+def _operator_result_sha256(payload: Mapping[str, object]) -> str:
+    unsigned = dict(payload)
+    unsigned.pop("record_sha256", None)
+    return _sha256_bytes(_canonical_json_bytes(unsigned))
+
+
+def _publish_actionable_operator_result(
+    plan: SchedulerPlan,
+    *,
+    run_id: str,
+    run_dir: Path,
+    status_path: Path,
+    marker_path: Path,
+    terminal: Mapping[str, Any],
+    completed_at: datetime,
+) -> None:
+    """Publish a marker-gated BaltBet upload candidate for one verified PLAY."""
+
+    source_path = run_dir / "package.csv"
+    archive_path = run_dir / "package-archive.json"
+    upload_path = run_dir / "baltbet-upload.txt"
+    source_bytes = _read_regular_file(
+        source_path,
+        name="operator source package",
+        reject_symlink=True,
+    )
+    selected_count = _strict_int(
+        "operator selected_count", terminal["selected_count"]
+    )
+    selected_cost = _strict_int(
+        "operator selected_cost", terminal["selected_cost"]
+    )
+    validated = _validate_package_csv(
+        source_bytes,
+        stake=plan.stake,
+        minimum_gross_ev=plan.minimum_gross_ev,
+        expected_count=selected_count,
+        expected_cost=selected_cost,
+    )
+    upload_bytes = _render_baltbet_upload(validated.coupons, stake=plan.stake)
+    _validate_baltbet_upload(
+        upload_bytes,
+        stake=plan.stake,
+        expected_count=selected_count,
+        expected_cost=selected_cost,
+        expected_coupons=validated.coupons,
+    )
+    if upload_path.exists():
+        if _read_regular_file(
+            upload_path,
+            name="existing operator upload",
+            reject_symlink=True,
+        ) != upload_bytes:
+            raise SchedulerIntegrityError(
+                "existing operator upload conflicts with verified PLAY",
+                category="operator_artifact_integrity",
+            )
+    else:
+        _write_exclusive_atomic(plan.output_dir, upload_path, upload_bytes)
+
+    archive = _load_strict_json(archive_path, name="package archive")
+    if not isinstance(archive, Mapping):
+        raise SchedulerIntegrityError(
+            "package archive is not an object",
+            category="operator_artifact_integrity",
+        )
+    archive_hash = _strict_sha256(
+        "operator archive manifest hash",
+        archive.get("archive_manifest_sha256"),
+    )
+    payload: dict[str, object] = {
+        "schema_version": 2,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "run_id": run_id,
+        "operator_status": "FINAL_FRESH",
+        "decision": "PLAY",
+        "reason": terminal["reason"],
+        "provenance": "FINAL_FRESH",
+        "staleness_seconds": 0.0,
+        "coupon_path": str(upload_path),
+        "package_sha256": _sha256_bytes(upload_bytes),
+        "source_package_path": str(source_path),
+        "source_package_sha256": _sha256_bytes(source_bytes),
+        "archive_manifest_path": str(archive_path),
+        "archive_manifest_sha256": archive_hash,
+        "status_path": str(status_path),
+        "marker_path": str(marker_path),
+        "stake": plan.stake,
+        "requested_bank": plan.requested_bank,
+        "effective_bank": terminal["effective_bank"],
+        "selected_count": selected_count,
+        "selected_cost": selected_cost,
+        "published_at": _timestamp(terminal["published_at"]),
+        "expires_at": _timestamp(plan.publish_deadline),
+        "completed_at": _timestamp(completed_at),
+        "automatic_wagering": False,
+        "actionable": True,
+    }
+    payload["record_sha256"] = _operator_result_sha256(payload)
+    _write_replace_atomic(
+        plan.output_dir,
+        plan.output_dir / "operator-result.json",
+        _canonical_json_bytes(payload) + b"\n",
+    )
+
+
+def _validated_actionable_operator_upload(
+    plan: SchedulerPlan,
+    *,
+    observed_at: datetime,
+    allow_at_deadline: bool,
+) -> bytes:
+    observed = _require_utc_datetime("observed_at", observed_at)
+    if (
+        observed > plan.publish_deadline
+        if allow_at_deadline
+        else observed >= plan.publish_deadline
+    ):
+        raise SchedulerIntegrityError(
+            "operator package expired at T-10",
+            category="operator_package_expired",
+        )
+    result_path = plan.output_dir / "operator-result.json"
+    payload = _load_strict_json(result_path, name="operator result")
+    if not isinstance(payload, Mapping):
+        raise SchedulerIntegrityError(
+            "operator result is not an object",
+            category="operator_artifact_integrity",
+        )
+    if (
+        payload.get("schema_version") != 2
+        or payload.get("plan_id") != plan.plan_id
+        or payload.get("drawing") != plan.drawing
+        or payload.get("drawing_id") != plan.drawing_id
+        or payload.get("decision") != "PLAY"
+        or payload.get("operator_status") != "FINAL_FRESH"
+        or payload.get("provenance") != "FINAL_FRESH"
+        or payload.get("automatic_wagering") is not False
+        or payload.get("actionable") is not True
+    ):
+        raise SchedulerIntegrityError(
+            "operator result is not actionable",
+            category="operator_release_boundary",
+        )
+    if payload.get("record_sha256") != _operator_result_sha256(payload):
+        raise SchedulerIntegrityError(
+            "operator result integrity hash mismatch",
+            category="operator_artifact_integrity",
+        )
+    expires_at = _parse_utc_datetime("operator expires_at", payload.get("expires_at"))
+    if expires_at != plan.publish_deadline:
+        raise SchedulerIntegrityError(
+            "operator result expiry does not match the plan",
+            category="operator_artifact_integrity",
+        )
+    published_at = _parse_utc_datetime(
+        "operator published_at", payload.get("published_at")
+    )
+    completed_at = _parse_utc_datetime(
+        "operator completed_at", payload.get("completed_at")
+    )
+    if not (
+        published_at <= completed_at <= plan.publish_deadline
+        and published_at <= observed
+    ):
+        raise SchedulerIntegrityError(
+            "operator publication chronology is invalid",
+            category="operator_artifact_integrity",
+        )
+    run_id = _strict_text("operator run_id", payload.get("run_id"))
+    if _RUN_ID_PATTERN.fullmatch(run_id) is None:
+        raise SchedulerIntegrityError(
+            "operator run_id is invalid",
+            category="operator_artifact_integrity",
+        )
+    declared_source = _require_contained_path(
+        plan.output_dir,
+        Path(str(payload.get("source_package_path"))),
+        name="operator source_package_path",
+    )
+    run_dir = declared_source.parent
+    allowed_run_dirs = {
+        plan.output_dir / "attempts" / run_id,
+        plan.output_dir / "runs" / str(plan.drawing) / run_id,
+    }
+    if run_dir not in allowed_run_dirs:
+        raise SchedulerIntegrityError(
+            "operator run directory is outside scheduler-owned run scopes",
+            category="operator_artifact_integrity",
+        )
+    expected_paths = {
+        "coupon_path": run_dir / "baltbet-upload.txt",
+        "source_package_path": run_dir / "package.csv",
+        "archive_manifest_path": run_dir / "package-archive.json",
+        "status_path": run_dir / "status.json",
+        "marker_path": run_dir / ".bet-ready",
+    }
+    paths: dict[str, Path] = {}
+    for field, expected in expected_paths.items():
+        path = _require_contained_path(
+            plan.output_dir,
+            Path(str(payload.get(field))),
+            name=f"operator {field}",
+        )
+        if path != expected:
+            raise SchedulerIntegrityError(
+                f"operator {field} is not run-scoped",
+                category="operator_artifact_integrity",
+            )
+        paths[field] = path
+
+    status = _load_strict_json(paths["status_path"], name="operator status")
+    marker = _load_strict_json(paths["marker_path"], name="BET READY marker")
+    if (
+        not isinstance(status, Mapping)
+        or status.get("plan_id") != plan.plan_id
+        or status.get("run_id") != run_id
+        or status.get("outcome") != "bet-ready"
+        or status.get("decision") != "PLAY"
+        or status.get("package_path") != str(paths["source_package_path"])
+        or status.get("published_at") != _timestamp(published_at)
+        or status.get("completed_at") != _timestamp(completed_at)
+        or not isinstance(marker, Mapping)
+        or marker.get("drawing") != plan.drawing
+        or marker.get("run_id") != run_id
+        or marker.get("outcome") != "bet-ready"
+        or marker.get("decision") != "PLAY"
+        or marker.get("status_path") != str(paths["status_path"])
+        or marker.get("package_path") != str(paths["source_package_path"])
+        or marker.get("package_sha256") != status.get("package_sha256")
+        or marker.get("completed_at") != _timestamp(completed_at)
+    ):
+        raise SchedulerIntegrityError(
+            "operator status or BET READY marker mismatch",
+            category="operator_artifact_integrity",
+        )
+    selected_count = _strict_int(
+        "operator selected_count", payload.get("selected_count")
+    )
+    selected_cost = _strict_int("operator selected_cost", payload.get("selected_cost"))
+    effective_bank = _strict_int(
+        "operator effective_bank", payload.get("effective_bank")
+    )
+    if (
+        payload.get("stake") != plan.stake
+        or payload.get("requested_bank") != plan.requested_bank
+        or selected_cost != selected_count * plan.stake
+        or selected_cost > effective_bank
+        or effective_bank > plan.requested_bank
+        or status.get("selected_count") != selected_count
+        or status.get("selected_cost") != selected_cost
+        or status.get("effective_bank") != effective_bank
+    ):
+        raise SchedulerIntegrityError(
+            "operator bank, stake, or coupon count mismatch",
+            category="operator_artifact_integrity",
+        )
+    source_bytes = _read_regular_file(
+        paths["source_package_path"],
+        name="operator source package",
+        reject_symlink=True,
+    )
+    source_hash = _sha256_bytes(source_bytes)
+    if (
+        source_hash != payload.get("source_package_sha256")
+        or source_hash != status.get("package_sha256")
+    ):
+        raise SchedulerIntegrityError(
+            "operator source package hash mismatch",
+            category="operator_artifact_integrity",
+        )
+    validated = _validate_package_csv(
+        source_bytes,
+        stake=plan.stake,
+        minimum_gross_ev=plan.minimum_gross_ev,
+        expected_count=selected_count,
+        expected_cost=selected_cost,
+    )
+    upload_bytes = _read_regular_file(
+        paths["coupon_path"],
+        name="operator upload package",
+        reject_symlink=True,
+    )
+    if _sha256_bytes(upload_bytes) != payload.get("package_sha256"):
+        raise SchedulerIntegrityError(
+            "operator upload package hash mismatch",
+            category="operator_artifact_integrity",
+        )
+    _validate_baltbet_upload(
+        upload_bytes,
+        stake=plan.stake,
+        expected_count=selected_count,
+        expected_cost=selected_cost,
+        expected_coupons=validated.coupons,
+    )
+    archive = _load_strict_json(
+        paths["archive_manifest_path"], name="operator package archive"
+    )
+    if not isinstance(archive, Mapping):
+        raise SchedulerIntegrityError(
+            "operator package archive is not an object",
+            category="operator_artifact_integrity",
+        )
+    unsigned_archive = dict(archive)
+    declared_archive_hash = unsigned_archive.pop("archive_manifest_sha256", None)
+    if (
+        declared_archive_hash != payload.get("archive_manifest_sha256")
+        or _sha256_bytes(_canonical_json_bytes(unsigned_archive))
+        != declared_archive_hash
+        or archive.get("drawing_id") != plan.drawing_id
+        or archive.get("drawing_number") != plan.drawing
+        or archive.get("stake") != plan.stake
+        or archive.get("coupon_count") != selected_count
+        or archive.get("cost") != selected_cost
+        or archive.get("source_path") != str(paths["source_package_path"])
+        or archive.get("source_bytes_sha256") != source_hash
+        or archive.get("provenance") != "pre_bet_runner"
+        or archive.get("archived_at") != _timestamp(published_at)
+    ):
+        raise SchedulerIntegrityError(
+            "operator package archive mismatch",
+            category="operator_artifact_integrity",
+        )
+    canonical_hash = hashlib.sha256(
+        ",".join(validated.coupons).encode("utf-8")
+    ).hexdigest()
+    if archive.get("canonical_package_sha256") != canonical_hash:
+        raise SchedulerIntegrityError(
+            "operator canonical package hash mismatch",
+            category="operator_artifact_integrity",
+        )
+    archive_engine = init_db(plan.db)
+    try:
+        with get_session_factory(archive_engine)() as session:
+            rows = session.scalars(
+                select(ArchivedPackage)
+                .where(ArchivedPackage.drawing_id == plan.drawing_id)
+                .where(ArchivedPackage.drawing_number == plan.drawing)
+                .where(ArchivedPackage.stake == plan.stake)
+                .where(ArchivedPackage.package_sha256 == canonical_hash)
+                .where(ArchivedPackage.source_bytes_sha256 == source_hash)
+                .where(
+                    ArchivedPackage.archive_manifest_sha256
+                    == declared_archive_hash
+                )
+            ).all()
+    finally:
+        archive_engine.dispose()
+    if (
+        len(rows) != 1
+        or rows[0].coupon_count != selected_count
+        or rows[0].cost != selected_cost
+        or rows[0].source_bytes != source_bytes
+        or rows[0].provenance != "pre_bet_runner"
+        or _parse_utc_datetime(
+            "durable archive archived_at", rows[0].archived_at
+        )
+        != published_at
+    ):
+        raise SchedulerIntegrityError(
+            "operator package is not bound to one durable archive",
+            category="operator_artifact_integrity",
+        )
+    return upload_bytes
+
+
+def export_operator_package(
+    plan: SchedulerPlan,
+    *,
+    destination: str | Path,
+    observed_at: datetime | None = None,
+    now: Callable[[], datetime] | None = None,
+) -> Path:
+    """Export only the current scheduler-owned actionable PLAY upload."""
+
+    _require_plan(plan)
+    if observed_at is not None and now is not None:
+        raise ValueError("provide observed_at or now, not both")
+    clock = now or (lambda: datetime.now(timezone.utc))
+    initial_observed = (
+        _require_utc_datetime("observed_at", observed_at)
+        if observed_at is not None
+        else _read_now(clock)
+    )
+    try:
+        upload_bytes = _validated_actionable_operator_upload(
+            plan,
+            observed_at=initial_observed,
+            allow_at_deadline=False,
+        )
+    except SchedulerIntegrityError:
+        raise
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise SchedulerIntegrityError(
+            f"operator package validation failed: {_safe_error(error)}",
+            category="operator_artifact_integrity",
+        ) from error
+    output = _validated_project_path(
+        plan.project_root,
+        Path(destination),
+        name="operator export destination",
+    )
+    before_write = initial_observed if observed_at is not None else _read_now(clock)
+    if before_write >= plan.publish_deadline:
+        raise SchedulerIntegrityError(
+            "operator package expired at T-10",
+            category="operator_package_expired",
+        )
+    _write_exclusive_atomic(plan.project_root, output, upload_bytes, mode=0o600)
+    after_write = before_write if observed_at is not None else _read_now(clock)
+    if after_write >= plan.publish_deadline:
+        _unlink_output_path(plan.project_root, output, missing_ok=True)
+        raise SchedulerIntegrityError(
+            "operator package expired at T-10",
+            category="operator_package_expired",
+        )
+    return output
+
+
 def _expire_operator_package_at_t10(
     plan: SchedulerPlan,
     *,
@@ -3185,6 +3633,74 @@ def _expire_operator_package_at_t10(
             "operator result is not a JSON object",
             category="operator_artifact_integrity",
         )
+    if (
+        payload.get("schema_version") == 2
+        or payload.get("decision") == "PLAY"
+        or payload.get("actionable") is True
+    ):
+        run_id = _strict_text("operator run_id", payload.get("run_id"))
+        source_path = _require_contained_path(
+            plan.output_dir,
+            Path(str(payload.get("source_package_path"))),
+            name="operator source_package_path",
+        )
+        run_dir = source_path.parent
+        if run_dir not in {
+            plan.output_dir / "attempts" / run_id,
+            plan.output_dir / "runs" / str(plan.drawing) / run_id,
+        }:
+            raise SchedulerIntegrityError(
+                "operator run directory is outside scheduler-owned run scopes",
+                category="operator_artifact_integrity",
+            )
+        marker_path = run_dir / ".bet-ready"
+        archive_path = run_dir / "package-archive.json"
+        if not marker_path.exists() and archive_path.is_file():
+            # Fail closed before atomic recovery: the archive remains eligible
+            # for audit-marker recovery, but the raw operator upload must not
+            # survive the hard T-10 boundary.
+            _unlink_output_path(
+                plan.output_dir,
+                run_dir / "baltbet-upload.txt",
+                missing_ok=True,
+            )
+            _write_operator_no_bet(
+                plan,
+                reason=(
+                    "operator package expired at T-10 during marker recovery; "
+                    "audit archive retained"
+                ),
+                completed_at=observed_at,
+            )
+            return
+        _validated_actionable_operator_upload(
+            plan,
+            observed_at=plan.publish_deadline,
+            allow_at_deadline=True,
+        )
+        value = payload.get("coupon_path")
+        if value is None:
+            raise SchedulerIntegrityError(
+                "actionable operator result has no upload path",
+                category="operator_artifact_integrity",
+            )
+        package_path = _require_contained_path(
+            plan.output_dir,
+            Path(str(value)),
+            name="expiring actionable operator package",
+        )
+        if package_path.name != "baltbet-upload.txt":
+            raise SchedulerIntegrityError(
+                "actionable operator result does not reference canonical upload",
+                category="operator_artifact_integrity",
+            )
+        _unlink_output_path(plan.output_dir, package_path, missing_ok=True)
+        _write_operator_no_bet(
+            plan,
+            reason="operator package expired at T-10; audit archive retained",
+            completed_at=observed_at,
+        )
+        return
     if (
         payload.get("plan_id") != plan.plan_id
         or payload.get("drawing") != plan.drawing
@@ -4251,6 +4767,7 @@ def _finalize_status(
     now: Callable[[], datetime],
 ) -> SchedulerExecutionResult:
     publication_deadline = plan.freeze_at
+    operator_window_open = completed_at < plan.publish_deadline
     if terminal["outcome"] == "bet-ready":
         _validate_terminal_package(plan, run_dir, terminal)
     status.update(
@@ -4306,6 +4823,27 @@ def _finalize_status(
                 raise SchedulerPublicationDeadlineError(
                     "bet-ready marker deadline crossed after durable archive"
                 )
+            if operator_window_open:
+                _publish_actionable_operator_result(
+                    plan,
+                    run_id=run_id,
+                    run_dir=run_dir,
+                    status_path=status_path,
+                    marker_path=marker_path,
+                    terminal=terminal,
+                    completed_at=completed_at,
+                )
+            else:
+                _unlink_output_path(
+                    plan.output_dir,
+                    run_dir / "baltbet-upload.txt",
+                    missing_ok=True,
+                )
+                _write_operator_no_bet(
+                    plan,
+                    reason="operator package expired at T-10; audit marker retained",
+                    completed_at=completed_at,
+                )
         _write_exclusive_atomic(
             plan.output_dir,
             marker_path,
@@ -4319,6 +4857,12 @@ def _finalize_status(
                     )
                 _validate_terminal_package(plan, run_dir, terminal)
                 _validate_status_file(plan, status_path, status)
+                if operator_window_open:
+                    _validated_actionable_operator_upload(
+                        plan,
+                        observed_at=_read_now(now),
+                        allow_at_deadline=True,
+                    )
             except Exception:
                 _unlink_output_path(
                     plan.output_dir,

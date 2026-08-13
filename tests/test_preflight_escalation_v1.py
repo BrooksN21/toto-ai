@@ -122,6 +122,40 @@ def _ready() -> MorningPreparedDrawing:
     )
 
 
+def _timing_unknown() -> MorningPreparedDrawing:
+    return MorningPreparedDrawing(
+        drawing_id=11990,
+        drawing_number=4960,
+        deadline=DEADLINE,
+        drawing_fingerprint=FINGERPRINT,
+        detail_sha256="c" * 64,
+        preparation_status="ready",
+        mapped_count=15,
+        eligibility_status="unknown",
+        span_days=None,
+        external_coverage_count=13,
+        baseline_only_event_orders=(7, 14),
+        unresolved_events=(
+            MorningUnresolvedEvent(
+                event_order=7,
+                target_event_id=178907,
+                home_team="Home 7",
+                away_team="Away 7",
+                resolution_status="timing_unknown",
+                reason="baseline-only event start time is unavailable",
+            ),
+            MorningUnresolvedEvent(
+                event_order=14,
+                target_event_id=178914,
+                home_team="Home 14",
+                away_team="Away 14",
+                resolution_status="timing_unknown",
+                reason="baseline-only event start time is unavailable",
+            ),
+        ),
+    )
+
+
 def _unresolved_count(count: int) -> MorningPreparedDrawing:
     return MorningPreparedDrawing(
         **{
@@ -142,6 +176,61 @@ def _unresolved_count(count: int) -> MorningPreparedDrawing:
             ),
         }
     )
+
+
+def test_morning_preparation_materializes_baseline_only_missing_kickoffs():
+    starts_at = DEADLINE + timedelta(hours=1)
+    target = SimpleNamespace(
+        events=tuple(
+            SimpleNamespace(
+                event_id=178900 + order,
+                home_team=f"Home {order}",
+                away_team=f"Away {order}",
+                starts_at=(starts_at if order == 7 else None),
+            )
+            for order in range(15)
+        )
+    )
+    prepared = SimpleNamespace(
+        events=tuple(
+            SimpleNamespace(
+                event_order=order,
+                target_event_id=178900 + order,
+                status=("baseline_only" if order in {7, 14} else "matched"),
+                reason="prepared",
+                candidate_evidence=(),
+            )
+            for order in range(15)
+        ),
+        baseline_only_event_orders=(7, 14),
+        eligibility=SimpleNamespace(status="unknown"),
+    )
+
+    unresolved = cli._morning_unresolved_events(
+        target=target,
+        prepared=prepared,
+        schedule_diagnostics=({"status": "success"},),
+    )
+
+    assert [item.event_order for item in unresolved] == [14]
+    assert unresolved[0].target_event_id == 178914
+    assert unresolved[0].resolution_status == "timing_unknown"
+    assert unresolved[0].required_evidence_type == "reviewed_schedule"
+    evidence = MorningPreparedDrawing(
+        drawing_id=11990,
+        drawing_number=4960,
+        deadline=DEADLINE,
+        drawing_fingerprint=FINGERPRINT,
+        detail_sha256="e" * 64,
+        preparation_status="ready",
+        mapped_count=15,
+        eligibility_status="unknown",
+        span_days=None,
+        external_coverage_count=13,
+        baseline_only_event_orders=(7, 14),
+        unresolved_events=unresolved,
+    )
+    assert evidence.unresolved_events == unresolved
 
 
 def test_real_morning_dispatch_cli_passes_repository_schedule_evidence_ledger(
@@ -621,6 +710,53 @@ def test_4960_deferred_writes_attention_retry_and_reviewed_queue(tmp_path):
     assert not tuple(config.scheduler_root.rglob("scheduler-plan.json"))
     assert not tuple(tmp_path.rglob("package.csv"))
     assert not tuple(tmp_path.rglob(".bet-ready"))
+
+
+def test_ready_baseline_only_without_kickoff_escalates_and_can_later_activate(
+    tmp_path,
+):
+    config = _config(tmp_path)
+    observed = datetime(2026, 7, 30, 7, 35, tzinfo=UTC)
+
+    unresolved = dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: _timing_unknown(),
+        python_command=sys.executable,
+    )
+
+    assert unresolved.status == "deferred"
+    assert unresolved.reason == "ACTION REQUIRED: timing unknown 2/15"
+    attention = json.loads(unresolved.attention_path.read_text(encoding="utf-8"))
+    assert attention["status"] == "ACTION REQUIRED: timing unknown 2/15"
+    assert attention["activate_evening"] is True
+    assert [item["event_order"] for item in attention["unresolved"]] == [7, 14]
+    assert all(
+        item["required_evidence_type"] == "reviewed_schedule"
+        for item in attention["unresolved"]
+    )
+    retry = json.loads(unresolved.retry_plan_path.read_text(encoding="utf-8"))
+    assert retry["activate_evening"] is True
+    assert retry["attempts"]
+    assert all("--activate" in item["command"] for item in retry["attempts"])
+    queue = json.loads(unresolved.review_queue_path.read_text(encoding="utf-8"))
+    assert [item["event_order"] for item in queue["records"]] == [7, 14]
+    assert not tuple(config.scheduler_root.rglob("scheduler-plan.json"))
+
+    ready_at = observed + timedelta(minutes=5)
+    ready = dispatch_morning(
+        config,
+        observed_at=ready_at,
+        now=lambda: ready_at,
+        prepare_current=lambda _now: _ready(),
+        python_command=sys.executable,
+    )
+
+    assert ready.status == "scheduled"
+    assert ready.plan_path is not None and ready.plan_path.is_file()
+    assert not unresolved.attention_path.exists()
+    assert (unresolved.attention_path.parent / "RESOLVED.json").is_file()
 
 
 def test_retry_artifacts_are_idempotent_and_attempts_are_append_only(tmp_path):

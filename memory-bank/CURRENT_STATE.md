@@ -1,5 +1,33 @@
 # Current State
 
+## 2026-08-13: operator export boundary and missing-kickoff escalation
+
+- A scheduler-owned `bet-ready / PLAY` publication now creates a run-scoped
+  `baltbet-upload.txt` and hash-bound actionable `operator-result.json` before
+  writing `.bet-ready`. The public `operator-export --plan ... --output ...`
+  command revalidates the schema-v6 plan, exact run/status/marker, source CSV,
+  upload bytes, archive manifest, SQLite archive row, bank/stake/count/cost,
+  and T-10 expiry before copying bytes. `NO BET`, LKG/research, expired,
+  tampered, foreign, or unarchived files cannot be exported.
+- `scheduler-execute` no longer labels an internal/audit package path as an
+  operator package. At T-10 the operator upload is removed and
+  `operator-result.json` becomes non-actionable while the audit archive and
+  historical `.bet-ready` marker remain.
+- A READY 15/15 preparation with baseline-only events that still lack kickoff
+  times is no longer silently reported as generic `drawing_not_playable`.
+  Missing kickoffs become explicit `timing_unknown` items, ACTION_REQUIRED
+  attention, reviewed-schedule queue records, and exact-identity retries that
+  stop before T-60. Such retries may request evening activation only if a
+  later pass becomes fully playable.
+- Drawing 4973 is frozen as failure evidence. The unbound 166-coupon file was
+  created after T-10, had no scheduler/archive/settlement identity, scored at
+  most 7/15, and is permanently non-actionable. The canonical quality-v2 paper
+  candidate scored at most 8/15. Neither produced a 10+ result or any evidence
+  of profitability.
+- Release verification passed: `1797 passed, 13 deselected in 112.49s`; full
+  Ruff passed. No push, PR, live scheduler change, network call, package
+  recommendation, or wager was made.
+
 ## 2026-08-11: scheduler last-known-good remediation
 
 The drawing-4972 failure mode is covered by local deterministic regressions.

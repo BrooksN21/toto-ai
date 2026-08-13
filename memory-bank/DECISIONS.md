@@ -1,5 +1,32 @@
 # Decisions
 
+## 2026-08-13: operator files require a single scheduler-owned export gateway
+
+- A file is operator-actionable only when current schema-v6 scheduler state is
+  `bet-ready / PLAY`, its run-scoped `.bet-ready`, status, source package,
+  BaltBet upload, archive manifest, and durable SQLite archive all verify, and
+  export begins before T-10.
+- Research reports, manually synthesized files, LKG `NO BET`, stale paths, and
+  internal package CSVs are never operator inputs. `scheduler-execute` does
+  not print them as uploadable packages.
+- `operator-export` copies already published canonical upload bytes; it never
+  derives coupons from research artifacts and never places a wager.
+- At T-10 the operator upload expires even if the audit archive and historical
+  BET READY marker remain. This separates historical publication evidence
+  from present permission to place a manual bet.
+
+## 2026-08-13: baseline-only identity is not kickoff evidence
+
+- READY 15/15 describes event/probability preparation, not complete timing.
+  Every baseline-only event whose kickoff remains absent is materialized as
+  `timing_unknown`; eligibility remains unknown and no evening plan is created.
+- `timing_unknown` requires reviewed schedule evidence. Retries remain bound
+  to drawing ID/number/deadline/fingerprint and stop before T-60. They may use
+  `--activate` only so a later fully playable pass can create the ordinary
+  evening plan; unresolved evidence itself never authorizes activation.
+- Attention resolves only when the same drawing is READY 15/15, has no timing
+  dependency, and is fully playable.
+
 ## Scheduler last-known-good invariant (2026-08-11)
 
 - A fully validated pre-final candidate is persisted as an immutable,

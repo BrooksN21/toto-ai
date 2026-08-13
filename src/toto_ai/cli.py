@@ -101,9 +101,11 @@ from toto_ai.external_odds.collection import (
     collect_open_external_odds,
     pinned_revalidation_is_ready,
 )
+from toto_ai.external_odds.domain import TargetDrawing
 from toto_ai.external_odds.eligibility import DrawingEligibility, target_fingerprint
 from toto_ai.external_odds.matching import load_aliases
 from toto_ai.external_odds.preparation import (
+    DrawingPreparationResult,
     _baseline_probability_input_sha256,
     fetch_preparation_schedule,
     load_local_schedule,
@@ -246,6 +248,7 @@ from toto_ai.runner import (
     drawing_run_candidate_paths,
     execute_scheduler_plan,
     execute_scheduler_tick,
+    export_operator_package,
     load_scheduler_plan,
     pin_drawing,
     prepare_morning_preanalysis_artifacts,
@@ -3136,6 +3139,49 @@ def preflight_retry_rehearsal_command(
     typer.echo(json.dumps(summary, ensure_ascii=False, sort_keys=True))
 
 
+def _morning_unresolved_events(
+    *,
+    target: TargetDrawing,
+    prepared: DrawingPreparationResult,
+    schedule_diagnostics: tuple[Mapping[str, object], ...],
+) -> tuple[MorningUnresolvedEvent, ...]:
+    """Expose every unresolved identity or baseline-only kickoff dependency."""
+
+    target_events = target.events
+    prepared_events = prepared.events
+    unresolved = [
+        MorningUnresolvedEvent(
+            event_order=item.event_order,
+            target_event_id=item.target_event_id,
+            home_team=target_events[item.event_order].home_team,
+            away_team=target_events[item.event_order].away_team,
+            resolution_status=item.status,
+            reason=item.reason,
+            candidate_evidence=item.candidate_evidence,
+            provider_diagnostics=schedule_diagnostics,
+        )
+        for item in prepared_events
+        if item.status not in {"matched", "baseline_only"}
+    ]
+    if prepared.eligibility.status == "unknown":
+        unresolved.extend(
+            MorningUnresolvedEvent(
+                event_order=order,
+                target_event_id=target_events[order].event_id,
+                home_team=target_events[order].home_team,
+                away_team=target_events[order].away_team,
+                resolution_status="timing_unknown",
+                reason="baseline-only event start time is unavailable",
+                candidate_evidence=(),
+                provider_diagnostics=schedule_diagnostics,
+            )
+            for order in prepared.baseline_only_event_orders
+            if target_events[order].starts_at is None
+        )
+    unresolved.sort(key=lambda item: item.event_order)
+    return tuple(unresolved)
+
+
 def _prepare_current_for_morning(
     *,
     observed_at: datetime,
@@ -3262,6 +3308,11 @@ def _prepare_current_for_morning(
                 ensure_ascii=True,
             ).encode("utf-8")
         ).hexdigest()
+        unresolved_events = _morning_unresolved_events(
+            target=target,
+            prepared=prepared,
+            schedule_diagnostics=tuple(schedule.diagnostics),
+        )
         return MorningPreparedDrawing(
             drawing_id=target.drawing_id,
             drawing_number=target.drawing_number,
@@ -3279,20 +3330,7 @@ def _prepare_current_for_morning(
                 drawing_id=target.drawing_id,
                 drawing_fingerprint=prepared.drawing_fingerprint,
             ),
-            unresolved_events=tuple(
-                MorningUnresolvedEvent(
-                    event_order=item.event_order,
-                    target_event_id=item.target_event_id,
-                    home_team=target.events[item.event_order].home_team,
-                    away_team=target.events[item.event_order].away_team,
-                    resolution_status=item.status,
-                    reason=item.reason,
-                    candidate_evidence=item.candidate_evidence,
-                    provider_diagnostics=tuple(schedule.diagnostics),
-                )
-                for item in prepared.events
-                if item.status not in {"matched", "baseline_only"}
-            ),
+            unresolved_events=unresolved_events,
         )
     finally:
         engine.dispose()
@@ -3550,11 +3588,32 @@ def scheduler_execute_command(
     print(f"Decision: {result.decision}")
     print(f"Reason: {result.reason}")
     print(f"Status: {result.status_path}")
-    if result.package_path is not None:
-        print(f"Operator package: {result.package_path}")
-        print(f"Package SHA-256: {result.package_sha256}")
+    if result.outcome == "bet-ready":
+        print(
+            "Operator export: use `operator-export --plan <scheduler-plan.json> "
+            "--output <destination.txt>` before T-10"
+        )
     if result.outcome == "failed":
         raise typer.Exit(code=1)
+
+
+@app.command("operator-export")
+def operator_export_command(
+    plan: str = typer.Option(..., "--plan"),
+    output: str = typer.Option(..., "--output"),
+) -> None:
+    """Export the current verified scheduler-owned PLAY package for BaltBet."""
+
+    try:
+        scheduler_plan = load_scheduler_plan(plan)
+        destination = export_operator_package(
+            scheduler_plan,
+            destination=output,
+            now=_utc_now_datetime,
+        )
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(f"Operator package: {destination}")
 
 
 @app.command("ev-package")

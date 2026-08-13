@@ -75,7 +75,10 @@ class MorningUnresolvedEvent:
 
     @property
     def required_evidence_type(self) -> str:
-        if self.resolution_status == "source_missing_competition":
+        if self.resolution_status in {
+            "source_missing_competition",
+            "timing_unknown",
+        }:
             return "reviewed_schedule"
         return "reviewed_alias"
 
@@ -170,7 +173,18 @@ class MorningPreparedDrawing:
                 "unresolved_events must have unique ascending event orders"
             )
         if self.preparation_status == "ready" and self.unresolved_events:
-            raise ValueError("ready preparation cannot contain unresolved events")
+            if (
+                any(
+                    item.resolution_status != "timing_unknown"
+                    for item in self.unresolved_events
+                )
+                or not set(orders).issubset(self.baseline_only_event_orders)
+                or self.eligibility_status != "unknown"
+                or self.span_days is not None
+            ):
+                raise ValueError(
+                    "ready preparation may contain only baseline timing_unknown events"
+                )
         if self.not_ready_reason is not None:
             if self.not_ready_reason != _ZERO_POOL_NOT_READY:
                 raise ValueError("not_ready_reason is unsupported")
@@ -736,6 +750,12 @@ def _ineligibility_reason(evidence: MorningPreparedDrawing) -> str | None:
             else 15 - evidence.mapped_count
         )
         return f"ACTION REQUIRED: unresolved {unresolved_count}/15"
+    timing_unknown_count = sum(
+        item.resolution_status == "timing_unknown"
+        for item in evidence.unresolved_events
+    )
+    if timing_unknown_count:
+        return f"ACTION REQUIRED: timing unknown {timing_unknown_count}/15"
     if evidence.span_days is not None and evidence.span_days > 5:
         return "drawing_span_exceeds_five_days"
     return _playability_reason(evidence)
@@ -956,7 +976,12 @@ def _update_preflight_escalation(
 ) -> _EscalationPaths:
     root = _preflight_root(config, evidence)
     attention_path = root / "attention.json"
-    if evidence.preparation_status == "ready" and evidence.mapped_count == 15:
+    if (
+        evidence.preparation_status == "ready"
+        and evidence.mapped_count == 15
+        and not evidence.unresolved_events
+        and _playability_reason(evidence) is None
+    ):
         if attention_path.is_file():
             prior = _load_json_mapping(attention_path)
             identity = prior.get("identity")
@@ -977,6 +1002,11 @@ def _update_preflight_escalation(
                 _write_json_idempotent(root / "RESOLVED.json", resolved)
         return _EscalationPaths(None, None, None)
     bootstrap_not_ready = evidence.not_ready_reason == _ZERO_POOL_NOT_READY
+    timing_unknown = bool(evidence.unresolved_events) and all(
+        item.resolution_status == "timing_unknown"
+        for item in evidence.unresolved_events
+    )
+    retry_can_activate_evening = bootstrap_not_ready or timing_unknown
     if not evidence.unresolved_events and not bootstrap_not_ready:
         return _EscalationPaths(None, None, None)
 
@@ -1006,7 +1036,7 @@ def _update_preflight_escalation(
             != evidence.drawing_fingerprint
             or identity.get("deadline") != _timestamp(evidence.deadline)
             or retry_plan.get("passive") is not True
-            or retry_plan.get("activate_evening") is not bootstrap_not_ready
+            or retry_plan.get("activate_evening") is not retry_can_activate_evening
         ):
             raise ValueError("existing passive retry plan identity conflicts")
     else:
@@ -1035,7 +1065,11 @@ def _update_preflight_escalation(
     attention_status = (
         _ZERO_POOL_NOT_READY
         if bootstrap_not_ready
-        else f"ACTION REQUIRED: unresolved {len(evidence.unresolved_events)}/15"
+        else (
+            f"ACTION REQUIRED: timing unknown {len(evidence.unresolved_events)}/15"
+            if timing_unknown
+            else f"ACTION REQUIRED: unresolved {len(evidence.unresolved_events)}/15"
+        )
     )
     attempt = {
         "schema_version": PREFLIGHT_ESCALATION_SCHEMA_VERSION,
@@ -1045,7 +1079,7 @@ def _update_preflight_escalation(
         "unresolved": unresolved_payload,
         "next_retry": next_retry,
         "passive": True,
-        "activate_evening": bootstrap_not_ready,
+        "activate_evening": retry_can_activate_evening,
     }
     attempt["record_sha256"] = _record_sha256(attempt)
     attempt_id = hashlib.sha256(_canonical(attempt)).hexdigest()[:16]
@@ -1071,7 +1105,7 @@ def _update_preflight_escalation(
         "unresolved": unresolved_payload,
         "retry_plan_path": str(retry_plan_path),
         "passive": True,
-        "activate_evening": False,
+        "activate_evening": retry_can_activate_evening,
     }
     attention["record_sha256"] = _record_sha256(attention)
     _write_atomic(attention_path, attention, replace=attention_path.exists())
@@ -1137,7 +1171,16 @@ def _retry_plan_payload(
         minutes=config.retry_hard_stop_minutes
     )
     executable = str(python_command or "python")
-    activate_evening = evidence.not_ready_reason == _ZERO_POOL_NOT_READY
+    activate_evening = (
+        evidence.not_ready_reason == _ZERO_POOL_NOT_READY
+        or (
+            bool(evidence.unresolved_events)
+            and all(
+                item.resolution_status == "timing_unknown"
+                for item in evidence.unresolved_events
+            )
+        )
+    )
     attempts = []
     scheduled_times = (
         _zero_pool_retry_times(observed_at, hard_stop)
@@ -1341,7 +1384,12 @@ def _render_attention_report(payload: Mapping[str, object]) -> str:
         f"- First seen: {payload.get('first_seen', payload.get('captured_at'))}",
         f"- Last seen: {payload.get('last_seen', payload.get('captured_at'))}",
         f"- Next retry: {payload.get('next_retry') or 'none before hard stop'}",
-        "- Evening activation: disabled",
+        "- Evening activation: "
+        + (
+            "enabled only after a retry becomes fully playable"
+            if payload.get("activate_evening") is True
+            else "disabled"
+        ),
         "",
         "## Unresolved events",
         "",

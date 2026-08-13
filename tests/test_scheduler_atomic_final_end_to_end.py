@@ -7,9 +7,11 @@ from pathlib import Path
 
 import pytest
 import requests
+from typer.testing import CliRunner
 
 import toto_ai.runner.scheduler as scheduler
 from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
+from toto_ai import cli
 from toto_ai.api.rate_limit import TotoBriefRequestError
 from toto_ai.db.models import Drawing
 from toto_ai.db.session import get_session_factory, init_db
@@ -20,6 +22,7 @@ from toto_ai.runner.scheduler import (
     SchedulerTransientError,
     build_scheduler_plan,
     execute_scheduler_tick,
+    export_operator_package,
 )
 from toto_ai.runner.scheduler_state import initial_state, load_state, save_state
 
@@ -464,6 +467,209 @@ def test_final_completed_by_cutoff_publishes_inside_reserve_by_hard_t10(
     }
 
 
+def test_bet_ready_publication_creates_verified_operator_export(tmp_path):
+    plan = _plan(tmp_path)
+    _seed_atomic_drawing(plan)
+    published = _tick(
+        plan,
+        _playing_runner(plan, _atomic_payload(plan, event_id_base=45100)),
+        plan.final_at,
+    )
+
+    assert published is not None and published.outcome == "bet-ready"
+    operator_result = json.loads(
+        (plan.output_dir / "operator-result.json").read_text(encoding="utf-8")
+    )
+    assert operator_result["decision"] == "PLAY"
+    assert operator_result["actionable"] is True
+    assert operator_result["run_id"] == published.run_id
+    assert operator_result["expires_at"] == plan.publish_deadline.isoformat().replace(
+        "+00:00", "Z"
+    )
+
+    destination = tmp_path / "exports" / "drawing-5100.txt"
+    exported = export_operator_package(
+        plan,
+        destination=destination,
+        observed_at=plan.final_at + timedelta(minutes=1),
+    )
+
+    assert exported == destination
+    assert destination.read_bytes() == (
+        published.run_dir / "baltbet-upload.txt"
+    ).read_bytes()
+    assert destination.read_text(encoding="utf-8") == (
+        "30; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1\n"
+    )
+
+
+def test_operator_export_cli_uses_only_verified_actionable_result(
+    tmp_path,
+    monkeypatch,
+):
+    plan = _plan(tmp_path)
+    scheduler.prepare_scheduler_artifacts(plan)
+    _seed_atomic_drawing(plan)
+    published = _tick(
+        plan,
+        _playing_runner(plan, _atomic_payload(plan, event_id_base=45150)),
+        plan.final_at,
+    )
+    assert published is not None and published.outcome == "bet-ready"
+    monkeypatch.setattr(cli, "_utc_now_datetime", lambda: plan.final_at)
+    destination = tmp_path / "exports" / "cli-drawing-5100.txt"
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "operator-export",
+            "--plan",
+            str(plan.output_dir / "scheduler-plan.json"),
+            "--output",
+            str(destination),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert f"Operator package: {destination}" in result.output
+    assert destination.is_file()
+
+
+def test_operator_export_rejects_no_bet_without_writing(tmp_path):
+    plan = _plan(tmp_path)
+    scheduler._write_operator_no_bet(
+        plan,
+        reason="release gate closed",
+        completed_at=plan.final_at,
+    )
+    destination = tmp_path / "exports" / "must-not-exist.txt"
+
+    with pytest.raises(SchedulerIntegrityError, match="not actionable"):
+        export_operator_package(
+            plan,
+            destination=destination,
+            observed_at=plan.final_at,
+        )
+
+    assert not destination.exists()
+
+
+def test_operator_export_rejects_expired_or_tampered_package(tmp_path):
+    plan = _plan(tmp_path)
+    _seed_atomic_drawing(plan)
+    published = _tick(
+        plan,
+        _playing_runner(plan, _atomic_payload(plan, event_id_base=45200)),
+        plan.final_at,
+    )
+    assert published is not None and published.outcome == "bet-ready"
+
+    expired_destination = tmp_path / "exports" / "expired.txt"
+    with pytest.raises(SchedulerIntegrityError, match="expired at T-10"):
+        export_operator_package(
+            plan,
+            destination=expired_destination,
+            observed_at=plan.publish_deadline,
+        )
+    assert not expired_destination.exists()
+
+    upload = published.run_dir / "baltbet-upload.txt"
+    upload.write_text(
+        "30; 2; 2; 2; 2; 2; 2; 2; 2; 2; 2; 2; 2; 2; 2; 2\n",
+        encoding="utf-8",
+    )
+    tampered_destination = tmp_path / "exports" / "tampered.txt"
+    with pytest.raises(SchedulerIntegrityError, match="hash mismatch"):
+        export_operator_package(
+            plan,
+            destination=tampered_destination,
+            observed_at=plan.final_at + timedelta(minutes=1),
+        )
+    assert not tampered_destination.exists()
+
+
+def test_operator_export_rechecks_t10_after_integrity_validation(tmp_path):
+    plan = _plan(tmp_path)
+    _seed_atomic_drawing(plan)
+    published = _tick(
+        plan,
+        _playing_runner(plan, _atomic_payload(plan, event_id_base=45250)),
+        plan.final_at,
+    )
+    assert published is not None and published.outcome == "bet-ready"
+    observations = iter((plan.final_at, plan.publish_deadline))
+    destination = tmp_path / "exports" / "crossed-t10.txt"
+
+    with pytest.raises(SchedulerIntegrityError, match="expired at T-10"):
+        export_operator_package(
+            plan,
+            destination=destination,
+            now=lambda: next(observations),
+        )
+
+    assert not destination.exists()
+
+
+def test_operator_export_rejects_rebound_foreign_package_path(tmp_path):
+    plan = _plan(tmp_path)
+    _seed_atomic_drawing(plan)
+    published = _tick(
+        plan,
+        _playing_runner(plan, _atomic_payload(plan, event_id_base=45275)),
+        plan.final_at,
+    )
+    assert published is not None and published.outcome == "bet-ready"
+    operator_path = plan.output_dir / "operator-result.json"
+    operator = json.loads(operator_path.read_text(encoding="utf-8"))
+    foreign = tmp_path / "research-package.txt"
+    foreign.write_bytes((published.run_dir / "baltbet-upload.txt").read_bytes())
+    operator["coupon_path"] = str(foreign)
+    operator["record_sha256"] = scheduler._operator_result_sha256(operator)
+    operator_path.write_text(json.dumps(operator), encoding="utf-8")
+    destination = tmp_path / "exports" / "foreign.txt"
+
+    with pytest.raises(SchedulerIntegrityError, match="inside output root"):
+        export_operator_package(
+            plan,
+            destination=destination,
+            observed_at=plan.final_at + timedelta(minutes=1),
+        )
+
+    assert not destination.exists()
+
+
+def test_t10_tick_expires_operator_upload_but_retains_audit_archive(tmp_path):
+    plan = _plan(tmp_path)
+    _seed_atomic_drawing(plan)
+    published = _tick(
+        plan,
+        _playing_runner(plan, _atomic_payload(plan, event_id_base=45300)),
+        plan.final_at,
+    )
+    assert published is not None and published.outcome == "bet-ready"
+    upload = published.run_dir / "baltbet-upload.txt"
+    archive = published.run_dir / "package-archive.json"
+    marker = published.run_dir / ".bet-ready"
+    assert upload.is_file()
+
+    repeated = _tick(
+        plan,
+        lambda _context: (_ for _ in ()).throw(AssertionError("must not rerun")),
+        plan.publish_deadline,
+    )
+
+    assert repeated is not None and repeated.outcome == "bet-ready"
+    assert not upload.exists()
+    assert archive.is_file()
+    assert marker.is_file()
+    operator = json.loads(
+        (plan.output_dir / "operator-result.json").read_text(encoding="utf-8")
+    )
+    assert operator["decision"] == "NO BET"
+    assert operator["actionable"] is False
+    assert operator["coupon_path"] is None
+
+
 def test_overlapping_ticks_run_one_final_attempt(tmp_path):
     plan = _plan(tmp_path)
     calls = 0
@@ -556,6 +762,12 @@ def test_archive_without_marker_is_recovered_at_hard_t10(tmp_path):
     assert recovered is not None
     assert recovered.outcome == "bet-ready"
     assert recovered.marker_path is not None and recovered.marker_path.is_file()
+    assert not (recovered.run_dir / "baltbet-upload.txt").exists()
+    operator = json.loads(
+        (plan.output_dir / "operator-result.json").read_text(encoding="utf-8")
+    )
+    assert operator["decision"] == "NO BET"
+    assert operator["actionable"] is False
 
 
 def test_late_archive_recovery_removes_stale_actionable_files(tmp_path):

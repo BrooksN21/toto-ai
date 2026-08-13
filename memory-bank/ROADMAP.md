@@ -1,5 +1,21 @@
 # Roadmap
 
+## Completed: operator-safe publication and timing escalation (2026-08-13)
+
+- [x] Add one mandatory `operator-export` gateway for current scheduler-owned,
+  archived, hash-bound, pre-T-10 `PLAY` packages.
+- [x] Suppress misleading operator-path output for `NO BET` and internal audit
+  artifacts; expire the canonical upload at T-10.
+- [x] Turn baseline-only missing kickoffs into explicit `timing_unknown`
+  attention, reviewed-schedule queue entries, and identity-bound retries.
+- [x] Freeze the failed unbound drawing-4973 file as non-actionable regression
+  evidence without copying its coupon strings.
+- [ ] Exercise the gateway on the next prospective scheduler result. Export is
+  allowed only if the result is genuinely `PLAY`; current quality-v2 release
+  policy remains paper-only `NO BET`.
+- [ ] Complete the prospective package lifecycle: canonical package -> result
+  or VOID -> immutable settlement -> mandatory post-draw review.
+
 - [x] Reproduce and remediate the 4972 HTTP-429/final-timeout incident with an
   immutable LKG checkpoint, phase-local final/retry budgets, pre-T-10 degraded
   fallback, deterministic early NO_BET, and operator-facing artifacts. Current

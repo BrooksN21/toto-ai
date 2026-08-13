@@ -1,5 +1,32 @@
 # Architecture
 
+## Operator export gateway
+
+The only operator-facing package flow is:
+
+```text
+fresh final PLAY
+-> run-scoped package.csv
+-> durable package-archive.json + SQLite ArchivedPackage
+-> run-scoped baltbet-upload.txt + actionable operator-result.json
+-> .bet-ready written last
+-> operator-export revalidates all bindings before T-10
+-> explicit project-local output file for manual BaltBet upload
+```
+
+`operator-export` is read-only with respect to package selection and never
+places a wager. It rejects `NO BET`, paper/research/LKG files, missing or
+foreign paths, hash/identity drift, archive mismatch, and T-10 expiry. The
+ordinary scheduler command no longer prints internal/audit package paths as
+operator packages. At T-10 the upload surface is deleted and the operator
+result becomes non-actionable; archive/marker bytes remain audit evidence.
+
+Morning preparation keeps identity coverage and kickoff evidence distinct.
+A baseline-only identity row with no kickoff produces a `timing_unknown`
+dependency even when preparation is READY 15/15. It enters the same
+fingerprint-bound attention/review/retry system, requires reviewed schedule
+evidence, and cannot create an evening plan until a retry is fully playable.
+
 ## Last-known-good package boundary
 
 Schema-v6 tick execution now has an append-only `last-known-good/checkpoints/`
