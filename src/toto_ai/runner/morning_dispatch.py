@@ -180,7 +180,6 @@ class MorningPreparedDrawing:
                 )
                 or not set(orders).issubset(self.baseline_only_event_orders)
                 or self.eligibility_status != "unknown"
-                or self.span_days is not None
             ):
                 raise ValueError(
                     "ready preparation may contain only baseline timing_unknown events"

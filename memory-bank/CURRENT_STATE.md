@@ -2,6 +2,16 @@
 
 ## 2026-08-13: operator export boundary and missing-kickoff escalation
 
+- The installed 12:00 morning run for drawing 4974 exposed one production
+  shape omitted by the first timing regression: eligibility can be `unknown`
+  while the 13 already timed events still yield a partial `span_days=1`.
+  `MorningPreparedDrawing` now accepts that partial span only under the
+  existing strict `timing_unknown`/baseline-only/unknown-eligibility
+  invariants. The exact `span_days=1` regression passes. The failed 12:00 job
+  made three attempts and installed no evening plan. No manual dispatch was
+  run; a separate loaded calendar job
+  `com.totoai.morning-dispatcher.once-20260813T1300` is scheduled for one
+  additional attempt at 13:00 MSK on 2026-08-13.
 - A scheduler-owned `bet-ready / PLAY` publication now creates a run-scoped
   `baltbet-upload.txt` and hash-bound actionable `operator-result.json` before
   writing `.bet-ready`. The public `operator-export --plan ... --output ...`

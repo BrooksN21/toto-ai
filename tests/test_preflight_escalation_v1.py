@@ -132,7 +132,9 @@ def _timing_unknown() -> MorningPreparedDrawing:
         preparation_status="ready",
         mapped_count=15,
         eligibility_status="unknown",
-        span_days=None,
+        # A partial span may already be known from the 13 externally timed
+        # events even though two baseline-only kickoffs remain unresolved.
+        span_days=1,
         external_coverage_count=13,
         baseline_only_event_orders=(7, 14),
         unresolved_events=(
