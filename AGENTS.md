@@ -16,8 +16,8 @@ The only authorized project-memory sources are:
 - project-local skills stored in this repository.
 
 Other repository files may be read as task inputs, but they are not persistent
-project memory. Globally installed skills may provide procedures only when
-allowlisted below; they are never TotoAI memory.
+project memory. Globally installed skills are not TotoAI memory and are not
+authorized for engineering work unless explicitly allowlisted below.
 
 Before making changes:
 - Read all files in `memory-bank/`.
@@ -42,9 +42,29 @@ rules below:
 - `openai-docs` for public OpenAI documentation;
 - browser access to public sites and public web research;
 - public sports and public data APIs;
-- generic `superpowers:*` engineering skills that operate locally and obey this
-  policy;
 - `git` and public `gh` workflows. These are the only authorized VCS CLIs.
+
+## Absolute external-model prohibition
+
+Never invoke, run, route to, authenticate to, or request inference from Claude,
+Anthropic APIs, Anthropic SDKs or CLIs, Eliza, or any other external LLM, model,
+agent, coding assistant, or model proxy. This prohibition applies both directly
+and indirectly, including through plugins, MCP servers, connectors, wrappers,
+skills, SDKs, CLIs, environment-configured model overrides, and subagents.
+
+Never transmit repository content, task prompts, file paths, Git state, diffs,
+derived project data, or secrets to an external LLM or agent. A read-only,
+context-only, planning, review, or research task is not an exception. Tool
+catalog visibility, installation state, prior use, and user approval do not
+authorize external-model execution. No runtime approval can override this
+prohibition; changing it requires the project owner to deliberately edit and
+commit this policy.
+
+TotoAI work may use only the model already hosting the current Codex task plus
+local repository tools and the explicitly allowlisted non-LLM public services.
+Do not start model-backed subagents. Static instruction files distributed under
+`claude-plugins-official` and all other global third-party skill bundles are not
+authorized; use project-local skills instead.
 
 Never invoke, query, install, authenticate to, or transmit data to any
 Yandex-, Arcadia-, or internal-only skill or service, even when it appears in a
@@ -73,8 +93,8 @@ remote service requires explicit user approval.
   it, and pass it only to the intended allowlisted public service without
   exposing its value.
 - Never send repository contents, patches, prompts containing repository
-  contents, or derived private project data to another external agent or
-  service without explicit user approval.
+  contents, or derived private project data to another external LLM or agent.
+  The external-model prohibition above has no runtime approval exception.
 - Public web research must use public queries and public sources; do not place
   private repository content into search queries, URLs, forms, or browser
   sessions.

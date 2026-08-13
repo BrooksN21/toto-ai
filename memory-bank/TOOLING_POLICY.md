@@ -9,11 +9,28 @@ contains the operational instructions.
 - Project-local skills stored in this repository.
 - `openai-docs` for public OpenAI documentation.
 - Public-site browser use, public web research, and public sports/data APIs.
-- Local, generic `superpowers:*` engineering skills that respect this policy.
 - `git` and public `gh` workflows; no other VCS CLI is authorized.
 
 Catalog visibility is not authorization. User approval is required before any
 non-allowlisted skill or service is used.
+
+## Absolute external-model prohibition
+
+Claude, Anthropic APIs, Anthropic SDKs and CLIs, Eliza, and every other external
+LLM, model, agent, coding assistant, or model proxy are absolutely denied.
+They must not be invoked directly or indirectly through plugins, MCP servers,
+connectors, wrappers, skills, SDKs, CLIs, model overrides, or subagents.
+
+Repository content, task prompts, file paths, Git state, diffs, derived project
+data, and secrets must never be transmitted to an external LLM or agent.
+Read-only, context-only, planning, review, and research tasks are not
+exceptions. No runtime approval can override this prohibition. A future change
+requires the project owner to deliberately edit and commit this policy.
+
+Only the model already hosting the current Codex task may perform model
+inference for TotoAI. Model-backed subagents are prohibited. Static global
+instruction bundles distributed under `claude-plugins-official` and other
+third-party global skill bundles are not authorized; use project-local skills.
 
 ## Absolute denylist
 
@@ -35,6 +52,5 @@ not project memory.
 
 Protect `.env` files and all credentials or secrets: never print, document,
 commit, or transmit them. Never send repository content or derived private
-project data to another external agent or service without explicit user
-approval. Remote Git publication and uploads are transmissions and therefore
-also require explicit approval.
+project data to another external LLM or agent. Remote Git publication and
+uploads are transmissions and therefore require explicit approval.

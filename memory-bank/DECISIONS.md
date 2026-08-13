@@ -1452,3 +1452,16 @@ ambiguous reversed evidence remains unresolved.
   output, not to rewriting history.
 - Ad-hoc coupon files assembled from research reports are not scheduler
   publications and must never be presented as a valid final package.
+# 2026-08-13: external model execution is permanently prohibited
+
+- TotoAI never invokes Claude, Anthropic APIs/SDKs/CLIs, Eliza, external LLM
+  proxies, external coding agents, or model-backed subagents.
+- The prohibition covers direct calls and indirect routing through skills,
+  plugins, MCP servers, connectors, wrappers, model overrides, and subagents.
+- Repository context, prompts, paths, Git state, diffs, derived data, and
+  secrets are never sent to an external LLM or agent, including for read-only
+  or planning work.
+- No runtime approval can override the rule. Changing it requires a deliberate
+  owner-authored policy edit committed to the repository.
+- Globally distributed `claude-plugins-official` instruction bundles are not
+  used for TotoAI. Engineering procedures must be project-local.

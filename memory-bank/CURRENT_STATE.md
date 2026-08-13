@@ -1,5 +1,15 @@
 # Current State
 
+## Absolute local-only model boundary enforced (2026-08-13)
+
+TotoAI now permanently prohibits Claude, Anthropic APIs/SDKs/CLIs, Eliza,
+external LLM proxies, external coding agents, and model-backed subagents. The
+rule covers both direct calls and indirect routing through tools, skills,
+plugins, MCP servers, connectors, wrappers, and model overrides. Repository
+context may not be sent to an external LLM even for read-only work. A focused
+policy regression protects the durable wording in `AGENTS.md` and
+`memory-bank/TOOLING_POLICY.md`.
+
 ## Automatic post-draw review lifecycle completed (2026-08-13)
 
 The scheduler now creates an uninstalled, non-betting post-draw candidate for
