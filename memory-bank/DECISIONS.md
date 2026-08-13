@@ -1,5 +1,26 @@
 # Decisions
 
+## 2026-08-13: every final calculation remains visible for learning
+
+- `NO BET` continues to mean non-actionable and must never be converted into
+  a BaltBet upload file, but its validated computed package is always exposed
+  as a clearly labelled paper artifact.
+- Post-draw reconciliation starts at 12:00 Europe/Moscow on the next calendar
+  day and retries incomplete results every three hours.
+- Complete settlement creates an explicit pending review request. The user is
+  asked whether to analyze it; no package is silently marked reviewed.
+
+## 2026-08-13: sports evidence adjusts, but does not replace, the market prior
+
+- TotoBrief BK remains the production control. Pool is crowd/payout evidence;
+  TotoBrief Pin is a separate market benchmark when present.
+- The first trained sports candidate is a regularized multinomial residual
+  correction around log BK probabilities, not a standalone form heuristic.
+- API-Sports remains one source; free public fallbacks are evaluated
+  provider-by-provider and missing coverage falls back explicitly to BK.
+- Sports analytics stays shadow-only until chronological and prospective gates
+  improve event probabilities and do not degrade package outcomes.
+
 ## 2026-08-13: scheduler child lead has one command/parser definition
 
 - The expected `final_lead_minutes` in a runner manifest must be derived by

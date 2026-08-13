@@ -736,6 +736,23 @@ Do not build another optimizer before the measurable lifecycle
 `drawing -> package -> archive -> results/VOID -> settlement -> review` is
 closed.
 
+- [ ] Expose every final computed package, including `NO BET`, through a
+  validated `PAPER / DO NOT WAGER` report and read-only display command.
+- [ ] Schedule post-draw result checks for 12:00 Moscow next day with
+  three-hour retries; create a durable user review request after 15/15 terminal
+  outcomes and settlement.
+- [ ] Generate immutable package postmortems covering event exposure, actual
+  outcomes/VOID, BK/pool/Pin/sports probabilities, category hits and payout
+  status.
+- [ ] Audit free sports-data source coverage on Toto competitions and freeze
+  source provenance before expanding sports features.
+- [ ] Implement leakage-safe Elo, venue, form, goals, rest, table and
+  congestion features with explicit per-event BK fallback.
+- [ ] Train and walk-forward evaluate a regularized sports residual adjustment
+  around BK; compare BK, Pin, calibrated BK, venue shadow and ensemble.
+- [ ] Run every candidate through unchanged dynamic-bank package selection and
+  finished settlement before any activation review.
+
 - [x] Add provider-neutral reusable schedule evidence ledger and strict
   identity/time resolver; integrate it into morning preparation.
 - [x] Wire the canonical schedule-evidence ledger through real

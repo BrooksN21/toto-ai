@@ -1,5 +1,24 @@
 # Current State
 
+## Next product focus: visible paper packages and sports analytics (2026-08-13)
+
+The user approved two mandatory lifecycle changes. Every terminal calculation
+must be shown, including a computed `NO BET` package clearly labelled
+`PAPER / DO NOT WAGER`. At 12:00 Moscow time on the next calendar day, result
+reconciliation must check for complete 15/15 terminal outcomes; incomplete
+drawings retry every three hours. Once complete, the durable workflow asks the
+user whether to review the package and records the answer before producing an
+immutable postmortem.
+
+The next main research phase is sports-analytics probability improvement. BK
+remains the production control. Existing API-Sports evidence and evaluated
+free public fallbacks feed leakage-safe features; a regularized sports residual
+model adjusts BK only in shadow mode. No sports model reaches package selection
+until chronological event metrics, end-to-end package outcomes, prospective
+coverage, and the predeclared activation gate all pass. Designs are recorded
+in `docs/superpowers/specs/2026-08-13-paper-package-and-post-draw-review-design.md`
+and `docs/superpowers/specs/2026-08-13-sports-analytics-probability-design.md`.
+
 ## Drawing 4974 evening run: warmup contract fix and terminal result (2026-08-13)
 
 The 16:15 warmup failed closed because the child command correctly used the
