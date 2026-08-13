@@ -1,1 +1,2 @@
 data/reviewed-schedule/**/*.html -whitespace
+data/schedule-evidence/snapshots/**/*.html -whitespace

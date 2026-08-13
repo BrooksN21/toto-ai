@@ -8,6 +8,10 @@
   artifacts; expire the canonical upload at T-10.
 - [x] Turn baseline-only missing kickoffs into explicit `timing_unknown`
   attention, reviewed-schedule queue entries, and identity-bound retries.
+- [x] Make repeated `timing_unknown` attention refresh idempotent and resolve
+  drawing-4974 events 8/15 from hash-checked official plus independent
+  evidence; rerun the bound preflight to READY 15/15 and activate its evening
+  scheduler.
 - [x] Freeze the failed unbound drawing-4973 file as non-actionable regression
   evidence without copying its coupon strings.
 - [ ] Exercise the gateway on the next prospective scheduler result. Export is

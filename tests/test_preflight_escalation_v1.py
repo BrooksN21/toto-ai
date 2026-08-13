@@ -761,6 +761,34 @@ def test_ready_baseline_only_without_kickoff_escalates_and_can_later_activate(
     assert (unresolved.attention_path.parent / "RESOLVED.json").is_file()
 
 
+def test_timing_unknown_attention_refresh_is_idempotent(tmp_path):
+    config = _config(tmp_path)
+    first_at = datetime(2026, 7, 30, 7, 35, tzinfo=UTC)
+
+    first = dispatch_morning(
+        config,
+        observed_at=first_at,
+        now=lambda: first_at,
+        prepare_current=lambda _now: _timing_unknown(),
+        python_command=sys.executable,
+    )
+    second_at = first_at + timedelta(minutes=1)
+    second = dispatch_morning(
+        config,
+        observed_at=second_at,
+        now=lambda: second_at,
+        prepare_current=lambda _now: _timing_unknown(),
+        python_command=sys.executable,
+    )
+
+    assert first.attention_path == second.attention_path
+    report = (second.attention_path.parent / "ACTION_REQUIRED.md").read_text()
+    assert "ACTION REQUIRED: timing unknown 2/15" in report
+    assert f"Last seen: {second_at.isoformat().replace('+00:00', 'Z')}" in report
+    attention = json.loads(second.attention_path.read_text())
+    assert attention["attempts"] == 2
+
+
 def test_retry_artifacts_are_idempotent_and_attempts_are_append_only(tmp_path):
     config = _config(tmp_path)
     first_at = datetime(2026, 7, 30, 7, 35, tzinfo=UTC)

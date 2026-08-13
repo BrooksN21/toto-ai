@@ -1,5 +1,36 @@
 # Current State
 
+## 2026-08-13: drawing 4974 timing evidence resolved
+
+- The repeated `timing_unknown` retry defect was caused by the report refresh
+  allowlist accepting `unresolved` and `totobrief_pool_not_ready`, but not the
+  already generated `ACTION REQUIRED: timing unknown` report. The refresh is
+  now idempotent for that status and a two-dispatch regression covers attempt
+  count plus `Last seen` replacement.
+- Drawing 4974 events 8 (`Ригас Футбола Скола — Яблонец`) and 15
+  (`Абха — Аль Хазм`) were reviewed against two current HTTPS sources each,
+  including one official and one independent source. Immutable source
+  snapshots and hash-checked review records are stored under
+  `data/schedule-evidence/`; the reusable ledger resolves both events exactly.
+- Canonical kickoffs are event 8 at `2026-08-13T16:30:00Z` (19:30 MSK) and
+  event 15 at `2026-08-13T16:15:00Z` (19:15 MSK). No guessed kickoff, fuzzy
+  identity, or single-source fallback was accepted.
+- The identity-bound morning dispatch for drawing id 12031 / visible 4974 was
+  rerun through the secure `.env` prelude. It is now READY with 15/15 pins,
+  zero unresolved events, and evening plan `3551ef6898d8f474` activated for a
+  RUB 4,980 bank / RUB 30 stake. The plan binds ledger content SHA-256
+  `af200ed9e83dff74036ee896deef74e90a945b96165e7c333011c436c1909490`
+  and semantic hash
+  `831aad0476f4d51e68c7ff1b7d6767e2fb836fe6df8a030f3631200ccc632d7e`.
+- Current preflight status is `preparation_status=ready`, `mapped_count=15`,
+  `pin_count=15`, `unresolved_count=0`, evening activation `activated` and
+  package generation `enabled`. This is scheduler readiness only; it is not a
+  profit claim or permission to wager. Quality-v2 remains paper-only unless a
+  future scheduler publication itself passes the existing `PLAY` boundary.
+- Verification: focused timing/evidence suite `28 passed`; full pytest
+  `1798 passed, 13 deselected in 115.71s`; full Ruff and `git diff --check`
+  passed.
+
 ## 2026-08-13: operator export boundary and missing-kickoff escalation
 
 - The installed 12:00 morning run for drawing 4974 exposed one production
@@ -14,10 +45,9 @@
   `ACTION REQUIRED: timing unknown 2/15` for events 8 and 15, wrote the
   attention/review/retry artifacts, installed no evening plan, and returned
   deferred. The wrapper then made its two configured retries, which exposed a
-  separate idempotency defect: rewriting `ACTION_REQUIRED.md` conflicts with
-  the existing text artifact. The one-time LaunchAgent was removed after
-  completion. No preflight-retry LaunchAgent or drawing-4974 evening scheduler
-  is loaded.
+  separate idempotency defect: rewriting `ACTION_REQUIRED.md` conflicted with
+  the existing text artifact. That defect and the two missing kickoff records
+  are resolved by the newer drawing-4974 state above.
 - A scheduler-owned `bet-ready / PLAY` publication now creates a run-scoped
   `baltbet-upload.txt` and hash-bound actionable `operator-result.json` before
   writing `.bet-ready`. The public `operator-export --plan ... --output ...`

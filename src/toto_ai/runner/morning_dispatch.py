@@ -1448,6 +1448,7 @@ def _refresh_generated_report(path: Path, content: str) -> None:
             return
         if not (
             existing.startswith(b"# ACTION REQUIRED: unresolved ")
+            or existing.startswith(b"# ACTION REQUIRED: timing unknown ")
             or existing.startswith(b"# totobrief_pool_not_ready\n")
         ):
             raise ValueError(f"existing preflight text artifact conflicts: {path}")

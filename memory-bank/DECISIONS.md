@@ -26,6 +26,9 @@
   evening plan; unresolved evidence itself never authorizes activation.
 - Attention resolves only when the same drawing is READY 15/15, has no timing
   dependency, and is fully playable.
+- Repeated retries must refresh the same `timing_unknown` report atomically;
+  an already generated attention document is retry state, not a conflicting
+  foreign artifact.
 
 ## Scheduler last-known-good invariant (2026-08-11)
 
