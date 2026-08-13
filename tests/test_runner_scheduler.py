@@ -1942,6 +1942,25 @@ def test_custom_plan_safety_config_is_forwarded_and_accepts_matching_manifest(
     )
 
 
+def test_warmup_manifest_uses_same_45_minute_lead_as_command(tmp_path: Path):
+    context = replace(
+        _manifest_context(tmp_path, phase="fallback"),
+        scheduler_phase="warmup",
+    )
+    payload = _valid_runner_manifest(context)
+    config = payload["config"]
+    assert isinstance(config, dict)
+    config["final_lead_minutes"] = 45
+    manifest = _write_runner_manifest(context, payload)
+
+    command = build_run_drawing_phase_command(context)
+    result = parse_runner_manifest_phase_result(context, manifest)
+
+    option = command.index("--final-lead-minutes")
+    assert command[option + 1] == "45"
+    assert result.decision == "NO BET"
+
+
 def test_production_manifest_parser_ignores_offline_replay_as_non_production(
     tmp_path: Path,
 ):

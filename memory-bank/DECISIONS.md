@@ -1,5 +1,15 @@
 # Decisions
 
+## 2026-08-13: scheduler child lead has one command/parser definition
+
+- The expected `final_lead_minutes` in a runner manifest must be derived by
+  the same canonical function that builds the `run-drawing` command.
+- Warmup is 45, refresh/fallback is 30, atomic final is 20, and legacy
+  non-atomic final is 15. Duplicating this phase mapping in validation is
+  prohibited because it caused drawing 4974 to fail after successful work.
+- An integrity-failed immutable plan is never edited or reset. Recovery clones
+  all semantic bindings into a fresh output scope via `scheduler-recover-plan`.
+
 ## 2026-08-13: operator files require a single scheduler-owned export gateway
 
 - A file is operator-actionable only when current schema-v6 scheduler state is

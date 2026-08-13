@@ -755,6 +755,9 @@ closed.
 - [x] Fix the drawing-4973 T-45 deterministic timeout: the warmup child now
   starts at T-45 instead of waiting for the T-30 fallback boundary while its
   parent deadline expires.
+- [x] Fix the drawing-4974 T-45 command/parser contract: command generation and
+  strict manifest validation now share the canonical phase-to-lead mapping;
+  automatic recovery refresh/final/T-10 runs completed with terminal `NO BET`.
 - [x] Fix drawing-4973 `safety_reselection_infeasible`: scheduler fallback
   phases now provide the immutable snapshot, ledger and scheduler-plan
   artifacts required by quality-v2 provenance instead of hash-only metadata.

@@ -1,5 +1,23 @@
 # Current State
 
+## Drawing 4974 evening run: warmup contract fix and terminal result (2026-08-13)
+
+The 16:15 warmup failed closed because the child command correctly used the
+T-45 `final_lead_minutes=45`, while strict runner-manifest validation still
+expected the ordinary fallback value 30. A regression reproduced this exact
+command/parser disagreement. Both paths now use one canonical
+`_runner_final_lead_minutes()` function; the scheduler test suite passed 129
+tests and Ruff passed.
+
+The failed immutable plan was replaced through `scheduler-recover-plan`, which
+preserved drawing 4974, bank 4,980, stake 30, probability configuration, and
+all reviewed schedule-evidence bindings. The automatic 16:30 refresh completed,
+the automatic 16:40 final completed at 16:46:59 MSK, and the 16:50 terminal
+tick was a clean no-op. Final operator state is `NO BET`, `FINAL_FRESH`,
+`actionable=false`, reason `quality_v2_real_money_release_gate_closed`. A
+166-coupon paper package costing 4,980 was retained for audit, not authorized
+for wagering.
+
 ## 2026-08-13: drawing 4974 timing evidence resolved
 
 - The repeated `timing_unknown` retry defect was caused by the report refresh

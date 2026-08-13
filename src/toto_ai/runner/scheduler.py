@@ -3827,11 +3827,7 @@ def build_run_drawing_phase_command(
     validated_executable = _validated_python_executable(python_executable)
     plan = context.plan
     atomic_final = context.phase == "final" and context.atomic_final
-    lead_minutes = (
-        45
-        if context.scheduler_phase == "warmup"
-        else (30 if context.phase == "fallback" else (20 if atomic_final else 15))
-    )
+    lead_minutes = _runner_final_lead_minutes(context)
     report_dir = context.work_dir / "reports"
     cache_root = context.work_dir / "cache"
     command = [
@@ -3905,6 +3901,16 @@ def build_run_drawing_phase_command(
         )
     )
     return tuple(command)
+
+
+def _runner_final_lead_minutes(context: SchedulerPhaseContext) -> int:
+    """Return the canonical run-drawing lead bound for one scheduler phase."""
+
+    if context.scheduler_phase == "warmup":
+        return 45
+    if context.phase == "fallback":
+        return 30
+    return 20 if context.atomic_final else 15
 
 
 def build_prepare_drawing_command(
@@ -5403,7 +5409,7 @@ def _parse_runner_manifest_phase_result_strict(
         or config["selection_context_sha256"]
         != selection_context_sha256(plan.quality_v2_ev_config)
         or _strict_int("runner final_lead_minutes", config["final_lead_minutes"])
-        != (30 if context.phase == "fallback" else (20 if context.atomic_final else 15))
+        != _runner_final_lead_minutes(context)
         or _strict_int("runner safety_stop_minutes", config["safety_stop_minutes"])
         != (12 if context.atomic_final else 10)
     ):
