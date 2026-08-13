@@ -9,9 +9,15 @@
   existing strict `timing_unknown`/baseline-only/unknown-eligibility
   invariants. The exact `span_days=1` regression passes. The failed 12:00 job
   made three attempts and installed no evening plan. No manual dispatch was
-  run; a separate loaded calendar job
-  `com.totoai.morning-dispatcher.once-20260813T1300` is scheduled for one
-  additional attempt at 13:00 MSK on 2026-08-13.
+  run. A separate calendar job was moved from 13:00 to 12:30 MSK without a
+  manual kickstart. Its first attempt correctly materialized
+  `ACTION REQUIRED: timing unknown 2/15` for events 8 and 15, wrote the
+  attention/review/retry artifacts, installed no evening plan, and returned
+  deferred. The wrapper then made its two configured retries, which exposed a
+  separate idempotency defect: rewriting `ACTION_REQUIRED.md` conflicts with
+  the existing text artifact. The one-time LaunchAgent was removed after
+  completion. No preflight-retry LaunchAgent or drawing-4974 evening scheduler
+  is loaded.
 - A scheduler-owned `bet-ready / PLAY` publication now creates a run-scoped
   `baltbet-upload.txt` and hash-bound actionable `operator-result.json` before
   writing `.bet-ready`. The public `operator-export --plan ... --output ...`
