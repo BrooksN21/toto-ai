@@ -1,5 +1,15 @@
 # Current State
 
+## Drawing 4975 API preflight evidence (2026-08-14 15:32 Moscow)
+
+The second loaded evening trigger also completed automatically. Launchd now
+reports two runs and exit code 0. Attempt
+`api_preflight-01-20260814T123008095081Z-a9b7695e` ran from
+`2026-08-14T12:30:08.095081Z` through `12:31:12.061655Z`, status `complete`,
+with zero failure details and the validated target/data/config/catalog reason.
+Terminal remains null as expected before final publication. The next trigger
+is 16:00 Moscow (`freshness_preflight`).
+
 ## Drawing 4975 live trigger evidence (2026-08-14 15:02 Moscow)
 
 The first loaded evening LaunchAgent trigger executed automatically. Launchd
