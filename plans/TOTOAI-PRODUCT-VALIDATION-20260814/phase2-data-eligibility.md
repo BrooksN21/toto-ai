@@ -12,11 +12,18 @@ timeouts at bank/stake 4,980/30. Average best hits were EV/crowd 7.00, BK-only
 strategy produced 14+ or 15. Cover-13 and Cover-14 spent only 660 and 2,700 on
 average, so those variants are not equal-cost to the two 4,980 packages.
 
+The v2 run added an explicit BK-top single-coupon control (6.54 average hits)
+and deterministic paired bootstrap intervals. EV/crowd minus BK-only was
+-2.00 best hits per drawing with a nominal 95% interval [-3.46, -0.54]. The
+interval is deliberately marked `interpretation_allowed=false` because only 13
+paired drawings exist. Cover-13 minus BK-only was -0.54 [-1.08, 0.00] and
+Cover-14 was +0.08 [-0.69, 0.92], also non-interpretable.
+
 These numbers expose a large current EV-vs-BK diagnostic gap and prove the
 strict runner works, but 13 drawings are too few for a winner or profitability
-claim. The report remains
+claim. The current report remains
 `STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE` at
-`reports/research/strict-strategy-benchmark-20260814-all13/`.
+`reports/research/strict-strategy-benchmark-20260814-all13-v2/`.
 
 ## Full database audit
 

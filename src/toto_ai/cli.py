@@ -5008,6 +5008,15 @@ def historical_strategy_benchmark_command(
             f"{row['hit_14_count']}/{row['drawings']}",
             f"{row['hit_15_count']}/{row['drawings']}",
         )
+    control = benchmark.summary["bk_top_control"]
+    table.add_row(
+        "BK_TOP_SINGLE_CONTROL",
+        str(control["drawings"]),
+        f"{control['average_hits']:.3f}",
+        f"{control['hit_13_count']}/{control['drawings']}",
+        f"{control['hit_14_count']}/{control['drawings']}",
+        f"{control['hit_15_count']}/{control['drawings']}",
+    )
     print(table)
     print(
         "[yellow]STRICT CHRONOLOGICAL PIPELINE EVIDENCE — "
@@ -5133,6 +5142,15 @@ def legacy_strategy_benchmark_command(
             f"{row['hit_14_count']}/{row['drawings']}",
             f"{row['hit_15_count']}/{row['drawings']}",
         )
+    control = benchmark.summary["bk_top_control"]
+    table.add_row(
+        "BK_TOP_SINGLE_CONTROL",
+        str(control["drawings"]),
+        f"{control['average_hits']:.3f}",
+        f"{control['hit_13_count']}/{control['drawings']}",
+        f"{control['hit_14_count']}/{control['drawings']}",
+        f"{control['hit_15_count']}/{control['drawings']}",
+    )
     print(table)
     print(
         "[yellow]LEGACY_RETROSPECTIVE — NOT RELEASE EVIDENCE — "

@@ -1,5 +1,29 @@
 # Current State
 
+## BK-top control and paired benchmark intervals (2026-08-14)
+
+Strict and legacy strategy reports now include an explicit deterministic
+single-coupon `BK_TOP_SINGLE_CONTROL` plus paired per-drawing best-hit
+comparisons. Intervals use a fixed-seed 10,000-replicate percentile bootstrap;
+fewer than 30 drawings always sets `interpretation_allowed=false`. Legacy
+checkpoint schema is v3 so old incomplete control rows cannot resume silently.
+
+The full strict 13-drawing v2 run completed in 14:44 and all manifest/artifact
+hashes verified. Average hits for the one-coupon BK-top control were 6.538.
+Against the 166-coupon BK probability-only package, mean best-hit deltas were:
+
+- EV/crowd: -2.000, nominal 95% CI [-3.462, -0.538];
+- Cover-13: -0.538, nominal 95% CI [-1.077, 0.000];
+- Cover-14: +0.077, nominal 95% CI [-0.692, 0.923].
+
+All strict intervals remain non-interpretable at n=13. The run confirms the
+current EV/crowd weakness is worth testing on the physically separate legacy
+diagnostic, but it does not prove a winner, edge, or profitability. Evidence:
+`reports/research/strict-strategy-benchmark-20260814-all13-v2/`; manifest
+SHA-256 `5b08ec50ab9304ae253a97dd5ebca43036134f341e0fb8680153329e78986c5f`.
+Verification for this slice: `1900 passed, 13 deselected in 123.05s`; Ruff and
+`git diff --check` passed.
+
 ## Resumable legacy strategy diagnostic (2026-08-14)
 
 The physically separate `legacy-strategy-benchmark` path is implemented for

@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from io import StringIO
 from itertools import combinations
 from pathlib import Path
+from random import Random
 from statistics import mean, median
 
 from sqlalchemy import select
@@ -45,6 +46,8 @@ from toto_ai.optimizer.strategy_comparison import (
 
 OUTCOMES = frozenset(("1", "X", "2"))
 ACTUAL_OUTCOMES = OUTCOMES | {"*"}
+BOOTSTRAP_SEED = 20_260_814
+BOOTSTRAP_REPLICATES = 10_000
 
 
 @dataclass(frozen=True)
@@ -85,6 +88,8 @@ class HistoricalStrategyRow:
     input_sha256: str
     staleness_seconds: float
     actual: str
+    bk_top_coupon: str
+    bk_top_hits: int
     strategy_id: str
     strategy_version: str
     category: int
@@ -202,6 +207,10 @@ def benchmark_strict_historical_cases(
         )
         if bundle.frozen_input.input_sha256 != case.frozen_input.input_sha256:
             raise ValueError("comparison returned a foreign frozen input")
+        bk_top_coupon, bk_top_hits = score_bk_top_control(
+            case.frozen_input.bk_probability_matrix,
+            case.actual,
+        )
         for result in bundle.results:
             score = score_coupon_package(
                 strategy_id=result.strategy_id,
@@ -217,6 +226,8 @@ def benchmark_strict_historical_cases(
                     input_sha256=case.frozen_input.input_sha256,
                     staleness_seconds=case.staleness_seconds,
                     actual=case.actual,
+                    bk_top_coupon=bk_top_coupon,
+                    bk_top_hits=bk_top_hits,
                     strategy_id=result.strategy_id,
                     strategy_version=result.strategy_version,
                     category=result.category,
@@ -619,6 +630,35 @@ def package_overlap(
     )
 
 
+def score_bk_top_control(
+    probabilities: Sequence[Sequence[float]],
+    actual: str,
+) -> tuple[str, int]:
+    """Return the deterministic single BK-top coupon and its actual hits."""
+    actual_value = _validated_actual(actual)
+    matrix = tuple(tuple(row) for row in probabilities)
+    if len(matrix) != 15 or any(len(row) != 3 for row in matrix):
+        raise ValueError("BK control requires a 15x3 probability matrix")
+    outcomes = ("1", "X", "2")
+    coupon = "".join(
+        outcomes[
+            max(
+                range(3),
+                key=lambda outcome_index: (
+                    row[outcome_index],
+                    -outcome_index,
+                ),
+            )
+        ]
+        for row in matrix
+    )
+    hits = sum(
+        observed == "*" or predicted == observed
+        for predicted, observed in zip(coupon, actual_value, strict=True)
+    )
+    return coupon, hits
+
+
 def _benchmark_summary(
     rows: Sequence[HistoricalStrategyRow],
     overlaps: Sequence[HistoricalOverlapRow],
@@ -673,6 +713,16 @@ def _benchmark_summary(
                 row.runtime_seconds for row in strategy_rows
             ),
         }
+    control_rows = _one_row_per_drawing(rows)
+    paired_vs_bk = _paired_strategy_differences(
+        rows,
+        baseline_strategy_id="BK_PROBABILITY_ONLY",
+        drawing_count=drawing_count,
+    )
+    paired_vs_bk_top = _paired_control_differences(
+        rows,
+        drawing_count=drawing_count,
+    )
     return {
         "drawings_evaluated": drawing_count,
         "strategy_count": len(strategy_ids),
@@ -685,11 +735,141 @@ def _benchmark_summary(
             if drawing_count < 30
             else "NO_AUTOMATIC_WINNER_SELECTION"
         ),
+        "bk_top_control": {
+            "drawings": len(control_rows),
+            "average_hits": mean(row.bk_top_hits for row in control_rows),
+            "median_hits": median(row.bk_top_hits for row in control_rows),
+            "hit_13_count": sum(row.bk_top_hits >= 13 for row in control_rows),
+            "hit_14_count": sum(row.bk_top_hits >= 14 for row in control_rows),
+            "hit_15_count": sum(row.bk_top_hits >= 15 for row in control_rows),
+        },
+        "bootstrap": {
+            "seed": BOOTSTRAP_SEED,
+            "replicates": BOOTSTRAP_REPLICATES,
+            "confidence_level": 0.95,
+            "interpretation_minimum_drawings": 30,
+        },
+        "paired_best_hits_vs_bk_probability_only": paired_vs_bk,
+        "paired_best_hits_vs_bk_top_control": paired_vs_bk_top,
         "strategies": strategies,
         "average_pairwise_jaccard": (
             mean(row.jaccard for row in overlaps) if overlaps else 1.0
         ),
     }
+
+
+def _one_row_per_drawing(
+    rows: Sequence[HistoricalStrategyRow],
+) -> tuple[HistoricalStrategyRow, ...]:
+    selected = {}
+    for row in rows:
+        selected.setdefault(row.drawing_id, row)
+    return tuple(selected[drawing_id] for drawing_id in sorted(selected))
+
+
+def paired_bootstrap_interval(
+    differences: Sequence[float | int],
+    *,
+    drawing_count: int,
+    seed: int = BOOTSTRAP_SEED,
+    replicates: int = BOOTSTRAP_REPLICATES,
+) -> dict[str, object]:
+    """Deterministic paired bootstrap interval for one per-drawing metric."""
+    values = tuple(float(value) for value in differences)
+    if not values:
+        raise ValueError("paired bootstrap requires at least one difference")
+    if drawing_count != len(values):
+        raise ValueError("paired bootstrap drawing count mismatch")
+    if type(replicates) is not int or replicates <= 0:
+        raise ValueError("bootstrap replicates must be positive")
+    rng = Random(seed)
+    samples = sorted(
+        mean(values[rng.randrange(len(values))] for _ in values)
+        for _ in range(replicates)
+    )
+    lower = samples[int(0.025 * (replicates - 1))]
+    upper = samples[int(0.975 * (replicates - 1))]
+    return {
+        "paired_drawings": drawing_count,
+        "mean_difference": mean(values),
+        "ci_95_lower": lower,
+        "ci_95_upper": upper,
+        "nominal_interval_excludes_zero": lower > 0.0 or upper < 0.0,
+        "interpretation_allowed": drawing_count >= 30,
+    }
+
+
+def _paired_strategy_differences(
+    rows: Sequence[HistoricalStrategyRow],
+    *,
+    baseline_strategy_id: str,
+    drawing_count: int,
+) -> dict[str, object]:
+    by_strategy = {
+        strategy_id: {
+            row.drawing_id: row.best_hits
+            for row in rows
+            if row.strategy_id == strategy_id
+        }
+        for strategy_id in sorted({row.strategy_id for row in rows})
+    }
+    baseline = by_strategy.get(baseline_strategy_id)
+    if baseline is None or len(baseline) != drawing_count:
+        raise ValueError("paired benchmark baseline is incomplete")
+    drawing_ids = tuple(sorted(baseline))
+    comparisons = {}
+    for strategy_id, values in by_strategy.items():
+        if set(values) != set(drawing_ids):
+            raise ValueError("paired benchmark strategy drawings do not align")
+        comparisons[strategy_id] = paired_bootstrap_interval(
+            tuple(
+                values[drawing_id] - baseline[drawing_id]
+                for drawing_id in drawing_ids
+            ),
+            drawing_count=drawing_count,
+            seed=BOOTSTRAP_SEED ^ int(
+                hashlib.sha256(strategy_id.encode()).hexdigest()[:8],
+                16,
+            ),
+        )
+    return comparisons
+
+
+def _paired_control_differences(
+    rows: Sequence[HistoricalStrategyRow],
+    *,
+    drawing_count: int,
+) -> dict[str, object]:
+    controls = {
+        row.drawing_id: row.bk_top_hits for row in _one_row_per_drawing(rows)
+    }
+    by_strategy = {
+        strategy_id: {
+            row.drawing_id: row.best_hits
+            for row in rows
+            if row.strategy_id == strategy_id
+        }
+        for strategy_id in sorted({row.strategy_id for row in rows})
+    }
+    if len(controls) != drawing_count:
+        raise ValueError("BK-top control drawings are incomplete")
+    comparisons = {}
+    for strategy_id, values in by_strategy.items():
+        if set(values) != set(controls):
+            raise ValueError("control comparison drawings do not align")
+        comparisons[strategy_id] = paired_bootstrap_interval(
+            tuple(
+                values[drawing_id] - controls[drawing_id]
+                for drawing_id in sorted(controls)
+            ),
+            drawing_count=drawing_count,
+            seed=(
+                BOOTSTRAP_SEED
+                ^ 0xB170
+                ^ int(hashlib.sha256(strategy_id.encode()).hexdigest()[:8], 16)
+            ),
+        )
+    return comparisons
 
 
 def _benchmark_payload(
@@ -748,6 +928,8 @@ def _benchmark_markdown(benchmark: StrictHistoricalBenchmark) -> str:
         f"- Drawings evaluated: {benchmark.summary['drawings_evaluated']}",
         f"- Bank / stake: {benchmark.bank} / {benchmark.stake}",
         f"- Winner status: `{benchmark.summary['winner_status']}`",
+        "- BK top single-coupon average hits: "
+        f"{benchmark.summary['bk_top_control']['average_hits']:.3f}",
         "",
         "| Strategy | Avg best | Median best | Hit 13+ | Hit 14+ | Hit 15 | "
         "Avg cost | Avg unused |",
@@ -770,6 +952,20 @@ def _benchmark_markdown(benchmark: StrictHistoricalBenchmark) -> str:
             f"{value['average_unused_bank']:.2f} |"
         )
     lines.extend(
+        _paired_markdown_lines(
+            benchmark.summary,
+            key="paired_best_hits_vs_bk_probability_only",
+            title="Paired best-hits difference vs BK probability-only package",
+        )
+    )
+    lines.extend(
+        _paired_markdown_lines(
+            benchmark.summary,
+            key="paired_best_hits_vs_bk_top_control",
+            title="Paired best-hits difference vs BK-top single coupon",
+        )
+    )
+    lines.extend(
         (
             "",
             "No strategy winner is declared from a small strict sample. "
@@ -778,6 +974,35 @@ def _benchmark_markdown(benchmark: StrictHistoricalBenchmark) -> str:
         )
     )
     return "\n".join(lines)
+
+
+def _paired_markdown_lines(
+    summary: Mapping[str, object],
+    *,
+    key: str,
+    title: str,
+) -> list[str]:
+    comparisons = summary.get(key)
+    if not isinstance(comparisons, Mapping):
+        raise ValueError("paired comparison summary must be a mapping")
+    lines = [
+        "",
+        f"## {title}",
+        "",
+        "| Strategy | Mean delta | 95% bootstrap CI | Interpretation allowed |",
+        "|---|---:|---:|---|",
+    ]
+    for strategy_id in sorted(comparisons):
+        comparison = comparisons[strategy_id]
+        if not isinstance(comparison, Mapping):
+            raise ValueError("paired comparison row must be a mapping")
+        lines.append(
+            f"| {strategy_id} | {comparison['mean_difference']:.3f} | "
+            f"[{comparison['ci_95_lower']:.3f}, "
+            f"{comparison['ci_95_upper']:.3f}] | "
+            f"{comparison['interpretation_allowed']} |"
+        )
+    return lines
 
 
 def _csv_value(value: object) -> object:

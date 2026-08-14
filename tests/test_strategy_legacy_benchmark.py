@@ -94,6 +94,13 @@ def test_legacy_benchmark_checkpoints_and_resumes_without_rerunning(tmp_path):
     assert first.overlaps == second.overlaps
     assert first.summary["drawings_evaluated"] == 2
     assert second.summary["resumed_drawings"] == 2
+    assert first.summary["bk_top_control"]["drawings"] == 2
+    assert first.summary["bk_top_control"]["average_hits"] == 7.5
+    assert {row.bk_top_coupon for row in first.rows} == {"1" * 15}
+    assert first.summary["bootstrap"]["replicates"] == 10_000
+    assert first.summary["paired_best_hits_vs_bk_probability_only"][
+        "EV_CROWD_CURRENT"
+    ]["interpretation_allowed"] is False
     assert first.summary["release_evidence"] is False
     assert first.summary["evidence_tier"] == "LEGACY_RETROSPECTIVE"
     checkpoints = sorted((tmp_path / "checkpoints").glob("drawing-*.json"))
@@ -133,7 +140,10 @@ def test_legacy_report_is_physically_and_visibly_non_release(tmp_path):
     assert payload["actionable"] is False
     assert manifest["evidence_tier"] == "LEGACY_RETROSPECTIVE"
     assert manifest["automatic_wagering"] is False
-    assert "NOT RELEASE EVIDENCE" in paths.markdown.read_text()
+    markdown = paths.markdown.read_text()
+    assert "NOT RELEASE EVIDENCE" in markdown
+    assert "Paired best-hits difference vs BK probability-only package" in markdown
+    assert "Interpretation allowed" in markdown
 
 
 def test_legacy_strategy_benchmark_cli_help():

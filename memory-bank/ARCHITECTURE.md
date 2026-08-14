@@ -35,7 +35,10 @@ outcomes are loaded separately from complete terminal result snapshots. VOID
 scheduler plan, changing only the requested research bank/stake, research mode,
 and the scheduler-only provenance requirement. It scores actual hits/exposure,
 modeled category probabilities, cost/unused bank, runtime/fallback and pairwise
-package overlap. Its hash-bound reports are always
+package overlap. It also reports a deterministic single-coupon BK-top control
+and paired 10,000-replicate bootstrap intervals for per-drawing best-hit
+differences. Samples below 30 are mechanically marked non-interpretable. Its
+hash-bound reports are always
 `STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE`; they are not
 an operator surface and cannot open the real-money gate.
 
@@ -48,7 +51,8 @@ strict report. `legacy-strategy-benchmark` writes only
 `LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE` artifacts. Long runs are
 resumable through one atomic, hash-checked, input/config-bound checkpoint per
 drawing; source or configuration drift fails closed instead of silently
-reusing stale calculations.
+reusing stale calculations. Checkpoint schema v3 binds the BK-top control fields
+used by the shared paired-comparison summary.
 
 ## Operator export gateway
 

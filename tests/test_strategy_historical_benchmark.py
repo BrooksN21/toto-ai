@@ -27,9 +27,31 @@ from toto_ai.optimizer.strategy_historical_benchmark import (
     historical_ev_config,
     load_strict_historical_cases,
     package_overlap,
+    paired_bootstrap_interval,
     score_coupon_package,
     write_strict_historical_benchmark_reports,
 )
+
+
+def test_paired_bootstrap_interval_is_deterministic_and_small_sample_guarded():
+    first = paired_bootstrap_interval(
+        (1, -1, 2, 0),
+        drawing_count=4,
+        seed=123,
+        replicates=1_000,
+    )
+    second = paired_bootstrap_interval(
+        (1, -1, 2, 0),
+        drawing_count=4,
+        seed=123,
+        replicates=1_000,
+    )
+
+    assert first == second
+    assert first["mean_difference"] == 0.5
+    assert first["interpretation_allowed"] is False
+    with pytest.raises(ValueError, match="drawing count mismatch"):
+        paired_bootstrap_interval((1, 2), drawing_count=3)
 
 
 def test_strict_loader_uses_latest_predeadline_raw_not_mutable_db_quotes(tmp_path):
@@ -238,6 +260,16 @@ def test_strict_benchmark_scores_actuals_and_reports_pairwise_overlap(tmp_path):
     by_strategy = {row.strategy_id: row for row in benchmark.rows}
     assert by_strategy["EV_CROWD_CURRENT"].best_hits == 15
     assert by_strategy["BK_PROBABILITY_ONLY"].best_hits == 14
+    assert by_strategy["EV_CROWD_CURRENT"].bk_top_coupon == "1" * 15
+    assert by_strategy["EV_CROWD_CURRENT"].bk_top_hits == 15
+    assert benchmark.summary["bk_top_control"]["average_hits"] == 15
+    ev_delta = benchmark.summary["paired_best_hits_vs_bk_probability_only"][
+        "EV_CROWD_CURRENT"
+    ]
+    assert ev_delta["mean_difference"] == 1
+    assert ev_delta["ci_95_lower"] == 1
+    assert ev_delta["ci_95_upper"] == 1
+    assert ev_delta["interpretation_allowed"] is False
     assert by_strategy["EV_CROWD_CURRENT"].hit_15 is True
     assert by_strategy["BK_PROBABILITY_ONLY"].hit_15 is False
     assert by_strategy["TOTOBRIEF_STYLE_COVER_13"].zero_exposure_event_orders == ()
@@ -257,7 +289,10 @@ def test_strict_benchmark_scores_actuals_and_reports_pairwise_overlap(tmp_path):
     manifest = json.loads(paths.manifest.read_text())
     assert payload["summary"]["drawings_evaluated"] == 1
     assert payload["actionable"] is False
-    assert "NOT RELEASE EVIDENCE" in paths.markdown.read_text()
+    markdown = paths.markdown.read_text()
+    assert "NOT RELEASE EVIDENCE" in markdown
+    assert "Paired best-hits difference vs BK probability-only package" in markdown
+    assert "Interpretation allowed" in markdown
     assert manifest["evidence_tier"] == (
         "STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE"
     )

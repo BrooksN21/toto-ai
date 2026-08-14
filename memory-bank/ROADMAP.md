@@ -37,6 +37,9 @@ legacy output is not release evidence. See the active plan's
 - [x] Run strict canary and all 13 currently eligible drawings at 4,980/30.
 - [x] Add physically separate, resumable legacy input/runner/checkpoint/report
   path and verify a real one-drawing calculate/resume canary.
+- [x] Add the explicit BK-top single-coupon control and deterministic paired
+  bootstrap intervals; rerun all 13 strict drawings with interpretation
+  disabled for the small sample.
 - [ ] Complete legacy 100/500/1,000 diagnostics without using them in release
   metrics.
 

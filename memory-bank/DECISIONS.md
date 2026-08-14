@@ -1,5 +1,18 @@
 # Decisions
 
+## 2026-08-14: strategy benchmarks require explicit controls and paired intervals
+
+- Every strict and legacy strategy benchmark includes the deterministic
+  one-coupon `BK_TOP_SINGLE_CONTROL`; it is reported separately from package
+  strategies because it does not spend the same bank.
+- Strategy comparisons use paired per-drawing best-hit differences and a
+  deterministic 10,000-replicate percentile bootstrap with a fixed seed.
+- Intervals from fewer than 30 paired drawings are displayed but carry
+  `interpretation_allowed=false`; a nominal interval excluding zero on the
+  13-drawing strict set is diagnostic only and cannot select a winner.
+- Legacy intervals may diagnose instability at larger sample sizes, but their
+  unverified chronology permanently excludes them from release evidence.
+
 ## 2026-08-14: product work follows measurable stage gates
 
 - The active execution plan is

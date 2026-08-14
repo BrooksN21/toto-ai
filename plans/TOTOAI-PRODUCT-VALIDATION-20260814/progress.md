@@ -10,7 +10,7 @@
 |---:|---|---|
 | 0. Live-цикл 4975 | IN PROGRESS | Evening terminal complete: final fresh paper package 166 / 4 980, T-10 cleanup and post-draw install verified; result sync/settlement due 2026-08-15 |
 | 1. EV/BK/TotoBrief-style | COMPLETE | Four equal-input adapters, command and hash-bound reports verified; 4975 EV output exactly reproduces final package |
-| 2. Historical benchmark | IN PROGRESS | Strict all-13 complete; resumable physically separate legacy runner and one-drawing canary complete; legacy 100/500/1000 runs remain |
+| 2. Historical benchmark | IN PROGRESS | Strict all-13 v2 complete with BK-top control and paired bootstrap; legacy v3 canary/resume complete; legacy 100/500/1000 runs remain |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
 | 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
 | 5. Free sports coverage | PARTIAL | Stored-source baseline written: API-Sports odds 10 drawings/150 events/68% consensus; The Odds API 4/15; sports stats 0/15 complete |
@@ -53,6 +53,16 @@
   `STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE` and no winner
   is declared. Evidence:
   `reports/research/strict-strategy-benchmark-20260814-all13/`.
+- Strict v2 control run: all 13 drawings completed in 14:44 with hash-verified
+  artifacts at
+  `reports/research/strict-strategy-benchmark-20260814-all13-v2/`. BK-top
+  single-coupon average was 6.538. Paired best-hit delta versus BK-only was
+  EV/crowd -2.000 with nominal 95% bootstrap interval [-3.462, -0.538],
+  Cover-13 -0.538 [-1.077, 0.000], and Cover-14 +0.077
+  [-0.692, 0.923]. All intervals have `interpretation_allowed=false` because
+  n=13; no winner or profitability claim is permitted.
+- BK-top/bootstrap implementation verification: `1900 passed, 13 deselected
+  in 123.05s`; Ruff and `git diff --check` passed.
 - Legacy runner: `legacy-strategy-benchmark` labels every input and artifact
   `LEGACY_RETROSPECTIVE`, records chronology as unverified, excludes actual
   results from the prediction-data hash, and writes an atomic hash-checked

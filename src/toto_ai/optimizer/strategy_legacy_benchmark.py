@@ -32,7 +32,11 @@ from toto_ai.optimizer.strategy_comparison import (
     run_totobrief_style_cover,
 )
 from toto_ai.optimizer.strategy_historical_benchmark import (
+    BOOTSTRAP_REPLICATES,
+    BOOTSTRAP_SEED,
     package_overlap,
+    paired_bootstrap_interval,
+    score_bk_top_control,
     score_coupon_package,
 )
 
@@ -145,6 +149,8 @@ class LegacyStrategyRow:
     source_data_sha256: str
     input_sha256: str
     actual: str
+    bk_top_coupon: str
+    bk_top_hits: int
     strategy_id: str
     strategy_version: str
     category: int
@@ -557,6 +563,10 @@ def _score_legacy_results(
         result.strategy_id for result in result_tuple
     } != STRATEGY_IDS:
         raise ValueError("legacy benchmark requires the four declared strategies")
+    bk_top_coupon, bk_top_hits = score_bk_top_control(
+        case.strategy_input.bk_probability_matrix,
+        case.actual,
+    )
     rows = []
     for result in result_tuple:
         if result.input_sha256 != case.strategy_input.input_sha256:
@@ -575,6 +585,8 @@ def _score_legacy_results(
                 source_data_sha256=case.source_data_sha256,
                 input_sha256=case.strategy_input.input_sha256,
                 actual=case.actual,
+                bk_top_coupon=bk_top_coupon,
+                bk_top_hits=bk_top_hits,
                 strategy_id=result.strategy_id,
                 strategy_version=result.strategy_version,
                 category=result.category,
@@ -672,6 +684,16 @@ def _summary(
                 row.probability_at_least_15 for row in selected
             ),
         }
+    control_rows = _one_row_per_drawing(rows)
+    paired_vs_bk = _paired_strategy_differences(
+        rows,
+        baseline_strategy_id="BK_PROBABILITY_ONLY",
+        drawing_count=drawing_count,
+    )
+    paired_vs_bk_top = _paired_control_differences(
+        rows,
+        drawing_count=drawing_count,
+    )
     return {
         "drawings_evaluated": drawing_count,
         "resumed_drawings": resumed,
@@ -682,11 +704,109 @@ def _summary(
         "chronology_verified": False,
         "release_evidence": False,
         "winner_status": "DIAGNOSTIC_ONLY_NO_RELEASE_WINNER",
+        "bk_top_control": {
+            "drawings": len(control_rows),
+            "average_hits": mean(row.bk_top_hits for row in control_rows),
+            "median_hits": median(row.bk_top_hits for row in control_rows),
+            "hit_13_count": sum(row.bk_top_hits >= 13 for row in control_rows),
+            "hit_14_count": sum(row.bk_top_hits >= 14 for row in control_rows),
+            "hit_15_count": sum(row.bk_top_hits >= 15 for row in control_rows),
+        },
+        "bootstrap": {
+            "seed": BOOTSTRAP_SEED,
+            "replicates": BOOTSTRAP_REPLICATES,
+            "confidence_level": 0.95,
+            "interpretation_minimum_drawings": 30,
+        },
+        "paired_best_hits_vs_bk_probability_only": paired_vs_bk,
+        "paired_best_hits_vs_bk_top_control": paired_vs_bk_top,
         "strategies": strategies,
         "average_pairwise_jaccard": (
             mean(row.jaccard for row in overlaps) if overlaps else 1.0
         ),
     }
+
+
+def _one_row_per_drawing(
+    rows: Sequence[LegacyStrategyRow],
+) -> tuple[LegacyStrategyRow, ...]:
+    selected = {}
+    for row in rows:
+        selected.setdefault(row.drawing_id, row)
+    return tuple(selected[drawing_id] for drawing_id in sorted(selected))
+
+
+def _paired_strategy_differences(
+    rows: Sequence[LegacyStrategyRow],
+    *,
+    baseline_strategy_id: str,
+    drawing_count: int,
+) -> dict[str, object]:
+    by_strategy = {
+        strategy_id: {
+            row.drawing_id: row.best_hits
+            for row in rows
+            if row.strategy_id == strategy_id
+        }
+        for strategy_id in sorted({row.strategy_id for row in rows})
+    }
+    baseline = by_strategy.get(baseline_strategy_id)
+    if baseline is None or len(baseline) != drawing_count:
+        raise ValueError("legacy paired baseline is incomplete")
+    drawing_ids = tuple(sorted(baseline))
+    comparisons = {}
+    for strategy_id, values in by_strategy.items():
+        if set(values) != set(drawing_ids):
+            raise ValueError("legacy paired strategy drawings do not align")
+        comparisons[strategy_id] = paired_bootstrap_interval(
+            tuple(
+                values[drawing_id] - baseline[drawing_id]
+                for drawing_id in drawing_ids
+            ),
+            drawing_count=drawing_count,
+            seed=BOOTSTRAP_SEED ^ int(
+                hashlib.sha256(strategy_id.encode()).hexdigest()[:8],
+                16,
+            ),
+        )
+    return comparisons
+
+
+def _paired_control_differences(
+    rows: Sequence[LegacyStrategyRow],
+    *,
+    drawing_count: int,
+) -> dict[str, object]:
+    controls = {
+        row.drawing_id: row.bk_top_hits for row in _one_row_per_drawing(rows)
+    }
+    by_strategy = {
+        strategy_id: {
+            row.drawing_id: row.best_hits
+            for row in rows
+            if row.strategy_id == strategy_id
+        }
+        for strategy_id in sorted({row.strategy_id for row in rows})
+    }
+    if len(controls) != drawing_count:
+        raise ValueError("legacy BK-top control drawings are incomplete")
+    comparisons = {}
+    for strategy_id, values in by_strategy.items():
+        if set(values) != set(controls):
+            raise ValueError("legacy control comparison drawings do not align")
+        comparisons[strategy_id] = paired_bootstrap_interval(
+            tuple(
+                values[drawing_id] - controls[drawing_id]
+                for drawing_id in sorted(controls)
+            ),
+            drawing_count=drawing_count,
+            seed=(
+                BOOTSTRAP_SEED
+                ^ 0xB170
+                ^ int(hashlib.sha256(strategy_id.encode()).hexdigest()[:8], 16)
+            ),
+        )
+    return comparisons
 
 
 def _write_checkpoint(
@@ -698,7 +818,7 @@ def _write_checkpoint(
     overlaps: Sequence[LegacyOverlapRow],
 ) -> None:
     unsigned = {
-        "schema_version": 2,
+        "schema_version": 3,
         "evidence_tier": EVIDENCE_TIER,
         "chronology_verified": False,
         "drawing_id": case.strategy_input.drawing_id,
@@ -739,7 +859,7 @@ def _load_checkpoint(
     ).hexdigest():
         raise ValueError("legacy checkpoint hash mismatch")
     expected = {
-        "schema_version": 2,
+        "schema_version": 3,
         "evidence_tier": EVIDENCE_TIER,
         "chronology_verified": False,
         "drawing_id": case.strategy_input.drawing_id,
@@ -893,6 +1013,8 @@ def _markdown(benchmark: LegacyRetrospectiveBenchmark) -> str:
         f"- Drawings evaluated: {benchmark.summary['drawings_evaluated']}",
         f"- Resumed from checkpoints: {benchmark.summary['resumed_drawings']}",
         f"- Bank / stake: {benchmark.bank} / {benchmark.stake}",
+        "- BK top single-coupon average hits: "
+        f"{benchmark.summary['bk_top_control']['average_hits']:.3f}",
         "",
         "| Strategy | Avg best | Median best | Hit 13+ | Hit 14+ | Hit 15 | "
         "Avg cost |",
@@ -914,6 +1036,20 @@ def _markdown(benchmark: LegacyRetrospectiveBenchmark) -> str:
             f"{row['average_cost']:.2f} |"
         )
     lines.extend(
+        _paired_markdown_lines(
+            benchmark.summary,
+            key="paired_best_hits_vs_bk_probability_only",
+            title="Paired best-hits difference vs BK probability-only package",
+        )
+    )
+    lines.extend(
+        _paired_markdown_lines(
+            benchmark.summary,
+            key="paired_best_hits_vs_bk_top_control",
+            title="Paired best-hits difference vs BK-top single coupon",
+        )
+    )
+    lines.extend(
         (
             "",
             "No result in this report may be aggregated into strict or "
@@ -922,6 +1058,35 @@ def _markdown(benchmark: LegacyRetrospectiveBenchmark) -> str:
         )
     )
     return "\n".join(lines)
+
+
+def _paired_markdown_lines(
+    summary: Mapping[str, object],
+    *,
+    key: str,
+    title: str,
+) -> list[str]:
+    comparisons = summary.get(key)
+    if not isinstance(comparisons, Mapping):
+        raise ValueError("legacy paired comparison summary must be a mapping")
+    lines = [
+        "",
+        f"## {title}",
+        "",
+        "| Strategy | Mean delta | 95% bootstrap CI | Interpretation allowed |",
+        "|---|---:|---:|---|",
+    ]
+    for strategy_id in sorted(comparisons):
+        comparison = comparisons[strategy_id]
+        if not isinstance(comparison, Mapping):
+            raise ValueError("legacy paired comparison row must be a mapping")
+        lines.append(
+            f"| {strategy_id} | {comparison['mean_difference']:.3f} | "
+            f"[{comparison['ci_95_lower']:.3f}, "
+            f"{comparison['ci_95_upper']:.3f}] | "
+            f"{comparison['interpretation_allowed']} |"
+        )
+    return lines
 
 
 def _artifact(root: Path, path: Path) -> dict[str, str]:
