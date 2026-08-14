@@ -214,6 +214,68 @@ class StrategyResult:
         return len(self.coupons)
 
 
+@dataclass(frozen=True)
+class StrategyComparisonBundle:
+    """Four strategy variants bound to one immutable comparison input."""
+
+    frozen_input: FrozenStrategyInput
+    results: tuple[StrategyResult, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.frozen_input, FrozenStrategyInput):
+            raise ValueError("frozen_input must be a FrozenStrategyInput")
+        object.__setattr__(self, "results", tuple(self.results))
+        expected = {
+            "EV_CROWD_CURRENT",
+            "BK_PROBABILITY_ONLY",
+            "TOTOBRIEF_STYLE_COVER_13",
+            "TOTOBRIEF_STYLE_COVER_14",
+        }
+        observed = {result.strategy_id for result in self.results}
+        if len(self.results) != 4 or observed != expected:
+            raise ValueError("comparison must contain the four declared strategies")
+        if any(
+            result.input_sha256 != self.frozen_input.input_sha256
+            for result in self.results
+        ):
+            raise ValueError("all strategies must use the same frozen input")
+        if any(
+            result.requested_bank != self.frozen_input.bank
+            or result.stake != self.frozen_input.stake
+            for result in self.results
+        ):
+            raise ValueError("all strategies must use the same bank and stake")
+
+
+def run_equal_input_comparison(
+    frozen: FrozenStrategyInput,
+    *,
+    ev_config: EVConfig,
+    provenance: PackageSelectionProvenance | None = None,
+    ev_runner: Callable[..., StrategyResult] | None = None,
+    bk_runner: Callable[..., StrategyResult] | None = None,
+    cover_runner: Callable[..., StrategyResult] | None = None,
+) -> StrategyComparisonBundle:
+    """Run EV, BK-only, Cover-13 and Cover-14 over identical bytes."""
+    resolved_ev_runner = run_ev_crowd_current if ev_runner is None else ev_runner
+    resolved_bk_runner = run_bk_probability_only if bk_runner is None else bk_runner
+    resolved_cover_runner = (
+        run_totobrief_style_cover if cover_runner is None else cover_runner
+    )
+    results = (
+        resolved_ev_runner(
+            frozen,
+            config=ev_config,
+            category=13,
+            provenance=provenance,
+        ),
+        resolved_bk_runner(frozen, category=13),
+        resolved_cover_runner(frozen, category=13),
+        resolved_cover_runner(frozen, category=14),
+    )
+    return StrategyComparisonBundle(frozen_input=frozen, results=results)
+
+
 def run_bk_probability_only(
     frozen: FrozenStrategyInput,
     *,

@@ -17,6 +17,12 @@ The authoritative implementation order is tracked in
 Operational evidence collection may run in parallel, but package activation
 cannot skip a gate.
 
+Current progress: step 2 is complete. The shared frozen-input contract,
+EV/BK/Cover-13/Cover-14 adapters and `compare-package-strategies` report bundle
+passed the full test suite and reproduced the exact drawing-4975 EV paper
+package. Step 3 is now active; modeled probability from one drawing is not a
+strategy verdict.
+
 Measured data constraint: only 398 drawings currently satisfy the strict
 historical-inventory snapshot contract, while 1,672 satisfy the weaker
 probability-backtest contract. Phase 2 will run strict 100/current-398 evidence

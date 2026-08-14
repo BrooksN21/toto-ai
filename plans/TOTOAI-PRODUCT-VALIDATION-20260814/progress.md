@@ -9,8 +9,8 @@
 | Этап | Статус | Результат / блокер |
 |---:|---|---|
 | 0. Live-цикл 4975 | IN PROGRESS | Evening terminal complete: final fresh paper package 166 / 4 980, T-10 cleanup and post-draw install verified; result sync/settlement due 2026-08-15 |
-| 1. EV/BK/TotoBrief-style | IN PROGRESS | Immutable equal-input contract and EV/BK/Cover-13/Cover-14 thin adapters implemented; comparison command/artifacts next |
-| 2. Historical benchmark | BLOCKED ON PHASE 1 | Data audit: 398 strict frozen, 1,672 probability-eligible; 500/1000 must be legacy-only |
+| 1. EV/BK/TotoBrief-style | COMPLETE | Four equal-input adapters, command and hash-bound reports verified; 4975 EV output exactly reproduces final package |
+| 2. Historical benchmark | READY TO START | Data audit: 398 strict frozen, 1,672 probability-eligible; 500/1000 must be legacy-only |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
 | 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
 | 5. Free sports coverage | PARTIAL | Stored-source baseline written: API-Sports odds 10 drawings/150 events/68% consensus; The Odds API 4/15; sports stats 0/15 complete |
@@ -88,15 +88,25 @@
 - Post-draw LaunchAgent `com.toto-ai.post-draw-12033` is installed and loaded;
   first automatic result sync is 2026-08-15 12:00 MSK with bounded three-hour
   retries through 2026-08-16 03:00 MSK.
-- Phase-1 shared contract tests: 5 focused tests pass; 38 adapter/BK/brief/cover
+- Phase-1 shared contract tests: 9 focused tests pass; full suite 1,885 passed,
+  13 deselected; Ruff and diff-check pass. Adapter/BK/brief/cover regressions
   regression tests pass; Ruff passes. The new adapters bind one immutable
   input hash, enforce pre-`as_of` chronology, dynamic bank/stake, unique
   15-sign coupons, exact cost and category probabilities. Cover-13 and Cover-14
   both require the existing independent exact verifier to pass.
+- `compare-package-strategies` completed on the immutable 4975 final input. All
+  four results share input hash `ee938dd3413e...`; the EV package is exactly
+  equal to the 166-coupon final paper package in both order and set. Modeled
+  P(13+)/P(14+)/P(15): EV 0.00226572/0.00022230/0.00000916; BK-only
+  0.01333865/0.00202121/0.00014290; Cover-13
+  0.00319861/0.00031179/0.00001273 at 22 coupons; Cover-14
+  0.00925712/0.00107714/0.00005283 at 90 coupons. Both Cover variants passed
+  exact guarantee verification. This is one modeled snapshot, not historical
+  evidence and not a profitability result.
 
 ## Следующее действие
 
-Добавить current/frozen comparison command поверх готовых адаптеров.
-Команда должна сохранить один manifest, JSON/CSV/Markdown и четыре
-независимых package-файла. Параллельно не менять post-draw план
-4975 до его реального запуска 2026-08-15 12:00 MSK.
+Начать этап 2 с короткого strict canary: проверить селектор frozen
+historical inputs, добавить actual-outcome scoring для новых results и
+прогнать 3–5 тиражей перед масштабом 100/398. Параллельно не
+менять post-draw план 4975 до его реального запуска 2026-08-15 12:00 MSK.

@@ -16,6 +16,14 @@ delegate to the existing brief and Cover engines plus independent exact
 verification. This research boundary cannot activate sports shadow, change the
 production scheduler, or open the real-money release gate.
 
+`compare-package-strategies` consumes only a validated scheduler
+`final-input.json` plus its exact schema-v6 plan. It rebuilds the production
+EVConfig and provenance from those artifacts, executes all four variants, and
+writes a paper-only manifest, JSON/CSV/Markdown and one exact BaltBet-format
+text file per strategy. The comparison manifest records common input identity,
+strategy config/package hashes, costs and artifact hashes; it is not an
+operator export surface.
+
 ## Operator export gateway
 
 The only operator-facing package flow is:

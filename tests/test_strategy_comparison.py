@@ -1,18 +1,27 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from typer.testing import CliRunner
 
+from toto_ai.cli import app
 from toto_ai.ev.models import EVConfig, EVPackage, EVSurface, RankedCoupon
 from toto_ai.optimizer.strategy_comparison import (
     FrozenStrategyEvent,
     FrozenStrategyInput,
+    StrategyComparisonBundle,
+    StrategyResult,
     run_bk_probability_only,
+    run_equal_input_comparison,
     run_ev_crowd_current,
     run_totobrief_style_cover,
 )
+from toto_ai.optimizer.strategy_execution import frozen_input_from_snapshot
+from toto_ai.optimizer.strategy_reports import write_strategy_comparison_reports
 
 
 def test_frozen_strategy_input_rejects_future_or_incomplete_evidence():
@@ -151,6 +160,121 @@ def test_ev_adapter_uses_the_same_frozen_matrices_and_config():
     assert result.cost == 90
 
 
+def test_equal_input_comparison_rejects_a_foreign_result():
+    frozen = _strategy_input(events=_events())
+    config = EVConfig(bank=4_980, stake=30, mode="research")
+    valid = _result(frozen, "EV_CROWD_CURRENT", ("1" * 15,))
+    foreign = replace(
+        _result(frozen, "BK_PROBABILITY_ONLY", ("X" * 15,)),
+        input_sha256="f" * 64,
+    )
+
+    with pytest.raises(ValueError, match="same frozen input"):
+        run_equal_input_comparison(
+            frozen,
+            ev_config=config,
+            ev_runner=lambda *_args, **_kwargs: valid,
+            bk_runner=lambda *_args, **_kwargs: foreign,
+            cover_runner=lambda _frozen, *, category: _result(
+                frozen,
+                f"TOTOBRIEF_STYLE_COVER_{category}",
+                ("2" * 15,),
+                category=category,
+            ),
+        )
+
+
+def test_strategy_report_bundle_writes_four_hash_bound_packages(tmp_path):
+    frozen = _strategy_input(events=_events())
+    results = (
+        _result(frozen, "EV_CROWD_CURRENT", ("1" * 15,)),
+        _result(frozen, "BK_PROBABILITY_ONLY", ("X" * 15,)),
+        _result(
+            frozen,
+            "TOTOBRIEF_STYLE_COVER_13",
+            ("2" * 15,),
+            category=13,
+        ),
+        _result(
+            frozen,
+            "TOTOBRIEF_STYLE_COVER_14",
+            ("1X2" * 5,),
+            category=14,
+        ),
+    )
+    bundle = StrategyComparisonBundle(frozen_input=frozen, results=results)
+
+    paths = write_strategy_comparison_reports(bundle, tmp_path)
+
+    assert paths.manifest.is_file()
+    assert paths.json.is_file()
+    assert paths.csv.is_file()
+    assert paths.markdown.is_file()
+    assert len(paths.packages) == 4
+    assert paths.packages["EV_CROWD_CURRENT"].read_text() == (
+        "30; " + "; ".join("1" * 15) + "\n"
+    )
+    manifest = __import__("json").loads(paths.manifest.read_text())
+    assert manifest["input_sha256"] == frozen.input_sha256
+    assert manifest["strategy_count"] == 4
+    assert len({row["package_sha256"] for row in manifest["strategies"]}) == 4
+
+
+def test_final_snapshot_builder_reuses_ev_probability_normalization():
+    snapshot = SimpleNamespace(
+        drawing_id=12_033,
+        drawing_number=4_975,
+        target_fingerprint="a" * 64,
+        captured_at=datetime(2026, 8, 14, 13, 40, tzinfo=timezone.utc),
+        payload={
+            "data": {
+                "id": 12_033,
+                "number": 4_975,
+                "pool_sum": 2_000_000,
+                "jackpot": 1_000_000,
+                "events": [
+                    {
+                        "order": order,
+                        "name": f"Match {order + 1}",
+                        "quotes": {
+                            "bk_win_1": 55,
+                            "bk_draw": 25,
+                            "bk_win_2": 20,
+                            "pool_win_1": 50,
+                            "pool_draw": 30,
+                            "pool_win_2": 20,
+                        },
+                    }
+                    for order in range(15)
+                ],
+            }
+        },
+    )
+    plan = SimpleNamespace(
+        drawing=4_975,
+        drawing_id=12_033,
+        ended_at=datetime(2026, 8, 14, 14, 0, tzinfo=timezone.utc),
+        requested_bank=4_980,
+        stake=30,
+    )
+
+    frozen = frozen_input_from_snapshot(snapshot, plan)
+
+    assert frozen.source_captured_at == "2026-08-14T13:40:00.000000Z"
+    assert frozen.as_of == frozen.source_captured_at
+    assert frozen.bk_probability_matrix[0] == (0.55, 0.25, 0.2)
+    assert frozen.crowd_probability_matrix[0] != (0.5, 0.3, 0.2)
+    assert sum(frozen.crowd_probability_matrix[0]) == pytest.approx(1.0)
+
+
+def test_compare_package_strategies_cli_help():
+    result = CliRunner().invoke(app, ["compare-package-strategies", "--help"])
+
+    assert result.exit_code == 0
+    assert "--final-input" in result.stdout
+    assert "--scheduler-plan" in result.stdout
+
+
 def _events() -> tuple[FrozenStrategyEvent, ...]:
     return tuple(
         FrozenStrategyEvent(
@@ -183,4 +307,37 @@ def _strategy_input(
         jackpot=1_000_000.0,
         possible_winnings=2_000_000.0,
         events=events,
+    )
+
+
+def _result(
+    frozen: FrozenStrategyInput,
+    strategy_id: str,
+    coupons: tuple[str, ...],
+    *,
+    category: int = 13,
+) -> StrategyResult:
+    import hashlib
+
+    package_sha = hashlib.sha256(
+        "".join(f"{coupon}\n" for coupon in coupons).encode()
+    ).hexdigest()
+    return StrategyResult(
+        strategy_id=strategy_id,
+        strategy_version="v1",
+        source_engine="test",
+        category=category,
+        input_sha256=frozen.input_sha256,
+        config_sha256="c" * 64,
+        package_sha256=package_sha,
+        requested_bank=frozen.bank,
+        stake=frozen.stake,
+        coupons=coupons,
+        cost=len(coupons) * frozen.stake,
+        unused_bank=frozen.bank - len(coupons) * frozen.stake,
+        probability_at_least_13=0.10,
+        probability_at_least_14=0.05,
+        probability_at_least_15=0.01,
+        runtime_seconds=0.1,
+        timed_out=False,
     )

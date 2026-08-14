@@ -1,5 +1,34 @@
 # Current State
 
+## Drawing 4975 equal-input strategy comparison (2026-08-14)
+
+The first artifact-bound `compare-package-strategies` run completed on the
+immutable final drawing-4975 input and schema-v6 scheduler plan. It wrote one
+hash-bound manifest, JSON/CSV/Markdown summaries and four separate paper
+package files under
+`reports/research/strategy-comparison-4975-20260814/`. All strategies used
+input SHA-256
+`ee938dd3413e390a589c498a2295cf2736b9ff42965a3c94a274dadd52e72cd9`.
+The EV adapter reproduced the actual 166-coupon final paper package exactly in
+both order and set.
+
+Modeled results for this one snapshot are:
+
+- EV/crowd: 166 coupons, 4,980; P(13+) 0.00226572, P(14+) 0.00022230,
+  P(15) 0.00000916;
+- BK-only: 166 coupons, 4,980; P(13+) 0.01333865, P(14+) 0.00202121,
+  P(15) 0.00014290;
+- Cover-13: 22 coupons, 660; P(13+) 0.00319861, P(14+) 0.00031179,
+  P(15) 0.00001273; exact guarantee passed;
+- Cover-14: 90 coupons, 2,700; P(13+) 0.00925712, P(14+) 0.00107714,
+  P(15) 0.00005283; exact guarantee passed.
+
+This is diagnostic evidence that the current EV/crowd objective can materially
+diverge from pure hit probability. It is not enough to declare BK-only the
+winner: actual finished outcomes across the frozen historical benchmark are
+required. The command remains `RESEARCH/PAPER`, non-actionable, and cannot
+place a wager or open the release gate.
+
 ## Equal-input strategy contract and adapters (2026-08-14)
 
 Phase 1 implementation has started after the drawing-4975 terminal state. New
@@ -18,10 +47,10 @@ exact verifier to pass. Every result enforces unique 15-sign coupons, exact
 cost, dynamic budget, input/config/package hashes and exact modeled P(13+),
 P(14+) and P(15).
 
-Verification: five new focused tests pass; 38 combined strategy/BK/brief/cover
-tests pass; Ruff passes. The current/frozen CLI comparison and report bundle
-remain the next phase-1 task. Production scheduling and the closed real-money
-gate are unchanged.
+Verification: nine focused strategy/CLI/report tests pass; the full default
+suite passes with 1,885 tests and 13 deselected; Ruff and diff-check pass.
+Phase 1 is complete. Production scheduling and the closed real-money gate are
+unchanged; the strict historical canary is next.
 
 ## Drawing 4975 terminal evening result (2026-08-14 16:52 Moscow)
 
