@@ -8,7 +8,7 @@
 
 | Этап | Статус | Результат / блокер |
 |---:|---|---|
-| 0. Live-цикл 4975 | IN PROGRESS | Preflights 15:00/15:30/16:00 complete, all exit 0; warmup 16:15 next |
+| 0. Live-цикл 4975 | IN PROGRESS | Preflights and 16:15 warmup complete, all exit 0; validated 166-coupon LKG exists; refresh 16:30 next |
 | 1. EV/BK/TotoBrief-style | READY TO START | Existing engines mapped in `phase1-inventory.md`; adapters begin after terminal 4975 |
 | 2. Historical benchmark | BLOCKED ON PHASE 1 | Data audit: 398 strict frozen, 1,672 probability-eligible; 500/1000 must be legacy-only |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
@@ -27,7 +27,7 @@
 - [x] 15:00 TLS preflight отработал: exit 0, 69.08s, no failures.
 - [x] 15:30 API preflight отработал: exit 0, 63.97s, no failures.
 - [x] 16:00 freshness preflight отработал: exit 0, 70.10s, no failures.
-- [ ] 16:15 warmup отработал.
+- [x] 16:15 warmup отработал: exit 0, 316.50s, LKG 166 / 4 980.
 - [ ] 16:30 refresh/LKG отработал.
 - [ ] 16:40 primary final отработал.
 - [ ] 16:44 retry/admission отработал или корректно пропущен.
@@ -66,8 +66,15 @@
 - Live 4975 trigger 16:00 MSK: LaunchAgent run 3, exit 0;
   `freshness_preflight-01-20260814T130018316198Z-a3a97623` completed at
   `2026-08-14T13:01:28.412427Z`; zero failure details.
+- Live 4975 trigger 16:15 MSK: LaunchAgent run 4, exit 0;
+  `warmup-01-20260814T131523643983Z-f27c7ad1` completed at
+  `2026-08-14T13:20:40.148532Z` in 316.50s; zero failure details. It produced
+  a validated non-actionable LKG checkpoint with 166 unique coupons, exact
+  cost 4,980 and 166 valid BaltBet upload lines. The package remains paper-only
+  and the release gate is closed.
 
 ## Следующее действие
 
-После 16:15 trigger проверить `warmup`, launchd exit, failures, cached package
-и новые artifacts. До terminal 4975 не начинать менять package objective.
+После 16:30 trigger проверить `refresh`, launchd exit, failures,
+новый LKG и хэш-связанные artifacts. До terminal 4975 не начинать
+менять package objective.

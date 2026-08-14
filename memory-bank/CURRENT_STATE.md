@@ -1,5 +1,24 @@
 # Current State
 
+## Drawing 4975 warmup and LKG evidence (2026-08-14 16:23 Moscow)
+
+The fourth automatic evening trigger completed successfully. Launchd reports
+four runs and exit code 0. Attempt
+`warmup-01-20260814T131523643983Z-f27c7ad1` ran from
+`2026-08-14T13:15:23.643983Z` through `13:20:40.148532Z`, status `complete`,
+with zero failure details. It created checkpoint
+`warmup-01-20260814T131523643983Z-f27c7ad1-b13f8050c6ec` under the drawing-4975
+last-known-good store.
+
+The checkpoint has 166 CSV rows and 166 unique coupons, selected cost 4,980,
+effective bank 4,980, and 166 unique `baltbet-upload.txt` lines. Every upload
+line passed the exact `30; outcome x 15` format check. The package SHA-256 is
+`fbc04911911af94b73d2c701e8708d4df51ff568b6a2f74680f8d1ad718694c5`; the
+upload SHA-256 is
+`b13f8050c6ec68da61ae1f5dfbcaa67bfa244d92654281bdad017b743ea26673`.
+This is a non-actionable paper/LKG artifact: the quality-v2 real-money release
+gate remains closed. The next automatic trigger is refresh at 16:30 Moscow.
+
 ## Drawing 4975 freshness evidence (2026-08-14 16:02 Moscow)
 
 The third automatic evening trigger completed successfully. Launchd reports
