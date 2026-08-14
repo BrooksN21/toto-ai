@@ -5054,6 +5054,7 @@ def _ensure_post_draw_plan_candidate(
     output = plan.output_dir / "post-draw"
     try:
         from toto_ai.operations.finished_draw import (
+            install_post_draw_launch_agent,
             prepare_post_draw_scheduler_artifacts,
         )
 
@@ -5063,7 +5064,8 @@ def _ensure_post_draw_plan_candidate(
             terminal_status=terminal_status,
             completed_at=completed_at,
         )
-        prepare_post_draw_scheduler_artifacts(
+        automatic_installation = _scheduler_launch_agent_is_loaded(plan)
+        plan_path, _wrapper_path, plist_path = prepare_post_draw_scheduler_artifacts(
             drawing_id=plan.drawing_id,
             drawing_number=None if plan.drawing_id is not None else plan.drawing,
             ended_at=_timestamp(plan.ended_at),
@@ -5080,7 +5082,25 @@ def _ensure_post_draw_plan_candidate(
             max_attempts=6,
             initial_delay_seconds=0,
             max_delay_seconds=0,
+            automation_installation=automatic_installation,
         )
+        if automatic_installation:
+            activation = install_post_draw_launch_agent(plan_path, plist_path)
+            _write_replace_atomic(
+                plan.output_dir,
+                output / "activation-status.json",
+                _canonical_json_bytes(
+                    {
+                        "schema_version": 1,
+                        "drawing": plan.drawing,
+                        "drawing_id": plan.drawing_id,
+                        "activated_at": _timestamp(completed_at),
+                        "automatic_wagering": False,
+                        **activation,
+                    }
+                )
+                + b"\n",
+            )
     except Exception as error:
         error_payload = {
             "schema_version": 1,
@@ -5100,6 +5120,29 @@ def _ensure_post_draw_plan_candidate(
         except Exception:
             # Advisory reporting must never trigger a second primary finalization.
             return
+
+
+def _scheduler_launch_agent_is_loaded(plan: SchedulerPlan) -> bool:
+    """Only chain post-draw automation from a verified loaded evening job."""
+
+    label = scheduler_launch_agent_label(plan)
+    candidate = plan.output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME
+    installed = Path.home() / "Library" / "LaunchAgents" / f"{label}.plist"
+    if (
+        not candidate.is_file()
+        or candidate.is_symlink()
+        or not installed.is_file()
+        or installed.is_symlink()
+        or candidate.read_bytes() != installed.read_bytes()
+    ):
+        return False
+    completed = subprocess.run(
+        ("launchctl", "print", f"gui/{os.getuid()}/{label}"),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return completed.returncode == 0
 
 
 def _validate_selector_diagnostics(

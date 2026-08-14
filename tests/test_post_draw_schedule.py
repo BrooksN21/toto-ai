@@ -1,17 +1,47 @@
 import hashlib
 import json
 import plistlib
+from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
 from toto_ai.db.models import Drawing
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.operations.finished_draw import (
+    cleanup_post_draw_launch_agent,
     due_post_draw_attempts,
+    install_post_draw_launch_agent,
     load_post_draw_plan,
     prepare_post_draw_scheduler_artifacts,
 )
+
+
+@dataclass
+class _Completed:
+    returncode: int
+    stderr: str = ""
+
+
+class _Launchctl:
+    def __init__(self):
+        self.loaded: set[str] = set()
+        self.calls: list[tuple[str, ...]] = []
+
+    def __call__(self, command, **_kwargs):
+        command = tuple(command)
+        self.calls.append(command)
+        if command[1] == "print":
+            return _Completed(0 if command[2] in self.loaded else 1)
+        if command[1] == "bootstrap":
+            payload = plistlib.loads(Path(command[3]).read_bytes())
+            self.loaded.add(f"{command[2]}/{payload['Label']}")
+            return _Completed(0)
+        if command[1] == "bootout":
+            self.loaded.discard(command[2])
+            return _Completed(0)
+        raise AssertionError(command)
 
 
 def _database(tmp_path, *, ended_at):
@@ -119,6 +149,53 @@ def test_post_draw_plan_is_hash_bound_idempotent_and_launchd_is_candidate_only(
     package.write_text("30; " + "; ".join("2" * 15) + "\n")
     with pytest.raises(ValueError, match="conflicts with immutable"):
         prepare_post_draw_scheduler_artifacts(**kwargs)
+
+
+def test_post_draw_launch_agent_installs_verifies_and_cleans_exact_candidate(
+    tmp_path,
+):
+    ended_at = "2026-08-13T18:00:00+00:00"
+    db = _database(tmp_path, ended_at=ended_at)
+    package = tmp_path / "package.txt"
+    package.write_text("30; " + "; ".join("1" * 15) + "\n")
+    plan, _wrapper, plist = prepare_post_draw_scheduler_artifacts(
+        drawing_id=12000,
+        drawing_number=None,
+        ended_at=ended_at,
+        package_file=package,
+        stake=30,
+        db=db,
+        state_file=tmp_path / "state.json",
+        output_dir=tmp_path / "scheduler",
+        project_root=tmp_path,
+        python_executable="/usr/bin/python3",
+        max_attempts=3,
+        initial_delay_seconds=0,
+        max_delay_seconds=0,
+        automation_installation=True,
+    )
+    runner = _Launchctl()
+    launch_agents = tmp_path / "LaunchAgents"
+
+    status = install_post_draw_launch_agent(
+        plan,
+        plist,
+        launch_agents_root=launch_agents,
+        command_runner=runner,
+    )
+
+    assert status["active"] is True
+    installed = launch_agents / "com.toto-ai.post-draw-12000.plist"
+    assert installed.read_bytes() == plist.read_bytes()
+    assert load_post_draw_plan(plan)["automation_installation"] is True
+
+    cleanup_post_draw_launch_agent(
+        plan,
+        launch_agents_root=launch_agents,
+        command_runner=runner,
+    )
+    assert not installed.exists()
+    assert not runner.loaded
 
 
 def test_package_free_no_bet_plan_has_due_slot_selection(tmp_path):

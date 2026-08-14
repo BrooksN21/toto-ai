@@ -1,4 +1,5 @@
 import csv
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -191,6 +192,38 @@ def test_collection_produces_15_audit_rows_and_explicit_market_fallback():
     assert result.events[0].home_window.fixture_count == 1
     assert result.events[0].home_window.rest_days > 0
     assert len(provider.history_calls) == 28
+
+
+def test_collection_keeps_mixed_schedule_only_pin_as_explicit_missing_fallback():
+    target, pins = target_and_pins()
+    pins = (
+        replace(
+            pins[0],
+            provider="schedule-evidence",
+            source_provider="schedule-evidence",
+            provider_fixture_id=None,
+            source_fixture_id=None,
+            provider_home_team_id=None,
+            provider_away_team_id=None,
+            schedule_only=True,
+        ),
+        *pins[1:],
+    )
+    provider = FakeProvider()
+
+    result = collect_sports_stats(
+        target,
+        pins,
+        provider,
+        history_size=10,
+        now=lambda: CAPTURED,
+    )
+
+    assert len(result.events) == 15
+    assert result.events[0].status == "missing"
+    assert result.events[0].missing_reasons == ("preparation_not_ready",)
+    assert result.events[0].provider_fixture_id is None
+    assert all(call[0] != "2000" for call in provider.history_calls)
 
 
 def test_missing_standings_is_partial_not_zero_or_drawing_failure():

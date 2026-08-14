@@ -24,8 +24,25 @@
 - A terminal scheduler result always wins over secondary post-draw automation.
   Missing package evidence creates only a package-free paper/review path;
   generation failures are diagnostics and cannot rewrite the primary marker.
-- Generated launchd files are candidates only. Installation and wagering are
-  outside this feature and never happen automatically.
+- Generated post-draw launchd files are installed automatically only when the
+  parent evening LaunchAgent is itself byte-verified and loaded. Manual and
+  rehearsal parents remain candidate-only. The child is exact-plan bound,
+  non-betting, and self-cleans after terminal completion/blocking/exhaustion.
+
+## 2026-08-14: public source discovery cannot self-promote schedule evidence
+
+- The automatic collector may search public independent sources, preserve raw
+  snapshots, and propose exact identity/kickoff candidates.
+- An independent source such as Sofascore cannot by itself satisfy the existing
+  official-plus-independent schedule-evidence gate. Candidate collection never
+  mutates the production ledger; official evidence and review remain required.
+- Mixed canonical pin sets are valid sports-stat inputs. Events without a
+  provider-owned fixture/team identity become explicit per-event BK fallback;
+  they must not abort collection for the other events or receive fake provider
+  identities.
+- A sports-vs-BK package comparison is meaningful only when sports coverage is
+  nonzero. At zero coverage, identical packages prove fallback correctness,
+  not sports-model benefit.
 
 ## 2026-08-13: sports evidence adjusts, but does not replace, the market prior
 

@@ -28,6 +28,8 @@ from toto_ai.sports_stats.provider import SportsStatsProvider
 def stats_targets_from_preparation(
     target: TargetDrawing,
     pins: tuple[DrawingEventPinRecord, ...],
+    *,
+    provider_name: str,
 ) -> tuple[StatsTargetEvent, ...]:
     if len(pins) != 15 or tuple(pin.event_order for pin in pins) != tuple(range(15)):
         raise ValueError("preparation_not_ready: exactly 15 ordered pins are required")
@@ -46,6 +48,12 @@ def stats_targets_from_preparation(
         if pin.drawing_fingerprint != fingerprint:
             raise ValueError("preparation_not_ready: pin fingerprint mismatch")
         starts_at = _parse_utc(pin.starts_at, "pin starts_at")
+        provider_available = (
+            pin.effective_source_provider == provider_name
+            and pin.provider_fixture_id is not None
+            and pin.provider_home_team_id is not None
+            and pin.provider_away_team_id is not None
+        )
         rows.append(
             StatsTargetEvent(
                 drawing_id=target.drawing_id,
@@ -56,14 +64,27 @@ def stats_targets_from_preparation(
                 sport=event.sport,
                 deadline=target.deadline,
                 target_starts_at=starts_at,
-                provider=pin.provider,
-                provider_fixture_id=pin.provider_fixture_id,
+                provider=provider_name,
+                provider_fixture_id=(
+                    pin.provider_fixture_id
+                    if provider_available
+                    else f"unavailable-{event.event_order}"
+                ),
                 canonical_home_team_id=pin.canonical_home_team_id,
                 canonical_away_team_id=pin.canonical_away_team_id,
-                provider_home_team_id=pin.provider_home_team_id,
-                provider_away_team_id=pin.provider_away_team_id,
+                provider_home_team_id=(
+                    pin.provider_home_team_id
+                    if provider_available
+                    else f"unavailable-home-{event.event_order}"
+                ),
+                provider_away_team_id=(
+                    pin.provider_away_team_id
+                    if provider_available
+                    else f"unavailable-away-{event.event_order}"
+                ),
                 home_team=event.home_team,
                 away_team=event.away_team,
+                provider_pin_available=provider_available,
             )
         )
     return tuple(rows)
@@ -95,7 +116,11 @@ def collect_sports_stats(
     elif captured_at >= target.deadline:
         raise ValueError("prospective collection is after the drawing deadline")
 
-    targets = stats_targets_from_preparation(target, pins)
+    targets = stats_targets_from_preparation(
+        target,
+        pins,
+        provider_name=provider.provider_name,
+    )
     if any(item.provider != provider.provider_name for item in targets):
         raise ValueError("preparation_not_ready: provider identity mismatch")
     context_cache: dict[str, Any] = {}
@@ -107,6 +132,17 @@ def collect_sports_stats(
 
     cache_only = fixed_as_of is not None
     for item in targets:
+        if not item.provider_pin_available:
+            pending.append(
+                (
+                    item,
+                    {
+                        "status": "missing",
+                        "reasons": ("preparation_not_ready",),
+                    },
+                )
+            )
+            continue
         if item.sport != "football":
             pending.append(
                 (

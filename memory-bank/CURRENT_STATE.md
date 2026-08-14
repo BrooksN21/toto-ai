@@ -1,5 +1,51 @@
 # Current State
 
+## Source collection, sports comparison, and 4974 review (2026-08-14)
+
+The first safe automatic public schedule-source collector is implemented and
+wired into deferred `morning-dispatch --activate`. It consumes the immutable
+review queue, searches Sofascore with target names plus reviewed aliases,
+stores raw hash-bound snapshots, and emits explicit candidate/conflict/missing
+records. It never mutates the production schedule-evidence ledger: Sofascore
+is independent evidence, so an official source and review are still required
+before promotion. A real drawing-4975 probe found independent candidates for
+all five previously missing events (5/5, zero unresolved) without changing the
+bound ledger.
+
+Mixed canonical pin sets no longer abort sports-stat collection. API-Sports
+pins are collected normally; reviewed/schedule-only pins become explicit
+per-event `preparation_not_ready` misses and fall back to BK. The drawing-4975
+audit produced 10 partial API-Sports rows and five explicit misses, but zero
+complete venue-history rows. Therefore the sports probability artifact has
+0/15 sports coverage and 15/15 BK fallback.
+
+An equal-bank preliminary comparison was run for drawing 4975 with 166 coupons
+and RUB 4,980 in each branch. The BK-control and sports-shadow packages are
+byte-identical (166/166 overlap) because sports coverage is zero. Their modeled
+P(13+) is approximately `0.00084412`; modeled EV/ROI remain unvalidated model
+diagnostics, not a profit forecast. Durable paper-only artifacts are under
+`reports/research/package-comparison-4975/final/`.
+
+Drawing 4974 is now complete 15/15 with actual row
+`XX121122X1X2X12`. The retained 166-coupon, RUB-4,980 paper package failed:
+best 6/15, mean 2.86, median 3, and zero coupons in categories 10-15. Every
+actual sign existed somewhere in the package, but the joint combinations were
+poor; the package's most frequent sign matched the actual sign in only 2/15
+events. BK's top-ranked outcome itself occurred in only 5/15 events. This was
+not a wager, so return and ROI are unavailable. The deterministic report is
+`reports/rehearsal/evening-4974-recovery-20260813T1330Z/post-draw/paper-package-review-4974.md`.
+
+Post-draw scheduling is now chained automatically only from a verified loaded
+evening LaunchAgent. Manual/rehearsal schedulers remain candidate-only. The
+installed post-draw job runs from 12:00 Moscow on the next day, retries on the
+existing bounded cadence, and removes its exact LaunchAgent after a terminal
+state. Drawing 4974 predates this activation behavior and was reconstructed
+manually; future loaded evening runs use the automatic path.
+
+Verification: `1876 passed, 13 deselected in 116.96s`; Ruff and
+`git diff --check` passed. The drawing-4975 evening LaunchAgent remains loaded
+with its first trigger at 15:00 Moscow and T-10 at 16:50 Moscow.
+
 ## Drawing 4975 morning recovery and retry activation fix (2026-08-14)
 
 The installed morning LaunchAgent did run for drawing 4975, but preparation
@@ -27,10 +73,10 @@ LaunchAgent has future triggers at 15:00, 15:30, 16:00, 16:15, 16:30, 16:40,
 16:44 and 16:50 Moscow. Scheduler readiness is not a profit claim; quality-v2
 remains paper-only.
 
-The separate automatic public-source evidence collector is still not
-implemented. The retry execution gap is closed, but a previously unseen event
-still needs authoritative schedule evidence before it can pass the existing
-official-plus-independent gate.
+The automatic collector now removes the manual discovery step for independent
+candidates. It does not remove the official-source requirement; previously
+unseen events still remain fail-closed until authoritative evidence is
+collected and reviewed.
 
 Verification after the retry fixes: `1868 passed, 13 deselected`; Ruff and
 `git diff --check` passed. The live read-only preflight status reports drawing
@@ -103,10 +149,13 @@ policy regression protects the durable wording in `AGENTS.md` and
 
 ## Automatic post-draw review lifecycle completed (2026-08-13)
 
-The scheduler now creates an uninstalled, non-betting post-draw candidate for
-every terminal outcome. The first result check is 12:00 Europe/Moscow on the
-next Moscow calendar day after the drawing deadline; incomplete drawings retry
-at three-hour intervals within the plan's bounded attempt window.
+The scheduler creates a non-betting post-draw plan for every terminal outcome.
+When and only when the parent evening LaunchAgent is verified loaded, the
+exact bound post-draw LaunchAgent is installed automatically. Manual and
+rehearsal parents remain uninstalled candidates. The first result check is
+12:00 Europe/Moscow on the next Moscow calendar day after the drawing deadline;
+incomplete drawings retry at three-hour intervals within the plan's bounded
+attempt window.
 
 The workflow reuses the existing authoritative result synchronization,
 reviewed VOID handling, immutable package archive, and settlement algorithms.
@@ -119,7 +168,7 @@ Post-draw preparation is advisory to the primary scheduler. Missing paper
 state is normalized to a zero-cost package-free paper result when no validated
 package exists; any post-draw generation failure is recorded separately and
 cannot change the terminal scheduler status/marker or create a second
-finalization failure. No LaunchAgent is installed and no wager is placed.
+finalization failure. No wager is placed.
 
 Verification after the fail-safe boundary repair passed `1830 passed, 13
 deselected in 120.89s`; full Ruff and `git diff --check` passed.

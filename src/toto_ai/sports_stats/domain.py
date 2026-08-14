@@ -79,6 +79,7 @@ class StatsTargetEvent:
     provider_away_team_id: str
     home_team: str
     away_team: str
+    provider_pin_available: bool = True
 
     def __post_init__(self) -> None:
         _positive_int("drawing_id", self.drawing_id)
@@ -100,6 +101,8 @@ class StatsTargetEvent:
         _text("provider_away_team_id", self.provider_away_team_id)
         _text("home_team", self.home_team)
         _text("away_team", self.away_team)
+        if not isinstance(self.provider_pin_available, bool):
+            raise ValueError("provider_pin_available must be a bool")
 
 
 @dataclass(frozen=True)

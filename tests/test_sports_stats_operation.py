@@ -394,7 +394,7 @@ def call_historical(monkeypatch, tmp_path, *, raw_fetched_at):
         lambda payload, fetched_at: target,
     )
     monkeypatch.setattr(
-        "toto_ai.sports_stats.operation.load_ready_drawing_pins",
+        "toto_ai.sports_stats.operation.load_ready_pin_set",
         lambda *args, **kwargs: pins,
     )
     provider = FrozenAPISportsClient()
@@ -466,7 +466,7 @@ def test_prospective_cache_replays_historically_without_network(
         lambda payload, fetched_at: target,
     )
     monkeypatch.setattr(
-        "toto_ai.sports_stats.operation.load_ready_drawing_pins",
+        "toto_ai.sports_stats.operation.load_ready_pin_set",
         lambda *args, **kwargs: pins,
     )
     warming_session = Session(prospective_responses())

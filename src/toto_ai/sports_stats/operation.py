@@ -14,7 +14,7 @@ from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.external_odds.api_sports import APISportsClient
 from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.targets import parse_target_drawing
-from toto_ai.external_odds.team_registry import load_ready_drawing_pins
+from toto_ai.external_odds.team_registry import load_ready_pin_set
 from toto_ai.sports_stats.api_sports import APISportsFootballStatsProvider
 from toto_ai.sports_stats.collection import collect_sports_stats
 from toto_ai.sports_stats.domain import SportsStatsRunSnapshot
@@ -104,11 +104,10 @@ def collect_and_store_sports_stats(
         target.deadline,
         target.events,
     )
-    pins = load_ready_drawing_pins(
+    pins = load_ready_pin_set(
         session_factory,
         drawing_id=target.drawing_id,
         drawing_fingerprint=fingerprint,
-        provider="api-sports",
     )
     if provider_client is None:
         api_key = load_api_sports_key(env_file)

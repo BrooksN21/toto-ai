@@ -672,6 +672,45 @@ def test_structurally_playable_phase_is_forced_to_paper_only_no_bet(tmp_path: Pa
     assert post_draw["package_binding"]["kind"] == "package_free_no_bet"
 
 
+def test_loaded_evening_scheduler_installs_bound_post_draw_job(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    plan = _plan(tmp_path)
+    installed: list[tuple[Path, Path]] = []
+
+    monkeypatch.setattr(scheduler, "_scheduler_launch_agent_is_loaded", lambda _p: True)
+
+    def install(plan_path, plist_path):
+        installed.append((Path(plan_path), Path(plist_path)))
+        return {
+            "label": f"com.toto-ai.post-draw-{plan.drawing_id}",
+            "installed_path": str(tmp_path / "installed.plist"),
+            "installed_verified": True,
+            "loaded_verified": True,
+            "active": True,
+        }
+
+    monkeypatch.setattr(
+        "toto_ai.operations.finished_draw.install_post_draw_launch_agent",
+        install,
+    )
+
+    result = _execute(plan, _happy_runner([]), run_id="post-draw-activation")
+
+    assert result.outcome == "no-bet"
+    assert len(installed) == 1
+    post_draw = json.loads(installed[0][0].read_text(encoding="utf-8"))
+    assert post_draw["automation_installation"] is True
+    activation = json.loads(
+        (plan.output_dir / "post-draw" / "activation-status.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert activation["active"] is True
+    assert activation["automatic_wagering"] is False
+
+
 def test_final_exception_never_promotes_diagnostic_fallback(tmp_path: Path):
     plan = _plan(tmp_path)
 

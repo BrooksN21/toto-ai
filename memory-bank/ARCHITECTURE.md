@@ -38,8 +38,8 @@ coupon path. T-10 does not remove paper checkpoints, but neither
 
 ## Automatic post-draw review boundary
 
-Every terminal scheduler result now produces an uninstalled post-draw
-candidate only after a durable non-actionable paper state exists:
+Every terminal scheduler result produces a post-draw plan only after a durable
+non-actionable paper state exists:
 
 ```text
 terminal scheduler status/marker
@@ -55,8 +55,19 @@ terminal scheduler status/marker
 Post-draw generation is advisory and fail-safe. A missing database row,
 artifact conflict, or generation error is written to
 `post-draw/generation-error.json` and cannot mutate or replace the primary
-scheduler result. Generated launchd artifacts are candidates only; the code
-does not install them and never places a wager.
+scheduler result. A verified loaded evening LaunchAgent may install only its
+exact hash-bound post-draw LaunchAgent; manual/rehearsal parents leave a
+candidate only. The post-draw job never places a wager and cleans up its exact
+LaunchAgent after terminal completion/blocking/exhaustion.
+
+## Automatic public schedule-source discovery
+
+Deferred morning preparation invokes a public-source collector against the
+immutable review queue. It stores hash-bound Sofascore search responses and
+machine-readable independent candidate/conflict/missing records. Discovery is
+automatic, but ledger promotion is not: independent evidence cannot satisfy
+the official-plus-independent policy on its own. The collector never mutates
+the bound production ledger.
 
 Morning preparation keeps identity coverage and kickoff evidence distinct.
 A baseline-only identity row with no kickoff produces a `timing_unknown`

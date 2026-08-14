@@ -41,6 +41,14 @@ The evidence has no production package influence. The current production
 probability matrix remains exclusively normalized TotoBrief BK; pool
 probabilities are crowd/EV input.
 
+The first equal-bank drawing-4975 package comparison confirmed fail-safe
+fallback rather than model benefit: API-Sports returned 10 partial rows and
+five schedule-only misses, leaving 0/15 complete venue-history events. The
+sports candidate therefore fell back to BK for all 15 events and produced the
+same 166 coupons as the BK control. A zero-coverage identical package must be
+reported as `analytics_effective=false`; it is not evidence that sports
+analytics improves the forecast.
+
 The shadow sports-probability provider, evaluator, and CLI are implemented.
 They emit `NOT_ACTIVATED` machine-readable artifacts containing BK,
 sports-shadow, candidate blend, raw feature summaries, content/source

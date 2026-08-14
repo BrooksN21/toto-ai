@@ -763,8 +763,11 @@ closed.
 - [x] Install generated identity-bound passive retry plans automatically when
   `morning-dispatch --activate` defers, and keep hard-stop-day hourly retries
   running after the fixed 12:00 morning pass.
-- [ ] Add an automatic evidence collector that writes reviewed observations
-  only after authoritative identity, orientation and kickoff checks succeed.
+- [x] Add automatic independent public-source discovery with immutable raw
+  snapshots and candidate/conflict/missing reports; never mutate the ledger.
+- [ ] Add authoritative competition/team source adapters and reviewed
+  promotion so official-plus-independent observations can be completed without
+  manual discovery while preserving the existing evidence gate.
 - [x] Make repeated preparation preserve already validated schedule-evidence
   pins when API-Sports cannot serve their kickoff UTC date; verify the live
   4973 READY/PLAYABLE re-run and install its schema-v6 evening scheduler.
