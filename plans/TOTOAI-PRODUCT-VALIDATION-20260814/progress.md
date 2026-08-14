@@ -8,7 +8,7 @@
 
 | Этап | Статус | Результат / блокер |
 |---:|---|---|
-| 0. Live-цикл 4975 | IN PROGRESS | READY 15/15; evening LaunchAgent загружен; первый триггер 15:00 МСК |
+| 0. Live-цикл 4975 | IN PROGRESS | 15:00 TLS preflight complete/exit 0; следующий триггер 15:30 МСК |
 | 1. EV/BK/TotoBrief-style | READY TO START | Existing engines mapped in `phase1-inventory.md`; adapters begin after terminal 4975 |
 | 2. Historical benchmark | BLOCKED ON PHASE 1 | Data audit: 398 strict frozen, 1,672 probability-eligible; 500/1000 must be legacy-only |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
@@ -24,7 +24,7 @@
 - [x] Bank/stake зафиксированы: 4 980 / 30.
 - [x] Evening plan `c6a3a25a8459d0d2` установлен и загружен.
 - [x] Trigger schedule проверен.
-- [ ] 15:00 preflight/control отработал.
+- [x] 15:00 TLS preflight отработал: exit 0, 69.08s, no failures.
 - [ ] 15:30 phase отработал.
 - [ ] 16:00 phase отработал.
 - [ ] 16:15 warmup отработал.
@@ -57,9 +57,12 @@
   1,672 probability-backtest eligible; 3,843/3,844 are also absent from the
   upstream results listing and are not local ingestion loss; phase-2 evidence
   tiers frozen in `phase2-data-eligibility.md`.
+- Live 4975 trigger 15:00 MSK: LaunchAgent run 1, exit 0;
+  `tls_preflight-01-20260814T120007817342Z-5651ee69` completed at
+  `2026-08-14T12:01:16.900047Z`; terminal remains null as expected.
 
 ## Следующее действие
 
-После первого реального scheduler trigger обновить этот файл фактическим
-exit/status/artifact результатом. До terminal 4975 не начинать менять package
-objective, чтобы не смешивать operational validation с новой стратегией.
+После 15:30 trigger проверить `api_preflight`, launchd exit, failures и новые
+artifacts. До terminal 4975 не начинать менять package objective, чтобы не
+смешивать operational validation с новой стратегией.

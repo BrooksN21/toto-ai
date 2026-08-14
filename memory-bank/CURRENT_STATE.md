@@ -1,5 +1,16 @@
 # Current State
 
+## Drawing 4975 live trigger evidence (2026-08-14 15:02 Moscow)
+
+The first loaded evening LaunchAgent trigger executed automatically. Launchd
+reports one run and exit code 0. Scheduler state records attempt
+`tls_preflight-01-20260814T120007817342Z-5651ee69` from
+`2026-08-14T12:00:07.817342Z` through `12:01:16.900047Z`, status `complete`,
+with zero failure details and reason `target, data access, configuration, and
+override catalog validated`. The terminal field is still null, as expected at
+T-120. The next planned trigger is 15:30 Moscow for API preflight. Evidence is
+under `reports/rehearsal/evening-4975-20260814T140000Z/`.
+
 ## Active product-validation plan (2026-08-14)
 
 The user approved a full staged plan at
