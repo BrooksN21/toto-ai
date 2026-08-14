@@ -280,6 +280,10 @@ from toto_ai.runner.offline_replay import (
     load_offline_replay_inputs,
     resolve_offline_replay_paths,
 )
+from toto_ai.runner.preflight_retry_scheduler import (
+    install_preflight_retry_launch_agent,
+    prepare_preflight_retry_artifacts,
+)
 from toto_ai.runner.preflight_status import build_preflight_status
 from toto_ai.sports_stats.operation import (
     collect_and_store_sports_stats,
@@ -3524,6 +3528,7 @@ def morning_dispatch_command(
             deadline=parsed_expected_deadline,
         )
     )
+    retry_scheduler_status: dict[str, object] | None = None
     try:
         result = dispatch_morning(
             config,
@@ -3555,6 +3560,13 @@ def morning_dispatch_command(
             python_command=python_executable,
             expected_identity=expected_identity,
         )
+        if activate and result.retry_plan_path is not None:
+            retry_artifacts = prepare_preflight_retry_artifacts(
+                result.retry_plan_path
+            )
+            retry_scheduler_status = install_preflight_retry_launch_agent(
+                retry_artifacts
+            )
     except MorningIdentityDriftError as error:
         typer.echo(
             json.dumps(
@@ -3606,6 +3618,7 @@ def morning_dispatch_command(
                     if result.review_queue_path is None
                     else str(result.review_queue_path)
                 ),
+                "retry_scheduler": retry_scheduler_status,
             },
             sort_keys=True,
             separators=(",", ":"),

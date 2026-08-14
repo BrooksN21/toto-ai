@@ -760,6 +760,9 @@ closed.
 - [x] Wire the canonical schedule-evidence ledger through real
   `morning-dispatch`, preserve it in passive retries, and allow only atomic
   baseline-only-to-reviewed schedule enrichment for an unchanged drawing.
+- [x] Install generated identity-bound passive retry plans automatically when
+  `morning-dispatch --activate` defers, and keep hard-stop-day hourly retries
+  running after the fixed 12:00 morning pass.
 - [ ] Add an automatic evidence collector that writes reviewed observations
   only after authoritative identity, orientation and kickoff checks succeed.
 - [x] Make repeated preparation preserve already validated schedule-evidence

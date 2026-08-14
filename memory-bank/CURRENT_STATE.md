@@ -1,5 +1,42 @@
 # Current State
 
+## Drawing 4975 morning recovery and retry activation fix (2026-08-14)
+
+The installed morning LaunchAgent did run for drawing 4975, but preparation
+stopped at `timing_unknown 5/15`: events 9, 11, 12, 13 and 15 had no usable
+API-Sports kickoff. The persisted retry plan also ended at 12:00 Moscow even
+though its hard stop was 16:00, and `morning-dispatch --activate` generated the
+identity-bound retry plan without installing its LaunchAgent. Consequently no
+automatic retry existed after the fixed 12:00 morning pass.
+
+Both execution defects are fixed locally. Bootstrap/timing retries now add
+hourly hard-stop-day attempts from 13:00 Moscow until, but never at or after,
+the configured hard stop. A deferred `morning-dispatch --activate` now
+generates and installs the exact passive retry LaunchAgent and reports its
+verified status. The retry remains drawing/fingerprint/deadline bound and may
+activate an evening scheduler only when the existing plan says
+`activate_evening=true`.
+
+For the current drawing, exact schedule evidence was reviewed from current
+official and independent public sources and appended for Annecy-Rodez,
+Dijon-Pau, Versailles-Le Puy, Villefranche-Paris 13, and QRM-Concarneau. The
+real morning wrapper then reached READY 15/15 and activated schema-v6 evening
+plan `c6a3a25a8459d0d2` for drawing 4975, deadline 17:00 Moscow, bank 4,980 and
+stake 30. Its bound ledger content and semantic hashes revalidate. The loaded
+LaunchAgent has future triggers at 15:00, 15:30, 16:00, 16:15, 16:30, 16:40,
+16:44 and 16:50 Moscow. Scheduler readiness is not a profit claim; quality-v2
+remains paper-only.
+
+The separate automatic public-source evidence collector is still not
+implemented. The retry execution gap is closed, but a previously unseen event
+still needs authoritative schedule evidence before it can pass the existing
+official-plus-independent gate.
+
+Verification after the retry fixes: `1868 passed, 13 deselected`; Ruff and
+`git diff --check` passed. The live read-only preflight status reports drawing
+4975 READY 15/15, zero unresolved events, evening activation `activated`, and
+package generation `enabled`.
+
 ## The Odds API current-drawing shadow probe completed (2026-08-13)
 
 The provider-neutral transport, immutable raw captures, generic quota and

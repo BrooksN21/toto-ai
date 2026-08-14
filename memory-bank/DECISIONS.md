@@ -1492,3 +1492,19 @@ ambiguous reversed evidence remains unresolved.
 - Provider coverage counts unique drawings, not checkpoint runs. When multiple
   complete observations exist for one drawing, the audit selects the latest
   append-ordered collection and counts that drawing once toward 30/450.
+
+## 2026-08-14: deferred morning retries must be executable, not documentary
+
+- `morning-dispatch --activate` must install and verify the exact passive
+  preflight retry LaunchAgent whenever a deferred result has a retry plan.
+  Merely writing `retry-plan.json` is not an operational retry.
+- Bootstrap and all-`timing_unknown` retries retain their short initial and
+  fixed morning checkpoints, then continue once per Moscow clock hour from
+  13:00 until the configured hard stop. No retry may run at or after hard stop.
+- Retry commands remain bound to drawing ID, visible number, fingerprint,
+  deadline and schedule-evidence ledger. Automatic evening activation is still
+  allowed only when the immutable retry plan explicitly sets
+  `activate_evening=true`.
+- This change closes retry execution only. It does not weaken the existing
+  official-plus-independent schedule-evidence requirement and does not claim
+  that an automatic evidence collector already exists.
