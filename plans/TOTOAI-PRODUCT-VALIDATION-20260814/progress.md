@@ -54,8 +54,9 @@
   evidence and StatsBomb Open Data is research-only. See
   `knowledge/free_sports_sources.md`.
 - Full DB health: 2,215 drawings; 398 strict historical-inventory healthy;
-  1,672 probability-backtest eligible; gaps 3,843/3,844; phase-2 evidence tiers
-  frozen in `phase2-data-eligibility.md`.
+  1,672 probability-backtest eligible; 3,843/3,844 are also absent from the
+  upstream results listing and are not local ingestion loss; phase-2 evidence
+  tiers frozen in `phase2-data-eligibility.md`.
 
 ## Следующее действие
 

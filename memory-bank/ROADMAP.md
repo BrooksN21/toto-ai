@@ -23,6 +23,10 @@ probability-backtest contract. Phase 2 will run strict 100/current-398 evidence
 separately from 500/1,000 legacy diagnostics; legacy output is not release
 evidence. See the active plan's `phase2-data-eligibility.md`.
 
+- [ ] Teach the gap audit to accept hash-bound documented upstream numbering
+  gaps. TotoBrief's public listing skips 3,843/3,844 between 3,842 and 3,845;
+  these are not missing local drawing records.
+
 ## Completed: operator-safe publication and timing escalation (2026-08-13)
 
 - [x] Add one mandatory `operator-export` gateway for current scheduler-owned,

@@ -57,9 +57,12 @@ only after the drawing-4975 terminal result is recorded.
 The full strict data-health audit covers 2,215 drawings. Only 398 satisfy the
 strong `historical_inventory` contract because most old rows lack immutable raw
 and result snapshots; 1,672 satisfy the weaker `backtest_probability` contract.
-There are no duplicate visible numbers, but 3,843 and 3,844 are reported as
-gaps and require upstream verification. The last 100 contain 78 strict-healthy
-and 79 probability-backtest-eligible drawings.
+There are no duplicate visible numbers. Numbers 3,843 and 3,844 are absent
+locally, but TotoBrief's own public results listing also skips directly from
+3,842 to 3,845; this is upstream numbering behavior rather than a local
+ingestion loss. The health contract still needs hash-bound upstream-gap
+evidence to suppress that false-positive metadata failure. The last 100
+contain 78 strict-healthy and 79 probability-backtest-eligible drawings.
 
 The plan no longer treats 500/1,000 old drawings as frozen release evidence.
 Phase 2 must publish a strict 100/current-398 benchmark separately from

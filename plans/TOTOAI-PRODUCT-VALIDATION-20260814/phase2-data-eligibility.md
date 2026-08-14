@@ -17,7 +17,9 @@ The strict read-only health contract was run over the complete local database:
 - complete BK rows: 2,215;
 - valid pool rows: 2,000;
 - duplicate visible numbers: 0;
-- visible-number gaps: 3,843 and 3,844.
+- visible-number gaps: 3,843 and 3,844. The upstream TotoBrief results listing
+  itself skips from 3,842 to 3,845, so this is an upstream numbering gap, not a
+  local ingestion loss.
 
 The last-100 audit has 78 strict historical-inventory healthy drawings and 79
 probability-backtest eligible drawings. It contains 17 finished drawings with
@@ -54,8 +56,10 @@ deadlines may contribute to prospective release evidence.
 
 ## Follow-up
 
-- Determine whether visible numbers 3,843 and 3,844 are genuinely missing
-  drawings or intentional numbering gaps in the upstream source.
+- Add hash-bound upstream-gap evidence for visible numbers 3,843 and 3,844 so
+  the health contract can distinguish a documented upstream numbering gap from
+  a local ingestion loss. Public evidence:
+  <https://totobrief.com/results/bbet?page=11>.
 - Continue bounded reconciliation for incomplete finished drawings; never
   invent a result for postponed/cancelled events.
 - Exclude zero-pool and incomplete-result rows from probability/package
