@@ -1,18 +1,19 @@
 # Phase 2 data-eligibility finding
 
 Measured: 2026-08-14
-Status: **BLOCKING CONSTRAINT RECORDED**
+Status: **CHRONOLOGY DEFECT CORRECTED / BLOCKING CONSTRAINT RECORDED**
 
 ## Full database audit
 
 The strict read-only health contract was run over the complete local database:
 
-- drawings: 2,215;
-- finished: 2,213;
+- drawings: 2,216;
+- finished: 2,214;
 - current active: 1;
-- strict `historical_inventory` healthy: 398;
+- strict chronological `historical_inventory` healthy: 13;
 - `backtest_probability` healthy: 1,672;
-- raw snapshot present: 484;
+- raw snapshot present: 485;
+- drawings with a usable pre-deadline raw snapshot: 17;
 - result snapshot present: 410;
 - complete BK rows: 2,215;
 - valid pool rows: 2,000;
@@ -33,26 +34,32 @@ Evidence:
 
 ## Consequence for the approved benchmark
 
-The repository cannot honestly produce 500 or 1,000 **strict frozen-snapshot**
-drawings today: only 398 satisfy the stronger historical inventory contract.
-Missing old raw snapshots cannot be recreated retrospectively with a truthful
-pre-deadline timestamp.
+The first audit counted any raw snapshot as frozen evidence. A chronology audit
+found that only 17 drawings have a raw snapshot captured at or before the
+deadline and only 13 of those also have complete terminal results and the other
+strict inputs. The other 385 previously reported `historical_inventory` rows
+had only post-deadline raw snapshots. Contract version 1.2.0 now fails closed on
+`missing_predeadline_raw_snapshot` and records the eligible count/timestamp.
+
+The repository therefore cannot honestly produce a 100-drawing strict frozen
+benchmark today. Missing historical pre-deadline snapshots cannot be recreated
+retrospectively.
 
 Phase 2 therefore has two explicitly separated evidence tiers:
 
-1. **Strict frozen benchmark**
-   - run 100 eligible drawings now;
-   - optionally run the complete available strict set (currently 398);
-   - use for the stronger historical claim, while still not claiming profit.
+1. **Strict chronological canary**
+   - run 3–5 drawings first, then all currently eligible drawings (13);
+   - use only as pipeline correctness evidence, not as a strategy verdict;
+   - grow this tier only from genuinely pre-deadline future snapshots.
 2. **Legacy probability diagnostic**
-   - run 500 and 1,000 `backtest_probability`-eligible drawings;
+   - run 100, 500 and 1,000 `backtest_probability`-eligible drawings;
    - database rows are hash-frozen at experiment time, but many lack original
      raw/result snapshot chronology;
    - label every artifact `LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`;
    - use only to detect large strategy weaknesses and instability.
 
-The prospective holdout gate is unchanged. Only packages frozen before future
-deadlines may contribute to prospective release evidence.
+The prospective holdout gate is unchanged and is now the primary release
+evidence path. Only packages frozen before future deadlines may contribute.
 
 ## Follow-up
 

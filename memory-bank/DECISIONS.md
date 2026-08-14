@@ -1541,13 +1541,29 @@ ambiguous reversed evidence remains unresolved.
   that an automatic evidence collector already exists.
 ## 2026-08-14 — Separate strict frozen and legacy historical benchmarks
 
-- The full database has 398 `historical_inventory`-healthy drawings and 1,672
-  `backtest_probability`-eligible drawings.
+- This decision was corrected later the same day after adding chronology
+  validation. The original count of 398 did not prove pre-deadline capture.
+- The full database has only 13 chronological `historical_inventory`-healthy
+  drawings and 1,672 `backtest_probability`-eligible drawings.
 - Missing old raw/result snapshots cannot be recreated with a trustworthy
   pre-deadline timestamp.
-- Phase 2 therefore separates a strict 100/current-398 frozen benchmark from
-  500/1,000 legacy retrospective diagnostics.
+- Phase 2 therefore separates a strict current-13 pipeline benchmark from
+  100/500/1,000 legacy retrospective diagnostics.
 - Legacy diagnostics must be labelled `NOT RELEASE EVIDENCE`, may not be
   aggregated into release metrics, and cannot support profitability claims.
 - Future prospective packages remain the only way to grow the strongest
   holdout evidence.
+
+## 2026-08-14 — Raw snapshot existence is not pre-deadline evidence
+
+- A raw snapshot is strict historical evidence only when its registered
+  timezone-aware `captured_at` is at or before the drawing deadline and both
+  immutable payload and metadata files still exist as regular non-symlink
+  files.
+- `historical_inventory` fails closed on
+  `missing_predeadline_raw_snapshot`; simple filesystem presence remains an
+  inventory metric only.
+- Post-deadline raw snapshots may support result reconciliation and legacy
+  diagnostics, but never strict prediction-input or release claims.
+- Contract version 1.2.0 records the eligible count and latest eligible capture
+  timestamp per drawing so future selectors cannot silently regress.

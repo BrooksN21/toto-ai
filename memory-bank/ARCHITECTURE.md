@@ -1182,10 +1182,10 @@ Marker selection changes test
 orchestration only; production safety, objective ordering, provenance and the
 candidate universe are identical.
 
-## Data-health contract v1
+## Data-health contract v1.2
 
 `toto_ai.analytics.data_health` is the reusable read-only quality boundary for
-the SQLite history. Contract version `1.0.0` evaluates every selected drawing,
+the SQLite history. Contract version `1.2.0` evaluates every selected drawing,
 emits stable reason codes, and computes independent eligibility for
 `historical_inventory`, `backtest_probability`, `result_settlement`, and
 `prospective_generation`.
@@ -1196,7 +1196,11 @@ snapshots, and unsettled canonical `pre_bet_runner` packages. Numeric gaps and
 duplicate visible numbers are report-level metadata rather than invented
 drawing rows. Canonical RAW discovery is deliberately limited to the sibling
 `data/raw` tree; rehearsal, report, and test-fixture JSON do not satisfy
-provenance.
+provenance. Strict historical eligibility additionally requires a registered
+raw row with timezone-aware `captured_at <= Drawing.ended_at`; its payload and
+metadata paths must still be existing regular non-symlink files. The report
+records the eligible count/latest timestamp and fails closed on
+`missing_predeadline_raw_snapshot`.
 
 `data-health` opens SQLite in read-only mode and exports detail plus aggregates
 to CSV/JSON/Markdown. Baseline prospective brief generation and the

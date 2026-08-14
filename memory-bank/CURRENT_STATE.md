@@ -1,5 +1,30 @@
 # Current State
 
+## Historical chronology gate correction (2026-08-14)
+
+The previous data-health contract treated the presence of any raw TotoBrief
+snapshot as frozen historical evidence. A direct audit of all 713 registered
+raw rows found only 173 rows, across 17 drawings, captured at or before the
+corresponding deadline. Of the 398 drawings previously labelled strict, only
+13 also have a genuine pre-deadline raw snapshot. The other 385 had only
+post-deadline raw evidence and cannot be used as strict historical inputs.
+
+Data-health contract 1.2.0 now requires at least one existing, non-symlink raw
+payload/metadata pair whose registered `captured_at` is at or before
+`Drawing.ended_at`. It reports `predeadline_raw_snapshot_count` and
+`latest_predeadline_raw_snapshot_at`, and `historical_inventory` fails closed
+with `missing_predeadline_raw_snapshot`. The current full audit is 2,216
+drawings: 13 strict chronological rows and 2,203 rejected rows. Evidence is in
+`reports/research/data-health-chronology-20260814/`.
+
+Verification after the chronology gate change: 1,888 default tests passed,
+13 heavy tests were deselected, Ruff passed, and `git diff --check` passed.
+
+Consequently, phase 2 will run a 3–5 drawing strict canary and then all 13
+eligible rows only as pipeline-integrity evidence. Historical 100/500/1,000
+runs are explicitly legacy diagnostics, never release evidence. The
+prospective pre-deadline holdout is the primary path to a strategy verdict.
+
 ## Drawing 4975 equal-input strategy comparison (2026-08-14)
 
 The first artifact-bound `compare-package-strategies` run completed on the
@@ -196,11 +221,13 @@ and one comparison command. The implementation sequence and tests are frozen
 in `plans/TOTOAI-PRODUCT-VALIDATION-20260814/phase1-inventory.md`. Coding starts
 only after the drawing-4975 terminal result is recorded.
 
-## Historical data eligibility finding (2026-08-14)
+## Historical data eligibility finding — superseded (2026-08-14)
 
-The full strict data-health audit covers 2,215 drawings. Only 398 satisfy the
-strong `historical_inventory` contract because most old rows lack immutable raw
-and result snapshots; 1,672 satisfy the weaker `backtest_probability` contract.
+The first audit covered 2,215 drawings and reported 398 as
+`historical_inventory`-healthy, but it did not validate raw-snapshot capture
+time. This count is superseded by contract 1.2.0: only 13 rows have genuine
+pre-deadline raw evidence plus complete strict inputs. A further 1,672 satisfy
+the weaker `backtest_probability` contract.
 There are no duplicate visible numbers. Numbers 3,843 and 3,844 are absent
 locally, but TotoBrief's own public results listing also skips directly from
 3,842 to 3,845; this is upstream numbering behavior rather than a local
@@ -209,11 +236,12 @@ evidence to suppress that false-positive metadata failure. The last 100
 contain 78 strict-healthy and 79 probability-backtest-eligible drawings.
 
 The plan no longer treats 500/1,000 old drawings as frozen release evidence.
-Phase 2 must publish a strict 100/current-398 benchmark separately from
-500/1,000 legacy retrospective diagnostics. Legacy rows are useful for finding
-large strategy defects but cannot support release or profit claims. Missing
-historical pre-deadline snapshots cannot be reconstructed honestly after the
-fact. Details are in
+Phase 2 must publish the current strict-13 benchmark separately from
+100/500/1,000 legacy retrospective diagnostics. Thirteen drawings are not
+enough to choose a winner; they validate the pipeline only. Legacy rows are
+useful for finding large strategy defects but cannot support release or profit
+claims. Missing historical pre-deadline snapshots cannot be reconstructed
+honestly after the fact. Details are in
 `plans/TOTOAI-PRODUCT-VALIDATION-20260814/phase2-data-eligibility.md`.
 
 ## Source collection, sports comparison, and 4974 review (2026-08-14)

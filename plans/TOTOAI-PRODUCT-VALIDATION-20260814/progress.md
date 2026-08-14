@@ -10,7 +10,7 @@
 |---:|---|---|
 | 0. Live-цикл 4975 | IN PROGRESS | Evening terminal complete: final fresh paper package 166 / 4 980, T-10 cleanup and post-draw install verified; result sync/settlement due 2026-08-15 |
 | 1. EV/BK/TotoBrief-style | COMPLETE | Four equal-input adapters, command and hash-bound reports verified; 4975 EV output exactly reproduces final package |
-| 2. Historical benchmark | READY TO START | Data audit: 398 strict frozen, 1,672 probability-eligible; 500/1000 must be legacy-only |
+| 2. Historical benchmark | IN PROGRESS | Chronology defect fixed: only 13 strict pre-deadline/result-complete drawings; 100/500/1000 are legacy-only |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
 | 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
 | 5. Free sports coverage | PARTIAL | Stored-source baseline written: API-Sports odds 10 drawings/150 events/68% consensus; The Odds API 4/15; sports stats 0/15 complete |
@@ -53,8 +53,8 @@
   sports-feature shadow pilot; TheSportsDB/OpenLigaDB are secondary schedule
   evidence and StatsBomb Open Data is research-only. See
   `knowledge/free_sports_sources.md`.
-- Full DB health: 2,215 drawings; 398 strict historical-inventory healthy;
-  1,672 probability-backtest eligible; 3,843/3,844 are also absent from the
+- Full DB health: 2,216 drawings; 13 strict chronological historical-inventory
+  healthy; 1,672 probability-backtest eligible; 3,843/3,844 are also absent from the
   upstream results listing and are not local ingestion loss; phase-2 evidence
   tiers frozen in `phase2-data-eligibility.md`.
 - Live 4975 trigger 15:00 MSK: LaunchAgent run 1, exit 0;
@@ -103,10 +103,14 @@
   0.00925712/0.00107714/0.00005283 at 90 coupons. Both Cover variants passed
   exact guarantee verification. This is one modeled snapshot, not historical
   evidence and not a profitability result.
+- Data-health chronology audit corrected the old strict count: only 13 rows
+  have genuine pre-deadline raw evidence plus complete strict inputs. Contract
+  1.2.0 fails closed on `missing_predeadline_raw_snapshot`; 1,888 default tests
+  and Ruff pass. The strict sample validates the pipeline only.
 
 ## Следующее действие
 
-Начать этап 2 с короткого strict canary: проверить селектор frozen
-historical inputs, добавить actual-outcome scoring для новых results и
-прогнать 3–5 тиражей перед масштабом 100/398. Параллельно не
+Продолжить этап 2 с короткого strict canary: выбрать 3–5 из 13 реально
+pre-deadline снимков, добавить actual-outcome scoring и доказать отсутствие
+post-deadline leakage. Затем прогнать все 13 и отдельно legacy 100/500/1000. Не
 менять post-draw план 4975 до его реального запуска 2026-08-15 12:00 MSK.

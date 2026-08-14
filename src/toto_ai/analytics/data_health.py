@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from toto_ai.db.models import (
     ArchivedPackage,
     Drawing,
+    DrawingRawSnapshot,
     DrawingReconciliationState,
     DrawingResultSnapshot,
     Event,
@@ -25,8 +26,8 @@ from toto_ai.db.models import (
     Quote,
 )
 
-DATA_HEALTH_CONTRACT_VERSION = "1.1.0"
-DATA_HEALTH_REPORT_SCHEMA_VERSION = 2
+DATA_HEALTH_CONTRACT_VERSION = "1.2.0"
+DATA_HEALTH_REPORT_SCHEMA_VERSION = 3
 DATA_QUALITY_EXIT_CODE = 3
 EXECUTION_ERROR_EXIT_CODE = 4
 EXPECTED_EVENT_ORDERS = frozenset(range(15))
@@ -54,6 +55,7 @@ REASON_ORDER = (
     "all_results_missing",
     "incomplete_results",
     "missing_raw_snapshot",
+    "missing_predeadline_raw_snapshot",
     "missing_result_snapshot",
     "unsettled_package",
 )
@@ -69,6 +71,7 @@ BLOCKING_REASONS: Mapping[DataHealthUseCase, frozenset[str]] = {
             "all_results_missing",
             "incomplete_results",
             "missing_raw_snapshot",
+            "missing_predeadline_raw_snapshot",
             "missing_result_snapshot",
             "unsettled_package",
         )
@@ -140,6 +143,8 @@ class DrawingHealth:
     result_snapshot_count: int
     complete_result_snapshot_count: int
     raw_snapshot_present: bool
+    predeadline_raw_snapshot_count: int
+    latest_predeadline_raw_snapshot_at: str | None
     actionable_package_count: int
     unsettled_actionable_package_count: int
     reconciliation_state_count: int
@@ -299,6 +304,23 @@ def audit_data_health(
             )
         ).all()
     )
+    raw_snapshots = (
+        _group_by_drawing(
+            session.scalars(
+                select(DrawingRawSnapshot)
+                .where(DrawingRawSnapshot.drawing_id.in_(selected_ids))
+                .order_by(
+                    DrawingRawSnapshot.drawing_id,
+                    DrawingRawSnapshot.captured_at,
+                    DrawingRawSnapshot.snapshot_sha256,
+                )
+            ).all()
+        )
+        if inspect(session.get_bind()).has_table(
+            DrawingRawSnapshot.__tablename__
+        )
+        else {}
+    )
     packages = _group_by_drawing(
         session.scalars(
             select(ArchivedPackage).where(
@@ -332,16 +354,23 @@ def audit_data_health(
         if raw_snapshot_drawing_ids is not None
         else discover_raw_snapshot_drawing_ids(db_path)
     )
+    canonical_raw_root = (
+        Path(db_path).resolve().parent / "raw"
+        if db_path is not None
+        else None
+    )
     rows = tuple(
         _drawing_health(
             drawing,
             events=events.get(drawing.id, ()),
             quotes=quotes.get(drawing.id, ()),
+            raw_snapshots=raw_snapshots.get(drawing.id, ()),
             result_snapshots=result_snapshots.get(drawing.id, ()),
             packages=packages.get(drawing.id, ()),
             settlements=settlements.get(drawing.id, ()),
             reconciliation_states=reconciliation_states.get(drawing.id, ()),
             raw_snapshot_present=drawing.id in raw_ids,
+            canonical_raw_root=canonical_raw_root,
             selected_use_case=selected_use_case,
         )
         for drawing in drawings
@@ -456,11 +485,13 @@ def _drawing_health(
     *,
     events: Sequence[Event],
     quotes: Sequence[Quote],
+    raw_snapshots: Sequence[DrawingRawSnapshot],
     result_snapshots: Sequence[DrawingResultSnapshot],
     packages: Sequence[ArchivedPackage],
     settlements: Sequence[PackageSettlement],
     reconciliation_states: Sequence[DrawingReconciliationState],
     raw_snapshot_present: bool,
+    canonical_raw_root: Path | None,
     selected_use_case: DataHealthUseCase,
 ) -> DrawingHealth:
     event_orders = tuple(
@@ -522,6 +553,11 @@ def _drawing_health(
         and snapshot.raw_snapshot_sha256 is not None
         for snapshot in result_snapshots
     )
+    predeadline_raw_snapshots = _predeadline_raw_snapshots(
+        drawing,
+        raw_snapshots,
+        canonical_raw_root=canonical_raw_root,
+    )
     actionable_packages = tuple(
         package for package in packages if package.provenance == "pre_bet_runner"
     )
@@ -571,6 +607,8 @@ def _drawing_health(
         reasons.append("incomplete_results")
     if not raw_snapshot_present:
         reasons.append("missing_raw_snapshot")
+    if not predeadline_raw_snapshots:
+        reasons.append("missing_predeadline_raw_snapshot")
     if drawing.status == "finished" and complete_result_snapshots == 0:
         reasons.append("missing_result_snapshot")
     if unsettled_packages:
@@ -602,6 +640,12 @@ def _drawing_health(
         result_snapshot_count=len(result_snapshots),
         complete_result_snapshot_count=complete_result_snapshots,
         raw_snapshot_present=raw_snapshot_present,
+        predeadline_raw_snapshot_count=len(predeadline_raw_snapshots),
+        latest_predeadline_raw_snapshot_at=(
+            predeadline_raw_snapshots[-1].captured_at
+            if predeadline_raw_snapshots
+            else None
+        ),
         actionable_package_count=len(actionable_packages),
         unsettled_actionable_package_count=unsettled_packages,
         reconciliation_state_count=len(reconciliation_states),
@@ -668,6 +712,9 @@ def _summary(
             row.quote_count == 15 and row.complete_bk_count == 15 for row in rows
         ),
         "raw_snapshot_drawings": sum(row.raw_snapshot_present for row in rows),
+        "predeadline_raw_snapshot_drawings": sum(
+            row.predeadline_raw_snapshot_count > 0 for row in rows
+        ),
         "result_snapshot_drawings": sum(
             row.complete_result_snapshot_count > 0 for row in rows
         ),
@@ -840,6 +887,58 @@ def _zero_probability_triple(*values: float | None) -> bool:
     )
 
 
+def _predeadline_raw_snapshots(
+    drawing: Drawing,
+    snapshots: Sequence[DrawingRawSnapshot],
+    *,
+    canonical_raw_root: Path | None,
+) -> tuple[DrawingRawSnapshot, ...]:
+    deadline = _aware_timestamp(drawing.ended_at)
+    if deadline is None or canonical_raw_root is None:
+        return ()
+    try:
+        resolved_root = canonical_raw_root.resolve(strict=True)
+    except OSError:
+        return ()
+    eligible: list[tuple[datetime, DrawingRawSnapshot]] = []
+    for snapshot in snapshots:
+        captured_at = _aware_timestamp(snapshot.captured_at)
+        if captured_at is None or captured_at > deadline:
+            continue
+        payload_path = Path(snapshot.payload_path)
+        metadata_path = Path(snapshot.metadata_path)
+        if not _canonical_regular_file(payload_path, resolved_root):
+            continue
+        if not _canonical_regular_file(metadata_path, resolved_root):
+            continue
+        eligible.append((captured_at, snapshot))
+    eligible.sort(key=lambda item: (item[0], item[1].snapshot_sha256))
+    return tuple(snapshot for _, snapshot in eligible)
+
+
+def _canonical_regular_file(path: Path, root: Path) -> bool:
+    if not path.is_file() or path.is_symlink():
+        return False
+    try:
+        resolved = path.resolve(strict=True)
+        resolved.relative_to(root)
+    except (OSError, ValueError):
+        return False
+    return True
+
+
+def _aware_timestamp(value: str | None) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.astimezone(timezone.utc)
+
+
 def _valid_number(value: float | None) -> bool:
     return (
         not isinstance(value, bool)
@@ -947,6 +1046,10 @@ def _csv_row(
         "result_snapshot_count": row.result_snapshot_count,
         "complete_result_snapshot_count": row.complete_result_snapshot_count,
         "raw_snapshot_present": row.raw_snapshot_present,
+        "predeadline_raw_snapshot_count": row.predeadline_raw_snapshot_count,
+        "latest_predeadline_raw_snapshot_at": (
+            row.latest_predeadline_raw_snapshot_at
+        ),
         "actionable_package_count": row.actionable_package_count,
         "unsettled_actionable_package_count": (
             row.unsettled_actionable_package_count
@@ -1048,8 +1151,8 @@ def _markdown(report: DataHealthReport) -> str:
             "## Drawing detail",
             "",
             "| Number | ID | Status | Health | Reasons | Events | Pool | BK | "
-            "Results | VOID | Reconcile state | Attempts |",
-            "|---:|---:|---|---|---|---:|---:|---:|---:|---:|---|---:|",
+            "Results | VOID | Pre-deadline raw | Reconcile state | Attempts |",
+            "|---:|---:|---|---|---|---:|---:|---:|---:|---:|---:|---|---:|",
         ]
     )
     for row in report.drawings:
@@ -1059,6 +1162,7 @@ def _markdown(report: DataHealthReport) -> str:
             f"{', '.join(row.selected_reason_codes)} | {row.event_count} | "
             f"{row.valid_pool_count} | {row.complete_bk_count} | "
             f"{row.terminal_result_count} | {row.void_result_count} | "
+            f"{row.predeadline_raw_snapshot_count} | "
             f"{','.join(row.reconciliation_retry_states) or '-'} | "
             f"{row.reconciliation_attempt_count} |"
         )

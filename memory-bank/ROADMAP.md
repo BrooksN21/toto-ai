@@ -7,7 +7,8 @@ The authoritative implementation order is tracked in
 
 1. close live drawing 4975 through post-draw settlement;
 2. compare current EV/crowd, BK probability-only and TotoBrief-style cover;
-3. run 100/500/1000-drawing equal-bank historical benchmarks;
+3. run a strict chronological canary/all-available benchmark and separate
+   100/500/1000 legacy diagnostics;
 4. correct only measured package-objective defects;
 5. complete official+independent schedule automation and free sports coverage;
 6. train/walk-forward evaluate a residual model around BK;
@@ -23,11 +24,12 @@ passed the full test suite and reproduced the exact drawing-4975 EV paper
 package. Step 3 is now active; modeled probability from one drawing is not a
 strategy verdict.
 
-Measured data constraint: only 398 drawings currently satisfy the strict
-historical-inventory snapshot contract, while 1,672 satisfy the weaker
-probability-backtest contract. Phase 2 will run strict 100/current-398 evidence
-separately from 500/1,000 legacy diagnostics; legacy output is not release
-evidence. See the active plan's `phase2-data-eligibility.md`.
+Measured chronology constraint: only 13 drawings currently satisfy the strict
+pre-deadline historical-inventory contract, while 1,672 satisfy the weaker
+probability-backtest contract. Phase 2 will run a strict 3–5 canary and all 13
+only as pipeline evidence, separately from 100/500/1,000 legacy diagnostics;
+legacy output is not release evidence. See the active plan's
+`phase2-data-eligibility.md`.
 
 - [ ] Teach the gap audit to accept hash-bound documented upstream numbering
   gaps. TotoBrief's public listing skips 3,843/3,844 between 3,842 and 3,845;

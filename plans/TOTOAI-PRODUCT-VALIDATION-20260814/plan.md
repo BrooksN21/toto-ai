@@ -121,11 +121,13 @@
 
 Шаги:
 
-1. Собрать eligible выборки последних 100, 500 и 1 000 завершённых тиражей.
+1. Собрать chronological-strict canary из 3–5 завершённых тиражей, затем весь
+   доступный strict-набор; отдельно собрать legacy-выборки 100, 500 и 1 000.
 2. Разделить доказательства на два несмешиваемых уровня:
-   - strict frozen benchmark: 100 и полный доступный strict-набор (на
-     2026-08-14 — 398 тиражей);
-   - legacy probability diagnostic: 500/1 000 тиражей, только с явной меткой
+   - strict chronological benchmark: полный доступный набор с raw snapshot,
+     реально captured at/before deadline (на 2026-08-14 — только 13 тиражей);
+     этот объём проверяет pipeline, но недостаточен для выбора победителя;
+   - legacy probability diagnostic: 100/500/1 000 тиражей, только с явной меткой
      `LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`, поскольку старые raw/result
      snapshots нельзя восстановить с доказанным pre-deadline timestamp.
    Только strict/prospective frozen evidence может участвовать в release gate.
@@ -151,6 +153,7 @@
 
 - воспроизводимый CSV/JSON/Markdown benchmark;
 - нет data leakage;
+- strict и legacy результаты физически разделены и никогда не агрегируются;
 - есть простой контроль `BK top outcome`;
 - вывод основан на фактических hits, а не только modeled ROI;
 - стратегия-победитель либо честный результат `нет доказанного победителя`.
