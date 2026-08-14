@@ -8,7 +8,7 @@
 
 | Этап | Статус | Результат / блокер |
 |---:|---|---|
-| 0. Live-цикл 4975 | IN PROGRESS | 15:00 TLS + 15:30 API preflight complete/exit 0; следующий триггер 16:00 МСК |
+| 0. Live-цикл 4975 | IN PROGRESS | Preflights 15:00/15:30/16:00 complete, all exit 0; warmup 16:15 next |
 | 1. EV/BK/TotoBrief-style | READY TO START | Existing engines mapped in `phase1-inventory.md`; adapters begin after terminal 4975 |
 | 2. Historical benchmark | BLOCKED ON PHASE 1 | Data audit: 398 strict frozen, 1,672 probability-eligible; 500/1000 must be legacy-only |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
@@ -26,7 +26,7 @@
 - [x] Trigger schedule проверен.
 - [x] 15:00 TLS preflight отработал: exit 0, 69.08s, no failures.
 - [x] 15:30 API preflight отработал: exit 0, 63.97s, no failures.
-- [ ] 16:00 phase отработал.
+- [x] 16:00 freshness preflight отработал: exit 0, 70.10s, no failures.
 - [ ] 16:15 warmup отработал.
 - [ ] 16:30 refresh/LKG отработал.
 - [ ] 16:40 primary final отработал.
@@ -63,9 +63,11 @@
 - Live 4975 trigger 15:30 MSK: LaunchAgent run 2, exit 0;
   `api_preflight-01-20260814T123008095081Z-a9b7695e` completed at
   `2026-08-14T12:31:12.061655Z`; zero failure details.
+- Live 4975 trigger 16:00 MSK: LaunchAgent run 3, exit 0;
+  `freshness_preflight-01-20260814T130018316198Z-a3a97623` completed at
+  `2026-08-14T13:01:28.412427Z`; zero failure details.
 
 ## Следующее действие
 
-После 16:00 trigger проверить `freshness_preflight`, launchd exit, failures и
-новые artifacts. До terminal 4975 не начинать менять package objective, чтобы
-не смешивать operational validation с новой стратегией.
+После 16:15 trigger проверить `warmup`, launchd exit, failures, cached package
+и новые artifacts. До terminal 4975 не начинать менять package objective.

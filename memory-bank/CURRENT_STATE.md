@@ -1,5 +1,14 @@
 # Current State
 
+## Drawing 4975 freshness evidence (2026-08-14 16:02 Moscow)
+
+The third automatic evening trigger completed successfully. Launchd reports
+three runs and exit code 0. Attempt
+`freshness_preflight-01-20260814T130018316198Z-a3a97623` ran from
+`2026-08-14T13:00:18.316198Z` through `13:01:28.412427Z`, status `complete`,
+with zero failure details. Terminal remains null. The next trigger is warmup at
+16:15 Moscow.
+
 ## Drawing 4975 API preflight evidence (2026-08-14 15:32 Moscow)
 
 The second loaded evening trigger also completed automatically. Launchd now
