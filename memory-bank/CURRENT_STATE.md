@@ -35,6 +35,15 @@ evidence without an official source. Phase 5 remains `PENDING`: neither the
 30-drawing/450-event evidence minimum nor 70% valid sports-feature coverage has
 been reached, and no predictive or profit improvement is claimed.
 
+Official documentation was reviewed for the next free candidates. The first
+shadow pilot should be football-data.org because its free tier exposes
+current-season fixtures, team matches and TOTAL/HOME/AWAY tables for 12 top
+competitions. Its narrow competition list means it cannot be the sole source.
+TheSportsDB and OpenLigaDB are secondary identity/schedule candidates;
+StatsBomb Open Data is suitable for offline feature research, not broad live
+coverage. No adapter is activated by this review. The durable source notes are
+in `knowledge/free_sports_sources.md`.
+
 ## Source collection, sports comparison, and 4974 review (2026-08-14)
 
 The first safe automatic public schedule-source collector is implemented and

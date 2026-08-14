@@ -49,6 +49,10 @@
 - Free-source baseline: `reports/research/free-source-audit-20260814/summary.md`;
   API-Sports external-odds consensus 102/150 (68.00%), The Odds API 4/15
   (26.67%), both below the 30-drawing/450-event gate.
+- Official-documentation audit ranks football-data.org as the first
+  sports-feature shadow pilot; TheSportsDB/OpenLigaDB are secondary schedule
+  evidence and StatsBomb Open Data is research-only. See
+  `knowledge/free_sports_sources.md`.
 
 ## Следующее действие
 
