@@ -13,7 +13,7 @@
 | 2. Historical benchmark | NOT STARTED | Требует три strategy implementations |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
 | 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
-| 5. Free sports coverage | PARTIAL | 4975: 0/15 complete sports coverage, 15/15 BK fallback |
+| 5. Free sports coverage | PARTIAL | Stored-source baseline written: API-Sports odds 10 drawings/150 events/68% consensus; The Odds API 4/15; sports stats 0/15 complete |
 | 6. Sports residual model | NOT STARTED | Нет достаточного frozen feature dataset |
 | 7. Prospective holdout | NOT STARTED | Release gate требует минимум 30 тиражей / 450 событий |
 | 8. Operator product | NOT STARTED | Production остаётся PAPER / NOT ACTIVATED |
@@ -46,6 +46,9 @@
 - Current implementation commit: `bd4ec83` (local, not pushed).
 - 4974 paper review: best 6/15, zero 10+, no wager.
 - 4975 BK vs sports comparison: identical 166/166, sports coverage 0/15.
+- Free-source baseline: `reports/research/free-source-audit-20260814/summary.md`;
+  API-Sports external-odds consensus 102/150 (68.00%), The Odds API 4/15
+  (26.67%), both below the 30-drawing/450-event gate.
 
 ## Следующее действие
 

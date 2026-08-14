@@ -18,6 +18,23 @@ completed work, current work, blockers and the next action. Automatic wagering
 remains prohibited and no profitability claim is allowed before the release
 gate.
 
+## Free-source coverage baseline (2026-08-14)
+
+A local, network-free audit now records the currently stored provider evidence
+at `reports/research/free-source-audit-20260814/summary.md`. API-Sports external
+odds cover 10 drawings / 150 events with 72.67% unique matching and 68.00%
+usable consensus; 48 events use fallback. The Odds API has only one stored
+drawing / 15 events, with 4/15 matching and 11 fallbacks. These are market
+coverage figures, not sports-feature coverage.
+
+The drawing-4975 API-Sports sports-statistics snapshot still has zero complete
+venue-history events, ten partial rows and five missing rows; the sports branch
+therefore falls back to BK for all 15 events. Sofascore found independent
+schedule candidates for the five schedule gaps but cannot promote production
+evidence without an official source. Phase 5 remains `PENDING`: neither the
+30-drawing/450-event evidence minimum nor 70% valid sports-feature coverage has
+been reached, and no predictive or profit improvement is claimed.
+
 ## Source collection, sports comparison, and 4974 review (2026-08-14)
 
 The first safe automatic public schedule-source collector is implemented and
