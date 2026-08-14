@@ -9,7 +9,7 @@
 | Этап | Статус | Результат / блокер |
 |---:|---|---|
 | 0. Live-цикл 4975 | IN PROGRESS | Evening terminal complete: final fresh paper package 166 / 4 980, T-10 cleanup and post-draw install verified; result sync/settlement due 2026-08-15 |
-| 1. EV/BK/TotoBrief-style | IN PROGRESS | Terminal 4975 reached; shared contract/adapters are the current implementation task |
+| 1. EV/BK/TotoBrief-style | IN PROGRESS | Immutable equal-input contract and EV/BK/Cover-13/Cover-14 thin adapters implemented; comparison command/artifacts next |
 | 2. Historical benchmark | BLOCKED ON PHASE 1 | Data audit: 398 strict frozen, 1,672 probability-eligible; 500/1000 must be legacy-only |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
 | 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
@@ -88,9 +88,15 @@
 - Post-draw LaunchAgent `com.toto-ai.post-draw-12033` is installed and loaded;
   first automatic result sync is 2026-08-15 12:00 MSK with bounded three-hour
   retries through 2026-08-16 03:00 MSK.
+- Phase-1 shared contract tests: 5 focused tests pass; 38 adapter/BK/brief/cover
+  regression tests pass; Ruff passes. The new adapters bind one immutable
+  input hash, enforce pre-`as_of` chronology, dynamic bank/stake, unique
+  15-sign coupons, exact cost and category probabilities. Cover-13 and Cover-14
+  both require the existing independent exact verifier to pass.
 
 ## Следующее действие
 
-Начать этап 1: добавить immutable shared strategy input/result contract
-и тонкие адаптеры трёх существующих engines. Параллельно не менять
-post-draw план 4975 до его реального запуска 2026-08-15 12:00 MSK.
+Добавить current/frozen comparison command поверх готовых адаптеров.
+Команда должна сохранить один manifest, JSON/CSV/Markdown и четыре
+независимых package-файла. Параллельно не менять post-draw план
+4975 до его реального запуска 2026-08-15 12:00 MSK.

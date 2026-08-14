@@ -1,5 +1,21 @@
 # Architecture
 
+## Equal-input package strategy research boundary
+
+`optimizer.strategy_comparison` is the shared research boundary for comparing
+package strategies. One immutable `FrozenStrategyInput` supplies the same
+ordered pre-deadline BK/crowd matrices, identity, `as_of`, bank and stake to
+every adapter. `StrategyResult` binds deterministic input/config/package hashes,
+cost and exact category probabilities. It rejects duplicate or malformed
+coupons and any package over budget.
+
+The adapters are deliberately thin: current EV/crowd delegates to the existing
+EV ternary surface and package selector, BK-only delegates to the existing
+top-probability enumerator, and category-13/category-14 TotoBrief-style variants
+delegate to the existing brief and Cover engines plus independent exact
+verification. This research boundary cannot activate sports shadow, change the
+production scheduler, or open the real-money release gate.
+
 ## Operator export gateway
 
 The only operator-facing package flow is:

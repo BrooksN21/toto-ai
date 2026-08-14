@@ -1,5 +1,28 @@
 # Current State
 
+## Equal-input strategy contract and adapters (2026-08-14)
+
+Phase 1 implementation has started after the drawing-4975 terminal state. New
+module `optimizer.strategy_comparison` defines a frozen 15-event input contract
+and validated strategy result contract. The input binds drawing identity,
+fingerprint, source capture time, `as_of`, deadline, dynamic bank/stake,
+pool/jackpot/winnings and ordered BK/crowd matrices. Future evidence, invalid
+event order, non-divisible banks and malformed probabilities fail closed.
+
+Thin adapters now expose the existing engines as `EV_CROWD_CURRENT`,
+`BK_PROBABILITY_ONLY`, `TOTOBRIEF_STYLE_COVER_13`, and
+`TOTOBRIEF_STYLE_COVER_14`. BK-only does not read crowd probabilities. The EV
+adapter receives the same frozen BK/crowd matrices and caller-bound `EVConfig`.
+Cover variants invoke the existing brief generator and require the independent
+exact verifier to pass. Every result enforces unique 15-sign coupons, exact
+cost, dynamic budget, input/config/package hashes and exact modeled P(13+),
+P(14+) and P(15).
+
+Verification: five new focused tests pass; 38 combined strategy/BK/brief/cover
+tests pass; Ruff passes. The current/frozen CLI comparison and report bundle
+remain the next phase-1 task. Production scheduling and the closed real-money
+gate are unchanged.
+
 ## Drawing 4975 terminal evening result (2026-08-14 16:52 Moscow)
 
 The complete automatic evening sequence reached terminal state without a
