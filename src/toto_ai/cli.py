@@ -227,6 +227,11 @@ from toto_ai.optimizer.strategy_diagnostics import (
     write_strategy_diagnostics_reports,
 )
 from toto_ai.optimizer.strategy_execution import execute_final_input_comparison
+from toto_ai.optimizer.strategy_historical_benchmark import (
+    historical_ev_config,
+    run_strict_historical_benchmark,
+    write_strict_historical_benchmark_reports,
+)
 from toto_ai.package.audit import (
     PackageStrategy,
     build_package_audit,
@@ -4880,6 +4885,130 @@ def compare_package_strategies_command(
     print(table)
     print("[yellow]RESEARCH/PAPER — NOT ACTIONABLE[/yellow]")
     print(f"Manifest: {executed.reports.manifest}")
+
+
+@app.command("historical-strategy-benchmark")
+def historical_strategy_benchmark_command(
+    db: Path = typer.Option(  # noqa: B008
+        Path("data/toto.db"),
+        "--db",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="SQLite database with immutable RAW/result snapshots.",
+    ),
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Scheduler plan whose production objective is reused.",
+    ),
+    last: int = typer.Option(
+        3,
+        "--last",
+        min=1,
+        help="Latest strict chronological drawings to evaluate.",
+    ),
+    bank: int = typer.Option(
+        4_980,
+        "--bank",
+        min=1,
+        help="Research budget; must be divisible by stake.",
+    ),
+    stake: int = typer.Option(
+        30,
+        "--stake",
+        min=1,
+        help="Stake per coupon.",
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        Path("reports/research/strict-strategy-benchmark"),
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+        help="Destination for strict paper-only benchmark artifacts.",
+    ),
+) -> None:
+    """Score equal-input strategies on true pre-deadline snapshots."""
+    try:
+        plan = load_scheduler_plan(scheduler_plan)
+        config = historical_ev_config(
+            plan.quality_v2_ev_config,
+            bank=bank,
+            stake=stake,
+        )
+        engine = open_readonly_db(db)
+        session_factory = get_session_factory(engine)
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            task = progress.add_task(
+                "strict benchmark: loading chronological cases",
+                total=last,
+            )
+
+            def update_progress(
+                index: int,
+                total: int,
+                drawing_number: int,
+                status: str,
+            ) -> None:
+                progress.update(
+                    task,
+                    total=total,
+                    completed=index if status == "complete" else index - 1,
+                    description=(
+                        f"drawing={drawing_number} {index}/{total} {status}"
+                    ),
+                )
+
+            with session_factory() as session:
+                benchmark = run_strict_historical_benchmark(
+                    session,
+                    db_path=db,
+                    last=last,
+                    bank=bank,
+                    stake=stake,
+                    ev_config=config,
+                    progress_callback=update_progress,
+                )
+        paths = write_strict_historical_benchmark_reports(
+            benchmark,
+            output_dir,
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    table = Table(title="Strict Historical Strategy Benchmark")
+    table.add_column("Strategy")
+    table.add_column("Drawings", justify="right")
+    table.add_column("Avg best", justify="right")
+    table.add_column("Hit 13+", justify="right")
+    table.add_column("Hit 14+", justify="right")
+    table.add_column("Hit 15", justify="right")
+    strategies = benchmark.summary["strategies"]
+    for strategy_id in sorted(strategies):
+        row = strategies[strategy_id]
+        table.add_row(
+            strategy_id,
+            str(row["drawings"]),
+            f"{row['average_best_hits']:.3f}",
+            f"{row['hit_13_count']}/{row['drawings']}",
+            f"{row['hit_14_count']}/{row['drawings']}",
+            f"{row['hit_15_count']}/{row['drawings']}",
+        )
+    print(table)
+    print(
+        "[yellow]STRICT CHRONOLOGICAL PIPELINE EVIDENCE — "
+        "NOT RELEASE EVIDENCE — NOT ACTIONABLE[/yellow]"
+    )
+    print(f"Manifest: {paths.manifest}")
 
 
 @app.command()

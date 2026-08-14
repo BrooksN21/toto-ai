@@ -3,6 +3,21 @@
 Measured: 2026-08-14
 Status: **CHRONOLOGY DEFECT CORRECTED / BLOCKING CONSTRAINT RECORDED**
 
+## Strict benchmark result
+
+The strict canary completed first on one and then three drawings. The complete
+available strict run then evaluated all 13 eligible drawings with zero strategy
+timeouts at bank/stake 4,980/30. Average best hits were EV/crowd 7.00, BK-only
+9.00, Cover-13 8.46 and Cover-14 9.08. Cover-14 produced one 13+ result; no
+strategy produced 14+ or 15. Cover-13 and Cover-14 spent only 660 and 2,700 on
+average, so those variants are not equal-cost to the two 4,980 packages.
+
+These numbers expose a large current EV-vs-BK diagnostic gap and prove the
+strict runner works, but 13 drawings are too few for a winner or profitability
+claim. The report remains
+`STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE` at
+`reports/research/strict-strategy-benchmark-20260814-all13/`.
+
 ## Full database audit
 
 The strict read-only health contract was run over the complete local database:

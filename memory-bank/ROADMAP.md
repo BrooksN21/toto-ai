@@ -21,8 +21,9 @@ cannot skip a gate.
 Current progress: step 2 is complete. The shared frozen-input contract,
 EV/BK/Cover-13/Cover-14 adapters and `compare-package-strategies` report bundle
 passed the full test suite and reproduced the exact drawing-4975 EV paper
-package. Step 3 is now active; modeled probability from one drawing is not a
-strategy verdict.
+package. Step 3 is active: the 1/3/all-13 strict chronological benchmark is
+complete with zero timeouts. Legacy 100/500/1000 diagnostics remain; modeled
+probability or the 13-row strict sample is not a strategy verdict.
 
 Measured chronology constraint: only 13 drawings currently satisfy the strict
 pre-deadline historical-inventory contract, while 1,672 satisfy the weaker
@@ -30,6 +31,12 @@ probability-backtest contract. Phase 2 will run a strict 3–5 canary and all 13
 only as pipeline evidence, separately from 100/500/1,000 legacy diagnostics;
 legacy output is not release evidence. See the active plan's
 `phase2-data-eligibility.md`.
+
+- [x] Add strict RAW-before-deadline loader, terminal-result separation, VOID
+  scoring, actual exposure, package overlap, CLI and hash-bound reports.
+- [x] Run strict canary and all 13 currently eligible drawings at 4,980/30.
+- [ ] Run physically separate legacy 100/500/1,000 diagnostics without using
+  them in release metrics.
 
 - [ ] Teach the gap audit to accept hash-bound documented upstream numbering
   gaps. TotoBrief's public listing skips 3,843/3,844 between 3,842 and 3,845;

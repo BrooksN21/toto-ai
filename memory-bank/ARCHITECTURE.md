@@ -24,6 +24,21 @@ text file per strategy. The comparison manifest records common input identity,
 strategy config/package hashes, costs and artifact hashes; it is not an
 operator export surface.
 
+`optimizer.strategy_historical_benchmark` extends this boundary without
+changing any strategy. It selects only registered RAW payloads captured at or
+before the drawing deadline, verifies archive hashes through `RawArchive`, and
+builds the frozen prediction input without reading result/score fields. Actual
+outcomes are loaded separately from complete terminal result snapshots. VOID
+`*` is scored as correct for every coupon, matching settlement semantics.
+
+`historical-strategy-benchmark` reuses the quality-v2 objective from an exact
+scheduler plan, changing only the requested research bank/stake, research mode,
+and the scheduler-only provenance requirement. It scores actual hits/exposure,
+modeled category probabilities, cost/unused bank, runtime/fallback and pairwise
+package overlap. Its hash-bound reports are always
+`STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE`; they are not
+an operator surface and cannot open the real-money gate.
+
 ## Operator export gateway
 
 The only operator-facing package flow is:

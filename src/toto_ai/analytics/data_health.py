@@ -553,7 +553,7 @@ def _drawing_health(
         and snapshot.raw_snapshot_sha256 is not None
         for snapshot in result_snapshots
     )
-    predeadline_raw_snapshots = _predeadline_raw_snapshots(
+    predeadline_raw_snapshots = select_predeadline_raw_snapshots(
         drawing,
         raw_snapshots,
         canonical_raw_root=canonical_raw_root,
@@ -887,7 +887,7 @@ def _zero_probability_triple(*values: float | None) -> bool:
     )
 
 
-def _predeadline_raw_snapshots(
+def select_predeadline_raw_snapshots(
     drawing: Drawing,
     snapshots: Sequence[DrawingRawSnapshot],
     *,

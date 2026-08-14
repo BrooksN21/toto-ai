@@ -1,7 +1,7 @@
 # TotoAI Product Validation Progress
 
 Обновлено: 2026-08-14
-Текущий этап: 0 — live-цикл 4975
+Текущий этап: 2 — historical benchmark; этап 0 ожидает post-draw 4975
 Общий статус: IN PROGRESS
 
 ## Этапы
@@ -10,7 +10,7 @@
 |---:|---|---|
 | 0. Live-цикл 4975 | IN PROGRESS | Evening terminal complete: final fresh paper package 166 / 4 980, T-10 cleanup and post-draw install verified; result sync/settlement due 2026-08-15 |
 | 1. EV/BK/TotoBrief-style | COMPLETE | Four equal-input adapters, command and hash-bound reports verified; 4975 EV output exactly reproduces final package |
-| 2. Historical benchmark | IN PROGRESS | Chronology defect fixed: only 13 strict pre-deadline/result-complete drawings; 100/500/1000 are legacy-only |
+| 2. Historical benchmark | IN PROGRESS | Strict loader/scorer/report/CLI complete; all 13 true pre-deadline drawings evaluated; legacy 100/500/1000 diagnostics remain |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
 | 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
 | 5. Free sports coverage | PARTIAL | Stored-source baseline written: API-Sports odds 10 drawings/150 events/68% consensus; The Odds API 4/15; sports stats 0/15 complete |
@@ -40,7 +40,21 @@
 
 ## Последние доказательства
 
-- Full tests: `1876 passed, 13 deselected in 116.96s`.
+- Strict strategy benchmark command:
+  `historical-strategy-benchmark`; it loads the latest cryptographically
+  verified RAW snapshot captured at/before deadline, keeps actual results on a
+  separate terminal-snapshot path, reuses the unchanged quality-v2 objective,
+  and writes hash-bound JSON/CSV/Markdown/manifest artifacts.
+- Full strict run: 13 drawings, bank/stake 4,980/30, 15:08 runtime, zero
+  strategy timeouts. Average best hits: EV/crowd 7.00, BK-only 9.00,
+  Cover-13 8.46, Cover-14 9.08. Cover-14 recorded one 13+ drawing; no 14+ or
+  15 for any strategy. Cover-13/14 spent only 660/2,700 on average, so this is
+  not an equal-cost verdict. The sample is explicitly
+  `STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE` and no winner
+  is declared. Evidence:
+  `reports/research/strict-strategy-benchmark-20260814-all13/`.
+- Current full verification: `1895 passed, 13 deselected in 119.95s`;
+  Ruff and `git diff --check` passed.
 - Ruff: passed.
 - Git diff check: passed.
 - Current implementation commit: `bd4ec83` (local, not pushed).
@@ -110,7 +124,7 @@
 
 ## Следующее действие
 
-Продолжить этап 2 с короткого strict canary: выбрать 3–5 из 13 реально
-pre-deadline снимков, добавить actual-outcome scoring и доказать отсутствие
-post-deadline leakage. Затем прогнать все 13 и отдельно legacy 100/500/1000. Не
-менять post-draw план 4975 до его реального запуска 2026-08-15 12:00 MSK.
+Продолжить этап 2 физически отдельным legacy diagnostic 100/500/1000 с явной
+меткой `LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`. Не смешивать его со
+strict-метриками и не менять post-draw план 4975 до его реального запуска
+2026-08-15 12:00 MSK.

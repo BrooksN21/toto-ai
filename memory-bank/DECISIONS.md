@@ -1567,3 +1567,20 @@ ambiguous reversed evidence remains unresolved.
   diagnostics, but never strict prediction-input or release claims.
 - Contract version 1.2.0 records the eligible count and latest eligible capture
   timestamp per drawing so future selectors cannot silently regress.
+
+## 2026-08-14 — Strict strategy benchmark is pipeline evidence only
+
+- Historical strategy input must come from the latest cryptographically
+  verified RAW snapshot whose registered capture time is at/before deadline;
+  mutable SQLite quotes and raw result/score fields are not prediction input.
+- Actual results are loaded only from a separate complete terminal snapshot.
+  VOID `*` counts as correct for every coupon, matching settlement.
+- The historical EV adapter preserves the production quality-v2 objective and
+  search parameters. Only bank/stake, research mode, effective budget, and the
+  scheduler-artifact-only provenance requirement are adapted for history.
+- The current all-available strict sample is 13 drawings. It can expose large
+  defects and validate chronology, scoring and reports, but cannot select a
+  winner, prove edge, or support a real-money release.
+- Cover-13/14 may spend less than the requested bank. Their cost and unused bank
+  must be reported explicitly; they are not described as equal-cost until a
+  separate full-budget Cover strategy exists.

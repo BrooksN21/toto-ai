@@ -1,5 +1,37 @@
 # Current State
 
+## Strict historical strategy benchmark (2026-08-14)
+
+Phase 2 now has a leakage-safe strict runner and report bundle. The new
+`historical-strategy-benchmark` command selects only immutable RAW evidence
+captured at/before deadline, verifies archive bytes, reconstructs the exact
+prediction input without raw result/score fields, loads actual outcomes from a
+separate terminal snapshot, applies settlement-compatible VOID scoring, and
+records input/config/package/raw/result hashes. It reports actual hit
+distribution, 13+/14+/15, exposure, zero-exposure events, modeled category
+probabilities, cost/unused bank, runtime/fallback and package overlap.
+
+Canaries on one and three drawings completed first. The complete available
+strict run then evaluated all 13 eligible drawings at bank/stake 4,980/30 in
+15:08 with zero strategy timeouts. Average best hits were:
+
+- EV/crowd current: 7.00;
+- BK probability-only: 9.00;
+- TotoBrief-style Cover-13: 8.46;
+- TotoBrief-style Cover-14: 9.08.
+
+Only Cover-14 reached 13+, once (drawing 4966); no strategy reached 14+ or 15.
+EV and BK used the full 4,980; Cover-13 and Cover-14 used 660 and 2,700 on
+average, so this is not an equal-cost strategy verdict. EV's large deficit to
+BK is a measured diagnostic that must be investigated, not a license to tune on
+13 rows. Artifacts are under
+`reports/research/strict-strategy-benchmark-20260814-all13/`, with verified
+artifact and manifest hashes. They are explicitly
+`STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE`, non-actionable,
+and cannot support a profitability claim. Next is the physically separate
+legacy 100/500/1,000 diagnostic. Verification after this implementation:
+`1895 passed, 13 deselected in 119.95s`; Ruff and `git diff --check` passed.
+
 ## Historical chronology gate correction (2026-08-14)
 
 The previous data-health contract treated the presence of any raw TotoBrief
