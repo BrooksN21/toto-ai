@@ -17,6 +17,12 @@ The authoritative implementation order is tracked in
 Operational evidence collection may run in parallel, but package activation
 cannot skip a gate.
 
+Measured data constraint: only 398 drawings currently satisfy the strict
+historical-inventory snapshot contract, while 1,672 satisfy the weaker
+probability-backtest contract. Phase 2 will run strict 100/current-398 evidence
+separately from 500/1,000 legacy diagnostics; legacy output is not release
+evidence. See the active plan's `phase2-data-eligibility.md`.
+
 ## Completed: operator-safe publication and timing escalation (2026-08-13)
 
 - [x] Add one mandatory `operator-export` gateway for current scheduler-owned,

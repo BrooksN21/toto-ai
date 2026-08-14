@@ -122,7 +122,13 @@
 Шаги:
 
 1. Собрать eligible выборки последних 100, 500 и 1 000 завершённых тиражей.
-2. Использовать только frozen pre-deadline snapshots.
+2. Разделить доказательства на два несмешиваемых уровня:
+   - strict frozen benchmark: 100 и полный доступный strict-набор (на
+     2026-08-14 — 398 тиражей);
+   - legacy probability diagnostic: 500/1 000 тиражей, только с явной меткой
+     `LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`, поскольку старые raw/result
+     snapshots нельзя восстановить с доказанным pre-deadline timestamp.
+   Только strict/prospective frozen evidence может участвовать в release gate.
 3. Основной benchmark выполнить при 4 980 ₽ / 30 ₽.
 4. После основного benchmark выполнить dynamic-bank sensitivity минимум для
    6 000 ₽ и 9 960 ₽ либо другого явно заданного кратного 30 банка.
@@ -148,6 +154,8 @@
 - есть простой контроль `BK top outcome`;
 - вывод основан на фактических hits, а не только modeled ROI;
 - стратегия-победитель либо честный результат `нет доказанного победителя`.
+- strict и legacy результаты никогда не агрегируются в одну release-метрику;
+  каждый отчёт показывает eligibility/exclusion counts и уровень доказательств.
 
 ### Этап 3. Исправить package objective по данным benchmark
 

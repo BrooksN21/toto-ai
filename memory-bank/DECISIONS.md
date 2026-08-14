@@ -1539,3 +1539,15 @@ ambiguous reversed evidence remains unresolved.
 - This change closes retry execution only. It does not weaken the existing
   official-plus-independent schedule-evidence requirement and does not claim
   that an automatic evidence collector already exists.
+## 2026-08-14 — Separate strict frozen and legacy historical benchmarks
+
+- The full database has 398 `historical_inventory`-healthy drawings and 1,672
+  `backtest_probability`-eligible drawings.
+- Missing old raw/result snapshots cannot be recreated with a trustworthy
+  pre-deadline timestamp.
+- Phase 2 therefore separates a strict 100/current-398 frozen benchmark from
+  500/1,000 legacy retrospective diagnostics.
+- Legacy diagnostics must be labelled `NOT RELEASE EVIDENCE`, may not be
+  aggregated into release metrics, and cannot support profitability claims.
+- Future prospective packages remain the only way to grow the strongest
+  holdout evidence.

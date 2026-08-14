@@ -10,7 +10,7 @@
 |---:|---|---|
 | 0. Live-цикл 4975 | IN PROGRESS | READY 15/15; evening LaunchAgent загружен; первый триггер 15:00 МСК |
 | 1. EV/BK/TotoBrief-style | READY TO START | Existing engines mapped in `phase1-inventory.md`; adapters begin after terminal 4975 |
-| 2. Historical benchmark | NOT STARTED | Требует три strategy implementations |
+| 2. Historical benchmark | BLOCKED ON PHASE 1 | Data audit: 398 strict frozen, 1,672 probability-eligible; 500/1000 must be legacy-only |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
 | 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
 | 5. Free sports coverage | PARTIAL | Stored-source baseline written: API-Sports odds 10 drawings/150 events/68% consensus; The Odds API 4/15; sports stats 0/15 complete |
@@ -53,6 +53,9 @@
   sports-feature shadow pilot; TheSportsDB/OpenLigaDB are secondary schedule
   evidence and StatsBomb Open Data is research-only. See
   `knowledge/free_sports_sources.md`.
+- Full DB health: 2,215 drawings; 398 strict historical-inventory healthy;
+  1,672 probability-backtest eligible; gaps 3,843/3,844; phase-2 evidence tiers
+  frozen in `phase2-data-eligibility.md`.
 
 ## Следующее действие
 

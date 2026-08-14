@@ -52,6 +52,23 @@ and one comparison command. The implementation sequence and tests are frozen
 in `plans/TOTOAI-PRODUCT-VALIDATION-20260814/phase1-inventory.md`. Coding starts
 only after the drawing-4975 terminal result is recorded.
 
+## Historical data eligibility finding (2026-08-14)
+
+The full strict data-health audit covers 2,215 drawings. Only 398 satisfy the
+strong `historical_inventory` contract because most old rows lack immutable raw
+and result snapshots; 1,672 satisfy the weaker `backtest_probability` contract.
+There are no duplicate visible numbers, but 3,843 and 3,844 are reported as
+gaps and require upstream verification. The last 100 contain 78 strict-healthy
+and 79 probability-backtest-eligible drawings.
+
+The plan no longer treats 500/1,000 old drawings as frozen release evidence.
+Phase 2 must publish a strict 100/current-398 benchmark separately from
+500/1,000 legacy retrospective diagnostics. Legacy rows are useful for finding
+large strategy defects but cannot support release or profit claims. Missing
+historical pre-deadline snapshots cannot be reconstructed honestly after the
+fact. Details are in
+`plans/TOTOAI-PRODUCT-VALIDATION-20260814/phase2-data-eligibility.md`.
+
 ## Source collection, sports comparison, and 4974 review (2026-08-14)
 
 The first safe automatic public schedule-source collector is implemented and
