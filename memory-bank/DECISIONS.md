@@ -1,5 +1,19 @@
 # Decisions
 
+## 2026-08-14: product work follows measurable stage gates
+
+- The active execution plan is
+  `plans/TOTOAI-PRODUCT-VALIDATION-20260814/plan.md`; `progress.md` is the
+  mandatory live checklist.
+- The next package research compares three equal-input/equal-bank controls:
+  current EV/crowd, BK probability-only, and TotoBrief-style category cover.
+- No strategy wins on modeled EV alone. Historical actual hits/categories and
+  prospective frozen evidence are mandatory.
+- A stage needs tests, replay/live evidence, artifacts and exit-criteria review;
+  code completion alone does not close it.
+- The live 4975 operational cycle is closed before changing the package
+  objective, preventing an operational test from being mixed with a new model.
+
 ## 2026-08-13: every final calculation remains visible for learning
 
 - `NO BET` continues to mean non-actionable and must never be converted into

@@ -1,5 +1,23 @@
 # Current State
 
+## Active product-validation plan (2026-08-14)
+
+The user approved a full staged plan at
+`plans/TOTOAI-PRODUCT-VALIDATION-20260814/plan.md`; live progress is tracked in
+the adjacent `progress.md`. The critical path is: close the complete live 4975
+lifecycle, implement equal-input EV/BK-probability/TotoBrief-style strategies,
+run historical benchmarks, correct only measured objective defects, evaluate a
+leakage-safe sports residual model, and then run a predeclared prospective
+paper holdout. Independent schedule/source and sports-data collection may grow
+in parallel but cannot alter production packages before their gates pass.
+
+An implementation stage is not complete merely because code exists. It needs
+tests, frozen or live execution evidence, durable artifacts, memory updates and
+an explicit exit-criteria check. Project status after every stage must list
+completed work, current work, blockers and the next action. Automatic wagering
+remains prohibited and no profitability claim is allowed before the release
+gate.
+
 ## Source collection, sports comparison, and 4974 review (2026-08-14)
 
 The first safe automatic public schedule-source collector is implemented and

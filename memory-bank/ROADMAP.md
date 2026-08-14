@@ -1,5 +1,22 @@
 # Roadmap
 
+## Active execution sequence (2026-08-14)
+
+The authoritative implementation order is tracked in
+`plans/TOTOAI-PRODUCT-VALIDATION-20260814/plan.md` and its `progress.md`:
+
+1. close live drawing 4975 through post-draw settlement;
+2. compare current EV/crowd, BK probability-only and TotoBrief-style cover;
+3. run 100/500/1000-drawing equal-bank historical benchmarks;
+4. correct only measured package-objective defects;
+5. complete official+independent schedule automation and free sports coverage;
+6. train/walk-forward evaluate a residual model around BK;
+7. pass a predeclared prospective paper holdout;
+8. only then review any real-money release.
+
+Operational evidence collection may run in parallel, but package activation
+cannot skip a gate.
+
 ## Completed: operator-safe publication and timing escalation (2026-08-13)
 
 - [x] Add one mandatory `operator-export` gateway for current scheduler-owned,
