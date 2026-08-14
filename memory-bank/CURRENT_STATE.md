@@ -1,5 +1,22 @@
 # Current State
 
+## Drawing 4975 refresh evidence (2026-08-14 16:37 Moscow)
+
+The fifth automatic evening trigger completed successfully. Launchd reports
+five runs and exit code 0. Attempt
+`refresh-01-20260814T133019452143Z-a3e476e3` ran from
+`2026-08-14T13:30:19.452143Z` through `13:35:10.720875Z`, status `complete`,
+with zero failure details. It created refreshed checkpoint
+`refresh-01-20260814T133019452143Z-a3e476e3-ff1ad616140a`.
+
+The refreshed checkpoint has 166 CSV rows and 166 unique coupons, selected
+cost 4,980, effective bank 4,980, and 166 unique valid BaltBet upload lines.
+The upload SHA-256 is
+`ff1ad616140a9d4f94dd1f3e67475c67b17a8cfa6a67f742b6cc16fed2a4fbe6`.
+The operator result remains non-actionable `NO BET` with status
+`LAST_KNOWN_GOOD_DEGRADED` before final execution, as required by the closed
+release gate. The next automatic trigger is primary final at 16:40 Moscow.
+
 ## Drawing 4975 warmup and LKG evidence (2026-08-14 16:23 Moscow)
 
 The fourth automatic evening trigger completed successfully. Launchd reports

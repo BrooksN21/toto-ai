@@ -8,7 +8,7 @@
 
 | Этап | Статус | Результат / блокер |
 |---:|---|---|
-| 0. Live-цикл 4975 | IN PROGRESS | Preflights and 16:15 warmup complete, all exit 0; validated 166-coupon LKG exists; refresh 16:30 next |
+| 0. Live-цикл 4975 | IN PROGRESS | Preflights, warmup and 16:30 refresh complete, all exit 0; refreshed 166-coupon LKG validated; final 16:40 next |
 | 1. EV/BK/TotoBrief-style | READY TO START | Existing engines mapped in `phase1-inventory.md`; adapters begin after terminal 4975 |
 | 2. Historical benchmark | BLOCKED ON PHASE 1 | Data audit: 398 strict frozen, 1,672 probability-eligible; 500/1000 must be legacy-only |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
@@ -28,7 +28,7 @@
 - [x] 15:30 API preflight отработал: exit 0, 63.97s, no failures.
 - [x] 16:00 freshness preflight отработал: exit 0, 70.10s, no failures.
 - [x] 16:15 warmup отработал: exit 0, 316.50s, LKG 166 / 4 980.
-- [ ] 16:30 refresh/LKG отработал.
+- [x] 16:30 refresh/LKG отработал: exit 0, 291.27s, LKG 166 / 4 980.
 - [ ] 16:40 primary final отработал.
 - [ ] 16:44 retry/admission отработал или корректно пропущен.
 - [ ] 16:50 T-10 terminal publication отработала.
@@ -72,9 +72,14 @@
   a validated non-actionable LKG checkpoint with 166 unique coupons, exact
   cost 4,980 and 166 valid BaltBet upload lines. The package remains paper-only
   and the release gate is closed.
+- Live 4975 trigger 16:30 MSK: LaunchAgent run 5, exit 0;
+  `refresh-01-20260814T133019452143Z-a3e476e3` completed at
+  `2026-08-14T13:35:10.720875Z` in 291.27s; zero failure details. The refreshed
+  checkpoint contains 166 unique coupons, exact cost 4,980 and 166 valid,
+  unique BaltBet upload lines; upload SHA-256 starts with `ff1ad616140a`.
 
 ## Следующее действие
 
-После 16:30 trigger проверить `refresh`, launchd exit, failures,
-новый LKG и хэш-связанные artifacts. До terminal 4975 не начинать
-менять package objective.
+После 16:40 trigger проверить `final`, launchd exit, failures,
+final/LKG provenance и оставшееся до T-10 время. Не менять package
+objective до terminal publication.
