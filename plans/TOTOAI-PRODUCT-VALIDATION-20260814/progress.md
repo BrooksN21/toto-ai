@@ -10,7 +10,7 @@
 |---:|---|---|
 | 0. Live-цикл 4975 | IN PROGRESS | Evening terminal complete: final fresh paper package 166 / 4 980, T-10 cleanup and post-draw install verified; result sync/settlement due 2026-08-15 |
 | 1. EV/BK/TotoBrief-style | COMPLETE | Four equal-input adapters, command and hash-bound reports verified; 4975 EV output exactly reproduces final package |
-| 2. Historical benchmark | IN PROGRESS | Strict loader/scorer/report/CLI complete; all 13 true pre-deadline drawings evaluated; legacy 100/500/1000 diagnostics remain |
+| 2. Historical benchmark | IN PROGRESS | Strict all-13 complete; resumable physically separate legacy runner and one-drawing canary complete; legacy 100/500/1000 runs remain |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
 | 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
 | 5. Free sports coverage | PARTIAL | Stored-source baseline written: API-Sports odds 10 drawings/150 events/68% consensus; The Odds API 4/15; sports stats 0/15 complete |
@@ -53,7 +53,15 @@
   `STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE` and no winner
   is declared. Evidence:
   `reports/research/strict-strategy-benchmark-20260814-all13/`.
-- Current full verification: `1895 passed, 13 deselected in 119.95s`;
+- Legacy runner: `legacy-strategy-benchmark` labels every input and artifact
+  `LEGACY_RETROSPECTIVE`, records chronology as unverified, excludes actual
+  results from the prediction-data hash, and writes an atomic hash-checked
+  checkpoint after each drawing. A real one-drawing canary completed in 1:04;
+  its immediate repeat resumed in 0 seconds. On drawing 4974 the mutable
+  legacy DB produced EV best 7 versus strict pre-deadline best 5, proving the
+  tiers must remain physically separate. The 100/500/1,000 runs have not yet
+  completed.
+- Current full verification: `1899 passed, 13 deselected in 114.91s`;
   Ruff and `git diff --check` passed.
 - Ruff: passed.
 - Git diff check: passed.

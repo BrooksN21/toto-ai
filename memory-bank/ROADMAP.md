@@ -35,8 +35,10 @@ legacy output is not release evidence. See the active plan's
 - [x] Add strict RAW-before-deadline loader, terminal-result separation, VOID
   scoring, actual exposure, package overlap, CLI and hash-bound reports.
 - [x] Run strict canary and all 13 currently eligible drawings at 4,980/30.
-- [ ] Run physically separate legacy 100/500/1,000 diagnostics without using
-  them in release metrics.
+- [x] Add physically separate, resumable legacy input/runner/checkpoint/report
+  path and verify a real one-drawing calculate/resume canary.
+- [ ] Complete legacy 100/500/1,000 diagnostics without using them in release
+  metrics.
 
 - [ ] Teach the gap audit to accept hash-bound documented upstream numbering
   gaps. TotoBrief's public listing skips 3,843/3,844 between 3,842 and 3,845;

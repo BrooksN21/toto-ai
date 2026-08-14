@@ -232,6 +232,11 @@ from toto_ai.optimizer.strategy_historical_benchmark import (
     run_strict_historical_benchmark,
     write_strict_historical_benchmark_reports,
 )
+from toto_ai.optimizer.strategy_legacy_benchmark import (
+    benchmark_legacy_retrospective_cases,
+    load_legacy_retrospective_cases,
+    write_legacy_retrospective_benchmark_reports,
+)
 from toto_ai.package.audit import (
     PackageStrategy,
     build_package_audit,
@@ -5008,6 +5013,132 @@ def historical_strategy_benchmark_command(
         "[yellow]STRICT CHRONOLOGICAL PIPELINE EVIDENCE — "
         "NOT RELEASE EVIDENCE — NOT ACTIONABLE[/yellow]"
     )
+    print(f"Manifest: {paths.manifest}")
+
+
+@app.command("legacy-strategy-benchmark")
+def legacy_strategy_benchmark_command(
+    db: Path = typer.Option(  # noqa: B008
+        Path("data/toto.db"),
+        "--db",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="SQLite database with retrospective current-state rows.",
+    ),
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Scheduler plan whose production objective is reused.",
+    ),
+    last: int = typer.Option(
+        100,
+        "--last",
+        min=1,
+        help="Latest legacy probability-eligible drawings to evaluate.",
+    ),
+    bank: int = typer.Option(4_980, "--bank", min=1),
+    stake: int = typer.Option(30, "--stake", min=1),
+    checkpoint_dir: Path = typer.Option(  # noqa: B008
+        Path("reports/research/legacy-strategy-checkpoints"),
+        "--checkpoint-dir",
+        file_okay=False,
+        resolve_path=True,
+        help="Reusable per-drawing checkpoints for long diagnostics.",
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        Path("reports/research/legacy-strategy-benchmark"),
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+        help="Destination for non-release retrospective reports.",
+    ),
+) -> None:
+    """Run resumable legacy diagnostics without claiming chronology."""
+    try:
+        plan = load_scheduler_plan(scheduler_plan)
+        config = historical_ev_config(
+            plan.quality_v2_ev_config,
+            bank=bank,
+            stake=stake,
+        )
+        engine = open_readonly_db(db)
+        session_factory = get_session_factory(engine)
+        with session_factory() as session:
+            cases = load_legacy_retrospective_cases(
+                session,
+                db_path=db,
+                last=last,
+                bank=bank,
+                stake=stake,
+            )
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            task = progress.add_task(
+                "legacy diagnostic: loading current-state rows",
+                total=len(cases),
+            )
+
+            def update_progress(
+                index: int,
+                total: int,
+                drawing_number: int,
+                status: str,
+            ) -> None:
+                progress.update(
+                    task,
+                    total=total,
+                    completed=index if status != "running" else index - 1,
+                    description=(
+                        f"drawing={drawing_number} {index}/{total} {status}"
+                    ),
+                )
+
+            benchmark = benchmark_legacy_retrospective_cases(
+                cases,
+                ev_config=config,
+                checkpoint_dir=checkpoint_dir,
+                progress_callback=update_progress,
+            )
+        paths = write_legacy_retrospective_benchmark_reports(
+            benchmark,
+            output_dir,
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    table = Table(title="Legacy Retrospective Strategy Diagnostic")
+    table.add_column("Strategy")
+    table.add_column("Drawings", justify="right")
+    table.add_column("Avg best", justify="right")
+    table.add_column("Hit 13+", justify="right")
+    table.add_column("Hit 14+", justify="right")
+    table.add_column("Hit 15", justify="right")
+    strategies = benchmark.summary["strategies"]
+    for strategy_id in sorted(strategies):
+        row = strategies[strategy_id]
+        table.add_row(
+            strategy_id,
+            str(row["drawings"]),
+            f"{row['average_best_hits']:.3f}",
+            f"{row['hit_13_count']}/{row['drawings']}",
+            f"{row['hit_14_count']}/{row['drawings']}",
+            f"{row['hit_15_count']}/{row['drawings']}",
+        )
+    print(table)
+    print(
+        "[yellow]LEGACY_RETROSPECTIVE — NOT RELEASE EVIDENCE — "
+        "NOT ACTIONABLE[/yellow]"
+    )
+    print(f"Resumed drawings: {benchmark.summary['resumed_drawings']}")
     print(f"Manifest: {paths.manifest}")
 
 

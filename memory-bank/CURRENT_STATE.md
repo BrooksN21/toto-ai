@@ -1,5 +1,24 @@
 # Current State
 
+## Resumable legacy strategy diagnostic (2026-08-14)
+
+The physically separate `legacy-strategy-benchmark` path is implemented for
+the 1,672 probability-eligible rows that lack strict pre-deadline evidence. It
+does not fabricate an `as_of`: every input/report is
+`LEGACY_RETROSPECTIVE`, `chronology_verified=false`, `NOT RELEASE EVIDENCE`,
+non-actionable, and excluded from strict/prospective metrics. Actual outcomes
+are excluded from the source/input hash.
+
+The command runs the same EV/crowd, BK-only, Cover-13 and Cover-14 engines with
+the production quality-v2 objective and writes one atomic hash-bound checkpoint
+per drawing. Exact source/config/input agreement is required to resume. A real
+drawing-4974 canary completed in 1:04 and its immediate rerun resumed in zero
+seconds. The legacy DB gave EV best 7/15 while the true pre-deadline strict input
+gave 5/15, an observed warning that post-deadline/current-state rows can change
+the apparent result. Verification: `1899 passed, 13 deselected in 114.91s`;
+Ruff and `git diff --check` passed. The 100/500/1,000 legacy diagnostics remain
+pending.
+
 ## Strict historical strategy benchmark (2026-08-14)
 
 Phase 2 now has a leakage-safe strict runner and report bundle. The new

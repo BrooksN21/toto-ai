@@ -1584,3 +1584,16 @@ ambiguous reversed evidence remains unresolved.
 - Cover-13/14 may spend less than the requested bank. Their cost and unused bank
   must be reported explicitly; they are not described as equal-cost until a
   separate full-budget Cover strategy exists.
+
+## 2026-08-14 — Legacy probability diagnostics never impersonate frozen input
+
+- Old SQLite probabilities without a proven capture timestamp use a separate
+  `LegacyRetrospectiveInput`; they are never wrapped in or labelled as a
+  pre-deadline `FrozenStrategyInput`.
+- Prediction-data hashes exclude actual results, but the evidence tier remains
+  `LEGACY_RETROSPECTIVE`, chronology is explicitly false, and outputs are never
+  release evidence even when the sample is large.
+- Because one production-quality EV calculation takes about one minute, legacy
+  100/500/1,000 runs use per-drawing atomic checkpoints. A checkpoint is reused
+  only when the source-data, strategy-input and full EV-configuration hashes
+  match; there is no search-quality reduction for speed.

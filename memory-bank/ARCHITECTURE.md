@@ -39,6 +39,17 @@ package overlap. Its hash-bound reports are always
 `STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE`; they are not
 an operator surface and cannot open the real-money gate.
 
+`optimizer.strategy_legacy_benchmark` is a physically separate diagnostic for
+older SQLite rows that lack provable capture chronology. Its input is named
+`LegacyRetrospectiveInput`, carries `chronology_verified=false`, and hashes the
+current probability/name/pool data without including actual outcomes. It calls
+the same four strategy engines but never creates a `FrozenStrategyInput` or a
+strict report. `legacy-strategy-benchmark` writes only
+`LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE` artifacts. Long runs are
+resumable through one atomic, hash-checked, input/config-bound checkpoint per
+drawing; source or configuration drift fails closed instead of silently
+reusing stale calculations.
+
 ## Operator export gateway
 
 The only operator-facing package flow is:
