@@ -8,8 +8,8 @@
 
 | Этап | Статус | Результат / блокер |
 |---:|---|---|
-| 0. Live-цикл 4975 | IN PROGRESS | Preflights, warmup and 16:30 refresh complete, all exit 0; refreshed 166-coupon LKG validated; final 16:40 next |
-| 1. EV/BK/TotoBrief-style | READY TO START | Existing engines mapped in `phase1-inventory.md`; adapters begin after terminal 4975 |
+| 0. Live-цикл 4975 | IN PROGRESS | Evening terminal complete: final fresh paper package 166 / 4 980, T-10 cleanup and post-draw install verified; result sync/settlement due 2026-08-15 |
+| 1. EV/BK/TotoBrief-style | IN PROGRESS | Terminal 4975 reached; shared contract/adapters are the current implementation task |
 | 2. Historical benchmark | BLOCKED ON PHASE 1 | Data audit: 398 strict frozen, 1,672 probability-eligible; 500/1000 must be legacy-only |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
 | 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
@@ -29,11 +29,11 @@
 - [x] 16:00 freshness preflight отработал: exit 0, 70.10s, no failures.
 - [x] 16:15 warmup отработал: exit 0, 316.50s, LKG 166 / 4 980.
 - [x] 16:30 refresh/LKG отработал: exit 0, 291.27s, LKG 166 / 4 980.
-- [ ] 16:40 primary final отработал.
-- [ ] 16:44 retry/admission отработал или корректно пропущен.
-- [ ] 16:50 T-10 terminal publication отработала.
-- [ ] Финальный package/package-free result показан пользователю.
-- [ ] Post-draw LaunchAgent автоматически установлен.
+- [x] 16:40 primary final отработал: exit 0, 224.47s, `FINAL_FRESH`.
+- [x] 16:44 retry/admission корректно не понадобился: final завершился terminal в 16:44:01.
+- [x] 16:50 T-10 terminal publication отработала: run 7, exit 0, operator upload expired, audit/paper retained.
+- [x] Финальный package/package-free result сохранён: `NO BET`, 166 unique paper coupons, 4 980, exact upload format.
+- [x] Post-draw LaunchAgent автоматически установлен и `launchctl print` verified.
 - [ ] Следующий день 12:00 result sync реально запущен.
 - [ ] Получены 15/15/VOID результаты.
 - [ ] Settlement и postmortem сформированы.
@@ -77,9 +77,20 @@
   `2026-08-14T13:35:10.720875Z` in 291.27s; zero failure details. The refreshed
   checkpoint contains 166 unique coupons, exact cost 4,980 and 166 valid,
   unique BaltBet upload lines; upload SHA-256 starts with `ff1ad616140a`.
+- Live 4975 final started at `2026-08-14T13:40:16.580964Z` and completed at
+  `13:44:01.046512Z`, exit 0, no failure details. It published a hash-verified
+  `FINAL_FRESH` paper package with 166 unique coupons, cost 4,980 and decision
+  `NO BET`; reason: `quality_v2_real_money_release_gate_closed`.
+- T-10 trigger raised LaunchAgent runs to 7 with exit 0 and expired the
+  operator-facing LKG pointer as designed. The immutable paper package remains
+  at `paper-package/checkpoints/00e224fcfa88b102f27daa8e/paper-package.txt`,
+  166 lines, SHA-256 `ff1ad616140a9d4f94dd1f3e67475c67b17a8cfa6a67f742b6cc16fed2a4fbe6`.
+- Post-draw LaunchAgent `com.toto-ai.post-draw-12033` is installed and loaded;
+  first automatic result sync is 2026-08-15 12:00 MSK with bounded three-hour
+  retries through 2026-08-16 03:00 MSK.
 
 ## Следующее действие
 
-После 16:40 trigger проверить `final`, launchd exit, failures,
-final/LKG provenance и оставшееся до T-10 время. Не менять package
-objective до terminal publication.
+Начать этап 1: добавить immutable shared strategy input/result contract
+и тонкие адаптеры трёх существующих engines. Параллельно не менять
+post-draw план 4975 до его реального запуска 2026-08-15 12:00 MSK.

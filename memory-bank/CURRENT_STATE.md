@@ -1,5 +1,31 @@
 # Current State
 
+## Drawing 4975 terminal evening result (2026-08-14 16:52 Moscow)
+
+The complete automatic evening sequence reached terminal state without a
+runtime failure. Primary final attempt
+`final-01-20260814T134016580964Z-c9c3e3ef` ran from
+`2026-08-14T13:40:16.580964Z` through `13:44:01.046512Z` (224.47 seconds),
+exit code 0 and zero failure details. It produced `FINAL_FRESH` paper evidence
+with decision `NO BET` solely because
+`quality_v2_real_money_release_gate_closed`; this is the current intentional
+paper-only policy, not a package-computation failure.
+
+The immutable final paper package contains 166 unique coupons, cost 4,980,
+and 166 valid `30; outcome x 15` lines. Its path is
+`reports/rehearsal/evening-4975-20260814T140000Z/paper-package/checkpoints/00e224fcfa88b102f27daa8e/paper-package.txt`
+and its SHA-256 is
+`ff1ad616140a9d4f94dd1f3e67475c67b17a8cfa6a67f742b6cc16fed2a4fbe6`.
+The artifact is non-actionable and automatic wagering is false.
+
+The 16:50 T-10 trigger raised LaunchAgent runs to seven, exit code 0. It
+removed the operator-facing LKG pointer and coupon path as designed while
+retaining immutable paper/audit evidence. Post-draw LaunchAgent
+`com.toto-ai.post-draw-12033` is installed and loaded, with its first real
+result-sync slot at 2026-08-15 12:00 Moscow and bounded three-hour retries
+through 2026-08-16 03:00 Moscow. The evening half of phase 0 is complete;
+result synchronization, settlement and postmortem remain pending.
+
 ## Drawing 4975 refresh evidence (2026-08-14 16:37 Moscow)
 
 The fifth automatic evening trigger completed successfully. Launchd reports
