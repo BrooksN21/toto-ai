@@ -44,6 +44,14 @@ StatsBomb Open Data is suitable for offline feature research, not broad live
 coverage. No adapter is activated by this review. The durable source notes are
 in `knowledge/free_sports_sources.md`.
 
+The phase-1 code inventory is also complete without changing live behavior.
+Current EV/crowd, top-probability BK-only, and brief/Cover engines already
+exist; the missing work is a shared immutable input/result contract, thin
+adapters, exact equal-input validation, category-13/category-14 Cover variants,
+and one comparison command. The implementation sequence and tests are frozen
+in `plans/TOTOAI-PRODUCT-VALIDATION-20260814/phase1-inventory.md`. Coding starts
+only after the drawing-4975 terminal result is recorded.
+
 ## Source collection, sports comparison, and 4974 review (2026-08-14)
 
 The first safe automatic public schedule-source collector is implemented and

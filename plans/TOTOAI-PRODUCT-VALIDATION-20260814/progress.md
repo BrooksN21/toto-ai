@@ -9,7 +9,7 @@
 | Этап | Статус | Результат / блокер |
 |---:|---|---|
 | 0. Live-цикл 4975 | IN PROGRESS | READY 15/15; evening LaunchAgent загружен; первый триггер 15:00 МСК |
-| 1. EV/BK/TotoBrief-style | NOT STARTED | Начинается после фиксации terminal package 4975 |
+| 1. EV/BK/TotoBrief-style | READY TO START | Existing engines mapped in `phase1-inventory.md`; adapters begin after terminal 4975 |
 | 2. Historical benchmark | NOT STARTED | Требует три strategy implementations |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
 | 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
