@@ -1,5 +1,23 @@
 # Decisions
 
+## 2026-08-20: experimental manual release is explicit operator risk, not evidence
+
+- The validated/default quality-v2 policy remains paper-only until the
+  prospective release gate is met. No local command may mark profitability as
+  proven or reinterpret a paper sample as release evidence.
+- An operator may explicitly acknowledge unvalidated risk for one exact
+  schema-v6 scheduler plan before T-10. The immutable authorization binds the
+  plan, drawing, deadline, bank, stake, quality configuration and selection
+  context. Missing, stale, foreign or modified authorization fails closed.
+- Authorization can promote only a fresh `final` `STRUCTURAL_PASS` package.
+  Warmup, refresh, last-known-good and degraded packages remain non-actionable.
+- The resulting operator artifact is schema v3 and explicitly records
+  `release_mode=EXPERIMENTAL_MANUAL`, `profitability_proven=false`,
+  `risk_acknowledged=true`, and `automatic_wagering=false`.
+- This mode only permits manual pre-T-10 export through the existing verified
+  operator gateway. It never places a wager and does not close or weaken the
+  prospective research gate.
+
 ## 2026-08-14: strategy benchmarks require explicit controls and paired intervals
 
 - Every strict and legacy strategy benchmark includes the deterministic

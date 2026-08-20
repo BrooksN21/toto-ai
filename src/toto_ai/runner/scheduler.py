@@ -89,6 +89,9 @@ UNBOUND_LEDGER_SCHEDULER_SCHEMA_VERSION = 5
 RUNNER_MANIFEST_SCHEMA_VERSION = 5
 SCHEDULER_INTEGRITY_EXIT_CODE = 78
 SCHEDULER_PLAN_FILENAME = "scheduler-plan.json"
+EXPERIMENTAL_RELEASE_AUTHORIZATION_FILENAME = (
+    "experimental-manual-release-authorization.json"
+)
 SCHEDULER_WRAPPER_FILENAME = "run-scheduler.sh"
 SCHEDULER_LAUNCH_AGENT_FILENAME = "totoai-scheduler.plist"
 MORNING_WRAPPER_FILENAME = "run-morning-preanalysis.sh"
@@ -3222,6 +3225,141 @@ def _operator_result_sha256(payload: Mapping[str, object]) -> str:
     return _sha256_bytes(_canonical_json_bytes(unsigned))
 
 
+def authorize_experimental_manual_release(
+    plan: SchedulerPlan,
+    *,
+    acknowledged: bool,
+    now: datetime,
+) -> Path:
+    """Persist one immutable operator acknowledgement bound to an exact plan.
+
+    This is not model evidence and does not claim profitability.  It only lets
+    a fresh, fully validated final package reach the existing manual operator
+    export path before T-10; automatic wagering remains forbidden.
+    """
+
+    _require_plan(plan)
+    if acknowledged is not True:
+        raise ValueError("explicit unvalidated manual-risk acknowledgement is required")
+    observed_at = _require_utc_datetime("authorization time", now)
+    if observed_at >= plan.publish_deadline:
+        raise ValueError("experimental manual release cannot be authorized at T-10")
+    path = plan.output_dir / EXPERIMENTAL_RELEASE_AUTHORIZATION_FILENAME
+    if path.exists():
+        _validate_experimental_manual_release(plan)
+        return path
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "authorization_mode": "EXPERIMENTAL_MANUAL",
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "ended_at": _timestamp(plan.ended_at),
+        "expires_at": _timestamp(plan.publish_deadline),
+        "requested_bank": plan.requested_bank,
+        "stake": plan.stake,
+        "quality_v2_config_sha256": quality_v2_config_sha256(
+            plan.quality_v2_ev_config
+        ),
+        "selection_context_sha256": selection_context_sha256(
+            plan.quality_v2_ev_config
+        ),
+        "risk_acknowledged": True,
+        "profitability_proven": False,
+        "automatic_wagering": False,
+        "authorized_at": _timestamp(observed_at),
+    }
+    payload["record_sha256"] = _operator_result_sha256(payload)
+    _write_exclusive_atomic(
+        plan.output_dir,
+        path,
+        _canonical_json_bytes(payload) + b"\n",
+    )
+    _validate_experimental_manual_release(plan)
+    return path
+
+
+def _validate_experimental_manual_release(plan: SchedulerPlan) -> Mapping[str, object]:
+    path = plan.output_dir / EXPERIMENTAL_RELEASE_AUTHORIZATION_FILENAME
+    payload = _load_strict_json(path, name="experimental release authorization")
+    if not isinstance(payload, Mapping):
+        raise SchedulerIntegrityError(
+            "experimental release authorization is not an object",
+            category="operator_release_boundary",
+        )
+    expected = {
+        "schema_version": 1,
+        "authorization_mode": "EXPERIMENTAL_MANUAL",
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "ended_at": _timestamp(plan.ended_at),
+        "expires_at": _timestamp(plan.publish_deadline),
+        "requested_bank": plan.requested_bank,
+        "stake": plan.stake,
+        "quality_v2_config_sha256": quality_v2_config_sha256(
+            plan.quality_v2_ev_config
+        ),
+        "selection_context_sha256": selection_context_sha256(
+            plan.quality_v2_ev_config
+        ),
+        "risk_acknowledged": True,
+        "profitability_proven": False,
+        "automatic_wagering": False,
+    }
+    if any(payload.get(key) != value for key, value in expected.items()):
+        raise SchedulerIntegrityError(
+            "experimental release authorization does not match scheduler plan",
+            category="operator_release_boundary",
+        )
+    if payload.get("record_sha256") != _operator_result_sha256(payload):
+        raise SchedulerIntegrityError(
+            "experimental release authorization integrity hash mismatch",
+            category="operator_release_boundary",
+        )
+    authorized_at = _parse_utc_datetime(
+        "experimental release authorized_at", payload.get("authorized_at")
+    )
+    if authorized_at >= plan.publish_deadline:
+        raise SchedulerIntegrityError(
+            "experimental release authorization is not pre-T-10",
+            category="operator_release_boundary",
+        )
+    return payload
+
+
+def _experimental_manual_release_authorized(plan: SchedulerPlan) -> bool:
+    path = plan.output_dir / EXPERIMENTAL_RELEASE_AUTHORIZATION_FILENAME
+    if not path.exists():
+        return False
+    _validate_experimental_manual_release(plan)
+    return True
+
+
+def experimental_manual_release_status(plan: SchedulerPlan) -> Mapping[str, object]:
+    """Return the fail-closed manual release state for one exact plan."""
+
+    _require_plan(plan)
+    path = plan.output_dir / EXPERIMENTAL_RELEASE_AUTHORIZATION_FILENAME
+    if not path.exists():
+        return {
+            "state": "paper_only_not_authorized",
+            "authorization_path": None,
+            "profitability_proven": False,
+            "automatic_wagering": False,
+        }
+    payload = _validate_experimental_manual_release(plan)
+    return {
+        "state": "experimental_manual_authorized",
+        "authorization_path": str(path),
+        "authorization_sha256": payload["record_sha256"],
+        "authorized_at": payload["authorized_at"],
+        "expires_at": payload["expires_at"],
+        "profitability_proven": False,
+        "automatic_wagering": False,
+    }
+
+
 def _publish_actionable_operator_result(
     plan: SchedulerPlan,
     *,
@@ -3286,8 +3424,16 @@ def _publish_actionable_operator_result(
         "operator archive manifest hash",
         archive.get("archive_manifest_sha256"),
     )
+    release_authorization_path = (
+        plan.output_dir / EXPERIMENTAL_RELEASE_AUTHORIZATION_FILENAME
+    )
+    release_authorization = (
+        _validate_experimental_manual_release(plan)
+        if release_authorization_path.exists()
+        else None
+    )
     payload: dict[str, object] = {
-        "schema_version": 2,
+        "schema_version": 3,
         "plan_id": plan.plan_id,
         "drawing": plan.drawing,
         "drawing_id": plan.drawing_id,
@@ -3315,6 +3461,23 @@ def _publish_actionable_operator_result(
         "completed_at": _timestamp(completed_at),
         "automatic_wagering": False,
         "actionable": True,
+        "release_mode": (
+            "EXPERIMENTAL_MANUAL"
+            if release_authorization is not None
+            else "STANDARD"
+        ),
+        "release_authorization_path": (
+            str(release_authorization_path)
+            if release_authorization is not None
+            else None
+        ),
+        "release_authorization_sha256": (
+            release_authorization["record_sha256"]
+            if release_authorization is not None
+            else None
+        ),
+        "risk_acknowledged": release_authorization is not None,
+        "profitability_proven": False,
     }
     payload["record_sha256"] = _operator_result_sha256(payload)
     _write_replace_atomic(
@@ -3348,7 +3511,7 @@ def _validated_actionable_operator_upload(
             category="operator_artifact_integrity",
         )
     if (
-        payload.get("schema_version") != 2
+        payload.get("schema_version") != 3
         or payload.get("plan_id") != plan.plan_id
         or payload.get("drawing") != plan.drawing
         or payload.get("drawing_id") != plan.drawing_id
@@ -3357,9 +3520,41 @@ def _validated_actionable_operator_upload(
         or payload.get("provenance") != "FINAL_FRESH"
         or payload.get("automatic_wagering") is not False
         or payload.get("actionable") is not True
+        or payload.get("profitability_proven") is not False
     ):
         raise SchedulerIntegrityError(
             "operator result is not actionable",
+            category="operator_release_boundary",
+        )
+    release_mode = payload.get("release_mode")
+    if release_mode == "EXPERIMENTAL_MANUAL":
+        authorization = _validate_experimental_manual_release(plan)
+        authorization_path = (
+            plan.output_dir / EXPERIMENTAL_RELEASE_AUTHORIZATION_FILENAME
+        )
+        if (
+            payload.get("release_authorization_path") != str(authorization_path)
+            or payload.get("release_authorization_sha256")
+            != authorization.get("record_sha256")
+            or payload.get("risk_acknowledged") is not True
+        ):
+            raise SchedulerIntegrityError(
+                "operator experimental release binding mismatch",
+                category="operator_release_boundary",
+            )
+    elif release_mode == "STANDARD":
+        if (
+            payload.get("release_authorization_path") is not None
+            or payload.get("release_authorization_sha256") is not None
+            or payload.get("risk_acknowledged") is not False
+        ):
+            raise SchedulerIntegrityError(
+                "operator standard release binding mismatch",
+                category="operator_release_boundary",
+            )
+    else:
+        raise SchedulerIntegrityError(
+            "operator release mode is invalid",
             category="operator_release_boundary",
         )
     if payload.get("record_sha256") != _operator_result_sha256(payload):
@@ -5689,6 +5884,29 @@ def _parse_runner_manifest_phase_result_strict(
             validate_config_bank(effective_bank, plan.stake)
             if paper_cost > effective_bank or effective_bank > plan.requested_bank:
                 raise SchedulerPhaseError("paper candidate exceeds approved bank")
+            if (
+                context.scheduler_phase == "final"
+                and _experimental_manual_release_authorized(plan)
+            ):
+                return SchedulerPhaseResult(
+                    decision="PLAY",
+                    reason=(
+                        "experimental manual release explicitly authorized; "
+                        "profitability is unproven"
+                    ),
+                    package_bytes=paper_bytes,
+                    package_sha256=_sha256_bytes(paper_bytes),
+                    effective_bank=effective_bank,
+                    selected_count=paper_count,
+                    selected_cost=paper_cost,
+                    override_sha256=context.override_sha256,
+                    final_inputs_sha256=context.final_inputs_sha256,
+                    drawing_fingerprint=final_fingerprint,
+                    probability_input_sha256=safety["probability_input_sha256"],
+                    source_captured_at=_parse_utc_datetime(
+                        "EV input_fetched_at", ev["input_fetched_at"]
+                    ),
+                )
             return SchedulerPhaseResult.candidate_package(
                 paper_bytes,
                 reason=reason,

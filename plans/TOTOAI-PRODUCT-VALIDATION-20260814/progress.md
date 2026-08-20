@@ -201,3 +201,26 @@ Legacy-500/1,000 без нового явного диагностическог
 Параллельно наблюдать каждый триггер активированного evening plan 4981 и
 сохранить финальный paper/operator result. Продолжать расширять authoritative
 coverage только на источники с тем же exact-consensus/fail-closed контрактом.
+Git-расхождение закрыто: 22 локальных коммита и отсутствовавший reviewed
+schedule fixture 4964 влиты PR #11; забытые исторические context-артефакты
+влиты PR #12. Локальный `main` совпадает с `origin/main`.
+Первый trigger 4981 в 16:00 успешно завершил `tls_preflight` с exit code 0 и
+пустым stderr. После live-цикла исправить вводящий в заблуждение CLI-вывод
+`no-op`: для non-terminal preflight авторитетен hash-chained scheduler state.
+Trigger 16:30 также успешно завершил `api_preflight`: exit code 0, stderr и
+failure details пусты. Следующая фаза — `freshness_preflight` в 17:00.
+Цикл 4981 завершился terminal `NO BET / FINAL_FRESH`: warmup получил
+retryable HTTP 429, refresh восстановился и сохранил 166/4,980 LKG, final
+завершился в 17:45:47 с exit code 0, но real-money release gate остался закрыт.
+До T-10 создан immutable prospective equal-input report четырёх стратегий:
+EV 0.00100249, BK 0.02228851, Cover-13 0.00616687, Cover-14 0.01701016 по
+модельной P(13+). Это одна paper-only точка; фактический settlement ещё не
+возможен.
+Для контролируемой operator-risk проверки добавлен отдельный immutable
+plan-bound experimental manual release. Он не доказывает прибыльность и не
+ослабляет prospective gate: только fresh final `STRUCTURAL_PASS`, только до
+T-10, только ручной export, без warmup/LKG/degraded и без automatic wagering.
+Тираж 4982 синхронизирован (12054, 21.08 19:00 MSK), но evening plan пока не
+создан: timing_unknown остаётся для 4/8/11/12/14. Retry 18:37 завершился
+deferred, нашёл три independent candidates без consensus promotion; следующий
+retry 19:07. Structured child result теперь виден в LaunchAgent stdout.

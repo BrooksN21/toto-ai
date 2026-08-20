@@ -272,6 +272,7 @@ from toto_ai.runner import (
     TimingOverrideAudit,
     VirtualSchedulerClock,
     activate_scheduler_launch_agent,
+    authorize_experimental_manual_release,
     build_scheduler_plan,
     clone_scheduler_plan_for_recovery,
     dispatch_morning,
@@ -3098,6 +3099,36 @@ def scheduler_recover_plan_command(
     print(f"Wrapper: {artifacts.wrapper_path}")
     print(f"LaunchAgent candidate: {artifacts.launch_agent_path}")
     print("All target, budget, probability, and evidence bindings were preserved.")
+
+
+@app.command("experimental-release-authorize")
+def experimental_release_authorize_command(
+    plan: str = typer.Option(..., "--plan"),
+    acknowledge_unvalidated_manual_risk: bool = typer.Option(
+        False,
+        "--acknowledge-unvalidated-manual-risk",
+        help=(
+            "Explicitly authorize one fresh manual package even though "
+            "profitability has not been proven."
+        ),
+    ),
+) -> None:
+    """Authorize one exact plan for experimental manual export before T-10."""
+
+    try:
+        scheduler_plan = load_scheduler_plan(plan)
+        authorization_path = authorize_experimental_manual_release(
+            scheduler_plan,
+            acknowledged=acknowledge_unvalidated_manual_risk,
+            now=_utc_now_datetime(),
+        )
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(f"Authorization: {authorization_path}")
+    typer.echo(
+        "EXPERIMENTAL MANUAL ONLY: profitability is unproven; "
+        "automatic wagering remains disabled."
+    )
 
 
 @app.command("morning-preanalysis-plan")

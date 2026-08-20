@@ -13,10 +13,13 @@ The authoritative implementation order is tracked in
 5. complete official+independent schedule automation and free sports coverage;
 6. train/walk-forward evaluate a residual model around BK;
 7. pass a predeclared prospective paper holdout;
-8. only then review any real-money release.
+8. only then review a validated real-money release.
 
 Operational evidence collection may run in parallel, but package activation
-cannot skip a gate.
+cannot skip a gate. A separately authorized experimental manual release may
+expose one fresh final package while explicitly retaining
+`profitability_proven=false`; it is operator-risk testing, not completion of
+the validated release stage.
 
 Current progress: the real drawing-4975 paper lifecycle is closed through
 settlement and reviewed postmortem. The shared frozen-input contract,
@@ -67,6 +70,12 @@ legacy output is not release evidence. See the active plan's
   untouched/prospective evaluation window.
 - [ ] Capture lawful pre-deadline `Possible winnings` and post-draw payout
   evidence; until then keep modeled EV/ROI separate from observed return.
+- [x] Add immutable plan-bound experimental manual authorization, final-only
+  promotion, schema-v3 operator provenance, preflight release status and
+  structured passive-retry logs without automatic wagering.
+- [ ] Exercise the authorized path on drawing 4982 only after all 15 kickoff
+  times are resolved and its exact evening plan is generated; verify manual
+  export before T-10 and retain the full post-draw audit lifecycle.
 
 - [ ] Teach the gap audit to accept hash-bound documented upstream numbering
   gaps. TotoBrief's public listing skips 3,843/3,844 between 3,842 and 3,845;
@@ -86,9 +95,9 @@ legacy output is not release evidence. See the active plan's
   scheduler.
 - [x] Freeze the failed unbound drawing-4973 file as non-actionable regression
   evidence without copying its coupon strings.
-- [ ] Exercise the gateway on the next prospective scheduler result. Export is
-  allowed only if the result is genuinely `PLAY`; current quality-v2 release
-  policy remains paper-only `NO BET`.
+- [ ] Exercise the gateway on the next fresh final scheduler result. A
+  validated release still requires the prospective gate; a plan-bound
+  experimental manual result must remain explicitly unproven.
 - [ ] Complete the prospective package lifecycle: canonical package -> result
   or VOID -> immutable settlement -> mandatory post-draw review.
 

@@ -1,5 +1,32 @@
 # Current State
 
+## Experimental manual release and drawing 4982 (2026-08-20)
+
+The default quality-v2 release gate remains paper-only and profitability is not
+proven. A separate explicit command now creates one immutable authorization for
+an exact schema-v6 scheduler plan before T-10. Only a fresh `final`
+`STRUCTURAL_PASS` may then reach the existing manual operator-export gateway;
+warmup/LKG/degraded packages remain non-actionable and automatic wagering stays
+disabled. Operator result schema v3 records the release mode, authorization
+hash, risk acknowledgement and `profitability_proven=false`. Preflight status
+exposes this state before evening execution.
+
+Drawing 4982 is the active BaltBet drawing: internal ID 12054, deadline
+2026-08-21 19:00 MSK, fingerprint
+`581cdbbee88e75525f9b562e0bc43e8c450fd93fbed886ee592ae3bcb6be17d3`.
+Identity/probabilities are mapped 15/15, but events 4/8/11/12/14 still have
+`timing_unknown`; therefore no evening plan or authorization exists yet. The
+passive retry LaunchAgent is installed and active. Its 18:37 MSK run completed
+as controlled `deferred`: three independent candidates were found, zero
+official-plus-independent consensus promotions were eligible, and the next
+retry is 19:07 MSK. Retry stdout now contains a structured child-result record
+instead of remaining empty.
+
+Git cleanup is complete. PR #11 merged the 22 local post-PR commits plus the
+missing drawing-4964 reviewed schedule fixture; PR #12 merged eleven historical
+task-context directories. Local `main` equals `origin/main`, and the release
+work continues from that exact base.
+
 ## Git integration boundary after drawing 4981 (2026-08-20)
 
 The former remote branch `codex/operator-export-timing-escalation` was merged by
