@@ -493,6 +493,101 @@ def test_new_reviewed_catalog_upgrades_existing_baseline_only_pin_set(
     )
 
 
+def test_new_verified_provider_identity_upgrades_existing_baseline_only_pin(
+    session_factory,
+    tmp_path: Path,
+) -> None:
+    original = _target()
+    target = replace(
+        original,
+        events=tuple(
+            replace(event, pool_probabilities=(0.4, 0.3, 0.3))
+            for event in original.events
+        ),
+    )
+    ledger = tmp_path / "ledger.json"
+    ledger.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "generated_at": "2026-07-29T14:00:00Z",
+                "observations": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    _seed(session_factory)
+    morning = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_evidence_ledger=ledger,
+        evaluated_at=EVALUATED_AT,
+    )
+    assert morning.status == "ready"
+    assert morning.baseline_only_event_orders == (14,)
+    old_by_order = {pin.event_order: pin for pin in morning.pins}
+
+    provider_fixture = ProviderEvent(
+        provider="api-sports",
+        provider_event_id="iceland-third-tier-verified",
+        sport="football",
+        league="3. Deild",
+        starts_at=DEADLINE + timedelta(hours=2),
+        home_team="KV Vesturbaer",
+        away_team="Reynir Sandgerdi",
+        fetched_at=EVALUATED_AT,
+        payload_hash="hash-iceland-third-tier",
+        country="Iceland",
+        provider_home_team_id="kv-vesturbaer",
+        provider_away_team_id="reynir-sandgerdi",
+    )
+    assert (
+        backfill_accepted_matches(
+            session_factory,
+            (
+                {
+                    "drawing_id": target.drawing_id,
+                    "target_event_id": 5014,
+                    "provider_fixture_id": provider_fixture.provider_event_id,
+                    "sport": "football",
+                    "target_home": "КВ Вестурбеяр",
+                    "target_away": "Рейнир Сандгерди",
+                    "provider_home": provider_fixture.home_team,
+                    "provider_away": provider_fixture.away_team,
+                    "provider_home_team_id": provider_fixture.provider_home_team_id,
+                    "provider_away_team_id": provider_fixture.provider_away_team_id,
+                    "country": "Iceland",
+                    "league": "3. Deild",
+                    "reviewed": True,
+                },
+            ),
+        )
+        == 2
+    )
+
+    refreshed = prepare_drawing(
+        target,
+        _candidates()[:-1] + (provider_fixture,),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_evidence_ledger=ledger,
+        evaluated_at=EVALUATED_AT,
+    )
+
+    assert refreshed.status == "ready"
+    assert refreshed.eligibility.status == "playable"
+    assert refreshed.baseline_only_event_orders == ()
+    assert refreshed.pins[14].effective_source_provider == "api-sports"
+    assert refreshed.pins[14].effective_source_fixture_id == (
+        "iceland-third-tier-verified"
+    )
+    assert tuple(pin.pin_hash for pin in refreshed.pins[:14]) == tuple(
+        old_by_order[order].pin_hash for order in range(14)
+    )
+
+
 def test_ready_mixed_pin_set_rejects_relevant_utc_date_failure(
     session_factory, tmp_path: Path
 ) -> None:

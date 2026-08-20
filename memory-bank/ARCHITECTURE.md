@@ -226,11 +226,15 @@ only be stricter than the documented 0.02 maximum. The gate cannot activate
 production: even a pass is only `PASS_REVIEW_REQUIRED`, while the artifact
 remains `NOT_ACTIVATED`.
 
-The active scheduler contract is schema v6. Quality-v2 is fail-closed
-`NO BET / TRAINING-PAPER` and cannot publish an actionable wager-ready marker.
-Legacy schema-v5 and marker descriptions later in this file are retained only
-as implementation history and are not current behavior. No profitability is
-proven.
+The active scheduler contract is schema v6. Quality-v2 remains fail-closed
+`NO BET / TRAINING-PAPER` by default and cannot self-authorize an actionable
+marker. One exact schema-v6 plan may carry a separately created, hash-bound
+`EXPERIMENTAL_MANUAL` authorization. Only its fresh final phase may promote a
+structurally and independently safety-approved paper candidate to `PLAY` for
+manual operator export before T-10. Warmup/control packages remain
+non-actionable, authorization never places a wager, and the artifact records
+`profitability_proven=false`. Legacy schema-v5 descriptions later in this file
+are implementation history, not current behavior.
 
 ## Deterministic safety-aware EV package selection
 
@@ -320,22 +324,26 @@ upgrades, strict provider pins, reversed schedule-only orientation, TotoBrief
 
 ## Atomic monotonic canonical pin enrichment
 
-A ready canonical pin-set is immutable except for one transactionally guarded
-upgrade: an unchanged 15-event drawing may replace a `totobrief-baseline`
-no-schedule row with a validated `reviewed-schedule` or `schedule-evidence`
-row. The preparation merge reuses all non-upgraded rows exactly, including
+A ready canonical pin-set is immutable except for transactionally guarded
+baseline upgrades. For an unchanged 15-event drawing, a
+`totobrief-baseline` no-schedule row may be replaced by either a validated
+`reviewed-schedule`/`schedule-evidence` row or an exact provider row that has a
+reviewed reusable team identity, stable fixture/team IDs, orientation and
+kickoff. The preparation merge reuses all non-upgraded rows exactly, including
 their source identity hashes and provenance, so a later provider fetch cannot
 rewrite strict fixture/team identity merely because transport metadata changed.
 
-For each upgraded order, target event ID/order and canonical home/away team IDs
-remain in TotoBrief orientation. A reversed official fixture is represented
-only by `provenance.orientation=reversed`; it remains schedule-only and has no
-external fixture/team or odds/statistics identity. The publication boundary
-independently verifies that every selected reviewed row carries the exact
-catalog/ledger hash supplied for the new set. The old rows and parent set are
-deleted only inside the same transaction that validates and inserts all 15 new
-rows, so any downgrade, ambiguity, schedule conflict or identity/hash drift
-leaves the previous ready set intact.
+For schedule-only upgrades, target event ID/order and canonical home/away team
+IDs remain in TotoBrief orientation. A reversed official fixture is
+represented only by `provenance.orientation=reversed`; it remains
+schedule-only and has no external fixture/team or odds/statistics identity.
+An exact provider upgrade instead requires non-empty provider fixture and both
+team IDs and may not carry reviewed schedule evidence. The publication
+boundary independently rechecks the selected transition class and every
+catalog/ledger hash. The old rows and parent set are deleted only inside the
+same transaction that validates and inserts all 15 new rows, so any downgrade,
+ambiguity, schedule conflict or identity/hash drift leaves the previous ready
+set intact.
 
 ## Deadline identity and publication boundary
 

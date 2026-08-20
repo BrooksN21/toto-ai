@@ -966,6 +966,7 @@ def publish_canonical_pin_set(
     pin_specs: tuple[Mapping[str, Any], ...],
     reviewed_catalog_hash: str | None,
     allow_baseline_schedule_enrichment: bool = False,
+    allow_baseline_provider_enrichment: bool = False,
 ) -> tuple[DrawingEventPinRecord, ...]:
     """Atomically publish exactly one complete canonical 15-pin set."""
     if len(pin_specs) != 15:
@@ -1055,9 +1056,19 @@ def publish_canonical_pin_set(
             _validate_canonical_pin_set(conflicting, rows)
             if conflicting.drawing_number != drawing_number:
                 raise ValueError("conflicting canonical drawing identity")
-            if not allow_baseline_schedule_enrichment or not (
-                _is_safe_baseline_schedule_enrichment(rows, contents)
-            ):
+            safe_schedule_enrichment = (
+                allow_baseline_schedule_enrichment
+                and _is_safe_baseline_schedule_enrichment(rows, contents)
+            )
+            safe_provider_enrichment = (
+                allow_baseline_provider_enrichment
+                and _is_safe_baseline_provider_enrichment(
+                    rows,
+                    contents,
+                    provider=provider,
+                )
+            )
+            if not (safe_schedule_enrichment or safe_provider_enrichment):
                 raise ValueError("conflicting immutable canonical pin set")
             for row in rows:
                 session.delete(row)
@@ -1151,6 +1162,41 @@ def _is_safe_baseline_schedule_enrichment(
             or old.canonical_home_team_id != new["canonical_home_team_id"]
             or old.canonical_away_team_id != new["canonical_away_team_id"]
             or not new["schedule_only"]
+        ):
+            return False
+        if old.starts_at not in {"baseline-only", None} and (
+            old.starts_at != new["starts_at"]
+        ):
+            return False
+        changed = True
+    return changed
+
+
+def _is_safe_baseline_provider_enrichment(
+    existing: tuple[DrawingPinSetItem, ...],
+    replacement: tuple[Mapping[str, Any], ...],
+    *,
+    provider: str,
+) -> bool:
+    """Allow only exact baseline-only to verified provider transitions."""
+    if len(existing) != 15 or len(replacement) != 15:
+        return False
+    changed = False
+    for old, new in zip(existing, replacement, strict=True):
+        old_content = _canonical_pin_content(old)
+        if old_content == new:
+            continue
+        if (
+            old.source_provider != "totobrief-baseline"
+            or new["source_provider"] != provider
+            or old.target_event_id != new["target_event_id"]
+            or old.event_order != new["event_order"]
+            or new["schedule_only"]
+            or new["reviewed_evidence_id"] is not None
+            or not new["source_fixture_id"]
+            or not new["source_home_team_id"]
+            or not new["source_away_team_id"]
+            or new["starts_at"] is None
         ):
             return False
         if old.starts_at not in {"baseline-only", None} and (

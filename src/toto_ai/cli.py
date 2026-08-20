@@ -307,6 +307,7 @@ from toto_ai.runner.preflight_retry_scheduler import (
 from toto_ai.runner.preflight_status import build_preflight_status
 from toto_ai.sports_stats.operation import (
     collect_and_store_sports_stats,
+    load_api_sports_key,
     parse_historical_as_of,
 )
 from toto_ai.sports_stats.preliminary_comparison import (
@@ -3348,6 +3349,7 @@ def _prepare_current_for_morning(
     api_sports_max_retries: int,
     expansion_horizon_days: int,
     project_root: Path,
+    env_file: Path,
     schedule_evidence_ledger: Path,
     reviewed_schedule_catalog: Path | None = None,
 ) -> MorningPreparedDrawing:
@@ -3424,9 +3426,7 @@ def _prepare_current_for_morning(
         if target.drawing_number is None:
             raise ValueError("current drawing visible number is required")
         seed_reviewed_alias_config(session_factory, aliases, provider=provider)
-        api_key = os.environ.get("API_SPORTS_KEY", "")
-        if not api_key.strip():
-            raise ValueError("API_SPORTS_KEY is required")
+        api_key = load_api_sports_key(env_file)
         schedule = fetch_preparation_schedule(
             target,
             APISportsClient(
@@ -3606,6 +3606,7 @@ def morning_dispatch_command(
                 api_sports_max_retries=api_sports_max_retries,
                 expansion_horizon_days=expansion_horizon_days,
                 project_root=root,
+                env_file=config.env_file,
                 schedule_evidence_ledger=config.schedule_evidence_ledger,
                 reviewed_schedule_catalog=(
                     None

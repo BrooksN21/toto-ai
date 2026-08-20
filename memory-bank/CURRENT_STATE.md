@@ -4723,3 +4723,33 @@ only to baseline-only event orders: previously validated provider or reviewed
 pins are retained and are not re-admitted against unrelated schedule-date
 diagnostics. Regression verification passed 23 mixed-provider/partial-
 enrichment tests and 40 morning-dispatch tests; Ruff passed.
+
+## Drawing 4982 live preparation and authorized scheduler (2026-08-20)
+
+The immediate `morning-dispatch` path now loads `API_SPORTS_KEY` through its
+configured protected `--env-file`, matching generated wrapper behavior instead
+of requiring a separately exported shell variable. This is drawing-neutral.
+
+Reviewed reusable aliases for the five previously unresolved fixtures allow
+API-Sports to resolve them exactly. Preparation can now monotonically upgrade
+an existing baseline-only canonical row to an exact provider pin while
+preserving every unrelated pin hash. Production source contains no drawing
+4982/12054 or team-name branch; the drawing-specific aliases and frozen source
+evidence remain reusable data.
+
+Live preparation is READY/PLAYABLE with 15 pins and zero unresolved events for
+drawing 4982 (internal ID 12054, deadline 2026-08-21 19:00 MSK). Schema-v6 plan
+`453829753fa55b5f` is activated for bank 4,980 and stake 30. Its generated and
+installed LaunchAgent plists have identical SHA-256
+`94359370a1cc82edb27ed6ddb67b148df7b0e970549193c797c0cfb50f5032e2`;
+launchd reports zero prior runs before the first 17:00 MSK phase, and a direct
+pre-phase wrapper smoke returned `no-op / no due scheduler phase`.
+
+The exact plan has a hash-bound `EXPERIMENTAL_MANUAL` authorization through
+T-10 at 18:50 MSK. Preflight reports
+`experimental_manual_authorized`, package generation enabled, 15/15 pins and
+zero unresolved events. A fresh final package that passes structural, safety,
+identity and deadline checks may therefore become `PLAY`; insufficient
+prospective sample alone no longer forces that authorized final to `NO BET`.
+Profitability remains unproven and automatic wagering remains disabled. The
+actual scheduled final/operator-export path is still pending live execution.
