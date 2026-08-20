@@ -103,8 +103,24 @@
   checkpoint after each drawing. A real one-drawing canary completed in 1:04;
   its immediate repeat resumed in 0 seconds. On drawing 4974 the mutable
   legacy DB produced EV best 7 versus strict pre-deadline best 5, proving the
-  tiers must remain physically separate. The 100/500/1,000 runs have not yet
-  completed.
+  tiers must remain physically separate. Legacy-100 completed in 1:50:22:
+  BK-only 8.700 average best, EV/crowd 7.050, Cover-13 8.260 and Cover-14
+  8.960. Paired versus BK-only: EV -1.650 [-2.210, -1.120], Cover-13 -0.440
+  [-0.650, -0.230], Cover-14 +0.260 [0.060, 0.460]. The report is diagnostic
+  only; Cover-14 spent 2,757 RUB on average, and no profitability or release
+  winner is declared. A Legacy-500 resume was stopped cleanly at 116
+  checkpoints: further non-chronological volume cannot establish observed ROI,
+  so prospective evidence has priority.
+- Official payout audit: the current BaltBet rules confirm the implemented
+  cumulative category fractions. TotoBrief still supplies no separate
+  `Possible winnings`, all 420 stored result snapshots have null payments,
+  and observed ROI cannot be computed from the current evidence. See
+  `research/baltbet_official_payout_audit_20260820.md`.
+- Legacy-500 resume initially failed closed because plan 4975 referenced an
+  older schedule-evidence hash than the advanced shared production ledger. The
+  exact ledger plus review-document bundle was recovered from Git commit
+  `9be3cdc`; a separate research scheduler plan passed strict validation and
+  resumed the existing checkpoints. No production evidence was rolled back.
 - Current full verification: `1904 passed, 13 deselected in 123.15s`;
   Ruff and `git diff --check` passed.
 - Ruff: passed.
@@ -177,9 +193,11 @@
 
 ## Следующее действие
 
-Дождаться и проверить legacy-100 с явной меткой
-`LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`; только после проверки продолжить
-500/1000. Параллельно наблюдать каждый триггер активированного evening plan
-4981 и сохранить его финальный paper/operator result. После полного regression
-прогона зафиксировать UEFA adapter; затем расширять authoritative coverage
-только на источники с тем же exact-consensus/fail-closed контрактом.
+Автоматически архивировать, а после завершения тиража рассчитывать результаты
+четырёх неизменённых стратегий на новых prospective-входах. Не продолжать
+Legacy-500/1,000 без нового явного диагностического вопроса и не открывать
+повторную BK-only оптимизацию после
+зафиксированного hybrid `STOP` без нового протокола и нового untouched-окна.
+Параллельно наблюдать каждый триггер активированного evening plan 4981 и
+сохранить финальный paper/operator result. Продолжать расширять authoritative
+coverage только на источники с тем же exact-consensus/fail-closed контрактом.

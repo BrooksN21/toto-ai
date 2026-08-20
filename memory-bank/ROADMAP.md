@@ -25,8 +25,14 @@ reproduced the exact drawing-4975 EV paper package. Five additional strict
 drawings 4976-4980 extend the immutable sample to 18 unique drawings. BK-only
 and Cover-14 average 8.889 best hits versus 6.889 for current EV/crowd, but the
 sample is still below the 30-drawing interpretation floor and no strategy or
-profitability verdict is allowed. The resumable legacy-100 diagnostic is in
-progress; 500/1,000 remain pending. Drawing 4981's two missing UEFA kickoffs
+profitability verdict is allowed. The resumable legacy-100 diagnostic is
+complete: EV/crowd trails BK-only by -1.650 best hits with nominal 95% interval
+[-2.210, -1.120], while Cover-14 is +0.260 [0.060, 0.460] but spends only
+2,757 RUB on average. This remains non-chronological diagnostic evidence, not
+a winner or profitability verdict. A 500-row resume was stopped at 116
+checkpoints; 500/1,000 are deprioritized because they cannot establish
+chronology or observed ROI. Drawing
+4981's two missing UEFA kickoffs
 were resolved from frozen official UEFA plus independent Sofascore evidence;
 the passive 12:00 retry completed automatically and activated evening paper
 plan `5caf88df9bdfe566` with eight triggers. The reusable automatic UEFA
@@ -50,8 +56,17 @@ legacy output is not release evidence. See the active plan's
   disabled for the small sample.
 - [x] Synchronize and analyze finished drawings 4975-4980; preserve 4975 as a
   real settled package and 4976-4980 as retrospective strict strategy rows.
-- [ ] Complete legacy 100/500/1,000 diagnostics without using them in release
-  metrics.
+- [x] Complete Legacy-100 diagnostic without using it in release metrics.
+  Preserve the 116 resumable checkpoints, but do not spend the current cycle on
+  Legacy-500/1,000 unless a new explicit diagnostic question justifies them.
+- [ ] Automatically archive and later settle equal-input prospective packages
+  from BK-only, current EV/crowd, Cover-13 and Cover-14 for each new eligible
+  drawing. Do not tune or choose a winner before the preregistered sample floor.
+- [ ] Keep further BK-only optimizer tuning closed after the sealed hybrid
+  `STOP`; any new optimizer hypothesis needs a preregistered protocol and a new
+  untouched/prospective evaluation window.
+- [ ] Capture lawful pre-deadline `Possible winnings` and post-draw payout
+  evidence; until then keep modeled EV/ROI separate from observed return.
 
 - [ ] Teach the gap audit to accept hash-bound documented upstream numbering
   gaps. TotoBrief's public listing skips 3,843/3,844 between 3,842 and 3,845;

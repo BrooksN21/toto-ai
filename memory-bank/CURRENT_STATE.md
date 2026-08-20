@@ -1,5 +1,58 @@
 # Current State
 
+## Legacy-100 diagnostic and official payout audit (2026-08-20)
+
+The unchanged resumable legacy benchmark completed 100 drawings at bank/stake
+4,980/30 in 1:50:22. It is explicitly
+`LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE / NOT ACTIONABLE`; current SQLite
+probabilities do not prove pre-deadline chronology.
+
+Average best hits were BK probability-only 8.700, current EV/crowd 7.050,
+Cover-13 8.260 and Cover-14 8.960. Against BK-only, paired mean best-hit
+differences and nominal 95% bootstrap intervals were EV/crowd -1.650
+[-2.210, -1.120], Cover-13 -0.440 [-0.650, -0.230], and Cover-14 +0.260
+[0.060, 0.460]. BK-only and Cover-14 each recorded three 13+ packages;
+BK-only recorded the only 14+. Cover-14 used 2,757 RUB on average versus the
+full 4,980 for BK/EV, so this is not an equal-cost winner verdict. Evidence:
+`reports/research/legacy-strategy-benchmark-100-20260820/`.
+
+The result confirms a measured defect in the current EV/crowd package for hit
+probability: its modeled P(13+) is about 0.00108 versus 0.01888 for BK-only,
+and every evaluated EV package omitted at least one actual-result outcome. It
+does not prove EV is unprofitable because its monetary score depends on
+unverified crowd-joint and prize-fund assumptions.
+
+The current official BaltBet rules were audited against the EV code. The
+published 8/18, 4/18, 2/18, 1/18, 1/18, 1/18+1/10 and 1/18+9/10 allocations
+match `category_funds()`, and categories are cumulative. However, TotoBrief
+stores no separate `Possible winnings` field, while TotoAI currently uses
+`pool_sum * prize_fund_factor` as a disclosed proxy. All 420 stored result
+snapshots have `payments = null`, so observed payout/ROI is unavailable and
+must not be fabricated. Evidence:
+`research/baltbet_official_payout_audit_20260820.md`.
+
+The sealed BK-only hybrid experiment already ended with `STOP`, so the
+Legacy-100 result must not reopen another BK-only optimizer on reused data.
+Legacy-500 was resumed only to 116 checkpoints and then deliberately stopped:
+the non-chronological rows and absent payout evidence cannot prove
+profitability, while Legacy-100 already exposed the EV/crowd hit-probability
+defect. The checkpoints remain resumable, but 500/1,000 are not the current
+priority. The immediate next evidence step is automatic prospective archival
+and settlement of the four existing strategies on newly arriving drawings.
+Any later optimizer hypothesis requires a preregistered protocol and a new
+untouched/prospective window.
+
+The partial Legacy-500 resume exposed a reproducibility boundary: scheduler plan 4975
+was correctly bound to schedule-evidence SHA-256 `43a61456...`, while the shared
+production ledger had subsequently advanced. The exact historical ledger and
+its referenced review documents were recovered from Git commit `9be3cdc` into
+the non-release immutable bundle
+`reports/research/legacy-strategy-input-4975-v2-20260820/`. A rebuilt research
+plan passed strict loading and resumed the existing checkpoints without
+changing strategy configuration. The live production ledger was not replaced
+or modified. The partial run stopped cleanly at 116/500; no checkpoint was
+discarded.
+
 ## Resume audit and drawings 4975-4980 (2026-08-20)
 
 The pause audit found drawings 4975-4980 finished and drawing 4981 active.
@@ -28,10 +81,11 @@ not establish a winner or profitability. Evidence:
 `reports/research/new-drawings-4975-4980-20260820/` and
 `reports/research/strict-strategy-benchmark-20260820-new6/`.
 
-The resumable legacy 100-drawing diagnostic is running with checkpoint schema
+The resumable legacy 100-drawing diagnostic completed with checkpoint schema
 v3 and unchanged bank/stake 4,980/30. It remains
-`LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`; 500/1,000 follow only after the
-100-row result is inspected.
+`LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`. A later 500-row resume was
+stopped at 116 checkpoints because expanding non-chronological evidence cannot
+establish profitability; prospective collection now has priority.
 
 Active drawing 4981 is now READY and playable 15/15. Public official UEFA v5
 match JSON and independent Sofascore event JSON agreed exactly on identity,

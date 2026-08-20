@@ -18,6 +18,11 @@ Core definitions:
   final veto. It never changes the coupon EV values themselves.
 - Modeled EV is not observed ROI while historical winner and category-payout
   data are unavailable.
+- The current official-rules audit confirms the category-fund fractions but
+  also records that `pool_sum` is only a proxy for the separately defined
+  `Possible winnings`, and that all currently stored result snapshots lack
+  official payment rows. See
+  [`baltbet_official_payout_audit_20260820.md`](../research/baltbet_official_payout_audit_20260820.md).
 - External consensus remains prospective-only during the API-Sports coverage
   audit. It accepts only full-time football `1/X/2` and regulation-time hockey
   `1/X/2`, requires at least three eligible bookmakers no older than 36 hours,
