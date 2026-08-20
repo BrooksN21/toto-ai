@@ -1,0 +1,7 @@
+Reviewed source snapshot for drawing 4964, fixture #9.
+Captured: 2026-08-03T08:40:00Z.
+Source: https://www.leagueofireland.ie/mens/first-division/fixtures/
+Wexford FC (home) vs Bray Wanderers FC (away).
+SSE Airtricity Men's First Division 2026.
+Monday 3 August 2026, 17:00 Europe/Dublin (16:00 UTC), Ferrycarrig Park, Wexford.
+Status: scheduled; the fixture remains listed and no cancellation or postponement notice is present in the reviewed source.

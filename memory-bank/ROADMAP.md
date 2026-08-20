@@ -1,5 +1,77 @@
 # Roadmap
 
+## Active execution sequence (2026-08-14)
+
+The authoritative implementation order is tracked in
+`plans/TOTOAI-PRODUCT-VALIDATION-20260814/plan.md` and its `progress.md`:
+
+1. close live drawing 4975 through post-draw settlement;
+2. compare current EV/crowd, BK probability-only and TotoBrief-style cover;
+3. run a strict chronological canary/all-available benchmark and separate
+   100/500/1000 legacy diagnostics;
+4. correct only measured package-objective defects;
+5. complete official+independent schedule automation and free sports coverage;
+6. train/walk-forward evaluate a residual model around BK;
+7. pass a predeclared prospective paper holdout;
+8. only then review any real-money release.
+
+Operational evidence collection may run in parallel, but package activation
+cannot skip a gate.
+
+Current progress: the real drawing-4975 paper lifecycle is closed through
+settlement and reviewed postmortem. The shared frozen-input contract,
+EV/BK/Cover-13/Cover-14 adapters and `compare-package-strategies` report bundle
+reproduced the exact drawing-4975 EV paper package. Five additional strict
+drawings 4976-4980 extend the immutable sample to 18 unique drawings. BK-only
+and Cover-14 average 8.889 best hits versus 6.889 for current EV/crowd, but the
+sample is still below the 30-drawing interpretation floor and no strategy or
+profitability verdict is allowed. The resumable legacy-100 diagnostic is
+complete: EV/crowd trails BK-only by -1.650 best hits with nominal 95% interval
+[-2.210, -1.120], while Cover-14 is +0.260 [0.060, 0.460] but spends only
+2,757 RUB on average. This remains non-chronological diagnostic evidence, not
+a winner or profitability verdict. A 500-row resume was stopped at 116
+checkpoints; 500/1,000 are deprioritized because they cannot establish
+chronology or observed ROI. Drawing
+4981's two missing UEFA kickoffs
+were resolved from frozen official UEFA plus independent Sofascore evidence;
+the passive 12:00 retry completed automatically and activated evening paper
+plan `5caf88df9bdfe566` with eight triggers. The reusable automatic UEFA
+official-adapter/promotion path remains phase-4 work; this reviewed evidence
+does not by itself complete schedule automation.
+
+Measured chronology constraint: only 13 drawings currently satisfy the strict
+pre-deadline historical-inventory contract, while 1,672 satisfy the weaker
+probability-backtest contract. Phase 2 will run a strict 3–5 canary and all 13
+only as pipeline evidence, separately from 100/500/1,000 legacy diagnostics;
+legacy output is not release evidence. See the active plan's
+`phase2-data-eligibility.md`.
+
+- [x] Add strict RAW-before-deadline loader, terminal-result separation, VOID
+  scoring, actual exposure, package overlap, CLI and hash-bound reports.
+- [x] Run strict canary and all 13 currently eligible drawings at 4,980/30.
+- [x] Add physically separate, resumable legacy input/runner/checkpoint/report
+  path and verify a real one-drawing calculate/resume canary.
+- [x] Add the explicit BK-top single-coupon control and deterministic paired
+  bootstrap intervals; rerun all 13 strict drawings with interpretation
+  disabled for the small sample.
+- [x] Synchronize and analyze finished drawings 4975-4980; preserve 4975 as a
+  real settled package and 4976-4980 as retrospective strict strategy rows.
+- [x] Complete Legacy-100 diagnostic without using it in release metrics.
+  Preserve the 116 resumable checkpoints, but do not spend the current cycle on
+  Legacy-500/1,000 unless a new explicit diagnostic question justifies them.
+- [ ] Automatically archive and later settle equal-input prospective packages
+  from BK-only, current EV/crowd, Cover-13 and Cover-14 for each new eligible
+  drawing. Do not tune or choose a winner before the preregistered sample floor.
+- [ ] Keep further BK-only optimizer tuning closed after the sealed hybrid
+  `STOP`; any new optimizer hypothesis needs a preregistered protocol and a new
+  untouched/prospective evaluation window.
+- [ ] Capture lawful pre-deadline `Possible winnings` and post-draw payout
+  evidence; until then keep modeled EV/ROI separate from observed return.
+
+- [ ] Teach the gap audit to accept hash-bound documented upstream numbering
+  gaps. TotoBrief's public listing skips 3,843/3,844 between 3,842 and 3,845;
+  these are not missing local drawing records.
+
 ## Completed: operator-safe publication and timing escalation (2026-08-13)
 
 - [x] Add one mandatory `operator-export` gateway for current scheduler-owned,
@@ -760,8 +832,19 @@ closed.
 - [x] Wire the canonical schedule-evidence ledger through real
   `morning-dispatch`, preserve it in passive retries, and allow only atomic
   baseline-only-to-reviewed schedule enrichment for an unchanged drawing.
-- [ ] Add an automatic evidence collector that writes reviewed observations
-  only after authoritative identity, orientation and kickoff checks succeed.
+- [x] Install generated identity-bound passive retry plans automatically when
+  `morning-dispatch --activate` defers, and keep hard-stop-day hourly retries
+  running after the fixed 12:00 morning pass.
+- [x] Add automatic independent public-source discovery with immutable raw
+  snapshots and candidate/conflict/missing reports; never mutate the ledger.
+- [ ] Add authoritative competition/team source adapters and reviewed
+  promotion so official-plus-independent observations can be completed without
+  manual discovery while preserving the existing evidence gate.
+  - [x] UEFA v5 plus independent Sofascore exact-consensus adapter, immutable
+    snapshots/review evidence, idempotent ledger promotion and automatic
+    deferred-morning integration.
+  - [ ] Add equivalent authoritative adapters for non-UEFA competitions only
+    where a stable official source and exact identity contract are available.
 - [x] Make repeated preparation preserve already validated schedule-evidence
   pins when API-Sports cannot serve their kickoff UTC date; verify the live
   4973 READY/PLAYABLE re-run and install its schema-v6 evening scheduler.

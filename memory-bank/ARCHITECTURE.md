@@ -1,5 +1,59 @@
 # Architecture
 
+## Equal-input package strategy research boundary
+
+`optimizer.strategy_comparison` is the shared research boundary for comparing
+package strategies. One immutable `FrozenStrategyInput` supplies the same
+ordered pre-deadline BK/crowd matrices, identity, `as_of`, bank and stake to
+every adapter. `StrategyResult` binds deterministic input/config/package hashes,
+cost and exact category probabilities. It rejects duplicate or malformed
+coupons and any package over budget.
+
+The adapters are deliberately thin: current EV/crowd delegates to the existing
+EV ternary surface and package selector, BK-only delegates to the existing
+top-probability enumerator, and category-13/category-14 TotoBrief-style variants
+delegate to the existing brief and Cover engines plus independent exact
+verification. This research boundary cannot activate sports shadow, change the
+production scheduler, or open the real-money release gate.
+
+`compare-package-strategies` consumes only a validated scheduler
+`final-input.json` plus its exact schema-v6 plan. It rebuilds the production
+EVConfig and provenance from those artifacts, executes all four variants, and
+writes a paper-only manifest, JSON/CSV/Markdown and one exact BaltBet-format
+text file per strategy. The comparison manifest records common input identity,
+strategy config/package hashes, costs and artifact hashes; it is not an
+operator export surface.
+
+`optimizer.strategy_historical_benchmark` extends this boundary without
+changing any strategy. It selects only registered RAW payloads captured at or
+before the drawing deadline, verifies archive hashes through `RawArchive`, and
+builds the frozen prediction input without reading result/score fields. Actual
+outcomes are loaded separately from complete terminal result snapshots. VOID
+`*` is scored as correct for every coupon, matching settlement semantics.
+
+`historical-strategy-benchmark` reuses the quality-v2 objective from an exact
+scheduler plan, changing only the requested research bank/stake, research mode,
+and the scheduler-only provenance requirement. It scores actual hits/exposure,
+modeled category probabilities, cost/unused bank, runtime/fallback and pairwise
+package overlap. It also reports a deterministic single-coupon BK-top control
+and paired 10,000-replicate bootstrap intervals for per-drawing best-hit
+differences. Samples below 30 are mechanically marked non-interpretable. Its
+hash-bound reports are always
+`STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE`; they are not
+an operator surface and cannot open the real-money gate.
+
+`optimizer.strategy_legacy_benchmark` is a physically separate diagnostic for
+older SQLite rows that lack provable capture chronology. Its input is named
+`LegacyRetrospectiveInput`, carries `chronology_verified=false`, and hashes the
+current probability/name/pool data without including actual outcomes. It calls
+the same four strategy engines but never creates a `FrozenStrategyInput` or a
+strict report. `legacy-strategy-benchmark` writes only
+`LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE` artifacts. Long runs are
+resumable through one atomic, hash-checked, input/config-bound checkpoint per
+drawing; source or configuration drift fails closed instead of silently
+reusing stale calculations. Checkpoint schema v3 binds the BK-top control fields
+used by the shared paired-comparison summary.
+
 ## Operator export gateway
 
 The only operator-facing package flow is:
@@ -38,8 +92,8 @@ coupon path. T-10 does not remove paper checkpoints, but neither
 
 ## Automatic post-draw review boundary
 
-Every terminal scheduler result now produces an uninstalled post-draw
-candidate only after a durable non-actionable paper state exists:
+Every terminal scheduler result produces a post-draw plan only after a durable
+non-actionable paper state exists:
 
 ```text
 terminal scheduler status/marker
@@ -55,8 +109,24 @@ terminal scheduler status/marker
 Post-draw generation is advisory and fail-safe. A missing database row,
 artifact conflict, or generation error is written to
 `post-draw/generation-error.json` and cannot mutate or replace the primary
-scheduler result. Generated launchd artifacts are candidates only; the code
-does not install them and never places a wager.
+scheduler result. A verified loaded evening LaunchAgent may install only its
+exact hash-bound post-draw LaunchAgent; manual/rehearsal parents leave a
+candidate only. The post-draw job never places a wager and cleans up its exact
+LaunchAgent after terminal completion/blocking/exhaustion.
+
+## Automatic public schedule-source discovery
+
+Deferred morning preparation invokes two independent public-source paths
+against the immutable review queue. The generic collector stores hash-bound
+Sofascore search responses and machine-readable
+candidate/conflict/missing records but never mutates the ledger. The UEFA
+consensus adapter pages the official UEFA date feed, requires exact localized
+target aliases and home/away orientation, re-fetches the selected official
+match by ID, then re-fetches one independently matched Sofascore event. Only
+identical pre-kickoff status/orientation/kickoff evidence is promoted with two
+frozen snapshots and a hash-bound deterministic review document. Any source
+failure, ambiguity, conflict, late capture or unsupported competition remains
+fail-closed for the next passive retry.
 
 Morning preparation keeps identity coverage and kickoff evidence distinct.
 A baseline-only identity row with no kickoff produces a `timing_unknown`
@@ -1147,10 +1217,10 @@ Marker selection changes test
 orchestration only; production safety, objective ordering, provenance and the
 candidate universe are identical.
 
-## Data-health contract v1
+## Data-health contract v1.2
 
 `toto_ai.analytics.data_health` is the reusable read-only quality boundary for
-the SQLite history. Contract version `1.0.0` evaluates every selected drawing,
+the SQLite history. Contract version `1.2.0` evaluates every selected drawing,
 emits stable reason codes, and computes independent eligibility for
 `historical_inventory`, `backtest_probability`, `result_settlement`, and
 `prospective_generation`.
@@ -1161,7 +1231,11 @@ snapshots, and unsettled canonical `pre_bet_runner` packages. Numeric gaps and
 duplicate visible numbers are report-level metadata rather than invented
 drawing rows. Canonical RAW discovery is deliberately limited to the sibling
 `data/raw` tree; rehearsal, report, and test-fixture JSON do not satisfy
-provenance.
+provenance. Strict historical eligibility additionally requires a registered
+raw row with timezone-aware `captured_at <= Drawing.ended_at`; its payload and
+metadata paths must still be existing regular non-symlink files. The report
+records the eligible count/latest timestamp and fails closed on
+`missing_predeadline_raw_snapshot`.
 
 `data-health` opens SQLite in read-only mode and exports detail plus aggregates
 to CSV/JSON/Markdown. Baseline prospective brief generation and the

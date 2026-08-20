@@ -125,10 +125,16 @@ from toto_ai.external_odds.reviewed_schedule import (
     revalidate_reviewed_catalog,
     reviewed_catalog_input_paths,
 )
+from toto_ai.external_odds.schedule_consensus import (
+    promote_uefa_sofascore_consensus,
+)
 from toto_ai.external_odds.schedule_evidence import (
     DEFAULT_SCHEDULE_EVIDENCE_PATH,
     ScheduleEvidenceIntegrityError,
     load_bound_schedule_evidence_ledger,
+)
+from toto_ai.external_odds.schedule_source_collector import (
+    collect_schedule_source_candidates,
 )
 from toto_ai.external_odds.storage import load_current_drawing_eligibility
 from toto_ai.external_odds.targets import parse_target_drawing
@@ -157,8 +163,10 @@ from toto_ai.external_odds.timing_overrides import (
 from toto_ai.operations.finished_draw import (
     PostDrawRetryConfig,
     archive_package,
+    cleanup_post_draw_launch_agent,
     complete_post_draw_review,
     import_prebet_package_manifest,
+    load_post_draw_plan,
     load_review_request,
     prepare_post_draw_scheduler_artifacts,
     resolve_explicit_drawing,
@@ -221,6 +229,17 @@ from toto_ai.optimizer.strategy_diagnostics import (
     summarize_strategy_diagnostics,
     write_strategy_diagnostics_reports,
 )
+from toto_ai.optimizer.strategy_execution import execute_final_input_comparison
+from toto_ai.optimizer.strategy_historical_benchmark import (
+    historical_ev_config,
+    run_strict_historical_benchmark,
+    write_strict_historical_benchmark_reports,
+)
+from toto_ai.optimizer.strategy_legacy_benchmark import (
+    benchmark_legacy_retrospective_cases,
+    load_legacy_retrospective_cases,
+    write_legacy_retrospective_benchmark_reports,
+)
 from toto_ai.package.audit import (
     PackageStrategy,
     build_package_audit,
@@ -280,10 +299,17 @@ from toto_ai.runner.offline_replay import (
     load_offline_replay_inputs,
     resolve_offline_replay_paths,
 )
+from toto_ai.runner.preflight_retry_scheduler import (
+    install_preflight_retry_launch_agent,
+    prepare_preflight_retry_artifacts,
+)
 from toto_ai.runner.preflight_status import build_preflight_status
 from toto_ai.sports_stats.operation import (
     collect_and_store_sports_stats,
     parse_historical_as_of,
+)
+from toto_ai.sports_stats.preliminary_comparison import (
+    compare_preliminary_packages,
 )
 from toto_ai.sports_stats.shadow_operation import (
     build_and_write_sports_probability_shadow,
@@ -796,6 +822,12 @@ def post_draw_run_command(
         except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
             raise typer.BadParameter(str(error)) from error
         typer.echo(json.dumps(state.to_dict(), ensure_ascii=False, sort_keys=True))
+        loaded_plan = load_post_draw_plan(plan)
+        if loaded_plan.get("automation_installation") is True and (
+            state.status in {"complete", "blocked"}
+            or state.attempts >= state.max_attempts
+        ):
+            cleanup_post_draw_launch_agent(plan)
         if state.status != "complete":
             raise typer.Exit(code=2 if state.status == "pending" else 1)
         return
@@ -3524,6 +3556,8 @@ def morning_dispatch_command(
             deadline=parsed_expected_deadline,
         )
     )
+    retry_scheduler_status: dict[str, object] | None = None
+    source_collector_status: dict[str, object] | None = None
     try:
         result = dispatch_morning(
             config,
@@ -3555,6 +3589,63 @@ def morning_dispatch_command(
             python_command=python_executable,
             expected_identity=expected_identity,
         )
+        if activate and result.retry_plan_path is not None:
+            retry_artifacts = prepare_preflight_retry_artifacts(
+                result.retry_plan_path
+            )
+            retry_scheduler_status = install_preflight_retry_launch_agent(
+                retry_artifacts
+            )
+        if activate and result.review_queue_path is not None:
+            independent_status: dict[str, object]
+            try:
+                collected = collect_schedule_source_candidates(
+                    result.review_queue_path,
+                    output_dir=result.review_queue_path.parent / "source-collector",
+                    schedule_evidence_ledger=resolved_schedule_evidence_ledger,
+                )
+            except Exception as error:
+                independent_status = {
+                    "status": "SOURCE_COLLECTOR_FAILED",
+                    "error": f"{type(error).__name__}: {str(error)[:300]}",
+                }
+            else:
+                independent_status = {
+                    "status": collected.status,
+                    "candidate_count": collected.candidate_count,
+                    "unresolved_count": collected.unresolved_count,
+                    "report_path": str(collected.report_path),
+                    "ledger_mutated": False,
+                }
+            consensus_status: dict[str, object]
+            try:
+                consensus = promote_uefa_sofascore_consensus(
+                    result.review_queue_path,
+                    output_dir=(
+                        result.review_queue_path.parent / "source-consensus"
+                    ),
+                    schedule_evidence_ledger=resolved_schedule_evidence_ledger,
+                )
+            except Exception as error:
+                consensus_status = {
+                    "status": "CONSENSUS_COLLECTOR_FAILED",
+                    "error": f"{type(error).__name__}: {str(error)[:300]}",
+                    "ledger_mutated": False,
+                }
+            else:
+                consensus_status = {
+                    "status": consensus.status,
+                    "promoted_count": consensus.promoted_count,
+                    "existing_count": consensus.existing_count,
+                    "unresolved_count": consensus.unresolved_count,
+                    "report_path": str(consensus.report_path),
+                    "ledger_semantic_hash": consensus.ledger_semantic_hash,
+                    "ledger_mutated": consensus.promoted_count > 0,
+                }
+            source_collector_status = {
+                "independent": independent_status,
+                "consensus": consensus_status,
+            }
     except MorningIdentityDriftError as error:
         typer.echo(
             json.dumps(
@@ -3606,6 +3697,8 @@ def morning_dispatch_command(
                     if result.review_queue_path is None
                     else str(result.review_queue_path)
                 ),
+                "retry_scheduler": retry_scheduler_status,
+                "source_collector": source_collector_status,
             },
             sort_keys=True,
             separators=(",", ":"),
@@ -3613,6 +3706,40 @@ def morning_dispatch_command(
     )
     if result.status == "deferred":
         raise typer.Exit(code=2)
+
+
+@app.command("collect-schedule-sources")
+def collect_schedule_sources_command(
+    queue: str = typer.Option(..., "--queue"),
+    output_dir: str = typer.Option(..., "--output-dir"),
+    schedule_evidence_ledger: str | None = typer.Option(
+        str(DEFAULT_SCHEDULE_EVIDENCE_PATH), "--schedule-evidence-ledger"
+    ),
+) -> None:
+    """Collect public schedule candidates; never promote them into the ledger."""
+
+    try:
+        result = collect_schedule_source_candidates(
+            queue,
+            output_dir=output_dir,
+            schedule_evidence_ledger=schedule_evidence_ledger,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": result.status,
+                "queue_sha256": result.queue_sha256,
+                "candidate_count": result.candidate_count,
+                "unresolved_count": result.unresolved_count,
+                "report_path": str(result.report_path),
+                "ledger_mutated": False,
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
 
 
 @app.command("scheduler-execute")
@@ -4737,6 +4864,335 @@ def build_brief(
     print(f"Package report written to {result['package_path']}")
 
 
+@app.command("compare-package-strategies")
+def compare_package_strategies_command(
+    final_input: Path = typer.Option(  # noqa: B008
+        ...,
+        "--final-input",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Immutable scheduler final-input.json.",
+    ),
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Hash-bound schema-v6 scheduler-plan.json.",
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        Path("reports/strategy-comparison"),
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+        help="Destination for paper-only comparison artifacts.",
+    ),
+) -> None:
+    """Compare EV, BK-only and Cover-13/14 on one frozen input."""
+    try:
+        executed = execute_final_input_comparison(
+            final_input_path=final_input,
+            scheduler_plan_path=scheduler_plan,
+            output_dir=output_dir,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    table = Table(title="Equal-Input Package Strategy Comparison")
+    table.add_column("Strategy")
+    table.add_column("Cat", justify="right")
+    table.add_column("Coupons", justify="right")
+    table.add_column("Cost", justify="right")
+    table.add_column("P(13+)", justify="right")
+    table.add_column("P(14+)", justify="right")
+    table.add_column("P(15)", justify="right")
+    for result in executed.bundle.results:
+        table.add_row(
+            result.strategy_id,
+            str(result.category),
+            str(result.coupon_count),
+            str(result.cost),
+            f"{result.probability_at_least_13:.8f}",
+            f"{result.probability_at_least_14:.8f}",
+            f"{result.probability_at_least_15:.8f}",
+        )
+    print(table)
+    print("[yellow]RESEARCH/PAPER — NOT ACTIONABLE[/yellow]")
+    print(f"Manifest: {executed.reports.manifest}")
+
+
+@app.command("historical-strategy-benchmark")
+def historical_strategy_benchmark_command(
+    db: Path = typer.Option(  # noqa: B008
+        Path("data/toto.db"),
+        "--db",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="SQLite database with immutable RAW/result snapshots.",
+    ),
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Scheduler plan whose production objective is reused.",
+    ),
+    last: int = typer.Option(
+        3,
+        "--last",
+        min=1,
+        help="Latest strict chronological drawings to evaluate.",
+    ),
+    bank: int = typer.Option(
+        4_980,
+        "--bank",
+        min=1,
+        help="Research budget; must be divisible by stake.",
+    ),
+    stake: int = typer.Option(
+        30,
+        "--stake",
+        min=1,
+        help="Stake per coupon.",
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        Path("reports/research/strict-strategy-benchmark"),
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+        help="Destination for strict paper-only benchmark artifacts.",
+    ),
+) -> None:
+    """Score equal-input strategies on true pre-deadline snapshots."""
+    try:
+        plan = load_scheduler_plan(scheduler_plan)
+        config = historical_ev_config(
+            plan.quality_v2_ev_config,
+            bank=bank,
+            stake=stake,
+        )
+        engine = open_readonly_db(db)
+        session_factory = get_session_factory(engine)
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            task = progress.add_task(
+                "strict benchmark: loading chronological cases",
+                total=last,
+            )
+
+            def update_progress(
+                index: int,
+                total: int,
+                drawing_number: int,
+                status: str,
+            ) -> None:
+                progress.update(
+                    task,
+                    total=total,
+                    completed=index if status == "complete" else index - 1,
+                    description=(
+                        f"drawing={drawing_number} {index}/{total} {status}"
+                    ),
+                )
+
+            with session_factory() as session:
+                benchmark = run_strict_historical_benchmark(
+                    session,
+                    db_path=db,
+                    last=last,
+                    bank=bank,
+                    stake=stake,
+                    ev_config=config,
+                    progress_callback=update_progress,
+                )
+        paths = write_strict_historical_benchmark_reports(
+            benchmark,
+            output_dir,
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    table = Table(title="Strict Historical Strategy Benchmark")
+    table.add_column("Strategy")
+    table.add_column("Drawings", justify="right")
+    table.add_column("Avg best", justify="right")
+    table.add_column("Hit 13+", justify="right")
+    table.add_column("Hit 14+", justify="right")
+    table.add_column("Hit 15", justify="right")
+    strategies = benchmark.summary["strategies"]
+    for strategy_id in sorted(strategies):
+        row = strategies[strategy_id]
+        table.add_row(
+            strategy_id,
+            str(row["drawings"]),
+            f"{row['average_best_hits']:.3f}",
+            f"{row['hit_13_count']}/{row['drawings']}",
+            f"{row['hit_14_count']}/{row['drawings']}",
+            f"{row['hit_15_count']}/{row['drawings']}",
+        )
+    control = benchmark.summary["bk_top_control"]
+    table.add_row(
+        "BK_TOP_SINGLE_CONTROL",
+        str(control["drawings"]),
+        f"{control['average_hits']:.3f}",
+        f"{control['hit_13_count']}/{control['drawings']}",
+        f"{control['hit_14_count']}/{control['drawings']}",
+        f"{control['hit_15_count']}/{control['drawings']}",
+    )
+    print(table)
+    print(
+        "[yellow]STRICT CHRONOLOGICAL PIPELINE EVIDENCE — "
+        "NOT RELEASE EVIDENCE — NOT ACTIONABLE[/yellow]"
+    )
+    print(f"Manifest: {paths.manifest}")
+
+
+@app.command("legacy-strategy-benchmark")
+def legacy_strategy_benchmark_command(
+    db: Path = typer.Option(  # noqa: B008
+        Path("data/toto.db"),
+        "--db",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="SQLite database with retrospective current-state rows.",
+    ),
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Scheduler plan whose production objective is reused.",
+    ),
+    last: int = typer.Option(
+        100,
+        "--last",
+        min=1,
+        help="Latest legacy probability-eligible drawings to evaluate.",
+    ),
+    bank: int = typer.Option(4_980, "--bank", min=1),
+    stake: int = typer.Option(30, "--stake", min=1),
+    checkpoint_dir: Path = typer.Option(  # noqa: B008
+        Path("reports/research/legacy-strategy-checkpoints"),
+        "--checkpoint-dir",
+        file_okay=False,
+        resolve_path=True,
+        help="Reusable per-drawing checkpoints for long diagnostics.",
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        Path("reports/research/legacy-strategy-benchmark"),
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+        help="Destination for non-release retrospective reports.",
+    ),
+) -> None:
+    """Run resumable legacy diagnostics without claiming chronology."""
+    try:
+        plan = load_scheduler_plan(scheduler_plan)
+        config = historical_ev_config(
+            plan.quality_v2_ev_config,
+            bank=bank,
+            stake=stake,
+        )
+        engine = open_readonly_db(db)
+        session_factory = get_session_factory(engine)
+        with session_factory() as session:
+            cases = load_legacy_retrospective_cases(
+                session,
+                db_path=db,
+                last=last,
+                bank=bank,
+                stake=stake,
+            )
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            task = progress.add_task(
+                "legacy diagnostic: loading current-state rows",
+                total=len(cases),
+            )
+
+            def update_progress(
+                index: int,
+                total: int,
+                drawing_number: int,
+                status: str,
+            ) -> None:
+                progress.update(
+                    task,
+                    total=total,
+                    completed=index if status != "running" else index - 1,
+                    description=(
+                        f"drawing={drawing_number} {index}/{total} {status}"
+                    ),
+                )
+
+            benchmark = benchmark_legacy_retrospective_cases(
+                cases,
+                ev_config=config,
+                checkpoint_dir=checkpoint_dir,
+                progress_callback=update_progress,
+            )
+        paths = write_legacy_retrospective_benchmark_reports(
+            benchmark,
+            output_dir,
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    table = Table(title="Legacy Retrospective Strategy Diagnostic")
+    table.add_column("Strategy")
+    table.add_column("Drawings", justify="right")
+    table.add_column("Avg best", justify="right")
+    table.add_column("Hit 13+", justify="right")
+    table.add_column("Hit 14+", justify="right")
+    table.add_column("Hit 15", justify="right")
+    strategies = benchmark.summary["strategies"]
+    for strategy_id in sorted(strategies):
+        row = strategies[strategy_id]
+        table.add_row(
+            strategy_id,
+            str(row["drawings"]),
+            f"{row['average_best_hits']:.3f}",
+            f"{row['hit_13_count']}/{row['drawings']}",
+            f"{row['hit_14_count']}/{row['drawings']}",
+            f"{row['hit_15_count']}/{row['drawings']}",
+        )
+    control = benchmark.summary["bk_top_control"]
+    table.add_row(
+        "BK_TOP_SINGLE_CONTROL",
+        str(control["drawings"]),
+        f"{control['average_hits']:.3f}",
+        f"{control['hit_13_count']}/{control['drawings']}",
+        f"{control['hit_14_count']}/{control['drawings']}",
+        f"{control['hit_15_count']}/{control['drawings']}",
+    )
+    print(table)
+    print(
+        "[yellow]LEGACY_RETROSPECTIVE — NOT RELEASE EVIDENCE — "
+        "NOT ACTIONABLE[/yellow]"
+    )
+    print(f"Resumed drawings: {benchmark.summary['resumed_drawings']}")
+    print(f"Manifest: {paths.manifest}")
+
+
 @app.command()
 def verify_cover(
     brief: str = typer.Option(
@@ -4924,6 +5380,59 @@ def sports_probability_shadow_command(
             },
             sort_keys=True,
             separators=(",", ":"),
+        )
+    )
+
+
+@app.command("compare-preliminary-packages")
+def compare_preliminary_packages_command(
+    drawing_id: int = typer.Option(..., "--drawing-id", min=1),
+    bank: int = typer.Option(4980, "--bank", min=30),
+    stake: int = typer.Option(30, "--stake", min=1),
+    as_of: str = typer.Option(..., "--as-of"),
+    sports_artifact: str = typer.Option(..., "--sports-artifact"),
+    raw_cache_dir: str = typer.Option("data/raw", "--raw-cache-dir"),
+    output_dir: str = typer.Option(
+        "reports/preliminary-package-comparison", "--output-dir"
+    ),
+    monte_carlo_samples: int = typer.Option(
+        2048, "--monte-carlo-samples", min=1
+    ),
+) -> None:
+    """Compare equal-budget BK and sports-shadow packages — PAPER ONLY."""
+
+    try:
+        parsed_as_of = parse_historical_as_of(as_of)
+        if parsed_as_of is None:
+            raise ValueError("--as-of is required")
+        report, json_path, baseline_path, candidate_path = (
+            compare_preliminary_packages(
+                drawing_id=drawing_id,
+                bank=bank,
+                stake=stake,
+                as_of=parsed_as_of,
+                raw_cache_dir=raw_cache_dir,
+                sports_artifact_path=sports_artifact,
+                output_dir=output_dir,
+                monte_carlo_samples=monte_carlo_samples,
+            )
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": report["status"],
+                "drawing_number": report["drawing_number"],
+                "sports_coverage_count": report["sports_coverage_count"],
+                "sports_fallback_count": report["sports_fallback_count"],
+                "comparison": report["comparison"],
+                "report": str(json_path),
+                "baseline_package": str(baseline_path),
+                "sports_package": str(candidate_path),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
         )
     )
 

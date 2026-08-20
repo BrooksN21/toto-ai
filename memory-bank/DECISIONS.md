@@ -1,5 +1,32 @@
 # Decisions
 
+## 2026-08-14: strategy benchmarks require explicit controls and paired intervals
+
+- Every strict and legacy strategy benchmark includes the deterministic
+  one-coupon `BK_TOP_SINGLE_CONTROL`; it is reported separately from package
+  strategies because it does not spend the same bank.
+- Strategy comparisons use paired per-drawing best-hit differences and a
+  deterministic 10,000-replicate percentile bootstrap with a fixed seed.
+- Intervals from fewer than 30 paired drawings are displayed but carry
+  `interpretation_allowed=false`; a nominal interval excluding zero on the
+  13-drawing strict set is diagnostic only and cannot select a winner.
+- Legacy intervals may diagnose instability at larger sample sizes, but their
+  unverified chronology permanently excludes them from release evidence.
+
+## 2026-08-14: product work follows measurable stage gates
+
+- The active execution plan is
+  `plans/TOTOAI-PRODUCT-VALIDATION-20260814/plan.md`; `progress.md` is the
+  mandatory live checklist.
+- The next package research compares three equal-input/equal-bank controls:
+  current EV/crowd, BK probability-only, and TotoBrief-style category cover.
+- No strategy wins on modeled EV alone. Historical actual hits/categories and
+  prospective frozen evidence are mandatory.
+- A stage needs tests, replay/live evidence, artifacts and exit-criteria review;
+  code completion alone does not close it.
+- The live 4975 operational cycle is closed before changing the package
+  objective, preventing an operational test from being mixed with a new model.
+
 ## 2026-08-13: every final calculation remains visible for learning
 
 - `NO BET` continues to mean non-actionable and must never be converted into
@@ -24,8 +51,25 @@
 - A terminal scheduler result always wins over secondary post-draw automation.
   Missing package evidence creates only a package-free paper/review path;
   generation failures are diagnostics and cannot rewrite the primary marker.
-- Generated launchd files are candidates only. Installation and wagering are
-  outside this feature and never happen automatically.
+- Generated post-draw launchd files are installed automatically only when the
+  parent evening LaunchAgent is itself byte-verified and loaded. Manual and
+  rehearsal parents remain candidate-only. The child is exact-plan bound,
+  non-betting, and self-cleans after terminal completion/blocking/exhaustion.
+
+## 2026-08-14: public source discovery cannot self-promote schedule evidence
+
+- The automatic collector may search public independent sources, preserve raw
+  snapshots, and propose exact identity/kickoff candidates.
+- An independent source such as Sofascore cannot by itself satisfy the existing
+  official-plus-independent schedule-evidence gate. Candidate collection never
+  mutates the production ledger; official evidence and review remain required.
+- Mixed canonical pin sets are valid sports-stat inputs. Events without a
+  provider-owned fixture/team identity become explicit per-event BK fallback;
+  they must not abort collection for the other events or receive fake provider
+  identities.
+- A sports-vs-BK package comparison is meaningful only when sports coverage is
+  nonzero. At zero coverage, identical packages prove fallback correctness,
+  not sports-model benefit.
 
 ## 2026-08-13: sports evidence adjusts, but does not replace, the market prior
 
@@ -1492,3 +1536,94 @@ ambiguous reversed evidence remains unresolved.
 - Provider coverage counts unique drawings, not checkpoint runs. When multiple
   complete observations exist for one drawing, the audit selects the latest
   append-ordered collection and counts that drawing once toward 30/450.
+
+## 2026-08-14: deferred morning retries must be executable, not documentary
+
+- `morning-dispatch --activate` must install and verify the exact passive
+  preflight retry LaunchAgent whenever a deferred result has a retry plan.
+  Merely writing `retry-plan.json` is not an operational retry.
+- Bootstrap and all-`timing_unknown` retries retain their short initial and
+  fixed morning checkpoints, then continue once per Moscow clock hour from
+  13:00 until the configured hard stop. No retry may run at or after hard stop.
+- Retry commands remain bound to drawing ID, visible number, fingerprint,
+  deadline and schedule-evidence ledger. Automatic evening activation is still
+  allowed only when the immutable retry plan explicitly sets
+  `activate_evening=true`.
+- This change closes retry execution only. It does not weaken the existing
+  official-plus-independent schedule-evidence requirement and does not claim
+  that an automatic evidence collector already exists.
+## 2026-08-14 — Separate strict frozen and legacy historical benchmarks
+
+- This decision was corrected later the same day after adding chronology
+  validation. The original count of 398 did not prove pre-deadline capture.
+- The full database has only 13 chronological `historical_inventory`-healthy
+  drawings and 1,672 `backtest_probability`-eligible drawings.
+- Missing old raw/result snapshots cannot be recreated with a trustworthy
+  pre-deadline timestamp.
+- Phase 2 therefore separates a strict current-13 pipeline benchmark from
+  100/500/1,000 legacy retrospective diagnostics.
+- Legacy diagnostics must be labelled `NOT RELEASE EVIDENCE`, may not be
+  aggregated into release metrics, and cannot support profitability claims.
+- Future prospective packages remain the only way to grow the strongest
+  holdout evidence.
+
+## 2026-08-14 — Raw snapshot existence is not pre-deadline evidence
+
+- A raw snapshot is strict historical evidence only when its registered
+  timezone-aware `captured_at` is at or before the drawing deadline and both
+  immutable payload and metadata files still exist as regular non-symlink
+  files.
+- `historical_inventory` fails closed on
+  `missing_predeadline_raw_snapshot`; simple filesystem presence remains an
+  inventory metric only.
+- Post-deadline raw snapshots may support result reconciliation and legacy
+  diagnostics, but never strict prediction-input or release claims.
+- Contract version 1.2.0 records the eligible count and latest eligible capture
+  timestamp per drawing so future selectors cannot silently regress.
+
+## 2026-08-14 — Strict strategy benchmark is pipeline evidence only
+
+- Historical strategy input must come from the latest cryptographically
+  verified RAW snapshot whose registered capture time is at/before deadline;
+  mutable SQLite quotes and raw result/score fields are not prediction input.
+- Actual results are loaded only from a separate complete terminal snapshot.
+  VOID `*` counts as correct for every coupon, matching settlement.
+- The historical EV adapter preserves the production quality-v2 objective and
+  search parameters. Only bank/stake, research mode, effective budget, and the
+  scheduler-artifact-only provenance requirement are adapted for history.
+- The current all-available strict sample is 13 drawings. It can expose large
+  defects and validate chronology, scoring and reports, but cannot select a
+  winner, prove edge, or support a real-money release.
+- Cover-13/14 may spend less than the requested bank. Their cost and unused bank
+  must be reported explicitly; they are not described as equal-cost until a
+  separate full-budget Cover strategy exists.
+
+## 2026-08-14 — Legacy probability diagnostics never impersonate frozen input
+
+- Old SQLite probabilities without a proven capture timestamp use a separate
+  `LegacyRetrospectiveInput`; they are never wrapped in or labelled as a
+  pre-deadline `FrozenStrategyInput`.
+- Prediction-data hashes exclude actual results, but the evidence tier remains
+  `LEGACY_RETROSPECTIVE`, chronology is explicitly false, and outputs are never
+  release evidence even when the sample is large.
+- Because one production-quality EV calculation takes about one minute, legacy
+  100/500/1,000 runs use per-drawing atomic checkpoints. A checkpoint is reused
+  only when the source-data, strategy-input and full EV-configuration hashes
+  match; there is no search-quality reduction for speed.
+
+## 2026-08-20 — Automatic schedule promotion requires exact two-source consensus
+
+- A deterministic machine reviewer may promote schedule evidence only when an
+  official competition feed and a separately fetched independent source agree
+  on exact team orientation and the identical kickoff before the match starts.
+- The target's localized home/away names must equal official localized aliases;
+  fuzzy target matching is discovery-only and never promotion authority.
+- The selected official and independent events are both re-fetched by stable
+  source ID. Both raw responses and a deterministic review document are frozen
+  and SHA-256 bound before append-only ledger ingestion.
+- Source/status drift, reversed orientation, ambiguity, late capture, kickoff
+  mismatch, unsupported competition or existing-ledger conflict all fail
+  closed. One source failing must not prevent the other collector from writing
+  diagnostics.
+- UEFA v5 is the first authoritative adapter. This does not authorize generic
+  Sofascore-only promotion or imply coverage for non-UEFA competitions.

@@ -19,6 +19,7 @@ from toto_ai.runner.morning_dispatch import (
     MorningDispatchResult,
     MorningExpectedIdentity,
     MorningPreparedDrawing,
+    MorningUnresolvedEvent,
     _allows_deferred_reviewed_hash_transition,
     activate_scheduler_launch_agent,
     dispatch_morning,
@@ -192,9 +193,61 @@ def test_zero_pool_bootstrap_creates_identity_bound_retry_plan_before_import(
         "2026-08-04T05:00:00Z",
         "2026-08-04T07:30:00Z",
         "2026-08-04T09:00:00Z",
+        "2026-08-04T10:00:00Z",
+        "2026-08-04T11:00:00Z",
+        "2026-08-04T12:00:00Z",
+        "2026-08-04T13:00:00Z",
     ]
     assert all("--activate" in item["command"] for item in plan["attempts"])
     assert not tuple(config.scheduler_root.rglob("scheduler-plan.json"))
+
+
+def test_timing_unknown_retry_plan_keeps_hourly_attempts_until_hard_stop(
+    tmp_path,
+):
+    config = _config(tmp_path)
+    observed = datetime(2026, 8, 13, 14, 12, 40, tzinfo=UTC)
+    deadline = datetime(2026, 8, 14, 14, 0, tzinfo=UTC)
+    prepared = MorningPreparedDrawing(
+        drawing_id=12033,
+        drawing_number=4975,
+        deadline=deadline,
+        drawing_fingerprint="c" * 64,
+        detail_sha256="d" * 64,
+        preparation_status="ready",
+        mapped_count=15,
+        eligibility_status="unknown",
+        span_days=None,
+        unresolved_events=(
+            MorningUnresolvedEvent(
+                event_order=8,
+                target_event_id=179606,
+                home_team="Анси",
+                away_team="Родез",
+                resolution_status="timing_unknown",
+                reason="baseline-only event start time is unavailable",
+            ),
+        ),
+        external_coverage_count=14,
+        baseline_only_event_orders=(8,),
+    )
+
+    result = dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: prepared,
+        python_command=sys.executable,
+    )
+
+    plan = json.loads(result.retry_plan_path.read_text(encoding="utf-8"))
+    assert plan["hard_stop"] == "2026-08-14T13:00:00Z"
+    scheduled = [item["scheduled_at"] for item in plan["attempts"]]
+    assert scheduled[-3:] == [
+        "2026-08-14T10:00:00Z",
+        "2026-08-14T11:00:00Z",
+        "2026-08-14T12:00:00Z",
+    ]
 
 
 def test_zero_pool_retry_recovers_to_one_activated_evening_scheduler(tmp_path):
@@ -1003,6 +1056,153 @@ def test_prepared_morning_cli_result_exits_zero(monkeypatch, tmp_path):
 
     assert result.exit_code == 0, result.output
     assert json.loads(result.output)["status"] == "prepared"
+
+
+def test_deferred_activated_cli_installs_identity_bound_retry_job(
+    monkeypatch,
+    tmp_path,
+):
+    retry_plan = tmp_path / "retry-plan.json"
+    retry_plan.write_text("{}\n", encoding="utf-8")
+    artifacts = SimpleNamespace(label="com.totoai.preflight-retry.12033.c" * 1)
+    installed: list[object] = []
+    monkeypatch.setattr(
+        cli,
+        "dispatch_morning",
+        lambda *_args, **_kwargs: MorningDispatchResult(
+            status="deferred",
+            reason="ACTION REQUIRED: timing unknown 1/15",
+            record_path=tmp_path / "deferred.json",
+            plan_id=None,
+            plan_path=None,
+            launch_agent_path=None,
+            activation_status="not_requested",
+            retry_plan_path=retry_plan,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "prepare_preflight_retry_artifacts",
+        lambda path: artifacts if path == retry_plan else None,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_preflight_retry_launch_agent",
+        lambda value: installed.append(value)
+        or {"active": True, "label": artifacts.label},
+        raising=False,
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(tmp_path / ".env"),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+            "--activate",
+        ],
+    )
+
+    assert result.exit_code == 2, result.output
+    payload = json.loads(result.output)
+    assert payload["retry_scheduler"]["active"] is True
+    assert installed == [artifacts]
+
+
+def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
+    monkeypatch,
+    tmp_path,
+):
+    write_empty_schedule_evidence_ledger(tmp_path)
+    env_file = _env(tmp_path / ".env")
+    retry_plan = tmp_path / "retry-plan.json"
+    retry_plan.write_text("{}\n", encoding="utf-8")
+    queue = tmp_path / "review-queue.json"
+    queue.write_text("{}\n", encoding="utf-8")
+    calls: list[tuple[str, Path]] = []
+    monkeypatch.setattr(
+        cli,
+        "dispatch_morning",
+        lambda *_args, **_kwargs: MorningDispatchResult(
+            status="deferred",
+            reason="ACTION REQUIRED: timing unknown 1/15",
+            record_path=tmp_path / "deferred.json",
+            plan_id=None,
+            plan_path=None,
+            launch_agent_path=None,
+            activation_status="not_requested",
+            retry_plan_path=retry_plan,
+            review_queue_path=queue,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "prepare_preflight_retry_artifacts",
+        lambda _path: SimpleNamespace(label="retry-label"),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_preflight_retry_launch_agent",
+        lambda _value: {"active": True},
+    )
+    monkeypatch.setattr(
+        cli,
+        "collect_schedule_source_candidates",
+        lambda path, **_kwargs: calls.append(("independent", Path(path)))
+        or SimpleNamespace(
+            status="CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
+            candidate_count=1,
+            unresolved_count=0,
+            report_path=tmp_path / "independent.json",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "promote_uefa_sofascore_consensus",
+        lambda path, **_kwargs: calls.append(("consensus", Path(path)))
+        or SimpleNamespace(
+            status="CONSENSUS_PROMOTED",
+            promoted_count=1,
+            existing_count=0,
+            unresolved_count=0,
+            report_path=tmp_path / "consensus.json",
+            ledger_semantic_hash="c" * 64,
+        ),
+        raising=False,
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+            "--activate",
+        ],
+    )
+
+    assert result.exit_code == 2, result.output
+    payload = json.loads(result.output)
+    assert calls == [("independent", queue), ("consensus", queue)]
+    assert payload["source_collector"]["independent"]["candidate_count"] == 1
+    assert payload["source_collector"]["consensus"]["promoted_count"] == 1
 
 
 def test_dispatch_after_t_minus_45_does_not_create_partial_schedule(tmp_path):

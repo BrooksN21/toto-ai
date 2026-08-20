@@ -1,5 +1,576 @@
 # Current State
 
+## Git integration boundary after drawing 4981 (2026-08-20)
+
+The former remote branch `codex/operator-export-timing-escalation` was merged by
+GitHub PR #10 at commit `1498ba6` and deleted remotely, but local development
+continued for 22 commits. The local branch was rebased without conflicts onto
+fresh `origin/main` (`3241d85`), so it now contains only those 22 subsequent
+commits over main. Full verification exposed one omitted repository fixture:
+the committed drawing-4964 scheduler regression referenced the reviewed
+schedule catalog, but `data/reviewed-schedule/4964/` had remained untracked.
+The exact catalog and its source evidence are now tracked; the catalog SHA-256
+is `68e98c8f006ddca04e193a1d06d3f23def57e498f4c02c51d8a9e3c18062895a`.
+The owner explicitly authorized publishing and merging the reconciled branch.
+
+The first drawing-4981 evening LaunchAgent trigger ran at 16:00 MSK and
+completed `tls_preflight` successfully at 16:02:47: exit code 0, empty stderr,
+and hash-chained scheduler state marked the phase `complete`. The wrapper still
+printed `Outcome: no-op / no due scheduler phase` because the CLI reports no
+terminal package result after a successful non-terminal preflight. Treat the
+state transition as authoritative for this run and fix this misleading
+observability message only after the live T-10 cycle.
+The second trigger ran at 16:30 MSK and completed `api_preflight` at 16:32:16
+with exit code 0, empty stderr and no failure details. No `final-input.json` is
+expected until the T-45 warmup; the next scheduled phase is
+`freshness_preflight` at 17:00 MSK.
+
+Drawing 4981 then completed its evening paper cycle. `freshness_preflight`
+passed, T-45 warmup failed retryably on TotoBrief HTTP 429 plus a stale
+60-second cache, and the independent T-30 refresh recovered: it froze a 15/15
+input and produced a 166-coupon/4,980-RUB last-known-good package. Final started
+at 17:40:10 and completed at 17:45:47 with exit code 0. The terminal operator
+result is `NO BET / FINAL_FRESH`, reason
+`quality_v2_real_money_release_gate_closed`; automatic wagering remains false.
+The final package was fully calculated but is not actionable.
+
+Before T-10, the exact final input was also used for a hash-bound prospective
+equal-input comparison at
+`reports/research/prospective-strategy-comparison-4981-20260820T144010Z/`.
+Modeled P(13+) values were current EV/crowd 0.00100249, BK-only 0.02228851,
+Cover-13 0.00616687 and Cover-14 0.01701016. Costs were respectively 4,980,
+4,980, 660 and 2,700 RUB. This is one paper-only prospective observation, not
+a winner or profitability verdict; settlement must wait for complete results.
+
+## Legacy-100 diagnostic and official payout audit (2026-08-20)
+
+The unchanged resumable legacy benchmark completed 100 drawings at bank/stake
+4,980/30 in 1:50:22. It is explicitly
+`LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE / NOT ACTIONABLE`; current SQLite
+probabilities do not prove pre-deadline chronology.
+
+Average best hits were BK probability-only 8.700, current EV/crowd 7.050,
+Cover-13 8.260 and Cover-14 8.960. Against BK-only, paired mean best-hit
+differences and nominal 95% bootstrap intervals were EV/crowd -1.650
+[-2.210, -1.120], Cover-13 -0.440 [-0.650, -0.230], and Cover-14 +0.260
+[0.060, 0.460]. BK-only and Cover-14 each recorded three 13+ packages;
+BK-only recorded the only 14+. Cover-14 used 2,757 RUB on average versus the
+full 4,980 for BK/EV, so this is not an equal-cost winner verdict. Evidence:
+`reports/research/legacy-strategy-benchmark-100-20260820/`.
+
+The result confirms a measured defect in the current EV/crowd package for hit
+probability: its modeled P(13+) is about 0.00108 versus 0.01888 for BK-only,
+and every evaluated EV package omitted at least one actual-result outcome. It
+does not prove EV is unprofitable because its monetary score depends on
+unverified crowd-joint and prize-fund assumptions.
+
+The current official BaltBet rules were audited against the EV code. The
+published 8/18, 4/18, 2/18, 1/18, 1/18, 1/18+1/10 and 1/18+9/10 allocations
+match `category_funds()`, and categories are cumulative. However, TotoBrief
+stores no separate `Possible winnings` field, while TotoAI currently uses
+`pool_sum * prize_fund_factor` as a disclosed proxy. All 420 stored result
+snapshots have `payments = null`, so observed payout/ROI is unavailable and
+must not be fabricated. Evidence:
+`research/baltbet_official_payout_audit_20260820.md`.
+
+The sealed BK-only hybrid experiment already ended with `STOP`, so the
+Legacy-100 result must not reopen another BK-only optimizer on reused data.
+Legacy-500 was resumed only to 116 checkpoints and then deliberately stopped:
+the non-chronological rows and absent payout evidence cannot prove
+profitability, while Legacy-100 already exposed the EV/crowd hit-probability
+defect. The checkpoints remain resumable, but 500/1,000 are not the current
+priority. The immediate next evidence step is automatic prospective archival
+and settlement of the four existing strategies on newly arriving drawings.
+Any later optimizer hypothesis requires a preregistered protocol and a new
+untouched/prospective window.
+
+The partial Legacy-500 resume exposed a reproducibility boundary: scheduler plan 4975
+was correctly bound to schedule-evidence SHA-256 `43a61456...`, while the shared
+production ledger had subsequently advanced. The exact historical ledger and
+its referenced review documents were recovered from Git commit `9be3cdc` into
+the non-release immutable bundle
+`reports/research/legacy-strategy-input-4975-v2-20260820/`. A rebuilt research
+plan passed strict loading and resumed the existing checkpoints without
+changing strategy configuration. The live production ledger was not replaced
+or modified. The partial run stopped cleanly at 116/500; no checkpoint was
+discarded.
+
+## Resume audit and drawings 4975-4980 (2026-08-20)
+
+The pause audit found drawings 4975-4980 finished and drawing 4981 active.
+Drawing 4980 was missing terminal rows locally; an explicit public TotoBrief
+result sync created the complete hash-bound snapshot with actual
+`1111XX112X2XX1X`. All six finished drawings now have 15/15 outcomes and a
+genuine pre-deadline probability snapshot. The `backtest_probability` health
+contract passes 6/6.
+
+Drawing 4975 completed its real paper lifecycle: result sync, immutable
+settlement, review request and reviewed postmortem are complete. The frozen
+166-coupon / 4,980 package reached only 8/15. It exposed every actual outcome,
+but eight actual signs had less than 10% coupon exposure and average actual
+outcome exposure was 35.6%. Its old result snapshot has no
+`raw_snapshot_sha256`, so strict inventory/settlement health remains 5/6 and
+the strict strategy benchmark correctly excludes 4975. This is evidence debt,
+not a missing result.
+
+The five newly eligible strict counterfactual drawings 4976-4980 produced
+average best hits BK-only 8.6, EV/crowd 6.6, Cover-13 7.4 and Cover-14 8.4;
+all recorded zero 13+. Combining these five with the previous 13 immutable
+drawings gives 18 unique strict rows: BK-only 8.889, EV/crowd 6.889,
+Cover-13 8.167, Cover-14 8.889, with one Cover-14 13+ and no 14+/15. The
+sample remains below the predeclared 30-drawing interpretation floor and does
+not establish a winner or profitability. Evidence:
+`reports/research/new-drawings-4975-4980-20260820/` and
+`reports/research/strict-strategy-benchmark-20260820-new6/`.
+
+The resumable legacy 100-drawing diagnostic completed with checkpoint schema
+v3 and unchanged bank/stake 4,980/30. It remains
+`LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`. A later 500-row resume was
+stopped at 116 checkpoints because expanding non-chronological evidence cannot
+establish profitability; prospective collection now has priority.
+
+Active drawing 4981 is now READY and playable 15/15. Public official UEFA v5
+match JSON and independent Sofascore event JSON agreed exactly on identity,
+orientation and kickoff for user events 7 (Hearts - SK Rapid Wien,
+18:45 UTC) and 9 (Hajduk Split - Rakow, 19:00 UTC). Their four pre-deadline
+snapshots, SHA-256 values and two review documents were frozen under
+`data/schedule-evidence/`; the reviewed ledger resolves both rows at high
+confidence. The already installed passive retry ran automatically at 12:00
+MSK with return code 0, changed coverage from 13/15 to 15/15 and activated
+evening plan `5caf88df9bdfe566` for bank/stake 4,980/30. Launchd confirms the
+production-scheduler paper job is loaded with eight triggers from 16:00 to
+17:50 MSK. This is operational readiness only: quality-v2 remains paper-only,
+no wager is authorized, and no package exists before a scheduler trigger.
+
+The first reusable authoritative schedule adapter is now implemented locally.
+For a deferred review queue it pages the public UEFA v5 date feed, requires an
+exact TotoBrief-to-UEFA localized home/away alias match, re-fetches the official
+match by ID, resolves Sofascore through the official English names, and promotes
+only an identical orientation/kickoff consensus captured before kickoff. It
+freezes both source snapshots plus a hash-bound deterministic review document;
+ambiguity, late evidence, source/status drift and kickoff disagreement remain
+unresolved. `morning-dispatch --activate` now runs this consensus path
+independently of the existing non-promoting Sofascore discovery collector, so a
+source failure on either side cannot suppress the other's diagnostics. A
+network-free replay against the two frozen 4981 pairs promoted 2/2 into an
+isolated empty ledger. A separate live public-source canary against the current
+UEFA and Sofascore responses also promoted 2/2 into an isolated ledger without
+touching production evidence. Verification: 73 focused schedule/morning tests
+and the full default suite (`1904 passed, 13 deselected`) pass; Ruff and
+`git diff --check` pass. Broader non-UEFA authoritative adapters remain
+pending.
+
+Pre-deadline shadow evidence was also frozen for drawing 4981. API-Sports
+sports-stat collection made 12 requests and returned 0/15 complete venue rows,
+10 partial and 5 missing; the resulting probability artifact is
+`NOT_ACTIVATED / INSUFFICIENT_EVIDENCE`, uses BK fallback for all 15 events and
+cannot change the package. The Odds API control checkpoint spent two credits
+(492 remaining) and matched 3/15 events exactly; 12/15 remained fallback. This
+confirms that neither current free feed is broad enough to replace BK for this
+drawing, while preserving prospective evidence for later settled evaluation.
+
+## BK-top control and paired benchmark intervals (2026-08-14)
+
+Strict and legacy strategy reports now include an explicit deterministic
+single-coupon `BK_TOP_SINGLE_CONTROL` plus paired per-drawing best-hit
+comparisons. Intervals use a fixed-seed 10,000-replicate percentile bootstrap;
+fewer than 30 drawings always sets `interpretation_allowed=false`. Legacy
+checkpoint schema is v3 so old incomplete control rows cannot resume silently.
+
+The full strict 13-drawing v2 run completed in 14:44 and all manifest/artifact
+hashes verified. Average hits for the one-coupon BK-top control were 6.538.
+Against the 166-coupon BK probability-only package, mean best-hit deltas were:
+
+- EV/crowd: -2.000, nominal 95% CI [-3.462, -0.538];
+- Cover-13: -0.538, nominal 95% CI [-1.077, 0.000];
+- Cover-14: +0.077, nominal 95% CI [-0.692, 0.923].
+
+All strict intervals remain non-interpretable at n=13. The run confirms the
+current EV/crowd weakness is worth testing on the physically separate legacy
+diagnostic, but it does not prove a winner, edge, or profitability. Evidence:
+`reports/research/strict-strategy-benchmark-20260814-all13-v2/`; manifest
+SHA-256 `5b08ec50ab9304ae253a97dd5ebca43036134f341e0fb8680153329e78986c5f`.
+Verification for this slice: `1900 passed, 13 deselected in 123.05s`; Ruff and
+`git diff --check` passed.
+
+## Resumable legacy strategy diagnostic (2026-08-14)
+
+The physically separate `legacy-strategy-benchmark` path is implemented for
+the 1,672 probability-eligible rows that lack strict pre-deadline evidence. It
+does not fabricate an `as_of`: every input/report is
+`LEGACY_RETROSPECTIVE`, `chronology_verified=false`, `NOT RELEASE EVIDENCE`,
+non-actionable, and excluded from strict/prospective metrics. Actual outcomes
+are excluded from the source/input hash.
+
+The command runs the same EV/crowd, BK-only, Cover-13 and Cover-14 engines with
+the production quality-v2 objective and writes one atomic hash-bound checkpoint
+per drawing. Exact source/config/input agreement is required to resume. A real
+drawing-4974 canary completed in 1:04 and its immediate rerun resumed in zero
+seconds. The legacy DB gave EV best 7/15 while the true pre-deadline strict input
+gave 5/15, an observed warning that post-deadline/current-state rows can change
+the apparent result. Verification: `1899 passed, 13 deselected in 114.91s`;
+Ruff and `git diff --check` passed. The 100/500/1,000 legacy diagnostics remain
+pending.
+
+## Strict historical strategy benchmark (2026-08-14)
+
+Phase 2 now has a leakage-safe strict runner and report bundle. The new
+`historical-strategy-benchmark` command selects only immutable RAW evidence
+captured at/before deadline, verifies archive bytes, reconstructs the exact
+prediction input without raw result/score fields, loads actual outcomes from a
+separate terminal snapshot, applies settlement-compatible VOID scoring, and
+records input/config/package/raw/result hashes. It reports actual hit
+distribution, 13+/14+/15, exposure, zero-exposure events, modeled category
+probabilities, cost/unused bank, runtime/fallback and package overlap.
+
+Canaries on one and three drawings completed first. The complete available
+strict run then evaluated all 13 eligible drawings at bank/stake 4,980/30 in
+15:08 with zero strategy timeouts. Average best hits were:
+
+- EV/crowd current: 7.00;
+- BK probability-only: 9.00;
+- TotoBrief-style Cover-13: 8.46;
+- TotoBrief-style Cover-14: 9.08.
+
+Only Cover-14 reached 13+, once (drawing 4966); no strategy reached 14+ or 15.
+EV and BK used the full 4,980; Cover-13 and Cover-14 used 660 and 2,700 on
+average, so this is not an equal-cost strategy verdict. EV's large deficit to
+BK is a measured diagnostic that must be investigated, not a license to tune on
+13 rows. Artifacts are under
+`reports/research/strict-strategy-benchmark-20260814-all13/`, with verified
+artifact and manifest hashes. They are explicitly
+`STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE / NOT RELEASE EVIDENCE`, non-actionable,
+and cannot support a profitability claim. Next is the physically separate
+legacy 100/500/1,000 diagnostic. Verification after this implementation:
+`1895 passed, 13 deselected in 119.95s`; Ruff and `git diff --check` passed.
+
+## Historical chronology gate correction (2026-08-14)
+
+The previous data-health contract treated the presence of any raw TotoBrief
+snapshot as frozen historical evidence. A direct audit of all 713 registered
+raw rows found only 173 rows, across 17 drawings, captured at or before the
+corresponding deadline. Of the 398 drawings previously labelled strict, only
+13 also have a genuine pre-deadline raw snapshot. The other 385 had only
+post-deadline raw evidence and cannot be used as strict historical inputs.
+
+Data-health contract 1.2.0 now requires at least one existing, non-symlink raw
+payload/metadata pair whose registered `captured_at` is at or before
+`Drawing.ended_at`. It reports `predeadline_raw_snapshot_count` and
+`latest_predeadline_raw_snapshot_at`, and `historical_inventory` fails closed
+with `missing_predeadline_raw_snapshot`. The current full audit is 2,216
+drawings: 13 strict chronological rows and 2,203 rejected rows. Evidence is in
+`reports/research/data-health-chronology-20260814/`.
+
+Verification after the chronology gate change: 1,888 default tests passed,
+13 heavy tests were deselected, Ruff passed, and `git diff --check` passed.
+
+Consequently, phase 2 will run a 3–5 drawing strict canary and then all 13
+eligible rows only as pipeline-integrity evidence. Historical 100/500/1,000
+runs are explicitly legacy diagnostics, never release evidence. The
+prospective pre-deadline holdout is the primary path to a strategy verdict.
+
+## Drawing 4975 equal-input strategy comparison (2026-08-14)
+
+The first artifact-bound `compare-package-strategies` run completed on the
+immutable final drawing-4975 input and schema-v6 scheduler plan. It wrote one
+hash-bound manifest, JSON/CSV/Markdown summaries and four separate paper
+package files under
+`reports/research/strategy-comparison-4975-20260814/`. All strategies used
+input SHA-256
+`ee938dd3413e390a589c498a2295cf2736b9ff42965a3c94a274dadd52e72cd9`.
+The EV adapter reproduced the actual 166-coupon final paper package exactly in
+both order and set.
+
+Modeled results for this one snapshot are:
+
+- EV/crowd: 166 coupons, 4,980; P(13+) 0.00226572, P(14+) 0.00022230,
+  P(15) 0.00000916;
+- BK-only: 166 coupons, 4,980; P(13+) 0.01333865, P(14+) 0.00202121,
+  P(15) 0.00014290;
+- Cover-13: 22 coupons, 660; P(13+) 0.00319861, P(14+) 0.00031179,
+  P(15) 0.00001273; exact guarantee passed;
+- Cover-14: 90 coupons, 2,700; P(13+) 0.00925712, P(14+) 0.00107714,
+  P(15) 0.00005283; exact guarantee passed.
+
+This is diagnostic evidence that the current EV/crowd objective can materially
+diverge from pure hit probability. It is not enough to declare BK-only the
+winner: actual finished outcomes across the frozen historical benchmark are
+required. The command remains `RESEARCH/PAPER`, non-actionable, and cannot
+place a wager or open the release gate.
+
+## Equal-input strategy contract and adapters (2026-08-14)
+
+Phase 1 implementation has started after the drawing-4975 terminal state. New
+module `optimizer.strategy_comparison` defines a frozen 15-event input contract
+and validated strategy result contract. The input binds drawing identity,
+fingerprint, source capture time, `as_of`, deadline, dynamic bank/stake,
+pool/jackpot/winnings and ordered BK/crowd matrices. Future evidence, invalid
+event order, non-divisible banks and malformed probabilities fail closed.
+
+Thin adapters now expose the existing engines as `EV_CROWD_CURRENT`,
+`BK_PROBABILITY_ONLY`, `TOTOBRIEF_STYLE_COVER_13`, and
+`TOTOBRIEF_STYLE_COVER_14`. BK-only does not read crowd probabilities. The EV
+adapter receives the same frozen BK/crowd matrices and caller-bound `EVConfig`.
+Cover variants invoke the existing brief generator and require the independent
+exact verifier to pass. Every result enforces unique 15-sign coupons, exact
+cost, dynamic budget, input/config/package hashes and exact modeled P(13+),
+P(14+) and P(15).
+
+Verification: nine focused strategy/CLI/report tests pass; the full default
+suite passes with 1,885 tests and 13 deselected; Ruff and diff-check pass.
+Phase 1 is complete. Production scheduling and the closed real-money gate are
+unchanged; the strict historical canary is next.
+
+## Drawing 4975 terminal evening result (2026-08-14 16:52 Moscow)
+
+The complete automatic evening sequence reached terminal state without a
+runtime failure. Primary final attempt
+`final-01-20260814T134016580964Z-c9c3e3ef` ran from
+`2026-08-14T13:40:16.580964Z` through `13:44:01.046512Z` (224.47 seconds),
+exit code 0 and zero failure details. It produced `FINAL_FRESH` paper evidence
+with decision `NO BET` solely because
+`quality_v2_real_money_release_gate_closed`; this is the current intentional
+paper-only policy, not a package-computation failure.
+
+The immutable final paper package contains 166 unique coupons, cost 4,980,
+and 166 valid `30; outcome x 15` lines. Its path is
+`reports/rehearsal/evening-4975-20260814T140000Z/paper-package/checkpoints/00e224fcfa88b102f27daa8e/paper-package.txt`
+and its SHA-256 is
+`ff1ad616140a9d4f94dd1f3e67475c67b17a8cfa6a67f742b6cc16fed2a4fbe6`.
+The artifact is non-actionable and automatic wagering is false.
+
+The 16:50 T-10 trigger raised LaunchAgent runs to seven, exit code 0. It
+removed the operator-facing LKG pointer and coupon path as designed while
+retaining immutable paper/audit evidence. Post-draw LaunchAgent
+`com.toto-ai.post-draw-12033` is installed and loaded, with its first real
+result-sync slot at 2026-08-15 12:00 Moscow and bounded three-hour retries
+through 2026-08-16 03:00 Moscow. The evening half of phase 0 is complete;
+result synchronization, settlement and postmortem remain pending.
+
+## Drawing 4975 refresh evidence (2026-08-14 16:37 Moscow)
+
+The fifth automatic evening trigger completed successfully. Launchd reports
+five runs and exit code 0. Attempt
+`refresh-01-20260814T133019452143Z-a3e476e3` ran from
+`2026-08-14T13:30:19.452143Z` through `13:35:10.720875Z`, status `complete`,
+with zero failure details. It created refreshed checkpoint
+`refresh-01-20260814T133019452143Z-a3e476e3-ff1ad616140a`.
+
+The refreshed checkpoint has 166 CSV rows and 166 unique coupons, selected
+cost 4,980, effective bank 4,980, and 166 unique valid BaltBet upload lines.
+The upload SHA-256 is
+`ff1ad616140a9d4f94dd1f3e67475c67b17a8cfa6a67f742b6cc16fed2a4fbe6`.
+The operator result remains non-actionable `NO BET` with status
+`LAST_KNOWN_GOOD_DEGRADED` before final execution, as required by the closed
+release gate. The next automatic trigger is primary final at 16:40 Moscow.
+
+## Drawing 4975 warmup and LKG evidence (2026-08-14 16:23 Moscow)
+
+The fourth automatic evening trigger completed successfully. Launchd reports
+four runs and exit code 0. Attempt
+`warmup-01-20260814T131523643983Z-f27c7ad1` ran from
+`2026-08-14T13:15:23.643983Z` through `13:20:40.148532Z`, status `complete`,
+with zero failure details. It created checkpoint
+`warmup-01-20260814T131523643983Z-f27c7ad1-b13f8050c6ec` under the drawing-4975
+last-known-good store.
+
+The checkpoint has 166 CSV rows and 166 unique coupons, selected cost 4,980,
+effective bank 4,980, and 166 unique `baltbet-upload.txt` lines. Every upload
+line passed the exact `30; outcome x 15` format check. The package SHA-256 is
+`fbc04911911af94b73d2c701e8708d4df51ff568b6a2f74680f8d1ad718694c5`; the
+upload SHA-256 is
+`b13f8050c6ec68da61ae1f5dfbcaa67bfa244d92654281bdad017b743ea26673`.
+This is a non-actionable paper/LKG artifact: the quality-v2 real-money release
+gate remains closed. The next automatic trigger is refresh at 16:30 Moscow.
+
+## Drawing 4975 freshness evidence (2026-08-14 16:02 Moscow)
+
+The third automatic evening trigger completed successfully. Launchd reports
+three runs and exit code 0. Attempt
+`freshness_preflight-01-20260814T130018316198Z-a3a97623` ran from
+`2026-08-14T13:00:18.316198Z` through `13:01:28.412427Z`, status `complete`,
+with zero failure details. Terminal remains null. The next trigger is warmup at
+16:15 Moscow.
+
+## Drawing 4975 API preflight evidence (2026-08-14 15:32 Moscow)
+
+The second loaded evening trigger also completed automatically. Launchd now
+reports two runs and exit code 0. Attempt
+`api_preflight-01-20260814T123008095081Z-a9b7695e` ran from
+`2026-08-14T12:30:08.095081Z` through `12:31:12.061655Z`, status `complete`,
+with zero failure details and the validated target/data/config/catalog reason.
+Terminal remains null as expected before final publication. The next trigger
+is 16:00 Moscow (`freshness_preflight`).
+
+## Drawing 4975 live trigger evidence (2026-08-14 15:02 Moscow)
+
+The first loaded evening LaunchAgent trigger executed automatically. Launchd
+reports one run and exit code 0. Scheduler state records attempt
+`tls_preflight-01-20260814T120007817342Z-5651ee69` from
+`2026-08-14T12:00:07.817342Z` through `12:01:16.900047Z`, status `complete`,
+with zero failure details and reason `target, data access, configuration, and
+override catalog validated`. The terminal field is still null, as expected at
+T-120. The next planned trigger is 15:30 Moscow for API preflight. Evidence is
+under `reports/rehearsal/evening-4975-20260814T140000Z/`.
+
+## Active product-validation plan (2026-08-14)
+
+The user approved a full staged plan at
+`plans/TOTOAI-PRODUCT-VALIDATION-20260814/plan.md`; live progress is tracked in
+the adjacent `progress.md`. The critical path is: close the complete live 4975
+lifecycle, implement equal-input EV/BK-probability/TotoBrief-style strategies,
+run historical benchmarks, correct only measured objective defects, evaluate a
+leakage-safe sports residual model, and then run a predeclared prospective
+paper holdout. Independent schedule/source and sports-data collection may grow
+in parallel but cannot alter production packages before their gates pass.
+
+An implementation stage is not complete merely because code exists. It needs
+tests, frozen or live execution evidence, durable artifacts, memory updates and
+an explicit exit-criteria check. Project status after every stage must list
+completed work, current work, blockers and the next action. Automatic wagering
+remains prohibited and no profitability claim is allowed before the release
+gate.
+
+## Free-source coverage baseline (2026-08-14)
+
+A local, network-free audit now records the currently stored provider evidence
+at `reports/research/free-source-audit-20260814/summary.md`. API-Sports external
+odds cover 10 drawings / 150 events with 72.67% unique matching and 68.00%
+usable consensus; 48 events use fallback. The Odds API has only one stored
+drawing / 15 events, with 4/15 matching and 11 fallbacks. These are market
+coverage figures, not sports-feature coverage.
+
+The drawing-4975 API-Sports sports-statistics snapshot still has zero complete
+venue-history events, ten partial rows and five missing rows; the sports branch
+therefore falls back to BK for all 15 events. Sofascore found independent
+schedule candidates for the five schedule gaps but cannot promote production
+evidence without an official source. Phase 5 remains `PENDING`: neither the
+30-drawing/450-event evidence minimum nor 70% valid sports-feature coverage has
+been reached, and no predictive or profit improvement is claimed.
+
+Official documentation was reviewed for the next free candidates. The first
+shadow pilot should be football-data.org because its free tier exposes
+current-season fixtures, team matches and TOTAL/HOME/AWAY tables for 12 top
+competitions. Its narrow competition list means it cannot be the sole source.
+TheSportsDB and OpenLigaDB are secondary identity/schedule candidates;
+StatsBomb Open Data is suitable for offline feature research, not broad live
+coverage. No adapter is activated by this review. The durable source notes are
+in `knowledge/free_sports_sources.md`.
+
+The phase-1 code inventory is also complete without changing live behavior.
+Current EV/crowd, top-probability BK-only, and brief/Cover engines already
+exist; the missing work is a shared immutable input/result contract, thin
+adapters, exact equal-input validation, category-13/category-14 Cover variants,
+and one comparison command. The implementation sequence and tests are frozen
+in `plans/TOTOAI-PRODUCT-VALIDATION-20260814/phase1-inventory.md`. Coding starts
+only after the drawing-4975 terminal result is recorded.
+
+## Historical data eligibility finding — superseded (2026-08-14)
+
+The first audit covered 2,215 drawings and reported 398 as
+`historical_inventory`-healthy, but it did not validate raw-snapshot capture
+time. This count is superseded by contract 1.2.0: only 13 rows have genuine
+pre-deadline raw evidence plus complete strict inputs. A further 1,672 satisfy
+the weaker `backtest_probability` contract.
+There are no duplicate visible numbers. Numbers 3,843 and 3,844 are absent
+locally, but TotoBrief's own public results listing also skips directly from
+3,842 to 3,845; this is upstream numbering behavior rather than a local
+ingestion loss. The health contract still needs hash-bound upstream-gap
+evidence to suppress that false-positive metadata failure. The last 100
+contain 78 strict-healthy and 79 probability-backtest-eligible drawings.
+
+The plan no longer treats 500/1,000 old drawings as frozen release evidence.
+Phase 2 must publish the current strict-13 benchmark separately from
+100/500/1,000 legacy retrospective diagnostics. Thirteen drawings are not
+enough to choose a winner; they validate the pipeline only. Legacy rows are
+useful for finding large strategy defects but cannot support release or profit
+claims. Missing historical pre-deadline snapshots cannot be reconstructed
+honestly after the fact. Details are in
+`plans/TOTOAI-PRODUCT-VALIDATION-20260814/phase2-data-eligibility.md`.
+
+## Source collection, sports comparison, and 4974 review (2026-08-14)
+
+The first safe automatic public schedule-source collector is implemented and
+wired into deferred `morning-dispatch --activate`. It consumes the immutable
+review queue, searches Sofascore with target names plus reviewed aliases,
+stores raw hash-bound snapshots, and emits explicit candidate/conflict/missing
+records. It never mutates the production schedule-evidence ledger: Sofascore
+is independent evidence, so an official source and review are still required
+before promotion. A real drawing-4975 probe found independent candidates for
+all five previously missing events (5/5, zero unresolved) without changing the
+bound ledger.
+
+Mixed canonical pin sets no longer abort sports-stat collection. API-Sports
+pins are collected normally; reviewed/schedule-only pins become explicit
+per-event `preparation_not_ready` misses and fall back to BK. The drawing-4975
+audit produced 10 partial API-Sports rows and five explicit misses, but zero
+complete venue-history rows. Therefore the sports probability artifact has
+0/15 sports coverage and 15/15 BK fallback.
+
+An equal-bank preliminary comparison was run for drawing 4975 with 166 coupons
+and RUB 4,980 in each branch. The BK-control and sports-shadow packages are
+byte-identical (166/166 overlap) because sports coverage is zero. Their modeled
+P(13+) is approximately `0.00084412`; modeled EV/ROI remain unvalidated model
+diagnostics, not a profit forecast. Durable paper-only artifacts are under
+`reports/research/package-comparison-4975/final/`.
+
+Drawing 4974 is now complete 15/15 with actual row
+`XX121122X1X2X12`. The retained 166-coupon, RUB-4,980 paper package failed:
+best 6/15, mean 2.86, median 3, and zero coupons in categories 10-15. Every
+actual sign existed somewhere in the package, but the joint combinations were
+poor; the package's most frequent sign matched the actual sign in only 2/15
+events. BK's top-ranked outcome itself occurred in only 5/15 events. This was
+not a wager, so return and ROI are unavailable. The deterministic report is
+`reports/rehearsal/evening-4974-recovery-20260813T1330Z/post-draw/paper-package-review-4974.md`.
+
+Post-draw scheduling is now chained automatically only from a verified loaded
+evening LaunchAgent. Manual/rehearsal schedulers remain candidate-only. The
+installed post-draw job runs from 12:00 Moscow on the next day, retries on the
+existing bounded cadence, and removes its exact LaunchAgent after a terminal
+state. Drawing 4974 predates this activation behavior and was reconstructed
+manually; future loaded evening runs use the automatic path.
+
+Verification: `1876 passed, 13 deselected in 116.96s`; Ruff and
+`git diff --check` passed. The drawing-4975 evening LaunchAgent remains loaded
+with its first trigger at 15:00 Moscow and T-10 at 16:50 Moscow.
+
+## Drawing 4975 morning recovery and retry activation fix (2026-08-14)
+
+The installed morning LaunchAgent did run for drawing 4975, but preparation
+stopped at `timing_unknown 5/15`: events 9, 11, 12, 13 and 15 had no usable
+API-Sports kickoff. The persisted retry plan also ended at 12:00 Moscow even
+though its hard stop was 16:00, and `morning-dispatch --activate` generated the
+identity-bound retry plan without installing its LaunchAgent. Consequently no
+automatic retry existed after the fixed 12:00 morning pass.
+
+Both execution defects are fixed locally. Bootstrap/timing retries now add
+hourly hard-stop-day attempts from 13:00 Moscow until, but never at or after,
+the configured hard stop. A deferred `morning-dispatch --activate` now
+generates and installs the exact passive retry LaunchAgent and reports its
+verified status. The retry remains drawing/fingerprint/deadline bound and may
+activate an evening scheduler only when the existing plan says
+`activate_evening=true`.
+
+For the current drawing, exact schedule evidence was reviewed from current
+official and independent public sources and appended for Annecy-Rodez,
+Dijon-Pau, Versailles-Le Puy, Villefranche-Paris 13, and QRM-Concarneau. The
+real morning wrapper then reached READY 15/15 and activated schema-v6 evening
+plan `c6a3a25a8459d0d2` for drawing 4975, deadline 17:00 Moscow, bank 4,980 and
+stake 30. Its bound ledger content and semantic hashes revalidate. The loaded
+LaunchAgent has future triggers at 15:00, 15:30, 16:00, 16:15, 16:30, 16:40,
+16:44 and 16:50 Moscow. Scheduler readiness is not a profit claim; quality-v2
+remains paper-only.
+
+The automatic collector now removes the manual discovery step for independent
+candidates. It does not remove the official-source requirement; previously
+unseen events still remain fail-closed until authoritative evidence is
+collected and reviewed.
+
+Verification after the retry fixes: `1868 passed, 13 deselected`; Ruff and
+`git diff --check` passed. The live read-only preflight status reports drawing
+4975 READY 15/15, zero unresolved events, evening activation `activated`, and
+package generation `enabled`.
+
 ## The Odds API current-drawing shadow probe completed (2026-08-13)
 
 The provider-neutral transport, immutable raw captures, generic quota and
@@ -66,10 +637,13 @@ policy regression protects the durable wording in `AGENTS.md` and
 
 ## Automatic post-draw review lifecycle completed (2026-08-13)
 
-The scheduler now creates an uninstalled, non-betting post-draw candidate for
-every terminal outcome. The first result check is 12:00 Europe/Moscow on the
-next Moscow calendar day after the drawing deadline; incomplete drawings retry
-at three-hour intervals within the plan's bounded attempt window.
+The scheduler creates a non-betting post-draw plan for every terminal outcome.
+When and only when the parent evening LaunchAgent is verified loaded, the
+exact bound post-draw LaunchAgent is installed automatically. Manual and
+rehearsal parents remain uninstalled candidates. The first result check is
+12:00 Europe/Moscow on the next Moscow calendar day after the drawing deadline;
+incomplete drawings retry at three-hour intervals within the plan's bounded
+attempt window.
 
 The workflow reuses the existing authoritative result synchronization,
 reviewed VOID handling, immutable package archive, and settlement algorithms.
@@ -82,7 +656,7 @@ Post-draw preparation is advisory to the primary scheduler. Missing paper
 state is normalized to a zero-cost package-free paper result when no validated
 package exists; any post-draw generation failure is recorded separately and
 cannot change the terminal scheduler status/marker or create a second
-finalization failure. No LaunchAgent is installed and no wager is placed.
+finalization failure. No wager is placed.
 
 Verification after the fail-safe boundary repair passed `1830 passed, 13
 deselected in 120.89s`; full Ruff and `git diff --check` passed.

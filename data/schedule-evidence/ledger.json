@@ -856,6 +856,318 @@
           "source_url": "https://www.sofascore.com/football/match/abha-al-hazem/LlrbsPlrb"
         }
       ]
+    },
+    {
+      "observation_id": "lfp-annecy-rodez-20260814",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2 BKT",
+        "Ligue 2"
+      ],
+      "home_entity": "FC Annecy",
+      "home_aliases": [
+        "Анси",
+        "Annecy",
+        "FC Annecy"
+      ],
+      "away_entity": "Rodez Aveyron Football",
+      "away_aliases": [
+        "Родез",
+        "Rodez",
+        "Rodez AF",
+        "Rodez Aveyron Football"
+      ],
+      "starts_at": "2026-08-14T18:45:00Z",
+      "review_document": "reviews/4975-event-9.md",
+      "claims": [
+        {
+          "source_name": "LFP official J2 programming",
+          "role": "official",
+          "source_url": "https://www.lfp.fr/article/ligue-2-bkt-le-calendrier-de-la-saison-2026-2027"
+        },
+        {
+          "source_name": "L'Équipe Ligue 2 J2 calendar",
+          "role": "independent",
+          "source_url": "https://www.lequipe.fr/Football/ligue-2/page-calendrier-resultats/2e-journee"
+        }
+      ],
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-public-evidence-review",
+      "reviewed_at": "2026-08-14T09:35:50Z",
+      "review_document_sha256": "77d73720c021e52bfd1fbc0d5594ce67ad44ae403777460f57839d7dba095833"
+    },
+    {
+      "observation_id": "lfp-dijon-pau-20260814",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2 BKT",
+        "Ligue 2"
+      ],
+      "home_entity": "Dijon FCO",
+      "home_aliases": [
+        "Дижон",
+        "Dijon",
+        "Dijon FCO",
+        "DFCO"
+      ],
+      "away_entity": "Pau FC",
+      "away_aliases": [
+        "По",
+        "Pau",
+        "Pau FC"
+      ],
+      "starts_at": "2026-08-14T18:45:00Z",
+      "review_document": "reviews/4975-event-11.md",
+      "claims": [
+        {
+          "source_name": "LFP official J2 programming",
+          "role": "official",
+          "source_url": "https://www.lfp.fr/article/ligue-2-bkt-le-calendrier-de-la-saison-2026-2027"
+        },
+        {
+          "source_name": "L'Équipe Ligue 2 J2 calendar",
+          "role": "independent",
+          "source_url": "https://www.lequipe.fr/Football/ligue-2/page-calendrier-resultats/2e-journee"
+        }
+      ],
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-public-evidence-review",
+      "reviewed_at": "2026-08-14T09:35:50Z",
+      "review_document_sha256": "cd39fc2b438b316962f6b09bf796f7d07b575986deedb611985d4673625d8d7f"
+    },
+    {
+      "observation_id": "fff-versailles-le-puy-20260814",
+      "competition_aliases": [
+        "Франция. Лига 3",
+        "Ligue 3",
+        "Championnat National"
+      ],
+      "home_entity": "FC Versailles 78",
+      "home_aliases": [
+        "Версаль 78",
+        "Versailles 78",
+        "FC Versailles",
+        "FC Versailles 78"
+      ],
+      "away_entity": "Le Puy Foot 43 Auvergne",
+      "away_aliases": [
+        "Ле Пюи Фут 43 Овернь",
+        "Le Puy",
+        "Le Puy-en-Velay",
+        "Le Puy Foot 43 Auvergne"
+      ],
+      "starts_at": "2026-08-14T17:00:00Z",
+      "review_document": "reviews/4975-event-12.md",
+      "claims": [
+        {
+          "source_name": "FFF official J1/J2/J3 programming",
+          "role": "official",
+          "source_url": "https://www.fff.fr/article/17019-j1-j2-j3-la-programmation-officialisee.html"
+        },
+        {
+          "source_name": "FFF official Ligue 3 calendar",
+          "role": "official",
+          "source_url": "https://www.fff.fr/article/17022-le-calendrier-2026-2027-est-servi.html"
+        },
+        {
+          "source_name": "FootTV fixtures",
+          "role": "independent",
+          "source_url": "https://www.foottv.fr/equipes/fc-versailles-78"
+        }
+      ],
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-public-evidence-review",
+      "reviewed_at": "2026-08-14T09:35:50Z",
+      "review_document_sha256": "9b12d9bc7791f9efda7808b64c2a5132ae896a0cbe11d83b57d39e845251d50b"
+    },
+    {
+      "observation_id": "fff-villefranche-paris13-20260814",
+      "competition_aliases": [
+        "Франция. Лига 3",
+        "Ligue 3",
+        "Championnat National"
+      ],
+      "home_entity": "FC Villefranche-Beaujolais",
+      "home_aliases": [
+        "Вильфранш",
+        "Villefranche",
+        "FC Villefranche",
+        "FC Villefranche-Beaujolais",
+        "FCVB"
+      ],
+      "away_entity": "Paris 13 Atletico",
+      "away_aliases": [
+        "Париж 13 Атлетико",
+        "Paris 13 Atletico",
+        "Paris 13 Atl."
+      ],
+      "starts_at": "2026-08-14T17:00:00Z",
+      "review_document": "reviews/4975-event-13.md",
+      "claims": [
+        {
+          "source_name": "FFF official J1/J2/J3 programming",
+          "role": "official",
+          "source_url": "https://www.fff.fr/article/17019-j1-j2-j3-la-programmation-officialisee.html"
+        },
+        {
+          "source_name": "FFF official Ligue 3 calendar",
+          "role": "official",
+          "source_url": "https://www.fff.fr/article/17022-le-calendrier-2026-2027-est-servi.html"
+        },
+        {
+          "source_name": "Transfermarkt Ligue 3 J2 calendar",
+          "role": "independent",
+          "source_url": "https://www.transfermarkt.com/championnat-national/startseite/wettbewerb/FR3"
+        }
+      ],
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-public-evidence-review",
+      "reviewed_at": "2026-08-14T09:35:50Z",
+      "review_document_sha256": "50d345a54b48f4a45c746ecdad9773b850d5a1ea566782c239d76be9bcd797a8"
+    },
+    {
+      "observation_id": "fff-qrm-concarneau-20260814",
+      "competition_aliases": [
+        "Франция. Лига 3",
+        "Ligue 3",
+        "Championnat National"
+      ],
+      "home_entity": "Quevilly Rouen Métropole",
+      "home_aliases": [
+        "Кевийи",
+        "Quevilly",
+        "QRM",
+        "Quevilly Rouen",
+        "Quevilly Rouen Métropole"
+      ],
+      "away_entity": "US Concarneau",
+      "away_aliases": [
+        "Конкарно",
+        "Concarneau",
+        "US Concarneau"
+      ],
+      "starts_at": "2026-08-14T17:00:00Z",
+      "review_document": "reviews/4975-event-15.md",
+      "claims": [
+        {
+          "source_name": "FFF official J1/J2/J3 programming",
+          "role": "official",
+          "source_url": "https://www.fff.fr/article/17019-j1-j2-j3-la-programmation-officialisee.html"
+        },
+        {
+          "source_name": "FFF official Ligue 3 calendar",
+          "role": "official",
+          "source_url": "https://www.fff.fr/article/17022-le-calendrier-2026-2027-est-servi.html"
+        },
+        {
+          "source_name": "SportCorico club schedule",
+          "role": "independent",
+          "source_url": "https://www.sportcorico.com/clubs/us-concarnoise-beuzecquoise/us-concarneau"
+        }
+      ],
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-public-evidence-review",
+      "reviewed_at": "2026-08-14T09:35:50Z",
+      "review_document_sha256": "48a009488fa14ca15947414e2d9a998a081eed36abb4bebd4b7bb05c5af0a768"
+    },
+    {
+      "observation_id": "uefa-hearts-rapid-20260820",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Heart of Midlothian",
+      "home_aliases": [
+        "Хартс",
+        "Hearts",
+        "Heart of Midlothian"
+      ],
+      "away_entity": "SK Rapid Wien",
+      "away_aliases": [
+        "Рапид Вена",
+        "SK Rapid",
+        "SK Rapid Wien",
+        "Rapid Vienna"
+      ],
+      "starts_at": "2026-08-20T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-public-evidence-review",
+      "reviewed_at": "2026-08-20T08:53:30Z",
+      "review_document": "reviews/4981-event-7.md",
+      "review_document_sha256": "e9d182a27311b6e3096a887f225e34f0abdb3a567382340be033c8bf3fd57949",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049254/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16717079"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-hajduk-rakow-20260820",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "HNK Hajduk Split",
+      "home_aliases": [
+        "Хайдук Сплит",
+        "Hajduk Split",
+        "HNK Hajduk Split"
+      ],
+      "away_entity": "Raków Częstochowa",
+      "away_aliases": [
+        "Ракув",
+        "Raków",
+        "Rakow",
+        "Raków Częstochowa"
+      ],
+      "starts_at": "2026-08-20T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-public-evidence-review",
+      "reviewed_at": "2026-08-20T08:53:30Z",
+      "review_document": "reviews/4981-event-9.md",
+      "review_document_sha256": "18dfd67d8af1471a6b02416d1f073eae862880f133523ee63479d3f13d6c3709",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049256/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16717080"
+        }
+      ]
     }
   ]
 }

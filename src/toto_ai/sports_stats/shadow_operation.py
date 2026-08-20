@@ -14,7 +14,7 @@ from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.team_registry import (
-    load_ready_drawing_pins,
+    load_ready_pin_set,
 )
 from toto_ai.sports_stats.evaluation import (
     ShadowEvaluationRecord,
@@ -79,11 +79,10 @@ def build_and_write_sports_probability_shadow(
     )
     if snapshot is None:
         raise ValueError("no immutable pre-match sports-stat snapshot was found")
-    pins = load_ready_drawing_pins(
+    pins = load_ready_pin_set(
         session_factory,
         drawing_id=target.drawing_id,
         drawing_fingerprint=fingerprint,
-        provider=snapshot.provider,
     )
     artifact = build_shadow_probability_artifact(
         target=target,

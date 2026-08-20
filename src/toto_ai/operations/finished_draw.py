@@ -11,7 +11,9 @@ import json
 import math
 import os
 import plistlib
+import re
 import shlex
+import subprocess
 import time
 from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
@@ -46,6 +48,7 @@ POST_DRAW_PLAN_SCHEMA_VERSION = 2
 POST_DRAW_STATE_SCHEMA_VERSION = 2
 POST_DRAW_REVIEW_SCHEMA_VERSION = 1
 POST_DRAW_TIMEZONE = ZoneInfo("Europe/Moscow")
+_POST_DRAW_LAUNCH_AGENT_LABEL = re.compile(r"com\.toto-ai\.post-draw-\d+\Z")
 
 
 @dataclass(frozen=True)
@@ -849,8 +852,9 @@ def prepare_post_draw_scheduler_artifacts(
     paper_result_file: str | Path | None = None,
     void_event_orders: Sequence[int] = (),
     void_source: str | None = None,
+    automation_installation: bool = False,
 ) -> tuple[Path, Path, Path]:
-    """Generate, but never install, a local launchd wrapper and plist candidate."""
+    """Generate a hash-bound local launchd wrapper and plist candidate."""
     if (drawing_id is None) == (drawing_number is None):
         raise ValueError("use exactly one of drawing_id or drawing_number")
     from toto_ai.db.session import get_session_factory, init_db
@@ -915,7 +919,7 @@ def prepare_post_draw_scheduler_artifacts(
         "void_event_orders": list(void_orders),
         "void_source": reviewed_void_source,
         "automatic_wagering": False,
-        "automation_installation": False,
+        "automation_installation": automation_installation,
     }
     plan_payload["plan_sha256"] = _sha256_json(plan_payload)
     plan_bytes = (
@@ -959,6 +963,131 @@ def prepare_post_draw_scheduler_artifacts(
     )
     _write_immutable_file(plist, plist_bytes, name="post-draw launchd candidate")
     return plan, wrapper, plist
+
+
+def install_post_draw_launch_agent(
+    plan_path: str | Path,
+    candidate_path: str | Path,
+    *,
+    launch_agents_root: Path | None = None,
+    command_runner: Callable[..., object] = subprocess.run,
+) -> dict[str, object]:
+    """Install and verify one exact post-draw LaunchAgent candidate."""
+
+    plan = load_post_draw_plan(plan_path)
+    if plan.get("automation_installation") is not True:
+        raise ValueError("post-draw plan does not authorize automatic installation")
+    candidate = Path(candidate_path).resolve()
+    if candidate.is_symlink() or not candidate.is_file():
+        raise ValueError("post-draw LaunchAgent candidate is invalid")
+    try:
+        payload = plistlib.loads(candidate.read_bytes())
+    except (OSError, plistlib.InvalidFileException) as error:
+        raise ValueError("post-draw LaunchAgent candidate is malformed") from error
+    label = f"com.toto-ai.post-draw-{plan['drawing_id']}"
+    expected_wrapper = candidate.parent / f"post-draw-{plan['drawing_id']}.sh"
+    if not _POST_DRAW_LAUNCH_AGENT_LABEL.fullmatch(label):
+        raise ValueError("post-draw LaunchAgent label is invalid")
+    if not isinstance(payload, dict) or payload.get("Label") != label:
+        raise ValueError("post-draw LaunchAgent candidate label mismatch")
+    if payload.get("ProgramArguments") != [str(expected_wrapper)]:
+        raise ValueError("post-draw LaunchAgent wrapper mismatch")
+    if expected_wrapper.is_symlink() or not expected_wrapper.is_file():
+        raise ValueError("post-draw LaunchAgent wrapper is unavailable")
+    root = (launch_agents_root or Path.home() / "Library/LaunchAgents").resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    if root.is_symlink():
+        raise ValueError("LaunchAgents root cannot be a symlink")
+    destination = root / f"{label}.plist"
+    _write_installed_launch_agent(destination, candidate.read_bytes())
+    domain = f"gui/{os.getuid()}"
+    loaded = command_runner(
+        ("launchctl", "print", f"{domain}/{label}"),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if getattr(loaded, "returncode", 1) != 0:
+        bootstrapped = command_runner(
+            ("launchctl", "bootstrap", domain, str(destination)),
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if getattr(bootstrapped, "returncode", 1) != 0:
+            destination.unlink(missing_ok=True)
+            raise ValueError("post-draw LaunchAgent bootstrap failed")
+    verified = command_runner(
+        ("launchctl", "print", f"{domain}/{label}"),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    active = (
+        getattr(verified, "returncode", 1) == 0
+        and destination.is_file()
+        and not destination.is_symlink()
+        and destination.read_bytes() == candidate.read_bytes()
+    )
+    if not active:
+        destination.unlink(missing_ok=True)
+        raise ValueError("post-draw LaunchAgent did not verify active")
+    return {
+        "label": label,
+        "installed_path": str(destination),
+        "installed_verified": True,
+        "loaded_verified": True,
+        "active": True,
+    }
+
+
+def cleanup_post_draw_launch_agent(
+    plan_path: str | Path,
+    *,
+    launch_agents_root: Path | None = None,
+    command_runner: Callable[..., object] = subprocess.run,
+) -> None:
+    """Unload and remove only the LaunchAgent bound to this post-draw plan."""
+
+    plan = load_post_draw_plan(plan_path)
+    label = f"com.toto-ai.post-draw-{plan['drawing_id']}"
+    root = (launch_agents_root or Path.home() / "Library/LaunchAgents").resolve()
+    destination = root / f"{label}.plist"
+    domain = f"gui/{os.getuid()}"
+    loaded = command_runner(
+        ("launchctl", "print", f"{domain}/{label}"),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if getattr(loaded, "returncode", 1) == 0:
+        stopped = command_runner(
+            ("launchctl", "bootout", f"{domain}/{label}"),
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if getattr(stopped, "returncode", 1) != 0:
+            raise ValueError("post-draw LaunchAgent bootout failed")
+    if destination.is_symlink():
+        raise ValueError("installed post-draw plist is a symlink")
+    destination.unlink(missing_ok=True)
+
+
+def _write_installed_launch_agent(path: Path, content: bytes) -> None:
+    if path.exists():
+        if path.is_symlink() or not path.is_file() or path.read_bytes() != content:
+            raise ValueError("installed post-draw LaunchAgent conflicts")
+        return
+    descriptor = os.open(
+        path,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    )
+    with os.fdopen(descriptor, "wb") as stream:
+        stream.write(content)
+        stream.flush()
+        os.fsync(stream.fileno())
 
 
 def _write_immutable_file(path: Path, content: bytes, *, name: str) -> None:
@@ -1069,6 +1198,8 @@ def load_post_draw_plan(path: str | Path) -> dict[str, Any]:
             raise ValueError("post-draw expiry does not match due slots")
         if payload.get("automatic_wagering") is not False:
             raise ValueError("post-draw plan cannot enable wagering")
+        if not isinstance(payload.get("automation_installation"), bool):
+            raise ValueError("post-draw automation installation flag is invalid")
         _validate_post_draw_package_binding(payload.get("package_binding"))
         return payload
     except (KeyError, OSError, TypeError, ValueError) as error:

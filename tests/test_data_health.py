@@ -16,6 +16,7 @@ from toto_ai.analytics.data_health import (
 from toto_ai.db.models import (
     ArchivedPackage,
     Drawing,
+    DrawingRawSnapshot,
     DrawingResultSnapshot,
     Event,
     PackageSettlement,
@@ -105,6 +106,53 @@ def _add_result_snapshot(session: Session, drawing_id: int, number: int) -> None
             actual="1" * 15,
             events_json="[]",
             payload_json="{}",
+        )
+    )
+
+
+def _add_raw_snapshot(
+    session: Session,
+    *,
+    db_path: Path,
+    drawing_id: int,
+    number: int,
+    captured_at: str,
+    storage_root: Path | None = None,
+) -> None:
+    root = db_path.parent / "raw" if storage_root is None else storage_root
+    directory = root / "archive" / f"drawing_{drawing_id}"
+    directory.mkdir(parents=True, exist_ok=True)
+    payload_path = directory / f"raw-{drawing_id}-{captured_at[:10]}.json"
+    metadata_path = directory / f"raw-{drawing_id}-{captured_at[:10]}.meta.json"
+    payload_path.write_text(
+        json.dumps(
+            {
+                "data": {
+                    "id": drawing_id,
+                    "number": number,
+                    "name": "baltbet-main",
+                    "events": [],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    metadata_path.write_text("{}", encoding="utf-8")
+    session.add(
+        DrawingRawSnapshot(
+            snapshot_sha256=f"raw-{drawing_id}-{captured_at}",
+            payload_sha256=f"payload-{drawing_id}-{captured_at}",
+            metadata_sha256=f"metadata-{drawing_id}-{captured_at}",
+            drawing_id=drawing_id,
+            drawing_number=number,
+            captured_at=captured_at,
+            source="test",
+            source_endpoint=f"/drawing-info/{drawing_id}",
+            lifecycle_status="active",
+            payload_path=str(payload_path),
+            metadata_path=str(metadata_path),
+            imported_at=captured_at,
+            classification="source_incomplete",
         )
     )
 
@@ -216,6 +264,97 @@ def test_contract_checks_structure_names_quotes_bk_and_snapshot_separately(tmp_p
         "missing_raw_snapshot",
         "missing_result_snapshot",
     } <= set(second.observed_reason_codes)
+
+
+def test_historical_inventory_requires_raw_snapshot_captured_before_deadline(
+    tmp_path,
+):
+    db, factory = _database(tmp_path)
+    with factory.begin() as session:
+        _add_drawing(session, drawing_id=1, number=100)
+        _add_result_snapshot(session, 1, 100)
+        _add_raw_snapshot(
+            session,
+            db_path=db,
+            drawing_id=1,
+            number=100,
+            captured_at="2030-01-01T00:01:00+00:00",
+        )
+
+    with factory() as session:
+        report = audit_data_health(
+            session,
+            db_path=db,
+            use_case="historical_inventory",
+            strict=False,
+        )
+
+    row = _record(report, 100)
+    assert row.raw_snapshot_present is True
+    assert row.predeadline_raw_snapshot_count == 0
+    assert "missing_predeadline_raw_snapshot" in row.observed_reason_codes
+    assert row.use_case_eligibility["historical_inventory"] is False
+
+
+def test_historical_inventory_accepts_raw_snapshot_captured_before_deadline(
+    tmp_path,
+):
+    db, factory = _database(tmp_path)
+    with factory.begin() as session:
+        _add_drawing(session, drawing_id=1, number=100)
+        _add_result_snapshot(session, 1, 100)
+        _add_raw_snapshot(
+            session,
+            db_path=db,
+            drawing_id=1,
+            number=100,
+            captured_at="2029-12-31T23:59:00+00:00",
+        )
+
+    with factory() as session:
+        report = audit_data_health(
+            session,
+            db_path=db,
+            use_case="historical_inventory",
+            strict=False,
+        )
+
+    row = _record(report, 100)
+    assert row.predeadline_raw_snapshot_count == 1
+    assert row.latest_predeadline_raw_snapshot_at == (
+        "2029-12-31T23:59:00+00:00"
+    )
+    assert "missing_predeadline_raw_snapshot" not in row.observed_reason_codes
+    assert row.use_case_eligibility["historical_inventory"] is True
+
+
+def test_historical_inventory_rejects_raw_snapshot_outside_canonical_tree(
+    tmp_path,
+):
+    db, factory = _database(tmp_path)
+    with factory.begin() as session:
+        _add_drawing(session, drawing_id=1, number=100)
+        _add_result_snapshot(session, 1, 100)
+        _add_raw_snapshot(
+            session,
+            db_path=db,
+            drawing_id=1,
+            number=100,
+            captured_at="2029-12-31T23:59:00+00:00",
+            storage_root=tmp_path / "unrelated-raw",
+        )
+
+    with factory() as session:
+        report = audit_data_health(
+            session,
+            db_path=db,
+            use_case="historical_inventory",
+            strict=False,
+        )
+
+    row = _record(report, 100)
+    assert row.predeadline_raw_snapshot_count == 0
+    assert "missing_predeadline_raw_snapshot" in row.observed_reason_codes
 
 
 def test_unsettled_only_applies_to_real_prebet_archives(tmp_path):

@@ -1283,6 +1283,18 @@ def _zero_pool_retry_times(
         )
         for hour, minute in ((8, 0), (10, 30), (12, 0))
     )
+    stop_local = stop.astimezone(_MOSCOW)
+    hourly_retry = datetime(
+        stop_local.year,
+        stop_local.month,
+        stop_local.day,
+        13,
+        0,
+        tzinfo=_MOSCOW,
+    )
+    while hourly_retry.astimezone(timezone.utc) < stop:
+        candidates.append(hourly_retry)
+        hourly_retry += timedelta(hours=1)
     return tuple(
         sorted(
             {
