@@ -244,6 +244,7 @@ def prepare_drawing(
         }:
             raise
         existing = ()
+    reviewed_catalog_upgrade_orders: tuple[int, ...] = ()
     if existing:
         failed_orders = _failed_date_pin_orders(target, existing, schedule_diagnostics)
         if failed_orders:
@@ -266,13 +267,45 @@ def prepare_drawing(
             reviewed_catalog=reviewed_catalog,
             schedule_evidence_ledger=evidence_ledger,
         )
+        if reviewed_catalog is not None:
+            existing_by_order = {pin.event_order: pin for pin in existing}
+            baseline_only_orders = frozenset(
+                order
+                for order, pin in existing_by_order.items()
+                if pin.effective_source_provider == "totobrief-baseline"
+            )
+            existing_preview = _resolve_preparation_candidates(
+                target,
+                candidates,
+                session_factory=session_factory,
+                provider=provider,
+                event_contexts=event_contexts,
+            )
+            admitted_reviewed = _admit_reviewed_fallbacks(
+                target,
+                fingerprint=fingerprint,
+                resolutions=existing_preview.resolutions,
+                catalog=reviewed_catalog,
+                schedule_diagnostics=schedule_diagnostics,
+                allowed_event_orders=baseline_only_orders,
+            )
+            reviewed_catalog_upgrade_orders = tuple(
+                sorted(
+                    order
+                    for order in admitted_reviewed
+                    if existing_by_order[order].effective_source_provider
+                    == "totobrief-baseline"
+                )
+            )
         schedule_evidence_upgrade_orders = _baseline_schedule_evidence_upgrade_orders(
             target,
             existing,
             evidence_ledger,
             evaluated_at=reference,
         )
-        if not schedule_evidence_upgrade_orders:
+        if not (
+            reviewed_catalog_upgrade_orders or schedule_evidence_upgrade_orders
+        ):
             result = _result_from_existing(target, fingerprint, provider, existing)
             refresh_ready_drawing_preparation_evidence(
                 session_factory,
@@ -747,12 +780,18 @@ def prepare_drawing(
         or evidence_by_order
         or any(item.status == "baseline_only" for item in events)
     ):
-        if existing and schedule_evidence_upgrade_orders:
+        monotonic_upgrade_orders = tuple(
+            sorted(
+                set(reviewed_catalog_upgrade_orders)
+                | set(schedule_evidence_upgrade_orders)
+            )
+        )
+        if existing and monotonic_upgrade_orders:
             canonical_pin_specs = list(
                 _merge_monotonic_schedule_upgrade_specs(
                     existing,
                     tuple(canonical_pin_specs),
-                    upgrade_orders=schedule_evidence_upgrade_orders,
+                    upgrade_orders=monotonic_upgrade_orders,
                 )
             )
         selected_reviewed_hashes = {
@@ -782,7 +821,7 @@ def prepare_drawing(
             pin_specs=tuple(canonical_pin_specs),
             reviewed_catalog_hash=selected_reviewed_catalog_hash,
             allow_baseline_schedule_enrichment=bool(
-                schedule_evidence_upgrade_orders
+                monotonic_upgrade_orders
             ),
         )
     else:
@@ -915,13 +954,27 @@ def _admit_reviewed_fallbacks(
     resolutions: tuple[CandidateResolution, ...],
     catalog: ReviewedScheduleCatalog,
     schedule_diagnostics: tuple[dict[str, str | None], ...],
+    allowed_event_orders: frozenset[int] | None = None,
 ) -> dict[int, ReviewedScheduleEvidence]:
-    if any(resolution.status in {"ambiguous", "missing"} for resolution in resolutions):
+    scoped_resolutions = tuple(
+        resolution
+        for event, resolution in zip(target.events, resolutions, strict=True)
+        if allowed_event_orders is None or event.event_order in allowed_event_orders
+    )
+    if any(
+        resolution.status in {"ambiguous", "missing"}
+        for resolution in scoped_resolutions
+    ):
         raise ValueError(
             "reviewed fallback cannot mask ambiguous or unproven API absence"
         )
     admitted: dict[int, ReviewedScheduleEvidence] = {}
     for event, resolution in zip(target.events, resolutions, strict=True):
+        if (
+            allowed_event_orders is not None
+            and event.event_order not in allowed_event_orders
+        ):
+            continue
         if resolution.status != "source_missing_competition":
             continue
         if target.drawing_number is None:

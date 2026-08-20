@@ -444,6 +444,55 @@ def test_ready_mixed_pin_set_is_reused_with_exact_source_revalidation(
     assert second.pins[14].effective_source_provider == "reviewed-schedule"
 
 
+def test_new_reviewed_catalog_upgrades_existing_baseline_only_pin_set(
+    session_factory, tmp_path: Path
+) -> None:
+    original = _target()
+    target = replace(
+        original,
+        events=tuple(
+            replace(event, pool_probabilities=(0.4, 0.3, 0.3))
+            for event in original.events
+        ),
+    )
+    _seed(session_factory)
+    morning = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+    )
+    assert morning.status == "ready"
+    assert morning.eligibility.status == "unknown"
+    assert morning.baseline_only_event_orders == (14,)
+    old_by_order = {pin.event_order: pin for pin in morning.pins}
+
+    refreshed = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=(
+            {
+                "sport": "football",
+                "date": "2026-07-29",
+                "status": "success",
+                "reason": None,
+            },
+        ),
+        reviewed_schedule_catalog=_catalog(tmp_path, target),
+        evaluated_at=EVALUATED_AT,
+    )
+
+    assert refreshed.status == "ready"
+    assert refreshed.eligibility.status == "playable"
+    assert refreshed.baseline_only_event_orders == ()
+    assert refreshed.pins[14].effective_source_provider == "reviewed-schedule"
+    assert tuple(pin.pin_hash for pin in refreshed.pins[:14]) == tuple(
+        old_by_order[order].pin_hash for order in range(14)
+    )
+
+
 def test_ready_mixed_pin_set_rejects_relevant_utc_date_failure(
     session_factory, tmp_path: Path
 ) -> None:
