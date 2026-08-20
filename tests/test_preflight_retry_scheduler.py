@@ -147,6 +147,40 @@ def test_due_attempts_execute_once_and_network_failure_remains_retryable(tmp_pat
     assert len(executed) == 2
 
 
+def test_retry_emits_structured_child_status_for_launchd_logs(tmp_path, capsys):
+    runner = FakeRunner(
+        [
+            Result(
+                2,
+                '{"status":"deferred","reason":"timing_unknown",'
+                '"unresolved_event_orders":[4,8]}',
+            )
+        ]
+    )
+    artifacts = prepare_preflight_retry_artifacts(_plan(tmp_path / "retry-plan.json"))
+
+    code = run_preflight_retry(
+        artifacts.plan_path,
+        now=datetime(2026, 7, 31, 10, 1, tzinfo=UTC),
+        command_runner=runner,
+        launch_agents_root=tmp_path / "LaunchAgents",
+    )
+
+    assert code == 2
+    observed = json.loads(capsys.readouterr().out)
+    assert observed == {
+        "preflight_retry": {
+            "scheduled_at": "2026-07-31T10:00:00Z",
+            "returncode": 2,
+            "child_result": {
+                "status": "deferred",
+                "reason": "timing_unknown",
+                "unresolved_event_orders": [4, 8],
+            },
+        }
+    }
+
+
 @pytest.mark.parametrize(
     ("result", "expected_code"),
     [

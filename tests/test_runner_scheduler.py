@@ -36,10 +36,12 @@ from toto_ai.runner.scheduler import (
     RUNNER_MANIFEST_SCHEMA_VERSION,
     CommandSchedulerPhaseRunner,
     SchedulerError,
+    SchedulerIntegrityError,
     SchedulerPhaseContext,
     SchedulerPhaseError,
     SchedulerPhaseResult,
     VirtualSchedulerClock,
+    authorize_experimental_manual_release,
     build_prepare_drawing_command,
     build_run_drawing_phase_command,
     build_scheduler_plan,
@@ -1810,6 +1812,65 @@ def test_structural_play_is_no_bet_while_release_gate_is_paper_only(
     assert result.decision == "NO BET"
     assert result.package_bytes is None
     assert result.reason == "quality-v2 paper-only release gate"
+
+
+def test_explicit_plan_bound_experimental_authorization_enables_fresh_final(
+    tmp_path: Path,
+):
+    context = replace(_manifest_context(tmp_path), scheduler_phase="final")
+    authorize_experimental_manual_release(
+        context.plan,
+        acknowledged=True,
+        now=datetime(2029, 12, 31, 12, tzinfo=UTC),
+    )
+    manifest = _write_runner_manifest(context, _valid_runner_manifest(context))
+
+    result = parse_runner_manifest_phase_result(context, manifest)
+
+    assert result.decision == "PLAY"
+    assert result.package_bytes is not None
+    assert result.selected_count == 2
+    assert result.selected_cost == 60
+    assert "profitability is unproven" in result.reason
+
+
+def test_experimental_authorization_never_promotes_warmup_package(tmp_path: Path):
+    context = replace(
+        _manifest_context(tmp_path, phase="fallback"),
+        scheduler_phase="warmup",
+    )
+    authorize_experimental_manual_release(
+        context.plan,
+        acknowledged=True,
+        now=datetime(2029, 12, 31, 12, tzinfo=UTC),
+    )
+    payload = _valid_runner_manifest(context)
+    payload["config"]["final_lead_minutes"] = 45
+    manifest = _write_runner_manifest(context, payload)
+
+    result = parse_runner_manifest_phase_result(context, manifest)
+
+    assert result.decision == "NO BET"
+    assert result.package_bytes is not None
+
+
+def test_tampered_experimental_authorization_fails_closed(tmp_path: Path):
+    context = replace(_manifest_context(tmp_path), scheduler_phase="final")
+    path = authorize_experimental_manual_release(
+        context.plan,
+        acknowledged=True,
+        now=datetime(2029, 12, 31, 12, tzinfo=UTC),
+    )
+    authorization = json.loads(path.read_text())
+    authorization["requested_bank"] = 9960
+    path.write_text(json.dumps(authorization), encoding="utf-8")
+    manifest = _write_runner_manifest(context, _valid_runner_manifest(context))
+
+    with pytest.raises(
+        SchedulerIntegrityError,
+        match="does not match scheduler plan",
+    ):
+        parse_runner_manifest_phase_result(context, manifest)
 
 
 @pytest.mark.parametrize(

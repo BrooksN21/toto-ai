@@ -20,6 +20,7 @@ from toto_ai.runner.scheduler import (
     SchedulerIntegrityError,
     SchedulerPhaseResult,
     SchedulerTransientError,
+    authorize_experimental_manual_release,
     build_scheduler_plan,
     execute_scheduler_tick,
     export_operator_package,
@@ -483,6 +484,10 @@ def test_bet_ready_publication_creates_verified_operator_export(tmp_path):
     )
     assert operator_result["decision"] == "PLAY"
     assert operator_result["actionable"] is True
+    assert operator_result["schema_version"] == 3
+    assert operator_result["release_mode"] == "STANDARD"
+    assert operator_result["profitability_proven"] is False
+    assert operator_result["risk_acknowledged"] is False
     assert operator_result["run_id"] == published.run_id
     assert operator_result["expires_at"] == plan.publish_deadline.isoformat().replace(
         "+00:00", "Z"
@@ -502,6 +507,47 @@ def test_bet_ready_publication_creates_verified_operator_export(tmp_path):
     assert destination.read_text(encoding="utf-8") == (
         "30; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1\n"
     )
+
+
+def test_authorized_experimental_result_is_explicitly_bound_and_exportable(
+    tmp_path,
+):
+    plan = _plan(tmp_path)
+    _seed_atomic_drawing(plan)
+    authorization_path = authorize_experimental_manual_release(
+        plan,
+        acknowledged=True,
+        now=plan.final_at - timedelta(minutes=1),
+    )
+
+    published = _tick(
+        plan,
+        _playing_runner(plan, _atomic_payload(plan, event_id_base=45125)),
+        plan.final_at,
+    )
+
+    assert published is not None and published.outcome == "bet-ready"
+    operator_result = json.loads(
+        (plan.output_dir / "operator-result.json").read_text(encoding="utf-8")
+    )
+    authorization = json.loads(authorization_path.read_text(encoding="utf-8"))
+    assert operator_result["release_mode"] == "EXPERIMENTAL_MANUAL"
+    assert operator_result["release_authorization_path"] == str(authorization_path)
+    assert (
+        operator_result["release_authorization_sha256"]
+        == authorization["record_sha256"]
+    )
+    assert operator_result["risk_acknowledged"] is True
+    assert operator_result["profitability_proven"] is False
+    assert operator_result["automatic_wagering"] is False
+
+    destination = tmp_path / "exports" / "experimental-manual.txt"
+    assert export_operator_package(
+        plan,
+        destination=destination,
+        observed_at=plan.final_at + timedelta(minutes=1),
+    ) == destination
+    assert destination.is_file()
 
 
 def test_operator_export_cli_uses_only_verified_actionable_result(

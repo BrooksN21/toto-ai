@@ -21,7 +21,12 @@ from toto_ai.runner.preflight_retry_scheduler import (
     prepare_preflight_retry_artifacts,
     verify_preflight_retry_launch_agent,
 )
-from toto_ai.runner.scheduler import MORNING_WRAPPER_FILENAME
+from toto_ai.runner.scheduler import (
+    MORNING_WRAPPER_FILENAME,
+    SchedulerError,
+    experimental_manual_release_status,
+    load_scheduler_plan,
+)
 
 MOSCOW = ZoneInfo("Europe/Moscow")
 
@@ -87,6 +92,7 @@ def build_preflight_status(
             else "not_requested"
         )
         morning_state = _morning_activation_state(scheduler)
+        release_gate = _release_gate_status(record)
         retry_scheduler = None
         if retry_plan_path.is_file():
             artifacts = prepare_preflight_retry_artifacts(
@@ -95,6 +101,7 @@ def build_preflight_status(
             terminal_retry = (
                 preparation.get("status") == "ready"
                 and int(preparation.get("mapped_count", 0)) == 15
+                and not unresolved
             ) or observed_at >= deadline - timedelta(minutes=60)
             retry_scheduler = verify_preflight_retry_launch_agent(
                 artifacts,
@@ -136,6 +143,7 @@ def build_preflight_status(
             "package_generation_state": (
                 "enabled" if activation == "activated" else "disabled"
             ),
+            "release_gate": release_gate,
         }
     finally:
         engine.dispose()
@@ -236,6 +244,32 @@ def _morning_activation_state(scheduler_root: Path) -> str:
         return "not_generated"
     content = wrapper.read_text(encoding="utf-8")
     return "activation_enabled_candidate" if "--activate" in content else "passive"
+
+
+def _release_gate_status(record: dict[str, object] | None) -> dict[str, object]:
+    if record is None or record.get("activation_status") != "activated":
+        return {
+            "state": "scheduler_not_activated",
+            "profitability_proven": False,
+            "automatic_wagering": False,
+        }
+    plan_value = record.get("plan_path")
+    if not isinstance(plan_value, str) or not plan_value.strip():
+        return {
+            "state": "scheduler_plan_missing",
+            "profitability_proven": False,
+            "automatic_wagering": False,
+        }
+    try:
+        plan = load_scheduler_plan(plan_value)
+        return dict(experimental_manual_release_status(plan))
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        return {
+            "state": "release_authorization_invalid",
+            "reason": str(error),
+            "profitability_proven": False,
+            "automatic_wagering": False,
+        }
 
 
 def _parse_timestamp(value: str | None) -> datetime:

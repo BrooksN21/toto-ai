@@ -239,6 +239,21 @@ def run_preflight_retry(
     }
     _write_runtime_state(state_path, state)
     payload = _result_payload(result)
+    print(
+        json.dumps(
+            {
+                "preflight_retry": {
+                    "scheduled_at": scheduled_at,
+                    "returncode": code,
+                    "child_result": payload or None,
+                }
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ),
+        flush=True,
+    )
     terminal = code in {0, 3} or (
         payload.get("status") == "deferred"
         and payload.get("reason")

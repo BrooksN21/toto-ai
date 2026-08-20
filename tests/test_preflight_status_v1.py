@@ -7,6 +7,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
+from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai.cli import app
 from toto_ai.db.models import Drawing
 from toto_ai.db.session import get_session_factory, init_db
@@ -16,8 +17,13 @@ from toto_ai.runner.morning_dispatch import (
     MorningUnresolvedEvent,
     dispatch_morning,
 )
-from toto_ai.runner.preflight_status import build_preflight_status
-from toto_ai.runner.scheduler import prepare_morning_preanalysis_artifacts
+from toto_ai.runner.preflight_status import _release_gate_status, build_preflight_status
+from toto_ai.runner.scheduler import (
+    authorize_experimental_manual_release,
+    build_scheduler_plan,
+    prepare_morning_preanalysis_artifacts,
+    prepare_scheduler_artifacts,
+)
 
 UTC = timezone.utc
 DEADLINE = datetime(2026, 7, 30, 16, tzinfo=UTC)
@@ -68,6 +74,32 @@ def _unresolved() -> MorningPreparedDrawing:
                 away_team="Сандерленд",
                 resolution_status="source_missing_competition",
                 reason="source schedule has no candidate",
+            ),
+        ),
+    )
+
+
+def _ready_with_unresolved_timing() -> MorningPreparedDrawing:
+    return MorningPreparedDrawing(
+        drawing_id=11990,
+        drawing_number=4960,
+        deadline=DEADLINE,
+        drawing_fingerprint=FINGERPRINT,
+        detail_sha256="b" * 64,
+        preparation_status="ready",
+        mapped_count=15,
+        eligibility_status="unknown",
+        span_days=2,
+        external_coverage_count=14,
+        baseline_only_event_orders=(8,),
+        unresolved_events=(
+            MorningUnresolvedEvent(
+                event_order=8,
+                target_event_id=178961,
+                home_team="Эммен",
+                away_team="Алкмаар(м)",
+                resolution_status="timing_unknown",
+                reason="baseline-only event start time is unavailable",
             ),
         ),
     )
@@ -134,6 +166,7 @@ def test_preflight_status_reports_open_drawing_and_passive_gates(tmp_path):
     assert status["morning_activation_state"] == "passive"
     assert status["evening_activation_state"] == "not_requested"
     assert status["package_generation_state"] == "disabled"
+    assert status["release_gate"]["state"] == "scheduler_not_activated"
 
 
 def test_preflight_status_cli_is_concise_and_read_only(tmp_path):
@@ -165,3 +198,76 @@ def test_preflight_status_cli_is_concise_and_read_only(tmp_path):
     assert payload["morning_activation_state"] == "not_generated"
     assert payload["evening_activation_state"] == "not_requested"
     assert db.read_bytes() == before
+
+
+def test_ready_mapping_with_unresolved_timing_keeps_retry_nonterminal(
+    tmp_path, monkeypatch
+):
+    config = _config(tmp_path)
+    observed = datetime(2026, 7, 30, 7, 35, tzinfo=UTC)
+    db = _db(tmp_path / "data" / "toto.db")
+    dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: _ready_with_unresolved_timing(),
+        python_command=sys.executable,
+    )
+    terminal_values: list[bool] = []
+
+    def fake_verify(*_args, terminal: bool, **_kwargs):
+        terminal_values.append(terminal)
+        return {"active": not terminal, "next_run": "2026-07-30T08:00:00Z"}
+
+    monkeypatch.setattr(
+        "toto_ai.runner.preflight_status.verify_preflight_retry_launch_agent",
+        fake_verify,
+    )
+
+    status = build_preflight_status(
+        db=db,
+        community="baltbet-main",
+        state_root=config.state_root,
+        scheduler_root=config.scheduler_root,
+        now=observed,
+    )
+
+    assert status["preparation_status"] == "ready"
+    assert status["mapped_count"] == 15
+    assert status["unresolved_count"] == 1
+    assert status["retry_scheduler"]["active"] is True
+    assert terminal_values == [False]
+
+
+def test_release_gate_status_distinguishes_paper_only_and_authorized_plan(tmp_path):
+    write_empty_schedule_evidence_ledger(tmp_path)
+    plan = build_scheduler_plan(
+        drawing=5001,
+        drawing_id=12001,
+        ended_at=datetime(2030, 1, 2, 12, tzinfo=UTC),
+        bank=4980,
+        stake=30,
+        output_dir=tmp_path / "scheduler",
+        project_root=tmp_path,
+        db=tmp_path / "toto.sqlite",
+        aliases=tmp_path / "aliases.json",
+    )
+    artifacts = prepare_scheduler_artifacts(plan)
+    record = {
+        "activation_status": "activated",
+        "plan_path": str(artifacts.plan_path),
+    }
+
+    paper_only = _release_gate_status(record)
+    assert paper_only["state"] == "paper_only_not_authorized"
+    assert paper_only["profitability_proven"] is False
+
+    authorize_experimental_manual_release(
+        plan,
+        acknowledged=True,
+        now=datetime(2029, 12, 31, 12, tzinfo=UTC),
+    )
+    authorized = _release_gate_status(record)
+    assert authorized["state"] == "experimental_manual_authorized"
+    assert authorized["profitability_proven"] is False
+    assert authorized["automatic_wagering"] is False
