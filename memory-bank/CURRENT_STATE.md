@@ -4710,3 +4710,16 @@ CSV is retained only for audit. Project instructions now forbid manually
 constructing or displaying upload packages from research/expired artifacts.
 Scheduler publication/LKG verification passed 189 tests. Full release
 verification passed `1786 passed, 13 deselected in 111.71s`; Ruff passed.
+
+## Drawing 4982 reviewed-schedule enrichment (2026-08-20)
+
+Five unresolved kickoff times (event orders 4, 8, 11, 12 and 14) were frozen
+in `data/reviewed-schedule/4982/` with exact official and independent public
+source snapshots, checksums and a strict drawing/fingerprint-bound catalog.
+
+Preparation now permits a newly supplied reviewed catalog to monotonically
+upgrade an already-ready `totobrief-baseline` pin set. The upgrade is scoped
+only to baseline-only event orders: previously validated provider or reviewed
+pins are retained and are not re-admitted against unrelated schedule-date
+diagnostics. Regression verification passed 23 mixed-provider/partial-
+enrichment tests and 40 morning-dispatch tests; Ruff passed.
