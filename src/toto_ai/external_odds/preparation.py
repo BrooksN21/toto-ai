@@ -244,6 +244,7 @@ def prepare_drawing(
         }:
             raise
         existing = ()
+    provider_upgrade_orders: tuple[int, ...] = ()
     reviewed_catalog_upgrade_orders: tuple[int, ...] = ()
     if existing:
         failed_orders = _failed_date_pin_orders(target, existing, schedule_diagnostics)
@@ -267,19 +268,30 @@ def prepare_drawing(
             reviewed_catalog=reviewed_catalog,
             schedule_evidence_ledger=evidence_ledger,
         )
+        existing_by_order = {pin.event_order: pin for pin in existing}
+        existing_preview = _resolve_preparation_candidates(
+            target,
+            candidates,
+            session_factory=session_factory,
+            provider=provider,
+            event_contexts=event_contexts,
+        )
+        provider_upgrade_orders = tuple(
+            event.event_order
+            for event, resolution in zip(
+                target.events,
+                existing_preview.resolutions,
+                strict=True,
+            )
+            if existing_by_order[event.event_order].effective_source_provider
+            == "totobrief-baseline"
+            and resolution.status == "matched"
+        )
         if reviewed_catalog is not None:
-            existing_by_order = {pin.event_order: pin for pin in existing}
             baseline_only_orders = frozenset(
                 order
                 for order, pin in existing_by_order.items()
                 if pin.effective_source_provider == "totobrief-baseline"
-            )
-            existing_preview = _resolve_preparation_candidates(
-                target,
-                candidates,
-                session_factory=session_factory,
-                provider=provider,
-                event_contexts=event_contexts,
             )
             admitted_reviewed = _admit_reviewed_fallbacks(
                 target,
@@ -304,7 +316,9 @@ def prepare_drawing(
             evaluated_at=reference,
         )
         if not (
-            reviewed_catalog_upgrade_orders or schedule_evidence_upgrade_orders
+            provider_upgrade_orders
+            or reviewed_catalog_upgrade_orders
+            or schedule_evidence_upgrade_orders
         ):
             result = _result_from_existing(target, fingerprint, provider, existing)
             refresh_ready_drawing_preparation_evidence(
@@ -316,6 +330,7 @@ def prepare_drawing(
             )
             return result
     else:
+        provider_upgrade_orders = ()
         schedule_evidence_upgrade_orders = ()
 
     preview = _resolve_preparation_candidates(
@@ -775,23 +790,29 @@ def prepare_drawing(
         pins=(),
         schedule_diagnostics=schedule_diagnostics,
     )
+    schedule_upgrade_orders = tuple(
+        sorted(
+            set(reviewed_catalog_upgrade_orders)
+            | set(schedule_evidence_upgrade_orders)
+        )
+    )
+    monotonic_upgrade_orders = tuple(
+        sorted(set(provider_upgrade_orders) | set(schedule_upgrade_orders))
+    )
     if status == "ready" and (
         reviewed_by_order
         or evidence_by_order
         or any(item.status == "baseline_only" for item in events)
+        or (existing and monotonic_upgrade_orders)
     ):
-        monotonic_upgrade_orders = tuple(
-            sorted(
-                set(reviewed_catalog_upgrade_orders)
-                | set(schedule_evidence_upgrade_orders)
-            )
-        )
         if existing and monotonic_upgrade_orders:
             canonical_pin_specs = list(
-                _merge_monotonic_schedule_upgrade_specs(
+                _merge_monotonic_baseline_upgrade_specs(
                     existing,
                     tuple(canonical_pin_specs),
-                    upgrade_orders=monotonic_upgrade_orders,
+                    provider=provider,
+                    provider_upgrade_orders=provider_upgrade_orders,
+                    schedule_upgrade_orders=schedule_upgrade_orders,
                 )
             )
         selected_reviewed_hashes = {
@@ -821,8 +842,9 @@ def prepare_drawing(
             pin_specs=tuple(canonical_pin_specs),
             reviewed_catalog_hash=selected_reviewed_catalog_hash,
             allow_baseline_schedule_enrichment=bool(
-                monotonic_upgrade_orders
+                schedule_upgrade_orders
             ),
+            allow_baseline_provider_enrichment=bool(provider_upgrade_orders),
         )
     else:
         pins = publish_drawing_preparation(
@@ -877,26 +899,32 @@ def _baseline_schedule_evidence_upgrade_orders(
     return tuple(upgrades)
 
 
-def _merge_monotonic_schedule_upgrade_specs(
+def _merge_monotonic_baseline_upgrade_specs(
     existing: tuple[DrawingEventPinRecord, ...],
     proposed: tuple[Mapping[str, Any], ...],
     *,
-    upgrade_orders: tuple[int, ...],
+    provider: str,
+    provider_upgrade_orders: tuple[int, ...],
+    schedule_upgrade_orders: tuple[int, ...],
 ) -> tuple[dict[str, Any], ...]:
-    """Preserve immutable pins while enriching baseline-only schedule rows."""
+    """Preserve immutable pins while enriching proven baseline-only rows."""
     existing_by_order = {pin.event_order: pin for pin in existing}
     proposed_by_order = {
         int(spec["event_order"]): dict(spec) for spec in proposed
     }
+    provider_upgrade_set = set(provider_upgrade_orders)
+    schedule_upgrade_set = set(schedule_upgrade_orders)
+    if provider_upgrade_set & schedule_upgrade_set:
+        raise ValueError("baseline upgrade order has conflicting sources")
+    upgrade_set = provider_upgrade_set | schedule_upgrade_set
     if (
         tuple(sorted(existing_by_order)) != tuple(range(15))
         or tuple(sorted(proposed_by_order)) != tuple(range(15))
-        or not upgrade_orders
-        or any(order not in existing_by_order for order in upgrade_orders)
+        or not upgrade_set
+        or any(order not in existing_by_order for order in upgrade_set)
     ):
-        raise ValueError("invalid monotonic schedule upgrade inputs")
+        raise ValueError("invalid monotonic baseline upgrade inputs")
 
-    upgrade_set = set(upgrade_orders)
     merged: list[dict[str, Any]] = []
     for order in range(15):
         old = existing_by_order[order]
@@ -906,9 +934,20 @@ def _merge_monotonic_schedule_upgrade_specs(
         if order not in upgrade_set:
             merged.append(_canonical_spec_from_existing_pin(old))
             continue
-        if (
-            old.effective_source_provider != "totobrief-baseline"
-            or new.get("source_provider")
+        if old.effective_source_provider != "totobrief-baseline":
+            raise ValueError("baseline upgrade is not monotonic")
+        if order in provider_upgrade_set:
+            if (
+                new.get("source_provider") != provider
+                or new.get("event_order") != old.event_order
+                or new.get("schedule_only") is not False
+                or not new.get("source_fixture_id")
+                or not new.get("source_home_team_id")
+                or not new.get("source_away_team_id")
+            ):
+                raise ValueError("provider upgrade is not monotonic")
+        elif (
+            new.get("source_provider")
             not in {"reviewed-schedule", "schedule-evidence"}
             or new.get("event_order") != old.event_order
             or new.get("schedule_only") is not True
@@ -919,10 +958,11 @@ def _merge_monotonic_schedule_upgrade_specs(
         if old_start not in {None, "baseline-only"} and (
             _parse_datetime(old_start) != new_start
         ):
-            raise ValueError("schedule upgrade conflicts with existing kickoff")
+            raise ValueError("baseline upgrade conflicts with existing kickoff")
         new["target_event_id"] = old.target_event_id
-        new["canonical_home_team_id"] = old.canonical_home_team_id
-        new["canonical_away_team_id"] = old.canonical_away_team_id
+        if order in schedule_upgrade_set:
+            new["canonical_home_team_id"] = old.canonical_home_team_id
+            new["canonical_away_team_id"] = old.canonical_away_team_id
         merged.append(new)
     return tuple(merged)
 

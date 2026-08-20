@@ -1645,3 +1645,20 @@ ambiguous reversed evidence remains unresolved.
   diagnostics.
 - UEFA v5 is the first authoritative adapter. This does not authorize generic
   Sofascore-only promotion or imply coverage for non-UEFA competitions.
+
+## 2026-08-20 — Immediate dispatch and baseline provider upgrades are generic
+
+- Direct `morning-dispatch` execution and generated scheduler wrappers use the
+  same protected `--env-file` loader. An API key need not be exported into the
+  invoking shell, and its value must never be printed or persisted elsewhere.
+- A ready baseline-only pin may be upgraded to an exact API-Sports identity
+  after reviewed reusable aliases make the fixture unambiguous. The transition
+  requires fixture ID, both provider team IDs, kickoff and provider
+  orientation; all unrelated pins retain their exact previous hashes.
+- Drawing-specific official evidence and alias rows are data, not control-flow
+  exceptions. Production code must not contain drawing numbers or team-name
+  branches for this recovery path.
+- The plan-bound experimental manual authorization is a release-boundary
+  mechanism, not a profitability claim: it permits only a fresh final,
+  safety-approved package to become `PLAY`, never a warmup package or automatic
+  wager.

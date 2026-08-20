@@ -126,6 +126,235 @@
         "Santa Fe",
         "Индепендьенте СФ"
       ]
+    },
+    {
+      "canonical_name": "Vicenza Virtus",
+      "country": "",
+      "context": "",
+      "provider_team_id": "1584",
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-20T15:53:01Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/reviewed-schedule/4982/catalog.json",
+        "provider": "api-sports",
+        "provider_team_id": "1584",
+        "sources": [
+          "https://www.legab.it/seriebkt/calendario/2026-2027/stagione-regolare/catanzaro",
+          "https://www.sofascore.com/api/v1/search/all?q=Vicenza%20Catanzaro"
+        ]
+      },
+      "aliases": [
+        "Vicenza Virtus",
+        "L.R. Vicenza",
+        "Виченца"
+      ]
+    },
+    {
+      "canonical_name": "Catanzaro",
+      "country": "",
+      "context": "",
+      "provider_team_id": "1687",
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-20T15:53:01Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/reviewed-schedule/4982/catalog.json",
+        "provider": "api-sports",
+        "provider_team_id": "1687",
+        "sources": [
+          "https://www.legab.it/seriebkt/calendario/2026-2027/stagione-regolare/catanzaro",
+          "https://www.sofascore.com/api/v1/search/all?q=Vicenza%20Catanzaro"
+        ]
+      },
+      "aliases": [
+        "Catanzaro",
+        "Катанцаро"
+      ]
+    },
+    {
+      "canonical_name": "Emmen",
+      "country": "",
+      "context": "",
+      "provider_team_id": "208",
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-20T15:53:01Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/reviewed-schedule/4982/catalog.json",
+        "provider": "api-sports",
+        "provider_team_id": "208",
+        "sources": [
+          "https://fcemmen.nl/wedstrijdschema/",
+          "https://www.sofascore.com/api/v1/search/all?q=FC%20Emmen%20Jong%20AZ"
+        ]
+      },
+      "aliases": [
+        "Emmen",
+        "FC Emmen",
+        "Эммен"
+      ]
+    },
+    {
+      "canonical_name": "Jong AZ",
+      "country": "",
+      "context": "",
+      "provider_team_id": "418",
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-20T15:53:01Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/reviewed-schedule/4982/catalog.json",
+        "provider": "api-sports",
+        "provider_team_id": "418",
+        "sources": [
+          "https://fcemmen.nl/wedstrijdschema/",
+          "https://www.sofascore.com/api/v1/search/all?q=FC%20Emmen%20Jong%20AZ"
+        ]
+      },
+      "aliases": [
+        "Jong AZ",
+        "AZ Alkmaar U21",
+        "Алкмаар(м)"
+      ]
+    },
+    {
+      "canonical_name": "Pau FC",
+      "country": "",
+      "context": "",
+      "provider_team_id": "1297",
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-20T15:53:01Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/reviewed-schedule/4982/catalog.json",
+        "provider": "api-sports",
+        "provider_team_id": "1297",
+        "sources": [
+          "https://www.paufc.fr/",
+          "https://www.sofascore.com/football/match/pau-fc-nancy/AIsKI#id:16386253"
+        ]
+      },
+      "aliases": [
+        "PAU",
+        "Pau FC",
+        "По"
+      ]
+    },
+    {
+      "canonical_name": "Nancy",
+      "country": "",
+      "context": "",
+      "provider_team_id": "102",
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-20T15:53:01Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/reviewed-schedule/4982/catalog.json",
+        "provider": "api-sports",
+        "provider_team_id": "102",
+        "sources": [
+          "https://www.paufc.fr/",
+          "https://www.sofascore.com/football/match/pau-fc-nancy/AIsKI#id:16386253"
+        ]
+      },
+      "aliases": [
+        "Nancy",
+        "AS Nancy Lorraine",
+        "Нанси"
+      ]
+    },
+    {
+      "canonical_name": "Clermont Foot",
+      "country": "",
+      "context": "",
+      "provider_team_id": "99",
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-20T15:53:01Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/reviewed-schedule/4982/catalog.json",
+        "provider": "api-sports",
+        "provider_team_id": "99",
+        "sources": [
+          "https://billetterie.clermontfoot.com/fr/matchs/calendrier",
+          "https://www.sofascore.com/football/match/dijon-clermont-foot/FIsLI#id:16386248"
+        ]
+      },
+      "aliases": [
+        "Clermont Foot",
+        "Clermont Foot 63",
+        "Клермон"
+      ]
+    },
+    {
+      "canonical_name": "Dijon",
+      "country": "",
+      "context": "",
+      "provider_team_id": "89",
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-20T15:53:01Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/reviewed-schedule/4982/catalog.json",
+        "provider": "api-sports",
+        "provider_team_id": "89",
+        "sources": [
+          "https://billetterie.clermontfoot.com/fr/matchs/calendrier",
+          "https://www.sofascore.com/football/match/dijon-clermont-foot/FIsLI#id:16386248"
+        ]
+      },
+      "aliases": [
+        "Dijon",
+        "Dijon FCO",
+        "Дижон"
+      ]
+    },
+    {
+      "canonical_name": "Sochaux",
+      "country": "",
+      "context": "",
+      "provider_team_id": "115",
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-20T15:53:01Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/reviewed-schedule/4982/catalog.json",
+        "provider": "api-sports",
+        "provider_team_id": "115",
+        "sources": [
+          "https://www.fcsochaux.fr/calendrier/fc-sochaux-montbeliard?wpmobileexternal=true",
+          "https://www.sofascore.com/football/match/sochaux-guingamp/eIshI#id:16386255"
+        ]
+      },
+      "aliases": [
+        "Sochaux",
+        "FC Sochaux-Montbéliard",
+        "Сошо"
+      ]
+    },
+    {
+      "canonical_name": "Guingamp",
+      "country": "",
+      "context": "",
+      "provider_team_id": "90",
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-20T15:53:01Z",
+      "provenance": {
+        "source": "reviewed-team-fact",
+        "source_path": "data/reviewed-schedule/4982/catalog.json",
+        "provider": "api-sports",
+        "provider_team_id": "90",
+        "sources": [
+          "https://www.fcsochaux.fr/calendrier/fc-sochaux-montbeliard?wpmobileexternal=true",
+          "https://www.sofascore.com/football/match/sochaux-guingamp/eIshI#id:16386255"
+        ]
+      },
+      "aliases": [
+        "Guingamp",
+        "En Avant Guingamp",
+        "Генгам"
+      ]
     }
   ]
 }

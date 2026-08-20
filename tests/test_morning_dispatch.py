@@ -1058,6 +1058,61 @@ def test_prepared_morning_cli_result_exits_zero(monkeypatch, tmp_path):
     assert json.loads(result.output)["status"] == "prepared"
 
 
+def test_morning_dispatch_forwards_env_file_to_immediate_preparation(
+    monkeypatch,
+    tmp_path,
+):
+    env_file = _env(tmp_path / ".env")
+    captured: dict[str, Path] = {}
+
+    def prepare_current_for_morning(*, observed_at, env_file, **_kwargs):
+        captured["env_file"] = env_file
+        return _prepared(
+            number=4982,
+            drawing_id=12054,
+            deadline=observed_at + timedelta(hours=10),
+        )
+
+    def dispatch(_config, *, observed_at, prepare_current, **_kwargs):
+        prepare_current(observed_at)
+        return MorningDispatchResult(
+            status="prepared",
+            reason="drawing_not_playable",
+            record_path=tmp_path / "prepared.json",
+            plan_id=None,
+            plan_path=None,
+            launch_agent_path=None,
+            activation_status="not_requested",
+        )
+
+    monkeypatch.setattr(
+        cli,
+        "_prepare_current_for_morning",
+        prepare_current_for_morning,
+    )
+    monkeypatch.setattr(cli, "dispatch_morning", dispatch)
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert captured == {"env_file": env_file}
+
+
 def test_deferred_activated_cli_installs_identity_bound_retry_job(
     monkeypatch,
     tmp_path,
