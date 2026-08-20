@@ -1,5 +1,47 @@
 # Current State
 
+## Git integration boundary after drawing 4981 (2026-08-20)
+
+The former remote branch `codex/operator-export-timing-escalation` was merged by
+GitHub PR #10 at commit `1498ba6` and deleted remotely, but local development
+continued for 22 commits. The local branch was rebased without conflicts onto
+fresh `origin/main` (`3241d85`), so it now contains only those 22 subsequent
+commits over main. Full verification exposed one omitted repository fixture:
+the committed drawing-4964 scheduler regression referenced the reviewed
+schedule catalog, but `data/reviewed-schedule/4964/` had remained untracked.
+The exact catalog and its source evidence are now tracked; the catalog SHA-256
+is `68e98c8f006ddca04e193a1d06d3f23def57e498f4c02c51d8a9e3c18062895a`.
+The owner explicitly authorized publishing and merging the reconciled branch.
+
+The first drawing-4981 evening LaunchAgent trigger ran at 16:00 MSK and
+completed `tls_preflight` successfully at 16:02:47: exit code 0, empty stderr,
+and hash-chained scheduler state marked the phase `complete`. The wrapper still
+printed `Outcome: no-op / no due scheduler phase` because the CLI reports no
+terminal package result after a successful non-terminal preflight. Treat the
+state transition as authoritative for this run and fix this misleading
+observability message only after the live T-10 cycle.
+The second trigger ran at 16:30 MSK and completed `api_preflight` at 16:32:16
+with exit code 0, empty stderr and no failure details. No `final-input.json` is
+expected until the T-45 warmup; the next scheduled phase is
+`freshness_preflight` at 17:00 MSK.
+
+Drawing 4981 then completed its evening paper cycle. `freshness_preflight`
+passed, T-45 warmup failed retryably on TotoBrief HTTP 429 plus a stale
+60-second cache, and the independent T-30 refresh recovered: it froze a 15/15
+input and produced a 166-coupon/4,980-RUB last-known-good package. Final started
+at 17:40:10 and completed at 17:45:47 with exit code 0. The terminal operator
+result is `NO BET / FINAL_FRESH`, reason
+`quality_v2_real_money_release_gate_closed`; automatic wagering remains false.
+The final package was fully calculated but is not actionable.
+
+Before T-10, the exact final input was also used for a hash-bound prospective
+equal-input comparison at
+`reports/research/prospective-strategy-comparison-4981-20260820T144010Z/`.
+Modeled P(13+) values were current EV/crowd 0.00100249, BK-only 0.02228851,
+Cover-13 0.00616687 and Cover-14 0.01701016. Costs were respectively 4,980,
+4,980, 660 and 2,700 RUB. This is one paper-only prospective observation, not
+a winner or profitability verdict; settlement must wait for complete results.
+
 ## Legacy-100 diagnostic and official payout audit (2026-08-20)
 
 The unchanged resumable legacy benchmark completed 100 drawings at bank/stake

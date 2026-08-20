@@ -1,0 +1,7 @@
+Reviewed source snapshot for drawing 4964, fixture #11.
+Captured: 2026-08-03T08:40:00Z.
+Source: https://lietuvosfutbolas.lt/en/matches/fk-panevezys-fc-dziugas-24325645/
+FK Panevezys (home) vs FC Dziugas (away).
+TOPLYGA 2026 / Lithuanian A Lyga, round 25.
+Monday 3 August 2026, 19:30 Europe/Vilnius (16:30 UTC), Aukstaitija Stadium, Panevezys.
+Status: scheduled; the federation match record retains the fixture and no cancellation or postponement notice is present in the reviewed source.

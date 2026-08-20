@@ -1,0 +1,7 @@
+Reviewed source snapshot for drawing 4964, fixture #15.
+Captured: 2026-08-03T08:40:00Z.
+Source: https://oskfotboll.se/ga-pa-match/spelschema-herr/2026
+Orebro SK Fotboll (home; Orebro/OSK/Orebro SK canonical aliases) vs IFK Varnamo (away).
+Superettan 2026, round 17.
+Monday 3 August 2026, 19:05 Europe/Stockholm (17:05 UTC), Behrn Arena, Orebro.
+Status: scheduled; the current club schedule retains the fixture and no cancellation or postponement notice is present in the reviewed source.
