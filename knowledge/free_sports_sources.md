@@ -1,6 +1,6 @@
 # Free sports-source candidates
 
-Updated: 2026-08-14
+Updated: 2026-08-20
 
 ## Policy
 
@@ -18,9 +18,19 @@ evening package. No source may influence production probabilities before the
   rows, ten partial rows and five missing rows.
 - Sofascore: independent schedule discovery only; it cannot auto-promote an
   event without official corroboration.
+- UEFA public v5 match feeds: authoritative schedule/identity evidence for
+  UEFA competitions. The first adapter requires exact localized target aliases
+  and independently re-fetched Sofascore agreement before append-only ledger
+  promotion. A frozen drawing-4981 replay resolved 2/2 queued UEFA events; this
+  is schedule evidence, not a sports probability model.
 
 The durable measured report is
 `reports/research/free-source-audit-20260814/summary.md`.
+
+Drawing 4981 added a second prospective point: API-Sports sports history had
+0/15 complete venue rows (10 partial, 5 missing), while The Odds API matched
+3/15 exact events. Both artifacts are frozen pre-deadline and `NOT_ACTIVATED`;
+all sports probabilities fell back to BK.
 
 ## Candidates from official documentation
 

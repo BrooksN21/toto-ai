@@ -125,6 +125,9 @@ from toto_ai.external_odds.reviewed_schedule import (
     revalidate_reviewed_catalog,
     reviewed_catalog_input_paths,
 )
+from toto_ai.external_odds.schedule_consensus import (
+    promote_uefa_sofascore_consensus,
+)
 from toto_ai.external_odds.schedule_evidence import (
     DEFAULT_SCHEDULE_EVIDENCE_PATH,
     ScheduleEvidenceIntegrityError,
@@ -3594,6 +3597,7 @@ def morning_dispatch_command(
                 retry_artifacts
             )
         if activate and result.review_queue_path is not None:
+            independent_status: dict[str, object]
             try:
                 collected = collect_schedule_source_candidates(
                     result.review_queue_path,
@@ -3601,18 +3605,47 @@ def morning_dispatch_command(
                     schedule_evidence_ledger=resolved_schedule_evidence_ledger,
                 )
             except Exception as error:
-                source_collector_status = {
+                independent_status = {
                     "status": "SOURCE_COLLECTOR_FAILED",
                     "error": f"{type(error).__name__}: {str(error)[:300]}",
                 }
             else:
-                source_collector_status = {
+                independent_status = {
                     "status": collected.status,
                     "candidate_count": collected.candidate_count,
                     "unresolved_count": collected.unresolved_count,
                     "report_path": str(collected.report_path),
                     "ledger_mutated": False,
                 }
+            consensus_status: dict[str, object]
+            try:
+                consensus = promote_uefa_sofascore_consensus(
+                    result.review_queue_path,
+                    output_dir=(
+                        result.review_queue_path.parent / "source-consensus"
+                    ),
+                    schedule_evidence_ledger=resolved_schedule_evidence_ledger,
+                )
+            except Exception as error:
+                consensus_status = {
+                    "status": "CONSENSUS_COLLECTOR_FAILED",
+                    "error": f"{type(error).__name__}: {str(error)[:300]}",
+                    "ledger_mutated": False,
+                }
+            else:
+                consensus_status = {
+                    "status": consensus.status,
+                    "promoted_count": consensus.promoted_count,
+                    "existing_count": consensus.existing_count,
+                    "unresolved_count": consensus.unresolved_count,
+                    "report_path": str(consensus.report_path),
+                    "ledger_semantic_hash": consensus.ledger_semantic_hash,
+                    "ledger_mutated": consensus.promoted_count > 0,
+                }
+            source_collector_status = {
+                "independent": independent_status,
+                "consensus": consensus_status,
+            }
     except MorningIdentityDriftError as error:
         typer.echo(
             json.dumps(

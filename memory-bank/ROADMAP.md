@@ -18,12 +18,20 @@ The authoritative implementation order is tracked in
 Operational evidence collection may run in parallel, but package activation
 cannot skip a gate.
 
-Current progress: step 2 is complete. The shared frozen-input contract,
+Current progress: the real drawing-4975 paper lifecycle is closed through
+settlement and reviewed postmortem. The shared frozen-input contract,
 EV/BK/Cover-13/Cover-14 adapters and `compare-package-strategies` report bundle
-passed the full test suite and reproduced the exact drawing-4975 EV paper
-package. Step 3 is active: the 1/3/all-13 strict chronological benchmark is
-complete with zero timeouts. Legacy 100/500/1000 diagnostics remain; modeled
-probability or the 13-row strict sample is not a strategy verdict.
+reproduced the exact drawing-4975 EV paper package. Five additional strict
+drawings 4976-4980 extend the immutable sample to 18 unique drawings. BK-only
+and Cover-14 average 8.889 best hits versus 6.889 for current EV/crowd, but the
+sample is still below the 30-drawing interpretation floor and no strategy or
+profitability verdict is allowed. The resumable legacy-100 diagnostic is in
+progress; 500/1,000 remain pending. Drawing 4981's two missing UEFA kickoffs
+were resolved from frozen official UEFA plus independent Sofascore evidence;
+the passive 12:00 retry completed automatically and activated evening paper
+plan `5caf88df9bdfe566` with eight triggers. The reusable automatic UEFA
+official-adapter/promotion path remains phase-4 work; this reviewed evidence
+does not by itself complete schedule automation.
 
 Measured chronology constraint: only 13 drawings currently satisfy the strict
 pre-deadline historical-inventory contract, while 1,672 satisfy the weaker
@@ -40,6 +48,8 @@ legacy output is not release evidence. See the active plan's
 - [x] Add the explicit BK-top single-coupon control and deterministic paired
   bootstrap intervals; rerun all 13 strict drawings with interpretation
   disabled for the small sample.
+- [x] Synchronize and analyze finished drawings 4975-4980; preserve 4975 as a
+  real settled package and 4976-4980 as retrospective strict strategy rows.
 - [ ] Complete legacy 100/500/1,000 diagnostics without using them in release
   metrics.
 
@@ -815,6 +825,11 @@ closed.
 - [ ] Add authoritative competition/team source adapters and reviewed
   promotion so official-plus-independent observations can be completed without
   manual discovery while preserving the existing evidence gate.
+  - [x] UEFA v5 plus independent Sofascore exact-consensus adapter, immutable
+    snapshots/review evidence, idempotent ledger promotion and automatic
+    deferred-morning integration.
+  - [ ] Add equivalent authoritative adapters for non-UEFA competitions only
+    where a stable official source and exact identity contract are available.
 - [x] Make repeated preparation preserve already validated schedule-evidence
   pins when API-Sports cannot serve their kickoff UTC date; verify the live
   4973 READY/PLAYABLE re-run and install its schema-v6 evening scheduler.

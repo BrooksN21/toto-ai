@@ -1,5 +1,78 @@
 # Current State
 
+## Resume audit and drawings 4975-4980 (2026-08-20)
+
+The pause audit found drawings 4975-4980 finished and drawing 4981 active.
+Drawing 4980 was missing terminal rows locally; an explicit public TotoBrief
+result sync created the complete hash-bound snapshot with actual
+`1111XX112X2XX1X`. All six finished drawings now have 15/15 outcomes and a
+genuine pre-deadline probability snapshot. The `backtest_probability` health
+contract passes 6/6.
+
+Drawing 4975 completed its real paper lifecycle: result sync, immutable
+settlement, review request and reviewed postmortem are complete. The frozen
+166-coupon / 4,980 package reached only 8/15. It exposed every actual outcome,
+but eight actual signs had less than 10% coupon exposure and average actual
+outcome exposure was 35.6%. Its old result snapshot has no
+`raw_snapshot_sha256`, so strict inventory/settlement health remains 5/6 and
+the strict strategy benchmark correctly excludes 4975. This is evidence debt,
+not a missing result.
+
+The five newly eligible strict counterfactual drawings 4976-4980 produced
+average best hits BK-only 8.6, EV/crowd 6.6, Cover-13 7.4 and Cover-14 8.4;
+all recorded zero 13+. Combining these five with the previous 13 immutable
+drawings gives 18 unique strict rows: BK-only 8.889, EV/crowd 6.889,
+Cover-13 8.167, Cover-14 8.889, with one Cover-14 13+ and no 14+/15. The
+sample remains below the predeclared 30-drawing interpretation floor and does
+not establish a winner or profitability. Evidence:
+`reports/research/new-drawings-4975-4980-20260820/` and
+`reports/research/strict-strategy-benchmark-20260820-new6/`.
+
+The resumable legacy 100-drawing diagnostic is running with checkpoint schema
+v3 and unchanged bank/stake 4,980/30. It remains
+`LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`; 500/1,000 follow only after the
+100-row result is inspected.
+
+Active drawing 4981 is now READY and playable 15/15. Public official UEFA v5
+match JSON and independent Sofascore event JSON agreed exactly on identity,
+orientation and kickoff for user events 7 (Hearts - SK Rapid Wien,
+18:45 UTC) and 9 (Hajduk Split - Rakow, 19:00 UTC). Their four pre-deadline
+snapshots, SHA-256 values and two review documents were frozen under
+`data/schedule-evidence/`; the reviewed ledger resolves both rows at high
+confidence. The already installed passive retry ran automatically at 12:00
+MSK with return code 0, changed coverage from 13/15 to 15/15 and activated
+evening plan `5caf88df9bdfe566` for bank/stake 4,980/30. Launchd confirms the
+production-scheduler paper job is loaded with eight triggers from 16:00 to
+17:50 MSK. This is operational readiness only: quality-v2 remains paper-only,
+no wager is authorized, and no package exists before a scheduler trigger.
+
+The first reusable authoritative schedule adapter is now implemented locally.
+For a deferred review queue it pages the public UEFA v5 date feed, requires an
+exact TotoBrief-to-UEFA localized home/away alias match, re-fetches the official
+match by ID, resolves Sofascore through the official English names, and promotes
+only an identical orientation/kickoff consensus captured before kickoff. It
+freezes both source snapshots plus a hash-bound deterministic review document;
+ambiguity, late evidence, source/status drift and kickoff disagreement remain
+unresolved. `morning-dispatch --activate` now runs this consensus path
+independently of the existing non-promoting Sofascore discovery collector, so a
+source failure on either side cannot suppress the other's diagnostics. A
+network-free replay against the two frozen 4981 pairs promoted 2/2 into an
+isolated empty ledger. A separate live public-source canary against the current
+UEFA and Sofascore responses also promoted 2/2 into an isolated ledger without
+touching production evidence. Verification: 73 focused schedule/morning tests
+and the full default suite (`1904 passed, 13 deselected`) pass; Ruff and
+`git diff --check` pass. Broader non-UEFA authoritative adapters remain
+pending.
+
+Pre-deadline shadow evidence was also frozen for drawing 4981. API-Sports
+sports-stat collection made 12 requests and returned 0/15 complete venue rows,
+10 partial and 5 missing; the resulting probability artifact is
+`NOT_ACTIVATED / INSUFFICIENT_EVIDENCE`, uses BK fallback for all 15 events and
+cannot change the package. The Odds API control checkpoint spent two credits
+(492 remaining) and matched 3/15 events exactly; 12/15 remained fallback. This
+confirms that neither current free feed is broad enough to replace BK for this
+drawing, while preserving prospective evidence for later settled evaluation.
+
 ## BK-top control and paired benchmark intervals (2026-08-14)
 
 Strict and legacy strategy reports now include an explicit deterministic

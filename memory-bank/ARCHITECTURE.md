@@ -116,12 +116,17 @@ LaunchAgent after terminal completion/blocking/exhaustion.
 
 ## Automatic public schedule-source discovery
 
-Deferred morning preparation invokes a public-source collector against the
-immutable review queue. It stores hash-bound Sofascore search responses and
-machine-readable independent candidate/conflict/missing records. Discovery is
-automatic, but ledger promotion is not: independent evidence cannot satisfy
-the official-plus-independent policy on its own. The collector never mutates
-the bound production ledger.
+Deferred morning preparation invokes two independent public-source paths
+against the immutable review queue. The generic collector stores hash-bound
+Sofascore search responses and machine-readable
+candidate/conflict/missing records but never mutates the ledger. The UEFA
+consensus adapter pages the official UEFA date feed, requires exact localized
+target aliases and home/away orientation, re-fetches the selected official
+match by ID, then re-fetches one independently matched Sofascore event. Only
+identical pre-kickoff status/orientation/kickoff evidence is promoted with two
+frozen snapshots and a hash-bound deterministic review document. Any source
+failure, ambiguity, conflict, late capture or unsupported competition remains
+fail-closed for the next passive retry.
 
 Morning preparation keeps identity coverage and kickoff evidence distinct.
 A baseline-only identity row with no kickoff produces a `timing_unknown`

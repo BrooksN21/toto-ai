@@ -1084,6 +1084,90 @@
       "reviewer": "codex-public-evidence-review",
       "reviewed_at": "2026-08-14T09:35:50Z",
       "review_document_sha256": "48a009488fa14ca15947414e2d9a998a081eed36abb4bebd4b7bb05c5af0a768"
+    },
+    {
+      "observation_id": "uefa-hearts-rapid-20260820",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Heart of Midlothian",
+      "home_aliases": [
+        "Хартс",
+        "Hearts",
+        "Heart of Midlothian"
+      ],
+      "away_entity": "SK Rapid Wien",
+      "away_aliases": [
+        "Рапид Вена",
+        "SK Rapid",
+        "SK Rapid Wien",
+        "Rapid Vienna"
+      ],
+      "starts_at": "2026-08-20T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-public-evidence-review",
+      "reviewed_at": "2026-08-20T08:53:30Z",
+      "review_document": "reviews/4981-event-7.md",
+      "review_document_sha256": "e9d182a27311b6e3096a887f225e34f0abdb3a567382340be033c8bf3fd57949",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049254/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16717079"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-hajduk-rakow-20260820",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "HNK Hajduk Split",
+      "home_aliases": [
+        "Хайдук Сплит",
+        "Hajduk Split",
+        "HNK Hajduk Split"
+      ],
+      "away_entity": "Raków Częstochowa",
+      "away_aliases": [
+        "Ракув",
+        "Raków",
+        "Rakow",
+        "Raków Częstochowa"
+      ],
+      "starts_at": "2026-08-20T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-public-evidence-review",
+      "reviewed_at": "2026-08-20T08:53:30Z",
+      "review_document": "reviews/4981-event-9.md",
+      "review_document_sha256": "18dfd67d8af1471a6b02416d1f073eae862880f133523ee63479d3f13d6c3709",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049256/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16717080"
+        }
+      ]
     }
   ]
 }

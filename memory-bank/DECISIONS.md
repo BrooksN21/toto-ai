@@ -1610,3 +1610,20 @@ ambiguous reversed evidence remains unresolved.
   100/500/1,000 runs use per-drawing atomic checkpoints. A checkpoint is reused
   only when the source-data, strategy-input and full EV-configuration hashes
   match; there is no search-quality reduction for speed.
+
+## 2026-08-20 — Automatic schedule promotion requires exact two-source consensus
+
+- A deterministic machine reviewer may promote schedule evidence only when an
+  official competition feed and a separately fetched independent source agree
+  on exact team orientation and the identical kickoff before the match starts.
+- The target's localized home/away names must equal official localized aliases;
+  fuzzy target matching is discovery-only and never promotion authority.
+- The selected official and independent events are both re-fetched by stable
+  source ID. Both raw responses and a deterministic review document are frozen
+  and SHA-256 bound before append-only ledger ingestion.
+- Source/status drift, reversed orientation, ambiguity, late capture, kickoff
+  mismatch, unsupported competition or existing-ledger conflict all fail
+  closed. One source failing must not prevent the other collector from writing
+  diagnostics.
+- UEFA v5 is the first authoritative adapter. This does not authorize generic
+  Sofascore-only promotion or imply coverage for non-UEFA competitions.

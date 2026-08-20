@@ -1,18 +1,18 @@
 # TotoAI Product Validation Progress
 
-Обновлено: 2026-08-14
-Текущий этап: 2 — historical benchmark; этап 0 ожидает post-draw 4975
+Обновлено: 2026-08-20
+Текущий этап: 2 — historical benchmark; legacy-100 выполняется
 Общий статус: IN PROGRESS
 
 ## Этапы
 
 | Этап | Статус | Результат / блокер |
 |---:|---|---|
-| 0. Live-цикл 4975 | IN PROGRESS | Evening terminal complete: final fresh paper package 166 / 4 980, T-10 cleanup and post-draw install verified; result sync/settlement due 2026-08-15 |
+| 0. Live-цикл 4975 | COMPLETE | Final paper package 166 / 4 980, T-10 cleanup, 15/15 result sync, settlement, review request and postmortem complete; best 8/15, no wager |
 | 1. EV/BK/TotoBrief-style | COMPLETE | Four equal-input adapters, command and hash-bound reports verified; 4975 EV output exactly reproduces final package |
-| 2. Historical benchmark | IN PROGRESS | Strict all-13 v2 complete with BK-top control and paired bootstrap; legacy v3 canary/resume complete; legacy 100/500/1000 runs remain |
+| 2. Historical benchmark | IN PROGRESS | Strict sample extended to 18 unique drawings; legacy v3 canary/resume complete; legacy-100 running, 500/1000 remain |
 | 3. Objective correction | NOT STARTED | Зависит от benchmark findings |
-| 4. Schedule evidence automation | PARTIAL | Independent collector готов; official adapters/promotion отсутствуют |
+| 4. Schedule evidence automation | PARTIAL | Reusable UEFA v5 + Sofascore exact-consensus promotion is implemented and replayed on 4981 (2/2); non-UEFA authoritative adapters remain |
 | 5. Free sports coverage | PARTIAL | Stored-source baseline written: API-Sports odds 10 drawings/150 events/68% consensus; The Odds API 4/15; sports stats 0/15 complete |
 | 6. Sports residual model | NOT STARTED | Нет достаточного frozen feature dataset |
 | 7. Prospective holdout | NOT STARTED | Release gate требует минимум 30 тиражей / 450 событий |
@@ -34,11 +34,45 @@
 - [x] 16:50 T-10 terminal publication отработала: run 7, exit 0, operator upload expired, audit/paper retained.
 - [x] Финальный package/package-free result сохранён: `NO BET`, 166 unique paper coupons, 4 980, exact upload format.
 - [x] Post-draw LaunchAgent автоматически установлен и `launchctl print` verified.
-- [ ] Следующий день 12:00 result sync реально запущен.
-- [ ] Получены 15/15/VOID результаты.
-- [ ] Settlement и postmortem сформированы.
+- [x] Следующий день 12:00 result sync реально запущен.
+- [x] Получены 15/15 результаты; VOID отсутствует.
+- [x] Settlement и postmortem сформированы и review завершён.
 
 ## Последние доказательства
+
+- Resume analysis 2026-08-20: drawings 4975-4980 have 15/15 outcomes and true
+  pre-deadline probability snapshots. Drawing 4980 was explicitly synchronized
+  after the pause. The real 4975 frozen package scored best 8/15; eight actual
+  outcomes had under 10% package exposure. Strict counterfactual rows for
+  4976-4980 average BK-only 8.6, EV/crowd 6.6, Cover-13 7.4 and Cover-14 8.4,
+  with zero 13+. Across 18 unique strict drawings the averages are 8.889,
+  6.889, 8.167 and 8.889 respectively; only Cover-14 has one 13+. The sample
+  is still non-interpretable for a strategy/release verdict. Evidence:
+  `reports/research/new-drawings-4975-4980-20260820/`.
+- Drawing 4975 strict evidence debt: its complete result snapshot lacks a RAW
+  hash binding. It is analyzed through the real frozen settlement but remains
+  excluded from the strict strategy runner.
+- Active drawing 4981 is READY/playable 15/15. Events 7 and 9 were resolved
+  before deadline from hash-frozen official UEFA v5 and independent Sofascore
+  JSON with exact kickoff agreement. The passive 12:00 MSK retry completed
+  automatically with return code 0 and activated evening paper plan
+  `5caf88df9bdfe566` for 4,980/30. Launchd reports eight triggers at
+  16:00/16:30/17:00/17:15/17:30/17:40/17:44/17:50 MSK. No real-money release
+  is authorized and no operator package exists before a scheduler result.
+- Reusable UEFA schedule automation: exact localized UEFA target matching,
+  official match re-fetch, independent Sofascore re-fetch, identical kickoff
+  consensus, immutable snapshots/review and idempotent ledger promotion are
+  implemented. The frozen 4981 replay promoted both unresolved rows into an
+  isolated ledger, and a live public-source canary repeated the 2/2 result
+  without touching production evidence. Automatic deferred morning dispatch
+  now runs this path independently of generic non-promoting discovery;
+  non-UEFA rows still fail closed and require another authoritative adapter or
+  review. Verification: `1904 passed, 13 deselected`; Ruff/diff-check pass.
+- Drawing 4981 sports shadows were captured before deadline. API-Sports sports
+  stats produced 0 complete / 10 partial / 5 missing event rows and a 15/15 BK
+  fallback `INSUFFICIENT_EVIDENCE` artifact. The Odds API control checkpoint
+  matched 3/15 events, spent two credits and retained 492; it remains
+  `NOT_ACTIVATED`. These are prospective diagnostics, not package inputs.
 
 - Strict strategy benchmark command:
   `historical-strategy-benchmark`; it loads the latest cryptographically
@@ -71,11 +105,12 @@
   legacy DB produced EV best 7 versus strict pre-deadline best 5, proving the
   tiers must remain physically separate. The 100/500/1,000 runs have not yet
   completed.
-- Current full verification: `1899 passed, 13 deselected in 114.91s`;
+- Current full verification: `1904 passed, 13 deselected in 123.15s`;
   Ruff and `git diff --check` passed.
 - Ruff: passed.
 - Git diff check: passed.
-- Current implementation commit: `bd4ec83` (local, not pushed).
+- Latest local implementation commit: `Automate exact UEFA schedule consensus`
+  (not pushed).
 - 4974 paper review: best 6/15, zero 10+, no wager.
 - 4975 BK vs sports comparison: identical 166/166, sports coverage 0/15.
 - Free-source baseline: `reports/research/free-source-audit-20260814/summary.md`;
@@ -142,7 +177,9 @@
 
 ## Следующее действие
 
-Продолжить этап 2 физически отдельным legacy diagnostic 100/500/1000 с явной
-меткой `LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`. Не смешивать его со
-strict-метриками и не менять post-draw план 4975 до его реального запуска
-2026-08-15 12:00 MSK.
+Дождаться и проверить legacy-100 с явной меткой
+`LEGACY_RETROSPECTIVE / NOT RELEASE EVIDENCE`; только после проверки продолжить
+500/1000. Параллельно наблюдать каждый триггер активированного evening plan
+4981 и сохранить его финальный paper/operator result. После полного regression
+прогона зафиксировать UEFA adapter; затем расширять authoritative coverage
+только на источники с тем же exact-consensus/fail-closed контрактом.
