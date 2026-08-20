@@ -79,6 +79,8 @@ legacy output is not release evidence. See the active plan's
   - [x] Resolve all 15 kickoff times, publish exact canonical pins, activate
     schema-v6 plan `453829753fa55b5f`, verify the installed LaunchAgent and
     create the exact plan-bound experimental manual authorization.
+  - [x] Extend the read-only preflight status with hash-verified per-phase
+    attempts, reasons, next checkpoint, overdue detection and terminal state.
   - [ ] Observe each scheduled phase, verify a fresh final `PLAY` or an
     evidence-backed legitimate `NO BET`, and exercise `operator-export` before
     T-10 if and only if the final result is actionable.

@@ -4753,3 +4753,10 @@ identity and deadline checks may therefore become `PLAY`; insufficient
 prospective sample alone no longer forces that authorized final to `NO BET`.
 Profitability remains unproven and automatic wagering remains disabled. The
 actual scheduled final/operator-export path is still pending live execution.
+
+The read-only `preflight-status` output now includes a hash-verified
+`evening_scheduler` block. It exposes every phase, attempt count, last reason,
+next UTC/MSK checkpoint, overdue checkpoints and terminal state without
+mutating the plan or generating a package. Against the live 4982 plan it
+reports `waiting`, revision 0, no overdue checkpoints and next checkpoint
+`tls_preflight` at 2026-08-21 17:00 MSK.
