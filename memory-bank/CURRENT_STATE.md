@@ -12,6 +12,11 @@ schedule catalog, but `data/reviewed-schedule/4964/` had remained untracked.
 The exact catalog and its source evidence are now tracked; the catalog SHA-256
 is `68e98c8f006ddca04e193a1d06d3f23def57e498f4c02c51d8a9e3c18062895a`.
 The owner explicitly authorized publishing and merging the reconciled branch.
+Eleven previously untracked `plans/` context directories from drawings
+4963–4967, the data audit, free-source audit, and paper/post-draw work were
+reviewed for credential-like content and committed as historical task
+artifacts. They are not project-memory authority and do not override this
+file, `DECISIONS.md`, or `ROADMAP.md`.
 
 The first drawing-4981 evening LaunchAgent trigger ran at 16:00 MSK and
 completed `tls_preflight` successfully at 16:02:47: exit code 0, empty stderr,
