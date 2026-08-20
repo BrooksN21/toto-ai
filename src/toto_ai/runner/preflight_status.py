@@ -27,6 +27,7 @@ from toto_ai.runner.scheduler import (
     experimental_manual_release_status,
     load_scheduler_plan,
 )
+from toto_ai.runner.scheduler_state import PHASES, load_state
 
 MOSCOW = ZoneInfo("Europe/Moscow")
 
@@ -144,6 +145,10 @@ def build_preflight_status(
                 "enabled" if activation == "activated" else "disabled"
             ),
             "release_gate": release_gate,
+            "evening_scheduler": _evening_scheduler_status(
+                record,
+                now=observed_at,
+            ),
         }
     finally:
         engine.dispose()
@@ -270,6 +275,123 @@ def _release_gate_status(record: dict[str, object] | None) -> dict[str, object]:
             "profitability_proven": False,
             "automatic_wagering": False,
         }
+
+
+def _evening_scheduler_status(
+    record: dict[str, object] | None,
+    *,
+    now: datetime,
+) -> dict[str, object]:
+    """Return a hash-verified, read-only phase snapshot for one evening plan."""
+
+    observed_at = _utc(now)
+    if record is None or record.get("activation_status") != "activated":
+        return {
+            "state": "not_activated",
+            "next_checkpoint": None,
+        }
+    plan_value = record.get("plan_path")
+    if not isinstance(plan_value, str) or not plan_value.strip():
+        return {
+            "state": "invalid",
+            "reason": "scheduler plan is missing",
+            "next_checkpoint": None,
+        }
+    try:
+        plan = load_scheduler_plan(plan_value)
+        state_path = plan.output_dir / "scheduler-state.json"
+        state = load_state(
+            state_path,
+            plan_id=plan.plan_id,
+            now=observed_at,
+        )
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        return {
+            "state": "invalid",
+            "reason": str(error),
+            "next_checkpoint": None,
+        }
+
+    transitions = state.get("transitions", [])
+    latest_by_phase: dict[str, dict[str, object]] = {}
+    if isinstance(transitions, list):
+        for item in transitions:
+            if isinstance(item, dict) and item.get("phase") in PHASES:
+                latest_by_phase[str(item["phase"])] = item
+    phases: dict[str, dict[str, object]] = {}
+    state_phases = state["phases"]
+    for phase in PHASES:
+        phase_state = state_phases[phase]
+        latest = latest_by_phase.get(phase)
+        attempts = phase_state.get("attempts", [])
+        phases[phase] = {
+            "status": phase_state.get("status"),
+            "attempt_count": len(attempts) if isinstance(attempts, list) else 0,
+            "latest_observed_at": (
+                None if latest is None else latest.get("observed_at")
+            ),
+            "latest_reason": None if latest is None else latest.get("reason"),
+        }
+
+    checkpoints = (
+        ("tls_preflight", "tls_preflight", plan.tls_preflight_at),
+        ("api_preflight", "api_preflight", plan.api_preflight_at),
+        (
+            "freshness_preflight",
+            "freshness_preflight",
+            plan.freshness_preflight_at,
+        ),
+        ("warmup", "warmup", plan.preflight_at),
+        ("refresh", "refresh", plan.fallback_at),
+        ("final", "final", plan.final_at),
+        ("final_retry", "final", plan.retry_at),
+        ("publish", "publish", plan.publish_deadline),
+    )
+    next_checkpoint = None
+    for checkpoint, _state_phase, scheduled_at in checkpoints:
+        if scheduled_at > observed_at:
+            next_checkpoint = {
+                "phase": checkpoint,
+                "at_utc": _timestamp(scheduled_at),
+                "at_msk": scheduled_at.astimezone(MOSCOW).isoformat(),
+            }
+            break
+
+    overdue: list[dict[str, object]] = []
+    for checkpoint, state_phase, scheduled_at in checkpoints:
+        if scheduled_at > observed_at:
+            continue
+        if phases[state_phase]["status"] in {"pending", "retryable_failed"}:
+            overdue.append(
+                {
+                    "phase": checkpoint,
+                    "at_utc": _timestamp(scheduled_at),
+                }
+            )
+
+    terminal = state.get("terminal")
+    if terminal is not None:
+        status = "terminal"
+        next_checkpoint = None
+    elif overdue:
+        status = "attention_required"
+    elif int(state.get("revision", 0)) > 0:
+        status = "running_schedule"
+    else:
+        status = "waiting"
+    last_transition = transitions[-1] if transitions else None
+    return {
+        "state": status,
+        "plan_id": plan.plan_id,
+        "state_path": str(state_path),
+        "state_revision": int(state.get("revision", 0)),
+        "updated_at": state.get("updated_at"),
+        "terminal": terminal,
+        "phases": phases,
+        "last_transition": last_transition,
+        "next_checkpoint": next_checkpoint,
+        "overdue_checkpoints": overdue,
+    }
 
 
 def _parse_timestamp(value: str | None) -> datetime:

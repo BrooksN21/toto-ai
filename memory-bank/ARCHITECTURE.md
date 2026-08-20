@@ -90,6 +90,14 @@ are emitted separately. Package-free `NO BET` records zero count/cost and no
 coupon path. T-10 does not remove paper checkpoints, but neither
 `operator-export` nor `.bet-ready` accepts or references them.
 
+`preflight-status` is also the read-only operator observation surface before
+and during the evening schedule. In addition to preparation and release-gate
+state, it hash-validates the exact plan-scoped `scheduler-state.json` and
+reports each phase status, attempt count, latest reason/timestamp, next Moscow
+checkpoint, missed checkpoints and terminal state. It never acquires the
+execution lock, changes state, reads secrets, generates coupons or exposes an
+operator package.
+
 ## Automatic post-draw review boundary
 
 Every terminal scheduler result produces a post-draw plan only after a durable
