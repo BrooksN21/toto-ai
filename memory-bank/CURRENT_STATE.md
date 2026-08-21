@@ -1,5 +1,54 @@
 # Current State
 
+## Drawing-4981 package audit (2026-08-21)
+
+The supported result synchronization refreshed drawing 4981 (internal ID
+12050) to a complete 15/15 resolved result: `2X1121XXXX12XX2`. The
+scheduler-owned package contained 166 unique coupons for 4,980 RUB. The exact
+actual vector was not selected; the best realized coupon reached 8/15, with
+hit13, hit14, and hit15 all zero. Missed positions for that best coupon were
+1, 4, 6, 7, 9, 12, and 15. Every actual sign was present in the per-event
+brief/union, so the result is a combinatorial package-selection miss, not a
+source, cancellation, or result-completeness defect. The audit is recorded in
+`reports/audits/yesterday-package-audit-20260821.md` and remains paper-only
+evidence.
+
+## Scheduler training archive binding (2026-08-21)
+
+Scheduler-owned `TRAINING_PAPER` input resolution is bound to the canonical
+morning-record `detail_sha256` and a verified `RawArchive` snapshot under the
+plan's project-bound immutable archive. An absent, malformed, or mismatching
+snapshot fails closed; the mutable `data/raw/drawing_<id>.json` cache is never
+used as a fallback. Focused regression coverage verifies both the matching
+archive path and a mutable-cache hash mismatch without running quality-v2.
+
+## Morning discovery and drawing-4982 training package (2026-08-20)
+
+The generated generic morning LaunchAgent now combines its fixed reviewed
+times with an hourly drawing-neutral discovery trigger. This removes the
+17:05/17:12/17:20-only assumption that missed drawing 4982 after drawing 4981's
+variable 18:00 MSK deadline, while preserving the request coordinator,
+provider cache/quota reserve, process lock, and exact-drawing idempotency. The
+minimum accepted discovery interval is 900 seconds and the default is 3,600.
+
+READY morning dispatch now ensures an immutable scheduler-bound
+`TRAINING_PAPER` package using the production baseline brief/cover generator
+and configured bank/stake/category. It is explicitly non-actionable and does
+not modify scheduler state, release authorization, operator result, or marker
+files. The supported local CLI generated drawing 4982's category-13 artifact
+for plan `453829753fa55b5f`: 22 coupons, 660 RUB at stake 30 from the configured
+4,980-RUB bank, category guarantee `PASS`. The result is
+`reports/rehearsal/evening-4982-20260821T160000Z/training-package/training-package-result.json`;
+its paper payload is under immutable checkpoint
+`16e4b4659b28-e93b972d20c6/`. A second CLI run reused identical bytes. The
+scheduler-state SHA-256 remained
+`4f96018bf7f0925bad7ddf1be027b3af64352a4df18a1172dad6293d13147ab3`;
+`operator-result.json`, `.bet-ready`, and `.no-bet` remain absent.
+The replacement morning candidate was generated but not installed at
+`reports/rehearsal/morning-dispatcher-v3/`; its plist contains the six existing
+calendar triggers plus `StartInterval=3600`, and its wrapper binds training
+category 13 while preserving explicit evening activation.
+
 ## Experimental manual release and drawing 4982 (2026-08-20)
 
 The default quality-v2 release gate remains paper-only and profitability is not
@@ -14,13 +63,11 @@ exposes this state before evening execution.
 Drawing 4982 is the active BaltBet drawing: internal ID 12054, deadline
 2026-08-21 19:00 MSK, fingerprint
 `581cdbbee88e75525f9b562e0bc43e8c450fd93fbed886ee592ae3bcb6be17d3`.
-Identity/probabilities are mapped 15/15, but events 4/8/11/12/14 still have
-`timing_unknown`; therefore no evening plan or authorization exists yet. The
-passive retry LaunchAgent is installed and active. Its 18:37 MSK run completed
-as controlled `deferred`: three independent candidates were found, zero
-official-plus-independent consensus promotions were eligible, and the next
-retry is 19:07 MSK. Retry stdout now contains a structured child-result record
-instead of remaining empty.
+Identity/probabilities and kickoff times are now mapped 15/15. Exact schema-v6
+plan `453829753fa55b5f` exists with its plan-bound experimental authorization;
+the historical passive retries that resolved the drawing remain audit
+evidence. Retry stdout contains a structured child-result record instead of
+remaining empty.
 
 Git cleanup is complete. PR #11 merged the 22 local post-PR commits plus the
 missing drawing-4964 reviewed schedule fixture; PR #12 merged eleven historical

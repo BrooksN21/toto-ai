@@ -643,12 +643,28 @@ artifacts are passive by default and omit `morning-dispatch --activate`;
 `morning-preanalysis-plan --activate-evening` is the explicit post-drill
 opt-in. A passive recurring job may synchronize, prepare, record diagnostics,
 and generate an exact evening plan, but cannot install that plan. Neither a
-schema-v5 evening scheduler nor automatic bet path is installed. The passive
-generic dispatcher is installed as `com.totoai.morning-dispatcher.v1` at
-08:00/10:30 Moscow time. New generated candidates default to
-08:00/10:30/12:00 and remain uninstalled. The five obsolete drawing-specific
-LaunchAgents were
-removed on 2026-07-28.
+schema-v6 evening scheduler nor automatic bet path is installed. Generated
+generic candidates combine their explicit clock-time checkpoints with a
+default 3,600-second `StartInterval`, rejecting intervals below 900 seconds.
+The recurring poll closes the gap created when a new drawing opens only after
+the variable deadline of its predecessor; fixed checkpoints remain useful for
+known operational windows. Existing shared request coordination, provider
+cache/quota reserve, process locks, and per-drawing idempotency bound the added
+traffic. Candidates remain uninstalled until an operator replaces the existing
+`com.totoai.morning-dispatcher.v1` LaunchAgent.
+
+After a morning dispatch reaches READY/playable and owns an exact persisted
+plan, the same wrapper ensures one training-only package below
+`<plan.output_dir>/training-package/`. Calculation reuses the production
+baseline brief/cover generator with the plan bank/stake and configured category.
+Its input is resolved only by the morning-record `detail_sha256` against a
+verified snapshot in the plan-bound immutable RAW archive; missing or
+mismatching archive evidence fails closed and the mutable operational cache is
+never a fallback. The wrapper publishes only immutable training checkpoints
+plus a hash-bound result.
+The artifact is explicitly non-actionable and cannot be consumed by
+`operator-export`: it never changes scheduler/release state or creates
+`operator-result.json`, `.bet-ready`, or `.no-bet`.
 
 ## Emergency pre-bet safety boundary
 

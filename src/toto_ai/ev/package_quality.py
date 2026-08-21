@@ -82,10 +82,11 @@ def quality_v2_config_sha256(config: EVConfig) -> str:
 def bound_selection_context(config: EVConfig) -> dict[str, object]:
     """Return every runtime policy input that can affect package selection.
 
-    Requested and effective capacity are both explicit: a plan that authorizes
-    a full bank cannot silently authorize a pool-limited or otherwise reduced
-    selection.  The nested quality-v2 payload binds the complete algorithm
-    policy separately from the surrounding EV and safety gates.
+    Requested and effective capacity are both explicit.  A scheduler plan's
+    effective capacity is an authorization cap; the immutable drawing input
+    may reduce the runtime capacity, but can never increase it.  The nested
+    quality-v2 payload binds the complete algorithm policy separately from the
+    surrounding EV and safety gates.
     """
     if not isinstance(config, EVConfig):
         raise TypeError("selection context config must be an EVConfig")
@@ -373,7 +374,6 @@ def _artifact_provenance_reasons(
                 plan,
                 reasons,
                 expected_context=expected_context,
-                expected_context_sha256=selection_context_sha256(expected_context),
             )
     return tuple(dict.fromkeys(reasons))
 
@@ -383,7 +383,6 @@ def _validate_scheduler_plan_artifact(
     reasons: list[str],
     *,
     expected_context: dict[str, object],
-    expected_context_sha256: str,
 ) -> None:
     """Require a canonical scheduler-plan shape, not merely arbitrary bytes."""
     try:
@@ -421,10 +420,74 @@ def _validate_scheduler_plan_artifact(
     ):
         reasons.append("scheduler_plan_invalid")
         return
-    if config.get("selection_context") != expected_context:
+    plan_context = config.get("selection_context")
+    if not isinstance(plan_context, dict) or not _selection_context_authorizes(
+        plan_context,
+        expected_context,
+    ):
         reasons.append("scheduler_plan_selection_context_mismatch")
-    if config.get("selection_context_sha256") != expected_context_sha256:
+    try:
+        plan_context_sha256 = (
+            selection_context_sha256(plan_context)
+            if isinstance(plan_context, dict)
+            else None
+        )
+    except (TypeError, ValueError):
+        plan_context_sha256 = None
+    if config.get("selection_context_sha256") != plan_context_sha256:
         reasons.append("scheduler_plan_selection_context_sha256_mismatch")
+
+
+def _selection_context_authorizes(
+    plan_context: dict[str, object],
+    runtime_context: dict[str, object],
+) -> bool:
+    """Return whether one plan context authorizes the exact runtime context."""
+    capacity_fields = {"effective_budget", "effective_coupon_capacity"}
+    if set(plan_context) != set(runtime_context):
+        return False
+    if any(
+        plan_context[field] != runtime_context[field]
+        for field in plan_context.keys() - capacity_fields
+    ):
+        return False
+
+    bank = runtime_context.get("bank")
+    stake = runtime_context.get("stake")
+    coupon_capacity = runtime_context.get("coupon_capacity")
+    plan_budget = plan_context.get("effective_budget")
+    runtime_budget = runtime_context.get("effective_budget")
+    plan_capacity = plan_context.get("effective_coupon_capacity")
+    runtime_capacity = runtime_context.get("effective_coupon_capacity")
+    integer_values = (
+        bank,
+        stake,
+        coupon_capacity,
+        plan_budget,
+        runtime_budget,
+        plan_capacity,
+        runtime_capacity,
+    )
+    if any(type(value) is not int for value in integer_values):
+        return False
+    assert isinstance(bank, int)
+    assert isinstance(stake, int)
+    assert isinstance(coupon_capacity, int)
+    assert isinstance(plan_budget, int)
+    assert isinstance(runtime_budget, int)
+    assert isinstance(plan_capacity, int)
+    assert isinstance(runtime_capacity, int)
+    return (
+        bank > 0
+        and stake > 0
+        and bank % stake == 0
+        and coupon_capacity == bank // stake
+        and 0 <= runtime_budget <= plan_budget <= bank
+        and plan_budget % stake == 0
+        and runtime_budget % stake == 0
+        and plan_capacity == plan_budget // stake
+        and runtime_capacity == runtime_budget // stake
+    )
 
 
 def _snapshot_probability_hash(document: object) -> str | None:

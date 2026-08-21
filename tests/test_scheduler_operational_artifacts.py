@@ -940,6 +940,7 @@ def test_morning_preanalysis_artifacts_are_isolated_and_non_betting(tmp_path):
 
     artifacts = prepare_morning_preanalysis_artifacts(
         times=("08:00", "10:30"),
+        discovery_interval_seconds=900,
         retry_count=2,
         retry_delay_seconds=30.0,
         output_dir=output_dir,
@@ -965,6 +966,7 @@ def test_morning_preanalysis_artifacts_are_isolated_and_non_betting(tmp_path):
         {"Hour": 8, "Minute": 0},
         {"Hour": 10, "Minute": 30},
     ]
+    assert launch_agent["StartInterval"] == 900
     assert launch_agent["StandardOutPath"].startswith(str(output_dir / "logs"))
     assert SECRET not in wrapper + artifacts.launch_agent_path.read_text()
 
@@ -987,6 +989,8 @@ def test_morning_preanalysis_cli_generates_without_network(tmp_path):
             "2",
             "--retry-delay-seconds",
             "30",
+            "--discovery-interval-seconds",
+            "900",
             "--output-dir",
             str(output_dir),
             "--project-root",
@@ -998,5 +1002,8 @@ def test_morning_preanalysis_cli_generates_without_network(tmp_path):
 
     assert result.exit_code == 0, result.output
     assert (output_dir / "run-morning-preanalysis.sh").is_file()
-    assert (output_dir / "totoai-morning-preanalysis.plist").is_file()
+    launch_agent_path = output_dir / "totoai-morning-preanalysis.plist"
+    assert launch_agent_path.is_file()
+    launch_agent = plistlib.loads(launch_agent_path.read_bytes())
+    assert launch_agent["StartInterval"] == 900
     assert SECRET not in result.output

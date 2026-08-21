@@ -1,5 +1,37 @@
 # Decisions
 
+## 2026-08-21: scheduler training uses the immutable morning snapshot
+
+- Scheduler-owned `TRAINING_PAPER` resolves its input by the canonical
+  `detail_sha256` in the plan-bound READY morning record, then verifies the
+  matching `RawArchive` payload and metadata bytes under the project-bound
+  archive.
+- Missing, malformed, future, or hash-mismatching archive evidence fails
+  closed. The mutable operational `data/raw/drawing_<id>.json` cache is never
+  used as a training input or fallback.
+- Reusing an existing training result first re-resolves the current morning
+  record and requires the same archive and frozen-input bindings; a changed
+  detail hash cannot silently reuse the old result.
+
+## 2026-08-20: recurring discovery and READY training are separate safe duties
+
+- The generic morning LaunchAgent retains reviewed clock-time checkpoints and
+  also runs every 3,600 seconds by default. This discovers drawings opened
+  after variable prior-drawing deadlines instead of assuming a fixed evening
+  opening window. Intervals below 900 seconds are rejected; the existing
+  cross-process request coordinator, provider cache/quota reserve, dispatcher
+  lock, and exact-drawing persisted records remain authoritative.
+- A READY/playable morning dispatch calculates one scheduler-owned training
+  package from the production baseline brief/cover generator. The immutable
+  input binds the exact schema-v6 plan, drawing, deadline, requested bank,
+  stake, category, and 15 probability rows. Category is explicit and limited
+  to 13/14/15; an existing result is validated and reused rather than changed.
+- Training output is permanently `TRAINING_PAPER`: `actionable=false`,
+  `operator_export_allowed=false`, and `automatic_wagering=false`. It lives
+  only below the plan's `training-package/` directory, never writes scheduler
+  state, `operator-result.json`, `.bet-ready`, or `.no-bet`, and is not an
+  operator-export source.
+
 ## 2026-08-20: experimental manual release is explicit operator risk, not evidence
 
 - The validated/default quality-v2 policy remains paper-only until the
