@@ -88,6 +88,26 @@ def _prepared(
     return MorningPreparedDrawing(**kwargs)
 
 
+@pytest.mark.parametrize(
+    ("span_days", "expected"),
+    ((None, None), (0, None), (1, 1), (2, 2)),
+)
+def test_optional_morning_span_days_maps_no_known_starts_to_null(
+    span_days,
+    expected,
+):
+    assert cli._optional_morning_span_days(span_days) == expected
+
+
+@pytest.mark.parametrize("span_days", (-1, True, 1.5, "1"))
+def test_optional_morning_span_days_rejects_invalid_values(span_days):
+    with pytest.raises(
+        ValueError,
+        match="eligibility span_days must be a non-negative integer",
+    ):
+        cli._optional_morning_span_days(span_days)
+
+
 def test_activated_morning_dispatch_forwards_exact_reviewed_catalog_hash(
     tmp_path,
 ):

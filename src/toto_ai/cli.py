@@ -3481,7 +3481,7 @@ def _prepare_current_for_morning(
             preparation_status=prepared.status,
             mapped_count=prepared.mapped_count,
             eligibility_status=prepared.eligibility.status,
-            span_days=prepared.eligibility.span_days,
+            span_days=_optional_morning_span_days(prepared.eligibility.span_days),
             external_coverage_count=prepared.external_coverage_count,
             baseline_only_event_orders=prepared.baseline_only_event_orders,
             reviewed_catalog_hash=load_ready_pin_set_reviewed_catalog_hash(
@@ -3493,6 +3493,15 @@ def _prepare_current_for_morning(
         )
     finally:
         engine.dispose()
+
+
+def _optional_morning_span_days(span_days: int | None) -> int | None:
+    """Map eligibility's zero-known-start sentinel to morning's null contract."""
+    if span_days is None:
+        return None
+    if type(span_days) is not int or span_days < 0:
+        raise ValueError("eligibility span_days must be a non-negative integer")
+    return span_days or None
 
 
 @app.command("morning-dispatch")

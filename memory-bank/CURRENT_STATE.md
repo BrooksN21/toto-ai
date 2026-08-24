@@ -1,5 +1,30 @@
 # Current State
 
+## Drawings 4982-4985 catch-up (2026-08-24)
+
+Drawing 4982 has a verified complete, non-VOID actual vector
+`X211112211X2X21`. Scheduler plan `7dddf0c68bf09df1` produced a non-actionable
+`TRAINING_PAPER` package of 166 coupons for 4,980 RUB. Its best realized coupon
+reached 7/15; hit13, hit14 and hit15 were zero. The best coupon missed positions
+1, 3, 6, 8, 9, 11, 13 and 14. This is paper audit evidence and does not
+establish profitability.
+
+Drawing 4983 is complete 15/15 with no `VOID`; the verified actual is
+`2111XX21XX2XX22`. Drawing 4984 is complete 15/15 with no `VOID`; the verified
+actual is `11112X1X1121121`. Neither drawing has a scheduler-owned package, so
+no package performance or return is attributed to them. The concise records
+are in `reports/audits/drawing-4982-package-audit.md`,
+`reports/audits/drawing-4983-package-audit.md`, and
+`reports/audits/drawing-4984-package-audit.md`.
+
+At the latest passive retry scheduled for 21:00 MSK (18:00 UTC), drawing 4985
+remained **deferred with all 15 events unresolved**. API-Sports returned
+provider semantic errors for the near dates and plan-coverage errors for the
+expanded dates. Independent discovery found five candidates, but none had the
+required official/review evidence; official consensus promoted 0/15. No
+scheduler plan, scheduler-owned package, operator result, or operator marker
+was created.
+
 ## Drawing-4981 package audit (2026-08-21)
 
 The supported result synchronization refreshed drawing 4981 (internal ID
