@@ -305,6 +305,7 @@ from toto_ai.runner.preflight_retry_scheduler import (
     prepare_preflight_retry_artifacts,
 )
 from toto_ai.runner.preflight_status import build_preflight_status
+from toto_ai.runner.training_package import ensure_scheduler_training_package
 from toto_ai.sports_stats.operation import (
     collect_and_store_sports_stats,
     load_api_sports_key,
@@ -3138,6 +3139,11 @@ def morning_preanalysis_plan_command(
     at: list[str] | None = typer.Option(None, "--at"),  # noqa: B008
     bank: int = typer.Option(4980, min=1),
     stake: int = typer.Option(30, min=1),
+    discovery_interval_seconds: int = typer.Option(
+        3600,
+        "--discovery-interval-seconds",
+        min=900,
+    ),
     retry_count: int = typer.Option(2, "--retry-count", min=0),
     retry_delay_seconds: float = typer.Option(
         60.0,
@@ -3166,6 +3172,7 @@ def morning_preanalysis_plan_command(
     try:
         artifacts = prepare_morning_preanalysis_artifacts(
             times=tuple(at or ("08:00", "10:30", "12:00")),
+            discovery_interval_seconds=discovery_interval_seconds,
             retry_count=retry_count,
             retry_delay_seconds=retry_delay_seconds,
             output_dir=output_dir,
@@ -3474,7 +3481,7 @@ def _prepare_current_for_morning(
             preparation_status=prepared.status,
             mapped_count=prepared.mapped_count,
             eligibility_status=prepared.eligibility.status,
-            span_days=prepared.eligibility.span_days,
+            span_days=_optional_morning_span_days(prepared.eligibility.span_days),
             external_coverage_count=prepared.external_coverage_count,
             baseline_only_event_orders=prepared.baseline_only_event_orders,
             reviewed_catalog_hash=load_ready_pin_set_reviewed_catalog_hash(
@@ -3486,6 +3493,15 @@ def _prepare_current_for_morning(
         )
     finally:
         engine.dispose()
+
+
+def _optional_morning_span_days(span_days: int | None) -> int | None:
+    """Map eligibility's zero-known-start sentinel to morning's null contract."""
+    if span_days is None:
+        return None
+    if type(span_days) is not int or span_days < 0:
+        raise ValueError("eligibility span_days must be a non-negative integer")
+    return span_days or None
 
 
 @app.command("morning-dispatch")
@@ -3589,6 +3605,7 @@ def morning_dispatch_command(
     )
     retry_scheduler_status: dict[str, object] | None = None
     source_collector_status: dict[str, object] | None = None
+    training_package_status: dict[str, object] | None = None
     try:
         result = dispatch_morning(
             config,
@@ -3621,6 +3638,42 @@ def morning_dispatch_command(
             python_command=python_executable,
             expected_identity=expected_identity,
         )
+        if result.plan_path is not None:
+            try:
+                training = ensure_scheduler_training_package(
+                    load_scheduler_plan(result.plan_path),
+                    morning_record_path=result.record_path,
+                    input_cache_dir=resolved_raw_cache,
+                    generated_at=datetime.now(timezone.utc),
+                )
+            except Exception as error:
+                training_package_status = {
+                    "status": "failed",
+                    "error": f"{type(error).__name__}: {str(error)[:300]}",
+                }
+            else:
+                training_package_status = {
+                    "status": "ready",
+                    "mode": training.mode,
+                    "actionable": training.actionable,
+                    "pipeline": training.pipeline,
+                    "structural_status": training.structural_status,
+                    "requested_bank": training.requested_bank,
+                    "effective_budget": training.effective_budget,
+                    "selected_count": training.selected_count,
+                    "selected_cost": training.selected_cost,
+                    "unused_requested_bank": training.unused_requested_bank,
+                    "bank_usage_reason": training.bank_usage_reason,
+                    "source_archive_path": str(training.source_archive_path),
+                    "source_archive_snapshot_sha256": (
+                        training.source_archive_snapshot_sha256
+                    ),
+                    "package_sha256": training.package_sha256,
+                    "result_path": str(training.result_path),
+                    "input_path": str(training.input_path),
+                    "paper_path": str(training.paper_path),
+                    "diagnostics_path": str(training.diagnostics_path),
+                }
         if activate and result.retry_plan_path is not None:
             retry_artifacts = prepare_preflight_retry_artifacts(
                 result.retry_plan_path
@@ -3731,6 +3784,7 @@ def morning_dispatch_command(
                 ),
                 "retry_scheduler": retry_scheduler_status,
                 "source_collector": source_collector_status,
+                "training_package": training_package_status,
             },
             sort_keys=True,
             separators=(",", ":"),
@@ -3890,6 +3944,61 @@ def paper_package_show_command(
         "PAPER / NO BET / DO NOT WAGER — "
         f"drawing={scheduler_plan.drawing} coupons={result.count} cost={result.cost}",
         file=sys.stderr,
+    )
+
+
+@app.command("scheduler-training-package")
+def scheduler_training_package_command(
+    plan: str = typer.Option(..., "--plan"),
+    morning_record: str = typer.Option(..., "--morning-record"),
+    input_cache_dir: str = typer.Option("data/raw", "--input-cache-dir"),
+    at: str | None = typer.Option(None, "--at"),
+) -> None:
+    """Calculate or validate a scheduler-bound quality-v2 training package."""
+
+    try:
+        scheduler_plan = load_scheduler_plan(plan)
+        generated_at = (
+            _utc_now_datetime() if at is None else _parse_expected_deadline(at)
+        )
+        result = ensure_scheduler_training_package(
+            scheduler_plan,
+            morning_record_path=morning_record,
+            input_cache_dir=input_cache_dir,
+            generated_at=generated_at,
+        )
+    except (OSError, SQLAlchemyError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": "ready",
+                "mode": result.mode,
+                "actionable": result.actionable,
+                "plan_id": result.plan_id,
+                "drawing": result.drawing,
+                "drawing_id": result.drawing_id,
+                "pipeline": result.pipeline,
+                "structural_status": result.structural_status,
+                "requested_bank": result.requested_bank,
+                "effective_budget": result.effective_budget,
+                "selected_count": result.selected_count,
+                "selected_cost": result.selected_cost,
+                "unused_requested_bank": result.unused_requested_bank,
+                "bank_usage_reason": result.bank_usage_reason,
+                "source_archive_path": str(result.source_archive_path),
+                "source_archive_snapshot_sha256": (
+                    result.source_archive_snapshot_sha256
+                ),
+                "package_sha256": result.package_sha256,
+                "result_path": str(result.result_path),
+                "input_path": str(result.input_path),
+                "paper_path": str(result.paper_path),
+                "diagnostics_path": str(result.diagnostics_path),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
     )
 
 

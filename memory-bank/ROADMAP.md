@@ -21,6 +21,12 @@ expose one fresh final package while explicitly retaining
 `profitability_proven=false`; it is operator-risk testing, not completion of
 the validated release stage.
 
+- [x] Make generic morning discovery deadline-independent with a bounded
+  recurring trigger, and add an idempotent scheduler-owned non-actionable
+  READY training calculation using configured bank/stake/category. Verify the
+  supported CLI path on drawing 4982 without changing live scheduler/release
+  state or creating operator-actionable markers.
+
 Current progress: the real drawing-4975 paper lifecycle is closed through
 settlement and reviewed postmortem. The shared frozen-input contract,
 EV/BK/Cover-13/Cover-14 adapters and `compare-package-strategies` report bundle

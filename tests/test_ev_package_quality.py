@@ -550,6 +550,70 @@ def test_bound_selection_context_mismatch_fails_closed(
     assert "selection_context_mismatch" in reasons
 
 
+def test_scheduler_plan_bank_cap_authorizes_lower_input_derived_budget(tmp_path):
+    probabilities = ((0.50, 0.30, 0.20),) * 3
+    plan_config = EVConfig(
+        bank=90,
+        stake=30,
+        mode="playable",
+        min_gross_ev=0.0,
+        package_safety_enabled=True,
+        package_near_fixed_share=1.0,
+        package_provenance_required=True,
+    )
+    artifacts = _provenance(probabilities, tmp_path, plan_config)
+    runtime_config = replace(plan_config, effective_budget=60)
+    runtime_provenance = PackageSelectionProvenance.from_artifacts(
+        probability_snapshot_path=artifacts.probability_snapshot_path,
+        probability_input_sha256=artifacts.probability_input_sha256,
+        schedule_evidence_ledger_path=artifacts.schedule_evidence_ledger_path,
+        scheduler_plan_path=artifacts.scheduler_plan_path,
+        selection_config=runtime_config,
+    )
+
+    complete, reasons, _, _ = validate_selection_provenance(
+        runtime_provenance,
+        probabilities,
+        config=runtime_config,
+        required=True,
+    )
+
+    assert complete is True
+    assert reasons == ()
+
+
+def test_scheduler_plan_effective_budget_cap_rejects_larger_runtime_budget(tmp_path):
+    probabilities = ((0.50, 0.30, 0.20),) * 3
+    runtime_config = EVConfig(
+        bank=90,
+        stake=30,
+        mode="playable",
+        min_gross_ev=0.0,
+        package_safety_enabled=True,
+        package_near_fixed_share=1.0,
+        package_provenance_required=True,
+    )
+    plan_config = replace(runtime_config, effective_budget=60)
+    artifacts = _provenance(probabilities, tmp_path, plan_config)
+    runtime_provenance = PackageSelectionProvenance.from_artifacts(
+        probability_snapshot_path=artifacts.probability_snapshot_path,
+        probability_input_sha256=artifacts.probability_input_sha256,
+        schedule_evidence_ledger_path=artifacts.schedule_evidence_ledger_path,
+        scheduler_plan_path=artifacts.scheduler_plan_path,
+        selection_config=runtime_config,
+    )
+
+    complete, reasons, _, _ = validate_selection_provenance(
+        runtime_provenance,
+        probabilities,
+        config=runtime_config,
+        required=True,
+    )
+
+    assert complete is False
+    assert "scheduler_plan_selection_context_mismatch" in reasons
+
+
 def test_incomplete_scheduler_plan_selection_context_fails_closed(tmp_path):
     probabilities = ((0.50, 0.30, 0.20),) * 3
     config = EVConfig(

@@ -530,6 +530,21 @@ def _effective_budget(
     return min(requested_bank, supported_coupon_count * stake)
 
 
+def effective_selection_budget(
+    *,
+    requested_bank: int,
+    pool_sum: int | float,
+    stake: int,
+) -> int:
+    """Return the production input-derived selection budget below a bank cap."""
+
+    return _effective_budget(
+        requested_bank=requested_bank,
+        pool_sum=pool_sum,
+        stake=stake,
+    )
+
+
 def _payload_pool_sum(payload: Mapping[str, Any]) -> int | float:
     data = payload.get("data") if isinstance(payload, Mapping) else None
     if not isinstance(data, Mapping):

@@ -88,6 +88,26 @@ def _prepared(
     return MorningPreparedDrawing(**kwargs)
 
 
+@pytest.mark.parametrize(
+    ("span_days", "expected"),
+    ((None, None), (0, None), (1, 1), (2, 2)),
+)
+def test_optional_morning_span_days_maps_no_known_starts_to_null(
+    span_days,
+    expected,
+):
+    assert cli._optional_morning_span_days(span_days) == expected
+
+
+@pytest.mark.parametrize("span_days", (-1, True, 1.5, "1"))
+def test_optional_morning_span_days_rejects_invalid_values(span_days):
+    with pytest.raises(
+        ValueError,
+        match="eligibility span_days must be a non-negative integer",
+    ):
+        cli._optional_morning_span_days(span_days)
+
+
 def test_activated_morning_dispatch_forwards_exact_reviewed_catalog_hash(
     tmp_path,
 ):
@@ -1055,7 +1075,230 @@ def test_prepared_morning_cli_result_exits_zero(monkeypatch, tmp_path):
     )
 
     assert result.exit_code == 0, result.output
-    assert json.loads(result.output)["status"] == "prepared"
+    payload = json.loads(result.output)
+    assert payload["status"] == "prepared"
+    assert payload["training_package"] is None
+
+
+def test_ready_morning_cli_ensures_scheduler_owned_training_package(
+    monkeypatch,
+    tmp_path,
+):
+    config = _config(tmp_path)
+    now = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    plan = build_scheduler_plan(
+        drawing=4982,
+        drawing_id=12054,
+        ended_at=now + timedelta(hours=10),
+        bank=4980,
+        stake=30,
+        output_dir=config.scheduler_root / "evening-4982",
+        project_root=config.project_root,
+        db=config.db,
+        aliases=config.aliases,
+        env_file=config.env_file,
+    )
+    artifacts = prepare_scheduler_artifacts(plan, python_command=sys.executable)
+    monkeypatch.setattr(
+        cli,
+        "dispatch_morning",
+        lambda *_args, **_kwargs: MorningDispatchResult(
+            status="scheduled",
+            reason="ready",
+            record_path=tmp_path / "ready.json",
+            plan_id=plan.plan_id,
+            plan_path=artifacts.plan_path,
+            launch_agent_path=artifacts.launch_agent_path,
+            activation_status="generated",
+        ),
+    )
+    calls: list[tuple[str, Path, Path]] = []
+
+    def ensure_training(
+        loaded_plan,
+        *,
+        morning_record_path,
+        input_cache_dir,
+        generated_at,
+    ):
+        del generated_at
+        calls.append(
+            (
+                loaded_plan.plan_id,
+                Path(morning_record_path),
+                Path(input_cache_dir),
+            )
+        )
+        root = loaded_plan.output_dir / "training-package"
+        return SimpleNamespace(
+            result_path=root / "training-package-result.json",
+            input_path=root / "input" / "final-input.json",
+            paper_path=root / "checkpoints" / "abc" / "training-paper-package.txt",
+            diagnostics_path=(
+                root / "checkpoints" / "abc" / "training-quality-v2.json"
+            ),
+            requested_bank=4980,
+            effective_budget=660,
+            selected_count=22,
+            selected_cost=660,
+            unused_requested_bank=4320,
+            bank_usage_reason="pool_cap",
+            source_archive_path=(
+                loaded_plan.project_root
+                / "data"
+                / "raw"
+                / "archive"
+                / "drawing_12054"
+                / "a.json"
+            ),
+            source_archive_snapshot_sha256="a" * 64,
+            package_sha256="d" * 64,
+            actionable=False,
+            mode="TRAINING_PAPER",
+            pipeline="production_quality_v2_ev",
+            structural_status="STRUCTURAL_PASS",
+        )
+
+    monkeypatch.setattr(
+        cli,
+        "ensure_scheduler_training_package",
+        ensure_training,
+        raising=False,
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(config.env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(config.state_root),
+            "--scheduler-root",
+            str(config.scheduler_root),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert calls == [
+        (plan.plan_id, tmp_path / "ready.json", tmp_path / "data" / "raw")
+    ]
+    assert payload["training_package"] == {
+        "actionable": False,
+        "bank_usage_reason": "pool_cap",
+        "diagnostics_path": str(
+            plan.output_dir
+            / "training-package"
+            / "checkpoints"
+            / "abc"
+            / "training-quality-v2.json"
+        ),
+        "effective_budget": 660,
+        "input_path": str(
+            plan.output_dir / "training-package" / "input" / "final-input.json"
+        ),
+        "mode": "TRAINING_PAPER",
+        "package_sha256": "d" * 64,
+        "pipeline": "production_quality_v2_ev",
+        "paper_path": str(
+            plan.output_dir
+            / "training-package"
+            / "checkpoints"
+            / "abc"
+            / "training-paper-package.txt"
+        ),
+        "requested_bank": 4980,
+        "result_path": str(
+            plan.output_dir / "training-package" / "training-package-result.json"
+        ),
+        "selected_cost": 660,
+        "selected_count": 22,
+        "source_archive_path": str(
+            tmp_path
+            / "data"
+            / "raw"
+            / "archive"
+            / "drawing_12054"
+            / "a.json"
+        ),
+        "source_archive_snapshot_sha256": "a" * 64,
+        "status": "ready",
+        "structural_status": "STRUCTURAL_PASS",
+        "unused_requested_bank": 4320,
+    }
+
+
+def test_training_failure_preserves_successful_morning_activation(
+    monkeypatch,
+    tmp_path,
+):
+    config = _config(tmp_path)
+    now = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    plan = build_scheduler_plan(
+        drawing=4982,
+        drawing_id=12054,
+        ended_at=now + timedelta(hours=10),
+        bank=4980,
+        stake=30,
+        output_dir=config.scheduler_root / "evening-4982",
+        project_root=config.project_root,
+        db=config.db,
+        aliases=config.aliases,
+        env_file=config.env_file,
+    )
+    artifacts = prepare_scheduler_artifacts(plan, python_command=sys.executable)
+    monkeypatch.setattr(
+        cli,
+        "dispatch_morning",
+        lambda *_args, **_kwargs: MorningDispatchResult(
+            status="scheduled",
+            reason="ready",
+            record_path=tmp_path / "ready.json",
+            plan_id=plan.plan_id,
+            plan_path=artifacts.plan_path,
+            launch_agent_path=artifacts.launch_agent_path,
+            activation_status="activated",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "ensure_scheduler_training_package",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            ValueError("quality-v2 training failed")
+        ),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(config.env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(config.state_root),
+            "--scheduler-root",
+            str(config.scheduler_root),
+            "--activate",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["status"] == "scheduled"
+    assert payload["activation_status"] == "activated"
+    assert payload["training_package"] == {
+        "error": "ValueError: quality-v2 training failed",
+        "status": "failed",
+    }
 
 
 def test_morning_dispatch_forwards_env_file_to_immediate_preparation(
@@ -1332,7 +1575,9 @@ def test_generic_morning_artifacts_contain_no_drawing_identity(tmp_path):
     assert "4953" not in wrapper
     assert "run-drawing" not in wrapper
     assert "--activate" not in wrapper
+    assert "--training-category" not in wrapper
     assert plist["Label"] == "com.totoai.morning-dispatcher.v1"
+    assert plist["StartInterval"] == 3600
 
 
 def test_generic_morning_artifacts_require_explicit_evening_activation(tmp_path):

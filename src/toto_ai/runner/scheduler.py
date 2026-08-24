@@ -96,6 +96,8 @@ SCHEDULER_WRAPPER_FILENAME = "run-scheduler.sh"
 SCHEDULER_LAUNCH_AGENT_FILENAME = "totoai-scheduler.plist"
 MORNING_WRAPPER_FILENAME = "run-morning-preanalysis.sh"
 MORNING_LAUNCH_AGENT_FILENAME = "totoai-morning-preanalysis.plist"
+DEFAULT_MORNING_DISCOVERY_INTERVAL_SECONDS = 3600
+MINIMUM_MORNING_DISCOVERY_INTERVAL_SECONDS = 900
 PACKAGE_CSV_HEADER = ("rank", "coupon", "gross_ev", "net_ev")
 DEFAULT_MINIMUM_GROSS_EV = EVConfig(
     bank=30,
@@ -1611,6 +1613,7 @@ def verify_scheduler_artifacts(
 def prepare_morning_preanalysis_artifacts(
     *,
     times: Sequence[str],
+    discovery_interval_seconds: int = DEFAULT_MORNING_DISCOVERY_INTERVAL_SECONDS,
     retry_count: int,
     retry_delay_seconds: float,
     output_dir: str | Path,
@@ -1624,6 +1627,13 @@ def prepare_morning_preanalysis_artifacts(
 ) -> MorningPreanalysisArtifacts:
     """Generate, but never install, a non-betting morning launchd candidate."""
     validate_config_bank(bank, stake)
+    if (
+        type(discovery_interval_seconds) is not int
+        or discovery_interval_seconds < MINIMUM_MORNING_DISCOVERY_INTERVAL_SECONDS
+    ):
+        raise ValueError(
+            "discovery_interval_seconds must be an integer of at least 900"
+        )
     _require_non_negative_int("retry_count", retry_count)
     if (
         not isinstance(retry_delay_seconds, (int, float))
@@ -1687,6 +1697,7 @@ def prepare_morning_preanalysis_artifacts(
         created.append(wrapper_path)
         launch_agent = _render_morning_launch_agent(
             times=parsed_times,
+            discovery_interval_seconds=discovery_interval_seconds,
             wrapper_path=wrapper_path,
             logs_dir=logs_dir,
             project_root=root,
@@ -8167,6 +8178,7 @@ def _render_morning_preanalysis_wrapper(
 def _render_morning_launch_agent(
     *,
     times: Sequence[tuple[int, int]],
+    discovery_interval_seconds: int,
     wrapper_path: Path,
     logs_dir: Path,
     project_root: Path,
@@ -8176,6 +8188,7 @@ def _render_morning_launch_agent(
         "ProgramArguments": [str(wrapper_path)],
         "WorkingDirectory": str(project_root),
         "RunAtLoad": False,
+        "StartInterval": discovery_interval_seconds,
         "StartCalendarInterval": [
             {"Hour": hour, "Minute": minute} for hour, minute in times
         ],
