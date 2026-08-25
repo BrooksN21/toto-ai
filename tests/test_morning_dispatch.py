@@ -1510,6 +1510,89 @@ def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
     assert payload["source_collector"]["consensus"]["promoted_count"] == 1
 
 
+def test_deferred_unactivated_cli_runs_source_collectors_without_installing(
+    monkeypatch,
+    tmp_path,
+):
+    write_empty_schedule_evidence_ledger(tmp_path)
+    env_file = _env(tmp_path / ".env")
+    retry_plan = tmp_path / "retry-plan.json"
+    retry_plan.write_text("{}\n", encoding="utf-8")
+    queue = tmp_path / "review-queue.json"
+    queue.write_text("{}\n", encoding="utf-8")
+    calls: list[tuple[str, Path]] = []
+    monkeypatch.setattr(
+        cli,
+        "dispatch_morning",
+        lambda *_args, **_kwargs: MorningDispatchResult(
+            status="deferred",
+            reason="ACTION REQUIRED: timing unknown 1/15",
+            record_path=tmp_path / "deferred.json",
+            plan_id=None,
+            plan_path=None,
+            launch_agent_path=None,
+            activation_status="not_requested",
+            retry_plan_path=retry_plan,
+            review_queue_path=queue,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "install_preflight_retry_launch_agent",
+        lambda _value: (_ for _ in ()).throw(
+            AssertionError("unactivated rehearsal must not install LaunchAgent")
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "collect_schedule_source_candidates",
+        lambda path, **_kwargs: calls.append(("independent", Path(path)))
+        or SimpleNamespace(
+            status="CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
+            candidate_count=1,
+            unresolved_count=0,
+            report_path=tmp_path / "independent.json",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "promote_uefa_sofascore_consensus",
+        lambda path, **_kwargs: calls.append(("consensus", Path(path)))
+        or SimpleNamespace(
+            status="CONSENSUS_PROMOTED",
+            promoted_count=1,
+            existing_count=0,
+            unresolved_count=0,
+            report_path=tmp_path / "consensus.json",
+            ledger_semantic_hash="c" * 64,
+        ),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+        ],
+    )
+
+    assert result.exit_code == 2, result.output
+    payload = json.loads(result.output)
+    assert calls == [("independent", queue), ("consensus", queue)]
+    assert payload["retry_scheduler"] is None
+    assert payload["source_collector"]["independent"]["candidate_count"] == 1
+    assert payload["source_collector"]["consensus"]["promoted_count"] == 1
+
+
 def test_reviewed_alias_names_load_existing_valid_catalog(tmp_path):
     aliases = tmp_path / "team-aliases.json"
     aliases.write_text(

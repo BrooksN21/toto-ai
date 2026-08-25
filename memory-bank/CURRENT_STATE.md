@@ -1,5 +1,20 @@
 # Current State
 
+## Non-activating morning source collection repair (2026-08-25)
+
+The morning CLI previously ran independent and UEFA-consensus source
+collection only inside `if activate`, so a safe rehearsal produced a review
+queue but reported `source_collector=null`. Source collection now runs whenever
+a review queue exists. `--activate` controls only LaunchAgent installation.
+
+A fresh identity-bound drawing-4986 rehearsal without `--activate` completed
+in about 55 seconds and reported the expected source evidence: Sofascore 10/15,
+TheSportsDB 12/15, source union 12/15, three unresolved events, and no ledger
+mutation. Exact UEFA consensus promoted 0/15, so preparation correctly remains
+`deferred`, with no scheduler plan, training package, operator package, or
+wager. A regression proves that non-activating runs invoke both collectors and
+cannot call the LaunchAgent installer.
+
 ## Drawing 4986 production CLI coverage check (2026-08-25)
 
 The real `collect-schedule-sources` CLI completed successfully against the

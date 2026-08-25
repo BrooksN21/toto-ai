@@ -183,6 +183,12 @@ frozen snapshots and a hash-bound deterministic review document. Any source
 failure, ambiguity, conflict, late capture or unsupported competition remains
 fail-closed for the next passive retry.
 
+Source discovery is triggered whenever morning preparation emits a review
+queue, including controlled runs without `--activate`. The activation flag
+controls only installation of LaunchAgent retry/evening jobs; it never controls
+whether evidence is collected. This keeps rehearsal observability equivalent
+to the activated data path without installing background automation.
+
 Morning preparation keeps identity coverage and kickoff evidence distinct.
 A baseline-only identity row with no kickoff produces a `timing_unknown`
 dependency even when preparation is READY 15/15. It enters the same
