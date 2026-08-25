@@ -297,6 +297,12 @@ from toto_ai.runner import (
     validate_scheduler_final_runtime_budget,
     write_drawing_run_reports,
 )
+from toto_ai.runner.conservative_cutoff import (
+    conservative_cutoff_evidence_sha256,
+    derive_conservative_cutoff,
+    load_conservative_cutoff_evidence,
+    write_conservative_cutoff_evidence,
+)
 from toto_ai.runner.final_input import load_final_input
 from toto_ai.runner.offline_replay import (
     OfflineReplayInputs,
@@ -2983,10 +2989,54 @@ def run_drawing_command(
     print(f"Reports written to {runner_paths[0]} and {runner_paths[1]}")
 
 
+@app.command("scheduler-cutoff")
+def scheduler_cutoff_command(
+    source_report: str = typer.Option(..., "--source-report"),
+    ended_at: str = typer.Option(..., "--ended-at"),
+    drawing_id: int = typer.Option(..., "--drawing-id", min=1),
+    drawing_number: int = typer.Option(..., "--drawing-number", min=1),
+    output: str = typer.Option(..., "--output"),
+    project_root: str = typer.Option(..., "--project-root"),
+) -> None:
+    """Derive a hash-bound cutoff that can only move scheduling earlier."""
+    root = Path(project_root).resolve(strict=True)
+    try:
+        report_path = resolve_contained_path(source_report, allowed_root=root)
+        output_path = resolve_contained_path(output, allowed_root=root)
+        evidence = derive_conservative_cutoff(
+            report_path,
+            source_ended_at=ended_at,
+            expected_drawing_id=drawing_id,
+            expected_drawing_number=drawing_number,
+        )
+        written = write_conservative_cutoff_evidence(evidence, output_path)
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": evidence.status,
+                "drawing_id": evidence.drawing_id,
+                "drawing_number": evidence.drawing_number,
+                "source_ended_at": evidence.source_ended_at.isoformat(),
+                "earliest_kickoff": evidence.earliest_kickoff.isoformat(),
+                "operational_cutoff": evidence.operational_cutoff.isoformat(),
+                "t_minus_10": (
+                    evidence.operational_cutoff - timedelta(minutes=10)
+                ).isoformat(),
+                "evidence_path": str(written),
+            },
+            sort_keys=True,
+        )
+    )
+
+
 @app.command("scheduler-plan")
 def scheduler_plan_command(
     drawing: int = typer.Option(..., min=1),
     ended_at: str = typer.Option(..., "--ended-at"),
+    operational_cutoff: str | None = typer.Option(None, "--operational-cutoff"),
+    cutoff_evidence: str | None = typer.Option(None, "--cutoff-evidence"),
     bank: int = typer.Option(..., min=1),
     output_dir: str = typer.Option(..., "--output-dir"),
     project_root: str | None = typer.Option(None, "--project-root"),
@@ -3034,6 +3084,8 @@ def scheduler_plan_command(
             drawing=drawing,
             drawing_id=drawing_id,
             ended_at=ended_at,
+            operational_cutoff=operational_cutoff,
+            cutoff_evidence=cutoff_evidence,
             bank=bank,
             stake=stake,
             minimum_gross_ev=minimum_gross_ev,
@@ -3508,6 +3560,53 @@ def _optional_morning_span_days(span_days: int | None) -> int | None:
     return span_days or None
 
 
+def _morning_cutoff_directory(
+    config: MorningDispatchConfig,
+    evidence: MorningPreparedDrawing,
+) -> Path:
+    deadline = evidence.deadline.strftime("%Y%m%dT%H%M%SZ")
+    return (
+        config.state_root
+        / "preflight"
+        / (
+            f"drawing-{evidence.drawing_id}-{deadline}-"
+            f"{evidence.drawing_fingerprint[:16]}"
+        )
+        / "source-collector"
+    )
+
+
+def _attach_persisted_conservative_cutoff(
+    config: MorningDispatchConfig,
+    evidence: MorningPreparedDrawing,
+) -> MorningPreparedDrawing:
+    collector_dir = _morning_cutoff_directory(config, evidence)
+    source_report = collector_dir / "schedule-source-candidates.json"
+    cutoff_path = collector_dir / "conservative-cutoff.json"
+    if not source_report.is_file():
+        return evidence
+    derived = derive_conservative_cutoff(
+        source_report,
+        source_ended_at=evidence.deadline,
+        expected_drawing_id=evidence.drawing_id,
+        expected_drawing_number=evidence.drawing_number,
+    )
+    write_conservative_cutoff_evidence(derived, cutoff_path)
+    loaded = load_conservative_cutoff_evidence(
+        cutoff_path,
+        project_root=config.project_root,
+        expected_drawing_id=evidence.drawing_id,
+        expected_drawing_number=evidence.drawing_number,
+        expected_source_ended_at=evidence.deadline,
+    )
+    return replace(
+        evidence,
+        operational_cutoff=loaded.operational_cutoff,
+        cutoff_evidence=cutoff_path,
+        cutoff_evidence_sha256=conservative_cutoff_evidence_sha256(loaded),
+    )
+
+
 @app.command("morning-dispatch")
 def morning_dispatch_command(
     bank: int = typer.Option(..., min=1),
@@ -3610,11 +3709,13 @@ def morning_dispatch_command(
     retry_scheduler_status: dict[str, object] | None = None
     source_collector_status: dict[str, object] | None = None
     training_package_status: dict[str, object] | None = None
-    try:
-        result = dispatch_morning(
+    prepared_evidence: MorningPreparedDrawing | None = None
+
+    def prepare_for_dispatch(now: datetime) -> MorningPreparedDrawing:
+        nonlocal prepared_evidence
+        prepared_evidence = _attach_persisted_conservative_cutoff(
             config,
-            observed_at=observed_at,
-            prepare_current=lambda now: _prepare_current_for_morning(
+            _prepare_current_for_morning(
                 observed_at=now,
                 db=config.db,
                 community=community,
@@ -3637,6 +3738,14 @@ def morning_dispatch_command(
                     )
                 ),
             ),
+        )
+        return prepared_evidence
+
+    try:
+        result = dispatch_morning(
+            config,
+            observed_at=observed_at,
+            prepare_current=prepare_for_dispatch,
             now=lambda: datetime.now(timezone.utc),
             activate=activate_scheduler_launch_agent if activate else None,
             python_command=python_executable,
@@ -3678,13 +3787,6 @@ def morning_dispatch_command(
                     "paper_path": str(training.paper_path),
                     "diagnostics_path": str(training.diagnostics_path),
                 }
-        if activate and result.retry_plan_path is not None:
-            retry_artifacts = prepare_preflight_retry_artifacts(
-                result.retry_plan_path
-            )
-            retry_scheduler_status = install_preflight_retry_launch_agent(
-                retry_artifacts
-            )
         if result.review_queue_path is not None:
             independent_status: dict[str, object]
             try:
@@ -3703,21 +3805,53 @@ def morning_dispatch_command(
                     "error": f"{type(error).__name__}: {str(error)[:300]}",
                 }
             else:
+                cutoff_fields: dict[str, object]
+                if prepared_evidence is None:
+                    cutoff_fields = {
+                        "cutoff_status": "unavailable",
+                        "cutoff_reason": (
+                            "morning preparation evidence is unavailable"
+                        ),
+                    }
+                else:
+                    try:
+                        cutoff = derive_conservative_cutoff(
+                            collected.report_path,
+                            source_ended_at=prepared_evidence.deadline,
+                            expected_drawing_id=prepared_evidence.drawing_id,
+                            expected_drawing_number=prepared_evidence.drawing_number,
+                        )
+                        cutoff_path = write_conservative_cutoff_evidence(
+                            cutoff,
+                            collected.report_path.parent / "conservative-cutoff.json",
+                        )
+                    except ValueError as error:
+                        cutoff_fields = {
+                            "cutoff_status": "unavailable",
+                            "cutoff_reason": str(error),
+                        }
+                    else:
+                        cutoff_fields = {
+                            "cutoff_status": cutoff.status,
+                            "operational_cutoff": (
+                                cutoff.operational_cutoff.isoformat()
+                            ),
+                            "cutoff_evidence_path": str(cutoff_path),
+                        }
                 independent_status = {
                     "status": collected.status,
                     "candidate_count": collected.candidate_count,
                     "unresolved_count": collected.unresolved_count,
                     "providers": getattr(collected, "provider_statuses", {}),
                     "report_path": str(collected.report_path),
+                    **cutoff_fields,
                     "ledger_mutated": False,
                 }
             consensus_status: dict[str, object]
             try:
                 consensus = promote_uefa_sofascore_consensus(
                     result.review_queue_path,
-                    output_dir=(
-                        result.review_queue_path.parent / "source-consensus"
-                    ),
+                    output_dir=(result.review_queue_path.parent / "source-consensus"),
                     schedule_evidence_ledger=resolved_schedule_evidence_ledger,
                 )
             except Exception as error:
@@ -3740,6 +3874,41 @@ def morning_dispatch_command(
                 "independent": independent_status,
                 "consensus": consensus_status,
             }
+            if (
+                prepared_evidence is not None
+                and "cutoff_evidence_path" in independent_status
+            ):
+                persisted_cutoff = load_conservative_cutoff_evidence(
+                    str(independent_status["cutoff_evidence_path"]),
+                    project_root=config.project_root,
+                    expected_drawing_id=prepared_evidence.drawing_id,
+                    expected_drawing_number=prepared_evidence.drawing_number,
+                    expected_source_ended_at=prepared_evidence.deadline,
+                )
+                prepared_evidence = replace(
+                    prepared_evidence,
+                    operational_cutoff=persisted_cutoff.operational_cutoff,
+                    cutoff_evidence=Path(
+                        str(independent_status["cutoff_evidence_path"])
+                    ),
+                    cutoff_evidence_sha256=(
+                        conservative_cutoff_evidence_sha256(persisted_cutoff)
+                    ),
+                )
+                result = dispatch_morning(
+                    config,
+                    observed_at=datetime.now(timezone.utc),
+                    prepare_current=lambda _now: prepared_evidence,
+                    now=lambda: datetime.now(timezone.utc),
+                    activate=None,
+                    python_command=python_executable,
+                    expected_identity=expected_identity,
+                )
+        if activate and result.retry_plan_path is not None:
+            retry_artifacts = prepare_preflight_retry_artifacts(result.retry_plan_path)
+            retry_scheduler_status = install_preflight_retry_launch_agent(
+                retry_artifacts
+            )
     except MorningIdentityDriftError as error:
         typer.echo(
             json.dumps(
@@ -4844,8 +5013,7 @@ def collect_the_odds_api_shadow_command(
         ) from error
 
     consensus_count = sum(
-        event.probability_source == "external_consensus"
-        for event in snapshot.events
+        event.probability_source == "external_consensus" for event in snapshot.events
     )
     fallback_count = len(snapshot.events) - consensus_count
     typer.echo(
@@ -5037,7 +5205,7 @@ def compare_package_strategies_command(
         dir_okay=False,
         readable=True,
         resolve_path=True,
-        help="Hash-bound schema-v6 scheduler-plan.json.",
+        help="Hash-bound schema-v7 scheduler-plan.json.",
     ),
     output_dir: Path = typer.Option(  # noqa: B008
         Path("reports/strategy-comparison"),
@@ -5156,9 +5324,7 @@ def historical_strategy_benchmark_command(
                     task,
                     total=total,
                     completed=index if status == "complete" else index - 1,
-                    description=(
-                        f"drawing={drawing_number} {index}/{total} {status}"
-                    ),
+                    description=(f"drawing={drawing_number} {index}/{total} {status}"),
                 )
 
             with session_factory() as session:
@@ -5294,9 +5460,7 @@ def legacy_strategy_benchmark_command(
                     task,
                     total=total,
                     completed=index if status != "running" else index - 1,
-                    description=(
-                        f"drawing={drawing_number} {index}/{total} {status}"
-                    ),
+                    description=(f"drawing={drawing_number} {index}/{total} {status}"),
                 )
 
             benchmark = benchmark_legacy_retrospective_cases(
@@ -5341,8 +5505,7 @@ def legacy_strategy_benchmark_command(
     )
     print(table)
     print(
-        "[yellow]LEGACY_RETROSPECTIVE — NOT RELEASE EVIDENCE — "
-        "NOT ACTIONABLE[/yellow]"
+        "[yellow]LEGACY_RETROSPECTIVE — NOT RELEASE EVIDENCE — NOT ACTIONABLE[/yellow]"
     )
     print(f"Resumed drawings: {benchmark.summary['resumed_drawings']}")
     print(f"Manifest: {paths.manifest}")
@@ -5550,9 +5713,7 @@ def compare_preliminary_packages_command(
     output_dir: str = typer.Option(
         "reports/preliminary-package-comparison", "--output-dir"
     ),
-    monte_carlo_samples: int = typer.Option(
-        2048, "--monte-carlo-samples", min=1
-    ),
+    monte_carlo_samples: int = typer.Option(2048, "--monte-carlo-samples", min=1),
 ) -> None:
     """Compare equal-budget BK and sports-shadow packages — PAPER ONLY."""
 
@@ -5560,17 +5721,15 @@ def compare_preliminary_packages_command(
         parsed_as_of = parse_historical_as_of(as_of)
         if parsed_as_of is None:
             raise ValueError("--as-of is required")
-        report, json_path, baseline_path, candidate_path = (
-            compare_preliminary_packages(
-                drawing_id=drawing_id,
-                bank=bank,
-                stake=stake,
-                as_of=parsed_as_of,
-                raw_cache_dir=raw_cache_dir,
-                sports_artifact_path=sports_artifact,
-                output_dir=output_dir,
-                monte_carlo_samples=monte_carlo_samples,
-            )
+        report, json_path, baseline_path, candidate_path = compare_preliminary_packages(
+            drawing_id=drawing_id,
+            bank=bank,
+            stake=stake,
+            as_of=parsed_as_of,
+            raw_cache_dir=raw_cache_dir,
+            sports_artifact_path=sports_artifact,
+            output_dir=output_dir,
+            monte_carlo_samples=monte_carlo_samples,
         )
     except (OSError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error

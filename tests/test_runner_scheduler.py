@@ -665,11 +665,9 @@ def test_structurally_playable_phase_is_forced_to_paper_only_no_bet(tmp_path: Pa
     assert paper.source_package_path is None
     assert paper.paper_path is None
     post_draw = json.loads(
-        (
-            plan.output_dir
-            / "post-draw"
-            / f"post-draw-{plan.drawing_id}.json"
-        ).read_text(encoding="utf-8")
+        (plan.output_dir / "post-draw" / f"post-draw-{plan.drawing_id}.json").read_text(
+            encoding="utf-8"
+        )
     )
     assert post_draw["package_binding"]["kind"] == "package_free_no_bet"
 
@@ -1225,7 +1223,9 @@ def test_scheduler_plan_rejects_non_finite_minimum_gross_ev(
     assert not (tmp_path / "scheduler").exists()
 
 
-def test_exact_offsets_and_phase_start_times_are_ended_at_anchored(tmp_path: Path):
+def test_exact_offsets_and_phase_start_times_are_operational_cutoff_anchored(
+    tmp_path: Path,
+):
     plan = _plan(tmp_path)
     assert plan.tls_preflight_at == ENDED_AT - timedelta(minutes=120)
     assert plan.api_preflight_at == ENDED_AT - timedelta(minutes=90)
@@ -1248,6 +1248,7 @@ def test_exact_offsets_and_phase_start_times_are_ended_at_anchored(tmp_path: Pat
     assert phases["freeze"]["started_at"] == "2030-01-02T11:50:00Z"
     assert _status(result)["deadlines"] == {
         "ended_at": "2030-01-02T12:00:00Z",
+        "operational_cutoff": "2030-01-02T12:00:00Z",
         "t_minus_120": "2030-01-02T10:00:00Z",
         "t_minus_90": "2030-01-02T10:30:00Z",
         "t_minus_60": "2030-01-02T11:00:00Z",
@@ -1959,9 +1960,7 @@ def test_manifest_selection_context_mismatch_fails_closed(
     payload = _valid_runner_manifest(context)
     forged = payload["config"]["selection_context"]
     forged[field] = value
-    payload["config"]["selection_context_sha256"] = selection_context_sha256(
-        forged
-    )
+    payload["config"]["selection_context_sha256"] = selection_context_sha256(forged)
     manifest = _write_runner_manifest(context, payload)
 
     with pytest.raises(SchedulerPhaseError, match="config does not match"):
@@ -1973,9 +1972,7 @@ def test_manifest_algorithm_selection_context_mismatch_fails_closed(tmp_path: Pa
     payload = _valid_runner_manifest(context)
     forged = payload["config"]["selection_context"]
     forged["quality_v2"]["exposure_floor_scale"] = 0.16
-    payload["config"]["selection_context_sha256"] = selection_context_sha256(
-        forged
-    )
+    payload["config"]["selection_context_sha256"] = selection_context_sha256(forged)
     manifest = _write_runner_manifest(context, payload)
 
     with pytest.raises(SchedulerPhaseError, match="config does not match"):

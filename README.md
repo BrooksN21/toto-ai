@@ -232,7 +232,10 @@ That paragraph records the historical installed schedule only. The current
 generator defaults to 08:00/10:30/12:00, but this feature does not install or
 modify LaunchAgents.
 
-Production schema-v6 execution is always a short-lived idempotent tick.
+Production schema-v7 execution is always a short-lived idempotent tick.
+Schema v7 keeps TotoBrief `ended_at` as identity metadata and uses a separate
+non-extending `operational_cutoff` for all T-minus phases. An earlier cutoff
+requires hash-bound independent kickoff evidence; it can never be moved later.
 `scheduler-execute --run-id` is supported only with `--simulate`; production
 use is rejected rather than entering the incompatible legacy long-running
 path.

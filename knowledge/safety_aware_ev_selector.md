@@ -65,7 +65,7 @@ headroom violations, replacements, gross and robust-EV deltas, diversity and
 distance distribution, exact/Monte-Carlo category probabilities, both package
 hashes, candidate counts, feasibility and objective values. The diagnostic
 payload hashes and binds the exact probability snapshot, normalized probability
-input, schedule-evidence ledger bytes/semantic identity, canonical schema-v6
+input, schedule-evidence ledger bytes/semantic identity, canonical schema-v7
 scheduler-plan bytes, and the complete quality-v2 configuration. Arbitrary
 digest strings, arbitrary plan files, missing artifacts, symlinks, or mutated
 bytes fail closed.
@@ -73,7 +73,7 @@ bytes fail closed.
 The canonical bound selection context also records mode, bank, stake,
 requested coupon capacity, effective budget/capacity, minimum gross EV,
 concentration and probability thresholds, safety/provenance flags, and the
-nested quality-v2 policy. Selector provenance, schema-v6 SchedulerPlan, runner
+nested quality-v2 policy. Selector provenance, schema-v7 SchedulerPlan, runner
 manifest, and diagnostics must agree on both the exact canonical object and its
 SHA-256. Missing fields, self-consistent forged values, and runtime drift fail
 closed.

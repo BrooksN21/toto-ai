@@ -78,12 +78,7 @@ def test_scheduler_child_lead_matches_triggering_phase(
         plan=plan,
         run_id=f"{scheduler_phase}-deadline",
         run_dir=plan.output_dir / "attempts" / f"{scheduler_phase}-deadline",
-        work_dir=(
-            plan.output_dir
-            / "attempts"
-            / f"{scheduler_phase}-deadline"
-            / phase
-        ),
+        work_dir=(plan.output_dir / "attempts" / f"{scheduler_phase}-deadline" / phase),
         scheduled_at=plan.preflight_at,
         started_at=plan.preflight_at,
         phase_deadline=plan.fallback_at - timedelta(seconds=5),
@@ -118,13 +113,12 @@ def test_drawing_4967_plan_binds_canonical_ledger_path_and_hashes(
     payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
 
     assert loaded.schedule_evidence_ledger == ledger_path.resolve()
-    assert loaded.schedule_evidence_ledger_sha256 == hashlib.sha256(
-        ledger_path.read_bytes()
-    ).hexdigest()
-    assert len(loaded.schedule_evidence_semantic_hash) == 64
-    assert payload["paths"]["schedule_evidence_ledger"] == str(
-        ledger_path.resolve()
+    assert (
+        loaded.schedule_evidence_ledger_sha256
+        == hashlib.sha256(ledger_path.read_bytes()).hexdigest()
     )
+    assert len(loaded.schedule_evidence_semantic_hash) == 64
+    assert payload["paths"]["schedule_evidence_ledger"] == str(ledger_path.resolve())
     assert payload["config"]["schedule_evidence_ledger_sha256"] == (
         loaded.schedule_evidence_ledger_sha256
     )
@@ -384,6 +378,9 @@ def test_legacy_schema_v1_plan_loads_with_inferred_absolute_project_root(
     artifacts = prepare_scheduler_artifacts(_plan(tmp_path, env_file))
     payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
     payload["schema_version"] = 1
+    payload["target"].pop("operational_cutoff")
+    payload["config"].pop("cutoff_evidence_sha256")
+    payload["paths"].pop("cutoff_evidence")
     payload["paths"].pop("project_root")
     payload["config"].pop("publication_lead_minutes")
     payload["config"].pop("trigger_offsets_minutes")
@@ -394,8 +391,7 @@ def test_legacy_schema_v1_plan_loads_with_inferred_absolute_project_root(
     payload["config"].pop("selection_context_sha256")
     payload["paths"].pop("schedule_evidence_ledger")
     semantic = {
-        key: payload[key]
-        for key in ("schema_version", "target", "config", "paths")
+        key: payload[key] for key in ("schema_version", "target", "config", "paths")
     }
     payload["plan_id"] = hashlib.sha256(
         json.dumps(
@@ -423,6 +419,9 @@ def test_genuine_schema_v2_plan_hash_loads_without_new_safety_fields(
     artifacts = prepare_scheduler_artifacts(_plan(tmp_path, env_file))
     payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
     payload["schema_version"] = 2
+    payload["target"].pop("operational_cutoff")
+    payload["config"].pop("cutoff_evidence_sha256")
+    payload["paths"].pop("cutoff_evidence")
     payload["config"].pop("publication_lead_minutes")
     payload["config"].pop("trigger_offsets_minutes")
     payload["config"].pop("schedule_evidence_ledger_sha256")
@@ -438,8 +437,7 @@ def test_genuine_schema_v2_plan_hash_loads_without_new_safety_fields(
     ):
         payload["config"].pop(key)
     semantic = {
-        key: payload[key]
-        for key in ("schema_version", "target", "config", "paths")
+        key: payload[key] for key in ("schema_version", "target", "config", "paths")
     }
     payload["plan_id"] = hashlib.sha256(
         json.dumps(
@@ -475,6 +473,9 @@ def test_schema_v3_plan_preserves_declared_project_root(tmp_path: Path):
     artifacts = prepare_scheduler_artifacts(plan)
     payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
     payload["schema_version"] = 3
+    payload["target"].pop("operational_cutoff")
+    payload["config"].pop("cutoff_evidence_sha256")
+    payload["paths"].pop("cutoff_evidence")
     payload["config"].pop("publication_lead_minutes")
     payload["config"].pop("trigger_offsets_minutes")
     payload["config"].pop("schedule_evidence_ledger_sha256")
@@ -484,8 +485,7 @@ def test_schema_v3_plan_preserves_declared_project_root(tmp_path: Path):
     payload["config"].pop("selection_context_sha256")
     payload["paths"].pop("schedule_evidence_ledger")
     semantic = {
-        key: payload[key]
-        for key in ("schema_version", "target", "config", "paths")
+        key: payload[key] for key in ("schema_version", "target", "config", "paths")
     }
     payload["plan_id"] = hashlib.sha256(
         json.dumps(
@@ -765,9 +765,7 @@ def test_evening_scheduler_preflight_succeeds_from_launchd_root_cwd(
     env["API_SPORTS_KEY"] = "cache-only-test-key"
     env["TOTO_TEST_DRAWING_PAYLOAD"] = str(payload_path)
     env["PYTHONPATH"] = os.pathsep.join(
-        item
-        for item in (str(hook_dir), env.get("PYTHONPATH", ""))
-        if item
+        item for item in (str(hook_dir), env.get("PYTHONPATH", "")) if item
     )
     plan = build_scheduler_plan(
         drawing=5001,
@@ -785,12 +783,7 @@ def test_evening_scheduler_preflight_succeeds_from_launchd_root_cwd(
         run_id="launchd-root",
         run_dir=plan.output_dir / "runs" / "5001" / "launchd-root",
         work_dir=(
-            plan.output_dir
-            / "runs"
-            / "5001"
-            / "launchd-root"
-            / "work"
-            / "preflight"
+            plan.output_dir / "runs" / "5001" / "launchd-root" / "work" / "preflight"
         ),
         scheduled_at=plan.preflight_at,
         started_at=plan.preflight_at,

@@ -5071,3 +5071,36 @@ eligibility, matching, fallback, and fail-closed decisions are unchanged.
 Verification was local and made no live provider request: the combined focused
 suite passed `110 passed in 12.82s`; Ruff passed on all changed Python files and
 `git diff --check` passed.
+
+## Drawing 4987 conservative operational cutoff (2026-08-25)
+
+TotoBrief drawing 4987 is stored as internal ID 12068 with 15/15 events and
+`ended_at=2026-08-26T18:45:00Z` (21:45 MSK). GOAL API candidate collection
+resolved 15/15 fixture identities; 12 kickoffs precede that field. Independent
+Sofascore spot checks agreed with the sampled GOAL times. The earliest observed
+kickoff is event 11 at `2026-08-26T15:45:00Z` (18:45 MSK), so the safe T-10
+boundary is `2026-08-26T15:35:00Z` (18:35 MSK). Official BaltBet rules require
+the package to be placed before the earliest event in the system.
+
+Scheduler schema v7 now separates immutable TotoBrief `ended_at` identity from
+`operational_cutoff`. A new hash-bound `conservative-cutoff.json` is derived
+from the immutable candidate report and applies only
+`min(ended_at, earliest_kickoff)`; it can never move the boundary later.
+Unproven early cutoffs, later cutoffs, drawing drift, source-report drift and
+legacy schema-v6 plans fail closed. All scheduler phases and passive retry
+hard stops are based on the operational cutoff.
+
+Morning source collection writes the cutoff evidence when qualifying
+independent evidence exists. The same invocation immediately tightens and
+rewrites an existing passive retry plan before LaunchAgent installation; later
+morning runs automatically load the exact persisted artifact. This does not
+promote candidate schedule rows into the canonical ledger, alter sports
+probabilities, create a package or authorize a wager.
+
+The 4987 dry-run retained source `ended_at=18:45Z`, used operational
+cutoff `15:45Z`, and produced T-10 `15:35Z`; no scheduler was activated and no
+package was generated. The evidence artifact is
+`reports/canary/goal-api-4987/conservative-cutoff.json`.
+
+Verification passed: `2021 passed, 13 deselected in 164.09s`; Ruff passed on
+the full repository and `git diff --check` passed.

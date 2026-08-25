@@ -67,6 +67,10 @@ from toto_ai.package.audit import (
     PackageSafetyConfig,
     evaluate_package_safety,
 )
+from toto_ai.runner.conservative_cutoff import (
+    conservative_cutoff_evidence_sha256,
+    load_conservative_cutoff_evidence,
+)
 from toto_ai.runner.final_input import (
     FinalInputSnapshot,
     capture_final_input,
@@ -80,12 +84,13 @@ from toto_ai.runner.scheduler_state import (
     transition,
 )
 
-SCHEDULER_SCHEMA_VERSION = 6
+SCHEDULER_SCHEMA_VERSION = 7
 LEGACY_SCHEDULER_SCHEMA_VERSION = 1
 LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION = 2
 LEGACY_ACTIONABLE_SCHEMA_VERSION = 3
 STALE_T12_SCHEDULER_SCHEMA_VERSION = 4
 UNBOUND_LEDGER_SCHEDULER_SCHEMA_VERSION = 5
+UNSAFE_DEADLINE_SCHEDULER_SCHEMA_VERSION = 6
 RUNNER_MANIFEST_SCHEMA_VERSION = 5
 SCHEDULER_INTEGRITY_EXIT_CODE = 78
 SCHEDULER_PLAN_FILENAME = "scheduler-plan.json"
@@ -209,13 +214,14 @@ class _NonProductionArtifact(SchedulerError):
 
 @dataclass(frozen=True)
 class SchedulerPlan:
-    """One exact drawing schedule anchored only to BaltBet ``ended_at``."""
+    """One exact drawing schedule with a non-extending operational cutoff."""
 
     drawing: int
     ended_at: datetime
     requested_bank: int
     output_dir: Path
     project_root: Path
+    operational_cutoff: datetime | None = None
     drawing_id: int | None = None
     stake: int = 30
     minimum_gross_ev: float = DEFAULT_MINIMUM_GROSS_EV
@@ -264,6 +270,8 @@ class SchedulerPlan:
     schedule_evidence_ledger: Path = DEFAULT_SCHEDULE_EVIDENCE_PATH
     schedule_evidence_ledger_sha256: str | None = None
     schedule_evidence_semantic_hash: str | None = None
+    cutoff_evidence: Path | None = None
+    cutoff_evidence_sha256: str | None = None
     timing_overrides: Path | None = None
     reviewed_schedule_catalog: Path | None = None
     reviewed_catalog_sha256: str | None = None
@@ -292,6 +300,14 @@ class SchedulerPlan:
             "ended_at",
             _require_utc_datetime("ended_at", self.ended_at),
         )
+        operational_cutoff = (
+            self.ended_at
+            if self.operational_cutoff is None
+            else _require_utc_datetime("operational_cutoff", self.operational_cutoff)
+        )
+        if operational_cutoff > self.ended_at:
+            raise ValueError("operational_cutoff cannot extend ended_at")
+        object.__setattr__(self, "operational_cutoff", operational_cutoff)
         validate_config_bank(self.requested_bank, self.stake)
         if not isinstance(self.minimum_gross_ev, (int, float)) or isinstance(
             self.minimum_gross_ev,
@@ -326,6 +342,38 @@ class SchedulerPlan:
         _ = self.quality_v2_ev_config
         project_root = _validated_project_root(self.project_root)
         object.__setattr__(self, "project_root", project_root)
+        if self.cutoff_evidence is None:
+            if operational_cutoff != self.ended_at:
+                raise ValueError(
+                    "an earlier operational_cutoff requires cutoff evidence"
+                )
+            if self.cutoff_evidence_sha256 is not None:
+                raise ValueError("cutoff_evidence_sha256 requires cutoff evidence")
+        else:
+            if self.drawing_id is None:
+                raise ValueError("cutoff evidence requires drawing_id")
+            cutoff_path = _validated_project_path(
+                project_root,
+                self.cutoff_evidence,
+                name="cutoff evidence",
+            )
+            evidence = load_conservative_cutoff_evidence(
+                cutoff_path,
+                project_root=project_root,
+                expected_drawing_id=self.drawing_id,
+                expected_drawing_number=self.drawing,
+                expected_source_ended_at=self.ended_at,
+            )
+            if evidence.operational_cutoff != operational_cutoff:
+                raise ValueError("cutoff evidence operational cutoff mismatch")
+            evidence_sha256 = conservative_cutoff_evidence_sha256(evidence)
+            if (
+                self.cutoff_evidence_sha256 is not None
+                and self.cutoff_evidence_sha256 != evidence_sha256
+            ):
+                raise ValueError("cutoff evidence content hash mismatch")
+            object.__setattr__(self, "cutoff_evidence", cutoff_path)
+            object.__setattr__(self, "cutoff_evidence_sha256", evidence_sha256)
         object.__setattr__(
             self,
             "output_dir",
@@ -464,6 +512,7 @@ class SchedulerPlan:
             LEGACY_SCHEDULER_SCHEMA_VERSION,
             LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
             LEGACY_ACTIONABLE_SCHEMA_VERSION,
+            UNSAFE_DEADLINE_SCHEDULER_SCHEMA_VERSION,
             SCHEDULER_SCHEMA_VERSION,
         }:
             raise ValueError("unsupported scheduler source schema")
@@ -479,35 +528,35 @@ class SchedulerPlan:
 
     @property
     def tls_preflight_at(self) -> datetime:
-        return self.ended_at - timedelta(minutes=120)
+        return self.operational_cutoff - timedelta(minutes=120)
 
     @property
     def api_preflight_at(self) -> datetime:
-        return self.ended_at - timedelta(minutes=90)
+        return self.operational_cutoff - timedelta(minutes=90)
 
     @property
     def freshness_preflight_at(self) -> datetime:
-        return self.ended_at - timedelta(minutes=60)
+        return self.operational_cutoff - timedelta(minutes=60)
 
     @property
     def preflight_at(self) -> datetime:
-        return self.ended_at - timedelta(minutes=45)
+        return self.operational_cutoff - timedelta(minutes=45)
 
     @property
     def fallback_at(self) -> datetime:
-        return self.ended_at - timedelta(minutes=30)
+        return self.operational_cutoff - timedelta(minutes=30)
 
     @property
     def final_at(self) -> datetime:
-        return self.ended_at - timedelta(minutes=20)
+        return self.operational_cutoff - timedelta(minutes=20)
 
     @property
     def retry_at(self) -> datetime:
-        return self.ended_at - timedelta(minutes=16)
+        return self.operational_cutoff - timedelta(minutes=16)
 
     @property
     def publish_deadline(self) -> datetime:
-        return self.ended_at - timedelta(minutes=PUBLICATION_LEAD_MINUTES)
+        return self.operational_cutoff - timedelta(minutes=PUBLICATION_LEAD_MINUTES)
 
     @property
     def actionable_publication_deadline(self) -> datetime:
@@ -525,6 +574,7 @@ class SchedulerPlan:
     def deadlines(self) -> dict[str, datetime]:
         return {
             "ended_at": self.ended_at,
+            "operational_cutoff": self.operational_cutoff,
             "t_minus_120": self.tls_preflight_at,
             "t_minus_90": self.api_preflight_at,
             "t_minus_60": self.freshness_preflight_at,
@@ -591,6 +641,7 @@ class SchedulerPlan:
                 "drawing": self.drawing,
                 "drawing_id": self.drawing_id,
                 "ended_at": _timestamp(self.ended_at),
+                "operational_cutoff": _timestamp(self.operational_cutoff),
             },
             "config": {
                 "requested_bank": self.requested_bank,
@@ -625,6 +676,7 @@ class SchedulerPlan:
                 "schedule_evidence_semantic_hash": (
                     self.schedule_evidence_semantic_hash
                 ),
+                "cutoff_evidence_sha256": self.cutoff_evidence_sha256,
                 **(
                     {}
                     if self.reviewed_catalog_hash is None
@@ -637,6 +689,9 @@ class SchedulerPlan:
                 "db": str(self.db),
                 "aliases": str(self.aliases),
                 "schedule_evidence_ledger": str(self.schedule_evidence_ledger),
+                "cutoff_evidence": (
+                    None if self.cutoff_evidence is None else str(self.cutoff_evidence)
+                ),
                 "timing_overrides": (
                     None
                     if self.timing_overrides is None
@@ -881,6 +936,7 @@ def build_scheduler_plan(
     bank: int,
     output_dir: str | Path,
     project_root: str | Path | None = None,
+    operational_cutoff: datetime | str | None = None,
     drawing_id: int | None = None,
     stake: int = 30,
     minimum_gross_ev: float = DEFAULT_MINIMUM_GROSS_EV,
@@ -929,6 +985,8 @@ def build_scheduler_plan(
     schedule_evidence_ledger: str | Path = DEFAULT_SCHEDULE_EVIDENCE_PATH,
     schedule_evidence_ledger_sha256: str | None = None,
     schedule_evidence_semantic_hash: str | None = None,
+    cutoff_evidence: str | Path | None = None,
+    cutoff_evidence_sha256: str | None = None,
     timing_overrides: str | Path | None = None,
     reviewed_schedule_catalog: str | Path | None = None,
     reviewed_catalog_sha256: str | None = None,
@@ -950,6 +1008,11 @@ def build_scheduler_plan(
     """Build a strict plan; null or malformed ``ended_at`` fails immediately."""
 
     parsed_ended_at = _parse_utc_datetime("ended_at", ended_at)
+    parsed_operational_cutoff = (
+        parsed_ended_at
+        if operational_cutoff is None
+        else _parse_utc_datetime("operational_cutoff", operational_cutoff)
+    )
     if drawing_id is None and not _allow_missing_drawing_id:
         raise ValueError("drawing_id is required for actionable scheduler plans")
     normalized_output = _normalized_path(output_dir)
@@ -965,6 +1028,7 @@ def build_scheduler_plan(
         drawing=drawing,
         drawing_id=drawing_id,
         ended_at=parsed_ended_at,
+        operational_cutoff=parsed_operational_cutoff,
         requested_bank=bank,
         stake=stake,
         minimum_gross_ev=minimum_gross_ev,
@@ -989,6 +1053,8 @@ def build_scheduler_plan(
         schedule_evidence_ledger=ledger_path,
         schedule_evidence_ledger_sha256=schedule_evidence_ledger_sha256,
         schedule_evidence_semantic_hash=schedule_evidence_semantic_hash,
+        cutoff_evidence=(None if cutoff_evidence is None else Path(cutoff_evidence)),
+        cutoff_evidence_sha256=cutoff_evidence_sha256,
         timing_overrides=(None if timing_overrides is None else Path(timing_overrides)),
         reviewed_schedule_catalog=(
             None
@@ -1181,6 +1247,12 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
             "scheduler schema v5 lacks canonical schedule-evidence binding; "
             f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}"
         )
+    if schema_version == UNSAFE_DEADLINE_SCHEDULER_SCHEMA_VERSION:
+        raise ValueError(
+            "scheduler schema v6 conflates TotoBrief ended_at with the "
+            "operational cutoff; "
+            f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}"
+        )
     if type(schema_version) is not int or schema_version not in {
         LEGACY_SCHEDULER_SCHEMA_VERSION,
         LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
@@ -1196,7 +1268,11 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         )
     target = _exact_mapping(
         payload["target"],
-        {"drawing", "drawing_id", "ended_at"},
+        (
+            {"drawing", "drawing_id", "ended_at", "operational_cutoff"}
+            if schema_version == SCHEDULER_SCHEMA_VERSION
+            else {"drawing", "drawing_id", "ended_at"}
+        ),
         "target",
     )
     base_config_keys = {
@@ -1223,6 +1299,7 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         "schedule_evidence_ledger_sha256",
         "schedule_evidence_semantic_hash",
     }
+    cutoff_binding_config_keys = {"cutoff_evidence_sha256"}
     raw_config = payload["config"]
     if not isinstance(raw_config, Mapping):
         raise ValueError("config must be a JSON object")
@@ -1243,6 +1320,7 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         base_config_keys |= (
             trigger_config_keys
             | ledger_binding_config_keys
+            | cutoff_binding_config_keys
             | {
                 "quality_v2",
                 "selection_context",
@@ -1373,6 +1451,7 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
                 f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}"
             )
         path_keys.add("schedule_evidence_ledger")
+        path_keys.add("cutoff_evidence")
     if "env_file" in raw_paths:
         path_keys.add("env_file")
     paths = _exact_mapping(raw_paths, path_keys, "paths")
@@ -1380,6 +1459,7 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         drawing=target["drawing"],
         drawing_id=target["drawing_id"],
         ended_at=target["ended_at"],
+        operational_cutoff=target.get("operational_cutoff"),
         bank=config["requested_bank"],
         stake=config["stake"],
         minimum_gross_ev=config["minimum_gross_ev"],
@@ -1428,6 +1508,8 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
         ),
         schedule_evidence_ledger_sha256=config.get("schedule_evidence_ledger_sha256"),
         schedule_evidence_semantic_hash=config.get("schedule_evidence_semantic_hash"),
+        cutoff_evidence=paths.get("cutoff_evidence"),
+        cutoff_evidence_sha256=config.get("cutoff_evidence_sha256"),
         timing_overrides=paths["timing_overrides"],
         reviewed_schedule_catalog=paths.get("reviewed_schedule_catalog"),
         reviewed_catalog_sha256=paths.get("reviewed_catalog_sha256"),
@@ -2680,14 +2762,16 @@ def _persist_last_known_good(
     checkpoint_id = f"{context.run_id}-{upload_hash[:12]}"
     root = plan.output_dir / "last-known-good"
     authority_path = root / "authoritative-drawing.json"
-    authority_bytes = _authoritative_drawing_bytes(
-        plan, result.drawing_fingerprint
-    )
-    if not authority_path.exists() or _read_regular_file(
-        authority_path,
-        name="LKG authoritative drawing",
-        reject_symlink=True,
-    ) != authority_bytes:
+    authority_bytes = _authoritative_drawing_bytes(plan, result.drawing_fingerprint)
+    if (
+        not authority_path.exists()
+        or _read_regular_file(
+            authority_path,
+            name="LKG authoritative drawing",
+            reject_symlink=True,
+        )
+        != authority_bytes
+    ):
         raise SchedulerIntegrityError(
             "candidate package fingerprint differs from independent frozen authority",
             category="lkg_integrity",
@@ -2774,9 +2858,12 @@ def _freeze_authoritative_drawing(
     path = root / "authoritative-drawing.json"
     content = _authoritative_drawing_bytes(plan, drawing_fingerprint)
     if path.exists():
-        if _read_regular_file(
-            path, name="LKG authoritative drawing", reject_symlink=True
-        ) != content:
+        if (
+            _read_regular_file(
+                path, name="LKG authoritative drawing", reject_symlink=True
+            )
+            != content
+        ):
             raise SchedulerIntegrityError(
                 "independent drawing authority changed",
                 category="lkg_integrity",
@@ -3269,12 +3356,8 @@ def authorize_experimental_manual_release(
         "expires_at": _timestamp(plan.publish_deadline),
         "requested_bank": plan.requested_bank,
         "stake": plan.stake,
-        "quality_v2_config_sha256": quality_v2_config_sha256(
-            plan.quality_v2_ev_config
-        ),
-        "selection_context_sha256": selection_context_sha256(
-            plan.quality_v2_ev_config
-        ),
+        "quality_v2_config_sha256": quality_v2_config_sha256(plan.quality_v2_ev_config),
+        "selection_context_sha256": selection_context_sha256(plan.quality_v2_ev_config),
         "risk_acknowledged": True,
         "profitability_proven": False,
         "automatic_wagering": False,
@@ -3308,12 +3391,8 @@ def _validate_experimental_manual_release(plan: SchedulerPlan) -> Mapping[str, o
         "expires_at": _timestamp(plan.publish_deadline),
         "requested_bank": plan.requested_bank,
         "stake": plan.stake,
-        "quality_v2_config_sha256": quality_v2_config_sha256(
-            plan.quality_v2_ev_config
-        ),
-        "selection_context_sha256": selection_context_sha256(
-            plan.quality_v2_ev_config
-        ),
+        "quality_v2_config_sha256": quality_v2_config_sha256(plan.quality_v2_ev_config),
+        "selection_context_sha256": selection_context_sha256(plan.quality_v2_ev_config),
         "risk_acknowledged": True,
         "profitability_proven": False,
         "automatic_wagering": False,
@@ -3391,12 +3470,8 @@ def _publish_actionable_operator_result(
         name="operator source package",
         reject_symlink=True,
     )
-    selected_count = _strict_int(
-        "operator selected_count", terminal["selected_count"]
-    )
-    selected_cost = _strict_int(
-        "operator selected_cost", terminal["selected_cost"]
-    )
+    selected_count = _strict_int("operator selected_count", terminal["selected_count"])
+    selected_cost = _strict_int("operator selected_cost", terminal["selected_cost"])
     validated = _validate_package_csv(
         source_bytes,
         stake=plan.stake,
@@ -3413,11 +3488,14 @@ def _publish_actionable_operator_result(
         expected_coupons=validated.coupons,
     )
     if upload_path.exists():
-        if _read_regular_file(
-            upload_path,
-            name="existing operator upload",
-            reject_symlink=True,
-        ) != upload_bytes:
+        if (
+            _read_regular_file(
+                upload_path,
+                name="existing operator upload",
+                reject_symlink=True,
+            )
+            != upload_bytes
+        ):
             raise SchedulerIntegrityError(
                 "existing operator upload conflicts with verified PLAY",
                 category="operator_artifact_integrity",
@@ -3473,9 +3551,7 @@ def _publish_actionable_operator_result(
         "automatic_wagering": False,
         "actionable": True,
         "release_mode": (
-            "EXPERIMENTAL_MANUAL"
-            if release_authorization is not None
-            else "STANDARD"
+            "EXPERIMENTAL_MANUAL" if release_authorization is not None else "STANDARD"
         ),
         "release_authorization_path": (
             str(release_authorization_path)
@@ -3687,9 +3763,8 @@ def _validated_actionable_operator_upload(
         reject_symlink=True,
     )
     source_hash = _sha256_bytes(source_bytes)
-    if (
-        source_hash != payload.get("source_package_sha256")
-        or source_hash != status.get("package_sha256")
+    if source_hash != payload.get("source_package_sha256") or source_hash != status.get(
+        "package_sha256"
     ):
         raise SchedulerIntegrityError(
             "operator source package hash mismatch",
@@ -3765,10 +3840,7 @@ def _validated_actionable_operator_upload(
                 .where(ArchivedPackage.stake == plan.stake)
                 .where(ArchivedPackage.package_sha256 == canonical_hash)
                 .where(ArchivedPackage.source_bytes_sha256 == source_hash)
-                .where(
-                    ArchivedPackage.archive_manifest_sha256
-                    == declared_archive_hash
-                )
+                .where(ArchivedPackage.archive_manifest_sha256 == declared_archive_hash)
             ).all()
     finally:
         archive_engine.dispose()
@@ -3778,9 +3850,7 @@ def _validated_actionable_operator_upload(
         or rows[0].cost != selected_cost
         or rows[0].source_bytes != source_bytes
         or rows[0].provenance != "pre_bet_runner"
-        or _parse_utc_datetime(
-            "durable archive archived_at", rows[0].archived_at
-        )
+        or _parse_utc_datetime("durable archive archived_at", rows[0].archived_at)
         != published_at
     ):
         raise SchedulerIntegrityError(
@@ -4253,9 +4323,7 @@ class CommandSchedulerPhaseRunner:
                     "persisted final input attempt identity mismatch",
                     category="final_input_identity",
                 )
-            _freeze_authoritative_drawing(
-                context.plan, atomic_input.target_fingerprint
-            )
+            _freeze_authoritative_drawing(context.plan, atomic_input.target_fingerprint)
         command = build_run_drawing_phase_command(
             context,
             python_executable=self.python_executable,
@@ -5231,9 +5299,7 @@ def _ensure_terminal_paper_result(
     provenance = provenance_value if isinstance(provenance_value, str) else None
     reason_value = terminal_status.get("reason")
     reason = (
-        reason_value
-        if isinstance(reason_value, str) and reason_value
-        else decision
+        reason_value if isinstance(reason_value, str) and reason_value else decision
     )
     return persist_paper_package_artifacts(
         plan,
@@ -7247,9 +7313,7 @@ def render_paper_package(coupons: Sequence[str], *, stake: int) -> bytes:
         )
     if not normalized:
         return b""
-    text = "\n".join(
-        f"{stake}; " + "; ".join(coupon) for coupon in normalized
-    )
+    text = "\n".join(f"{stake}; " + "; ".join(coupon) for coupon in normalized)
     return (text + "\n").encode("utf-8")
 
 
@@ -7465,9 +7529,7 @@ def persist_paper_package_artifacts(
         "requested_bank": plan.requested_bank,
         "count": expected_count,
         "cost": expected_cost,
-        "source_package_path": (
-            None if source_bytes is None else str(durable_source)
-        ),
+        "source_package_path": (None if source_bytes is None else str(durable_source)),
         "source_package_sha256": source_hash,
         "paper_path": None if paper_bytes is None else str(durable_paper),
         "paper_sha256": paper_hash,
@@ -7622,9 +7684,7 @@ def load_paper_package(plan: SchedulerPlan) -> PaperPackageResult:
         source_hash = _strict_sha256(
             "paper source hash", payload.get("source_package_sha256")
         )
-        paper_hash = _strict_sha256(
-            "paper payload hash", payload.get("paper_sha256")
-        )
+        paper_hash = _strict_sha256("paper payload hash", payload.get("paper_sha256"))
         source_bytes = _read_regular_file(
             source_path, name="paper source package", reject_symlink=True
         )

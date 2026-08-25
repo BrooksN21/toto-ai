@@ -143,8 +143,7 @@ def test_expected_deadline_rejects_naive_or_malformed_values_clearly(
 
     assert result.exit_code != 0
     assert (
-        "expected-deadline must be a timezone-aware ISO-8601 datetime"
-        in result.output
+        "expected-deadline must be a timezone-aware ISO-8601 datetime" in result.output
     )
     assert captured == {}
 
@@ -168,13 +167,22 @@ def test_4961_scheduler_round_trips_deadline_and_triggers_at_t_minus_10(
     plist = plistlib.loads(artifacts.launch_agent_path.read_bytes())
     loaded = load_scheduler_plan(artifacts.plan_path)
 
-    assert SCHEDULER_SCHEMA_VERSION == 6
-    assert payload["schema_version"] == 6
+    assert SCHEDULER_SCHEMA_VERSION == 7
+    assert payload["schema_version"] == 7
     assert payload["config"]["publication_lead_minutes"] == 10
     assert payload["config"]["trigger_offsets_minutes"] == [
-        120, 90, 60, 45, 30, 20, 16, 10
+        120,
+        90,
+        60,
+        45,
+        30,
+        20,
+        16,
+        10,
     ]
     assert payload["target"]["ended_at"] == "2026-07-31T16:00:00Z"
+    assert payload["target"]["operational_cutoff"] == "2026-07-31T16:00:00Z"
+    assert payload["deadlines"]["operational_cutoff"] == "2026-07-31T16:00:00Z"
     assert payload["deadlines"]["t_minus_120"] == "2026-07-31T14:00:00Z"
     assert payload["deadlines"]["t_minus_90"] == "2026-07-31T14:30:00Z"
     assert payload["deadlines"]["t_minus_60"] == "2026-07-31T15:00:00Z"
@@ -189,11 +197,11 @@ def test_4961_scheduler_round_trips_deadline_and_triggers_at_t_minus_10(
         "Hour": 18,
         "Minute": 50,
     }
-    assert plist["Label"].startswith("com.totoai.production-scheduler.v6.")
+    assert plist["Label"].startswith("com.totoai.production-scheduler.v7.")
     assert "scheduler-execute" in artifacts.wrapper_path.read_text(encoding="utf-8")
 
 
-def test_schema_v6_status_is_bound_to_exact_t_minus_10_semantics(
+def test_schema_v7_status_is_bound_to_exact_t_minus_10_semantics(
     tmp_path: Path,
 ) -> None:
     write_empty_schedule_evidence_ledger(tmp_path)
@@ -214,11 +222,11 @@ def test_schema_v6_status_is_bound_to_exact_t_minus_10_semantics(
         phase_runner=SimulatedSchedulerPhaseRunner(),
         now=clock.now,
         sleep=clock.sleep,
-        run_id="schema-v6-status",
+        run_id="schema-v7-status",
     )
     status = json.loads(result.status_path.read_text(encoding="utf-8"))
 
-    assert status["schema_version"] == 6
+    assert status["schema_version"] == 7
     assert status["plan_id"] == plan.plan_id
     assert status["deadlines"]["t_minus_10"] == "2026-07-31T15:50:00Z"
     assert "t_minus_12" not in status["deadlines"]
@@ -252,7 +260,7 @@ def test_schema_v4_t_minus_12_plan_fails_closed_with_regenerate_diagnostic(
 
     with pytest.raises(
         ValueError,
-        match=r"stale scheduler schema v4.*T-12.*regenerate schema v6",
+        match=r"stale scheduler schema v4.*T-12.*regenerate schema v7",
     ):
         load_scheduler_plan(artifacts.plan_path)
 
@@ -262,13 +270,37 @@ def test_schema_v4_t_minus_12_plan_fails_closed_with_regenerate_diagnostic(
     )
     assert result.exit_code != 0
     assert "stale scheduler schema v4" in result.output
-    assert "regenerate schema v6" in result.output
+    assert "regenerate schema v7" in result.output
 
     with pytest.raises(
         SchedulerIntegrityError,
-        match=r"stale scheduler schema v4.*T-12.*regenerate schema v6",
+        match=r"stale scheduler schema v4.*T-12.*regenerate schema v7",
     ):
         verify_scheduler_artifacts(plan)
+
+
+def test_schema_v6_deadline_only_plan_fails_closed(tmp_path: Path) -> None:
+    write_empty_schedule_evidence_ledger(tmp_path)
+    plan = build_scheduler_plan(
+        drawing=4961,
+        drawing_id=11993,
+        ended_at=DRAWING_4961_DEADLINE,
+        bank=4980,
+        output_dir=tmp_path / "scheduler",
+        project_root=tmp_path,
+        db=tmp_path / "toto.db",
+        aliases=tmp_path / "aliases.json",
+    )
+    artifacts = prepare_scheduler_artifacts(plan)
+    payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
+    payload["schema_version"] = 6
+    artifacts.plan_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    with pytest.raises(
+        ValueError,
+        match=r"schema v6 conflates.*operational cutoff.*regenerate schema v7",
+    ):
+        load_scheduler_plan(artifacts.plan_path)
 
 
 @pytest.mark.parametrize(
@@ -278,7 +310,7 @@ def test_schema_v4_t_minus_12_plan_fails_closed_with_regenerate_diagnostic(
         ("trigger_offsets_minutes", [120, 90, 60, 45, 30, 20, 16, 12]),
     ),
 )
-def test_schema_v6_trigger_semantics_are_identity_bound_and_fail_closed(
+def test_schema_v7_trigger_semantics_are_identity_bound_and_fail_closed(
     tmp_path: Path,
     field: str,
     value: object,
@@ -304,6 +336,6 @@ def test_schema_v6_trigger_semantics_are_identity_bound_and_fail_closed(
 
     with pytest.raises(
         ValueError,
-        match=r"scheduler trigger semantics.*regenerate schema v6",
+        match=r"scheduler trigger semantics.*regenerate schema v7",
     ):
         load_scheduler_plan(artifacts.plan_path)

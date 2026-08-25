@@ -57,10 +57,7 @@ class MorningUnresolvedEvent:
     provider_diagnostics: tuple[Mapping[str, object], ...] = ()
 
     def __post_init__(self) -> None:
-        if (
-            type(self.event_order) is not int
-            or not 0 <= self.event_order < 15
-        ):
+        if type(self.event_order) is not int or not 0 <= self.event_order < 15:
             raise ValueError("event_order must be from 0 through 14")
         if type(self.target_event_id) is not int or self.target_event_id <= 0:
             raise ValueError("target_event_id must be a positive integer")
@@ -91,9 +88,7 @@ class MorningUnresolvedEvent:
             "resolution_status": self.resolution_status,
             "reason": self.reason,
             "candidate_evidence": [dict(item) for item in self.candidate_evidence],
-            "provider_diagnostics": [
-                dict(item) for item in self.provider_diagnostics
-            ],
+            "provider_diagnostics": [dict(item) for item in self.provider_diagnostics],
             "required_evidence_type": self.required_evidence_type,
         }
 
@@ -130,6 +125,9 @@ class MorningPreparedDrawing:
     external_coverage_count: int = 15
     baseline_only_event_orders: tuple[int, ...] = ()
     reviewed_catalog_hash: str | None = None
+    operational_cutoff: datetime | None = None
+    cutoff_evidence: Path | None = None
+    cutoff_evidence_sha256: str | None = None
 
     def __post_init__(self) -> None:
         if type(self.drawing_id) is not int or self.drawing_id <= 0:
@@ -137,6 +135,24 @@ class MorningPreparedDrawing:
         if type(self.drawing_number) is not int or self.drawing_number <= 0:
             raise ValueError("drawing_number must be a positive integer")
         object.__setattr__(self, "deadline", _utc(self.deadline, "deadline"))
+        operational_cutoff = (
+            self.deadline
+            if self.operational_cutoff is None
+            else _utc(self.operational_cutoff, "operational_cutoff")
+        )
+        if operational_cutoff > self.deadline:
+            raise ValueError("operational_cutoff cannot extend deadline")
+        object.__setattr__(self, "operational_cutoff", operational_cutoff)
+        if self.cutoff_evidence is None:
+            if operational_cutoff != self.deadline:
+                raise ValueError(
+                    "an earlier operational_cutoff requires cutoff evidence"
+                )
+            if self.cutoff_evidence_sha256 is not None:
+                raise ValueError("cutoff_evidence_sha256 requires cutoff evidence")
+        else:
+            object.__setattr__(self, "cutoff_evidence", Path(self.cutoff_evidence))
+            _sha256(self.cutoff_evidence_sha256, "cutoff_evidence_sha256")
         _sha256(self.drawing_fingerprint, "drawing_fingerprint")
         _sha256(self.detail_sha256, "detail_sha256")
         if self.reviewed_catalog_hash is not None:
@@ -158,9 +174,7 @@ class MorningPreparedDrawing:
             or len(set(self.baseline_only_event_orders))
             != len(self.baseline_only_event_orders)
             or any(order not in range(15) for order in self.baseline_only_event_orders)
-            or self.external_coverage_count
-            + len(self.baseline_only_event_orders)
-            != 15
+            or self.external_coverage_count + len(self.baseline_only_event_orders) != 15
         ):
             raise ValueError("baseline-only coverage evidence is inconsistent")
         if self.span_days is not None and (
@@ -201,6 +215,8 @@ class MorningPreparedDrawing:
             "drawing_id": self.drawing_id,
             "drawing_number": self.drawing_number,
             "deadline": _timestamp(self.deadline),
+            "operational_cutoff": _timestamp(self.operational_cutoff),
+            "cutoff_evidence_sha256": self.cutoff_evidence_sha256,
             "drawing_fingerprint": self.drawing_fingerprint,
             "detail_sha256": self.detail_sha256,
             "reviewed_catalog_hash": self.reviewed_catalog_hash,
@@ -217,14 +233,10 @@ class MorningDispatchConfig:
     stake: int = 30
     db: Path = Path("data/toto.db")
     aliases: Path = Path("data/external-odds/team-aliases.json")
-    maintenance_lock: Path = Path(
-        "data/operations/global-maintenance.lock"
-    )
+    maintenance_lock: Path = Path("data/operations/global-maintenance.lock")
     timing_overrides: Path | None = None
     reviewed_schedule_catalog: Path | None = None
-    schedule_evidence_ledger: Path = Path(
-        "data/schedule-evidence/ledger.json"
-    )
+    schedule_evidence_ledger: Path = Path("data/schedule-evidence/ledger.json")
     retry_offsets_minutes: tuple[int, ...] = (360, 240, 180, 120, 90)
     retry_hard_stop_minutes: int = 60
 
@@ -417,6 +429,9 @@ def _dispatch_morning_locked(
         drawing=evidence.drawing_number,
         drawing_id=evidence.drawing_id,
         ended_at=evidence.deadline,
+        operational_cutoff=evidence.operational_cutoff,
+        cutoff_evidence=evidence.cutoff_evidence,
+        cutoff_evidence_sha256=evidence.cutoff_evidence_sha256,
         bank=config.bank,
         stake=config.stake,
         output_dir=output_dir,
@@ -600,6 +615,8 @@ def _reuse_prior(
             "drawing_id",
             "drawing_number",
             "deadline",
+            "operational_cutoff",
+            "cutoff_evidence_sha256",
             "drawing_fingerprint",
             "reviewed_catalog_hash",
         )
@@ -618,10 +635,9 @@ def _reuse_prior(
         )
     plan_path = Path(str(prior["plan_path"])).absolute()
     launch_agent_path = Path(str(prior["launch_agent_path"])).absolute()
-    if (
-        not plan_path.is_relative_to(config.project_root)
-        or not launch_agent_path.is_relative_to(config.project_root)
-    ):
+    if not plan_path.is_relative_to(
+        config.project_root
+    ) or not launch_agent_path.is_relative_to(config.project_root):
         raise ValueError("morning dispatch artifact path escaped project_root")
     plan = load_scheduler_plan(plan_path)
     if (
@@ -629,8 +645,9 @@ def _reuse_prior(
         or plan.drawing != evidence.drawing_number
         or plan.drawing_id != evidence.drawing_id
         or plan.ended_at != evidence.deadline
-        or launch_agent_path
-        != plan.output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME
+        or plan.operational_cutoff != evidence.operational_cutoff
+        or plan.cutoff_evidence_sha256 != evidence.cutoff_evidence_sha256
+        or launch_agent_path != plan.output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME
         or not launch_agent_path.is_file()
         or launch_agent_path.is_symlink()
     ):
@@ -798,14 +815,10 @@ def _record(
             "status": evidence.preparation_status,
             "mapped_count": evidence.mapped_count,
             "external_coverage_count": evidence.external_coverage_count,
-            "baseline_only_event_orders": list(
-                evidence.baseline_only_event_orders
-            ),
+            "baseline_only_event_orders": list(evidence.baseline_only_event_orders),
             "eligibility_status": evidence.eligibility_status,
             "span_days": evidence.span_days,
-            "unresolved": [
-                item.payload() for item in evidence.unresolved_events
-            ],
+            "unresolved": [item.payload() for item in evidence.unresolved_events],
             "not_ready_reason": evidence.not_ready_reason,
         },
         "playability": {
@@ -876,9 +889,7 @@ def _replace_record(path: Path, payload: Mapping[str, object]) -> None:
     _write_atomic(path, updated, replace=True)
 
 
-def _write_atomic(
-    path: Path, payload: Mapping[str, object], *, replace: bool
-) -> None:
+def _write_atomic(path: Path, payload: Mapping[str, object], *, replace: bool) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.parent / f".{path.name}.{secrets.token_hex(8)}.tmp"
     descriptor = os.open(
@@ -986,8 +997,7 @@ def _update_preflight_escalation(
             identity = prior.get("identity")
             if (
                 isinstance(identity, Mapping)
-                and identity.get("drawing_fingerprint")
-                == evidence.drawing_fingerprint
+                and identity.get("drawing_fingerprint") == evidence.drawing_fingerprint
             ):
                 attention_path.unlink()
                 (root / "ACTION_REQUIRED.md").unlink(missing_ok=True)
@@ -1012,15 +1022,9 @@ def _update_preflight_escalation(
     root.mkdir(parents=True, exist_ok=True)
     if root.is_symlink():
         raise ValueError("preflight escalation root cannot be a symlink")
-    prior = (
-        _load_json_mapping(attention_path)
-        if attention_path.is_file()
-        else None
-    )
+    prior = _load_json_mapping(attention_path) if attention_path.is_file() else None
     first_seen = (
-        str(prior["first_seen"])
-        if prior is not None
-        else _timestamp(observed_at)
+        str(prior["first_seen"]) if prior is not None else _timestamp(observed_at)
     )
     prior_attempts = int(prior.get("attempts", 0)) if prior is not None else 0
     retry_plan_path = root / "retry-plan.json"
@@ -1031,13 +1035,30 @@ def _update_preflight_escalation(
             not isinstance(identity, Mapping)
             or identity.get("drawing_id") != evidence.drawing_id
             or identity.get("drawing_number") != evidence.drawing_number
-            or identity.get("drawing_fingerprint")
-            != evidence.drawing_fingerprint
+            or identity.get("drawing_fingerprint") != evidence.drawing_fingerprint
             or identity.get("deadline") != _timestamp(evidence.deadline)
             or retry_plan.get("passive") is not True
             or retry_plan.get("activate_evening") is not retry_can_activate_evening
         ):
             raise ValueError("existing passive retry plan identity conflicts")
+        prior_cutoff = _parse_timestamp(
+            str(identity.get("operational_cutoff", identity["deadline"]))
+        )
+        if evidence.operational_cutoff > prior_cutoff:
+            raise ValueError("passive retry cutoff cannot be relaxed")
+        if evidence.operational_cutoff < prior_cutoff:
+            retry_plan = _retry_plan_payload(
+                config,
+                evidence=evidence,
+                observed_at=observed_at,
+                python_command=python_command,
+            )
+            _write_atomic(retry_plan_path, retry_plan, replace=True)
+        elif identity.get("cutoff_evidence_sha256") not in {
+            None,
+            evidence.cutoff_evidence_sha256,
+        }:
+            raise ValueError("passive retry cutoff evidence conflicts")
     else:
         retry_plan = _retry_plan_payload(
             config,
@@ -1114,8 +1135,8 @@ def _update_preflight_escalation(
     _refresh_generated_notify_command(
         root / "notify.command",
         "/usr/bin/osascript -e "
-        f"'display notification \"{attention_status}\" "
-        f"with title \"TotoAI drawing {evidence.drawing_number}\"'\n",
+        f'\'display notification "{attention_status}" '
+        f'with title "TotoAI drawing {evidence.drawing_number}"\'\n',
         drawing_number=evidence.drawing_number,
     )
     missing_schedule_orders = tuple(
@@ -1123,17 +1144,14 @@ def _update_preflight_escalation(
         for item in evidence.unresolved_events
         if item.required_evidence_type == "reviewed_schedule"
     )
-    queue_suffix = hashlib.sha256(
-        _canonical(missing_schedule_orders)
-    ).hexdigest()[:12]
+    queue_suffix = hashlib.sha256(_canonical(missing_schedule_orders)).hexdigest()[:12]
     review_queue_path = root / f"reviewed-schedule-queue-{queue_suffix}.json"
     if review_queue_path.is_file():
         queue = _load_json_mapping(review_queue_path)
         identity = queue.get("identity")
         if (
             not isinstance(identity, Mapping)
-            or identity.get("drawing_fingerprint")
-            != evidence.drawing_fingerprint
+            or identity.get("drawing_fingerprint") != evidence.drawing_fingerprint
         ):
             raise ValueError("existing reviewed schedule queue identity conflicts")
     else:
@@ -1166,18 +1184,15 @@ def _retry_plan_payload(
     observed_at: datetime,
     python_command: str | Path | None,
 ) -> dict[str, object]:
-    hard_stop = evidence.deadline - timedelta(
+    hard_stop = evidence.operational_cutoff - timedelta(
         minutes=config.retry_hard_stop_minutes
     )
     executable = str(python_command or "python")
-    activate_evening = (
-        evidence.not_ready_reason == _ZERO_POOL_NOT_READY
-        or (
-            bool(evidence.unresolved_events)
-            and all(
-                item.resolution_status == "timing_unknown"
-                for item in evidence.unresolved_events
-            )
+    activate_evening = evidence.not_ready_reason == _ZERO_POOL_NOT_READY or (
+        bool(evidence.unresolved_events)
+        and all(
+            item.resolution_status == "timing_unknown"
+            for item in evidence.unresolved_events
         )
     )
     attempts = []
@@ -1185,7 +1200,7 @@ def _retry_plan_payload(
         _zero_pool_retry_times(observed_at, hard_stop)
         if activate_evening
         else tuple(
-            evidence.deadline - timedelta(minutes=offset)
+            evidence.operational_cutoff - timedelta(minutes=offset)
             for offset in config.retry_offsets_minutes
         )
     )
@@ -1268,9 +1283,7 @@ def _zero_pool_retry_times(
     rounded = local_observed.replace(second=0, microsecond=0)
     if rounded < local_observed:
         rounded += timedelta(minutes=1)
-    candidates = [
-        rounded + timedelta(minutes=delay) for delay in (10, 30, 60, 180)
-    ]
+    candidates = [rounded + timedelta(minutes=delay) for delay in (10, 30, 60, 180)]
     next_day = local_observed.date() + timedelta(days=1)
     candidates.extend(
         datetime(
@@ -1429,9 +1442,7 @@ def _load_json_mapping(path: Path) -> dict[str, object]:
     return payload
 
 
-def _write_json_idempotent(
-    path: Path, payload: Mapping[str, object]
-) -> bool:
+def _write_json_idempotent(path: Path, payload: Mapping[str, object]) -> bool:
     expected = _canonical(payload) + b"\n"
     if path.exists():
         if path.is_symlink() or not path.is_file() or path.read_bytes() != expected:
@@ -1481,9 +1492,7 @@ def _refresh_generated_notify_command(
         if existing == expected:
             return
         prefix = b"/usr/bin/osascript -e 'display notification \""
-        suffix = (
-            f"\" with title \"TotoAI drawing {drawing_number}\"'\n".encode()
-        )
+        suffix = f'" with title "TotoAI drawing {drawing_number}"\'\n'.encode()
         if not existing.startswith(prefix) or not existing.endswith(suffix):
             raise ValueError(f"existing preflight text artifact conflicts: {path}")
     _write_bytes(path, expected, replace=path.exists())

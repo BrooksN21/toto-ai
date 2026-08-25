@@ -312,9 +312,15 @@ only be stricter than the documented 0.02 maximum. The gate cannot activate
 production: even a pass is only `PASS_REVIEW_REQUIRED`, while the artifact
 remains `NOT_ACTIVATED`.
 
-The active scheduler contract is schema v6. Quality-v2 remains fail-closed
+The active scheduler contract is schema v7. TotoBrief `ended_at` remains
+drawing identity metadata, while `operational_cutoff` is a separate
+non-extending bound. It equals `ended_at` unless a contained, hash-bound
+`conservative-cutoff.json` proves an earlier independently collected kickoff.
+All T-120 through T-10 phases are anchored to `operational_cutoff`; an
+unproven earlier bound and any later bound fail closed. Schema v6 is rejected
+because it conflates the two meanings. Quality-v2 remains fail-closed
 `NO BET / TRAINING-PAPER` by default and cannot self-authorize an actionable
-marker. One exact schema-v6 plan may carry a separately created, hash-bound
+marker. One exact schema-v7 plan may carry a separately created, hash-bound
 `EXPERIMENTAL_MANUAL` authorization. Only its fresh final phase may promote a
 structurally and independently safety-approved paper candidate to `PLAY` for
 manual operator export before T-10. Warmup/control packages remain
@@ -457,16 +463,18 @@ text and current LKG pointer, rewrites the operator result without coupons, and
 retains only the source CSV/diagnostics for audit. A manually copied file
 outside the plan tree is never a scheduler publication.
 
-Scheduler schema v6 binds `publication_lead_minutes = 10` and the complete
+Scheduler schema v7 binds `publication_lead_minutes = 10`, source `ended_at`,
+the non-extending `operational_cutoff`, its optional evidence hash/path, and the complete
 `120/90/60/45/30/20/16/10` trigger-offset vector into the semantic payload and
 plan ID alongside the ledger binding. T−120/T−90/T−60 are diagnostic
 TLS/API/freshness preflights; they cannot publish a package. Each stage is
 persisted and idempotent, while all TotoBrief requests retain shared
 cross-process pacing. Generated LaunchAgent labels are explicitly versioned
-`v6`, while status uses schema v6 and the same exact deadline map. Schema v4
+`v7`, while status uses schema v7 and the same exact cutoff-based deadline map. Schema v4
 is the stale T−12 contract and schema v5 lacks ledger identity; both are
-rejected with regenerate-v6 diagnostics before production execution or
-artifact reuse. No implicit migration is allowed.
+rejected before production execution or artifact reuse. Schema v6 is also
+rejected because it has no distinct operational cutoff. No implicit migration
+is allowed.
 
 Every scheduler failure records a redacted transport message, structural
 exception-type chain, transport category, HTTP status when present, and attempt

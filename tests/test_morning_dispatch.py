@@ -6,6 +6,7 @@ import plistlib
 import shlex
 import sys
 from copy import deepcopy
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -176,9 +177,7 @@ def test_zero_pool_bootstrap_creates_identity_bound_retry_plan_before_import(
     config = _config(tmp_path)
     observed = datetime(2026, 8, 3, 14, 6, 20, tzinfo=UTC)
     deadline = datetime(2026, 8, 4, 15, 0, tzinfo=UTC)
-    fingerprint = (
-        "559c7615626b624cdd5ebefa782c6b96593ff9fb4dfcdbd18a3e6155f3c17af8"
-    )
+    fingerprint = "559c7615626b624cdd5ebefa782c6b96593ff9fb4dfcdbd18a3e6155f3c17af8"
 
     result = dispatch_morning(
         config,
@@ -271,13 +270,114 @@ def test_timing_unknown_retry_plan_keeps_hourly_attempts_until_hard_stop(
     ]
 
 
+def test_timing_unknown_retry_plan_uses_conservative_operational_cutoff(
+    tmp_path,
+):
+    config = _config(tmp_path)
+    observed = datetime(2026, 8, 13, 14, 0, tzinfo=UTC)
+    source_deadline = datetime(2026, 8, 14, 14, 0, tzinfo=UTC)
+    operational_cutoff = datetime(2026, 8, 14, 10, 0, tzinfo=UTC)
+    prepared = MorningPreparedDrawing(
+        drawing_id=12033,
+        drawing_number=4975,
+        deadline=source_deadline,
+        operational_cutoff=operational_cutoff,
+        cutoff_evidence=tmp_path / "conservative-cutoff.json",
+        cutoff_evidence_sha256="e" * 64,
+        drawing_fingerprint="c" * 64,
+        detail_sha256="d" * 64,
+        preparation_status="ready",
+        mapped_count=15,
+        eligibility_status="unknown",
+        span_days=None,
+        unresolved_events=(
+            MorningUnresolvedEvent(
+                event_order=8,
+                target_event_id=179606,
+                home_team="Анси",
+                away_team="Родез",
+                resolution_status="timing_unknown",
+                reason="baseline-only event start time is unavailable",
+            ),
+        ),
+        external_coverage_count=14,
+        baseline_only_event_orders=(8,),
+    )
+
+    result = dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: prepared,
+        python_command=sys.executable,
+    )
+
+    plan = json.loads(result.retry_plan_path.read_text(encoding="utf-8"))
+    assert plan["hard_stop"] == "2026-08-14T09:00:00Z"
+    assert all(
+        item["scheduled_at"] < "2026-08-14T09:00:00Z" for item in plan["attempts"]
+    )
+
+
+def test_existing_retry_plan_is_atomically_tightened(tmp_path):
+    config = _config(tmp_path)
+    observed = datetime(2026, 8, 13, 14, 0, tzinfo=UTC)
+    deadline = datetime(2026, 8, 14, 14, 0, tzinfo=UTC)
+    unresolved = MorningUnresolvedEvent(
+        event_order=8,
+        target_event_id=179606,
+        home_team="Анси",
+        away_team="Родез",
+        resolution_status="timing_unknown",
+        reason="baseline-only event start time is unavailable",
+    )
+    initial = MorningPreparedDrawing(
+        drawing_id=12033,
+        drawing_number=4975,
+        deadline=deadline,
+        drawing_fingerprint="c" * 64,
+        detail_sha256="d" * 64,
+        preparation_status="ready",
+        mapped_count=15,
+        eligibility_status="unknown",
+        span_days=None,
+        unresolved_events=(unresolved,),
+        external_coverage_count=14,
+        baseline_only_event_orders=(8,),
+    )
+    first = dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: initial,
+        python_command=sys.executable,
+    )
+    tightened = replace(
+        initial,
+        operational_cutoff=datetime(2026, 8, 14, 10, 0, tzinfo=UTC),
+        cutoff_evidence=tmp_path / "conservative-cutoff.json",
+        cutoff_evidence_sha256="e" * 64,
+    )
+
+    second = dispatch_morning(
+        config,
+        observed_at=observed + timedelta(minutes=1),
+        now=lambda: observed + timedelta(minutes=1),
+        prepare_current=lambda _now: tightened,
+        python_command=sys.executable,
+    )
+    payload = json.loads(second.retry_plan_path.read_text(encoding="utf-8"))
+
+    assert second.retry_plan_path == first.retry_plan_path
+    assert payload["hard_stop"] == "2026-08-14T09:00:00Z"
+    assert payload["identity"]["operational_cutoff"] == "2026-08-14T10:00:00Z"
+
+
 def test_zero_pool_retry_recovers_to_one_activated_evening_scheduler(tmp_path):
     config = _config(tmp_path)
     observed = datetime(2026, 8, 3, 14, 6, tzinfo=UTC)
     deadline = datetime(2026, 8, 4, 15, 0, tzinfo=UTC)
-    fingerprint = (
-        "559c7615626b624cdd5ebefa782c6b96593ff9fb4dfcdbd18a3e6155f3c17af8"
-    )
+    fingerprint = "559c7615626b624cdd5ebefa782c6b96593ff9fb4dfcdbd18a3e6155f3c17af8"
     activations: list[tuple[str, Path]] = []
 
     deferred = dispatch_morning(
@@ -411,20 +511,16 @@ def test_actual_4964_current_plan_candidate_label_is_installable(
         ended_at="2026-08-03T14:00:00Z",
         bank=4980,
         output_dir=(
-            "/Users/turshevr/toto-ai/reports/rehearsal/"
-            "evening-4964-20260803T140000Z"
+            "/Users/turshevr/toto-ai/reports/rehearsal/evening-4964-20260803T140000Z"
         ),
         project_root="/Users/turshevr/toto-ai",
         db="/Users/turshevr/toto-ai/data/toto.db",
-        aliases=(
-            "/Users/turshevr/toto-ai/data/external-odds/team-aliases.json"
-        ),
+        aliases=("/Users/turshevr/toto-ai/data/external-odds/team-aliases.json"),
         reviewed_schedule_catalog=(
             "/Users/turshevr/toto-ai/data/reviewed-schedule/4964/catalog.json"
         ),
         reviewed_catalog_sha256=(
-            "68e98c8f006ddca04e193a1d06d3f23d"
-            "ef57e498f4c02c51d8a9e3c18062895a"
+            "68e98c8f006ddca04e193a1d06d3f23def57e498f4c02c51d8a9e3c18062895a"
         ),
         env_file="/Users/turshevr/toto-ai/.env",
     )
@@ -452,8 +548,7 @@ def test_actual_4964_current_plan_candidate_label_is_installable(
         return SimpleNamespace(returncode=0, stderr="")
 
     assert candidate["Label"] == (
-        f"com.totoai.production-scheduler.v{SCHEDULER_SCHEMA_VERSION}."
-        f"{plan.plan_id}"
+        f"com.totoai.production-scheduler.v{SCHEDULER_SCHEMA_VERSION}.{plan.plan_id}"
     )
 
     activate_scheduler_launch_agent(
@@ -541,8 +636,7 @@ def test_scheduler_installer_rejects_arbitrary_matching_candidate_label(
     artifacts = prepare_scheduler_artifacts(plan, python_command=sys.executable)
     candidate = plistlib.loads(artifacts.launch_agent_path.read_bytes())
     arbitrary_label = (
-        f"com.totoai.production-scheduler.v{SCHEDULER_SCHEMA_VERSION}."
-        + "0" * 16
+        f"com.totoai.production-scheduler.v{SCHEDULER_SCHEMA_VERSION}." + "0" * 16
     )
     candidate["Label"] = arbitrary_label
     artifacts.launch_agent_path.write_bytes(
@@ -594,9 +688,7 @@ def test_activation_failure_persists_generated_state_and_retry_reuses_artifacts(
     persisted = json.loads(records[0].read_text(encoding="utf-8"))
     assert persisted["status"] == "scheduled"
     assert persisted["activation_status"] == "generated"
-    plans_before_retry = tuple(
-        config.scheduler_root.rglob("scheduler-plan.json")
-    )
+    plans_before_retry = tuple(config.scheduler_root.rglob("scheduler-plan.json"))
     assert len(plans_before_retry) == 1
 
     recovered = dispatch_morning(
@@ -668,9 +760,7 @@ def test_activation_retry_rejects_tampered_scheduler_artifact(
             observed_at=now + timedelta(minutes=1),
             now=lambda: now + timedelta(minutes=1),
             prepare_current=lambda _now: evidence,
-            activate=lambda label, path: retried_activations.append(
-                (label, path)
-            ),
+            activate=lambda label, path: retried_activations.append((label, path)),
             python_command=sys.executable,
         )
 
@@ -852,9 +942,7 @@ def test_prepared_artifact_free_record_accepts_validated_reviewed_hash(
     assert scheduled.status == "scheduled"
     assert scheduled.record_path == prepared.record_path
     assert len(tuple(config.scheduler_root.rglob("scheduler-plan.json"))) == 1
-    persisted = json.loads(
-        scheduled.record_path.read_text(encoding="utf-8")
-    )
+    persisted = json.loads(scheduled.record_path.read_text(encoding="utf-8"))
     assert persisted["identity"]["reviewed_catalog_hash"] == "c" * 64
 
 
@@ -862,22 +950,16 @@ def test_prepared_artifact_free_record_accepts_validated_reviewed_hash(
     "mutation",
     (
         lambda prior, _evidence: prior.__setitem__("status", "scheduled"),
-        lambda prior, _evidence: prior.__setitem__(
-            "activation_status", "activated"
-        ),
+        lambda prior, _evidence: prior.__setitem__("activation_status", "activated"),
         lambda prior, _evidence: prior.__setitem__("plan_id", "plan-id"),
-        lambda prior, _evidence: prior.__setitem__(
-            "package_path", "/tmp/package.csv"
-        ),
+        lambda prior, _evidence: prior.__setitem__("package_path", "/tmp/package.csv"),
         lambda prior, _evidence: prior["identity"].__setitem__(
             "reviewed_catalog_hash", "b" * 64
         ),
         lambda prior, _evidence: prior["identity"].__setitem__(
             "drawing_fingerprint", "d" * 64
         ),
-        lambda prior, _evidence: prior["identity"].__setitem__(
-            "drawing_id", 12008
-        ),
+        lambda prior, _evidence: prior["identity"].__setitem__("drawing_id", 12008),
         lambda prior, _evidence: prior["identity"].__setitem__(
             "deadline", "2032-01-01T18:00:00Z"
         ),
@@ -1186,9 +1268,7 @@ def test_ready_morning_cli_ensures_scheduler_owned_training_package(
 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
-    assert calls == [
-        (plan.plan_id, tmp_path / "ready.json", tmp_path / "data" / "raw")
-    ]
+    assert calls == [(plan.plan_id, tmp_path / "ready.json", tmp_path / "data" / "raw")]
     assert payload["training_package"] == {
         "actionable": False,
         "bank_usage_reason": "pool_cap",
@@ -1220,12 +1300,7 @@ def test_ready_morning_cli_ensures_scheduler_owned_training_package(
         "selected_cost": 660,
         "selected_count": 22,
         "source_archive_path": str(
-            tmp_path
-            / "data"
-            / "raw"
-            / "archive"
-            / "drawing_12054"
-            / "a.json"
+            tmp_path / "data" / "raw" / "archive" / "drawing_12054" / "a.json"
         ),
         "source_archive_snapshot_sha256": "a" * 64,
         "status": "ready",
@@ -1388,8 +1463,9 @@ def test_deferred_activated_cli_installs_identity_bound_retry_job(
     monkeypatch.setattr(
         cli,
         "install_preflight_retry_launch_agent",
-        lambda value: installed.append(value)
-        or {"active": True, "label": artifacts.label},
+        lambda value: (
+            installed.append(value) or {"active": True, "label": artifacts.label}
+        ),
         raising=False,
     )
 
@@ -1458,26 +1534,30 @@ def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
     monkeypatch.setattr(
         cli,
         "collect_schedule_source_candidates",
-        lambda path, **kwargs: collector_aliases.append(kwargs["team_aliases"])
-        or calls.append(("independent", Path(path)))
-        or SimpleNamespace(
-            status="CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
-            candidate_count=1,
-            unresolved_count=0,
-            report_path=tmp_path / "independent.json",
+        lambda path, **kwargs: (
+            collector_aliases.append(kwargs["team_aliases"])
+            or calls.append(("independent", Path(path)))
+            or SimpleNamespace(
+                status="CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
+                candidate_count=1,
+                unresolved_count=0,
+                report_path=tmp_path / "independent.json",
+            )
         ),
     )
     monkeypatch.setattr(
         cli,
         "promote_uefa_sofascore_consensus",
-        lambda path, **_kwargs: calls.append(("consensus", Path(path)))
-        or SimpleNamespace(
-            status="CONSENSUS_PROMOTED",
-            promoted_count=1,
-            existing_count=0,
-            unresolved_count=0,
-            report_path=tmp_path / "consensus.json",
-            ledger_semantic_hash="c" * 64,
+        lambda path, **_kwargs: (
+            calls.append(("consensus", Path(path)))
+            or SimpleNamespace(
+                status="CONSENSUS_PROMOTED",
+                promoted_count=1,
+                existing_count=0,
+                unresolved_count=0,
+                report_path=tmp_path / "consensus.json",
+                ledger_semantic_hash="c" * 64,
+            )
         ),
         raising=False,
     )
@@ -1546,25 +1626,29 @@ def test_deferred_unactivated_cli_runs_source_collectors_without_installing(
     monkeypatch.setattr(
         cli,
         "collect_schedule_source_candidates",
-        lambda path, **_kwargs: calls.append(("independent", Path(path)))
-        or SimpleNamespace(
-            status="CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
-            candidate_count=1,
-            unresolved_count=0,
-            report_path=tmp_path / "independent.json",
+        lambda path, **_kwargs: (
+            calls.append(("independent", Path(path)))
+            or SimpleNamespace(
+                status="CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
+                candidate_count=1,
+                unresolved_count=0,
+                report_path=tmp_path / "independent.json",
+            )
         ),
     )
     monkeypatch.setattr(
         cli,
         "promote_uefa_sofascore_consensus",
-        lambda path, **_kwargs: calls.append(("consensus", Path(path)))
-        or SimpleNamespace(
-            status="CONSENSUS_PROMOTED",
-            promoted_count=1,
-            existing_count=0,
-            unresolved_count=0,
-            report_path=tmp_path / "consensus.json",
-            ledger_semantic_hash="c" * 64,
+        lambda path, **_kwargs: (
+            calls.append(("consensus", Path(path)))
+            or SimpleNamespace(
+                status="CONSENSUS_PROMOTED",
+                promoted_count=1,
+                existing_count=0,
+                unresolved_count=0,
+                report_path=tmp_path / "consensus.json",
+                ledger_semantic_hash="c" * 64,
+            )
         ),
     )
 
@@ -1605,9 +1689,7 @@ def test_reviewed_alias_names_load_existing_valid_catalog(tmp_path):
         encoding="utf-8",
     )
 
-    assert cli.load_reviewed_alias_names(aliases) == {
-        "Бавария": "FC Bayern München"
-    }
+    assert cli.load_reviewed_alias_names(aliases) == {"Бавария": "FC Bayern München"}
 
 
 def test_reviewed_alias_names_reject_existing_malformed_catalog(tmp_path):

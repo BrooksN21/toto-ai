@@ -1877,3 +1877,22 @@ ambiguous reversed evidence remains unresolved.
   may only tighten `ended_at` to an independently confirmed earlier kickoff;
   it must never extend it. Missing/conflicting kickoff evidence remains
   fail-closed.
+
+## 2026-08-25 — Scheduler identity time and operational cutoff are separate
+
+- TotoBrief `ended_at` remains part of drawing identity and live drift checks;
+  it is not assumed to be the safe placement deadline.
+- Scheduler schema v7 adds `operational_cutoff`. Every phase, publication
+  deadline and passive retry hard stop is derived from it.
+- The only permitted transformation is
+  `operational_cutoff = min(ended_at, earliest independently observed kickoff)`.
+  A later value is invalid and an earlier value requires contained hash-bound
+  evidence whose source report bytes and semantic hash still verify.
+- Candidate evidence may tighten scheduling because this can only suppress a
+  late run; it still cannot promote event timing, change probabilities,
+  authorize `PLAY`, create a package or place a wager.
+- Existing passive retry plans may be replaced only by a tighter cutoff for
+  the same drawing identity. Relaxing a previously persisted cutoff fails
+  closed.
+- Schema v6 plans are not implicitly migrated or executed because they conflate
+  source metadata and operational deadline; they must be regenerated as v7.

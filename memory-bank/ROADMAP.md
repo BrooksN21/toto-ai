@@ -1005,3 +1005,17 @@ closed.
 - [ ] Collect 30 consecutive completed drawings / 450 events prospectively.
 - [ ] Add post-settlement log-loss/Brier/calibration and unchanged-package
   replay once settled checkpoint evidence exists.
+
+# 2026-08-25 operational deadline correction
+
+- [x] Add a hash-bound conservative cutoff that can only tighten TotoBrief
+  `ended_at` to an independently collected earlier kickoff.
+- [x] Separate scheduler identity time from operational time in schema v7 and
+  anchor T-120 through T-10 plus passive retry hard stops to the latter.
+- [x] Make morning source collection persist and immediately apply a tighter
+  retry cutoff before LaunchAgent installation; reuse it on later runs.
+- [x] Verify drawing 4987 without activation or package generation:
+  `ended_at=18:45Z`, operational cutoff `15:45Z`, T-10 `15:35Z`.
+- [ ] Decide, through reviewed provider policy, whether two-source exact
+  timing consensus may become canonical event timing. Until then the cutoff is
+  scheduling safety only and does not promote candidate rows.
