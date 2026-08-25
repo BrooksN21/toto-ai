@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import plistlib
+import shlex
 import sys
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
@@ -1600,3 +1601,44 @@ def test_generic_morning_artifacts_require_explicit_evening_activation(tmp_path)
     wrapper = artifacts.wrapper_path.read_text(encoding="utf-8")
     assert "morning-dispatch" in wrapper
     assert "--activate" in wrapper
+    assert "export THESPORTSDB_API_KEY" in wrapper
+    assert "export THESPORTSDB_BASE_URL" in wrapper
+    assert "123" not in wrapper
+
+
+def test_generated_morning_command_matches_current_cli_contract(tmp_path):
+    config = _config(tmp_path)
+    output = config.scheduler_root / "morning-dispatcher-contract"
+    reviewed_catalog = tmp_path / "data" / "reviewed-schedule.json"
+
+    artifacts = prepare_morning_preanalysis_artifacts(
+        times=("08:00",),
+        retry_count=0,
+        retry_delay_seconds=0.0,
+        output_dir=output,
+        env_file=config.env_file,
+        project_root=config.project_root,
+        bank=config.bank,
+        stake=config.stake,
+        activate_evening=True,
+        reviewed_schedule_catalog=reviewed_catalog,
+        python_command=sys.executable,
+    )
+
+    wrapper_lines = artifacts.wrapper_path.read_text(encoding="utf-8").splitlines()
+    command_line = next(line for line in wrapper_lines if line.startswith("  if "))
+    command = command_line.removeprefix("  if ").removesuffix("; then")
+    argv = shlex.split(command)
+    assert argv[:4] == [sys.executable, "-m", "toto_ai.cli", "morning-dispatch"]
+
+    result = CliRunner().invoke(cli.app, [*argv[3:], "--help"])
+
+    assert result.exit_code == 0, result.output
+    assert "No such option" not in result.output
+
+    stale_result = CliRunner().invoke(
+        cli.app,
+        [*argv[3:], "--training-category", "13", "--help"],
+    )
+    assert stale_result.exit_code == 2
+    assert "No such option: --training-category" in stale_result.output

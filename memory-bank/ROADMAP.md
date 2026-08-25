@@ -1,5 +1,15 @@
 # Roadmap
 
+- [x] `TOTO-THESPORTSDB-PROVIDER-20260824`: add a rate-limited TheSportsDB v1
+  schedule provider using the documented public key by default, official-host
+  fail-closed transport, immutable snapshots, normalized scheduled/not-started
+  evidence, bidirectional query coverage, existing alias/orientation matching,
+  secret-safe diagnostics and independent candidate collection. Keep the
+  current ledger/release rule unchanged: TheSportsDB cannot promote alone.
+- [ ] Evaluate the future two-independent-source promotion lane only as a
+  separate architecture/policy change with explicit review; this provider task
+  does not authorize it.
+
 ## Active execution sequence (2026-08-14)
 
 The authoritative implementation order is tracked in
@@ -21,6 +31,10 @@ expose one fresh final package while explicitly retaining
 `profitability_proven=false`; it is operator-risk testing, not completion of
 the validated release stage.
 
+- [x] `TOTO-MORNING-WRAPPER-COMPAT-20260824`: centralize generated
+  `morning-dispatch` argv, contract-check the parsed wrapper against the current
+  Typer CLI, and generate an uninstalled v4 candidate with the existing hourly
+  interval and six fixed triggers.
 - [x] Make generic morning discovery deadline-independent with a bounded
   recurring trigger, and add an idempotent scheduler-owned non-actionable
   READY training calculation using configured bank/stake/category. Verify the

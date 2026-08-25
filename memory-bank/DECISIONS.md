@@ -1,5 +1,41 @@
 # Decisions
 
+## 2026-08-24: TheSportsDB v1 is independent candidate evidence only
+
+- TheSportsDB v1 is integrated as a generic schedule provider through only its
+  documented event-day and event-search API endpoints. Website scraping and
+  arbitrary endpoint access remain prohibited.
+- The documented public v1 key `123` is the default. `THESPORTSDB_API_KEY`
+  remains an optional override and is absent from repr/cache/snapshots/request
+  fingerprints/diagnostics. Production transport accepts only the official
+  TheSportsDB HTTPS host and exact v1 path; an arbitrary `THESPORTSDB_BASE_URL`
+  fails before transport. Explicit `api_key=None` is retained only as a
+  deliberate offline/test disable switch.
+- Searches and event-day fetches use a maximum five-day span, timeout, at most
+  one retry by default, and a hard maximum of 30 requests/minute. Immutable raw
+  snapshots and API-Sports-shaped HTTP/provider/quota diagnostics are retained.
+- Only explicit scheduled/not-started evidence captured before kickoff can be
+  matched. Both query orientations are fetched and provider IDs deduplicated;
+  identity and same/reversed orientation still use the existing matcher and
+  team aliases. Provider IDs do not bypass that matcher.
+- TheSportsDB is an independent source, never an official source. This change
+  does not broaden ledger or release policy: a TheSportsDB candidate alone is
+  not ledger-eligible and collection never promotes it.
+
+## 2026-08-24: generated morning wrappers must parse against the current CLI
+
+- One scheduler command builder owns the complete argv emitted into every
+  recurring morning wrapper. Historical candidate files are never hand-edited
+  into compatibility; a new candidate is generated from current code.
+- The generated shell command is shlex-parsed in a contract test and submitted
+  to the real Typer command with `--help`. Any removed or unknown generated
+  option is therefore a test failure without invoking network preparation.
+- Training-package category remains internal scheduler/training-package
+  configuration. It is not a `morning-dispatch` wrapper option.
+- Replacing a candidate does not install or load it. The recurring interval
+  stays 3,600 seconds and the six reviewed calendar triggers stay fixed unless
+  a separate scheduling decision explicitly changes them.
+
 ## 2026-08-21: scheduler training uses the immutable morning snapshot
 
 - Scheduler-owned `TRAINING_PAPER` resolves its input by the canonical
@@ -1694,3 +1730,22 @@ ambiguous reversed evidence remains unresolved.
   mechanism, not a profitability claim: it permits only a fresh final,
   safety-approved package to become `PLAY`, never a warmup package or automatic
   wager.
+
+## 2026-08-24 — API-Sports diagnostics use existing artifacts
+
+- API-Sports request diagnostics have a strict allowlist: category, endpoint
+  path, attempt, HTTP status, normalized provider errors, and non-negative
+  daily/minute quota metadata. They never contain request headers, query
+  parameters, raw response payloads, or known credential values.
+- Schedule attempts are embedded in the existing schedule-date provenance JSON;
+  preparation attempts are embedded in the existing readiness summary. Failed
+  market requests use the existing event fallback reason, while successful
+  market sources retain the established endpoint/fingerprint provenance and
+  run-level quota state.
+- No diagnostic-specific database column or migration is justified. Readers
+  remain backward-compatible with schedule-date artifacts that predate the
+  optional attempt list, and storage validates new attempt records before
+  persistence.
+- Diagnostics are observational only. Provider semantic/HTTP failures, quota
+  stops, matching, eligibility, TotoBrief fallback, and publication gates keep
+  their existing fail-closed behavior.

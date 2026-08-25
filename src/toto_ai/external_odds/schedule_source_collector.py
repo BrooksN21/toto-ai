@@ -15,12 +15,28 @@ from typing import Any
 from urllib.parse import quote_plus
 from urllib.request import Request, urlopen
 
-from toto_ai.external_odds.matching import normalize_team_name
+from toto_ai.external_odds.domain import TargetEvent
+from toto_ai.external_odds.matching import (
+    MATCHER_VERSION,
+    match_event,
+    normalize_team_name,
+)
 from toto_ai.external_odds.schedule_evidence import (
     ScheduleEvidenceLedger,
     load_schedule_evidence_ledger,
 )
 from toto_ai.external_odds.team_registry import transliterate_team_name
+from toto_ai.external_odds.thesportsdb import (
+    PROVIDER_NAME as THESPORTSDB_PROVIDER,
+)
+from toto_ai.external_odds.thesportsdb import (
+    TheSportsDBClient,
+    TheSportsDBConfig,
+    TheSportsDBError,
+    TheSportsDBScheduleEvent,
+    load_thesportsdb_config,
+    sanitize_thesportsdb_message,
+)
 
 _SEARCH_ENDPOINT = "https://www.sofascore.com/api/v1/search/all?q={query}"
 _MAX_DRAWING_SPAN = timedelta(days=5)
@@ -33,6 +49,7 @@ class ScheduleSourceCollection:
     candidate_count: int
     unresolved_count: int
     records: tuple[dict[str, object], ...]
+    provider_statuses: dict[str, dict[str, object]]
     report_path: Path
 
 
@@ -43,6 +60,9 @@ def collect_schedule_source_candidates(
     fetch_json: Callable[[str], Mapping[str, Any]] | None = None,
     captured_at: datetime | None = None,
     schedule_evidence_ledger: str | Path | None = None,
+    thesportsdb_config: TheSportsDBConfig | None = None,
+    thesportsdb_client: TheSportsDBClient | None = None,
+    team_aliases: Mapping[str, str] | None = None,
 ) -> ScheduleSourceCollection:
     """Collect immutable independent candidates without mutating the ledger.
 
@@ -70,9 +90,7 @@ def collect_schedule_source_candidates(
         canonical_homes = _ledger_canonical_names(ledger, target_home)
         canonical_aways = _ledger_canonical_names(ledger, target_away)
         historical_queries = tuple(
-            f"{home} {away}"
-            for home in canonical_homes
-            for away in canonical_aways
+            f"{home} {away}" for home in canonical_homes for away in canonical_aways
         )
         queries = tuple(
             dict.fromkeys(
@@ -160,12 +178,9 @@ def collect_schedule_source_candidates(
             continue
 
         event = matches[0]
-        starts_at = datetime.fromtimestamp(
-            int(event["startTimestamp"]), timezone.utc
-        )
+        starts_at = datetime.fromtimestamp(int(event["startTimestamp"]), timezone.utc)
         sport = str(
-            event.get("homeTeam", {}).get("sport", {}).get("slug")
-            or "football"
+            event.get("homeTeam", {}).get("sport", {}).get("slug") or "football"
         )
         source_url = (
             f"https://www.sofascore.com/{sport}/match/"
@@ -193,12 +208,40 @@ def collect_schedule_source_candidates(
             }
         )
 
-    candidate_count = sum(
+    sofascore_candidate_count = sum(
         item["status"] == "independent_candidate" for item in records
     )
-    unresolved_count = len(records) - candidate_count
+    provider_statuses: dict[str, dict[str, object]] = {
+        "sofascore": {
+            "status": "collected",
+            "candidate_count": sofascore_candidate_count,
+            "ledger_mutated": False,
+        }
+    }
+    thesportsdb_records, thesportsdb_status = _collect_thesportsdb_candidates(
+        queue,
+        output=output,
+        observed=observed,
+        deadline=deadline,
+        ledger=ledger,
+        config=thesportsdb_config,
+        client=thesportsdb_client,
+        team_aliases=team_aliases,
+    )
+    records.extend(thesportsdb_records)
+    provider_statuses[THESPORTSDB_PROVIDER] = thesportsdb_status
+
+    candidate_count = sum(item["status"] == "independent_candidate" for item in records)
+    resolved_orders = {
+        int(item["event_order"])
+        for item in records
+        if item["status"] == "independent_candidate"
+    }
+    unresolved_count = sum(
+        int(row["event_order"]) not in resolved_orders for row in queue["records"]
+    )
     report: dict[str, object] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
         "queue_path": str(Path(queue_path).resolve()),
         "queue_sha256": queue["queue_sha256"],
@@ -208,6 +251,7 @@ def collect_schedule_source_candidates(
         "candidate_count": candidate_count,
         "unresolved_count": unresolved_count,
         "ledger_mutated": False,
+        "providers": provider_statuses,
         "records": records,
     }
     report["report_sha256"] = hashlib.sha256(_canonical(report)).hexdigest()
@@ -219,8 +263,349 @@ def collect_schedule_source_candidates(
         candidate_count=candidate_count,
         unresolved_count=unresolved_count,
         records=tuple(records),
+        provider_statuses=provider_statuses,
         report_path=report_path,
     )
+
+
+def _collect_thesportsdb_candidates(
+    queue: Mapping[str, Any],
+    *,
+    output: Path,
+    observed: datetime,
+    deadline: datetime,
+    ledger: ScheduleEvidenceLedger | None,
+    config: TheSportsDBConfig | None,
+    client: TheSportsDBClient | None,
+    team_aliases: Mapping[str, str] | None,
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    if client is None:
+        effective_config = config or load_thesportsdb_config()
+        if not effective_config.enabled:
+            return [], {
+                "status": "disabled_missing_key",
+                "config_key": "THESPORTSDB_API_KEY",
+                "candidate_count": 0,
+                "ledger_mutated": False,
+            }
+        client = TheSportsDBClient.from_config(
+            effective_config,
+            cache_dir=output / "thesportsdb-v1",
+            now=lambda: observed,
+        )
+
+    aliases = _collector_aliases(ledger, team_aliases)
+    records: list[dict[str, object]] = []
+    window_end = deadline + _MAX_DRAWING_SPAN
+    for row in queue["records"]:
+        diagnostic_offset = len(client.request_diagnostics)
+        evidence_offset = len(client.request_evidence)
+        target_home = str(row["home_team"])
+        target_away = str(row["away_team"])
+        query_home = _preferred_query_name(ledger, target_home)
+        query_away = _preferred_query_name(ledger, target_away)
+        try:
+            search_results = []
+            query_pairs = tuple(
+                dict.fromkeys(
+                    (
+                        (query_home, query_away),
+                        (query_away, query_home),
+                    )
+                )
+            )
+            for search_home, search_away in query_pairs:
+                search_results.extend(
+                    client.search_schedule_events(
+                        search_home,
+                        search_away,
+                        window_start=deadline,
+                        window_end=window_end,
+                    )
+                )
+            normalized = _dedupe_thesportsdb_search_results(search_results)
+            selected, orientation, candidate_ids, match_status = (
+                _match_thesportsdb_candidates(
+                    row,
+                    normalized,
+                    aliases=aliases,
+                    deadline=deadline,
+                )
+            )
+        except Exception as error:
+            records.append(
+                _base_record(row)
+                | {
+                    "status": "source_failed",
+                    "source_name": "TheSportsDB",
+                    "source_provider": THESPORTSDB_PROVIDER,
+                    "source_role": "independent",
+                    "captured_at": _timestamp(observed),
+                    "error": _safe_thesportsdb_error(error),
+                    "provider_attempts": _thesportsdb_diagnostics(
+                        client, diagnostic_offset
+                    ),
+                    "ledger_eligible": False,
+                    "missing_requirements": ["official_source", "review"],
+                }
+            )
+            continue
+
+        evidence = tuple(client.request_evidence[evidence_offset:])
+        snapshot_fields = _thesportsdb_snapshot_fields(evidence, output=output)
+        diagnostics = _thesportsdb_diagnostics(client, diagnostic_offset)
+        if selected is None:
+            status = (
+                "status_filtered"
+                if normalized and not any(item.eligible for item in normalized)
+                else "conflict"
+                if match_status == "ambiguous"
+                else "not_found"
+            )
+            records.append(
+                _base_record(row)
+                | {
+                    "status": status,
+                    "source_name": "TheSportsDB",
+                    "source_provider": THESPORTSDB_PROVIDER,
+                    "source_role": "independent",
+                    "captured_at": _timestamp(observed),
+                    "candidate_ids": list(candidate_ids),
+                    "normalized_statuses": [
+                        {
+                            "source_event_id": item.provider_event_id,
+                            "status": item.status,
+                            "eligible": item.eligible,
+                        }
+                        for item in normalized
+                    ],
+                    "provider_attempts": diagnostics,
+                    **snapshot_fields,
+                    "ledger_eligible": False,
+                    "missing_requirements": ["official_source", "review"],
+                }
+            )
+            continue
+
+        records.append(
+            _base_record(row)
+            | {
+                "status": "independent_candidate",
+                "source_name": "TheSportsDB",
+                "source_provider": THESPORTSDB_PROVIDER,
+                "source_role": "independent",
+                "source_url": selected.source_url,
+                "source_event_id": selected.provider_event_id,
+                "source_home_team_id": selected.provider_home_team_id,
+                "source_away_team_id": selected.provider_away_team_id,
+                "sport": selected.sport,
+                "home_name": selected.home_team,
+                "away_name": selected.away_team,
+                "orientation": orientation,
+                "matcher_version": MATCHER_VERSION,
+                "competition": selected.competition,
+                "starts_at": _timestamp(selected.starts_at),
+                "source_status": selected.status,
+                "status_eligible": selected.eligible,
+                "captured_at": _timestamp(selected.captured_at),
+                "source_endpoint": selected.source_endpoint,
+                "request_fingerprint": selected.request_fingerprint,
+                "event_payload_sha256": selected.payload_hash,
+                "provider_attempts": diagnostics,
+                **snapshot_fields,
+                "ledger_eligible": False,
+                "missing_requirements": ["official_source", "review"],
+            }
+        )
+
+    candidate_count = sum(item["status"] == "independent_candidate" for item in records)
+    return records, {
+        "status": "collected",
+        "candidate_count": candidate_count,
+        "request_count": client.requests_made,
+        "cache_hit_count": client.cache_hits,
+        "quota": {
+            "daily_limit": client.quota_state.daily_limit,
+            "daily_remaining": client.quota_state.daily_remaining,
+            "minute_limit": client.quota_state.minute_limit,
+            "minute_remaining": client.quota_state.minute_remaining,
+        },
+        "ledger_mutated": False,
+    }
+
+
+def _match_thesportsdb_candidates(
+    row: Mapping[str, Any],
+    events: tuple[TheSportsDBScheduleEvent, ...],
+    *,
+    aliases: dict[str, str],
+    deadline: datetime,
+) -> tuple[
+    TheSportsDBScheduleEvent | None,
+    str | None,
+    tuple[str, ...],
+    str,
+]:
+    eligible = tuple(item for item in events if item.eligible)
+    by_id = {item.provider_event_id: item for item in eligible}
+    decisions = []
+    for sport in ("football", "hockey"):
+        candidates = tuple(
+            item.as_provider_event() for item in eligible if item.sport == sport
+        )
+        if not candidates:
+            continue
+        target = TargetEvent(
+            drawing_id=int(row["drawing_id"]),
+            drawing_number=int(row["drawing_number"]),
+            event_id=int(row["target_event_id"]),
+            event_order=int(row["event_order"]),
+            sport=sport,
+            championship="TheSportsDB schedule candidate",
+            starts_at=None,
+            deadline=deadline,
+            home_team=str(row["home_team"]),
+            away_team=str(row["away_team"]),
+            home_team_en=None,
+            away_team_en=None,
+            bk_probabilities=(1 / 3, 1 / 3, 1 / 3),
+        )
+        decisions.append(match_event(target, candidates, aliases))
+    matched = tuple(
+        decision
+        for decision in decisions
+        if decision.status == "matched" and decision.provider_event_id is not None
+    )
+    candidate_ids = tuple(
+        sorted(
+            {
+                candidate_id
+                for decision in decisions
+                for candidate_id in decision.candidate_ids
+            }
+        )
+    )
+    if len(matched) == 1:
+        decision = matched[0]
+        return (
+            by_id[decision.provider_event_id],
+            decision.orientation,
+            candidate_ids,
+            decision.status,
+        )
+    status = (
+        "ambiguous"
+        if len(matched) > 1 or any(item.status == "ambiguous" for item in decisions)
+        else "missing"
+    )
+    return None, None, candidate_ids, status
+
+
+def _dedupe_thesportsdb_search_results(
+    events: list[TheSportsDBScheduleEvent],
+) -> tuple[TheSportsDBScheduleEvent, ...]:
+    by_id: dict[str, TheSportsDBScheduleEvent] = {}
+    for event in events:
+        previous = by_id.get(event.provider_event_id)
+        if previous is not None and (
+            previous.sport,
+            previous.competition,
+            previous.home_team,
+            previous.away_team,
+            previous.starts_at,
+            previous.status,
+            previous.eligible,
+            previous.provider_home_team_id,
+            previous.provider_away_team_id,
+        ) != (
+            event.sport,
+            event.competition,
+            event.home_team,
+            event.away_team,
+            event.starts_at,
+            event.status,
+            event.eligible,
+            event.provider_home_team_id,
+            event.provider_away_team_id,
+        ):
+            raise TheSportsDBError("TheSportsDB duplicate event identity conflicts")
+        by_id.setdefault(event.provider_event_id, event)
+    return tuple(by_id[key] for key in sorted(by_id))
+
+
+def _collector_aliases(
+    ledger: ScheduleEvidenceLedger | None,
+    supplied: Mapping[str, str] | None,
+) -> dict[str, str]:
+    result: dict[str, str] = {}
+    if ledger is not None:
+        for observation in ledger.observations:
+            for entity, aliases in (
+                (observation.home_entity, observation.home_aliases),
+                (observation.away_entity, observation.away_aliases),
+            ):
+                canonical = normalize_team_name(entity)
+                for alias in (*aliases, entity):
+                    key = normalize_team_name(alias)
+                    previous = result.get(key)
+                    if previous is not None and previous != canonical:
+                        raise ValueError("schedule source ledger aliases conflict")
+                    if key != canonical:
+                        result[key] = canonical
+    if supplied is not None:
+        for raw_key, raw_value in supplied.items():
+            key = normalize_team_name(raw_key)
+            value = normalize_team_name(raw_value)
+            previous = result.get(key)
+            if previous is not None and previous != value:
+                raise ValueError("schedule source aliases conflict")
+            if key != value:
+                result[key] = value
+    return result
+
+
+def _preferred_query_name(
+    ledger: ScheduleEvidenceLedger | None,
+    target: str,
+) -> str:
+    canonical = _ledger_canonical_names(ledger, target)
+    return canonical[0] if canonical else target
+
+
+def _thesportsdb_diagnostics(
+    client: TheSportsDBClient,
+    offset: int,
+) -> list[dict[str, object]]:
+    return [item.payload() for item in client.request_diagnostics[offset:]]
+
+
+def _thesportsdb_snapshot_fields(
+    evidence: tuple[object, ...],
+    *,
+    output: Path,
+) -> dict[str, object]:
+    if not evidence:
+        return {}
+    item = evidence[-1]
+    path = getattr(item, "snapshot_path", None)
+    digest = getattr(item, "snapshot_sha256", None)
+    if not isinstance(path, Path) or not isinstance(digest, str):
+        return {}
+    resolved = path.resolve()
+    try:
+        rendered_path = str(resolved.relative_to(output))
+    except ValueError:
+        rendered_path = str(resolved)
+    return {
+        "snapshot_path": rendered_path,
+        "snapshot_sha256": digest,
+    }
+
+
+def _safe_thesportsdb_error(error: BaseException) -> str:
+    if isinstance(error, TheSportsDBError):
+        return str(error)
+    return sanitize_thesportsdb_message(f"provider failure: {type(error).__name__}")
 
 
 def _load_queue(path: Path) -> dict[str, Any]:
@@ -278,13 +663,9 @@ def _matching_events(
 
 def _team_aliases(team: Mapping[str, Any]) -> tuple[str, ...]:
     aliases = [str(team["name"])]
-    translations = team.get("fieldTranslations", {}).get(
-        "nameTranslation", {}
-    )
+    translations = team.get("fieldTranslations", {}).get("nameTranslation", {})
     if isinstance(translations, dict):
-        aliases.extend(
-            str(value) for value in translations.values() if value
-        )
+        aliases.extend(str(value) for value in translations.values() if value)
     return tuple(dict.fromkeys(aliases))
 
 

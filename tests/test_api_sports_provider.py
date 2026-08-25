@@ -829,6 +829,201 @@ def test_non_retry_http_failure_is_sanitized_and_not_cached(tmp_path):
     assert list(tmp_path.iterdir()) == []
 
 
+def test_semantic_error_exposes_only_normalized_secret_safe_diagnostic(tmp_path):
+    from toto_ai.external_odds.api_sports import (
+        APISportsClient,
+        ProviderPlanUnavailable,
+    )
+
+    api_key = "semantic-secret-key"
+    payload = {
+        **football_schedule_payload(),
+        "errors": {
+            "plan": {"api_key": api_key, "raw": football_schedule_payload()},
+            "Requests Limit": f"token={api_key}",
+            api_key: "mirrored credential",
+        },
+    }
+    headers = {
+        "X-RateLimit-Requests-Limit": "100",
+        "X-RateLimit-Requests-Remaining": "17",
+        "X-RateLimit-Limit": "10",
+        "X-RateLimit-Remaining": "4",
+        "X-RateLimit-Requests-Reset": "3600",
+        "X-RateLimit-Reset": "42",
+        "Authorization": f"Bearer {api_key}",
+    }
+    session = FakeSession([FakeResponse(payload=payload, headers=headers)])
+    client = APISportsClient(api_key, session=session, cache_dir=tmp_path)
+
+    with pytest.raises(ProviderPlanUnavailable) as excinfo:
+        client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert str(excinfo.value) == (
+        "API-Sports plan does not provide the requested data"
+    )
+    diagnostic = excinfo.value.diagnostic_payload()
+    assert diagnostic == {
+        "category": "semantic_error",
+        "endpoint": "/fixtures",
+        "attempt": 1,
+        "http_status": 200,
+        "provider_errors": [
+            {"code": "plan", "message": "provider error"},
+            {"code": "requests_limit", "message": "token=[REDACTED]"},
+            {"code": "redacted", "message": "mirrored credential"},
+        ],
+        "quota_daily_limit": 100,
+        "quota_daily_remaining": 17,
+        "quota_minute_limit": 10,
+        "quota_minute_remaining": 4,
+        "quota_daily_reset": 3600,
+        "quota_minute_reset": 42,
+    }
+    serialized = json.dumps(diagnostic, sort_keys=True)
+    assert api_key not in str(excinfo.value)
+    assert api_key not in serialized
+    assert "Authorization" not in serialized
+    assert "headers" not in serialized
+    assert "raw" not in serialized
+    assert "response" not in serialized
+    assert client.request_diagnostics == (excinfo.value.diagnostic,)
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_diagnostic_serialization_rejects_arbitrary_identity_and_metadata():
+    from toto_ai.external_odds.api_sports import (
+        APISportsDiagnostic,
+        APISportsProviderError,
+    )
+
+    diagnostic = APISportsDiagnostic(
+        category="raw response payload",
+        endpoint="/odds?api_key=diagnostic-secret-key",
+        attempt=0,
+        http_status=999,
+        provider_errors=(
+            APISportsProviderError(
+                code="invalid code with spaces",
+                message="Authorization: Bearer diagnostic-secret-key",
+            ),
+        ),
+        quota_daily_limit=-1,
+    )
+
+    payload = diagnostic.payload()
+    assert payload["category"] == "semantic_error"
+    assert payload["endpoint"] == "/odds"
+    assert payload["attempt"] == 1
+    assert payload["http_status"] is None
+    assert payload["provider_errors"] == [
+        {
+            "code": "invalid_code_with_spaces",
+            "message": "Authorization=[REDACTED]",
+        }
+    ]
+    assert payload["quota_daily_limit"] is None
+    serialized = json.dumps(payload, sort_keys=True)
+    assert "diagnostic-secret-key" not in serialized
+    assert "api_key" not in serialized
+    assert "raw response payload" not in serialized
+
+
+def test_http_error_diagnostic_keeps_status_quota_and_redacts_provider_message(
+    tmp_path,
+):
+    from toto_ai.external_odds.api_sports import APISportsClient, APISportsError
+
+    api_key = "http-secret-key"
+    payload = {
+        **football_schedule_payload(),
+        "errors": {"auth": f"Authorization: Bearer {api_key}"},
+    }
+    session = FakeSession(
+        [
+            FakeResponse(
+                payload=payload,
+                headers=quota_headers(daily_remaining="3", minute_remaining="2"),
+                status_code=403,
+            )
+        ]
+    )
+    client = APISportsClient(api_key, session=session, cache_dir=tmp_path)
+
+    with pytest.raises(APISportsError, match="status 403") as excinfo:
+        client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert str(excinfo.value) == "API-Sports request failed with status 403"
+    diagnostic = excinfo.value.diagnostic_payload()
+    assert diagnostic is not None
+    assert diagnostic["category"] == "http_failure"
+    assert diagnostic["http_status"] == 403
+    assert diagnostic["quota_daily_limit"] == 100
+    assert diagnostic["quota_daily_remaining"] == 3
+    assert diagnostic["quota_minute_limit"] == 10
+    assert diagnostic["quota_minute_remaining"] == 2
+    assert diagnostic["provider_errors"] == [
+        {"code": "auth", "message": "Authorization=[REDACTED]"}
+    ]
+    assert api_key not in str(excinfo.value)
+    assert api_key not in json.dumps(diagnostic, sort_keys=True)
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_retry_diagnostics_capture_each_http_attempt_without_raw_metadata(
+    monkeypatch,
+    tmp_path,
+):
+    from toto_ai.external_odds.api_sports import APISportsClient
+
+    first_headers = quota_headers(daily_remaining="7", minute_remaining="8") | {
+        "x-ratelimit-requests-reset": "120",
+        "x-ratelimit-reset": "8",
+    }
+    session = FakeSession(
+        [
+            FakeResponse(
+                payload={
+                    **football_schedule_payload(),
+                    "errors": {"rate limit": "retry later"},
+                },
+                headers=first_headers,
+                status_code=429,
+            ),
+            FakeResponse(
+                payload=football_schedule_payload(),
+                headers=quota_headers(daily_remaining="6", minute_remaining="9"),
+            ),
+        ]
+    )
+    client = APISportsClient(
+        "secret-key",
+        session=session,
+        cache_dir=tmp_path,
+        quota_reserve=0,
+        max_retries=1,
+    )
+    monkeypatch.setattr(client, "_sleep_before_retry", lambda attempt: None)
+
+    client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    attempts = tuple(item.payload() for item in client.request_diagnostics)
+    assert tuple(item["category"] for item in attempts) == (
+        "http_retry",
+        "success",
+    )
+    assert tuple(item["attempt"] for item in attempts) == (1, 2)
+    assert tuple(item["http_status"] for item in attempts) == (429, 200)
+    assert attempts[0]["provider_errors"] == [
+        {"code": "rate_limit", "message": "retry later"}
+    ]
+    assert attempts[0]["quota_daily_reset"] == 120
+    assert attempts[0]["quota_minute_reset"] == 8
+    assert attempts[1]["quota_daily_remaining"] == 6
+    assert "headers" not in json.dumps(attempts, sort_keys=True)
+    assert "payload" not in json.dumps(attempts, sort_keys=True)
+
+
 @pytest.mark.parametrize(
     "corrupt_cache",
     [

@@ -1,10 +1,16 @@
+import json
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import sessionmaker
 
-from toto_ai.db.models import Base, DrawingEventPin
+from toto_ai.db.models import Base, DrawingEventPin, DrawingPreparation
+from toto_ai.external_odds.api_sports import (
+    APISportsDiagnostic,
+    APISportsProviderError,
+    ProviderPlanUnavailable,
+)
 from toto_ai.external_odds.domain import ProviderEvent, TargetDrawing, TargetEvent
 from toto_ai.external_odds.preparation import (
     fetch_preparation_schedule,
@@ -213,3 +219,88 @@ def test_progressive_preparation_scopes_later_failure_to_unresolved_event(
     assert prepared.unresolved_event_orders == (14,)
     with session_factory() as session:
         assert session.scalar(select(func.count(DrawingEventPin.id))) == 0
+
+
+def test_api_sports_diagnostics_persist_in_preparation_readiness_artifact(
+    session_factory,
+):
+    class Provider:
+        def __init__(self):
+            self._request_diagnostics = []
+
+        @property
+        def request_diagnostics(self):
+            return tuple(self._request_diagnostics)
+
+        def fetch_schedule(self, sport, dates):
+            diagnostic = APISportsDiagnostic(
+                category="semantic_error",
+                endpoint="/fixtures",
+                attempt=1,
+                http_status=200,
+                provider_errors=(
+                    APISportsProviderError(
+                        code="plan",
+                        message="coverage unavailable",
+                    ),
+                ),
+                quota_daily_limit=100,
+                quota_daily_remaining=11,
+                quota_minute_limit=10,
+                quota_minute_remaining=9,
+            )
+            self._request_diagnostics.append(diagnostic)
+            raise ProviderPlanUnavailable(
+                "API-Sports plan does not provide the requested data",
+                diagnostic=diagnostic,
+            )
+
+    target = _target()
+    schedule = fetch_preparation_schedule(
+        target,
+        Provider(),
+        session_factory=session_factory,
+        missing_start_horizon_days=1,
+    )
+    prepared = prepare_drawing(
+        target,
+        schedule.candidates,
+        session_factory=session_factory,
+        schedule_diagnostics=schedule.diagnostics,
+    )
+
+    assert prepared.status == "unresolved"
+    assert schedule.diagnostics
+    assert all(item["status"] == "failed" for item in schedule.diagnostics)
+    with session_factory() as session:
+        readiness_json = session.scalar(
+            select(DrawingPreparation.readiness_summary).where(
+                DrawingPreparation.drawing_id == target.drawing_id
+            )
+        )
+    readiness = json.loads(readiness_json)
+    persisted = readiness["schedule_diagnostics"]
+    expected_attempt = {
+        "attempt": 1,
+        "category": "semantic_error",
+        "endpoint": "/fixtures",
+        "http_status": 200,
+        "provider_errors": [
+            {"code": "plan", "message": "coverage unavailable"}
+        ],
+        "quota_daily_limit": 100,
+        "quota_daily_remaining": 11,
+        "quota_daily_reset": None,
+        "quota_minute_limit": 10,
+        "quota_minute_remaining": 9,
+        "quota_minute_reset": None,
+    }
+    assert all(item["provider_attempts"] == [expected_attempt] for item in persisted)
+    assert all(
+        item["reason"] == "API-Sports plan does not provide the requested data"
+        for item in persisted
+    )
+    serialized = json.dumps(persisted, sort_keys=True)
+    assert "headers" not in serialized
+    assert "payload" not in serialized
+    assert "x-apisports-key" not in serialized

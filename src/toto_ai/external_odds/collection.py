@@ -12,9 +12,11 @@ from zoneinfo import ZoneInfo
 
 from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.external_odds.api_sports import (
+    APISportsDiagnostic,
     APISportsError,
     QuotaExhausted,
     SafetyStopReached,
+    diagnostic_payload,
 )
 from toto_ai.external_odds.consensus import (
     MAXIMUM_ODDS_AGE,
@@ -98,6 +100,7 @@ class ScheduleDateResult:
     requested_date: date
     events: tuple[ProviderEvent, ...]
     error: str | None
+    provider_attempts: tuple[dict[str, object], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -335,17 +338,23 @@ def build_external_collection(
                     fallback_reason=SAFETY_STOP_FALLBACK,
                 )
                 continue
-            except QuotaExhausted:
+            except QuotaExhausted as error:
                 quota_stopped = True
+                reason = "quota reserve reached"
+                if error.diagnostic is not None:
+                    reason = f"{reason}: {error}"
                 market_results[event.event_order] = _MarketFetchResult(
                     markets=(),
-                    fallback_reason="quota reserve reached",
+                    fallback_reason=reason,
                 )
                 continue
             except APISportsError as error:
+                reason = f"provider odds failure: {error}"
+                if error.diagnostic is not None:
+                    reason = f"{reason}: {error.diagnostic.summary()}"
                 market_results[event.event_order] = _MarketFetchResult(
                     markets=(),
-                    fallback_reason=f"provider odds failure: {error}",
+                    fallback_reason=reason,
                 )
                 continue
             except Exception as error:
@@ -641,6 +650,33 @@ def _provider_counter(provider: ExternalOddsProvider, name: str) -> int | None:
     return value if isinstance(value, int) and not isinstance(value, bool) else None
 
 
+def _provider_diagnostic_count(provider: ExternalOddsProvider) -> int:
+    diagnostics = getattr(provider, "request_diagnostics", ())
+    if not isinstance(diagnostics, tuple):
+        return 0
+    return len(diagnostics)
+
+
+def _provider_attempt_payloads(
+    provider: ExternalOddsProvider,
+    *,
+    offset: int = 0,
+    error: BaseException | None = None,
+) -> tuple[dict[str, object], ...]:
+    diagnostics = getattr(provider, "request_diagnostics", ())
+    payloads: list[dict[str, object]] = []
+    if isinstance(diagnostics, tuple):
+        payloads.extend(
+            item.payload()
+            for item in diagnostics[offset:]
+            if isinstance(item, APISportsDiagnostic)
+        )
+    error_payload = None if error is None else diagnostic_payload(error)
+    if error_payload is not None and error_payload not in payloads:
+        payloads.append(error_payload)
+    return tuple(payloads)
+
+
 def _fetch_schedules(
     target: TargetDrawing,
     request_counter: _RequestCounter,
@@ -702,6 +738,7 @@ def _fetch_schedules(
                 )
             )
             continue
+        diagnostic_offset = _provider_diagnostic_count(request_counter.provider)
         try:
             events = request_counter.fetch_schedule(sport, (requested_date,))
             results.append(
@@ -710,9 +747,13 @@ def _fetch_schedules(
                     requested_date=requested_date,
                     events=events,
                     error=None,
+                    provider_attempts=_provider_attempt_payloads(
+                        request_counter.provider,
+                        offset=diagnostic_offset,
+                    ),
                 )
             )
-        except SafetyStopReached:
+        except SafetyStopReached as error:
             safety_stopped = True
             results.append(
                 ScheduleDateResult(
@@ -720,9 +761,14 @@ def _fetch_schedules(
                     requested_date=requested_date,
                     events=(),
                     error=SAFETY_STOP_FALLBACK,
+                    provider_attempts=_provider_attempt_payloads(
+                        request_counter.provider,
+                        offset=diagnostic_offset,
+                        error=error,
+                    ),
                 )
             )
-        except QuotaExhausted:
+        except QuotaExhausted as error:
             quota_stopped = True
             results.append(
                 ScheduleDateResult(
@@ -730,15 +776,25 @@ def _fetch_schedules(
                     requested_date=requested_date,
                     events=(),
                     error="quota reserve reached",
+                    provider_attempts=_provider_attempt_payloads(
+                        request_counter.provider,
+                        offset=diagnostic_offset,
+                        error=error,
+                    ),
                 )
             )
-        except Exception:
+        except Exception as error:
             results.append(
                 ScheduleDateResult(
                     sport=sport,
                     requested_date=requested_date,
                     events=(),
                     error="provider schedule failure",
+                    provider_attempts=_provider_attempt_payloads(
+                        request_counter.provider,
+                        offset=diagnostic_offset,
+                        error=error,
+                    ),
                 )
             )
     return _ScheduleFetchResult(
@@ -1756,13 +1812,20 @@ def _collection_identity_payload(
 
 def _schedule_date_payload(
     schedule_dates: tuple[ScheduleDateResult, ...],
-) -> tuple[dict[str, str | None], ...]:
+) -> tuple[dict[str, object], ...]:
     return tuple(
-        {
-            "sport": result.sport,
-            "requested_date": result.requested_date.isoformat(),
-            "error": result.error,
-        }
+        (
+            {
+                "sport": result.sport,
+                "requested_date": result.requested_date.isoformat(),
+                "error": result.error,
+            }
+            | (
+                {"provider_attempts": result.provider_attempts}
+                if result.provider_attempts
+                else {}
+            )
+        )
         for result in sorted(
             schedule_dates,
             key=lambda result: (result.sport, result.requested_date),

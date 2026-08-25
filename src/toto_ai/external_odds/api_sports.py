@@ -31,10 +31,132 @@ FOOTBALL_BASE_URL = "https://v3.football.api-sports.io"
 HOCKEY_BASE_URL = "https://v1.hockey.api-sports.io"
 _RETRY_STATUSES = frozenset((408, 429, 500, 502, 503, 504))
 _CACHE_SCHEMA_VERSION = 2
+_DIAGNOSTIC_MESSAGE_LIMIT = 240
+_SECRET_FIELD_PATTERN = re.compile(
+    r"(?i)\b(authorization|proxy-authorization|cookie|set-cookie|"
+    r"x-api-key|x-apisports-key|api[_-]?key|token|secret|password)\b"
+    r"[\"']?\s*[:=]\s*[\"']?(?:bearer\s+)?[^,\s;}&\"']+"
+)
+_SECRET_QUERY_PATTERN = re.compile(
+    r"(?i)([?&](?:api[_-]?key|key|token|access[_-]?token|auth|authorization|"
+    r"password|secret)=)[^&#\s]+"
+)
+_URL_QUERY_PATTERN = re.compile(r"(https?://[^\s?]+)\?[^\s]*", re.IGNORECASE)
+_PROVIDER_ERROR_CODE_PATTERN = re.compile(r"[a-z0-9][a-z0-9_.-]{0,63}\Z")
+_DIAGNOSTIC_CATEGORIES = frozenset(
+    {
+        "success",
+        "semantic_error",
+        "http_retry",
+        "http_failure",
+        "transport_retry",
+        "transport_failure",
+        "invalid_json",
+        "invalid_quota_headers",
+    }
+)
+
+
+@dataclass(frozen=True)
+class APISportsProviderError:
+    code: str
+    message: str
+
+
+@dataclass(frozen=True)
+class APISportsDiagnostic:
+    category: str
+    endpoint: str
+    attempt: int
+    http_status: int | None = None
+    provider_errors: tuple[APISportsProviderError, ...] = ()
+    quota_daily_limit: int | None = None
+    quota_daily_remaining: int | None = None
+    quota_minute_limit: int | None = None
+    quota_minute_remaining: int | None = None
+    quota_daily_reset: int | None = None
+    quota_minute_reset: int | None = None
+
+    def payload(self) -> dict[str, object]:
+        return {
+            "category": (
+                self.category
+                if self.category in _DIAGNOSTIC_CATEGORIES
+                else "semantic_error"
+            ),
+            "endpoint": _safe_endpoint(self.endpoint),
+            "attempt": (
+                self.attempt
+                if isinstance(self.attempt, int)
+                and not isinstance(self.attempt, bool)
+                and self.attempt >= 1
+                else 1
+            ),
+            "http_status": _safe_http_status(self.http_status),
+            "provider_errors": [
+                {
+                    "code": _normalize_provider_error_code(item.code)
+                    or "provider_error",
+                    "message": sanitize_api_sports_message(item.message),
+                }
+                for item in self.provider_errors[:10]
+                if isinstance(item, APISportsProviderError)
+            ],
+            "quota_daily_limit": _safe_nonnegative_int(self.quota_daily_limit),
+            "quota_daily_remaining": _safe_nonnegative_int(
+                self.quota_daily_remaining
+            ),
+            "quota_minute_limit": _safe_nonnegative_int(self.quota_minute_limit),
+            "quota_minute_remaining": _safe_nonnegative_int(
+                self.quota_minute_remaining
+            ),
+            "quota_daily_reset": _safe_nonnegative_int(self.quota_daily_reset),
+            "quota_minute_reset": _safe_nonnegative_int(self.quota_minute_reset),
+        }
+
+    def summary(self) -> str:
+        payload = self.payload()
+        fields = [
+            str(payload["category"]),
+            f"endpoint={payload['endpoint']}",
+            f"attempt={payload['attempt']}",
+        ]
+        if payload["http_status"] is not None:
+            fields.append(f"http={payload['http_status']}")
+        for field in (
+            "quota_daily_limit",
+            "quota_daily_remaining",
+            "quota_minute_limit",
+            "quota_minute_remaining",
+            "quota_daily_reset",
+            "quota_minute_reset",
+        ):
+            if payload[field] is not None:
+                fields.append(f"{field}={payload[field]}")
+        provider_errors = payload["provider_errors"]
+        if isinstance(provider_errors, list) and provider_errors:
+            errors = ",".join(
+                f"{item['code']}:{item['message']}" for item in provider_errors
+            )
+            fields.append(f"provider={errors}")
+        return " ".join(fields)
 
 
 class APISportsError(RuntimeError):
     """Sanitized API-Sports provider failure."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        diagnostic: APISportsDiagnostic | None = None,
+    ) -> None:
+        safe_message = sanitize_api_sports_message(message)
+        super().__init__(safe_message)
+        self.diagnostic = diagnostic
+
+    def diagnostic_payload(self) -> dict[str, object] | None:
+        return None if self.diagnostic is None else self.diagnostic.payload()
 
 
 class QuotaExhausted(APISportsError):
@@ -113,6 +235,7 @@ class APISportsClient:
         self._requests_made = 0
         self._cache_hits = 0
         self._logical_fetches = 0
+        self._request_diagnostics: list[APISportsDiagnostic] = []
         self.bind_safety_boundary(stop_at=stop_at, now=now)
 
     @property
@@ -130,6 +253,16 @@ class APISportsClient:
     @property
     def logical_fetches(self) -> int:
         return self._logical_fetches
+
+    @property
+    def request_diagnostics(self) -> tuple[APISportsDiagnostic, ...]:
+        return tuple(self._request_diagnostics)
+
+    @property
+    def last_diagnostic(self) -> APISportsDiagnostic | None:
+        if not self._request_diagnostics:
+            return None
+        return self._request_diagnostics[-1]
 
     def set_quota_for_test(self, quota_state: QuotaState) -> None:
         self._quota_state = quota_state
@@ -384,29 +517,113 @@ class APISportsClient:
                 connection_failed = True
 
             if connection_failed:
+                diagnostic = APISportsDiagnostic(
+                    category=(
+                        "transport_failure"
+                        if attempt == self._max_retries
+                        else "transport_retry"
+                    ),
+                    endpoint=_safe_endpoint(path),
+                    attempt=attempt + 1,
+                )
+                self._request_diagnostics.append(diagnostic)
                 self._check_safety_stop()
                 if attempt == self._max_retries:
-                    raise APISportsError("API-Sports transport connection failed")
+                    raise APISportsError(
+                        "API-Sports transport connection failed",
+                        diagnostic=diagnostic,
+                    )
                 self._sleep_before_retry(attempt)
                 continue
 
-            self._quota_state = quota_from_headers(response.headers)
+            try:
+                self._quota_state = quota_from_headers(response.headers)
+            except (APISportsError, ValueError):
+                diagnostic = _response_diagnostic(
+                    response,
+                    endpoint=path,
+                    attempt=attempt + 1,
+                    category="invalid_quota_headers",
+                    secrets=(self._api_key,),
+                )
+                self._request_diagnostics.append(diagnostic)
+                raise APISportsError(
+                    "API-Sports quota headers are invalid",
+                    diagnostic=diagnostic,
+                ) from None
             self._check_safety_stop()
             if response.status_code in _RETRY_STATUSES:
+                diagnostic = _response_diagnostic(
+                    response,
+                    endpoint=path,
+                    attempt=attempt + 1,
+                    category=(
+                        "http_failure"
+                        if attempt == self._max_retries
+                        else "http_retry"
+                    ),
+                    secrets=(self._api_key,),
+                )
+                self._request_diagnostics.append(diagnostic)
                 if attempt == self._max_retries:
                     raise APISportsError(
-                        f"API-Sports request failed with status {response.status_code}"
+                        "API-Sports request failed with status "
+                        f"{response.status_code}",
+                        diagnostic=diagnostic,
                     )
-                self._ensure_quota_available()
+                self._ensure_quota_available(diagnostic=diagnostic)
                 self._sleep_before_retry(attempt)
                 continue
             if response.status_code >= 400:
+                diagnostic = _response_diagnostic(
+                    response,
+                    endpoint=path,
+                    attempt=attempt + 1,
+                    category="http_failure",
+                    secrets=(self._api_key,),
+                )
+                self._request_diagnostics.append(diagnostic)
                 raise APISportsError(
-                    f"API-Sports request failed with status {response.status_code}"
+                    "API-Sports request failed with status "
+                    f"{response.status_code}",
+                    diagnostic=diagnostic,
                 )
 
-            payload = _json_mapping(response)
-            _validate_top_level_payload(payload)
+            try:
+                payload = _json_mapping(response)
+            except APISportsError:
+                diagnostic = _response_diagnostic(
+                    response,
+                    endpoint=path,
+                    attempt=attempt + 1,
+                    category="invalid_json",
+                    inspect_payload=False,
+                )
+                self._request_diagnostics.append(diagnostic)
+                raise APISportsError(
+                    "API-Sports returned invalid JSON",
+                    diagnostic=diagnostic,
+                ) from None
+            raw_provider_errors = payload.get("errors")
+            provider_errors = _normalize_provider_errors(
+                raw_provider_errors,
+                secrets=(self._api_key,),
+            )
+            diagnostic = _response_diagnostic(
+                response,
+                endpoint=path,
+                attempt=attempt + 1,
+                category=(
+                    "semantic_error"
+                    if _has_provider_errors(raw_provider_errors)
+                    else "success"
+                ),
+                provider_errors=provider_errors,
+                inspect_payload=False,
+                secrets=(self._api_key,),
+            )
+            self._request_diagnostics.append(diagnostic)
+            _validate_top_level_payload(payload, diagnostic=diagnostic)
             fetched_at = _observed_fetched_at(payload)
             self._write_cache(
                 cache_key,
@@ -429,9 +646,16 @@ class APISportsClient:
             return HOCKEY_BASE_URL
         raise APISportsError("unsupported sport")
 
-    def _ensure_quota_available(self) -> None:
+    def _ensure_quota_available(
+        self,
+        *,
+        diagnostic: APISportsDiagnostic | None = None,
+    ) -> None:
         if _is_quota_exhausted(self._quota_state, self._quota_reserve):
-            raise QuotaExhausted("API-Sports quota reserve reached")
+            raise QuotaExhausted(
+                "API-Sports quota reserve reached",
+                diagnostic=diagnostic,
+            )
 
     def _check_safety_stop(self) -> None:
         if self._stop_at is None:
@@ -535,11 +759,245 @@ class APISportsClient:
 
 def quota_from_headers(headers: Mapping[str, str]) -> QuotaState:
     return QuotaState(
-        daily_limit=_optional_int(headers.get("x-ratelimit-requests-limit")),
-        daily_remaining=_optional_int(headers.get("x-ratelimit-requests-remaining")),
-        minute_limit=_optional_int(headers.get("x-ratelimit-limit")),
-        minute_remaining=_optional_int(headers.get("x-ratelimit-remaining")),
+        daily_limit=_optional_int(
+            _header_value(headers, "x-ratelimit-requests-limit")
+        ),
+        daily_remaining=_optional_int(
+            _header_value(headers, "x-ratelimit-requests-remaining")
+        ),
+        minute_limit=_optional_int(_header_value(headers, "x-ratelimit-limit")),
+        minute_remaining=_optional_int(
+            _header_value(headers, "x-ratelimit-remaining")
+        ),
     )
+
+
+def diagnostic_payload(error: BaseException) -> dict[str, object] | None:
+    if isinstance(error, APISportsError):
+        return error.diagnostic_payload()
+    return None
+
+
+def sanitize_api_sports_message(
+    message: object,
+    *,
+    secrets: tuple[str, ...] = (),
+) -> str:
+    """Bound API-Sports diagnostics without request metadata or raw payloads."""
+    text = str(message).replace("\r", " ").replace("\n", " ").strip()
+    for secret in sorted(
+        (item for item in secrets if isinstance(item, str) and item),
+        key=len,
+        reverse=True,
+    ):
+        text = text.replace(secret, "[REDACTED]")
+    text = _URL_QUERY_PATTERN.sub(r"\1?[REDACTED]", text)
+    text = _SECRET_QUERY_PATTERN.sub(r"\1[REDACTED]", text)
+    text = _SECRET_FIELD_PATTERN.sub(r"\1=[REDACTED]", text)
+    text = re.sub(r"\s+", " ", text)
+    return (text or "provider failure")[:_DIAGNOSTIC_MESSAGE_LIMIT]
+
+
+def _response_diagnostic(
+    response: Any,
+    *,
+    endpoint: str,
+    attempt: int,
+    category: str,
+    provider_errors: tuple[APISportsProviderError, ...] | None = None,
+    inspect_payload: bool = True,
+    secrets: tuple[str, ...] = (),
+) -> APISportsDiagnostic:
+    headers = getattr(response, "headers", {})
+    if not isinstance(headers, Mapping):
+        headers = {}
+    if provider_errors is None:
+        provider_errors = (
+            _safe_provider_errors_from_response(response, secrets=secrets)
+            if inspect_payload
+            else ()
+        )
+    return APISportsDiagnostic(
+        category=category,
+        endpoint=_safe_endpoint(endpoint),
+        attempt=attempt,
+        http_status=_safe_http_status(getattr(response, "status_code", None)),
+        provider_errors=provider_errors,
+        quota_daily_limit=_safe_optional_header_int(
+            headers, "x-ratelimit-requests-limit"
+        ),
+        quota_daily_remaining=_safe_optional_header_int(
+            headers, "x-ratelimit-requests-remaining"
+        ),
+        quota_minute_limit=_safe_optional_header_int(headers, "x-ratelimit-limit"),
+        quota_minute_remaining=_safe_optional_header_int(
+            headers, "x-ratelimit-remaining"
+        ),
+        quota_daily_reset=_safe_optional_header_int(
+            headers, "x-ratelimit-requests-reset"
+        ),
+        quota_minute_reset=_safe_optional_header_int(
+            headers, "x-ratelimit-reset"
+        ),
+    )
+
+
+def _safe_provider_errors_from_response(
+    response: Any,
+    *,
+    secrets: tuple[str, ...] = (),
+) -> tuple[APISportsProviderError, ...]:
+    try:
+        payload = response.json()
+    except (AttributeError, TypeError, ValueError):
+        return ()
+    if not isinstance(payload, Mapping):
+        return ()
+    return _normalize_provider_errors(payload.get("errors"), secrets=secrets)
+
+
+def _normalize_provider_errors(
+    value: object,
+    *,
+    secrets: tuple[str, ...] = (),
+) -> tuple[APISportsProviderError, ...]:
+    if value in (None, [], {}):
+        return ()
+    normalized: list[APISportsProviderError] = []
+    if isinstance(value, Mapping):
+        for raw_code, raw_message in sorted(
+            value.items(), key=lambda item: str(item[0]).casefold()
+        ):
+            code = _normalize_provider_error_code(raw_code, secrets=secrets)
+            if code is None:
+                continue
+            message = _normalize_provider_error_message(
+                raw_message,
+                secrets=secrets,
+            )
+            normalized.append(
+                APISportsProviderError(
+                    code=code,
+                    message=message or "provider error",
+                )
+            )
+    elif isinstance(value, (list, tuple)):
+        for index, raw_message in enumerate(value[:10], start=1):
+            message = _normalize_provider_error_message(
+                raw_message,
+                secrets=secrets,
+            )
+            if message is not None:
+                normalized.append(
+                    APISportsProviderError(
+                        code=f"provider_error_{index}",
+                        message=message,
+                    )
+                )
+    else:
+        message = _normalize_provider_error_message(value, secrets=secrets)
+        if message is not None:
+            normalized.append(
+                APISportsProviderError(code="provider_error", message=message)
+            )
+    if not normalized:
+        normalized.append(
+            APISportsProviderError(code="provider_error", message="provider error")
+        )
+    return tuple(normalized[:10])
+
+
+def _normalize_provider_error_code(
+    value: object,
+    *,
+    secrets: tuple[str, ...] = (),
+) -> str | None:
+    if not isinstance(value, str):
+        return None
+    safe_value = value
+    for secret in sorted(
+        (item for item in secrets if isinstance(item, str) and item),
+        key=len,
+        reverse=True,
+    ):
+        safe_value = safe_value.replace(secret, "redacted")
+    code = re.sub(
+        r"[^a-z0-9_.-]+",
+        "_",
+        safe_value.strip().casefold(),
+    ).strip("_")
+    if _PROVIDER_ERROR_CODE_PATTERN.fullmatch(code) is None:
+        return None
+    return code
+
+
+def _normalize_provider_error_message(
+    value: object,
+    *,
+    secrets: tuple[str, ...] = (),
+) -> str | None:
+    if isinstance(value, bool) or not isinstance(value, (str, int, float)):
+        return None
+    if isinstance(value, float) and not isfinite(value):
+        return None
+    return sanitize_api_sports_message(value, secrets=secrets)
+
+
+def _has_provider_errors(value: object) -> bool:
+    return value not in (None, [])
+
+
+def _provider_error_codes(value: object) -> frozenset[str]:
+    if not isinstance(value, Mapping):
+        return frozenset()
+    return frozenset(
+        code
+        for code in (_normalize_provider_error_code(key) for key in value)
+        if code is not None
+    )
+
+
+def _safe_endpoint(endpoint: object) -> str:
+    if not isinstance(endpoint, str):
+        return "unknown"
+    path = endpoint.split("?", 1)[0].strip()
+    if not path.startswith("/") or not re.fullmatch(r"/[a-z0-9_./-]{1,127}", path):
+        return "unknown"
+    return path
+
+
+def _safe_http_status(value: object) -> int | None:
+    if isinstance(value, int) and not isinstance(value, bool) and 100 <= value <= 599:
+        return value
+    return None
+
+
+def _safe_nonnegative_int(value: object) -> int | None:
+    if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+        return value
+    return None
+
+
+def _header_value(headers: Mapping[str, object], name: str) -> object:
+    expected = name.casefold()
+    for key, value in headers.items():
+        if isinstance(key, str) and key.casefold() == expected:
+            return value
+    return None
+
+
+def _safe_optional_header_int(
+    headers: Mapping[str, object],
+    name: str,
+) -> int | None:
+    value = _header_value(headers, name)
+    try:
+        parsed = _optional_int(value)
+    except APISportsError:
+        return None
+    if parsed is None or parsed < 0:
+        return None
+    return parsed
 
 
 def _schedule_path(sport: Sport) -> str:
@@ -586,23 +1044,63 @@ def _cache_key(base_url: str, path: str, params: Mapping[str, object]) -> str:
 def _json_mapping(response: Any) -> dict[str, Any]:
     try:
         payload = response.json()
-    except ValueError as error:
-        raise APISportsError("API-Sports returned invalid JSON") from error
+    except ValueError:
+        raise APISportsError("API-Sports returned invalid JSON") from None
     if not isinstance(payload, dict):
         raise APISportsError("API-Sports payload must be an object")
     return payload
 
 
-def _validate_top_level_payload(payload: Mapping[str, Any]) -> None:
+def _validate_top_level_payload(
+    payload: Mapping[str, Any],
+    *,
+    diagnostic: APISportsDiagnostic | None = None,
+) -> None:
     errors = payload.get("errors")
     if errors not in ([], None):
-        if isinstance(errors, Mapping) and any(
-            key in errors for key in ("plan", "subscription")
-        ):
-            raise ProviderPlanUnavailable(
-                "API-Sports plan does not provide the requested data"
+        provider_errors = (
+            diagnostic.provider_errors
+            if diagnostic is not None
+            else _normalize_provider_errors(errors)
+        )
+        effective_diagnostic = diagnostic
+        if diagnostic is None or diagnostic.provider_errors != provider_errors:
+            effective_diagnostic = APISportsDiagnostic(
+                category="semantic_error",
+                endpoint=("unknown" if diagnostic is None else diagnostic.endpoint),
+                attempt=(1 if diagnostic is None else diagnostic.attempt),
+                http_status=(None if diagnostic is None else diagnostic.http_status),
+                provider_errors=provider_errors,
+                quota_daily_limit=(
+                    None if diagnostic is None else diagnostic.quota_daily_limit
+                ),
+                quota_daily_remaining=(
+                    None if diagnostic is None else diagnostic.quota_daily_remaining
+                ),
+                quota_minute_limit=(
+                    None if diagnostic is None else diagnostic.quota_minute_limit
+                ),
+                quota_minute_remaining=(
+                    None if diagnostic is None else diagnostic.quota_minute_remaining
+                ),
+                quota_daily_reset=(
+                    None if diagnostic is None else diagnostic.quota_daily_reset
+                ),
+                quota_minute_reset=(
+                    None if diagnostic is None else diagnostic.quota_minute_reset
+                ),
             )
-        raise APISportsError("API-Sports returned provider errors")
+        if _provider_error_codes(errors) & {"plan", "subscription"}:
+            message = "API-Sports plan does not provide the requested data"
+            raise ProviderPlanUnavailable(
+                message,
+                diagnostic=effective_diagnostic,
+            )
+        message = "API-Sports returned provider errors"
+        raise APISportsError(
+            message,
+            diagnostic=effective_diagnostic,
+        )
     paging = payload.get("paging")
     if paging is not None:
         if not isinstance(paging, Mapping):

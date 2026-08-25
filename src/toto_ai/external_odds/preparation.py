@@ -10,7 +10,13 @@ from pathlib import Path
 from typing import Any
 
 from toto_ai.db.models import Drawing
-from toto_ai.external_odds.api_sports import _parse_schedule_payload
+from toto_ai.external_odds.api_sports import (
+    APISportsDiagnostic,
+    APISportsError,
+    _parse_schedule_payload,
+    diagnostic_payload,
+    sanitize_api_sports_message,
+)
 from toto_ai.external_odds.domain import (
     TOTO_BRIEF_OUTCOME_ORDER,
     ProviderEvent,
@@ -80,7 +86,7 @@ class DrawingPreparationResult:
     eligibility: DrawingEligibility
     events: tuple[PreparationEventResult, ...]
     pins: tuple[DrawingEventPinRecord, ...]
-    schedule_diagnostics: tuple[dict[str, str | None], ...] = ()
+    schedule_diagnostics: tuple[dict[str, object], ...] = ()
 
     @property
     def baseline_only_event_orders(self) -> tuple[int, ...]:
@@ -98,7 +104,7 @@ class DrawingPreparationResult:
 @dataclass(frozen=True)
 class PreparationScheduleResult:
     candidates: tuple[ProviderEvent, ...]
-    diagnostics: tuple[dict[str, str | None], ...]
+    diagnostics: tuple[dict[str, object], ...]
 
 
 @dataclass(frozen=True)
@@ -137,32 +143,44 @@ def fetch_preparation_schedule(
         dates.update(drawing_dates)
 
     events_by_identity: dict[tuple[str, str], ProviderEvent] = {}
-    diagnostics: list[dict[str, str | None]] = []
+    diagnostics: list[dict[str, object]] = []
     failed_before_readiness = False
     ready = False
     for sport in sorted(required):
         for requested_date in sorted(required[sport]):
+            diagnostic_offset = _provider_diagnostic_count(provider_client)
             try:
                 events = provider_client.fetch_schedule(sport, (requested_date,))
             except Exception as error:  # provider errors are isolated per date
-                diagnostics.append(
-                    {
-                        "sport": sport,
-                        "date": requested_date.isoformat(),
-                        "status": "failed",
-                        "reason": str(error) or type(error).__name__,
-                    }
-                )
-                failed_before_readiness = True
-                continue
-            diagnostics.append(
-                {
+                record: dict[str, object] = {
                     "sport": sport,
                     "date": requested_date.isoformat(),
-                    "status": "success",
-                    "reason": None,
+                    "status": "failed",
+                    "reason": _safe_provider_reason(error),
                 }
+                attempts = _provider_attempt_payloads(
+                    provider_client,
+                    offset=diagnostic_offset,
+                    error=error,
+                )
+                if attempts:
+                    record["provider_attempts"] = attempts
+                diagnostics.append(record)
+                failed_before_readiness = True
+                continue
+            record = {
+                "sport": sport,
+                "date": requested_date.isoformat(),
+                "status": "success",
+                "reason": None,
+            }
+            attempts = _provider_attempt_payloads(
+                provider_client,
+                offset=diagnostic_offset,
             )
+            if attempts:
+                record["provider_attempts"] = attempts
+            diagnostics.append(record)
             for event in events:
                 events_by_identity[(event.provider, event.provider_event_id)] = event
             preview = _resolve_preparation_candidates(
@@ -189,6 +207,39 @@ def fetch_preparation_schedule(
     )
 
 
+def _provider_diagnostic_count(provider_client: Any) -> int:
+    diagnostics = getattr(provider_client, "request_diagnostics", ())
+    if not isinstance(diagnostics, tuple):
+        return 0
+    return len(diagnostics)
+
+
+def _provider_attempt_payloads(
+    provider_client: Any,
+    *,
+    offset: int,
+    error: BaseException | None = None,
+) -> list[dict[str, object]]:
+    diagnostics = getattr(provider_client, "request_diagnostics", ())
+    payloads: list[dict[str, object]] = []
+    if isinstance(diagnostics, tuple):
+        payloads.extend(
+            item.payload()
+            for item in diagnostics[offset:]
+            if isinstance(item, APISportsDiagnostic)
+        )
+    error_payload = None if error is None else diagnostic_payload(error)
+    if error_payload is not None and error_payload not in payloads:
+        payloads.append(error_payload)
+    return payloads
+
+
+def _safe_provider_reason(error: BaseException) -> str:
+    if isinstance(error, APISportsError):
+        return str(error)
+    return sanitize_api_sports_message(str(error) or type(error).__name__)
+
+
 def prepare_drawing(
     target: TargetDrawing,
     candidates: tuple[ProviderEvent, ...] | list[ProviderEvent],
@@ -196,7 +247,7 @@ def prepare_drawing(
     session_factory: Any,
     provider: str = "api-sports",
     event_contexts: Mapping[int, ResolutionContext] | None = None,
-    schedule_diagnostics: tuple[dict[str, str | None], ...] = (),
+    schedule_diagnostics: tuple[dict[str, object], ...] = (),
     reviewed_schedule_catalog: str | Path | None = None,
     schedule_evidence_ledger: str | Path | None = None,
     expected_schedule_evidence_sha256: str | None = None,
@@ -993,7 +1044,7 @@ def _admit_reviewed_fallbacks(
     fingerprint: str,
     resolutions: tuple[CandidateResolution, ...],
     catalog: ReviewedScheduleCatalog,
-    schedule_diagnostics: tuple[dict[str, str | None], ...],
+    schedule_diagnostics: tuple[dict[str, object], ...],
     allowed_event_orders: frozenset[int] | None = None,
 ) -> dict[int, ReviewedScheduleEvidence]:
     scoped_resolutions = tuple(
@@ -1640,7 +1691,7 @@ def _name_team_id(value: object) -> str:
 
 def _failed_date_event_orders(
     target: TargetDrawing,
-    diagnostics: tuple[dict[str, str | None], ...],
+    diagnostics: tuple[dict[str, object], ...],
     *,
     resolutions: tuple[CandidateResolution, ...] = (),
     candidate_by_id: Mapping[str, ProviderEvent] | None = None,
@@ -1697,7 +1748,7 @@ def _failed_date_event_orders(
 def _failed_date_pin_orders(
     target: TargetDrawing,
     pins: tuple[DrawingEventPinRecord, ...],
-    diagnostics: tuple[dict[str, str | None], ...],
+    diagnostics: tuple[dict[str, object], ...],
 ) -> tuple[int, ...]:
     failed = {
         key
@@ -1720,7 +1771,7 @@ def _failed_date_pin_orders(
 
 
 def _schedule_diagnostic_statuses(
-    diagnostics: tuple[dict[str, str | None], ...],
+    diagnostics: tuple[dict[str, object], ...],
 ) -> dict[tuple[str, str], str]:
     """Return the final per-UTC-date fetch status.
 

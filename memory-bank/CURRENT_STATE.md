@@ -1,5 +1,57 @@
 # Current State
 
+## Provider hardening and TheSportsDB v1 free access (2026-08-25)
+
+The documented TheSportsDB v1 event-day/search provider is implemented behind
+the existing non-promoting schedule-source collector. It now uses the
+documented public v1 key `123` when `THESPORTSDB_API_KEY` is absent; a configured
+override remains redacted. Only the official TheSportsDB HTTPS host and exact
+v1 path are allowed before transport. The transport enforces five-day windows,
+30/minute pacing, ten-second default timeout, one retry by default, immutable
+content/hash-bound snapshots and secret-safe API-Sports-shaped diagnostics.
+
+Normalized candidates retain provider event/team IDs, sport, competition,
+home/away, UTC kickoff, status, public source URL and capture/provenance hashes.
+Only pre-kickoff scheduled/not-started rows enter the existing alias and
+same/reversed-orientation matcher. The collector queries both team orientations
+and deduplicates provider event identities. Collection reports TheSportsDB
+independently from Sofascore, but every accepted row remains
+`ledger_eligible=false`, `ledger_mutated=false`, and non-promoting; the
+official-plus-independent reviewed promotion policy is unchanged. No live
+TheSportsDB request, ledger mutation, scheduler activation, package, wager,
+commit or remote publication was performed for this implementation.
+
+API-Sports public exception strings retain their established caller contract;
+new HTTP/provider/quota detail is available only through structured,
+secret-safe diagnostics and existing artifacts. Preparation likewise preserves
+specific sanitized provider reasons such as `future date unavailable` instead
+of replacing them with a generic exception class. A controlled health check on
+2026-08-25 at 10:33 MSK still returned HTTP 200 with provider semantic error
+`access: Your account is suspended`; quota remained available, so API-Sports
+is currently unusable because the provider account is suspended, not because
+of project quota or request exhaustion.
+
+## Morning wrapper CLI compatibility (2026-08-24)
+
+Generated morning dispatcher wrappers now obtain their complete
+`morning-dispatch` argv from one scheduler command builder. The generated argv
+contains only current CLI options; the removed `--training-category` option is
+not part of the generator. A contract regression shlex-parses the command from
+the generated shell wrapper and passes that exact argv to the Typer CLI with
+`--help`, so a removed or unknown generated option fails the test before any
+network or dispatcher execution.
+
+The replacement candidate was generated, but not installed or executed, at
+`reports/rehearsal/morning-dispatcher-v4/`. It preserves `StartInterval=3600`
+and the exact 08:00, 10:30, 12:00, 17:05, 17:12 and 17:20 calendar triggers.
+The wrapper SHA-256 is
+`dcff05772c37c50db189bcdbc3c5551533cd984f8438678073afcadfd187a14b`, the
+plist SHA-256 is
+`72bf0760a1213f9838da73212175b32cf6cd7bc9f52e029f8de225a4c4f5762d`.
+The wrapper exports optional TheSportsDB environment overrides only when
+present and persists neither the public default nor any private override. It
+remains an uninstalled candidate; no LaunchAgent was loaded.
+
 ## Drawings 4982-4985 catch-up (2026-08-24)
 
 Drawing 4982 has a verified complete, non-VOID actual vector
@@ -69,10 +121,10 @@ its paper payload is under immutable checkpoint
 scheduler-state SHA-256 remained
 `4f96018bf7f0925bad7ddf1be027b3af64352a4df18a1172dad6293d13147ab3`;
 `operator-result.json`, `.bet-ready`, and `.no-bet` remain absent.
-The replacement morning candidate was generated but not installed at
-`reports/rehearsal/morning-dispatcher-v3/`; its plist contains the six existing
-calendar triggers plus `StartInterval=3600`, and its wrapper binds training
-category 13 while preserving explicit evening activation.
+The never-installed `morning-dispatcher-v3` candidate later proved stale: its
+wrapper retained the removed `--training-category` CLI option. It remains a
+historical artifact and is superseded by the generated v4 compatibility
+candidate documented above.
 
 ## Experimental manual release and drawing 4982 (2026-08-20)
 
@@ -4832,3 +4884,25 @@ next UTC/MSK checkpoint, overdue checkpoints and terminal state without
 mutating the plan or generating a package. Against the live 4982 plan it
 reports `waiting`, revision 0, no overdue checkpoints and next checkpoint
 `tls_preflight` at 2026-08-21 17:00 MSK.
+
+## API-Sports diagnostic observability (2026-08-24)
+
+API-Sports now records a secret-safe per-request diagnostic contract: category,
+endpoint path, attempt number, HTTP status, normalized provider error
+code/message, and daily/minute quota limit, remaining, and reset metadata.
+Known API keys, credential-like fields, URL queries, response headers, and raw
+response payloads are excluded from diagnostic artifacts. Complex provider
+error values collapse to a generic message instead of being serialized.
+
+Schedule request attempts round-trip through the existing requested,
+successful, and failed schedule-date JSON artifacts. Preparation attempts are
+stored in the existing `readiness_summary.schedule_diagnostics` artifact.
+Market failures retain the bounded sanitized final diagnostic in the existing
+event fallback reason; successful market evidence continues to use its existing
+endpoint/request-fingerprint source provenance and run-level quota fields.
+There is no database column or migration for diagnostics, and collection
+eligibility, matching, fallback, and fail-closed decisions are unchanged.
+
+Verification was local and made no live provider request: the combined focused
+suite passed `110 passed in 12.82s`; Ruff passed on all changed Python files and
+`git diff --check` passed.

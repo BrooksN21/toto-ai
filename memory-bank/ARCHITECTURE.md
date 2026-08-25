@@ -1,5 +1,37 @@
 # Architecture
 
+## TheSportsDB v1 independent schedule candidate (2026-08-24)
+
+`toto_ai.external_odds.thesportsdb` is a provider-neutral schedule adapter for
+the documented TheSportsDB v1 `eventsday.php` and `searchevents.php`
+endpoints. It defaults to the documented public v1 key `123`; an optional
+`THESPORTSDB_API_KEY` environment override supports a separately configured
+key without exposing it in repr, diagnostics or artifacts. Production
+transport accepts only the official TheSportsDB HTTPS host and exact v1 API
+path; arbitrary configured hosts fail before transport. Date/search windows
+are limited to five days, requests are paced to at most 30/minute, and timeout
+and retry counts are finite. The v1 key is used only in the transport URL;
+request fingerprints, immutable snapshots, cache indexes, diagnostics,
+reports, and exceptions contain only the key-free endpoint.
+
+Raw responses are frozen as append-only content/hash-bound snapshots with a
+short-lived validated request index. Normalized schedule evidence includes the
+provider event/team IDs, football/hockey identity, competition, exact
+home/away names, UTC kickoff, normalized status, public source URL, capture
+time, endpoint, request fingerprint and payload hash. Only explicit
+`scheduled`/`not_started` rows captured before kickoff are candidate-eligible;
+finished, postponed, cancelled, unknown-status and unsupported-sport rows are
+retained only as diagnostics.
+
+The existing public schedule-source collector invokes TheSportsDB as a second
+independent candidate path. It queries both home-vs-away and away-vs-home,
+deduplicates provider event identities, then delegates to the existing team
+alias/exact-orientation matcher and records same/reversed orientation.
+TheSportsDB remains independent and candidate-only: its result always carries
+`ledger_eligible=false`, never mutates `data/schedule-evidence/ledger.json`,
+and cannot promote alone under the unchanged official-plus-independent review
+policy. Explicit `api_key=None` remains an offline/test-only disabled mode.
+
 ## Equal-input package strategy research boundary
 
 `optimizer.strategy_comparison` is the shared research boundary for comparing

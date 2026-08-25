@@ -8094,10 +8094,8 @@ def _reject_stale_t12_scheduler_artifact(plan_path: Path) -> None:
         )
 
 
-def _render_morning_preanalysis_wrapper(
+def build_morning_dispatch_command(
     *,
-    retry_count: int,
-    retry_delay_seconds: float,
     env_file: Path,
     project_root: Path,
     bank: int,
@@ -8105,8 +8103,9 @@ def _render_morning_preanalysis_wrapper(
     activate_evening: bool,
     reviewed_schedule_catalog: Path | None,
     python_executable: str,
-) -> str:
-    executable = shlex.quote(python_executable)
+) -> tuple[str, ...]:
+    """Build the current CLI argv used by every generated morning wrapper."""
+
     command_values = [
         python_executable,
         "-m",
@@ -8149,7 +8148,33 @@ def _render_morning_preanalysis_wrapper(
                 str(reviewed_schedule_catalog),
             )
         )
-    command = " ".join(shlex.quote(value) for value in command_values)
+    return tuple(command_values)
+
+
+def _render_morning_preanalysis_wrapper(
+    *,
+    retry_count: int,
+    retry_delay_seconds: float,
+    env_file: Path,
+    project_root: Path,
+    bank: int,
+    stake: int,
+    activate_evening: bool,
+    reviewed_schedule_catalog: Path | None,
+    python_executable: str,
+) -> str:
+    executable = shlex.quote(python_executable)
+    command = shlex.join(
+        build_morning_dispatch_command(
+            env_file=env_file,
+            project_root=project_root,
+            bank=bank,
+            stake=stake,
+            activate_evening=activate_evening,
+            reviewed_schedule_catalog=reviewed_schedule_catalog,
+            python_executable=python_executable,
+        )
+    )
     return (
         "#!/bin/sh\n"
         "set -eu\n"
@@ -8231,6 +8256,12 @@ def _render_secure_env_prelude(
         "  exit 78\n"
         "fi\n"
         "export API_SPORTS_KEY\n"
+        'if [ -n "${THESPORTSDB_API_KEY:-}" ]; then\n'
+        "  export THESPORTSDB_API_KEY\n"
+        "fi\n"
+        'if [ -n "${THESPORTSDB_BASE_URL:-}" ]; then\n'
+        "  export THESPORTSDB_BASE_URL\n"
+        "fi\n"
     )
 
 

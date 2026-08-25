@@ -3699,6 +3699,7 @@ def morning_dispatch_command(
                     "status": collected.status,
                     "candidate_count": collected.candidate_count,
                     "unresolved_count": collected.unresolved_count,
+                    "providers": getattr(collected, "provider_statuses", {}),
                     "report_path": str(collected.report_path),
                     "ledger_mutated": False,
                 }
@@ -3819,6 +3820,7 @@ def collect_schedule_sources_command(
                 "queue_sha256": result.queue_sha256,
                 "candidate_count": result.candidate_count,
                 "unresolved_count": result.unresolved_count,
+                "providers": result.provider_statuses,
                 "report_path": str(result.report_path),
                 "ledger_mutated": False,
             },

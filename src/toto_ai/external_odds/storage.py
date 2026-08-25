@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, replace
 from datetime import date, datetime
 from typing import Any
@@ -12,6 +13,7 @@ from toto_ai.db.models import (
     ExternalCollectionRun,
     ExternalEventDisposition,
 )
+from toto_ai.external_odds.api_sports import sanitize_api_sports_message
 from toto_ai.external_odds.collection import (
     ExternalBookmakerQuoteRecord,
     ExternalCollectionSnapshot,
@@ -26,6 +28,21 @@ from toto_ai.external_odds.eligibility import (
     EffectiveEventStart,
     classify_drawing_eligibility,
 )
+
+_PROVIDER_ATTEMPT_CATEGORIES = frozenset(
+    {
+        "success",
+        "semantic_error",
+        "http_retry",
+        "http_failure",
+        "transport_retry",
+        "transport_failure",
+        "invalid_json",
+        "invalid_quota_headers",
+    }
+)
+_PROVIDER_ENDPOINT_PATTERN = re.compile(r"/[a-z0-9_./-]{1,127}\Z")
+_PROVIDER_ERROR_CODE_PATTERN = re.compile(r"[a-z0-9][a-z0-9_.-]{0,63}\Z")
 
 
 def save_collection(
@@ -481,7 +498,16 @@ def _canonical_schedule_dates(
         if key in seen:
             raise ValueError(f"{field_name} contains duplicate sport/date entries")
         seen.add(key)
-        canonical.append(replace(item, events=()))
+        canonical.append(
+            replace(
+                item,
+                events=(),
+                provider_attempts=_canonical_provider_attempts(
+                    item.provider_attempts,
+                    f"{field_name}.provider_attempts",
+                ),
+            )
+        )
     return tuple(
         sorted(canonical, key=lambda item: (item.sport, item.requested_date))
     )
@@ -489,11 +515,18 @@ def _canonical_schedule_dates(
 
 def _schedule_dates_json(values: tuple[ScheduleDateResult, ...]) -> str:
     payload = tuple(
-        {
-            "sport": item.sport,
-            "requested_date": item.requested_date.isoformat(),
-            "error": item.error,
-        }
+        (
+            {
+                "sport": item.sport,
+                "requested_date": item.requested_date.isoformat(),
+                "error": item.error,
+            }
+            | (
+                {"provider_attempts": item.provider_attempts}
+                if item.provider_attempts
+                else {}
+            )
+        )
         for item in values
     )
     return json.dumps(
@@ -520,11 +553,10 @@ def _schedule_dates_from_json(
             raise ValueError("schedule payload must be a list")
         records = []
         for item in payload:
-            if not isinstance(item, dict) or set(item) != {
-                "sport",
-                "requested_date",
-                "error",
-            }:
+            if not isinstance(item, dict) or set(item) not in (
+                {"sport", "requested_date", "error"},
+                {"sport", "requested_date", "error", "provider_attempts"},
+            ):
                 raise ValueError("schedule entry has invalid fields")
             requested_date_text = item["requested_date"]
             if not isinstance(requested_date_text, str):
@@ -538,11 +570,110 @@ def _schedule_dates_from_json(
                     requested_date=requested_date,
                     events=(),
                     error=item["error"],
+                    provider_attempts=_canonical_provider_attempts(
+                        tuple(item.get("provider_attempts", ())),
+                        f"{field_name}.provider_attempts",
+                    ),
                 )
             )
         return _canonical_schedule_dates(tuple(records), field_name)
     except (KeyError, TypeError, ValueError) as error:
         raise ValueError(f"invalid {field_name} JSON") from error
+
+
+def _canonical_provider_attempts(
+    values: tuple[dict[str, object], ...],
+    field_name: str,
+) -> tuple[dict[str, object], ...]:
+    if not isinstance(values, tuple):
+        raise ValueError(f"{field_name} must be a tuple")
+    expected = {
+        "category",
+        "endpoint",
+        "attempt",
+        "http_status",
+        "provider_errors",
+        "quota_daily_limit",
+        "quota_daily_remaining",
+        "quota_minute_limit",
+        "quota_minute_remaining",
+        "quota_daily_reset",
+        "quota_minute_reset",
+    }
+    result: list[dict[str, object]] = []
+    for item in values:
+        if not isinstance(item, dict) or set(item) != expected:
+            raise ValueError(f"{field_name} contains invalid fields")
+        category = item["category"]
+        endpoint = item["endpoint"]
+        attempt = item["attempt"]
+        http_status = item["http_status"]
+        if (
+            category not in _PROVIDER_ATTEMPT_CATEGORIES
+            or not isinstance(endpoint, str)
+            or _PROVIDER_ENDPOINT_PATTERN.fullmatch(endpoint) is None
+            or not isinstance(attempt, int)
+            or isinstance(attempt, bool)
+            or attempt < 1
+        ):
+            raise ValueError(f"{field_name} contains invalid identity fields")
+        if http_status is not None and (
+            not isinstance(http_status, int)
+            or isinstance(http_status, bool)
+            or not 100 <= http_status <= 599
+        ):
+            raise ValueError(f"{field_name} contains invalid HTTP status")
+        quota_fields = (
+            "quota_daily_limit",
+            "quota_daily_remaining",
+            "quota_minute_limit",
+            "quota_minute_remaining",
+            "quota_daily_reset",
+            "quota_minute_reset",
+        )
+        if any(
+            value is not None
+            and (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or value < 0
+            )
+            for value in (item[name] for name in quota_fields)
+        ):
+            raise ValueError(f"{field_name} contains invalid quota metadata")
+        provider_errors = item["provider_errors"]
+        if not isinstance(provider_errors, (list, tuple)) or len(provider_errors) > 10:
+            raise ValueError(f"{field_name} contains invalid provider errors")
+        canonical_errors: list[dict[str, str]] = []
+        for provider_error in provider_errors:
+            if (
+                not isinstance(provider_error, dict)
+                or set(provider_error) != {"code", "message"}
+            ):
+                raise ValueError(f"{field_name} contains invalid provider errors")
+            code = provider_error["code"]
+            message = provider_error["message"]
+            if (
+                not isinstance(code, str)
+                or _PROVIDER_ERROR_CODE_PATTERN.fullmatch(code) is None
+                or not isinstance(message, str)
+                or not message
+                or len(message) > 240
+                or sanitize_api_sports_message(message) != message
+            ):
+                raise ValueError(f"{field_name} contains invalid provider errors")
+            canonical_errors.append({"code": code, "message": message})
+        result.append(
+            {
+                "category": category,
+                "endpoint": endpoint,
+                "attempt": attempt,
+                "http_status": http_status,
+                "provider_errors": canonical_errors,
+                **{name: item[name] for name in quota_fields},
+            }
+        )
+    return tuple(result)
 
 
 def _eligibility_from_row(run: ExternalCollectionRun) -> DrawingEligibility:
