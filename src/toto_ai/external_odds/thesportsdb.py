@@ -51,6 +51,19 @@ _SECRET_QUERY_PATTERN = re.compile(
 )
 _URL_QUERY_PATTERN = re.compile(r"(https?://[^\s?]+)\?[^\s]*", re.IGNORECASE)
 _SCHEDULED_STATUSES = frozenset(("scheduled", "not_started"))
+_TBD_MARKERS = frozenset(
+    (
+        "tbd",
+        "time tbd",
+        "time to be defined",
+        "to be defined",
+        "unknown",
+    )
+)
+_ZERO_TIME_PATTERN = re.compile(
+    r"0{1,2}:0{2}(?::0{2}(?:\.0+)?)?(?:Z|[+-]00:00)?\Z",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -766,7 +779,7 @@ def _parse_event(
     sport = _normalize_sport(value.get("strSport"))
     competition = _text(value.get("strLeague"), "strLeague")
     starts_at = _event_timestamp(value)
-    status = _normalize_status(value)
+    status = _normalize_status(value, starts_at=starts_at)
     eligible = (
         status in _SCHEDULED_STATUSES
         and sport in {"football", "hockey"}
@@ -794,9 +807,23 @@ def _parse_event(
 def _event_timestamp(value: Mapping[str, object]) -> datetime:
     timestamp = _optional_text(value.get("strTimestamp"))
     if timestamp is not None:
-        return _parse_timestamp(timestamp)
+        return _parse_event_timestamp(timestamp)
     event_date = _text(value.get("dateEvent"), "dateEvent")
-    event_time = _text(value.get("strTime"), "strTime")
+    event_time = _optional_text(value.get("strTime"))
+    normalized_time = (
+        None
+        if event_time is None
+        else re.sub(r"[^a-z0-9]+", " ", event_time.casefold()).strip()
+    )
+    if event_time is None or normalized_time in _TBD_MARKERS:
+        try:
+            return datetime.fromisoformat(f"{event_date}T00:00:00").replace(
+                tzinfo=timezone.utc
+            )
+        except ValueError:
+            raise TheSportsDBError(
+                "TheSportsDB event date/time is invalid"
+            ) from None
     try:
         parsed = datetime.fromisoformat(
             f"{event_date}T{event_time.replace('Z', '+00:00')}"
@@ -808,7 +835,11 @@ def _event_timestamp(value: Mapping[str, object]) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
-def _normalize_status(value: Mapping[str, object]) -> str:
+def _normalize_status(
+    value: Mapping[str, object],
+    *,
+    starts_at: datetime,
+) -> str:
     postponed = _optional_text(value.get("strPostponed"))
     if postponed is not None and postponed.casefold() in {"yes", "true", "1"}:
         return "postponed"
@@ -816,7 +847,26 @@ def _normalize_status(value: Mapping[str, object]) -> str:
     if raw is None:
         return "unknown"
     normalized = re.sub(r"[^a-z0-9]+", " ", raw.casefold()).strip()
-    if normalized in {"scheduled", "fixture", "time tbd", "tbd"}:
+    event_time = _optional_text(value.get("strTime"))
+    normalized_time = (
+        None
+        if event_time is None
+        else re.sub(r"[^a-z0-9]+", " ", event_time.casefold()).strip()
+    )
+    if normalized in _TBD_MARKERS or normalized_time in _TBD_MARKERS:
+        return "unknown"
+    if normalized in {
+        "scheduled",
+        "fixture",
+        "not started",
+        "notstarted",
+        "ns",
+    } and _is_placeholder_event_time(
+        starts_at,
+        event_time,
+    ):
+        return "unknown"
+    if normalized in {"scheduled", "fixture"}:
         return "scheduled"
     if normalized in {"not started", "notstarted", "ns"}:
         return "not_started"
@@ -833,6 +883,20 @@ def _normalize_status(value: Mapping[str, object]) -> str:
     }:
         return "finished"
     return "unknown"
+
+
+def _is_placeholder_event_time(
+    starts_at: datetime,
+    event_time: str | None,
+) -> bool:
+    """Recognize TheSportsDB's date-only midnight placeholder conservatively."""
+
+    if starts_at.hour or starts_at.minute or starts_at.second or starts_at.microsecond:
+        return False
+    return (
+        event_time is None
+        or _ZERO_TIME_PATTERN.fullmatch(event_time.strip()) is not None
+    )
 
 
 def _normalize_sport(value: object) -> Sport:
@@ -974,6 +1038,20 @@ def _parse_timestamp(value: object) -> datetime:
         raise TheSportsDBError("TheSportsDB timestamp is invalid") from None
     if parsed.tzinfo is None:
         raise TheSportsDBError("TheSportsDB timestamp must include a timezone")
+    return parsed.astimezone(timezone.utc)
+
+
+def _parse_event_timestamp(value: object) -> datetime:
+    """Parse provider event time; TheSportsDB documents naive values as UTC."""
+
+    if not isinstance(value, str) or not value.strip():
+        raise TheSportsDBError("TheSportsDB timestamp is invalid")
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        raise TheSportsDBError("TheSportsDB timestamp is invalid") from None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
     return parsed.astimezone(timezone.utc)
 
 

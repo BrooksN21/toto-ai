@@ -62,6 +62,12 @@ def events_payload() -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+@pytest.fixture
+def naive_timestamp_payload() -> dict[str, object]:
+    path = Path("tests/fixtures/thesportsdb_v1_naive_timestamp.json")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _now() -> datetime:
     return datetime(2026, 8, 24, 16, 0, tzinfo=UTC)
 
@@ -156,6 +162,214 @@ def test_fixture_parses_identity_timezone_status_and_provenance(
     assert by_id["1004"].sport == "hockey"
     assert session.calls[0]["params"] == {"e": "Talleres de Córdoba_vs_Rosario Central"}
     assert session.calls[0]["timeout"] == 10.0
+
+
+def test_real_api_shape_interprets_naive_event_timestamp_as_utc(
+    tmp_path: Path,
+    naive_timestamp_payload: dict[str, object],
+) -> None:
+    session = FakeSession([FakeResponse(naive_timestamp_payload)])
+    client = TheSportsDBClient(
+        SECRET,
+        session=session,
+        cache_dir=tmp_path,
+        now=_now,
+    )
+
+    events = client.search_schedule_events(
+        "UTC Home",
+        "UTC Away",
+        window_start=_now(),
+        window_end=_now() + timedelta(days=2),
+    )
+
+    assert len(events) == 1
+    assert events[0].starts_at == datetime(2026, 8, 25, 18, 30, tzinfo=UTC)
+    assert events[0].starts_at.tzinfo is UTC
+    assert events[0].status == "not_started"
+    assert events[0].eligible is True
+
+
+def test_event_timestamp_with_explicit_offset_remains_normalized_to_utc(
+    tmp_path: Path,
+    naive_timestamp_payload: dict[str, object],
+) -> None:
+    event = naive_timestamp_payload["event"][0]
+    assert isinstance(event, dict)
+    event["strTimestamp"] = "2026-08-25T21:30:00+03:00"
+    session = FakeSession([FakeResponse(naive_timestamp_payload)])
+    client = TheSportsDBClient(
+        SECRET,
+        session=session,
+        cache_dir=tmp_path,
+        now=_now,
+    )
+
+    events = client.search_schedule_events(
+        "UTC Home",
+        "UTC Away",
+        window_start=_now(),
+        window_end=_now() + timedelta(days=2),
+    )
+
+    assert events[0].starts_at == datetime(2026, 8, 25, 18, 30, tzinfo=UTC)
+
+
+def test_malformed_event_timestamp_remains_fail_closed(
+    tmp_path: Path,
+    naive_timestamp_payload: dict[str, object],
+) -> None:
+    event = naive_timestamp_payload["event"][0]
+    assert isinstance(event, dict)
+    event["strTimestamp"] = "not-a-timestamp"
+    session = FakeSession([FakeResponse(naive_timestamp_payload)])
+    client = TheSportsDBClient(
+        SECRET,
+        session=session,
+        cache_dir=tmp_path,
+        now=_now,
+    )
+
+    with pytest.raises(TheSportsDBError, match="timestamp is invalid"):
+        client.search_schedule_events(
+            "UTC Home",
+            "UTC Away",
+            window_start=_now(),
+            window_end=_now() + timedelta(days=2),
+        )
+
+
+@pytest.mark.parametrize(
+    ("status", "event_time"),
+    (
+        ("Time TBD", "18:30:00"),
+        ("Scheduled", "TBD"),
+        ("Scheduled", "00:00:00"),
+    ),
+)
+def test_tbd_or_placeholder_timing_is_never_event_eligible(
+    tmp_path: Path,
+    naive_timestamp_payload: dict[str, object],
+    status: str,
+    event_time: str,
+) -> None:
+    event = naive_timestamp_payload["event"][0]
+    assert isinstance(event, dict)
+    event["strStatus"] = status
+    event["strTime"] = event_time
+    if event_time == "00:00:00":
+        event["strTimestamp"] = "2026-08-25T00:00:00"
+    session = FakeSession([FakeResponse(naive_timestamp_payload)])
+    client = TheSportsDBClient(
+        SECRET,
+        session=session,
+        cache_dir=tmp_path,
+        now=_now,
+    )
+
+    events = client.search_schedule_events(
+        "UTC Home",
+        "UTC Away",
+        window_start=_now(),
+        window_end=_now() + timedelta(days=2),
+    )
+
+    assert len(events) == 1
+    assert events[0].starts_at.tzinfo is UTC
+    assert events[0].status == "unknown"
+    assert events[0].eligible is False
+
+
+@pytest.mark.parametrize("status", ("NS", "Not Started"))
+def test_not_started_midnight_placeholder_is_never_event_eligible(
+    tmp_path: Path,
+    naive_timestamp_payload: dict[str, object],
+    status: str,
+) -> None:
+    event = naive_timestamp_payload["event"][0]
+    assert isinstance(event, dict)
+    event["strStatus"] = status
+    event["strTime"] = "00:00:00"
+    event["strTimestamp"] = "2026-08-25T00:00:00"
+    session = FakeSession([FakeResponse(naive_timestamp_payload)])
+    client = TheSportsDBClient(
+        SECRET,
+        session=session,
+        cache_dir=tmp_path,
+        now=_now,
+    )
+
+    events = client.search_schedule_events(
+        "UTC Home",
+        "UTC Away",
+        window_start=_now(),
+        window_end=_now() + timedelta(days=2),
+    )
+
+    assert len(events) == 1
+    assert events[0].starts_at == datetime(2026, 8, 25, 0, 0, tzinfo=UTC)
+    assert events[0].status == "unknown"
+    assert events[0].eligible is False
+
+
+def test_non_midnight_not_started_event_remains_eligible(
+    tmp_path: Path,
+    naive_timestamp_payload: dict[str, object],
+) -> None:
+    event = naive_timestamp_payload["event"][0]
+    assert isinstance(event, dict)
+    event["strStatus"] = "Not Started"
+    event["strTime"] = "18:30:00"
+    event["strTimestamp"] = "2026-08-25T18:30:00"
+    session = FakeSession([FakeResponse(naive_timestamp_payload)])
+    client = TheSportsDBClient(
+        SECRET,
+        session=session,
+        cache_dir=tmp_path,
+        now=_now,
+    )
+
+    events = client.search_schedule_events(
+        "UTC Home",
+        "UTC Away",
+        window_start=_now(),
+        window_end=_now() + timedelta(days=2),
+    )
+
+    assert len(events) == 1
+    assert events[0].starts_at == datetime(2026, 8, 25, 18, 30, tzinfo=UTC)
+    assert events[0].status == "not_started"
+    assert events[0].eligible is True
+
+
+def test_tbd_time_without_timestamp_is_retained_only_as_ineligible_diagnostic(
+    tmp_path: Path,
+    naive_timestamp_payload: dict[str, object],
+) -> None:
+    event = naive_timestamp_payload["event"][0]
+    assert isinstance(event, dict)
+    event["strTimestamp"] = None
+    event["strTime"] = "TBD"
+    event["strStatus"] = "Scheduled"
+    session = FakeSession([FakeResponse(naive_timestamp_payload)])
+    client = TheSportsDBClient(
+        SECRET,
+        session=session,
+        cache_dir=tmp_path,
+        now=_now,
+    )
+
+    events = client.search_schedule_events(
+        "UTC Home",
+        "UTC Away",
+        window_start=_now(),
+        window_end=_now() + timedelta(days=2),
+    )
+
+    assert len(events) == 1
+    assert events[0].starts_at == datetime(2026, 8, 25, 0, 0, tzinfo=UTC)
+    assert events[0].status == "unknown"
+    assert events[0].eligible is False
 
 
 def test_documented_eventsday_fetch_is_date_bounded_and_status_filtered(

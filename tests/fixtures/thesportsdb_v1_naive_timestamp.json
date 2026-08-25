@@ -1,0 +1,20 @@
+{
+  "event": [
+    {
+      "idEvent": "2001",
+      "idHomeTeam": "901",
+      "idAwayTeam": "902",
+      "strEvent": "UTC Home vs UTC Away",
+      "strSport": "Soccer",
+      "idLeague": "9901",
+      "strLeague": "UTC Test League",
+      "strHomeTeam": "UTC Home",
+      "strAwayTeam": "UTC Away",
+      "strTimestamp": "2026-08-25T18:30:00",
+      "dateEvent": "2026-08-25",
+      "strTime": "18:30:00",
+      "strStatus": "Not Started",
+      "strPostponed": "no"
+    }
+  ]
+}

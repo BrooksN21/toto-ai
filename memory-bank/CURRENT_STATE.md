@@ -1,5 +1,25 @@
 # Current State
 
+## TheSportsDB UTC-naive event-time normalization (2026-08-25)
+
+A live TheSportsDB `/searchevents.php` smoke request returned HTTP 200 but the
+event parser rejected the provider's timezone-naive `strTimestamp` with
+`TheSportsDB timestamp must include a timezone`. The event parser now applies
+the provider-specific contract documented by TheSportsDB: a timezone-naive
+`strTimestamp` is interpreted explicitly as UTC and every parsed event kickoff
+is normalized to an aware UTC datetime. Explicit offsets retain their instant
+and are converted to UTC. The shared/internal timestamp parser remains strict,
+so cache timestamps and unrelated providers do not acquire this exception;
+malformed event timestamps still fail closed.
+
+Known unknown timing remains non-actionable. `TBD`, `Time TBD`, an equivalent
+`strTime` marker, or a scheduled/fixture/not-started row carrying a date-only
+midnight placeholder is normalized to `status=unknown` and
+`eligible=false`. A missing `strTimestamp` with a known event date and TBD time
+is retained only as an ineligible diagnostic placeholder. TheSportsDB remains
+independent, non-promoting and `ledger_eligible=false`; this parser correction
+does not change release policy.
+
 ## Provider hardening and TheSportsDB v1 free access (2026-08-25)
 
 The documented TheSportsDB v1 event-day/search provider is implemented behind

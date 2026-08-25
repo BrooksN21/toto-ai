@@ -1,5 +1,24 @@
 # Decisions
 
+## 2026-08-25: timezone-naive TheSportsDB event timestamps mean UTC only
+
+- TheSportsDB `strTimestamp` values without an explicit offset are interpreted
+  as UTC only at the TheSportsDB event-parser boundary, following the provider
+  contract. The normalized result is always timezone-aware UTC; timestamps
+  carrying an explicit offset preserve their instant.
+- This is not a project-wide relaxation. Shared/internal timestamps, cache
+  evidence, and timestamps from every unrelated provider still require an
+  explicit timezone. Malformed TheSportsDB event timestamps remain fail-closed.
+- Explicit TBD status/time markers normalize to `unknown`. A
+  `scheduled`/`fixture`/`not started`/`NS` row with a date-only
+  midnight/zero-time placeholder is also `unknown`; neither case is
+  candidate-eligible. If only a valid event
+  date plus TBD time is available, midnight UTC may be retained for diagnostic
+  filtering but is never eligible evidence.
+- This normalization does not alter evidence authority: TheSportsDB remains
+  independent, non-promoting, `ledger_eligible=false`, and incapable of
+  opening the release gate by itself.
+
 ## 2026-08-24: TheSportsDB v1 is independent candidate evidence only
 
 - TheSportsDB v1 is integrated as a generic schedule provider through only its
