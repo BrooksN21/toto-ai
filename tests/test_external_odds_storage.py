@@ -17,6 +17,11 @@ from toto_ai.db.models import (
 )
 from toto_ai.db.session import init_db, open_readonly_db
 from toto_ai.external_odds import storage
+from toto_ai.external_odds.api_sports import (
+    APISportsDiagnostic,
+    APISportsProviderError,
+    ProviderPlanUnavailable,
+)
 from toto_ai.external_odds.collection import build_external_collection
 from toto_ai.external_odds.domain import (
     ProviderEvent,
@@ -218,6 +223,42 @@ class ScheduleFailureProvider(CompleteProvider):
         raise AssertionError("markets must not be fetched after schedule failure")
 
 
+class DiagnosticScheduleFailureProvider(ScheduleFailureProvider):
+    def __init__(self):
+        super().__init__()
+        self._request_diagnostics = []
+
+    @property
+    def request_diagnostics(self):
+        return tuple(self._request_diagnostics)
+
+    def fetch_schedule(self, sport, dates):
+        self.requests_made += 1
+        diagnostic = APISportsDiagnostic(
+            category="semantic_error",
+            endpoint="/fixtures",
+            attempt=1,
+            http_status=200,
+            provider_errors=(
+                APISportsProviderError(
+                    code="auth",
+                    message="token=[REDACTED]",
+                ),
+            ),
+            quota_daily_limit=100,
+            quota_daily_remaining=3,
+            quota_minute_limit=10,
+            quota_minute_remaining=2,
+            quota_daily_reset=3600,
+            quota_minute_reset=42,
+        )
+        self._request_diagnostics.append(diagnostic)
+        raise ProviderPlanUnavailable(
+            "API-Sports plan does not provide the requested data",
+            diagnostic=diagnostic,
+        )
+
+
 class DuplicateMarketProvider(CompleteProvider):
     def fetch_event_markets(self, sport, provider_event_id):
         markets = super().fetch_event_markets(sport, provider_event_id)
@@ -344,6 +385,52 @@ def test_failed_schedule_date_provenance_round_trips_canonically(session_factory
             "sport": "football",
         }
     ]
+
+
+def test_provider_diagnostics_round_trip_in_existing_schedule_artifact(
+    session_factory,
+):
+    result = build_external_collection(
+        target_drawing(),
+        DiagnosticScheduleFailureProvider(),
+        aliases={},
+    )
+
+    save_collection(session_factory, result)
+    stored = load_latest_complete_collections(session_factory, last=1)[0]
+
+    expected_attempt = {
+        "attempt": 1,
+        "category": "semantic_error",
+        "endpoint": "/fixtures",
+        "http_status": 200,
+        "provider_errors": [
+            {"code": "auth", "message": "token=[REDACTED]"}
+        ],
+        "quota_daily_limit": 100,
+        "quota_daily_remaining": 3,
+        "quota_daily_reset": 3600,
+        "quota_minute_limit": 10,
+        "quota_minute_remaining": 2,
+        "quota_minute_reset": 42,
+    }
+    assert stored.failed_schedule_dates[0].provider_attempts == (expected_attempt,)
+    with session_factory() as session:
+        failed_json = session.scalar(
+            select(ExternalCollectionRun.failed_schedule_dates).where(
+                ExternalCollectionRun.collection_id == result.collection_id
+            )
+        )
+        run_columns = {
+            item["name"]
+            for item in inspect(session.bind).get_columns("external_collection_runs")
+        }
+    serialized = json.dumps(json.loads(failed_json), sort_keys=True)
+    assert json.loads(failed_json)[0]["provider_attempts"] == [expected_attempt]
+    assert "provider_attempts" not in run_columns
+    assert "headers" not in serialized
+    assert "payload" not in serialized
+    assert "x-apisports-key" not in serialized
 
 
 def test_new_provenance_participates_in_equality_asdict_and_canonicalization():

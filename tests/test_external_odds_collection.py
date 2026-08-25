@@ -8,7 +8,12 @@ from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import sessionmaker
 
 from toto_ai.db.models import Base, ExternalCollectionRun, ExternalEventDisposition
-from toto_ai.external_odds.api_sports import APISportsError, QuotaExhausted
+from toto_ai.external_odds.api_sports import (
+    APISportsDiagnostic,
+    APISportsError,
+    APISportsProviderError,
+    QuotaExhausted,
+)
 from toto_ai.external_odds.collection import (
     build_external_collection,
     collect_open_external_odds,
@@ -206,6 +211,31 @@ class FailingProvider(MixedProvider):
     def fetch_schedule(self, sport, dates):
         self.requests_made += 1
         raise APISportsError("sanitized failure")
+
+
+class DiagnosticMarketFailureProvider(MixedProvider):
+    def fetch_event_markets(self, sport, provider_event_id):
+        self.requests_made += 1
+        self.market_calls.append((sport, provider_event_id))
+        raise APISportsError(
+            "market request failed",
+            diagnostic=APISportsDiagnostic(
+                category="http_failure",
+                endpoint="/odds",
+                attempt=1,
+                http_status=403,
+                provider_errors=(
+                    APISportsProviderError(
+                        code="auth",
+                        message="Authorization: Bearer market-secret-key",
+                    ),
+                ),
+                quota_daily_limit=100,
+                quota_daily_remaining=3,
+                quota_minute_limit=10,
+                quota_minute_remaining=2,
+            ),
+        )
 
 
 class ReversedFirstProvider(MixedProvider):
@@ -520,6 +550,27 @@ def test_provider_failure_falls_back_for_every_remaining_event():
         "provider_failure",
         "unknown_sport",
     }
+
+
+def test_market_failure_persists_bounded_secret_safe_diagnostic():
+    result = build_external_collection(
+        target_drawing(),
+        DiagnosticMarketFailureProvider(),
+        aliases={},
+    )
+
+    reasons = tuple(
+        event.fallback_reason
+        for event in result.events
+        if event.match_status == "matched"
+    )
+    assert len(reasons) == 14
+    assert all("http_failure" in reason for reason in reasons)
+    assert all("endpoint=/odds" in reason for reason in reasons)
+    assert all("http=403" in reason for reason in reasons)
+    assert all("quota_daily_remaining=3" in reason for reason in reasons)
+    assert all("Authorization=[REDACTED]" in reason for reason in reasons)
+    assert all("market-secret-key" not in reason for reason in reasons)
 
 
 def test_quota_failure_records_explicit_fallback_without_silent_loss():

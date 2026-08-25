@@ -1,0 +1,68 @@
+{
+  "event": [
+    {
+      "idEvent": "1001",
+      "idHomeTeam": "501",
+      "idAwayTeam": "502",
+      "strEvent": "Talleres de Córdoba vs Rosario Central",
+      "strSport": "Soccer",
+      "idLeague": "4406",
+      "strLeague": "Argentine Primera Division",
+      "strHomeTeam": "Talleres de Córdoba",
+      "strAwayTeam": "Rosario Central",
+      "strTimestamp": "2026-08-24T21:30:00+03:00",
+      "dateEvent": "2026-08-24",
+      "strTime": "18:30:00",
+      "strStatus": "Not Started",
+      "strPostponed": "no"
+    },
+    {
+      "idEvent": "1002",
+      "idHomeTeam": "601",
+      "idAwayTeam": "602",
+      "strEvent": "Fulham vs Chelsea",
+      "strSport": "Soccer",
+      "idLeague": "4328",
+      "strLeague": "English Premier League",
+      "strHomeTeam": "Fulham",
+      "strAwayTeam": "Chelsea",
+      "strTimestamp": "2026-08-24T19:00:00Z",
+      "dateEvent": "2026-08-24",
+      "strTime": "19:00:00",
+      "strStatus": "Match Finished",
+      "strPostponed": "no"
+    },
+    {
+      "idEvent": "1003",
+      "idHomeTeam": "701",
+      "idAwayTeam": "702",
+      "strEvent": "Postponed Home vs Postponed Away",
+      "strSport": "Soccer",
+      "idLeague": "9991",
+      "strLeague": "Test League",
+      "strHomeTeam": "Postponed Home",
+      "strAwayTeam": "Postponed Away",
+      "strTimestamp": "2026-08-24T20:00:00Z",
+      "dateEvent": "2026-08-24",
+      "strTime": "20:00:00",
+      "strStatus": "Not Started",
+      "strPostponed": "yes"
+    },
+    {
+      "idEvent": "1004",
+      "idHomeTeam": "801",
+      "idAwayTeam": "802",
+      "strEvent": "Hockey Home vs Hockey Away",
+      "strSport": "Ice Hockey",
+      "idLeague": "4380",
+      "strLeague": "National Hockey League",
+      "strHomeTeam": "Hockey Home",
+      "strAwayTeam": "Hockey Away",
+      "strTimestamp": "2026-08-25T01:00:00-04:00",
+      "dateEvent": "2026-08-25",
+      "strTime": "05:00:00",
+      "strStatus": "Scheduled",
+      "strPostponed": "no"
+    }
+  ]
+}
