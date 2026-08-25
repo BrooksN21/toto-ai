@@ -3681,7 +3681,7 @@ def morning_dispatch_command(
             retry_scheduler_status = install_preflight_retry_launch_agent(
                 retry_artifacts
             )
-        if activate and result.review_queue_path is not None:
+        if result.review_queue_path is not None:
             independent_status: dict[str, object]
             try:
                 collected = collect_schedule_source_candidates(

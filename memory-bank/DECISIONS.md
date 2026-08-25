@@ -1,5 +1,15 @@
 # Decisions
 
+## 2026-08-25: source collection is independent from scheduler activation
+
+- A morning review queue always triggers independent and official-consensus
+  source collection, including controlled runs without `--activate`.
+- `--activate` controls only installation of retry/evening LaunchAgents. It is
+  not a data-collection switch and cannot make rehearsal evidence incomplete.
+- Independent candidates remain non-promoting. Running collectors in rehearsal
+  does not mutate the ledger, open the release gate, generate an operator
+  package, or place a wager.
+
 ## 2026-08-25: reviewed alias conflicts are diagnostic and ledger-preferred
 
 - The schedule-evidence ledger remains authoritative over the optional

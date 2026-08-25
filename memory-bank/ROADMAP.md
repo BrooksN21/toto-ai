@@ -1,5 +1,9 @@
 # Roadmap
 
+- [x] Decouple morning public-source collection from LaunchAgent activation;
+  verify an identity-bound drawing-4986 rehearsal collects Sofascore 10/15 and
+  TheSportsDB 12/15 while remaining non-activating and fail-closed.
+
 - [x] `TOTO-THESPORTSDB-CANONICAL-QUERY-20260825`: prioritize deterministic
   canonical/Latin queries, preserve women's/gender identity, keep independent
   names lookup-only, deduplicate bounded forward/reverse searches, and enforce
