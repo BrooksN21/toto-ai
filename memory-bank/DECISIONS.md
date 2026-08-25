@@ -1896,3 +1896,15 @@ ambiguous reversed evidence remains unresolved.
   closed.
 - Schema v6 plans are not implicitly migrated or executed because they conflate
   source metadata and operational deadline; they must be regenerated as v7.
+
+## 2026-08-25 — Deferred collection is a completed automation invocation
+
+- `morning-dispatch` uses dedicated exit code 75 for a valid persisted
+  `deferred` result. The recurring wrapper maps only that code to success and
+  must not repeat the full source collection inside the same invocation.
+- Identity drift remains terminal exit code 3. Other unexpected failures keep
+  bounded retries; this preserves resilience without spending quota on a
+  known, scheduled passive-retry state.
+- A single stored source alias in an unsupported script is non-comparable, not
+  a fatal ledger error. Exact resolution skips only that alias and remains
+  fail-closed unless another supported exact alias establishes identity.

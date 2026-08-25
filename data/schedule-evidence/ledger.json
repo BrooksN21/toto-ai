@@ -1168,6 +1168,100 @@
           "source_url": "https://www.sofascore.com/api/v1/event/16717080"
         }
       ]
+    },
+    {
+      "observation_id": "uefa-match-2049217",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Champions League",
+        "Лига чемпионов УЕФА",
+        "UEFA Champions League, Playoff Round"
+      ],
+      "home_entity": "Viking FK",
+      "home_aliases": [
+        "Викинг",
+        "Viking",
+        "Viking FK",
+        "الفايكنج FK",
+        "ФК Викинг"
+      ],
+      "away_entity": "GNK Dinamo",
+      "away_aliases": [
+        "Динамо Загреб",
+        "GNK Dinamo",
+        "Dinamo Zagreb",
+        "Динамо",
+        "GNK Dinamo Zagreb",
+        "دينامو زغرب",
+        "जीएनके डिनामो ज़ाग्रेब"
+      ],
+      "starts_at": "2026-08-26T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-25T17:11:48.302462Z",
+      "review_document": "reviews/auto-uefa-match-2049217.md",
+      "review_document_sha256": "5febe12553db71a0059b68719be68bf0912e5bcfcecb68ae34963588dff79980",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049217/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16707705"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2049218",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Champions League",
+        "Лига чемпионов УЕФА",
+        "UEFA Champions League, Playoff Round"
+      ],
+      "home_entity": "NK Celje",
+      "home_aliases": [
+        "Целе",
+        "Celje",
+        "NK Celje",
+        "سيليي NK",
+        "एनके सेल्जे",
+        "ФК Целье"
+      ],
+      "away_entity": "ŠK Slovan Bratislava",
+      "away_aliases": [
+        "Слован Братислава",
+        "S. Bratislava",
+        "Слован",
+        "ŠK Slovan Bratislava",
+        "Slovan Bratislava",
+        "إس كيه سلوفان براتيسلافا"
+      ],
+      "starts_at": "2026-08-26T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-25T17:11:48.302462Z",
+      "review_document": "reviews/auto-uefa-match-2049218.md",
+      "review_document_sha256": "094adbafa08e69c66539c1c72888d795ca4b489ca2ad488e3b367cc39bf05e80",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049218/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16707708"
+        }
+      ]
     }
   ]
 }

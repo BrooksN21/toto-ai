@@ -139,6 +139,26 @@ def test_unseen_localized_and_historical_aliases_resolve_exactly(tmp_path):
     assert reused.confidence == "high"
 
 
+def test_unsupported_script_alias_does_not_block_supported_exact_alias(tmp_path):
+    observation = _observation(
+        home_aliases=["الفايكنج FK", "Иберия 1999", "FC Iberia 1999"],
+    )
+    ledger = _ledger(tmp_path, [observation])
+
+    result = resolve_schedule_evidence(
+        _target(
+            "Иберия 1999",
+            "Ларн",
+            "Европа. Лига Европы УЕФА. Квалификация",
+        ),
+        ledger,
+        evaluated_at=NOW,
+    )
+
+    assert result.state == "RESOLVED"
+    assert result.observation.home_entity == "FC Iberia 1999"
+
+
 def test_fuzzy_only_stays_review_required_but_exact_reversed_schedule_resolves(
     tmp_path,
 ):

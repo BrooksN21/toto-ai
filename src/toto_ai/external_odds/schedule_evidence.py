@@ -472,9 +472,13 @@ def _matching_entities(
     gender_age_class: str,
 ) -> frozenset[str]:
     """Resolve an exact alias against all historical reviewed observations."""
-    target_keys = {_name_key(primary)}
-    if english:
-        target_keys.add(_name_key(english))
+    target_keys = {
+        key
+        for value in (primary, english)
+        if value is not None and (key := _optional_name_key(value)) is not None
+    }
+    if not target_keys:
+        return frozenset()
     matched: set[str] = set()
     for observation in ledger.observations:
         if (
@@ -492,7 +496,12 @@ def _matching_entities(
                 (*observation.away_aliases, observation.away_entity),
             ),
         ):
-            if target_keys & {_name_key(alias) for alias in aliases}:
+            alias_keys = {
+                key
+                for alias in aliases
+                if (key := _optional_name_key(alias)) is not None
+            }
+            if target_keys & alias_keys:
                 matched.add(entity)
     return frozenset(matched)
 
@@ -529,12 +538,25 @@ def _name_key(value: str) -> str:
     return re.sub(r"\s+", " ", transliterate_team_name(normalized)).strip()
 
 
+def _optional_name_key(value: str) -> str | None:
+    """Return a comparable key, or None for an unsupported source script."""
+    try:
+        return _name_key(value)
+    except ValueError:
+        return None
+
+
 def _competition_compatible(target: str, aliases: tuple[str, ...]) -> bool:
-    target_key = _name_key(target)
-    return any(
-        _name_key(alias) in target_key or target_key in _name_key(alias)
-        for alias in aliases
-    )
+    target_key = _optional_name_key(target)
+    if target_key is None:
+        return False
+    for alias in aliases:
+        alias_key = _optional_name_key(alias)
+        if alias_key is not None and (
+            alias_key in target_key or target_key in alias_key
+        ):
+            return True
+    return False
 
 
 def _time_compatible(
@@ -554,11 +576,15 @@ def _time_compatible(
 
 
 def _fuzzy_pair_hint(target: TargetEvent, observation: ScheduleObservation) -> bool:
-    home = set(_name_key(target.home_team).split())
-    away = set(_name_key(target.away_team).split())
-    return bool(
-        home & set(_name_key(" ".join(observation.home_aliases)).split())
-    ) and bool(away & set(_name_key(" ".join(observation.away_aliases)).split()))
+    target_home = _optional_name_key(target.home_team)
+    target_away = _optional_name_key(target.away_team)
+    observed_home = _optional_name_key(" ".join(observation.home_aliases))
+    observed_away = _optional_name_key(" ".join(observation.away_aliases))
+    if None in (target_home, target_away, observed_home, observed_away):
+        return False
+    return bool(set(target_home.split()) & set(observed_home.split())) and bool(
+        set(target_away.split()) & set(observed_away.split())
+    )
 
 
 def _utc(value: object, name: str) -> datetime:

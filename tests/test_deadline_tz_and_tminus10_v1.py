@@ -15,6 +15,7 @@ from toto_ai.runner.morning_dispatch import (
     MorningIdentityDriftError,
 )
 from toto_ai.runner.scheduler import (
+    MORNING_DEFERRED_EXIT_CODE,
     SCHEDULER_SCHEMA_VERSION,
     SchedulerIntegrityError,
     SimulatedSchedulerPhaseRunner,
@@ -109,7 +110,7 @@ def test_4961_expected_deadline_accepts_aware_iso_and_normalizes_to_utc(
 ) -> None:
     result, captured = _invoke_morning_dispatch(monkeypatch, tmp_path, deadline)
 
-    assert result.exit_code == 2, result.output
+    assert result.exit_code == MORNING_DEFERRED_EXIT_CODE, result.output
     assert captured["deadline"] == DRAWING_4961_DEADLINE
 
 

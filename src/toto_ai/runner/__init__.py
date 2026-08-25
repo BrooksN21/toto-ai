@@ -37,6 +37,8 @@ from toto_ai.runner.reports import (
 )
 from toto_ai.runner.scheduler import (
     DEFAULT_MINIMUM_GROSS_EV,
+    MORNING_DEFERRED_EXIT_CODE,
+    MORNING_IDENTITY_DRIFT_EXIT_CODE,
     PACKAGE_CSV_HEADER,
     RUNNER_MANIFEST_SCHEMA_VERSION,
     SCHEDULER_INTEGRITY_EXIT_CODE,
@@ -108,6 +110,8 @@ __all__ = [
     "MorningUnresolvedEvent",
     "activate_scheduler_launch_agent",
     "DEFAULT_MINIMUM_GROSS_EV",
+    "MORNING_DEFERRED_EXIT_CODE",
+    "MORNING_IDENTITY_DRIFT_EXIT_CODE",
     "PACKAGE_CSV_HEADER",
     "RUNNER_MANIFEST_SCHEMA_VERSION",
     "SCHEDULER_INTEGRITY_EXIT_CODE",

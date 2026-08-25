@@ -27,6 +27,7 @@ from toto_ai.runner.morning_dispatch import (
     dispatch_morning,
 )
 from toto_ai.runner.scheduler import (
+    MORNING_DEFERRED_EXIT_CODE,
     SCHEDULER_LAUNCH_AGENT_FILENAME,
     SCHEDULER_SCHEMA_VERSION,
     SCHEDULER_WRAPPER_FILENAME,
@@ -1487,7 +1488,7 @@ def test_deferred_activated_cli_installs_identity_bound_retry_job(
         ],
     )
 
-    assert result.exit_code == 2, result.output
+    assert result.exit_code == MORNING_DEFERRED_EXIT_CODE, result.output
     payload = json.loads(result.output)
     assert payload["retry_scheduler"]["active"] is True
     assert installed == [artifacts]
@@ -1582,7 +1583,7 @@ def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
         ],
     )
 
-    assert result.exit_code == 2, result.output
+    assert result.exit_code == MORNING_DEFERRED_EXIT_CODE, result.output
     payload = json.loads(result.output)
     assert calls == [("independent", queue), ("consensus", queue)]
     assert collector_aliases == [{}]
@@ -1669,7 +1670,7 @@ def test_deferred_unactivated_cli_runs_source_collectors_without_installing(
         ],
     )
 
-    assert result.exit_code == 2, result.output
+    assert result.exit_code == MORNING_DEFERRED_EXIT_CODE, result.output
     payload = json.loads(result.output)
     assert calls == [("independent", queue), ("consensus", queue)]
     assert payload["retry_scheduler"] is None
@@ -1792,6 +1793,8 @@ def test_generic_morning_artifacts_contain_no_drawing_identity(tmp_path):
     assert "run-drawing" not in wrapper
     assert "--activate" not in wrapper
     assert "--training-category" not in wrapper
+    assert f'[ "$status" -eq {MORNING_DEFERRED_EXIT_CODE} ]' in wrapper
+    assert "exit 0" in wrapper
     assert plist["Label"] == "com.totoai.morning-dispatcher.v1"
     assert plist["StartInterval"] == 3600
 

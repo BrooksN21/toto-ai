@@ -93,6 +93,8 @@ UNBOUND_LEDGER_SCHEDULER_SCHEMA_VERSION = 5
 UNSAFE_DEADLINE_SCHEDULER_SCHEMA_VERSION = 6
 RUNNER_MANIFEST_SCHEMA_VERSION = 5
 SCHEDULER_INTEGRITY_EXIT_CODE = 78
+MORNING_DEFERRED_EXIT_CODE = 75
+MORNING_IDENTITY_DRIFT_EXIT_CODE = 3
 SCHEDULER_PLAN_FILENAME = "scheduler-plan.json"
 EXPERIMENTAL_RELEASE_AUTHORIZATION_FILENAME = (
     "experimental-manual-release-authorization.json"
@@ -8250,6 +8252,12 @@ def _render_morning_preanalysis_wrapper(
         + "    exit 0\n"
         + "  else\n"
         + "    status=$?\n"
+        + "  fi\n"
+        + f'  if [ "$status" -eq {MORNING_DEFERRED_EXIT_CODE} ]; then\n'
+        + "    exit 0\n"
+        + "  fi\n"
+        + f'  if [ "$status" -eq {MORNING_IDENTITY_DRIFT_EXIT_CODE} ]; then\n'
+        + '    exit "$status"\n'
         + "  fi\n"
         + f'  if [ "$attempt" -ge {retry_count} ]; then\n'
         + '    exit "$status"\n'

@@ -255,6 +255,8 @@ from toto_ai.package.mvp import generate_mvp_package
 from toto_ai.path_safety import probe_writable_directory, validate_output_paths
 from toto_ai.runner import (
     DEFAULT_MINIMUM_GROSS_EV,
+    MORNING_DEFERRED_EXIT_CODE,
+    MORNING_IDENTITY_DRIFT_EXIT_CODE,
     SCHEDULER_INTEGRITY_EXIT_CODE,
     SCHEDULER_SCHEMA_VERSION,
     AppliedTimingOverrideEvent,
@@ -3917,7 +3919,7 @@ def morning_dispatch_command(
                 separators=(",", ":"),
             )
         )
-        raise typer.Exit(code=3) from error
+        raise typer.Exit(code=MORNING_IDENTITY_DRIFT_EXIT_CODE) from error
     except (
         APISportsError,
         OSError,
@@ -3969,7 +3971,7 @@ def morning_dispatch_command(
         )
     )
     if result.status == "deferred":
-        raise typer.Exit(code=2)
+        raise typer.Exit(code=MORNING_DEFERRED_EXIT_CODE)
 
 
 @app.command("collect-schedule-sources")

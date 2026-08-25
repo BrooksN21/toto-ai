@@ -5104,3 +5104,34 @@ package was generated. The evidence artifact is
 
 Verification passed: `2021 passed, 13 deselected in 164.09s`; Ruff passed on
 the full repository and `git diff --check` passed.
+
+## Drawing 4987 morning automation control run (2026-08-25)
+
+The installed generic morning dispatcher is now version v6. Its LaunchAgent
+and generated candidate plist have identical SHA-256
+`ec39d528c2f2e90c193bcce349243d0ebcb863acd93ec55a42d9a0a3d7fe1ee2`.
+Launchd has the six Moscow checkpoints 08:00, 10:30, 12:00, 17:05, 17:12 and
+17:20 plus the existing hourly interval; automatic betting remains disabled.
+
+A live control collection for drawing 4987 completed rather than hanging.
+GOAL found exact identities for 15/15 events and retained 846/1000 daily
+requests; Sofascore supplied three candidates. Exact UEFA plus independent
+Sofascore consensus promoted two reviewed schedule observations into the
+append-only ledger. Thirteen events remain unresolved, so the result is
+correctly `deferred` and an identity-bound passive retry LaunchAgent is active.
+The persisted conservative cutoff remains 18:45 MSK with T-10 at 18:35 MSK.
+Its first due attempt at 20:22 MSK completed normally with return code 2 and no
+child run because no additional schedule evidence had become available; later
+predeclared attempts remain loaded.
+
+The control run exposed two generic defects which are now fixed. A normal
+`deferred` result has dedicated exit code 75, and the generated recurring
+wrapper treats it as a completed invocation instead of retrying the full
+collector and spending provider quota. Identity drift remains terminal exit
+code 3; other failures retain bounded retries. Schedule-evidence resolution
+now skips individual source aliases whose scripts cannot produce a comparable
+key, while retaining exact matching through supported aliases. It no longer
+lets one Arabic or other unsupported alias crash the complete ledger lookup.
+
+Final verification passed `2022 passed, 13 deselected in 162.24s`; Ruff and
+`git diff --check` passed.

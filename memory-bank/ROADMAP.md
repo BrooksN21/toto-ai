@@ -1019,3 +1019,10 @@ closed.
 - [ ] Decide, through reviewed provider policy, whether two-source exact
   timing consensus may become canonical event timing. Until then the cutoff is
   scheduling safety only and does not promote candidate rows.
+- [x] Run the first live 4987 morning control collection, persist the tighter
+  cutoff, promote two exact UEFA/Sofascore consensus observations, and install
+  the identity-bound passive retry job for the remaining 13 events.
+- [x] Give valid `deferred` dispatches a dedicated terminal wrapper path so one
+  scheduled invocation cannot repeat full source collection and waste quota.
+- [x] Make schedule-evidence lookup tolerate individual unsupported-script
+  source aliases without weakening exact matching or crashing the ledger.
