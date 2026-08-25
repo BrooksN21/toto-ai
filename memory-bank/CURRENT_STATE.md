@@ -5135,3 +5135,35 @@ lets one Arabic or other unsupported alias crash the complete ledger lookup.
 
 Final verification passed `2022 passed, 13 deselected in 162.24s`; Ruff and
 `git diff --check` passed.
+
+## Drawing 4987 retry-chain hardening (2026-08-25)
+
+The first live v6 control exposed three sequential retry-chain defects rather
+than a collector hang. They are fixed generically:
+
+- a newly promoted consensus row now triggers one bounded re-preparation from
+  the updated ledger before the final dispatch result;
+- retry artifacts and an installed plist can be atomically replaced only for
+  the same drawing ID/fingerprint label, with bootout/bootstrap when an
+  independent dispatcher changes their bytes;
+- passive runtime state accepts changed detail/review/cutoff evidence only for
+  the same immutable drawing identity and an equal or earlier operational
+  cutoff; a later cutoff still fails closed.
+
+Retry plans now carry `runner_version=2` and every generated child command is
+marked `--preflight-retry-child`. A retry child may refresh evidence and its
+plan but cannot bootout/reinstall its own LaunchAgent. The independent generic
+morning dispatcher owns installation and version upgrades. A same-cutoff
+evidence refresh deliberately keeps the current retry schedule rather than
+churning plist bytes.
+
+The final live generic control exited once with code 0. It correctly reduced
+4987 from 15 to 13 `timing_unknown` events, retained operational cutoff 18:45
+MSK/T-10 18:35 MSK, persisted runner-v2 child markers, and installed a
+hash-matching passive retry job. No evening package, operator upload or bet
+marker was created. GOAL resolved all 13 remaining identities as candidate
+data (12 earlier-time conflicts plus Bradford at the TotoBrief boundary), but
+the provider remains candidate-only, so readiness is still deferred.
+
+Latest full verification passed `2028 passed, 13 deselected in 170.19s`; the
+subsequent retry-chain focused suite passed 86 tests and Ruff/diff checks.

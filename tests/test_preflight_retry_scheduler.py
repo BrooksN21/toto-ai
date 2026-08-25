@@ -147,6 +147,86 @@ def test_due_attempts_execute_once_and_network_failure_remains_retryable(tmp_pat
     assert len(executed) == 2
 
 
+def test_runtime_accepts_same_drawing_monotonic_evidence_refresh(tmp_path):
+    runner = FakeRunner([Result(2), Result(2)])
+    plan_path = _plan(tmp_path / "retry-plan.json")
+    initial = json.loads(plan_path.read_text(encoding="utf-8"))
+    initial["identity"].update(
+        {
+            "operational_cutoff": "2026-07-31T14:00:00Z",
+            "cutoff_evidence_sha256": "a" * 64,
+            "reviewed_catalog_hash": None,
+        }
+    )
+    initial.pop("plan_sha256")
+    initial["plan_sha256"] = hashlib.sha256(_canonical(initial)).hexdigest()
+    plan_path.write_text(json.dumps(initial), encoding="utf-8")
+    artifacts = prepare_preflight_retry_artifacts(plan_path)
+    assert run_preflight_retry(
+        artifacts.plan_path,
+        now=datetime(2026, 7, 31, 10, 1, tzinfo=UTC),
+        command_runner=runner,
+        launch_agents_root=tmp_path / "LaunchAgents",
+    ) == 2
+    refreshed = json.loads(plan_path.read_text(encoding="utf-8"))
+    refreshed["identity"].update(
+        {
+            "operational_cutoff": "2026-07-31T13:30:00Z",
+            "cutoff_evidence_sha256": "b" * 64,
+            "detail_sha256": "c" * 64,
+            "reviewed_catalog_hash": "d" * 64,
+        }
+    )
+    refreshed.pop("plan_sha256")
+    refreshed["plan_sha256"] = hashlib.sha256(_canonical(refreshed)).hexdigest()
+    plan_path.write_text(json.dumps(refreshed), encoding="utf-8")
+
+    assert run_preflight_retry(
+        artifacts.plan_path,
+        now=datetime(2026, 7, 31, 12, 1, tzinfo=UTC),
+        command_runner=runner,
+        launch_agents_root=tmp_path / "LaunchAgents",
+    ) == 2
+    runtime = json.loads(
+        (tmp_path / "retry-runtime.json").read_text(encoding="utf-8")
+    )
+    assert runtime["identity"] == refreshed["identity"]
+    assert set(runtime["executed"]) == {
+        "2026-07-31T10:00:00Z",
+        "2026-07-31T12:00:00Z",
+    }
+
+
+def test_runtime_rejects_relaxed_operational_cutoff(tmp_path):
+    runner = FakeRunner([Result(2)])
+    plan_path = _plan(tmp_path / "retry-plan.json")
+    initial = json.loads(plan_path.read_text(encoding="utf-8"))
+    initial["identity"]["operational_cutoff"] = "2026-07-31T14:00:00Z"
+    initial.pop("plan_sha256")
+    initial["plan_sha256"] = hashlib.sha256(_canonical(initial)).hexdigest()
+    plan_path.write_text(json.dumps(initial), encoding="utf-8")
+    artifacts = prepare_preflight_retry_artifacts(plan_path)
+    assert run_preflight_retry(
+        artifacts.plan_path,
+        now=datetime(2026, 7, 31, 10, 1, tzinfo=UTC),
+        command_runner=runner,
+        launch_agents_root=tmp_path / "LaunchAgents",
+    ) == 2
+    relaxed = json.loads(plan_path.read_text(encoding="utf-8"))
+    relaxed["identity"]["operational_cutoff"] = "2026-07-31T14:30:00Z"
+    relaxed.pop("plan_sha256")
+    relaxed["plan_sha256"] = hashlib.sha256(_canonical(relaxed)).hexdigest()
+    plan_path.write_text(json.dumps(relaxed), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="runtime identity drift"):
+        run_preflight_retry(
+            plan_path,
+            now=datetime(2026, 7, 31, 12, 1, tzinfo=UTC),
+            command_runner=runner,
+            launch_agents_root=tmp_path / "LaunchAgents",
+        )
+
+
 def test_retry_emits_structured_child_status_for_launchd_logs(tmp_path, capsys):
     runner = FakeRunner(
         [
@@ -267,6 +347,56 @@ def test_bootstrap_retry_allows_exact_evening_activation_and_reinstall_is_idempo
     assert first["active"] is True
     assert second["active"] is True
     assert runner.bootstrap_count == 1
+
+
+def test_same_identity_plan_refresh_replaces_and_reloads_launch_agent(tmp_path):
+    runner = FakeRunner()
+    plan_path = _plan(tmp_path / "retry-plan.json")
+    initial = prepare_preflight_retry_artifacts(plan_path)
+    root = tmp_path / "LaunchAgents"
+    install_preflight_retry_launch_agent(
+        initial,
+        launch_agents_root=root,
+        command_runner=runner,
+    )
+    initial_candidate = initial.candidate_path.read_bytes()
+    payload = json.loads(plan_path.read_text(encoding="utf-8"))
+    payload["attempts"][0]["scheduled_at"] = "2026-07-31T10:30:00Z"
+    payload.pop("plan_sha256")
+    payload["plan_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    plan_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    refreshed = prepare_preflight_retry_artifacts(plan_path)
+    status = install_preflight_retry_launch_agent(
+        refreshed,
+        launch_agents_root=root,
+        command_runner=runner,
+    )
+
+    assert refreshed.candidate_path.read_bytes() != initial_candidate
+    assert status["active"] is True
+    assert runner.bootstrap_count == 2
+    assert any(command[1] == "bootout" for command in runner.commands)
+    assert (root / f"{refreshed.label}.plist").read_bytes() == (
+        refreshed.candidate_path.read_bytes()
+    )
+
+
+def test_changed_identity_cannot_replace_existing_retry_artifacts(tmp_path):
+    plan_path = _plan(tmp_path / "retry-plan.json")
+    prepare_preflight_retry_artifacts(plan_path)
+    payload = json.loads(plan_path.read_text(encoding="utf-8"))
+    payload["identity"]["drawing_fingerprint"] = "c" * 64
+    for attempt in payload["attempts"]:
+        command = attempt["command"]
+        option = command.index("--expected-fingerprint")
+        command[option + 1] = "c" * 64
+    payload.pop("plan_sha256")
+    payload["plan_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    plan_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="identity conflicts"):
+        prepare_preflight_retry_artifacts(plan_path)
 
 
 def test_retry_wrapper_loads_secure_env_and_fails_before_command_when_key_missing(

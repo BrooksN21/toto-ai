@@ -3638,6 +3638,11 @@ def morning_dispatch_command(
         "--schedule-evidence-ledger",
     ),
     activate: bool = typer.Option(False, "--activate"),
+    preflight_retry_child: bool = typer.Option(
+        False,
+        "--preflight-retry-child",
+        hidden=True,
+    ),
     expected_drawing_id: int | None = typer.Option(
         None, "--expected-drawing-id", min=1
     ),
@@ -3850,6 +3855,7 @@ def morning_dispatch_command(
                     "ledger_mutated": False,
                 }
             consensus_status: dict[str, object]
+            consensus_promoted_count = 0
             try:
                 consensus = promote_uefa_sofascore_consensus(
                     result.review_queue_path,
@@ -3863,6 +3869,7 @@ def morning_dispatch_command(
                     "ledger_mutated": False,
                 }
             else:
+                consensus_promoted_count = consensus.promoted_count
                 consensus_status = {
                     "status": consensus.status,
                     "promoted_count": consensus.promoted_count,
@@ -3876,6 +3883,10 @@ def morning_dispatch_command(
                 "independent": independent_status,
                 "consensus": consensus_status,
             }
+            refresh_dispatch = False
+            if prepared_evidence is not None and consensus_promoted_count > 0:
+                prepared_evidence = prepare_for_dispatch(datetime.now(timezone.utc))
+                refresh_dispatch = True
             if (
                 prepared_evidence is not None
                 and "cutoff_evidence_path" in independent_status
@@ -3897,6 +3908,8 @@ def morning_dispatch_command(
                         conservative_cutoff_evidence_sha256(persisted_cutoff)
                     ),
                 )
+                refresh_dispatch = True
+            if prepared_evidence is not None and refresh_dispatch:
                 result = dispatch_morning(
                     config,
                     observed_at=datetime.now(timezone.utc),
@@ -3906,7 +3919,11 @@ def morning_dispatch_command(
                     python_command=python_executable,
                     expected_identity=expected_identity,
                 )
-        if activate and result.retry_plan_path is not None:
+        if (
+            activate
+            and not preflight_retry_child
+            and result.retry_plan_path is not None
+        ):
             retry_artifacts = prepare_preflight_retry_artifacts(result.retry_plan_path)
             retry_scheduler_status = install_preflight_retry_launch_agent(
                 retry_artifacts

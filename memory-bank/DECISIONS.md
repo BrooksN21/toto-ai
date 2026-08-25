@@ -1908,3 +1908,19 @@ ambiguous reversed evidence remains unresolved.
 - A single stored source alias in an unsupported script is non-comparable, not
   a fatal ledger error. Exact resolution skips only that alias and remains
   fail-closed unless another supported exact alias establishes identity.
+
+## 2026-08-25 — Retry children never reload their own LaunchAgent
+
+- Retry plan runner v2 marks every generated child invocation explicitly. The
+  child may refresh source evidence and persist a tighter plan, but it cannot
+  regenerate, bootout or bootstrap the LaunchAgent that currently owns it.
+- Same-cutoff evidence refreshes do not rewrite the retry schedule. A strictly
+  earlier cutoff or runner-version upgrade may rewrite it; the independent
+  generic morning dispatcher then atomically regenerates and reloads the same
+  identity-bound job.
+- Generated wrapper/plist replacement is permitted only under the same
+  drawing-ID/fingerprint label. Any different identity already present in the
+  artifact directory fails closed.
+- Runtime attempts survive refreshed detail, reviewed evidence and cutoff
+  hashes only when drawing ID, visible number, fingerprint and `ended_at` are
+  unchanged and the operational cutoff does not move later.

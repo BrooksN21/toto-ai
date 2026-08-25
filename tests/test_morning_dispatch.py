@@ -220,6 +220,9 @@ def test_zero_pool_bootstrap_creates_identity_bound_retry_plan_before_import(
         "2026-08-04T13:00:00Z",
     ]
     assert all("--activate" in item["command"] for item in plan["attempts"])
+    assert all(
+        "--preflight-retry-child" in item["command"] for item in plan["attempts"]
+    )
     assert not tuple(config.scheduler_root.rglob("scheduler-plan.json"))
 
 
@@ -372,6 +375,64 @@ def test_existing_retry_plan_is_atomically_tightened(tmp_path):
     assert second.retry_plan_path == first.retry_plan_path
     assert payload["hard_stop"] == "2026-08-14T09:00:00Z"
     assert payload["identity"]["operational_cutoff"] == "2026-08-14T10:00:00Z"
+
+
+def test_existing_retry_plan_keeps_schedule_for_same_cutoff_refresh(tmp_path):
+    config = _config(tmp_path)
+    observed = datetime(2026, 8, 13, 14, 0, tzinfo=UTC)
+    deadline = datetime(2026, 8, 14, 14, 0, tzinfo=UTC)
+    cutoff = datetime(2026, 8, 14, 10, 0, tzinfo=UTC)
+    unresolved = MorningUnresolvedEvent(
+        event_order=8,
+        target_event_id=179606,
+        home_team="Анси",
+        away_team="Родез",
+        resolution_status="timing_unknown",
+        reason="baseline-only event start time is unavailable",
+    )
+    initial = MorningPreparedDrawing(
+        drawing_id=12033,
+        drawing_number=4975,
+        deadline=deadline,
+        operational_cutoff=cutoff,
+        cutoff_evidence=tmp_path / "cutoff-first.json",
+        cutoff_evidence_sha256="e" * 64,
+        drawing_fingerprint="c" * 64,
+        detail_sha256="d" * 64,
+        preparation_status="ready",
+        mapped_count=15,
+        eligibility_status="unknown",
+        span_days=None,
+        unresolved_events=(unresolved,),
+        external_coverage_count=14,
+        baseline_only_event_orders=(8,),
+    )
+    first = dispatch_morning(
+        config,
+        observed_at=observed,
+        now=lambda: observed,
+        prepare_current=lambda _now: initial,
+        python_command=sys.executable,
+    )
+    refreshed = replace(
+        initial,
+        cutoff_evidence=tmp_path / "cutoff-refreshed.json",
+        cutoff_evidence_sha256="f" * 64,
+    )
+
+    second = dispatch_morning(
+        config,
+        observed_at=observed + timedelta(minutes=1),
+        now=lambda: observed + timedelta(minutes=1),
+        prepare_current=lambda _now: refreshed,
+        python_command=sys.executable,
+    )
+    payload = json.loads(second.retry_plan_path.read_text(encoding="utf-8"))
+
+    assert second.retry_plan_path == first.retry_plan_path
+    assert payload["identity"]["operational_cutoff"] == "2026-08-14T10:00:00Z"
+    assert payload["identity"]["cutoff_evidence_sha256"] == "e" * 64
+    assert payload["runner_version"] == 2
 
 
 def test_zero_pool_retry_recovers_to_one_activated_evening_scheduler(tmp_path):
@@ -1494,6 +1555,54 @@ def test_deferred_activated_cli_installs_identity_bound_retry_job(
     assert installed == [artifacts]
 
 
+def test_retry_child_never_reinstalls_its_own_launch_agent(monkeypatch, tmp_path):
+    retry_plan = tmp_path / "retry-plan.json"
+    retry_plan.write_text("{}\n", encoding="utf-8")
+    monkeypatch.setattr(
+        cli,
+        "dispatch_morning",
+        lambda *_args, **_kwargs: MorningDispatchResult(
+            status="deferred",
+            reason="ACTION REQUIRED: timing unknown 1/15",
+            record_path=tmp_path / "deferred.json",
+            plan_id=None,
+            plan_path=None,
+            launch_agent_path=None,
+            activation_status="not_requested",
+            retry_plan_path=retry_plan,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "prepare_preflight_retry_artifacts",
+        lambda _path: (_ for _ in ()).throw(
+            AssertionError("retry child must not regenerate its own artifacts")
+        ),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(tmp_path / ".env"),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+            "--activate",
+            "--preflight-retry-child",
+        ],
+    )
+
+    assert result.exit_code == MORNING_DEFERRED_EXIT_CODE, result.output
+    assert json.loads(result.output)["retry_scheduler"] is None
+
+
 def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
     monkeypatch,
     tmp_path,
@@ -1676,6 +1785,124 @@ def test_deferred_unactivated_cli_runs_source_collectors_without_installing(
     assert payload["retry_scheduler"] is None
     assert payload["source_collector"]["independent"]["candidate_count"] == 1
     assert payload["source_collector"]["consensus"]["promoted_count"] == 1
+
+
+def test_consensus_promotion_reprepares_before_final_dispatch(monkeypatch, tmp_path):
+    write_empty_schedule_evidence_ledger(tmp_path)
+    env_file = _env(tmp_path / ".env")
+    queue = tmp_path / "review-queue.json"
+    queue.write_text("{}\n", encoding="utf-8")
+    unresolved = MorningUnresolvedEvent(
+        event_order=0,
+        target_event_id=1,
+        home_team="Home",
+        away_team="Away",
+        resolution_status="timing_unknown",
+        reason="baseline-only event start time is unavailable",
+    )
+    initial = replace(
+        _prepared(
+            number=4987,
+            drawing_id=12068,
+            deadline=datetime(2026, 8, 26, 18, 45, tzinfo=UTC),
+            status="not_ready",
+            mapped=14,
+            eligibility="unknown",
+            span_days=None,
+        ),
+        unresolved_events=(unresolved,),
+    )
+    refreshed = _prepared(
+        number=4987,
+        drawing_id=12068,
+        deadline=initial.deadline,
+    )
+    prepare_calls: list[datetime] = []
+    dispatch_evidence: list[MorningPreparedDrawing] = []
+
+    def prepare_current_for_morning(*, observed_at, **_kwargs):
+        prepare_calls.append(observed_at)
+        return initial if len(prepare_calls) == 1 else refreshed
+
+    def dispatch(_config, *, observed_at, prepare_current, **_kwargs):
+        evidence = prepare_current(observed_at)
+        dispatch_evidence.append(evidence)
+        if len(dispatch_evidence) == 1:
+            return MorningDispatchResult(
+                status="deferred",
+                reason="ACTION REQUIRED: timing unknown 1/15",
+                record_path=tmp_path / "deferred.json",
+                plan_id=None,
+                plan_path=None,
+                launch_agent_path=None,
+                activation_status="not_requested",
+                review_queue_path=queue,
+            )
+        return MorningDispatchResult(
+            status="prepared",
+            reason="drawing_not_playable",
+            record_path=tmp_path / "prepared.json",
+            plan_id=None,
+            plan_path=None,
+            launch_agent_path=None,
+            activation_status="not_requested",
+        )
+
+    monkeypatch.setattr(
+        cli,
+        "_prepare_current_for_morning",
+        prepare_current_for_morning,
+    )
+    monkeypatch.setattr(cli, "dispatch_morning", dispatch)
+    monkeypatch.setattr(
+        cli,
+        "collect_schedule_source_candidates",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            status="CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
+            candidate_count=1,
+            unresolved_count=0,
+            report_path=tmp_path / "independent.json",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "derive_conservative_cutoff",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("no cutoff")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "promote_uefa_sofascore_consensus",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            status="CONSENSUS_PROMOTED",
+            promoted_count=1,
+            existing_count=0,
+            unresolved_count=0,
+            report_path=tmp_path / "consensus.json",
+            ledger_semantic_hash="c" * 64,
+        ),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(tmp_path / "state"),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert len(prepare_calls) == 2
+    assert dispatch_evidence == [initial, refreshed]
+    assert json.loads(result.output)["status"] == "prepared"
 
 
 def test_reviewed_alias_names_load_existing_valid_catalog(tmp_path):

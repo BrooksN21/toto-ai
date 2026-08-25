@@ -1026,3 +1026,12 @@ closed.
   scheduled invocation cannot repeat full source collection and waste quota.
 - [x] Make schedule-evidence lookup tolerate individual unsupported-script
   source aliases without weakening exact matching or crashing the ledger.
+- [x] Re-prepare once after exact consensus promotion so the same morning run
+  observes newly committed schedule evidence; live 4987 improved 15/15 to
+  13/15 unresolved.
+- [x] Upgrade passive retry plans to runner v2 and prevent child processes from
+  reloading their own LaunchAgent; preserve monotonic runtime state and allow
+  atomic same-identity artifact refresh by the independent dispatcher.
+- [ ] Establish and prospectively validate a provider policy for the 13
+  remaining 4987 events. GOAL has candidate identities/times for all 13, but
+  candidate-only evidence cannot currently make the drawing playable.

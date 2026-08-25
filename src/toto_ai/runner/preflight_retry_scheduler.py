@@ -87,8 +87,17 @@ def prepare_preflight_retry_artifacts(
     plist_bytes = plistlib.dumps(payload, sort_keys=True)
     if write:
         root.mkdir(parents=True, exist_ok=True)
-        _write_exact(wrapper, wrapper_bytes, 0o700)
-        _write_exact(candidate, plist_bytes, 0o600)
+        other_candidates = tuple(
+            path
+            for path in root.glob("com.totoai.preflight-retry.*.plist")
+            if path != candidate
+        )
+        if other_candidates:
+            raise ValueError(
+                "preflight retry identity conflicts with existing artifacts"
+            )
+        _write_replace(wrapper, wrapper_bytes, 0o700)
+        _write_replace(candidate, plist_bytes, 0o600)
     return PreflightRetryArtifacts(label, plan_path, wrapper, candidate)
 
 
@@ -103,12 +112,27 @@ def install_preflight_retry_launch_agent(
     root.mkdir(parents=True, exist_ok=True)
     destination = root / f"{artifacts.label}.plist"
     candidate = artifacts.candidate_path.read_bytes()
-    _write_exact(destination, candidate, 0o600)
     domain = f"gui/{os.getuid()}"
     probe = _launchctl(
         command_runner, "print", f"{domain}/{artifacts.label}"
     )
-    if getattr(probe, "returncode", 1) != 0:
+    loaded = getattr(probe, "returncode", 1) == 0
+    installed_changed = (
+        not destination.is_file()
+        or destination.is_symlink()
+        or destination.read_bytes() != candidate
+    )
+    if destination.is_symlink():
+        raise ValueError("installed preflight retry plist is a symlink")
+    if loaded and installed_changed:
+        result = _launchctl(
+            command_runner, "bootout", f"{domain}/{artifacts.label}"
+        )
+        if getattr(result, "returncode", 1) != 0:
+            raise ValueError("preflight retry LaunchAgent bootout failed")
+        loaded = False
+    _write_replace(destination, candidate, 0o600)
+    if not loaded:
         result = _launchctl(
             command_runner, "bootstrap", domain, str(destination)
         )
@@ -373,13 +397,40 @@ def _load_runtime_state(
     if path.is_symlink() or not path.is_file():
         raise ValueError("preflight retry runtime state is invalid")
     payload = json.loads(path.read_text(encoding="utf-8"))
-    if (
-        not isinstance(payload, dict)
-        or payload.get("identity") != dict(identity)
-        or not isinstance(payload.get("executed"), dict)
-    ):
+    if not isinstance(payload, dict) or not isinstance(payload.get("executed"), dict):
         raise ValueError("preflight retry runtime identity drift")
+    prior_identity = payload.get("identity")
+    if prior_identity != dict(identity):
+        if not isinstance(prior_identity, Mapping) or not _allows_identity_refresh(
+            prior_identity,
+            identity,
+        ):
+            raise ValueError("preflight retry runtime identity drift")
+        payload["identity"] = dict(identity)
+        _write_runtime_state(path, payload)
     return payload
+
+
+def _allows_identity_refresh(
+    prior: Mapping[str, object],
+    current: Mapping[str, object],
+) -> bool:
+    immutable = (
+        "drawing_id",
+        "drawing_number",
+        "drawing_fingerprint",
+        "deadline",
+    )
+    if any(prior.get(field) != current.get(field) for field in immutable):
+        return False
+    try:
+        prior_cutoff = _parse(str(prior.get("operational_cutoff", prior["deadline"])))
+        current_cutoff = _parse(
+            str(current.get("operational_cutoff", current["deadline"]))
+        )
+    except (KeyError, ValueError):
+        return False
+    return current_cutoff <= prior_cutoff
 
 
 def _write_runtime_state(path: Path, payload: Mapping[str, object]) -> None:
@@ -448,14 +499,33 @@ def _quote(value: str) -> str:
     return "'" + value.replace("'", "'\"'\"'") + "'"
 
 
-def _write_exact(path: Path, content: bytes, mode: int) -> None:
-    if path.exists():
-        if path.is_symlink() or path.read_bytes() != content:
-            raise ValueError(f"conflicting preflight scheduler artifact: {path}")
+def _write_replace(path: Path, content: bytes, mode: int) -> bool:
+    if path.is_symlink():
+        raise ValueError(f"preflight scheduler artifact is a symlink: {path}")
+    if path.is_file() and path.read_bytes() == content:
         path.chmod(mode)
-        return
-    path.write_bytes(content)
-    path.chmod(mode)
+        return False
+    temporary = path.parent / f".{path.name}.{secrets.token_hex(8)}.tmp"
+    descriptor = os.open(
+        temporary,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+        mode,
+    )
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+        path.chmod(mode)
+        directory = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return True
 
 
 def _launchctl(

@@ -35,6 +35,7 @@ _MOSCOW = ZoneInfo("Europe/Moscow")
 _ZERO_POOL_NOT_READY = "totobrief_pool_not_ready"
 MORNING_DISPATCH_SCHEMA_VERSION = 1
 PREFLIGHT_ESCALATION_SCHEMA_VERSION = 1
+PREFLIGHT_RETRY_RUNNER_VERSION = 2
 _SCHEDULER_LABEL = re.compile(
     rf"com\.totoai\.production-scheduler\.v{SCHEDULER_SCHEMA_VERSION}\."
     r"[0-9a-f]{16}\Z"
@@ -1041,12 +1042,15 @@ def _update_preflight_escalation(
             or retry_plan.get("activate_evening") is not retry_can_activate_evening
         ):
             raise ValueError("existing passive retry plan identity conflicts")
+        runner_upgrade_required = (
+            retry_plan.get("runner_version") != PREFLIGHT_RETRY_RUNNER_VERSION
+        )
         prior_cutoff = _parse_timestamp(
             str(identity.get("operational_cutoff", identity["deadline"]))
         )
         if evidence.operational_cutoff > prior_cutoff:
             raise ValueError("passive retry cutoff cannot be relaxed")
-        if evidence.operational_cutoff < prior_cutoff:
+        if evidence.operational_cutoff < prior_cutoff or runner_upgrade_required:
             retry_plan = _retry_plan_payload(
                 config,
                 evidence=evidence,
@@ -1054,11 +1058,6 @@ def _update_preflight_escalation(
                 python_command=python_command,
             )
             _write_atomic(retry_plan_path, retry_plan, replace=True)
-        elif identity.get("cutoff_evidence_sha256") not in {
-            None,
-            evidence.cutoff_evidence_sha256,
-        }:
-            raise ValueError("passive retry cutoff evidence conflicts")
     else:
         retry_plan = _retry_plan_payload(
             config,
@@ -1252,6 +1251,7 @@ def _retry_plan_payload(
         )
         if activate_evening:
             command.append("--activate")
+        command.append("--preflight-retry-child")
         attempts.append(
             {
                 "scheduled_at": _timestamp(scheduled_at),
@@ -1261,6 +1261,7 @@ def _retry_plan_payload(
         )
     payload: dict[str, object] = {
         "schema_version": PREFLIGHT_ESCALATION_SCHEMA_VERSION,
+        "runner_version": PREFLIGHT_RETRY_RUNNER_VERSION,
         "plan_type": "passive_preflight_retry",
         "identity": evidence.identity_payload(),
         "created_at": _timestamp(observed_at),
