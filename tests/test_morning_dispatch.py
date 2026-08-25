@@ -1427,7 +1427,9 @@ def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
     retry_plan.write_text("{}\n", encoding="utf-8")
     queue = tmp_path / "review-queue.json"
     queue.write_text("{}\n", encoding="utf-8")
+    missing_aliases = tmp_path / "missing-team-aliases.json"
     calls: list[tuple[str, Path]] = []
+    collector_aliases: list[dict[str, str]] = []
     monkeypatch.setattr(
         cli,
         "dispatch_morning",
@@ -1456,7 +1458,8 @@ def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
     monkeypatch.setattr(
         cli,
         "collect_schedule_source_candidates",
-        lambda path, **_kwargs: calls.append(("independent", Path(path)))
+        lambda path, **kwargs: collector_aliases.append(kwargs["team_aliases"])
+        or calls.append(("independent", Path(path)))
         or SimpleNamespace(
             status="CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
             candidate_count=1,
@@ -1493,6 +1496,8 @@ def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
             str(tmp_path / "state"),
             "--scheduler-root",
             str(tmp_path / "scheduler"),
+            "--aliases",
+            str(missing_aliases),
             "--activate",
         ],
     )
@@ -1500,8 +1505,53 @@ def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
     assert result.exit_code == 2, result.output
     payload = json.loads(result.output)
     assert calls == [("independent", queue), ("consensus", queue)]
+    assert collector_aliases == [{}]
     assert payload["source_collector"]["independent"]["candidate_count"] == 1
     assert payload["source_collector"]["consensus"]["promoted_count"] == 1
+
+
+def test_reviewed_alias_names_load_existing_valid_catalog(tmp_path):
+    aliases = tmp_path / "team-aliases.json"
+    aliases.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "aliases": {"Бавария": "FC Bayern München"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert cli.load_reviewed_alias_names(aliases) == {
+        "Бавария": "FC Bayern München"
+    }
+
+
+def test_reviewed_alias_names_reject_existing_malformed_catalog(tmp_path):
+    aliases = tmp_path / "team-aliases.json"
+    aliases.write_text("{\n", encoding="utf-8")
+
+    with pytest.raises(json.JSONDecodeError):
+        cli.load_reviewed_alias_names(aliases)
+
+
+def test_reviewed_alias_names_propagates_unreadable_catalog(
+    monkeypatch,
+    tmp_path,
+):
+    aliases = tmp_path / "team-aliases.json"
+    aliases.write_text("{}\n", encoding="utf-8")
+    original_read_text = Path.read_text
+
+    def unreadable(path, *args, **kwargs):
+        if path == aliases:
+            raise PermissionError("alias catalog unreadable")
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", unreadable)
+
+    with pytest.raises(PermissionError, match="alias catalog unreadable"):
+        cli.load_reviewed_alias_names(aliases)
 
 
 def test_dispatch_after_t_minus_45_does_not_create_partial_schedule(tmp_path):

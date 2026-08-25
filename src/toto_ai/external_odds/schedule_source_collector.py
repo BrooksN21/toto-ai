@@ -40,6 +40,16 @@ from toto_ai.external_odds.thesportsdb import (
 
 _SEARCH_ENDPOINT = "https://www.sofascore.com/api/v1/search/all?q={query}"
 _MAX_DRAWING_SPAN = timedelta(days=5)
+_MAX_THESPORTSDB_QUERIES_PER_EVENT = 2
+_MAX_ALIAS_CONFLICT_DIAGNOSTICS = 20
+_WOMEN_MARKER = re.compile(
+    r"(?:^|[^\w])(?:women(?:'s)?|ladies|female|wfc|жфк|жен(?:щины|ский|ская)?\.?|ж)(?:$|[^\w])",
+    re.IGNORECASE,
+)
+_MEN_MARKER = re.compile(
+    r"(?:^|[^\w])(?:men(?:'s)?|male|муж(?:чины|ской|ская)?\.?|м)(?:$|[^\w])",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -227,6 +237,7 @@ def collect_schedule_source_candidates(
         config=thesportsdb_config,
         client=thesportsdb_client,
         team_aliases=team_aliases,
+        lookup_hints=_thesportsdb_lookup_hints(records),
     )
     records.extend(thesportsdb_records)
     provider_statuses[THESPORTSDB_PROVIDER] = thesportsdb_status
@@ -278,7 +289,10 @@ def _collect_thesportsdb_candidates(
     config: TheSportsDBConfig | None,
     client: TheSportsDBClient | None,
     team_aliases: Mapping[str, str] | None,
+    lookup_hints: Mapping[int, tuple[str, str]],
 ) -> tuple[list[dict[str, object]], dict[str, object]]:
+    aliases, alias_conflicts = _collector_aliases(ledger, team_aliases)
+    alias_conflict_diagnostics = _alias_conflict_diagnostics(alias_conflicts)
     if client is None:
         effective_config = config or load_thesportsdb_config()
         if not effective_config.enabled:
@@ -286,6 +300,7 @@ def _collect_thesportsdb_candidates(
                 "status": "disabled_missing_key",
                 "config_key": "THESPORTSDB_API_KEY",
                 "candidate_count": 0,
+                "alias_conflicts_skipped": alias_conflict_diagnostics,
                 "ledger_mutated": False,
             }
         client = TheSportsDBClient.from_config(
@@ -294,7 +309,6 @@ def _collect_thesportsdb_candidates(
             now=lambda: observed,
         )
 
-    aliases = _collector_aliases(ledger, team_aliases)
     records: list[dict[str, object]] = []
     window_end = deadline + _MAX_DRAWING_SPAN
     for row in queue["records"]:
@@ -302,17 +316,15 @@ def _collect_thesportsdb_candidates(
         evidence_offset = len(client.request_evidence)
         target_home = str(row["home_team"])
         target_away = str(row["away_team"])
-        query_home = _preferred_query_name(ledger, target_home)
-        query_away = _preferred_query_name(ledger, target_away)
         try:
             search_results = []
-            query_pairs = tuple(
-                dict.fromkeys(
-                    (
-                        (query_home, query_away),
-                        (query_away, query_home),
-                    )
-                )
+            query_pairs = _thesportsdb_query_pairs(
+                ledger,
+                target_home,
+                target_away,
+                supplied=team_aliases,
+                supplied_conflicts=alias_conflicts,
+                hints=lookup_hints.get(int(row["event_order"])),
             )
             for search_home, search_away in query_pairs:
                 search_results.extend(
@@ -424,6 +436,10 @@ def _collect_thesportsdb_candidates(
         "candidate_count": candidate_count,
         "request_count": client.requests_made,
         "cache_hit_count": client.cache_hits,
+        "attempted": client.requests_made,
+        "skipped": client.requests_skipped,
+        "budget_exhausted": client.budget_exhausted,
+        "alias_conflicts_skipped": alias_conflict_diagnostics,
         "quota": {
             "daily_limit": client.quota_state.daily_limit,
             "daily_remaining": client.quota_state.daily_remaining,
@@ -446,7 +462,11 @@ def _match_thesportsdb_candidates(
     tuple[str, ...],
     str,
 ]:
-    eligible = tuple(item for item in events if item.eligible)
+    eligible = tuple(
+        item
+        for item in events
+        if item.eligible and _thesportsdb_event_gender_compatible(row, item)
+    )
     by_id = {item.provider_event_id: item for item in eligible}
     decisions = []
     for sport in ("football", "hockey"):
@@ -501,6 +521,21 @@ def _match_thesportsdb_candidates(
     return None, None, candidate_ids, status
 
 
+def _thesportsdb_event_gender_compatible(
+    row: Mapping[str, Any],
+    event: TheSportsDBScheduleEvent,
+) -> bool:
+    target_home = str(row["home_team"])
+    target_away = str(row["away_team"])
+    return (
+        _gender_compatible(target_home, event.home_team)
+        and _gender_compatible(target_away, event.away_team)
+    ) or (
+        _gender_compatible(target_home, event.away_team)
+        and _gender_compatible(target_away, event.home_team)
+    )
+
+
 def _dedupe_thesportsdb_search_results(
     events: list[TheSportsDBScheduleEvent],
 ) -> tuple[TheSportsDBScheduleEvent, ...]:
@@ -536,8 +571,8 @@ def _dedupe_thesportsdb_search_results(
 def _collector_aliases(
     ledger: ScheduleEvidenceLedger | None,
     supplied: Mapping[str, str] | None,
-) -> dict[str, str]:
-    result: dict[str, str] = {}
+) -> tuple[dict[str, str], frozenset[str]]:
+    ledger_aliases: dict[str, str] = {}
     if ledger is not None:
         for observation in ledger.observations:
             for entity, aliases in (
@@ -546,30 +581,266 @@ def _collector_aliases(
             ):
                 canonical = normalize_team_name(entity)
                 for alias in (*aliases, entity):
+                    if not _gender_compatible(alias, entity):
+                        continue
                     key = normalize_team_name(alias)
-                    previous = result.get(key)
+                    previous = ledger_aliases.get(key)
                     if previous is not None and previous != canonical:
                         raise ValueError("schedule source ledger aliases conflict")
-                    if key != canonical:
-                        result[key] = canonical
+                    ledger_aliases[key] = canonical
+
+    result = {
+        key: value for key, value in ledger_aliases.items() if key != value
+    }
+    supplied_aliases: dict[str, str] = {}
+    conflicts: set[str] = set()
     if supplied is not None:
-        for raw_key, raw_value in supplied.items():
+        for raw_key, raw_value in sorted(
+            supplied.items(),
+            key=lambda item: (str(item[0]).casefold(), str(item[1]).casefold()),
+        ):
+            if not _gender_compatible(raw_key, raw_value):
+                continue
             key = normalize_team_name(raw_key)
             value = normalize_team_name(raw_value)
-            previous = result.get(key)
+            previous = supplied_aliases.get(key)
             if previous is not None and previous != value:
-                raise ValueError("schedule source aliases conflict")
-            if key != value:
-                result[key] = value
+                conflicts.add(key)
+                continue
+            supplied_aliases[key] = value
+
+    for key, value in sorted(supplied_aliases.items()):
+        if key in conflicts:
+            continue
+        ledger_value = ledger_aliases.get(key)
+        if ledger_value is not None:
+            if ledger_value != value:
+                conflicts.add(key)
+            continue
+        if key != value:
+            result[key] = value
+    return result, frozenset(conflicts)
+
+
+def _alias_conflict_diagnostics(
+    conflicts: frozenset[str],
+) -> dict[str, object]:
+    ordered = sorted(conflicts)
+    visible = ordered[:_MAX_ALIAS_CONFLICT_DIAGNOSTICS]
+    return {
+        "count": len(ordered),
+        "normalized_alias_keys": visible,
+        "truncated": len(visible) != len(ordered),
+    }
+
+
+def _thesportsdb_query_pairs(
+    ledger: ScheduleEvidenceLedger | None,
+    target_home: str,
+    target_away: str,
+    *,
+    supplied: Mapping[str, str] | None,
+    supplied_conflicts: frozenset[str],
+    hints: tuple[str, str] | None,
+) -> tuple[tuple[str, str], ...]:
+    home_candidates = _query_name_candidates(
+        ledger,
+        target_home,
+        supplied=supplied,
+        supplied_conflicts=supplied_conflicts,
+        hint=None if hints is None else hints[0],
+    )
+    away_candidates = _query_name_candidates(
+        ledger,
+        target_away,
+        supplied=supplied,
+        supplied_conflicts=supplied_conflicts,
+        hint=None if hints is None else hints[1],
+    )
+    home = _prioritized_query_name(home_candidates)
+    away = _prioritized_query_name(away_candidates)
+    pairs = ((home, away), (away, home))
+    result: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for query_home, query_away in pairs:
+        query = f"{query_home}_vs_{query_away}".casefold()
+        if query in seen:
+            continue
+        seen.add(query)
+        result.append((query_home, query_away))
+        if len(result) == _MAX_THESPORTSDB_QUERIES_PER_EVENT:
+            break
+    return tuple(result)
+
+
+def _query_name_candidates(
+    ledger: ScheduleEvidenceLedger | None,
+    target: str,
+    *,
+    supplied: Mapping[str, str] | None,
+    supplied_conflicts: frozenset[str],
+    hint: str | None,
+) -> tuple[tuple[str, str], ...]:
+    original = _normalize_query_name(target)
+    candidates: list[tuple[str, str]] = [(original, "original")]
+    candidates.extend(
+        (
+            _preserve_explicit_gender_marker(
+                original, _normalize_query_name(value)
+            ),
+            "canonical",
+        )
+        for value in _ledger_canonical_names(ledger, target)
+        if _gender_compatible(target, value)
+    )
+    candidates.extend(
+        (
+            _preserve_explicit_gender_marker(
+                original, _normalize_query_name(value)
+            ),
+            source,
+        )
+        for value, source in _supplied_query_names(
+            supplied,
+            target,
+            conflicting_keys=supplied_conflicts,
+        )
+    )
+    transliterated = _normalize_query_name(transliterate_team_name(original))
+    transliterated = _preserve_explicit_gender_marker(original, transliterated)
+    candidates.append((transliterated, "transliteration"))
+    if (
+        hint is not None
+        and _is_latin_name(hint)
+        and _gender_compatible(target, hint)
+    ):
+        candidates.append(
+            (
+                _preserve_explicit_gender_marker(
+                    original, _normalize_query_name(hint)
+                ),
+                "hint",
+            )
+        )
+
+    result: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for name, source in candidates:
+        key = name.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append((name, source))
+    return tuple(result)
+
+
+def _prioritized_query_name(candidates: tuple[tuple[str, str], ...]) -> str:
+    priorities = {
+        "canonical": 0,
+        "hint": 1,
+        "transliteration": 2,
+        "original": 3,
+    }
+    ranked = sorted(
+        enumerate(candidates),
+        key=lambda item: (
+            0 if _is_latin_name(item[1][0]) else 1,
+            priorities[item[1][1]],
+            item[0],
+        ),
+    )
+    return ranked[0][1][0]
+
+
+def _supplied_query_names(
+    supplied: Mapping[str, str] | None,
+    target: str,
+    *,
+    conflicting_keys: frozenset[str],
+) -> tuple[tuple[str, str], ...]:
+    if supplied is None:
+        return ()
+    names: dict[str, tuple[str, str]] = {}
+    for key, value in sorted(
+        supplied.items(),
+        key=lambda item: (str(item[0]).casefold(), str(item[1]).casefold()),
+    ):
+        rendered_key = str(key)
+        rendered_value = str(value)
+        if not _alias_compatible(target, (rendered_key,)) or not _gender_compatible(
+            target, rendered_value
+        ):
+            continue
+        source = (
+            "hint"
+            if normalize_team_name(rendered_key) in conflicting_keys
+            else "canonical"
+        )
+        name_key = rendered_value.casefold()
+        previous = names.get(name_key)
+        if previous is None or (previous[1] == "hint" and source == "canonical"):
+            names[name_key] = (rendered_value, source)
+    return tuple(names.values())
+
+
+def _thesportsdb_lookup_hints(
+    records: list[dict[str, object]],
+) -> dict[int, tuple[str, str]]:
+    result: dict[int, tuple[str, str]] = {}
+    for record in records:
+        home = record.get("home_name")
+        away = record.get("away_name")
+        if (
+            record.get("status") != "independent_candidate"
+            or record.get("source_name") != "Sofascore"
+            or not isinstance(home, str)
+            or not isinstance(away, str)
+            or not _is_latin_name(home)
+            or not _is_latin_name(away)
+            or not _gender_compatible(str(record["target_home_team"]), home)
+            or not _gender_compatible(str(record["target_away_team"]), away)
+        ):
+            continue
+        result[int(record["event_order"])] = (home, away)
     return result
 
 
-def _preferred_query_name(
-    ledger: ScheduleEvidenceLedger | None,
-    target: str,
-) -> str:
-    canonical = _ledger_canonical_names(ledger, target)
-    return canonical[0] if canonical else target
+def _normalize_query_name(value: str) -> str:
+    return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", value)).strip()
+
+
+def _is_latin_name(value: str) -> bool:
+    letters = [character for character in value if character.isalpha()]
+    return bool(letters) and all(
+        "LATIN" in unicodedata.name(character, "") for character in letters
+    )
+
+
+def _gender_marker(value: str) -> str | None:
+    normalized = unicodedata.normalize("NFKC", value)
+    if _WOMEN_MARKER.search(normalized):
+        return "women"
+    if _MEN_MARKER.search(normalized):
+        return "men"
+    return None
+
+
+def _gender_compatible(left: str, right: str) -> bool:
+    left_marker = _gender_marker(left)
+    right_marker = _gender_marker(right)
+    if "women" in {left_marker, right_marker}:
+        return left_marker == right_marker
+    if left_marker is not None and right_marker is not None:
+        return left_marker == right_marker
+    return True
+
+
+def _preserve_explicit_gender_marker(target: str, candidate: str) -> str:
+    marker = _gender_marker(target)
+    if marker is None or _gender_marker(candidate) == marker:
+        return candidate
+    suffix = "Women" if marker == "women" else "Men"
+    return f"{candidate} {suffix}"
 
 
 def _thesportsdb_diagnostics(
@@ -705,6 +976,8 @@ def _alias_compatible(target: str, aliases: tuple[str, ...]) -> bool:
     target_key = _name_key(target)
     target_tokens = set(target_key.split())
     for alias in aliases:
+        if not _gender_compatible(target, alias):
+            continue
         try:
             alias_key = _name_key(alias)
         except ValueError:

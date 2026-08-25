@@ -44,6 +44,15 @@ rules below:
 - public sports and public data APIs;
 - `git` and public `gh` workflows. These are the only authorized VCS CLIs.
 
+Repository enumeration safety:
+
+- Never run `git ls-files`, directly or indirectly, for this repository.
+- Never use a whole-repository inventory as a default discovery step.
+- Inspect only task-relevant paths with bounded commands such as targeted
+  `rg`, `git diff -- <paths>`, or `git status --short --untracked-files=no`.
+- Before starting a potentially long command, state what will run and use a
+  bounded timeout or an interactive progress indicator.
+
 ## Absolute external-model prohibition
 
 Never invoke, run, route to, authenticate to, or request inference from Claude,

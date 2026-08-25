@@ -1,5 +1,69 @@
 # Current State
 
+## Drawing 4986 production CLI coverage check (2026-08-25)
+
+The real `collect-schedule-sources` CLI completed successfully against the
+immutable drawing-4986 review queue after reviewed-alias wiring and conflict
+handling. Sofascore produced 10/15 independent candidates; TheSportsDB
+produced 12/15; their union covered 12/15. TheSportsDB added events 180086 and
+180088 beyond Sofascore. Events 180090, 180091 and 180092 remain unresolved.
+
+TheSportsDB used its complete 30-request transport budget without exhausting
+it (`attempted=30`, `skipped=0`, `budget_exhausted=false`). One catalog/ledger
+alias conflict, normalized key `рапид вена`, was skipped deterministically and
+reported through bounded `alias_conflicts_skipped` diagnostics. The ledger was
+not mutated. Both sources remain independent and non-promoting, so this result
+does not open the release gate and does not justify scheduler activation yet.
+
+## Reviewed gender-safe team aliases for TheSportsDB (2026-08-25)
+
+The versioned source-independent reviewed alias catalog now includes the 18
+requested Cyrillic-to-canonical team mappings for nine drawing-4986 pairs.
+TheSportsDB collector entry points preserve the catalog's canonical spelling
+for query construction and normalize that same mapping for the existing exact
+matcher. Deferred morning collection and the standalone collector both load
+this reviewed source; Sofascore names remain lookup hints only and never become
+trusted matcher aliases.
+
+Network-free collector regressions resolve the seven previously rejected
+Cardiff/Norwich, Blackpool/Lincoln, Cambridge/Millwall,
+Fleetwood/Shrewsbury, Stoke/Hull, Southampton/West Ham, and Nottingham/Leeds
+pairs. Stevenage/Reading and LASK/Celtic produce their exact canonical
+forward/reverse query names. Explicit gender markers are retained, and
+gender-incompatible provider events are excluded before matching; women's
+variants do not inherit the unmarked men's mappings. An unrelated low-score
+pair remains rejected.
+
+Matcher pair/team/margin thresholds, the three-hour timing window, the
+five-day search window, request budget, source authority, and promotion policy
+are unchanged. Focused verification passed all 17 tests in
+`tests/test_thesportsdb_schedule_collection.py` in 32.80 seconds. No network
+request, ledger mutation, scheduler activation, package, wager, commit, or
+remote publication was performed.
+
+## TheSportsDB canonical-query and run-budget hardening (2026-08-25)
+
+The independent schedule collector now constructs deterministic TheSportsDB
+query candidates from the normalized original team name, directly available
+canonical aliases, Cyrillic-to-Latin transliteration, and Latin home/away names
+from an earlier independent candidate. One best Latin/canonical forward query
+is prioritized, the reverse is bounded, and duplicate query strings are not
+requested. Independent names remain lookup hints only and are not promoted to
+matcher aliases or ledger evidence.
+
+Women's/gender markers are preserved. Gender-incompatible canonical mappings
+are ignored, so a women's target is never queried or matched through a men's
+alias. The client now enforces a hard default/max transport budget of 30
+requests per run. Valid cache hits occur before budget enforcement and consume
+no transport; diagnostics and provider status report attempted, skipped and
+budget-exhausted state without exposing the API key.
+
+TheSportsDB and Sofascore remain independent and non-promoting with
+`ledger_eligible=false` and `ledger_mutated=false`; release and promotion
+policy did not change. Team-ID lookup and `/eventsnext.php` fallback were not
+added and remain a possible separate next step. The two focused provider and
+collector test files pass 28 tests.
+
 ## TheSportsDB UTC-naive event-time normalization (2026-08-25)
 
 A live TheSportsDB `/searchevents.php` smoke request returned HTTP 200 but the

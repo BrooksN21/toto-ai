@@ -432,6 +432,8 @@ def test_cache_snapshot_is_immutable_idempotent_and_secret_free(
     assert second_events == first_events
     assert second.cache_hits == 1
     assert second.requests_made == 0
+    assert second.requests_skipped == 0
+    assert second.budget_exhausted is False
     assert second_session.calls == []
     snapshots = tuple((tmp_path / "snapshots").glob("*.json"))
     assert len(snapshots) == 1
@@ -439,6 +441,50 @@ def test_cache_snapshot_is_immutable_idempotent_and_secret_free(
         path.read_text(encoding="utf-8") for path in tmp_path.rglob("*.json")
     )
     assert SECRET not in serialized
+
+
+def test_hard_request_budget_stops_transport_and_reports_secret_safe_counts(
+    tmp_path: Path,
+) -> None:
+    session = FakeSession([FakeResponse({"event": []}) for _ in range(30)])
+    client = TheSportsDBClient(
+        SECRET,
+        session=session,
+        cache_dir=tmp_path,
+        max_retries=0,
+        now=_now,
+        monotonic=lambda: 0.0,
+        sleep=lambda _seconds: None,
+    )
+
+    for index in range(30):
+        client.search_schedule_events(
+            f"Home {index}",
+            f"Away {index}",
+            window_start=_now(),
+            window_end=_now() + timedelta(days=1),
+        )
+
+    with pytest.raises(TheSportsDBError) as caught:
+        client.search_schedule_events(
+            "Home exhausted",
+            "Away exhausted",
+            window_start=_now(),
+            window_end=_now() + timedelta(days=1),
+        )
+
+    diagnostic = caught.value.diagnostic_payload()
+    assert len(session.calls) == 30
+    assert client.requests_made == 30
+    assert client.requests_skipped == 1
+    assert client.budget_exhausted is True
+    assert diagnostic is not None
+    assert diagnostic["category"] == "budget_exhausted"
+    assert diagnostic["attempted"] == 30
+    assert diagnostic["skipped"] == 1
+    assert diagnostic["budget_exhausted"] is True
+    assert SECRET not in json.dumps(diagnostic, sort_keys=True)
+    assert SECRET not in str(caught.value)
 
 
 def test_http_provider_quota_diagnostic_is_bounded_and_redacted(

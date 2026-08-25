@@ -1,5 +1,14 @@
 # Roadmap
 
+- [x] `TOTO-THESPORTSDB-CANONICAL-QUERY-20260825`: prioritize deterministic
+  canonical/Latin queries, preserve women's/gender identity, keep independent
+  names lookup-only, deduplicate bounded forward/reverse searches, and enforce
+  a secret-safe hard 30-request per-run transport budget with cache hits
+  excluded. Focused provider/collector verification: 28 passed. Team-ID
+  fallback remains a separate next step; release policy is unchanged.
+- [ ] Evaluate a bounded cached team-ID plus upcoming-events fallback as a
+  separate identity/endpoint change; do not weaken independent-source or
+  reviewed-promotion boundaries.
 - [x] `TOTO-THESPORTSDB-PROVIDER-20260824`: add a rate-limited TheSportsDB v1
   schedule provider using the documented public key by default, official-host
   fail-closed transport, immutable snapshots, normalized scheduled/not-started
