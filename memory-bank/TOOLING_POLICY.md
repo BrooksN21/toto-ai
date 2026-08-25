@@ -11,6 +11,16 @@ contains the operational instructions.
 - Public-site browser use, public web research, and public sports/data APIs.
 - `git` and public `gh` workflows; no other VCS CLI is authorized.
 
+## Repository enumeration safety
+
+`git ls-files` is prohibited in TotoAI because repository-wide index
+enumeration has repeatedly caused disruptive long-running Codex operations.
+Do not use it directly, from shell substitutions, or through helper scripts.
+Do not perform whole-repository inventory by default. Use bounded,
+task-specific path inspection (`rg` on named directories, `git diff --
+<paths>`, or `git status --short --untracked-files=no`) and put an explicit
+timeout or progress indicator around potentially long work.
+
 Catalog visibility is not authorization. User approval is required before any
 non-allowlisted skill or service is used.
 

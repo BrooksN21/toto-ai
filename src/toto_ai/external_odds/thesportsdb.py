@@ -38,6 +38,7 @@ _MAX_WINDOW_SPAN = timedelta(days=5)
 _MAX_WINDOW_DATES = 6
 _MAX_RETRIES = 3
 _MAX_REQUESTS_PER_MINUTE = 30
+_MAX_REQUEST_BUDGET = 30
 _MESSAGE_LIMIT = 240
 _HASH_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 _SECRET_FIELD_PATTERN = re.compile(
@@ -79,6 +80,7 @@ class TheSportsDBConfig:
     timeout: float = 10.0
     max_retries: int = 1
     requests_per_minute: int = 30
+    request_budget: int = 30
     cache_ttl: timedelta = timedelta(minutes=10)
 
     def __post_init__(self) -> None:
@@ -105,6 +107,12 @@ class TheSportsDBConfig:
             or not 1 <= self.requests_per_minute <= _MAX_REQUESTS_PER_MINUTE
         ):
             raise ValueError("TheSportsDB requests_per_minute must be in range 1..30")
+        if (
+            not isinstance(self.request_budget, int)
+            or isinstance(self.request_budget, bool)
+            or not 1 <= self.request_budget <= _MAX_REQUEST_BUDGET
+        ):
+            raise ValueError("TheSportsDB request_budget must be in range 1..30")
         if not isinstance(self.cache_ttl, timedelta) or not (
             timedelta(0) < self.cache_ttl <= timedelta(hours=1)
         ):
@@ -136,6 +144,9 @@ class TheSportsDBDiagnostic:
     quota_minute_remaining: int | None = None
     quota_daily_reset: int | None = None
     quota_minute_reset: int | None = None
+    attempted: int = 0
+    skipped: int = 0
+    budget_exhausted: bool = False
 
     def payload(self) -> dict[str, object]:
         return {
@@ -153,6 +164,9 @@ class TheSportsDBDiagnostic:
             "quota_minute_remaining": self.quota_minute_remaining,
             "quota_daily_reset": self.quota_daily_reset,
             "quota_minute_reset": self.quota_minute_reset,
+            "attempted": self.attempted,
+            "skipped": self.skipped,
+            "budget_exhausted": self.budget_exhausted,
         }
 
     def summary(self) -> str:
@@ -174,6 +188,13 @@ class TheSportsDBDiagnostic:
                     f"{item.code}:{item.message}" for item in self.provider_errors
                 )
             )
+        fields.extend(
+            (
+                f"attempted={self.attempted}",
+                f"skipped={self.skipped}",
+                f"budget_exhausted={str(self.budget_exhausted).lower()}",
+            )
+        )
         return " ".join(fields)
 
 
@@ -293,6 +314,7 @@ class TheSportsDBClient:
         timeout: float = 10.0,
         max_retries: int = 1,
         requests_per_minute: int = 30,
+        request_budget: int = 30,
         cache_ttl: timedelta = timedelta(minutes=10),
         now: Callable[[], datetime] | None = None,
         monotonic: Callable[[], float] | None = None,
@@ -306,6 +328,7 @@ class TheSportsDBClient:
             timeout=timeout,
             max_retries=max_retries,
             requests_per_minute=requests_per_minute,
+            request_budget=request_budget,
             cache_ttl=cache_ttl,
         )
         if not config.enabled or config.api_key is None:
@@ -317,6 +340,7 @@ class TheSportsDBClient:
         self._timeout = float(config.timeout)
         self._max_retries = config.max_retries
         self._requests_per_minute = config.requests_per_minute
+        self._request_budget = config.request_budget
         self._cache_ttl = config.cache_ttl
         self._now = now or (lambda: datetime.now(timezone.utc))
         self._monotonic = monotonic or time.monotonic
@@ -324,6 +348,8 @@ class TheSportsDBClient:
         self._next_request_at = 0.0
         self._request_ticks: list[float] = []
         self._requests_made = 0
+        self._requests_skipped = 0
+        self._budget_exhausted = False
         self._cache_hits = 0
         self._request_diagnostics: list[TheSportsDBDiagnostic] = []
         self._request_evidence: list[TheSportsDBRequestEvidence] = []
@@ -342,6 +368,7 @@ class TheSportsDBClient:
             timeout=config.timeout,
             max_retries=config.max_retries,
             requests_per_minute=config.requests_per_minute,
+            request_budget=config.request_budget,
             cache_ttl=config.cache_ttl,
             **kwargs,
         )
@@ -358,6 +385,14 @@ class TheSportsDBClient:
     @property
     def cache_hits(self) -> int:
         return self._cache_hits
+
+    @property
+    def requests_skipped(self) -> int:
+        return self._requests_skipped
+
+    @property
+    def budget_exhausted(self) -> bool:
+        return self._budget_exhausted
 
     @property
     def request_diagnostics(self) -> tuple[TheSportsDBDiagnostic, ...]:
@@ -433,6 +468,20 @@ class TheSportsDBClient:
             return cached
 
         for attempt in range(1, self._max_retries + 2):
+            if self._requests_made >= self._request_budget:
+                self._requests_skipped += 1
+                self._budget_exhausted = True
+                diagnostic = self._diagnostic(
+                    "budget_exhausted",
+                    endpoint,
+                    attempt,
+                )
+                self._request_diagnostics.append(diagnostic)
+                raise TheSportsDBError(
+                    "TheSportsDB transport request budget exhausted",
+                    diagnostic=diagnostic,
+                    secrets=(self._api_key,),
+                )
             self._pace()
             try:
                 self._requests_made += 1
@@ -560,6 +609,9 @@ class TheSportsDBClient:
             provider_errors=provider_errors,
             quota_minute_limit=self._requests_per_minute,
             quota_minute_remaining=max(0, self._requests_per_minute - len(recent)),
+            attempted=self._requests_made,
+            skipped=self._requests_skipped,
+            budget_exhausted=self._budget_exhausted,
         )
 
     def _pace(self) -> None:

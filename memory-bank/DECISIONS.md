@@ -1,5 +1,67 @@
 # Decisions
 
+## 2026-08-25: reviewed alias conflicts are diagnostic and ledger-preferred
+
+- The schedule-evidence ledger remains authoritative over the optional
+  reviewed query-alias catalog. If both map the same normalized key to
+  different canonical values, the collector keeps the ledger matcher alias.
+- The conflicting supplied value may be used only as a bounded lookup hint; it
+  never becomes a trusted matcher alias and cannot mutate or promote ledger
+  evidence.
+- Conflicts are skipped deterministically and exposed through bounded,
+  secret-safe `alias_conflicts_skipped` diagnostics instead of aborting the
+  complete independent-source collection run. Malformed or unreadable alias
+  catalogs still fail explicitly; only a missing optional catalog means no
+  supplied aliases.
+- The production drawing-4986 CLI check exercised the existing conflict
+  `Рапид Вена -> Rapid Vienna` versus ledger `Рапид Вена -> SK Rapid Wien`
+  without weakening identity, timing, or release gates.
+
+## 2026-08-25: TheSportsDB consumes source-independent reviewed team aliases
+
+- Canonical team spellings belong in the existing versioned project-reviewed
+  alias catalog, not in TheSportsDB-specific code, drawing branches, or
+  Sofascore-derived hints. Collector entry points load the catalog with
+  reviewed display spelling for queries and normalize the same map for the
+  existing matcher.
+- Unmarked reviewed team aliases are not applicable to explicitly women's
+  targets. Explicit women/men markers are retained in query candidates, and a
+  gender-incompatible provider event is rejected before alias or
+  transliterated matching. The rule is symmetric for men's and women's
+  targets.
+- Reviewed aliases may establish exact team identity only; they do not change
+  pair/team/margin thresholds, matcher timing, search windows, request budget,
+  evidence authority, or promotion policy. Unknown low-score pairs remain
+  fail-closed.
+- Sofascore Latin names remain bounded lookup hints only. They are never added
+  to reviewed aliases or passed to the matcher as trusted identity.
+- The seven previously rejected drawing-4986 pairs are covered by network-free
+  exact-match regressions. Stevenage/Reading and LASK/Celtic have separate
+  canonical-query regressions; those assertions are not live provider coverage
+  evidence.
+
+## 2026-08-25: TheSportsDB uses bounded Latin lookup without promotion
+
+- Schedule query names are deterministic: normalized original, directly
+  available canonical alias, Cyrillic-to-Latin transliteration, and Latin
+  names from an earlier independent candidate. Query execution prioritizes one
+  best Latin/canonical home-vs-away string, then a bounded deduplicated reverse.
+- Earlier independent names are lookup hints only. They do not become matcher
+  aliases, identity consensus, reviewed evidence, or ledger input.
+- Women's/gender markers are preserved across candidate selection and
+  transliteration. Gender-incompatible aliases are ignored; women are never
+  mapped to men.
+- Each client run has a hard default/max transport budget of 30 requests.
+  Cache lookup precedes budget accounting, so cache hits consume no transport.
+  Secret-safe diagnostics expose attempted, skipped and budget-exhausted state
+  without the API key.
+- Team-ID lookup and upcoming-event fallback are not part of this change. They
+  remain a separate future endpoint and identity decision.
+- Evidence authority is unchanged: TheSportsDB and Sofascore remain
+  independent, non-promoting, `ledger_eligible=false`, and
+  `ledger_mutated=false`. Focused provider/collector verification passed 28
+  tests.
+
 ## 2026-08-25: timezone-naive TheSportsDB event timestamps mean UTC only
 
 - TheSportsDB `strTimestamp` values without an explicit offset are interpreted

@@ -104,7 +104,7 @@ from toto_ai.external_odds.collection import (
 )
 from toto_ai.external_odds.domain import TargetDrawing
 from toto_ai.external_odds.eligibility import DrawingEligibility, target_fingerprint
-from toto_ai.external_odds.matching import load_aliases
+from toto_ai.external_odds.matching import load_aliases, load_reviewed_alias_names
 from toto_ai.external_odds.preparation import (
     DrawingPreparationResult,
     _baseline_probability_input_sha256,
@@ -3688,6 +3688,7 @@ def morning_dispatch_command(
                     result.review_queue_path,
                     output_dir=result.review_queue_path.parent / "source-collector",
                     schedule_evidence_ledger=resolved_schedule_evidence_ledger,
+                    team_aliases=load_reviewed_alias_names(config.aliases),
                 )
             except Exception as error:
                 independent_status = {
@@ -3799,6 +3800,7 @@ def morning_dispatch_command(
 def collect_schedule_sources_command(
     queue: str = typer.Option(..., "--queue"),
     output_dir: str = typer.Option(..., "--output-dir"),
+    aliases: str = typer.Option("data/external-odds/team-aliases.json"),
     schedule_evidence_ledger: str | None = typer.Option(
         str(DEFAULT_SCHEDULE_EVIDENCE_PATH), "--schedule-evidence-ledger"
     ),
@@ -3810,6 +3812,7 @@ def collect_schedule_sources_command(
             queue,
             output_dir=output_dir,
             schedule_evidence_ledger=schedule_evidence_ledger,
+            team_aliases=load_reviewed_alias_names(aliases),
         )
     except (OSError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error

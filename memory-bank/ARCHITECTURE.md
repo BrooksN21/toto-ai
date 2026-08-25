@@ -24,13 +24,28 @@ finished, postponed, cancelled, unknown-status and unsupported-sport rows are
 retained only as diagnostics.
 
 The existing public schedule-source collector invokes TheSportsDB as a second
-independent candidate path. It queries both home-vs-away and away-vs-home,
-deduplicates provider event identities, then delegates to the existing team
-alias/exact-orientation matcher and records same/reversed orientation.
+independent candidate path. For each team it deterministically considers the
+normalized original name, directly available reviewed/caller-supplied
+canonical aliases, Cyrillic-to-Latin transliteration, and Latin names from an
+earlier independent candidate. It prioritizes one best Latin/canonical
+home-vs-away query, then a bounded reverse query, and deduplicates identical
+query strings. Independent names are lookup hints only and are never inserted
+into matcher aliases. Women's/gender markers are preserved, and a women's
+target cannot be mapped through a men's alias.
+
+The client enforces a hard 30-request lifetime transport budget per run in
+addition to minute pacing. Cache lookup occurs before budget accounting, so a
+valid cache hit consumes no transport request. Secret-safe diagnostics expose
+attempted, skipped and budget-exhausted state without retaining the key. Search
+results are deduplicated by provider event identity, then delegated to the
+existing team alias/exact-orientation matcher, which records same/reversed
+orientation.
 TheSportsDB remains independent and candidate-only: its result always carries
 `ledger_eligible=false`, never mutates `data/schedule-evidence/ledger.json`,
 and cannot promote alone under the unchanged official-plus-independent review
 policy. Explicit `api_key=None` remains an offline/test-only disabled mode.
+No team-ID lookup or upcoming-events fallback is implemented; that remains a
+separate future identity/endpoint change.
 
 ## Equal-input package strategy research boundary
 

@@ -177,6 +177,27 @@ def load_aliases(path: str | Path) -> dict[str, str]:
     return {key: normalized_aliases[key] for key in sorted(normalized_aliases)}
 
 
+def load_reviewed_alias_names(path: str | Path) -> dict[str, str]:
+    """Load validated aliases while preserving reviewed query-name spelling.
+
+    The schedule collector normalizes this same mapping before passing it to
+    the matcher, while query construction retains canonical capitalization and
+    diacritics from the reviewed source. A missing optional catalog contributes
+    no aliases; existing catalogs remain strict.
+    """
+    source = Path(path)
+    try:
+        load_aliases(source)
+        payload = json.loads(source.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    raw_aliases = payload["aliases"]
+    return {
+        raw_key: raw_aliases[raw_key]
+        for raw_key in sorted(raw_aliases, key=lambda value: value.casefold())
+    }
+
+
 def suggest_matches(
     target: TargetEvent,
     candidates: tuple[ProviderEvent, ...] | list[ProviderEvent],
