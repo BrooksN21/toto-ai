@@ -5167,3 +5167,12 @@ the provider remains candidate-only, so readiness is still deferred.
 
 Latest full verification passed `2028 passed, 13 deselected in 170.19s`; the
 subsequent retry-chain focused suite passed 86 tests and Ruff/diff checks.
+
+The first scheduled runner-v2 attempt executed automatically at 21:13 MSK.
+It completed once with retryable exit 75, persisted a structured 13/15
+`timing_unknown` child result, left `retry_scheduler=null` inside the child,
+and did not unload or reinstall itself. Post-run verification reports the
+installed plist byte-identical, loaded and active, with next checkpoint 21:33
+MSK. GOAL had 624/1000 daily requests remaining after the run. Final code
+verification for this state passed `2029 passed, 13 deselected in 170.19s`;
+Ruff and `git diff --check` passed.

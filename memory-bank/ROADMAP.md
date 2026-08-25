@@ -1032,6 +1032,9 @@ closed.
 - [x] Upgrade passive retry plans to runner v2 and prevent child processes from
   reloading their own LaunchAgent; preserve monotonic runtime state and allow
   atomic same-identity artifact refresh by the independent dispatcher.
+- [x] Validate runner v2 through a real scheduled 4987 attempt: one code-75
+  deferred child, no self-reinstall, job remains loaded/verified for its next
+  checkpoint.
 - [ ] Establish and prospectively validate a provider policy for the 13
   remaining 4987 events. GOAL has candidate identities/times for all 13, but
   candidate-only evidence cannot currently make the drawing playable.
