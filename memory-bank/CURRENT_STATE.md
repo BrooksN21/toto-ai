@@ -1,5 +1,71 @@
 # Current State
 
+## GOAL API adapter and drawing 4987 canary (2026-08-25)
+
+- New candidate-only provider module:
+  `src/toto_ai/external_odds/goal_api.py`.
+- The existing source collector now includes GOAL API alongside Sofascore and
+  TheSportsDB. It never mutates the reviewed schedule ledger and has no path
+  into prediction probabilities, package selection or operator export.
+- Protected authentication works with the mandatory stable user agent. The
+  live drawing-4987 fetch used 37 documented paginated date requests; the
+  final observed quota was 883/1,000. API-Sports remains configured and is not
+  removed while its account reports provider-side suspension.
+- TotoBrief drawing 4987 (internal ID 12068) is synchronized with 15/15 local
+  events. GOAL API contains all 15 exact fixture identities. Automatic
+  candidate matching resolves 15/15 without drawing-specific code or manual
+  aliases.
+- The canary uncovered a blocking timing inconsistency: 12/15 GOAL kickoffs
+  are earlier than TotoBrief `ended_at=2026-08-26T18:45:00Z`. Those rows are
+  explicitly `timing_conflict`; only three rows are ordinary independent
+  candidates. Five representative fixtures were independently confirmed at
+  identical kickoffs through Sofascore. This is source evidence, not
+  permission to reinterpret the betting deadline or generate a package.
+- Official BaltBet rules require placement before the earliest event. For
+  4987 the confirmed earliest kickoff is `2026-08-26T15:45:00Z` (18:45 MSK),
+  so the conservative T-10 boundary is 18:35 MSK. TotoBrief `ended_at`
+  (21:45 MSK) is unsafe as an operational cutoff for this drawing. The current
+  collector exposes and blocks the conflict; scheduler-owned conservative
+  cutoff propagation is the next P0 change.
+- Focused provider/collector/morning regression: 86 passed. Full default suite:
+  `2008 passed, 13 deselected in 191.10s`; repository Ruff, diff check, CLI
+  smoke and protected-key leak scan passed.
+- Canary artifact:
+  `reports/canary/goal-api-4987/output-v3/schedule-source-candidates.json`.
+
+
+## Free schedule-provider audit correction (2026-08-25)
+
+No single free source can guarantee every arbitrary BaltBet event and permanent
+account availability. TheSportsDB remains a useful keyless secondary source,
+but its documented free tier does not support the previously proposed generic
+team-ID search fallback; that roadmap item is closed as rejected rather than
+implemented.
+
+GOAL API is the strongest new football candidate for a controlled bake-off:
+its free plan advertises 1,000 requests/day and its exact public catalogue lists
+1,019 competitions, including Russia Second League B. It is not production
+approved because the service is new and its own terms disclaim guaranteed
+fixture coverage. SportsDataAPI is second choice because its official pages
+contradict each other about free competition coverage. Neither source is wired
+to the scheduler, ledger or package path. The next step is a candidate-only
+10-drawing exact coverage/stability bake-off documented in
+`research/free_schedule_provider_audit_20260825.md`.
+
+The protected GOAL API key has now been validated. The free account reports a
+1,000-request daily quota. A bounded drawing-4986 fixture canary found all
+15/15 targets; the three apparent misses were only provider-name differences
+(`Blackburn`, `Cambridge Utd`, and `Vladimir`). The source also supplied all
+three events missing from the existing Sofascore/TheSportsDB union. One request
+with Python's default user agent returned an unstructured 403, while all
+subsequent requests with a stable TotoAI user agent succeeded; this must be a
+tested transport contract, not hidden as empty coverage. Details are in
+`research/goal_api_coverage_drawing_4986.md`.
+
+API-Sports remains configured and must not be removed. Its current status call
+still returns the semantic provider error `Your account is suspended`, so it
+is retained for future recovery but cannot currently supply schedule data.
+
 ## Non-activating morning source collection repair (2026-08-25)
 
 The morning CLI previously ran independent and UEFA-consensus source

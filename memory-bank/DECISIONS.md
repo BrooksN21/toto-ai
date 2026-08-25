@@ -1840,3 +1840,40 @@ ambiguous reversed evidence remains unresolved.
 - Diagnostics are observational only. Provider semantic/HTTP failures, quota
   stops, matching, eligibility, TotoBrief fallback, and publication gates keep
   their existing fail-closed behavior.
+
+## 2026-08-25 — No single free schedule provider is a release dependency
+
+- Free coverage, permanent account availability and 100% arbitrary BaltBet
+  fixture coverage cannot be guaranteed by one provider. Marketing coverage is
+  not release evidence.
+- TheSportsDB stays a keyless independent secondary source. Its documented
+  free tier does not authorize a generic team-search fallback, so that sampled
+  path will not be implemented as a universal solution.
+- GOAL API is the first candidate for a prospective exact-coverage bake-off;
+  SportsDataAPI is second only if needed. Both remain candidate-only and cannot
+  mutate the ledger or scheduler until the bake-off is reviewed.
+- Production schedule resolution remains provider-neutral and fail-closed,
+  with documented APIs plus official competition adapters rather than
+  unofficial 1xBet/Sofascore scraping.
+
+## 2026-08-25 — GOAL API remains candidate-only and exposes deadline conflicts
+
+- GOAL API is integrated only into the independent public-source collector.
+  It cannot mutate the schedule ledger, activate a scheduler, change sports
+  probabilities or authorize a package.
+- The adapter accepts only the official HTTPS v1 endpoint, requires a stable
+  explicit user agent, uses a protected bearer key, finite retries and a hard
+  request budget, and freezes only secret-free request/response evidence.
+- Exact/reviewed identity matching remains preferred. Conservative
+  cross-script matching is discovery-only and always requires review; it is
+  never promotion authority.
+- A provider kickoff before TotoBrief `ended_at` is not silently discarded as
+  missing and is never made eligible. It is persisted as `timing_conflict` so
+  deadline semantics can be investigated independently and fail closed.
+- API-Sports stays configured as a separate provider even while the provider
+  reports the account suspended. GOAL API is additive, not a replacement.
+- Official BaltBet rules, not TotoBrief field naming, define the operational
+  cutoff: placement must precede the earliest event. A future scheduler cutoff
+  may only tighten `ended_at` to an independently confirmed earlier kickoff;
+  it must never extend it. Missing/conflicting kickoff evidence remains
+  fail-closed.

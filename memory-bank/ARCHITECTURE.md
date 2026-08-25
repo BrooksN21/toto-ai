@@ -1,5 +1,30 @@
 # Architecture
 
+## GOAL API v1 independent schedule candidate (2026-08-25)
+
+`toto_ai.external_odds.goal_api` is a football schedule adapter for the
+documented `GET /v1/fixtures/date/:date` endpoint. It requires the protected
+`GOAL_API_KEY`, accepts only the official HTTPS v1 host, always sends a stable
+TotoAI user agent, paginates every requested date, enforces finite retry and
+per-run request budgets, records quota headers, and freezes secret-free
+content/hash-bound response snapshots. Authorization headers and key values
+are never written to diagnostics, fingerprints, reports or snapshots.
+
+The public schedule-source collector fetches each bounded UTC date once and
+matches all queue events against that immutable fixture set. Existing exact
+and reviewed aliases remain authoritative. A separate conservative
+cross-script fuzzy lane may emit a candidate when exact matching is missing;
+it is discovery-only, uses deterministic score/margin thresholds, and cannot
+promote evidence. Every GOAL row is `ledger_eligible=false` and still requires
+an official source plus review.
+
+Fixtures whose provider kickoff is earlier than the TotoBrief drawing
+`ended_at` are retained as `timing_conflict`, not mislabeled `not_found` and
+not counted as eligible candidates. This exposes bad or semantically different
+deadline data without allowing it into preparation, scheduler activation,
+package selection or operator export. API-Sports and TheSportsDB remain
+configured independent paths; GOAL API does not replace either provider.
+
 ## TheSportsDB v1 independent schedule candidate (2026-08-24)
 
 `toto_ai.external_odds.thesportsdb` is a provider-neutral schedule adapter for

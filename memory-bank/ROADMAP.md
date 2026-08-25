@@ -10,9 +10,26 @@
   a secret-safe hard 30-request per-run transport budget with cache hits
   excluded. Focused provider/collector verification: 28 passed. Team-ID
   fallback remains a separate next step; release policy is unchanged.
-- [ ] Evaluate a bounded cached team-ID plus upcoming-events fallback as a
-  separate identity/endpoint change; do not weaken independent-source or
-  reviewed-promotion boundaries.
+- [x] Reject the proposed free TheSportsDB team-ID/upcoming-events fallback:
+  the official free-v1 contract restricts generic team search, so the sampled
+  lookup is not a lawful universal production path.
+- [ ] Run a provider-neutral schedule bake-off for GOAL API on at least ten
+  consecutive mixed Toto drawings (15/15 exact identity/kickoff required),
+  with SportsDataAPI as the second candidate only if the first fails. Keep both
+  candidate-only until the prospective evidence is complete.
+  - [x] Validate the protected free key and complete drawing-4986 canary:
+    observed 15/15 exact fixtures, 1,000/day quota, explicit-user-agent
+    transport required; API-Sports remains configured but provider-suspended.
+  - [x] Implement the reusable candidate-only adapter and run drawing-4987:
+    raw and matched coverage 15/15, 37 requests, quota 883/1,000. Record the
+    12/15 kickoff-before-`ended_at` rows as blocking `timing_conflict` rather
+    than source misses or playable evidence.
+  - [x] Resolve the operational boundary from official BaltBet rules: bets
+    must precede the earliest event, so 4987 uses no later than 18:45 MSK and
+    T-10 at 18:35 MSK; TotoBrief `ended_at=21:45 MSK` is not safe here.
+  - [ ] Propagate a scheduler-owned conservative cutoff that can only tighten
+    `ended_at`, and keep missing/conflicting earliest-kickoff evidence
+    fail-closed.
 - [x] `TOTO-THESPORTSDB-PROVIDER-20260824`: add a rate-limited TheSportsDB v1
   schedule provider using the documented public key by default, official-host
   fail-closed transport, immutable snapshots, normalized scheduled/not-started

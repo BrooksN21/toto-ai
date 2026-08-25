@@ -10,12 +10,24 @@ import unicodedata
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote_plus
 from urllib.request import Request, urlopen
 
 from toto_ai.external_odds.domain import TargetEvent
+from toto_ai.external_odds.goal_api import (
+    PROVIDER_NAME as GOAL_API_PROVIDER,
+)
+from toto_ai.external_odds.goal_api import (
+    GoalAPIClient,
+    GoalAPIConfig,
+    GoalAPIError,
+    GoalAPIRequestEvidence,
+    GoalAPIScheduleEvent,
+    load_goal_api_config,
+)
 from toto_ai.external_odds.matching import (
     MATCHER_VERSION,
     match_event,
@@ -42,6 +54,10 @@ _SEARCH_ENDPOINT = "https://www.sofascore.com/api/v1/search/all?q={query}"
 _MAX_DRAWING_SPAN = timedelta(days=5)
 _MAX_THESPORTSDB_QUERIES_PER_EVENT = 2
 _MAX_ALIAS_CONFLICT_DIAGNOSTICS = 20
+_GOAL_API_MATCHER_VERSION = "goal-api-candidate-v1"
+_GOAL_API_MIN_PAIR_SCORE = 0.62
+_GOAL_API_MIN_TEAM_SCORE = 0.50
+_GOAL_API_MIN_MARGIN = 0.10
 _WOMEN_MARKER = re.compile(
     r"(?:^|[^\w])(?:women(?:'s)?|ladies|female|wfc|жфк|жен(?:щины|ский|ская)?\.?|ж)(?:$|[^\w])",
     re.IGNORECASE,
@@ -72,6 +88,8 @@ def collect_schedule_source_candidates(
     schedule_evidence_ledger: str | Path | None = None,
     thesportsdb_config: TheSportsDBConfig | None = None,
     thesportsdb_client: TheSportsDBClient | None = None,
+    goal_api_config: GoalAPIConfig | None = None,
+    goal_api_client: GoalAPIClient | None = None,
     team_aliases: Mapping[str, str] | None = None,
 ) -> ScheduleSourceCollection:
     """Collect immutable independent candidates without mutating the ledger.
@@ -228,6 +246,18 @@ def collect_schedule_source_candidates(
             "ledger_mutated": False,
         }
     }
+    goal_records, goal_status = _collect_goal_api_candidates(
+        queue,
+        output=output,
+        observed=observed,
+        deadline=deadline,
+        ledger=ledger,
+        config=goal_api_config,
+        client=goal_api_client,
+        team_aliases=team_aliases,
+    )
+    records.extend(goal_records)
+    provider_statuses[GOAL_API_PROVIDER] = goal_status
     thesportsdb_records, thesportsdb_status = _collect_thesportsdb_candidates(
         queue,
         output=output,
@@ -277,6 +307,341 @@ def collect_schedule_source_candidates(
         provider_statuses=provider_statuses,
         report_path=report_path,
     )
+
+
+def _collect_goal_api_candidates(
+    queue: Mapping[str, Any],
+    *,
+    output: Path,
+    observed: datetime,
+    deadline: datetime,
+    ledger: ScheduleEvidenceLedger | None,
+    config: GoalAPIConfig | None,
+    client: GoalAPIClient | None,
+    team_aliases: Mapping[str, str] | None,
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    aliases, alias_conflicts = _collector_aliases(ledger, team_aliases)
+    alias_conflict_diagnostics = _alias_conflict_diagnostics(alias_conflicts)
+    if client is None:
+        effective_config = config or load_goal_api_config()
+        if not effective_config.enabled:
+            return [], {
+                "status": "disabled_missing_key",
+                "config_key": "GOAL_API_KEY",
+                "candidate_count": 0,
+                "alias_conflicts_skipped": alias_conflict_diagnostics,
+                "ledger_mutated": False,
+            }
+        client = GoalAPIClient.from_config(
+            effective_config,
+            snapshot_dir=output / "goal-api-v1",
+            now=lambda: observed,
+        )
+
+    window_end = deadline + _MAX_DRAWING_SPAN
+    dates = tuple(
+        deadline.date() + timedelta(days=offset)
+        for offset in range((window_end.date() - deadline.date()).days + 1)
+    )
+    try:
+        events = tuple(
+            event
+            for event in client.fetch_schedule(dates)
+            if event.starts_at <= window_end
+        )
+    except Exception as error:
+        safe_error = _safe_goal_api_error(error)
+        failed = [
+            _base_record(row)
+            | {
+                "status": "source_failed",
+                "source_name": "GOAL API",
+                "source_provider": GOAL_API_PROVIDER,
+                "source_role": "independent",
+                "captured_at": _timestamp(observed),
+                "error": safe_error,
+                "provider_attempts": _goal_api_diagnostics(client),
+                "ledger_eligible": False,
+                "missing_requirements": ["official_source", "review"],
+            }
+            for row in queue["records"]
+        ]
+        return failed, {
+            "status": "source_failed",
+            "candidate_count": 0,
+            "request_count": client.requests_made,
+            "attempted": client.requests_made,
+            "skipped": client.requests_skipped,
+            "budget_exhausted": client.budget_exhausted,
+            "error": safe_error,
+            "alias_conflicts_skipped": alias_conflict_diagnostics,
+            "ledger_mutated": False,
+        }
+
+    evidence = client.request_evidence
+    snapshot_fields = _goal_api_snapshot_fields(evidence, output=output)
+    diagnostics = _goal_api_diagnostics(client)
+    records: list[dict[str, object]] = []
+    for row in queue["records"]:
+        selected, orientation, candidate_ids, match_status = (
+            _match_goal_api_candidates(
+                row,
+                events,
+                aliases=aliases,
+                deadline=deadline,
+            )
+        )
+        if selected is None:
+            records.append(
+                _base_record(row)
+                | {
+                    "status": (
+                        "conflict" if match_status == "ambiguous" else "not_found"
+                    ),
+                    "source_name": "GOAL API",
+                    "source_provider": GOAL_API_PROVIDER,
+                    "source_role": "independent",
+                    "captured_at": _timestamp(observed),
+                    "candidate_ids": list(candidate_ids),
+                    "provider_attempts": diagnostics,
+                    **snapshot_fields,
+                    "ledger_eligible": False,
+                    "missing_requirements": ["official_source", "review"],
+                }
+            )
+            continue
+        timing_conflict = selected.starts_at < deadline
+        records.append(
+            _base_record(row)
+            | {
+                "status": (
+                    "timing_conflict" if timing_conflict else "independent_candidate"
+                ),
+                "source_name": "GOAL API",
+                "source_provider": GOAL_API_PROVIDER,
+                "source_role": "independent",
+                "source_url": selected.source_url,
+                "source_event_id": selected.provider_event_id,
+                "source_home_team_id": selected.provider_home_team_id,
+                "source_away_team_id": selected.provider_away_team_id,
+                "sport": "football",
+                "home_name": selected.home_team,
+                "away_name": selected.away_team,
+                "orientation": orientation,
+                "matcher_version": (
+                    MATCHER_VERSION
+                    if match_status == "matched"
+                    else _GOAL_API_MATCHER_VERSION
+                ),
+                "match_mode": match_status,
+                "competition": selected.competition,
+                "starts_at": _timestamp(selected.starts_at),
+                "source_status": selected.status,
+                "status_eligible": selected.eligible and not timing_conflict,
+                "captured_at": _timestamp(selected.captured_at),
+                "source_endpoint": selected.source_endpoint,
+                "request_fingerprint": selected.request_fingerprint,
+                "event_payload_sha256": selected.payload_hash,
+                "provider_attempts": diagnostics,
+                **snapshot_fields,
+                "ledger_eligible": False,
+                "missing_requirements": [
+                    "official_source",
+                    "review",
+                    *(
+                        ["starts_before_drawing_deadline"]
+                        if timing_conflict
+                        else []
+                    ),
+                ],
+            }
+        )
+
+    candidate_count = sum(item["status"] == "independent_candidate" for item in records)
+    timing_conflict_count = sum(item["status"] == "timing_conflict" for item in records)
+    quota = client.quota_state
+    return records, {
+        "status": "collected",
+        "candidate_count": candidate_count,
+        "matched_count": candidate_count + timing_conflict_count,
+        "timing_conflict_count": timing_conflict_count,
+        "request_count": client.requests_made,
+        "attempted": client.requests_made,
+        "skipped": client.requests_skipped,
+        "budget_exhausted": client.budget_exhausted,
+        "alias_conflicts_skipped": alias_conflict_diagnostics,
+        "quota": {
+            "daily_limit": quota.daily_limit,
+            "daily_remaining": quota.daily_remaining,
+        },
+        "ledger_mutated": False,
+    }
+
+
+def _match_goal_api_candidates(
+    row: Mapping[str, Any],
+    events: tuple[GoalAPIScheduleEvent, ...],
+    *,
+    aliases: dict[str, str],
+    deadline: datetime,
+) -> tuple[GoalAPIScheduleEvent | None, str | None, tuple[str, ...], str]:
+    eligible = tuple(
+        event
+        for event in events
+        if event.eligible
+        and (
+            (
+                _gender_compatible(str(row["home_team"]), event.home_team)
+                and _gender_compatible(str(row["away_team"]), event.away_team)
+            )
+            or (
+                _gender_compatible(str(row["home_team"]), event.away_team)
+                and _gender_compatible(str(row["away_team"]), event.home_team)
+            )
+        )
+    )
+    target = TargetEvent(
+        drawing_id=int(row["drawing_id"]),
+        drawing_number=int(row["drawing_number"]),
+        event_id=int(row["target_event_id"]),
+        event_order=int(row["event_order"]),
+        sport="football",
+        championship="GOAL API schedule candidate",
+        starts_at=None,
+        deadline=deadline,
+        home_team=str(row["home_team"]),
+        away_team=str(row["away_team"]),
+        home_team_en=None,
+        away_team_en=None,
+        bk_probabilities=(1 / 3, 1 / 3, 1 / 3),
+    )
+    decision = match_event(
+        target,
+        tuple(event.as_provider_event() for event in eligible),
+        aliases,
+    )
+    by_id = {event.provider_event_id: event for event in eligible}
+    if decision.status == "matched" and decision.provider_event_id is not None:
+        return (
+            by_id[decision.provider_event_id],
+            decision.orientation,
+            decision.candidate_ids,
+            decision.status,
+        )
+    if decision.status == "missing":
+        fuzzy = _match_goal_api_fuzzy(row, eligible, deadline=deadline)
+        if fuzzy is not None:
+            selected, orientation, margin = fuzzy
+            return (
+                selected,
+                orientation,
+                (selected.provider_event_id,),
+                f"fuzzy_candidate_margin_{margin:.3f}",
+            )
+    return None, None, decision.candidate_ids, decision.status
+
+
+def _match_goal_api_fuzzy(
+    row: Mapping[str, Any],
+    events: tuple[GoalAPIScheduleEvent, ...],
+    *,
+    deadline: datetime,
+) -> tuple[GoalAPIScheduleEvent, str, float] | None:
+    target_home = _goal_api_name_key(str(row["home_team"]))
+    target_away = _goal_api_name_key(str(row["away_team"]))
+    scored: list[
+        tuple[float, float, float, str, str, GoalAPIScheduleEvent]
+    ] = []
+    for event in events:
+        source_home = _goal_api_name_key(event.home_team)
+        source_away = _goal_api_name_key(event.away_team)
+        for orientation, left, right in (
+            ("same", source_home, source_away),
+            ("reversed", source_away, source_home),
+        ):
+            home_score = _goal_api_team_score(target_home, left)
+            away_score = _goal_api_team_score(target_away, right)
+            pair_score = (home_score + away_score) / 2.0
+            date_bonus = 0.08 if event.starts_at.date() == deadline.date() else 0.0
+            scored.append(
+                (
+                    pair_score + date_bonus,
+                    pair_score,
+                    min(home_score, away_score),
+                    event.provider_event_id,
+                    orientation,
+                    event,
+                )
+            )
+    if not scored:
+        return None
+    scored.sort(key=lambda item: (-item[0], -item[1], -item[2], item[3], item[4]))
+    best = scored[0]
+    runner_up = scored[1][0] if len(scored) > 1 else 0.0
+    margin = best[0] - runner_up
+    if (
+        best[1] < _GOAL_API_MIN_PAIR_SCORE
+        or best[2] < _GOAL_API_MIN_TEAM_SCORE
+        or margin < _GOAL_API_MIN_MARGIN
+    ):
+        return None
+    return best[5], best[4], margin
+
+
+def _goal_api_name_key(value: str) -> str:
+    latin = transliterate_team_name(value).casefold()
+    latin = unicodedata.normalize("NFKD", latin)
+    latin = "".join(char for char in latin if not unicodedata.combining(char))
+    latin = latin.replace("dzh", "j")
+    latin = re.sub(r"\bnatsbank\b", "national bank", latin)
+    tokens = []
+    for token in re.sub(r"[^a-z0-9]+", " ", latin).split():
+        token = "al" if token == "el" else token
+        if token not in {"fc", "fk", "cf", "sc"}:
+            tokens.append(token)
+    return " ".join(tokens)
+
+
+def _goal_api_team_score(left: str, right: str) -> float:
+    base = SequenceMatcher(None, left, right).ratio()
+    compact = SequenceMatcher(
+        None,
+        left.replace(" ", ""),
+        right.replace(" ", ""),
+    ).ratio()
+    containment = 0.0
+    shorter, longer = sorted((left, right), key=len)
+    if len(shorter) >= 3 and (
+        longer.startswith(f"{shorter} ")
+        or longer.endswith(f" {shorter}")
+        or shorter == longer
+    ):
+        containment = 0.90
+    return max(base, compact, containment)
+
+
+def _goal_api_diagnostics(client: GoalAPIClient) -> list[dict[str, object]]:
+    return [item.payload() for item in client.request_diagnostics]
+
+
+def _goal_api_snapshot_fields(
+    evidence: tuple[GoalAPIRequestEvidence, ...],
+    *,
+    output: Path,
+) -> dict[str, object]:
+    return {
+        "snapshot_paths": [
+            str(item.snapshot_path.relative_to(output.resolve())) for item in evidence
+        ],
+        "snapshot_sha256s": [item.snapshot_sha256 for item in evidence],
+        "request_fingerprints": [item.request_fingerprint for item in evidence],
+    }
+
+
+def _safe_goal_api_error(error: BaseException) -> str:
+    if isinstance(error, GoalAPIError):
+        return str(error)
+    return _safe_error(error)
 
 
 def _collect_thesportsdb_candidates(
