@@ -24,6 +24,11 @@ Core principles:
   missing venue evidence falls back to BK without aggregate substitution.
   Production EV and package generation remain exclusively on normalized
   TotoBrief BK.
+- Exact frozen GOAL binding/team-history probes can be imported through a
+  separate research-only path into the same venue-only shadow contract. The
+  importer performs no live request, writes only deliberately non-uploadable
+  artifacts below `reports/research/`, and remains
+  `PAPER_ONLY_NOT_ACTIVATED` with no scheduler or operator authority.
 - The shadow provider/evaluator and CLI are implemented with per-event BK
   fallback and strict provenance validation. Injuries, lineups, xG, and Elo
   are not implemented.

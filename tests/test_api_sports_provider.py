@@ -260,6 +260,107 @@ def test_schedule_response_is_cached_and_key_is_never_serialized(
     assert "secret-key" not in read_cache_text(tmp_path)
 
 
+def test_schedule_cache_is_shared_across_fresh_market_sessions(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient
+
+    shared_schedule = tmp_path / "shared-schedule"
+    first_session = FakeSession(
+        [FakeResponse(payload=football_schedule_payload(), headers=quota_headers())]
+    )
+    first = APISportsClient(
+        "secret-key",
+        session=first_session,
+        cache_dir=tmp_path / "market-one",
+        schedule_cache_dir=shared_schedule,
+        now=lambda: datetime(2026, 7, 19, 17, 25, tzinfo=timezone.utc),
+    )
+    second_session = FakeSession()
+    second = APISportsClient(
+        "secret-key",
+        session=second_session,
+        cache_dir=tmp_path / "market-two",
+        schedule_cache_dir=shared_schedule,
+        now=lambda: datetime(2026, 7, 19, 17, 30, tzinfo=timezone.utc),
+    )
+
+    first_result = first.fetch_schedule("football", (date(2026, 7, 14),))
+    second_result = second.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert first_result == second_result
+    assert len(first_session.calls) == 1
+    assert second_session.calls == []
+    assert second.cache_hits == 1
+    assert tuple(shared_schedule.glob("*.json"))
+    assert not tuple((tmp_path / "market-one").glob("*.json"))
+
+
+def test_shared_schedule_cache_never_reuses_market_odds(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient
+
+    shared_schedule = tmp_path / "shared-schedule"
+    first_session = FakeSession(
+        [FakeResponse(payload=odds_payload(), headers=quota_headers())]
+    )
+    second_session = FakeSession(
+        [FakeResponse(payload=odds_payload(), headers=quota_headers())]
+    )
+    first = APISportsClient(
+        "secret-key",
+        session=first_session,
+        cache_dir=tmp_path / "market-one",
+        schedule_cache_dir=shared_schedule,
+    )
+    second = APISportsClient(
+        "secret-key",
+        session=second_session,
+        cache_dir=tmp_path / "market-two",
+        schedule_cache_dir=shared_schedule,
+    )
+
+    first.fetch_event_markets("football", "42")
+    second.fetch_event_markets("football", "42")
+
+    assert len(first_session.calls) == 1
+    assert len(second_session.calls) == 1
+    assert not shared_schedule.exists()
+
+
+def test_stale_shared_schedule_cache_is_refetched(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient
+
+    shared_schedule = tmp_path / "shared-schedule"
+    first_payload = football_schedule_payload()
+    refreshed_payload = football_schedule_payload()
+    refreshed_at = datetime(2026, 7, 19, 19, 30, tzinfo=timezone.utc)
+    refreshed_payload["timestamp"] = int(refreshed_at.timestamp())
+    first = APISportsClient(
+        "secret-key",
+        session=FakeSession(
+            [FakeResponse(payload=first_payload, headers=quota_headers())]
+        ),
+        cache_dir=tmp_path / "market-one",
+        schedule_cache_dir=shared_schedule,
+        now=lambda: datetime(2026, 7, 19, 17, 25, tzinfo=timezone.utc),
+    )
+    second_session = FakeSession(
+        [FakeResponse(payload=refreshed_payload, headers=quota_headers())]
+    )
+    second = APISportsClient(
+        "secret-key",
+        session=second_session,
+        cache_dir=tmp_path / "market-two",
+        schedule_cache_dir=shared_schedule,
+        schedule_cache_max_age_seconds=3600,
+        now=lambda: refreshed_at,
+    )
+
+    first.fetch_schedule("football", (date(2026, 7, 14),))
+    second.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert len(second_session.calls) == 1
+    assert second.cache_hits == 0
+
+
 def test_official_schedule_without_timestamp_uses_cached_observation_time(
     monkeypatch, tmp_path
 ):
@@ -692,6 +793,28 @@ def test_safety_stop_prevents_transport_retry(monkeypatch, tmp_path):
 
     assert len(session.calls) == 1
     assert sleep_calls == []
+
+
+def test_request_timeout_is_clamped_to_remaining_safety_window(tmp_path):
+    from toto_ai.external_odds.api_sports import APISportsClient
+
+    stop_at = datetime(2026, 7, 14, 12, 0, tzinfo=timezone.utc)
+    current = stop_at.replace(second=55, minute=59, hour=11)
+    session = FakeSession(
+        [FakeResponse(payload=football_schedule_payload(), headers=quota_headers())]
+    )
+    client = APISportsClient(
+        "secret-key",
+        session=session,
+        cache_dir=tmp_path,
+        timeout=30.0,
+        stop_at=stop_at,
+        now=lambda: current,
+    )
+
+    client.fetch_schedule("football", (date(2026, 7, 14),))
+
+    assert session.calls[0]["timeout"] == pytest.approx(5.0)
 
 
 def test_429_updates_quota_state_before_retry(monkeypatch, tmp_path):

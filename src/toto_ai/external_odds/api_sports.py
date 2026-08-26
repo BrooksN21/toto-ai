@@ -213,6 +213,8 @@ class APISportsClient:
         *,
         session: requests.Session | None = None,
         cache_dir: Path = Path("data/external-cache/api-sports"),
+        schedule_cache_dir: Path | None = None,
+        schedule_cache_max_age_seconds: float = 3600.0,
         quota_reserve: int = 10,
         timeout: float = 30.0,
         max_retries: int = 2,
@@ -225,9 +227,23 @@ class APISportsClient:
             raise ValueError("quota_reserve must be non-negative")
         if max_retries < 0:
             raise ValueError("max_retries must be non-negative")
+        if (
+            not isinstance(schedule_cache_max_age_seconds, (int, float))
+            or isinstance(schedule_cache_max_age_seconds, bool)
+            or not 0 < float(schedule_cache_max_age_seconds) < float("inf")
+        ):
+            raise ValueError(
+                "schedule_cache_max_age_seconds must be finite and positive"
+            )
         self._api_key = api_key
         self._session = session or requests.Session()
         self._cache_dir = Path(cache_dir)
+        self._schedule_cache_dir = (
+            None if schedule_cache_dir is None else Path(schedule_cache_dir)
+        )
+        self._schedule_cache_max_age_seconds = float(
+            schedule_cache_max_age_seconds
+        )
         self._quota_reserve = quota_reserve
         self._timeout = timeout
         self._max_retries = max_retries
@@ -290,6 +306,12 @@ class APISportsClient:
                 sport,
                 _schedule_path(sport),
                 {"date": item.isoformat()},
+                cache_dir=self._schedule_cache_dir,
+                max_cache_age_seconds=(
+                    self._schedule_cache_max_age_seconds
+                    if self._schedule_cache_dir is not None
+                    else None
+                ),
             )
             events.extend(
                 _parse_schedule_payload(
@@ -456,9 +478,18 @@ class APISportsClient:
         sport: Sport,
         path: str,
         params: Mapping[str, object],
+        *,
+        cache_dir: Path | None = None,
+        max_cache_age_seconds: float | None = None,
     ) -> _CachePayload:
         self._check_safety_stop()
-        cached = self._get_json(sport, path, params)
+        cached = self._get_json(
+            sport,
+            path,
+            params,
+            cache_dir=cache_dir,
+            max_cache_age_seconds=max_cache_age_seconds,
+        )
         if (
             _paging_value(cached.payload, "current") != 1
             or _paging_value(cached.payload, "total") != 1
@@ -493,10 +524,18 @@ class APISportsClient:
         sport: Sport,
         path: str,
         params: Mapping[str, object],
+        *,
+        cache_dir: Path | None = None,
+        max_cache_age_seconds: float | None = None,
     ) -> _CachePayload:
         self._check_safety_stop()
         cache_key = _cache_key(self._base_url(sport), path, params)
-        cached = self._load_cache(cache_key)
+        selected_cache_dir = self._cache_dir if cache_dir is None else cache_dir
+        cached = self._load_cache(
+            cache_key,
+            cache_dir=selected_cache_dir,
+            max_age_seconds=max_cache_age_seconds,
+        )
         if cached is not None:
             self._cache_hits += 1
             return cached
@@ -511,7 +550,7 @@ class APISportsClient:
                     f"{self._base_url(sport)}{path}",
                     headers={"x-apisports-key": self._api_key},
                     params=dict(sorted(params.items())),
-                    timeout=self._timeout,
+                    timeout=self._request_timeout(),
                 )
             except requests.ConnectionError:
                 connection_failed = True
@@ -630,6 +669,7 @@ class APISportsClient:
                 payload,
                 self._quota_state,
                 fetched_at=fetched_at,
+                cache_dir=selected_cache_dir,
             )
             return _CachePayload(
                 quota=self._quota_state,
@@ -665,11 +705,28 @@ class APISportsClient:
         if current >= self._stop_at:
             raise SafetyStopReached("API-Sports safety stop reached")
 
+    def _request_timeout(self) -> float:
+        if self._stop_at is None:
+            return self._timeout
+        current = self._now()
+        _require_utc_datetime("now", current)
+        remaining_seconds = (self._stop_at - current).total_seconds()
+        if remaining_seconds <= 0:
+            raise SafetyStopReached("API-Sports safety stop reached")
+        return min(self._timeout, remaining_seconds)
+
     def _sleep_before_retry(self, attempt: int) -> None:
         time.sleep(0.05 * (attempt + 1))
 
-    def _load_cache(self, cache_key: str) -> _CachePayload | None:
-        path = self._cache_dir / f"{cache_key}.json"
+    def _load_cache(
+        self,
+        cache_key: str,
+        *,
+        cache_dir: Path | None = None,
+        max_age_seconds: float | None = None,
+    ) -> _CachePayload | None:
+        selected_cache_dir = self._cache_dir if cache_dir is None else cache_dir
+        path = selected_cache_dir / f"{cache_key}.json"
         try:
             if not path.exists():
                 return None
@@ -685,6 +742,13 @@ class APISportsClient:
             fetched_at = _parse_datetime(
                 raw["fetched_at"], field_name="cache fetched_at"
             )
+            if max_age_seconds is not None:
+                current = self._now()
+                _require_utc_datetime("now", current)
+                if fetched_at > current:
+                    raise ValueError("cache fetched_at cannot be in the future")
+                if (current - fetched_at).total_seconds() > max_age_seconds:
+                    return None
             quota_fields = {
                 "daily_limit",
                 "daily_remaining",
@@ -718,6 +782,7 @@ class APISportsClient:
         quota_state: QuotaState,
         *,
         fetched_at: datetime,
+        cache_dir: Path | None = None,
     ) -> None:
         body = {
             "fetched_at": fetched_at.isoformat(),
@@ -729,16 +794,17 @@ class APISportsClient:
             },
             "payload": payload,
         }
-        final_path = self._cache_dir / f"{cache_key}.json"
+        selected_cache_dir = self._cache_dir if cache_dir is None else cache_dir
+        final_path = selected_cache_dir / f"{cache_key}.json"
         temporary_path: Path | None = None
         error_message: str | None = None
         try:
-            self._cache_dir.mkdir(parents=True, exist_ok=True)
+            selected_cache_dir.mkdir(parents=True, exist_ok=True)
             with tempfile.NamedTemporaryFile(
                 mode="w",
                 encoding="utf-8",
                 delete=False,
-                dir=self._cache_dir,
+                dir=selected_cache_dir,
                 prefix=f".{final_path.name}.",
                 suffix=".tmp",
             ) as output:

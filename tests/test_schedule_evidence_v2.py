@@ -3,6 +3,7 @@ import json
 from datetime import date, datetime, timedelta, timezone
 
 from toto_ai.external_odds.domain import TargetDrawing, TargetEvent
+from toto_ai.external_odds.matching import normalize_team_name
 from toto_ai.external_odds.schedule_evidence import (
     drawing_schedule_dates,
     drawing_schedule_window,
@@ -10,6 +11,7 @@ from toto_ai.external_odds.schedule_evidence import (
     load_schedule_evidence_ledger,
     resolve_schedule_evidence,
 )
+from toto_ai.external_odds.schedule_source_collector import _collector_aliases
 
 NOW = datetime(2026, 8, 3, 17, 30, tzinfo=timezone.utc)
 DEADLINE = datetime(2026, 8, 4, 15, tzinfo=timezone.utc)
@@ -428,3 +430,45 @@ def test_conflicting_official_home_away_identity_is_rejected(tmp_path):
     )
     assert result.state == "CONFLICT"
     assert result.observation is None
+
+
+def test_equivalent_consensus_canonical_names_resolve_one_schedule(tmp_path):
+    first = _observation(
+        observation_id="uefa-ferencvaros",
+        home_entity="Ferencvárosi TC",
+        home_aliases=["Ференцварош", "Ferencváros", "Ferencváros TC"],
+        away_entity="Trabzonspor A.Ş.",
+        away_aliases=["Трабзонспор", "Trabzonspor", "Trabzonspor A.Ş."],
+        starts_at="2026-08-06T19:00:00Z",
+    )
+    second = _observation(
+        observation_id="goal-ferencvaros",
+        home_entity="Ferencvaros",
+        home_aliases=["Ференцварош", "Ferencvaros", "Ferencváros TC"],
+        away_entity="Trabzonspor",
+        away_aliases=["Трабзонспор", "Trabzonspor", "Trabzonspor A.Ş."],
+        starts_at="2026-08-06T19:00:00Z",
+    )
+    ledger = _ledger(tmp_path, [first, second])
+
+    result = resolve_schedule_evidence(
+        _target(
+            "Ференцварош",
+            "Трабзонспор",
+            "Европа. Лига Европы УЕФА. Квалификация",
+        ),
+        ledger,
+        evaluated_at=NOW,
+    )
+
+    assert result.state == "RESOLVED"
+    assert result.observation is not None
+    assert result.observation.starts_at == datetime(
+        2026, 8, 6, 19, 0, tzinfo=timezone.utc
+    )
+    aliases, conflicts = _collector_aliases(ledger, None)
+    assert conflicts == frozenset()
+    assert aliases[normalize_team_name("Ференцварош")] == min(
+        normalize_team_name("Ferencvárosi TC"),
+        normalize_team_name("Ferencvaros"),
+    )

@@ -4,6 +4,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from threading import Event
 
 import pytest
 import requests
@@ -750,6 +751,44 @@ def test_overlapping_ticks_run_one_final_attempt(tmp_path):
 
     assert calls == 1
     assert sum(result is not None for result in results) == 1
+
+
+def test_overlapping_canary_and_warmup_do_not_run_concurrently(tmp_path):
+    plan = _plan(tmp_path)
+    entered = Event()
+    warmup_entered = Event()
+    release = Event()
+    calls = []
+
+    def runner(context):
+        calls.append(context.scheduler_phase)
+        if context.scheduler_phase == "freshness_preflight":
+            entered.set()
+            assert release.wait(timeout=2)
+        if context.scheduler_phase == "warmup":
+            warmup_entered.set()
+        return SchedulerPhaseResult.completed("phase complete")
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        canary = pool.submit(
+            _tick,
+            plan,
+            runner,
+            plan.freshness_preflight_at,
+        )
+        assert entered.wait(timeout=2)
+        overlapping_warmup = pool.submit(
+            _tick,
+            plan,
+            runner,
+            plan.preflight_at,
+        )
+        assert not warmup_entered.wait(timeout=0.1)
+        release.set()
+        assert canary.result(timeout=2) is None
+        assert overlapping_warmup.result(timeout=2) is None
+
+    assert calls == ["freshness_preflight", "warmup"]
 
 
 def test_archive_without_marker_is_recovered_at_hard_t10(tmp_path):

@@ -12,7 +12,7 @@ import json
 import os
 import secrets
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -141,7 +141,9 @@ def write_conservative_cutoff_evidence(
         ):
             raise ValueError("existing cutoff evidence drawing identity conflicts")
         if evidence.operational_cutoff > prior.operational_cutoff:
-            raise ValueError("persisted operational cutoff cannot be relaxed")
+            _validate_source_binding(prior)
+            return output.resolve(strict=True)
+    evidence = _freeze_cutoff_source(evidence, output=output)
     data = _serialized_evidence(evidence)
     temporary = output.with_name(
         f".{output.name}.{os.getpid()}.{secrets.token_hex(8)}.tmp"
@@ -155,6 +157,73 @@ def write_conservative_cutoff_evidence(
     finally:
         temporary.unlink(missing_ok=True)
     return output.resolve(strict=True)
+
+
+def _freeze_cutoff_source(
+    evidence: ConservativeCutoffEvidence,
+    *,
+    output: Path,
+) -> ConservativeCutoffEvidence:
+    source = evidence.source_report_path.resolve(strict=True)
+    source_bytes = source.read_bytes()
+    if hashlib.sha256(source_bytes).hexdigest() != evidence.source_report_sha256:
+        raise ValueError("cutoff source report content changed before persistence")
+    snapshot_dir = output.parent / "cutoff-source-snapshots"
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
+    if snapshot_dir.is_symlink() or not snapshot_dir.is_dir():
+        raise ValueError("cutoff source snapshot directory is invalid")
+    snapshot = snapshot_dir / f"{evidence.source_report_sha256}.json"
+    if snapshot.exists():
+        if snapshot.is_symlink() or not snapshot.is_file():
+            raise ValueError("cutoff source snapshot is not a regular file")
+        if snapshot.read_bytes() != source_bytes:
+            raise ValueError("cutoff source snapshot hash collision")
+    else:
+        temporary = snapshot.with_name(
+            f".{snapshot.name}.{os.getpid()}.{secrets.token_hex(8)}.tmp"
+        )
+        try:
+            with temporary.open("xb") as stream:
+                stream.write(source_bytes)
+                stream.flush()
+                os.fsync(stream.fileno())
+            temporary.replace(snapshot)
+        finally:
+            temporary.unlink(missing_ok=True)
+    frozen = replace(
+        evidence,
+        source_report_path=snapshot.resolve(strict=True),
+        record_sha256="",
+    )
+    payload = _evidence_payload(
+        drawing_id=frozen.drawing_id,
+        drawing_number=frozen.drawing_number,
+        source_ended_at=frozen.source_ended_at,
+        earliest_kickoff=frozen.earliest_kickoff,
+        operational_cutoff=frozen.operational_cutoff,
+        source_report_path=frozen.source_report_path,
+        source_report_sha256=frozen.source_report_sha256,
+        source_report_semantic_hash=frozen.source_report_semantic_hash,
+        provider_names=frozen.provider_names,
+        event_orders=frozen.event_orders,
+        status=frozen.status,
+    )
+    return _evidence_from_payload(
+        payload | {"record_sha256": _sha256_payload(payload)}
+    )
+
+
+def _validate_source_binding(evidence: ConservativeCutoffEvidence) -> None:
+    source = evidence.source_report_path.resolve(strict=True)
+    if source.is_symlink() or not source.is_file():
+        raise ValueError("persisted cutoff source report is invalid")
+    source_bytes = source.read_bytes()
+    if hashlib.sha256(source_bytes).hexdigest() != evidence.source_report_sha256:
+        raise ValueError("persisted cutoff source report content hash mismatch")
+    report = _load_mapping(source_bytes, "persisted cutoff source report")
+    _validate_candidate_report_hash(report)
+    if report["report_sha256"] != evidence.source_report_semantic_hash:
+        raise ValueError("persisted cutoff source report semantic hash mismatch")
 
 
 def load_conservative_cutoff_evidence(

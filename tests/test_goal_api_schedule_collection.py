@@ -13,12 +13,51 @@ from toto_ai.external_odds.goal_api import (
 )
 from toto_ai.external_odds.schedule_source_collector import (
     _match_goal_api_candidates,
+    _thesportsdb_lookup_hints,
     collect_schedule_source_candidates,
 )
 from toto_ai.external_odds.thesportsdb import TheSportsDBConfig
 
 UTC = timezone.utc
 SECRET = "goal-collection-secret"
+
+
+def test_goal_candidate_names_seed_independent_provider_lookup() -> None:
+    hints = _thesportsdb_lookup_hints(
+        [
+            {
+                "status": "independent_candidate",
+                "source_name": "GOAL API",
+                "event_order": 9,
+                "target_home_team": "Санкт-Галлен",
+                "target_away_team": "Нордсьелланд",
+                "home_name": "St. Gallen",
+                "away_name": "Nordsjaelland",
+                "orientation": "same",
+            }
+        ]
+    )
+
+    assert hints == {9: ("St. Gallen", "Nordsjaelland")}
+
+
+def test_reversed_goal_candidate_names_seed_target_oriented_lookup() -> None:
+    hints = _thesportsdb_lookup_hints(
+        [
+            {
+                "status": "independent_candidate",
+                "source_name": "GOAL API",
+                "event_order": 3,
+                "target_home_team": "Хозяева",
+                "target_away_team": "Гости",
+                "home_name": "Away FC",
+                "away_name": "Home FC",
+                "orientation": "reversed",
+            }
+        ]
+    )
+
+    assert hints == {3: ("Home FC", "Away FC")}
 
 
 def _canonical(value: object) -> bytes:
@@ -109,6 +148,103 @@ class FakeSession:
                 "X-RateLimit-Remaining": "990",
             },
         )
+
+
+class StGallenSession(FakeSession):
+    def get(self, url, *, params, headers, timeout):
+        self.calls.append({"url": url, "params": dict(params)})
+        requested_date = url.rsplit("/", 1)[-1]
+        data = []
+        if requested_date == "2026-08-27":
+            data = [
+                {
+                    "id": 7101,
+                    "apiId": 9101,
+                    "homeTeamName": "St. Gallen",
+                    "awayTeamName": "Nordsjaelland",
+                    "homeTeamId": 201,
+                    "awayTeamId": 202,
+                    "kickoffUtc": "2026-08-27T18:00:00Z",
+                    "leagueName": "UEFA Conference League",
+                    "leagueId": 12,
+                    "matchStatus": "Not Started",
+                }
+            ]
+        return FakeResponse(
+            {
+                "success": True,
+                "data": data,
+                "pagination": {"hasMore": False},
+            },
+            headers={
+                "X-RateLimit-Limit": "1000",
+                "X-RateLimit-Remaining": "990",
+            },
+        )
+
+
+def test_goal_names_seed_sofascore_discovery_without_promoting_alone(
+    tmp_path: Path,
+) -> None:
+    queue = _queue(tmp_path)
+    queue_payload = json.loads(queue.read_text(encoding="utf-8"))
+    queue_payload["identity"]["deadline"] = "2026-08-27T19:00:00Z"
+    queue_payload["records"][0]["home_team"] = "Санкт-Галлен"
+    queue_payload["records"][0]["away_team"] = "Нордсьелланд"
+    queue_payload.pop("queue_sha256")
+    queue_payload["queue_sha256"] = hashlib.sha256(
+        _canonical(queue_payload)
+    ).hexdigest()
+    queue.write_text(json.dumps(queue_payload, ensure_ascii=False), encoding="utf-8")
+
+    session = StGallenSession()
+    client = GoalAPIClient(
+        SECRET,
+        session=session,
+        snapshot_dir=tmp_path / "out" / "goal-api-v1",
+        now=lambda: datetime(2026, 8, 26, 9, 0, tzinfo=UTC),
+    )
+    search_urls: list[str] = []
+
+    def fetch(url: str):
+        search_urls.append(url)
+        if "St.+Gallen+Nordsjaelland" not in url:
+            return {"results": []}
+        return {
+            "results": [
+                {
+                    "type": "event",
+                    "entity": {
+                        "id": 8101,
+                        "slug": "st-gallen-nordsjaelland",
+                        "customId": "sgn",
+                        "startTimestamp": int(
+                            datetime(2026, 8, 27, 18, 0, tzinfo=UTC).timestamp()
+                        ),
+                        "homeTeam": {"name": "St. Gallen"},
+                        "awayTeam": {"name": "Nordsjaelland"},
+                        "tournament": {"name": "UEFA Conference League"},
+                    },
+                }
+            ]
+        }
+
+    result = collect_schedule_source_candidates(
+        queue,
+        output_dir=tmp_path / "out",
+        fetch_json=fetch,
+        captured_at=datetime(2026, 8, 26, 9, 0, tzinfo=UTC),
+        goal_api_client=client,
+        thesportsdb_config=TheSportsDBConfig(api_key=None),
+    )
+
+    sofa = next(
+        item for item in result.records if item.get("source_name") == "Sofascore"
+    )
+    assert sofa["status"] == "independent_candidate"
+    assert sofa["source_event_id"] == 8101
+    assert any("St.+Gallen+Nordsjaelland" in url for url in search_urls)
+    assert sofa["ledger_eligible"] is False
 
 
 def test_goal_api_adds_independent_non_promoting_candidate(tmp_path: Path) -> None:

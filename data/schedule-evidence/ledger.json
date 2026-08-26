@@ -2368,6 +2368,1057 @@
           "source_url": "https://www.sofascore.com/football/match/al-faisaly-al-fateh/yvxsKvx#id:16629436"
         }
       ]
+    },
+    {
+      "observation_id": "uefa-match-2049235",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Europa League",
+        "Лига Европы УЕФА",
+        "UEFA Europa League, Playoff Round"
+      ],
+      "home_entity": "FC Ararat-Armenia",
+      "home_aliases": [
+        "Арарат-Армения",
+        "Ararat-Armenia",
+        "FC Ararat-Armenia",
+        "إف سي أراوات-أرمينيا",
+        "ऍफ़सी अरारात-अर्मेनिआ",
+        "ФК Арарат-Армения"
+      ],
+      "away_entity": "Universitatea Craiova",
+      "away_aliases": [
+        "Университатя Крайова",
+        "U. Craiova",
+        "Universitatea Craiova",
+        "Universitatea Craiov",
+        "يونيفيرسيتاتيا كرايوفا"
+      ],
+      "starts_at": "2026-08-27T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:26.973248Z",
+      "review_document": "reviews/auto-uefa-match-2049235.md",
+      "review_document_sha256": "5d005465cda8facedc4e49017409f2958035a384bf2dbf53ec1d5361486643fa",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049235/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16708159"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2049234",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Europa League",
+        "Лига Европы УЕФА",
+        "UEFA Europa League, Playoff Round"
+      ],
+      "home_entity": "Ferencvárosi TC",
+      "home_aliases": [
+        "Ференцварош",
+        "Ferencváros",
+        "Ferencvárosi TC",
+        "Ferencváros TC",
+        "فيرينتسفاروش تي سي"
+      ],
+      "away_entity": "Trabzonspor A.Ş.",
+      "away_aliases": [
+        "Трабзонспор",
+        "Trabzonspor",
+        "Trabzonspor A.Ş.",
+        "طرابزون سبور",
+        "ট্রাবজনস্পোর",
+        "ट्राबज़ोंसपोर",
+        "ФК Трабзонспор"
+      ],
+      "starts_at": "2026-08-27T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:26.973248Z",
+      "review_document": "reviews/auto-uefa-match-2049234.md",
+      "review_document_sha256": "68de4742adc6257a00c3a4e4b27ea01c20fc092d8a363245739366079eaa6a14",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049234/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16708143"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2049293",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Conference League",
+        "Лига конференций УЕФА",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Maccabi Tel-Aviv FC",
+      "home_aliases": [
+        "Маккаби Тель-Авив",
+        "M. Tel-Aviv",
+        "Маккаби Т-А",
+        "Maccabi Tel-Aviv FC",
+        "Маккаби ТА",
+        "Maccabi Tel Aviv",
+        "مكابي تل أبيب"
+      ],
+      "away_entity": "FC Lugano",
+      "away_aliases": [
+        "Лугано",
+        "Lugano",
+        "FC Lugano",
+        "إف سي لوجانو",
+        "ऍफ़सी लुगानो"
+      ],
+      "starts_at": "2026-08-27T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:26.973248Z",
+      "review_document": "reviews/auto-uefa-match-2049293.md",
+      "review_document_sha256": "17a437bb77ef6a2fb3bd3c5e25a649067480cbb01126fbd94264ccac87e50a6d",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049293/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16823222"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2049291",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Conference League",
+        "Лига конференций УЕФА",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Qarabağ FK",
+      "home_aliases": [
+        "Карабах",
+        "Qarabağ",
+        "Qarabağ FK",
+        "كاراباج",
+        "কারাবাগ",
+        "करबाख"
+      ],
+      "away_entity": "FC Twente",
+      "away_aliases": [
+        "Твенте",
+        "Twente",
+        "FC Twente",
+        "تفينتي أنشخيده",
+        "Твенте Энсхеде"
+      ],
+      "starts_at": "2026-08-27T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:26.973248Z",
+      "review_document": "reviews/auto-uefa-match-2049291.md",
+      "review_document_sha256": "78cf61fdb86bbd586cb647168b069ed5ef698d78820fd69cea75c012fe8c3d85",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049291/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16821936"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2049281",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Conference League",
+        "Лига конференций УЕФА",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "FC Hradec Králové",
+      "home_aliases": [
+        "Градец Кралове",
+        "Hradec Králové",
+        "Градец-Кралове",
+        "FC Hradec Králové",
+        "هراديتس كرالوفيه"
+      ],
+      "away_entity": "Panathinaikos FC",
+      "away_aliases": [
+        "Панатинаикос",
+        "Panathinaikos",
+        "Panathinaikos FC",
+        "باناثينايكوس",
+        "পানাথিনাইকোস",
+        "पानाथिनाइकोस",
+        "Панатинаикос Афины"
+      ],
+      "starts_at": "2026-08-27T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:26.973248Z",
+      "review_document": "reviews/auto-uefa-match-2049281.md",
+      "review_document_sha256": "9cef33fde62fe4208a9ec89ad84cac6d5862d033ea3cf98cf5fc793945a08ef1",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049281/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16717092"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2049280",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Conference League",
+        "Лига конференций УЕФА",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Raków Częstochowa",
+      "home_aliases": [
+        "Ракув",
+        "Raków",
+        "Raków Częstochowa",
+        "Rakow",
+        "راكوف تشينستوشوفا",
+        "Ракув Ченстохова"
+      ],
+      "away_entity": "HNK Hajduk Split",
+      "away_aliases": [
+        "Хайдук Сплит",
+        "Hajduk Split",
+        "HNK Hajduk Split",
+        "Хайдук",
+        "هايدوك سبليت",
+        "एचएनके हज्दुक स्प्लिट"
+      ],
+      "starts_at": "2026-08-27T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:26.973248Z",
+      "review_document": "reviews/auto-uefa-match-2049280.md",
+      "review_document_sha256": "7f2796d9ea7b2b350e077ed172416c0232963c57a8be9c3ac451d1682824cf70",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049280/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16822948"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2049283",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Conference League",
+        "Лига конференций УЕФА",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "SK Brann",
+      "home_aliases": [
+        "Бранн",
+        "Brann",
+        "SK Brann",
+        "اس كيه بران",
+        "एसके ब्रैन",
+        "ФК Бранн"
+      ],
+      "away_entity": "PAOK FC",
+      "away_aliases": [
+        "ПАОК",
+        "PAOK",
+        "PAOK FC",
+        "باوك",
+        "পিএওকে",
+        "पाओक"
+      ],
+      "starts_at": "2026-08-27T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:26.973248Z",
+      "review_document": "reviews/auto-uefa-match-2049283.md",
+      "review_document_sha256": "de81513cd8ab5dd02e4b3851ee2d9e9737c9c9811b87b929590411a4f29a154d",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049283/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16796599"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2049290",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Conference League",
+        "Лига конференций УЕФА",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "FK Austria Wien",
+      "home_aliases": [
+        "Аустрия Вена",
+        "Austria Wien",
+        "FK Austria Wien",
+        "Аустрия",
+        "النمسا فيينا",
+        "অস্ট্রিয়া ভিয়েন",
+        "ऑस्ट्रिया विएन"
+      ],
+      "away_entity": "SC Braga",
+      "away_aliases": [
+        "Брага",
+        "Braga",
+        "SC Braga",
+        "Sporting Braga",
+        "سبورتينغ براغا"
+      ],
+      "starts_at": "2026-08-27T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:26.973248Z",
+      "review_document": "reviews/auto-uefa-match-2049290.md",
+      "review_document_sha256": "252c4303623f1314b31f34568f2780794a355847146375527c8387fe4063bf1a",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049290/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16717100"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2049292",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Conference League",
+        "Лига конференций УЕФА",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "FK Partizan Beograd",
+      "home_aliases": [
+        "Партизан",
+        "Partizan",
+        "FK Partizan Beograd",
+        "FK Partizan",
+        "إف كيه بارتيزان"
+      ],
+      "away_entity": "Getafe CF",
+      "away_aliases": [
+        "Хетафе",
+        "Getafe",
+        "Getafe CF",
+        "خيتافي",
+        "গেটাফে",
+        "गेटाफे"
+      ],
+      "starts_at": "2026-08-27T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:26.973248Z",
+      "review_document": "reviews/auto-uefa-match-2049292.md",
+      "review_document_sha256": "6faef18b9a0c2fc556b946ad71b4a911a6d7509a5947e84339d582d2b2220b4c",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049292/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16717101"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2049282",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Conference League",
+        "Лига конференций УЕФА",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Hibernian F.C.",
+      "home_aliases": [
+        "Хиберниан",
+        "Hibernian",
+        "Hibernian F.C.",
+        "نادي هيبرنيان",
+        "Хиберниан Эдинбург"
+      ],
+      "away_entity": "KAA Gent",
+      "away_aliases": [
+        "Гент",
+        "Gent",
+        "KAA Gent",
+        "جينت",
+        "केएए गेंट",
+        "КАА Гент"
+      ],
+      "starts_at": "2026-08-27T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:26.973248Z",
+      "review_document": "reviews/auto-uefa-match-2049282.md",
+      "review_document_sha256": "7f0e1b1ce82c296eb8de1580d81d79417e989470b3355be8d47ee3aa5737ba20",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2049282/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16823068"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-581de9e7cfde4b83f13f",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига Европы УЕФА. Квалификация",
+        "UEFA Europa League - Play-offs",
+        "UEFA Europa League, Playoff Round"
+      ],
+      "home_entity": "Thun",
+      "home_aliases": [
+        "Тун",
+        "Thun",
+        "FC Thun",
+        "توون",
+        "ऍफ़सी थून"
+      ],
+      "away_entity": "Lech Poznan",
+      "away_aliases": [
+        "Лех Познань",
+        "Lech Poznan",
+        "Lech Poznań",
+        "ليخ بوزنان",
+        "Лех Познан"
+      ],
+      "starts_at": "2026-08-27T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-581de9e7cfde4b83f13f.md",
+      "review_document_sha256": "8c8da2b73097c3a4472a7859cf2c30913d5308b7f772aa772d811dc69bf8fad5",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3y0799nupg07tdpnf6bz"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/lech-poznan-fc-thun/eZswmb#id:16708166"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-f1a5ff1d36c4a53d8e74",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига Европы УЕФА. Квалификация",
+        "UEFA Europa League - Play-offs",
+        "UEFA Europa League, Playoff Round"
+      ],
+      "home_entity": "Ferencvaros",
+      "home_aliases": [
+        "Ференцварош",
+        "Ferencvaros",
+        "Ferencváros TC",
+        "فيرينتسفاروش تي سي"
+      ],
+      "away_entity": "Trabzonspor",
+      "away_aliases": [
+        "Трабзонспор",
+        "Trabzonspor",
+        "طرابزون سبور",
+        "ট্রাবজনস্পোর",
+        "ट्राबज़ोंसपोर",
+        "ФК Трабзонспор"
+      ],
+      "starts_at": "2026-08-27T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-f1a5ff1d36c4a53d8e74.md",
+      "review_document_sha256": "b1f5eafb436751daf197415f3fc569b1e0c0e706dd569deb30f49a80847837eb",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3y1199o5pg075c82ynas"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/trabzonspor-ferencvaros-tc/ANsblb#id:16708143"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-e9b455ac11698118e3df",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League - Play-offs",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Maccabi Tel Aviv",
+      "home_aliases": [
+        "Маккаби Тель-Авив",
+        "Maccabi Tel Aviv",
+        "مكابي تل أبيب"
+      ],
+      "away_entity": "Lugano",
+      "away_aliases": [
+        "Лугано",
+        "Lugano",
+        "FC Lugano",
+        "إف سي لوجانو",
+        "ऍफ़सी लुगानो"
+      ],
+      "starts_at": "2026-08-27T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-e9b455ac11698118e3df.md",
+      "review_document_sha256": "28c4616e141a07cd4b6a170de6743a971e640ce58e3785d979d6e335b82a97aa",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3u2q9946pg07lsmyrike"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/maccabi-tel-aviv-fc-lugano/TYsYdc#id:16823222"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-88a326258b841a5373b0",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League - Play-offs",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Qarabag",
+      "home_aliases": [
+        "Карабах",
+        "Qarabag",
+        "Qarabağ FK",
+        "كاراباج",
+        "কারাবাগ",
+        "करबाख"
+      ],
+      "away_entity": "Twente",
+      "away_aliases": [
+        "Твенте",
+        "Twente",
+        "FC Twente",
+        "تفينتي أنشخيده",
+        "Твенте Энсхеде"
+      ],
+      "starts_at": "2026-08-27T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-88a326258b841a5373b0.md",
+      "review_document_sha256": "20d48f1dac9f6837a66f7fe25ae10f83900809849db79c953cccfab8faac5a50",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3u1n993wpg07zvyckkar"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/qarabag-fk-fc-twente/fjbsmuc#id:16821936"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-2073d6923397989ccb15",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League - Play-offs",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Jablonec",
+      "home_aliases": [
+        "Яблонец",
+        "Jablonec",
+        "FK Jablonec",
+        "إف كيه جابلونيك",
+        "ऍफ़के जाबलोनेक"
+      ],
+      "away_entity": "Rangers",
+      "away_aliases": [
+        "Рейнджерс",
+        "Rangers",
+        "رينجرز",
+        "রেঞ্জার্স",
+        "रेंजर्स",
+        "Глазго Рейнджерс"
+      ],
+      "starts_at": "2026-08-27T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-2073d6923397989ccb15.md",
+      "review_document_sha256": "fe507ba8688c557d4375246ac8ccffd8a1e6fa23d71f3ab71735207d7f18cacd",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3u2i9944pg07bon6h8hg"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/rangers-fk-jablonec/fUsbX#id:16822047"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-32192acf0d957bc07e45",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League - Play-offs",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Hradec Kralove",
+      "home_aliases": [
+        "Градец Кралове",
+        "Hradec Kralove",
+        "FC Hradec Králové",
+        "هراديتس كرالوفيه"
+      ],
+      "away_entity": "Panathinaikos",
+      "away_aliases": [
+        "Панатинаикос",
+        "Panathinaikos",
+        "Panathinaikos FC",
+        "باناثينايكوس",
+        "পানাথিনাইকোস",
+        "पानाथिनाइकोस",
+        "Панатинаикос Афины"
+      ],
+      "starts_at": "2026-08-27T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-32192acf0d957bc07e45.md",
+      "review_document_sha256": "0f9f87343fe060e3450c375befae9f71d44efa63fd4abdfa3aa0a3e0210185b0",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3tsw992cpg07t458yjby"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/panathinaikos-fc-fc-hradec-kralove/rUsYob#id:16717092"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-078675e4ec92e1868506",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League - Play-offs",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Rakow",
+      "home_aliases": [
+        "Ракув",
+        "Rakow",
+        "Raków Częstochowa",
+        "راكوف تشينستوشوفا",
+        "Ракув Ченстохова"
+      ],
+      "away_entity": "Hajduk Split",
+      "away_aliases": [
+        "Хайдук Сплит",
+        "Hajduk Split",
+        "HNK Hajduk Split",
+        "هايدوك سبليت",
+        "एचएनके हज्दुक स्प्लिट"
+      ],
+      "starts_at": "2026-08-27T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-078675e4ec92e1868506.md",
+      "review_document_sha256": "80953011ce8e13fa6888910de4430530a636d6ef3894d248cfdaf15aeec1756a",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3tyo992upg07gyuzycg5"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/rakow-czestochowa-hnk-hajduk-split/LPstfo#id:16822948"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-8cd660fc06f465f29586",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League - Play-offs",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Brann",
+      "home_aliases": [
+        "Бранн",
+        "Brann",
+        "SK Brann",
+        "اس كيه بران",
+        "एसके ब्रैन",
+        "ФК Бранн"
+      ],
+      "away_entity": "PAOK",
+      "away_aliases": [
+        "ПАОК",
+        "PAOK",
+        "باوك",
+        "পিএওকে",
+        "पाओक"
+      ],
+      "starts_at": "2026-08-27T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-8cd660fc06f465f29586.md",
+      "review_document_sha256": "ed8858fa5aa42f6c1382ea450cbe6bacbaa446bd3e2d292799ae440bf9646ed6",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3tu9992ipg07aojuna1h"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/paok-sk-brann/jysbpb#id:16796599"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-a03ebe9e01c27a7cb8c2",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League - Play-offs",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Rijeka",
+      "home_aliases": [
+        "Риека",
+        "Rijeka",
+        "HNK Rijeka",
+        "ريجكا",
+        "एचएनके रिजेका"
+      ],
+      "away_entity": "Midtjylland",
+      "away_aliases": [
+        "Мидтьюлланд",
+        "Midtjylland",
+        "FC Midtjylland",
+        "إف سي ميدتيلاند",
+        "ऍफ़सी मीडटजीलैंड",
+        "Мидтьюлланн"
+      ],
+      "starts_at": "2026-08-27T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-a03ebe9e01c27a7cb8c2.md",
+      "review_document_sha256": "8deb4cfaddc41fdf8bc51663c6b153a962edd7203ac3a88b0159700f70d45734",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3y2699oopg07lbz5wau8"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/hnk-rijeka-fc-midtjylland/OAsOP#id:16821980"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-99d29d0d0f0dc3a12135",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League - Play-offs",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Partizan",
+      "home_aliases": [
+        "Партизан",
+        "Partizan",
+        "FK Partizan",
+        "إف كيه بارتيزان"
+      ],
+      "away_entity": "Getafe",
+      "away_aliases": [
+        "Хетафе",
+        "Getafe",
+        "خيتافي",
+        "গেটাফে",
+        "गेटाफे"
+      ],
+      "starts_at": "2026-08-27T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-99d29d0d0f0dc3a12135.md",
+      "review_document_sha256": "1d018501dc0ae61a60a2ecc5cb1b0ef7927dbd87be86e527345170e247dbc66f",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3y3o99p5pg07p2sfa3pf"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fk-partizan-getafe/jhbscdc#id:16717101"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-f8b8caaf0315e4792326",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League - Play-offs",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "Hibernian",
+      "home_aliases": [
+        "Хиберниан",
+        "Hibernian",
+        "نادي هيبرنيان",
+        "Хиберниан Эдинбург"
+      ],
+      "away_entity": "Gent",
+      "away_aliases": [
+        "Гент",
+        "Gent",
+        "KAA Gent",
+        "جينت",
+        "केएए गेंट",
+        "КАА Гент"
+      ],
+      "starts_at": "2026-08-27T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T16:49:37.795812Z",
+      "review_document": "reviews/auto-independent-consensus-v2-f8b8caaf0315e4792326.md",
+      "review_document_sha256": "ef3411e4081089dda6be261b2a248e449dc7bdaf7e45e2cb0a33534919e3e367",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3y3u99p9pg076nwi0o2p"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/kaa-gent-hibernian/eXsdib#id:16823068"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-c0004a724f82fe73c7cb",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Бахрейн. Премьер-Лига",
+        "Premier League"
+      ],
+      "home_entity": "Sitra",
+      "home_aliases": [
+        "Ситра",
+        "Sitra",
+        "سترة",
+        "Ситра Клуб"
+      ],
+      "away_entity": "Malkia",
+      "away_aliases": [
+        "Малкия",
+        "Malkia",
+        "Malkiya",
+        "المالكية",
+        "Малкия Клуб"
+      ],
+      "starts_at": "2026-08-27T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T17:15:52.535601Z",
+      "review_document": "reviews/auto-independent-consensus-v2-c0004a724f82fe73c7cb.md",
+      "review_document_sha256": "469e6ac4f1ed4da9897ed443a5639f1e0e9be0609bbeca9bfb46a4a31074ee03",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3u0h993ipg07ercz3oaa"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sitra-malkiya/CjtsvUW#id:16681222"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-9d10fb701292c3f525d4",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига конференций УЕФА. Квалификация",
+        "UEFA Conference League - Play-offs",
+        "UEFA Europa Conference League, Qualification Playoff"
+      ],
+      "home_entity": "St. Gallen",
+      "home_aliases": [
+        "Санкт-Галлен",
+        "St. Gallen",
+        "FC St. Gallen 1879",
+        "إف سي سانت غالن 1879",
+        "ऍफ़सी साँ गाल्लेन 1879"
+      ],
+      "away_entity": "Nordsjaelland",
+      "away_aliases": [
+        "Нордсьелланд",
+        "Nordsjaelland",
+        "FC Nordsjælland",
+        "نادي نوردشيلاند",
+        "Нордшелланд"
+      ],
+      "starts_at": "2026-08-27T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T17:19:51.150359Z",
+      "review_document": "reviews/auto-independent-consensus-v2-9d10fb701292c3f525d4.md",
+      "review_document_sha256": "792e0f8b1c9ab204b651adbb388838f4e74deae405bce918d8b362a6da1e7b81",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3y0299nspg07cl7t7mqf"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-st-gallen-1879-fc-nordsjaelland/RAsRY#id:16823073"
+        }
+      ]
     }
   ]
 }

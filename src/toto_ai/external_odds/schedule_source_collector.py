@@ -35,6 +35,7 @@ from toto_ai.external_odds.matching import (
 )
 from toto_ai.external_odds.schedule_evidence import (
     ScheduleEvidenceLedger,
+    canonical_entities_equivalent,
     drawing_schedule_window,
     load_schedule_evidence_ledger,
 )
@@ -109,14 +110,28 @@ def collect_schedule_source_candidates(
     snapshots.mkdir(parents=True, exist_ok=True)
     fetch = fetch_json or _fetch_json
     deadline = _parse_utc(queue["identity"]["deadline"])
-    records: list[dict[str, object]] = []
     ledger = _optional_ledger(schedule_evidence_ledger)
+    goal_records, goal_status = _collect_goal_api_candidates(
+        queue,
+        output=output,
+        observed=observed,
+        deadline=deadline,
+        ledger=ledger,
+        config=goal_api_config,
+        client=goal_api_client,
+        team_aliases=team_aliases,
+    )
+    records: list[dict[str, object]] = list(goal_records)
+    provider_lookup_hints = _thesportsdb_lookup_hints(goal_records)
 
     for row in queue["records"]:
         target_home = str(row["home_team"])
         target_away = str(row["away_team"])
         canonical_homes = _ledger_canonical_names(ledger, target_home)
         canonical_aways = _ledger_canonical_names(ledger, target_away)
+        lookup_hint = provider_lookup_hints.get(int(row["event_order"]))
+        hinted_homes = () if lookup_hint is None else (lookup_hint[0],)
+        hinted_aways = () if lookup_hint is None else (lookup_hint[1],)
         historical_queries = tuple(
             f"{home} {away}" for home in canonical_homes for away in canonical_aways
         )
@@ -125,6 +140,11 @@ def collect_schedule_source_candidates(
                 (
                     f"{row['home_team']} {row['away_team']}",
                     *historical_queries,
+                    *(
+                        ()
+                        if lookup_hint is None
+                        else (f"{lookup_hint[0]} {lookup_hint[1]}",)
+                    ),
                     " ".join(
                         (
                             transliterate_team_name(str(row["home_team"])),
@@ -154,8 +174,8 @@ def collect_schedule_source_candidates(
                 _write_exact(candidate_snapshot, snapshot_bytes)
                 candidate_matches = _matching_events(
                     payload,
-                    homes=(target_home, *canonical_homes),
-                    aways=(target_away, *canonical_aways),
+                    homes=(target_home, *canonical_homes, *hinted_homes),
+                    aways=(target_away, *canonical_aways, *hinted_aways),
                     deadline=deadline,
                 )
                 if candidate_matches:
@@ -240,24 +260,13 @@ def collect_schedule_source_candidates(
         item["status"] == "independent_candidate" for item in records
     )
     provider_statuses: dict[str, dict[str, object]] = {
+        GOAL_API_PROVIDER: goal_status,
         "sofascore": {
             "status": "collected",
             "candidate_count": sofascore_candidate_count,
             "ledger_mutated": False,
         }
     }
-    goal_records, goal_status = _collect_goal_api_candidates(
-        queue,
-        output=output,
-        observed=observed,
-        deadline=deadline,
-        ledger=ledger,
-        config=goal_api_config,
-        client=goal_api_client,
-        team_aliases=team_aliases,
-    )
-    records.extend(goal_records)
-    provider_statuses[GOAL_API_PROVIDER] = goal_status
     thesportsdb_records, thesportsdb_status = _collect_thesportsdb_candidates(
         queue,
         output=output,
@@ -938,6 +947,7 @@ def _collector_aliases(
     supplied: Mapping[str, str] | None,
 ) -> tuple[dict[str, str], frozenset[str]]:
     ledger_aliases: dict[str, str] = {}
+    raw_entities: dict[str, str] = {}
     if ledger is not None:
         for observation in ledger.observations:
             for entity, aliases in (
@@ -945,13 +955,33 @@ def _collector_aliases(
                 (observation.away_entity, observation.away_aliases),
             ):
                 canonical = normalize_team_name(entity)
+                raw_entities.setdefault(canonical, entity)
                 for alias in (*aliases, entity):
                     if not _gender_compatible(alias, entity):
                         continue
                     key = normalize_team_name(alias)
                     previous = ledger_aliases.get(key)
                     if previous is not None and previous != canonical:
-                        raise ValueError("schedule source ledger aliases conflict")
+                        if not _ledger_entities_equivalent(
+                            ledger,
+                            raw_entities[previous],
+                            entity,
+                        ):
+                            raise ValueError(
+                                "schedule source ledger aliases conflict"
+                            )
+                        representative = min(previous, canonical)
+                        replaced = {previous, canonical}
+                        ledger_aliases = {
+                            existing_key: (
+                                representative
+                                if existing_value in replaced
+                                else existing_value
+                            )
+                            for existing_key, existing_value in ledger_aliases.items()
+                        }
+                        canonical = representative
+                        raw_entities.setdefault(representative, entity)
                     ledger_aliases[key] = canonical
 
     result = {
@@ -985,6 +1015,28 @@ def _collector_aliases(
         if key != value:
             result[key] = value
     return result, frozenset(conflicts)
+
+
+def _ledger_entities_equivalent(
+    ledger: ScheduleEvidenceLedger,
+    left: str,
+    right: str,
+) -> bool:
+    contexts = {
+        (observation.sport, observation.gender_age_class)
+        for observation in ledger.observations
+        if left in {observation.home_entity, observation.away_entity}
+        or right in {observation.home_entity, observation.away_entity}
+    }
+    return any(
+        canonical_entities_equivalent(
+            frozenset((left, right)),
+            ledger,
+            sport=sport,
+            gender_age_class=gender_age_class,
+        )
+        for sport, gender_age_class in contexts
+    )
 
 
 def _alias_conflict_diagnostics(
@@ -1157,14 +1209,18 @@ def _thesportsdb_lookup_hints(
         away = record.get("away_name")
         if (
             record.get("status") != "independent_candidate"
-            or record.get("source_name") != "Sofascore"
+            or record.get("source_name") not in {"Sofascore", "GOAL API"}
             or not isinstance(home, str)
             or not isinstance(away, str)
             or not _is_latin_name(home)
             or not _is_latin_name(away)
-            or not _gender_compatible(str(record["target_home_team"]), home)
-            or not _gender_compatible(str(record["target_away_team"]), away)
         ):
+            continue
+        if record.get("orientation") == "reversed":
+            home, away = away, home
+        if not _gender_compatible(
+            str(record["target_home_team"]), home
+        ) or not _gender_compatible(str(record["target_away_team"]), away):
             continue
         result[int(record["event_order"])] = (home, away)
     return result

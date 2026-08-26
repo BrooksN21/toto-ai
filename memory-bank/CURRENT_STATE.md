@@ -1,5 +1,70 @@
 # Current State
 
+## Drawing 4987 evening incident and scheduler remediation (2026-08-26)
+
+Drawing 4987 ended with scheduler-owned `NO_BET`; no valid operator package was
+published. TLS, API and the old shallow freshness preflights completed, while
+warmup, refresh and final each timed out. The primary defect was a split time
+contract: schema-v7 correctly anchored parent phases to the earlier
+`operational_cutoff`, but the child `run-drawing` still built its internal wait
+schedule from the later TotoBrief identity `ended_at`. For 4987 those instants
+differed by three hours, so the child spent its parent phase budget waiting for
+the wrong windows and was terminated before useful package work completed.
+
+The child now receives the immutable non-extending `operational_cutoff` and
+uses it for all waiting while retaining `ended_at` only as target identity.
+The T-60 freshness phase is now a bounded full end-to-end package canary rather
+than a shallow configuration check. Scheduler phases have admission checks,
+package-runtime reserves, phase-specific safety stops, sanitized timeout
+artifacts, shared one-hour verified schedule cache across phases, and isolated
+market-odds caches. A successful T-60 canary may seed an LKG; later unavailable
+sources preserve it. Phase locking is covered against canary/warmup overlap.
+API-Sports request timeouts are clamped to the remaining safety window so a
+single transport call cannot knowingly overrun the child stop boundary.
+
+Regression and full verification after the main remediation passed 2,054
+tests with 13 intentionally deselected and repository Ruff clean. The added
+HTTP timeout-clamp regression passes in the 55-test API-Sports provider suite.
+A controlled preparation of next drawing 4988 then failed closed at 0/15
+because API-Sports still returns the provider semantic error `Your account is
+suspended`; this is external-source evidence, not a successful production
+rehearsal. A full fresh scheduler rehearsal remains required once 4988 becomes
+the selected current drawing and independent schedule evidence is available.
+
+## Drawing 4987 frozen GOAL sports-shadow comparison (2026-08-26)
+
+The reusable research-only command `compare-goal-shadow-packages` now imports
+the exact frozen drawing-4987 GOAL schedule binding and 30 team-results
+snapshots without a live provider request. It validates drawing/event order,
+same orientation, provider fixture/team IDs, source-report semantic hash,
+source paths and hashes, frozen TotoBrief authority, and strict pre-`as_of` /
+pre-kickoff chronology. GOAL `FINISHED`, `AFTER_ET`, and `AFTER_PEN` map to the
+existing provider-neutral `FT`, `AET`, and `PEN` terminal contract. All 300
+rows were eligible at the frozen `2026-08-26T10:00:18.237832Z` boundary; 142
+were venue-matched.
+
+The shadow has 15/15 sports coverage and remains
+`PAPER_ONLY_NOT_ACTIVATED`. It uses the existing Jeffreys-smoothed home-team
+home plus away-team away W-D-L projection and sample-count shrinkage toward BK;
+blend weights range from 0.1667 to 0.3750. Production BK, scheduler state,
+operator-result and PLAY paths are unchanged.
+
+Both comparison branches use bank/stake 4,980/30 and contain exactly 166
+unique coupons at cost 4,980. They overlap on 5 coupons; each has 161 unique
+to that branch, and exposure changes on 13 events. Own-model diagnostic
+P(13+) is 0.00098391 for the BK baseline and 0.00266955 for the sports
+candidate. These one-drawing model diagnostics do not prove superiority,
+profitability, calibration, or activation.
+
+Artifacts are under
+`reports/research/goal-sports-dual-package-4987/`; manifest semantic SHA-256 is
+`e1f31d7bfff64d8390a649d36bb31b0d1f5cdbcae1cd01b1a425e2e5037dcce8`.
+Package CSV/TXT files carry explicit research-only fields/headers and are
+deliberately not BaltBet upload syntax. All 34 frozen sources and ten output
+artifacts verified by hash; the nine existing evening-scheduler files were
+byte-identical before and after execution. Focused verification: 5 tests
+passed; targeted Ruff and `git diff --check` passed.
+
 ## GOAL API adapter and drawing 4987 canary (2026-08-25)
 
 - New candidate-only provider module:
@@ -5204,3 +5269,43 @@ Verification: targeted schedule/morning/provenance suites passed 91 and 52
 tests respectively; the full default suite passed `2038 passed, 13 deselected`
 in 183.62 seconds; full Ruff passed. The next required work is observing the
 live evening checkpoints and validating the scheduler-owned terminal result.
+
+## Drawing 4987 incident closure and drawing 4988 readiness (2026-08-26)
+
+The 4987 evening run proved that schema-v7 parent phases were anchored to the
+verified operational cutoff while their `run-drawing` children still waited on
+the later TotoBrief identity `ended_at`. Warmup, refresh and final therefore
+timed out. The child now receives the operational cutoff. Scheduler phases have
+a T-60 true E2E canary, phase-specific admission/deadline budgets, bounded
+timeout diagnostics and a plan-scoped verified schedule-only shared cache.
+Market/probability payloads remain run-scoped and cannot be reused as fresh
+final evidence.
+
+Drawing 4988 (internal ID 12071) is prepared READY 15/15 with zero unresolved
+events. Independent schedule work resolved St Gallen/Nordsjaelland and
+Sitra/Malkiya, including conservative Latin compatibility folding. Its identity
+`ended_at` is 2026-08-27 22:00 MSK; the verified operational cutoff is 19:00
+MSK and T-10 is 18:50 MSK. Schema-v7 plan `095bea62149ea735` is generated but
+not activated. The training result is `TRAINING_PAPER`, structural pass, 34
+coupons / 1,020 RUB effective budget under the pool self-dilution cap; it is
+not actionable.
+
+A live rehearsal exposed a generic split-brain selector: morning dispatch had
+correctly retired 4987 using its verified operational cutoff and selected 4988,
+but production preflight re-selected the nearest page-one row by raw
+`ended_at`, choosing 4987. Preflight now validates the exact immutable target
+bound into the plan, and mandatory preparation uses that exact `drawing_id`
+instead of `--open`. Missing, duplicate, drifted or no-longer-playable target
+rows remain terminal fail-closed conditions.
+
+An invalid local accelerated-clock drill wrote four future probability-history
+timestamps into the 4988 preparation. The database was backed up, only those
+four versions were removed, and the last real version was restored before a
+fresh exact-ID preparation. Current evidence is real-time and READY 15/15.
+Scheduler E2E phases must not be accelerated with a virtual parent clock while
+children use wall time; production validation will occur only at the real
+checkpoints.
+
+Verification after these repairs: scheduler/runner/cutoff focused suite
+`316 passed`; full default suite `2066 passed, 13 deselected` in 187.08 seconds;
+full Ruff and `git diff --check` passed.

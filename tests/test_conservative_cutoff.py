@@ -117,13 +117,27 @@ def test_cutoff_evidence_round_trip_is_bound_to_source_bytes(tmp_path: Path) -> 
         expected_source_ended_at=datetime(2026, 8, 26, 18, 45, tzinfo=UTC),
     )
 
-    assert loaded == evidence
+    assert loaded.operational_cutoff == evidence.operational_cutoff
+    assert loaded.source_report_path != report
+    assert loaded.source_report_path.parent.name == "cutoff-source-snapshots"
     assert (
         conservative_cutoff_evidence_sha256(loaded)
         == hashlib.sha256(evidence_path.read_bytes()).hexdigest()
     )
 
     report.write_text(report.read_text(encoding="utf-8") + " ", encoding="utf-8")
+    assert load_conservative_cutoff_evidence(
+        evidence_path,
+        project_root=tmp_path,
+        expected_drawing_id=12068,
+        expected_drawing_number=4987,
+        expected_source_ended_at=datetime(2026, 8, 26, 18, 45, tzinfo=UTC),
+    ).operational_cutoff == evidence.operational_cutoff
+
+    loaded.source_report_path.write_text(
+        loaded.source_report_path.read_text(encoding="utf-8") + " ",
+        encoding="utf-8",
+    )
     with pytest.raises(ValueError, match="content hash mismatch"):
         load_conservative_cutoff_evidence(
             evidence_path,
@@ -286,8 +300,17 @@ def test_persisted_cutoff_can_tighten_again_but_never_relax(tmp_path: Path) -> N
         expected_drawing_number=4987,
     )
 
-    with pytest.raises(ValueError, match="cannot be relaxed"):
-        write_conservative_cutoff_evidence(later, output)
+    write_conservative_cutoff_evidence(later, output)
+    preserved = load_conservative_cutoff_evidence(
+        output,
+        project_root=tmp_path,
+        expected_drawing_id=12068,
+        expected_drawing_number=4987,
+        expected_source_ended_at=datetime(2026, 8, 26, 18, 45, tzinfo=UTC),
+    )
+    assert preserved.operational_cutoff == datetime(
+        2026, 8, 26, 15, 45, tzinfo=UTC
+    )
 
     earlier = derive_conservative_cutoff(
         _write_report(tmp_path / "earlier.json", starts_at="2026-08-26T15:30:00Z"),

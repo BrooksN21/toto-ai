@@ -54,6 +54,7 @@ def _candidate(
     bank: int = 4980,
     stake: int = 30,
     drawing_fingerprint: str = "a" * 64,
+    source_captured_at: datetime | None = None,
 ) -> SchedulerPhaseResult:
     count = bank // stake
     rows = ["rank,coupon,gross_ev,net_ev"]
@@ -69,7 +70,11 @@ def _candidate(
         selected_cost=count * stake,
         drawing_fingerprint=drawing_fingerprint,
         probability_input_sha256="b" * 64,
-        source_captured_at=ENDED_AT - timedelta(minutes=45),
+        source_captured_at=(
+            ENDED_AT - timedelta(minutes=45)
+            if source_captured_at is None
+            else source_captured_at
+        ),
     )
 
 
@@ -130,6 +135,46 @@ def _rewrite_checkpoint(plan, mutate):
         json.dumps(pointer, sort_keys=True, separators=(",", ":")) + "\n",
         encoding="utf-8",
     )
+
+
+def test_t60_canary_lkg_survives_later_source_outage(tmp_path: Path):
+    plan = _plan(tmp_path)
+    clock = _Clock(plan.freshness_preflight_at)
+
+    def runner(context):
+        if context.scheduler_phase == "freshness_preflight":
+            return _candidate(source_captured_at=plan.freshness_preflight_at)
+        if context.scheduler_phase in {"warmup", "refresh", "final"}:
+            raise TotoBriefRequestError(
+                "provider unavailable after canary",
+                endpoint="/fixtures",
+                attempts=1,
+                category="connect",
+            )
+        return SchedulerPhaseResult.completed("diagnostic ok")
+
+    assert _tick(plan, runner, clock) is None
+    canary_operator = _operator_payload(plan)
+    package_path = Path(canary_operator["coupon_path"])
+    assert canary_operator["operator_status"] == "LAST_KNOWN_GOOD_DEGRADED"
+    _upload_lines(package_path, stake=30, expected_count=166)
+
+    for checkpoint in (plan.preflight_at, plan.fallback_at, plan.final_at):
+        clock.current = checkpoint
+        assert _tick(plan, runner, clock) is None
+        current = _operator_payload(plan)
+        assert current["coupon_path"] == str(package_path)
+        assert package_path.is_file()
+
+    clock.current = plan.retry_at
+    result = _tick(plan, runner, clock)
+
+    assert result is not None
+    assert result.outcome == "no-bet"
+    assert result.package_path == package_path
+    status = json.loads(result.status_path.read_text(encoding="utf-8"))
+    assert status["operator_status"] == "LAST_KNOWN_GOOD_DEGRADED"
+    assert status["provenance"] == "LAST_KNOWN_GOOD"
 
 
 def test_4972_refresh_429_and_slow_final_deliver_lkg_before_t10(tmp_path: Path):
@@ -421,7 +466,7 @@ def test_lkg_rejects_stale_source_foreign_fingerprint_and_budget_mismatch(
         def mutate(manifest, *, case=case, plan=plan):
             if case == "stale":
                 manifest["source_captured_at"] = (
-                    (plan.preflight_at - timedelta(seconds=1))
+                    (plan.freshness_preflight_at - timedelta(seconds=1))
                     .isoformat()
                     .replace("+00:00", "Z")
                 )

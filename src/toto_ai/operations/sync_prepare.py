@@ -37,6 +37,7 @@ def synchronize_open_drawing(
         DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS
     ),
     storage_root: str | Path = ".",
+    operational_cutoffs: Mapping[int, datetime] | None = None,
 ) -> OpenDrawingSyncResult:
     """Perform the minimum TotoBrief morning synchronization.
 
@@ -71,6 +72,7 @@ def synchronize_open_drawing(
         summary_page.drawings,
         now=now,
         community=community,
+        operational_cutoffs=operational_cutoffs,
     )
     if expected_drawing_number is not None:
         if type(expected_drawing_number) is not int or expected_drawing_number <= 0:
@@ -138,11 +140,12 @@ def _select_open_from_page(
     *,
     now: datetime,
     community: str,
+    operational_cutoffs: Mapping[int, datetime] | None = None,
 ) -> tuple[DrawingReference, dict[str, object]]:
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("open drawing selection time must be timezone-aware")
     current = now.astimezone(timezone.utc)
-    candidates: list[tuple[datetime, int, dict[str, object]]] = []
+    candidates: list[tuple[datetime, datetime, int, dict[str, object]]] = []
     for row in drawings:
         if row.get("status") not in {"active", "expected"}:
             continue
@@ -150,9 +153,14 @@ def _select_open_from_page(
         if type(drawing_id) is not int:
             raise ValueError("playable page-one drawing id must be an integer")
         deadline = _parse_deadline(row.get("ended_at"))
-        if deadline <= current:
+        selection_deadline = _selection_deadline(
+            drawing_id,
+            deadline,
+            operational_cutoffs,
+        )
+        if selection_deadline <= current:
             continue
-        candidates.append((deadline, drawing_id, row))
+        candidates.append((selection_deadline, deadline, drawing_id, row))
     if not candidates:
         raise ValueError(
             f"No playable {community} drawing was found on fresh API page one"
@@ -163,13 +171,13 @@ def _select_open_from_page(
     )
     if len(nearest) != 1:
         identities = ",".join(
-            str(item[1]) for item in sorted(nearest, key=lambda item: item[1])
+            str(item[2]) for item in sorted(nearest, key=lambda item: item[2])
         )
         raise ValueError(
             "ambiguous nearest playable drawings on fresh API page one: "
             f"{identities}"
         )
-    deadline, drawing_id, selected = nearest[0]
+    _selection_cutoff, deadline, drawing_id, selected = nearest[0]
     number = selected.get("number")
     if number is not None and type(number) is not int:
         raise ValueError("playable page-one drawing number must be an integer or null")
@@ -184,6 +192,22 @@ def _select_open_from_page(
         ),
         selected,
     )
+
+
+def _selection_deadline(
+    drawing_id: int,
+    identity_deadline: datetime,
+    operational_cutoffs: Mapping[int, datetime] | None,
+) -> datetime:
+    if operational_cutoffs is None or drawing_id not in operational_cutoffs:
+        return identity_deadline
+    cutoff = operational_cutoffs[drawing_id]
+    if not isinstance(cutoff, datetime) or cutoff.tzinfo is None:
+        raise ValueError("operational selection cutoff must be timezone-aware")
+    normalized = cutoff.astimezone(timezone.utc)
+    if normalized > identity_deadline:
+        raise ValueError("operational selection cutoff cannot extend ended_at")
+    return normalized
 
 
 def _parse_deadline(value: object) -> datetime:

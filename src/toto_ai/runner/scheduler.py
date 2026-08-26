@@ -34,7 +34,6 @@ from toto_ai.api.client import TotoBriefClient
 from toto_ai.api.rate_limit import TotoBriefRequestError
 from toto_ai.db.models import ArchivedPackage
 from toto_ai.db.session import get_session_factory, init_db
-from toto_ai.ev.drawing import resolve_open_drawing_from_api
 from toto_ai.ev.models import EVConfig, validate_config_bank
 from toto_ai.ev.package_quality import (
     EVALUATION_MC_STREAM,
@@ -120,6 +119,7 @@ PUBLICATION_LEAD_MINUTES = 10
 SCHEDULER_TRIGGER_OFFSETS_MINUTES = (120, 90, 60, 45, 30, 20, 16, 10)
 LKG_MAX_SOURCE_AGE_SECONDS = 45 * 60
 DEFAULT_MINIMUM_FINAL_RUNTIME_SECONDS = 300
+MINIMUM_COLLECTION_START_SECONDS = 30
 
 SchedulerPhase = Literal["preflight", "fallback", "final", "freeze"]
 PackagePhase = Literal["fallback", "final"]
@@ -129,6 +129,10 @@ PhaseDecision = Literal["PLAY", "NO BET"]
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 _RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}\Z")
 _COUPON_PATTERN = re.compile(r"[1X2]{15}\Z")
+_ANSI_ESCAPE_PATTERN = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+_UNSAFE_DIAGNOSTIC_CONTROL_PATTERN = re.compile(
+    r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]"
+)
 _MOSCOW = ZoneInfo("Europe/Moscow")
 _TIMING_PAYLOAD_FIELDS = {
     "status",
@@ -1121,6 +1125,33 @@ def validate_scheduler_final_runtime_budget(
     if remaining < plan.minimum_final_runtime_seconds:
         raise SchedulerTransientError(
             "insufficient final runtime budget before the actionable cutoff",
+            category="run_drawing_timeout",
+        )
+    return remaining
+
+
+def validate_scheduler_phase_runtime_budget(
+    context: SchedulerPhaseContext,
+    observed_at: datetime,
+) -> float:
+    """Require time for both fresh collection and the reserved package build."""
+
+    observed = _require_utc_datetime("observed_at", observed_at)
+    deadline = (
+        context.phase_deadline
+        if context.phase_deadline is not None
+        else context.plan.actionable_publication_deadline
+    )
+    remaining = (deadline - observed).total_seconds()
+    required = (
+        context.plan.minimum_final_runtime_seconds
+        + MINIMUM_COLLECTION_START_SECONDS
+    )
+    if remaining < required:
+        phase_label = context.scheduler_phase or context.phase
+        raise SchedulerTransientError(
+            f"insufficient {phase_label} phase runtime budget: "
+            f"remaining={remaining:.1f}s required={required}s",
             category="run_drawing_timeout",
         )
     return remaining
@@ -2212,12 +2243,16 @@ def execute_scheduler_tick(
                 plan.actionable_publication_deadline
                 if phase == "final"
                 else (
-                    plan.fallback_at - timedelta(seconds=5)
-                    if phase == "warmup"
+                    plan.preflight_at - timedelta(seconds=5)
+                    if phase == "freshness_preflight"
                     else (
-                        plan.final_at - timedelta(seconds=5)
-                        if phase == "refresh"
-                        else None
+                        plan.fallback_at - timedelta(seconds=5)
+                        if phase == "warmup"
+                        else (
+                            plan.final_at - timedelta(seconds=5)
+                            if phase == "refresh"
+                            else None
+                        )
                     )
                 )
             ),
@@ -2740,7 +2775,7 @@ def _persist_last_known_good(
             "candidate package hash mismatch", category="lkg_integrity"
         )
     if not (
-        plan.preflight_at <= result.source_captured_at <= completed_at
+        plan.freshness_preflight_at <= result.source_captured_at <= completed_at
         and completed_at <= plan.publish_deadline
         and (completed_at - result.source_captured_at).total_seconds()
         <= LKG_MAX_SOURCE_AGE_SECONDS
@@ -3030,7 +3065,7 @@ def _load_last_known_good(plan: SchedulerPlan) -> LastKnownGoodPackage:
     )
     completed_at = _parse_utc_datetime("LKG completed_at", payload["completed_at"])
     if not (
-        plan.preflight_at <= source_captured_at <= completed_at
+        plan.freshness_preflight_at <= source_captured_at <= completed_at
         and completed_at <= plan.publish_deadline
         and (completed_at - source_captured_at).total_seconds()
         <= LKG_MAX_SOURCE_AGE_SECONDS
@@ -4126,7 +4161,6 @@ def build_run_drawing_phase_command(
         raise ValueError("run-drawing command is only valid for package phases")
     validated_executable = _validated_python_executable(python_executable)
     plan = context.plan
-    atomic_final = context.phase == "final" and context.atomic_final
     lead_minutes = _runner_final_lead_minutes(context)
     report_dir = context.work_dir / "reports"
     cache_root = context.work_dir / "cache"
@@ -4153,7 +4187,7 @@ def build_run_drawing_phase_command(
         "--final-lead-minutes",
         str(lead_minutes),
         "--safety-stop-minutes",
-        str(12 if atomic_final else 10),
+        str(_runner_safety_stop_minutes(context)),
         "--db",
         str(plan.db),
         "--report-dir",
@@ -4172,6 +4206,8 @@ def build_run_drawing_phase_command(
         str(plan.retry_delay_seconds),
         "--cache-root",
         str(cache_root),
+        "--shared-schedule-cache-root",
+        str(plan.output_dir / "shared-cache" / "api-sports-schedule"),
     ]
     if plan.timing_overrides is not None:
         command.extend(("--timing-overrides", str(plan.timing_overrides)))
@@ -4206,11 +4242,35 @@ def build_run_drawing_phase_command(
 def _runner_final_lead_minutes(context: SchedulerPhaseContext) -> int:
     """Return the canonical run-drawing lead bound for one scheduler phase."""
 
+    if context.scheduler_phase == "freshness_preflight":
+        return 60
     if context.scheduler_phase == "warmup":
         return 45
     if context.phase == "fallback":
         return 30
     return 20 if context.atomic_final else 15
+
+
+def _runner_safety_stop_minutes(context: SchedulerPhaseContext) -> int:
+    """Reserve measured package-build time before the parent phase deadline."""
+
+    phase_deadline = (
+        context.phase_deadline
+        if context.phase_deadline is not None
+        else context.plan.actionable_publication_deadline
+    )
+    collection_stop = phase_deadline - timedelta(
+        seconds=context.plan.minimum_final_runtime_seconds
+    )
+    seconds_before_cutoff = (
+        context.plan.operational_cutoff - collection_stop
+    ).total_seconds()
+    computed = (
+        1
+        if seconds_before_cutoff <= 0
+        else max(1, math.ceil(seconds_before_cutoff / 60.0))
+    )
+    return min(computed, _runner_final_lead_minutes(context) - 1)
 
 
 def build_prepare_drawing_command(
@@ -4226,7 +4286,8 @@ def build_prepare_drawing_command(
         "-m",
         "toto_ai.cli",
         "prepare-drawing",
-        "--open",
+        "--drawing-id",
+        str(plan.drawing_id),
         "--refresh-totobrief",
         "--db",
         str(plan.db),
@@ -4281,7 +4342,11 @@ class CommandSchedulerPhaseRunner:
         if context.phase == "preflight":
             self._preflight(context.plan, context.work_dir)
             self.target_validator(context.plan, _read_now(self.now))
-            if context.scheduler_phase in {"warmup", "refresh"}:
+            if context.scheduler_phase in {
+                "freshness_preflight",
+                "warmup",
+                "refresh",
+            }:
                 return self(
                     replace(
                         context,
@@ -4344,6 +4409,7 @@ class CommandSchedulerPhaseRunner:
         )
         timeout_seconds = (phase_deadline - subprocess_started_at).total_seconds()
         validate_scheduler_final_runtime_budget(context.plan, subprocess_started_at)
+        validate_scheduler_phase_runtime_budget(context, subprocess_started_at)
         try:
             completed = subprocess.run(
                 command,
@@ -4355,10 +4421,27 @@ class CommandSchedulerPhaseRunner:
                 timeout=timeout_seconds,
             )
         except subprocess.TimeoutExpired as error:
+            observed_at = _read_now(self.now)
+            diagnostics_path = _write_run_drawing_timeout_diagnostics(
+                context,
+                subprocess_started_at=subprocess_started_at,
+                phase_deadline=phase_deadline,
+                configured_timeout_seconds=timeout_seconds,
+                observed_at=observed_at,
+                timeout_error=error,
+                secret=self.environment.get("API_SPORTS_KEY", ""),
+            )
+            phase_label = context.scheduler_phase or context.phase
+            deadline_label = (
+                "the actionable T-10 deadline"
+                if context.scheduler_phase == "final" or context.phase == "final"
+                else f"the {phase_label} phase deadline"
+            )
             raise SchedulerTransientError(
-                "run-drawing timed out before the T-10 cutoff",
+                f"run-drawing {phase_label} phase timed out at {deadline_label}; "
+                f"diagnostics written to {diagnostics_path}",
                 category="run_drawing_timeout",
-            ) from error
+            ) from None
         if completed.returncode != 0:
             detail = completed.stderr.strip() or completed.stdout.strip()
             secret = self.environment.get("API_SPORTS_KEY", "")
@@ -5905,7 +5988,7 @@ def _parse_runner_manifest_phase_result_strict(
         or _strict_int("runner final_lead_minutes", config["final_lead_minutes"])
         != _runner_final_lead_minutes(context)
         or _strict_int("runner safety_stop_minutes", config["safety_stop_minutes"])
-        != (12 if context.atomic_final else 10)
+        != _runner_safety_stop_minutes(context)
     ):
         raise SchedulerPhaseError(
             "runner manifest config does not match scheduler plan"
@@ -8358,23 +8441,64 @@ def _validate_preflight_inputs(plan: SchedulerPlan) -> None:
 
 
 def _validate_live_scheduler_target(plan: SchedulerPlan, observed_at: datetime) -> None:
-    """Validate the exact open target during the production T-45 preflight."""
+    """Validate the exact immutable target during a production preflight.
+
+    A scheduler plan is created after cutoff-aware selection.  Re-selecting
+    the nearest drawing here by TotoBrief ``ended_at`` can incorrectly choose
+    the preceding drawing after its verified operational cutoff has passed.
+    Validate the plan-bound row directly instead; never switch targets during
+    execution.
+    """
 
     client = TotoBriefClient()
-    reference = resolve_open_drawing_from_api(client, now=observed_at)
+    page = client.drawings("baltbet-main", 1)
+    rows = page.get("data") if isinstance(page, Mapping) else None
+    if not isinstance(rows, list):
+        raise SchedulerIntegrityError(
+            "live drawing page is malformed",
+            category="target_identity",
+        )
+    matches = tuple(
+        row
+        for row in rows
+        if isinstance(row, Mapping) and row.get("id") == plan.drawing_id
+    )
+    if len(matches) != 1:
+        raise SchedulerIntegrityError(
+            "scheduler target is not uniquely present on the live drawing page",
+            category="target_identity",
+        )
+    reference = matches[0]
+    try:
+        reference_deadline = _parse_utc_datetime(
+            "live drawing ended_at", reference.get("ended_at")
+        )
+    except (TypeError, ValueError) as error:
+        raise SchedulerIntegrityError(
+            "live scheduler target deadline is invalid",
+            category="target_identity",
+        ) from error
+    if (
+        reference.get("number") != plan.drawing
+        or reference.get("status") not in {"active", "expected"}
+        or reference_deadline != plan.ended_at
+        or observed_at >= plan.operational_cutoff
+    ):
+        raise SchedulerIntegrityError(
+            "live scheduler target summary does not match the scheduler plan",
+            category="target_identity",
+        )
     target = parse_target_drawing(
-        client.drawing_info(reference.drawing_id),
+        client.drawing_info(plan.drawing_id),
         fetched_at=observed_at,
     )
     if (
-        reference.number != plan.drawing
-        or target.drawing_number != plan.drawing
+        target.drawing_number != plan.drawing
         or target.deadline != plan.ended_at
         or (
             plan.drawing_id is not None
             and (
-                reference.drawing_id != plan.drawing_id
-                or target.drawing_id != plan.drawing_id
+                target.drawing_id != plan.drawing_id
             )
         )
     ):
@@ -9432,6 +9556,68 @@ def _exact_mapping(value: object, expected: set[str], name: str) -> Mapping[str,
 def _safe_error(error: BaseException) -> str:
     message = str(error).strip()
     return message or type(error).__name__
+
+
+def _sanitized_subprocess_tail(value: object, *, secret: str) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        text = value.decode("utf-8", errors="replace")
+    else:
+        text = str(value)
+    if secret:
+        text = text.replace(secret, "[REDACTED]")
+    text = _ANSI_ESCAPE_PATTERN.sub("", text)
+    text = _UNSAFE_DIAGNOSTIC_CONTROL_PATTERN.sub("", text)
+    text = text.replace("\r", "\n")
+    lines = [line.rstrip() for line in text.splitlines()]
+    text = "\n".join(line for line in lines if line.strip()).strip()
+    return text[-4000:]
+
+
+def _write_run_drawing_timeout_diagnostics(
+    context: SchedulerPhaseContext,
+    *,
+    subprocess_started_at: datetime,
+    phase_deadline: datetime,
+    configured_timeout_seconds: float,
+    observed_at: datetime,
+    timeout_error: subprocess.TimeoutExpired,
+    secret: str,
+) -> Path:
+    """Persist the last safe child output when a package phase is killed."""
+
+    phase_label = context.scheduler_phase or context.phase
+    payload = {
+        "schema_version": 1,
+        "plan_id": context.plan.plan_id,
+        "drawing": context.plan.drawing,
+        "drawing_id": context.plan.drawing_id,
+        "run_id": context.run_id,
+        "scheduler_phase": phase_label,
+        "runner_phase": context.phase,
+        "subprocess_started_at": subprocess_started_at.isoformat(),
+        "deadline": phase_deadline.isoformat(),
+        "observed_at": observed_at.isoformat(),
+        "configured_timeout_seconds": max(0.0, configured_timeout_seconds),
+        "stdout_tail": _sanitized_subprocess_tail(
+            timeout_error.stdout,
+            secret=secret,
+        ),
+        "stderr_tail": _sanitized_subprocess_tail(
+            timeout_error.stderr,
+            secret=secret,
+        ),
+    }
+    content = _canonical_json_bytes(payload) + b"\n"
+    for index in range(1, 100):
+        path = context.work_dir / f"run-drawing-timeout-{index:02d}.json"
+        try:
+            _write_exclusive_atomic(context.plan.output_dir, path, content)
+        except FileExistsError:
+            continue
+        return path
+    raise SchedulerError("run-drawing timeout diagnostic slots are exhausted")
 
 
 def _scheduler_failure_detail(error: BaseException) -> dict[str, Any]:

@@ -17,6 +17,7 @@ from toto_ai.db.models import (
 )
 from toto_ai.db.session import get_session_factory, open_readonly_db
 from toto_ai.runner.morning_dispatch import load_morning_dispatch_record
+from toto_ai.runner.operational_selection import load_verified_operational_cutoffs
 from toto_ai.runner.preflight_retry_scheduler import (
     prepare_preflight_retry_artifacts,
     verify_preflight_retry_launch_agent,
@@ -39,12 +40,14 @@ def build_preflight_status(
     state_root: str | Path,
     scheduler_root: str | Path,
     now: datetime,
+    project_root: str | Path | None = None,
 ) -> dict[str, Any]:
     """Return status using only read-only DB and local generated artifacts."""
     observed_at = _utc(now)
     database = Path(db).absolute()
     state = Path(state_root).absolute()
     scheduler = Path(scheduler_root).absolute()
+    root = Path(project_root).absolute() if project_root is not None else state.parent
     engine = open_readonly_db(database)
     try:
         session_factory = get_session_factory(engine)
@@ -54,6 +57,10 @@ def build_preflight_status(
                 open=True,
                 community=community,
                 now=observed_at,
+                operational_cutoffs=load_verified_operational_cutoffs(
+                    state,
+                    project_root=root,
+                ),
             )
         deadline = _parse_timestamp(reference.ended_at)
         record, record_path = _latest_record(

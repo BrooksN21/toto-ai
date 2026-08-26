@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 
 import pytest
 from sqlalchemy import create_engine
@@ -213,6 +214,21 @@ def test_resolve_drawing_reference_open_never_uses_past_ended_drawing(session):
     )
 
     assert reference.drawing_id == 11939
+    assert reference.ended_at == "2026-07-09T14:00:00Z"
+
+
+def test_open_selection_retires_verified_operationally_closed_drawing(session):
+    reference = resolve_drawing_reference(
+        session,
+        open=True,
+        now="2026-07-09T12:30:00Z",
+        operational_cutoffs={
+            11938: datetime(2026, 7, 9, 12, 0, tzinfo=timezone.utc),
+        },
+    )
+
+    assert reference.drawing_id == 11939
+    assert reference.number == 4942
     assert reference.ended_at == "2026-07-09T14:00:00Z"
 
 

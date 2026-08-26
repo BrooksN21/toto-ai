@@ -408,8 +408,9 @@ def test_runner_package_bridge_rejects_second_payload_mutation_before_ev(
 def test_run_drawing_wires_only_approved_options_and_fresh_dependencies(monkeypatch):
     provider_calls: list[tuple[str, object, int]] = []
 
-    def provider(api_key, *, cache_dir, quota_reserve):
+    def provider(api_key, *, cache_dir, schedule_cache_dir, quota_reserve):
         provider_calls.append((api_key, cache_dir, quota_reserve))
+        assert schedule_cache_dir is None
         return object()
 
     monkeypatch.setattr(cli, "APISportsClient", provider)
@@ -667,6 +668,7 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "--max-expansion-passes",
         "--retry-delay-seconds",
         "--cache-root",
+        "--shared-schedule-cache-root",
     }
     forbidden = {
         "--no-open",
@@ -718,9 +720,10 @@ def test_run_drawing_exposes_exact_approved_option_surface():
         "quota_reserve": 10,
         "max_passes": 3,
         "max_expansion_passes": 3,
-        "retry_delay_seconds": 65.0,
-        "cache_root": None,
-    }
+            "retry_delay_seconds": 65.0,
+            "cache_root": None,
+            "shared_schedule_cache_root": None,
+        }
 
 
 def test_scheduler_generated_run_drawing_argv_matches_cli_contract(
@@ -1594,7 +1597,7 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
         )["config"]
         manifest = _local_scheduler_manifest(
             final_lead_minutes=20,
-            safety_stop_minutes=12,
+            safety_stop_minutes=16,
             probability_snapshot_sha256=final_input["snapshot_sha256"],
             probability_input_sha256=final_input["probability_input_sha256"],
             schedule_evidence_ledger_sha256=plan_config[

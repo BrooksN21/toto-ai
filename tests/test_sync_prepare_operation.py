@@ -427,6 +427,66 @@ def test_fresh_page_rejects_ambiguous_nearest_deadline(tmp_path):
     engine.dispose()
 
 
+def test_fresh_page_skips_verified_operationally_closed_drawing(tmp_path):
+    target_cache = json.loads(
+        (FIXTURES / "drawing_4951_totobrief_target_cache.json").read_text()
+    )
+    first = json.loads(json.dumps(target_cache["payload"]))
+    second = json.loads(json.dumps(target_cache["payload"]))
+    first["data"].update(
+        {
+            "id": 12068,
+            "number": 4987,
+            "status": "active",
+            "ended_at": "2026-08-26T18:45:00Z",
+        }
+    )
+    second["data"].update(
+        {
+            "id": 12071,
+            "number": 4988,
+            "status": "expected",
+            "ended_at": "2026-08-27T19:00:00Z",
+        }
+    )
+
+    class TwoDrawingClient:
+        detail_calls: list[int] = []
+
+        def drawings(self, name="baltbet-main", page=1):
+            assert name == "baltbet-main"
+            assert page == 1
+            return {"data": [first["data"], second["data"]]}
+
+        def drawing_info(self, drawing_id):
+            self.detail_calls.append(drawing_id)
+            assert drawing_id == 12071
+            return second
+
+    now = datetime(2026, 8, 26, 16, 30, tzinfo=timezone.utc)
+    engine = init_db(tmp_path / "toto.db")
+    factory = get_session_factory(engine)
+    client = TwoDrawingClient()
+
+    synchronized = synchronize_open_drawing(
+        client,
+        factory,
+        now=now,
+        raw_cache_dir=tmp_path / "raw",
+        storage_root=tmp_path,
+        operational_cutoffs={
+            12068: datetime(2026, 8, 26, 15, 45, tzinfo=timezone.utc),
+        },
+    )
+
+    assert synchronized.ready is True
+    assert synchronized.reference.drawing_id == 12071
+    assert synchronized.reference.number == 4988
+    assert synchronized.reference.ended_at == "2026-08-27T19:00:00+00:00"
+    assert client.detail_calls == [12071]
+    engine.dispose()
+
+
 def test_expected_visible_number_mismatch_stops_before_detail_fetch(tmp_path):
     target_cache = json.loads(
         (FIXTURES / "drawing_4951_totobrief_target_cache.json").read_text()

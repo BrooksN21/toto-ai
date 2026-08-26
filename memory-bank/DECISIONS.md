@@ -1,5 +1,41 @@
 # Decisions
 
+## 2026-08-26: scheduler runtime uses operational cutoff end to end
+
+- TotoBrief `ended_at` remains immutable drawing identity only. Every parent
+  scheduler phase and child `run-drawing` wait schedule must use the same
+  hash-bound, non-extending `operational_cutoff`.
+- The T-60 freshness checkpoint is a real bounded package-path canary. It may
+  persist a validated non-actionable LKG, but cannot publish or authorize a
+  wager.
+- Each phase must reserve measured package runtime plus collection admission
+  before starting heavy work. A late phase fails before spawning the child;
+  child provider requests use the remaining safety interval as their maximum
+  transport timeout.
+- Verified schedule responses may be shared across phases for at most one hour.
+  Market odds remain run-scoped and are never shared through that cache.
+- Timeout failures persist sanitized phase-specific diagnostics. A later source
+  outage may reuse only a previously validated in-window LKG; without one the
+  scheduler remains fail-closed `NO_BET`.
+
+## 2026-08-26: frozen GOAL history may feed research shadow only
+
+- A GOAL history probe is consumable only after exact 15-event drawing/order,
+  same-orientation, fixture/team-ID, source-path/hash, semantic-report-hash,
+  frozen-TotoBrief authority and chronology validation.
+- GOAL terminal statuses use the existing common semantics:
+  `FINISHED -> FT`, `AFTER_ET -> AET`, and `AFTER_PEN -> PEN`. Every accepted
+  row must start strictly before both the shared `as_of` and target kickoff.
+- The sports estimate remains the existing untrained venue-only W-D-L model,
+  shrunk toward BK by matched venue sample size. Missing history or venue
+  coverage is BK fallback, never aggregate-form substitution.
+- The resulting dual-package comparison is
+  `PAPER_ONLY_NOT_ACTIVATED`, writes only to `reports/research/`, uses
+  deliberately non-uploadable package formats, and has no scheduler,
+  operator-result, PLAY, release, or automatic-wagering authority.
+- Drawing 4987 is a one-snapshot research comparison, not activation,
+  calibration, backtest, profitability, or release evidence.
+
 ## 2026-08-25: source collection is independent from scheduler activation
 
 - A morning review queue always triggers independent and official-consensus
@@ -1944,3 +1980,18 @@ ambiguous reversed evidence remains unresolved.
 - Package-selection provenance supports exactly the active scheduler schema v7;
   schema v6 remains rejected. A cross-module test must detect future version
   drift.
+
+## 2026-08-26 — Scheduler execution validates its immutable target directly
+
+- Cutoff-aware target selection happens when morning dispatch creates the
+  scheduler plan. Production execution must not repeat a nearest-drawing
+  selection based only on TotoBrief `ended_at`, because a preceding drawing may
+  remain API-playable after its verified operational cutoff.
+- Every scheduler preflight validates the exact plan-bound drawing ID, visible
+  number, status and identity `ended_at` on fresh page-one/detail responses.
+  It never switches the plan to another drawing.
+- Mandatory preparation uses `--drawing-id` from the immutable plan, never
+  `--open`. A missing, duplicate, finished or drifted target fails closed.
+- Virtual parent-clock drills cannot execute wall-clock children against shared
+  production persistence. Real network E2E acceptance runs only at real phase
+  times; network-free simulation remains the accelerated state-machine test.

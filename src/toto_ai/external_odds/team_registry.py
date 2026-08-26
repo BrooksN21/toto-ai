@@ -61,6 +61,18 @@ _CYRILLIC_TO_LATIN = {
     "ъ": "",
 }
 
+_LATIN_COMPATIBILITY_FOLD = {
+    "æ": "ae",
+    "œ": "oe",
+    "ø": "o",
+    "ł": "l",
+    "đ": "d",
+    "ð": "d",
+    "þ": "th",
+    "ß": "ss",
+    "ı": "i",
+}
+
 _EXPECTED_REVIEWED_CATALOG_HASH_UNSET = object()
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 
@@ -168,7 +180,10 @@ def transliterate_team_name(value: str) -> str:
         if not unicodedata.combining(character)
     )
     transliterated = "".join(
-        _CYRILLIC_TO_LATIN.get(character, character)
+        _CYRILLIC_TO_LATIN.get(
+            character,
+            _LATIN_COMPATIBILITY_FOLD.get(character, character),
+        )
         for character in without_marks
     )
     collapsed = " ".join(re.sub(r"[^a-z0-9]+", " ", transliterated).split())

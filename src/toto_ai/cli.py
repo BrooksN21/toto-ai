@@ -315,12 +315,16 @@ from toto_ai.runner.offline_replay import (
     load_offline_replay_inputs,
     resolve_offline_replay_paths,
 )
+from toto_ai.runner.operational_selection import load_verified_operational_cutoffs
 from toto_ai.runner.preflight_retry_scheduler import (
     install_preflight_retry_launch_agent,
     prepare_preflight_retry_artifacts,
 )
 from toto_ai.runner.preflight_status import build_preflight_status
 from toto_ai.runner.training_package import ensure_scheduler_training_package
+from toto_ai.sports_stats.goal_probe_research import (
+    run_goal_probe_package_comparison,
+)
 from toto_ai.sports_stats.operation import (
     collect_and_store_sports_stats,
     load_api_sports_key,
@@ -2037,10 +2041,13 @@ def _build_runner_package(
 def _api_sports_provider_factory(
     api_key: str,
     quota_reserve: int,
+    *,
+    schedule_cache_dir: Path | None = None,
 ) -> Callable[[Path], APISportsClient]:
     return lambda cache_dir: APISportsClient(
         api_key,
         cache_dir=cache_dir,
+        schedule_cache_dir=schedule_cache_dir,
         quota_reserve=quota_reserve,
     )
 
@@ -2499,6 +2506,10 @@ def run_drawing_command(
     max_expansion_passes: int = typer.Option(3, min=1),
     retry_delay_seconds: float = typer.Option(65.0, min=0.0),
     cache_root: str | None = typer.Option(None),
+    shared_schedule_cache_root: str | None = typer.Option(
+        None,
+        "--shared-schedule-cache-root",
+    ),
 ) -> None:
     """Safely run one pinned drawing through collection, audit, and EV."""
     replay_values = (drawing_id, target_cache, schedule_cache, replay_as_of)
@@ -2667,7 +2678,15 @@ def run_drawing_command(
                 expected_plan=bound_scheduler_plan,
             )
         )
-        provider_factory = _api_sports_provider_factory(api_key, quota_reserve)
+        provider_factory = _api_sports_provider_factory(
+            api_key,
+            quota_reserve,
+            schedule_cache_dir=(
+                None
+                if not isinstance(shared_schedule_cache_root, (str, os.PathLike))
+                else Path(shared_schedule_cache_root)
+            ),
+        )
         resources: _RunnerResources | None = None
         timing_resolution: RunnerTimingResolution | None = None
 
@@ -2865,6 +2884,11 @@ def run_drawing_command(
                 ),
                 verify_timing_override=(
                     verify_timing_override if timing_overrides is not None else None
+                ),
+                operational_cutoff=(
+                    None
+                    if bound_scheduler_plan is None
+                    else bound_scheduler_plan.operational_cutoff
                 ),
             )
             result = (
@@ -3271,6 +3295,15 @@ def preflight_status_command(
             community=community,
             state_root=state_root,
             scheduler_root=scheduler_root,
+            project_root=Path(
+                os.path.commonpath(
+                    (
+                        Path(db).absolute(),
+                        Path(state_root).absolute(),
+                        Path(scheduler_root).absolute(),
+                    )
+                )
+            ),
             now=(
                 datetime.now(timezone.utc)
                 if at is None
@@ -3419,6 +3452,7 @@ def _prepare_current_for_morning(
     api_sports_max_retries: int,
     expansion_horizon_days: int,
     project_root: Path,
+    state_root: Path,
     env_file: Path,
     schedule_evidence_ledger: Path,
     reviewed_schedule_catalog: Path | None = None,
@@ -3443,6 +3477,10 @@ def _prepare_current_for_morning(
                 DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS
             ),
             storage_root=project_root,
+            operational_cutoffs=load_verified_operational_cutoffs(
+                state_root,
+                project_root=project_root,
+            ),
         )
         if (
             synchronized.detail.reason_code == "totobrief_pool_not_ready"
@@ -3740,6 +3778,7 @@ def morning_dispatch_command(
                 api_sports_max_retries=api_sports_max_retries,
                 expansion_horizon_days=expansion_horizon_days,
                 project_root=root,
+                state_root=config.state_root,
                 env_file=config.env_file,
                 schedule_evidence_ledger=config.schedule_evidence_ledger,
                 reviewed_schedule_catalog=(
@@ -4779,6 +4818,10 @@ def sync_prepare_command(
         min=0,
     ),
     expansion_horizon_days: int = typer.Option(5, min=1, max=5),
+    state_root: str = typer.Option(
+        "data/scheduler/morning-dispatch",
+        "--state-root",
+    ),
     sync_only: bool = typer.Option(
         False,
         "--sync-only",
@@ -4828,6 +4871,10 @@ def sync_prepare_command(
             raw_cache_dir=raw_cache_dir,
             detail_cache_max_age_seconds=detail_cache_max_age_seconds,
             storage_root=Path.cwd(),
+            operational_cutoffs=load_verified_operational_cutoffs(
+                state_root,
+                project_root=Path.cwd(),
+            ),
         )
         detail = synchronized.detail
         cache_age = (
@@ -5825,6 +5872,63 @@ def compare_preliminary_packages_command(
                 "report": str(json_path),
                 "baseline_package": str(baseline_path),
                 "sports_package": str(candidate_path),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
+
+
+@app.command("compare-goal-shadow-packages")
+def compare_goal_shadow_packages_command(
+    drawing_id: int = typer.Option(..., "--drawing-id", min=1),
+    bank: int = typer.Option(4980, "--bank", min=30),
+    stake: int = typer.Option(30, "--stake", min=1),
+    as_of: str = typer.Option(..., "--as-of"),
+    coverage_summary: str = typer.Option(..., "--coverage-summary"),
+    raw_cache_dir: str = typer.Option("data/raw", "--raw-cache-dir"),
+    output_dir: str = typer.Option(
+        "reports/research/goal-sports-dual-package",
+        "--output-dir",
+    ),
+    monte_carlo_samples: int = typer.Option(
+        2048,
+        "--monte-carlo-samples",
+        min=1,
+    ),
+) -> None:
+    """Compare frozen BK and GOAL sports-shadow packages — RESEARCH ONLY."""
+
+    try:
+        parsed_as_of = parse_historical_as_of(as_of)
+        if parsed_as_of is None:
+            raise ValueError("--as-of is required")
+        report, paths = run_goal_probe_package_comparison(
+            drawing_id=drawing_id,
+            bank=bank,
+            stake=stake,
+            as_of=parsed_as_of,
+            raw_cache_dir=raw_cache_dir,
+            coverage_summary_path=coverage_summary,
+            output_dir=output_dir,
+            project_root=Path.cwd(),
+            monte_carlo_samples=monte_carlo_samples,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": report["status"],
+                "drawing_number": report["drawing_number"],
+                "sports_coverage_count": report["sports_coverage_count"],
+                "sports_fallback_count": report["sports_fallback_count"],
+                "overlap_count": report["comparison"]["overlap_count"],
+                "manifest": str(paths.manifest),
+                "comparison": str(paths.comparison_json),
+                "analytics": str(paths.analytics_markdown),
+                "baseline_package": str(paths.baseline_txt),
+                "sports_package": str(paths.sports_txt),
             },
             ensure_ascii=False,
             sort_keys=True,

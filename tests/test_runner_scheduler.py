@@ -40,6 +40,7 @@ from toto_ai.runner.scheduler import (
     SchedulerPhaseContext,
     SchedulerPhaseError,
     SchedulerPhaseResult,
+    SchedulerTransientError,
     VirtualSchedulerClock,
     authorize_experimental_manual_release,
     build_prepare_drawing_command,
@@ -147,6 +148,85 @@ def _atomic_final_payload(plan):
             ],
         }
     }
+
+
+def test_live_target_validation_keeps_cutoff_selected_plan_target(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    plan = _plan(tmp_path)
+    preceding_deadline = plan.ended_at - timedelta(hours=1)
+
+    class Client:
+        def drawings(self, name, page):
+            assert (name, page) == ("baltbet-main", 1)
+            return {
+                "data": [
+                    {
+                        "id": 12000,
+                        "number": 5000,
+                        "status": "expected",
+                        "ended_at": preceding_deadline.isoformat(),
+                    },
+                    {
+                        "id": plan.drawing_id,
+                        "number": plan.drawing,
+                        "status": "expected",
+                        "ended_at": plan.ended_at.isoformat(),
+                    },
+                ]
+            }
+
+        def drawing_info(self, drawing_id):
+            assert drawing_id == plan.drawing_id
+            return _atomic_final_payload(plan)
+
+    frozen = []
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(
+        scheduler,
+        "_freeze_authoritative_drawing",
+        lambda target_plan, fingerprint: frozen.append(
+            (target_plan.plan_id, fingerprint)
+        ),
+    )
+
+    scheduler._validate_live_scheduler_target(
+        plan,
+        preceding_deadline + timedelta(minutes=1),
+    )
+
+    assert len(frozen) == 1
+    assert frozen[0][0] == plan.plan_id
+
+
+def test_live_target_validation_rejects_plan_target_missing_from_page(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    plan = _plan(tmp_path)
+
+    class Client:
+        def drawings(self, name, page):
+            assert (name, page) == ("baltbet-main", 1)
+            return {
+                "data": [
+                    {
+                        "id": 12000,
+                        "number": 5000,
+                        "status": "expected",
+                        "ended_at": (plan.ended_at - timedelta(hours=1)).isoformat(),
+                    }
+                ]
+            }
+
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+
+    with pytest.raises(SchedulerIntegrityError, match="not uniquely present"):
+        scheduler._validate_live_scheduler_target(
+            plan,
+            plan.tls_preflight_at,
+        )
 
 
 def _play(package: bytes, context: SchedulerPhaseContext):
@@ -382,8 +462,8 @@ def _valid_runner_manifest(
             "bank": context.plan.requested_bank,
             "stake": context.plan.stake,
             "mode": "playable",
-            "final_lead_minutes": 30 if context.phase == "fallback" else 15,
-            "safety_stop_minutes": 10,
+            "final_lead_minutes": scheduler._runner_final_lead_minutes(context),
+            "safety_stop_minutes": scheduler._runner_safety_stop_minutes(context),
             "provider": context.plan.provider,
             "quality_v2": quality_v2_config_payload(context.plan.quality_v2_ev_config),
             "selection_context": bound_selection_context(
@@ -1260,6 +1340,31 @@ def test_exact_offsets_and_phase_start_times_are_operational_cutoff_anchored(
     }
 
 
+def test_freshness_checkpoint_has_bounded_end_to_end_canary_window(
+    tmp_path: Path,
+):
+    plan = _plan(tmp_path)
+    observed = plan.freshness_preflight_at
+    contexts: list[SchedulerPhaseContext] = []
+
+    def phase_runner(context: SchedulerPhaseContext) -> SchedulerPhaseResult:
+        contexts.append(context)
+        return SchedulerPhaseResult.completed("canary completed")
+
+    result = execute_scheduler_tick(
+        plan,
+        phase_runner=phase_runner,
+        now=lambda: observed,
+        sleep=lambda _seconds: None,
+    )
+
+    assert result is None
+    assert len(contexts) == 1
+    assert contexts[0].scheduler_phase == "freshness_preflight"
+    assert contexts[0].phase == "preflight"
+    assert contexts[0].phase_deadline == plan.preflight_at - timedelta(seconds=5)
+
+
 def test_generated_artifacts_are_credential_free_generic_and_exclusive(
     tmp_path: Path,
 ):
@@ -1422,7 +1527,10 @@ def test_command_phase_preflight_runs_mandatory_prepare_drawing(
 
     assert result.status == "complete"
     assert calls[0][0][3] == "prepare-drawing"
-    assert "--open" in calls[0][0]
+    assert "--open" not in calls[0][0]
+    assert calls[0][0][calls[0][0].index("--drawing-id") + 1] == str(
+        plan.drawing_id
+    )
     assert "TOTO_LEGACY_NAME_MATCHING" not in calls[0][1]["env"]
     assert calls[0][1]["cwd"] == plan.project_root
 
@@ -1465,6 +1573,61 @@ def test_command_phase_preflight_uses_fresh_post_preparation_time(
 
     assert result.status == "complete"
     assert validator_observations == [preparation_completed_at]
+
+
+def test_freshness_preflight_runs_full_end_to_end_canary(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    base = _manifest_context(tmp_path, phase="preflight")
+    context = replace(
+        base,
+        scheduler_phase="freshness_preflight",
+        scheduled_at=base.plan.freshness_preflight_at,
+        started_at=base.plan.freshness_preflight_at,
+        phase_deadline=base.plan.preflight_at - timedelta(seconds=5),
+    )
+    fallback_context = replace(
+        context,
+        phase="fallback",
+        work_dir=context.run_dir / "fallback",
+        atomic_final=False,
+    )
+    calls = []
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == context.plan.drawing_id
+            return _atomic_final_payload(context.plan)
+
+    def completed(command, **kwargs):
+        calls.append((tuple(command), kwargs))
+        _write_runner_manifest(
+            fallback_context,
+            _valid_runner_manifest(fallback_context),
+        )
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(scheduler.subprocess, "run", completed)
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"},
+        target_validator=lambda _plan, _observed: None,
+        now=lambda: context.plan.freshness_preflight_at,
+    )
+    monkeypatch.setattr(runner, "_preflight", lambda _plan, _work_dir: None)
+
+    result = runner(context)
+
+    assert result.status == "complete"
+    assert len(calls) == 1
+    command, kwargs = calls[0]
+    assert command[command.index("--final-lead-minutes") + 1] == "60"
+    assert kwargs["timeout"] == pytest.approx(
+        (
+            context.phase_deadline - context.plan.freshness_preflight_at
+        ).total_seconds()
+    )
 
 
 def test_command_final_subprocess_timeout_preserves_publication_reserve(
@@ -1523,6 +1686,60 @@ def test_command_final_subprocess_timeout_preserves_publication_reserve(
     assert recorded_timeouts == sorted(recorded_timeouts, reverse=True)
 
 
+def test_command_package_timeout_persists_sanitized_phase_diagnostics(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    context = replace(
+        _manifest_context(tmp_path, phase="fallback"),
+        scheduler_phase="warmup",
+    )
+    context = replace(
+        context,
+        phase_deadline=context.plan.fallback_at - timedelta(seconds=5),
+    )
+    secret = "timeout-secret-must-not-leak"
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == context.plan.drawing_id
+            return _atomic_final_payload(context.plan)
+
+    def time_out(command, **kwargs):
+        raise subprocess.TimeoutExpired(
+            command,
+            kwargs["timeout"],
+            output=f"\x1b[31mCollecting fresh API-Sports odds\x1b[0m {secret}\n",
+            stderr=b"provider still unavailable\n",
+        )
+
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(scheduler.subprocess, "run", time_out)
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": secret},
+        now=lambda: context.plan.preflight_at,
+    )
+
+    with pytest.raises(SchedulerTransientError) as error:
+        runner(context)
+
+    message = str(error.value)
+    assert "warmup phase timed out" in message
+    assert "T-10 cutoff" not in message
+    diagnostics = context.work_dir / "run-drawing-timeout-01.json"
+    payload = json.loads(diagnostics.read_text(encoding="utf-8"))
+    assert payload["scheduler_phase"] == "warmup"
+    assert payload["runner_phase"] == "fallback"
+    assert payload["deadline"] == context.phase_deadline.isoformat()
+    assert payload["configured_timeout_seconds"] > 0
+    assert payload["stdout_tail"] == (
+        "Collecting fresh API-Sports odds [REDACTED]"
+    )
+    assert payload["stderr_tail"] == "provider still unavailable"
+    assert secret not in diagnostics.read_text(encoding="utf-8")
+    assert str(diagnostics) in message
+
+
 def test_command_final_rechecks_runtime_budget_after_snapshot_capture(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -1576,6 +1793,46 @@ def test_command_final_rechecks_runtime_budget_after_snapshot_capture(
     assert state["terminal"] == "no_bet"
 
 
+def test_command_package_phase_reserves_collection_and_optimizer_runtime(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+):
+    context = replace(
+        _manifest_context(tmp_path, phase="fallback"),
+        scheduler_phase="refresh",
+    )
+    deadline = context.plan.final_at - timedelta(seconds=5)
+    context = replace(context, phase_deadline=deadline)
+    observed = deadline - timedelta(
+        seconds=context.plan.minimum_final_runtime_seconds + 29
+    )
+    subprocess_calls = []
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == context.plan.drawing_id
+            return _atomic_final_payload(context.plan)
+
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(
+        scheduler.subprocess,
+        "run",
+        lambda command, **_kwargs: subprocess_calls.append(command),
+    )
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"},
+        now=lambda: observed,
+    )
+
+    with pytest.raises(
+        SchedulerTransientError,
+        match="insufficient refresh phase runtime budget",
+    ):
+        runner(context)
+
+    assert subprocess_calls == []
+
+
 def test_prepare_command_uses_absolute_raw_and_reusable_provider_cache(
     tmp_path: Path,
 ):
@@ -1585,6 +1842,8 @@ def test_prepare_command_uses_absolute_raw_and_reusable_provider_cache(
         plan.output_dir / "runs" / "one" / "work" / "preflight",
     )
 
+    assert "--open" not in command
+    assert command[command.index("--drawing-id") + 1] == str(plan.drawing_id)
     assert command[command.index("--raw-cache-dir") + 1] == str(
         tmp_path / "data" / "raw"
     )
@@ -1626,6 +1885,9 @@ def test_package_phases_keep_run_isolated_cache(tmp_path: Path):
     )
     assert command[command.index("--cache-root") + 1] != str(
         context.plan.project_root / "data" / "external-cache" / "api-sports"
+    )
+    assert command[command.index("--shared-schedule-cache-root") + 1] == str(
+        context.plan.output_dir / "shared-cache" / "api-sports-schedule"
     )
 
 

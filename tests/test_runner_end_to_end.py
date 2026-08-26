@@ -668,9 +668,15 @@ def test_run_drawing_cli_computed_threshold_no_bet_leaks_no_coupon_artifact(
             minimum_denominator=components.minimum_denominator,
         )
 
-    def configured_provider_factory(api_key: str, quota_reserve: int):
+    def configured_provider_factory(
+        api_key: str,
+        quota_reserve: int,
+        *,
+        schedule_cache_dir: Path | None = None,
+    ):
         assert api_key == SENTINEL_KEY
         assert quota_reserve == 10
+        assert schedule_cache_dir is None
 
         def create(_cache_dir: Path):
             provider = _FakeProvider(payload, clock.now())
@@ -1105,9 +1111,15 @@ def test_command_boundary_detaches_chained_provider_secret_from_every_surface(
     monkeypatch.setenv("API_SPORTS_KEY", SENTINEL_KEY)
     monkeypatch.setattr(cli_module, "TotoBriefClient", lambda: client)
 
-    def configured_provider_factory(api_key: str, quota_reserve: int):
+    def configured_provider_factory(
+        api_key: str,
+        quota_reserve: int,
+        *,
+        schedule_cache_dir: Path | None = None,
+    ):
         assert api_key == SENTINEL_KEY
         assert quota_reserve == 10
+        assert schedule_cache_dir is None
 
         def fail(_cache_dir: Path):
             try:

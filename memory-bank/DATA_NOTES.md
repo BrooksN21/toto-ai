@@ -135,3 +135,10 @@
 - A scheduled expected drawing number is compared only with the fresh
   TotoBrief page-one open candidate. It is not inferred from historical SQLite
   state and is checked before requesting detail or writing preparation/pins.
+- Frozen drawing 4987 GOAL history contains 295 `FINISHED`, two `AFTER_ET`, and
+  three `AFTER_PEN` rows across 30 team-result snapshots. The research importer
+  maps all three terminal classes to the existing FT/AET/PEN contract and,
+  after strict pre-`as_of` and pre-kickoff filtering, accepts all 300 rows. The
+  resulting venue-only windows contain 142 matched rows and cover all 15
+  events. This is one-drawing shadow coverage, not OOS quality or profit
+  evidence.

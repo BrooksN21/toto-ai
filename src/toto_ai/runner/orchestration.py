@@ -68,6 +68,7 @@ def run_drawing(
     preflight_check: PreflightCheck | None = None,
     resolve_timing_override: TimingOverrideResolver | None = None,
     verify_timing_override: TimingOverrideVerifier | None = None,
+    operational_cutoff: datetime | None = None,
 ) -> DrawingRunnerResult:
     """Run one preflight-to-EV state machine with injected dependencies."""
     if not isinstance(config, DrawingRunnerConfig):
@@ -77,7 +78,11 @@ def run_drawing(
     _notify(progress_callback, "preflight")
     preflight = resolve_target(preflight_at)
     _require_pinned_target("preflight", preflight)
-    schedule = build_runner_schedule(preflight.target.deadline, config)
+    schedule_deadline = _schedule_deadline(
+        preflight.target.deadline,
+        operational_cutoff,
+    )
+    schedule = build_runner_schedule(schedule_deadline, config)
     if preflight_check is not None:
         if not callable(preflight_check):
             raise ValueError("preflight_check must be callable")
@@ -670,6 +675,7 @@ def run_drawing_from_final_input(
     preflight_check: PreflightCheck | None = None,
     resolve_timing_override: TimingOverrideResolver | None = None,
     verify_timing_override: TimingOverrideVerifier | None = None,
+    operational_cutoff: datetime | None = None,
 ) -> DrawingRunnerResult:
     """Run from one already captured detail view without another target fetch."""
     target = pin_drawing(
@@ -696,6 +702,7 @@ def run_drawing_from_final_input(
         preflight_check=preflight_check,
         resolve_timing_override=resolve_timing_override,
         verify_timing_override=verify_timing_override,
+        operational_cutoff=operational_cutoff,
     )
     return replace(
         result,
@@ -832,6 +839,23 @@ def _read_now(now: Callable[[], datetime]) -> datetime:
     if value.utcoffset() != timedelta(0):
         raise ValueError("now must return timezone-aware UTC datetimes")
     return value
+
+
+def _schedule_deadline(
+    identity_deadline: datetime,
+    operational_cutoff: datetime | None,
+) -> datetime:
+    if operational_cutoff is None:
+        return identity_deadline
+    if (
+        not isinstance(operational_cutoff, datetime)
+        or operational_cutoff.tzinfo is None
+        or operational_cutoff.utcoffset() != timedelta(0)
+    ):
+        raise ValueError("operational_cutoff must be a timezone-aware UTC datetime")
+    if operational_cutoff > identity_deadline:
+        raise ValueError("operational_cutoff cannot extend the identity deadline")
+    return operational_cutoff
 
 
 def _read_monotonic(monotonic: Callable[[], float]) -> float:

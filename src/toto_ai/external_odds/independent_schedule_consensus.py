@@ -100,8 +100,28 @@ def promote_goal_sofascore_consensus(
                 goal,
                 observed=observed,
             )
+            sofa_candidates = _sofascore_records(
+                source,
+                event_order=int(row["event_order"]),
+            )
+            if len(sofa_candidates) > 1:
+                raise ValueError("multiple Sofascore candidates match target event")
+            verification_home = goal_home
+            verification_away = goal_away
+            expected_sofa_id: int | None = None
+            if sofa_candidates:
+                (
+                    expected_sofa_id,
+                    verification_home,
+                    verification_away,
+                ) = _validate_sofascore_source_record(
+                    sofa_candidates[0],
+                    row=row,
+                    starts_at=starts_at,
+                    observed=observed,
+                )
             search_url = _SEARCH_ENDPOINT.format(
-                query=quote_plus(f"{goal_home} {goal_away}")
+                query=quote_plus(f"{verification_home} {verification_away}")
             )
             search_payload = _require_mapping(fetch(search_url), "Sofascore search")
             search_snapshot, search_digest = _freeze_snapshot(
@@ -112,10 +132,14 @@ def promote_goal_sofascore_consensus(
             )
             matches = _matching_sofascore_events(
                 search_payload,
-                home=goal_home,
-                away=goal_away,
+                home=verification_home,
+                away=verification_away,
                 starts_at=starts_at,
             )
+            if expected_sofa_id is not None:
+                matches = tuple(
+                    item for item in matches if int(item["id"]) == expected_sofa_id
+                )
             if len(matches) != 1:
                 records.append(
                     base
@@ -144,8 +168,8 @@ def promote_goal_sofascore_consensus(
             _validate_sofascore_detail(
                 search_event,
                 event,
-                home=goal_home,
-                away=goal_away,
+                home=verification_home,
+                away=verification_away,
                 starts_at=starts_at,
                 observed=observed,
             )
@@ -314,6 +338,45 @@ def _goal_records(
         and item.get("source_status") in {"scheduled", "not_started"}
         and int(item.get("event_order", -1)) == event_order
     )
+
+
+def _sofascore_records(
+    source: Mapping[str, Any], *, event_order: int
+) -> tuple[Mapping[str, Any], ...]:
+    return tuple(
+        item
+        for item in source["records"]
+        if isinstance(item, Mapping)
+        and item.get("source_name") == "Sofascore"
+        and item.get("status") == "independent_candidate"
+        and int(item.get("event_order", -1)) == event_order
+    )
+
+
+def _validate_sofascore_source_record(
+    record: Mapping[str, Any],
+    *,
+    row: Mapping[str, Any],
+    starts_at: datetime,
+    observed: datetime,
+) -> tuple[int, str, str]:
+    if int(record.get("target_event_id", -1)) != int(row["target_event_id"]):
+        raise ValueError("Sofascore source candidate target identity conflicts")
+    sofa_id = int(record.get("source_event_id", -1))
+    home = str(record.get("home_name") or "").strip()
+    away = str(record.get("away_name") or "").strip()
+    if sofa_id <= 0 or not home or not away:
+        raise ValueError("Sofascore source candidate identity is incomplete")
+    source_start = _parse_utc(record["starts_at"])
+    source_capture = _parse_utc(record["captured_at"])
+    if source_start != starts_at:
+        raise ValueError("independent source kickoff values conflict")
+    if source_capture >= source_start or observed >= source_start:
+        raise ValueError("Sofascore source evidence was captured too late")
+    source_url = str(record.get("source_url") or "")
+    if not source_url.startswith("https://www.sofascore.com/"):
+        raise ValueError("Sofascore source candidate URL is invalid")
+    return sofa_id, home, away
 
 
 def _validate_goal_record(
@@ -577,9 +640,10 @@ def _render_review(
             "",
             f"Scheduled kickoff: **{_timestamp(starts_at)}**.",
             "",
-            "GOAL API and a separately fetched Sofascore event agree on canonical "
-            "home/away identities and exactly on UTC kickoff. This evidence is "
-            "used only for schedule timing and does not alter probabilities.",
+            "GOAL API and a separately fetched Sofascore event independently match "
+            "the target orientation and agree exactly on UTC kickoff. Canonical "
+            "spelling variants are retained as aliases. This evidence is used only "
+            "for schedule timing and does not alter probabilities.",
             "",
             f"- GOAL API: {goal_url}",
             f"- Sofascore: {sofa_url}",

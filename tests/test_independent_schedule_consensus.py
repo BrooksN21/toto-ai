@@ -159,6 +159,91 @@ def _fetcher(*, sofa_kickoff=KICKOFF):
     return fetch
 
 
+def _add_sofascore_source_record(
+    source_path,
+    *,
+    away_name="San Miguel",
+    starts_at=KICKOFF,
+):
+    payload = json.loads(source_path.read_text(encoding="utf-8"))
+    payload["records"].append(
+        {
+            "status": "independent_candidate",
+            "drawing_id": 12068,
+            "drawing_number": 4987,
+            "target_fingerprint": "a" * 64,
+            "event_order": 4,
+            "target_event_id": 180127,
+            "home_team": "Чако Фор Эвер",
+            "away_team": "Сан Мигель",
+            "source_name": "Sofascore",
+            "source_role": "independent",
+            "source_url": (
+                "https://www.sofascore.com/football/match/"
+                "chaco-for-ever-san-miguel/abc123#id:8001"
+            ),
+            "source_event_id": 8001,
+            "home_name": "CSYD Chaco For Ever",
+            "away_name": away_name,
+            "starts_at": starts_at.isoformat().replace("+00:00", "Z"),
+            "captured_at": "2026-08-26T08:00:00Z",
+        }
+    )
+    payload["candidate_count"] = 2
+    payload.pop("report_sha256")
+    payload["report_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    source_path.write_text(json.dumps(payload), encoding="utf-8")
+
+
+def test_collected_sofascore_identity_bridges_canonical_spelling_variant(tmp_path):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    payload = json.loads(source.read_text(encoding="utf-8"))
+    payload["records"][0]["away_name"] = "San Migel"
+    payload.pop("report_sha256")
+    payload["report_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    source.write_text(json.dumps(payload), encoding="utf-8")
+    _add_sofascore_source_record(source)
+    ledger = _ledger(tmp_path)
+
+    result = promote_goal_sofascore_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        fetch_json=_fetcher(),
+        captured_at=CAPTURED_AT,
+    )
+
+    assert result.promoted_count == 1
+    observation = load_schedule_evidence_ledger(ledger).observations[0]
+    assert "San Migel" in observation.away_aliases
+    assert "San Miguel" in observation.away_aliases
+
+
+def test_collected_sofascore_kickoff_conflict_fails_closed(tmp_path):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    _add_sofascore_source_record(
+        source,
+        starts_at=KICKOFF.replace(minute=5),
+    )
+    ledger = _ledger(tmp_path)
+
+    result = promote_goal_sofascore_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        fetch_json=_fetcher(),
+        captured_at=CAPTURED_AT,
+    )
+
+    assert result.promoted_count == 0
+    assert result.unresolved_count == 1
+    assert json.loads(ledger.read_text())["observations"] == []
+
+
 def test_exact_goal_sofascore_consensus_promotes_and_resolves(tmp_path):
     queue_path, queue = _queue(tmp_path)
     source = _source_report(tmp_path, queue)

@@ -57,11 +57,19 @@ def _plan(tmp_path: Path, env_file: Path):
 
 
 @pytest.mark.parametrize(
-    ("phase", "scheduler_phase", "atomic_final", "expected_lead"),
+    (
+        "phase",
+        "scheduler_phase",
+        "atomic_final",
+        "expected_lead",
+        "deadline_name",
+        "expected_safety_stop",
+    ),
     [
-        ("fallback", "warmup", False, "45"),
-        ("fallback", "refresh", False, "30"),
-        ("final", "final", True, "20"),
+        ("fallback", "freshness_preflight", False, "60", "preflight", "51"),
+        ("fallback", "warmup", False, "45", "fallback", "36"),
+        ("fallback", "refresh", False, "30", "final", "26"),
+        ("final", "final", True, "20", "actionable", "16"),
     ],
 )
 def test_scheduler_child_lead_matches_triggering_phase(
@@ -70,8 +78,16 @@ def test_scheduler_child_lead_matches_triggering_phase(
     scheduler_phase: str,
     atomic_final: bool,
     expected_lead: str,
+    deadline_name: str,
+    expected_safety_stop: str,
 ):
     plan = _plan(tmp_path, _env_file(tmp_path / ".env"))
+    phase_deadline = {
+        "preflight": plan.preflight_at - timedelta(seconds=5),
+        "fallback": plan.fallback_at - timedelta(seconds=5),
+        "final": plan.final_at - timedelta(seconds=5),
+        "actionable": plan.actionable_publication_deadline,
+    }[deadline_name]
     context = SchedulerPhaseContext(
         phase=phase,
         scheduler_phase=scheduler_phase,
@@ -81,14 +97,16 @@ def test_scheduler_child_lead_matches_triggering_phase(
         work_dir=(plan.output_dir / "attempts" / f"{scheduler_phase}-deadline" / phase),
         scheduled_at=plan.preflight_at,
         started_at=plan.preflight_at,
-        phase_deadline=plan.fallback_at - timedelta(seconds=5),
+        phase_deadline=phase_deadline,
         atomic_final=atomic_final,
     )
 
     command = build_run_drawing_phase_command(context)
     lead_index = command.index("--final-lead-minutes") + 1
+    stop_index = command.index("--safety-stop-minutes") + 1
 
     assert command[lead_index] == expected_lead
+    assert command[stop_index] == expected_safety_stop
 
 
 def test_drawing_4967_plan_binds_canonical_ledger_path_and_hashes(

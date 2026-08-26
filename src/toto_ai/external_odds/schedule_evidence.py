@@ -277,7 +277,23 @@ def resolve_schedule_evidence(
         sport=target.sport,
         gender_age_class=target_class,
     )
-    if len(home_entities) > 1 or len(away_entities) > 1:
+    if (
+        len(home_entities) > 1
+        and not canonical_entities_equivalent(
+            home_entities,
+            ledger,
+            sport=target.sport,
+            gender_age_class=target_class,
+        )
+    ) or (
+        len(away_entities) > 1
+        and not canonical_entities_equivalent(
+            away_entities,
+            ledger,
+            sport=target.sport,
+            gender_age_class=target_class,
+        )
+    ):
         return EvidenceResolution(
             "CONFLICT",
             "exact normalized alias belongs to multiple canonical entities",
@@ -332,22 +348,31 @@ def resolve_schedule_evidence(
         )
     if stale and not identity_matches:
         return EvidenceResolution("STALE", "matching reviewed evidence is stale")
-    unique = {
-        (
-            item.home_entity,
-            item.away_entity,
-            item.starts_at,
-            item.gender_age_class,
-            orientation,
-        ): (item, orientation)
-        for item, orientation in identity_matches
-    }
-    if len(unique) > 1:
+    schedules: dict[
+        tuple[datetime, str, Literal["same", "reversed"]],
+        list[tuple[ScheduleObservation, Literal["same", "reversed"]]],
+    ] = {}
+    for item, orientation in identity_matches:
+        schedules.setdefault(
+            (item.starts_at, item.gender_age_class, orientation), []
+        ).append((item, orientation))
+    if len(schedules) > 1:
         return EvidenceResolution(
             "CONFLICT", "reviewed evidence has conflicting exact schedules"
         )
-    if len(unique) == 1:
-        observation, orientation = next(iter(unique.values()))
+    if len(schedules) == 1:
+        matches = next(iter(schedules.values()))
+        if not _equivalent_observation_identities(
+            tuple(item for item, _orientation in matches)
+        ):
+            return EvidenceResolution(
+                "CONFLICT",
+                "exact normalized alias belongs to multiple canonical entities",
+            )
+        observation, orientation = min(
+            matches,
+            key=lambda value: (value[0].observation_id, value[0].semantic_hash),
+        )
         return EvidenceResolution(
             "RESOLVED",
             "exact reusable reviewed identity and kickoff evidence",
@@ -365,6 +390,89 @@ def resolve_schedule_evidence(
             "only fuzzy or conditional evidence exists; exact identity is required",
         )
     return EvidenceResolution("SOURCE_MISSING", "no exact reviewed schedule evidence")
+
+
+def _equivalent_observation_identities(
+    observations: tuple[ScheduleObservation, ...],
+) -> bool:
+    if len(observations) < 2:
+        return True
+    first = observations[0]
+    return all(
+        _same_entity_alias_evidence(first, item, side="home")
+        and _same_entity_alias_evidence(first, item, side="away")
+        for item in observations[1:]
+    )
+
+
+def canonical_entities_equivalent(
+    entities: frozenset[str],
+    ledger: ScheduleEvidenceLedger,
+    *,
+    sport: str,
+    gender_age_class: str,
+) -> bool:
+    aliases_by_entity: dict[str, set[str]] = {entity: set() for entity in entities}
+    for observation in ledger.observations:
+        if (
+            observation.sport != sport
+            or observation.gender_age_class != gender_age_class
+        ):
+            continue
+        for entity, aliases in (
+            (observation.home_entity, observation.home_aliases),
+            (observation.away_entity, observation.away_aliases),
+        ):
+            if entity not in aliases_by_entity:
+                continue
+            aliases_by_entity[entity].update(
+                key
+                for value in (entity, *aliases)
+                if (key := _optional_name_key(value)) is not None
+            )
+    values = sorted(entities)
+    for index, left in enumerate(values):
+        for right in values[index + 1 :]:
+            left_keys = aliases_by_entity[left]
+            right_keys = aliases_by_entity[right]
+            left_key = _optional_name_key(left)
+            right_key = _optional_name_key(right)
+            if not (
+                len(left_keys & right_keys) >= 2
+                or left_key in right_keys
+                or right_key in left_keys
+            ):
+                return False
+    return True
+
+
+def _same_entity_alias_evidence(
+    left: ScheduleObservation,
+    right: ScheduleObservation,
+    *,
+    side: Literal["home", "away"],
+) -> bool:
+    left_entity = left.home_entity if side == "home" else left.away_entity
+    right_entity = right.home_entity if side == "home" else right.away_entity
+    left_aliases = left.home_aliases if side == "home" else left.away_aliases
+    right_aliases = right.home_aliases if side == "home" else right.away_aliases
+    left_keys = {
+        key
+        for value in (left_entity, *left_aliases)
+        if (key := _optional_name_key(value)) is not None
+    }
+    right_keys = {
+        key
+        for value in (right_entity, *right_aliases)
+        if (key := _optional_name_key(value)) is not None
+    }
+    left_entity_key = _optional_name_key(left_entity)
+    right_entity_key = _optional_name_key(right_entity)
+    return (
+        len(left_keys & right_keys) >= 2
+        or left_entity_key in right_keys
+        or right_entity_key in left_keys
+    )
 
 
 def gender_age_class(event: TargetEvent) -> str:

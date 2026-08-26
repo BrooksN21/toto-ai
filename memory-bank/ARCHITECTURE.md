@@ -1,5 +1,32 @@
 # Architecture
 
+## Frozen GOAL sports-shadow research adapter (2026-08-26)
+
+`toto_ai.sports_stats.goal_probe_research` is a read-only bridge from an exact
+frozen GOAL coverage probe into the existing provider-neutral sports snapshot,
+shadow-probability, and preliminary package-comparison contracts. It requires
+15 ordered target bindings with same orientation and exact fixture/home/away
+provider IDs, verifies the schedule report's semantic hash, validates every
+declared source path inside the project, and binds the result to the frozen
+TotoBrief detail/fingerprint captured no later than the shared `as_of`.
+
+History rows influence features only when terminal and strictly earlier than
+both `as_of` and target kickoff. Provider statuses map as `FINISHED -> FT`,
+`AFTER_ET -> AET`, and `AFTER_PEN -> PEN`, resolving the earlier probe-summary
+status mismatch without changing the common completed-fixture contract.
+Venue probabilities and sample-size blending are unchanged: only home-team
+home and away-team away W-D-L enter the Jeffreys-smoothed sports row, and the
+blend weight is `venue_sample_count / (venue_sample_count + 2 * history_size)`.
+Missing usable or venue evidence falls back per event to normalized BK.
+
+The adapter imports no scheduler/operator/release modules, performs no network
+request, and may write only below `reports/research/`. Its CSV/TXT coupon views
+include explicit research metadata and deliberately do not use the BaltBet
+upload line shape. The manifest records `PAPER_ONLY_NOT_ACTIVATED`, no
+automatic wagering, no operator compatibility, zero live requests and no
+scheduler paths written. Production probability and release architecture
+remain normalized TotoBrief BK only.
+
 ## Two-independent-source schedule consensus v2 (2026-08-26)
 
 The morning retry path may promote canonical kickoff evidence from GOAL plus a
@@ -152,6 +179,14 @@ reusing stale calculations. Checkpoint schema v3 binds the BK-top control fields
 used by the shared paired-comparison summary.
 
 ## Operator export gateway
+
+Scheduler target validation is plan-bound. Morning dispatch performs the only
+cutoff-aware choice of the next drawing; each later preflight locates and
+validates that exact drawing ID on fresh TotoBrief page/detail data and invokes
+preparation with the same ID. It never re-selects a nearest raw-`ended_at`
+drawing during execution. This keeps identity immutable while allowing an
+independently verified earlier operational cutoff to retire the preceding
+TotoBrief row.
 
 The only operator-facing package flow is:
 
@@ -352,6 +387,14 @@ manual operator export before T-10. Warmup/control packages remain
 non-actionable, authorization never places a wager, and the artifact records
 `profitability_proven=false`. Legacy schema-v5 descriptions later in this file
 are implementation history, not current behavior.
+
+The same `operational_cutoff` is passed into child `run-drawing`; child waiting
+must never be rebuilt from identity `ended_at`. T-60 is a full bounded E2E
+package canary and may seed a validated LKG. Every phase reserves measured
+package runtime before its own deadline, clamps provider request timeouts to
+the remaining child safety window and writes redacted timeout evidence. A
+verified schedule-only API-Sports cache may be reused between phases for one
+hour; market-odds cache scopes remain isolated per run.
 
 ## Deterministic safety-aware EV package selection
 

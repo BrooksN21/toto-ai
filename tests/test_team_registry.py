@@ -26,10 +26,17 @@ from toto_ai.external_odds.team_registry import (
     lookup_reviewed_alias_by_provider_id,
     publish_canonical_pin_set,
     resolve_review,
+    transliterate_team_name,
     upsert_reviewed_alias,
     upsert_team_entity,
     write_pin,
 )
+
+
+def test_transliteration_folds_latin_compatibility_letters() -> None:
+    assert transliterate_team_name("FC Nordsjælland") == "fc nordsjaelland"
+    assert transliterate_team_name("ŁKS Łódź") == "lks lodz"
+    assert transliterate_team_name("Straße Øresund") == "strasse oresund"
 
 REGISTRY_TABLES = {
     "drawing_event_pins",

@@ -1,5 +1,13 @@
 # Roadmap
 
+- [x] `TOTO-SPORTS-DUAL-PACKAGE-4987`: import and validate the frozen 15-event
+  GOAL binding plus 30 local team-history snapshots, map all supported terminal
+  statuses into the provider-neutral feature contract, build the unchanged
+  venue-only BK-shrunk shadow, and compare two exact 166-coupon / 4,980-ruble
+  research packages. Emit hash-bound analytics/comparison/manifest and
+  deliberately non-uploadable CSV/TXT views; verify no scheduler/operator
+  mutation. Keep the candidate `PAPER_ONLY_NOT_ACTIVATED`.
+
 - [x] Decouple morning public-source collection from LaunchAgent activation;
   verify an identity-bound drawing-4986 rehearsal collects Sofascore 10/15 and
   TheSportsDB 12/15 while remaining non-activating and fail-closed.
@@ -1041,5 +1049,18 @@ closed.
 - [x] Repair quality-v2 provenance validation for active scheduler schema v7;
   verify a 166-coupon / 4,980-ruble training package reaches
   `STRUCTURAL_PASS` without reducing optimizer quality.
-- [ ] Observe every 4987 evening checkpoint and verify terminal package/
-  `NO BET`, T-10 expiry and post-draw lifecycle from scheduler-owned artifacts.
+- [x] Observe every 4987 evening checkpoint. The run terminalized as
+  scheduler-owned `NO_BET`; warmup, refresh and final timed out because the
+  child waited on identity `ended_at` instead of `operational_cutoff`.
+- [x] Propagate `operational_cutoff` into the child wait schedule; add a true
+  T-60 E2E canary, phase admission/runtime reserves, shared verified schedule
+  cache, sanitized timeout artifacts and source-outage/phase-overlap
+  regressions.
+- [ ] Complete one fresh scheduler rehearsal on the next selected drawing with
+  independent schedule evidence, verify shared-cache reuse and inspect every
+  phase artifact before activation.
+  - [x] Prepare drawing 4988 READY 15/15 and generate its schema-v7 plan.
+  - [x] Fix split-brain target validation and exact-ID scheduler preparation.
+  - [x] Pass exact live preflight plus full local regression (`2066 passed`).
+  - [ ] Observe real wall-clock T-60/T-45/T-30/T-20/T-16/T-10 phases; virtual
+    parent-clock acceleration is not valid for wall-clock child processes.

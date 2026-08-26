@@ -1,4 +1,5 @@
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -63,6 +64,7 @@ def resolve_drawing_reference(
     open: bool = False,
     now: datetime | str | None = None,
     community: str = "baltbet-main",
+    operational_cutoffs: Mapping[int, datetime] | None = None,
 ) -> DrawingReference:
     selected_options = sum(
         (drawing_id is not None, number is not None, latest_finished, live, open)
@@ -119,6 +121,7 @@ def resolve_drawing_reference(
         candidates,
         now=current_time,
         require_future=open,
+        operational_cutoffs=operational_cutoffs,
     )
     if drawing is None:
         mode = "open" if open else "live"
@@ -257,9 +260,17 @@ def _select_time_based_drawing(
     *,
     now: datetime,
     require_future: bool,
+    operational_cutoffs: Mapping[int, datetime] | None = None,
 ) -> Drawing | None:
     parsed = [
-        (drawing, _parse_datetime(drawing.ended_at))
+        (
+            drawing,
+            _selection_deadline(
+                drawing,
+                _parse_datetime(drawing.ended_at),
+                operational_cutoffs,
+            ),
+        )
         for drawing in drawings
     ]
     valid = [
@@ -285,6 +296,24 @@ def _select_time_based_drawing(
     if not locked:
         return None
     return max(locked, key=lambda item: (item[1], item[0].id))[0]
+
+
+def _selection_deadline(
+    drawing: Drawing,
+    identity_deadline: datetime | None,
+    operational_cutoffs: Mapping[int, datetime] | None,
+) -> datetime | None:
+    if identity_deadline is None:
+        return None
+    if operational_cutoffs is None or drawing.id not in operational_cutoffs:
+        return identity_deadline
+    cutoff = operational_cutoffs[drawing.id]
+    if not isinstance(cutoff, datetime) or cutoff.tzinfo is None:
+        raise ValueError("operational selection cutoff must be timezone-aware")
+    normalized = cutoff.astimezone(timezone.utc)
+    if normalized > identity_deadline:
+        raise ValueError("operational selection cutoff cannot extend ended_at")
+    return normalized
 
 
 def _coerce_datetime(value: datetime | str | None) -> datetime:

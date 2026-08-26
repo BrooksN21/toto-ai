@@ -506,6 +506,52 @@ def test_injected_legacy_play_is_converted_to_paper_only_no_bet():
     assert updates[-1]["decision"] == "NO BET"
 
 
+def test_operational_cutoff_drives_waiting_without_changing_target_identity():
+    identity_deadline = DEADLINE + timedelta(hours=3)
+    target = _target(
+        deadline=identity_deadline,
+        fetched_at=T_MINUS_21,
+    )
+    pinned = pin_drawing(target)
+    collection = _collection(target)
+    timing = _timing(target)
+    audit = _audit(collection)
+    ev_run = _ev_run(target)
+    calls = []
+    dependencies = _recording_dependencies(
+        calls,
+        target,
+        collection,
+        audit,
+        timing,
+        ev_run,
+    )
+    clock = MutableClock(T_MINUS_21)
+    sleeps = []
+
+    def advance(seconds):
+        sleeps.append(seconds)
+        clock.value += timedelta(seconds=seconds)
+
+    result = run_drawing(
+        config=DrawingRunnerConfig(bank=4980),
+        resolve_target=_recording_resolver(calls, pinned, pinned),
+        collect_target=dependencies[0],
+        resolve_timing=dependencies[1],
+        audit_coverage=dependencies[2],
+        build_package=dependencies[3],
+        now=clock,
+        monotonic=SequenceClock(10.0, 14.0),
+        sleep=advance,
+        operational_cutoff=DEADLINE,
+    )
+
+    assert result.target.target.deadline == identity_deadline
+    assert sum(sleeps) == pytest.approx(60.0)
+    assert max(sleeps) <= 30.0
+    assert calls == ["preflight", "final", "collect", "timing", "audit", "ev"]
+
+
 def test_preflight_check_failure_stops_before_wait_and_provider_access():
     pinned = pin_drawing(_target())
     calls: list[str] = []
