@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta, timezone
 from toto_ai.external_odds.domain import TargetDrawing, TargetEvent
 from toto_ai.external_odds.schedule_evidence import (
     drawing_schedule_dates,
+    drawing_schedule_window,
     ingest_reviewed_observation,
     load_schedule_evidence_ledger,
     resolve_schedule_evidence,
@@ -191,7 +192,7 @@ def test_womens_marker_is_not_silently_dropped(tmp_path):
 def test_missing_start_uses_bounded_five_day_window(tmp_path):
     ledger = _ledger(
         tmp_path,
-        [_observation(starts_at="2026-08-09T14:59:00Z")],
+        [_observation(starts_at="2026-08-08T20:59:00Z")],
     )
     target = _target("Иберия 1999", "Ларн", "Европа. Лига Европы УЕФА. Квалификация")
     assert (
@@ -210,6 +211,18 @@ def test_missing_start_uses_bounded_five_day_window(tmp_path):
     assert drawing_schedule_dates(drawing, maximum_span_days=5) == tuple(
         date(2026, 8, 3) + timedelta(days=offset) for offset in range(6)
     )
+
+
+def test_missing_start_accepts_event_before_deadline_on_same_moscow_day(tmp_path):
+    starts_at = datetime(2026, 8, 4, 8, 0, tzinfo=timezone.utc)
+    ledger = _ledger(tmp_path, [_observation(starts_at=starts_at.isoformat())])
+    target = _target("Иберия 1999", "Ларн", "Европа. Лига Европы УЕФА. Квалификация")
+
+    result = resolve_schedule_evidence(target, ledger, evaluated_at=NOW)
+    window_start, window_end = drawing_schedule_window(DEADLINE)
+
+    assert window_start <= starts_at < DEADLINE < window_end
+    assert result.state == "RESOLVED"
 
 
 def test_known_four_day_drawing_fetches_every_intermediate_date():
@@ -297,6 +310,53 @@ def test_reviewed_evidence_ingestion_is_append_only_and_idempotent(tmp_path):
         assert "immutable" in str(error)
     else:  # pragma: no cover - fail-closed assertion
         raise AssertionError("changed reviewed evidence was accepted")
+
+
+def test_two_distinct_independent_schedule_claims_are_accepted(tmp_path):
+    ledger = _ledger(tmp_path, [_observation()])
+    payload = json.loads(ledger.path.read_text(encoding="utf-8"))
+    payload["observations"][0]["claims"] = [
+        {
+            "source_name": "GOAL API",
+            "role": "independent",
+            "source_url": "https://goal-api.com/#fixture-1",
+        },
+        {
+            "source_name": "Sofascore",
+            "role": "independent",
+            "source_url": "https://www.sofascore.com/match/1",
+        },
+    ]
+    ledger.path.write_text(json.dumps(payload), encoding="utf-8")
+
+    loaded = load_schedule_evidence_ledger(ledger.path)
+
+    assert len(loaded.observations[0].claims) == 2
+
+
+def test_duplicate_independent_schedule_sources_are_rejected(tmp_path):
+    ledger = _ledger(tmp_path, [_observation()])
+    payload = json.loads(ledger.path.read_text(encoding="utf-8"))
+    payload["observations"][0]["claims"] = [
+        {
+            "source_name": "Sofascore",
+            "role": "independent",
+            "source_url": "https://www.sofascore.com/match/1",
+        },
+        {
+            "source_name": "Sofascore mirror",
+            "role": "independent",
+            "source_url": "https://www.sofascore.com/match/2",
+        },
+    ]
+    ledger.path.write_text(json.dumps(payload), encoding="utf-8")
+
+    try:
+        load_schedule_evidence_ledger(ledger.path)
+    except ValueError as error:
+        assert "two distinct independent claims" in str(error)
+    else:  # pragma: no cover - fail-closed assertion
+        raise AssertionError("duplicate independent sources were accepted")
 
 
 def test_repository_4965_evidence_resolves_only_non_conflicting_exact_rows():

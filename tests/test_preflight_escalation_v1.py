@@ -188,6 +188,7 @@ def test_morning_preparation_materializes_baseline_only_missing_kickoffs():
                 event_id=178900 + order,
                 home_team=f"Home {order}",
                 away_team=f"Away {order}",
+                championship="Test competition",
                 starts_at=(starts_at if order == 7 else None),
             )
             for order in range(15)

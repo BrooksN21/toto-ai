@@ -5176,3 +5176,31 @@ installed plist byte-identical, loaded and active, with next checkpoint 21:33
 MSK. GOAL had 624/1000 daily requests remaining after the run. Final code
 verification for this state passed `2029 passed, 13 deselected in 170.19s`;
 Ruff and `git diff --check` passed.
+
+## Drawing 4987 live recovery and evening readiness (2026-08-26)
+
+The time resolver no longer treats TotoBrief `ended_at` as the earliest event
+time. GOAL and Sofascore now share a bounded Moscow calendar window. A strict
+GOAL-plus-Sofascore consensus lane promoted target-bound v2 schedule evidence;
+legacy rows missing target competition remain audit-only. Monotonic ledger
+growth now preserves exact observation identity while safely rebinding the
+whole-ledger hash, and an artifact-free deferred morning record may advance to
+that validated hash.
+
+Live drawing 4987 is READY 15/15 with zero unresolved events. Schema-v7 plan
+`f28e5483bcea337a` is loaded as LaunchAgent
+`com.totoai.production-scheduler.v7.f28e5483bcea337a`. Operational cutoff is
+18:45 MSK and T-10 is 18:35 MSK. The first checkpoint is 16:45 MSK, followed
+by 17:15, 17:45, 18:00, 18:15, 18:25, 18:29 and 18:35. Automatic wagering is
+disabled.
+
+The morning training run exposed a stale provenance check that accepted only
+scheduler schema v6. It now accepts exactly active schema v7 and has a
+cross-module drift regression. The same frozen 4987 input then produced a
+`STRUCTURAL_PASS` quality-v2 training package with 166 unique coupons, cost
+4,980 and full bank use. It remains non-actionable `TRAINING_PAPER`.
+
+Verification: targeted schedule/morning/provenance suites passed 91 and 52
+tests respectively; the full default suite passed `2038 passed, 13 deselected`
+in 183.62 seconds; full Ruff passed. The next required work is observing the
+live evening checkpoints and validating the scheduler-owned terminal result.

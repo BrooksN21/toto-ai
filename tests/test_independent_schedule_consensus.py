@@ -1,0 +1,283 @@
+import hashlib
+import json
+from datetime import datetime, timezone
+
+from toto_ai.external_odds.domain import TargetEvent
+from toto_ai.external_odds.independent_schedule_consensus import (
+    promote_goal_sofascore_consensus,
+)
+from toto_ai.external_odds.schedule_evidence import (
+    load_schedule_evidence_ledger,
+    resolve_schedule_evidence,
+)
+
+UTC = timezone.utc
+CAPTURED_AT = datetime(2026, 8, 26, 9, 0, tzinfo=UTC)
+KICKOFF = datetime(2026, 8, 26, 18, 0, tzinfo=UTC)
+
+
+def _canonical(value):
+    return json.dumps(
+        value,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+
+
+def _queue(tmp_path):
+    payload = {
+        "schema_version": 1,
+        "queue_type": "reviewed_schedule_evidence",
+        "created_at": "2026-08-26T08:00:00Z",
+        "identity": {
+            "drawing_id": 12068,
+            "drawing_number": 4987,
+            "drawing_fingerprint": "a" * 64,
+            "deadline": "2026-08-26T18:45:00Z",
+            "detail_sha256": "b" * 64,
+            "reviewed_catalog_hash": None,
+        },
+        "records": [
+            {
+                "status": "awaiting_review",
+                "drawing_id": 12068,
+                "drawing_number": 4987,
+                "target_fingerprint": "a" * 64,
+                "event_order": 4,
+                "target_event_id": 180127,
+                "home_team": "Чако Фор Эвер",
+                "away_team": "Сан Мигель",
+                "championship": "Аргентина. Примера Насьональ",
+                "source_fixture_id": None,
+                "requirements": {},
+                "template": {},
+            }
+        ],
+    }
+    payload["queue_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    path = tmp_path / "queue.json"
+    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    return path, payload
+
+
+def _source_report(tmp_path, queue, *, starts_at=KICKOFF):
+    goal = {
+        "status": "independent_candidate",
+        "drawing_id": 12068,
+        "drawing_number": 4987,
+        "target_fingerprint": "a" * 64,
+        "event_order": 4,
+        "target_event_id": 180127,
+        "home_team": "Чако Фор Эвер",
+        "away_team": "Сан Мигель",
+        "source_name": "GOAL API",
+        "source_provider": "goal-api-v1",
+        "source_role": "independent",
+        "source_url": "https://goal-api.com",
+        "source_event_id": "goal-7001",
+        "home_name": "Chaco For Ever",
+        "away_name": "San Miguel",
+        "orientation": "same",
+        "match_mode": "fuzzy_candidate_margin_0.320",
+        "competition": "Primera Nacional",
+        "starts_at": starts_at.isoformat().replace("+00:00", "Z"),
+        "source_status": "scheduled",
+        "captured_at": "2026-08-26T08:00:00Z",
+    }
+    payload = {
+        "schema_version": 2,
+        "status": "CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
+        "queue_path": str(tmp_path / "queue.json"),
+        "queue_sha256": queue["queue_sha256"],
+        "drawing_id": 12068,
+        "drawing_number": 4987,
+        "captured_at": "2026-08-26T08:00:00Z",
+        "candidate_count": 1,
+        "unresolved_count": 0,
+        "ledger_mutated": False,
+        "providers": {},
+        "records": [goal],
+    }
+    payload["report_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    path = tmp_path / "source.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _ledger(tmp_path):
+    root = tmp_path / "schedule-evidence"
+    root.mkdir()
+    path = root / "ledger.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "generated_at": "2026-08-26T08:00:00Z",
+                "observations": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+def _sofa_event(*, kickoff=KICKOFF):
+    return {
+        "id": 8001,
+        "slug": "chaco-for-ever-san-miguel",
+        "customId": "abc123",
+        "startTimestamp": int(kickoff.timestamp()),
+        "status": {"type": "notstarted"},
+        "homeTeam": {
+            "name": "CSYD Chaco For Ever",
+            "fieldTranslations": {
+                "nameTranslation": {
+                    "ru": "Чако Фор Эвер",
+                    "ar": "تشاكو فور إيفر",
+                }
+            },
+        },
+        "awayTeam": {
+            "name": "San Miguel",
+            "fieldTranslations": {"nameTranslation": {"ru": "Сан Мигель"}},
+        },
+        "tournament": {"name": "Primera Nacional"},
+    }
+
+
+def _fetcher(*, sofa_kickoff=KICKOFF):
+    event = _sofa_event(kickoff=sofa_kickoff)
+
+    def fetch(url):
+        if "/search/all" in url:
+            return {"results": [{"type": "event", "entity": event}]}
+        if url.endswith("/api/v1/event/8001"):
+            return {"event": event}
+        raise AssertionError(f"unexpected URL: {url}")
+
+    return fetch
+
+
+def test_exact_goal_sofascore_consensus_promotes_and_resolves(tmp_path):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    ledger = _ledger(tmp_path)
+
+    first = promote_goal_sofascore_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        fetch_json=_fetcher(),
+        captured_at=CAPTURED_AT,
+    )
+    second = promote_goal_sofascore_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        fetch_json=_fetcher(),
+        captured_at=CAPTURED_AT,
+    )
+
+    assert first.promoted_count == 1
+    assert second.existing_count == 1
+    loaded = load_schedule_evidence_ledger(ledger)
+    observation = loaded.observations[0]
+    assert "Аргентина. Примера Насьональ" in observation.competition_aliases
+    assert observation.observation_id.startswith("independent-consensus-v2-")
+    assert {claim.source_name for claim in observation.claims} == {
+        "GOAL API",
+        "Sofascore event",
+    }
+    target = TargetEvent(
+        drawing_id=12068,
+        drawing_number=4987,
+        event_id=180127,
+        event_order=4,
+        sport="football",
+        championship="Аргентина. Примера Насьональ",
+        starts_at=None,
+        deadline=datetime(2026, 8, 26, 18, 45, tzinfo=UTC),
+        home_team="Чако Фор Эвер",
+        away_team="Сан Мигель",
+        home_team_en=None,
+        away_team_en=None,
+        bk_probabilities=(0.4, 0.3, 0.3),
+    )
+    assert resolve_schedule_evidence(
+        target,
+        loaded,
+        evaluated_at=CAPTURED_AT,
+    ).state == "RESOLVED"
+
+
+def test_legacy_observation_without_target_competition_is_superseded(tmp_path):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    ledger = _ledger(tmp_path)
+    promote_goal_sofascore_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        fetch_json=_fetcher(),
+        captured_at=CAPTURED_AT,
+    )
+    raw = json.loads(ledger.read_text(encoding="utf-8"))
+    raw["observations"][0]["observation_id"] = "independent-consensus-legacy"
+    raw["observations"][0]["competition_aliases"] = ["Primera Nacional"]
+    ledger.write_text(json.dumps(raw), encoding="utf-8")
+
+    repaired = promote_goal_sofascore_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        fetch_json=_fetcher(),
+        captured_at=CAPTURED_AT,
+    )
+
+    assert repaired.promoted_count == 1
+    loaded = load_schedule_evidence_ledger(ledger)
+    assert len(loaded.observations) == 2
+    target = TargetEvent(
+        drawing_id=12068,
+        drawing_number=4987,
+        event_id=180127,
+        event_order=4,
+        sport="football",
+        championship="Аргентина. Примера Насьональ",
+        starts_at=None,
+        deadline=datetime(2026, 8, 26, 18, 45, tzinfo=UTC),
+        home_team="Чако Фор Эвер",
+        away_team="Сан Мигель",
+        home_team_en=None,
+        away_team_en=None,
+        bk_probabilities=(0.4, 0.3, 0.3),
+    )
+    assert resolve_schedule_evidence(
+        target,
+        loaded,
+        evaluated_at=CAPTURED_AT,
+    ).state == "RESOLVED"
+
+
+def test_kickoff_conflict_does_not_mutate_ledger(tmp_path):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    ledger = _ledger(tmp_path)
+
+    result = promote_goal_sofascore_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        fetch_json=_fetcher(sofa_kickoff=KICKOFF.replace(minute=5)),
+        captured_at=CAPTURED_AT,
+    )
+
+    assert result.promoted_count == 0
+    assert result.unresolved_count == 1
+    assert json.loads(ledger.read_text())["observations"] == []

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
 from toto_ai.external_odds.domain import TargetDrawing, TargetEvent
@@ -230,6 +231,22 @@ def drawing_schedule_dates(
     )
 
 
+def drawing_schedule_window(
+    deadline: datetime, *, maximum_span_days: int = 5
+) -> tuple[datetime, datetime]:
+    """Return the half-open UTC window for one bounded Moscow drawing."""
+    if not 1 <= maximum_span_days <= 5:
+        raise ValueError("maximum_span_days must be from 1 through 5")
+    deadline = _utc_datetime(deadline, "deadline")
+    local_first = deadline.astimezone(_MOSCOW).date()
+    start = datetime.combine(
+        local_first,
+        datetime.min.time(),
+        tzinfo=_MOSCOW,
+    ).astimezone(timezone.utc)
+    return start, start + timedelta(days=maximum_span_days)
+
+
 def resolve_schedule_evidence(
     target: TargetEvent,
     ledger: ScheduleEvidenceLedger,
@@ -405,8 +422,7 @@ def _parse_observation(value: object, root: Path) -> ScheduleObservation:
     if not isinstance(value, dict) or set(value) != fields:
         raise ValueError("schedule evidence observation fields are invalid")
     claims = tuple(_parse_claim(item) for item in value["claims"])
-    if not claims or not any(item.role == "official" for item in claims):
-        raise ValueError("schedule evidence requires an official claim")
+    _validate_claim_set(claims)
     document = (root / _text(value["review_document"], "review_document")).resolve()
     if root.resolve() not in document.parents:
         raise ValueError("review document escapes ledger directory")
@@ -461,6 +477,23 @@ def _parse_claim(value: object) -> EvidenceClaim:
     if not url.startswith("https://"):
         raise ValueError("schedule evidence claim URL must use HTTPS")
     return EvidenceClaim(_text(value["source_name"], "source_name"), role, url)
+
+
+def _validate_claim_set(claims: tuple[EvidenceClaim, ...]) -> None:
+    """Require one official source or two genuinely independent public sources."""
+    if any(item.role == "official" for item in claims):
+        return
+    independent = tuple(item for item in claims if item.role == "independent")
+    origins = {
+        (urlparse(item.source_url).scheme, urlparse(item.source_url).netloc.casefold())
+        for item in independent
+    }
+    names = {item.source_name.casefold() for item in independent}
+    if len(independent) < 2 or len(origins) < 2 or len(names) < 2:
+        raise ValueError(
+            "schedule evidence requires an official claim or two distinct "
+            "independent claims"
+        )
 
 
 def _matching_entities(
@@ -568,11 +601,13 @@ def _time_compatible(
 ) -> bool:
     if target.starts_at is not None:
         return abs(target.starts_at - observed) <= tolerance
-    return (
-        target.deadline
-        <= observed
-        <= target.deadline + timedelta(days=maximum_span_days)
+    # TotoBrief ``ended_at`` is not a reliable lower bound for every event.
+    # Some coupons contain matches earlier on the same Moscow calendar day.
+    window_start, window_end = drawing_schedule_window(
+        target.deadline,
+        maximum_span_days=maximum_span_days,
     )
+    return window_start <= observed < window_end
 
 
 def _fuzzy_pair_hint(target: TargetEvent, observation: ScheduleObservation) -> bool:

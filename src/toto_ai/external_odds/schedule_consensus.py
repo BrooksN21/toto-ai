@@ -14,6 +14,7 @@ from urllib.request import Request, urlopen
 
 from toto_ai.external_odds.schedule_evidence import (
     ScheduleEvidenceLedger,
+    drawing_schedule_window,
     ingest_reviewed_observation,
     load_schedule_evidence_ledger,
 )
@@ -41,7 +42,6 @@ _UEFA_LIST_ENDPOINT = (
 _UEFA_MATCH_ENDPOINT = "https://match.uefa.com/v5/matches/{match_id}/"
 _SOFASCORE_SEARCH_ENDPOINT = "https://www.sofascore.com/api/v1/search/all?q={query}"
 _SOFASCORE_EVENT_ENDPOINT = "https://www.sofascore.com/api/v1/event/{event_id}"
-_MAX_DRAWING_SPAN = timedelta(days=5)
 _PAGE_SIZE = 100
 _MAX_PAGES = 10
 
@@ -361,8 +361,9 @@ def _fetch_uefa_events(
 ) -> tuple[tuple[Mapping[str, Any], ...], tuple[str, ...]]:
     events: list[Mapping[str, Any]] = []
     urls: list[str] = []
-    from_date = deadline.date().isoformat()
-    to_date = (deadline + _MAX_DRAWING_SPAN).date().isoformat()
+    window_start, window_end = drawing_schedule_window(deadline)
+    from_date = window_start.date().isoformat()
+    to_date = (window_end - timedelta(microseconds=1)).date().isoformat()
     for page in range(_MAX_PAGES):
         url = _UEFA_LIST_ENDPOINT.format(
             from_date=from_date,
@@ -391,6 +392,7 @@ def _matching_uefa_events(
 ) -> tuple[Mapping[str, Any], ...]:
     home_key = _name_key(home)
     away_key = _name_key(away)
+    window_start, window_end = drawing_schedule_window(deadline)
     matches = []
     for event in events:
         try:
@@ -404,7 +406,7 @@ def _matching_uefa_events(
             continue
         if event.get("status") not in {"UPCOMING", "SCHEDULED"}:
             continue
-        if not deadline <= starts_at <= deadline + _MAX_DRAWING_SPAN:
+        if not window_start <= starts_at < window_end:
             continue
         if home_key in {_name_key(value) for value in home_aliases} and away_key in {
             _name_key(value) for value in away_aliases

@@ -864,6 +864,11 @@ def prepare_drawing(
                     provider=provider,
                     provider_upgrade_orders=provider_upgrade_orders,
                     schedule_upgrade_orders=schedule_upgrade_orders,
+                    schedule_evidence_ledger_hash=(
+                        None
+                        if evidence_ledger is None
+                        else evidence_ledger.semantic_hash
+                    ),
                 )
             )
         selected_reviewed_hashes = {
@@ -957,6 +962,7 @@ def _merge_monotonic_baseline_upgrade_specs(
     provider: str,
     provider_upgrade_orders: tuple[int, ...],
     schedule_upgrade_orders: tuple[int, ...],
+    schedule_evidence_ledger_hash: str | None,
 ) -> tuple[dict[str, Any], ...]:
     """Preserve immutable pins while enriching proven baseline-only rows."""
     existing_by_order = {pin.event_order: pin for pin in existing}
@@ -983,7 +989,18 @@ def _merge_monotonic_baseline_upgrade_specs(
         if str(new.get("target_event_id")) != old.target_event_id:
             raise ValueError("schedule upgrade target event identity changed")
         if order not in upgrade_set:
-            merged.append(_canonical_spec_from_existing_pin(old))
+            preserved = _canonical_spec_from_existing_pin(old)
+            if old.effective_source_provider == "schedule-evidence":
+                if schedule_evidence_ledger_hash is None:
+                    raise ValueError(
+                        "schedule-evidence pin cannot be rebound without ledger"
+                    )
+                preserved["provenance"] = {
+                    **dict(preserved["provenance"]),
+                    "ledger_hash": schedule_evidence_ledger_hash,
+                }
+                preserved.pop("source_identity_hash", None)
+            merged.append(preserved)
             continue
         if old.effective_source_provider != "totobrief-baseline":
             raise ValueError("baseline upgrade is not monotonic")
@@ -1628,8 +1645,6 @@ def _validate_existing_pins_against_candidates(
                 or resolution.orientation
                 != pin.provenance.get("orientation", "same")
                 or pin.provenance.get("evidence_hash") != evidence.semantic_hash
-                or pin.provenance.get("ledger_hash")
-                != schedule_evidence_ledger.semantic_hash
             ):
                 raise ScheduleEvidenceIntegrityError(
                     "ready schedule-evidence pin conflicts with ledger"

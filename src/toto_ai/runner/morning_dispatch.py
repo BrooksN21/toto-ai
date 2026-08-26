@@ -54,6 +54,7 @@ class MorningUnresolvedEvent:
     away_team: str
     resolution_status: str
     reason: str
+    championship: str | None = None
     candidate_evidence: tuple[Mapping[str, object], ...] = ()
     provider_diagnostics: tuple[Mapping[str, object], ...] = ()
 
@@ -86,6 +87,7 @@ class MorningUnresolvedEvent:
             "target_event_id": self.target_event_id,
             "home_team": self.home_team,
             "away_team": self.away_team,
+            "championship": self.championship,
             "resolution_status": self.resolution_status,
             "reason": self.reason,
             "candidate_evidence": [dict(item) for item in self.candidate_evidence],
@@ -720,7 +722,7 @@ def _allows_deferred_reviewed_hash_transition(
     prior: Mapping[str, object],
     evidence: MorningPreparedDrawing,
 ) -> bool:
-    """Allow only artifact-free null-to-validated reviewed hash enrichment."""
+    """Allow artifact-free evidence-ledger advancement for one drawing."""
     if (
         prior.get("status") not in {"prepared", "deferred"}
         or prior.get("activation_status") != "not_requested"
@@ -744,7 +746,13 @@ def _allows_deferred_reviewed_hash_transition(
     if not isinstance(identity, Mapping):
         return False
     expected = evidence.identity_payload()
-    if identity.get("reviewed_catalog_hash") is not None:
+    prior_hash = identity.get("reviewed_catalog_hash")
+    if prior_hash is not None:
+        try:
+            _sha256(str(prior_hash), "prior reviewed_catalog_hash")
+        except ValueError:
+            return False
+    if prior_hash == evidence.reviewed_catalog_hash:
         return False
     return all(
         identity.get(field) == expected[field]
@@ -1374,10 +1382,14 @@ def _review_queue_payload(
                 "target_event_id": item.target_event_id,
                 "home_team": item.home_team,
                 "away_team": item.away_team,
+                "championship": item.championship,
                 "source_fixture_id": None,
                 "requirements": {
                     "minimum_https_sources": 2,
-                    "required_roles": ["official", "independent"],
+                    "accepted_claim_sets": [
+                        ["official", "independent"],
+                        ["independent", "independent"],
+                    ],
                     "exact_team_and_start_agreement": True,
                     "snapshot_sha256_required": True,
                     "freshness_required": True,

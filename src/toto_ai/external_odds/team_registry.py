@@ -1153,6 +1153,9 @@ def _is_safe_baseline_schedule_enrichment(
         old_content = _canonical_pin_content(old)
         if old_content == new:
             continue
+        if _is_safe_schedule_evidence_ledger_rebind(old_content, new):
+            changed = True
+            continue
         if (
             old.source_provider != "totobrief-baseline"
             or new["source_provider"]
@@ -1170,6 +1173,36 @@ def _is_safe_baseline_schedule_enrichment(
             return False
         changed = True
     return changed
+
+
+def _is_safe_schedule_evidence_ledger_rebind(
+    old: Mapping[str, Any],
+    new: Mapping[str, Any],
+) -> bool:
+    """Allow only the whole-ledger hash to advance for an unchanged observation."""
+    if (
+        old.get("source_provider") != "schedule-evidence"
+        or new.get("source_provider") != "schedule-evidence"
+    ):
+        return False
+    ignored = {"provenance", "source_identity_hash"}
+    if any(old.get(key) != new.get(key) for key in old.keys() - ignored):
+        return False
+    try:
+        old_provenance = json.loads(str(old["provenance"]))
+        new_provenance = json.loads(str(new["provenance"]))
+    except (KeyError, TypeError, json.JSONDecodeError):
+        return False
+    old_ledger_hash = old_provenance.pop("ledger_hash", None)
+    new_ledger_hash = new_provenance.pop("ledger_hash", None)
+    return (
+        old_provenance == new_provenance
+        and isinstance(old_ledger_hash, str)
+        and _SHA256_RE.fullmatch(old_ledger_hash) is not None
+        and isinstance(new_ledger_hash, str)
+        and _SHA256_RE.fullmatch(new_ledger_hash) is not None
+        and old_ledger_hash != new_ledger_hash
+    )
 
 
 def _is_safe_baseline_provider_enrichment(

@@ -35,6 +35,7 @@ from toto_ai.external_odds.matching import (
 )
 from toto_ai.external_odds.schedule_evidence import (
     ScheduleEvidenceLedger,
+    drawing_schedule_window,
     load_schedule_evidence_ledger,
 )
 from toto_ai.external_odds.team_registry import transliterate_team_name
@@ -51,7 +52,6 @@ from toto_ai.external_odds.thesportsdb import (
 )
 
 _SEARCH_ENDPOINT = "https://www.sofascore.com/api/v1/search/all?q={query}"
-_MAX_DRAWING_SPAN = timedelta(days=5)
 _MAX_THESPORTSDB_QUERIES_PER_EVENT = 2
 _MAX_ALIAS_CONFLICT_DIAGNOSTICS = 20
 _GOAL_API_MATCHER_VERSION = "goal-api-candidate-v1"
@@ -338,10 +338,10 @@ def _collect_goal_api_candidates(
             now=lambda: observed,
         )
 
-    window_end = deadline + _MAX_DRAWING_SPAN
+    window_start, window_end = drawing_schedule_window(deadline)
     dates = tuple(
-        deadline.date() + timedelta(days=offset)
-        for offset in range((window_end.date() - deadline.date()).days + 1)
+        window_start.date() + timedelta(days=offset)
+        for offset in range((window_end.date() - window_start.date()).days + 1)
     )
     try:
         events = tuple(
@@ -410,7 +410,7 @@ def _collect_goal_api_candidates(
                 }
             )
             continue
-        timing_conflict = selected.starts_at < deadline
+        timing_conflict = not window_start <= selected.starts_at < window_end
         records.append(
             _base_record(row)
             | {
@@ -675,7 +675,7 @@ def _collect_thesportsdb_candidates(
         )
 
     records: list[dict[str, object]] = []
-    window_end = deadline + _MAX_DRAWING_SPAN
+    window_start, window_end = drawing_schedule_window(deadline)
     for row in queue["records"]:
         diagnostic_offset = len(client.request_diagnostics)
         evidence_offset = len(client.request_evidence)
@@ -696,7 +696,7 @@ def _collect_thesportsdb_candidates(
                     client.search_schedule_events(
                         search_home,
                         search_away,
-                        window_start=deadline,
+                        window_start=window_start,
                         window_end=window_end,
                     )
                 )
@@ -1273,6 +1273,7 @@ def _matching_events(
     aways: tuple[str, ...],
     deadline: datetime,
 ) -> list[dict[str, Any]]:
+    window_start, window_end = drawing_schedule_window(deadline)
     matches: list[dict[str, Any]] = []
     for item in payload.get("results", []):
         if not isinstance(item, dict) or item.get("type") != "event":
@@ -1288,7 +1289,7 @@ def _matching_events(
             away_aliases = _team_aliases(event["awayTeam"])
         except (KeyError, TypeError, ValueError):
             continue
-        if not deadline <= starts_at <= deadline + _MAX_DRAWING_SPAN:
+        if not window_start <= starts_at < window_end:
             continue
         if any(_alias_compatible(home, home_aliases) for home in homes) and any(
             _alias_compatible(away, away_aliases) for away in aways

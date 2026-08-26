@@ -1016,9 +1016,6 @@ def test_prepared_artifact_free_record_accepts_validated_reviewed_hash(
         lambda prior, _evidence: prior.__setitem__("plan_id", "plan-id"),
         lambda prior, _evidence: prior.__setitem__("package_path", "/tmp/package.csv"),
         lambda prior, _evidence: prior["identity"].__setitem__(
-            "reviewed_catalog_hash", "b" * 64
-        ),
-        lambda prior, _evidence: prior["identity"].__setitem__(
             "drawing_fingerprint", "d" * 64
         ),
         lambda prior, _evidence: prior["identity"].__setitem__("drawing_id", 12008),
@@ -1051,6 +1048,29 @@ def test_deferred_reviewed_hash_transition_rejects_unsafe_state_or_identity(
     mutation(prior, evidence)
 
     assert not _allows_deferred_reviewed_hash_transition(prior, evidence)
+
+
+def test_deferred_artifact_free_record_accepts_reviewed_hash_advancement():
+    evidence = _prepared(
+        number=4966,
+        drawing_id=12007,
+        deadline=datetime(2032, 1, 1, 17, 0, tzinfo=UTC),
+        reviewed_catalog_hash="c" * 64,
+    )
+    prior = {
+        "status": "deferred",
+        "activation_status": "not_requested",
+        "plan_id": None,
+        "plan_path": None,
+        "launch_agent_path": None,
+        "launch_agent_label": None,
+        "identity": {
+            **evidence.identity_payload(),
+            "reviewed_catalog_hash": "b" * 64,
+        },
+    }
+
+    assert _allows_deferred_reviewed_hash_transition(prior, evidence)
 
 
 def test_scheduled_record_rejects_reviewed_hash_mutation(tmp_path):
@@ -1787,7 +1807,17 @@ def test_deferred_unactivated_cli_runs_source_collectors_without_installing(
     assert payload["source_collector"]["consensus"]["promoted_count"] == 1
 
 
-def test_consensus_promotion_reprepares_before_final_dispatch(monkeypatch, tmp_path):
+@pytest.mark.parametrize(
+    ("promoted_count", "existing_count", "initial_ledger_hash"),
+    ((1, 0, None), (0, 1, "b" * 64)),
+)
+def test_consensus_evidence_reprepares_before_final_dispatch(
+    monkeypatch,
+    tmp_path,
+    promoted_count,
+    existing_count,
+    initial_ledger_hash,
+):
     write_empty_schedule_evidence_ledger(tmp_path)
     env_file = _env(tmp_path / ".env")
     queue = tmp_path / "review-queue.json"
@@ -1809,6 +1839,7 @@ def test_consensus_promotion_reprepares_before_final_dispatch(monkeypatch, tmp_p
             mapped=14,
             eligibility="unknown",
             span_days=None,
+            reviewed_catalog_hash=initial_ledger_hash,
         ),
         unresolved_events=(unresolved,),
     )
@@ -1873,9 +1904,9 @@ def test_consensus_promotion_reprepares_before_final_dispatch(monkeypatch, tmp_p
         cli,
         "promote_uefa_sofascore_consensus",
         lambda *_args, **_kwargs: SimpleNamespace(
-            status="CONSENSUS_PROMOTED",
-            promoted_count=1,
-            existing_count=0,
+            status=("CONSENSUS_PROMOTED" if promoted_count else "CONSENSUS_PARTIAL"),
+            promoted_count=promoted_count,
+            existing_count=existing_count,
             unresolved_count=0,
             report_path=tmp_path / "consensus.json",
             ledger_semantic_hash="c" * 64,

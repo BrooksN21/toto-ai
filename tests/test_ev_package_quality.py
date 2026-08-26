@@ -14,6 +14,7 @@ from toto_ai.ev.package import select_ev_package
 from toto_ai.ev.package_quality import (
     EVALUATION_MC_STREAM,
     OPTIMIZATION_MC_STREAM,
+    SUPPORTED_SCHEDULER_SCHEMA_VERSION,
     ExactCategoryCoverage,
     PackageSelectionProvenance,
     bound_selection_context,
@@ -64,8 +65,13 @@ def _provenance(probabilities, tmp_path, config):
 
 def _write_test_scheduler_plan(path: Path, *, config: EVConfig) -> None:
     semantic = {
-        "schema_version": 6,
-        "target": {"drawing": 0, "drawing_id": 0, "ended_at": "test"},
+        "schema_version": SUPPORTED_SCHEDULER_SCHEMA_VERSION,
+        "target": {
+            "drawing": 0,
+            "drawing_id": 0,
+            "ended_at": "test",
+            "operational_cutoff": "test",
+        },
         "config": {
             "quality_v2": quality_v2_config_payload(config),
             "selection_context": bound_selection_context(config),
@@ -506,6 +512,12 @@ def test_selector_rejects_arbitrary_or_mutated_plan_artifacts(tmp_path):
     assert "scheduler_plan_sha256_mismatch" in (
         rejected_mutated.selection_diagnostics.infeasibility_reasons
     )
+
+
+def test_provenance_schema_contract_matches_active_scheduler():
+    from toto_ai.runner.scheduler import SCHEDULER_SCHEMA_VERSION
+
+    assert SUPPORTED_SCHEDULER_SCHEMA_VERSION == SCHEDULER_SCHEMA_VERSION
 
 
 @pytest.mark.parametrize(

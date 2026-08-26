@@ -1,5 +1,30 @@
 # Architecture
 
+## Two-independent-source schedule consensus v2 (2026-08-26)
+
+The morning retry path may promote canonical kickoff evidence from GOAL plus a
+separately fetched Sofascore search/detail pair. Promotion requires one unique
+home/away match, exact UTC kickoff agreement, pre-kickoff `scheduled` state,
+two distinct HTTPS domains, immutable snapshots and a deterministic review
+artifact. Neither provider may promote alone, and the resulting evidence is
+schedule-only: it cannot alter BK probabilities or place a wager.
+
+Observation identity v2 binds GOAL and Sofascore IDs to the exact drawing,
+target event and target championship. The target championship is included in
+the reusable competition aliases. Legacy observations lacking that binding
+remain audit evidence but cannot suppress a corrected v2 observation.
+
+All public schedule adapters use the same bounded Moscow drawing window: local
+midnight on the TotoBrief drawing date through at most five calendar days.
+`ended_at` is not a lower bound for event kickoff. A monotonic ledger append
+may rebind an unchanged observation pin to the new whole-ledger hash only after
+the observation ID, semantic hash, kickoff and orientation are revalidated.
+
+Selector provenance accepts only the active scheduler-plan schema v7. A
+contract test binds the provenance schema constant to the scheduler constant
+so a future schema migration cannot silently make every package structurally
+infeasible.
+
 ## GOAL API v1 independent schedule candidate (2026-08-25)
 
 `toto_ai.external_odds.goal_api` is a football schedule adapter for the

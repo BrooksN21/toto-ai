@@ -108,6 +108,9 @@ from toto_ai.external_odds.goal_api import (
     GoalAPIConfig,
     load_goal_api_key,
 )
+from toto_ai.external_odds.independent_schedule_consensus import (
+    promote_goal_sofascore_consensus,
+)
 from toto_ai.external_odds.matching import load_aliases, load_reviewed_alias_names
 from toto_ai.external_odds.preparation import (
     DrawingPreparationResult,
@@ -3373,6 +3376,7 @@ def _morning_unresolved_events(
             target_event_id=item.target_event_id,
             home_team=target_events[item.event_order].home_team,
             away_team=target_events[item.event_order].away_team,
+            championship=target_events[item.event_order].championship,
             resolution_status=item.status,
             reason=item.reason,
             candidate_evidence=item.candidate_evidence,
@@ -3388,6 +3392,7 @@ def _morning_unresolved_events(
                 target_event_id=target_events[order].event_id,
                 home_team=target_events[order].home_team,
                 away_team=target_events[order].away_team,
+                championship=target_events[order].championship,
                 resolution_status="timing_unknown",
                 reason="baseline-only event start time is unavailable",
                 candidate_evidence=(),
@@ -3796,6 +3801,7 @@ def morning_dispatch_command(
                 }
         if result.review_queue_path is not None:
             independent_status: dict[str, object]
+            source_candidates_report: Path | None = None
             try:
                 collected = collect_schedule_source_candidates(
                     result.review_queue_path,
@@ -3812,6 +3818,7 @@ def morning_dispatch_command(
                     "error": f"{type(error).__name__}: {str(error)[:300]}",
                 }
             else:
+                source_candidates_report = collected.report_path
                 cutoff_fields: dict[str, object]
                 if prepared_evidence is None:
                     cutoff_fields = {
@@ -3879,12 +3886,67 @@ def morning_dispatch_command(
                     "ledger_semantic_hash": consensus.ledger_semantic_hash,
                     "ledger_mutated": consensus.promoted_count > 0,
                 }
+            independent_consensus_status: dict[str, object]
+            independent_consensus_promoted_count = 0
+            try:
+                if source_candidates_report is None:
+                    raise ValueError("schedule source candidates are unavailable")
+                independent_consensus = promote_goal_sofascore_consensus(
+                    result.review_queue_path,
+                    source_candidates_path=source_candidates_report,
+                    output_dir=(
+                        result.review_queue_path.parent
+                        / "source-independent-consensus"
+                    ),
+                    schedule_evidence_ledger=resolved_schedule_evidence_ledger,
+                )
+            except Exception as error:
+                independent_consensus_status = {
+                    "status": "INDEPENDENT_CONSENSUS_FAILED",
+                    "error": f"{type(error).__name__}: {str(error)[:300]}",
+                    "ledger_mutated": False,
+                }
+            else:
+                independent_consensus_promoted_count = (
+                    independent_consensus.promoted_count
+                )
+                independent_consensus_status = {
+                    "status": independent_consensus.status,
+                    "promoted_count": independent_consensus.promoted_count,
+                    "existing_count": independent_consensus.existing_count,
+                    "unresolved_count": independent_consensus.unresolved_count,
+                    "report_path": str(independent_consensus.report_path),
+                    "ledger_semantic_hash": (
+                        independent_consensus.ledger_semantic_hash
+                    ),
+                    "ledger_mutated": independent_consensus.promoted_count > 0,
+                }
             source_collector_status = {
                 "independent": independent_status,
                 "consensus": consensus_status,
+                "independent_consensus": independent_consensus_status,
             }
+            observed_ledger_hashes = {
+                str(status["ledger_semantic_hash"])
+                for status in (
+                    consensus_status,
+                    independent_consensus_status,
+                )
+                if isinstance(status.get("ledger_semantic_hash"), str)
+            }
+            evidence_ledger_advanced = (
+                prepared_evidence is not None
+                and any(
+                    ledger_hash != prepared_evidence.reviewed_catalog_hash
+                    for ledger_hash in observed_ledger_hashes
+                )
+            )
             refresh_dispatch = False
-            if prepared_evidence is not None and consensus_promoted_count > 0:
+            if prepared_evidence is not None and (
+                consensus_promoted_count > 0
+                or independent_consensus_promoted_count > 0
+                or evidence_ledger_advanced
+            ):
                 prepared_evidence = prepare_for_dispatch(datetime.now(timezone.utc))
                 refresh_dispatch = True
             if (

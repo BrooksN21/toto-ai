@@ -477,6 +477,7 @@ def _morning_evidence(
             target_event_id=item.target_event_id,
             home_team=events[item.event_order].home_team,
             away_team=events[item.event_order].away_team,
+            championship=events[item.event_order].championship,
             resolution_status=item.status,
             reason=item.reason,
             candidate_evidence=item.candidate_evidence,

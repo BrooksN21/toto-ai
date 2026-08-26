@@ -27,6 +27,7 @@ _HEX_DIGITS = frozenset("0123456789abcdef")
 OPTIMIZATION_MC_STREAM = "quality-v2-optimization"
 EVALUATION_MC_STREAM = "quality-v2-evaluation"
 QUALITY_RELEASE_PROTOCOL_VERSION = "quality-v2-paper-only-v1"
+SUPPORTED_SCHEDULER_SCHEMA_VERSION = 7
 QUALITY_OBJECTIVE_ORDER = (
     "probability_at_least_13",
     "probability_at_least_14",
@@ -409,7 +410,7 @@ def _validate_scheduler_plan_artifact(
     config = document.get("config")
     quality = config.get("quality_v2") if isinstance(config, dict) else None
     if (
-        document.get("schema_version") != 6
+        document.get("schema_version") != SUPPORTED_SCHEDULER_SCHEMA_VERSION
         or not isinstance(document.get("target"), dict)
         or not isinstance(document.get("paths"), dict)
         or not isinstance(document.get("deadlines"), dict)

@@ -1262,6 +1262,1112 @@
           "source_url": "https://www.sofascore.com/api/v1/event/16707708"
         }
       ]
+    },
+    {
+      "observation_id": "independent-consensus-e7d17b02d2ed51da6f20",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "League Cup - 1/32-finals",
+        "EFL Cup"
+      ],
+      "home_entity": "Bradford City",
+      "home_aliases": [
+        "Брэдфорд",
+        "Bradford City",
+        "برادفورد سيتي",
+        "Брэдфорд Сити"
+      ],
+      "away_entity": "Burnley",
+      "away_aliases": [
+        "Бернли",
+        "Burnley",
+        "بيرنلي",
+        "বার্নলি",
+        "बर्नली"
+      ],
+      "starts_at": "2026-08-26T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:27:30.369205Z",
+      "review_document": "reviews/auto-independent-consensus-e7d17b02d2ed51da6f20.md",
+      "review_document_sha256": "7378a9332abb94d4fc0e7358194223237d246a872c3196c17e403da13691c132",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp46nz9azypg07b5ktpwep"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/bradford-city-burnley/gsx#id:16798244"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-371984703cfdd6dd243d",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Primera Nacional",
+        "Primera B Nacional"
+      ],
+      "home_entity": "Acassuso",
+      "home_aliases": [
+        "Акассусо",
+        "Acassuso",
+        "أكاسوسو",
+        "Атлетико Акассусо"
+      ],
+      "away_entity": "San Telmo",
+      "away_aliases": [
+        "Сан Тельмо",
+        "San Telmo",
+        "سان تيلمو",
+        "Сан-Тельмо"
+      ],
+      "starts_at": "2026-08-26T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:27:30.369205Z",
+      "review_document": "reviews/auto-independent-consensus-371984703cfdd6dd243d.md",
+      "review_document_sha256": "44fa0308b95dc147621eb1922db385d3310082dbe92d8c972cccd36b11ab22a0",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmrfllqid03qcm507yr7dtpii"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/san-telmo-acassuso/QZUslrKb#id:16611053"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-16a6281259e1554e8392",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Primera Nacional",
+        "Primera B Nacional"
+      ],
+      "home_entity": "Chaco For Ever",
+      "home_aliases": [
+        "Чако Фор Эвер",
+        "Chaco For Ever",
+        "تشاكو فور إيفر"
+      ],
+      "away_entity": "San Miguel",
+      "away_aliases": [
+        "Сан Мигель",
+        "San Miguel",
+        "سان ميغيل",
+        "Сан-Мигель"
+      ],
+      "starts_at": "2026-08-26T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:27:30.369205Z",
+      "review_document": "reviews/auto-independent-consensus-16a6281259e1554e8392.md",
+      "review_document_sha256": "605ca561cf1095b96c3f59d215852fa348527e6880f2f7e7550dc173b78e224a",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmrjvxmy70xyyo807okj8t592"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/san-miguel-chaco-for-ever/BebcsVYfc#id:16853880"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-8f8649667b43b24a7b53",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "DBU Pokalen - 1/32-finals",
+        "Oddset Pokalen"
+      ],
+      "home_entity": "Fredericia",
+      "home_aliases": [
+        "Фредерисия",
+        "Fredericia",
+        "FC Fredericia",
+        "إف سي فريديريسيا",
+        "ऍफ़सी फ्रेडेरिसिया",
+        "ФК Фредерика"
+      ],
+      "away_entity": "Odense",
+      "away_aliases": [
+        "Оденсе",
+        "Odense",
+        "Odense Boldklub",
+        "ओडेनसे बोल्ड़क्लुब"
+      ],
+      "starts_at": "2026-08-26T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:27:30.369205Z",
+      "review_document": "reviews/auto-independent-consensus-8f8649667b43b24a7b53.md",
+      "review_document_sha256": "1cdfcec7ce386b484d9a8978895a8be5ee007aaec68fb41482d54799a14539eb",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsp4mxnku5repn06funr96vn"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-fredericia-odense-boldklub/LAscB#id:16815778"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-35661fa2cfed56c411de",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "1. Division",
+        "1st Division"
+      ],
+      "home_entity": "Asane",
+      "home_aliases": [
+        "Осане",
+        "Asane",
+        "Åsane",
+        "أوساني",
+        "ФК Асан"
+      ],
+      "away_entity": "Lyn",
+      "away_aliases": [
+        "Люн Осло",
+        "Lyn",
+        "Lyn FK",
+        "لين إف كيه",
+        "ФК Люн"
+      ],
+      "starts_at": "2026-08-26T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:27:30.369205Z",
+      "review_document": "reviews/auto-independent-consensus-35661fa2cfed56c411de.md",
+      "review_document_sha256": "70a25509a87e4f0d0db8744b7ed893b05a5cae74dad4e21a2c5b297bfb5a4b7f",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42rc9ae5pg07hpwtvu6r"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/asane-lyn-fk/hnsHn#id:15265874"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-4ee8101aa7bb36837950",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Saudi League",
+        "Saudi Pro League"
+      ],
+      "home_entity": "Al-Faisaly",
+      "home_aliases": [
+        "Аль Файзали Харма",
+        "Al-Faisaly",
+        "Al Faisaly",
+        "نادي الفيصلي",
+        "আল-ফয়সালি",
+        "अल-फैसली",
+        "Аль Файсали"
+      ],
+      "away_entity": "Al Fateh",
+      "away_aliases": [
+        "Аль Фатех",
+        "Al Fateh",
+        "Al-Fateh",
+        "الفتح",
+        "আল-ফাতেহ",
+        "अल-फतेह",
+        "Аль Фатех СК"
+      ],
+      "starts_at": "2026-08-26T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:27:30.369205Z",
+      "review_document": "reviews/auto-independent-consensus-4ee8101aa7bb36837950.md",
+      "review_document_sha256": "5e961ed0dc8a8f1268f93339a7602e903f09271affc87a7e40620d18b7e79eca",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42x09af3pg075im3r193"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/al-faisaly-al-fateh/yvxsKvx#id:16629436"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-30d813d7464ca79efe1e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Primera Nacional",
+        "Primera B Nacional"
+      ],
+      "home_entity": "Patronato",
+      "home_aliases": [
+        "Патронато",
+        "Patronato",
+        "باتروناتو",
+        "КА Паронато Парана"
+      ],
+      "away_entity": "Atletico Atlanta",
+      "away_aliases": [
+        "Атланта",
+        "Atletico Atlanta",
+        "Atlanta",
+        "أتلانتا",
+        "Атлетико Атланта"
+      ],
+      "starts_at": "2026-08-26T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:45:21.282766Z",
+      "review_document": "reviews/auto-independent-consensus-30d813d7464ca79efe1e.md",
+      "review_document_sha256": "1f0ba15c120e81cd31aed169b8fcac684d8c414de95aba0f95566860135bd551",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmrjvxmzl0xzyo8074ypghbvo"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/atlanta-patronato/QzrsZAw#id:16853881"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-4ea076560424de72c285",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Prim B Metro",
+        "Primera B"
+      ],
+      "home_entity": "Liniers",
+      "home_aliases": [
+        "Линьерс",
+        "Liniers",
+        "CSYD Liniers",
+        "سي إس واي دي لينييرس",
+        "КСД Линиерс"
+      ],
+      "away_entity": "Deportivo Armenio",
+      "away_aliases": [
+        "Депортиво Арменио",
+        "Deportivo Armenio",
+        "ديپورتيڢو ارمينيو"
+      ],
+      "starts_at": "2026-08-26T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:45:21.282766Z",
+      "review_document": "reviews/auto-independent-consensus-4ea076560424de72c285.md",
+      "review_document_sha256": "d911da8a1c07057793c61cd571bf006e1f07aa2eba4773e0ade4ca651aa39780",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsp4mzcwu5zapn06lgon38ls"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/csyd-liniers-deportivo-armenio/fmMsQgCb#id:15276398"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-a376f4c5708100dd7a06",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Premier League",
+        "Egyptian Premier League"
+      ],
+      "home_entity": "Petrojet",
+      "home_aliases": [
+        "Петроджет",
+        "Petrojet",
+        "Suez Petrojet FC",
+        "بتروجت",
+        "Петрожет ФК"
+      ],
+      "away_entity": "El Gaish",
+      "away_aliases": [
+        "Тала Аль Гаиш",
+        "El Gaish",
+        "Tala'ea El-Gaish",
+        "طلائع الجيش",
+        "Талаеа Эль Гаиш"
+      ],
+      "starts_at": "2026-08-26T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:45:21.282766Z",
+      "review_document": "reviews/auto-independent-consensus-a376f4c5708100dd7a06.md",
+      "review_document_sha256": "b7814967117b5ba250470664f281021e0f9a871ddb8954d15e8de97d908e00bf",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42qj9adzpg071ne7y3lh"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/petrojet-talaea-el-gaish/lwrsrwr#id:16738941"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-bfd9c6092cb1781e4871",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Premier League",
+        "Egyptian Premier League"
+      ],
+      "home_entity": "National Bank Egypt",
+      "home_aliases": [
+        "Нацбанк ФК",
+        "National Bank Egypt",
+        "National Bank of Egypt",
+        "البنك الأهلي المصري",
+        "Национальный банк Египта"
+      ],
+      "away_entity": "Zamalek",
+      "away_aliases": [
+        "Замалек",
+        "Zamalek",
+        "Zamalek SC",
+        "الزمالك",
+        "ज़मालेक एससी",
+        "Эль Замалек"
+      ],
+      "starts_at": "2026-08-26T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:45:21.282766Z",
+      "review_document": "reviews/auto-independent-consensus-bfd9c6092cb1781e4871.md",
+      "review_document_sha256": "2fe423a225fb999acb758babb5aa48db129181a11e4f4f3984fff1713c1cb8ca",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42pa9adtpg07l6077t0p"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/national-bank-of-egypt-zamalek-sc/tXqsBHgc#id:16738931"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-fa5fb36e9d1dbb458201",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Premier League"
+      ],
+      "home_entity": "Al Shabab",
+      "home_aliases": [
+        "Аль Шабаб Ахмади",
+        "Al Shabab",
+        "Al Shabab SC",
+        "نادي الشباب",
+        "Аль-Шабаб Кувейт"
+      ],
+      "away_entity": "Al Jahra",
+      "away_aliases": [
+        "Аль Джахра",
+        "Al Jahra",
+        "Al Jahra SC",
+        "نادي الجهراء",
+        "Аль-Джахра"
+      ],
+      "starts_at": "2026-08-26T15:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:45:21.282766Z",
+      "review_document": "reviews/auto-independent-consensus-fa5fb36e9d1dbb458201.md",
+      "review_document_sha256": "7116afe63cdd2def5c6f2a627dce3720d002d625db4a5fcf2b808dac3e2cf738",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsxwg9epf4lvqg079lwojgpy"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/al-shabab-sc-al-jahra-sc/VBwsudx#id:16796336"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-87480f60c9c2e9ce100c",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "1. Division",
+        "1st Division"
+      ],
+      "home_entity": "Odd",
+      "home_aliases": [
+        "Одд",
+        "Odd",
+        "Odds BK",
+        "Одд БК"
+      ],
+      "away_entity": "Kongsvinger",
+      "away_aliases": [
+        "Конгсвингер",
+        "Kongsvinger",
+        "كونغسفينغر",
+        "কংসভিংগার",
+        "कोंगस्विंगर",
+        "ФК Конгсвингер"
+      ],
+      "starts_at": "2026-08-26T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:45:21.282766Z",
+      "review_document": "reviews/auto-independent-consensus-87480f60c9c2e9ce100c.md",
+      "review_document_sha256": "ea4cd4f256d1a82ae464a1ed0f0d7018f301c8b057a9f82aa5bbdd1a36d4a56e",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42wa9aexpg07ozcsnaoh"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/kongsvinger-odds-bk/jnsxn#id:15265869"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-8c0b0764535c74926f9a",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "1. Division",
+        "1st Division"
+      ],
+      "home_entity": "Moss",
+      "home_aliases": [
+        "Мосс",
+        "Moss",
+        "Moss FK",
+        "موس",
+        "मॉस एफके",
+        "ФК Мосс"
+      ],
+      "away_entity": "Sogndal",
+      "away_aliases": [
+        "Согндал",
+        "Sogndal",
+        "Sogndal IL",
+        "سوغندال",
+        "ФК Сондаль"
+      ],
+      "starts_at": "2026-08-26T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T08:45:21.282766Z",
+      "review_document": "reviews/auto-independent-consensus-8c0b0764535c74926f9a.md",
+      "review_document_sha256": "4131e820b061cefec7fe48127cba316050ff7de2840d4f8fa63185979f9d5dea",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42ub9aelpg07cnowwg96"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sogndal-il-moss-fk/mnspn#id:15265868"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-04ccc62f5e499ab58170",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Кубок Лиги",
+        "League Cup - 1/32-finals",
+        "EFL Cup"
+      ],
+      "home_entity": "Bradford City",
+      "home_aliases": [
+        "Брэдфорд",
+        "Bradford City",
+        "برادفورد سيتي",
+        "Брэдфорд Сити"
+      ],
+      "away_entity": "Burnley",
+      "away_aliases": [
+        "Бернли",
+        "Burnley",
+        "بيرنلي",
+        "বার্নলি",
+        "बर्नली"
+      ],
+      "starts_at": "2026-08-26T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-04ccc62f5e499ab58170.md",
+      "review_document_sha256": "c39df2e7c331f48e5502c953f7aa12652aa10c622aaac5ee68ac8f505cfc7996",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp46nz9azypg07b5ktpwep"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/bradford-city-burnley/gsx#id:16798244"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-e8037a29d39a8ee8df35",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Аргентина. Примера Насьональ",
+        "Primera Nacional",
+        "Primera B Nacional"
+      ],
+      "home_entity": "Acassuso",
+      "home_aliases": [
+        "Акассусо",
+        "Acassuso",
+        "أكاسوسو",
+        "Атлетико Акассусо"
+      ],
+      "away_entity": "San Telmo",
+      "away_aliases": [
+        "Сан Тельмо",
+        "San Telmo",
+        "سان تيلمو",
+        "Сан-Тельмо"
+      ],
+      "starts_at": "2026-08-26T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-e8037a29d39a8ee8df35.md",
+      "review_document_sha256": "9a2c375c8afdfbe3ee4c22f9bd7e95ab1d9ba6da4b31644c1873363d293c9708",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmrfllqid03qcm507yr7dtpii"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/san-telmo-acassuso/QZUslrKb#id:16611053"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-089fda2d6cfb78aecec2",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Аргентина. Примера Насьональ",
+        "Primera Nacional",
+        "Primera B Nacional"
+      ],
+      "home_entity": "Chaco For Ever",
+      "home_aliases": [
+        "Чако Фор Эвер",
+        "Chaco For Ever",
+        "تشاكو فور إيفر"
+      ],
+      "away_entity": "San Miguel",
+      "away_aliases": [
+        "Сан Мигель",
+        "San Miguel",
+        "سان ميغيل",
+        "Сан-Мигель"
+      ],
+      "starts_at": "2026-08-26T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-089fda2d6cfb78aecec2.md",
+      "review_document_sha256": "b9842212c0345921a324d1ac9eec4b6241ce1eb5ace787de374436833d8662ad",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmrjvxmy70xyyo807okj8t592"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/san-miguel-chaco-for-ever/BebcsVYfc#id:16853880"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-7b973469846cd09f52cf",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Аргентина. Примера Насьональ",
+        "Primera Nacional",
+        "Primera B Nacional"
+      ],
+      "home_entity": "Patronato",
+      "home_aliases": [
+        "Патронато",
+        "Patronato",
+        "باتروناتو",
+        "КА Паронато Парана"
+      ],
+      "away_entity": "Atletico Atlanta",
+      "away_aliases": [
+        "Атланта",
+        "Atletico Atlanta",
+        "Atlanta",
+        "أتلانتا",
+        "Атлетико Атланта"
+      ],
+      "starts_at": "2026-08-26T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-7b973469846cd09f52cf.md",
+      "review_document_sha256": "82991770c4d694870653e0a36f1e6b7d854eda6973bc8d84ce104dcd20dd4396",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmrjvxmzl0xzyo8074ypghbvo"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/atlanta-patronato/QzrsZAw#id:16853881"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-4c7037c21a9b953d25c9",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Дания. Кубок",
+        "DBU Pokalen - 1/32-finals",
+        "Oddset Pokalen"
+      ],
+      "home_entity": "Fredericia",
+      "home_aliases": [
+        "Фредерисия",
+        "Fredericia",
+        "FC Fredericia",
+        "إف سي فريديريسيا",
+        "ऍफ़सी फ्रेडेरिसिया",
+        "ФК Фредерика"
+      ],
+      "away_entity": "Odense",
+      "away_aliases": [
+        "Оденсе",
+        "Odense",
+        "Odense Boldklub",
+        "ओडेनसे बोल्ड़क्लुब"
+      ],
+      "starts_at": "2026-08-26T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-4c7037c21a9b953d25c9.md",
+      "review_document_sha256": "96bf6eb12c895b0298bd0d375368c04933f66a07b485b0e24f8c5cc1e646cea7",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsp4mxnku5repn06funr96vn"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-fredericia-odense-boldklub/LAscB#id:16815778"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-8d02ce7f11699f153ec6",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Египет. Чемпионат",
+        "Premier League",
+        "Egyptian Premier League"
+      ],
+      "home_entity": "Petrojet",
+      "home_aliases": [
+        "Петроджет",
+        "Petrojet",
+        "Suez Petrojet FC",
+        "بتروجت",
+        "Петрожет ФК"
+      ],
+      "away_entity": "El Gaish",
+      "away_aliases": [
+        "Тала Аль Гаиш",
+        "El Gaish",
+        "Tala'ea El-Gaish",
+        "طلائع الجيش",
+        "Талаеа Эль Гаиш"
+      ],
+      "starts_at": "2026-08-26T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-8d02ce7f11699f153ec6.md",
+      "review_document_sha256": "d1e8512aec13a11c801c3b6d503acc3ce81029baac0cd7050defa6efe18f6ba9",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42qj9adzpg071ne7y3lh"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/petrojet-talaea-el-gaish/lwrsrwr#id:16738941"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-5ef36646c211a40a5454",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Египет. Чемпионат",
+        "Premier League",
+        "Egyptian Premier League"
+      ],
+      "home_entity": "National Bank Egypt",
+      "home_aliases": [
+        "Нацбанк ФК",
+        "National Bank Egypt",
+        "National Bank of Egypt",
+        "البنك الأهلي المصري",
+        "Национальный банк Египта"
+      ],
+      "away_entity": "Zamalek",
+      "away_aliases": [
+        "Замалек",
+        "Zamalek",
+        "Zamalek SC",
+        "الزمالك",
+        "ज़मालेक एससी",
+        "Эль Замалек"
+      ],
+      "starts_at": "2026-08-26T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-5ef36646c211a40a5454.md",
+      "review_document_sha256": "0ae310513840b4eb468c87af199ad3f9fe026bfaeb25876f62941a7d51f2d5cb",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42pa9adtpg07l6077t0p"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/national-bank-of-egypt-zamalek-sc/tXqsBHgc#id:16738931"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-06da96d58061afa90a3a",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Кувейт. Премьер Лига",
+        "Premier League"
+      ],
+      "home_entity": "Al Shabab",
+      "home_aliases": [
+        "Аль Шабаб Ахмади",
+        "Al Shabab",
+        "Al Shabab SC",
+        "نادي الشباب",
+        "Аль-Шабаб Кувейт"
+      ],
+      "away_entity": "Al Jahra",
+      "away_aliases": [
+        "Аль Джахра",
+        "Al Jahra",
+        "Al Jahra SC",
+        "نادي الجهراء",
+        "Аль-Джахра"
+      ],
+      "starts_at": "2026-08-26T15:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-06da96d58061afa90a3a.md",
+      "review_document_sha256": "b429cbdc20797e807ee80208eb3f0f09bc2bcedc5fd51ed1f3c4aadb3603737b",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsxwg9epf4lvqg079lwojgpy"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/al-shabab-sc-al-jahra-sc/VBwsudx#id:16796336"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-b07648f53eac95f47993",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Норвегия. 1-й дивизион",
+        "1. Division",
+        "1st Division"
+      ],
+      "home_entity": "Odd",
+      "home_aliases": [
+        "Одд",
+        "Odd",
+        "Odds BK",
+        "Одд БК"
+      ],
+      "away_entity": "Kongsvinger",
+      "away_aliases": [
+        "Конгсвингер",
+        "Kongsvinger",
+        "كونغسفينغر",
+        "কংসভিংগার",
+        "कोंगस्विंगर",
+        "ФК Конгсвингер"
+      ],
+      "starts_at": "2026-08-26T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-b07648f53eac95f47993.md",
+      "review_document_sha256": "526935af2faaea898ce3b0f694540699d5be74dd12c692665c1368546789f6e2",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42wa9aexpg07ozcsnaoh"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/kongsvinger-odds-bk/jnsxn#id:15265869"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-01e3011b10acbc519fb6",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Норвегия. 1-й дивизион",
+        "1. Division",
+        "1st Division"
+      ],
+      "home_entity": "Moss",
+      "home_aliases": [
+        "Мосс",
+        "Moss",
+        "Moss FK",
+        "موس",
+        "मॉस एफके",
+        "ФК Мосс"
+      ],
+      "away_entity": "Sogndal",
+      "away_aliases": [
+        "Согндал",
+        "Sogndal",
+        "Sogndal IL",
+        "سوغندال",
+        "ФК Сондаль"
+      ],
+      "starts_at": "2026-08-26T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-01e3011b10acbc519fb6.md",
+      "review_document_sha256": "d971cdd18dc5fd3b5cb2e830198ff4c5aa982948978f079296e43b950b02dd33",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42ub9aelpg07cnowwg96"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sogndal-il-moss-fk/mnspn#id:15265868"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-02b8a25888323b02c7ab",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Норвегия. 1-й дивизион",
+        "1. Division",
+        "1st Division"
+      ],
+      "home_entity": "Asane",
+      "home_aliases": [
+        "Осане",
+        "Asane",
+        "Åsane",
+        "أوساني",
+        "ФК Асан"
+      ],
+      "away_entity": "Lyn",
+      "away_aliases": [
+        "Люн Осло",
+        "Lyn",
+        "Lyn FK",
+        "لين إف كيه",
+        "ФК Люн"
+      ],
+      "starts_at": "2026-08-26T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-02b8a25888323b02c7ab.md",
+      "review_document_sha256": "dae0899eced38732717bd67fb84de7c53cfe7f974e2834c47294ec61d6c2b682",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42rc9ae5pg07hpwtvu6r"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/asane-lyn-fk/hnsHn#id:15265874"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-bac9ded658ac647c6c18",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Саудовская Аравия. Чемпионат",
+        "Saudi League",
+        "Saudi Pro League"
+      ],
+      "home_entity": "Al-Faisaly",
+      "home_aliases": [
+        "Аль Файзали Харма",
+        "Al-Faisaly",
+        "Al Faisaly",
+        "نادي الفيصلي",
+        "আল-ফয়সালি",
+        "अल-फैसली",
+        "Аль Файсали"
+      ],
+      "away_entity": "Al Fateh",
+      "away_aliases": [
+        "Аль Фатех",
+        "Al Fateh",
+        "Al-Fateh",
+        "الفتح",
+        "আল-ফাতেহ",
+        "अल-फतेह",
+        "Аль Фатех СК"
+      ],
+      "starts_at": "2026-08-26T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-26T09:01:09.230992Z",
+      "review_document": "reviews/auto-independent-consensus-v2-bac9ded658ac647c6c18.md",
+      "review_document_sha256": "8b4060df3cc7b97d6334ffefcdb5f35ec509ee4b0bd7c4dd0b7c9e3874e4425a",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp42x09af3pg075im3r193"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/al-faisaly-al-fateh/yvxsKvx#id:16629436"
+        }
+      ]
     }
   ]
 }

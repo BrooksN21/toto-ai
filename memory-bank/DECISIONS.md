@@ -1924,3 +1924,23 @@ ambiguous reversed evidence remains unresolved.
 - Runtime attempts survive refreshed detail, reviewed evidence and cutoff
   hashes only when drawing ID, visible number, fingerprint and `ended_at` are
   unchanged and the operational cutoff does not move later.
+## 2026-08-26 — Exact two-independent-source schedule promotion
+
+- GOAL plus a separately fetched Sofascore search/detail pair is sufficient
+  schedule evidence only when identity, orientation, exact UTC kickoff and
+  pre-kickoff status agree and both immutable HTTPS source artifacts verify.
+- Evidence identity v2 is bound to drawing ID, target event ID and target
+  championship. Legacy observations without the target competition remain
+  audit-only when they cannot satisfy the exact competition resolver.
+- The schedule search window starts at Moscow local midnight of the drawing
+  date and extends for at most five calendar days. TotoBrief `ended_at` is a
+  conservative outer identity/cutoff field, not an event-time lower bound.
+- An artifact-free deferred morning record may advance to a newer validated
+  ledger hash for the same immutable drawing. Once a scheduler artifact exists,
+  the identity remains immutable.
+- A monotonic append does not invalidate an unchanged evidence observation.
+  Existing pins are revalidated per observation and rebound to the new ledger
+  hash before publication.
+- Package-selection provenance supports exactly the active scheduler schema v7;
+  schema v6 remains rejected. A cross-module test must detect future version
+  drift.

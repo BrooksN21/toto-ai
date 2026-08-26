@@ -1016,9 +1016,9 @@ closed.
   retry cutoff before LaunchAgent installation; reuse it on later runs.
 - [x] Verify drawing 4987 without activation or package generation:
   `ended_at=18:45Z`, operational cutoff `15:45Z`, T-10 `15:35Z`.
-- [ ] Decide, through reviewed provider policy, whether two-source exact
-  timing consensus may become canonical event timing. Until then the cutoff is
-  scheduling safety only and does not promote candidate rows.
+- [x] Approve exact GOAL plus separately fetched Sofascore consensus as
+  canonical schedule-only timing evidence under immutable two-domain,
+  exact-identity, exact-kickoff and pre-kickoff checks.
 - [x] Run the first live 4987 morning control collection, persist the tighter
   cutoff, promote two exact UEFA/Sofascore consensus observations, and install
   the identity-bound passive retry job for the remaining 13 events.
@@ -1035,6 +1035,11 @@ closed.
 - [x] Validate runner v2 through a real scheduled 4987 attempt: one code-75
   deferred child, no self-reinstall, job remains loaded/verified for its next
   checkpoint.
-- [ ] Establish and prospectively validate a provider policy for the 13
-  remaining 4987 events. GOAL has candidate identities/times for all 13, but
-  candidate-only evidence cannot currently make the drawing playable.
+- [x] Establish and live-validate the two-independent-source policy for the 13
+  remaining 4987 events. Corrected v2 observations made preparation READY
+  15/15 and activated the schema-v7 evening scheduler.
+- [x] Repair quality-v2 provenance validation for active scheduler schema v7;
+  verify a 166-coupon / 4,980-ruble training package reaches
+  `STRUCTURAL_PASS` without reducing optimizer quality.
+- [ ] Observe every 4987 evening checkpoint and verify terminal package/
+  `NO BET`, T-10 expiry and post-draw lifecycle from scheduler-owned artifacts.

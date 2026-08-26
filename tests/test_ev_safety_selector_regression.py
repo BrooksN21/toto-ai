@@ -9,6 +9,7 @@ from toto_ai.ev.drawing import ev_input_from_payload
 from toto_ai.ev.models import EVConfig
 from toto_ai.ev.package import select_ev_package
 from toto_ai.ev.package_quality import (
+    SUPPORTED_SCHEDULER_SCHEMA_VERSION,
     PackageSelectionProvenance,
     bound_selection_context,
     quality_v2_config_payload,
@@ -57,8 +58,13 @@ def _retrospective_hits(coupons, result: str) -> tuple[int, float]:
 
 def _write_frozen_scheduler_plan(path: Path, config: EVConfig) -> None:
     semantic = {
-        "schema_version": 6,
-        "target": {"drawing": 4971, "drawing_id": 0, "ended_at": "frozen-test"},
+        "schema_version": SUPPORTED_SCHEDULER_SCHEMA_VERSION,
+        "target": {
+            "drawing": 4971,
+            "drawing_id": 0,
+            "ended_at": "frozen-test",
+            "operational_cutoff": "frozen-test",
+        },
         "config": {
             "quality_v2": quality_v2_config_payload(config),
             "selection_context": bound_selection_context(config),

@@ -169,7 +169,7 @@ def test_goal_api_can_be_disabled_without_affecting_other_sources(
     )
 
 
-def test_match_before_drawing_deadline_is_visible_but_not_eligible(
+def test_match_before_drawing_deadline_on_same_moscow_day_is_eligible(
     tmp_path: Path,
 ) -> None:
     queue = _queue(tmp_path)
@@ -203,11 +203,11 @@ def test_match_before_drawing_deadline_is_visible_but_not_eligible(
         for item in result.records
         if item.get("source_provider") == "goal-api-v1"
     )
-    assert record["status"] == "timing_conflict"
-    assert record["status_eligible"] is False
-    assert "starts_before_drawing_deadline" in record["missing_requirements"]
+    assert record["status"] == "independent_candidate"
+    assert record["status_eligible"] is True
+    assert "starts_before_drawing_deadline" not in record["missing_requirements"]
     assert result.provider_statuses["goal-api-v1"]["matched_count"] == 1
-    assert result.provider_statuses["goal-api-v1"]["timing_conflict_count"] == 1
+    assert result.provider_statuses["goal-api-v1"]["timing_conflict_count"] == 0
 
 
 def test_goal_candidate_fallback_handles_unseen_cross_script_name_variants() -> None:

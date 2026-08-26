@@ -281,6 +281,44 @@ def test_existing_schedule_evidence_pin_survives_provider_plan_gap(
     ) == ("schedule-evidence", "schedule-evidence")
 
 
+def test_existing_schedule_evidence_pin_survives_monotonic_ledger_append(
+    session_factory,
+    tmp_path: Path,
+):
+    target = _target()
+    _seed(session_factory)
+    ledger = _schedule_evidence_ledger(tmp_path, target, event_orders=(13,))
+    first = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        schedule_evidence_ledger=ledger,
+        evaluated_at=FETCHED_AT,
+    )
+    first_pin = first.pins[13]
+    expanded = _schedule_evidence_ledger(tmp_path, target, event_orders=(13, 14))
+
+    refreshed = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        schedule_evidence_ledger=expanded,
+        evaluated_at=FETCHED_AT,
+    )
+
+    assert refreshed.eligibility.status == "playable"
+    assert refreshed.pins[13].pin_hash != first_pin.pin_hash
+    assert (
+        refreshed.pins[13].provenance["evidence_hash"]
+        == first_pin.provenance["evidence_hash"]
+    )
+    assert (
+        refreshed.pins[13].reviewed_evidence_id
+        == first_pin.reviewed_evidence_id
+    )
+    assert refreshed.pins[14].effective_source_provider == "schedule-evidence"
+
+
 def test_thirteen_external_and_two_baseline_only_are_ready(session_factory):
     _seed(session_factory)
     result = prepare_drawing(
