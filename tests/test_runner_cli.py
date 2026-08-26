@@ -1,5 +1,6 @@
 import hashlib
 import json
+import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -36,6 +37,7 @@ from toto_ai.runner import (
     build_run_drawing_phase_command,
     build_scheduler_plan,
     pin_drawing,
+    prepare_scheduler_artifacts,
 )
 
 runner = CliRunner()
@@ -1448,6 +1450,46 @@ def test_scheduler_cli_plan_simulated_execute_and_operator_pickup_are_offline(
     assert not (run_dir / "package.csv").exists()
     assert (run_dir / ".no-bet").is_file()
     assert not (run_dir / ".success").exists()
+
+
+def test_scheduler_preflight_only_cli_is_explicitly_package_free(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    write_empty_schedule_evidence_ledger(tmp_path)
+    plan = build_scheduler_plan(
+        drawing=5001,
+        drawing_id=12001,
+        ended_at=datetime(2030, 1, 2, 12, tzinfo=timezone.utc),
+        bank=4980,
+        output_dir=tmp_path / "scheduler",
+        project_root=tmp_path,
+        db=tmp_path / "data" / "toto.db",
+        aliases=tmp_path / "data" / "aliases.json",
+    )
+    artifacts = prepare_scheduler_artifacts(plan, python_command=sys.executable)
+    monkeypatch.setattr(
+        cli,
+        "execute_scheduler_preflight_only",
+        lambda *_args, **_kwargs: {
+            "status": "PASS",
+            "package_generation": False,
+            "training": False,
+        },
+    )
+
+    result = runner.invoke(
+        cli.app,
+        ["scheduler-preflight-only", "--plan", str(artifacts.plan_path)],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload == {
+        "package_generation": False,
+        "status": "PASS",
+        "training": False,
+    }
 
 
 def test_scheduler_cli_rejects_production_run_id_for_schema_v4(

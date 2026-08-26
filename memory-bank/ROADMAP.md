@@ -1062,5 +1062,7 @@ closed.
   - [x] Prepare drawing 4988 READY 15/15 and generate its schema-v7 plan.
   - [x] Fix split-brain target validation and exact-ID scheduler preparation.
   - [x] Pass exact live preflight plus full local regression (`2066 passed`).
+  - [x] Add and live-run package-free `scheduler-preflight-only`; load a
+    one-shot 16:00 MSK control before the first 4988 evening checkpoint.
   - [ ] Observe real wall-clock T-60/T-45/T-30/T-20/T-16/T-10 phases; virtual
     parent-clock acceleration is not valid for wall-clock child processes.

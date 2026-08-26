@@ -1995,3 +1995,15 @@ ambiguous reversed evidence remains unresolved.
 - Virtual parent-clock drills cannot execute wall-clock children against shared
   production persistence. Real network E2E acceptance runs only at real phase
   times; network-free simulation remains the accelerated state-machine test.
+
+## 2026-08-26 — Daytime control is package-free and state-isolated
+
+- A real control before T-120 uses the same exact-target production preflight
+  runner, but it must not execute `run-drawing`, training or package selection.
+- `scheduler-preflight-only` writes a separate immutable result and mutable
+  pointer below `daytime-preflight/`; it never mutates `scheduler-state.json`.
+- Any package bytes/path returned by the preflight runner are an integrity
+  failure. The command refuses to start at or after the first scheduler
+  checkpoint so it cannot overlap the evening state machine.
+- Sports-shadow output remains a separate paper comparison. A successful
+  daytime operational preflight does not activate sports probabilities.

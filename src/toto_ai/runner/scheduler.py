@@ -2124,6 +2124,8 @@ def execute_scheduler_tick(
             return recovered
         if state["terminal"] is not None:
             return None
+
+
         if observed >= plan.publish_deadline:
             return _finalize_tick_no_bet(
                 plan,
@@ -2447,6 +2449,86 @@ def execute_scheduler_tick(
                     reason=_safe_error(error),
                 )
             return None
+
+
+def execute_scheduler_preflight_only(
+    plan: SchedulerPlan,
+    *,
+    phase_runner: SchedulerPhaseRunner,
+    now: Callable[[], datetime],
+) -> dict[str, object]:
+    """Run the production preflight path without package generation.
+
+    This isolated control run is valid only before the first scheduler
+    checkpoint.  It validates the immutable target through the same production
+    phase runner, never mutates scheduler state, and rejects package output.
+    """
+
+    _require_plan(plan)
+    observed = _read_now(now)
+    if observed >= plan.tls_preflight_at:
+        raise SchedulerPhaseError(
+            "preflight-only control must finish before the first scheduler checkpoint"
+        )
+    _ensure_output_directory(plan.output_dir, plan.output_dir)
+    root = plan.output_dir / "daytime-preflight"
+    _ensure_output_directory(plan.output_dir, root)
+    run_id = _new_run_id(observed)
+    run_dir = root / "checkpoints" / run_id
+    _create_output_directory_exclusive(plan.output_dir, run_dir)
+    context = SchedulerPhaseContext(
+        phase="preflight",
+        plan=plan,
+        run_id=run_id,
+        run_dir=run_dir,
+        work_dir=run_dir / "preflight",
+        scheduled_at=observed,
+        started_at=observed,
+        scheduler_phase="tls_preflight",
+        phase_deadline=plan.tls_preflight_at,
+    )
+    status = "PASS"
+    reason = "exact production preflight completed"
+    try:
+        result = _call_phase_runner(phase_runner, context)
+        if result.status != "complete":
+            raise SchedulerPhaseError(result.reason)
+        if result.package_bytes is not None or result.package_path is not None:
+            raise SchedulerIntegrityError(
+                "preflight-only control produced forbidden package output",
+                category="preflight_only_package_output",
+            )
+        reason = result.reason
+    except Exception as error:
+        status = "FAIL"
+        reason = _safe_error(error)
+    finished = _read_now(now)
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "artifact_class": "REAL_PREFLIGHT_ONLY_NO_PACKAGE",
+        "plan_id": plan.plan_id,
+        "drawing_id": plan.drawing_id,
+        "drawing_number": plan.drawing,
+        "status": status,
+        "reason": reason,
+        "started_at": _timestamp(observed),
+        "finished_at": _timestamp(finished),
+        "package_generation": False,
+        "training": False,
+        "automatic_wagering": False,
+        "result_path": str(run_dir / "result.json"),
+    }
+    _write_exclusive_atomic(
+        plan.output_dir,
+        run_dir / "result.json",
+        _canonical_json_bytes(payload) + b"\n",
+    )
+    _write_replace_atomic(
+        plan.output_dir,
+        root / "current.json",
+        _canonical_json_bytes(payload) + b"\n",
+    )
+    return payload
 
 
 def _permanent_tick_error(error: Exception) -> bool:

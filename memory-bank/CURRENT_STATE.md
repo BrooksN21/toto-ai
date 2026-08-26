@@ -5309,3 +5309,20 @@ checkpoints.
 Verification after these repairs: scheduler/runner/cutoff focused suite
 `316 passed`; full default suite `2066 passed, 13 deselected` in 187.08 seconds;
 full Ruff and `git diff --check` passed.
+
+The 4988 plan is now activated as LaunchAgent
+`com.totoai.production-scheduler.v7.095bea62149ea735`. A separate
+`scheduler-preflight-only` command exercises the exact production preparation
+and target-validation path before T-120 while forbidding training, package
+generation, scheduler-state mutation and automatic wagering. Two live runs on
+4988 passed; the public CLI run took about 36 seconds. A one-shot LaunchAgent
+is loaded for 2026-08-27 16:00 MSK, one hour before the first evening
+checkpoint, with results isolated below the plan's `daytime-preflight/` root.
+The focused scheduler/runner regression passed `318 tests` and Ruff.
+
+Sports analytics remains shadow/research-only. GOAL and Sofascore currently
+affect schedule identity and kickoff evidence, not production probabilities.
+The frozen GOAL-history adapter can compare equal-budget BK and sports-shadow
+packages, but 4988 still needs a complete 15/15 GOAL fixture/team binding and
+frozen team histories before that separate comparison can run. Production must
+not silently switch from BK for 4988.

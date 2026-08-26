@@ -48,6 +48,7 @@ from toto_ai.runner.scheduler import (
     build_scheduler_plan,
     clone_scheduler_plan_for_recovery,
     execute_scheduler_plan,
+    execute_scheduler_preflight_only,
     execute_scheduler_tick,
     find_prior_bet_ready,
     parse_runner_manifest_phase_result,
@@ -148,6 +149,64 @@ def _atomic_final_payload(plan):
             ],
         }
     }
+
+
+def test_preflight_only_runs_production_preflight_without_package(
+    tmp_path: Path,
+) -> None:
+    plan = _plan(tmp_path)
+    observed = plan.tls_preflight_at - timedelta(hours=1)
+    contexts: list[SchedulerPhaseContext] = []
+
+    def phase_runner(context: SchedulerPhaseContext) -> SchedulerPhaseResult:
+        contexts.append(context)
+        return SchedulerPhaseResult.completed("real preflight passed")
+
+    result = execute_scheduler_preflight_only(
+        plan,
+        phase_runner=phase_runner,
+        now=lambda: observed,
+    )
+
+    assert result["status"] == "PASS"
+    assert result["package_generation"] is False
+    assert result["training"] is False
+    assert len(contexts) == 1
+    assert contexts[0].phase == "preflight"
+    assert contexts[0].scheduler_phase == "tls_preflight"
+    persisted = json.loads(Path(str(result["result_path"])).read_text())
+    assert persisted == result
+
+
+def test_preflight_only_rejects_accidental_package_output(tmp_path: Path) -> None:
+    plan = _plan(tmp_path)
+    observed = plan.tls_preflight_at - timedelta(hours=1)
+
+    result = execute_scheduler_preflight_only(
+        plan,
+        phase_runner=lambda _context: SchedulerPhaseResult(
+            reason="unexpected package",
+            package_bytes=FALLBACK_PACKAGE,
+        ),
+        now=lambda: observed,
+    )
+
+    assert result["status"] == "FAIL"
+    assert "forbidden package output" in str(result["reason"])
+    assert result["package_generation"] is False
+
+
+def test_preflight_only_refuses_to_overlap_first_scheduler_checkpoint(
+    tmp_path: Path,
+) -> None:
+    plan = _plan(tmp_path)
+
+    with pytest.raises(SchedulerPhaseError, match="before the first"):
+        execute_scheduler_preflight_only(
+            plan,
+            phase_runner=lambda _context: SchedulerPhaseResult.completed("unused"),
+            now=lambda: plan.tls_preflight_at,
+        )
 
 
 def test_live_target_validation_keeps_cutoff_selected_plan_target(

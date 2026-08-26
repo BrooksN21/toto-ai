@@ -287,6 +287,7 @@ from toto_ai.runner import (
     dispatch_morning,
     drawing_run_candidate_paths,
     execute_scheduler_plan,
+    execute_scheduler_preflight_only,
     execute_scheduler_tick,
     export_operator_package,
     export_paper_package,
@@ -4199,6 +4200,31 @@ def scheduler_execute_command(
             "--output <destination.txt>` before T-10"
         )
     if result.outcome == "failed":
+        raise typer.Exit(code=1)
+
+
+@app.command("scheduler-preflight-only")
+def scheduler_preflight_only_command(
+    plan: str = typer.Option(..., "--plan"),
+) -> None:
+    """Run one real exact-target preflight without training or packages."""
+
+    try:
+        scheduler_plan = load_scheduler_plan(plan)
+        environment = dict(os.environ)
+        if scheduler_plan.env_file is not None:
+            environment["API_SPORTS_KEY"] = load_api_sports_key(
+                scheduler_plan.env_file
+            )
+        result = execute_scheduler_preflight_only(
+            scheduler_plan,
+            phase_runner=CommandSchedulerPhaseRunner(environment=environment),
+            now=_utc_now_datetime,
+        )
+    except (OSError, SchedulerError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    if result["status"] != "PASS":
         raise typer.Exit(code=1)
 
 

@@ -180,6 +180,13 @@ used by the shared paired-comparison summary.
 
 ## Operator export gateway
 
+Before the first evening checkpoint, `scheduler-preflight-only` may execute the
+same exact-ID preparation and live target validation as production. It is a
+separate control surface: no `run-drawing`, package, training, scheduler-state
+transition or wager marker is permitted. Results live only below the immutable
+plan's `daytime-preflight/` directory, and the command fails closed once T-120
+is reached.
+
 Scheduler target validation is plan-bound. Morning dispatch performs the only
 cutoff-aware choice of the next drawing; each later preflight locates and
 validates that exact drawing ID on fresh TotoBrief page/detail data and invokes
