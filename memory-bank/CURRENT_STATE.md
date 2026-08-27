@@ -1,5 +1,35 @@
 # Current State
 
+## Drawing 4988 schedule pins and exact final-input refresh (2026-08-27)
+
+Pins backed by TotoBrief baseline, reviewed schedule, or the bound
+schedule-evidence ledger now revalidate against that exact local evidence and
+do not require a live API-Sports schedule call. Only pins that actually depend
+on the live provider participate in provider schedule requests and freshness
+timestamps; mixed preparations remain fail-closed per pin.
+
+Every real fallback package run and atomic final package run now parses the
+exact immutable `final-input.json` payload at its recorded capture time and
+refreshes the existing READY 15/15 preparation evidence before spawning
+`run-drawing`. Missing, changed, or non-READY preparation remains a terminal
+integrity failure; the probability hash guard is not weakened. Snapshot retry
+reuses the same immutable input and performs the refresh idempotently again.
+
+Scheduler regressions use real persisted READY preparations instead of
+stubbing this production guard. Dedicated fallback/final tests prove refresh
+ordering and fail-closed behavior. The six reported regressions pass, the full
+scheduler module passes 147 tests, partial-enrichment passes 13 tests, and
+targeted Ruff is clean.
+
+An isolated atomic-immediate control for drawing 4988 completed in 156.49
+seconds with READY 15/15 revalidation and zero API-Sports schedule requests.
+It calculated the full-bank 166-coupon, 4,980-RUB paper candidate and reached
+the internal safety decision `PLAY`. The operator decision remains `NO BET`:
+the quality-v2 release policy still requires explicit experimental manual-risk
+authorization. No coupon contents were recorded here, no operator export or
+wager occurred, and no remote operation was performed. The full repository
+suite was not rerun for this final fix.
+
 ## Drawing 4988 preflight and automatic GOAL shadow input (2026-08-27)
 
 Drawing 4988 (internal ID 12071) is READY 15/15 under schema-v7 plan

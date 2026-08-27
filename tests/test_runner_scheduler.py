@@ -27,6 +27,9 @@ from toto_ai.ev.package_quality import (
     quality_v2_config_sha256,
     selection_context_sha256,
 )
+from toto_ai.external_odds.domain import ProviderEvent
+from toto_ai.external_odds.preparation import prepare_drawing
+from toto_ai.external_odds.team_resolution import ResolutionContext
 from toto_ai.external_odds.timing_overrides import (
     load_timing_override_catalog,
     timing_override_catalog_sha256,
@@ -149,6 +152,56 @@ def _atomic_final_payload(plan):
             ],
         }
     }
+
+
+def _prepare_refreshable_scheduler_input(
+    plan,
+    *,
+    fetched_at: datetime,
+) -> None:
+    """Persist a real READY 15/15 preparation for scheduler package tests."""
+
+    target = scheduler.parse_target_drawing(
+        _atomic_final_payload(plan),
+        fetched_at=fetched_at,
+    )
+    engine = init_db(plan.db)
+    try:
+        result = prepare_drawing(
+            target,
+            tuple(
+                ProviderEvent(
+                    provider=plan.provider,
+                    provider_event_id=f"fixture-{event.event_order}",
+                    sport=event.sport,
+                    league=event.championship,
+                    starts_at=plan.ended_at
+                    + timedelta(minutes=30 + event.event_order),
+                    home_team=event.home_team,
+                    away_team=event.away_team,
+                    fetched_at=fetched_at,
+                    payload_hash=f"hash-{event.event_order}",
+                    country=None,
+                    provider_home_team_id=f"home-{event.event_order}",
+                    provider_away_team_id=f"away-{event.event_order}",
+                )
+                for event in target.events
+            ),
+            session_factory=get_session_factory(engine),
+            event_contexts={
+                event.event_order: ResolutionContext(
+                    plan.provider,
+                    league=event.championship,
+                )
+                for event in target.events
+            },
+            evaluated_at=fetched_at,
+        )
+    finally:
+        engine.dispose()
+    assert result.status == "ready"
+    assert result.mapped_count == 15
+    assert len(result.pins) == 15
 
 
 def test_preflight_only_runs_production_preflight_without_package(
@@ -1653,6 +1706,10 @@ def test_freshness_preflight_runs_full_end_to_end_canary(
         atomic_final=False,
     )
     calls = []
+    _prepare_refreshable_scheduler_input(
+        context.plan,
+        fetched_at=context.plan.freshness_preflight_at - timedelta(minutes=1),
+    )
 
     class Client:
         def drawing_info(self, drawing_id):
@@ -1687,6 +1744,133 @@ def test_freshness_preflight_runs_full_end_to_end_canary(
             context.phase_deadline - context.plan.freshness_preflight_at
         ).total_seconds()
     )
+
+
+@pytest.mark.parametrize(
+    ("phase", "scheduler_phase", "atomic_final"),
+    (("fallback", "refresh", False), ("final", "final", True)),
+)
+def test_package_child_refreshes_preparation_from_exact_final_input_first(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    phase: str,
+    scheduler_phase: str,
+    atomic_final: bool,
+):
+    context = replace(
+        _manifest_context(tmp_path, phase=phase),
+        scheduler_phase=scheduler_phase,
+        atomic_final=atomic_final,
+    )
+    captured_at = context.started_at + timedelta(seconds=7)
+    observations: list[tuple[str, object]] = []
+    _prepare_refreshable_scheduler_input(
+        context.plan,
+        fetched_at=captured_at - timedelta(minutes=1),
+    )
+    real_refresh = scheduler.refresh_ready_preparation_for_target
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == context.plan.drawing_id
+            return _atomic_final_payload(context.plan)
+
+    def refresh(target, *, session_factory, provider):
+        observations.append(("refresh", target))
+        assert callable(session_factory)
+        assert provider == context.plan.provider
+        assert target.drawing_id == context.plan.drawing_id
+        assert target.drawing_number == context.plan.drawing
+        assert target.deadline == context.plan.ended_at
+        assert target.fetched_at == captured_at
+        real_refresh(
+            target,
+            session_factory=session_factory,
+            provider=provider,
+        )
+
+    def completed(command, **_kwargs):
+        observations.append(("subprocess", tuple(command)))
+        assert [name for name, _value in observations] == [
+            "refresh",
+            "subprocess",
+        ]
+        _write_runner_manifest(context, _valid_runner_manifest(context))
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(
+        scheduler,
+        "refresh_ready_preparation_for_target",
+        refresh,
+    )
+    monkeypatch.setattr(scheduler.subprocess, "run", completed)
+    monkeypatch.setattr(
+        scheduler,
+        "parse_runner_manifest_phase_result",
+        lambda _context, _path: SchedulerPhaseResult.no_bet(
+            "refresh ordering verified"
+        ),
+    )
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"},
+        now=lambda: captured_at,
+    )
+
+    result = runner(context)
+
+    assert result.decision == "NO BET"
+    assert [name for name, _value in observations] == [
+        "refresh",
+        "subprocess",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("phase", "scheduler_phase", "atomic_final"),
+    (("fallback", "refresh", False), ("final", "final", True)),
+)
+def test_package_child_fails_closed_without_refreshable_ready_preparation(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    phase: str,
+    scheduler_phase: str,
+    atomic_final: bool,
+):
+    context = replace(
+        _manifest_context(tmp_path, phase=phase),
+        scheduler_phase=scheduler_phase,
+        atomic_final=atomic_final,
+    )
+    subprocess_calls = []
+
+    class Client:
+        def drawing_info(self, drawing_id):
+            assert drawing_id == context.plan.drawing_id
+            return _atomic_final_payload(context.plan)
+
+    monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+    monkeypatch.setattr(
+        scheduler.subprocess,
+        "run",
+        lambda command, **_kwargs: subprocess_calls.append(command),
+    )
+    runner = CommandSchedulerPhaseRunner(
+        environment={"API_SPORTS_KEY": "not-persisted"},
+        now=lambda: context.started_at,
+    )
+
+    with pytest.raises(
+        SchedulerIntegrityError,
+        match=(
+            "final input preparation refresh failed: "
+            "ready drawing preparation cannot be refreshed"
+        ),
+    ) as error:
+        runner(context)
+
+    assert error.value.category == "preparation_integrity"
+    assert subprocess_calls == []
 
 
 def test_command_final_subprocess_timeout_preserves_publication_reserve(
@@ -1726,6 +1910,10 @@ def test_command_final_subprocess_timeout_preserves_publication_reserve(
         raise subprocess.TimeoutExpired(command, kwargs["timeout"])
 
     clock = Clock()
+    _prepare_refreshable_scheduler_input(
+        plan,
+        fetched_at=plan.final_at - timedelta(minutes=1),
+    )
     monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
     monkeypatch.setattr(scheduler.subprocess, "run", time_out)
     runner = CommandSchedulerPhaseRunner(
@@ -1772,6 +1960,10 @@ def test_command_package_timeout_persists_sanitized_phase_diagnostics(
             stderr=b"provider still unavailable\n",
         )
 
+    _prepare_refreshable_scheduler_input(
+        context.plan,
+        fetched_at=context.plan.preflight_at - timedelta(minutes=1),
+    )
     monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
     monkeypatch.setattr(scheduler.subprocess, "run", time_out)
     runner = CommandSchedulerPhaseRunner(
@@ -1983,6 +2175,12 @@ def test_atomic_final_subprocess_retry_reuses_persisted_snapshot(
     )
     detail_calls = 0
     subprocess_calls = 0
+    refreshed_targets = []
+    _prepare_refreshable_scheduler_input(
+        context.plan,
+        fetched_at=context.started_at - timedelta(minutes=1),
+    )
+    real_refresh = scheduler.refresh_ready_preparation_for_target
 
     class Client:
         def drawing_info(self, drawing_id):
@@ -2004,6 +2202,20 @@ def test_atomic_final_subprocess_retry_reuses_persisted_snapshot(
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
     monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
+
+    def refresh(target, *, session_factory, provider):
+        refreshed_targets.append(target)
+        real_refresh(
+            target,
+            session_factory=session_factory,
+            provider=provider,
+        )
+
+    monkeypatch.setattr(
+        scheduler,
+        "refresh_ready_preparation_for_target",
+        refresh,
+    )
     monkeypatch.setattr(scheduler.subprocess, "run", completed)
     monkeypatch.setattr(
         scheduler,
@@ -2011,7 +2223,8 @@ def test_atomic_final_subprocess_retry_reuses_persisted_snapshot(
         lambda _context, _path: SchedulerPhaseResult.no_bet("safe retry"),
     )
     runner = CommandSchedulerPhaseRunner(
-        environment={"API_SPORTS_KEY": "not-persisted"}
+        environment={"API_SPORTS_KEY": "not-persisted"},
+        now=lambda: context.started_at,
     )
 
     with pytest.raises(SchedulerPhaseError, match="temporary provider failure"):
@@ -2021,6 +2234,9 @@ def test_atomic_final_subprocess_retry_reuses_persisted_snapshot(
     assert result.decision == "NO BET"
     assert detail_calls == 1
     assert subprocess_calls == 2
+    assert len(refreshed_targets) == 2
+    assert refreshed_targets[0] == refreshed_targets[1]
+    assert refreshed_targets[0].fetched_at == context.started_at
     assert (context.run_dir / "final-input.json").is_file()
 
 
@@ -2034,6 +2250,11 @@ def test_fallback_subprocess_binds_snapshot_ledger_and_scheduler_plan(
     )
     prepare_scheduler_artifacts(context.plan)
     captured_environment = {}
+    captured_at = context.started_at
+    _prepare_refreshable_scheduler_input(
+        context.plan,
+        fetched_at=captured_at - timedelta(minutes=1),
+    )
 
     class Client:
         def drawing_info(self, drawing_id):
@@ -2048,7 +2269,8 @@ def test_fallback_subprocess_binds_snapshot_ledger_and_scheduler_plan(
     monkeypatch.setattr(scheduler, "TotoBriefClient", Client)
     monkeypatch.setattr(scheduler.subprocess, "run", completed)
     runner = CommandSchedulerPhaseRunner(
-        environment={"API_SPORTS_KEY": "not-persisted"}
+        environment={"API_SPORTS_KEY": "not-persisted"},
+        now=lambda: captured_at,
     )
 
     result = runner(context)

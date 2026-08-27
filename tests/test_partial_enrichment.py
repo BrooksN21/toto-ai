@@ -582,6 +582,62 @@ def test_final_collection_uses_revalidated_schedule_evidence_start_for_eligibili
         )
 
 
+def test_schedule_evidence_only_collection_does_not_require_live_provider_schedule(
+    session_factory,
+    tmp_path: Path,
+):
+    target = _target()
+    ledger_path = _schedule_evidence_ledger(
+        tmp_path,
+        target,
+        event_orders=tuple(range(15)),
+    )
+    ledger = load_schedule_evidence_ledger(ledger_path)
+    prepared = prepare_drawing(
+        target,
+        (),
+        session_factory=session_factory,
+        schedule_evidence_ledger=ledger_path,
+        evaluated_at=FETCHED_AT,
+    )
+    assert tuple(
+        pin.effective_source_provider for pin in prepared.pins
+    ) == ("schedule-evidence",) * 15
+
+    class SuspendedProvider:
+        provider_name = "api-sports"
+        quota_state = QuotaState(100, 99, 10, 9)
+
+        def fetch_schedule(self, sport, dates):
+            raise AssertionError(
+                "live provider schedule must not be requested for "
+                "schedule-evidence pins"
+            )
+
+        def fetch_event_markets(self, sport, provider_event_id):
+            raise AssertionError(
+                "live provider markets must not be requested for "
+                "schedule-evidence pins"
+            )
+
+    collection = build_external_collection(
+        target,
+        SuspendedProvider(),
+        aliases={},
+        prepared_pins=prepared.pins,
+        schedule_evidence_ledger=ledger,
+        now=lambda: FETCHED_AT,
+    )
+
+    summary = collection.pinned_revalidation
+    assert summary is not None
+    assert summary.matched_count == 15
+    assert summary.failed_schedule_dates == ()
+    assert summary.required_dates_complete is True
+    assert summary.schedule_fresh is True
+    assert summary.ready_for_play is True
+
+
 def test_drawing_4967_rejects_ambiguous_schedule_ledger_without_mutation(
     session_factory,
     tmp_path: Path,

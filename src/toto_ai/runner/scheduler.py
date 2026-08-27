@@ -48,6 +48,9 @@ from toto_ai.ev.package_quality import (
 )
 from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.matching import load_aliases
+from toto_ai.external_odds.preparation import (
+    refresh_ready_preparation_for_target,
+)
 from toto_ai.external_odds.reviewed_schedule import (
     load_reviewed_schedule_catalog,
 )
@@ -4473,6 +4476,19 @@ class CommandSchedulerPhaseRunner:
                     category="final_input_identity",
                 )
             _freeze_authoritative_drawing(context.plan, atomic_input.target_fingerprint)
+            post_capture_at = _read_now(self.now)
+            validate_scheduler_final_runtime_budget(context.plan, post_capture_at)
+            validate_scheduler_phase_runtime_budget(context, post_capture_at)
+            try:
+                _refresh_preparation_from_final_input(context.plan, atomic_input)
+            except SchedulerIntegrityError:
+                raise
+            except Exception as error:
+                raise SchedulerIntegrityError(
+                    "final input preparation refresh failed: "
+                    f"{_safe_error(error)}",
+                    category="preparation_integrity",
+                ) from error
         command = build_run_drawing_phase_command(
             context,
             python_executable=self.python_executable,
@@ -4615,6 +4631,36 @@ class CommandSchedulerPhaseRunner:
                 f"prepare-drawing did not produce a ready 15/15 preparation{suffix}",
                 category="preparation_unavailable",
             )
+
+
+def _refresh_preparation_from_final_input(
+    plan: SchedulerPlan,
+    final_input: FinalInputSnapshot,
+) -> None:
+    """Atomically bind READY preparation to one verified immutable snapshot."""
+
+    target = parse_target_drawing(
+        final_input.payload,
+        fetched_at=final_input.captured_at,
+    )
+    if (
+        target.drawing_id != final_input.drawing_id
+        or target.drawing_number != final_input.drawing_number
+        or target.deadline != final_input.deadline
+    ):
+        raise SchedulerIntegrityError(
+            "final input preparation target identity mismatch",
+            category="preparation_integrity",
+        )
+    engine = init_db(plan.db)
+    try:
+        refresh_ready_preparation_for_target(
+            target,
+            session_factory=get_session_factory(engine),
+            provider=plan.provider,
+        )
+    finally:
+        engine.dispose()
 
 
 class SimulatedSchedulerPhaseRunner:

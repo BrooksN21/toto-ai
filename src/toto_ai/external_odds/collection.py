@@ -54,6 +54,9 @@ TOTOBRIEF_BK_FALLBACK = "totobrief_bk_fallback"
 SAFETY_STOP_FALLBACK = "safety stop reached"
 PIN_SCHEDULE_MAX_AGE = timedelta(hours=24)
 PIN_START_TIME_TOLERANCE = timedelta(minutes=5)
+_PIN_SOURCES_WITHOUT_LIVE_SCHEDULE = frozenset(
+    {"totobrief-baseline", "reviewed-schedule", "schedule-evidence"}
+)
 _MOSCOW = ZoneInfo("Europe/Moscow")
 _UNKNOWN_ELIGIBILITY = DrawingEligibility(
     status="unknown",
@@ -689,6 +692,8 @@ def _fetch_schedules(
         if len(prepared_pins) != 15:
             raise ValueError("prepared pins must contain exactly 15 events")
         for event, pin in zip(target.events, prepared_pins, strict=True):
+            if pin.effective_source_provider in _PIN_SOURCES_WITHOUT_LIVE_SCHEDULE:
+                continue
             starts_at = _event_datetime(pin.starts_at)
             if starts_at is None:
                 raise ValueError("prepared pin must contain starts_at")
@@ -1306,10 +1311,15 @@ def _pinned_revalidation_summary(
         for item in schedule_results
         if item.error is not None
     )
+    live_schedule_pins = tuple(
+        pin
+        for pin in pins
+        if pin.effective_source_provider not in _PIN_SOURCES_WITHOUT_LIVE_SCHEDULE
+    )
     pin_ids = {
         pin.provider_fixture_id
-        for pin in pins
-        if pin.effective_source_provider != "totobrief-baseline"
+        for pin in live_schedule_pins
+        if pin.provider_fixture_id is not None
     }
     fetched_at = tuple(
         event.fetched_at
@@ -1327,13 +1337,11 @@ def _pinned_revalidation_summary(
     )
     matched_count = len(matched)
     required_dates_complete = not failed_dates
-    external_count = sum(
-        pin.effective_source_provider != "totobrief-baseline" for pin in pins
-    )
+    live_schedule_count = len(live_schedule_pins)
     schedule_fresh = (
         matched_count == 15
         and not stale
-        and (oldest is not None or external_count == 0)
+        and (oldest is not None or live_schedule_count == 0)
     )
     provider_checks_passed = matched_count == 15 and not provider_failures_by_identity
     fixture_checks_passed = matched_count == 15 and not fixture_failures
