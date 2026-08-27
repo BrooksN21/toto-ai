@@ -7,5 +7,5 @@
 - [x] Generic discovery runs every 15 minutes with `--activate`.
 - [x] Replacement LaunchAgent installed and live exit-0 cycle observed.
 - [x] Full tests and Ruff pass.
-- [ ] Stable operator-delivery record and expiry transition.
+- [x] Stable operator-delivery record and expiry transition.
 - [ ] Drawing 4989 reaches timing-playable 15/15 and installs evening plan.

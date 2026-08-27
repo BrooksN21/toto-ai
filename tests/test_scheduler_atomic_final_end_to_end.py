@@ -493,6 +493,18 @@ def test_bet_ready_publication_creates_verified_operator_export(tmp_path):
     assert operator_result["expires_at"] == plan.publish_deadline.isoformat().replace(
         "+00:00", "Z"
     )
+    delivery = json.loads(
+        (plan.output_dir / "operator-delivery.json").read_text(encoding="utf-8")
+    )
+    assert delivery["delivery_state"] == "READY"
+    assert delivery["actionable"] is True
+    assert delivery["coupon_path"] == operator_result["coupon_path"]
+    assert delivery["package_sha256"] == operator_result["package_sha256"]
+    assert delivery["selected_count"] == operator_result["selected_count"]
+    assert delivery["selected_cost"] == operator_result["selected_cost"]
+    assert delivery["expires_at"] == operator_result["expires_at"]
+    assert delivery["automatic_wagering"] is False
+    assert delivery["record_sha256"] == scheduler._operator_result_sha256(delivery)
 
     destination = tmp_path / "exports" / "drawing-5100.txt"
     exported = export_operator_package(
@@ -719,6 +731,20 @@ def test_t10_tick_expires_operator_upload_but_retains_audit_archive(tmp_path):
     assert operator["decision"] == "NO BET"
     assert operator["actionable"] is False
     assert operator["coupon_path"] is None
+    delivery = json.loads(
+        (plan.output_dir / "operator-delivery.json").read_text(encoding="utf-8")
+    )
+    assert delivery["delivery_state"] == "EXPIRED"
+    assert delivery["actionable"] is False
+    assert delivery["coupon_path"] is None
+    assert delivery["package_sha256"] is not None
+    assert delivery["selected_count"] == 1
+    assert delivery["selected_cost"] == plan.stake
+    assert delivery["archive_manifest_path"] == str(archive)
+    assert delivery["expired_at"] == plan.publish_deadline.isoformat().replace(
+        "+00:00", "Z"
+    )
+    assert delivery["record_sha256"] == scheduler._operator_result_sha256(delivery)
     paper_after = load_paper_package(plan)
     assert paper_after == paper_before
     assert paper_after.paper_path is not None and paper_after.paper_path.is_file()

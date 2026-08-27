@@ -20,6 +20,12 @@ normal successful calculation five additional minutes for manual operator
 delivery without reducing search work. Verification is green: `2087 passed,
 13 deselected`; Ruff and diff check pass.
 
+A verified pre-T-10 PLAY now also writes stable `operator-delivery.json`.
+While READY it carries the canonical upload path, package/archive hashes,
+coupon count, cost, publication time and expiry. At T-10 it atomically becomes
+EXPIRED, clears the upload path and retains only audit metadata; automatic
+wagering remains false. Publication/expiry/rollback regressions pass.
+
 ## Expired package audit policy clarified (2026-08-27)
 
 T-10 still irrevocably removes wagering and upload eligibility. The project

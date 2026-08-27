@@ -1085,7 +1085,7 @@ closed.
   install the replacement LaunchAgent, and verify one live exit-0 cycle.
 - [x] Discover and prepare drawing 4989 automatically; retain a loaded passive
   retry for its five unresolved kickoff times.
-- [ ] Publish a stable operator-delivery status record immediately after a
+- [x] Publish a stable operator-delivery status record immediately after a
   verified pre-T-10 PLAY and retain a clearly expired audit pointer after T-10.
 - [ ] Observe drawing 4989 becoming 15/15 timing-playable, then verify its
   generated schema-v8 evening plan and every real checkpoint.

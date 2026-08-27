@@ -2620,6 +2620,17 @@ def _remove_actionable_publication_artifacts(
             and payload.get("run_id") == run_dir.name
         ):
             _unlink_output_path(plan.output_dir, operator_path, missing_ok=True)
+    delivery_path = plan.output_dir / "operator-delivery.json"
+    if delivery_path.is_file() and not delivery_path.is_symlink():
+        try:
+            delivery = _load_strict_json(
+                delivery_path,
+                name="operator delivery record",
+            )
+        except (OSError, SchedulerError, TypeError, ValueError):
+            delivery = None
+        if isinstance(delivery, Mapping) and delivery.get("run_id") == run_dir.name:
+            _unlink_output_path(plan.output_dir, delivery_path, missing_ok=True)
 
 
 def _recover_atomic_publication(
@@ -3457,6 +3468,86 @@ def _operator_result_sha256(payload: Mapping[str, object]) -> str:
     return _sha256_bytes(_canonical_json_bytes(unsigned))
 
 
+def _write_ready_operator_delivery(
+    plan: SchedulerPlan,
+    *,
+    operator_result: Mapping[str, object],
+) -> None:
+    """Persist the stable operator-facing pointer for one actionable package."""
+
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "run_id": operator_result["run_id"],
+        "delivery_state": "READY",
+        "decision": "PLAY",
+        "actionable": True,
+        "coupon_path": operator_result["coupon_path"],
+        "package_sha256": operator_result["package_sha256"],
+        "archive_manifest_path": operator_result["archive_manifest_path"],
+        "archive_manifest_sha256": operator_result["archive_manifest_sha256"],
+        "stake": plan.stake,
+        "requested_bank": plan.requested_bank,
+        "selected_count": operator_result["selected_count"],
+        "selected_cost": operator_result["selected_cost"],
+        "published_at": operator_result["published_at"],
+        "expires_at": operator_result["expires_at"],
+        "expired_at": None,
+        "reason": operator_result["reason"],
+        "published_operator_result_sha256": operator_result["record_sha256"],
+        "automatic_wagering": False,
+    }
+    payload["record_sha256"] = _operator_result_sha256(payload)
+    _write_replace_atomic(
+        plan.output_dir,
+        plan.output_dir / "operator-delivery.json",
+        _canonical_json_bytes(payload) + b"\n",
+    )
+
+
+def _write_expired_operator_delivery(
+    plan: SchedulerPlan,
+    *,
+    operator_result: Mapping[str, object],
+    observed_at: datetime,
+    reason: str,
+) -> None:
+    """Revoke the upload pointer while retaining immutable delivery evidence."""
+
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "run_id": operator_result["run_id"],
+        "delivery_state": "EXPIRED",
+        "decision": "NO BET",
+        "actionable": False,
+        "coupon_path": None,
+        "package_sha256": operator_result["package_sha256"],
+        "archive_manifest_path": operator_result["archive_manifest_path"],
+        "archive_manifest_sha256": operator_result["archive_manifest_sha256"],
+        "stake": plan.stake,
+        "requested_bank": plan.requested_bank,
+        "selected_count": operator_result["selected_count"],
+        "selected_cost": operator_result["selected_cost"],
+        "published_at": operator_result["published_at"],
+        "expires_at": operator_result["expires_at"],
+        "expired_at": _timestamp(observed_at),
+        "reason": reason,
+        "published_operator_result_sha256": operator_result["record_sha256"],
+        "automatic_wagering": False,
+    }
+    payload["record_sha256"] = _operator_result_sha256(payload)
+    _write_replace_atomic(
+        plan.output_dir,
+        plan.output_dir / "operator-delivery.json",
+        _canonical_json_bytes(payload) + b"\n",
+    )
+
+
 def authorize_experimental_manual_release(
     plan: SchedulerPlan,
     *,
@@ -3706,6 +3797,7 @@ def _publish_actionable_operator_result(
         plan.output_dir / "operator-result.json",
         _canonical_json_bytes(payload) + b"\n",
     )
+    _write_ready_operator_delivery(plan, operator_result=payload)
 
 
 def _validated_actionable_operator_upload(
@@ -4096,12 +4188,19 @@ def _expire_operator_package_at_t10(
                 run_dir / "baltbet-upload.txt",
                 missing_ok=True,
             )
+            recovery_reason = (
+                "operator package expired at T-10 during marker recovery; "
+                "audit archive retained"
+            )
+            _write_expired_operator_delivery(
+                plan,
+                operator_result=payload,
+                observed_at=observed_at,
+                reason=recovery_reason,
+            )
             _write_operator_no_bet(
                 plan,
-                reason=(
-                    "operator package expired at T-10 during marker recovery; "
-                    "audit archive retained"
-                ),
+                reason=recovery_reason,
                 completed_at=observed_at,
             )
             return
@@ -4127,9 +4226,16 @@ def _expire_operator_package_at_t10(
                 category="operator_artifact_integrity",
             )
         _unlink_output_path(plan.output_dir, package_path, missing_ok=True)
+        expiry_reason = "operator package expired at T-10; audit archive retained"
+        _write_expired_operator_delivery(
+            plan,
+            operator_result=payload,
+            observed_at=observed_at,
+            reason=expiry_reason,
+        )
         _write_operator_no_bet(
             plan,
-            reason="operator package expired at T-10; audit archive retained",
+            reason=expiry_reason,
             completed_at=observed_at,
         )
         return

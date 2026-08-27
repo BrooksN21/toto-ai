@@ -336,6 +336,12 @@ reserve. T-16 can retry only after the earlier process releases the scheduler
 lock and leaves retryable state; it cannot truncate or overlap a running T-25
 calculation.
 
+Every verified pre-T-10 PLAY also publishes `operator-delivery.json`. This
+stable record mirrors the canonical upload path, hash, coupon count, cost and
+expiry while READY. T-10 clears the upload path and changes the record to
+EXPIRED while retaining archive metadata; it never permits automatic wagering
+or extends the operator window.
+
 An authoritative final DNS/transport outage never turns cached data into a
 fresh final result. TotoBrief retains its bounded transport retries; after they
 fail, scheduler execution preserves and publishes only a previously validated

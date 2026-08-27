@@ -13,6 +13,10 @@
 - A later unresolved-only source report cannot replace or invalidate an
   existing verified conservative cutoff. New valid evidence may only preserve
   or tighten that cutoff; all other integrity failures remain fail-closed.
+- `operator-result.json` remains the authoritative actionable boundary. A
+  separate `operator-delivery.json` is the stable operator notification/status
+  record: READY mirrors only verified PLAY metadata; at T-10 it becomes
+  EXPIRED, clears `coupon_path`, and retains package/archive hashes for audit.
 
 ## 2026-08-27: expired operator packages remain non-actionable but auditable
 
