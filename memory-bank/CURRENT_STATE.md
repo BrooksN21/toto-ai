@@ -5366,3 +5366,22 @@ The frozen GOAL-history adapter can compare equal-budget BK and sports-shadow
 packages, but 4988 still needs a complete 15/15 GOAL fixture/team binding and
 frozen team histories before that separate comparison can run. Production must
 not silently switch from BK for 4988.
+
+## Drawing 4987 settlement and Git home guard (2026-08-27)
+
+The frozen equal-bank research packages for drawing 4987 were settled against
+all 15 resolved results. The BK baseline reached at most 7/15 (mean 4.5602),
+while the experimental GOAL sports shadow reached at most 5/15 (mean 3.3735).
+Neither package, nor their 327-coupon unique union, reached 9/13/14/15. Baseline
+had zero actual-outcome exposure in events 5, 9, 11 and 15; sports shadow had
+zero exposure in events 5, 8, 9 and 11. The sports candidate remains strictly
+`NOT_ACTIVATED`. Durable analysis is in
+`research/drawing-4987-package-review.md`.
+
+The recurring whole-home Git scan was traced to `/Users/turshevr/.git` making
+`$HOME` a Git work tree. TotoAI now provides `scripts/project-git`, which pins
+all project Git operations and rejects `ls-files` or repository overrides. A
+tested user-local guard at `~/.local/bin/git`, placed first in login-shell PATH,
+returns exit 64 for `status`/`ls-files` when the resolved repository root is
+exactly `$HOME`, while allowing Git in nested repositories. The home repository
+was not removed or modified.

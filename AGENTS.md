@@ -47,9 +47,17 @@ rules below:
 Repository enumeration safety:
 
 - Never run `git ls-files`, directly or indirectly, for this repository.
+- Never run bare `git` commands. Run project Git only through
+  `scripts/project-git`, which pins every operation to this repository and
+  rejects repository overrides. This is required because `$HOME` is itself a
+  Git work tree and an accidental command there can scan the whole home
+  directory.
+- In every shell tool call, set the working directory explicitly to
+  `/Users/turshevr/toto-ai` even when using `scripts/project-git`.
 - Never use a whole-repository inventory as a default discovery step.
 - Inspect only task-relevant paths with bounded commands such as targeted
-  `rg`, `git diff -- <paths>`, or `git status --short --untracked-files=no`.
+  `rg`, `scripts/project-git diff -- <paths>`, or
+  `scripts/project-git status --short --untracked-files=no`.
 - Before starting a potentially long command, state what will run and use a
   bounded timeout or an interactive progress indicator.
 

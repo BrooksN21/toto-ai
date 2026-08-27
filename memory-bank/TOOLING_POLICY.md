@@ -16,9 +16,15 @@ contains the operational instructions.
 `git ls-files` is prohibited in TotoAI because repository-wide index
 enumeration has repeatedly caused disruptive long-running Codex operations.
 Do not use it directly, from shell substitutions, or through helper scripts.
+`$HOME` is itself a Git work tree, so a bare Git command started from the wrong
+directory can enumerate the entire home directory. TotoAI Git commands must
+therefore use `scripts/project-git`; the wrapper pins operations to the TotoAI
+root, rejects `ls-files`, and rejects `-C`/work-tree overrides. Shell tool calls
+must also set `/Users/turshevr/toto-ai` as their explicit working directory.
 Do not perform whole-repository inventory by default. Use bounded,
-task-specific path inspection (`rg` on named directories, `git diff --
-<paths>`, or `git status --short --untracked-files=no`) and put an explicit
+task-specific path inspection (`rg` on named directories,
+`scripts/project-git diff -- <paths>`, or
+`scripts/project-git status --short --untracked-files=no`) and put an explicit
 timeout or progress indicator around potentially long work.
 
 Catalog visibility is not authorization. User approval is required before any

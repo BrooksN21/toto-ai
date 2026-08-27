@@ -1,0 +1,38 @@
+#!/bin/sh
+set -eu
+
+real_git=/usr/bin/git
+effective_directory=$PWD
+expect_directory=0
+guarded_command=
+
+for argument in "$@"; do
+    if [ "$expect_directory" -eq 1 ]; then
+        case "$argument" in
+            /*) effective_directory=$argument ;;
+            *) effective_directory=$effective_directory/$argument ;;
+        esac
+        expect_directory=0
+        continue
+    fi
+
+    case "$argument" in
+        -C) expect_directory=1 ;;
+        status|ls-files) guarded_command=$argument ;;
+    esac
+done
+
+if [ -n "$guarded_command" ]; then
+    repository_root=$(
+        "$real_git" -C "$effective_directory" rev-parse --show-toplevel 2>/dev/null || true
+    )
+    home_root=$(CDPATH= cd -- "$HOME" && pwd -P)
+
+    if [ "$repository_root" = "$home_root" ]; then
+        echo "git guard: refusing '$guarded_command' because the repository root is HOME ($home_root)" >&2
+        echo "git guard: use scripts/project-git inside TotoAI or git -C <real-repository> elsewhere" >&2
+        exit 64
+    fi
+fi
+
+exec "$real_git" "$@"

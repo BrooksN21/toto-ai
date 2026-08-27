@@ -1,5 +1,15 @@
 # Decisions
 
+## 2026-08-27: TotoAI Git operations are repository-pinned
+
+- `$HOME` is itself a Git work tree. A Git command started there can scan the
+  whole home directory, so working-directory convention alone is insufficient.
+- TotoAI commands must use `scripts/project-git`, which pins the repository
+  root and rejects `ls-files`, `-C`, and work-tree overrides.
+- A user-local `~/.local/bin/git` guard rejects `status` and `ls-files` when
+  their resolved repository root is exactly `$HOME`; it does not delete or
+  alter the home Git repository and permits commands in nested real projects.
+
 ## 2026-08-27: sports analytics is an automatic non-blocking shadow sidecar
 
 - Generated morning and passive retry commands collect at most one complete

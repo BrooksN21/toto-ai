@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+
+project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+
+for argument in "$@"; do
+    case "$argument" in
+        ls-files)
+            echo "project-git: git ls-files is prohibited for TotoAI" >&2
+            exit 64
+            ;;
+        -C|--git-dir|--work-tree|--git-dir=*|--work-tree=*)
+            echo "project-git: repository override is prohibited; TotoAI Git is pinned to $project_root" >&2
+            exit 64
+            ;;
+    esac
+done
+
+exec /usr/bin/git -C "$project_root" "$@"

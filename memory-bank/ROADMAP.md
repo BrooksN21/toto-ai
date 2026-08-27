@@ -183,6 +183,9 @@ legacy output is not release evidence. See the active plan's
   record exact feature, orientation, hash, chronology, and source provenance.
 - [x] Emit machine-readable `NOT_ACTIVATED` artifacts with BK, sports-shadow,
   candidate blend, features, fallback reasons, and evidence identity.
+- [x] Settle the equal-bank 4987 baseline/sports-shadow comparison: baseline
+  reached 7/15, sports shadow 5/15, neither reached a prize category; retain
+  sports as `NOT_ACTIVATED`.
 - [x] Implement chronological OOS comparison using multiclass log loss,
   Brier, ECE, counts, coverage, fallback, and validation failures.
 - [x] Implement a fail-closed activation gate that cannot activate production.
