@@ -1245,6 +1245,78 @@ def test_prepared_morning_cli_result_exits_zero(monkeypatch, tmp_path):
     assert payload["training_package"] is None
 
 
+def test_reused_morning_cli_still_collects_goal_shadow(monkeypatch, tmp_path):
+    config = _config(tmp_path)
+    observed = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    evidence = _prepared(
+        number=4988,
+        drawing_id=12071,
+        deadline=observed + timedelta(hours=12),
+    )
+
+    monkeypatch.setattr(
+        cli,
+        "_prepare_current_for_morning",
+        lambda **_kwargs: evidence,
+    )
+
+    def reused_dispatch(_config, *, observed_at, prepare_current, **_kwargs):
+        prepare_current(observed_at)
+        return MorningDispatchResult(
+            status="reused",
+            reason="ready",
+            record_path=tmp_path / "ready.json",
+            plan_id="plan",
+            plan_path=None,
+            launch_agent_path=None,
+            activation_status="activated",
+        )
+
+    monkeypatch.setattr(cli, "dispatch_morning", reused_dispatch)
+    monkeypatch.setattr(cli, "load_goal_api_key", lambda _path: "goal-secret")
+    monkeypatch.setattr(
+        cli,
+        "ensure_goal_probe_input",
+        lambda **_kwargs: SimpleNamespace(
+            event_count=15,
+            history_source_count=30,
+            sports_eligible_count=15,
+            request_count=0,
+            quota_daily_remaining=900,
+            captured_at=observed,
+            coverage_summary_path=tmp_path / "coverage-summary.json",
+            reused=True,
+        ),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(config.env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(config.state_root),
+            "--scheduler-root",
+            str(config.scheduler_root),
+            "--goal-shadow-auto",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["status"] == "reused"
+    assert payload["sports_shadow"]["status"] == (
+        "PAPER_ONLY_COVERAGE_PROBE_READY"
+    )
+    assert payload["sports_shadow"]["reused"] is True
+    assert payload["sports_shadow"]["package_influence"] == "NONE"
+
+
 def test_ready_morning_cli_ensures_scheduler_owned_training_package(
     monkeypatch,
     tmp_path,

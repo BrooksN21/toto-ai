@@ -4038,7 +4038,7 @@ def morning_dispatch_command(
         if (
             goal_shadow_auto
             and prepared_evidence is not None
-            and result.status == "scheduled"
+            and result.status in {"scheduled", "reused"}
         ):
             try:
                 goal_api_key = load_goal_api_key(config.env_file)

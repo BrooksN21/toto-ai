@@ -19,6 +19,14 @@ passive retry children pass `--goal-shadow-auto`. Collection failure is
 reported but cannot block production; package influence remains `NONE` and
 automatic wagering remains disabled.
 
+The first 12:00 live run exposed a status-contract omission before evening:
+an already activated exact plan returns morning status `reused`, while the new
+hook initially accepted only `scheduled`. The hook now accepts both successful
+states, with a dedicated CLI regression. A live retry then collected 15/15
+events and 30 histories in 67 requests (quota remaining 864). An immediate
+second live retry returned `reused=true` from the same hash-bound snapshot and
+made no new GOAL collection.
+
 The first live 4988 research capture completed 15/15 with 30 histories in 67
 requests. The equal-bank 4,980/30 BK and sports-shadow packages each contain
 166 coupons and overlap on 23. The sports candidate is better under its own
@@ -27,9 +35,10 @@ disagreement, not evidence of superiority or profitability. Production remains
 normalized TotoBrief BK until prospective settled comparisons justify a
 separate activation decision.
 
-Focused GOAL, probability, morning-dispatch and scheduler-contract verification
-passes 82 tests. Full default verification passes 2,075 tests with 13
-intentionally deselected; repository Ruff and `git diff --check` are clean.
+The pre-fix focused GOAL/probability/morning/scheduler suite passed 82 tests and
+the `reused` regression subset passes 65 tests. Final full verification passes
+2,076 tests with 13 intentionally deselected; repository Ruff and
+`git diff --check` are clean.
 
 ## Drawing 4987 evening incident and scheduler remediation (2026-08-26)
 
