@@ -122,6 +122,17 @@ class GoalAPIRequestEvidence:
 
 
 @dataclass(frozen=True)
+class GoalAPITeamResults:
+    """One secret-safe, frozen GOAL team-results response."""
+
+    team_id: str
+    payload: Mapping[str, Any]
+    http_status: int
+    evidence: GoalAPIRequestEvidence
+    quota_daily_remaining: int | None
+
+
+@dataclass(frozen=True)
 class GoalAPIScheduleEvent:
     provider_event_id: str
     competition: str
@@ -321,6 +332,101 @@ class GoalAPIClient:
             for _, event in sorted(events.items())
             if event.starts_at.date() in allowed
         )
+
+    def fetch_team_results(
+        self,
+        team_id: str,
+        *,
+        limit: int = 10,
+    ) -> GoalAPITeamResults:
+        """Fetch and freeze a bounded team history for research-only use."""
+
+        normalized_team_id = _team_identifier(team_id)
+        if (
+            isinstance(limit, bool)
+            or not isinstance(limit, int)
+            or not 1 <= limit <= 10
+        ):
+            raise ValueError("GOAL API team-results limit must be in range 1..10")
+        endpoint = f"/teams/{normalized_team_id}/results"
+        safe_params = (("limit", str(limit)),)
+        fingerprint = _request_fingerprint(self._base_url, endpoint, safe_params)
+        for attempt in range(1, self._max_retries + 2):
+            if self._requests_made >= self._request_budget:
+                self._requests_skipped += 1
+                self._budget_exhausted = True
+                self._record_diagnostic("budget_exhausted", endpoint, attempt)
+                raise GoalAPIError("GOAL API request budget exhausted")
+            try:
+                self._requests_made += 1
+                response = self._session.get(
+                    f"{self._base_url}{endpoint}",
+                    params=dict(safe_params),
+                    headers={
+                        "Authorization": f"Bearer {self._api_key}",
+                        "Accept": "application/json",
+                        "User-Agent": USER_AGENT,
+                    },
+                    timeout=self._timeout,
+                )
+            except requests.RequestException as error:
+                self._record_diagnostic("transport_failure", endpoint, attempt)
+                if attempt == self._max_retries + 1:
+                    raise GoalAPIError(
+                        f"GOAL API transport failed: {type(error).__name__}",
+                        secret=self._api_key,
+                    ) from None
+                self._sleep(0.25 * attempt)
+                continue
+            self._update_quota(response.headers)
+            if response.status_code in _RETRY_STATUSES:
+                self._record_diagnostic(
+                    "http_retry", endpoint, attempt, response.status_code
+                )
+                if attempt == self._max_retries + 1:
+                    raise GoalAPIError("GOAL API request failed", secret=self._api_key)
+                self._sleep(0.25 * attempt)
+                continue
+            if response.status_code >= 400:
+                self._record_diagnostic(
+                    "http_failure", endpoint, attempt, response.status_code
+                )
+                raise GoalAPIError("GOAL API request failed", secret=self._api_key)
+            try:
+                body = response.json()
+            except (AttributeError, TypeError, ValueError):
+                self._record_diagnostic(
+                    "invalid_json", endpoint, attempt, response.status_code
+                )
+                raise GoalAPIError("GOAL API returned invalid JSON") from None
+            if not isinstance(body, Mapping) or body.get("success") is not True:
+                self._record_diagnostic(
+                    "semantic_error", endpoint, attempt, response.status_code
+                )
+                raise GoalAPIError("GOAL API returned an unsuccessful payload")
+            if str(body.get("teamId")) != normalized_team_id:
+                raise GoalAPIError("GOAL API team-results identity mismatch")
+            data = body.get("data")
+            if not isinstance(data, list) or len(data) > limit:
+                raise GoalAPIError("GOAL API team-results payload shape is invalid")
+            observed = _utc(self._now())
+            evidence = self._freeze(
+                endpoint=endpoint,
+                params=safe_params,
+                body=dict(body),
+                fetched_at=observed,
+                request_fingerprint=fingerprint,
+            )
+            self._evidence.append(evidence)
+            self._record_diagnostic("success", endpoint, attempt, response.status_code)
+            return GoalAPITeamResults(
+                team_id=normalized_team_id,
+                payload=dict(body),
+                http_status=response.status_code,
+                evidence=evidence,
+                quota_daily_remaining=self._daily_remaining,
+            )
+        raise GoalAPIError("GOAL API request failed")
 
     def _get_page(
         self,
@@ -605,6 +711,13 @@ def _optional_identifier(value: object) -> str | None:
     if value is None:
         return None
     return _identifier(value, "team ID")
+
+
+def _team_identifier(value: object) -> str:
+    identifier = _identifier(value, "team ID")
+    if re.fullmatch(r"[A-Za-z0-9_-]+", identifier) is None:
+        raise ValueError("GOAL API team ID contains unsupported characters")
+    return identifier
 
 
 def _optional_int(value: object) -> int | None:

@@ -426,6 +426,28 @@ def test_frozen_artifact_binds_authoritative_target_and_embedded_bk(tmp_path):
     assert path.name.endswith(f"{artifact.artifact_sha256[:16]}.json")
 
 
+def test_authoritative_bk_hash_uses_exactly_one_normalization_pass():
+    target, pins, snapshot = _target_pins_snapshot()
+    target = replace(
+        target,
+        events=tuple(
+            replace(event, bk_probabilities=(0.35, 0.29, 0.36))
+            for event in target.events
+        ),
+    )
+
+    artifact = build_shadow_probability_artifact(
+        target=target,
+        snapshot=snapshot,
+        pins=pins,
+        as_of=AS_OF,
+    )
+
+    assert "authoritative_bk_snapshot_mismatch" not in artifact.validation_failures
+    assert artifact.authority_status == "FROZEN_PRE_AS_OF"
+    assert artifact.sports_coverage_count == 14
+
+
 def test_missing_independent_authority_fails_closed():
     _target, pins, snapshot = _target_pins_snapshot()
 

@@ -1,5 +1,22 @@
 # Decisions
 
+## 2026-08-27: sports analytics is an automatic non-blocking shadow sidecar
+
+- Generated morning and passive retry commands collect at most one complete
+  GOAL sports-shadow input per exact drawing. Complete hash-bound evidence is
+  reused; failed partial attempts are never promoted as current.
+- Sports collection must not delay, block or alter production preparation,
+  scheduler activation, BK probabilities, package selection, operator export
+  or wagering. Its only current status is paper-only with package influence
+  `NONE`.
+- A successful 15/15 capture is not an activation signal. BK and sports
+  packages must be compared prospectively after settlement with equal bank,
+  unchanged package selection and predeclared metrics. Cross-model disagreement
+  is expected and must not be reported as profit evidence.
+- The package-free daytime preflight remains separate from morning analytics:
+  it performs real production validation only and cannot create either a
+  training or research package.
+
 ## 2026-08-26: scheduler runtime uses operational cutoff end to end
 
 - TotoBrief `ended_at` remains immutable drawing identity only. Every parent

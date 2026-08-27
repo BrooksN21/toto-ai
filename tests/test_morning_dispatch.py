@@ -2106,6 +2106,7 @@ def test_generated_morning_command_matches_current_cli_contract(tmp_path):
     command = command_line.removeprefix("  if ").removesuffix("; then")
     argv = shlex.split(command)
     assert argv[:4] == [sys.executable, "-m", "toto_ai.cli", "morning-dispatch"]
+    assert "--goal-shadow-auto" in argv
 
     result = CliRunner().invoke(cli.app, [*argv[3:], "--help"])
 

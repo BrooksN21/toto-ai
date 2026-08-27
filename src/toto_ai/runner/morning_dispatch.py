@@ -1259,6 +1259,7 @@ def _retry_plan_payload(
         )
         if activate_evening:
             command.append("--activate")
+        command.append("--goal-shadow-auto")
         command.append("--preflight-retry-child")
         attempts.append(
             {

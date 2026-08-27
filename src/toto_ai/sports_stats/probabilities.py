@@ -112,13 +112,14 @@ def build_shadow_probability_artifact(
         target.events,
     )
     expected_event_ids = tuple(str(event.event_id) for event in target.events)
-    bk_probabilities = tuple(
-        _normalize(event.bk_probabilities) for event in target.events
+    raw_bk_probabilities = tuple(event.bk_probabilities for event in target.events)
+    normalized_bk_probabilities = tuple(
+        _normalize(row) for row in raw_bk_probabilities
     )
     return build_shadow_probability_artifact_from_snapshot(
         snapshot=snapshot,
         pins=pins,
-        bk_probabilities=bk_probabilities,
+        bk_probabilities=raw_bk_probabilities,
         as_of=as_of,
         generated_at=produced_at,
         expected_drawing_id=target.drawing_id,
@@ -131,7 +132,7 @@ def build_shadow_probability_artifact(
             drawing_id=target.drawing_id,
             drawing_fingerprint=expected_fingerprint,
             authority_fetched_at=target.fetched_at,
-            bk_probabilities=bk_probabilities,
+            bk_probabilities=normalized_bk_probabilities,
         ),
     )
 

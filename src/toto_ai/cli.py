@@ -105,6 +105,7 @@ from toto_ai.external_odds.collection import (
 from toto_ai.external_odds.domain import TargetDrawing
 from toto_ai.external_odds.eligibility import DrawingEligibility, target_fingerprint
 from toto_ai.external_odds.goal_api import (
+    GoalAPIClient,
     GoalAPIConfig,
     load_goal_api_key,
 )
@@ -323,6 +324,10 @@ from toto_ai.runner.preflight_retry_scheduler import (
 )
 from toto_ai.runner.preflight_status import build_preflight_status
 from toto_ai.runner.training_package import ensure_scheduler_training_package
+from toto_ai.sports_stats.goal_probe_collection import (
+    collect_goal_probe_input,
+    ensure_goal_probe_input,
+)
 from toto_ai.sports_stats.goal_probe_research import (
     run_goal_probe_package_comparison,
 )
@@ -3682,6 +3687,14 @@ def morning_dispatch_command(
         "--schedule-evidence-ledger",
     ),
     activate: bool = typer.Option(False, "--activate"),
+    goal_shadow_auto: bool = typer.Option(
+        False,
+        "--goal-shadow-auto/--no-goal-shadow-auto",
+        help=(
+            "Collect one idempotent GOAL sports-shadow snapshot per drawing; "
+            "research-only and non-blocking."
+        ),
+    ),
     preflight_retry_child: bool = typer.Option(
         False,
         "--preflight-retry-child",
@@ -3760,6 +3773,7 @@ def morning_dispatch_command(
     retry_scheduler_status: dict[str, object] | None = None
     source_collector_status: dict[str, object] | None = None
     training_package_status: dict[str, object] | None = None
+    sports_shadow_status: dict[str, object] | None = None
     prepared_evidence: MorningPreparedDrawing | None = None
 
     def prepare_for_dispatch(now: datetime) -> MorningPreparedDrawing:
@@ -4022,6 +4036,51 @@ def morning_dispatch_command(
                     expected_identity=expected_identity,
                 )
         if (
+            goal_shadow_auto
+            and prepared_evidence is not None
+            and result.status == "scheduled"
+        ):
+            try:
+                goal_api_key = load_goal_api_key(config.env_file)
+                if goal_api_key is None:
+                    raise ValueError("GOAL_API_KEY is required")
+                shadow = ensure_goal_probe_input(
+                    drawing_id=prepared_evidence.drawing_id,
+                    raw_cache_dir=resolved_raw_cache,
+                    output_root=(
+                        root
+                        / "reports"
+                        / "sports-analytics"
+                        / str(prepared_evidence.drawing_number)
+                        / "goal-auto"
+                    ),
+                    api_key=goal_api_key,
+                    project_root=root,
+                )
+            except Exception as error:
+                sports_shadow_status = {
+                    "status": "PAPER_ONLY_COLLECTION_FAILED",
+                    "error": f"{type(error).__name__}: {str(error)[:300]}",
+                    "package_influence": "NONE",
+                    "automatic_wagering": False,
+                }
+            else:
+                sports_shadow_status = {
+                    "status": "PAPER_ONLY_COVERAGE_PROBE_READY",
+                    "drawing_id": prepared_evidence.drawing_id,
+                    "drawing_number": prepared_evidence.drawing_number,
+                    "event_count": shadow.event_count,
+                    "history_source_count": shadow.history_source_count,
+                    "sports_eligible_count": shadow.sports_eligible_count,
+                    "request_count": shadow.request_count,
+                    "quota_daily_remaining": shadow.quota_daily_remaining,
+                    "captured_at": shadow.captured_at.isoformat(),
+                    "coverage_summary": str(shadow.coverage_summary_path),
+                    "reused": shadow.reused,
+                    "package_influence": "NONE",
+                    "automatic_wagering": False,
+                }
+        if (
             activate
             and not preflight_retry_child
             and result.retry_plan_path is not None
@@ -4084,6 +4143,7 @@ def morning_dispatch_command(
                 "retry_scheduler": retry_scheduler_status,
                 "source_collector": source_collector_status,
                 "training_package": training_package_status,
+                "sports_shadow": sports_shadow_status,
             },
             sort_keys=True,
             separators=(",", ":"),
@@ -5898,6 +5958,58 @@ def compare_preliminary_packages_command(
                 "report": str(json_path),
                 "baseline_package": str(baseline_path),
                 "sports_package": str(candidate_path),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
+
+
+@app.command("collect-goal-shadow-input")
+def collect_goal_shadow_input_command(
+    drawing_id: int = typer.Option(..., "--drawing-id", min=1),
+    queue: str = typer.Option(..., "--queue"),
+    raw_cache_dir: str = typer.Option("data/raw", "--raw-cache-dir"),
+    output_dir: str = typer.Option(..., "--output-dir"),
+    env_file: str = typer.Option(".env", "--env-file"),
+    request_budget: int = typer.Option(120, "--request-budget", min=30, max=120),
+) -> None:
+    """Freeze a 15-event GOAL sports-shadow input — RESEARCH ONLY."""
+
+    try:
+        api_key = load_goal_api_key(env_file)
+        if api_key is None:
+            raise ValueError("GOAL_API_KEY is required")
+        client = GoalAPIClient(
+            api_key,
+            snapshot_dir=Path(output_dir) / "schedule" / "goal-api-v1",
+            request_budget=request_budget,
+        )
+        result = collect_goal_probe_input(
+            drawing_id=drawing_id,
+            queue_path=queue,
+            raw_cache_dir=raw_cache_dir,
+            output_dir=output_dir,
+            client=client,
+            project_root=Path.cwd(),
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": "PAPER_ONLY_COVERAGE_PROBE",
+                "drawing_id": drawing_id,
+                "event_count": result.event_count,
+                "history_source_count": result.history_source_count,
+                "sports_eligible_count": result.sports_eligible_count,
+                "request_count": result.request_count,
+                "quota_daily_remaining": result.quota_daily_remaining,
+                "captured_at": result.captured_at.isoformat(),
+                "coverage_summary": str(result.coverage_summary_path),
+                "schedule_report": str(result.schedule_report_path),
+                "package_influence": "NONE",
+                "automatic_wagering": False,
             },
             ensure_ascii=False,
             sort_keys=True,

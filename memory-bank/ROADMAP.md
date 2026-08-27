@@ -899,6 +899,11 @@ closed.
   source provenance before expanding sports features.
 - [ ] Implement leakage-safe Elo, venue, form, goals, rest, table and
   congestion features with explicit per-event BK fallback.
+- [x] Add idempotent automatic morning GOAL shadow-input collection with exact
+  15-event bindings, 30 team histories, hash-bound reuse and no production
+  influence.
+- [ ] Automatically settle and compare each frozen BK/sports pair after the
+  drawing, then accumulate prospective log-loss/Brier/category-hit evidence.
 - [ ] Train and walk-forward evaluate a regularized sports residual adjustment
   around BK; compare BK, Pin, calibrated BK, venue shadow and ensemble.
 - [ ] Run every candidate through unchanged dynamic-bank package selection and

@@ -173,6 +173,69 @@ def test_fetch_schedule_paginates_and_freezes_secret_safe_evidence(
         assert "Authorization" not in json.dumps(document)
 
 
+def test_fetch_team_results_binds_identity_and_freezes_secret_safe_payload(
+    tmp_path: Path,
+) -> None:
+    payload = {
+        "success": True,
+        "teamId": "team-101",
+        "data": [
+            {
+                "id": "history-1",
+                "matchStatus": "FINISHED",
+                "kickoffUtc": "2026-08-20T18:00:00Z",
+                "homeTeamId": "team-101",
+                "awayTeamId": "team-202",
+                "homeTeamScore": "2",
+                "awayTeamScore": "1",
+            }
+        ],
+    }
+    session = FakeSession(
+        [
+            FakeResponse(
+                payload,
+                headers={"X-RateLimit-Remaining": "997"},
+            )
+        ]
+    )
+    client = GoalAPIClient(
+        SECRET,
+        session=session,
+        snapshot_dir=tmp_path,
+        now=_now,
+    )
+
+    result = client.fetch_team_results("team-101")
+
+    assert result.team_id == "team-101"
+    assert result.payload == payload
+    assert result.http_status == 200
+    assert result.quota_daily_remaining == 997
+    assert session.calls[0]["url"] == f"{DEFAULT_BASE_URL}/teams/team-101/results"
+    assert session.calls[0]["params"] == {"limit": "10"}
+    frozen = result.evidence.snapshot_path.read_text(encoding="utf-8")
+    assert SECRET not in frozen
+    assert json.loads(frozen)["payload"] == payload
+
+
+def test_fetch_team_results_rejects_unsafe_identity_before_transport(
+    tmp_path: Path,
+) -> None:
+    session = FakeSession([])
+    client = GoalAPIClient(
+        SECRET,
+        session=session,
+        snapshot_dir=tmp_path,
+        now=_now,
+    )
+
+    with pytest.raises(ValueError, match="unsupported characters"):
+        client.fetch_team_results("../secret")
+
+    assert session.calls == []
+
+
 def test_finished_fixture_is_retained_but_not_eligible(tmp_path: Path) -> None:
     fixture = _fixture()
     fixture["matchStatus"] = "Finished"

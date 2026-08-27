@@ -1,5 +1,29 @@
 # Architecture
 
+## Automatic research-only GOAL history capture (2026-08-27)
+
+Generated morning dispatch commands and identity-bound passive retry children
+enable `--goal-shadow-auto`. After an exact drawing reaches `scheduled`, the
+hook may freeze one complete GOAL research input: 15 same-orientation fixture
+bindings plus home/away histories for all 30 teams. A successful capture is
+published through a hash-bound `current.json`; repeated morning runs verify and
+reuse it without consuming quota. Failed partial captures never become current
+and a later morning pass may retry in a new immutable capture directory.
+
+This is a non-blocking sidecar. It cannot change preparation, scheduler state,
+production probabilities, package selection, operator export, release state or
+automatic wagering. Missing keys, provider errors, incomplete 15/15 matching,
+hash drift and malformed evidence are reported as
+`PAPER_ONLY_COLLECTION_FAILED` while the production morning result is
+preserved. The ordinary package-free daytime preflight does not invoke this
+collector and still forbids training/package output.
+
+The GOAL client now also supports bounded `/v1/teams/<id>/results` retrieval.
+Only terminal rows strictly before both capture time and target kickoff are
+eligible for the existing venue W-D-L shadow. Snapshot hashes and paths are
+project-contained and secret-free. Probability authority remains normalized
+TotoBrief BK; GOAL is prospective research evidence only.
+
 ## Frozen GOAL sports-shadow research adapter (2026-08-26)
 
 `toto_ai.sports_stats.goal_probe_research` is a read-only bridge from an exact

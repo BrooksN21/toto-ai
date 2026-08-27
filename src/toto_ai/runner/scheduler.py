@@ -8363,6 +8363,7 @@ def build_morning_dispatch_command(
     ]
     if activate_evening:
         command_values.append("--activate")
+    command_values.append("--goal-shadow-auto")
     if reviewed_schedule_catalog is not None:
         _require_contained_path(
             project_root,

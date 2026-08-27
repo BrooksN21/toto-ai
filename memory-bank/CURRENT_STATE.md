@@ -1,5 +1,36 @@
 # Current State
 
+## Drawing 4988 preflight and automatic GOAL shadow input (2026-08-27)
+
+Drawing 4988 (internal ID 12071) is READY 15/15 under schema-v7 plan
+`095bea62149ea735`. The immutable identity deadline is 22:00 MSK, the
+independently tightened operational cutoff is 19:00 MSK, and T-10 is 18:50
+MSK. The production LaunchAgent is loaded for 17:00 through 18:50. A separate
+package-free real preflight LaunchAgent is loaded for 16:00; it uses the exact
+production target/preparation path but cannot generate a package, training
+artifact, scheduler transition or wager.
+
+GOAL team-history collection is now reusable and idempotent. It freezes one
+15-event schedule binding plus 30 team histories per drawing below
+`reports/sports-analytics/<drawing>/goal-auto/`, publishes a hash-bound current
+marker only after complete 15/15 success, and reuses that marker on later
+morning runs without new provider requests. Generated morning dispatchers and
+passive retry children pass `--goal-shadow-auto`. Collection failure is
+reported but cannot block production; package influence remains `NONE` and
+automatic wagering remains disabled.
+
+The first live 4988 research capture completed 15/15 with 30 histories in 67
+requests. The equal-bank 4,980/30 BK and sports-shadow packages each contain
+166 coupons and overlap on 23. The sports candidate is better under its own
+model, while the BK package is better under BK cross-evaluation. This is model
+disagreement, not evidence of superiority or profitability. Production remains
+normalized TotoBrief BK until prospective settled comparisons justify a
+separate activation decision.
+
+Focused GOAL, probability, morning-dispatch and scheduler-contract verification
+passes 82 tests. Full default verification passes 2,075 tests with 13
+intentionally deselected; repository Ruff and `git diff --check` are clean.
+
 ## Drawing 4987 evening incident and scheduler remediation (2026-08-26)
 
 Drawing 4987 ended with scheduler-owned `NO_BET`; no valid operator package was
