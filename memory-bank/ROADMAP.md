@@ -1072,5 +1072,20 @@ closed.
   - [x] Pass exact live preflight plus full local regression (`2066 passed`).
   - [x] Add and live-run package-free `scheduler-preflight-only`; load a
     one-shot 16:00 MSK control before the first 4988 evening checkpoint.
-  - [ ] Observe real wall-clock T-60/T-45/T-30/T-20/T-16/T-10 phases; virtual
+  - [ ] Observe real wall-clock T-60/T-45/T-30/T-25/T-16/T-10 phases; virtual
     parent-clock acceleration is not valid for wall-clock child processes.
+
+# 2026-08-27 drawing 4989 and operator-delivery hardening
+
+- [x] Preserve an existing verified cutoff when an unresolved-only retry
+  report contains no new qualifying GOAL kickoff evidence.
+- [x] Upgrade scheduler identity to schema v8 and start atomic final at T-25
+  without reducing package quality, bank or search work.
+- [x] Change generic new-drawing discovery from hourly to every 15 minutes,
+  install the replacement LaunchAgent, and verify one live exit-0 cycle.
+- [x] Discover and prepare drawing 4989 automatically; retain a loaded passive
+  retry for its five unresolved kickoff times.
+- [ ] Publish a stable operator-delivery status record immediately after a
+  verified pre-T-10 PLAY and retain a clearly expired audit pointer after T-10.
+- [ ] Observe drawing 4989 becoming 15/15 timing-playable, then verify its
+  generated schema-v8 evening plan and every real checkpoint.

@@ -34,12 +34,13 @@ def _write_report(
     starts_at: str = "2026-08-26T15:45:00Z",
     drawing_id: int = 12068,
     drawing_number: int = 4987,
+    status: str = "timing_conflict",
 ) -> Path:
     record = {
         "drawing_id": drawing_id,
         "drawing_number": drawing_number,
         "event_order": 10,
-        "status": "timing_conflict",
+        "status": status,
         "source_provider": "goal-api-v1",
         "source_role": "independent",
         "ledger_eligible": False,
@@ -282,6 +283,42 @@ def test_morning_preparation_reuses_exact_persisted_cutoff(tmp_path: Path) -> No
     assert attached.operational_cutoff == datetime(2026, 8, 26, 15, 45, tzinfo=UTC)
     assert attached.cutoff_evidence == collector_dir / "conservative-cutoff.json"
     assert attached.cutoff_evidence_sha256 is not None
+
+
+def test_morning_retry_preserves_cutoff_when_latest_report_has_no_candidates(
+    tmp_path: Path,
+) -> None:
+    """An unresolved-only retry cannot erase an earlier verified cutoff."""
+    write_empty_schedule_evidence_ledger(tmp_path)
+    config = MorningDispatchConfig(
+        project_root=tmp_path,
+        state_root=tmp_path / "state",
+        scheduler_root=tmp_path / "scheduler",
+        env_file=tmp_path / ".env",
+        bank=4980,
+    )
+    prepared = MorningPreparedDrawing(
+        drawing_id=12068,
+        drawing_number=4987,
+        deadline=datetime(2026, 8, 26, 18, 45, tzinfo=UTC),
+        drawing_fingerprint="a" * 64,
+        detail_sha256="b" * 64,
+        preparation_status="ready",
+        mapped_count=15,
+        eligibility_status="unknown",
+        span_days=None,
+    )
+    collector_dir = cli._morning_cutoff_directory(config, prepared)
+    report = collector_dir / "schedule-source-candidates.json"
+    _write_report(report)
+    first = cli._attach_persisted_conservative_cutoff(config, prepared)
+
+    _write_report(report, status="not_found")
+    second = cli._attach_persisted_conservative_cutoff(config, prepared)
+
+    assert second.operational_cutoff == first.operational_cutoff
+    assert second.cutoff_evidence == first.cutoff_evidence
+    assert second.cutoff_evidence_sha256 == first.cutoff_evidence_sha256
 
 
 def test_persisted_cutoff_can_tighten_again_but_never_relax(tmp_path: Path) -> None:

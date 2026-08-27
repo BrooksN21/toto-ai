@@ -1,5 +1,32 @@
 # Current State
 
+## Drawing 4989 automatic preparation and scheduler v8 (2026-08-27)
+
+The generic morning dispatcher selected drawing 4989 (internal ID 12074)
+without operator prompting. Identity preparation is READY 15/15; kickoff
+timing is confirmed for 10/15 events and the remaining orders 3/7/8/11/14 are
+owned by the loaded identity-bound passive retry job. A live retry after the
+cutoff fix returned the expected deferred code 75 rather than fatal code 2.
+
+An unresolved-only source refresh can no longer erase an earlier hash-verified
+conservative cutoff. The persisted 18:00 MSK operational cutoff remains bound
+to drawing 4989 while later reports may only tighten it. The generic discovery
+LaunchAgent now runs every 900 seconds, retains the fixed calendar checkpoints,
+and always invokes `morning-dispatch --activate`; it never places wagers.
+
+Scheduler schema v8 moves the atomic primary final from T-20 to T-25 while
+retaining T-10 expiry and the full quality/bank configuration. This gives a
+normal successful calculation five additional minutes for manual operator
+delivery without reducing search work. Verification is green: `2087 passed,
+13 deselected`; Ruff and diff check pass.
+
+## Expired package audit policy clarified (2026-08-27)
+
+T-10 still irrevocably removes wagering and upload eligibility. The project
+owner may now explicitly request the exact hash-verified scheduler archive for
+read-only post-draw analysis, with an `EXPIRED — ANALYSIS ONLY — NOT FOR
+WAGERING` label. Research/rehearsal packages cannot be substituted.
+
 ## Drawing 4988 schedule pins and exact final-input refresh (2026-08-27)
 
 Pins backed by TotoBrief baseline, reviewed schedule, or the bound

@@ -23,6 +23,10 @@ _QUALIFYING_STATUSES = frozenset({"independent_candidate", "timing_conflict"})
 _DEFAULT_PROVIDERS = frozenset({"goal-api-v1"})
 
 
+class NoQualifyingKickoffEvidenceError(ValueError):
+    """The current source report has no evidence that can establish a cutoff."""
+
+
 @dataclass(frozen=True)
 class ConservativeCutoffEvidence:
     drawing_id: int
@@ -100,7 +104,9 @@ def derive_conservative_cutoff(
         seen.add(identity)
         qualified.append((starts_at, order, str(provider)))
     if not qualified:
-        raise ValueError("cutoff source report has no qualifying kickoff evidence")
+        raise NoQualifyingKickoffEvidenceError(
+            "cutoff source report has no qualifying kickoff evidence"
+        )
 
     earliest = min(item[0] for item in qualified)
     cutoff = min(ended_at, earliest)

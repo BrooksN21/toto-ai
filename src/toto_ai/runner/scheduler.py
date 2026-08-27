@@ -1,4 +1,4 @@
-"""Tracked T-120/T-90/T-60/T-45/T-30/T-20/T-16/T-10 scheduler.
+"""Tracked T-120/T-90/T-60/T-45/T-30/T-25/T-16/T-10 scheduler.
 
 The scheduler deliberately separates a process completing from an actionable
 package becoming ``BET READY``. Package-producing work happens in immutable
@@ -86,7 +86,7 @@ from toto_ai.runner.scheduler_state import (
     transition,
 )
 
-SCHEDULER_SCHEMA_VERSION = 7
+SCHEDULER_SCHEMA_VERSION = 8
 LEGACY_SCHEDULER_SCHEMA_VERSION = 1
 LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION = 2
 LEGACY_ACTIONABLE_SCHEMA_VERSION = 3
@@ -105,7 +105,7 @@ SCHEDULER_WRAPPER_FILENAME = "run-scheduler.sh"
 SCHEDULER_LAUNCH_AGENT_FILENAME = "totoai-scheduler.plist"
 MORNING_WRAPPER_FILENAME = "run-morning-preanalysis.sh"
 MORNING_LAUNCH_AGENT_FILENAME = "totoai-morning-preanalysis.plist"
-DEFAULT_MORNING_DISCOVERY_INTERVAL_SECONDS = 3600
+DEFAULT_MORNING_DISCOVERY_INTERVAL_SECONDS = 900
 MINIMUM_MORNING_DISCOVERY_INTERVAL_SECONDS = 900
 PACKAGE_CSV_HEADER = ("rank", "coupon", "gross_ev", "net_ev")
 DEFAULT_MINIMUM_GROSS_EV = EVConfig(
@@ -119,7 +119,17 @@ DEFAULT_QUALITY_V2_CONFIG = EVConfig(
     package_safety_enabled=True,
 )
 PUBLICATION_LEAD_MINUTES = 10
-SCHEDULER_TRIGGER_OFFSETS_MINUTES = (120, 90, 60, 45, 30, 20, 16, 10)
+PRIMARY_FINAL_LEAD_MINUTES = 25
+SCHEDULER_TRIGGER_OFFSETS_MINUTES = (
+    120,
+    90,
+    60,
+    45,
+    30,
+    PRIMARY_FINAL_LEAD_MINUTES,
+    16,
+    10,
+)
 LKG_MAX_SOURCE_AGE_SECONDS = 45 * 60
 DEFAULT_MINIMUM_FINAL_RUNTIME_SECONDS = 300
 MINIMUM_COLLECTION_START_SECONDS = 30
@@ -557,7 +567,9 @@ class SchedulerPlan:
 
     @property
     def final_at(self) -> datetime:
-        return self.operational_cutoff - timedelta(minutes=20)
+        return self.operational_cutoff - timedelta(
+            minutes=PRIMARY_FINAL_LEAD_MINUTES
+        )
 
     @property
     def retry_at(self) -> datetime:
@@ -589,7 +601,7 @@ class SchedulerPlan:
             "t_minus_60": self.freshness_preflight_at,
             "t_minus_45": self.preflight_at,
             "t_minus_30": self.fallback_at,
-            "t_minus_20": self.final_at,
+            "t_minus_25": self.final_at,
             "t_minus_16": self.retry_at,
             "t_minus_10": self.publish_deadline,
         }
@@ -4333,7 +4345,7 @@ def _runner_final_lead_minutes(context: SchedulerPhaseContext) -> int:
         return 45
     if context.phase == "fallback":
         return 30
-    return 20 if context.atomic_final else 15
+    return PRIMARY_FINAL_LEAD_MINUTES if context.atomic_final else 15
 
 
 def _runner_safety_stop_minutes(context: SchedulerPhaseContext) -> int:

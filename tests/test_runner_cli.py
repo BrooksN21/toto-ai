@@ -24,8 +24,11 @@ from toto_ai.ev.package_quality import (
     deterministic_outcome_seed,
     diagnostics_payload_sha256,
 )
+from toto_ai.external_odds.domain import ProviderEvent
 from toto_ai.external_odds.eligibility import DrawingEligibility
+from toto_ai.external_odds.preparation import prepare_drawing
 from toto_ai.external_odds.targets import parse_target_drawing
+from toto_ai.external_odds.team_resolution import ResolutionContext
 from toto_ai.package.audit import evaluate_package_safety
 from toto_ai.runner import (
     CommandSchedulerPhaseRunner,
@@ -1377,6 +1380,54 @@ def _seed_scheduler_drawing(
     engine.dispose()
 
 
+def _seed_scheduler_preparation(
+    db: Path,
+    *,
+    detail_payload: dict[str, object],
+    deadline: datetime,
+) -> None:
+    """Persist the real READY precondition required by an atomic final run."""
+    fetched_at = deadline - timedelta(minutes=30)
+    target = parse_target_drawing(detail_payload, fetched_at=fetched_at)
+    engine = init_db(db)
+    try:
+        result = prepare_drawing(
+            target,
+            tuple(
+                ProviderEvent(
+                    provider="api-sports",
+                    provider_event_id=f"fixture-{event.event_order}",
+                    sport=event.sport,
+                    league=event.championship,
+                    starts_at=deadline
+                    + timedelta(minutes=30 + event.event_order),
+                    home_team=event.home_team,
+                    away_team=event.away_team,
+                    fetched_at=fetched_at,
+                    payload_hash=f"hash-{event.event_order}",
+                    country=None,
+                    provider_home_team_id=f"home-{event.event_order}",
+                    provider_away_team_id=f"away-{event.event_order}",
+                )
+                for event in target.events
+            ),
+            session_factory=get_session_factory(engine),
+            event_contexts={
+                event.event_order: ResolutionContext(
+                    "api-sports",
+                    league=event.championship,
+                )
+                for event in target.events
+            },
+            evaluated_at=fetched_at,
+        )
+    finally:
+        engine.dispose()
+    assert result.status == "ready"
+    assert result.mapped_count == 15
+    assert len(result.pins) == 15
+
+
 def test_scheduler_cli_plan_simulated_execute_and_operator_pickup_are_offline(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -1604,6 +1655,11 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
         drawing_number=5001,
         ended_at=deadline.isoformat(),
     )
+    _seed_scheduler_preparation(
+        tmp_path / "data" / "toto.db",
+        detail_payload=detail_payload,
+        deadline=deadline,
+    )
 
     detail_calls = 0
 
@@ -1638,7 +1694,7 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
             (output_dir / "scheduler-plan.json").read_text(encoding="utf-8")
         )["config"]
         manifest = _local_scheduler_manifest(
-            final_lead_minutes=20,
+            final_lead_minutes=25,
             safety_stop_minutes=16,
             probability_snapshot_sha256=final_input["snapshot_sha256"],
             probability_input_sha256=final_input["probability_input_sha256"],

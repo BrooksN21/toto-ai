@@ -3419,6 +3419,437 @@
           "source_url": "https://www.sofascore.com/football/match/fc-st-gallen-1879-fc-nordsjaelland/RAsRY#id:16823073"
         }
       ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-f6365d15f8d12c94cdbb",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Wrexham",
+      "home_aliases": [
+        "Рексхэм",
+        "Wrexham",
+        "ريكسهام",
+        "АФК Рексем"
+      ],
+      "away_entity": "Birmingham",
+      "away_aliases": [
+        "Бирмингем Сити",
+        "Birmingham",
+        "Birmingham City",
+        "بيرمنجهام سيتي",
+        "बिर्मिन्ग्हम सिटी"
+      ],
+      "starts_at": "2026-08-28T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-27T16:22:10.135314Z",
+      "review_document": "reviews/auto-independent-consensus-v2-f6365d15f8d12c94cdbb.md",
+      "review_document_sha256": "a70a8b089b132518e8ae408bc4c493a1fe393da0d714d94e5eb87263dc51cd01",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4dvx9bzypg07k6a0c7uy"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/wrexham-birmingham-city/jsob#id:16391191"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-f895988c8f95cbc4eef4",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Racing Santander",
+      "home_aliases": [
+        "Расинг Сантандер",
+        "Racing Santander",
+        "Real Racing Club",
+        "راسينغ سانتاندير"
+      ],
+      "away_entity": "Elche",
+      "away_aliases": [
+        "Эльче",
+        "Elche",
+        "إلتشي",
+        "এলচে",
+        "एल्चे"
+      ],
+      "starts_at": "2026-08-28T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-27T16:22:10.135314Z",
+      "review_document": "reviews/auto-independent-consensus-v2-f895988c8f95cbc4eef4.md",
+      "review_document_sha256": "c376d03d7d03151cea814a9e37717289b8048bb726383e3179396a2b299d20c1",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp41119a5zpg078zv153bv"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/elche-real-racing-club/KgbsWgb#id:16416304"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-48b77627d8fea902044f",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Alaves",
+      "home_aliases": [
+        "Алавес",
+        "Alaves",
+        "Deportivo Alavés",
+        "ديبورتيفو ألافيس"
+      ],
+      "away_entity": "Villarreal",
+      "away_aliases": [
+        "Вильярреал",
+        "Villarreal",
+        "فياريال",
+        "ভিলারিয়াল",
+        "विल्लारियल"
+      ],
+      "starts_at": "2026-08-28T19:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-27T16:22:10.135314Z",
+      "review_document": "reviews/auto-independent-consensus-v2-48b77627d8fea902044f.md",
+      "review_document_sha256": "fd2279e77b728be219ac622a57e2f7ef1aff05d7ad0b49d5870ade71f2570cff",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4dyw9c0kpg07i2vz3j8h"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/deportivo-alaves-villarreal/ugbsKhb#id:16416290"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-277b189330d6c0f3da6b",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. 1-я лига",
+        "First League"
+      ],
+      "home_entity": "Neftekhimik",
+      "home_aliases": [
+        "Нефтехимик",
+        "Neftekhimik",
+        "Neftekhimik Nizhnekamsk",
+        "نفطخيميك نيجنيكامسك",
+        "Нефтехимик Нижнекамск"
+      ],
+      "away_entity": "Ufa",
+      "away_aliases": [
+        "Уфа",
+        "Ufa",
+        "FC Ufa",
+        "FK Ufa",
+        "ФК Уфа"
+      ],
+      "starts_at": "2026-08-28T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-27T16:22:10.135314Z",
+      "review_document": "reviews/auto-independent-consensus-v2-277b189330d6c0f3da6b.md",
+      "review_document_sha256": "ead481f6a124ac9dac3ed13a72ce54d737b3daa73a738e5ff319477b44e01592",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3xly99kzpg07fdwkj99q"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-ufa-neftekhimik-nizhnekamsk/xnEsQJE#id:16491056"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-14185dc64c23fe14014e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2"
+      ],
+      "home_entity": "Clermont",
+      "home_aliases": [
+        "Клермон",
+        "Clermont",
+        "Clermont Foot",
+        "كليرمونت فوت"
+      ],
+      "away_entity": "Sochaux",
+      "away_aliases": [
+        "Сошо",
+        "Sochaux",
+        "سوشو",
+        "সোচক্স",
+        "सोचौक्स"
+      ],
+      "starts_at": "2026-08-28T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-27T16:22:10.135314Z",
+      "review_document": "reviews/auto-independent-consensus-v2-14185dc64c23fe14014e.md",
+      "review_document_sha256": "a86e5aa5cd66dbf51df2439cd1fae298f565862154b5a5d7cb7d671009a744e3",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp48cw9b6xpg07eoyn9rg3"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/clermont-foot-sochaux/hIsFI#id:16386263"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-0d9e237d158c3916def8",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2"
+      ],
+      "home_entity": "Nancy",
+      "home_aliases": [
+        "Нанси",
+        "Nancy",
+        "نانس"
+      ],
+      "away_entity": "Dunkerque",
+      "away_aliases": [
+        "Дюнкерк",
+        "Dunkerque",
+        "USL Dunkerque",
+        "دنكارك",
+        "युएसएल दुन्केर्कुए",
+        "Дункеркью"
+      ],
+      "starts_at": "2026-08-28T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-27T16:22:10.135314Z",
+      "review_document": "reviews/auto-independent-consensus-v2-0d9e237d158c3916def8.md",
+      "review_document_sha256": "5a8fb2d61eb1a050f11568b25e06327a4cf4871804cccaf672b600c6b4237fdf",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp48hu9b7npg07juu816q2"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/usl-dunkerque-nancy/AIstNc#id:16386258"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-5d2b44d47fa5947560de",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Нидерланды. 1-й дивизион",
+        "Eerste Divisie"
+      ],
+      "home_entity": "Den Bosch",
+      "home_aliases": [
+        "Ден Босх",
+        "Den Bosch",
+        "FC Den Bosch",
+        "إف سي دن بوش",
+        "ФК Ден Босх"
+      ],
+      "away_entity": "Vitesse",
+      "away_aliases": [
+        "Витесс",
+        "Vitesse",
+        "فيتاس آرنهام",
+        "Витесс Арнем"
+      ],
+      "starts_at": "2026-08-28T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-27T16:22:10.135314Z",
+      "review_document": "reviews/auto-independent-consensus-v2-5d2b44d47fa5947560de.md",
+      "review_document_sha256": "b6ad6c369a51d49b53066b545099cf073752cc45f3bffb843d63ef1aede1d9c0",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp44q09aoipg074s8lpn8o"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-den-bosch-vitesse/ijbsnjb#id:16317362"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-3b6e73548515e9c72a36",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Нидерланды. 1-й дивизион",
+        "Eerste Divisie"
+      ],
+      "home_entity": "Roda",
+      "home_aliases": [
+        "Рода",
+        "Roda",
+        "Roda JC Kerkrade",
+        "روضة جيه سي كيركريد",
+        "ФК Рода Керкрад"
+      ],
+      "away_entity": "NAC Breda",
+      "away_aliases": [
+        "Бреда",
+        "NAC Breda",
+        "ن أي سي بريدا"
+      ],
+      "starts_at": "2026-08-28T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-27T16:22:10.135314Z",
+      "review_document": "reviews/auto-independent-consensus-v2-3b6e73548515e9c72a36.md",
+      "review_document_sha256": "acf46d21a61616cd8ade2eef38a71e552d09b8bb984cb0e203b57fa2a8343537",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp48be9b6bpg07iou1z50b"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/roda-jc-kerkrade-nac-breda/Xibsejb#id:16317374"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-5e2e1e21c4816035adef",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Польша. Чемпионат",
+        "Ekstraklasa"
+      ],
+      "home_entity": "Wisla Plock",
+      "home_aliases": [
+        "Висла Плоцк",
+        "Wisla Plock",
+        "Wisła Płock",
+        "فيشلا بلوك"
+      ],
+      "away_entity": "Korona Kielce",
+      "away_aliases": [
+        "Корона Кельце",
+        "Korona Kielce",
+        "MKS Korona Kielce",
+        "إم كي إس كورونا كيلتسه"
+      ],
+      "starts_at": "2026-08-28T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-27T16:22:10.135314Z",
+      "review_document": "reviews/auto-independent-consensus-v2-5e2e1e21c4816035adef.md",
+      "review_document_sha256": "bdf381e7b60740682027c595adfc957674b165f8e2ed22bf890c434b77045505",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp3xcl99jbpg070n9em7lo"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/mks-korona-kielce-wisla-plock/xmbspbc#id:16316996"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-eb5a47e3a7980d8a636c",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Румыния. Чемпионат",
+        "Liga I",
+        "Superliga"
+      ],
+      "home_entity": "FC Voluntari",
+      "home_aliases": [
+        "Волунтари",
+        "FC Voluntari",
+        "إف سي فولونتاري"
+      ],
+      "away_entity": "Otelul",
+      "away_aliases": [
+        "Оцелул",
+        "Otelul",
+        "SC Oțelul Galați",
+        "إف سي أوتيلل جالاتي",
+        "Оцелул Галати"
+      ],
+      "starts_at": "2026-08-28T15:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-27T16:22:10.135314Z",
+      "review_document": "reviews/auto-independent-consensus-v2-eb5a47e3a7980d8a636c.md",
+      "review_document_sha256": "03996b60fc951c5d5bf902d00094e987eefa76f059b1dd85e5bd933bd8a0ce9d",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4w1l9ep7pg07bg03hv43"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-voluntari-sc-otelul-galati/QpbsfKr#id:16403870"
+        }
+      ]
     }
   ]
 }

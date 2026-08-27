@@ -331,9 +331,9 @@ produce `FinalInputProvenance`, their runner reports use current manifest
 schema v5; scheduler ingestion keeps one current schema contract for warmup,
 refresh, and final package phases.
 Warmup publication establishes operator availability before final work. The
-T-20 primary final owns the full runtime through T-10 minus the publication
+T-25 primary final owns the full runtime through T-10 minus the publication
 reserve. T-16 can retry only after the earlier process releases the scheduler
-lock and leaves retryable state; it cannot truncate or overlap a running T-20
+lock and leaves retryable state; it cannot truncate or overlap a running T-25
 calculation.
 
 An authoritative final DNS/transport outage never turns cached data into a

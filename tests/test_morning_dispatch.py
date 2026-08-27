@@ -2126,7 +2126,7 @@ def test_generic_morning_artifacts_contain_no_drawing_identity(tmp_path):
     assert f'[ "$status" -eq {MORNING_DEFERRED_EXIT_CODE} ]' in wrapper
     assert "exit 0" in wrapper
     assert plist["Label"] == "com.totoai.morning-dispatcher.v1"
-    assert plist["StartInterval"] == 3600
+    assert plist["StartInterval"] == 900
 
 
 def test_generic_morning_artifacts_require_explicit_evening_activation(tmp_path):

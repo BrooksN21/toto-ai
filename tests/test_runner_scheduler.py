@@ -1424,7 +1424,7 @@ def test_exact_offsets_and_phase_start_times_are_operational_cutoff_anchored(
     assert plan.freshness_preflight_at == ENDED_AT - timedelta(minutes=60)
     assert plan.preflight_at == ENDED_AT - timedelta(minutes=45)
     assert plan.fallback_at == ENDED_AT - timedelta(minutes=30)
-    assert plan.final_at == ENDED_AT - timedelta(minutes=20)
+    assert plan.final_at == ENDED_AT - timedelta(minutes=25)
     assert plan.retry_at == ENDED_AT - timedelta(minutes=16)
     assert plan.freeze_at == ENDED_AT - timedelta(minutes=10)
     calls: list[SchedulerPhaseContext] = []
@@ -1446,7 +1446,7 @@ def test_exact_offsets_and_phase_start_times_are_operational_cutoff_anchored(
         "t_minus_60": "2030-01-02T11:00:00Z",
         "t_minus_10": "2030-01-02T11:50:00Z",
         "t_minus_16": "2030-01-02T11:44:00Z",
-        "t_minus_20": "2030-01-02T11:40:00Z",
+        "t_minus_25": "2030-01-02T11:35:00Z",
         "t_minus_30": "2030-01-02T11:30:00Z",
         "t_minus_45": "2030-01-02T11:15:00Z",
     }

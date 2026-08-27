@@ -305,6 +305,7 @@ from toto_ai.runner import (
     write_drawing_run_reports,
 )
 from toto_ai.runner.conservative_cutoff import (
+    NoQualifyingKickoffEvidenceError,
     conservative_cutoff_evidence_sha256,
     derive_conservative_cutoff,
     load_conservative_cutoff_evidence,
@@ -3113,7 +3114,7 @@ def scheduler_plan_command(
     ),
     dry_run: bool = typer.Option(False, "--dry-run"),
 ) -> None:
-    """Prepare a tracked T-45/T-30/T-20/T-16/T-10 scheduler plan."""
+    """Prepare a tracked T-45/T-30/T-25/T-16/T-10 scheduler plan."""
     try:
         plan = build_scheduler_plan(
             drawing=drawing,
@@ -3231,7 +3232,7 @@ def morning_preanalysis_plan_command(
     bank: int = typer.Option(4980, min=1),
     stake: int = typer.Option(30, min=1),
     discovery_interval_seconds: int = typer.Option(
-        3600,
+        900,
         "--discovery-interval-seconds",
         min=900,
     ),
@@ -3634,22 +3635,37 @@ def _attach_persisted_conservative_cutoff(
     collector_dir = _morning_cutoff_directory(config, evidence)
     source_report = collector_dir / "schedule-source-candidates.json"
     cutoff_path = collector_dir / "conservative-cutoff.json"
-    if not source_report.is_file():
+    loaded = None
+    if cutoff_path.is_file():
+        loaded = load_conservative_cutoff_evidence(
+            cutoff_path,
+            project_root=config.project_root,
+            expected_drawing_id=evidence.drawing_id,
+            expected_drawing_number=evidence.drawing_number,
+            expected_source_ended_at=evidence.deadline,
+        )
+    if source_report.is_file():
+        try:
+            derived = derive_conservative_cutoff(
+                source_report,
+                source_ended_at=evidence.deadline,
+                expected_drawing_id=evidence.drawing_id,
+                expected_drawing_number=evidence.drawing_number,
+            )
+        except NoQualifyingKickoffEvidenceError:
+            if loaded is None:
+                raise
+        else:
+            write_conservative_cutoff_evidence(derived, cutoff_path)
+            loaded = load_conservative_cutoff_evidence(
+                cutoff_path,
+                project_root=config.project_root,
+                expected_drawing_id=evidence.drawing_id,
+                expected_drawing_number=evidence.drawing_number,
+                expected_source_ended_at=evidence.deadline,
+            )
+    if loaded is None:
         return evidence
-    derived = derive_conservative_cutoff(
-        source_report,
-        source_ended_at=evidence.deadline,
-        expected_drawing_id=evidence.drawing_id,
-        expected_drawing_number=evidence.drawing_number,
-    )
-    write_conservative_cutoff_evidence(derived, cutoff_path)
-    loaded = load_conservative_cutoff_evidence(
-        cutoff_path,
-        project_root=config.project_root,
-        expected_drawing_id=evidence.drawing_id,
-        expected_drawing_number=evidence.drawing_number,
-        expected_source_ended_at=evidence.deadline,
-    )
     return replace(
         evidence,
         operational_cutoff=loaded.operational_cutoff,

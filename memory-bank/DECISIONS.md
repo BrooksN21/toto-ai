@@ -1,5 +1,30 @@
 # Decisions
 
+## 2026-08-27: autonomous 15-minute discovery and earlier primary final
+
+- The single generic morning dispatcher remains the owner of new-drawing
+  discovery. Its default interval is 900 seconds and it invokes
+  `morning-dispatch --activate`; no second polling daemon is allowed.
+- Automatic activation means preparation and installation of an exact evening
+  scheduler only. Automatic wagering remains prohibited.
+- Scheduler schema v8 starts atomic primary-final work at T-25 instead of
+  T-20. T-10 remains the irrevocable upload expiry boundary; quality samples,
+  candidate count, bank and package-selection objectives are unchanged.
+- A later unresolved-only source report cannot replace or invalidate an
+  existing verified conservative cutoff. New valid evidence may only preserve
+  or tighten that cutoff; all other integrity failures remain fail-closed.
+
+## 2026-08-27: expired operator packages remain non-actionable but auditable
+
+- T-10 expiry still revokes wagering, upload, recommendation and actionable
+  status. No expired package may be revived or presented as safe to bet.
+- On the project owner's explicit request, the exact archived bytes of a
+  scheduler-owned pre-T-10 `PLAY` package may be displayed solely for
+  read-only post-draw analysis after their hash and archive binding are
+  verified.
+- Every such display must be labelled `EXPIRED — ANALYSIS ONLY — NOT FOR
+  WAGERING`. Research, rehearsal and simulation packages remain ineligible.
+
 ## 2026-08-27: TotoAI Git operations are repository-pinned
 
 - `$HOME` is itself a Git work tree. A Git command started there can scan the

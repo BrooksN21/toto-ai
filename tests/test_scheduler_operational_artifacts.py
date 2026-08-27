@@ -68,8 +68,8 @@ def _plan(tmp_path: Path, env_file: Path):
     [
         ("fallback", "freshness_preflight", False, "60", "preflight", "51"),
         ("fallback", "warmup", False, "45", "fallback", "36"),
-        ("fallback", "refresh", False, "30", "final", "26"),
-        ("final", "final", True, "20", "actionable", "16"),
+        ("fallback", "refresh", False, "30", "final", "29"),
+        ("final", "final", True, "25", "actionable", "16"),
     ],
 )
 def test_scheduler_child_lead_matches_triggering_phase(

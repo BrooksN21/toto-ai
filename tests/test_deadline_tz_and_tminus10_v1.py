@@ -168,8 +168,8 @@ def test_4961_scheduler_round_trips_deadline_and_triggers_at_t_minus_10(
     plist = plistlib.loads(artifacts.launch_agent_path.read_bytes())
     loaded = load_scheduler_plan(artifacts.plan_path)
 
-    assert SCHEDULER_SCHEMA_VERSION == 7
-    assert payload["schema_version"] == 7
+    assert SCHEDULER_SCHEMA_VERSION == 8
+    assert payload["schema_version"] == 8
     assert payload["config"]["publication_lead_minutes"] == 10
     assert payload["config"]["trigger_offsets_minutes"] == [
         120,
@@ -177,7 +177,7 @@ def test_4961_scheduler_round_trips_deadline_and_triggers_at_t_minus_10(
         60,
         45,
         30,
-        20,
+        25,
         16,
         10,
     ]
@@ -198,11 +198,11 @@ def test_4961_scheduler_round_trips_deadline_and_triggers_at_t_minus_10(
         "Hour": 18,
         "Minute": 50,
     }
-    assert plist["Label"].startswith("com.totoai.production-scheduler.v7.")
+    assert plist["Label"].startswith("com.totoai.production-scheduler.v8.")
     assert "scheduler-execute" in artifacts.wrapper_path.read_text(encoding="utf-8")
 
 
-def test_schema_v7_status_is_bound_to_exact_t_minus_10_semantics(
+def test_schema_v8_status_is_bound_to_exact_t_minus_10_semantics(
     tmp_path: Path,
 ) -> None:
     write_empty_schedule_evidence_ledger(tmp_path)
@@ -223,11 +223,11 @@ def test_schema_v7_status_is_bound_to_exact_t_minus_10_semantics(
         phase_runner=SimulatedSchedulerPhaseRunner(),
         now=clock.now,
         sleep=clock.sleep,
-        run_id="schema-v7-status",
+        run_id="schema-v8-status",
     )
     status = json.loads(result.status_path.read_text(encoding="utf-8"))
 
-    assert status["schema_version"] == 7
+    assert status["schema_version"] == 8
     assert status["plan_id"] == plan.plan_id
     assert status["deadlines"]["t_minus_10"] == "2026-07-31T15:50:00Z"
     assert "t_minus_12" not in status["deadlines"]
@@ -261,7 +261,7 @@ def test_schema_v4_t_minus_12_plan_fails_closed_with_regenerate_diagnostic(
 
     with pytest.raises(
         ValueError,
-        match=r"stale scheduler schema v4.*T-12.*regenerate schema v7",
+        match=r"stale scheduler schema v4.*T-12.*regenerate schema v8",
     ):
         load_scheduler_plan(artifacts.plan_path)
 
@@ -271,11 +271,11 @@ def test_schema_v4_t_minus_12_plan_fails_closed_with_regenerate_diagnostic(
     )
     assert result.exit_code != 0
     assert "stale scheduler schema v4" in result.output
-    assert "regenerate schema v7" in result.output
+    assert "regenerate schema v8" in result.output
 
     with pytest.raises(
         SchedulerIntegrityError,
-        match=r"stale scheduler schema v4.*T-12.*regenerate schema v7",
+        match=r"stale scheduler schema v4.*T-12.*regenerate schema v8",
     ):
         verify_scheduler_artifacts(plan)
 
@@ -299,7 +299,7 @@ def test_schema_v6_deadline_only_plan_fails_closed(tmp_path: Path) -> None:
 
     with pytest.raises(
         ValueError,
-        match=r"schema v6 conflates.*operational cutoff.*regenerate schema v7",
+        match=r"schema v6 conflates.*operational cutoff.*regenerate schema v8",
     ):
         load_scheduler_plan(artifacts.plan_path)
 
@@ -311,7 +311,7 @@ def test_schema_v6_deadline_only_plan_fails_closed(tmp_path: Path) -> None:
         ("trigger_offsets_minutes", [120, 90, 60, 45, 30, 20, 16, 12]),
     ),
 )
-def test_schema_v7_trigger_semantics_are_identity_bound_and_fail_closed(
+def test_schema_v8_trigger_semantics_are_identity_bound_and_fail_closed(
     tmp_path: Path,
     field: str,
     value: object,
@@ -337,6 +337,6 @@ def test_schema_v7_trigger_semantics_are_identity_bound_and_fail_closed(
 
     with pytest.raises(
         ValueError,
-        match=r"scheduler trigger semantics.*regenerate schema v7",
+        match=r"scheduler trigger semantics.*regenerate schema v8",
     ):
         load_scheduler_plan(artifacts.plan_path)

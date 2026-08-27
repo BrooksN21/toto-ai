@@ -127,10 +127,17 @@ Maintenance rules:
   definitions change.
 - Update `memory-bank/ROADMAP.md` when a phase or task is completed.
 - Do not silently change category, cover, budget, or probability definitions.
-- Never manually synthesize, copy, display, or recommend a BaltBet upload
-  package from research reports or expired artifacts. Operator-facing coupons
-  may come only from the current scheduler-owned `operator-result.json` before
-  its bound T-10 deadline; after T-10 they are expired.
+- Never synthesize, recommend, or present a BaltBet package from research,
+  rehearsal, simulation, or otherwise non-operator artifacts. Coupons intended
+  for wagering may come only from the current scheduler-owned
+  `operator-result.json` before its bound T-10 deadline; after T-10 they are
+  expired and must never be represented as actionable or safe to upload.
+- After expiry, the project owner may explicitly request the exact archived
+  coupons solely for read-only post-draw analysis. Display is allowed only when
+  the bytes are verified against the scheduler-owned pre-T-10 `PLAY` archive
+  and must be clearly labelled `EXPIRED — ANALYSIS ONLY — NOT FOR WAGERING`.
+  Never reconstruct such a package from research reports or use this exception
+  to bypass the operator deadline.
 - Run pytest and ruff before committing.
 - Keep answers and implementation notes concise.
 - Do not claim profitability without backtest evidence.
