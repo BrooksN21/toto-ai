@@ -1151,7 +1151,9 @@ closed.
   same-config category-hit hybrid research pair.
 - [x] Replace the one-run 4989 hybrid research harness with reusable
   final-input-bound comparison and fail-safe post-PLAY sidecar commands.
-- [ ] Install and observe the exact 4989 sidecar; settle both frozen packages
+- [x] Install exact 4989 sidecar for 17:37 MSK without altering the main
+  scheduler.
+- [ ] Observe the exact 4989 sidecar and settle both frozen packages
   automatically after the drawing.
 - [ ] Predeclare a prospective stopping/activation gate of at least 30 complete
   drawings / 450 events before replacing the current production probability or

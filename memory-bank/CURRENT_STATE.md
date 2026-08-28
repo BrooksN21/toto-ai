@@ -42,8 +42,9 @@ calculations to one immutable scheduler final input. A live training check on
 separate `run-final-goal-hybrid-sidecar` waits for scheduler-owned PLAY,
 requires at least 240 seconds before T-10, validates/re-exports the operator BK
 package, and fails if its recomputed BK control differs. The sports output
-remains research-only and non-uploadable. Installation of the exact 4989
-LaunchAgent is the remaining operational step before the evening checkpoints.
+remains research-only and non-uploadable. Exact LaunchAgent
+`com.totoai.goal-hybrid-sidecar.4989.e27c56d2ef849b11` is loaded for
+17:37 MSK; it has never run yet and does not alter the main scheduler.
 
 ## Drawing 4988 settlement and selector defect (2026-08-28)
 
