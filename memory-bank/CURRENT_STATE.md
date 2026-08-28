@@ -1,5 +1,37 @@
 # Current State
 
+## Drawing 4988 settlement and selector defect (2026-08-28)
+
+Drawing 4988 is now synchronized from authoritative TotoBrief result snapshot
+`62a24d563372b94c1acb0fdef55486215911738fdf58d692853db69e1be09177`
+and its archived
+166-coupon / 4,980-RUB package is settled. The actual result was
+`1X1X21XX12X2121`; best hits were 8, mean hits 5.404, and no coupon reached
+9/13/14/15. Settlement SHA-256 is
+`f5e24c7dfd2126504a57ba64fd4a4cc8ac0dd443b66df6a2d5e1021e42bb8774`.
+
+The frozen equal-input audit identifies a package-construction defect rather
+than only bad luck. The EV/crowd package modeled `P(13+)=0.00339451`; a
+full-bank BK top-probability control on the same bytes modeled
+`P(13+)=0.02167641`, about 6.4 times larger. Nine actual outcomes had only
+3.0%-7.8% package exposure. The selector starts from EV-ranked coupons and
+performs only 12 local quality swaps, so its declared probability-first repair
+objective is not a global package-generation objective. Existing strict and
+legacy diagnostics show the same EV/crowd deficit.
+
+The postmortem is
+`research/drawing_4988_package_postmortem_20260828.md`; the approved next-step
+design is
+`plans/TOTO-4988-POSTMORTEM-4989-IMPROVEMENT/plan.md`. EV/crowd must remain a
+shadow comparator. The next candidate comparison adds BK-only and a full-bank
+Cover-14 plus unique BK-fill challenger. This is not profitability evidence.
+
+Drawing 4989 remains active. Identity/pins are READY 15/15, kickoff timing is
+10/15, and orders 3/7/8/11/14 remain under the loaded passive retry. A fresh
+10:38 MSK EV research preview again showed the defect: modeled
+`P(13+)=0.00220526` versus `0.01105551` for BK-only on the same current BK
+matrix. No final scheduler package exists yet.
+
 ## Drawing 4989 automatic preparation and scheduler v8 (2026-08-27)
 
 The generic morning dispatcher selected drawing 4989 (internal ID 12074)

@@ -1,5 +1,23 @@
 # Roadmap
 
+## 4988 postmortem / 4989 protection (2026-08-28)
+
+- [x] Synchronize and settle the immutable drawing-4988 package: best 8/15,
+  mean 5.404, no 9+/13+/14+/15.
+- [x] Confirm that current EV/crowd has materially lower modeled `P(13+)` than
+  BK-only on the same 4988 and preliminary 4989 inputs.
+- [ ] Complete drawing-4989 timing evidence from 10/15 to 15/15 and activate
+  its exact scheduler before the operational checkpoints.
+- [ ] Add deterministic `COVER_14_BK_FILL` and compare it with BK-only and
+  EV/crowd on one frozen final input and equal dynamic bank.
+- [ ] Archive and post-draw settle all compared packages prospectively; do not
+  choose a winner or tune on drawing 4988.
+- [ ] Keep EV/crowd shadow-only until a predeclared prospective gate disproves
+  the repeatedly observed category-hit deficit.
+
+Execution details:
+`plans/TOTO-4988-POSTMORTEM-4989-IMPROVEMENT/plan.md`.
+
 - [x] `TOTO-SPORTS-DUAL-PACKAGE-4987`: import and validate the frozen 15-event
   GOAL binding plus 30 local team-history snapshots, map all supported terminal
   statuses into the provider-neutral feature contract, build the unchanged

@@ -2063,3 +2063,20 @@ ambiguous reversed evidence remains unresolved.
   checkpoint so it cannot overlap the evening state machine.
 - Sports-shadow output remains a separate paper comparison. A successful
   daytime operational preflight does not activate sports probabilities.
+
+## 2026-08-28 — EV/crowd cannot remain the sole category-hit candidate
+
+- Drawing 4988 settlement and the existing strict/legacy comparisons identify
+  a repeated, large deficit in current EV/crowd category-hit performance.
+- The current selector starts with EV-ranked coupons and then applies bounded
+  local probability/diversity repairs. Its probability-first objective is not
+  a global generation objective and must not be described as one.
+- `EV_CROWD_CURRENT` remains a shadow comparator. Equal-input final analysis
+  must include a full-bank BK probability-only control.
+- The next challenger is deterministic `COVER_14_BK_FILL`: preserve an exact
+  verified Cover-14 subset and fill remaining dynamic capacity with unique BK
+  top-probability coupons.
+- A single drawing cannot select the challenger. Every package is frozen before
+  outcomes, settled afterward, and compared prospectively on predeclared
+  metrics. Modeled EV cannot by itself establish profitability or open a
+  release gate.
