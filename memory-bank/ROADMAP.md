@@ -1158,3 +1158,20 @@ closed.
 - [ ] Predeclare a prospective stopping/activation gate of at least 30 complete
   drawings / 450 events before replacing the current production probability or
   package strategy. No modeled EV or isolated win proves profitability.
+
+# 2026-08-28 drawing 4989 closure and drawing 4990 scheduler v9
+
+- [x] Preserve post-deadline 4989 BK and sports packages as explicitly
+  non-actionable research artifacts for settlement; never expose them as an
+  operator upload after T-10.
+- [x] Separate complete reviewed-catalog hash validation from selected-pin hash
+  validation and bind both independently.
+- [x] Extend reviewed schedule freshness to a bounded 24-hour next-day window.
+- [x] Replace schema v8 with schema v9: T-60/T-50/T-40/T-30 heavy stages,
+  T-18 retry and T-10 hard boundary.
+- [x] Reject partial category covers and require exact verifier-confirmed seeds.
+- [x] Automatically clean an obsolete passive retry after a READY activation.
+- [x] Prepare drawing 4990 READY 15/15, activate plan `3a9fa3fe29a2290b`
+  and verify a scheduler-bound `STRUCTURAL_PASS` training package.
+- [ ] Observe all real 4990 checkpoints and report the scheduler-owned terminal
+  operator result before T-10; automatic wagering remains prohibited.

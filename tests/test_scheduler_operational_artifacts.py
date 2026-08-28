@@ -66,10 +66,10 @@ def _plan(tmp_path: Path, env_file: Path):
         "expected_safety_stop",
     ),
     [
-        ("fallback", "freshness_preflight", False, "60", "preflight", "51"),
-        ("fallback", "warmup", False, "45", "fallback", "36"),
-        ("fallback", "refresh", False, "30", "final", "29"),
-        ("final", "final", True, "25", "actionable", "16"),
+        ("fallback", "freshness_preflight", False, "60", "preflight", "56"),
+        ("fallback", "warmup", False, "50", "fallback", "46"),
+        ("fallback", "refresh", False, "40", "final", "36"),
+        ("final", "final", True, "30", "actionable", "16"),
     ],
 )
 def test_scheduler_child_lead_matches_triggering_phase(

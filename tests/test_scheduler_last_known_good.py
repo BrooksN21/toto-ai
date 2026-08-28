@@ -71,7 +71,7 @@ def _candidate(
         drawing_fingerprint=drawing_fingerprint,
         probability_input_sha256="b" * 64,
         source_captured_at=(
-            ENDED_AT - timedelta(minutes=45)
+            ENDED_AT - timedelta(minutes=50)
             if source_captured_at is None
             else source_captured_at
         ),
@@ -288,9 +288,9 @@ def test_final_dns_outage_preserves_refresh_lkg_before_t10(tmp_path: Path):
     assert result is not None
     assert result.outcome == "no-bet"
     assert result.package_path == package_path
-    # The 300-second final-runtime floor suppresses the last retry that could
-    # not finish before the actionable publication cutoff.
-    assert dns_calls == 7
+    # The earlier T-18 retry preserves enough runtime for one last bounded
+    # attempt before the actionable publication cutoff.
+    assert dns_calls == 8
     assert clock.current < plan.publish_deadline
     status = json.loads(result.status_path.read_text(encoding="utf-8"))
     assert status["operator_status"] == "LAST_KNOWN_GOOD_DEGRADED"

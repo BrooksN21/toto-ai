@@ -1,4 +1,4 @@
-"""Tracked T-120/T-90/T-60/T-45/T-30/T-25/T-16/T-10 scheduler.
+"""Tracked T-120/T-90/T-60/T-50/T-40/T-30/T-18/T-10 scheduler.
 
 The scheduler deliberately separates a process completing from an actionable
 package becoming ``BET READY``. Package-producing work happens in immutable
@@ -86,13 +86,14 @@ from toto_ai.runner.scheduler_state import (
     transition,
 )
 
-SCHEDULER_SCHEMA_VERSION = 8
+SCHEDULER_SCHEMA_VERSION = 9
 LEGACY_SCHEDULER_SCHEMA_VERSION = 1
 LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION = 2
 LEGACY_ACTIONABLE_SCHEMA_VERSION = 3
 STALE_T12_SCHEDULER_SCHEMA_VERSION = 4
 UNBOUND_LEDGER_SCHEDULER_SCHEMA_VERSION = 5
 UNSAFE_DEADLINE_SCHEDULER_SCHEMA_VERSION = 6
+IMPOSSIBLE_REFRESH_WINDOW_SCHEDULER_SCHEMA_VERSION = 8
 RUNNER_MANIFEST_SCHEMA_VERSION = 5
 SCHEDULER_INTEGRITY_EXIT_CODE = 78
 MORNING_DEFERRED_EXIT_CODE = 75
@@ -119,15 +120,18 @@ DEFAULT_QUALITY_V2_CONFIG = EVConfig(
     package_safety_enabled=True,
 )
 PUBLICATION_LEAD_MINUTES = 10
-PRIMARY_FINAL_LEAD_MINUTES = 25
+WARMUP_LEAD_MINUTES = 50
+FALLBACK_LEAD_MINUTES = 40
+PRIMARY_FINAL_LEAD_MINUTES = 30
+RETRY_LEAD_MINUTES = 18
 SCHEDULER_TRIGGER_OFFSETS_MINUTES = (
     120,
     90,
     60,
-    45,
-    30,
+    WARMUP_LEAD_MINUTES,
+    FALLBACK_LEAD_MINUTES,
     PRIMARY_FINAL_LEAD_MINUTES,
-    16,
+    RETRY_LEAD_MINUTES,
     10,
 )
 LKG_MAX_SOURCE_AGE_SECONDS = 45 * 60
@@ -559,11 +563,11 @@ class SchedulerPlan:
 
     @property
     def preflight_at(self) -> datetime:
-        return self.operational_cutoff - timedelta(minutes=45)
+        return self.operational_cutoff - timedelta(minutes=WARMUP_LEAD_MINUTES)
 
     @property
     def fallback_at(self) -> datetime:
-        return self.operational_cutoff - timedelta(minutes=30)
+        return self.operational_cutoff - timedelta(minutes=FALLBACK_LEAD_MINUTES)
 
     @property
     def final_at(self) -> datetime:
@@ -573,7 +577,7 @@ class SchedulerPlan:
 
     @property
     def retry_at(self) -> datetime:
-        return self.operational_cutoff - timedelta(minutes=16)
+        return self.operational_cutoff - timedelta(minutes=RETRY_LEAD_MINUTES)
 
     @property
     def publish_deadline(self) -> datetime:
@@ -599,10 +603,10 @@ class SchedulerPlan:
             "t_minus_120": self.tls_preflight_at,
             "t_minus_90": self.api_preflight_at,
             "t_minus_60": self.freshness_preflight_at,
-            "t_minus_45": self.preflight_at,
-            "t_minus_30": self.fallback_at,
-            "t_minus_25": self.final_at,
-            "t_minus_16": self.retry_at,
+            "t_minus_50": self.preflight_at,
+            "t_minus_40": self.fallback_at,
+            "t_minus_30": self.final_at,
+            "t_minus_18": self.retry_at,
             "t_minus_10": self.publish_deadline,
         }
 
@@ -1301,6 +1305,11 @@ def load_scheduler_plan(path: str | Path) -> SchedulerPlan:
             "operational cutoff; "
             f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}"
         )
+    if schema_version == IMPOSSIBLE_REFRESH_WINDOW_SCHEDULER_SCHEMA_VERSION:
+        raise ValueError(
+            "scheduler schema v8 has an impossible T-30 refresh runtime window; "
+            f"regenerate schema v{SCHEDULER_SCHEMA_VERSION}"
+        )
     if type(schema_version) is not int or schema_version not in {
         LEGACY_SCHEDULER_SCHEMA_VERSION,
         LEGACY_SAFETY_UNBOUND_SCHEMA_VERSION,
@@ -1953,7 +1962,7 @@ def execute_scheduler_plan(
             if _read_now(now) < plan.freeze_at:
                 try:
                     # Pin scheduler inputs during the atomic-final phase, never
-                    # during T-120 through T-30 diagnostics. This intentionally
+                    # during T-120 through T-35 diagnostics. This intentionally
                     # permits a structurally valid operator catalog update
                     # during the review window.
                     _wait_until(plan.final_at, now=now, sleep=sleep)
@@ -2310,6 +2319,16 @@ def execute_scheduler_tick(
                     ),
                 )
             if phase != "final":
+                if (
+                    phase in {"warmup", "refresh"}
+                    and result.decision == "NO BET"
+                    and result.package_bytes is None
+                    and result.package_path is None
+                ):
+                    raise SchedulerTransientError(
+                        f"{phase} did not produce a usable package: {result.reason}",
+                        category="pre_final_package_unavailable",
+                    )
                 if result.package_bytes is not None or result.package_path is not None:
                     lkg = _persist_last_known_good(
                         plan,
@@ -4448,9 +4467,9 @@ def _runner_final_lead_minutes(context: SchedulerPhaseContext) -> int:
     if context.scheduler_phase == "freshness_preflight":
         return 60
     if context.scheduler_phase == "warmup":
-        return 45
+        return WARMUP_LEAD_MINUTES
     if context.phase == "fallback":
-        return 30
+        return FALLBACK_LEAD_MINUTES
     return PRIMARY_FINAL_LEAD_MINUTES if context.atomic_final else 15
 
 
@@ -8664,7 +8683,7 @@ def _render_secure_env_prelude(
 
 
 def _validate_preflight_inputs(plan: SchedulerPlan) -> None:
-    # Strict parsing is intentional, but this T-45 validation does not retain a
+    # Strict parsing is intentional, but this T-50 validation does not retain a
     # semantic hash. A valid operator edit before atomic-final capture is
     # therefore allowed.
     if plan.timing_overrides is not None:

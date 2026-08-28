@@ -1695,6 +1695,89 @@ def test_retry_child_never_reinstalls_its_own_launch_agent(monkeypatch, tmp_path
     assert json.loads(result.output)["retry_scheduler"] is None
 
 
+def test_ready_dispatch_cleans_obsolete_preflight_retry_job(monkeypatch, tmp_path):
+    env_file = _env(tmp_path / ".env")
+    evidence = _prepared(
+        number=4990,
+        drawing_id=12077,
+        deadline=datetime(2026, 8, 29, 16, 30, tzinfo=UTC),
+    )
+    state_root = tmp_path / "state"
+    deadline = evidence.deadline.strftime("%Y%m%dT%H%M%SZ")
+    retry_plan = (
+        state_root
+        / "preflight"
+        / (
+            f"drawing-{evidence.drawing_id}-{deadline}-"
+            f"{evidence.drawing_fingerprint[:16]}"
+        )
+        / "retry-plan.json"
+    )
+    retry_plan.parent.mkdir(parents=True)
+    retry_plan.write_text("{}\n", encoding="utf-8")
+    artifacts = SimpleNamespace(label="com.totoai.preflight-retry.12077.test")
+    cleaned: list[object] = []
+
+    monkeypatch.setattr(
+        cli,
+        "_prepare_current_for_morning",
+        lambda **_kwargs: evidence,
+    )
+
+    def dispatch(_config, *, observed_at, prepare_current, **_kwargs):
+        assert prepare_current(observed_at) == evidence
+        return MorningDispatchResult(
+            status="scheduled",
+            reason="ready",
+            record_path=tmp_path / "scheduled.json",
+            plan_id=None,
+            plan_path=None,
+            launch_agent_path=None,
+            activation_status="activated",
+        )
+
+    monkeypatch.setattr(cli, "dispatch_morning", dispatch)
+    monkeypatch.setattr(
+        cli,
+        "prepare_preflight_retry_artifacts",
+        lambda path, *, write: artifacts
+        if path == retry_plan and write is False
+        else None,
+    )
+    monkeypatch.setattr(
+        cli,
+        "cleanup_preflight_retry_launch_agent",
+        lambda value: cleaned.append(value),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(state_root),
+            "--scheduler-root",
+            str(tmp_path / "scheduler"),
+            "--activate",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert cleaned == [artifacts]
+    payload = json.loads(result.output)
+    assert payload["retry_scheduler"] == {
+        "active": False,
+        "label": artifacts.label,
+        "reason": "drawing_ready",
+    }
+
+
 def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
     monkeypatch,
     tmp_path,
@@ -2050,13 +2133,13 @@ def test_reviewed_alias_names_propagates_unreadable_catalog(
         cli.load_reviewed_alias_names(aliases)
 
 
-def test_dispatch_after_t_minus_45_does_not_create_partial_schedule(tmp_path):
+def test_dispatch_after_t_minus_50_does_not_create_partial_schedule(tmp_path):
     config = _config(tmp_path)
     deadline = datetime(2032, 1, 1, 17, 0, tzinfo=UTC)
     result = dispatch_morning(
         config,
-        observed_at=deadline - timedelta(minutes=44),
-        now=lambda: deadline - timedelta(minutes=44),
+        observed_at=deadline - timedelta(minutes=49),
+        now=lambda: deadline - timedelta(minutes=49),
         prepare_current=lambda _now: _prepared(
             number=4958,
             drawing_id=11986,

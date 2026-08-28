@@ -8,6 +8,7 @@ from typing import Protocol
 
 from toto_ai.external_odds.domain import TargetDrawing
 from toto_ai.external_odds.reviewed_schedule import (
+    REVIEWED_SCHEDULE_MAX_AGE,
     REVIEWED_SCHEDULE_PROVIDER,
     revalidate_reviewed_catalog,
     select_reviewed_evidence,
@@ -62,7 +63,7 @@ class ReviewedCatalogScheduleSource:
         catalog_path: Path,
         *,
         expected_catalog_hash: str,
-        max_age: timedelta = timedelta(minutes=90),
+        max_age: timedelta = REVIEWED_SCHEDULE_MAX_AGE,
     ) -> None:
         self._catalog_path = Path(catalog_path)
         self._expected_catalog_hash = expected_catalog_hash
@@ -129,8 +130,12 @@ class ReviewedCatalogScheduleSource:
                     raise ValueError("reviewed pin contains synthetic fixture identity")
                 if pin.starts_at != evidence.starts_at.isoformat():
                     raise ValueError("reviewed fixture start changed")
-                if evidence.starts_at < target.deadline:
-                    raise ValueError("reviewed fixture starts before drawing deadline")
+                # Do not compare the fixture start with TotoBrief ``ended_at``
+                # here.  Scheduler playability is bound to the independently
+                # verified operational cutoff, which may be earlier than that
+                # technical deadline.  Preparation already validated the
+                # evidence against the cutoff; revalidation only proves that
+                # the exact pinned evidence has not changed.
             except (IndexError, TypeError, ValueError) as error:
                 results.append(
                     SchedulePinRevalidation(

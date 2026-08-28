@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "catalog_id": "reviewed-schedule-4990-20260828T153421Z",
+  "generated_at": "2026-08-28T15:34:21Z",
+  "records": [
+    {
+      "evidence_id": "reviewed-12077-620a385b-order1-event180259-v1",
+      "drawing_id": 12077,
+      "drawing_number": 4990,
+      "target_fingerprint": "620a385ba047c909c09a3a9bb0f090d7183206cf9a047f8457489d3bdd588d94",
+      "event_order": 1,
+      "target_event_id": 180259,
+      "reviewer": "codex-public-source-review",
+      "reviewed_at": "2026-08-28T15:34:21Z",
+      "claims": [
+        {
+          "source_name": "Queens Park Rangers FC",
+          "role": "official",
+          "source_url": "https://www.qpr.co.uk/",
+          "snapshot_path": "blackburn-qpr-official.txt",
+          "snapshot_sha256": "90ebd6729e38fc77684c70deb790cf1c1d535958abd68d5af2549c1dea077ccc",
+          "captured_at": "2026-08-28T15:34:21Z",
+          "native_fixture_id": "g2647274",
+          "home_name": "Blackburn Rovers",
+          "away_name": "Queens Park Rangers",
+          "competition": "Championship",
+          "sport": "football",
+          "gender_age_class": "men-senior",
+          "starts_at": "2026-08-29T14:00:00Z",
+          "status": "scheduled",
+          "native_home_team_id": null,
+          "native_away_team_id": null
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/blackburn-rovers-queens-park-rangers/bsW#id:16391180",
+          "snapshot_path": "blackburn-qpr-independent.json",
+          "snapshot_sha256": "97d90b0b68672846ed991bf3743a5505e89e47b8087b19f177625d6d9925ec78",
+          "captured_at": "2026-08-28T15:34:21Z",
+          "native_fixture_id": "16391180",
+          "home_name": "Blackburn Rovers",
+          "away_name": "Queens Park Rangers",
+          "competition": "Championship",
+          "sport": "football",
+          "gender_age_class": "men-senior",
+          "starts_at": "2026-08-29T14:00:00Z",
+          "status": "scheduled",
+          "native_home_team_id": null,
+          "native_away_team_id": null
+        }
+      ]
+    }
+  ]
+}

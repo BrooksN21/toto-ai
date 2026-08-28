@@ -5625,3 +5625,47 @@ The fix passed 246 scheduler/runner tests, the complete suite passes
 `2102 passed, 13 deselected`, and Ruff passes. The real 17:15 warmup then
 completed successfully with the 15/15 prepared pin set. The live watcher
 remains active through refresh, final, sports sidecar, retry and T-10.
+
+## Drawing 4989 incident closure and drawing 4990 readiness (2026-08-28)
+
+Drawing 4989 did not produce a scheduler-owned operator package before T-10.
+Two explicit post-deadline research packages were generated only for diagnosis:
+BK baseline and GOAL sports-shadow, each 166 coupons / 4,980 RUB and both
+`PAPER_ONLY_NOT_ACTIVATED`. They are not valid BaltBet upload artifacts.
+
+The incident exposed and fixed four generic defects:
+
+- complete reviewed-catalog hashes are no longer compared with selected-pin
+  hashes from a different semantic domain;
+- reviewed evidence stays fresh for 24 hours, which covers an evening review
+  through the following next-day final window while still expiring before a
+  later drawing;
+- scheduler schema v9 moves heavy work to T-60/T-50/T-40/T-30, keeps a T-18
+  retry and T-10 hard boundary, and rejects impossible schema-v8 runtime
+  windows;
+- pre-final `NO BET` without a package is retryable rather than falsely
+  complete, and a successful READY dispatch removes its obsolete preflight
+  retry LaunchAgent.
+
+The baseline/category-hit bridge also failed closed when a low effective
+budget produced only a partial Cover-14 result. `build_baseline_brief` now
+accepts only verifier-confirmed exact category covers and falls back to the
+narrowest affordable exact brief; partial cover cannot seed the production
+quality selector.
+
+Drawing 4990 (internal ID 12077) is READY 15/15. The final missing kickoff,
+Blackburn Rovers versus Queens Park Rangers, is bound to reviewed official plus
+independent snapshot evidence at 2026-08-29 14:00 UTC. Operational cutoff is
+2026-08-29 16:30 MSK and T-10 is 16:20 MSK. Schema-v9 plan
+`3a9fa3fe29a2290b` is loaded as
+`com.totoai.production-scheduler.v9.3a9fa3fe29a2290b`; its heavy checkpoints
+are 15:30, 15:40, 15:50 and 16:00 MSK, retry 16:12 and hard boundary 16:20.
+The obsolete preflight retry is unloaded and no stray TotoAI process remains.
+
+A scheduler-bound 4990 training run now reaches `STRUCTURAL_PASS`. The current
+small pool invokes the one-percent self-dilution cap, so the preliminary
+effective budget is only 480 RUB / 16 coupons; this is not the final package
+and will be recomputed from the fresh final pool. Profitability remains
+unproven and automatic wagering remains disabled.
+
+- Full verification for this change set: `2110 passed, 13 deselected`; `ruff check .` passed.

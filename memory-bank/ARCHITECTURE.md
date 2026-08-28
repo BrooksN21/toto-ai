@@ -379,6 +379,22 @@ exposes `FINAL_FRESH`, `LAST_KNOWN_GOOD_DEGRADED`, or `NO_BET`; a validated
 package uses a separate BaltBet upload-text path. The T-45 warmup child receives
 `final_lead_minutes = 45` and starts immediately at the triggering phase; it
 must not inherit the T-30 fallback lead and wait past its parent deadline.
+
+### Scheduler schema v9 timing contract (2026-08-28)
+
+Schema v9 supersedes the older T-45/T-30/T-25 runtime layout. The active
+operational checkpoints are T-120, T-90, T-60, T-50, T-40, T-30, T-18 and
+T-10. Heavy package attempts receive approximately 595 seconds each at T-50,
+T-40 and T-30; T-18 is the bounded retry and T-10 is immutable expiry. An old
+schema-v8 plan is rejected rather than silently executed with an impossible
+optimizer window.
+
+Reviewed schedule evidence has a 24-hour freshness horizon so an evidence
+catalog produced on the prior evening remains valid through a next-day final
+window. Its immutable bytes and the selected evidence-pin hash are validated
+as separate domains. READY activation cleans any earlier passive retry for the
+same drawing/fingerprint, preventing stale retry commands from racing the
+active evening scheduler.
 Every scheduler package phase, including the T-45 warmup and T-30 refresh
 fallback paths, captures a run-scoped immutable probability snapshot and binds
 that snapshot, the schedule-evidence ledger, and the scheduler plan into

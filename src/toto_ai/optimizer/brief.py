@@ -208,15 +208,17 @@ def build_baseline_brief(
         reverse=True,
     )
     exact_variant_limit = _exact_variant_limit(max_coupons)
-    exact_candidates = [
+    exact_candidate_pool = [
         candidate
         for candidate in ranked_candidates
         if candidate["full_brief_size"] <= exact_variant_limit
-    ][:top_candidates]
+    ]
+    exact_candidates = exact_candidate_pool[:top_candidates]
     if not exact_candidates and ranked_candidates:
-        exact_candidates = [
+        exact_candidate_pool = [
             min(ranked_candidates, key=lambda candidate: candidate["full_brief_size"])
         ]
+        exact_candidates = exact_candidate_pool
     timing["scoring_time"] = time.perf_counter() - scoring_started_at
 
     candidates = []
@@ -251,6 +253,8 @@ def build_baseline_brief(
             category=category,
             coupons=cover["selected_coupons"],
         )
+        if not verification["guarantee_pass"]:
+            continue
         exact_candidate = {
             **candidate,
             "selected_coupons": cover["selected_coupons"],
@@ -258,9 +262,7 @@ def build_baseline_brief(
             "covered_variants_count": cover["covered_variants_count"],
             "coverage_rate": cover["coverage_rate"],
             "cost": cost,
-            "category_guarantee": "PASS"
-            if verification["guarantee_pass"]
-            else "FAIL",
+            "category_guarantee": "PASS",
         }
         candidates.append(exact_candidate)
         best = max(candidates, key=rank_candidate_key)
@@ -280,26 +282,44 @@ def build_baseline_brief(
             break
 
     if not candidates:
-        if not exact_candidates:
-            raise ValueError("No affordable cover package could be generated.")
-        fallback = exact_candidates[0]
-        cover = cache.get(
-            brief=fallback["brief"],
-            category=category,
-            max_coupons=max_coupons,
-        )
-        candidates.append(
-            {
-                **fallback,
-                "selected_coupons": cover["selected_coupons"],
-                "full_brief_size": cover["full_variants_count"],
-                "covered_variants_count": cover["covered_variants_count"],
-                "coverage_rate": cover["coverage_rate"],
-                "cost": len(cover["selected_coupons"]) * stake,
-                "category_guarantee": "UNKNOWN",
-            }
-        )
-        timed_out = True
+        # A partial greedy cover must never masquerade as a category seed.
+        # Search the remaining briefs from the narrowest upwards; the
+        # all-single brief is an exact one-coupon fallback when present.
+        remaining = [
+            candidate
+            for candidate in exact_candidate_pool
+            if candidate not in exact_candidates
+        ]
+        for fallback in sorted(
+            remaining,
+            key=lambda candidate: candidate["full_brief_size"],
+        ):
+            cover = cache.get(
+                brief=fallback["brief"],
+                category=category,
+                max_coupons=max_coupons,
+            )
+            cost = len(cover["selected_coupons"]) * stake
+            verification = verify_cover_package(
+                brief=fallback["brief"],
+                category=category,
+                coupons=cover["selected_coupons"],
+            )
+            if cost <= bank and verification["guarantee_pass"]:
+                candidates.append(
+                    {
+                        **fallback,
+                        "selected_coupons": cover["selected_coupons"],
+                        "full_brief_size": cover["full_variants_count"],
+                        "covered_variants_count": cover["covered_variants_count"],
+                        "coverage_rate": cover["coverage_rate"],
+                        "cost": cost,
+                        "category_guarantee": "PASS",
+                    }
+                )
+                break
+        if not candidates:
+            raise ValueError("No affordable exact category cover could be generated.")
 
     result = max(candidates, key=rank_candidate_key)
     total_time = time.perf_counter() - started_at

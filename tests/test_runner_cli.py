@@ -1737,7 +1737,7 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
             (output_dir / "scheduler-plan.json").read_text(encoding="utf-8")
         )["config"]
         manifest = _local_scheduler_manifest(
-            final_lead_minutes=25,
+                final_lead_minutes=30,
             safety_stop_minutes=16,
             probability_snapshot_sha256=final_input["snapshot_sha256"],
             probability_input_sha256=final_input["probability_input_sha256"],
@@ -1858,7 +1858,7 @@ def test_scheduler_cli_dry_run_outputs_plan_without_writes(tmp_path: Path) -> No
     assert payload["target"]["drawing"] == 5002
     assert payload["config"]["minimum_gross_ev"] == 1.0
     assert payload["config"]["minimum_final_runtime_seconds"] == 300
-    assert payload["deadlines"]["t_minus_45"] == "2030-01-03T11:15:00Z"
+    assert payload["deadlines"]["t_minus_50"] == "2030-01-03T11:10:00Z"
     assert payload["deadlines"]["t_minus_10"] == "2030-01-03T11:50:00Z"
     assert not output_dir.exists()
 

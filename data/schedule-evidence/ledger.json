@@ -3850,6 +3850,617 @@
           "source_url": "https://www.sofascore.com/football/match/fc-voluntari-sc-otelul-galati/QpbsfKr#id:16403870"
         }
       ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-7db3ea6a4a574c49d8c6",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Премьер-Лига",
+        "Premier League"
+      ],
+      "home_entity": "Tottenham",
+      "home_aliases": [
+        "Тоттенхэм",
+        "Tottenham",
+        "Tottenham Hotspur",
+        "توتنهام هوتسبير",
+        "टोटेनहैम हॉटस्पर ऍफ़सी",
+        "Тоттенхэм Хотспур"
+      ],
+      "away_entity": "Newcastle",
+      "away_aliases": [
+        "Ньюкасл",
+        "Newcastle",
+        "Newcastle United",
+        "نيوكاسل يونايتد",
+        "न्यू कास्सेल यूनाइटेड ऍफ़सी",
+        "Ньюкасл Юнайтед"
+      ],
+      "starts_at": "2026-08-29T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-7db3ea6a4a574c49d8c6.md",
+      "review_document_sha256": "d2edff94a1ea9453c7adfde43bd4c5aabc7d73ae518ae9cd6671d4d1581d0d72",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4w9g9eqypg07pj0k5uk2"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/newcastle-united-tottenham-hotspur/IO#id:16363256"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-b5d56df7732c048bc27c",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Cardiff",
+      "home_aliases": [
+        "Кардифф Сити",
+        "Cardiff",
+        "Cardiff City",
+        "كاردف ستي",
+        "कार्डिफ सिटी"
+      ],
+      "away_entity": "Sheffield Utd",
+      "away_aliases": [
+        "Шеффилд Юнайтед",
+        "Sheffield Utd",
+        "Sheffield United",
+        "شيفيلد يونايتد",
+        "शेफील्ड यूनाइटेड"
+      ],
+      "starts_at": "2026-08-29T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-b5d56df7732c048bc27c.md",
+      "review_document_sha256": "35cf85e86b07169fc9be78a8e3a597eca338a2be5ccc7f670f93ded332ae4fc8",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4ltc9d9spg07xf47j7jw"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/cardiff-city-sheffield-united/pslb#id:16391183"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-a463f939cfd4528918ca",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Norwich",
+      "home_aliases": [
+        "Норвич",
+        "Norwich",
+        "Norwich City",
+        "نوريتش سيتي",
+        "Норвич Сити"
+      ],
+      "away_entity": "Burnley",
+      "away_aliases": [
+        "Бернли",
+        "Burnley",
+        "بيرنلي",
+        "বার্নলি",
+        "बर्नली"
+      ],
+      "starts_at": "2026-08-29T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-a463f939cfd4528918ca.md",
+      "review_document_sha256": "d741fe07e8e27a9e5cb774e52b585ed45c7b4bb4410e32f1f9ca87c9a4e913df",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4ltx9da0pg07c38aj9ya"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/norwich-city-burnley/gsnf#id:16391187"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-69f8f79f904a331311d2",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Bolton",
+      "home_aliases": [
+        "Болтон",
+        "Bolton",
+        "Bolton Wanderers",
+        "بولتون وانديريرز",
+        "बोल्टन वंडरेर",
+        "Болтон Уондерерс"
+      ],
+      "away_entity": "Lincoln",
+      "away_aliases": [
+        "Линкольн Сити",
+        "Lincoln",
+        "Lincoln City",
+        "لينكولن سيتي",
+        "लिंकोल्न सिटी"
+      ],
+      "starts_at": "2026-08-29T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-69f8f79f904a331311d2.md",
+      "review_document_sha256": "d361ce0ef3995ec33424dc381d9fe511d211c79c26b7f93e12f89c2e25ecd1bd",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4lsq9d9opg07g1bw082d"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/lincoln-city-bolton-wanderers/fsRb#id:16391181"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-22697dd372b521b32b80",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Германия. Бундеслига",
+        "Bundesliga"
+      ],
+      "home_entity": "Union Berlin",
+      "home_aliases": [
+        "Унион Берлин",
+        "Union Berlin",
+        "1. FC Union Berlin",
+        "1 إف سي يونيون برلين"
+      ],
+      "away_entity": "Eintracht Frankfurt",
+      "away_aliases": [
+        "Айнтрахт Франкфурт",
+        "Eintracht Frankfurt",
+        "آينتراخت فرانكفورت",
+        "एईनट्राख्ट फ्रांकफुर्ट"
+      ],
+      "starts_at": "2026-08-29T13:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-22697dd372b521b32b80.md",
+      "review_document_sha256": "e766480b66ae294df6fc352d1a72db72af82c557646832348fb322bab178458d",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4ghw9cczpg07qrzdxcy5"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/eintracht-frankfurt-1-fc-union-berlin/Xabszdb#id:16434026"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-9556d6d8309f10603779",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Германия. Бундеслига",
+        "Bundesliga"
+      ],
+      "home_entity": "FC Koln",
+      "home_aliases": [
+        "Кельн",
+        "FC Koln",
+        "1. FC Köln",
+        "1. إف سي كولن",
+        "Кёльн"
+      ],
+      "away_entity": "Hoffenheim",
+      "away_aliases": [
+        "Хоффенхайм",
+        "Hoffenheim",
+        "TSG Hoffenheim",
+        "هوفنهايم",
+        "TSG होफ्फेन्हेइम"
+      ],
+      "starts_at": "2026-08-29T13:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-9556d6d8309f10603779.md",
+      "review_document_sha256": "f9b03d7db8bec79ef6f104dd9306de3f9c82c1942c15206a61da2369bff418f3",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4gum9cfdpg07ty9ivgbo"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/1-fc-koln-tsg-hoffenheim/ubbswdb#id:16434022"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-b792a08944b8755c5ea8",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Levante",
+      "home_aliases": [
+        "Леванте",
+        "Levante",
+        "Levante UD",
+        "ليفانتي",
+        "लेवांटे यूडी"
+      ],
+      "away_entity": "Betis",
+      "away_aliases": [
+        "Бетис",
+        "Betis",
+        "Real Betis",
+        "ريال بيتيس",
+        "Реал Бетис"
+      ],
+      "starts_at": "2026-08-29T15:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-b792a08944b8755c5ea8.md",
+      "review_document_sha256": "e00d2fe18f44a826f8c861fc5b741f9f54be7556bede57d0f3f99c4e5423d324",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4rk89e2cpg07sncwmnwp"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/levante-ud-real-betis/qgbsZgb#id:16416309"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-f219b3f63b32ab3b2fea",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Италия. Серия A",
+        "Serie A"
+      ],
+      "home_entity": "Monza",
+      "home_aliases": [
+        "Монца",
+        "Monza",
+        "مونزا",
+        "মনজা",
+        "मॉन्ज़ा"
+      ],
+      "away_entity": "Udinese",
+      "away_aliases": [
+        "Удинезе",
+        "Udinese",
+        "أودينيزي",
+        "উদিনিজ",
+        "उडिनेज़े"
+      ],
+      "starts_at": "2026-08-29T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-f219b3f63b32ab3b2fea.md",
+      "review_document_sha256": "67e5cc5e06b5a78400622814d76f6bb4d7af1a326f43e198c36f5576317a5602",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4w849eqkpg075qvkp8ad"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/monza-udinese/VdbsEeb#id:16284979"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-fb767b97c22b4f7e1608",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Италия. Серия A",
+        "Serie A"
+      ],
+      "home_entity": "Sassuolo",
+      "home_aliases": [
+        "Сассуоло",
+        "Sassuolo",
+        "ساسولو",
+        "সাসুওলো",
+        "ससुओलो"
+      ],
+      "away_entity": "Torino",
+      "away_aliases": [
+        "Торино",
+        "Torino",
+        "تورينو",
+        "টরিনো",
+        "टोरीनो"
+      ],
+      "starts_at": "2026-08-29T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-fb767b97c22b4f7e1608.md",
+      "review_document_sha256": "d2b617efc009d2a9d51f76ad8155d466cd64ddf1f0ce92c25e8960a6064f9a9c",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4w869eqmpg07fvphzkvz"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sassuolo-torino/WdbsTfb#id:16284974"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-61edfd0ba0585dfcb23f",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. Премьер Лига",
+        "Premier League"
+      ],
+      "home_entity": "Lokomotiv Moscow",
+      "home_aliases": [
+        "Локомотив Москва",
+        "Lokomotiv Moscow",
+        "FK لوكوموتيف موسكو",
+        "ऍफ़के लोकोमोटिव मॉस्को"
+      ],
+      "away_entity": "Dynamo Moscow",
+      "away_aliases": [
+        "Динамо Москва",
+        "Dynamo Moscow",
+        "دينامو موسكو"
+      ],
+      "starts_at": "2026-08-29T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-61edfd0ba0585dfcb23f.md",
+      "review_document_sha256": "514eebf0b03c626f00dd2079c3685d4d53738260ba605a35fbb1860072a1157f",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4w7t9eqipg077wdtl19s"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/lokomotiv-moscow-dynamo-moscow/pWsvW#id:16390279"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-784bbf60e851249ce97a",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. 1-я лига",
+        "First League"
+      ],
+      "home_entity": "Arsenal Tula",
+      "home_aliases": [
+        "Арсенал Тула",
+        "Arsenal Tula",
+        "أرسنال تولا"
+      ],
+      "away_entity": "Ural",
+      "away_aliases": [
+        "Урал",
+        "Ural",
+        "Ural Yekaterinburg",
+        "أورال يكاترينبورغ",
+        "Урал Екатеринбург"
+      ],
+      "starts_at": "2026-08-29T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-784bbf60e851249ce97a.md",
+      "review_document_sha256": "5500c6603f145340e6a40a4b911401101aaaf1dad37af5bae77088fa7a0e85b7",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4i3w9cmlpg076htlkxss"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/arsenal-tula-ural-yekaterinburg/Eadsbgo#id:16491062"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-806532335074d438c299",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. 1-я лига",
+        "First League"
+      ],
+      "home_entity": "Tekstilshtik",
+      "home_aliases": [
+        "Текстильщик",
+        "Tekstilshtik",
+        "Tekstilshchik Ivanovo",
+        "تيكستيلششيك إيفانوفو",
+        "Текстильщик Иваново"
+      ],
+      "away_entity": "Veles Moscow",
+      "away_aliases": [
+        "Велес",
+        "Veles Moscow",
+        "فيليس موسكو",
+        "Велес Москва"
+      ],
+      "starts_at": "2026-08-29T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-806532335074d438c299.md",
+      "review_document_sha256": "de460e094e9fe40bd09e93edb18ae6d86dd6730d05ee81f2dd8309265fc13ebe",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4i5w9cn3pg07yq7h03t7"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/veles-moscow-tekstilshchik-ivanovo/DadsGEdc#id:16491064"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-c5a0741f7891eab2f3d6",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 1",
+        "Ligue 1"
+      ],
+      "home_entity": "Strasbourg",
+      "home_aliases": [
+        "Страсбур",
+        "Strasbourg",
+        "RC Strasbourg",
+        "ستراسبورغ"
+      ],
+      "away_entity": "Lens",
+      "away_aliases": [
+        "Ланс",
+        "Lens",
+        "RC Lens",
+        "لانس",
+        "লেন্স",
+        "लेंस"
+      ],
+      "starts_at": "2026-08-29T15:15:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-c5a0741f7891eab2f3d6.md",
+      "review_document_sha256": "7cf7799db4c1d461c59afe8e0201a6d83d75a6241ba41f6ead4402e42ba371c6",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4tz09ebrpg07ocjy262h"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/rc-strasbourg-rc-lens/YHsjI#id:16310936"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-bc6271296011c448ff3f",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 1",
+        "Ligue 1"
+      ],
+      "home_entity": "Brest",
+      "home_aliases": [
+        "Брест",
+        "Brest",
+        "Stade Brestois",
+        "بريست"
+      ],
+      "away_entity": "Toulouse",
+      "away_aliases": [
+        "Тулуза",
+        "Toulouse",
+        "تولوز",
+        "টুলুজ",
+        "टूलूज़"
+      ],
+      "starts_at": "2026-08-29T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-08-28T15:15:43.662952Z",
+      "review_document": "reviews/auto-independent-consensus-v2-bc6271296011c448ff3f.md",
+      "review_document_sha256": "f9140ab98568ebed586ee326e1dc250092ebd74c4b117db9fecec6c32e82d30e",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmsvp4xye9f19pg07ruq7am59"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/stade-brestois-toulouse/GIspJ#id:16310929"
+        }
+      ]
     }
   ]
 }

@@ -11,6 +11,10 @@ from urllib.parse import urlparse
 
 REVIEWED_SCHEDULE_PROVIDER = "reviewed-schedule"
 REVIEWED_SCHEDULE_SCHEMA_VERSION = 1
+# Reviewed schedule evidence is commonly collected on the evening before a
+# next-day drawing.  Keep it valid through the following final window while
+# still forcing a fresh review for later drawings.
+REVIEWED_SCHEDULE_MAX_AGE = timedelta(hours=24)
 
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 _ROOT_FIELDS = frozenset(

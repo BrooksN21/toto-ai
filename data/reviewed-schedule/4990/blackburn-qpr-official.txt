@@ -1,0 +1,8 @@
+Reviewed public fixture evidence
+Source: Queens Park Rangers FC official website
+URL: https://www.qpr.co.uk/
+Captured at: 2026-08-28T15:34:21Z
+Observed first-team fixture: Blackburn Rovers vs Queens Park Rangers
+Official fixture id: g2647274
+Local kickoff: 2026-08-29 15:00 Europe/London
+UTC kickoff: 2026-08-29T14:00:00Z

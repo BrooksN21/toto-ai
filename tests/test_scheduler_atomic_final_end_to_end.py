@@ -242,6 +242,26 @@ def test_warmup_failure_does_not_block_independent_final(tmp_path):
     assert state["terminal"] == "no_bet"
 
 
+def test_warmup_no_bet_without_package_is_not_reported_complete(tmp_path):
+    plan = _plan(tmp_path)
+
+    def runner(_context):
+        return SchedulerPhaseResult.no_bet(
+            "pinned revalidation is not fresh matched 15/15"
+        )
+
+    assert _tick(plan, runner, plan.preflight_at) is None
+
+    state = load_state(
+        plan.output_dir / "scheduler-state.json",
+        plan_id=plan.plan_id,
+        now=plan.preflight_at,
+    )
+    assert state["phases"]["warmup"]["status"] == "retryable_failed"
+    assert "did not produce a usable package" in state["transitions"][-1]["reason"]
+    assert state["terminal"] is None
+
+
 def test_final_transient_retry_is_bounded_and_restart_can_resume(tmp_path):
     plan = _plan(tmp_path)
     calls = 0

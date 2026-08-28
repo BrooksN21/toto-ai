@@ -27,7 +27,7 @@ _HEX_DIGITS = frozenset("0123456789abcdef")
 OPTIMIZATION_MC_STREAM = "quality-v2-optimization"
 EVALUATION_MC_STREAM = "quality-v2-evaluation"
 QUALITY_RELEASE_PROTOCOL_VERSION = "quality-v2-category-hit-hybrid-v2"
-SUPPORTED_SCHEDULER_SCHEMA_VERSION = 8
+SUPPORTED_SCHEDULER_SCHEMA_VERSION = 9
 QUALITY_OBJECTIVE_ORDER = (
     "probability_at_least_13",
     "probability_at_least_14",

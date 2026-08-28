@@ -129,6 +129,7 @@ from toto_ai.external_odds.prospective import (
 )
 from toto_ai.external_odds.reports import write_external_coverage_reports
 from toto_ai.external_odds.reviewed_schedule import (
+    REVIEWED_SCHEDULE_MAX_AGE,
     load_reviewed_schedule_catalog,
     revalidate_reviewed_catalog,
     reviewed_catalog_input_paths,
@@ -323,6 +324,7 @@ from toto_ai.runner.offline_replay import (
 )
 from toto_ai.runner.operational_selection import load_verified_operational_cutoffs
 from toto_ai.runner.preflight_retry_scheduler import (
+    cleanup_preflight_retry_launch_agent,
     install_preflight_retry_launch_agent,
     prepare_preflight_retry_artifacts,
 )
@@ -2116,7 +2118,7 @@ def _prepare_runner_resources(
         else load_reviewed_schedule_catalog(
             Path(reviewed_schedule_catalog),
             evaluated_at=preflight_at,
-            max_age=timedelta(hours=12),
+            max_age=REVIEWED_SCHEDULE_MAX_AGE,
         )
     )
     reviewed_input_paths = (
@@ -2957,7 +2959,7 @@ def run_drawing_command(
                 resources.reviewed_catalog_path,
                 expected_catalog_hash=resources.reviewed_catalog_hash,
                 evaluated_at=_utc_now_datetime(),
-                max_age=timedelta(minutes=90),
+                max_age=REVIEWED_SCHEDULE_MAX_AGE,
             )
         except (OSError, TypeError, ValueError) as error:
             result = replace(
@@ -3122,7 +3124,7 @@ def scheduler_plan_command(
     ),
     dry_run: bool = typer.Option(False, "--dry-run"),
 ) -> None:
-    """Prepare a tracked T-45/T-30/T-25/T-16/T-10 scheduler plan."""
+    """Prepare a tracked T-50/T-40/T-30/T-18/T-10 scheduler plan."""
     try:
         plan = build_scheduler_plan(
             drawing=drawing,
@@ -3682,6 +3684,23 @@ def _attach_persisted_conservative_cutoff(
     )
 
 
+def _existing_preflight_retry_plan(
+    config: MorningDispatchConfig,
+    evidence: MorningPreparedDrawing,
+) -> Path | None:
+    deadline = evidence.deadline.strftime("%Y%m%dT%H%M%SZ")
+    path = (
+        config.state_root
+        / "preflight"
+        / (
+            f"drawing-{evidence.drawing_id}-{deadline}-"
+            f"{evidence.drawing_fingerprint[:16]}"
+        )
+        / "retry-plan.json"
+    )
+    return path if path.is_file() else None
+
+
 @app.command("morning-dispatch")
 def morning_dispatch_command(
     bank: int = typer.Option(..., min=1),
@@ -3841,6 +3860,27 @@ def morning_dispatch_command(
             python_command=python_executable,
             expected_identity=expected_identity,
         )
+        if (
+            activate
+            and not preflight_retry_child
+            and result.status in {"scheduled", "reused"}
+            and prepared_evidence is not None
+        ):
+            resolved_retry_plan = _existing_preflight_retry_plan(
+                config,
+                prepared_evidence,
+            )
+            if resolved_retry_plan is not None:
+                retry_artifacts = prepare_preflight_retry_artifacts(
+                    resolved_retry_plan,
+                    write=False,
+                )
+                cleanup_preflight_retry_launch_agent(retry_artifacts)
+                retry_scheduler_status = {
+                    "active": False,
+                    "label": retry_artifacts.label,
+                    "reason": "drawing_ready",
+                }
         if result.plan_path is not None:
             try:
                 training = ensure_scheduler_training_package(

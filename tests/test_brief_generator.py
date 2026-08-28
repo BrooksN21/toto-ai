@@ -1,4 +1,5 @@
 import math
+from dataclasses import replace
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -71,6 +72,40 @@ def test_build_baseline_brief_filters_candidates_by_bank_and_stake():
     assert result["cost"] <= 95
     assert len(result["selected_coupons"]) <= 3
     assert result["brief"] == ["1"] * 15
+    assert result["category_guarantee"] == "PASS"
+
+
+def test_build_baseline_brief_never_selects_partial_cover_as_category_seed():
+    probability_rows = (
+        (42.0, 25.0, 33.0),
+        (38.0, 28.0, 33.0),
+        (36.0, 27.0, 37.0),
+        (42.0, 27.0, 31.0),
+        (38.0, 29.0, 33.0),
+        (37.0, 27.0, 37.0),
+        (31.0, 25.0, 44.0),
+        (27.0, 28.0, 45.0),
+        (30.0, 30.0, 40.0),
+        (42.0, 29.0, 29.0),
+        (29.0, 25.0, 46.0),
+        (28.0, 29.0, 43.0),
+        (30.0, 31.0, 39.0),
+        (27.0, 28.0, 46.0),
+        (36.0, 28.0, 35.0),
+    )
+    analyses = [
+        replace(_analysis(pool=row, bk=row), event_order=event_order)
+        for event_order, row in enumerate(probability_rows)
+    ]
+
+    result = build_baseline_brief(
+        analyses,
+        category=14,
+        bank=480,
+        stake=30,
+    )
+
+    assert result["cost"] <= 480
     assert result["category_guarantee"] == "PASS"
 
 

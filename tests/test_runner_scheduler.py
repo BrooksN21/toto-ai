@@ -586,7 +586,7 @@ def _valid_runner_manifest(
             ),
         },
         "timeline": {
-            "preflight_at": "2030-01-02T11:15:00Z",
+            "preflight_at": "2030-01-02T11:10:00Z",
             "final_started_at": "2030-01-02T11:45:00Z",
             "collection_finished_at": "2030-01-02T11:46:00Z",
             "timing_finished_at": "2030-01-02T11:47:00Z",
@@ -1422,10 +1422,10 @@ def test_exact_offsets_and_phase_start_times_are_operational_cutoff_anchored(
     assert plan.tls_preflight_at == ENDED_AT - timedelta(minutes=120)
     assert plan.api_preflight_at == ENDED_AT - timedelta(minutes=90)
     assert plan.freshness_preflight_at == ENDED_AT - timedelta(minutes=60)
-    assert plan.preflight_at == ENDED_AT - timedelta(minutes=45)
-    assert plan.fallback_at == ENDED_AT - timedelta(minutes=30)
-    assert plan.final_at == ENDED_AT - timedelta(minutes=25)
-    assert plan.retry_at == ENDED_AT - timedelta(minutes=16)
+    assert plan.preflight_at == ENDED_AT - timedelta(minutes=50)
+    assert plan.fallback_at == ENDED_AT - timedelta(minutes=40)
+    assert plan.final_at == ENDED_AT - timedelta(minutes=30)
+    assert plan.retry_at == ENDED_AT - timedelta(minutes=18)
     assert plan.freeze_at == ENDED_AT - timedelta(minutes=10)
     calls: list[SchedulerPhaseContext] = []
 
@@ -1445,10 +1445,10 @@ def test_exact_offsets_and_phase_start_times_are_operational_cutoff_anchored(
         "t_minus_90": "2030-01-02T10:30:00Z",
         "t_minus_60": "2030-01-02T11:00:00Z",
         "t_minus_10": "2030-01-02T11:50:00Z",
-        "t_minus_16": "2030-01-02T11:44:00Z",
-        "t_minus_25": "2030-01-02T11:35:00Z",
+        "t_minus_18": "2030-01-02T11:42:00Z",
         "t_minus_30": "2030-01-02T11:30:00Z",
-        "t_minus_45": "2030-01-02T11:15:00Z",
+        "t_minus_40": "2030-01-02T11:20:00Z",
+        "t_minus_50": "2030-01-02T11:10:00Z",
     }
 
 
@@ -2000,7 +2000,9 @@ def test_command_final_rechecks_runtime_budget_after_snapshot_capture(
     subprocess_calls = []
 
     class Clock:
-        current = plan.retry_at
+        current = plan.actionable_publication_deadline - timedelta(
+            seconds=plan.minimum_final_runtime_seconds + 10
+        )
 
         def now(self):
             return self.current
@@ -2082,6 +2084,34 @@ def test_command_package_phase_reserves_collection_and_optimizer_runtime(
         runner(context)
 
     assert subprocess_calls == []
+
+
+def test_refresh_checkpoint_has_enough_time_for_collection_and_full_optimizer(
+    tmp_path: Path,
+):
+    plan = _plan(tmp_path)
+    context = SchedulerPhaseContext(
+        phase="fallback",
+        plan=plan,
+        run_id="refresh-budget",
+        run_dir=plan.output_dir / "refresh-budget",
+        work_dir=plan.output_dir / "refresh-budget" / "fallback",
+        scheduled_at=plan.fallback_at,
+        started_at=plan.fallback_at,
+        scheduler_phase="refresh",
+        phase_deadline=plan.final_at - timedelta(seconds=5),
+    )
+
+    remaining = scheduler.validate_scheduler_phase_runtime_budget(
+        context,
+        plan.fallback_at,
+    )
+
+    assert remaining == 595
+    assert remaining >= (
+        plan.minimum_final_runtime_seconds
+        + scheduler.MINIMUM_COLLECTION_START_SECONDS
+    )
 
 
 def test_prepare_command_uses_absolute_raw_and_reusable_provider_cache(
@@ -2389,7 +2419,7 @@ def test_experimental_authorization_never_promotes_warmup_package(tmp_path: Path
         now=datetime(2029, 12, 31, 12, tzinfo=UTC),
     )
     payload = _valid_runner_manifest(context)
-    payload["config"]["final_lead_minutes"] = 45
+    payload["config"]["final_lead_minutes"] = 50
     manifest = _write_runner_manifest(context, payload)
 
     result = parse_runner_manifest_phase_result(context, manifest)
@@ -2646,7 +2676,7 @@ def test_custom_plan_safety_config_is_forwarded_and_accepts_matching_manifest(
     )
 
 
-def test_warmup_manifest_uses_same_45_minute_lead_as_command(tmp_path: Path):
+def test_warmup_manifest_uses_same_50_minute_lead_as_command(tmp_path: Path):
     context = replace(
         _manifest_context(tmp_path, phase="fallback"),
         scheduler_phase="warmup",
@@ -2654,14 +2684,14 @@ def test_warmup_manifest_uses_same_45_minute_lead_as_command(tmp_path: Path):
     payload = _valid_runner_manifest(context)
     config = payload["config"]
     assert isinstance(config, dict)
-    config["final_lead_minutes"] = 45
+    config["final_lead_minutes"] = 50
     manifest = _write_runner_manifest(context, payload)
 
     command = build_run_drawing_phase_command(context)
     result = parse_runner_manifest_phase_result(context, manifest)
 
     option = command.index("--final-lead-minutes")
-    assert command[option + 1] == "45"
+    assert command[option + 1] == "50"
     assert result.decision == "NO BET"
 
 

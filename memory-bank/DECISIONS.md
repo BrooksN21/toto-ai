@@ -2125,3 +2125,22 @@ ambiguous reversed evidence remains unresolved.
 - Scheduler plans bind the catalog bytes independently and pass the selected
   evidence hash to canonical pin loading. Runtime validation must verify each
   binding in its own domain instead of comparing the two hashes directly.
+
+## 2026-08-28 — Next-day evidence, scheduler v9 and exact category seeds
+
+- Reviewed schedule snapshots may be captured on the evening before a
+  next-day drawing. Their default freshness horizon is 24 hours: enough to
+  survive the bound final window, but not reusable for a later drawing.
+- TotoBrief identity `ended_at` and the independently derived operational
+  cutoff remain different fields. A reviewed kickoff before technical
+  `ended_at` is valid and tightens playability rather than being rejected.
+- Scheduler schema v9 is the only active timing contract. Heavy stages run at
+  T-60/T-50/T-40/T-30, retry at T-18 and hard-expire at T-10. Schema v8 is
+  rejected because its refresh/final runtime window was shorter than the
+  measured optimizer budget.
+- A pre-final phase that returns `NO BET` and no package is retryable, not
+  complete. Once a later dispatch reaches READY and activates the evening
+  scheduler, its obsolete passive preflight retry must be unloaded.
+- A partial greedy cover is never a valid category seed. Baseline/category-hit
+  selection may use only an exact verifier-confirmed category cover within the
+  effective budget; otherwise it narrows the brief or fails closed.
