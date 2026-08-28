@@ -5528,3 +5528,11 @@ has been updated from four to five strategies; legacy checkpoint schema is v4
 so incompatible four-strategy checkpoints fail closed. The comparison remains
 paper-only and does not change scheduler selection or operator output. Focused
 strategy/strict/legacy verification passed 23 tests and Ruff.
+
+The first drawing-4989 activation-input comparison completed at bank/stake
+4,980/30. Modeled P13 was 0.00326133 for current EV/crowd, 0.01112910 for
+BK-only and 0.01243595 for `COVER_14_BK_FILL`. The challenger is approximately
+3.81x current EV/crowd and 11.74% above BK-only on P13, while BK-only remains
+slightly higher on P14 and higher on P15. This is one pre-outcome paper
+snapshot, not a profitability verdict. Durable details are in
+`research/drawing-4989-preliminary-strategy-comparison.md`.

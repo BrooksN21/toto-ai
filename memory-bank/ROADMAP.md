@@ -12,6 +12,11 @@
   subset preservation and full-bank 4,980/9,960 regression tests.
 - [ ] Compare `COVER_14_BK_FILL` with BK-only and EV/crowd on one frozen final
   input and equal dynamic bank.
+  - [x] Complete the preliminary 4989 activation-input comparison at 4,980/30;
+    `COVER_14_BK_FILL` leads modeled P13, while BK-only remains marginally
+    better on P14 and better on P15.
+  - [ ] Repeat from the scheduler-owned evening final input before T-10 and
+    freeze all packages for post-draw settlement.
 - [ ] Archive and post-draw settle all compared packages prospectively; do not
   choose a winner or tune on drawing 4988.
 - [ ] Keep EV/crowd shadow-only until a predeclared prospective gate disproves
