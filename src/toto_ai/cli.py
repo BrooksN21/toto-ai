@@ -237,7 +237,10 @@ from toto_ai.optimizer.strategy_diagnostics import (
     summarize_strategy_diagnostics,
     write_strategy_diagnostics_reports,
 )
-from toto_ai.optimizer.strategy_execution import execute_final_input_comparison
+from toto_ai.optimizer.strategy_execution import (
+    execute_final_input_category_hit_comparison,
+    execute_final_input_comparison,
+)
 from toto_ai.optimizer.strategy_historical_benchmark import (
     historical_ev_config,
     run_strict_historical_benchmark,
@@ -5475,6 +5478,68 @@ def compare_package_strategies_command(
         )
     print(table)
     print("[yellow]RESEARCH/PAPER — NOT ACTIONABLE[/yellow]")
+    print(f"Manifest: {executed.reports.manifest}")
+
+
+@app.command("compare-category-hit-strategies")
+def compare_category_hit_strategies_command(
+    final_input: Path = typer.Option(  # noqa: B008
+        ...,
+        "--final-input",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Immutable scheduler final-input.json.",
+    ),
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Hash-bound scheduler-plan.json for the same drawing.",
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        Path("reports/category-hit-comparison"),
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+        help="Destination for isolated paper-only comparison artifacts.",
+    ),
+) -> None:
+    """Compare fast BK-only and BK-filled Cover-14 candidates."""
+    try:
+        executed = execute_final_input_category_hit_comparison(
+            final_input_path=final_input,
+            scheduler_plan_path=scheduler_plan,
+            output_dir=output_dir,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+
+    table = Table(title="Lightweight Category-Hit Strategy Comparison")
+    table.add_column("Strategy")
+    table.add_column("Cat", justify="right")
+    table.add_column("Coupons", justify="right")
+    table.add_column("Cost", justify="right")
+    table.add_column("P(13+)", justify="right")
+    table.add_column("P(14+)", justify="right")
+    table.add_column("P(15)", justify="right")
+    for result in executed.bundle.results:
+        table.add_row(
+            result.strategy_id,
+            str(result.category),
+            str(result.coupon_count),
+            str(result.cost),
+            f"{result.probability_at_least_13:.8f}",
+            f"{result.probability_at_least_14:.8f}",
+            f"{result.probability_at_least_15:.8f}",
+        )
+    print(table)
+    print("[yellow]RESEARCH/PAPER — NOT ACTIONABLE[/yellow]")
+    print("[yellow]Scheduler plan and scheduler state are read-only.[/yellow]")
     print(f"Manifest: {executed.reports.manifest}")
 
 

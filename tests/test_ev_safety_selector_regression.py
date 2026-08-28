@@ -106,15 +106,18 @@ def _write_frozen_scheduler_plan(path: Path, config: EVConfig) -> None:
                 "old_hits": (5, 2.5602409638554215),
                 "safe_hits": (5, 2.3855421686746987),
                     "quality_hash": (
-                        "d4e407f82fd8222debce37b7844ef48fa2a78820cbe0773b8673d286df0aec15"
+                        "4466edbdba26cfd834528ea84ccb66ffe399558eb683eafe48ec959027cefe0e"
                     ),
-                    "quality_expected_payout": 185206.3183136361,
-                    "quality_hits": (7, 2.5180722891566263),
+                    "quality_pre_hash": (
+                        "1d3e8bb1fd3e9bc5269ac1fa94eb3bd3f2e4e689db4a48a13be969e4b213ba90"
+                    ),
+                    "quality_expected_payout": 24220.904748135024,
+                    "quality_hits": (12, 6.825301204819277),
                     "quality_probabilities": (
-                        0.4423828125,
-                        0.0024834747159516884,
-                        0.0002240626633357782,
-                        9.092767811555738e-06,
+                        0.9613037109375,
+                        0.014681710023644944,
+                        0.001577812710087321,
+                        7.40491769318058e-05,
                 ),
             },
         ),
@@ -132,15 +135,18 @@ def _write_frozen_scheduler_plan(path: Path, config: EVConfig) -> None:
                 "old_hits": (8, 5.427710843373494),
                 "safe_hits": (9, 5.554216867469879),
                     "quality_hash": (
-                        "4b5e39208c0c8a437d86b244eb8242bbce4189a030d36bfbb6151926ba4e8aa4"
+                        "8395ab6be9f53ec11f3cf9ab2ec4779a57bbf0f933f7b632ae0319147361e38a"
                     ),
-                    "quality_expected_payout": 313605.66267582466,
-                    "quality_hits": (9, 5.801204819277109),
+                    "quality_pre_hash": (
+                        "8395ab6be9f53ec11f3cf9ab2ec4779a57bbf0f933f7b632ae0319147361e38a"
+                    ),
+                    "quality_expected_payout": 25054.79602582583,
+                    "quality_hits": (9, 5.030120481927711),
                     "quality_probabilities": (
-                        0.324462890625,
-                        0.0017519996337899562,
-                        0.00017069665909453304,
-                        7.449402048703076e-06,
+                        0.963623046875,
+                        0.012337053994490883,
+                        0.0012890197702330342,
+                        5.937416371423911e-05,
                 ),
             },
         ),
@@ -158,15 +164,18 @@ def _write_frozen_scheduler_plan(path: Path, config: EVConfig) -> None:
                 "old_hits": (8, 5.102409638554217),
                 "safe_hits": (8, 5.186746987951807),
                     "quality_hash": (
-                        "2aa986a12165def508f91b1c31a3a710dd7e2f1acb3ada06ecf0d6ede576a417"
+                        "2c5726c50ddfb8af733e99518c11a8f5818aba03271acc86fee1defab23d78af"
                     ),
-                    "quality_expected_payout": 478795.5067543715,
-                    "quality_hits": (9, 5.22289156626506),
+                    "quality_pre_hash": (
+                        "ae56a6ff1960cc524fa9a5ebb5a0870d21ad7eda3680f34c3236b9317603cd14"
+                    ),
+                    "quality_expected_payout": 33460.92459452146,
+                    "quality_hits": (10, 5.63855421686747),
                     "quality_probabilities": (
-                        0.3143310546875,
-                        0.001684819050256079,
-                        0.00016493066203776988,
-                        6.815848798827935e-06,
+                        0.961669921875,
+                        0.010738058474865898,
+                        0.0010744290112708929,
+                        4.766600224159623e-05,
                 ),
             },
         ),
@@ -288,7 +297,7 @@ def test_frozen_pre_cutoff_selector_regression_without_result_leakage(
     assert diagnostics is not None
     assert diagnostics.constraint_feasible is True
     assert diagnostics.provenance_complete is True
-    assert diagnostics.pre_package_sha256 == old_hash
+    assert diagnostics.pre_package_sha256 == expected["quality_pre_hash"]
     assert diagnostics.post_package_sha256 == quality_hash
     assert diagnostics.headroom_violation_count == 0
     category = diagnostics.post_category_probabilities
@@ -316,6 +325,7 @@ def test_frozen_pre_cutoff_selector_regression_without_result_leakage(
     assert _retrospective_hits(safety_v1_coupons, result) == pytest.approx(
         expected["safe_hits"]
     )
-    assert _retrospective_hits(
+    observed_quality_hits = _retrospective_hits(
         tuple(row.coupon for row in quality_package.paper_coupons), result
-    ) == pytest.approx(expected["quality_hits"])
+    )
+    assert observed_quality_hits == pytest.approx(expected["quality_hits"])

@@ -33,7 +33,13 @@ from toto_ai.ev.package_quality import (
     selection_context_sha256,
     validate_selection_provenance,
 )
-from toto_ai.ev.ternary import MAX_EVENTS, OUTCOMES, coupon_from_index
+from toto_ai.ev.ternary import (
+    MAX_EVENTS,
+    OUTCOMES,
+    coupon_from_index,
+    index_from_coupon,
+)
+from toto_ai.optimizer.category_hit import cover_14_bk_fill_seed
 
 RANK_RTOL = 1e-12
 RANK_ATOL = 1e-15
@@ -315,9 +321,35 @@ def _select_safety_aware_package(
     required = config.max_coupons
     eligible_indices = order[eligible_positions]
     eligible_count = int(eligible_indices.size)
-    baseline_count = min(required, eligible_count)
-    baseline_indices = eligible_indices[:baseline_count]
-    baseline_ranks = eligible_positions[:baseline_count] + 1
+    if event_count == MAX_EVENTS:
+        seed_coupons = cover_14_bk_fill_seed(
+            probabilities,
+            config.selection_budget,
+            config.stake,
+            config.package_exposure_floor_scale,
+            config.package_exposure_floor_exponent,
+            config.package_near_fixed_share,
+            config.package_concentration_headroom_share,
+        )
+        seed_indices = np.asarray(
+            [index_from_coupon(coupon) for coupon in seed_coupons],
+            dtype=np.int64,
+        )
+        maximum_hybrid_count = min(gross_ev.size, _SAFETY_MAX_CANDIDATES)
+        ev_prefix = order[:maximum_hybrid_count]
+        ev_prefix = ev_prefix[~np.isin(ev_prefix, seed_indices, assume_unique=True)]
+        eligible_indices = np.concatenate((seed_indices, ev_prefix))[
+            :maximum_hybrid_count
+        ]
+        eligible_positions = np.arange(eligible_indices.size, dtype=np.int64)
+        eligible_count = int(gross_ev.size)
+        baseline_indices = seed_indices
+        baseline_ranks = np.arange(1, seed_indices.size + 1, dtype=np.int64)
+        baseline_count = int(seed_indices.size)
+    else:
+        baseline_count = min(required, eligible_count)
+        baseline_indices = eligible_indices[:baseline_count]
+        baseline_ranks = eligible_positions[:baseline_count] + 1
     baseline_digits = _coupon_digits(baseline_indices, event_count)
     baseline_counts = _selection_counts(baseline_digits, event_count)
     maximum_count = math.ceil(config.package_near_fixed_share * required) - 1

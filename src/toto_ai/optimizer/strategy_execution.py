@@ -11,9 +11,11 @@ from typing import Any
 from toto_ai.ev.drawing import ev_input_from_payload
 from toto_ai.ev.package_quality import PackageSelectionProvenance
 from toto_ai.optimizer.strategy_comparison import (
+    CategoryHitComparisonBundle,
     FrozenStrategyEvent,
     FrozenStrategyInput,
     StrategyComparisonBundle,
+    run_category_hit_comparison,
     run_equal_input_comparison,
 )
 from toto_ai.optimizer.strategy_reports import (
@@ -27,6 +29,12 @@ from toto_ai.runner.scheduler import SchedulerPlan, load_scheduler_plan
 @dataclass(frozen=True)
 class ExecutedStrategyComparison:
     bundle: StrategyComparisonBundle
+    reports: StrategyComparisonReportPaths
+
+
+@dataclass(frozen=True)
+class ExecutedCategoryHitComparison:
+    bundle: CategoryHitComparisonBundle
     reports: StrategyComparisonReportPaths
 
 
@@ -57,6 +65,23 @@ def execute_final_input_comparison(
     )
     reports = write_strategy_comparison_reports(bundle, output_dir)
     return ExecutedStrategyComparison(bundle=bundle, reports=reports)
+
+
+def execute_final_input_category_hit_comparison(
+    *,
+    final_input_path: str | Path,
+    scheduler_plan_path: str | Path,
+    output_dir: str | Path,
+) -> ExecutedCategoryHitComparison:
+    """Run only fast probability-first candidates from a validated final input."""
+    plan_path = Path(scheduler_plan_path).absolute()
+    snapshot_path = Path(final_input_path).absolute()
+    plan = load_scheduler_plan(plan_path)
+    snapshot = load_final_input(snapshot_path, expected_plan=plan)
+    frozen = frozen_input_from_snapshot(snapshot, plan)
+    bundle = run_category_hit_comparison(frozen)
+    reports = write_strategy_comparison_reports(bundle, output_dir)
+    return ExecutedCategoryHitComparison(bundle=bundle, reports=reports)
 
 
 def frozen_input_from_snapshot(

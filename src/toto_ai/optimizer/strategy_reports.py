@@ -11,7 +11,12 @@ from dataclasses import asdict, dataclass
 from io import StringIO
 from pathlib import Path
 
-from toto_ai.optimizer.strategy_comparison import StrategyComparisonBundle
+from toto_ai.optimizer.strategy_comparison import (
+    CategoryHitComparisonBundle,
+    StrategyComparisonBundle,
+)
+
+ComparisonBundle = StrategyComparisonBundle | CategoryHitComparisonBundle
 
 
 @dataclass(frozen=True)
@@ -24,11 +29,13 @@ class StrategyComparisonReportPaths:
 
 
 def write_strategy_comparison_reports(
-    bundle: StrategyComparisonBundle,
+    bundle: ComparisonBundle,
     output_dir: str | Path,
 ) -> StrategyComparisonReportPaths:
-    if not isinstance(bundle, StrategyComparisonBundle):
-        raise ValueError("bundle must be a StrategyComparisonBundle")
+    if not isinstance(
+        bundle, (StrategyComparisonBundle, CategoryHitComparisonBundle)
+    ):
+        raise ValueError("bundle must be a supported comparison bundle")
     root = Path(output_dir).absolute()
     if root.exists() and root.is_symlink():
         raise ValueError("strategy output directory cannot be a symlink")
@@ -107,7 +114,7 @@ def write_strategy_comparison_reports(
     )
 
 
-def _comparison_payload(bundle: StrategyComparisonBundle) -> dict[str, object]:
+def _comparison_payload(bundle: ComparisonBundle) -> dict[str, object]:
     return {
         "schema_version": 1,
         "input": {
@@ -128,7 +135,7 @@ def _comparison_payload(bundle: StrategyComparisonBundle) -> dict[str, object]:
     }
 
 
-def _comparison_csv(bundle: StrategyComparisonBundle) -> str:
+def _comparison_csv(bundle: ComparisonBundle) -> str:
     stream = StringIO()
     writer = csv.writer(stream, lineterminator="\n")
     writer.writerow(
@@ -173,7 +180,7 @@ def _comparison_csv(bundle: StrategyComparisonBundle) -> str:
     return stream.getvalue()
 
 
-def _comparison_markdown(bundle: StrategyComparisonBundle) -> str:
+def _comparison_markdown(bundle: ComparisonBundle) -> str:
     lines = [
         f"# Strategy comparison for drawing {bundle.frozen_input.drawing_number}",
         "",

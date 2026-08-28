@@ -1,5 +1,26 @@
 # Architecture
 
+## Category-hit hybrid production selector v2 (2026-08-28)
+
+The quality-v2 selector now starts 15-event playable selection from a
+deterministic category-hit seed instead of an EV-only prefix. The seed keeps
+the exact verified Cover-14 core and fills the remaining dynamic capacity from
+BK marginal probabilities while satisfying the existing exposure floors and
+concentration headroom. The unchanged safety-aware selector may then repair
+and improve that seed under the existing lexicographic objective:
+P(13+), P(14+), P(15), independent P(9+), diversity, then robust EV.
+
+The seed does not use result knowledge or sports-shadow data. Schedule,
+identity, final-input, provenance, timing, publication and manual operator
+boundaries remain unchanged. `quality_v2_config_payload` binds candidate source
+`cover14_bk_fill_then_ev_hybrid` and release protocol
+`quality-v2-category-hit-hybrid-v2`, so an older scheduler plan cannot silently
+run the new selector. Active plans must be regenerated and reinstalled.
+
+The lightweight `compare-category-hit-strategies` command remains an isolated
+paper/research sidecar. It reads a validated final input and plan, writes only
+to its requested report directory and never mutates scheduler state.
+
 ## Automatic research-only GOAL history capture (2026-08-27)
 
 Generated morning dispatch commands and identity-bound passive retry children

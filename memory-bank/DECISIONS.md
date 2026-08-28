@@ -2097,3 +2097,21 @@ ambiguous reversed evidence remains unresolved.
   with different component hashes. Its persisted reviewed binding is then a
   deterministic aggregate of all selected source/hash tuples. Single-source
   legacy sets retain their original hash unchanged.
+
+## 2026-08-28 — Activate the category-hit hybrid experimentally on 4989
+
+- The project owner explicitly chose not to keep the materially weaker
+  EV/crowd package as the main selector for another drawing. Drawing 4989 is
+  the first operational trial of the category-hit hybrid.
+- This is an experimental strategy change, not evidence of profitability. The
+  real-money release gate and automatic wagering prohibition remain unchanged.
+- The production seed must preserve the exact Cover-14 core, use the complete
+  dynamic bank, and pass the existing exposure, concentration, provenance and
+  timing gates. Safety must not be disabled to obtain a higher modeled P(13+).
+- Candidate-source identity is part of the hash-bound quality protocol. An old
+  plan must fail closed and be regenerated before the active LaunchAgent is
+  allowed to execute the new selector.
+- On the frozen 4989 activation input, the safety-compatible hybrid reached
+  modeled P(13+) 0.01157973 versus 0.00326133 for EV/crowd, while using 166
+  coupons / 4,980 RUB and passing structural constraints. This is a canary
+  comparison only; actual outcomes must be settled afterward.

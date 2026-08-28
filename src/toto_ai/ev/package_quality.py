@@ -26,7 +26,7 @@ from toto_ai.package.audit import canonical_probability_input_sha256
 _HEX_DIGITS = frozenset("0123456789abcdef")
 OPTIMIZATION_MC_STREAM = "quality-v2-optimization"
 EVALUATION_MC_STREAM = "quality-v2-evaluation"
-QUALITY_RELEASE_PROTOCOL_VERSION = "quality-v2-paper-only-v1"
+QUALITY_RELEASE_PROTOCOL_VERSION = "quality-v2-category-hit-hybrid-v2"
 SUPPORTED_SCHEDULER_SCHEMA_VERSION = 8
 QUALITY_OBJECTIVE_ORDER = (
     "probability_at_least_13",
@@ -47,6 +47,7 @@ def quality_v2_config_payload(config: EVConfig) -> dict[str, object]:
         "concentration_headroom_share": (config.package_concentration_headroom_share),
         "repair_iterations": config.package_quality_repair_iterations,
         "candidate_count": config.package_quality_candidate_count,
+        "candidate_source": "cover14_bk_fill_then_ev_hybrid",
         "optimization_samples": config.package_optimization_probability_samples,
         "evaluation_samples": config.package_probability_samples,
         "optimization_stream": OPTIMIZATION_MC_STREAM,

@@ -5536,3 +5536,31 @@ BK-only and 0.01243595 for `COVER_14_BK_FILL`. The challenger is approximately
 slightly higher on P14 and higher on P15. This is one pre-outcome paper
 snapshot, not a profitability verdict. Durable details are in
 `research/drawing-4989-preliminary-strategy-comparison.md`.
+
+## Drawing 4989 category-hit selector migration (2026-08-28)
+
+The main 15-event safety-aware selector now uses protocol
+`quality-v2-category-hit-hybrid-v2`. Its seed preserves an exact Cover-14 core,
+allocates BK-based fill marginals inside the existing exposure/headroom bounds,
+and then runs the unchanged P13/P14/P15-first local optimizer. A raw BK fill
+was correctly rejected by production safety; the bounded fill fixed that
+failure without disabling any gate.
+
+On the exact frozen 4989 activation input, an artifact-bound selector canary
+completed in 86.34 seconds with `STRUCTURAL_PASS`, 166 unique coupons, cost
+4,980, zero headroom violations and modeled probabilities P13 0.01157973,
+P14 0.00112965 and P15 0.00004832. The old EV/crowd P13 on the same input was
+0.00326133. Profitability is still unproven.
+
+Focused verification passed 191 scheduler/runner tests and 90
+strategy/package tests. The full default suite passes `2096 passed, 13
+deselected`; Ruff and `git diff --check` pass. The old active plan
+`ceaa292700dbb903` is intentionally incompatible with protocol v2 and must be
+superseded by a regenerated, verified drawing-4989 plan before the 16:00 MSK
+checkpoint. No scheduler checkpoint has run yet.
+
+The refreshed frozen heavy regressions also passed after explicit golden
+review. New versus old quality-v2 best hits were 12 vs 7 on 4967, 9 vs 9 on
+4969 and 10 vs 9 on 4970. Mean hits improved on 4967 and 4970 but declined on
+4969. This supports the experimental category-hit direction but remains only
+three retrospective drawings and does not prove profitability.

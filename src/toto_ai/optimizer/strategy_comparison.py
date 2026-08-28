@@ -20,6 +20,7 @@ from toto_ai.ev.package_quality import (
 )
 from toto_ai.ev.ternary import compute_ev_components, materialize_ev_surface
 from toto_ai.optimizer.brief import analyze_event, build_baseline_brief
+from toto_ai.optimizer.category_hit import cover_14_bk_fill_seed
 from toto_ai.optimizer.coupon_probabilities import top_probability_coupons
 from toto_ai.optimizer.cover import verify_cover_package
 
@@ -248,6 +249,45 @@ class StrategyComparisonBundle:
             raise ValueError("all strategies must use the same bank and stake")
 
 
+@dataclass(frozen=True)
+class CategoryHitComparisonBundle:
+    """Lightweight BK-only versus BK-filled Cover-14 comparison."""
+
+    frozen_input: FrozenStrategyInput
+    results: tuple[StrategyResult, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.frozen_input, FrozenStrategyInput):
+            raise ValueError("frozen_input must be a FrozenStrategyInput")
+        object.__setattr__(self, "results", tuple(self.results))
+        if len(self.results) != 2 or {
+            result.strategy_id for result in self.results
+        } != {"BK_PROBABILITY_ONLY", "COVER_14_BK_FILL"}:
+            raise ValueError(
+                "category-hit comparison must contain its two declared strategies"
+            )
+        if any(
+            result.input_sha256 != self.frozen_input.input_sha256
+            or result.requested_bank != self.frozen_input.bank
+            or result.stake != self.frozen_input.stake
+            for result in self.results
+        ):
+            raise ValueError("category-hit strategies must use the same frozen input")
+
+
+def run_category_hit_comparison(
+    frozen: FrozenStrategyInput,
+) -> CategoryHitComparisonBundle:
+    """Run only the two fast probability-first candidates."""
+    return CategoryHitComparisonBundle(
+        frozen_input=frozen,
+        results=(
+            run_bk_probability_only(frozen, category=13),
+            run_cover_14_bk_fill(frozen),
+        ),
+    )
+
+
 def run_equal_input_comparison(
     frozen: FrozenStrategyInput,
     *,
@@ -354,22 +394,11 @@ def run_cover_14_bk_fill(frozen: FrozenStrategyInput) -> StrategyResult:
     """Preserve exact Cover-14 and fill remaining capacity by BK probability."""
     started = time.perf_counter()
     cover = run_totobrief_style_cover(frozen, category=14)
-    coupons = list(cover.coupons)
-    selected = set(coupons)
-    if len(coupons) < frozen.max_coupons:
-        ranked = top_probability_coupons(
-            frozen.bk_probability_matrix,
-            limit=frozen.max_coupons + len(coupons),
-        )
-        for coupon in ranked:
-            if coupon in selected:
-                continue
-            selected.add(coupon)
-            coupons.append(coupon)
-            if len(coupons) == frozen.max_coupons:
-                break
-    if len(coupons) != frozen.max_coupons:
-        raise ValueError("BK fill could not use the complete dynamic bank")
+    coupons = cover_14_bk_fill_seed(
+        frozen.bk_probability_matrix,
+        frozen.bank,
+        frozen.stake,
+    )
     return _strategy_result(
         strategy_id="COVER_14_BK_FILL",
         source_engine=(
@@ -378,7 +407,7 @@ def run_cover_14_bk_fill(frozen: FrozenStrategyInput) -> StrategyResult:
         ),
         category=14,
         frozen=frozen,
-        coupons=tuple(coupons),
+        coupons=coupons,
         config={
             "category": 14,
             "fill": "BK_PROBABILITY_DESCENDING",

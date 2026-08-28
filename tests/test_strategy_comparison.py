@@ -11,11 +11,13 @@ from typer.testing import CliRunner
 from toto_ai.cli import app
 from toto_ai.ev.models import EVConfig, EVPackage, EVSurface, RankedCoupon
 from toto_ai.optimizer.strategy_comparison import (
+    CategoryHitComparisonBundle,
     FrozenStrategyEvent,
     FrozenStrategyInput,
     StrategyComparisonBundle,
     StrategyResult,
     run_bk_probability_only,
+    run_category_hit_comparison,
     run_cover_14_bk_fill,
     run_equal_input_comparison,
     run_ev_crowd_current,
@@ -23,6 +25,7 @@ from toto_ai.optimizer.strategy_comparison import (
 )
 from toto_ai.optimizer.strategy_execution import frozen_input_from_snapshot
 from toto_ai.optimizer.strategy_reports import write_strategy_comparison_reports
+from toto_ai.package.audit import evaluate_package_safety
 
 
 def test_frozen_strategy_input_rejects_future_or_incomplete_evidence():
@@ -113,6 +116,10 @@ def test_cover_14_bk_fill_preserves_guarantee_and_uses_dynamic_bank(
     assert result.guarantee_pass is True
     assert result.coverage_rate == 1.0
     assert set(cover.coupons) <= set(result.coupons)
+    assert (
+        evaluate_package_safety(result.coupons, frozen.bk_probability_matrix).decision
+        == "PLAY"
+    )
     assert (
         result.probability_at_least_13
         >= cover.probability_at_least_13
@@ -215,6 +222,62 @@ def test_equal_input_comparison_rejects_a_foreign_result():
         )
 
 
+def test_category_hit_comparison_runs_only_two_full_bank_candidates():
+    frozen = _strategy_input(events=_events())
+
+    bundle = run_category_hit_comparison(frozen)
+
+    assert isinstance(bundle, CategoryHitComparisonBundle)
+    assert [result.strategy_id for result in bundle.results] == [
+        "BK_PROBABILITY_ONLY",
+        "COVER_14_BK_FILL",
+    ]
+    assert all(result.input_sha256 == frozen.input_sha256 for result in bundle.results)
+    assert all(result.coupon_count == 166 for result in bundle.results)
+    assert all(result.cost == 4_980 for result in bundle.results)
+
+
+def test_category_hit_comparison_rejects_foreign_input_result():
+    frozen = _strategy_input(events=_events())
+    valid = _result(frozen, "BK_PROBABILITY_ONLY", ("1" * 15,))
+    foreign = replace(
+        _result(
+            frozen,
+            "COVER_14_BK_FILL",
+            ("X" * 15,),
+            category=14,
+        ),
+        input_sha256="f" * 64,
+    )
+
+    with pytest.raises(ValueError, match="same frozen input"):
+        CategoryHitComparisonBundle(frozen_input=frozen, results=(valid, foreign))
+
+
+def test_category_hit_report_bundle_writes_two_paper_packages(tmp_path):
+    frozen = _strategy_input(events=_events())
+    bundle = CategoryHitComparisonBundle(
+        frozen_input=frozen,
+        results=(
+            _result(frozen, "BK_PROBABILITY_ONLY", ("1" * 15,)),
+            _result(
+                frozen,
+                "COVER_14_BK_FILL",
+                ("X" * 15,),
+                category=14,
+            ),
+        ),
+    )
+
+    paths = write_strategy_comparison_reports(bundle, tmp_path)
+
+    manifest = __import__("json").loads(paths.manifest.read_text())
+    assert manifest["strategy_count"] == 2
+    assert manifest["actionable"] is False
+    assert manifest["automatic_wagering"] is False
+    assert set(paths.packages) == {"BK_PROBABILITY_ONLY", "COVER_14_BK_FILL"}
+
+
 def test_strategy_report_bundle_writes_five_hash_bound_packages(tmp_path):
     frozen = _strategy_input(events=_events())
     results = (
@@ -310,6 +373,15 @@ def test_compare_package_strategies_cli_help():
     assert result.exit_code == 0
     assert "--final-input" in result.stdout
     assert "--scheduler-plan" in result.stdout
+
+
+def test_compare_category_hit_strategies_cli_help():
+    result = CliRunner().invoke(app, ["compare-category-hit-strategies", "--help"])
+
+    assert result.exit_code == 0
+    assert "--final-input" in result.stdout
+    assert "--scheduler-plan" in result.stdout
+    assert "--output-dir" in result.stdout
 
 
 def _events() -> tuple[FrozenStrategyEvent, ...]:
