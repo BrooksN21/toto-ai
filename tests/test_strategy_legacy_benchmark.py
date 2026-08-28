@@ -224,6 +224,12 @@ def _results(strategy_input):
             ("X" * 15,),
             category=14,
         ),
+        _result(
+            strategy_input,
+            "COVER_14_BK_FILL",
+            ("2" * 15,),
+            category=14,
+        ),
     )
 
 

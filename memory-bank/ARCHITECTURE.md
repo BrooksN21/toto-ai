@@ -161,8 +161,10 @@ The adapters are deliberately thin: current EV/crowd delegates to the existing
 EV ternary surface and package selector, BK-only delegates to the existing
 top-probability enumerator, and category-13/category-14 TotoBrief-style variants
 delegate to the existing brief and Cover engines plus independent exact
-verification. This research boundary cannot activate sports shadow, change the
-production scheduler, or open the real-money release gate.
+verification. `COVER_14_BK_FILL` preserves the exact Cover-14 subset and fills
+the remaining dynamic bank with unique BK-ranked coupons. This research
+boundary cannot activate sports shadow, change the production scheduler, or
+open the real-money release gate.
 
 `compare-package-strategies` consumes only a validated scheduler
 `final-input.json` plus its exact schema-v6 plan. It rebuilds the production

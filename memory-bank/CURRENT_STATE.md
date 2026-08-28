@@ -5521,3 +5521,10 @@ bank is used, and exact P13/P14/P15 are recomputed for the combined package.
 Focused tests cover 4,980/30 (166 coupons) and 9,960/30 (332 coupons), preserve
 the Cover subset and verify no loss of modeled P13 relative to unfilled Cover.
 The adapter is research-only and is not yet wired into scheduler selection.
+
+It is now included as the fifth strategy in the shared equal-input comparison
+bundle and report set. Strict and legacy benchmark scoring/report cardinality
+has been updated from four to five strategies; legacy checkpoint schema is v4
+so incompatible four-strategy checkpoints fail closed. The comparison remains
+paper-only and does not change scheduler selection or operator output. Focused
+strategy/strict/legacy verification passed 23 tests and Ruff.

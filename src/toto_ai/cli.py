@@ -5445,7 +5445,7 @@ def compare_package_strategies_command(
         help="Destination for paper-only comparison artifacts.",
     ),
 ) -> None:
-    """Compare EV, BK-only and Cover-13/14 on one frozen input."""
+    """Compare EV, BK-only, Cover-13/14 and BK-filled Cover-14."""
     try:
         executed = execute_final_input_comparison(
             final_input_path=final_input,

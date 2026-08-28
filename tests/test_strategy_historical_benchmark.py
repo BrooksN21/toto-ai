@@ -256,7 +256,7 @@ def test_strict_benchmark_scores_actuals_and_reports_pairwise_overlap(tmp_path):
         "STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE"
     )
     assert benchmark.summary["winner_status"] == "INCONCLUSIVE_SMALL_SAMPLE"
-    assert len(benchmark.rows) == 4
+    assert len(benchmark.rows) == 5
     by_strategy = {row.strategy_id: row for row in benchmark.rows}
     assert by_strategy["EV_CROWD_CURRENT"].best_hits == 15
     assert by_strategy["BK_PROBABILITY_ONLY"].best_hits == 14
@@ -273,7 +273,7 @@ def test_strict_benchmark_scores_actuals_and_reports_pairwise_overlap(tmp_path):
     assert by_strategy["EV_CROWD_CURRENT"].hit_15 is True
     assert by_strategy["BK_PROBABILITY_ONLY"].hit_15 is False
     assert by_strategy["TOTOBRIEF_STYLE_COVER_13"].zero_exposure_event_orders == ()
-    assert len(benchmark.overlaps) == 6
+    assert len(benchmark.overlaps) == 10
     ev_bk = next(
         row
         for row in benchmark.overlaps
@@ -297,8 +297,8 @@ def test_strict_benchmark_scores_actuals_and_reports_pairwise_overlap(tmp_path):
         "STRICT_CHRONOLOGICAL_PIPELINE_EVIDENCE"
     )
     assert manifest["automatic_wagering"] is False
-    assert paths.rows_csv.read_text().count("\n") == 5
-    assert paths.overlaps_csv.read_text().count("\n") == 7
+    assert paths.rows_csv.read_text().count("\n") == 6
+    assert paths.overlaps_csv.read_text().count("\n") == 11
 
 
 def test_historical_strategy_benchmark_cli_help():
@@ -509,9 +509,15 @@ def _comparison_bundle(frozen):
         ("X" * 15,),
         category=14,
     )
+    cover_14_bk_fill = _strategy_result(
+        frozen,
+        "COVER_14_BK_FILL",
+        ("2" * 15,),
+        category=14,
+    )
     return StrategyComparisonBundle(
         frozen_input=frozen,
-        results=(ev, bk, cover_13, cover_14),
+        results=(ev, bk, cover_13, cover_14, cover_14_bk_fill),
     )
 
 

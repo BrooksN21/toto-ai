@@ -216,7 +216,7 @@ class StrategyResult:
 
 @dataclass(frozen=True)
 class StrategyComparisonBundle:
-    """Four strategy variants bound to one immutable comparison input."""
+    """Declared strategy variants bound to one immutable comparison input."""
 
     frozen_input: FrozenStrategyInput
     results: tuple[StrategyResult, ...]
@@ -230,10 +230,11 @@ class StrategyComparisonBundle:
             "BK_PROBABILITY_ONLY",
             "TOTOBRIEF_STYLE_COVER_13",
             "TOTOBRIEF_STYLE_COVER_14",
+            "COVER_14_BK_FILL",
         }
         observed = {result.strategy_id for result in self.results}
-        if len(self.results) != 4 or observed != expected:
-            raise ValueError("comparison must contain the four declared strategies")
+        if len(self.results) != 5 or observed != expected:
+            raise ValueError("comparison must contain the five declared strategies")
         if any(
             result.input_sha256 != self.frozen_input.input_sha256
             for result in self.results
@@ -255,12 +256,16 @@ def run_equal_input_comparison(
     ev_runner: Callable[..., StrategyResult] | None = None,
     bk_runner: Callable[..., StrategyResult] | None = None,
     cover_runner: Callable[..., StrategyResult] | None = None,
+    cover_fill_runner: Callable[..., StrategyResult] | None = None,
 ) -> StrategyComparisonBundle:
-    """Run EV, BK-only, Cover-13 and Cover-14 over identical bytes."""
+    """Run all declared category-hit strategies over identical bytes."""
     resolved_ev_runner = run_ev_crowd_current if ev_runner is None else ev_runner
     resolved_bk_runner = run_bk_probability_only if bk_runner is None else bk_runner
     resolved_cover_runner = (
         run_totobrief_style_cover if cover_runner is None else cover_runner
+    )
+    resolved_cover_fill_runner = (
+        run_cover_14_bk_fill if cover_fill_runner is None else cover_fill_runner
     )
     results = (
         resolved_ev_runner(
@@ -272,6 +277,7 @@ def run_equal_input_comparison(
         resolved_bk_runner(frozen, category=13),
         resolved_cover_runner(frozen, category=13),
         resolved_cover_runner(frozen, category=14),
+        resolved_cover_fill_runner(frozen),
     )
     return StrategyComparisonBundle(frozen_input=frozen, results=results)
 

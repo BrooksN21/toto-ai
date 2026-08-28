@@ -206,10 +206,16 @@ def test_equal_input_comparison_rejects_a_foreign_result():
                 ("2" * 15,),
                 category=category,
             ),
+            cover_fill_runner=lambda _frozen: _result(
+                frozen,
+                "COVER_14_BK_FILL",
+                ("1X2" * 5,),
+                category=14,
+            ),
         )
 
 
-def test_strategy_report_bundle_writes_four_hash_bound_packages(tmp_path):
+def test_strategy_report_bundle_writes_five_hash_bound_packages(tmp_path):
     frozen = _strategy_input(events=_events())
     results = (
         _result(frozen, "EV_CROWD_CURRENT", ("1" * 15,)),
@@ -226,6 +232,12 @@ def test_strategy_report_bundle_writes_four_hash_bound_packages(tmp_path):
             ("1X2" * 5,),
             category=14,
         ),
+        _result(
+            frozen,
+            "COVER_14_BK_FILL",
+            ("12X" * 5,),
+            category=14,
+        ),
     )
     bundle = StrategyComparisonBundle(frozen_input=frozen, results=results)
 
@@ -235,14 +247,14 @@ def test_strategy_report_bundle_writes_four_hash_bound_packages(tmp_path):
     assert paths.json.is_file()
     assert paths.csv.is_file()
     assert paths.markdown.is_file()
-    assert len(paths.packages) == 4
+    assert len(paths.packages) == 5
     assert paths.packages["EV_CROWD_CURRENT"].read_text() == (
         "30; " + "; ".join("1" * 15) + "\n"
     )
     manifest = __import__("json").loads(paths.manifest.read_text())
     assert manifest["input_sha256"] == frozen.input_sha256
-    assert manifest["strategy_count"] == 4
-    assert len({row["package_sha256"] for row in manifest["strategies"]}) == 4
+    assert manifest["strategy_count"] == 5
+    assert len({row["package_sha256"] for row in manifest["strategies"]}) == 5
 
 
 def test_final_snapshot_builder_reuses_ev_probability_normalization():

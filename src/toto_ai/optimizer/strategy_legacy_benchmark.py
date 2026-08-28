@@ -28,6 +28,7 @@ from toto_ai.optimizer.strategy_comparison import (
     FrozenStrategyEvent,
     StrategyResult,
     run_bk_probability_only,
+    run_cover_14_bk_fill,
     run_ev_crowd_current,
     run_totobrief_style_cover,
 )
@@ -47,6 +48,7 @@ STRATEGY_IDS = frozenset(
         "BK_PROBABILITY_ONLY",
         "TOTOBRIEF_STYLE_COVER_13",
         "TOTOBRIEF_STYLE_COVER_14",
+        "COVER_14_BK_FILL",
     )
 )
 
@@ -286,7 +288,7 @@ def run_legacy_strategy_comparison(
     *,
     ev_config: EVConfig,
 ) -> tuple[StrategyResult, ...]:
-    """Run the same four engines while preserving the legacy evidence label."""
+    """Run the same five engines while preserving the legacy evidence label."""
     results = (
         run_ev_crowd_current(
             strategy_input,  # type: ignore[arg-type]
@@ -306,6 +308,7 @@ def run_legacy_strategy_comparison(
             strategy_input,  # type: ignore[arg-type]
             category=14,
         ),
+        run_cover_14_bk_fill(strategy_input),  # type: ignore[arg-type]
     )
     if {result.strategy_id for result in results} != STRATEGY_IDS:
         raise ValueError("legacy comparison returned an invalid strategy set")
@@ -559,10 +562,10 @@ def _score_legacy_results(
     results: Sequence[StrategyResult],
 ) -> tuple[tuple[LegacyStrategyRow, ...], tuple[LegacyOverlapRow, ...]]:
     result_tuple = tuple(results)
-    if len(result_tuple) != 4 or {
+    if len(result_tuple) != 5 or {
         result.strategy_id for result in result_tuple
     } != STRATEGY_IDS:
-        raise ValueError("legacy benchmark requires the four declared strategies")
+        raise ValueError("legacy benchmark requires the five declared strategies")
     bk_top_coupon, bk_top_hits = score_bk_top_control(
         case.strategy_input.bk_probability_matrix,
         case.actual,
@@ -818,7 +821,7 @@ def _write_checkpoint(
     overlaps: Sequence[LegacyOverlapRow],
 ) -> None:
     unsigned = {
-        "schema_version": 3,
+        "schema_version": 4,
         "evidence_tier": EVIDENCE_TIER,
         "chronology_verified": False,
         "drawing_id": case.strategy_input.drawing_id,
@@ -859,7 +862,7 @@ def _load_checkpoint(
     ).hexdigest():
         raise ValueError("legacy checkpoint hash mismatch")
     expected = {
-        "schema_version": 3,
+        "schema_version": 4,
         "evidence_tier": EVIDENCE_TIER,
         "chronology_verified": False,
         "drawing_id": case.strategy_input.drawing_id,
@@ -876,7 +879,7 @@ def _load_checkpoint(
         raise ValueError("legacy checkpoint rows are malformed")
     rows = tuple(_legacy_row_from_json(value) for value in raw_rows)
     overlaps = tuple(LegacyOverlapRow(**value) for value in raw_overlaps)
-    if len(rows) != 4 or len(overlaps) != 6:
+    if len(rows) != 5 or len(overlaps) != 10:
         raise ValueError("legacy checkpoint strategy cardinality is invalid")
     return rows, overlaps
 
