@@ -5509,3 +5509,15 @@ The optional GOAL sports-shadow capture failed closed because its report did
 not bind all 15 event orders. It did not affect preparation, scheduler
 activation or production probabilities. Verification passed `2090 passed, 13
 deselected`; full Ruff and `git diff --check` passed.
+
+## COVER_14_BK_FILL core (2026-08-28)
+
+The equal-input research layer now has a deterministic
+`COVER_14_BK_FILL` adapter. It preserves every coupon in the exact verified
+TotoBrief-style Cover-14 package, then fills the remaining dynamic capacity
+`bank // stake` with unique coupons in descending joint BK probability. The
+Cover-14 brief and guarantee remain attached to the result, the full configured
+bank is used, and exact P13/P14/P15 are recomputed for the combined package.
+Focused tests cover 4,980/30 (166 coupons) and 9,960/30 (332 coupons), preserve
+the Cover subset and verify no loss of modeled P13 relative to unfilled Cover.
+The adapter is research-only and is not yet wired into scheduler selection.

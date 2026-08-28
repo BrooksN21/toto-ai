@@ -16,6 +16,7 @@ from toto_ai.optimizer.strategy_comparison import (
     StrategyComparisonBundle,
     StrategyResult,
     run_bk_probability_only,
+    run_cover_14_bk_fill,
     run_equal_input_comparison,
     run_ev_crowd_current,
     run_totobrief_style_cover,
@@ -92,6 +93,30 @@ def test_totobrief_cover_strategy_has_exact_declared_guarantee(category):
     assert result.coverage_rate == 1.0
     assert result.cost <= 4_980
     assert len(result.brief) == 15
+
+
+@pytest.mark.parametrize(("bank", "expected_count"), [(4_980, 166), (9_960, 332)])
+def test_cover_14_bk_fill_preserves_guarantee_and_uses_dynamic_bank(
+    bank,
+    expected_count,
+):
+    frozen = _strategy_input(events=_events(), bank=bank)
+    cover = run_totobrief_style_cover(frozen, category=14)
+
+    result = run_cover_14_bk_fill(frozen)
+
+    assert result.strategy_id == "COVER_14_BK_FILL"
+    assert result.category == 14
+    assert result.coupon_count == expected_count
+    assert result.cost == bank
+    assert result.unused_bank == 0
+    assert result.guarantee_pass is True
+    assert result.coverage_rate == 1.0
+    assert set(cover.coupons) <= set(result.coupons)
+    assert (
+        result.probability_at_least_13
+        >= cover.probability_at_least_13
+    )
 
 
 def test_ev_adapter_uses_the_same_frozen_matrices_and_config():

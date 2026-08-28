@@ -344,6 +344,49 @@ def run_totobrief_style_cover(
     )
 
 
+def run_cover_14_bk_fill(frozen: FrozenStrategyInput) -> StrategyResult:
+    """Preserve exact Cover-14 and fill remaining capacity by BK probability."""
+    started = time.perf_counter()
+    cover = run_totobrief_style_cover(frozen, category=14)
+    coupons = list(cover.coupons)
+    selected = set(coupons)
+    if len(coupons) < frozen.max_coupons:
+        ranked = top_probability_coupons(
+            frozen.bk_probability_matrix,
+            limit=frozen.max_coupons + len(coupons),
+        )
+        for coupon in ranked:
+            if coupon in selected:
+                continue
+            selected.add(coupon)
+            coupons.append(coupon)
+            if len(coupons) == frozen.max_coupons:
+                break
+    if len(coupons) != frozen.max_coupons:
+        raise ValueError("BK fill could not use the complete dynamic bank")
+    return _strategy_result(
+        strategy_id="COVER_14_BK_FILL",
+        source_engine=(
+            "optimizer.brief.build_baseline_brief+optimizer.cover+"
+            "optimizer.coupon_probabilities.top_probability_coupons"
+        ),
+        category=14,
+        frozen=frozen,
+        coupons=tuple(coupons),
+        config={
+            "category": 14,
+            "fill": "BK_PROBABILITY_DESCENDING",
+            "cover_package_sha256": cover.package_sha256,
+            "cover_coupon_count": cover.coupon_count,
+            "max_coupons": frozen.max_coupons,
+        },
+        runtime_seconds=time.perf_counter() - started,
+        brief=cover.brief,
+        coverage_rate=cover.coverage_rate,
+        guarantee_pass=cover.guarantee_pass,
+    )
+
+
 def run_ev_crowd_current(
     frozen: FrozenStrategyInput,
     *,

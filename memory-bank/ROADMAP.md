@@ -8,8 +8,10 @@
   BK-only on the same 4988 and preliminary 4989 inputs.
 - [ ] Complete drawing-4989 timing evidence from 10/15 to 15/15 and activate
   its exact scheduler before the operational checkpoints.
-- [ ] Add deterministic `COVER_14_BK_FILL` and compare it with BK-only and
-  EV/crowd on one frozen final input and equal dynamic bank.
+- [x] Add deterministic dynamic-bank `COVER_14_BK_FILL` with exact Cover-14
+  subset preservation and full-bank 4,980/9,960 regression tests.
+- [ ] Compare `COVER_14_BK_FILL` with BK-only and EV/crowd on one frozen final
+  input and equal dynamic bank.
 - [ ] Archive and post-draw settle all compared packages prospectively; do not
   choose a winner or tune on drawing 4988.
 - [ ] Keep EV/crowd shadow-only until a predeclared prospective gate disproves
