@@ -173,16 +173,24 @@ def build_shadow_probability_artifact_from_snapshot(
         bk_probabilities=rows,
     )
     ordered_pins = tuple(sorted(pins, key=lambda pin: pin.event_order))
-    if len(ordered_pins) != 15 or tuple(
-        pin.event_order for pin in ordered_pins
-    ) != tuple(range(15)):
+    pin_orders = tuple(pin.event_order for pin in ordered_pins)
+    pins_are_valid = (
+        all(order in range(15) for order in pin_orders)
+        and len(set(pin_orders)) == len(pin_orders)
+    )
+    if not pins_are_valid:
         failures = (*failures, "orientation_evidence_missing")
+    pins_by_order = (
+        {pin.event_order: pin for pin in ordered_pins}
+        if pins_are_valid
+        else {}
+    )
 
     events: list[ShadowEventProbability] = []
     for order, (feature, bk_row) in enumerate(
         zip(snapshot.events, rows, strict=True)
     ):
-        pin = ordered_pins[order] if len(ordered_pins) == 15 else None
+        pin = pins_by_order.get(order)
         fallback_reason = failures[0] if failures else _event_fallback_reason(
             feature,
             pin,

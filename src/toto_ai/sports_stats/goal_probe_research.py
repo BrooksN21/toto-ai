@@ -180,20 +180,33 @@ def load_goal_probe_shadow(
         as_of=as_of,
     )
     schedule_rows = _ordered_goal_schedule_rows(schedule)
+    schedule_rows_by_order = {
+        _event_order(row.get("event_order")): row for row in schedule_rows
+    }
     coverage_rows = _ordered_coverage_rows(coverage)
-    if coverage.get("event_count") != 15 or coverage.get(
-        "sports_eligible_count"
-    ) != 15:
-        raise ValueError("coverage summary must bind all 15 events")
+    sports_eligible_count = coverage.get("sports_eligible_count")
+    history_source_count = coverage.get(
+        "history_source_count",
+        None
+        if not isinstance(sports_eligible_count, int)
+        else 2 * sports_eligible_count,
+    )
+    if (
+        coverage.get("event_count") != 15
+        or not isinstance(sports_eligible_count, int)
+        or not 0 <= sports_eligible_count <= 15
+        or history_source_count != 2 * sports_eligible_count
+    ):
+        raise ValueError("coverage summary counts are invalid")
 
     imported: list[
         tuple[
             Any,
             Mapping[str, Any],
-            Mapping[str, Any],
+            Mapping[str, Any] | None,
             datetime,
-            _HistoryImport,
-            _HistoryImport,
+            _HistoryImport | None,
+            _HistoryImport | None,
         ]
     ] = []
     source_files: dict[Path, str] = {
@@ -206,9 +219,30 @@ def load_goal_probe_shadow(
             "frozen_totobrief_detail_metadata"
         ),
     }
-    for expected_order, (event, coverage_row, schedule_row) in enumerate(
-        zip(target.events, coverage_rows, schedule_rows, strict=True)
+    for expected_order, (event, coverage_row) in enumerate(
+        zip(target.events, coverage_rows, strict=True)
     ):
+        schedule_row = schedule_rows_by_order.get(expected_order)
+        if coverage_row.get("sports_eligible") is not True:
+            _validate_fallback_binding(
+                expected_order=expected_order,
+                target_event=event,
+                coverage_row=coverage_row,
+                schedule_row=schedule_row,
+            )
+            imported.append(
+                (
+                    event,
+                    coverage_row,
+                    None,
+                    event.starts_at or target.deadline,
+                    None,
+                    None,
+                )
+            )
+            continue
+        if schedule_row is None:
+            raise ValueError("sports-eligible event is missing GOAL schedule binding")
         _validate_event_binding(
             expected_order=expected_order,
             target_event=event,
@@ -266,6 +300,54 @@ def load_goal_probe_shadow(
         home_history,
         away_history,
     ) in imported:
+        if home_history is None or away_history is None:
+            event_snapshots.append(
+                build_event_snapshot(
+                    schema_version=1,
+                    drawing_id=target.drawing_id,
+                    drawing_number=target.drawing_number,
+                    drawing_fingerprint=fingerprint,
+                    event_id=str(event.event_id),
+                    event_order=event.event_order,
+                    sport="football",
+                    provider=GOAL_PROVIDER,
+                    status="missing",
+                    missing_reasons=("target_fixture_missing",),
+                    captured_at=as_of,
+                    as_of=as_of,
+                    deadline=target.deadline,
+                    target_starts_at=target_start,
+                    provider_fixture_id=None,
+                    canonical_home_team_id=None,
+                    canonical_away_team_id=None,
+                    provider_home_team_id=None,
+                    provider_away_team_id=None,
+                    league_id=None,
+                    season=None,
+                    home_window=None,
+                    away_window=None,
+                    home_standing=None,
+                    away_standing=None,
+                    source_evidence=(),
+                )
+            )
+            imported_analytics.append(
+                {
+                    "event_order": event.event_order,
+                    "event_number": event.event_order + 1,
+                    "event_id": str(event.event_id),
+                    "home_team": event.home_team,
+                    "away_team": event.away_team,
+                    "target_starts_at": _iso(target_start),
+                    "provider_fixture_id": None,
+                    "provider_home_team_id": None,
+                    "provider_away_team_id": None,
+                    "orientation": None,
+                    "home_history": _missing_history_analytics("home"),
+                    "away_history": _missing_history_analytics("away"),
+                }
+            )
+            continue
         home_provider_id = str(coverage_row["provider_home_team_id"])
         away_provider_id = str(coverage_row["provider_away_team_id"])
         fixture_id = str(coverage_row["provider_fixture_id"])
@@ -403,7 +485,7 @@ def load_goal_probe_shadow(
         deadline=target.deadline,
         events=tuple(event_snapshots),
         requests_made=0,
-        cache_hits=30,
+        cache_hits=int(history_source_count),
     )
     shadow = build_shadow_probability_artifact(
         target=target,
@@ -783,14 +865,21 @@ def _ordered_goal_schedule_rows(
                 for item in records
                 if isinstance(item, Mapping)
                 and item.get("source_provider") == GOAL_PROVIDER
+                and (
+                    item.get("status")
+                    in {"independent_candidate", "timing_conflict"}
+                    or (
+                        item.get("status") is None
+                        and item.get("source_event_id") is not None
+                    )
+                )
             ),
             key=lambda item: _event_order(item.get("event_order")),
         )
     )
-    if len(rows) != 15 or tuple(row.get("event_order") for row in rows) != (
-        _EXPECTED_ORDERS
-    ):
-        raise ValueError("schedule report requires exactly 15 ordered GOAL rows")
+    orders = tuple(_event_order(row.get("event_order")) for row in rows)
+    if len(set(orders)) != len(orders):
+        raise ValueError("schedule report contains duplicate GOAL event orders")
     return rows
 
 
@@ -820,15 +909,19 @@ def _validate_event_binding(
     coverage_row: Mapping[str, Any],
     schedule_row: Mapping[str, Any],
 ) -> None:
-    expected = {
-        "event_order": expected_order,
-        "event_number": expected_order + 1,
-        "target_event_id": target_event.event_id,
-        "home_team": target_event.home_team,
-        "away_team": target_event.away_team,
-    }
-    for name, value in expected.items():
-        _require_exact(coverage_row.get(name), value, f"coverage {name}")
+    _validate_coverage_identity(
+        expected_order=expected_order,
+        target_event=target_event,
+        coverage_row=coverage_row,
+    )
+    if coverage_row.get("sports_eligible") is not True:
+        raise ValueError("coverage event is not sports eligible")
+    for name in (
+        "provider_fixture_id",
+        "provider_home_team_id",
+        "provider_away_team_id",
+    ):
+        _nonempty_text(coverage_row.get(name), f"coverage {name}")
     schedule_expected = {
         "event_order": expected_order,
         "target_event_id": target_event.event_id,
@@ -844,14 +937,50 @@ def _validate_event_binding(
     }
     for name, value in schedule_expected.items():
         _require_exact(schedule_row.get(name), value, f"schedule {name}")
-    if coverage_row.get("sports_eligible") is not True:
-        raise ValueError("coverage event is not sports eligible")
-    for name in (
-        "provider_fixture_id",
-        "provider_home_team_id",
-        "provider_away_team_id",
-    ):
-        _nonempty_text(coverage_row.get(name), f"coverage {name}")
+
+
+def _validate_coverage_identity(
+    *,
+    expected_order: int,
+    target_event: Any,
+    coverage_row: Mapping[str, Any],
+) -> None:
+    expected = {
+        "event_order": expected_order,
+        "event_number": expected_order + 1,
+        "target_event_id": target_event.event_id,
+        "home_team": target_event.home_team,
+        "away_team": target_event.away_team,
+    }
+    for name, value in expected.items():
+        _require_exact(coverage_row.get(name), value, f"coverage {name}")
+
+
+def _validate_fallback_binding(
+    *,
+    expected_order: int,
+    target_event: Any,
+    coverage_row: Mapping[str, Any],
+    schedule_row: Mapping[str, Any] | None,
+) -> None:
+    _validate_coverage_identity(
+        expected_order=expected_order,
+        target_event=target_event,
+        coverage_row=coverage_row,
+    )
+    if schedule_row is not None:
+        raise ValueError("fallback event unexpectedly has a GOAL schedule binding")
+    expected = {
+        "sports_eligible": False,
+        "fallback_reason": "target_fixture_missing",
+        "provider_fixture_id": None,
+        "provider_home_team_id": None,
+        "provider_away_team_id": None,
+        "target_starts_at": None,
+        "sources": [],
+    }
+    for name, value in expected.items():
+        _require_exact(coverage_row.get(name), value, f"fallback coverage {name}")
 
 
 def _ordered_history_sources(
@@ -1042,6 +1171,26 @@ def _history_analytics(
         "accepted_status_counts": diagnostics.accepted_status_counts,
         "excluded_counts": diagnostics.excluded_counts,
         "source_artifact_sha256": diagnostics.source_artifact_sha256,
+    }
+
+
+def _missing_history_analytics(venue: str) -> dict[str, Any]:
+    return {
+        "fixture_count": None,
+        "overall_wdl": None,
+        "venue": venue,
+        "venue_played": 0,
+        "venue_wdl": None,
+        "points_per_game": None,
+        "last5_form_points": None,
+        "rest_days": None,
+        "declared_history_count": 0,
+        "declared_venue_count": 0,
+        "raw_count": 0,
+        "accepted_count": 0,
+        "accepted_status_counts": {},
+        "excluded_counts": {"target_fixture_missing": 1},
+        "source_artifact_sha256": None,
     }
 
 

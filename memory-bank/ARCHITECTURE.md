@@ -1,5 +1,21 @@
 # Architecture
 
+## Partial GOAL sports-shadow with explicit BK fallback (2026-08-28)
+
+The research-only GOAL collector no longer discards an otherwise valid drawing
+when GOAL cannot bind every event. It always freezes 15 ordered target rows,
+fetches team histories only for unique same-orientation GOAL bindings, and
+marks every unmatched event `target_fixture_missing`. The probability adapter
+creates 15 feature rows and applies the existing event-local TotoBrief BK
+fallback to unmatched events. A partial orientation-pin set is valid only for
+the covered event orders; missing pins cannot authorize sports probabilities.
+
+Counts are bound explicitly: `event_count=15`,
+`history_source_count=2*sports_eligible_count`, and
+`fallback_count=15-sports_coverage_count`. Partial artifacts remain
+`PAPER_ONLY` / `NOT_ACTIVATED`, cannot mutate scheduler/operator state and are
+not BaltBet operator packages.
+
 ## Category-hit hybrid production selector v2 (2026-08-28)
 
 The quality-v2 selector now starts 15-event playable selection from a

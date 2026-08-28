@@ -20,6 +20,22 @@ MSK checkpoint; T-25 final is 17:35, retry is 17:44 and the operator boundary
 remains T-10 at 17:50. Automatic wagering remains disabled and no
 profitability claim is made.
 
+The owner explicitly authorized one experimental manual release for exact plan
+`e27c56d2ef849b11`; it expires at T-10 and does not enable automatic wagering
+or prove profitability. A separate package-free preflight still passes.
+
+GOAL sports-shadow collection for 4989 found 10/15 exact/same-orientation
+fixtures and retained events 4/8/9/12/15 as explicit TotoBrief BK fallbacks.
+The frozen research input contains 15 events, 20 team histories and no
+scheduler influence. A same-config category-hit hybrid comparison at bank
+4,980 produced two 166-coupon research packages. The BK candidate modeled
+P13=0.012195996 under BK; the sports candidate modeled P13=0.010685331 under
+the experimental sports blend. The sports package beats the BK package under
+the sports model (0.010685331 versus 0.009114524), while BK beats sports under
+BK (0.012195996 versus 0.009481680). Their overlap is 0/166. This is model
+disagreement, not activation or evidence of profitability. The artifacts are
+below `reports/research/goal-sports-hybrid-4989-20260828/`.
+
 ## Drawing 4988 settlement and selector defect (2026-08-28)
 
 Drawing 4988 is now synchronized from authoritative TotoBrief result snapshot

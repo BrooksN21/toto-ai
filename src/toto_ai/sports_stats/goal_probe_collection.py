@@ -151,13 +151,33 @@ def collect_goal_probe_input(
     )
     schedule_report = _json_object(collection.report_path)
     goal_rows = _ordered_goal_rows(schedule_report)
-    if len(goal_rows) != 15:
-        raise ValueError("GOAL schedule binding requires exactly 15 matched rows")
+    goal_rows_by_order = {
+        int(row["event_order"]): row for row in goal_rows
+    }
 
     target_events = tuple(sorted(target.events, key=lambda item: item.event_order))
     coverage_events: list[dict[str, Any]] = []
     latest_capture = observed
-    for event, schedule_row in zip(target_events, goal_rows, strict=True):
+    for event in target_events:
+        schedule_row = goal_rows_by_order.get(event.event_order)
+        if schedule_row is None:
+            coverage_events.append(
+                {
+                    "event_order": event.event_order,
+                    "event_number": event.event_order + 1,
+                    "target_event_id": event.event_id,
+                    "home_team": event.home_team,
+                    "away_team": event.away_team,
+                    "provider_fixture_id": None,
+                    "provider_home_team_id": None,
+                    "provider_away_team_id": None,
+                    "target_starts_at": None,
+                    "sports_eligible": False,
+                    "fallback_reason": "target_fixture_missing",
+                    "sources": [],
+                }
+            )
+            continue
         _validate_schedule_binding(event, schedule_row)
         target_start = _parse_utc(schedule_row.get("starts_at"), "starts_at")
         home_id = _text(schedule_row.get("source_home_team_id"), "home team id")
@@ -206,6 +226,8 @@ def collect_goal_probe_input(
     finished_at = max(latest_capture, observed)
     if finished_at >= target.deadline:
         raise ValueError("GOAL probe collection crossed the drawing deadline")
+    sports_eligible_count = len(goal_rows)
+    history_source_count = sports_eligible_count * 2
     coverage = {
         "schema_version": 1,
         "status": "PAPER_ONLY_COVERAGE_PROBE",
@@ -213,8 +235,8 @@ def collect_goal_probe_input(
         "drawing_id": target.drawing_id,
         "drawing_number": target.drawing_number,
         "event_count": 15,
-        "sports_eligible_count": 15,
-        "history_source_count": 30,
+        "sports_eligible_count": sports_eligible_count,
+        "history_source_count": history_source_count,
         "package_influence": "NONE",
         "automatic_wagering": False,
         "source_schedule_report": collection.report_path.relative_to(root).as_posix(),
@@ -227,8 +249,8 @@ def collect_goal_probe_input(
         schedule_report_path=collection.report_path,
         captured_at=finished_at,
         event_count=15,
-        history_source_count=30,
-        sports_eligible_count=15,
+        history_source_count=history_source_count,
+        sports_eligible_count=sports_eligible_count,
         request_count=client.requests_made,
         quota_daily_remaining=client.quota_state.daily_remaining,
     )
@@ -309,8 +331,10 @@ def _load_current_collection(
         coverage.get("drawing_id") != drawing_id
         or coverage.get("status") != "PAPER_ONLY_COVERAGE_PROBE"
         or coverage.get("event_count") != 15
-        or coverage.get("history_source_count") != 30
-        or coverage.get("sports_eligible_count") != 15
+        or not isinstance(coverage.get("sports_eligible_count"), int)
+        or not 0 <= int(coverage["sports_eligible_count"]) <= 15
+        or coverage.get("history_source_count")
+        != 2 * int(coverage["sports_eligible_count"])
     ):
         raise ValueError("GOAL probe coverage marker is invalid")
     return GoalProbeCollection(
@@ -369,8 +393,11 @@ def _ordered_goal_rows(report: Mapping[str, Any]) -> tuple[Mapping[str, Any], ..
             key=lambda row: int(row["event_order"]),
         )
     )
-    if tuple(row.get("event_order") for row in rows) != tuple(range(15)):
-        raise ValueError("GOAL schedule report does not bind all event orders")
+    orders = tuple(int(row["event_order"]) for row in rows)
+    if any(order not in range(15) for order in orders) or len(set(orders)) != len(
+        orders
+    ):
+        raise ValueError("GOAL schedule report event orders are invalid")
     return rows
 
 

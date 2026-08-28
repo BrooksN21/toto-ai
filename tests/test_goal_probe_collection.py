@@ -83,6 +83,28 @@ class FakeSession:
         )
 
 
+class PartialFakeSession(FakeSession):
+    missing_orders = frozenset({3, 7, 8, 11, 14})
+
+    def get(self, url, *, params, headers, timeout):
+        response = super().get(
+            url,
+            params=params,
+            headers=headers,
+            timeout=timeout,
+        )
+        if "/fixtures/date/" in url and isinstance(response.payload, dict):
+            values = response.payload.get("data")
+            if isinstance(values, list):
+                response.payload["data"] = [
+                    row
+                    for row in values
+                    if int(str(row["id"]).rsplit("-", 1)[1])
+                    not in self.missing_orders
+                ]
+        return response
+
+
 def _canonical(value: object) -> bytes:
     return json.dumps(
         value,
@@ -224,6 +246,59 @@ def test_collect_goal_probe_builds_adapter_compatible_15_event_input(
     assert bundle.shadow.fallback_count == 0
 
 
+def test_collect_goal_probe_keeps_15_events_with_explicit_bk_fallback(
+    tmp_path: Path,
+) -> None:
+    queue = _write_inputs(tmp_path)
+    session = PartialFakeSession()
+    observed = datetime(2026, 8, 27, 8, 0, tzinfo=UTC)
+    client = GoalAPIClient(
+        "test-secret",
+        session=session,
+        snapshot_dir=(
+            tmp_path / "reports" / "goal-partial-probe" / "schedule" / "goal-api-v1"
+        ),
+        request_budget=120,
+        now=lambda: observed,
+    )
+
+    result = collect_goal_probe_input(
+        drawing_id=12071,
+        queue_path=queue,
+        raw_cache_dir=tmp_path / "data" / "raw",
+        output_dir=tmp_path / "reports" / "goal-partial-probe",
+        client=client,
+        project_root=tmp_path,
+        captured_at=observed,
+    )
+
+    assert result.event_count == 15
+    assert result.sports_eligible_count == 10
+    assert result.history_source_count == 20
+    coverage = json.loads(result.coverage_summary_path.read_text(encoding="utf-8"))
+    assert len(coverage["events"]) == 15
+    fallback = [row for row in coverage["events"] if not row["sports_eligible"]]
+    assert [row["event_order"] for row in fallback] == [3, 7, 8, 11, 14]
+    assert all(row["fallback_reason"] == "target_fixture_missing" for row in fallback)
+    assert all(row["sources"] == [] for row in fallback)
+
+    bundle = load_goal_probe_shadow(
+        drawing_id=12071,
+        as_of=result.captured_at,
+        raw_cache_dir=tmp_path / "data" / "raw",
+        coverage_summary_path=result.coverage_summary_path,
+        project_root=tmp_path,
+    )
+
+    assert bundle.shadow.sports_coverage_count == 10
+    assert bundle.shadow.fallback_count == 5
+    assert [
+        row.event_order
+        for row in bundle.shadow.events
+        if row.probability_source == "totobrief_bk_fallback"
+    ] == [3, 7, 8, 11, 14]
+
+
 def test_ensure_goal_probe_generates_full_queue_and_reuses_current_marker(
     monkeypatch,
     tmp_path: Path,
@@ -276,3 +351,49 @@ def test_ensure_goal_probe_generates_full_queue_and_reuses_current_marker(
     assert "test-secret" not in (output / "current.json").read_text(
         encoding="utf-8"
     )
+
+
+def test_ensure_goal_probe_reuses_partial_marker_with_bk_fallback(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    _write_inputs(tmp_path)
+    session = PartialFakeSession()
+    observed = datetime(2026, 8, 27, 8, 0, tzinfo=UTC)
+    real_client = GoalAPIClient
+
+    def client_factory(api_key, *, snapshot_dir, request_budget):
+        return real_client(
+            api_key,
+            session=session,
+            snapshot_dir=snapshot_dir,
+            request_budget=request_budget,
+            now=lambda: observed,
+        )
+
+    monkeypatch.setattr(goal_probe_collection, "GoalAPIClient", client_factory)
+    output = tmp_path / "reports" / "sports-analytics" / "4988" / "goal-auto"
+    first = ensure_goal_probe_input(
+        drawing_id=12071,
+        raw_cache_dir=tmp_path / "data" / "raw",
+        output_root=output,
+        api_key="test-secret",
+        project_root=tmp_path,
+        captured_at=observed,
+    )
+    calls_after_first = len(session.calls)
+    second = ensure_goal_probe_input(
+        drawing_id=12071,
+        raw_cache_dir=tmp_path / "data" / "raw",
+        output_root=output,
+        api_key="test-secret",
+        project_root=tmp_path,
+        captured_at=observed,
+    )
+
+    assert first.sports_eligible_count == 10
+    assert first.history_source_count == 20
+    assert second.reused is True
+    assert second.sports_eligible_count == 10
+    assert second.history_source_count == 20
+    assert len(session.calls) == calls_after_first

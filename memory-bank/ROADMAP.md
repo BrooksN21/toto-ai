@@ -1146,6 +1146,11 @@ closed.
 - [ ] Walk-forward calibrate each probability candidate against untouched BK.
   Reject any blend that worsens log loss, Brier score or calibration without a
   paired category-hit benefit.
+- [x] Add partial GOAL research coverage with per-event BK fallback; drawing
+  4989 froze 10 sports-covered and 5 fallback events and produced a same-bank,
+  same-config category-hit hybrid research pair.
+- [ ] Replace the one-run 4989 hybrid research harness with a reusable
+  artifact-bound CLI and settle the pair automatically after the drawing.
 - [ ] Predeclare a prospective stopping/activation gate of at least 30 complete
   drawings / 450 events before replacing the current production probability or
   package strategy. No modeled EV or isolated win proves profitability.
