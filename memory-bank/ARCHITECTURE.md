@@ -1,5 +1,23 @@
 # Architecture
 
+## Final-input-bound sports comparison sidecar (2026-08-28)
+
+The optional GOAL sidecar waits for the scheduler-owned actionable PLAY and
+only then reads that run's immutable `final-input.json`. It recomputes the BK
+control and sports-shadow candidate with the exact production quality-v2
+hybrid selector, bank, stake, pool and scheduler plan. The sports model is
+rebased around the final BK probabilities using each frozen event's blend
+weight; uncovered events remain event-local BK fallbacks.
+
+The sidecar starts only after the main scheduler has published, so it cannot
+compete for CPU during the critical operator calculation. It exports the
+validated scheduler-owned BK package through the existing operator gateway,
+requires the independently recomputed BK control to match it exactly, and
+writes the sports candidate only in deliberately non-uploadable research
+format. A safe-start reserve suppresses the sidecar when too little time
+remains before T-10. It never mutates scheduler state or enables automatic
+wagering.
+
 ## Partial GOAL sports-shadow with explicit BK fallback (2026-08-28)
 
 The research-only GOAL collector no longer discards an otherwise valid drawing

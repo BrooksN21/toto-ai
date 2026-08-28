@@ -36,6 +36,15 @@ BK (0.012195996 versus 0.009481680). Their overlap is 0/166. This is model
 disagreement, not activation or evidence of profitability. The artifacts are
 below `reports/research/goal-sports-hybrid-4989-20260828/`.
 
+The reusable `compare-final-goal-hybrid` command now binds both hybrid
+calculations to one immutable scheduler final input. A live training check on
+4989 completed in 168 seconds and produced 166 coupons per candidate. The
+separate `run-final-goal-hybrid-sidecar` waits for scheduler-owned PLAY,
+requires at least 240 seconds before T-10, validates/re-exports the operator BK
+package, and fails if its recomputed BK control differs. The sports output
+remains research-only and non-uploadable. Installation of the exact 4989
+LaunchAgent is the remaining operational step before the evening checkpoints.
+
 ## Drawing 4988 settlement and selector defect (2026-08-28)
 
 Drawing 4988 is now synchronized from authoritative TotoBrief result snapshot

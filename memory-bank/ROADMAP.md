@@ -1149,8 +1149,10 @@ closed.
 - [x] Add partial GOAL research coverage with per-event BK fallback; drawing
   4989 froze 10 sports-covered and 5 fallback events and produced a same-bank,
   same-config category-hit hybrid research pair.
-- [ ] Replace the one-run 4989 hybrid research harness with a reusable
-  artifact-bound CLI and settle the pair automatically after the drawing.
+- [x] Replace the one-run 4989 hybrid research harness with reusable
+  final-input-bound comparison and fail-safe post-PLAY sidecar commands.
+- [ ] Install and observe the exact 4989 sidecar; settle both frozen packages
+  automatically after the drawing.
 - [ ] Predeclare a prospective stopping/activation gate of at least 30 complete
   drawings / 450 events before replacing the current production probability or
   package strategy. No modeled EV or isolated win proves profitability.

@@ -328,6 +328,10 @@ from toto_ai.runner.preflight_retry_scheduler import (
 )
 from toto_ai.runner.preflight_status import build_preflight_status
 from toto_ai.runner.training_package import ensure_scheduler_training_package
+from toto_ai.sports_stats.final_hybrid_comparison import (
+    execute_final_hybrid_comparison,
+)
+from toto_ai.sports_stats.final_hybrid_sidecar import run_final_hybrid_sidecar
 from toto_ai.sports_stats.goal_probe_collection import (
     collect_goal_probe_input,
     ensure_goal_probe_input,
@@ -6153,6 +6157,130 @@ def compare_goal_shadow_packages_command(
             sort_keys=True,
         )
     )
+
+
+@app.command("compare-final-goal-hybrid")
+def compare_final_goal_hybrid_command(
+    final_input: Path = typer.Option(  # noqa: B008
+        ...,
+        "--final-input",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    sports_artifact: Path = typer.Option(  # noqa: B008
+        ...,
+        "--sports-artifact",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        ...,
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+    ),
+) -> None:
+    """Compare production-hybrid BK/sports packages — RESEARCH ONLY."""
+
+    try:
+        report, paths = execute_final_hybrid_comparison(
+            final_input_path=final_input,
+            scheduler_plan_path=scheduler_plan,
+            sports_artifact_path=sports_artifact,
+            output_dir=output_dir,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": report["status"],
+                "drawing_number": report["drawing_number"],
+                "sports_coverage_count": report["sports_coverage_count"],
+                "sports_fallback_count": report["sports_fallback_count"],
+                "comparison": report["comparison"],
+                "report": str(paths.report),
+                "baseline_package": str(paths.baseline_package),
+                "sports_package": str(paths.sports_package),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
+
+
+@app.command("run-final-goal-hybrid-sidecar")
+def run_final_goal_hybrid_sidecar_command(
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    sports_artifact: Path = typer.Option(  # noqa: B008
+        ...,
+        "--sports-artifact",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    output_root: Path = typer.Option(  # noqa: B008
+        ...,
+        "--output-root",
+        file_okay=False,
+        resolve_path=True,
+    ),
+    wait_seconds: int = typer.Option(600, "--wait-seconds", min=0, max=900),
+    minimum_runtime_seconds: int = typer.Option(
+        240,
+        "--minimum-runtime-seconds",
+        min=180,
+        max=600,
+    ),
+) -> None:
+    """Wait for final PLAY, then run the non-blocking sports sidecar."""
+
+    try:
+        result = run_final_hybrid_sidecar(
+            scheduler_plan_path=scheduler_plan,
+            sports_artifact_path=sports_artifact,
+            output_root=output_root,
+            wait_seconds=wait_seconds,
+            minimum_runtime_seconds=minimum_runtime_seconds,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": result.status,
+                "result_path": str(result.result_path),
+                "output_dir": (
+                    None if result.output_dir is None else str(result.output_dir)
+                ),
+                "reason": result.reason,
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
+    if result.status != "READY_BEFORE_T10":
+        raise typer.Exit(code=1)
 
 
 @app.command("evaluate-sports-probability-shadow")
