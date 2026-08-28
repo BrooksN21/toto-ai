@@ -1,5 +1,25 @@
 # Current State
 
+## Drawing 4989 category-hit activation (2026-08-28)
+
+The category-hit hybrid selector is now active for drawing 4989 under the
+regenerated schema-v8 scheduler plan `e27c56d2ef849b11`. The plan is bound to
+candidate source `cover14_bk_fill_then_ev_hybrid`, release protocol
+`quality-v2-category-hit-hybrid-v2`, bank 4,980 RUB, stake 30 RUB, the existing
+READY 15/15 preparation and the independently verified 18:00 MSK operational
+cutoff. The superseded EV/crowd plan `ceaa292700dbb903` was unloaded and its
+record/output directory were archived without deletion.
+
+The regenerated morning dispatch installed and verified LaunchAgent
+`com.totoai.production-scheduler.v8.e27c56d2ef849b11`. Its non-actionable
+training run produced 166 unique coupons for 4,980 RUB with
+`STRUCTURAL_PASS` and no unused bank. A separate real package-free daytime
+preflight passed exact drawing identity, data access, configuration and
+reviewed schedule validation. The scheduler is waiting for the first 16:00
+MSK checkpoint; T-25 final is 17:35, retry is 17:44 and the operator boundary
+remains T-10 at 17:50. Automatic wagering remains disabled and no
+profitability claim is made.
+
 ## Drawing 4988 settlement and selector defect (2026-08-28)
 
 Drawing 4988 is now synchronized from authoritative TotoBrief result snapshot

@@ -1123,8 +1123,12 @@ closed.
 - [x] Implement the safety-compatible category-hit hybrid seed and bind its
   candidate source into quality protocol v2. Frozen 4989 canary: 166 coupons,
   4,980 RUB, structural pass, modeled P13 0.01157973.
-- [ ] Regenerate, verify and activate the protocol-v2 plan for drawing 4989;
-  observe every checkpoint and preserve the T-10 operator boundary.
+- [x] Regenerate, verify and activate protocol-v2 plan
+  `e27c56d2ef849b11` for drawing 4989; verify a 166-coupon / 4,980-RUB
+  `STRUCTURAL_PASS` training package and pass a real package-free exact-ID
+  daytime preflight.
+- [ ] Observe every real 4989 checkpoint and preserve the T-10 operator
+  boundary.
 
 - [ ] Freeze the same final input for three equal-bank packages on every new
   drawing: `BK_PROBABILITY_ONLY`, deterministic `COVER_14_BK_FILL`, and current
