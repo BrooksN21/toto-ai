@@ -2124,12 +2124,13 @@ def _prepare_runner_resources(
         if reviewed_catalog is None
         else reviewed_catalog_input_paths(reviewed_catalog)
     )
-    if (
-        reviewed_catalog is not None
-        and expected_reviewed_catalog_hash is not None
-        and reviewed_catalog.semantic_hash != expected_reviewed_catalog_hash
-    ):
-        raise ValueError("reviewed catalog hash mismatch")
+    # ``expected_reviewed_catalog_hash`` is the hash of the reviewed evidence
+    # selected into the canonical pin set, not the semantic hash of the whole
+    # reviewed catalog.  A catalog can legitimately contain records that are
+    # not selected for this drawing, so comparing those two different hash
+    # domains rejects valid scheduler-bound inputs.  The catalog bytes are
+    # independently bound by the scheduler plan and the selected-evidence hash
+    # is verified by ``load_ready_pin_set`` below.
     expected_pin_set_hash = (
         reviewed_catalog.semantic_hash
         if reviewed_catalog is not None and expected_reviewed_catalog_hash is None

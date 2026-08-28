@@ -2115,3 +2115,13 @@ ambiguous reversed evidence remains unresolved.
   modeled P(13+) 0.01157973 versus 0.00326133 for EV/crowd, while using 166
   coupons / 4,980 RUB and passing structural constraints. This is a canary
   comparison only; actual outcomes must be settled afterward.
+
+## 2026-08-28 — Keep reviewed-catalog and selected-evidence hashes distinct
+
+- The reviewed catalog semantic hash identifies the complete catalog payload.
+  The canonical pin-set reviewed hash identifies only the reviewed evidence
+  actually selected into that pin set. They are separate hash domains and are
+  not expected to be equal.
+- Scheduler plans bind the catalog bytes independently and pass the selected
+  evidence hash to canonical pin loading. Runtime validation must verify each
+  binding in its own domain instead of comparing the two hashes directly.

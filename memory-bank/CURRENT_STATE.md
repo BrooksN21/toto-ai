@@ -5610,3 +5610,18 @@ review. New versus old quality-v2 best hits were 12 vs 7 on 4967, 9 vs 9 on
 4969 and 10 vs 9 on 4970. Mean hits improved on 4967 and 4970 but declined on
 4969. This supports the experimental category-hit direction but remains only
 three retrospective drawings and does not prove profitability.
+
+## Drawing 4989 live evening run (2026-08-28)
+
+Active schema-v8 plan `e27c56d2ef849b11` is loaded as LaunchAgent
+`com.totoai.production-scheduler.v8.e27c56d2ef849b11`. TLS and API preflights
+completed. The 17:00 freshness preflight exposed an invalid comparison between
+the complete reviewed-catalog semantic hash and the selected-evidence pin-set
+hash. Those are different hash domains; the runner now binds the catalog bytes
+and verifies the selected hash through canonical pin loading without comparing
+the two values. A regression test covers the distinction.
+
+The fix passed 246 scheduler/runner tests, the complete suite passes
+`2102 passed, 13 deselected`, and Ruff passes. The real 17:15 warmup then
+completed successfully with the 15/15 prepared pin set. The live watcher
+remains active through refresh, final, sports sidecar, retry and T-10.

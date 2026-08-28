@@ -633,6 +633,49 @@ def test_run_drawing_protects_reviewed_snapshots_and_fails_closed_on_toctou(
     assert publication_result.ev_run is None
 
 
+def test_run_drawing_accepts_selected_evidence_hash_distinct_from_catalog_hash(
+    monkeypatch,
+    tmp_path,
+):
+    catalog_path = tmp_path / "reviewed-catalog.json"
+    catalog_path.write_text("pinned", encoding="utf-8")
+    catalog = SimpleNamespace(
+        path=catalog_path.resolve(),
+        semantic_hash="c" * 64,
+        records=(),
+    )
+    monkeypatch.setattr(
+        cli,
+        "load_reviewed_schedule_catalog",
+        lambda *args, **kwargs: catalog,
+    )
+    _wire_runner(monkeypatch, result=_RunnerResult("NO BET"))
+    loader_calls = []
+    monkeypatch.setattr(
+        cli,
+        "load_ready_pin_set",
+        lambda *_args, **kwargs: loader_calls.append(kwargs)
+        or tuple(f"pin-{index}" for index in range(15)),
+    )
+
+    result = runner.invoke(
+        cli.app,
+        [
+            "run-drawing",
+            "--open",
+            "--bank",
+            "4980",
+            "--reviewed-schedule-catalog",
+            str(catalog_path),
+            "--expected-reviewed-catalog-hash",
+            "d" * 64,
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert loader_calls[0]["expected_reviewed_catalog_hash"] == "d" * 64
+
+
 def test_run_drawing_exposes_exact_approved_option_surface():
     command = typer.main.get_command(cli.app).commands["run-drawing"]
     option_names = {
