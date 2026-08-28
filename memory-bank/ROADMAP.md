@@ -1103,7 +1103,32 @@ closed.
   install the replacement LaunchAgent, and verify one live exit-0 cycle.
 - [x] Discover and prepare drawing 4989 automatically; retain a loaded passive
   retry for its five unresolved kickoff times.
+- [x] Close all five 4989 kickoff gaps with immutable exact
+  official-plus-independent evidence, publish a mixed-source 15/15 pin set and
+  activate schema-v8 plan `ceaa292700dbb903` for the 18:00 MSK operational
+  cutoff.
 - [x] Publish a stable operator-delivery status record immediately after a
   verified pre-T-10 PLAY and retain a clearly expired audit pointer after T-10.
-- [ ] Observe drawing 4989 becoming 15/15 timing-playable, then verify its
-  generated schema-v8 evening plan and every real checkpoint.
+- [ ] Observe every real 4989 checkpoint and verify final publication/expiry.
+
+# Forecast/category-hit improvement sequence
+
+- [ ] Freeze the same final input for three equal-bank packages on every new
+  drawing: `BK_PROBABILITY_ONLY`, deterministic `COVER_14_BK_FILL`, and current
+  `EV_CROWD` shadow. Do not let outcome knowledge enter package generation.
+- [ ] Settle all three automatically and compare P13/P14/P15, actual best hits,
+  event exposure, concentration, overlap, runtime and unused bank by paired
+  drawing.
+- [ ] Implement a global dynamic-bank category optimizer whose primary
+  objective is modeled P(13+) under `floor(bank/stake)` unique coupons;
+  crowd/payout value is a bounded secondary tie-breaker, not the primary
+  objective.
+- [ ] Add leakage-safe sports residual features around BK (Elo, venue form,
+  goals/xG where available, rest, table position, congestion, lineups and
+  injuries), with per-event BK fallback and immutable as-of provenance.
+- [ ] Walk-forward calibrate each probability candidate against untouched BK.
+  Reject any blend that worsens log loss, Brier score or calibration without a
+  paired category-hit benefit.
+- [ ] Predeclare a prospective stopping/activation gate of at least 30 complete
+  drawings / 450 events before replacing the current production probability or
+  package strategy. No modeled EV or isolated win proves profitability.

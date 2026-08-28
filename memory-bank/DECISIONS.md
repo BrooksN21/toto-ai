@@ -2080,3 +2080,20 @@ ambiguous reversed evidence remains unresolved.
   outcomes, settled afterward, and compared prospectively on predeclared
   metrics. Modeled EV cannot by itself establish profitability or open a
   release gate.
+
+## 2026-08-28 — Reviewed schedule evidence survives explicit provider outage
+
+- Exact target-bound official-plus-independent reviewed evidence may replace a
+  missing provider row only when the final provider diagnostic explicitly says
+  `access` or `plan`. Generic quota, transport and unknown failures remain
+  rejected; ambiguous identity is never masked.
+- A partial reviewed catalog applies only to its listed event orders. Other
+  events may retain independently verified schedule-ledger pins; absence from
+  the partial catalog is not treated as conflicting evidence.
+- A future reviewed kickoff earlier than TotoBrief `ended_at` tightens the
+  operational cutoff. Evidence at or before evaluation time is already late
+  and remains ineligible.
+- A canonical pin set may contain schedule-ledger and reviewed-catalog evidence
+  with different component hashes. Its persisted reviewed binding is then a
+  deterministic aggregate of all selected source/hash tuples. Single-source
+  legacy sets retain their original hash unchanged.

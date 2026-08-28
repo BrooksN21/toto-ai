@@ -692,6 +692,97 @@ def test_reviewed_fallback_cannot_mask_provider_date_failure(
         assert session.scalar(select(func.count(DrawingPinSetItem.id))) == 0
 
 
+def test_reviewed_fallback_allows_explicit_provider_access_outage(
+    session_factory, tmp_path: Path
+) -> None:
+    target = _target()
+    _seed(session_factory)
+
+    result = prepare_drawing(
+        target,
+        _candidates()[:-1],
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=(
+            {
+                "sport": "football",
+                "date": "2026-07-29",
+                "status": "success",
+                "reason": None,
+            },
+            {
+                "sport": "football",
+                "date": "2026-07-30",
+                "status": "failed",
+                "reason": "API-Sports returned provider errors",
+                "provider_attempts": [
+                    {
+                        "provider_errors": [
+                            {
+                                "code": "access",
+                                "message": "provider account is unavailable",
+                            }
+                        ]
+                    }
+                ],
+            },
+        ),
+        reviewed_schedule_catalog=_catalog(
+            tmp_path,
+            target,
+            starts_at="2026-07-30T18:00:00Z",
+        ),
+        evaluated_at=EVALUATED_AT,
+    )
+
+    assert result.status == "ready", {
+        "events": [
+            (event.event_order, event.status, event.reason)
+            for event in result.events
+            if event.status != "matched"
+        ],
+        "eligibility": result.eligibility,
+        "unresolved": result.unresolved_event_orders,
+        "pins": len(result.pins),
+    }
+    assert result.eligibility.status == "playable"
+    assert result.pins[14].effective_source_provider == "reviewed-schedule"
+
+
+def test_reviewed_fallback_can_tighten_cutoff_before_nominal_deadline(
+    session_factory, tmp_path: Path
+) -> None:
+    target = _target()
+    _seed(session_factory)
+
+    result = prepare_drawing(
+        target,
+        _candidates(),
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=(
+            {
+                "sport": "football",
+                "date": "2026-07-29",
+                "status": "success",
+                "reason": None,
+            },
+        ),
+        reviewed_schedule_catalog=_catalog(
+            tmp_path,
+            target,
+            starts_at="2026-07-29T15:30:00Z",
+        ),
+        evaluated_at=EVALUATED_AT,
+    )
+
+    assert result.status == "ready"
+    assert result.eligibility.status == "playable"
+    assert result.eligibility.earliest_start == datetime(
+        2026, 7, 29, 15, 30, tzinfo=UTC
+    )
+
+
 def test_final_revalidation_is_per_pin_and_never_fetches_reviewed_market(
     session_factory, tmp_path: Path
 ) -> None:

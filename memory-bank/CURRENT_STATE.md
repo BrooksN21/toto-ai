@@ -5480,3 +5480,32 @@ tested user-local guard at `~/.local/bin/git`, placed first in login-shell PATH,
 returns exit 64 for `status`/`ls-files` when the resolved repository root is
 exactly `$HOME`, while allowing Git in nested repositories. The home repository
 was not removed or modified.
+
+## Drawing 4989 schedule closure and activation (2026-08-28)
+
+The five previously unknown kickoff times are closed by exact target-bound
+official-plus-independent reviewed evidence for Tenerife/Sporting Gijon,
+Braunschweig/Hertha, Al Ittihad Alexandria/Ceramica, Galway/Shelbourne and
+Dunfermline/Raith. Immutable source snapshots and the partial catalog are in
+`data/reviewed-schedule/4989/`.
+
+Preparation now permits an exact reviewed record during an explicit provider
+`access`/`plan` outage, while still rejecting ambiguous identity, generic
+transport/quota failures, an absent catalog event and evidence captured after
+kickoff. Reviewed evidence may conservatively tighten an inaccurate later
+TotoBrief deadline. Mixed schedule-ledger and reviewed-catalog pins use one
+deterministic aggregate binding hash; every component hash remains validated.
+
+Drawing 4989 is READY 15/15 with zero unresolved event orders. Operational
+cutoff is 18:00 MSK, T-10 is 17:50 MSK, and schema-v8 plan
+`ceaa292700dbb903` is loaded as LaunchAgent
+`com.totoai.production-scheduler.v8.ceaa292700dbb903`. Checkpoints are 16:00,
+16:30, 17:00, 17:15, 17:30, T-25 final at 17:35, retry at 17:44 and expiry at
+17:50 MSK. The activation-time training package is a non-actionable
+`STRUCTURAL_PASS`: 166 unique coupons, 4,980 RUB, full configured bank.
+Automatic wagering remains disabled and profitability is not proven.
+
+The optional GOAL sports-shadow capture failed closed because its report did
+not bind all 15 event orders. It did not affect preparation, scheduler
+activation or production probabilities. Verification passed `2090 passed, 13
+deselected`; full Ruff and `git diff --check` passed.

@@ -51,6 +51,7 @@ from toto_ai.external_odds.team_registry import (
     publish_canonical_pin_set,
     publish_drawing_preparation,
     refresh_ready_drawing_preparation_evidence,
+    selected_reviewed_input_hash,
     upsert_team_entity,
 )
 from toto_ai.external_odds.team_resolution import (
@@ -350,6 +351,7 @@ def prepare_drawing(
                 resolutions=existing_preview.resolutions,
                 catalog=reviewed_catalog,
                 schedule_diagnostics=schedule_diagnostics,
+                evaluated_at=reference,
                 allowed_event_orders=baseline_only_orders,
             )
             reviewed_catalog_upgrade_orders = tuple(
@@ -412,10 +414,16 @@ def prepare_drawing(
                 resolutions=tuple(resolutions),
                 catalog=reviewed_catalog,
                 schedule_diagnostics=schedule_diagnostics,
+                evaluated_at=reference,
             )
         except (OSError, TypeError, ValueError) as error:
             reviewed_error = str(error) or type(error).__name__
             reviewed_by_order = {}
+            if existing and reviewed_catalog_upgrade_orders:
+                raise ValueError(
+                    "reviewed fallback re-evaluation failed during monotonic "
+                    f"upgrade: {reviewed_error}"
+                ) from error
 
     if schedule_evidence_ledger is not None:
         assert evidence_ledger is not None
@@ -871,21 +879,8 @@ def prepare_drawing(
                     ),
                 )
             )
-        selected_reviewed_hashes = {
-            str(item["provenance"][hash_field])
-            for item in canonical_pin_specs
-            for source_provider, hash_field in (
-                ("reviewed-schedule", "catalog_hash"),
-                ("schedule-evidence", "ledger_hash"),
-            )
-            if item["source_provider"] == source_provider
-        }
-        if len(selected_reviewed_hashes) > 1:
-            raise ValueError(
-                "selected reviewed pins require conflicting reviewed catalog hashes"
-            )
-        selected_reviewed_catalog_hash = next(
-            iter(selected_reviewed_hashes), None
+        selected_reviewed_catalog_hash = selected_reviewed_input_hash(
+            canonical_pin_specs
         )
         pins = publish_canonical_pin_set(
             session_factory,
@@ -1020,7 +1015,12 @@ def _merge_monotonic_baseline_upgrade_specs(
             or new.get("event_order") != old.event_order
             or new.get("schedule_only") is not True
         ):
-            raise ValueError("schedule upgrade is not monotonic")
+            raise ValueError(
+                "schedule upgrade is not monotonic for event order "
+                f"{order}: source_provider={new.get('source_provider')!r}, "
+                f"event_order={new.get('event_order')!r}, "
+                f"schedule_only={new.get('schedule_only')!r}"
+            )
         old_start = old.starts_at
         new_start = new.get("starts_at")
         if old_start not in {None, "baseline-only"} and (
@@ -1062,6 +1062,7 @@ def _admit_reviewed_fallbacks(
     resolutions: tuple[CandidateResolution, ...],
     catalog: ReviewedScheduleCatalog,
     schedule_diagnostics: tuple[dict[str, object], ...],
+    evaluated_at: datetime,
     allowed_event_orders: frozenset[int] | None = None,
 ) -> dict[int, ReviewedScheduleEvidence]:
     scoped_resolutions = tuple(
@@ -1069,13 +1070,21 @@ def _admit_reviewed_fallbacks(
         for event, resolution in zip(target.events, resolutions, strict=True)
         if allowed_event_orders is None or event.event_order in allowed_event_orders
     )
-    if any(
-        resolution.status in {"ambiguous", "missing"}
-        for resolution in scoped_resolutions
-    ):
+    if any(resolution.status == "ambiguous" for resolution in scoped_resolutions):
         raise ValueError(
-            "reviewed fallback cannot mask ambiguous or unproven API absence"
+            "reviewed fallback cannot mask ambiguous provider identity"
         )
+    diagnostic_statuses = _schedule_diagnostic_statuses(schedule_diagnostics)
+    diagnostic_error_codes = _schedule_diagnostic_error_codes(
+        schedule_diagnostics
+    )
+    catalog_event_orders = {
+        record.event_order
+        for record in catalog.records
+        if record.drawing_id == target.drawing_id
+        and record.drawing_number == target.drawing_number
+        and record.target_fingerprint == fingerprint
+    }
     admitted: dict[int, ReviewedScheduleEvidence] = {}
     for event, resolution in zip(target.events, resolutions, strict=True):
         if (
@@ -1083,7 +1092,9 @@ def _admit_reviewed_fallbacks(
             and event.event_order not in allowed_event_orders
         ):
             continue
-        if resolution.status != "source_missing_competition":
+        if resolution.status not in {"source_missing_competition", "missing"}:
+            continue
+        if event.event_order not in catalog_event_orders:
             continue
         if target.drawing_number is None:
             raise ValueError("reviewed fallback requires visible drawing number")
@@ -1099,13 +1110,18 @@ def _admit_reviewed_fallbacks(
             evidence.sport,
             evidence.starts_at.astimezone(timezone.utc).date().isoformat(),
         )
-        relevant_status = _schedule_diagnostic_statuses(schedule_diagnostics).get(
-            relevant_key
+        relevant_status = diagnostic_statuses.get(relevant_key)
+        explicit_access_outage = (
+            resolution.status == "missing"
+            and relevant_status == "failed"
+            and bool(diagnostic_error_codes.get(relevant_key))
+            and diagnostic_error_codes[relevant_key] <= {"access", "plan"}
         )
-        if relevant_status != "success":
+        if relevant_status != "success" and not explicit_access_outage:
             raise ValueError(
-                "reviewed fallback requires successful API-Sports fetch for "
-                f"relevant UTC date {relevant_key[0]}:{relevant_key[1]}"
+                "reviewed fallback requires successful provider fetch or an "
+                "explicit access/plan outage for relevant UTC date "
+                f"{relevant_key[0]}:{relevant_key[1]}"
             )
         if evidence.sport != event.sport:
             raise ValueError("reviewed evidence sport does not match target")
@@ -1114,8 +1130,8 @@ def _admit_reviewed_fallbacks(
             and evidence.starts_at != event.starts_at.astimezone(timezone.utc)
         ):
             raise ValueError("reviewed evidence start date/time does not match target")
-        if evidence.starts_at < target.deadline:
-            raise ValueError("reviewed evidence starts before drawing deadline")
+        if evidence.starts_at <= evaluated_at:
+            raise ValueError("reviewed evidence event already started")
         expected_class = _target_gender_age_class(event)
         if evidence.gender_age_class != expected_class:
             raise ValueError("reviewed evidence gender/age class does not match target")
@@ -1748,7 +1764,10 @@ def _failed_date_event_orders(
         if effective_start is None:
             if any(sport == event.sport for sport, _ in failed):
                 orders.append(event.event_order)
-        elif event.event_order in evidence_by_order:
+        elif (
+            event.event_order in reviewed_by_order
+            or event.event_order in evidence_by_order
+        ):
             # The relevant UTC date is backed by independent reviewed evidence;
             # an API provider plan gap cannot erase that source observation.
             continue
@@ -1776,7 +1795,7 @@ def _failed_date_pin_orders(
         event.event_order
         for event, pin in zip(target.events, pins, strict=True)
         if pin.effective_source_provider
-        not in {"totobrief-baseline", "schedule-evidence"}
+        not in {"totobrief-baseline", "reviewed-schedule", "schedule-evidence"}
         and (
             event.sport,
             _parse_datetime(pin.starts_at).date().isoformat(),
@@ -1807,6 +1826,40 @@ def _schedule_diagnostic_statuses(
             continue
         statuses[(sport, canonical_date)] = status
     return statuses
+
+
+def _schedule_diagnostic_error_codes(
+    diagnostics: tuple[dict[str, object], ...],
+) -> dict[tuple[str, str], frozenset[str]]:
+    """Return provider error codes from the final diagnostic per UTC date."""
+    codes: dict[tuple[str, str], frozenset[str]] = {}
+    for item in diagnostics:
+        sport = item.get("sport")
+        requested_date = item.get("date")
+        status = item.get("status")
+        if not sport or not requested_date or status not in {"success", "failed"}:
+            continue
+        try:
+            key = (str(sport), date.fromisoformat(str(requested_date)).isoformat())
+        except ValueError:
+            continue
+        found: set[str] = set()
+        attempts = item.get("provider_attempts")
+        if isinstance(attempts, list):
+            for attempt in attempts:
+                if not isinstance(attempt, dict):
+                    continue
+                errors = attempt.get("provider_errors")
+                if not isinstance(errors, list):
+                    continue
+                for error in errors:
+                    if not isinstance(error, dict):
+                        continue
+                    code = error.get("code")
+                    if isinstance(code, str) and code:
+                        found.add(code)
+        codes[key] = frozenset(found)
+    return codes
 
 
 def _parse_datetime(value: object) -> datetime:

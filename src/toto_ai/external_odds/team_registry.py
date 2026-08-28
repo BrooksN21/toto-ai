@@ -1156,6 +1156,63 @@ def publish_canonical_pin_set(
         return tuple(_canonical_pin_record(row) for row in rows)
 
 
+def selected_reviewed_input_hash(
+    pin_specs: Iterable[Mapping[str, Any]],
+) -> str | None:
+    """Bind every reviewed catalog/ledger used by a canonical pin set.
+
+    Legacy pin sets that use one source hash retain that hash verbatim. A
+    genuinely mixed pin set receives a deterministic aggregate hash instead
+    of requiring unrelated catalogs and ledgers to have identical hashes.
+    """
+    selected: set[tuple[str, str, str]] = set()
+    for item in pin_specs:
+        source_provider = item.get("source_provider")
+        if source_provider not in {"reviewed-schedule", "schedule-evidence"}:
+            continue
+        provenance_value = item.get("provenance")
+        if isinstance(provenance_value, Mapping):
+            provenance = provenance_value
+        else:
+            try:
+                decoded = json.loads(str(provenance_value))
+            except (TypeError, json.JSONDecodeError) as error:
+                raise ValueError("reviewed pin provenance is invalid") from error
+            if not isinstance(decoded, Mapping):
+                raise ValueError("reviewed pin provenance is invalid")
+            provenance = decoded
+        hash_field = (
+            "catalog_hash"
+            if source_provider == "reviewed-schedule"
+            else "ledger_hash"
+        )
+        source_hash = provenance.get(hash_field)
+        if (
+            not isinstance(source_hash, str)
+            or _SHA256_RE.fullmatch(source_hash) is None
+        ):
+            raise ValueError("reviewed source hash is invalid")
+        selected.add((str(source_provider), hash_field, source_hash))
+    if not selected:
+        return None
+    distinct_hashes = {item[2] for item in selected}
+    if len(distinct_hashes) == 1:
+        return next(iter(distinct_hashes))
+    return _sha256(
+        {
+            "schema_version": 1,
+            "selected_reviewed_inputs": [
+                {
+                    "source_provider": source_provider,
+                    "hash_field": hash_field,
+                    "hash": source_hash,
+                }
+                for source_provider, hash_field, source_hash in sorted(selected)
+            ],
+        }
+    )
+
+
 def _is_safe_baseline_schedule_enrichment(
     existing: tuple[DrawingPinSetItem, ...],
     replacement: tuple[Mapping[str, Any], ...],
@@ -1266,18 +1323,8 @@ def _validate_selected_reviewed_hash(
         or _SHA256_RE.fullmatch(reviewed_catalog_hash) is None
     ):
         raise ValueError("reviewed catalog hash is invalid")
-    for item in reviewed:
-        try:
-            provenance = json.loads(str(item["provenance"]))
-        except (TypeError, json.JSONDecodeError) as error:
-            raise ValueError("reviewed pin provenance is invalid") from error
-        hash_field = (
-            "catalog_hash"
-            if item["source_provider"] == "reviewed-schedule"
-            else "ledger_hash"
-        )
-        if provenance.get(hash_field) != reviewed_catalog_hash:
-            raise ValueError("reviewed catalog hash does not match selected evidence")
+    if selected_reviewed_input_hash(reviewed) != reviewed_catalog_hash:
+        raise ValueError("reviewed catalog hash does not match selected evidence")
 
 
 def refresh_ready_drawing_preparation_evidence(

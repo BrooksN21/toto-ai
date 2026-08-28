@@ -26,6 +26,7 @@ from toto_ai.external_odds.team_registry import (
     lookup_reviewed_alias_by_provider_id,
     publish_canonical_pin_set,
     resolve_review,
+    selected_reviewed_input_hash,
     transliterate_team_name,
     upsert_reviewed_alias,
     upsert_team_entity,
@@ -739,6 +740,53 @@ def test_publish_and_load_atomic_mixed_provider_pin_set(session_factory):
     with session_factory() as session:
         assert session.scalar(select(func.count(DrawingPinSet.pin_set_id))) == 1
         assert session.scalar(select(func.count(DrawingPinSetItem.id))) == 15
+
+
+def test_mixed_reviewed_sources_use_deterministic_aggregate_binding(
+    session_factory,
+):
+    specs = list(_canonical_specs(session_factory, reviewed_orders=(13, 14)))
+    specs[13] = {
+        **specs[13],
+        "source_provider": "schedule-evidence",
+        "provenance": {
+            "observation_id": "evidence-13",
+            "evidence_hash": f"{13:064x}",
+            "ledger_hash": "d" * 64,
+        },
+    }
+    binding_hash = selected_reviewed_input_hash(specs)
+
+    assert binding_hash is not None
+    assert binding_hash not in {"c" * 64, "d" * 64}
+    pins = publish_canonical_pin_set(
+        session_factory,
+        drawing_id=11988,
+        drawing_number=4959,
+        drawing_fingerprint="f" * 64,
+        provider="api-sports",
+        eligibility_status="playable",
+        readiness_summary=(
+            '{"mapped_count":15,"probability_input_sha256":"'
+            + "a" * 64
+            + '","status":"ready","target_fetched_at":'
+            '"2026-07-29T12:00:00+00:00","unresolved_event_orders":[]}'
+        ),
+        pin_specs=tuple(specs),
+        reviewed_catalog_hash=binding_hash,
+    )
+
+    assert len(pins) == 15
+    assert (
+        selected_reviewed_input_hash(
+            {
+                "source_provider": pin.effective_source_provider,
+                "provenance": pin.provenance,
+            }
+            for pin in pins
+        )
+        == binding_hash
+    )
 
 
 def test_persisted_4967_pin_set_accepts_only_atomic_monotonic_schedule_upgrade(
