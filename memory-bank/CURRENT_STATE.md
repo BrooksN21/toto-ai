@@ -36,6 +36,16 @@ improved to 6.253. This is encouraging model-robustness evidence on one input,
 not evidence of profit or readiness for activation. Details are in
 `research/drawing_4989_robust_recombination_canary_20260829.md`.
 
+Two additional frozen pre-result canaries cover drawings 4987 and 4988. The
+robust recombination again improved the minimum modeled P(13+) over both
+controls on each input: 0.001419 on 4987 and 0.001666 on 4988. Actual outcomes
+still produced zero 13+ in every package. Robust tied the BK best of 7 on 4987
+and reached 8 on 4988, between the BK best of 7 and sports best of 9. Across
+4987-4989 the modeled maximin objective is behaving as designed, but actual
+settlement does not show a prize or consistent dominance. Durable reports are
+`research/drawing_4987_robust_recombination_canary_20260829.md` and
+`research/drawing_4988_robust_recombination_canary_20260829.md`.
+
 The final comparison sidecar now also handles a scheduler-owned `NO BET` when
 a validated final input exists and enough pre-T-10 runtime remains. It produces
 only BK/sports/robust research artifacts, never an operator package. Drawing

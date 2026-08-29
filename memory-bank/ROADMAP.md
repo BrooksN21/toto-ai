@@ -13,6 +13,10 @@
   research trio without operator export; install the 4990 sidecar for 16:01.
 - [x] Run the first frozen 4989 recombination canary; modeled cross-model
   P(13+) improved, but actual best remained 11 and no category was hit.
+- [x] Extend the frozen recombination canary to 4987 and 4988. The robust
+  package improved the modeled cross-model minimum on both, but all three
+  strategies still had zero 13+ and robust did not consistently dominate the
+  better control on actual best hits.
 - [ ] Settle BK, sports and robust packages together after drawing 4990 and
   compare exact category hits, calibration and overlap.
 - [ ] Expand from finite BK/sports recombination to a larger candidate universe
