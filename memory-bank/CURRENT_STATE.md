@@ -1,5 +1,25 @@
 # Current State
 
+## Drawing 4989 paired research settlement (2026-08-29)
+
+The complete authoritative result snapshot for drawing 4989 is
+`21122X1222XX2X1` (`snapshot_sha256=57593fc86bb9c0a2160e396b0a9400aa1b474f5abf3e267afa9f943f9ed7fc40`).
+The two post-deadline research packages were settled against that exact row.
+The 166-coupon BK control reached best 11/15, mean 6.054 and zero 13+;
+the 166-coupon GOAL sports-shadow reached best 10/15, mean 6.060 and zero
+13+. Their 330-coupon unique union still reached only 11/15.
+
+The sports probability matrix was marginally better than BK on this one
+drawing (log loss 1.0692 versus 1.0770; multiclass Brier 0.6465 versus
+0.6509), but that did not translate into a better package. Six actual outcomes
+were BK rank 3. Every actual event outcome had non-zero package exposure, so
+the category miss was joint-combination failure rather than a fixed/zero-cover
+failure. Durable analysis is in
+`research/drawing_4989_package_postmortem_20260829.md`; machine-readable
+settlement is in
+`reports/research/final-goal-hybrid-4989-postdeadline-20260828/settlement-20260829.json`.
+This one paired result is not activation or profitability evidence.
+
 ## Drawing 4989 category-hit activation (2026-08-28)
 
 The category-hit hybrid selector is now active for drawing 4989 under the
