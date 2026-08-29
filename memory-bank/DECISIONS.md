@@ -1,5 +1,25 @@
 # Decisions
 
+## 2026-08-29: exact research packages may be inspected only post-cutoff
+
+- A project-owner request may expose exact research coupon strings only after
+  the plan-bound operational cutoff, never while wagering remains possible.
+- Sidecar/result file hashes, drawing, plan and final-input bindings must be
+  verified first; operator compatibility and automatic wagering must both be
+  false.
+- Display remains read-only research, carries an explicit non-wagering label,
+  and is never converted to BaltBet upload syntax or represented as safe.
+
+## 2026-08-29: child safety stop is the complete phase deadline
+
+- The scheduler parent `phase_deadline` is the hard end of a pre-final child
+  run, including collection, audit and package construction.
+- `run-drawing --safety-stop-minutes` must represent that same deadline. The
+  measured package runtime must not be subtracted from it a second time.
+- `minimum_final_runtime_seconds` remains an admission requirement before
+  starting final work; parent subprocess timeouts and T-10 publication reserve
+  remain unchanged.
+
 ## 2026-08-29: one reviewed-catalog freshness contract
 
 - All production consumers of reviewed schedule evidence use

@@ -132,6 +132,14 @@ Maintenance rules:
   for wagering may come only from the current scheduler-owned
   `operator-result.json` before its bound T-10 deadline; after T-10 they are
   expired and must never be represented as actionable or safe to upload.
+- After the exact scheduler-bound operational cutoff has passed, the project
+  owner may explicitly request an exact research package solely for read-only
+  analysis. Display is allowed only after verifying the package-file SHA-256
+  against its hash-bound sidecar/result record, verifying the same drawing,
+  plan and final input, and confirming `operator_compatible=false` and
+  `automatic_wagering=false`. Every display must be labelled
+  `POST-CUTOFF RESEARCH ONLY — NOT FOR WAGERING OR UPLOAD`. Preserve the
+  research coupon strings; never convert them into BaltBet upload syntax.
 - After expiry, the project owner may explicitly request the exact archived
   coupons solely for read-only post-draw analysis. Display is allowed only when
   the bytes are verified against the scheduler-owned pre-T-10 `PLAY` archive

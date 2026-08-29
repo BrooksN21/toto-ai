@@ -70,3 +70,15 @@ Protect `.env` files and all credentials or secrets: never print, document,
 commit, or transmit them. Never send repository content or derived private
 project data to another external LLM or agent. Remote Git publication and
 uploads are transmissions and therefore require explicit approval.
+
+## Post-cutoff research package inspection
+
+Research/rehearsal/simulation packages are never wagering artifacts and may
+not be shown before their exact scheduler-bound operational cutoff. After that
+cutoff, the project owner may explicitly request an exact package for read-only
+analysis only. The file bytes must match the SHA-256 in their hash-bound
+sidecar/result record and must bind the same drawing, plan and immutable final
+input. The record must confirm `operator_compatible=false` and
+`automatic_wagering=false`. Display must retain the research representation
+and carry `POST-CUTOFF RESEARCH ONLY — NOT FOR WAGERING OR UPLOAD`; conversion
+to BaltBet upload syntax remains prohibited.

@@ -4475,18 +4475,23 @@ def _runner_final_lead_minutes(context: SchedulerPhaseContext) -> int:
 
 
 def _runner_safety_stop_minutes(context: SchedulerPhaseContext) -> int:
-    """Reserve measured package-build time before the parent phase deadline."""
+    """Bind the child safety stop to the parent phase deadline.
+
+    ``run-drawing`` treats this value as the deadline for the *complete* run,
+    including package construction.  Subtracting the measured package runtime
+    here therefore removed that runtime twice: once from this safety stop and
+    again through the parent subprocess timeout.  The parent phase deadline is
+    already the bounded end of the child run; admission checks separately
+    reserve ``minimum_final_runtime_seconds`` before starting final work.
+    """
 
     phase_deadline = (
         context.phase_deadline
         if context.phase_deadline is not None
         else context.plan.actionable_publication_deadline
     )
-    collection_stop = phase_deadline - timedelta(
-        seconds=context.plan.minimum_final_runtime_seconds
-    )
     seconds_before_cutoff = (
-        context.plan.operational_cutoff - collection_stop
+        context.plan.operational_cutoff - phase_deadline
     ).total_seconds()
     computed = (
         1

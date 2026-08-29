@@ -1738,7 +1738,7 @@ def test_scheduler_cli_atomic_final_binds_safety_manifest_archive_and_marker(
         )["config"]
         manifest = _local_scheduler_manifest(
                 final_lead_minutes=30,
-            safety_stop_minutes=16,
+                safety_stop_minutes=11,
             probability_snapshot_sha256=final_input["snapshot_sha256"],
             probability_input_sha256=final_input["probability_input_sha256"],
             schedule_evidence_ledger_sha256=plan_config[

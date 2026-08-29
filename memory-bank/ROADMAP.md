@@ -7,6 +7,11 @@
 - [x] Create and activate a fresh exact-input recovery scheduler after the
   original 4990 state terminalized.
 - [ ] Observe every remaining real recovery checkpoint from T-60 through T-10.
+  - [x] T-60 completed; T-50 exposed double runtime reservation; corrected
+    T-40 completed with a validated 166-coupon / 4,980-RUB LKG.
+  - [x] T-30 final completed without timeout; research sidecar completed the
+    frozen BK/sports/robust trio before T-10. No retry was needed.
+  - [x] Observe T-10 fail-closed expiry/no-op and preserve final evidence.
 - [x] Add a research-only maximin BK/sports finite-universe package selector.
 - [x] Add the robust equal-bank package to the final-input comparison sidecar.
 - [x] Allow terminal `NO BET` to produce only the same final-input-bound

@@ -2717,6 +2717,22 @@ def test_warmup_manifest_uses_same_50_minute_lead_as_command(tmp_path: Path):
     assert result.decision == "NO BET"
 
 
+def test_warmup_child_safety_stop_is_parent_deadline_not_double_runtime_reserve(
+    tmp_path: Path,
+):
+    base = _manifest_context(tmp_path, phase="fallback")
+    context = replace(
+        base,
+        scheduler_phase="warmup",
+        phase_deadline=base.plan.fallback_at - timedelta(seconds=5),
+    )
+
+    command = build_run_drawing_phase_command(context)
+
+    option = command.index("--safety-stop-minutes")
+    assert command[option + 1] == "41"
+
+
 def test_production_manifest_parser_ignores_offline_replay_as_non_production(
     tmp_path: Path,
 ):

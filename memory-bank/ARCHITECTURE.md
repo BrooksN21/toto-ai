@@ -1,5 +1,14 @@
 # Architecture
 
+## Scheduler child runtime boundary (2026-08-29)
+
+Every package-phase child has one parent-owned `phase_deadline`. The child
+`run-drawing` safety stop maps to that same deadline and covers the complete
+collection/audit/package run. The scheduler separately checks that at least
+`minimum_final_runtime_seconds` remain before admitting final work. Runtime is
+never subtracted from the child deadline twice; T-10 and publication reserve
+remain the immutable operator boundaries.
+
 ## Research-only maximin BK/sports recombination (2026-08-29)
 
 `optimizer.robust_package` accepts a finite coupon universe plus two or more

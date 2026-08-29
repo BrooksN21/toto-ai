@@ -20,6 +20,16 @@ scheduled T-90 API preflight then completed successfully at 15:00 MSK. The
 remaining T-60 through T-10 checkpoints still require observation; this
 recovery is not a profitability claim.
 
+The real T-60 canary completed in 136 seconds. The first T-50 warmup exposed a
+second generic timing defect: the parent phase timeout already bounded the
+complete child, but `_runner_safety_stop_minutes` also subtracted the measured
+300-second package runtime from that deadline. Because `run-drawing` applies
+its safety stop after EV too, runtime was reserved twice and the warmup failed
+after 329 seconds. The child safety stop now binds directly to the parent phase
+deadline; final-runtime admission remains a separate check. A live T-40 refresh
+on the corrected code completed in 211 seconds, produced a validated
+166-coupon / 4,980-RUB non-actionable LKG, and did not hit its safety cutoff.
+
 A separate research-only maximin selector now recombines a finite union of BK
 and sports package candidates. Its primary objective is the worst sampled
 category coverage across the two probability models, with mean coverage and
@@ -45,6 +55,8 @@ and reached 8 on 4988, between the BK best of 7 and sports best of 9. Across
 settlement does not show a prize or consistent dominance. Durable reports are
 `research/drawing_4987_robust_recombination_canary_20260829.md` and
 `research/drawing_4988_robust_recombination_canary_20260829.md`.
+The three-drawing aggregate is
+`research/robust_recombination_canary_summary_20260829.md`.
 
 The final comparison sidecar now also handles a scheduler-owned `NO BET` when
 a validated final input exists and enough pre-T-10 runtime remains. It produces
@@ -52,6 +64,28 @@ only BK/sports/robust research artifacts, never an operator package. Drawing
 4990 has a frozen 14/15 sports artifact with one explicit BK fallback and a
 loaded research sidecar for 16:01 MSK. Full verification after this extension
 passes 2,119 tests with 13 deselected; Ruff and diff checks pass.
+
+The corrected T-30 final completed in 273 seconds without timeout and
+terminalized scheduler-owned `NO BET` only because the real-money release gate
+was closed. The 4990 sidecar then completed before T-10 with three equal-bank
+166-coupon research packages from one immutable final input. Sports coverage
+was 14/15 with one BK fallback. Robust exact P(13+) was 0.018534 under BK and
+0.022183 under sports, above both controls under each model. This is the first
+prospectively frozen robust package but remains non-actionable and unproven;
+it must be settled without retuning. Details are in
+`research/drawing_4990_prospective_robust_snapshot_20260829.md`.
+
+The real T-10 trigger completed fail-closed at 16:20 MSK. The final operator
+record is non-actionable `NO_BET`, has no coupon path or package hash, and
+retains only the audit reason. No retry was needed, and no automatic wagering
+occurred.
+
+The owner may now request exact research coupon strings only after the bound
+operational cutoff for read-only analysis. The sidecar/result file hashes and
+drawing/plan/final-input bindings must be verified first; output stays in its
+research representation and is never converted to BaltBet upload syntax. Full
+verification after the runtime-boundary and policy changes passes 2,120 tests
+with 13 deselected; Ruff and diff checks pass.
 
 ## Drawing 4989 paired research settlement (2026-08-29)
 
