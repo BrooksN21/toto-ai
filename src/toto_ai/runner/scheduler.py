@@ -86,6 +86,7 @@ from toto_ai.runner.scheduler_state import (
     scheduler_lock,
     transition,
 )
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 SCHEDULER_SCHEMA_VERSION = 9
 LEGACY_SCHEDULER_SCHEMA_VERSION = 1
@@ -8742,8 +8743,10 @@ def _validate_live_scheduler_target(plan: SchedulerPlan, observed_at: datetime) 
         )
     reference = matches[0]
     try:
-        reference_deadline = _parse_utc_datetime(
-            "live drawing ended_at", reference.get("ended_at")
+        reference_deadline = parse_totobrief_timestamp(
+            reference.get("ended_at"),
+            community="baltbet-main",
+            field_name="live drawing ended_at",
         )
     except (TypeError, ValueError) as error:
         raise SchedulerIntegrityError(

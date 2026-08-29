@@ -227,7 +227,7 @@ def test_resolver_uses_page_one_and_nearest_future_ended_at():
 
     result = resolve_open_drawing_from_api(
         client,
-        now="2026-07-14T12:00:00+00:00",
+        now="2026-07-14T09:00:00+00:00",
     )
 
     assert result.drawing_id == 5

@@ -308,7 +308,7 @@ def test_historical_inventory_accepts_raw_snapshot_captured_before_deadline(
             db_path=db,
             drawing_id=1,
             number=100,
-            captured_at="2029-12-31T23:59:00+00:00",
+            captured_at="2029-12-31T20:59:00+00:00",
         )
 
     with factory() as session:
@@ -322,7 +322,7 @@ def test_historical_inventory_accepts_raw_snapshot_captured_before_deadline(
     row = _record(report, 100)
     assert row.predeadline_raw_snapshot_count == 1
     assert row.latest_predeadline_raw_snapshot_at == (
-        "2029-12-31T23:59:00+00:00"
+        "2029-12-31T20:59:00+00:00"
     )
     assert "missing_predeadline_raw_snapshot" not in row.observed_reason_codes
     assert row.use_case_eligibility["historical_inventory"] is True

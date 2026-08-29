@@ -6,6 +6,7 @@ from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from zoneinfo import ZoneInfo
 
 import pytest
 from typer.testing import CliRunner
@@ -36,6 +37,7 @@ from toto_ai.runner.training_package import (
 FETCHED_AT = datetime(2032, 4, 4, 6, 30, tzinfo=timezone.utc)
 GENERATED_AT = datetime(2032, 4, 4, 7, 0, tzinfo=timezone.utc)
 ENDED_AT = datetime(2032, 4, 5, 18, 0, tzinfo=timezone.utc)
+MSK = ZoneInfo("Europe/Moscow")
 COUPONS = (
     "1X21X21X21X21X2",
     "X21X21X21X21X21",
@@ -53,6 +55,10 @@ def _canonical(value: object) -> bytes:
     ).encode()
 
 
+def _totobrief_baltbet_timestamp(value: datetime) -> str:
+    return value.astimezone(MSK).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def _payload() -> dict[str, object]:
     return {
         "version": 1,
@@ -61,7 +67,7 @@ def _payload() -> dict[str, object]:
             "number": 4982,
             "name": "baltbet-main",
             "status": "active",
-            "ended_at": ENDED_AT.isoformat().replace("+00:00", "Z"),
+            "ended_at": _totobrief_baltbet_timestamp(ENDED_AT),
             "pool_sum": 12_000,
             "jackpot": 1_000_000,
             "payments": [],

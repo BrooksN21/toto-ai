@@ -353,6 +353,7 @@ from toto_ai.sports_stats.shadow_operation import (
     build_and_write_sports_probability_shadow,
     evaluate_stored_sports_probability_shadow,
 )
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 app = typer.Typer(help="TotoBrief API commands.")
 
@@ -368,8 +369,20 @@ def _validate_cached_reference(
         raise ValueError("synchronized target cache drawing number mismatch")
     if reference.status is not None and data.get("status") != reference.status:
         raise ValueError("synchronized target cache drawing status mismatch")
-    if reference.ended_at is not None and data.get("ended_at") != reference.ended_at:
-        raise ValueError("synchronized target cache deadline mismatch")
+    if reference.ended_at is not None:
+        cached_deadline = parse_totobrief_timestamp(
+            data.get("ended_at"),
+            community=str(data.get("name") or reference.community or "").strip()
+            or None,
+            field_name="synchronized target cache deadline",
+        )
+        reference_deadline = parse_totobrief_timestamp(
+            reference.ended_at,
+            community=reference.community,
+            field_name="stored target cache deadline",
+        )
+        if cached_deadline != reference_deadline:
+            raise ValueError("synchronized target cache deadline mismatch")
 
 
 @app.command()
@@ -3663,8 +3676,11 @@ def _attach_persisted_conservative_cutoff(
                 expected_drawing_number=evidence.drawing_number,
             )
         except NoQualifyingKickoffEvidenceError:
-            if loaded is None:
-                raise
+            # A candidate report may contain useful schedule candidates from
+            # providers that are not authorized to tighten the operational
+            # cutoff.  In that case keep TotoBrief ``ended_at`` (or an older
+            # persisted cutoff) instead of aborting morning preparation.
+            pass
         else:
             write_conservative_cutoff_evidence(derived, cutoff_path)
             loaded = load_conservative_cutoff_evidence(

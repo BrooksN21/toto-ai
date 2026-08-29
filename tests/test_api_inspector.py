@@ -184,7 +184,7 @@ def test_resolve_drawing_reference_live_uses_locked_active_or_expected_baltbet(s
     reference = resolve_drawing_reference(
         session,
         live=True,
-        now="2026-07-09T12:00:00Z",
+        now="2026-07-09T09:00:00Z",
     )
 
     assert reference.drawing_id == 11937
@@ -197,7 +197,7 @@ def test_resolve_drawing_reference_open_uses_future_ended_playable_baltbet(sessi
     reference = resolve_drawing_reference(
         session,
         open=True,
-        now="2026-07-09T12:00:00Z",
+        now="2026-07-09T09:00:00Z",
     )
 
     assert reference.drawing_id == 11938
@@ -210,7 +210,7 @@ def test_resolve_drawing_reference_open_never_uses_past_ended_drawing(session):
     reference = resolve_drawing_reference(
         session,
         open=True,
-        now="2026-07-09T13:30:00Z",
+        now="2026-07-09T10:30:00Z",
     )
 
     assert reference.drawing_id == 11939
@@ -221,9 +221,9 @@ def test_open_selection_retires_verified_operationally_closed_drawing(session):
     reference = resolve_drawing_reference(
         session,
         open=True,
-        now="2026-07-09T12:30:00Z",
+        now="2026-07-09T09:30:00Z",
         operational_cutoffs={
-            11938: datetime(2026, 7, 9, 12, 0, tzinfo=timezone.utc),
+            11938: datetime(2026, 7, 9, 9, 0, tzinfo=timezone.utc),
         },
     )
 

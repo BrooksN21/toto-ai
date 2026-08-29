@@ -27,6 +27,7 @@ from toto_ai.collector.lifecycle import (
     validate_full_detail_payload,
 )
 from toto_ai.db.models import Drawing, Event, Quote
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 
 @dataclass(frozen=True)
@@ -690,9 +691,12 @@ def _validate_detail_matches_summary(
         raise ValueError("drawing detail number does not match page summary")
     expected_deadline = drawing_summary.get("ended_at")
     if expected_deadline is not None:
-        if _parse_aware_datetime(data.get("ended_at")) != _parse_aware_datetime(
-            expected_deadline
-        ):
+        community = str(
+            data.get("name") or drawing_summary.get("name") or ""
+        ).strip() or None
+        if _parse_aware_datetime(
+            data.get("ended_at"), community=community
+        ) != _parse_aware_datetime(expected_deadline, community=community):
             raise ValueError("drawing detail ended_at does not match page summary")
     if strict:
         expected_status = drawing_summary.get("status")
@@ -701,20 +705,26 @@ def _validate_detail_matches_summary(
         if data.get("status") != expected_status:
             raise ValueError("drawing detail status does not match page summary")
         current = now or datetime.now(timezone.utc)
-        deadline = _parse_aware_datetime(data.get("ended_at"))
+        deadline = _parse_aware_datetime(
+            data.get("ended_at"),
+            community=str(data.get("name") or "").strip() or None,
+        )
         if deadline <= current.astimezone(timezone.utc):
             raise ValueError("drawing detail deadline is not in the future")
 
 
-def _parse_aware_datetime(value: Any) -> datetime:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError("drawing detail deadline must be a timezone-aware timestamp")
+def _parse_aware_datetime(
+    value: Any,
+    *,
+    community: str | None = None,
+) -> datetime:
     try:
-        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        return parse_totobrief_timestamp(
+            value,
+            community=community,
+            field_name="drawing detail deadline",
+        )
     except ValueError as error:
         raise ValueError(
             "drawing detail deadline must be a timezone-aware timestamp"
         ) from error
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise ValueError("drawing detail deadline must be timezone-aware")
-    return parsed.astimezone(timezone.utc)

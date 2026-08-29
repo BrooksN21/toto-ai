@@ -14,6 +14,7 @@ from toto_ai.api.detail_cache import (
 )
 from toto_ai.api.safe_paths import prepare_contained_parent
 from toto_ai.db.models import Drawing, Event, Quote
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 RAW_TO_DB_MAPPINGS = {
     "data.id": "drawings.id",
@@ -267,7 +268,7 @@ def _select_time_based_drawing(
             drawing,
             _selection_deadline(
                 drawing,
-                _parse_datetime(drawing.ended_at),
+                _parse_drawing_deadline(drawing),
                 operational_cutoffs,
             ),
         )
@@ -338,6 +339,17 @@ def _parse_datetime(value: str | None) -> datetime | None:
     except ValueError:
         return None
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def _parse_drawing_deadline(drawing: Drawing) -> datetime | None:
+    try:
+        return parse_totobrief_timestamp(
+            drawing.ended_at,
+            community=drawing.name,
+            field_name="stored drawing ended_at",
+        )
+    except ValueError:
+        return None
 
 
 def _stored_db_fields() -> list[str]:

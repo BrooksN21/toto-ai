@@ -30,6 +30,7 @@ from toto_ai.ev.ternary import (
     materialize_ev_surface,
 )
 from toto_ai.package.audit import PackageSafetyResult, evaluate_package_safety
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 SENSITIVITY_FACTORS = (0.70, 0.80, 0.90, 1.00)
 _SELF_DILUTION_LIMIT_NUMERATOR = 1
@@ -163,7 +164,14 @@ def resolve_open_drawing_from_api(
             "expected",
         }:
             continue
-        ended_at = _parse_datetime(row.get("ended_at"))
+        try:
+            ended_at = parse_totobrief_timestamp(
+                row.get("ended_at"),
+                community="baltbet-main",
+                field_name="playable drawing ended_at",
+            )
+        except ValueError:
+            ended_at = None
         drawing_id = row.get("id")
         if ended_at is None or ended_at <= current_time:
             continue

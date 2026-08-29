@@ -37,6 +37,7 @@ from toto_ai.db.models import (
     PackageSettlement,
 )
 from toto_ai.package.audit import OUTCOMES, validate_coupons
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 EVENT_COUNT = 15
 VOID_RESULT = "*"
@@ -374,7 +375,7 @@ def archive_package(
         if drawing is None or drawing.number != drawing_number:
             raise ValueError("package archive drawing identity mismatch")
         if provenance == "pre_bet_runner":
-            ended = _parse_timestamp(drawing.ended_at)
+            ended = _parse_totobrief_deadline(drawing)
             if ended is None or _aware_utc(archived_at) >= ended:
                 raise ValueError("pre-bet package must be archived before ended_at")
         inserted = session.execute(
@@ -713,7 +714,7 @@ def _run_post_draw_locked(
     now = now or (lambda: datetime.now(timezone.utc))
     with session_factory() as session:
         drawing = session.get(Drawing, expected_id)
-        ended_at = _parse_timestamp(drawing.ended_at if drawing is not None else None)
+        ended_at = _parse_totobrief_deadline(drawing)
     current = _aware_utc(now())
     if ended_at is None:
         state = PostDrawState(
@@ -867,10 +868,15 @@ def prepare_post_draw_scheduler_artifacts(
     )
     with factory() as session:
         drawing = session.get(Drawing, resolved_id)
-        stored_ended = _parse_timestamp_required(
-            None if drawing is None else drawing.ended_at
-        )
-    requested_ended = _parse_timestamp_required(ended_at)
+        stored_ended = _parse_totobrief_deadline(drawing)
+        community = None if drawing is None else drawing.name
+    if stored_ended is None:
+        raise ValueError("stored drawing ended_at is unavailable")
+    requested_ended = parse_totobrief_timestamp(
+        ended_at,
+        community=community,
+        field_name="caller ended_at",
+    )
     if requested_ended != stored_ended:
         raise ValueError("caller ended_at does not match exact database drawing")
     root = Path(project_root).resolve()
@@ -2443,6 +2449,19 @@ def _parse_timestamp(value: Any) -> datetime | None:
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         return None
     return parsed.astimezone(timezone.utc)
+
+
+def _parse_totobrief_deadline(drawing: Drawing | None) -> datetime | None:
+    if drawing is None or not drawing.ended_at:
+        return None
+    try:
+        return parse_totobrief_timestamp(
+            drawing.ended_at,
+            community=drawing.name,
+            field_name="drawing.ended_at",
+        )
+    except ValueError:
+        return None
 
 
 def _parse_timestamp_required(value: Any) -> datetime:

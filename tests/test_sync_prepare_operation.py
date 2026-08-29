@@ -482,7 +482,7 @@ def test_fresh_page_skips_verified_operationally_closed_drawing(tmp_path):
     assert synchronized.ready is True
     assert synchronized.reference.drawing_id == 12071
     assert synchronized.reference.number == 4988
-    assert synchronized.reference.ended_at == "2026-08-27T19:00:00+00:00"
+    assert synchronized.reference.ended_at == "2026-08-27T16:00:00+00:00"
     assert client.detail_calls == [12071]
     engine.dispose()
 

@@ -62,6 +62,7 @@ from toto_ai.external_odds.team_resolution import (
     derive_resolution_context,
     resolve_event_candidate,
 )
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 
 @dataclass(frozen=True)
@@ -1232,7 +1233,11 @@ def persist_drawing_identity(
         if drawing.number is None:
             drawing.number = target.drawing_number
         if drawing.ended_at is not None:
-            if _parse_datetime(drawing.ended_at) != target.deadline:
+            if parse_totobrief_timestamp(
+                drawing.ended_at,
+                community=drawing.name,
+                field_name="stored drawing ended_at",
+            ) != target.deadline:
                 raise ValueError(
                     "stored drawing ended_at does not match preparation target"
                 )

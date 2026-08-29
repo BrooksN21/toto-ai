@@ -5776,3 +5776,25 @@ and will be recomputed from the fresh final pool. Profitability remains
 unproven and automatic wagering remains disabled.
 
 - Full verification for this change set: `2110 passed, 13 deselected`; `ruff check .` passed.
+
+## Drawing 4991 Moscow-time correction and preparation (2026-08-29)
+
+TotoBrief raw `ended_at=2026-08-30T16:00:00Z` is now interpreted according to
+the BaltBet source contract as `2026-08-30 16:00 MSK`, canonical 13:00 UTC.
+The shared parser is wired through open-drawing selection, collection,
+preparation, scheduler target validation, preflight status, pre-bet expiry,
+post-draw timing and historical predeadline snapshot selection. A missing
+qualifying conservative-cutoff candidate now preserves the authoritative
+TotoBrief deadline instead of aborting morning preparation.
+
+Drawing 4991 (internal ID 12081) is READY 15/15. Events 5 (Celta—Athletic Club)
+and 9 (Paris FC—Nice) were closed with official club plus Sofascore evidence.
+Schema-v9 plan `a8649d48c117c6da` is activated as
+`com.totoai.production-scheduler.v9.a8649d48c117c6da`. The operational cutoff
+is 16:00 MSK, T-10 is 15:50 MSK, and the first checkpoint is T-120 at 14:00
+MSK. The release gate is still `paper_only_not_authorized`; automatic wagering
+remains disabled and profitability is not proven.
+
+Targeted timezone/runner/finished-draw verification passed 338 tests. Full
+verification passed `2124 passed, 13 deselected`; Ruff and `git diff --check`
+pass.

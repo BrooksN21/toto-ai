@@ -26,7 +26,7 @@ from toto_ai.runner.scheduler import (
 )
 
 UTC = timezone.utc
-DEADLINE = datetime(2026, 7, 30, 16, tzinfo=UTC)
+DEADLINE = datetime(2026, 7, 30, 13, tzinfo=UTC)
 FINGERPRINT = "5dd516990e8f64d091a870ec0ee8981a3907e70b63674e6ecc1919abd7ec964b"
 
 
@@ -156,7 +156,7 @@ def test_preflight_status_reports_open_drawing_and_passive_gates(tmp_path):
 
     assert status["drawing_number"] == 4960
     assert status["drawing_id"] == 11990
-    assert status["deadline_msk"] == "2026-07-30T19:00:00+03:00"
+    assert status["deadline_msk"] == "2026-07-30T16:00:00+03:00"
     assert status["preparation_status"] == "unresolved"
     assert status["mapped_count"] == 13
     assert status["pin_count"] == 0

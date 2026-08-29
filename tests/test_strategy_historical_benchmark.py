@@ -56,7 +56,7 @@ def test_paired_bootstrap_interval_is_deterministic_and_small_sample_guarded():
 
 def test_strict_loader_uses_latest_predeadline_raw_not_mutable_db_quotes(tmp_path):
     db_path, factory = _database(tmp_path)
-    deadline = "2030-01-01T00:00:00+00:00"
+    deadline = "2030-01-01T03:00:00+00:00"
     actual = "1X2" * 5
     with factory.begin() as session:
         _add_complete_drawing(
@@ -131,7 +131,7 @@ def test_strict_loader_uses_latest_predeadline_raw_not_mutable_db_quotes(tmp_pat
 
 
 def test_strict_loader_prediction_hash_ignores_raw_result_fields(tmp_path):
-    deadline = "2030-01-01T00:00:00+00:00"
+    deadline = "2030-01-01T03:00:00+00:00"
     payload = _raw_payload(
         drawing_id=1,
         number=100,
@@ -222,7 +222,7 @@ def test_strict_benchmark_scores_actuals_and_reports_pairwise_overlap(tmp_path):
         _raw_payload(
             drawing_id=1,
             number=100,
-            deadline="2030-01-01T00:00:00+00:00",
+            deadline="2030-01-01T03:00:00+00:00",
             bk=(50.0, 30.0, 20.0),
             pool=(45.0, 35.0, 20.0),
             embedded_result="",

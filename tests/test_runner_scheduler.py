@@ -7,6 +7,7 @@ import subprocess
 from dataclasses import asdict, fields, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
 from sqlalchemy import select
@@ -59,9 +60,14 @@ from toto_ai.runner.scheduler import (
 )
 
 UTC = timezone.utc
+MSK = ZoneInfo("Europe/Moscow")
 ENDED_AT = datetime(2030, 1, 2, 12, tzinfo=UTC)
 FALLBACK_PACKAGE = b"rank,coupon,gross_ev,net_ev\n1,111111111111111,1.05,0.05\n"
 FINAL_PACKAGE = b"rank,coupon,gross_ev,net_ev\n1,XXXXXXXXXXXXXXX,1.15,0.15\n"
+
+
+def _totobrief_baltbet_timestamp(value: datetime) -> str:
+    return value.astimezone(MSK).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _plan(
@@ -153,8 +159,9 @@ def _atomic_final_payload(plan):
         "data": {
             "id": plan.drawing_id,
             "number": plan.drawing,
+            "name": "baltbet-main",
             "status": "active",
-            "ended_at": plan.ended_at.isoformat(),
+            "ended_at": _totobrief_baltbet_timestamp(plan.ended_at),
             "events": [
                 {
                     "id": 39000 + order,
@@ -300,13 +307,15 @@ def test_live_target_validation_keeps_cutoff_selected_plan_target(
                         "id": 12000,
                         "number": 5000,
                         "status": "expected",
-                        "ended_at": preceding_deadline.isoformat(),
+                        "ended_at": _totobrief_baltbet_timestamp(
+                            preceding_deadline
+                        ),
                     },
                     {
                         "id": plan.drawing_id,
                         "number": plan.drawing,
                         "status": "expected",
-                        "ended_at": plan.ended_at.isoformat(),
+                        "ended_at": _totobrief_baltbet_timestamp(plan.ended_at),
                     },
                 ]
             }
@@ -349,7 +358,9 @@ def test_live_target_validation_rejects_plan_target_missing_from_page(
                         "id": 12000,
                         "number": 5000,
                         "status": "expected",
-                        "ended_at": (plan.ended_at - timedelta(hours=1)).isoformat(),
+                        "ended_at": _totobrief_baltbet_timestamp(
+                            plan.ended_at - timedelta(hours=1)
+                        ),
                     }
                 ]
             }

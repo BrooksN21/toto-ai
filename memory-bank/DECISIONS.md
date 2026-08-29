@@ -2186,3 +2186,17 @@ ambiguous reversed evidence remains unresolved.
 - A partial greedy cover is never a valid category seed. Baseline/category-hit
   selection may use only an exact verifier-confirmed category cover within the
   effective budget; otherwise it narrows the brief or fails closed.
+
+## 2026-08-29 — BaltBet/TotoBrief timestamps are Moscow wall-clock values
+
+- For community `baltbet-main`, TotoBrief drawing `ended_at` and event
+  `start_at` values encode the displayed Moscow clock even when the serialized
+  suffix is `Z` or another ISO offset. The suffix must not shift the displayed
+  clock a second time.
+- Operational code interprets that wall clock in `Europe/Moscow` and converts
+  it once to canonical UTC. Raw source values remain stored unchanged for
+  source identity and audit.
+- Scheduler, open-drawing selection, synchronization, preflight, source
+  matching, pre-bet expiry and post-draw timing must all use the shared parser.
+- Drawing 4991 therefore closes at `2026-08-30 16:00 MSK`, canonical
+  `2026-08-30T13:00:00Z`; T-10 is `15:50 MSK`.

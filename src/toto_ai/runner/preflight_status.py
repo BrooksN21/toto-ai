@@ -29,6 +29,7 @@ from toto_ai.runner.scheduler import (
     load_scheduler_plan,
 )
 from toto_ai.runner.scheduler_state import PHASES, load_state
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 MOSCOW = ZoneInfo("Europe/Moscow")
 
@@ -62,7 +63,11 @@ def build_preflight_status(
                     project_root=root,
                 ),
             )
-        deadline = _parse_timestamp(reference.ended_at)
+        deadline = parse_totobrief_timestamp(
+            reference.ended_at,
+            community=reference.community,
+            field_name="open drawing deadline",
+        )
         record, record_path = _latest_record(
             state,
             drawing_id=reference.drawing_id,

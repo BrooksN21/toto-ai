@@ -25,6 +25,7 @@ from toto_ai.db.models import (
     PackageSettlement,
     Quote,
 )
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 DATA_HEALTH_CONTRACT_VERSION = "1.2.0"
 DATA_HEALTH_REPORT_SCHEMA_VERSION = 3
@@ -893,7 +894,7 @@ def select_predeadline_raw_snapshots(
     *,
     canonical_raw_root: Path | None,
 ) -> tuple[DrawingRawSnapshot, ...]:
-    deadline = _aware_timestamp(drawing.ended_at)
+    deadline = _totobrief_drawing_deadline(drawing)
     if deadline is None or canonical_raw_root is None:
         return ()
     try:
@@ -937,6 +938,19 @@ def _aware_timestamp(value: str | None) -> datetime | None:
     if parsed.tzinfo is None:
         return None
     return parsed.astimezone(timezone.utc)
+
+
+def _totobrief_drawing_deadline(drawing: Drawing) -> datetime | None:
+    if not drawing.ended_at:
+        return None
+    try:
+        return parse_totobrief_timestamp(
+            drawing.ended_at,
+            community=drawing.name,
+            field_name="drawing.ended_at",
+        )
+    except ValueError:
+        return None
 
 
 def _valid_number(value: float | None) -> bool:

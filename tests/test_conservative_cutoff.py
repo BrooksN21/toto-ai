@@ -285,6 +285,58 @@ def test_morning_preparation_reuses_exact_persisted_cutoff(tmp_path: Path) -> No
     assert attached.cutoff_evidence_sha256 is not None
 
 
+def test_morning_preparation_keeps_totobrief_deadline_without_cutoff_provider(
+    tmp_path: Path,
+) -> None:
+    """Independent candidates from other providers must not abort preparation."""
+    write_empty_schedule_evidence_ledger(tmp_path)
+    config = MorningDispatchConfig(
+        project_root=tmp_path,
+        state_root=tmp_path / "state",
+        scheduler_root=tmp_path / "scheduler",
+        env_file=tmp_path / ".env",
+        bank=4980,
+    )
+    prepared = MorningPreparedDrawing(
+        drawing_id=12081,
+        drawing_number=4991,
+        deadline=datetime(2026, 8, 30, 16, 0, tzinfo=UTC),
+        drawing_fingerprint="a" * 64,
+        detail_sha256="b" * 64,
+        preparation_status="ready",
+        mapped_count=15,
+        eligibility_status="playable",
+        span_days=1,
+    )
+    collector_dir = cli._morning_cutoff_directory(config, prepared)
+    report = _write_report(
+        collector_dir / "schedule-source-candidates.json",
+        drawing_id=12081,
+        drawing_number=4991,
+        status="independent_candidate",
+    )
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    payload["records"][0]["source_provider"] = "sofascore-search-v1"
+    payload.pop("report_sha256")
+    payload["report_sha256"] = hashlib.sha256(
+        json.dumps(
+            payload,
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    report.write_text(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+
+    attached = cli._attach_persisted_conservative_cutoff(config, prepared)
+
+    assert attached == prepared
+    assert not (collector_dir / "conservative-cutoff.json").exists()
+
+
 def test_morning_retry_preserves_cutoff_when_latest_report_has_no_candidates(
     tmp_path: Path,
 ) -> None:

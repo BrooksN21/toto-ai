@@ -11,6 +11,7 @@ from toto_ai.external_odds.domain import (
     TargetDrawing,
     TargetEvent,
 )
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 HOCKEY_CHAMPIONSHIP_TOKENS = (
     "кхл",
@@ -48,7 +49,12 @@ def parse_target_drawing(
     data = _require_mapping(payload.get("data"), "payload data")
     drawing_id = _require_positive_int(data.get("id"), "drawing id")
     drawing_number = _optional_positive_int(data.get("number"), "drawing number")
-    deadline = _parse_utc_datetime(data.get("ended_at"), "ended_at")
+    community = str(data.get("name") or "").strip() or None
+    deadline = parse_totobrief_timestamp(
+        data.get("ended_at"),
+        community=community,
+        field_name="ended_at",
+    )
     resolved_fetched_at = _parse_utc_datetime(fetched_at, "fetched_at")
     raw_events = data.get("events")
     if not isinstance(raw_events, list) or len(raw_events) != 15:
@@ -62,6 +68,7 @@ def parse_target_drawing(
                     drawing_id=drawing_id,
                     drawing_number=drawing_number,
                     deadline=deadline,
+                    community=community,
                 )
                 for raw_event in raw_events
             ),
@@ -83,6 +90,7 @@ def _parse_target_event(
     drawing_id: int,
     drawing_number: int | None,
     deadline: datetime,
+    community: str | None,
 ) -> TargetEvent:
     championship = _require_text(raw_event.get("championship"), "championship")
     home_team, away_team = _split_teams(
@@ -101,8 +109,14 @@ def _parse_target_event(
         event_order=_require_event_order(raw_event.get("order")),
         sport=classify_sport(championship, raw_event.get("sport")),
         championship=championship,
-        starts_at=_parse_optional_utc_datetime(
-            raw_event.get("start_at"), "start_at"
+        starts_at=(
+            None
+            if raw_event.get("start_at") is None
+            else parse_totobrief_timestamp(
+                raw_event.get("start_at"),
+                community=community,
+                field_name="start_at",
+            )
         ),
         deadline=deadline,
         home_team=home_team,

@@ -1202,3 +1202,17 @@ closed.
   and verify a scheduler-bound `STRUCTURAL_PASS` training package.
 - [ ] Observe all real 4990 checkpoints and report the scheduler-owned terminal
   operator result before T-10; automatic wagering remains prohibited.
+
+# 2026-08-29 drawing 4991 Moscow-time preparation
+
+- [x] Treat `baltbet-main` TotoBrief timestamps as Moscow wall-clock values and
+  propagate one canonical UTC conversion through every operational deadline
+  consumer.
+- [x] Recreate drawing 4991 under the corrected 16:00 MSK identity, close its
+  two remaining kickoff gaps with official-plus-independent evidence and
+  activate schema-v9 plan `a8649d48c117c6da` READY 15/15.
+- [ ] Obtain explicit per-plan experimental manual-release authorization before
+  T-10 if the owner wants an operator-facing package; automatic wagering stays
+  disabled.
+- [ ] Observe and report every real 4991 checkpoint from 14:00 through 15:50
+  MSK, including terminal operator-result status and package path.

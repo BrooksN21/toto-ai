@@ -1292,7 +1292,7 @@ def test_prebet_manifest_binding_and_early_wake_state_lock(tmp_path):
         "drawing_id": 11970,
         "drawing_number": 4952,
         "ended_at": "2026-07-22T16:00:00+00:00",
-        "archived_at": "2026-07-22T15:50:00+00:00",
+        "archived_at": "2026-07-22T12:50:00+00:00",
         "stake": 30,
         "coupon_count": 1,
         "cost": 30,
@@ -1317,7 +1317,7 @@ def test_prebet_manifest_binding_and_early_wake_state_lock(tmp_path):
     assert duplicate.created is False
     assert duplicate.archive_sha256 == archived.archive_sha256
 
-    current = [datetime(2026, 7, 22, 15, 59, 58, tzinfo=timezone.utc)]
+    current = [datetime(2026, 7, 22, 12, 59, 58, tzinfo=timezone.utc)]
 
     def now():
         return current[0]

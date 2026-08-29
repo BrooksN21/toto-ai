@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from toto_ai.analytics.api_inspector import DrawingReference
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.collector.sync import Collector, DetailSyncResult, SummaryPageResult
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS = 60.0
 
@@ -117,7 +118,9 @@ def synchronize_drawing_payload(
         or data.get("number") != expected_drawing_number
     ):
         raise ValueError("captured drawing payload identity mismatch")
-    deadline = _parse_deadline(data.get("ended_at"))
+    deadline = _parse_deadline(
+        data.get("ended_at"), community=str(data.get("name") or "baltbet-main")
+    )
     if parsed_at > deadline:
         raise ValueError("captured drawing payload is after the deadline")
     collector = Collector(
@@ -128,7 +131,7 @@ def synchronize_drawing_payload(
         drawing_summary={
             "id": expected_drawing_id,
             "number": expected_drawing_number,
-            "ended_at": deadline.isoformat(),
+            "ended_at": data.get("ended_at"),
             "status": data.get("status"),
         },
         source="atomic-final",
@@ -152,7 +155,7 @@ def _select_open_from_page(
         drawing_id = row.get("id")
         if type(drawing_id) is not int:
             raise ValueError("playable page-one drawing id must be an integer")
-        deadline = _parse_deadline(row.get("ended_at"))
+        deadline = _parse_deadline(row.get("ended_at"), community=community)
         selection_deadline = _selection_deadline(
             drawing_id,
             deadline,
@@ -210,13 +213,12 @@ def _selection_deadline(
     return normalized
 
 
-def _parse_deadline(value: object) -> datetime:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError("playable page-one drawing deadline is required")
+def _parse_deadline(value: object, *, community: str) -> datetime:
     try:
-        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        return parse_totobrief_timestamp(
+            value,
+            community=community,
+            field_name="playable page-one drawing deadline",
+        )
     except ValueError as error:
         raise ValueError("playable page-one drawing deadline is invalid") from error
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise ValueError("playable page-one drawing deadline must be timezone-aware")
-    return parsed.astimezone(timezone.utc)

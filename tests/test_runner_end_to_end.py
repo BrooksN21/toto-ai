@@ -9,6 +9,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pytest
@@ -54,14 +55,20 @@ from toto_ai.runner import (
     run_drawing,
     write_drawing_run_reports,
 )
+from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 DEADLINE = datetime(2026, 7, 16, 15, 0, tzinfo=timezone.utc)
+MSK = ZoneInfo("Europe/Moscow")
 T_MINUS_21 = DEADLINE - timedelta(minutes=21)
 T_MINUS_20 = DEADLINE - timedelta(minutes=20)
 T_MINUS_19 = DEADLINE - timedelta(minutes=19)
 T_MINUS_5 = DEADLINE - timedelta(minutes=5)
 SENTINEL_KEY = "task-6-review-sentinel-key"
 _CAPTURED_EV_INPUTS: list[EVInput] = []
+
+
+def _totobrief_baltbet_timestamp(value: datetime) -> str:
+    return value.astimezone(MSK).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 @dataclass
@@ -192,7 +199,11 @@ class _FakeProvider:
             order = int(event["order"])
             if order in self.provider_starts:
                 return self.provider_starts[order]
-            return datetime.fromisoformat(str(event["start_at"]))
+            return parse_totobrief_timestamp(
+                event["start_at"],
+                community="baltbet-main",
+                field_name="test event start_at",
+            )
 
         return tuple(
             ProviderEvent(
@@ -386,11 +397,20 @@ def _payload(
 ) -> dict[str, object]:
     first_start = DEADLINE + timedelta(hours=1)
     overrides = start_overrides or {}
+
+    def source_start(order: int) -> str | None:
+        value = overrides.get(
+            order,
+            first_start + timedelta(days=order // 8, minutes=order),
+        )
+        return None if value is None else _totobrief_baltbet_timestamp(value)
+
     return {
         "data": {
             "id": 9200,
             "number": 5200,
-            "ended_at": DEADLINE.isoformat(),
+            "name": "baltbet-main",
+            "ended_at": _totobrief_baltbet_timestamp(DEADLINE),
             "pool_sum": 2_000_000.0,
             "jackpot": 250_000.0,
             "events": [
@@ -401,15 +421,7 @@ def _payload(
                     "name_en": f"Home {order} - Away {order}",
                     "championship": f"League {order % 3}",
                     "sport": "football",
-                    "start_at": (
-                        None
-                        if order in overrides and overrides[order] is None
-                        else overrides.get(
-                            order,
-                            first_start
-                            + timedelta(days=order // 8, minutes=order),
-                        ).isoformat()
-                    ),
+                    "start_at": source_start(order),
                     "quotes": {
                         "bk_win_1": 45 + order,
                         "bk_draw": 30 + order,
@@ -1356,14 +1368,14 @@ def _payload_for_deadline(deadline: datetime) -> dict[str, object]:
     payload = _payload()
     data = payload["data"]
     assert isinstance(data, dict)
-    data["ended_at"] = deadline.isoformat()
+    data["ended_at"] = _totobrief_baltbet_timestamp(deadline)
     events = data["events"]
     assert isinstance(events, list)
     for event in events:
         order = int(event["order"])
-        event["start_at"] = (
+        event["start_at"] = _totobrief_baltbet_timestamp(
             deadline + timedelta(hours=1, minutes=order)
-        ).isoformat()
+        )
     return payload
 
 
