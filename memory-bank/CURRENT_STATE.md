@@ -28,6 +28,14 @@ GOAL comparison sidecar now writes three equal-bank artifacts: BK control,
 sports shadow and robust BK/sports recombination. The robust artifact remains
 non-operator, cannot affect scheduler state and is not activation evidence.
 
+The first frozen historical canary recombined the 330 unique coupons from the
+4989 BK/sports pair into 166 coupons. Robust exact P(13+) was 0.012465 under BK
+and 0.011034 under sports, above both controls' cross-model minimum. Actual
+settlement still produced only 11 best hits and zero 13+, although mean hits
+improved to 6.253. This is encouraging model-robustness evidence on one input,
+not evidence of profit or readiness for activation. Details are in
+`research/drawing_4989_robust_recombination_canary_20260829.md`.
+
 ## Drawing 4989 paired research settlement (2026-08-29)
 
 The complete authoritative result snapshot for drawing 4989 is

@@ -9,6 +9,8 @@
 - [ ] Observe every remaining real recovery checkpoint from T-60 through T-10.
 - [x] Add a research-only maximin BK/sports finite-universe package selector.
 - [x] Add the robust equal-bank package to the final-input comparison sidecar.
+- [x] Run the first frozen 4989 recombination canary; modeled cross-model
+  P(13+) improved, but actual best remained 11 and no category was hit.
 - [ ] Settle BK, sports and robust packages together after drawing 4990 and
   compare exact category hits, calibration and overlap.
 - [ ] Expand from finite BK/sports recombination to a larger candidate universe
