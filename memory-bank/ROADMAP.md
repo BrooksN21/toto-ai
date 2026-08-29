@@ -1,5 +1,19 @@
 # Roadmap
 
+## Immediate 4990 recovery and robust comparison (2026-08-29)
+
+- [x] Remove the reviewed-catalog 12h/24h split-brain and add next-day
+  preparation plus scheduler-preflight regressions.
+- [x] Create and activate a fresh exact-input recovery scheduler after the
+  original 4990 state terminalized.
+- [ ] Observe every remaining real recovery checkpoint from T-60 through T-10.
+- [x] Add a research-only maximin BK/sports finite-universe package selector.
+- [x] Add the robust equal-bank package to the final-input comparison sidecar.
+- [ ] Settle BK, sports and robust packages together after drawing 4990 and
+  compare exact category hits, calibration and overlap.
+- [ ] Expand from finite BK/sports recombination to a larger candidate universe
+  only after runtime and paired historical/prospective canaries pass.
+
 ## 4988 postmortem / 4989 protection (2026-08-28)
 
 - [x] Synchronize and settle the immutable drawing-4988 package: best 8/15,

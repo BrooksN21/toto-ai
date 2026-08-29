@@ -4,7 +4,7 @@ import hashlib
 import json
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from math import isclose, isfinite
 from pathlib import Path
 from typing import Any
@@ -30,6 +30,7 @@ from toto_ai.external_odds.eligibility import (
 )
 from toto_ai.external_odds.matching import normalize_team_name
 from toto_ai.external_odds.reviewed_schedule import (
+    REVIEWED_SCHEDULE_MAX_AGE,
     ReviewedScheduleCatalog,
     ReviewedScheduleEvidence,
     load_reviewed_schedule_catalog,
@@ -310,7 +311,7 @@ def prepare_drawing(
             reviewed_catalog = load_reviewed_schedule_catalog(
                 Path(reviewed_schedule_catalog),
                 evaluated_at=evaluated_at or datetime.now(timezone.utc),
-                max_age=timedelta(hours=12),
+                max_age=REVIEWED_SCHEDULE_MAX_AGE,
             )
         _validate_existing_pins_against_candidates(
             target,
@@ -406,7 +407,7 @@ def prepare_drawing(
             reviewed_catalog = load_reviewed_schedule_catalog(
                 Path(reviewed_schedule_catalog),
                 evaluated_at=reference,
-                max_age=timedelta(hours=12),
+                max_age=REVIEWED_SCHEDULE_MAX_AGE,
             )
             reviewed_by_order = _admit_reviewed_fallbacks(
                 target,

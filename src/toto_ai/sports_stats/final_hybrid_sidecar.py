@@ -166,6 +166,8 @@ def _execute(
         "research_report_sha256": _sha256(paths.report),
         "sports_research_package": str(paths.sports_package),
         "sports_research_package_sha256": _sha256(paths.sports_package),
+        "robust_research_package": str(paths.robust_package),
+        "robust_research_package_sha256": _sha256(paths.robust_package),
         "baseline_matches_operator": True,
         "sports_coverage_count": report["sports_coverage_count"],
         "sports_fallback_count": report["sports_fallback_count"],

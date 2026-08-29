@@ -1,5 +1,24 @@
 # Decisions
 
+## 2026-08-29: one reviewed-catalog freshness contract
+
+- All production consumers of reviewed schedule evidence use
+  `REVIEWED_SCHEDULE_MAX_AGE`; call-site TTL literals are forbidden.
+- The bounded 24-hour window supports evidence collected the evening before a
+  next-day drawing while still rejecting later reuse.
+- A terminal scheduler state is never edited or revived in place. Recovery
+  clones the immutable plan into a fresh output scope and preserves all target,
+  budget, probability and evidence bindings.
+
+## 2026-08-29: robust optimization starts as finite-universe research
+
+- The first robust optimizer maximizes worst sampled category coverage across
+  BK and sports probability models on the union of their equal-bank packages.
+- It is called a recombination optimizer, not a global optimizer; no claim of
+  global optimality or profitability is allowed.
+- It remains research-only until paired prospective settlements show benefit
+  over both BK and sports controls. Production scheduler selection is unchanged.
+
 ## 2026-08-27: autonomous 15-minute discovery and earlier primary final
 
 - The single generic morning dispatcher remains the owner of new-drawing

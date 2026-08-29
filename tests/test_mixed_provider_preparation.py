@@ -265,6 +265,62 @@ def test_preparation_atomically_publishes_14_api_plus_one_reviewed(
         assert session.scalar(select(func.count(DrawingEventPin.id))) == 0
 
 
+def test_ready_preparation_accepts_reviewed_claim_collected_previous_day(
+    session_factory, tmp_path: Path
+) -> None:
+    deadline = datetime(2026, 7, 30, 16, tzinfo=UTC)
+    original = _target()
+    target = replace(
+        original,
+        deadline=deadline,
+        events=tuple(
+            replace(event, deadline=deadline) for event in original.events
+        ),
+    )
+    candidates = tuple(
+        replace(candidate, starts_at=deadline + timedelta(hours=2))
+        for candidate in _candidates()
+    )
+    _seed(session_factory)
+    catalog = _catalog(
+        tmp_path,
+        target,
+        starts_at="2026-07-30T18:00:00Z",
+    )
+    diagnostics = (
+        {
+            "sport": "football",
+            "date": "2026-07-30",
+            "status": "success",
+            "reason": None,
+        },
+    )
+
+    initial = prepare_drawing(
+        target,
+        candidates,
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=diagnostics,
+        reviewed_schedule_catalog=catalog,
+        evaluated_at=EVALUATED_AT,
+    )
+    refreshed = prepare_drawing(
+        target,
+        candidates,
+        session_factory=session_factory,
+        event_contexts=_contexts(target),
+        schedule_diagnostics=diagnostics,
+        reviewed_schedule_catalog=catalog,
+        evaluated_at=datetime(2026, 7, 30, 10, 30, tzinfo=UTC),
+    )
+
+    assert initial.status == "ready"
+    assert refreshed.status == "ready"
+    assert refreshed.mapped_count == 15
+    assert refreshed.pins[14].effective_source_provider == "reviewed-schedule"
+
+
 def test_reviewed_fallback_uses_api_utc_date_across_local_midnight(
     session_factory, tmp_path: Path
 ) -> None:

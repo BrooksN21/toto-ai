@@ -139,12 +139,14 @@ def test_sidecar_binds_recomputed_baseline_to_operator_package(
         baseline = output / "baseline.txt"
         sports = output / "sports.txt"
         snapshot = output / "probabilities.json"
+        robust = output / "robust.txt"
         report.write_text("{}", encoding="utf-8")
         baseline.write_text(
             "RESEARCH ONLY\n" + coupon + "\n",
             encoding="utf-8",
         )
         sports.write_text("RESEARCH ONLY\n" + "2" * 15 + "\n", encoding="utf-8")
+        robust.write_text("RESEARCH ONLY\n" + "X" * 15 + "\n", encoding="utf-8")
         snapshot.write_text("{}", encoding="utf-8")
         return (
             {"sports_coverage_count": 10, "sports_fallback_count": 5},
@@ -152,6 +154,7 @@ def test_sidecar_binds_recomputed_baseline_to_operator_package(
                 report=report,
                 baseline_package=baseline,
                 sports_package=sports,
+                robust_package=robust,
                 sports_probability_snapshot=snapshot,
             ),
         )

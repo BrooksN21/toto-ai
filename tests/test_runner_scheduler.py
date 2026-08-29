@@ -92,6 +92,28 @@ def _plan(
     )
 
 
+def test_scheduler_preflight_uses_shared_reviewed_schedule_freshness(
+    tmp_path: Path, monkeypatch
+) -> None:
+    catalog = tmp_path / "reviewed-catalog.json"
+    catalog.write_text("{}", encoding="utf-8")
+    plan = replace(_plan(tmp_path), reviewed_schedule_catalog=catalog)
+    observed: dict[str, object] = {}
+
+    def fake_load(path, *, evaluated_at, max_age):
+        observed["path"] = path
+        observed["evaluated_at"] = evaluated_at
+        observed["max_age"] = max_age
+        return object()
+
+    monkeypatch.setattr(scheduler, "load_reviewed_schedule_catalog", fake_load)
+
+    scheduler._validate_preflight_inputs(plan)
+
+    assert observed["path"] == catalog
+    assert observed["max_age"] == scheduler.REVIEWED_SCHEDULE_MAX_AGE
+
+
 def test_recovery_plan_clone_preserves_every_semantic_input_except_output_dir(
     tmp_path: Path,
 ) -> None:

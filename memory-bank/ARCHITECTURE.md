@@ -1,5 +1,21 @@
 # Architecture
 
+## Research-only maximin BK/sports recombination (2026-08-29)
+
+`optimizer.robust_package` accepts a finite coupon universe plus two or more
+pre-deadline probability matrices. It samples each model independently and
+greedily maximizes the minimum projected category-coverage rate across models.
+Mean coverage and worst/mean coupon log probability are tie-breakers. For
+15-event packages it independently reports exact P(13+), P(14+) and P(15)
+under every model.
+
+The final-input GOAL comparison uses the union of the equal-bank BK and sports
+packages as the finite candidate universe and emits a third equal-bank robust
+research package. This is explicitly a recombination optimizer, not a global
+proof of optimality. It imports no scheduler, release or operator modules and
+cannot authorize wagering. Activation requires paired prospective settlement
+and a separately approved production design.
+
 ## Final-input-bound sports comparison sidecar (2026-08-28)
 
 The optional GOAL sidecar waits for the scheduler-owned actionable PLAY and

@@ -6255,6 +6255,7 @@ def compare_final_goal_hybrid_command(
                 "report": str(paths.report),
                 "baseline_package": str(paths.baseline_package),
                 "sports_package": str(paths.sports_package),
+                "robust_package": str(paths.robust_package),
             },
             ensure_ascii=False,
             sort_keys=True,

@@ -52,6 +52,7 @@ from toto_ai.external_odds.preparation import (
     refresh_ready_preparation_for_target,
 )
 from toto_ai.external_odds.reviewed_schedule import (
+    REVIEWED_SCHEDULE_MAX_AGE,
     load_reviewed_schedule_catalog,
 )
 from toto_ai.external_odds.schedule_evidence import (
@@ -8702,7 +8703,7 @@ def _validate_preflight_inputs(plan: SchedulerPlan) -> None:
         load_reviewed_schedule_catalog(
             plan.reviewed_schedule_catalog,
             evaluated_at=datetime.now(timezone.utc),
-            max_age=timedelta(hours=12),
+            max_age=REVIEWED_SCHEDULE_MAX_AGE,
         )
 
 

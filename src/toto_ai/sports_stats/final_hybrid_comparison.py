@@ -23,6 +23,7 @@ from toto_ai.ev.package_quality import (
     package_quality_metrics,
     selection_probability_input_sha256,
 )
+from toto_ai.optimizer.robust_package import select_robust_package
 from toto_ai.optimizer.strategy_comparison import (
     FrozenStrategyInput,
     StrategyResult,
@@ -42,6 +43,7 @@ class FinalHybridComparisonPaths:
     report: Path
     baseline_package: Path
     sports_package: Path
+    robust_package: Path
     sports_probability_snapshot: Path
 
 
@@ -135,6 +137,22 @@ def execute_final_hybrid_comparison(
         config=config,
         provenance=sports_provenance,
     )
+    candidate_union = tuple(
+        dict.fromkeys((*baseline.coupons, *sports_result.coupons))
+    )
+    robust = select_robust_package(
+        candidates=candidate_union,
+        probability_models={
+            "bk": frozen.bk_probability_matrix,
+            "sports": sports_probabilities,
+        },
+        category=13,
+        max_coupons=runtime_budget // plan.stake,
+        sample_count=config.package_probability_samples,
+        seed_material=(
+            f"final-hybrid-robust-{snapshot.snapshot_sha256}-{probability_hash}"
+        ),
+    )
 
     baseline_quality_bk = package_quality_metrics(
         baseline.coupons,
@@ -178,6 +196,23 @@ def execute_final_hybrid_comparison(
         "sports_fallback_count": sports.fallback_count,
         "baseline": _result_payload(baseline, baseline_quality_bk),
         "sports": _result_payload(sports_result, sports_quality_sports),
+        "robust": {
+            "coupon_count": len(robust.selected_coupons),
+            "cost": len(robust.selected_coupons) * plan.stake,
+            "unused_bank": runtime_budget
+            - len(robust.selected_coupons) * plan.stake,
+            "candidate_count": robust.candidate_count,
+            "category": robust.category,
+            "sample_count_per_model": robust.sample_count_per_model,
+            "worst_sampled_category_coverage": (
+                robust.worst_sampled_category_coverage
+            ),
+            "mean_sampled_category_coverage": (
+                robust.mean_sampled_category_coverage
+            ),
+            "timed_out": robust.timed_out,
+            "models": [asdict(item) for item in robust.model_metrics],
+        },
         "cross_evaluation": {
             "baseline_under_sports": asdict(baseline_quality_sports),
             "sports_under_bk": asdict(sports_quality_bk),
@@ -191,6 +226,12 @@ def execute_final_hybrid_comparison(
             "sports_only_count": len(
                 set(sports_result.coupons) - set(baseline.coupons)
             ),
+            "robust_baseline_overlap_count": len(
+                set(robust.selected_coupons) & set(baseline.coupons)
+            ),
+            "robust_sports_overlap_count": len(
+                set(robust.selected_coupons) & set(sports_result.coupons)
+            ),
         },
         "automatic_wagering": False,
         "operator_compatible": False,
@@ -201,6 +242,7 @@ def execute_final_hybrid_comparison(
 
     baseline_package = output / "baseline-final-research-coupons.txt"
     sports_package = output / "sports-final-research-coupons.txt"
+    robust_package = output / "robust-final-research-coupons.txt"
     report_path = output / "comparison.json"
     _write_replace(
         baseline_package,
@@ -212,11 +254,20 @@ def execute_final_hybrid_comparison(
             "FINAL_GOAL_SPORTS_SHADOW", plan.stake, sports_result.coupons
         ),
     )
+    _write_replace(
+        robust_package,
+        _research_package_bytes(
+            "FINAL_BK_SPORTS_MAXIMIN_RECOMBINATION",
+            plan.stake,
+            robust.selected_coupons,
+        ),
+    )
     _write_replace(report_path, _pretty(report))
     return report, FinalHybridComparisonPaths(
         report=report_path,
         baseline_package=baseline_package,
         sports_package=sports_package,
+        robust_package=robust_package,
         sports_probability_snapshot=sports_probability_snapshot,
     )
 

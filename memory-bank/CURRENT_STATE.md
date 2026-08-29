@@ -1,5 +1,33 @@
 # Current State
 
+## Drawing 4990 freshness recovery and robust package research (2026-08-29)
+
+The first real schema-v9 T-120 checkpoint terminalized plan
+`3a9fa3fe29a2290b` because reviewed-catalog freshness had split into three
+different production call sites: the CLI/source path used the approved
+24-hour next-day window, while preparation refresh and scheduler preflight
+still hard-coded 12 hours. All production loaders now use the single
+`REVIEWED_SCHEDULE_MAX_AGE` contract. Regressions cover a reviewed claim
+collected the previous day and the scheduler preflight binding. The focused
+reviewed/preparation/scheduler suite passes 189 tests; the full pre-robust
+suite passes 2,112 tests with 13 deselected.
+
+Because the original state was already terminal, exact-input recovery plan
+`5708c4b517c0f1e3` was generated in a separate output scope and its LaunchAgent
+was installed. A real recovery T-120 TLS preflight completed successfully at
+14:42 MSK with the same drawing, bank, probability and evidence bindings. The
+scheduled T-90 API preflight then completed successfully at 15:00 MSK. The
+remaining T-60 through T-10 checkpoints still require observation; this
+recovery is not a profitability claim.
+
+A separate research-only maximin selector now recombines a finite union of BK
+and sports package candidates. Its primary objective is the worst sampled
+category coverage across the two probability models, with mean coverage and
+cross-model coupon probability only as deterministic tie-breakers. The final
+GOAL comparison sidecar now writes three equal-bank artifacts: BK control,
+sports shadow and robust BK/sports recombination. The robust artifact remains
+non-operator, cannot affect scheduler state and is not activation evidence.
+
 ## Drawing 4989 paired research settlement (2026-08-29)
 
 The complete authoritative result snapshot for drawing 4989 is
