@@ -5792,9 +5792,15 @@ and 9 (Paris FC—Nice) were closed with official club plus Sofascore evidence.
 Schema-v9 plan `a8649d48c117c6da` is activated as
 `com.totoai.production-scheduler.v9.a8649d48c117c6da`. The operational cutoff
 is 16:00 MSK, T-10 is 15:50 MSK, and the first checkpoint is T-120 at 14:00
-MSK. The release gate is still `paper_only_not_authorized`; automatic wagering
-remains disabled and profitability is not proven.
+MSK. The project owner explicitly authorized the plan-bound experimental
+manual release. The release gate is `experimental_manual_authorized` through
+T-10; automatic wagering remains disabled and profitability is not proven.
 
 Targeted timezone/runner/finished-draw verification passed 338 tests. Full
 verification passed `2124 passed, 13 deselected`; Ruff and `git diff --check`
 pass.
+
+Repository housekeeping retained four factual task-context records under
+`plans/` and classified `.playwright-mcp/` page snapshots as disposable local
+browser output. The browser output is ignored and removed from the working
+tree so browser inspection cannot repeatedly dirty repository status.
