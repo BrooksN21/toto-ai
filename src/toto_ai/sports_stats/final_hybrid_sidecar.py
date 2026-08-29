@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from toto_ai.runner.final_input import load_final_input
 from toto_ai.runner.scheduler import export_operator_package, load_scheduler_plan
 from toto_ai.sports_stats.final_hybrid_comparison import (
     execute_final_hybrid_comparison,
@@ -88,6 +89,22 @@ def run_final_hybrid_sidecar(
                     observed_at=observed_at,
                 )
             if operator.get("decision") == "NO BET":
+                if observed_at < latest_start:
+                    final_input = _latest_final_input(plan)
+                    if final_input is not None:
+                        return _execute_no_bet_research(
+                            plan=plan,
+                            plan_path=plan_path,
+                            sports_path=sports_path,
+                            output_root=root,
+                            final_input=final_input,
+                            status_path=status_path,
+                            started_at=started_at,
+                            observed_at=observed_at,
+                            operator_reason=str(
+                                operator.get("reason") or "operator returned NO BET"
+                            ),
+                        )
                 return _terminal(
                     status_path,
                     status="SKIPPED_OPERATOR_NO_BET",
@@ -184,6 +201,84 @@ def _execute(
         output_dir=output,
         reason=None,
     )
+
+
+def _execute_no_bet_research(
+    *,
+    plan: Any,
+    plan_path: Path,
+    sports_path: Path,
+    output_root: Path,
+    final_input: Path,
+    status_path: Path,
+    started_at: datetime,
+    observed_at: datetime,
+    operator_reason: str,
+) -> FinalHybridSidecarResult:
+    run_id = final_input.parent.name
+    output = output_root / f"run-{run_id}"
+    output.mkdir(parents=True, exist_ok=True)
+    report, paths = execute_final_hybrid_comparison(
+        final_input_path=final_input,
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        output_dir=output / "research-comparison",
+    )
+    completed_at = datetime.now(timezone.utc)
+    payload = {
+        "schema_version": 1,
+        "status": "READY_RESEARCH_ONLY_NO_BET",
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "run_id": run_id,
+        "started_at": _timestamp(started_at),
+        "operator_observed_at": _timestamp(observed_at),
+        "completed_at": _timestamp(completed_at),
+        "operator_reason": operator_reason,
+        "final_input": str(final_input),
+        "final_input_sha256": _sha256(final_input),
+        "research_report": str(paths.report),
+        "research_report_sha256": _sha256(paths.report),
+        "baseline_research_package": str(paths.baseline_package),
+        "baseline_research_package_sha256": _sha256(paths.baseline_package),
+        "sports_research_package": str(paths.sports_package),
+        "sports_research_package_sha256": _sha256(paths.sports_package),
+        "robust_research_package": str(paths.robust_package),
+        "robust_research_package_sha256": _sha256(paths.robust_package),
+        "sports_coverage_count": report["sports_coverage_count"],
+        "sports_fallback_count": report["sports_fallback_count"],
+        "automatic_wagering": False,
+        "operator_compatible": False,
+        "profitability_proven": False,
+    }
+    payload["record_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    _write_replace(output / "sidecar-result.json", _canonical(payload) + b"\n")
+    _write_replace(status_path, _canonical(payload) + b"\n")
+    return FinalHybridSidecarResult(
+        status="READY_RESEARCH_ONLY_NO_BET",
+        result_path=status_path,
+        output_dir=output,
+        reason=operator_reason,
+    )
+
+
+def _latest_final_input(plan: Any) -> Path | None:
+    candidates = []
+    attempts = plan.output_dir / "attempts"
+    if not attempts.is_dir() or attempts.is_symlink():
+        return None
+    for path in attempts.glob("final-*/final-input.json"):
+        try:
+            regular = _regular_file(path, "final input")
+            snapshot = load_final_input(regular, expected_plan=plan)
+        except (OSError, TypeError, ValueError):
+            continue
+        candidates.append((snapshot.captured_at, regular))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: (item[0], str(item[1])))
+    return candidates[-1][1]
 
 
 def _terminal(

@@ -18,6 +18,9 @@
   global optimality or profitability is allowed.
 - It remains research-only until paired prospective settlements show benefit
   over both BK and sports controls. Production scheduler selection is unchanged.
+- Scheduler `NO BET` does not suppress research comparison when a validated
+  final input exists and the sidecar has a safe runtime window. This never
+  changes the operator decision or creates an upload-compatible package.
 
 ## 2026-08-27: autonomous 15-minute discovery and earlier primary final
 

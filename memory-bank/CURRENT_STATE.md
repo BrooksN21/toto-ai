@@ -36,6 +36,13 @@ improved to 6.253. This is encouraging model-robustness evidence on one input,
 not evidence of profit or readiness for activation. Details are in
 `research/drawing_4989_robust_recombination_canary_20260829.md`.
 
+The final comparison sidecar now also handles a scheduler-owned `NO BET` when
+a validated final input exists and enough pre-T-10 runtime remains. It produces
+only BK/sports/robust research artifacts, never an operator package. Drawing
+4990 has a frozen 14/15 sports artifact with one explicit BK fallback and a
+loaded research sidecar for 16:01 MSK. Full verification after this extension
+passes 2,119 tests with 13 deselected; Ruff and diff checks pass.
+
 ## Drawing 4989 paired research settlement (2026-08-29)
 
 The complete authoritative result snapshot for drawing 4989 is

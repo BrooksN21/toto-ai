@@ -16,6 +16,12 @@ proof of optimality. It imports no scheduler, release or operator modules and
 cannot authorize wagering. Activation requires paired prospective settlement
 and a separately approved production design.
 
+The sidecar retains the strict operator equality check when scheduler output is
+actionable PLAY. If the scheduler instead owns a terminal `NO BET`, it may use
+the latest hash-validated final-attempt input only while sufficient pre-T-10
+runtime remains. That path writes research-only BK/sports/robust artifacts and
+contains no operator export. Missing or invalid final inputs still fail closed.
+
 ## Final-input-bound sports comparison sidecar (2026-08-28)
 
 The optional GOAL sidecar waits for the scheduler-owned actionable PLAY and

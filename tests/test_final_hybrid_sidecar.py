@@ -180,3 +180,79 @@ def test_sidecar_binds_recomputed_baseline_to_operator_package(
     payload = json.loads(result.result_path.read_text(encoding="utf-8"))
     assert payload["baseline_matches_operator"] is True
     assert payload["sports_operator_compatible"] is False
+
+
+def test_sidecar_builds_research_comparison_from_final_input_after_no_bet(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    plan_path = tmp_path / "scheduler-plan.json"
+    sports_path = tmp_path / "sports.json"
+    final_input = tmp_path / "scheduler" / "attempts" / "final-1" / "final-input.json"
+    final_input.parent.mkdir(parents=True)
+    plan_path.write_text("{}", encoding="utf-8")
+    sports_path.write_text("{}", encoding="utf-8")
+    final_input.write_text("{}", encoding="utf-8")
+    observed = datetime(2026, 8, 28, 14, 40, tzinfo=UTC)
+    scheduler_dir = tmp_path / "scheduler"
+    (scheduler_dir / "operator-result.json").write_text(
+        json.dumps({"decision": "NO BET", "reason": "release gate closed"}),
+        encoding="utf-8",
+    )
+    plan = SimpleNamespace(
+        output_dir=scheduler_dir,
+        publish_deadline=observed + timedelta(minutes=10),
+        plan_id="plan",
+        drawing=4989,
+        drawing_id=12074,
+        stake=30,
+    )
+    monkeypatch.setattr(final_hybrid_sidecar, "load_scheduler_plan", lambda _: plan)
+    monkeypatch.setattr(
+        final_hybrid_sidecar,
+        "_latest_final_input",
+        lambda _: final_input,
+    )
+
+    def fake_compare(**kwargs):
+        output = Path(kwargs["output_dir"])
+        output.mkdir(parents=True)
+        report = output / "comparison.json"
+        baseline = output / "baseline.txt"
+        sports = output / "sports.txt"
+        robust = output / "robust.txt"
+        snapshot = output / "probabilities.json"
+        for path in (report, baseline, sports, robust, snapshot):
+            path.write_text("{}", encoding="utf-8")
+        return (
+            {"sports_coverage_count": 10, "sports_fallback_count": 5},
+            SimpleNamespace(
+                report=report,
+                baseline_package=baseline,
+                sports_package=sports,
+                robust_package=robust,
+                sports_probability_snapshot=snapshot,
+            ),
+        )
+
+    monkeypatch.setattr(
+        final_hybrid_sidecar,
+        "execute_final_hybrid_comparison",
+        fake_compare,
+    )
+
+    result = run_final_hybrid_sidecar(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        output_root=tmp_path / "sidecar",
+        wait_seconds=0,
+        minimum_runtime_seconds=240,
+        now=lambda: observed,
+        sleeper=lambda _: None,
+    )
+
+    assert result.status == "READY_RESEARCH_ONLY_NO_BET"
+    payload = json.loads(result.result_path.read_text(encoding="utf-8"))
+    assert payload["operator_compatible"] is False
+    assert payload["automatic_wagering"] is False
+    assert payload["operator_reason"] == "release gate closed"
