@@ -110,7 +110,7 @@ from toto_ai.external_odds.goal_api import (
     load_goal_api_key,
 )
 from toto_ai.external_odds.independent_schedule_consensus import (
-    promote_goal_sofascore_consensus,
+    promote_independent_schedule_consensus,
 )
 from toto_ai.external_odds.matching import load_aliases, load_reviewed_alias_names
 from toto_ai.external_odds.preparation import (
@@ -4025,12 +4025,11 @@ def morning_dispatch_command(
             try:
                 if source_candidates_report is None:
                     raise ValueError("schedule source candidates are unavailable")
-                independent_consensus = promote_goal_sofascore_consensus(
+                independent_consensus = promote_independent_schedule_consensus(
                     result.review_queue_path,
                     source_candidates_path=source_candidates_report,
                     output_dir=(
-                        result.review_queue_path.parent
-                        / "source-independent-consensus"
+                        result.review_queue_path.parent / "source-independent-consensus"
                     ),
                     schedule_evidence_ledger=resolved_schedule_evidence_ledger,
                 )
@@ -4068,12 +4067,9 @@ def morning_dispatch_command(
                 )
                 if isinstance(status.get("ledger_semantic_hash"), str)
             }
-            evidence_ledger_advanced = (
-                prepared_evidence is not None
-                and any(
-                    ledger_hash != prepared_evidence.reviewed_catalog_hash
-                    for ledger_hash in observed_ledger_hashes
-                )
+            evidence_ledger_advanced = prepared_evidence is not None and any(
+                ledger_hash != prepared_evidence.reviewed_catalog_hash
+                for ledger_hash in observed_ledger_hashes
             )
             refresh_dispatch = False
             if prepared_evidence is not None and (
@@ -4353,9 +4349,7 @@ def scheduler_preflight_only_command(
         scheduler_plan = load_scheduler_plan(plan)
         environment = dict(os.environ)
         if scheduler_plan.env_file is not None:
-            environment["API_SPORTS_KEY"] = load_api_sports_key(
-                scheduler_plan.env_file
-            )
+            environment["API_SPORTS_KEY"] = load_api_sports_key(scheduler_plan.env_file)
         result = execute_scheduler_preflight_only(
             scheduler_plan,
             phase_runner=CommandSchedulerPhaseRunner(environment=environment),

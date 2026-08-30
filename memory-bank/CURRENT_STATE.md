@@ -1,5 +1,28 @@
 # Current State
 
+## Drawing 4992 timing-consensus status (2026-08-30)
+
+- Generic independent-provider timing consensus is implemented locally in
+  `main` for allowlisted GOAL, Sofascore and TheSportsDB evidence. The change
+  is not committed or pushed.
+- Promotion requires two distinct providers and domains, exact canonical team
+  identities in the same orientation, acceptable scheduled/not-started
+  status, and UTC kickoff agreement within the existing tolerance. Fuzzy,
+  reversed, ambiguous and single-source evidence remains fail-closed.
+- The last actual dispatcher pass for drawing 4992 stopped with two unknown
+  kickoff times; no scheduler plan was created by that pass.
+- Event `180353` has official MLSZ evidence for `2026-08-31T17:30:00Z`, but it
+  still requires evidence review and ledger ingestion before it can resolve
+  preparation.
+- Event `180358` has agreeing GOAL and TheSportsDB evidence for
+  `2026-08-31T16:00:00Z`; the generic consensus implementation is intended to
+  promote this strict pair after a fresh collection/review pass.
+- The generic morning dispatcher is loaded on a 15-minute interval. This does
+  not imply that drawing 4992 is scheduler-ready.
+- Next operational step: review/freeze the two evidence paths, rerun morning
+  collection and preparation, and only then verify whether a scheduler plan is
+  created.
+
 ## Drawing 4991 closure and quality-v3 integration (2026-08-30)
 
 Drawing 4991 completed one scheduler-owned pre-T-10 `PLAY` under recovery plan

@@ -1,5 +1,23 @@
 # Decisions
 
+## Generic independent timing consensus (2026-08-30)
+
+- Timing promotion is provider-neutral across the explicit allowlist: GOAL,
+  Sofascore and TheSportsDB. It is no longer architecturally limited to the
+  GOAL-plus-Sofascore pair.
+- Two claims are independent only when both provider identity and normalized
+  HTTPS domain differ.
+- Team agreement uses equality of complete canonical names produced from the
+  existing alias maps. Token-subset matching is forbidden because a short club
+  name must not silently match a longer, different identity.
+- Both sources must preserve same home/away orientation, acceptable
+  scheduled/not-started status, pre-kickoff capture and UTC kickoff agreement
+  within the existing tolerance. A single source, fuzzy match, reversed match,
+  ambiguity or conflict cannot promote evidence.
+- Both source records and their hashes remain represented in the review
+  provenance. Consensus remains schedule-only and cannot affect probabilities
+  or authorize wagering.
+
 ## 2026-08-30: EV eligibility is a hard package-candidate boundary
 
 - `minimum_gross_ev` is applied before category-hit quality selection.

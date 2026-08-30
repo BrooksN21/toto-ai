@@ -1,5 +1,31 @@
 # Architecture
 
+## Generic strict independent-provider timing consensus (2026-08-30)
+
+The independent schedule promoter consumes candidate records from the shared
+source report and may form a pair from the explicit GOAL, Sofascore and
+TheSportsDB allowlist. Provider identity and normalized HTTPS domain must both
+be distinct. Each candidate must be an exact, same-orientation match with a
+scheduled/not-started status captured before kickoff; UTC kickoff values must
+agree within the existing timing tolerance.
+
+Pair identity uses complete canonical team keys derived from the existing
+alias maps. It deliberately does not use token containment, so a short subset
+cannot stand in for a longer team name. Fuzzy, reversed, duplicate-provider,
+ambiguous, late, started, conflicting and single-source candidates remain
+non-promoting. The backward-compatible GOAL/Sofascore entry point delegates to
+the generic flow where applicable.
+
+Both accepted source records are frozen independently and referenced with
+SHA-256 provenance in the generated review and ledger claims. This mechanism
+is schedule-only: it does not change match probabilities, package selection,
+release gates or automatic-wagering policy.
+
+For drawing 4992, the pre-fix preparation had two unknown times. Official MLSZ
+evidence exists for event `180353` at `17:30Z`, and GOAL plus TheSportsDB agree
+for event `180358` at `16:00Z`. These facts are pending review and a fresh
+preparation rerun; they are not evidence that the scheduler is ready.
+
 ## Eligibility-preserving category seed and raw archive identity (2026-08-30)
 
 Playable package selection treats `minimum_gross_ev` as a hard candidate

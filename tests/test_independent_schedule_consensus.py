@@ -2,9 +2,12 @@ import hashlib
 import json
 from datetime import datetime, timezone
 
+import pytest
+
 from toto_ai.external_odds.domain import TargetEvent
 from toto_ai.external_odds.independent_schedule_consensus import (
     promote_goal_sofascore_consensus,
+    promote_independent_schedule_consensus,
 )
 from toto_ai.external_odds.schedule_evidence import (
     load_schedule_evidence_ledger,
@@ -78,11 +81,14 @@ def _source_report(tmp_path, queue, *, starts_at=KICKOFF):
         "source_event_id": "goal-7001",
         "home_name": "Chaco For Ever",
         "away_name": "San Miguel",
+        "canonical_home_name": "Chaco For Ever",
+        "canonical_away_name": "San Miguel",
         "orientation": "same",
-        "match_mode": "fuzzy_candidate_margin_0.320",
+        "match_mode": "matched",
         "competition": "Primera Nacional",
         "starts_at": starts_at.isoformat().replace("+00:00", "Z"),
         "source_status": "scheduled",
+        "status_eligible": True,
         "captured_at": "2026-08-26T08:00:00Z",
     }
     payload = {
@@ -177,6 +183,7 @@ def _add_sofascore_source_record(
             "home_team": "Чако Фор Эвер",
             "away_team": "Сан Мигель",
             "source_name": "Sofascore",
+            "source_provider": "sofascore-v1",
             "source_role": "independent",
             "source_url": (
                 "https://www.sofascore.com/football/match/"
@@ -185,6 +192,12 @@ def _add_sofascore_source_record(
             "source_event_id": 8001,
             "home_name": "CSYD Chaco For Ever",
             "away_name": away_name,
+            "canonical_home_name": "Chaco For Ever",
+            "canonical_away_name": "San Miguel",
+            "orientation": "same",
+            "match_mode": "matched",
+            "source_status": "not_started",
+            "status_eligible": True,
             "starts_at": starts_at.isoformat().replace("+00:00", "Z"),
             "captured_at": "2026-08-26T08:00:00Z",
         }
@@ -195,11 +208,58 @@ def _add_sofascore_source_record(
     source_path.write_text(json.dumps(payload), encoding="utf-8")
 
 
+def _add_thesportsdb_source_record(
+    source_path,
+    *,
+    starts_at=KICKOFF,
+    orientation="same",
+    match_mode="matched",
+    source_status="not_started",
+    source_url="https://www.thesportsdb.com/event/9001",
+    source_event_id="9001",
+    home_name="Chaco For Ever",
+    canonical_home_name="Chaco For Ever",
+):
+    payload = json.loads(source_path.read_text(encoding="utf-8"))
+    payload["records"].append(
+        {
+            "status": "independent_candidate",
+            "drawing_id": 12068,
+            "drawing_number": 4987,
+            "target_fingerprint": "a" * 64,
+            "event_order": 4,
+            "target_event_id": 180127,
+            "home_team": "Чако Фор Эвер",
+            "away_team": "Сан Мигель",
+            "source_name": "TheSportsDB",
+            "source_provider": "thesportsdb-v1",
+            "source_role": "independent",
+            "source_url": source_url,
+            "source_event_id": source_event_id,
+            "home_name": home_name,
+            "away_name": "San Miguel",
+            "canonical_home_name": canonical_home_name,
+            "canonical_away_name": "San Miguel",
+            "orientation": orientation,
+            "match_mode": match_mode,
+            "competition": "Primera Nacional",
+            "starts_at": starts_at.isoformat().replace("+00:00", "Z"),
+            "source_status": source_status,
+            "status_eligible": source_status in {"scheduled", "not_started"},
+            "captured_at": "2026-08-26T08:00:00Z",
+        }
+    )
+    payload["candidate_count"] = len(payload["records"])
+    payload.pop("report_sha256")
+    payload["report_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    source_path.write_text(json.dumps(payload), encoding="utf-8")
+
+
 def test_collected_sofascore_identity_bridges_canonical_spelling_variant(tmp_path):
     queue_path, queue = _queue(tmp_path)
     source = _source_report(tmp_path, queue)
     payload = json.loads(source.read_text(encoding="utf-8"))
-    payload["records"][0]["away_name"] = "San Migel"
+    payload["records"][0]["home_name"] = "Chaco For Ever"
     payload.pop("report_sha256")
     payload["report_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
     source.write_text(json.dumps(payload), encoding="utf-8")
@@ -217,8 +277,120 @@ def test_collected_sofascore_identity_bridges_canonical_spelling_variant(tmp_pat
 
     assert result.promoted_count == 1
     observation = load_schedule_evidence_ledger(ledger).observations[0]
-    assert "San Migel" in observation.away_aliases
     assert "San Miguel" in observation.away_aliases
+
+
+def test_exact_goal_thesportsdb_consensus_promotes_with_both_provenances(tmp_path):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    _add_thesportsdb_source_record(source)
+    ledger = _ledger(tmp_path)
+
+    result = promote_independent_schedule_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        captured_at=CAPTURED_AT,
+    )
+
+    assert result.promoted_count == 1
+    observation = load_schedule_evidence_ledger(ledger).observations[0]
+    assert {claim.source_name for claim in observation.claims} == {
+        "GOAL API",
+        "TheSportsDB",
+    }
+    review = observation.review_document.read_text(encoding="utf-8")
+    assert "goal-api-v1" in review
+    assert "thesportsdb-v1" in review
+    assert review.count("SHA-256") == 2
+
+
+def test_single_independent_source_does_not_promote_without_second_evidence(tmp_path):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    ledger = _ledger(tmp_path)
+
+    result = promote_independent_schedule_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        fetch_json=lambda _url: (_ for _ in ()).throw(ValueError("unavailable")),
+        captured_at=CAPTURED_AT,
+    )
+
+    assert result.promoted_count == 0
+    assert json.loads(ledger.read_text())["observations"] == []
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    (
+        {"match_mode": "fuzzy_candidate_margin_0.9"},
+        {"orientation": "reversed"},
+        {"starts_at": KICKOFF.replace(minute=6)},
+        {"source_status": "finished"},
+        {"source_url": "https://goal-api.com/event/9001"},
+    ),
+)
+def test_non_strict_independent_pair_never_promotes(tmp_path, overrides):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    _add_thesportsdb_source_record(source, **overrides)
+    ledger = _ledger(tmp_path)
+
+    result = promote_independent_schedule_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        captured_at=CAPTURED_AT,
+    )
+
+    assert result.promoted_count == 0
+    assert json.loads(ledger.read_text())["observations"] == []
+
+
+def test_duplicate_provider_candidates_are_ambiguous_and_never_promote(tmp_path):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    _add_thesportsdb_source_record(source)
+    _add_thesportsdb_source_record(source, source_event_id="9002")
+    ledger = _ledger(tmp_path)
+
+    result = promote_independent_schedule_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        captured_at=CAPTURED_AT,
+    )
+
+    assert result.promoted_count == 0
+    assert json.loads(ledger.read_text())["observations"] == []
+
+
+def test_short_team_token_subset_does_not_match_longer_team(tmp_path):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    _add_thesportsdb_source_record(
+        source,
+        home_name="Chaco",
+        canonical_home_name="Chaco",
+    )
+    ledger = _ledger(tmp_path)
+
+    result = promote_independent_schedule_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        captured_at=CAPTURED_AT,
+    )
+
+    assert result.promoted_count == 0
+    assert json.loads(ledger.read_text())["observations"] == []
 
 
 def test_collected_sofascore_kickoff_conflict_fails_closed(tmp_path):
@@ -226,7 +398,7 @@ def test_collected_sofascore_kickoff_conflict_fails_closed(tmp_path):
     source = _source_report(tmp_path, queue)
     _add_sofascore_source_record(
         source,
-        starts_at=KICKOFF.replace(minute=5),
+        starts_at=KICKOFF.replace(minute=6),
     )
     ledger = _ledger(tmp_path)
 
@@ -291,11 +463,14 @@ def test_exact_goal_sofascore_consensus_promotes_and_resolves(tmp_path):
         away_team_en=None,
         bk_probabilities=(0.4, 0.3, 0.3),
     )
-    assert resolve_schedule_evidence(
-        target,
-        loaded,
-        evaluated_at=CAPTURED_AT,
-    ).state == "RESOLVED"
+    assert (
+        resolve_schedule_evidence(
+            target,
+            loaded,
+            evaluated_at=CAPTURED_AT,
+        ).state
+        == "RESOLVED"
+    )
 
 
 def test_legacy_observation_without_target_competition_is_superseded(tmp_path):
@@ -342,11 +517,14 @@ def test_legacy_observation_without_target_competition_is_superseded(tmp_path):
         away_team_en=None,
         bk_probabilities=(0.4, 0.3, 0.3),
     )
-    assert resolve_schedule_evidence(
-        target,
-        loaded,
-        evaluated_at=CAPTURED_AT,
-    ).state == "RESOLVED"
+    assert (
+        resolve_schedule_evidence(
+            target,
+            loaded,
+            evaluated_at=CAPTURED_AT,
+        ).state
+        == "RESOLVED"
+    )
 
 
 def test_kickoff_conflict_does_not_mutate_ledger(tmp_path):

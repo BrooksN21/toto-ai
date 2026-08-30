@@ -234,11 +234,17 @@ def collect_schedule_source_candidates(
             f"https://www.sofascore.com/{sport}/match/"
             f"{event.get('slug')}/{event.get('customId')}#id:{event['id']}"
         )
+        source_status = (
+            "not_started"
+            if event.get("status", {}).get("type") == "notstarted"
+            else "unknown"
+        )
         records.append(
             _base_record(row)
             | {
                 "status": "independent_candidate",
                 "source_name": "Sofascore",
+                "source_provider": "sofascore-v1",
                 "source_role": "independent",
                 "source_url": source_url,
                 "search_url": selected_url,
@@ -246,6 +252,10 @@ def collect_schedule_source_candidates(
                 "source_event_id": int(event["id"]),
                 "home_name": event["homeTeam"]["name"],
                 "away_name": event["awayTeam"]["name"],
+                "orientation": "same",
+                "match_mode": "matched",
+                "source_status": source_status,
+                "status_eligible": source_status == "not_started",
                 "competition": event.get("tournament", {}).get("name"),
                 "starts_at": _timestamp(starts_at),
                 "captured_at": _timestamp(observed),
@@ -265,7 +275,7 @@ def collect_schedule_source_candidates(
             "status": "collected",
             "candidate_count": sofascore_candidate_count,
             "ledger_mutated": False,
-        }
+        },
     }
     thesportsdb_records, thesportsdb_status = _collect_thesportsdb_candidates(
         queue,
@@ -392,13 +402,11 @@ def _collect_goal_api_candidates(
     diagnostics = _goal_api_diagnostics(client)
     records: list[dict[str, object]] = []
     for row in queue["records"]:
-        selected, orientation, candidate_ids, match_status = (
-            _match_goal_api_candidates(
-                row,
-                events,
-                aliases=aliases,
-                deadline=deadline,
-            )
+        selected, orientation, candidate_ids, match_status = _match_goal_api_candidates(
+            row,
+            events,
+            aliases=aliases,
+            deadline=deadline,
         )
         if selected is None:
             records.append(
@@ -436,6 +444,12 @@ def _collect_goal_api_candidates(
                 "sport": "football",
                 "home_name": selected.home_team,
                 "away_name": selected.away_team,
+                "canonical_home_name": _canonical_candidate_name(
+                    selected.home_team, aliases
+                ),
+                "canonical_away_name": _canonical_candidate_name(
+                    selected.away_team, aliases
+                ),
                 "orientation": orientation,
                 "matcher_version": (
                     MATCHER_VERSION
@@ -457,11 +471,7 @@ def _collect_goal_api_candidates(
                 "missing_requirements": [
                     "official_source",
                     "review",
-                    *(
-                        ["starts_before_drawing_deadline"]
-                        if timing_conflict
-                        else []
-                    ),
+                    *(["starts_before_drawing_deadline"] if timing_conflict else []),
                 ],
             }
         )
@@ -558,9 +568,7 @@ def _match_goal_api_fuzzy(
 ) -> tuple[GoalAPIScheduleEvent, str, float] | None:
     target_home = _goal_api_name_key(str(row["home_team"]))
     target_away = _goal_api_name_key(str(row["away_team"]))
-    scored: list[
-        tuple[float, float, float, str, str, GoalAPIScheduleEvent]
-    ] = []
+    scored: list[tuple[float, float, float, str, str, GoalAPIScheduleEvent]] = []
     for event in events:
         source_home = _goal_api_name_key(event.home_team)
         source_away = _goal_api_name_key(event.away_team)
@@ -787,8 +795,15 @@ def _collect_thesportsdb_candidates(
                 "sport": selected.sport,
                 "home_name": selected.home_team,
                 "away_name": selected.away_team,
+                "canonical_home_name": _canonical_candidate_name(
+                    selected.home_team, aliases
+                ),
+                "canonical_away_name": _canonical_candidate_name(
+                    selected.away_team, aliases
+                ),
                 "orientation": orientation,
                 "matcher_version": MATCHER_VERSION,
+                "match_mode": match_status,
                 "competition": selected.competition,
                 "starts_at": _timestamp(selected.starts_at),
                 "source_status": selected.status,
@@ -967,9 +982,7 @@ def _collector_aliases(
                             raw_entities[previous],
                             entity,
                         ):
-                            raise ValueError(
-                                "schedule source ledger aliases conflict"
-                            )
+                            raise ValueError("schedule source ledger aliases conflict")
                         representative = min(previous, canonical)
                         replaced = {previous, canonical}
                         ledger_aliases = {
@@ -984,9 +997,7 @@ def _collector_aliases(
                         raw_entities.setdefault(representative, entity)
                     ledger_aliases[key] = canonical
 
-    result = {
-        key: value for key, value in ledger_aliases.items() if key != value
-    }
+    result = {key: value for key, value in ledger_aliases.items() if key != value}
     supplied_aliases: dict[str, str] = {}
     conflicts: set[str] = set()
     if supplied is not None:
@@ -1015,6 +1026,17 @@ def _collector_aliases(
         if key != value:
             result[key] = value
     return result, frozenset(conflicts)
+
+
+def _canonical_candidate_name(value: str, aliases: Mapping[str, str]) -> str:
+    current = normalize_team_name(value)
+    visited: set[str] = set()
+    while current in aliases:
+        if current in visited:
+            raise ValueError("schedule source alias cycle detected")
+        visited.add(current)
+        current = aliases[current]
+    return current
 
 
 def _ledger_entities_equivalent(
@@ -1102,9 +1124,7 @@ def _query_name_candidates(
     candidates: list[tuple[str, str]] = [(original, "original")]
     candidates.extend(
         (
-            _preserve_explicit_gender_marker(
-                original, _normalize_query_name(value)
-            ),
+            _preserve_explicit_gender_marker(original, _normalize_query_name(value)),
             "canonical",
         )
         for value in _ledger_canonical_names(ledger, target)
@@ -1112,9 +1132,7 @@ def _query_name_candidates(
     )
     candidates.extend(
         (
-            _preserve_explicit_gender_marker(
-                original, _normalize_query_name(value)
-            ),
+            _preserve_explicit_gender_marker(original, _normalize_query_name(value)),
             source,
         )
         for value, source in _supplied_query_names(
@@ -1126,16 +1144,10 @@ def _query_name_candidates(
     transliterated = _normalize_query_name(transliterate_team_name(original))
     transliterated = _preserve_explicit_gender_marker(original, transliterated)
     candidates.append((transliterated, "transliteration"))
-    if (
-        hint is not None
-        and _is_latin_name(hint)
-        and _gender_compatible(target, hint)
-    ):
+    if hint is not None and _is_latin_name(hint) and _gender_compatible(target, hint):
         candidates.append(
             (
-                _preserve_explicit_gender_marker(
-                    original, _normalize_query_name(hint)
-                ),
+                _preserve_explicit_gender_marker(original, _normalize_query_name(hint)),
                 "hint",
             )
         )

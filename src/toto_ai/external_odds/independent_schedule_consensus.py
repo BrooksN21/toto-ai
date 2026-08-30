@@ -5,10 +5,11 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Callable, Mapping
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse
 
 from toto_ai.external_odds.domain import TargetEvent
 from toto_ai.external_odds.schedule_consensus import (
@@ -44,9 +45,437 @@ _SEARCH_ENDPOINT = "https://www.sofascore.com/api/v1/search/all?q={query}"
 _EVENT_ENDPOINT = "https://www.sofascore.com/api/v1/event/{event_id}"
 _ALLOWED_GOAL_STATUSES = {"independent_candidate", "timing_conflict"}
 _ALLOWED_MATCH_MODES = {"matched"}
+_KICKOFF_TOLERANCE = timedelta(minutes=5)
+_PROVIDER_DOMAINS = {
+    "goal-api-v1": frozenset({"goal-api.com", "api.goal-api.com"}),
+    "sofascore-v1": frozenset({"sofascore.com"}),
+    "thesportsdb-v1": frozenset({"thesportsdb.com"}),
+}
 
 
-def promote_goal_sofascore_consensus(
+@dataclass(frozen=True)
+class _IndependentCandidate:
+    provider: str
+    source_name: str
+    source_event_id: str
+    source_url: str
+    domain: str
+    home: str
+    away: str
+    canonical_home: str
+    canonical_away: str
+    starts_at: datetime
+    captured_at: datetime
+    competition: str
+    raw: Mapping[str, Any]
+
+
+def promote_independent_schedule_consensus(
+    queue_path: str | Path,
+    *,
+    source_candidates_path: str | Path,
+    output_dir: str | Path,
+    schedule_evidence_ledger: str | Path,
+    fetch_json: Callable[[str], object] | None = None,
+    captured_at: datetime | None = None,
+) -> ScheduleConsensusPromotion:
+    """Promote any strict pair of allowlisted independent schedule providers."""
+
+    queue_path = Path(queue_path)
+    queue = _load_queue(queue_path)
+    source_path = Path(source_candidates_path).resolve()
+    source = _load_source_report(source_path, queue_sha256=str(queue["queue_sha256"]))
+    observed = _utc(captured_at or datetime.now(timezone.utc))
+    output = _safe_directory(Path(output_dir))
+    ledger_path = Path(schedule_evidence_ledger).resolve()
+    if ledger_path.is_symlink() or not ledger_path.is_file():
+        raise ValueError("schedule evidence ledger must be a regular file")
+    ledger = load_schedule_evidence_ledger(ledger_path)
+    deadline = _parse_utc(queue["identity"]["deadline"])
+    records: list[dict[str, object]] = []
+
+    for row in queue["records"]:
+        base = _base_record(row)
+        raw_candidates = tuple(
+            item
+            for item in source["records"]
+            if isinstance(item, Mapping)
+            and item.get("status") == "independent_candidate"
+            and int(item.get("event_order", -1)) == int(row["event_order"])
+            and _provider_name(item) in _PROVIDER_DOMAINS
+        )
+        try:
+            candidates = tuple(
+                _strict_candidate(item, row=row, observed=observed)
+                for item in raw_candidates
+            )
+            pair = _strict_consensus_pair(candidates)
+        except ValueError as error:
+            records.append(
+                base
+                | {
+                    "status": "independent_consensus_failed",
+                    "captured_at": _timestamp(observed),
+                    "error": _safe_error(error),
+                    "ledger_promoted": False,
+                }
+            )
+            continue
+        if pair is None:
+            # Backward compatibility for historical GOAL reports whose
+            # independently fetched Sofascore detail was not stored as a row.
+            if len(candidates) == 1 and candidates[0].provider == "goal-api-v1":
+                return _promote_goal_sofascore_consensus_legacy(
+                    queue_path,
+                    source_candidates_path=source_path,
+                    output_dir=output,
+                    schedule_evidence_ledger=ledger_path,
+                    fetch_json=fetch_json,
+                    captured_at=observed,
+                )
+            records.append(
+                base
+                | {
+                    "status": "independent_pair_not_found",
+                    "captured_at": _timestamp(observed),
+                    "ledger_promoted": False,
+                }
+            )
+            continue
+
+        first, second = pair
+        starts_at = min(first.starts_at, second.starts_at)
+        observation_id = _generic_observation_id(first, second, row=row)
+        try:
+            existing = _find_existing(
+                ledger,
+                observation_id=observation_id,
+                starts_at=starts_at,
+                home=first.home,
+                away=first.away,
+            )
+        except ValueError as error:
+            records.append(
+                base
+                | {
+                    "status": "ledger_conflict",
+                    "captured_at": _timestamp(observed),
+                    "error": _safe_error(error),
+                    "ledger_promoted": False,
+                }
+            )
+            continue
+        if existing is not None:
+            records.append(
+                base
+                | {
+                    "status": "already_promoted",
+                    "captured_at": _timestamp(observed),
+                    "starts_at": _timestamp(starts_at),
+                    "observation_id": observation_id,
+                    "providers": [first.provider, second.provider],
+                    "ledger_promoted": False,
+                }
+            )
+            continue
+
+        frozen = []
+        for candidate in pair:
+            snapshot, digest = _freeze_snapshot(
+                ledger_path.parent,
+                source=candidate.provider,
+                source_id=candidate.source_event_id,
+                payload=candidate.raw,
+            )
+            frozen.append((candidate, snapshot, digest))
+        review_path = ledger_path.parent / "reviews" / f"auto-{observation_id}.md"
+        review_path.parent.mkdir(parents=True, exist_ok=True)
+        review = _render_generic_review(
+            row=row,
+            pair=pair,
+            frozen=tuple(frozen),
+            observed=observed,
+            starts_at=starts_at,
+            ledger_root=ledger_path.parent,
+        )
+        _write_exact(review_path, review.encode("utf-8"))
+        observation = _generic_observation(
+            row=row,
+            pair=pair,
+            observation_id=observation_id,
+            starts_at=starts_at,
+            observed=observed,
+            review_path=review_path,
+            ledger_root=ledger_path.parent,
+            deadline=deadline,
+        )
+        try:
+            ledger = ingest_reviewed_observation(ledger_path, observation)
+        except Exception as error:
+            records.append(
+                base
+                | {
+                    "status": "ledger_rejected",
+                    "captured_at": _timestamp(observed),
+                    "error": _safe_error(error),
+                    "ledger_promoted": False,
+                }
+            )
+            continue
+        records.append(
+            base
+            | {
+                "status": "promoted_exact_consensus",
+                "captured_at": _timestamp(observed),
+                "starts_at": _timestamp(starts_at),
+                "observation_id": observation_id,
+                "providers": [first.provider, second.provider],
+                "review_document": str(review_path.relative_to(ledger_path.parent)),
+                "ledger_promoted": True,
+            }
+        )
+
+    return _finish(
+        queue_path=queue_path,
+        source_path=source_path,
+        queue=queue,
+        records=records,
+        output=output,
+        ledger=ledger,
+    )
+
+
+def _provider_name(record: Mapping[str, Any]) -> str:
+    provider = str(record.get("source_provider") or "").strip()
+    if not provider and record.get("source_name") == "Sofascore":
+        provider = "sofascore-v1"
+    return provider
+
+
+def _strict_candidate(
+    record: Mapping[str, Any],
+    *,
+    row: Mapping[str, Any],
+    observed: datetime,
+) -> _IndependentCandidate:
+    provider = _provider_name(record)
+    if provider not in _PROVIDER_DOMAINS or record.get("source_role") != "independent":
+        raise ValueError("source provider is not allowlisted and independent")
+    if int(record.get("target_event_id", -1)) != int(row["target_event_id"]):
+        raise ValueError("source candidate target identity conflicts")
+    if record.get("orientation") != "same" or record.get("match_mode") != "matched":
+        raise ValueError("source candidate is fuzzy, reversed, or ambiguous")
+    if record.get("source_status") not in {"scheduled", "not_started"}:
+        raise ValueError("source candidate status is not acceptable")
+    if record.get("status_eligible") is not True:
+        raise ValueError("source candidate is not status eligible")
+    source_url = str(record.get("source_url") or "").strip()
+    parsed = urlparse(source_url)
+    domain = (parsed.hostname or "").casefold()
+    if domain.startswith("www."):
+        domain = domain[4:]
+    if parsed.scheme != "https" or domain not in _PROVIDER_DOMAINS[provider]:
+        raise ValueError("source candidate domain is not allowlisted")
+    home = str(record.get("home_name") or "").strip()
+    away = str(record.get("away_name") or "").strip()
+    event_id = str(record.get("source_event_id") or "").strip()
+    if not home or not away or not event_id:
+        raise ValueError("source candidate identity is incomplete")
+    starts_at = _parse_utc(record["starts_at"])
+    captured_at = _parse_utc(record["captured_at"])
+    if captured_at >= starts_at or observed >= starts_at:
+        raise ValueError("source evidence was captured too late")
+    return _IndependentCandidate(
+        provider=provider,
+        source_name=str(record.get("source_name") or provider),
+        source_event_id=event_id,
+        source_url=source_url,
+        domain=domain,
+        home=home,
+        away=away,
+        canonical_home=_candidate_canonical_key(record, "home", home),
+        canonical_away=_candidate_canonical_key(record, "away", away),
+        starts_at=starts_at,
+        captured_at=captured_at,
+        competition=str(record.get("competition") or "").strip(),
+        raw=record,
+    )
+
+
+def _strict_consensus_pair(
+    candidates: tuple[_IndependentCandidate, ...],
+) -> tuple[_IndependentCandidate, _IndependentCandidate] | None:
+    by_provider: dict[str, _IndependentCandidate] = {}
+    for candidate in candidates:
+        if candidate.provider in by_provider:
+            raise ValueError("ambiguous duplicate provider candidates")
+        by_provider[candidate.provider] = candidate
+    ordered = tuple(by_provider[key] for key in sorted(by_provider))
+    if len(ordered) < 2:
+        return None
+    for index, left in enumerate(ordered):
+        for right in ordered[index + 1 :]:
+            if left.provider == right.provider or left.domain == right.domain:
+                raise ValueError(
+                    "independent sources must use different providers/domains"
+                )
+            if (
+                left.canonical_home != right.canonical_home
+                or left.canonical_away != right.canonical_away
+            ):
+                raise ValueError("independent source team identities conflict")
+            if abs(left.starts_at - right.starts_at) > _KICKOFF_TOLERANCE:
+                raise ValueError("independent source kickoff values conflict")
+    return ordered[0], ordered[1]
+
+
+def _candidate_canonical_key(
+    record: Mapping[str, Any], side: str, fallback: str
+) -> str:
+    value = record.get(f"canonical_{side}_name")
+    return _name_key(str(value).strip() if value else fallback)
+
+
+def _generic_observation_id(
+    first: _IndependentCandidate,
+    second: _IndependentCandidate,
+    *,
+    row: Mapping[str, Any],
+) -> str:
+    identity = {
+        "sources": sorted(
+            (
+                (first.provider, first.source_event_id),
+                (second.provider, second.source_event_id),
+            )
+        ),
+        "drawing_id": int(row["drawing_id"]),
+        "target_event_id": int(row["target_event_id"]),
+        "championship": str(row.get("championship") or "").strip(),
+    }
+    return (
+        "independent-consensus-v3-"
+        + hashlib.sha256(_canonical(identity)).hexdigest()[:20]
+    )
+
+
+def _generic_observation(
+    *,
+    row: Mapping[str, Any],
+    pair: tuple[_IndependentCandidate, _IndependentCandidate],
+    observation_id: str,
+    starts_at: datetime,
+    observed: datetime,
+    review_path: Path,
+    ledger_root: Path,
+    deadline: datetime,
+) -> dict[str, object]:
+    first, second = pair
+    target = TargetEvent(
+        drawing_id=int(row["drawing_id"]),
+        drawing_number=int(row["drawing_number"]),
+        event_id=int(row["target_event_id"]),
+        event_order=int(row["event_order"]),
+        sport="football",
+        championship=str(row.get("championship") or "football"),
+        starts_at=None,
+        deadline=deadline,
+        home_team=str(row["home_team"]),
+        away_team=str(row["away_team"]),
+        home_team_en=first.home,
+        away_team_en=first.away,
+        bk_probabilities=(1 / 3, 1 / 3, 1 / 3),
+    )
+    competitions = [
+        str(row.get("championship") or "").strip(),
+        first.competition,
+        second.competition,
+    ]
+    return {
+        "observation_id": observation_id,
+        "sport": "football",
+        "gender_age_class": gender_age_class(target),
+        "competition_aliases": list(
+            dict.fromkeys(item for item in competitions if item)
+        ),
+        "home_entity": first.home,
+        "home_aliases": list(
+            dict.fromkeys((str(row["home_team"]), first.home, second.home))
+        ),
+        "away_entity": first.away,
+        "away_aliases": list(
+            dict.fromkeys((str(row["away_team"]), first.away, second.away))
+        ),
+        "starts_at": _timestamp(starts_at),
+        "status": "scheduled",
+        "conditional": False,
+        "reviewer": "automated-independent-provider-consensus-v1",
+        "reviewed_at": _timestamp(observed),
+        "review_document": str(review_path.relative_to(ledger_root)),
+        "review_document_sha256": hashlib.sha256(review_path.read_bytes()).hexdigest(),
+        "claims": [
+            {
+                "source_name": item.source_name,
+                "role": "independent",
+                "source_url": item.source_url,
+            }
+            for item in pair
+        ],
+    }
+
+
+def _render_generic_review(
+    *,
+    row: Mapping[str, Any],
+    pair: tuple[_IndependentCandidate, _IndependentCandidate],
+    frozen: tuple[tuple[_IndependentCandidate, Path, str], ...],
+    observed: datetime,
+    starts_at: datetime,
+    ledger_root: Path,
+) -> str:
+    title = (
+        "# Automated independent schedule consensus: "
+        f"{row['home_team']} — {row['away_team']}"
+    )
+    lines = [
+        title,
+        "",
+        f"Reviewed at **{_timestamp(observed)}**.",
+        f"Scheduled kickoff: **{_timestamp(starts_at)}**.",
+        "",
+        "Two allowlisted independent providers match exact home/away ",
+        "orientation, acceptable pre-kickoff status and UTC kickoff within ",
+        "tolerance.",
+        "",
+    ]
+    for candidate, snapshot, digest in frozen:
+        identity = (
+            f"  - provider: `{candidate.provider}`; "
+            f"event: `{candidate.source_event_id}`"
+        )
+        evidence = (
+            f"  - evidence: `{snapshot.relative_to(ledger_root)}` — "
+            f"SHA-256 `{digest}`"
+        )
+        lines.extend(
+            (
+                f"- {candidate.source_name}: {candidate.source_url}",
+                identity,
+                evidence,
+            )
+        )
+    lines.extend(
+        (
+            "",
+            "Single-source, fuzzy, reversed, ambiguous, late, started or ",
+            "conflicting evidence remains fail-closed.",
+            "",
+        )
+    )
+    return "\n".join(lines)
+
+
+def _promote_goal_sofascore_consensus_legacy(
     queue_path: str | Path,
     *,
     source_candidates_path: str | Path,
@@ -305,6 +734,27 @@ def promote_goal_sofascore_consensus(
         records=records,
         output=output,
         ledger=ledger,
+    )
+
+
+def promote_goal_sofascore_consensus(
+    queue_path: str | Path,
+    *,
+    source_candidates_path: str | Path,
+    output_dir: str | Path,
+    schedule_evidence_ledger: str | Path,
+    fetch_json: Callable[[str], object] | None = None,
+    captured_at: datetime | None = None,
+) -> ScheduleConsensusPromotion:
+    """Backward-compatible name for generic independent-provider consensus."""
+
+    return promote_independent_schedule_consensus(
+        queue_path,
+        source_candidates_path=source_candidates_path,
+        output_dir=output_dir,
+        schedule_evidence_ledger=schedule_evidence_ledger,
+        fetch_json=fetch_json,
+        captured_at=captured_at,
     )
 
 

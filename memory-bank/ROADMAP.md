@@ -1,5 +1,22 @@
 # Roadmap
 
+## Immediate drawing 4992 timing closure
+
+- [x] Generalize independent timing consensus over allowlisted GOAL,
+  Sofascore and TheSportsDB providers.
+- [x] Replace permissive token-subset comparison with strict complete
+  canonical alias equality and retain both-source provenance.
+- [x] Cover strict GOAL plus TheSportsDB promotion and fail-closed negative
+  cases in targeted tests.
+- [ ] Review and ingest official MLSZ evidence for event `180353` at
+  `2026-08-31T17:30:00Z`.
+- [ ] Recollect/review the GOAL plus TheSportsDB pair for event `180358` at
+  `2026-08-31T16:00:00Z` through the generic consensus flow.
+- [ ] Rerun drawing 4992 morning preparation and verify 15/15 timing coverage.
+- [ ] Create or activate a drawing-4992 scheduler plan only after that actual
+  rerun reports READY; the currently loaded 15-minute dispatcher alone is not
+  readiness evidence.
+
 # 2026-08-30 drawing 4991 closure and quality-v3
 
 - [x] Preserve the playable EV threshold through the category-hit seed and add

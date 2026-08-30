@@ -1310,9 +1310,7 @@ def test_reused_morning_cli_still_collects_goal_shadow(monkeypatch, tmp_path):
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert payload["status"] == "reused"
-    assert payload["sports_shadow"]["status"] == (
-        "PAPER_ONLY_COVERAGE_PROBE_READY"
-    )
+    assert payload["sports_shadow"]["status"] == ("PAPER_ONLY_COVERAGE_PROBE_READY")
     assert payload["sports_shadow"]["reused"] is True
     assert payload["sports_shadow"]["package_influence"] == "NONE"
 
@@ -1740,9 +1738,9 @@ def test_ready_dispatch_cleans_obsolete_preflight_retry_job(monkeypatch, tmp_pat
     monkeypatch.setattr(
         cli,
         "prepare_preflight_retry_artifacts",
-        lambda path, *, write: artifacts
-        if path == retry_plan and write is False
-        else None,
+        lambda path, *, write: (
+            artifacts if path == retry_plan and write is False else None
+        ),
     )
     monkeypatch.setattr(
         cli,
@@ -1846,6 +1844,21 @@ def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
         ),
         raising=False,
     )
+    monkeypatch.setattr(
+        cli,
+        "promote_independent_schedule_consensus",
+        lambda path, **_kwargs: (
+            calls.append(("independent_consensus", Path(path)))
+            or SimpleNamespace(
+                status="CONSENSUS_PROMOTED",
+                promoted_count=1,
+                existing_count=0,
+                unresolved_count=0,
+                report_path=tmp_path / "independent-consensus.json",
+                ledger_semantic_hash="d" * 64,
+            )
+        ),
+    )
 
     result = CliRunner().invoke(
         cli.app,
@@ -1869,10 +1882,15 @@ def test_deferred_activated_cli_runs_independent_and_exact_consensus_collectors(
 
     assert result.exit_code == MORNING_DEFERRED_EXIT_CODE, result.output
     payload = json.loads(result.output)
-    assert calls == [("independent", queue), ("consensus", queue)]
+    assert calls == [
+        ("independent", queue),
+        ("consensus", queue),
+        ("independent_consensus", queue),
+    ]
     assert collector_aliases == [{}]
     assert payload["source_collector"]["independent"]["candidate_count"] == 1
     assert payload["source_collector"]["consensus"]["promoted_count"] == 1
+    assert payload["source_collector"]["independent_consensus"]["promoted_count"] == 1
 
 
 def test_deferred_unactivated_cli_runs_source_collectors_without_installing(
@@ -1936,6 +1954,14 @@ def test_deferred_unactivated_cli_runs_source_collectors_without_installing(
             )
         ),
     )
+    monkeypatch.setattr(
+        cli,
+        "promote_independent_schedule_consensus",
+        lambda path, **_kwargs: (
+            calls.append(("independent_consensus", Path(path)))
+            or (_ for _ in ()).throw(ValueError("strict independent failure"))
+        ),
+    )
 
     result = CliRunner().invoke(
         cli.app,
@@ -1956,10 +1982,19 @@ def test_deferred_unactivated_cli_runs_source_collectors_without_installing(
 
     assert result.exit_code == MORNING_DEFERRED_EXIT_CODE, result.output
     payload = json.loads(result.output)
-    assert calls == [("independent", queue), ("consensus", queue)]
+    assert calls == [
+        ("independent", queue),
+        ("consensus", queue),
+        ("independent_consensus", queue),
+    ]
     assert payload["retry_scheduler"] is None
     assert payload["source_collector"]["independent"]["candidate_count"] == 1
     assert payload["source_collector"]["consensus"]["promoted_count"] == 1
+    assert payload["source_collector"]["independent_consensus"] == {
+        "status": "INDEPENDENT_CONSENSUS_FAILED",
+        "error": "ValueError: strict independent failure",
+        "ledger_mutated": False,
+    }
 
 
 @pytest.mark.parametrize(
