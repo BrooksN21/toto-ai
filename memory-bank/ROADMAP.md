@@ -1,5 +1,28 @@
 # Roadmap
 
+# 2026-08-30 drawing 4991 closure and quality-v3
+
+- [x] Preserve the playable EV threshold through the category-hit seed and add
+  an exact containment regression.
+- [x] Separate Moscow operational timing from raw-source archive identity and
+  add an atomic-final archive regression.
+- [x] Complete drawing 4991 pre-T-10 manual `PLAY` publication: 166 coupons /
+  4,980 RUB; verify post-T-10 expiry and keep automatic wagering disabled.
+- [x] Integrate direct bounded-uncertainty quality-v3 into research-only final
+  comparison, sidecar and CLI without changing production/operator behavior.
+- [x] Keep failed/mismatched 4987-4990 replay inputs fail-closed; do not bypass
+  old schema or ledger integrity to manufacture evidence.
+- [ ] Complete expanded and full verification for the combined working tree.
+- [x] Verify and prepare, but do not load, the current 15-minute open-drawing
+  dispatcher candidate (`com.totoai.morning-dispatcher.v1`) for a separate ops
+  installation step.
+- [ ] Resolve drawing 4992's current local `deferred` state (playability
+  unknown, preparation unresolved 15/15) through the authorized public/local
+  flow, persist it in SQLite, then prepare its exact scheduler plan and collect
+  quality-v3 prospectively alongside unchanged production quality-v2.
+- [ ] Keep quality-v3 inactive until paired prospective evidence satisfies the
+  predeclared release criteria; do not claim profitability.
+
 ## Immediate 4990 recovery and robust comparison (2026-08-29)
 
 - [x] Remove the reviewed-catalog 12h/24h split-brain and add next-day

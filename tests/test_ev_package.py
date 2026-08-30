@@ -6,7 +6,7 @@ import pytest
 import toto_ai.ev.package as package_module
 from toto_ai.ev.models import EVConfig, EVSurface
 from toto_ai.ev.package import derive_brief, rank_coupon_indices, select_ev_package
-from toto_ai.ev.ternary import coupon_from_index
+from toto_ai.ev.ternary import coupon_from_index, index_from_coupon
 
 
 def surface(values, event_count=2):
@@ -66,6 +66,81 @@ def test_playable_mode_does_not_spend_bank_on_low_ev_coupons():
     assert package.cost == 60
     assert package.unused_bank == 30
     assert package.decision == "PLAY"
+
+
+def test_quality_hybrid_candidates_never_restore_below_threshold_seed() -> None:
+    eligible = np.array([9, 7, 5, 3], dtype=np.int64)
+    raw_seed = np.array([8, 7, 2, 3], dtype=np.int64)
+
+    candidates, seed = package_module._eligible_hybrid_candidate_indices(
+        eligible_indices=eligible,
+        seed_indices=raw_seed,
+    )
+
+    assert seed.tolist() == [7, 3]
+    assert candidates.tolist() == [7, 3, 9, 5]
+    assert set(candidates).issubset(set(eligible))
+
+
+def test_15_event_selector_never_restores_below_threshold_category_seed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    eligible_coupons = (
+        "1" * 15,
+        "X" * 15,
+        "2" * 15,
+        "1X2" * 5,
+        "X21" * 5,
+        "21X" * 5,
+        "X12" * 5,
+    )
+    below_threshold_coupon = "1" * 14 + "X"
+    eligible_indices = tuple(index_from_coupon(row) for row in eligible_coupons)
+    below_threshold_index = index_from_coupon(below_threshold_coupon)
+    gross_ev = np.zeros(3**15, dtype=np.uint8)
+    gross_ev[np.asarray(eligible_indices, dtype=np.int64)] = 2
+    ev_surface = surface(gross_ev, event_count=15)
+    controlled_order = np.asarray(
+        (*eligible_indices, below_threshold_index),
+        dtype=np.int64,
+    )
+    raw_seed = (
+        below_threshold_coupon,
+        *eligible_coupons[:5],
+    )
+    monkeypatch.setattr(
+        package_module,
+        "rank_coupon_indices",
+        lambda _surface: controlled_order,
+    )
+    monkeypatch.setattr(
+        package_module,
+        "cover_14_bk_fill_seed",
+        lambda *_args, **_kwargs: raw_seed,
+    )
+
+    package = select_ev_package(
+        ev_surface,
+        EVConfig(
+            bank=180,
+            stake=30,
+            mode="playable",
+            min_gross_ev=1.0,
+            package_safety_enabled=True,
+            package_quality_repair_iterations=0,
+            package_quality_candidate_count=16,
+            package_probability_samples=64,
+            package_optimization_probability_samples=64,
+        ),
+        probabilities=((1 / 3, 1 / 3, 1 / 3),) * 15,
+    )
+
+    selected = paper_coupons(package)
+    assert len(selected) == 6
+    assert below_threshold_coupon not in {row.coupon for row in selected}
+    assert all(row.gross_ev >= 1.0 for row in selected)
+    assert package.selection_diagnostics is not None
+    assert package.selection_diagnostics.eligible_candidate_count == 7
 
 
 def test_package_and_top_diagnostics_share_one_complete_ranking(monkeypatch):

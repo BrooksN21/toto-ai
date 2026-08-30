@@ -12,6 +12,7 @@ import json
 import math
 import os
 import secrets
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
@@ -20,6 +21,7 @@ from typing import Any
 from toto_ai.ev.drawing import effective_selection_budget
 from toto_ai.ev.package_quality import (
     PackageSelectionProvenance,
+    exact_category_probabilities,
     package_quality_metrics,
     selection_probability_input_sha256,
 )
@@ -30,6 +32,12 @@ from toto_ai.optimizer.strategy_comparison import (
     run_ev_crowd_current,
 )
 from toto_ai.optimizer.strategy_execution import frozen_input_from_snapshot
+from toto_ai.optimizer.uncertainty_package import (
+    DEFAULT_FLATTEN_WEIGHTS,
+    build_uncertainty_models,
+    outcome_exposure,
+    select_uncertainty_package,
+)
 from toto_ai.runner.final_input import load_final_input
 from toto_ai.runner.scheduler import load_scheduler_plan
 from toto_ai.sports_stats.probabilities import load_shadow_probability_artifact
@@ -44,6 +52,7 @@ class FinalHybridComparisonPaths:
     baseline_package: Path
     sports_package: Path
     robust_package: Path
+    uncertainty_package: Path
     sports_probability_snapshot: Path
 
 
@@ -153,6 +162,21 @@ def execute_final_hybrid_comparison(
             f"final-hybrid-robust-{snapshot.snapshot_sha256}-{probability_hash}"
         ),
     )
+    uncertainty_models = build_uncertainty_models(
+        frozen.bk_probability_matrix,
+        flatten_weights=DEFAULT_FLATTEN_WEIGHTS,
+    )
+    uncertainty = select_uncertainty_package(
+        bk_probabilities=frozen.bk_probability_matrix,
+        anchor_coupons=baseline.coupons,
+        category=13,
+        max_coupons=runtime_budget // plan.stake,
+        flatten_weights=DEFAULT_FLATTEN_WEIGHTS,
+        selection_sample_count=config.package_probability_samples,
+        seed_material=(
+            f"final-hybrid-uncertainty-v1-{snapshot.snapshot_sha256}"
+        ),
+    )
 
     baseline_quality_bk = package_quality_metrics(
         baseline.coupons,
@@ -213,6 +237,31 @@ def execute_final_hybrid_comparison(
             "timed_out": robust.timed_out,
             "models": [asdict(item) for item in robust.model_metrics],
         },
+        "uncertainty_v1": {
+            "role": "DIRECT_BK_BOUNDED_UNCERTAINTY_CHALLENGER",
+            "coupon_count": len(uncertainty.selected_coupons),
+            "cost": len(uncertainty.selected_coupons) * plan.stake,
+            "unused_bank": runtime_budget
+            - len(uncertainty.selected_coupons) * plan.stake,
+            "candidate_count": uncertainty.candidate_count,
+            "candidate_source": "direct_top_sampled_mutated_per_model",
+            "category": uncertainty.category,
+            "flatten_weights": list(DEFAULT_FLATTEN_WEIGHTS),
+            "sample_count_per_model": uncertainty.sample_count_per_model,
+            "worst_sampled_category_coverage": (
+                uncertainty.worst_sampled_category_coverage
+            ),
+            "mean_sampled_category_coverage": (
+                uncertainty.mean_sampled_category_coverage
+            ),
+            "timed_out": uncertainty.timed_out,
+            "models": [asdict(item) for item in uncertainty.model_metrics],
+            "baseline_models": _exact_model_metrics(
+                baseline.coupons,
+                uncertainty_models,
+            ),
+            "exposure": outcome_exposure(uncertainty.selected_coupons),
+        },
         "cross_evaluation": {
             "baseline_under_sports": asdict(baseline_quality_sports),
             "sports_under_bk": asdict(sports_quality_bk),
@@ -243,6 +292,7 @@ def execute_final_hybrid_comparison(
     baseline_package = output / "baseline-final-research-coupons.txt"
     sports_package = output / "sports-final-research-coupons.txt"
     robust_package = output / "robust-final-research-coupons.txt"
+    uncertainty_package = output / "uncertainty-v1-final-research-coupons.txt"
     report_path = output / "comparison.json"
     _write_replace(
         baseline_package,
@@ -262,14 +312,41 @@ def execute_final_hybrid_comparison(
             robust.selected_coupons,
         ),
     )
+    _write_replace(
+        uncertainty_package,
+        _research_package_bytes(
+            "DIRECT_BK_BOUNDED_UNCERTAINTY_CHALLENGER",
+            plan.stake,
+            uncertainty.selected_coupons,
+        ),
+    )
     _write_replace(report_path, _pretty(report))
     return report, FinalHybridComparisonPaths(
         report=report_path,
         baseline_package=baseline_package,
         sports_package=sports_package,
         robust_package=robust_package,
+        uncertainty_package=uncertainty_package,
         sports_probability_snapshot=sports_probability_snapshot,
     )
+
+
+def _exact_model_metrics(
+    coupons: tuple[str, ...],
+    models: Mapping[str, tuple[tuple[float, float, float], ...]],
+) -> list[dict[str, float | str]]:
+    rows = []
+    for name, probabilities in models.items():
+        p13, p14, p15 = exact_category_probabilities(coupons, probabilities)
+        rows.append(
+            {
+                "model": name,
+                "exact_p13": p13,
+                "exact_p14": p14,
+                "exact_p15": p15,
+            }
+        )
+    return rows
 
 
 def _rebase_sports_probabilities(

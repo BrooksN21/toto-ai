@@ -1,5 +1,52 @@
 # Current State
 
+## Drawing 4991 closure and quality-v3 integration (2026-08-30)
+
+Drawing 4991 completed one scheduler-owned pre-T-10 `PLAY` under recovery plan
+`a4cd1d2529e9a211`: 166 unique coupons, 4,980 RUB, with automatic wagering
+disabled.  The operator package was published and verified before 15:50 MSK.
+At T-10 the operator record expired as designed to `NO BET`,
+`actionable=false`; the durable archive and exported bytes retain their
+verified hashes but are no longer wagering-authoritative.
+
+Two generic defects exposed by that run are fixed in the current working tree.
+The category-hit seed can no longer restore coupons below
+`minimum_gross_ev`, and archive identity now uses the atomic final input's raw
+source `ended_at` while scheduler timing continues to use the corrected Moscow
+operational cutoff.  Neither change contains drawing 4991 or internal-ID
+special cases.  Their exact regression tests pass (2 tests), and focused Ruff
+passes.
+
+The direct bounded-uncertainty challenger (`quality-v3`) is integrated into
+the final hybrid comparison/sidecar/CLI as a research-only fourth package.
+Its focused suite passes 9 tests and Ruff.  It is not connected to production
+selection, the release gate or operator publication.  An earlier exploratory
+4990 replay increased modeled exact P13 from 0.015651 to 0.021088 under BK and
+from 0.012050 to 0.015917 in the 20%-flattened scenario, but actual best hits
+fell from 11 to 10.  That single result is negative settlement evidence and
+cannot justify activation.
+
+No additional authoritative 4987-4990 replay was admitted in this pass:
+4987/4988 lack a matching final-input/baseline pair, schema-v8 drawing 4989 is
+rejected by the current scheduler validator, and drawing 4990's old plan no
+longer matches the current hash-bound schedule ledger.  Integrity checks were
+not bypassed.
+
+The local SQLite database currently ends at drawing 4991, but the existing
+dispatcher state already contains drawing 4992 (internal ID 12083), source and
+operational cutoff `2026-08-31T13:30:00Z` (16:30 MSK).  That state is
+`deferred`, not scheduler-ready: playability is still unknown and preparation
+is unresolved 15/15.  Its retained diagnostics show API-Sports account/plan
+errors and no accepted timing evidence.  No network retry was performed in
+this implementation pass.
+
+No TotoAI LaunchAgent is currently loaded.  The current repository candidate
+is `reports/rehearsal/morning-dispatcher-v8-15m/` with launchd label
+`com.totoai.morning-dispatcher.v1`, `StartInterval=900`, project-pinned working
+directory/wrapper, executable wrapper and a regular owner-only `.env` (`0600`).
+It is prepared for a separate ops installation step; this implementation pass
+did not call `launchctl` or publish a package.
+
 ## Drawing 4990 freshness recovery and robust package research (2026-08-29)
 
 The first real schema-v9 T-120 checkpoint terminalized plan

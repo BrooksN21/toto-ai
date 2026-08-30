@@ -185,6 +185,10 @@ def _execute(
         "sports_research_package_sha256": _sha256(paths.sports_package),
         "robust_research_package": str(paths.robust_package),
         "robust_research_package_sha256": _sha256(paths.robust_package),
+        "uncertainty_research_package": str(paths.uncertainty_package),
+        "uncertainty_research_package_sha256": _sha256(
+            paths.uncertainty_package
+        ),
         "baseline_matches_operator": True,
         "sports_coverage_count": report["sports_coverage_count"],
         "sports_fallback_count": report["sports_fallback_count"],
@@ -246,6 +250,10 @@ def _execute_no_bet_research(
         "sports_research_package_sha256": _sha256(paths.sports_package),
         "robust_research_package": str(paths.robust_package),
         "robust_research_package_sha256": _sha256(paths.robust_package),
+        "uncertainty_research_package": str(paths.uncertainty_package),
+        "uncertainty_research_package_sha256": _sha256(
+            paths.uncertainty_package
+        ),
         "sports_coverage_count": report["sports_coverage_count"],
         "sports_fallback_count": report["sports_fallback_count"],
         "automatic_wagering": False,

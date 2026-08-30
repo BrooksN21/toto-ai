@@ -5267,7 +5267,9 @@ def _freeze_and_publish(
             "provenance": "pre_bet_runner",
             "drawing_id": plan.drawing_id,
             "drawing_number": plan.drawing,
-            "ended_at": _timestamp(plan.ended_at),
+            "ended_at": _timestamp(
+                _archive_identity_ended_at(plan, final_input)
+            ),
             "archived_at": _timestamp(published_at),
             "stake": plan.stake,
             "coupon_count": validated_package.count,
@@ -5351,6 +5353,29 @@ def _freeze_and_publish(
         _remove_actionable_publication_artifacts(plan, run_dir)
         phase_errors.append(f"final: {_safe_error(error)}")
         return _no_package_terminal(phase_errors, phase_absences)
+
+
+def _archive_identity_ended_at(
+    plan: SchedulerPlan,
+    final_input: FinalInputSnapshot | None,
+) -> datetime:
+    """Return the raw source deadline used by the persisted drawing identity.
+
+    BaltBet operational scheduling interprets TotoBrief's displayed clock as
+    Moscow time.  The historical database deliberately retains the source ISO
+    value, so the durable archive manifest must bind that raw value rather than
+    the corrected operational cutoff.
+    """
+
+    if final_input is None:
+        return plan.ended_at
+    payload = final_input.payload
+    if not isinstance(payload, Mapping):
+        raise SchedulerPhaseError("final input payload is invalid")
+    data = payload.get("data")
+    if not isinstance(data, Mapping):
+        raise SchedulerPhaseError("final input drawing payload is invalid")
+    return _parse_utc_datetime("source drawing ended_at", data.get("ended_at"))
 
 
 def _snapshot_validation_error(

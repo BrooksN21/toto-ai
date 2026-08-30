@@ -1,5 +1,35 @@
 # Architecture
 
+## Eligibility-preserving category seed and raw archive identity (2026-08-30)
+
+Playable package selection treats `minimum_gross_ev` as a hard candidate
+boundary.  For a 15-event category-hit run, the Cover-14/BK seed is first
+intersected with the already ranked EV-eligible universe; seed rows below the
+threshold cannot be restored by the hybrid candidate builder.  The remaining
+quality universe is filled only from that same eligible ordering.  This is a
+general selector invariant and contains no drawing-specific condition.
+
+BaltBet operational timing and persisted source identity are deliberately
+separate.  Scheduler checkpoints use the Moscow-normalized operational cutoff,
+while a durable pre-bet archive created from an atomic final input binds the
+raw TotoBrief `payload.data.ended_at` retained by SQLite.  This prevents an
+operational timezone correction from changing the archived drawing identity.
+
+## Research-only direct uncertainty challenger v1 (2026-08-30)
+
+`optimizer.uncertainty_package` builds a fresh coupon candidate universe from
+the frozen bookmaker matrix and deterministic 10%/20% probability-flattening
+scenarios.  It combines top, sampled and mutated candidates from every model,
+then uses the existing maximin category selector.  Production coupons may be
+included as anchors, but the challenger is not limited to recombining them.
+
+The final hybrid research comparison and sidecar can emit a fourth
+`uncertainty-v1` artifact with exact per-model P13/P14/P15 and event exposure
+diagnostics.  The module imports no scheduler, release or operator gateway and
+does not modify the production package, release gate, operator result or
+automatic-wagering state.  It remains research-only until a predeclared paired
+prospective gate is met.
+
 ## Scheduler child runtime boundary (2026-08-29)
 
 Every package-phase child has one parent-owned `phase_deadline`. The child

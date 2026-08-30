@@ -7,6 +7,7 @@ import subprocess
 from dataclasses import asdict, fields, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -68,6 +69,24 @@ FINAL_PACKAGE = b"rank,coupon,gross_ev,net_ev\n1,XXXXXXXXXXXXXXX,1.15,0.15\n"
 
 def _totobrief_baltbet_timestamp(value: datetime) -> str:
     return value.astimezone(MSK).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def test_archive_identity_uses_raw_source_deadline_for_atomic_final() -> None:
+    operational = datetime(2026, 8, 30, 13, 0, tzinfo=UTC)
+    plan = SimpleNamespace(ended_at=operational)
+    final_input = SimpleNamespace(
+        payload={"data": {"ended_at": "2026-08-30T16:00:00.000000Z"}}
+    )
+
+    assert scheduler._archive_identity_ended_at(plan, final_input) == datetime(
+        2026,
+        8,
+        30,
+        16,
+        0,
+        tzinfo=UTC,
+    )
+    assert scheduler._archive_identity_ended_at(plan, None) == operational
 
 
 def _plan(

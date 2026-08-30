@@ -1,5 +1,34 @@
 # Decisions
 
+## 2026-08-30: EV eligibility is a hard package-candidate boundary
+
+- `minimum_gross_ev` is applied before category-hit quality selection.
+- A Cover/category seed may reorder eligible candidates, but it may never
+  restore a coupon excluded by that threshold.
+- Regression coverage must assert candidate-set containment, not only the
+  final package minimum.
+
+## 2026-08-30: operational cutoff and source archive identity are distinct
+
+- Moscow-normalized operational time controls scheduler checkpoints and T-10.
+- SQLite and durable package archives retain the raw TotoBrief source
+  `ended_at` identity captured in immutable final input.
+- Time correction must not rewrite source identity, and source identity must
+  not move operational checkpoints.
+
+## 2026-08-30: quality-v3 remains a research-only challenger
+
+- The bounded-uncertainty selector may generate candidates directly from BK
+  and predeclared flattening scenarios, rather than only recombine existing
+  packages.
+- It cannot change production/operator selection, release gates or automatic
+  wagering without a separately reviewed activation change.
+- One 4990 exploratory replay improved modeled P13 but reduced actual best hits;
+  it is not evidence of profit or production superiority.
+- Historical replay must fail closed when final input, baseline, plan or
+  evidence hashes cannot be validated.  Old schema or ledger checks must not
+  be bypassed to increase sample size.
+
 ## 2026-08-29: exact research packages may be inspected only post-cutoff
 
 - A project-owner request may expose exact research coupon strings only after

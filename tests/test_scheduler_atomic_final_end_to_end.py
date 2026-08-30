@@ -8,13 +8,14 @@ from threading import Event
 
 import pytest
 import requests
+from sqlalchemy import select
 from typer.testing import CliRunner
 
 import toto_ai.runner.scheduler as scheduler
 from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai import cli
 from toto_ai.api.rate_limit import TotoBriefRequestError
-from toto_ai.db.models import Drawing
+from toto_ai.db.models import ArchivedPackage, Drawing
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.runner.final_input import persist_final_input
 from toto_ai.runner.scheduler import (
@@ -540,6 +541,51 @@ def test_bet_ready_publication_creates_verified_operator_export(tmp_path):
     assert destination.read_text(encoding="utf-8") == (
         "30; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1\n"
     )
+
+
+def test_atomic_archive_import_uses_raw_baltbet_deadline_identity(tmp_path):
+    plan = _plan(tmp_path)
+    raw_source_deadline = plan.ended_at + timedelta(hours=3)
+    engine = init_db(plan.db)
+    with get_session_factory(engine).begin() as session:
+        session.add(
+            Drawing(
+                id=plan.drawing_id,
+                number=plan.drawing,
+                name="baltbet-main",
+                ended_at=raw_source_deadline.isoformat(),
+                status="active",
+            )
+        )
+    engine.dispose()
+    payload = _atomic_payload(plan, event_id_base=45110)
+    payload["data"]["name"] = "baltbet-main"
+    payload["data"]["ended_at"] = raw_source_deadline.isoformat().replace(
+        "+00:00",
+        "Z",
+    )
+
+    published = _tick(plan, _playing_runner(plan, payload), plan.final_at)
+
+    assert published is not None and published.outcome == "bet-ready"
+    archive_payload = json.loads(
+        (published.run_dir / "package-archive.json").read_text(encoding="utf-8")
+    )
+    assert archive_payload["ended_at"] == raw_source_deadline.isoformat().replace(
+        "+00:00",
+        "Z",
+    )
+    assert plan.ended_at != raw_source_deadline
+    engine = init_db(plan.db)
+    with get_session_factory(engine)() as session:
+        archived = session.scalar(select(ArchivedPackage))
+        assert archived is not None
+        assert archived.drawing_id == plan.drawing_id
+        assert archived.drawing_number == plan.drawing
+        assert archived.archive_manifest_sha256 == archive_payload[
+            "archive_manifest_sha256"
+        ]
+    engine.dispose()
 
 
 def test_authorized_experimental_result_is_explicitly_bound_and_exportable(

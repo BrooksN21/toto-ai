@@ -331,21 +331,18 @@ def _select_safety_aware_package(
             config.package_near_fixed_share,
             config.package_concentration_headroom_share,
         )
-        seed_indices = np.asarray(
+        raw_seed_indices = np.asarray(
             [index_from_coupon(coupon) for coupon in seed_coupons],
             dtype=np.int64,
         )
-        maximum_hybrid_count = min(gross_ev.size, _SAFETY_MAX_CANDIDATES)
-        ev_prefix = order[:maximum_hybrid_count]
-        ev_prefix = ev_prefix[~np.isin(ev_prefix, seed_indices, assume_unique=True)]
-        eligible_indices = np.concatenate((seed_indices, ev_prefix))[
-            :maximum_hybrid_count
-        ]
+        eligible_indices, seed_indices = _eligible_hybrid_candidate_indices(
+            eligible_indices=eligible_indices,
+            seed_indices=raw_seed_indices,
+        )
         eligible_positions = np.arange(eligible_indices.size, dtype=np.int64)
-        eligible_count = int(gross_ev.size)
-        baseline_indices = seed_indices
-        baseline_ranks = np.arange(1, seed_indices.size + 1, dtype=np.int64)
-        baseline_count = int(seed_indices.size)
+        baseline_count = min(required, int(eligible_indices.size))
+        baseline_indices = eligible_indices[:baseline_count]
+        baseline_ranks = np.arange(1, baseline_count + 1, dtype=np.int64)
     else:
         baseline_count = min(required, eligible_count)
         baseline_indices = eligible_indices[:baseline_count]
@@ -606,6 +603,25 @@ def _select_safety_aware_package(
         ),
         selection_diagnostics=diagnostics,
     )
+
+
+def _eligible_hybrid_candidate_indices(
+    *,
+    eligible_indices: np.ndarray,
+    seed_indices: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Keep the category seed and quality universe inside the EV threshold."""
+
+    filtered_seed = seed_indices[
+        np.isin(seed_indices, eligible_indices, assume_unique=True)
+    ]
+    maximum_count = min(int(eligible_indices.size), _SAFETY_MAX_CANDIDATES)
+    ev_prefix = eligible_indices[:maximum_count]
+    ev_prefix = ev_prefix[
+        ~np.isin(ev_prefix, filtered_seed, assume_unique=True)
+    ]
+    candidates = np.concatenate((filtered_seed, ev_prefix))[:maximum_count]
+    return candidates, filtered_seed
 
 
 def _repair_selection(
