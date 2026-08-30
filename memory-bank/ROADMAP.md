@@ -8,14 +8,14 @@
   canonical alias equality and retain both-source provenance.
 - [x] Cover strict GOAL plus TheSportsDB promotion and fail-closed negative
   cases in targeted tests.
-- [ ] Review and ingest official MLSZ evidence for event `180353` at
+- [x] Review and ingest official MLSZ plus club evidence for event `180353` at
   `2026-08-31T17:30:00Z`.
-- [ ] Recollect/review the GOAL plus TheSportsDB pair for event `180358` at
+- [x] Recollect/review the GOAL plus TheSportsDB pair for event `180358` at
   `2026-08-31T16:00:00Z` through the generic consensus flow.
-- [ ] Rerun drawing 4992 morning preparation and verify 15/15 timing coverage.
-- [ ] Create or activate a drawing-4992 scheduler plan only after that actual
-  rerun reports READY; the currently loaded 15-minute dispatcher alone is not
-  readiness evidence.
+- [x] Rerun drawing 4992 morning preparation and verify 15/15 timing coverage
+  (`0/15` unresolved).
+- [x] Create and load drawing-4992 scheduler plan `1d837ebf02c14788` after the
+  actual rerun reports READY; first checkpoint is T-120 at 14:30 MSK.
 
 # 2026-08-30 drawing 4991 closure and quality-v3
 
@@ -30,13 +30,12 @@
 - [x] Keep failed/mismatched 4987-4990 replay inputs fail-closed; do not bypass
   old schema or ledger integrity to manufacture evidence.
 - [ ] Complete expanded and full verification for the combined working tree.
-- [x] Verify and prepare, but do not load, the current 15-minute open-drawing
-  dispatcher candidate (`com.totoai.morning-dispatcher.v1`) for a separate ops
-  installation step.
-- [ ] Resolve drawing 4992's current local `deferred` state (playability
-  unknown, preparation unresolved 15/15) through the authorized public/local
-  flow, persist it in SQLite, then prepare its exact scheduler plan and collect
-  quality-v3 prospectively alongside unchanged production quality-v2.
+- [x] Verify, prepare and load the 15-minute open-drawing dispatcher
+  (`com.totoai.morning-dispatcher.v1`).
+- [x] Resolve drawing 4992's deferred timing state through the authorized
+  public/local flow, persist 15/15 timing coverage in SQLite and prepare its
+  exact scheduler plan. Collect quality-v3 prospectively alongside unchanged
+  production quality-v2.
 - [ ] Keep quality-v3 inactive until paired prospective evidence satisfies the
   predeclared release criteria; do not claim profitability.
 

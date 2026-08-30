@@ -2,26 +2,21 @@
 
 ## Drawing 4992 timing-consensus status (2026-08-30)
 
-- Generic independent-provider timing consensus is implemented locally in
-  `main` for allowlisted GOAL, Sofascore and TheSportsDB evidence. The change
-  is not committed or pushed.
-- Promotion requires two distinct providers and domains, exact canonical team
-  identities in the same orientation, acceptable scheduled/not-started
-  status, and UTC kickoff agreement within the existing tolerance. Fuzzy,
-  reversed, ambiguous and single-source evidence remains fail-closed.
-- The last actual dispatcher pass for drawing 4992 stopped with two unknown
-  kickoff times; no scheduler plan was created by that pass.
-- Event `180353` has official MLSZ evidence for `2026-08-31T17:30:00Z`, but it
-  still requires evidence review and ledger ingestion before it can resolve
-  preparation.
-- Event `180358` has agreeing GOAL and TheSportsDB evidence for
-  `2026-08-31T16:00:00Z`; the generic consensus implementation is intended to
-  promote this strict pair after a fresh collection/review pass.
-- The generic morning dispatcher is loaded on a 15-minute interval. This does
-  not imply that drawing 4992 is scheduler-ready.
-- Next operational step: review/freeze the two evidence paths, rerun morning
-  collection and preparation, and only then verify whether a scheduler plan is
-  created.
+- Drawing 4992 (internal ID `12083`) is active with 15 events. Its operational
+  cutoff is `2026-08-31 16:30 MSK`.
+- Timing preparation is complete: `0/15` events remain unresolved.
+- Event `180353` is resolved at `2026-08-31T17:30:00Z` from accepted official
+  MLSZ plus club evidence.
+- Event `180358` is resolved at `2026-08-31T16:00:00Z` from accepted GOAL plus
+  TheSportsDB independent-provider consensus.
+- Scheduler plan `1d837ebf02c14788` is prepared and its launchd label is
+  loaded. The next checkpoint is T-120 at `14:30 MSK`; subsequent phases are
+  warmup at `15:40`, refresh at `15:50`, final at `16:00`, publish at `16:12`
+  and T-10 expiry at `16:20 MSK`.
+- No package has been generated and no wager has been made for drawing 4992.
+  Automatic wagering remains disabled.
+- The generic morning dispatcher is loaded and checks for new/open drawings
+  every 15 minutes.
 
 ## Drawing 4991 closure and quality-v3 integration (2026-08-30)
 
@@ -55,20 +50,10 @@ rejected by the current scheduler validator, and drawing 4990's old plan no
 longer matches the current hash-bound schedule ledger.  Integrity checks were
 not bypassed.
 
-The local SQLite database currently ends at drawing 4991, but the existing
-dispatcher state already contains drawing 4992 (internal ID 12083), source and
-operational cutoff `2026-08-31T13:30:00Z` (16:30 MSK).  That state is
-`deferred`, not scheduler-ready: playability is still unknown and preparation
-is unresolved 15/15.  Its retained diagnostics show API-Sports account/plan
-errors and no accepted timing evidence.  No network retry was performed in
-this implementation pass.
-
-No TotoAI LaunchAgent is currently loaded.  The current repository candidate
-is `reports/rehearsal/morning-dispatcher-v8-15m/` with launchd label
-`com.totoai.morning-dispatcher.v1`, `StartInterval=900`, project-pinned working
-directory/wrapper, executable wrapper and a regular owner-only `.env` (`0600`).
-It is prepared for a separate ops installation step; this implementation pass
-did not call `launchctl` or publish a package.
+The earlier deferred 4992 preparation state is superseded by the verified
+timing-complete scheduler state recorded above. The 15-minute dispatcher and
+the drawing-specific scheduler label are loaded; no package has yet been
+published for drawing 4992.
 
 ## Drawing 4990 freshness recovery and robust package research (2026-08-29)
 
