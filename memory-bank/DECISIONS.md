@@ -1,5 +1,19 @@
 # Decisions
 
+## 2026-08-31: post-draw source identity is ID/number-bound
+
+- Operational Moscow time controls scheduler phases but cannot be reused as
+  raw TotoBrief source identity.
+- Post-draw generation uses raw `ended_at` from a verified final input when
+  available; otherwise it reads the exact SQLite drawing selected jointly by
+  internal ID and visible number.
+- A missing internal ID, mismatched number, duplicate visible number, invalid
+  final input or response ID/number mismatch fails closed.  Timestamp
+  similarity alone can never select a drawing.
+- Result/score persistence, reviewed VOID handling and missing-result semantics
+  are unchanged.  A code fix is not evidence that an affected drawing has
+  been synchronized or settled; an explicit rerun is still required.
+
 ## Generic independent timing consensus (2026-08-30)
 
 - Timing promotion is provider-neutral across the explicit allowlist: GOAL,

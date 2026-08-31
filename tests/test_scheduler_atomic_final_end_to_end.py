@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Event
+from zoneinfo import ZoneInfo
 
 import pytest
 import requests
@@ -965,6 +966,42 @@ def test_archive_without_marker_is_recovered_at_hard_t10(tmp_path):
     )
     assert operator["decision"] == "NO BET"
     assert operator["actionable"] is False
+
+
+def test_atomic_final_post_draw_uses_raw_baltbet_source_deadline(tmp_path):
+    plan = _plan(tmp_path)
+    raw_ended_at = plan.ended_at.astimezone(ZoneInfo("Europe/Moscow")).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+    engine = init_db(plan.db)
+    with get_session_factory(engine).begin() as session:
+        session.add(
+            Drawing(
+                id=plan.drawing_id,
+                number=plan.drawing,
+                name="baltbet-main",
+                ended_at=raw_ended_at,
+                status="active",
+            )
+        )
+    engine.dispose()
+    payload = _atomic_payload(plan)
+    payload["data"]["name"] = "baltbet-main"
+    payload["data"]["ended_at"] = raw_ended_at
+
+    published = _tick(plan, _playing_runner(plan, payload), plan.final_at)
+
+    assert published is not None and published.outcome == "bet-ready"
+    post_draw_dir = plan.output_dir / "post-draw"
+    assert not (post_draw_dir / "generation-error.json").exists()
+    post_draw = json.loads(
+        (post_draw_dir / f"post-draw-{plan.drawing_id}.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert post_draw["drawing_id"] == plan.drawing_id
+    assert post_draw["drawing_number"] == plan.drawing
+    assert datetime.fromisoformat(post_draw["ended_at"]) == plan.ended_at
 
 
 def test_late_archive_recovery_removes_stale_actionable_files(tmp_path):

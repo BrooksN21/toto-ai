@@ -15,6 +15,7 @@ from toto_ai.db.models import (
     ArchivedPackage,
     Drawing,
     DrawingResultSnapshot,
+    Event,
     PackageSettlement,
 )
 from toto_ai.db.session import get_session_factory, init_db
@@ -251,6 +252,26 @@ def test_finished_sync_rejects_identity_and_partial_results(tmp_path):
 
     with factory() as session:
         assert session.scalar(select(DrawingResultSnapshot)) is None
+
+
+def test_finished_sync_rejects_wrong_internal_drawing_with_same_deadline(tmp_path):
+    factory = _database(tmp_path)
+    wrong_drawing = finished_payload()
+    wrong_drawing["data"]["id"] = 11971
+    wrong_drawing["data"]["number"] = 4953
+
+    with pytest.raises(ValueError, match="drawing id mismatch"):
+        sync_finished_drawing(
+            factory,
+            SnapshotClient([wrong_drawing]),
+            drawing_id=11970,
+        )
+
+    with factory() as session:
+        assert session.scalar(select(DrawingResultSnapshot)) is None
+        assert all(
+            event.result in (None, "") for event in session.scalars(select(Event))
+        )
 
 
 def test_finished_sync_accepts_reviewed_void_and_settlement_counts_it_as_hit(

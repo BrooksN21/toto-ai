@@ -1,5 +1,21 @@
 # Architecture
 
+## Exact post-draw source identity fallback (2026-08-31)
+
+Post-draw generation never treats the scheduler's Moscow-normalized cutoff as
+the raw TotoBrief drawing identity.  An available immutable final input is
+hash- and plan-validated, then supplies the raw payload `ended_at` through the
+same helper used by the durable pre-bet archive.  If no final input exists, the
+fallback resolves the persisted source identity from SQLite only when the
+internal drawing ID and visible drawing number identify one and the same
+unique row; a missing ID, number mismatch or duplicate visible number fails
+closed.
+
+Finished-result synchronization remains separately identity-bound: it fetches
+only `/drawing-info/{internal_id}` and requires both response ID and visible
+number to match before accepting any result.  VOID/reviewed cancellation and
+unresolved-result rules are unchanged.
+
 ## Generic strict independent-provider timing consensus (2026-08-30)
 
 The independent schedule promoter consumes candidate records from the shared

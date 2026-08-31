@@ -65,7 +65,10 @@ from toto_ai.external_odds.timing_overrides import (
     load_timing_override_catalog,
     timing_override_catalog_sha256,
 )
-from toto_ai.operations.finished_draw import import_prebet_package_manifest
+from toto_ai.operations.finished_draw import (
+    import_prebet_package_manifest,
+    resolve_exact_drawing_source_ended_at,
+)
 from toto_ai.package.audit import (
     PackageSafetyConfig,
     evaluate_package_safety,
@@ -5378,6 +5381,35 @@ def _archive_identity_ended_at(
     return _parse_utc_datetime("source drawing ended_at", data.get("ended_at"))
 
 
+def _post_draw_source_ended_at(plan: SchedulerPlan, run_dir: Path) -> datetime:
+    """Return the exact source deadline for the post-draw identity handoff.
+
+    The scheduler deadline is the Moscow-normalized operational cutoff. When
+    an atomic final input exists, its validated TotoBrief payload retains the
+    raw source timestamp used by the persisted drawing row. Reuse the same
+    source-identity rule as the durable pre-bet archive instead of passing the
+    operational cutoff through TotoBrief's Moscow parser a second time.
+    """
+
+    final_input_path = run_dir / "final-input.json"
+    if _path_exists(final_input_path):
+        return _archive_identity_ended_at(
+            plan,
+            load_final_input(final_input_path, expected_plan=plan),
+        )
+    if plan.drawing_id is None:
+        raise ValueError("exact drawing identity requires an internal drawing_id")
+    engine = init_db(plan.db)
+    try:
+        return resolve_exact_drawing_source_ended_at(
+            get_session_factory(engine),
+            drawing_id=plan.drawing_id,
+            drawing_number=plan.drawing,
+        )
+    finally:
+        engine.dispose()
+
+
 def _snapshot_validation_error(
     plan: SchedulerPlan,
     snapshot: PackageSnapshot,
@@ -5722,7 +5754,7 @@ def _ensure_post_draw_plan_candidate(
         plan_path, _wrapper_path, plist_path = prepare_post_draw_scheduler_artifacts(
             drawing_id=plan.drawing_id,
             drawing_number=None if plan.drawing_id is not None else plan.drawing,
-            ended_at=_timestamp(plan.ended_at),
+            ended_at=_timestamp(_post_draw_source_ended_at(plan, run_dir)),
             package_file=paper.source_package_path,
             paper_result_file=(
                 paper.result_path if paper.source_package_path is None else None

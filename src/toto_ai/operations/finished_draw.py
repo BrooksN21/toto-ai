@@ -307,6 +307,37 @@ def resolve_explicit_drawing(
     )
 
 
+def resolve_exact_drawing_source_ended_at(
+    session_factory: sessionmaker[Session],
+    *,
+    drawing_id: int,
+    drawing_number: int,
+) -> datetime:
+    """Return raw source ``ended_at`` for one unambiguous ID/number pair."""
+
+    if type(drawing_id) is not int or drawing_id < 1:
+        raise ValueError("exact drawing identity requires a positive drawing_id")
+    if type(drawing_number) is not int or drawing_number < 1:
+        raise ValueError("exact drawing identity requires a positive drawing_number")
+    with session_factory() as session:
+        drawing = session.get(Drawing, drawing_id)
+        numbered = session.scalars(
+            select(Drawing)
+            .where(Drawing.number == drawing_number)
+            .order_by(Drawing.id.desc())
+        ).all()
+        if (
+            drawing is None
+            or drawing.number != drawing_number
+            or len(numbered) != 1
+            or numbered[0].id != drawing_id
+        ):
+            raise ValueError(
+                "exact drawing identity is missing, mismatched, or ambiguous"
+            )
+        return _parse_timestamp_required(drawing.ended_at)
+
+
 def archive_package(
     session_factory: sessionmaker[Session],
     package_file: str | Path,

@@ -1,5 +1,25 @@
 # Current State
 
+## Drawing 4991 post-draw identity fix pending operational rerun (2026-08-31)
+
+The 4991 post-draw failure occurred before result collection.  Scheduler plan
+time was already Moscow-normalized, but post-draw generation passed it through
+the TotoBrief Moscow parser again and rejected it against the raw `ended_at`
+stored in SQLite.  The handoff now uses the validated atomic final input's raw
+source timestamp, matching the existing pre-bet archive identity rule.
+
+The no-final-input fallback is also closed systemically: it reads raw
+`ended_at` only from an unambiguous exact SQLite identity where internal ID and
+visible number agree.  Wrong IDs, number mismatches and duplicate visible
+numbers fail closed.  Focused regressions cover the 4991-shaped raw/operational
+split, no-final-input success, wrong/ambiguous identity rejection and
+wrong-drawing result payload rejection.
+
+Drawing 4991 has **not** been resynchronized or settled after this code change.
+Its 15 event result fields, result snapshot, settlement and postmortem must not
+be reported complete until the explicit operational rerun succeeds.  No
+network request, package generation, commit or push was performed in this fix.
+
 ## Drawing 4992 timing-consensus status (2026-08-30)
 
 - Drawing 4992 (internal ID `12083`) is active with 15 events. Its operational

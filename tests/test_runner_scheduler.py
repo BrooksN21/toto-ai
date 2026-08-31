@@ -89,6 +89,68 @@ def test_archive_identity_uses_raw_source_deadline_for_atomic_final() -> None:
     assert scheduler._archive_identity_ended_at(plan, None) == operational
 
 
+def test_post_draw_source_deadline_falls_back_to_exact_database_identity(
+    tmp_path: Path,
+) -> None:
+    plan = _plan(tmp_path)
+    raw_source_ended_at = "2030-01-02T15:00:00Z"
+    engine = init_db(plan.db)
+    with get_session_factory(engine).begin() as session:
+        session.add(
+            Drawing(
+                id=plan.drawing_id,
+                number=plan.drawing,
+                name="baltbet-main",
+                ended_at=raw_source_ended_at,
+                status="active",
+            )
+        )
+    engine.dispose()
+    run_dir = tmp_path / "run-without-final-input"
+    run_dir.mkdir()
+
+    assert scheduler._post_draw_source_ended_at(plan, run_dir) == datetime(
+        2030,
+        1,
+        2,
+        15,
+        tzinfo=UTC,
+    )
+
+
+@pytest.mark.parametrize("ambiguous", (False, True))
+def test_post_draw_database_fallback_rejects_wrong_or_ambiguous_identity(
+    tmp_path: Path,
+    ambiguous: bool,
+) -> None:
+    plan = _plan(tmp_path)
+    engine = init_db(plan.db)
+    with get_session_factory(engine).begin() as session:
+        session.add(
+            Drawing(
+                id=plan.drawing_id,
+                number=plan.drawing + (0 if ambiguous else 1),
+                ended_at="2030-01-02T15:00:00Z",
+                status="active",
+            )
+        )
+        if ambiguous:
+            session.add(
+                Drawing(
+                    id=plan.drawing_id + 1,
+                    number=plan.drawing,
+                    ended_at="2030-01-02T15:00:00Z",
+                    status="active",
+                )
+            )
+    engine.dispose()
+    run_dir = tmp_path / "run-without-final-input"
+    run_dir.mkdir()
+
+    with pytest.raises(ValueError, match="exact drawing identity"):
+        scheduler._post_draw_source_ended_at(plan, run_dir)
+
+
 def _plan(
     tmp_path: Path,
     *,
