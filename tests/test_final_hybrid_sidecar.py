@@ -192,6 +192,139 @@ def test_sidecar_binds_recomputed_baseline_to_operator_package(
     assert payload["uncertainty_research_package_sha256"]
 
 
+def test_authorized_sidecar_exports_selected_challenger_before_t10(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    plan_path = tmp_path / "scheduler-plan.json"
+    sports_path = tmp_path / "sports.json"
+    plan_path.write_text("{}", encoding="utf-8")
+    sports_path.write_text("{}", encoding="utf-8")
+    observed = datetime(2026, 8, 28, 14, 40, tzinfo=UTC)
+    scheduler = tmp_path / "scheduler"
+    run_dir = scheduler / "attempts" / "run-1"
+    run_dir.mkdir(parents=True)
+    source = run_dir / "package.csv"
+    source.write_text("source", encoding="utf-8")
+    (run_dir / "final-input.json").write_text("{}", encoding="utf-8")
+    operator = {
+        "plan_id": "plan",
+        "drawing": 4989,
+        "drawing_id": 12074,
+        "decision": "PLAY",
+        "actionable": True,
+        "run_id": "run-1",
+        "source_package_path": str(source),
+    }
+    (scheduler / "operator-result.json").write_text(
+        json.dumps(operator),
+        encoding="utf-8",
+    )
+    plan = SimpleNamespace(
+        output_dir=scheduler,
+        publish_deadline=observed + timedelta(minutes=10),
+        plan_id="plan",
+        drawing=4989,
+        drawing_id=12074,
+        requested_bank=60,
+        stake=30,
+    )
+    monkeypatch.setattr(final_hybrid_sidecar, "load_scheduler_plan", lambda _: plan)
+    baseline_coupon = "1" * 15
+    challenger_coupon = "X" * 15
+    challenger_hash = hashlib.sha256(challenger_coupon.encode()).hexdigest()
+
+    def fake_export(_plan, *, destination, observed_at):
+        path = Path(destination)
+        path.write_text(
+            "30;" + ";".join(baseline_coupon) + "\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def fake_compare(**kwargs):
+        output = Path(kwargs["output_dir"])
+        output.mkdir(parents=True)
+        report_path = output / "comparison.json"
+        baseline = output / "baseline.txt"
+        sports = output / "sports.txt"
+        robust = output / "robust.txt"
+        quality_v3 = output / "quality-v3.txt"
+        uncertainty = output / "uncertainty.txt"
+        snapshot = output / "probabilities.json"
+        baseline.write_text(baseline_coupon + "\n", encoding="utf-8")
+        sports.write_text("2" * 15 + "\n", encoding="utf-8")
+        robust.write_text("12X" * 5 + "\n", encoding="utf-8")
+        quality_v3.write_text(challenger_coupon + "\n", encoding="utf-8")
+        uncertainty.write_text(challenger_coupon + "\n", encoding="utf-8")
+        snapshot.write_text("{}", encoding="utf-8")
+        report = {
+            "sports_coverage_count": 10,
+            "sports_fallback_count": 5,
+            "experimental_selection": {
+                "policy_version": "parallel-challenger-nondegradation-v1",
+                "selected_strategy_id": "quality-v3",
+                "selected_package_sha256": challenger_hash,
+                "promoted": True,
+                "selection_reason": "eligible",
+                "candidates": [
+                    {
+                        "strategy_id": "quality-v3",
+                        "eligible": True,
+                        "coupon_count": 1,
+                        "cost": 30,
+                    }
+                ],
+            },
+        }
+        report_path.write_text(json.dumps(report), encoding="utf-8")
+        return report, SimpleNamespace(
+            report=report_path,
+            baseline_package=baseline,
+            sports_package=sports,
+            robust_package=robust,
+            quality_v3_package=quality_v3,
+            uncertainty_package=uncertainty,
+            sports_probability_snapshot=snapshot,
+        )
+
+    monkeypatch.setattr(final_hybrid_sidecar, "export_operator_package", fake_export)
+    monkeypatch.setattr(
+        final_hybrid_sidecar,
+        "execute_final_hybrid_comparison",
+        fake_compare,
+    )
+    authorization = final_hybrid_sidecar.authorize_parallel_manual_release(
+        scheduler_plan_path=plan_path,
+        output_root=tmp_path / "sidecar",
+        acknowledged=True,
+        now=observed,
+    )
+
+    result = run_final_hybrid_sidecar(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        output_root=tmp_path / "sidecar",
+        wait_seconds=0,
+        minimum_runtime_seconds=240,
+        parallel_authorization_path=authorization,
+        now=lambda: observed,
+        sleeper=lambda _: None,
+    )
+
+    assert result.status == "READY_PARALLEL_PLAY_BEFORE_T10"
+    payload = json.loads(result.result_path.read_text(encoding="utf-8"))
+    release = payload["parallel_release"]
+    assert release["decision"] == "PLAY"
+    assert release["actionable"] is True
+    assert release["selected_strategy_id"] == "quality-v3"
+    assert release["automatic_wagering"] is False
+    package = Path(release["selected_package_path"])
+    assert package.read_text(encoding="utf-8") == (
+        "30;" + ";".join(challenger_coupon) + "\n"
+    )
+
+
 def test_sidecar_builds_research_comparison_from_final_input_after_no_bet(
     monkeypatch,
     tmp_path: Path,
@@ -431,10 +564,16 @@ def test_real_sidecar_output_marks_uncertainty_v1_as_research_only(
         "run_ev_crowd_current",
         lambda *_args, **_kwargs: next(strategy_results),
     )
+    robust_call = {}
+
+    def fake_robust(**kwargs):
+        robust_call.update(kwargs)
+        return robust
+
     monkeypatch.setattr(
         final_hybrid_comparison,
         "select_robust_package",
-        lambda **_kwargs: robust,
+        fake_robust,
     )
     monkeypatch.setattr(
         final_hybrid_comparison,
@@ -445,6 +584,14 @@ def test_real_sidecar_output_marks_uncertainty_v1_as_research_only(
         final_hybrid_comparison,
         "package_quality_metrics",
         lambda *_args, **_kwargs: Quality(),
+    )
+    monkeypatch.setattr(
+        final_hybrid_comparison,
+        "evaluate_package_safety",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            decision="PLAY",
+            reason_codes=(),
+        ),
     )
 
     result = run_final_hybrid_sidecar(
@@ -463,6 +610,14 @@ def test_real_sidecar_output_marks_uncertainty_v1_as_research_only(
     assert result.status == "READY_RESEARCH_ONLY_NO_BET"
     assert payload["automatic_wagering"] is False
     assert payload["operator_compatible"] is False
+    assert payload["quality_v3_research_package_sha256"]
+    assert set(robust_call["probability_models"]) == {
+        "bk",
+        "sports",
+        "flatten_10",
+        "flatten_20",
+    }
+    assert set(uncertainty_coupons).issubset(set(robust_call["candidates"]))
     assert hashlib.sha256(uncertainty_path.read_bytes()).hexdigest() == payload[
         "uncertainty_research_package_sha256"
     ]

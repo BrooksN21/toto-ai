@@ -2333,3 +2333,31 @@ ambiguous reversed evidence remains unresolved.
   matching, pre-bet expiry and post-draw timing must all use the shared parser.
 - Drawing 4991 therefore closes at `2026-08-30 16:00 MSK`, canonical
   `2026-08-30T13:00:00Z`; T-10 is `15:50 MSK`.
+
+## 2026-08-31 — Parallel challengers must fail open to quality-v2
+
+- Drawing 4993 keeps its immutable schema-v9 scheduler and quality-v2 operator
+  control. Quality-v3, GOAL sports-shadow and robust are computed in a
+  separate final-input-bound process.
+- A challenger must pass package safety, match the same input/bank/stake, not
+  reduce BK P13/P14/P15, strictly improve worst-model P13, and not increase
+  maximum event/outcome concentration. Otherwise quality-v2 wins.
+- A plan-bound companion manual package is allowed only after the main
+  scheduler publishes actionable PLAY and only with a separate immutable
+  pre-T-10 experimental authorization. It never overwrites the main operator
+  record and never wagers automatically.
+- Historical quality-v2/v3 replay is equal-cost: the exact retained quality-v2
+  package is the control and quality-v3 receives the same coupon count. Current
+  mutable schedule evidence is not revalidated for historical replay, but the
+  stored plan ID, final-input content hashes, probability hash, target identity
+  and package rows are verified.
+
+## 2026-08-31 — Sports Analytics v2 remains a bounded BK residual
+
+- V2 adds smoothed venue goal rates and an independent-Poisson W/D/L projection
+  to venue W/D/L evidence.
+- BK remains the anchor. Sports influence is capped at 20%, scales with venue
+  sample size and shrinks to zero on strong market disagreement. Missing or
+  insufficient event data falls back locally to BK.
+- V2 is research-only until chronological walk-forward calibration and
+  equal-bank package settlement show non-degradation versus untouched BK.

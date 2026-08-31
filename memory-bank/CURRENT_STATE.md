@@ -5981,3 +5981,45 @@ Repository housekeeping retained four factual task-context records under
 `plans/` and classified `.playwright-mcp/` page snapshots as disposable local
 browser output. The browser output is ignored and removed from the working
 tree so browser inspection cannot repeatedly dirty repository status.
+
+## Drawing 4993 parallel challengers and Sports Analytics v2 (2026-08-31)
+
+The primary drawing-4993 scheduler remains immutable: plan
+`bd649bfd70e5b165`, internal drawing ID 12086, bank 4,980 RUB, stake 30 RUB,
+deadline 17:00 MSK and T-10 16:50 MSK. Its LaunchAgent remains loaded with
+eight triggers from 15:00 through 16:50 MSK. No primary scheduler file or
+trigger was changed by the challenger work.
+
+GOAL evidence was frozen before the deadline for 11/15 events; four events use
+event-local BK fallback. A separate LaunchAgent
+`com.totoai.parallel-sidecar.v1.bd649bfd70e5b165` is loaded for 16:30 MSK. It
+waits for the main actionable PLAY, then compares quality-v2, sports-shadow,
+quality-v3 and robust from the same final input. A plan/policy-bound manual
+experimental authorization exists. The companion can publish a manual
+BaltBet-format file only before T-10; it cannot wager automatically and every
+error leaves quality-v2 unchanged.
+
+The deterministic non-degradation gate evaluates exact P13/P14/P15 under BK,
+sports, flatten-10 and flatten-20. It rejects BK degradation, increased maximum
+outcome concentration, package-safety failures and failure to strictly improve
+worst-model P13. A fresh training snapshot selected quality-v2: sports-shadow
+reduced BK/worst-model probabilities, while quality-v3 and robust increased
+maximum outcome share from 0.648 to 0.909. The full four-package comparison
+completed in about one minute, within the isolated sidecar window.
+
+Equal-cost historical replay retained the exact 166-coupon / 4,980-RUB
+quality-v2 packages. On drawing 4990, quality-v2 best hits were 11 and
+quality-v3 best hits were 9. On 4991 both reached 11. Drawing 4992 is generated
+but remains unsettled in the database. Quality-v3 increased modeled P13 on all
+three inputs but also increased maximum concentration to approximately
+0.87-0.90; realized evidence does not justify replacing quality-v2.
+
+Sports Analytics v2 has started as research-only module
+`sports-analytics-v2-poisson-venue-shrunk-v1`. It combines venue W/D/L with
+smoothed venue goals and a Poisson W/D/L projection, caps sports influence at
+20%, shrinks strong BK disagreement and falls back locally to BK. It is not
+activated for drawing 4993 and requires chronological walk-forward evidence.
+
+Verification for the parallel-challenger, historical-replay and Sports
+Analytics v2 change set passed: `2250 passed, 13 deselected`; Ruff and
+`git diff --check` also passed.

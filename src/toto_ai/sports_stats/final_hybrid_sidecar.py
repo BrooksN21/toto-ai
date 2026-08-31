@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from toto_ai.optimizer.parallel_challenger import POLICY_VERSION
 from toto_ai.runner.final_input import load_final_input
 from toto_ai.runner.scheduler import export_operator_package, load_scheduler_plan
 from toto_ai.sports_stats.final_hybrid_comparison import (
@@ -28,6 +29,59 @@ class FinalHybridSidecarResult:
     reason: str | None
 
 
+PARALLEL_AUTHORIZATION_FILENAME = "parallel-release-authorization.json"
+
+
+def authorize_parallel_manual_release(
+    *,
+    scheduler_plan_path: str | Path,
+    output_root: str | Path,
+    acknowledged: bool,
+    now: datetime | None = None,
+) -> Path:
+    """Authorize the exact plan-bound selector, never automatic wagering."""
+
+    if acknowledged is not True:
+        raise ValueError("explicit parallel experimental-risk acknowledgement required")
+    plan = load_scheduler_plan(_regular_file(scheduler_plan_path, "scheduler plan"))
+    observed_at = _utc(datetime.now(timezone.utc) if now is None else now)
+    if observed_at >= plan.publish_deadline:
+        raise ValueError("parallel release cannot be authorized at or after T-10")
+    root = Path(output_root).absolute()
+    root.mkdir(parents=True, exist_ok=True)
+    if root.is_symlink() or not root.is_dir():
+        raise ValueError("output root must be a regular directory")
+    path = root / PARALLEL_AUTHORIZATION_FILENAME
+    if path.exists():
+        _validate_parallel_authorization(plan, path)
+        return path
+    payload = {
+        "schema_version": 1,
+        "authorization_mode": "EXPERIMENTAL_PARALLEL_MANUAL",
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "requested_bank": plan.requested_bank,
+        "stake": plan.stake,
+        "expires_at": _timestamp(plan.publish_deadline),
+        "selection_policy_version": POLICY_VERSION,
+        "candidate_strategies": [
+            "quality-v2",
+            "sports-shadow",
+            "quality-v3",
+            "robust",
+        ],
+        "risk_acknowledged": True,
+        "profitability_proven": False,
+        "automatic_wagering": False,
+        "authorized_at": _timestamp(observed_at),
+    }
+    payload["record_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    _write_replace(path, _canonical(payload) + b"\n")
+    _validate_parallel_authorization(plan, path)
+    return path
+
+
 def run_final_hybrid_sidecar(
     *,
     scheduler_plan_path: str | Path,
@@ -35,6 +89,7 @@ def run_final_hybrid_sidecar(
     output_root: str | Path,
     wait_seconds: int = 600,
     minimum_runtime_seconds: int = 240,
+    parallel_authorization_path: str | Path | None = None,
     poll_seconds: float = 5.0,
     now: Callable[[], datetime] | None = None,
     sleeper: Callable[[float], None] = time.sleep,
@@ -47,6 +102,16 @@ def run_final_hybrid_sidecar(
     plan_path = _regular_file(scheduler_plan_path, "scheduler plan")
     sports_path = _regular_file(sports_artifact_path, "sports artifact")
     plan = load_scheduler_plan(plan_path)
+    authorization_path = (
+        None
+        if parallel_authorization_path is None
+        else _regular_file(
+            parallel_authorization_path,
+            "parallel release authorization",
+        )
+    )
+    if authorization_path is not None:
+        _validate_parallel_authorization(plan, authorization_path)
     root = Path(output_root).absolute()
     root.mkdir(parents=True, exist_ok=True)
     if root.is_symlink() or not root.is_dir():
@@ -87,6 +152,8 @@ def run_final_hybrid_sidecar(
                     status_path=status_path,
                     started_at=started_at,
                     observed_at=observed_at,
+                    parallel_authorization_path=authorization_path,
+                    clock=clock,
                 )
             if operator.get("decision") == "NO BET":
                 if observed_at < latest_start:
@@ -138,6 +205,8 @@ def _execute(
     status_path: Path,
     started_at: datetime,
     observed_at: datetime,
+    parallel_authorization_path: Path | None,
+    clock: Callable[[], datetime],
 ) -> FinalHybridSidecarResult:
     run_id = _text(operator.get("run_id"), "operator run_id")
     source_path = _regular_file(
@@ -160,12 +229,29 @@ def _execute(
         scheduler_plan_path=plan_path,
         sports_artifact_path=sports_path,
         output_dir=output / "research-comparison",
+        deadline=_comparison_deadline(plan.publish_deadline, observed_at),
     )
     operator_coupons = _parse_operator_package(operator_export, plan.stake)
     baseline_coupons = _parse_research_package(paths.baseline_package)
+    quality_v3_package = getattr(
+        paths,
+        "quality_v3_package",
+        paths.uncertainty_package,
+    )
     if operator_coupons != baseline_coupons:
         raise ValueError("recomputed BK control differs from operator package")
-    completed_at = datetime.now(timezone.utc)
+    completed_at = _utc(clock())
+    parallel_release = None
+    if parallel_authorization_path is not None:
+        parallel_release = _publish_parallel_selection(
+            plan=plan,
+            report=report,
+            paths=paths,
+            operator_export=operator_export,
+            output=output,
+            authorization_path=parallel_authorization_path,
+            observed_at=completed_at,
+        )
     payload = {
         "schema_version": 1,
         "status": "READY_BEFORE_T10",
@@ -185,6 +271,8 @@ def _execute(
         "sports_research_package_sha256": _sha256(paths.sports_package),
         "robust_research_package": str(paths.robust_package),
         "robust_research_package_sha256": _sha256(paths.robust_package),
+        "quality_v3_research_package": str(quality_v3_package),
+        "quality_v3_research_package_sha256": _sha256(quality_v3_package),
         "uncertainty_research_package": str(paths.uncertainty_package),
         "uncertainty_research_package_sha256": _sha256(
             paths.uncertainty_package
@@ -195,12 +283,19 @@ def _execute(
         "automatic_wagering": False,
         "sports_operator_compatible": False,
         "profitability_proven": False,
+        "parallel_release": parallel_release,
     }
+    result_status = (
+        "READY_PARALLEL_PLAY_BEFORE_T10"
+        if parallel_release is not None
+        else "READY_BEFORE_T10"
+    )
+    payload["status"] = result_status
     payload["record_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
     _write_replace(output / "sidecar-result.json", _canonical(payload) + b"\n")
     _write_replace(status_path, _canonical(payload) + b"\n")
     return FinalHybridSidecarResult(
-        status="READY_BEFORE_T10",
+        status=result_status,
         result_path=status_path,
         output_dir=output,
         reason=None,
@@ -227,8 +322,14 @@ def _execute_no_bet_research(
         scheduler_plan_path=plan_path,
         sports_artifact_path=sports_path,
         output_dir=output / "research-comparison",
+        deadline=_comparison_deadline(plan.publish_deadline, observed_at),
     )
     completed_at = datetime.now(timezone.utc)
+    quality_v3_package = getattr(
+        paths,
+        "quality_v3_package",
+        paths.uncertainty_package,
+    )
     payload = {
         "schema_version": 1,
         "status": "READY_RESEARCH_ONLY_NO_BET",
@@ -250,6 +351,8 @@ def _execute_no_bet_research(
         "sports_research_package_sha256": _sha256(paths.sports_package),
         "robust_research_package": str(paths.robust_package),
         "robust_research_package_sha256": _sha256(paths.robust_package),
+        "quality_v3_research_package": str(quality_v3_package),
+        "quality_v3_research_package_sha256": _sha256(quality_v3_package),
         "uncertainty_research_package": str(paths.uncertainty_package),
         "uncertainty_research_package_sha256": _sha256(
             paths.uncertainty_package
@@ -271,6 +374,167 @@ def _execute_no_bet_research(
     )
 
 
+def _publish_parallel_selection(
+    *,
+    plan: Any,
+    report: Mapping[str, Any],
+    paths: Any,
+    operator_export: Path,
+    output: Path,
+    authorization_path: Path,
+    observed_at: datetime,
+) -> dict[str, Any]:
+    authorization = _validate_parallel_authorization(plan, authorization_path)
+    completed_at = _utc(observed_at)
+    if completed_at >= plan.publish_deadline:
+        raise ValueError("parallel selection completed at or after T-10")
+    selection = report.get("experimental_selection")
+    if not isinstance(selection, Mapping):
+        raise ValueError("parallel comparison has no selection record")
+    if selection.get("policy_version") != POLICY_VERSION:
+        raise ValueError("parallel selection policy mismatch")
+    selected_id = _text(
+        selection.get("selected_strategy_id"),
+        "selected parallel strategy",
+    )
+    selected_hash = _text(
+        selection.get("selected_package_sha256"),
+        "selected parallel package hash",
+    )
+    candidates = selection.get("candidates")
+    if not isinstance(candidates, list):
+        raise ValueError("parallel selection candidates are invalid")
+    selected_candidate = next(
+        (
+            row
+            for row in candidates
+            if isinstance(row, Mapping) and row.get("strategy_id") == selected_id
+        ),
+        None,
+    )
+    if selected_candidate is None or selected_candidate.get("eligible") is not True:
+        raise ValueError("selected parallel candidate is not eligible")
+    package_paths = {
+        "quality-v2": operator_export,
+        "sports-shadow": paths.sports_package,
+        "quality-v3": getattr(
+            paths,
+            "quality_v3_package",
+            paths.uncertainty_package,
+        ),
+        "robust": paths.robust_package,
+    }
+    if selected_id not in package_paths:
+        raise ValueError("selected parallel strategy is unsupported")
+    if selected_id == "quality-v2":
+        coupons = _parse_operator_package(package_paths[selected_id], plan.stake)
+    else:
+        coupons = _parse_research_package(package_paths[selected_id])
+    canonical_hash = hashlib.sha256(
+        ",".join(coupons).encode("utf-8")
+    ).hexdigest()
+    expected_count = selected_candidate.get("coupon_count")
+    expected_cost = selected_candidate.get("cost")
+    if (
+        canonical_hash != selected_hash
+        or len(coupons) != expected_count
+        or len(coupons) * plan.stake != expected_cost
+        or len(coupons) * plan.stake > plan.requested_bank
+    ):
+        raise ValueError("selected parallel package binding mismatch")
+
+    package_path = output / "selected-parallel-operator-package.txt"
+    _write_replace(package_path, _operator_package_bytes(plan.stake, coupons))
+    payload: dict[str, Any] = {
+        "schema_version": 1,
+        "status": "READY_PARALLEL_PLAY_BEFORE_T10",
+        "decision": "PLAY",
+        "actionable": True,
+        "authorization_mode": "EXPERIMENTAL_PARALLEL_MANUAL",
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "selected_strategy_id": selected_id,
+        "selected_package_sha256": selected_hash,
+        "selected_coupon_count": len(coupons),
+        "selected_cost": len(coupons) * plan.stake,
+        "selected_package_path": str(package_path),
+        "selected_package_file_sha256": _sha256(package_path),
+        "selection_policy_version": POLICY_VERSION,
+        "selection_reason": selection.get("selection_reason"),
+        "selection_promoted": selection.get("promoted"),
+        "authorization_path": str(authorization_path),
+        "authorization_sha256": authorization["record_sha256"],
+        "published_at": _timestamp(completed_at),
+        "expires_at": _timestamp(plan.publish_deadline),
+        "risk_acknowledged": True,
+        "profitability_proven": False,
+        "automatic_wagering": False,
+    }
+    payload["record_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    _write_replace(
+        output / "parallel-operator-result.json",
+        _canonical(payload) + b"\n",
+    )
+    return payload
+
+
+def _validate_parallel_authorization(
+    plan: Any,
+    path: Path,
+) -> Mapping[str, Any]:
+    regular = _regular_file(path, "parallel release authorization")
+    try:
+        payload = json.loads(regular.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("parallel release authorization is invalid") from error
+    if not isinstance(payload, Mapping):
+        raise ValueError("parallel release authorization must be an object")
+    expected = {
+        "schema_version": 1,
+        "authorization_mode": "EXPERIMENTAL_PARALLEL_MANUAL",
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "requested_bank": plan.requested_bank,
+        "stake": plan.stake,
+        "expires_at": _timestamp(plan.publish_deadline),
+        "selection_policy_version": POLICY_VERSION,
+        "candidate_strategies": [
+            "quality-v2",
+            "sports-shadow",
+            "quality-v3",
+            "robust",
+        ],
+        "risk_acknowledged": True,
+        "profitability_proven": False,
+        "automatic_wagering": False,
+    }
+    if any(payload.get(key) != value for key, value in expected.items()):
+        raise ValueError("parallel release authorization does not match plan")
+    unsigned = dict(payload)
+    declared = unsigned.pop("record_sha256", None)
+    if declared != hashlib.sha256(_canonical(unsigned)).hexdigest():
+        raise ValueError("parallel release authorization hash mismatch")
+    authorized_at = _utc(
+        datetime.fromisoformat(
+            _text(payload.get("authorized_at"), "parallel authorized_at").replace(
+                "Z",
+                "+00:00",
+            )
+        )
+    )
+    if authorized_at >= plan.publish_deadline:
+        raise ValueError("parallel release authorization is not pre-T-10")
+    return payload
+
+
+def _operator_package_bytes(stake: int, coupons: tuple[str, ...]) -> bytes:
+    return (
+        "\n".join(f"{stake};" + ";".join(coupon) for coupon in coupons) + "\n"
+    ).encode("utf-8")
+
+
 def _latest_final_input(plan: Any) -> Path | None:
     candidates = []
     attempts = plan.output_dir / "attempts"
@@ -287,6 +551,17 @@ def _latest_final_input(plan: Any) -> Path | None:
         return None
     candidates.sort(key=lambda item: (item[0], str(item[1])))
     return candidates[-1][1]
+
+
+def _comparison_deadline(
+    publish_deadline: datetime,
+    observed_at: datetime,
+) -> float:
+    remaining = max(
+        0.0,
+        (_utc(publish_deadline) - _utc(observed_at)).total_seconds() - 5.0,
+    )
+    return time.perf_counter() + remaining
 
 
 def _terminal(

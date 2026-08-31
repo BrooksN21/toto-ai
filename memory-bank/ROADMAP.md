@@ -1333,3 +1333,27 @@ closed.
   disabled.
 - [ ] Observe and report every real 4991 checkpoint from 14:00 through 15:50
   MSK, including terminal operator-result status and package path.
+
+# 2026-08-31 drawing 4993 parallel challenger
+
+- [x] Preserve the immutable quality-v2 scheduler as the fail-open control.
+- [x] Add deterministic same-input comparison for quality-v2, quality-v3,
+  GOAL sports-shadow and four-model robust recombination.
+- [x] Add the safety/non-degradation selector and plan-bound manual companion
+  release without automatic wagering.
+- [x] Load the isolated 4993 sidecar for 16:30 MSK while retaining the original
+  15:00-16:50 MSK primary LaunchAgent.
+- [x] Replay equal-cost quality-v2/v3 packages for 4990 and 4991; generate the
+  pending 4992 comparison for later settlement.
+- [ ] Observe the 4993 final run, report the selected strategy and exact manual
+  package path before T-10, then settle all four candidates post-draw.
+
+# Sports Analytics v2
+
+- [x] Implement the first conservative venue-goals/Poisson projection with a
+  20% maximum BK residual weight and local fallback.
+- [ ] Persist immutable v2 probability artifacts from feature snapshots.
+- [ ] Run chronological walk-forward v1/v2/BK probability calibration.
+- [ ] Compare v1/v2 package P13/P14/P15 and realized hits at equal bank.
+- [ ] Activate no v2 influence until the declared probability, package and
+  prospective non-degradation gates pass.

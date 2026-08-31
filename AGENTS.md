@@ -128,10 +128,16 @@ Maintenance rules:
 - Update `memory-bank/ROADMAP.md` when a phase or task is completed.
 - Do not silently change category, cover, budget, or probability definitions.
 - Never synthesize, recommend, or present a BaltBet package from research,
-  rehearsal, simulation, or otherwise non-operator artifacts. Coupons intended
-  for wagering may come only from the current scheduler-owned
-  `operator-result.json` before its bound T-10 deadline; after T-10 they are
-  expired and must never be represented as actionable or safe to upload.
+  rehearsal, simulation, or otherwise non-operator artifacts. Before T-10,
+  wagering coupons may come from either the current scheduler-owned
+  `operator-result.json` or its plan-bound `parallel-operator-result.json`
+  companion. The companion is allowed only when the scheduler control is an
+  actionable PLAY, an immutable pre-T-10 experimental authorization exists,
+  every candidate uses the same final input/bank/stake, the predeclared safety
+  and non-degradation selector succeeds, and the selected file hash matches the
+  companion record. It must fail open to the scheduler control and must never
+  place a wager automatically. After T-10 both records are expired and must
+  never be represented as actionable or safe to upload.
 - After the exact scheduler-bound operational cutoff has passed, the project
   owner may explicitly request an exact research package solely for read-only
   analysis. Display is allowed only after verifying the package-file SHA-256

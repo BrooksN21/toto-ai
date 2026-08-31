@@ -25,6 +25,12 @@ from toto_ai.ev.package_quality import (
     package_quality_metrics,
     selection_probability_input_sha256,
 )
+from toto_ai.optimizer.parallel_challenger import (
+    ExactCategoryMetrics,
+    ParallelCandidate,
+    select_parallel_candidate,
+)
+from toto_ai.optimizer.prospective_quality import QualityV3Config
 from toto_ai.optimizer.robust_package import select_robust_package
 from toto_ai.optimizer.strategy_comparison import (
     FrozenStrategyInput,
@@ -33,11 +39,11 @@ from toto_ai.optimizer.strategy_comparison import (
 )
 from toto_ai.optimizer.strategy_execution import frozen_input_from_snapshot
 from toto_ai.optimizer.uncertainty_package import (
-    DEFAULT_FLATTEN_WEIGHTS,
     build_uncertainty_models,
     outcome_exposure,
     select_uncertainty_package,
 )
+from toto_ai.package.audit import evaluate_package_safety
 from toto_ai.runner.final_input import load_final_input
 from toto_ai.runner.scheduler import load_scheduler_plan
 from toto_ai.sports_stats.probabilities import load_shadow_probability_artifact
@@ -52,6 +58,7 @@ class FinalHybridComparisonPaths:
     baseline_package: Path
     sports_package: Path
     robust_package: Path
+    quality_v3_package: Path
     uncertainty_package: Path
     sports_probability_snapshot: Path
 
@@ -62,6 +69,7 @@ def execute_final_hybrid_comparison(
     scheduler_plan_path: str | Path,
     sports_artifact_path: str | Path,
     output_dir: str | Path,
+    deadline: float | None = None,
 ) -> tuple[dict[str, Any], FinalHybridComparisonPaths]:
     """Generate equal-config BK and sports packages from one final input."""
 
@@ -146,38 +154,53 @@ def execute_final_hybrid_comparison(
         config=config,
         provenance=sports_provenance,
     )
-    candidate_union = tuple(
-        dict.fromkeys((*baseline.coupons, *sports_result.coupons))
+    quality_v3_config = QualityV3Config()
+    uncertainty_models = build_uncertainty_models(
+        frozen.bk_probability_matrix,
+        flatten_weights=quality_v3_config.flatten_weights,
     )
+    quality_v3 = select_uncertainty_package(
+        bk_probabilities=frozen.bk_probability_matrix,
+        anchor_coupons=baseline.coupons,
+        category=quality_v3_config.category,
+        max_coupons=runtime_budget // plan.stake,
+        flatten_weights=quality_v3_config.flatten_weights,
+        top_count=quality_v3_config.top_count,
+        candidate_sample_count=quality_v3_config.candidate_sample_count,
+        mutation_limit=quality_v3_config.mutation_limit,
+        selection_sample_count=quality_v3_config.scenario_sample_count,
+        seed_material=f"quality-v3-{snapshot.snapshot_sha256}",
+        deadline=deadline,
+    )
+    candidate_union = tuple(
+        dict.fromkeys(
+            (
+                *baseline.coupons,
+                *sports_result.coupons,
+                *quality_v3.selected_coupons,
+            )
+        )
+    )
+    combined_models = {
+        "bk": frozen.bk_probability_matrix,
+        "sports": sports_probabilities,
+        **{
+            name: probabilities
+            for name, probabilities in uncertainty_models.items()
+            if name != "bk"
+        },
+    }
     robust = select_robust_package(
         candidates=candidate_union,
-        probability_models={
-            "bk": frozen.bk_probability_matrix,
-            "sports": sports_probabilities,
-        },
+        probability_models=combined_models,
         category=13,
         max_coupons=runtime_budget // plan.stake,
         sample_count=config.package_probability_samples,
         seed_material=(
             f"final-hybrid-robust-{snapshot.snapshot_sha256}-{probability_hash}"
         ),
+        deadline=deadline,
     )
-    uncertainty_models = build_uncertainty_models(
-        frozen.bk_probability_matrix,
-        flatten_weights=DEFAULT_FLATTEN_WEIGHTS,
-    )
-    uncertainty = select_uncertainty_package(
-        bk_probabilities=frozen.bk_probability_matrix,
-        anchor_coupons=baseline.coupons,
-        category=13,
-        max_coupons=runtime_budget // plan.stake,
-        flatten_weights=DEFAULT_FLATTEN_WEIGHTS,
-        selection_sample_count=config.package_probability_samples,
-        seed_material=(
-            f"final-hybrid-uncertainty-v1-{snapshot.snapshot_sha256}"
-        ),
-    )
-
     baseline_quality_bk = package_quality_metrics(
         baseline.coupons,
         frozen.bk_probability_matrix,
@@ -202,6 +225,43 @@ def execute_final_hybrid_comparison(
         seed_material=f"final-hybrid-sports-{probability_hash}",
         monte_carlo_samples=config.package_probability_samples,
     )
+    candidates = (
+        _parallel_candidate(
+            strategy_id="quality-v2",
+            coupons=baseline.coupons,
+            models=combined_models,
+            probabilities=frozen.bk_probability_matrix,
+            safety_config=config.package_safety_config,
+            stake=plan.stake,
+        ),
+        _parallel_candidate(
+            strategy_id="sports-shadow",
+            coupons=sports_result.coupons,
+            models=combined_models,
+            probabilities=frozen.bk_probability_matrix,
+            safety_config=config.package_safety_config,
+            stake=plan.stake,
+        ),
+        _parallel_candidate(
+            strategy_id="quality-v3",
+            coupons=quality_v3.selected_coupons,
+            models=combined_models,
+            probabilities=frozen.bk_probability_matrix,
+            safety_config=config.package_safety_config,
+            stake=plan.stake,
+            timed_out=quality_v3.timed_out,
+        ),
+        _parallel_candidate(
+            strategy_id="robust",
+            coupons=robust.selected_coupons,
+            models=combined_models,
+            probabilities=frozen.bk_probability_matrix,
+            safety_config=config.package_safety_config,
+            stake=plan.stake,
+            timed_out=robust.timed_out,
+        ),
+    )
+    experimental_selection = select_parallel_candidate(candidates)
     overlap = len(set(baseline.coupons) & set(sports_result.coupons))
     report: dict[str, Any] = {
         "schema_version": 1,
@@ -237,31 +297,39 @@ def execute_final_hybrid_comparison(
             "timed_out": robust.timed_out,
             "models": [asdict(item) for item in robust.model_metrics],
         },
-        "uncertainty_v1": {
+        "quality_v3": {
             "role": "DIRECT_BK_BOUNDED_UNCERTAINTY_CHALLENGER",
-            "coupon_count": len(uncertainty.selected_coupons),
-            "cost": len(uncertainty.selected_coupons) * plan.stake,
+            "config": quality_v3_config.payload(
+                coupon_capacity=runtime_budget // plan.stake
+            ),
+            "coupon_count": len(quality_v3.selected_coupons),
+            "cost": len(quality_v3.selected_coupons) * plan.stake,
             "unused_bank": runtime_budget
-            - len(uncertainty.selected_coupons) * plan.stake,
-            "candidate_count": uncertainty.candidate_count,
+            - len(quality_v3.selected_coupons) * plan.stake,
+            "candidate_count": quality_v3.candidate_count,
             "candidate_source": "direct_top_sampled_mutated_per_model",
-            "category": uncertainty.category,
-            "flatten_weights": list(DEFAULT_FLATTEN_WEIGHTS),
-            "sample_count_per_model": uncertainty.sample_count_per_model,
+            "category": quality_v3.category,
+            "flatten_weights": list(quality_v3_config.flatten_weights),
+            "sample_count_per_model": quality_v3.sample_count_per_model,
             "worst_sampled_category_coverage": (
-                uncertainty.worst_sampled_category_coverage
+                quality_v3.worst_sampled_category_coverage
             ),
             "mean_sampled_category_coverage": (
-                uncertainty.mean_sampled_category_coverage
+                quality_v3.mean_sampled_category_coverage
             ),
-            "timed_out": uncertainty.timed_out,
-            "models": [asdict(item) for item in uncertainty.model_metrics],
+            "timed_out": quality_v3.timed_out,
+            "models": [asdict(item) for item in quality_v3.model_metrics],
             "baseline_models": _exact_model_metrics(
                 baseline.coupons,
                 uncertainty_models,
             ),
-            "exposure": outcome_exposure(uncertainty.selected_coupons),
+            "exposure": outcome_exposure(quality_v3.selected_coupons),
         },
+        "uncertainty_v1": {
+            "deprecated_alias_of": "quality_v3",
+            "package_sha256": _package_sha256(quality_v3.selected_coupons),
+        },
+        "experimental_selection": experimental_selection.public_summary(),
         "cross_evaluation": {
             "baseline_under_sports": asdict(baseline_quality_sports),
             "sports_under_bk": asdict(sports_quality_bk),
@@ -292,6 +360,7 @@ def execute_final_hybrid_comparison(
     baseline_package = output / "baseline-final-research-coupons.txt"
     sports_package = output / "sports-final-research-coupons.txt"
     robust_package = output / "robust-final-research-coupons.txt"
+    quality_v3_package = output / "quality-v3-final-research-coupons.txt"
     uncertainty_package = output / "uncertainty-v1-final-research-coupons.txt"
     report_path = output / "comparison.json"
     _write_replace(
@@ -307,9 +376,17 @@ def execute_final_hybrid_comparison(
     _write_replace(
         robust_package,
         _research_package_bytes(
-            "FINAL_BK_SPORTS_MAXIMIN_RECOMBINATION",
+            "FINAL_PARALLEL_MODEL_MAXIMIN_RECOMBINATION",
             plan.stake,
             robust.selected_coupons,
+        ),
+    )
+    _write_replace(
+        quality_v3_package,
+        _research_package_bytes(
+            "QUALITY_V3_BOUNDED_UNCERTAINTY_CHALLENGER",
+            plan.stake,
+            quality_v3.selected_coupons,
         ),
     )
     _write_replace(
@@ -317,7 +394,7 @@ def execute_final_hybrid_comparison(
         _research_package_bytes(
             "DIRECT_BK_BOUNDED_UNCERTAINTY_CHALLENGER",
             plan.stake,
-            uncertainty.selected_coupons,
+            quality_v3.selected_coupons,
         ),
     )
     _write_replace(report_path, _pretty(report))
@@ -326,6 +403,7 @@ def execute_final_hybrid_comparison(
         baseline_package=baseline_package,
         sports_package=sports_package,
         robust_package=robust_package,
+        quality_v3_package=quality_v3_package,
         uncertainty_package=uncertainty_package,
         sports_probability_snapshot=sports_probability_snapshot,
     )
@@ -347,6 +425,78 @@ def _exact_model_metrics(
             }
         )
     return rows
+
+
+def _parallel_candidate(
+    *,
+    strategy_id: str,
+    coupons: tuple[str, ...],
+    models: Mapping[str, tuple[tuple[float, float, float], ...]],
+    probabilities: tuple[tuple[float, float, float], ...],
+    safety_config: Any,
+    stake: int = 30,
+    timed_out: bool = False,
+) -> ParallelCandidate:
+    reasons = []
+    if timed_out:
+        reasons.append("generation_timed_out")
+    if not coupons:
+        reasons.append("empty_package")
+    else:
+        safety = evaluate_package_safety(
+            coupons,
+            probabilities,
+            config=safety_config,
+        )
+        if safety.decision != "PLAY":
+            reasons.extend(
+                f"package_safety:{code}" for code in safety.reason_codes
+            )
+    model_metrics = tuple(
+        _exact_category_metrics(coupons, name=name, probabilities=rows)
+        for name, rows in models.items()
+    )
+    return ParallelCandidate(
+        strategy_id=strategy_id,
+        package_sha256=_package_sha256(coupons),
+        coupon_count=len(coupons),
+        cost=len(coupons) * stake,
+        maximum_outcome_share=_maximum_outcome_share(coupons),
+        eligible=not reasons,
+        rejection_reasons=tuple(dict.fromkeys(reasons)),
+        models=model_metrics,
+    )
+
+
+def _exact_category_metrics(
+    coupons: tuple[str, ...],
+    *,
+    name: str,
+    probabilities: tuple[tuple[float, float, float], ...],
+) -> ExactCategoryMetrics:
+    if coupons:
+        p13, p14, p15 = exact_category_probabilities(coupons, probabilities)
+    else:
+        p13 = p14 = p15 = 0.0
+    return ExactCategoryMetrics(
+        model=name,
+        probability_at_least_13=p13,
+        probability_at_least_14=p14,
+        probability_at_least_15=p15,
+    )
+
+
+def _maximum_outcome_share(coupons: tuple[str, ...]) -> float:
+    if not coupons:
+        return 1.0
+    return max(
+        max(row["shares"].values())
+        for row in outcome_exposure(coupons)
+    )
+
+
+def _package_sha256(coupons: tuple[str, ...]) -> str:
+    return hashlib.sha256(",".join(coupons).encode("utf-8")).hexdigest()
 
 
 def _rebase_sports_probabilities(

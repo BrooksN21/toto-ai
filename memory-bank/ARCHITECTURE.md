@@ -214,6 +214,23 @@ format. A safe-start reserve suppresses the sidecar when too little time
 remains before T-10. It never mutates scheduler state or enables automatic
 wagering.
 
+The 2026-08-31 extension evaluates four same-input candidates: quality-v2,
+GOAL sports-shadow, bounded-uncertainty quality-v3, and a four-model robust
+recombination. Exact P13/P14/P15 is evaluated under BK, sports, flatten-10 and
+flatten-20 probability matrices. A challenger may replace the control only if
+it passes package safety, does not reduce BK P13/P14/P15, strictly improves
+worst-model P13, and does not increase maximum event/outcome concentration.
+Every failure selects quality-v2.
+
+An optional separately scheduled companion can publish
+`parallel-operator-result.json` before T-10. It requires an existing
+scheduler-owned actionable PLAY, the exact final input, a plan/policy-bound
+manual experimental authorization and matching package hashes. It never
+overwrites the main `operator-result.json` and cannot place a wager. Without
+the authorization or with any validation/timing failure, all challenger files
+remain research-only and the scheduler control remains the only actionable
+package.
+
 ## Partial GOAL sports-shadow with explicit BK fallback (2026-08-28)
 
 The research-only GOAL collector no longer discards an otherwise valid drawing

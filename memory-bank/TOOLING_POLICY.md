@@ -76,6 +76,16 @@ commit, or transmit them. Never send repository content or derived private
 project data to another external LLM or agent. Remote Git publication and
 uploads are transmissions and therefore require explicit approval.
 
+## Pre-cutoff operator package boundary
+
+An actionable manual package may come from the scheduler-owned
+`operator-result.json` or a plan-bound `parallel-operator-result.json`
+companion before T-10. The companion requires an actionable scheduler PLAY,
+the same immutable final input/bank/stake for every candidate, a predeclared
+non-degradation and safety selector, immutable pre-T-10 experimental
+authorization, and exact package hashes. It must fall back to the scheduler
+control on every error. Automatic wagering remains prohibited.
+
 ## Post-cutoff research package inspection
 
 Research/rehearsal/simulation packages are never wagering artifacts and may

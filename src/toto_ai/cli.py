@@ -234,6 +234,7 @@ from toto_ai.optimizer.hybrid_evaluation import (
     seal_hybrid_development,
     write_hybrid_evaluation_reports,
 )
+from toto_ai.optimizer.quality_replay import execute_quality_replay
 from toto_ai.optimizer.strategy_backtest import (
     StrategyConfig,
     freeze_strategy_experiment_manifest,
@@ -344,7 +345,10 @@ from toto_ai.runner.training_package import ensure_scheduler_training_package
 from toto_ai.sports_stats.final_hybrid_comparison import (
     execute_final_hybrid_comparison,
 )
-from toto_ai.sports_stats.final_hybrid_sidecar import run_final_hybrid_sidecar
+from toto_ai.sports_stats.final_hybrid_sidecar import (
+    authorize_parallel_manual_release,
+    run_final_hybrid_sidecar,
+)
 from toto_ai.sports_stats.goal_probe_collection import (
     collect_goal_probe_input,
     ensure_goal_probe_input,
@@ -6411,7 +6415,78 @@ def compare_final_goal_hybrid_command(
                 "baseline_package": str(paths.baseline_package),
                 "sports_package": str(paths.sports_package),
                 "robust_package": str(paths.robust_package),
+                "quality_v3_package": str(paths.quality_v3_package),
                 "uncertainty_package": str(paths.uncertainty_package),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
+
+
+@app.command("replay-quality-v2-v3")
+def replay_quality_v2_v3_command(
+    final_input: Path = typer.Option(  # noqa: B008
+        ...,
+        "--final-input",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    baseline_package: Path = typer.Option(  # noqa: B008
+        ...,
+        "--baseline-package",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    db: Path = typer.Option(  # noqa: B008
+        Path("data/toto.db"),
+        "--db",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        ...,
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+    ),
+) -> None:
+    """Replay frozen quality-v2 versus equal-cost quality-v3 — RESEARCH ONLY."""
+
+    try:
+        report, report_path = execute_quality_replay(
+            final_input_path=final_input,
+            scheduler_plan_path=scheduler_plan,
+            baseline_package_path=baseline_package,
+            db_path=db,
+            output_dir=output_dir,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": report["status"],
+                "drawing_number": report["drawing_number"],
+                "settled": report["settled"],
+                "equal_coupon_count": report["equal_coupon_count"],
+                "equal_cost": report["equal_cost"],
+                "settlement_comparison": report["settlement_comparison"],
+                "report": str(report_path),
             },
             ensure_ascii=False,
             sort_keys=True,
@@ -6450,6 +6525,14 @@ def run_final_goal_hybrid_sidecar_command(
         min=180,
         max=600,
     ),
+    parallel_authorization: Path | None = typer.Option(  # noqa: B008
+        None,
+        "--parallel-authorization",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
 ) -> None:
     """Wait for final PLAY, then run the non-blocking sports sidecar."""
 
@@ -6460,6 +6543,7 @@ def run_final_goal_hybrid_sidecar_command(
             output_root=output_root,
             wait_seconds=wait_seconds,
             minimum_runtime_seconds=minimum_runtime_seconds,
+            parallel_authorization_path=parallel_authorization,
         )
     except (OSError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
@@ -6477,8 +6561,48 @@ def run_final_goal_hybrid_sidecar_command(
             sort_keys=True,
         )
     )
-    if result.status != "READY_BEFORE_T10":
+    if result.status not in {
+        "READY_BEFORE_T10",
+        "READY_PARALLEL_PLAY_BEFORE_T10",
+    }:
         raise typer.Exit(code=1)
+
+
+@app.command("parallel-release-authorize")
+def parallel_release_authorize_command(
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    output_root: Path = typer.Option(  # noqa: B008
+        ...,
+        "--output-root",
+        file_okay=False,
+        resolve_path=True,
+    ),
+    acknowledge_unvalidated_manual_risk: bool = typer.Option(
+        False,
+        "--acknowledge-unvalidated-manual-risk",
+    ),
+) -> None:
+    """Authorize one plan-bound parallel selector before T-10."""
+
+    try:
+        path = authorize_parallel_manual_release(
+            scheduler_plan_path=scheduler_plan,
+            output_root=output_root,
+            acknowledged=acknowledge_unvalidated_manual_risk,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(f"Authorization: {path}")
+    typer.echo(
+        "EXPERIMENTAL MANUAL ONLY: no automatic wager and no profitability claim."
+    )
 
 
 @app.command("evaluate-sports-probability-shadow")
