@@ -1,6 +1,26 @@
 # Current State
 
-## Drawing 4991 post-draw identity fix pending operational rerun (2026-08-31)
+## Schedule-evidence CLI phase 1 complete (2026-08-31)
+
+The phase-1 operator workflow exposes `schedule-evidence-status`,
+`schedule-evidence-review` and `schedule-evidence-verify`. Status and verify
+are read-only. Review is a dry-run by default and mutates the ledger only with
+explicit `--apply`. The writer is atomic and idempotent and holds a cross-process
+`fcntl` lock across read, validation and replacement, preventing lost updates
+from concurrent operators.
+
+Evidence validation binds review and snapshot SHA-256 provenance, exact target
+identity and orientation, UTC kickoff and acceptable pre-kickoff status.
+Independent sources must have distinct publisher identities and registrable
+domains; merely using different subdomains is insufficient. Unsupported
+nontransliterable aliases are reported safely instead of crashing status.
+Real read-only status/verify smoke completed with `unresolved_count=0` and no
+mutation. Full verification completed with **2164 passed, 13 deselected** and
+Ruff clean. Runtime evidence migration and Git cleanup remain deliberately
+deferred until drawing 4992 completes so its active path/hash bindings cannot
+drift.
+
+## Drawing 4991 post-draw rerun complete (2026-08-31)
 
 The 4991 post-draw failure occurred before result collection.  Scheduler plan
 time was already Moscow-normalized, but post-draw generation passed it through
@@ -15,10 +35,16 @@ numbers fail closed.  Focused regressions cover the 4991-shaped raw/operational
 split, no-final-input success, wrong/ambiguous identity rejection and
 wrong-drawing result payload rejection.
 
-Drawing 4991 has **not** been resynchronized or settled after this code change.
-Its 15 event result fields, result snapshot, settlement and postmortem must not
-be reported complete until the explicit operational rerun succeeds.  No
-network request, package generation, commit or push was performed in this fix.
+The systemic identity fix was published in commit `7ce2a09`; it contains no
+drawing-specific branch. The operational rerun then synchronized all **15/15**
+results with no VOID events and completed settlement/review for the immutable
+166-coupon, 4,980-RUB package. Best performance was **11/15**; hit counts for
+13, 14 and 15 were all zero. The postmortem status is `REVIEW_COMPLETE` at
+`reports/rehearsal/evening-4991-20260830T130000Z-recovery-20260830T1538/post-draw/postmortem.md`.
+
+TotoBrief supplied no category-payout evidence, so payout, profit and ROI stay
+unavailable rather than being inferred. Detailed analysis of the four missed
+positions, package exposure and BK/pool ranks is still pending.
 
 ## Drawing 4992 timing-consensus status (2026-08-30)
 
@@ -35,6 +61,11 @@ network request, package generation, commit or push was performed in this fix.
   and T-10 expiry at `16:20 MSK`.
 - No package has been generated and no wager has been made for drawing 4992.
   Automatic wagering remains disabled.
+- The plan-bound experimental manual-release authorization is valid through
+  T-10 at `16:20 MSK`; it acknowledges unproven profitability and does not
+  enable automatic wagering.
+- The active scheduler plan and schedule-evidence ledger remained byte- and
+  hash-unchanged throughout Evidence CLI smoke/verification.
 - The generic morning dispatcher is loaded and checks for new/open drawings
   every 15 minutes.
 

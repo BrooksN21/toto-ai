@@ -1,5 +1,31 @@
 # Architecture
 
+## Schedule-evidence operator CLI phase 1 (2026-08-31)
+
+Three top-level commands expose the existing evidence boundary without direct
+JSON mutation: `schedule-evidence-status`, `schedule-evidence-review`, and
+`schedule-evidence-verify`. Status and verify are read-only. Review accepts
+only a prepared schema-v1 JSON document whose bytes are bound by a caller
+SHA-256; default execution is dry-run and mutation requires explicit
+`--apply`. The prepared document binds target identity, exact home/away
+orientation, UTC kickoff, eligible pre-kickoff statuses, distinct HTTPS
+domains, review time, and immutable snapshot paths/hashes.
+
+Successful apply delegates to the existing atomic/idempotent
+`ingest_reviewed_observation`; existing automatic ingest callers remain
+compatible. A cross-process `fcntl` writer lock encloses ledger read,
+validation and atomic replacement, so concurrent applies cannot silently lose
+an accepted observation. Verify follows ledger → review → snapshot
+provenance and treats hash drift as integrity failure.
+
+Source independence is defined by both publisher identity and registrable
+domain; different subdomains alone do not establish independence. Status uses
+exact drawing/event identity where available and treats aliases that cannot be
+transliterated as bounded diagnostics rather than a whole-ledger failure. Real
+read-only status/verify smoke completed without mutation. Runtime migration is
+intentionally absent: the current ledger/reviews/snapshots layout and active
+4992 plan remain unchanged until drawing 4992 completes.
+
 ## Exact post-draw source identity fallback (2026-08-31)
 
 Post-draw generation never treats the scheduler's Moscow-normalized cutoff as
@@ -15,6 +41,12 @@ Finished-result synchronization remains separately identity-bound: it fetches
 only `/drawing-info/{internal_id}` and requires both response ID and visible
 number to match before accepting any result.  VOID/reviewed cancellation and
 unresolved-result rules are unchanged.
+
+The drawing-4991 operational rerun exercised this boundary end to end after
+commit `7ce2a09`: all 15 results were accepted, no VOID was present, and the
+existing 166-coupon archive settled at best 11/15 with no 13/14/15 hit. The
+postmortem reached `REVIEW_COMPLETE`; payout and ROI remain unset because no
+authoritative payout data was available.
 
 ## Generic strict independent-provider timing consensus (2026-08-30)
 

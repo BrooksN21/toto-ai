@@ -161,6 +161,8 @@ def ingest_reviewed_observation(
     observation ID is rejected.
     """
     path = Path(path).resolve()
+    if validate_reviewed_observation(path, observation):
+        return load_schedule_evidence_ledger(path)
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
@@ -168,12 +170,12 @@ def ingest_reviewed_observation(
     if not isinstance(raw, dict) or not isinstance(raw.get("observations"), list):
         raise ValueError("schedule evidence ledger fields are invalid")
     observation_id = _text(observation.get("observation_id"), "observation_id")
+    candidate = dict(observation)
     existing = tuple(
         item
         for item in raw["observations"]
         if isinstance(item, dict) and item.get("observation_id") == observation_id
     )
-    candidate = dict(observation)
     if existing:
         if len(existing) != 1 or existing[0] != candidate:
             raise ValueError("schedule evidence observation_id is immutable")
@@ -193,6 +195,41 @@ def ingest_reviewed_observation(
         temporary.unlink(missing_ok=True)
         raise
     return load_schedule_evidence_ledger(path)
+
+
+def validate_reviewed_observation(
+    path: Path,
+    observation: Mapping[str, object],
+) -> bool:
+    """Validate one candidate without changing the ledger.
+
+    Return ``True`` when the exact observation is already present.  A reused
+    observation ID with different bytes remains an immutable-identity error.
+    """
+
+    path = Path(path).resolve()
+    ledger = load_schedule_evidence_ledger(path)
+    candidate = dict(observation)
+    parsed = _parse_observation(candidate, path.parent)
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError("schedule evidence ledger is unreadable") from error
+    existing = tuple(
+        item
+        for item in raw["observations"]
+        if isinstance(item, dict)
+        and item.get("observation_id") == parsed.observation_id
+    )
+    if not existing:
+        return False
+    if len(existing) != 1 or existing[0] != candidate:
+        raise ValueError("schedule evidence observation_id is immutable")
+    if not any(
+        item.observation_id == parsed.observation_id for item in ledger.observations
+    ):
+        raise ValueError("schedule evidence observation validation failed")
+    return True
 
 
 def drawing_schedule_dates(

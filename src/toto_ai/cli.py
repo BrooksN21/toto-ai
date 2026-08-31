@@ -142,6 +142,13 @@ from toto_ai.external_odds.schedule_evidence import (
     ScheduleEvidenceIntegrityError,
     load_bound_schedule_evidence_ledger,
 )
+from toto_ai.external_odds.schedule_evidence_admin import (
+    DEFAULT_REVIEWS_DIR,
+    DEFAULT_SNAPSHOTS_DIR,
+    review_prepared_schedule_evidence,
+    schedule_evidence_status,
+    verify_schedule_evidence,
+)
 from toto_ai.external_odds.schedule_source_collector import (
     collect_schedule_source_candidates,
 )
@@ -4266,6 +4273,89 @@ def collect_schedule_sources_command(
             sort_keys=True,
         )
     )
+
+
+SCHEDULE_EVIDENCE_INTEGRITY_EXIT_CODE = 20
+SCHEDULE_EVIDENCE_UNRESOLVED_EXIT_CODE = 21
+SCHEDULE_EVIDENCE_REVIEW_EXIT_CODE = 22
+
+
+@app.command("schedule-evidence-status")
+def schedule_evidence_status_command(
+    ledger: str = typer.Option(str(DEFAULT_SCHEDULE_EVIDENCE_PATH), "--ledger"),
+    reviews_dir: str = typer.Option(str(DEFAULT_REVIEWS_DIR), "--reviews-dir"),
+    snapshots_dir: str = typer.Option(
+        str(DEFAULT_SNAPSHOTS_DIR), "--snapshots-dir"
+    ),
+) -> None:
+    """Print a read-only ledger and drawing/event evidence summary."""
+
+    try:
+        result = schedule_evidence_status(
+            ledger_path=Path(ledger),
+            reviews_dir=Path(reviews_dir),
+            snapshots_dir=Path(snapshots_dir),
+        )
+    except (OSError, TypeError, ValueError) as error:
+        typer.echo(json.dumps({"status": "invalid", "error": str(error)}))
+        raise typer.Exit(code=SCHEDULE_EVIDENCE_INTEGRITY_EXIT_CODE) from error
+    typer.echo(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    if int(result["unresolved_count"]) > 0:
+        raise typer.Exit(code=SCHEDULE_EVIDENCE_UNRESOLVED_EXIT_CODE)
+
+
+@app.command("schedule-evidence-review")
+def schedule_evidence_review_command(
+    review: str = typer.Option(..., "--review"),
+    review_sha256: str = typer.Option(..., "--review-sha256"),
+    apply: bool = typer.Option(
+        False,
+        "--apply",
+        help="Atomically ingest after validation; default is a no-write dry-run.",
+    ),
+    ledger: str = typer.Option(str(DEFAULT_SCHEDULE_EVIDENCE_PATH), "--ledger"),
+    reviews_dir: str = typer.Option(str(DEFAULT_REVIEWS_DIR), "--reviews-dir"),
+    snapshots_dir: str = typer.Option(
+        str(DEFAULT_SNAPSHOTS_DIR), "--snapshots-dir"
+    ),
+) -> None:
+    """Validate a hash-bound prepared review; write only with --apply."""
+
+    try:
+        result = review_prepared_schedule_evidence(
+            ledger_path=Path(ledger),
+            reviews_dir=Path(reviews_dir),
+            snapshots_dir=Path(snapshots_dir),
+            review_path=Path(review),
+            expected_review_sha256=review_sha256,
+            apply=apply,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        typer.echo(json.dumps({"status": "rejected", "error": str(error)}))
+        raise typer.Exit(code=SCHEDULE_EVIDENCE_REVIEW_EXIT_CODE) from error
+    typer.echo(json.dumps(result, ensure_ascii=False, sort_keys=True))
+
+
+@app.command("schedule-evidence-verify")
+def schedule_evidence_verify_command(
+    ledger: str = typer.Option(str(DEFAULT_SCHEDULE_EVIDENCE_PATH), "--ledger"),
+    reviews_dir: str = typer.Option(str(DEFAULT_REVIEWS_DIR), "--reviews-dir"),
+    snapshots_dir: str = typer.Option(
+        str(DEFAULT_SNAPSHOTS_DIR), "--snapshots-dir"
+    ),
+) -> None:
+    """Verify ledger, review and snapshot hashes without mutation."""
+
+    try:
+        result = verify_schedule_evidence(
+            ledger_path=Path(ledger),
+            reviews_dir=Path(reviews_dir),
+            snapshots_dir=Path(snapshots_dir),
+        )
+    except (OSError, TypeError, ValueError) as error:
+        typer.echo(json.dumps({"status": "invalid", "error": str(error)}))
+        raise typer.Exit(code=SCHEDULE_EVIDENCE_INTEGRITY_EXIT_CODE) from error
+    typer.echo(json.dumps(result, ensure_ascii=False, sort_keys=True))
 
 
 @app.command("scheduler-execute")

@@ -1,5 +1,24 @@
 # Decisions
 
+## 2026-08-31 — Reviewed evidence requires an explicit hash-bound apply
+
+- Manual evidence ingestion accepts only prepared schema-v1 review JSON, not a
+  raw ledger object or patch.
+- Review is a no-write dry-run by default; `--apply` is the sole mutation
+  switch and delegates to the existing atomic/idempotent ingest function.
+- Status and provenance verification are always read-only and use explicit
+  ledger/reviews/snapshots paths with current-layout defaults.
+- Apply holds a cross-process `fcntl` writer lock across ledger read,
+  validation and atomic replacement. Identical repeats are idempotent and
+  concurrent distinct writes must not lose an accepted observation.
+- Source independence requires distinct publisher identities and distinct
+  registrable domains. Different subdomains of one publisher/domain are not
+  independent evidence.
+- Status must tolerate unsupported nontransliterable aliases and report them
+  diagnostically rather than fail the complete evidence audit.
+- Runtime evidence migration and repository cleanup are deferred until drawing
+  4992 completes, so the active plan's path and hash bindings cannot drift.
+
 ## 2026-08-31: post-draw source identity is ID/number-bound
 
 - Operational Moscow time controls scheduler phases but cannot be reused as
@@ -13,6 +32,9 @@
 - Result/score persistence, reviewed VOID handling and missing-result semantics
   are unchanged.  A code fix is not evidence that an affected drawing has
   been synchronized or settled; an explicit rerun is still required.
+- Drawing 4991's explicit rerun completed 15/15 result synchronization with no
+  VOID events and a `REVIEW_COMPLETE` postmortem. Missing payout evidence keeps
+  payout/profit/ROI unknown; it must never be reconstructed from hit counts.
 
 ## Generic independent timing consensus (2026-08-30)
 

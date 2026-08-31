@@ -1,5 +1,32 @@
 # Roadmap
 
+## 2026-08-31 schedule-evidence operator workflow
+
+- [x] Add read-only status with ledger hashes and drawing/event reviewed,
+  consensus and unresolved counts.
+- [x] Add prepared-review dry-run plus explicit atomic/idempotent `--apply`.
+- [x] Add read-only ledger/review/snapshot provenance verification and stable
+  nonzero exit codes.
+- [x] Add focused corruption, validation, idempotency, concurrent-writer,
+  publisher/domain-independence and unsupported-alias tests.
+- [x] Complete real read-only status/verify smoke with zero mutation; full
+  verification: 2164 passed, 13 deselected, Ruff clean.
+- [ ] After drawing 4992 completes, design and separately activate runtime
+  migration/cleanup; do not move the current ledger or scheduler-bound data
+  before then.
+
+## Drawing 4991 post-draw closure
+
+- [x] Publish systemic raw-source/operational-time post-draw identity fix in
+  commit `7ce2a09`.
+- [x] Rerun result synchronization and settle all 15 events: no VOID events,
+  166 coupons / 4,980 RUB, best 11/15, zero hit13/hit14/hit15.
+- [x] Produce `REVIEW_COMPLETE` postmortem under the scheduler-owned 4991
+  `post-draw/` directory.
+- [ ] Complete detailed four-missed-position exposure and BK/pool-rank analysis.
+- [ ] Record payout/profit/ROI only if authoritative category-payout evidence
+  becomes available; otherwise retain null values.
+
 ## Immediate drawing 4992 timing closure
 
 - [x] Generalize independent timing consensus over allowlisted GOAL,
@@ -16,6 +43,9 @@
   (`0/15` unresolved).
 - [x] Create and load drawing-4992 scheduler plan `1d837ebf02c14788` after the
   actual rerun reports READY; first checkpoint is T-120 at 14:30 MSK.
+- [x] Create and validate the exact plan-bound experimental manual-release
+  authorization through T-10 while keeping automatic wagering disabled.
+- [x] Verify Evidence CLI work did not change the active plan or ledger hashes.
 
 # 2026-08-30 drawing 4991 closure and quality-v3
 
@@ -29,7 +59,7 @@
   comparison, sidecar and CLI without changing production/operator behavior.
 - [x] Keep failed/mismatched 4987-4990 replay inputs fail-closed; do not bypass
   old schema or ledger integrity to manufacture evidence.
-- [ ] Complete expanded and full verification for the combined working tree.
+- [x] Complete expanded and full verification for the combined working tree.
 - [x] Verify, prepare and load the 15-minute open-drawing dispatcher
   (`com.totoai.morning-dispatcher.v1`).
 - [x] Resolve drawing 4992's deferred timing state through the authorized

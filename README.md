@@ -632,6 +632,60 @@ Polling is bounded with exponential delay and writes terminal machine-readable
 `complete`, `pending`, or `failed` state. It never installs automation or
 places a bet.
 
+## Schedule evidence operator CLI
+
+Phase 1 provides fail-closed inspection and reviewed-ingest commands. All paths
+are explicit and default to the current repository layout:
+
+```bash
+python -m toto_ai.cli schedule-evidence-status \
+  --ledger data/schedule-evidence/ledger.json \
+  --reviews-dir data/schedule-evidence/reviews \
+  --snapshots-dir data/schedule-evidence/snapshots
+```
+
+`status` is read-only. It prints ledger content/semantic hashes plus scoped
+unresolved, reviewed and independent-consensus counts by drawing/event.
+
+Manual review accepts only a prepared schema-v1 JSON document and its expected
+SHA-256. Without `--apply` it is a no-write dry-run:
+
+```bash
+python -m toto_ai.cli schedule-evidence-review \
+  --review data/schedule-evidence/reviews/prepared-example.json \
+  --review-sha256 <64-hex-sha256> \
+  --ledger data/schedule-evidence/ledger.json \
+  --reviews-dir data/schedule-evidence/reviews \
+  --snapshots-dir data/schedule-evidence/snapshots
+```
+
+After checking teams, orientation, UTC kickoff, pre-kickoff status, independent
+HTTPS domains and snapshot hashes, apply the same document explicitly:
+
+```bash
+python -m toto_ai.cli schedule-evidence-review \
+  --review data/schedule-evidence/reviews/prepared-example.json \
+  --review-sha256 <64-hex-sha256> \
+  --ledger data/schedule-evidence/ledger.json \
+  --reviews-dir data/schedule-evidence/reviews \
+  --snapshots-dir data/schedule-evidence/snapshots \
+  --apply
+```
+
+Repeated `--apply` is idempotent. Raw ledger JSON patching is unsupported.
+
+```bash
+python -m toto_ai.cli schedule-evidence-verify \
+  --ledger data/schedule-evidence/ledger.json \
+  --reviews-dir data/schedule-evidence/reviews \
+  --snapshots-dir data/schedule-evidence/snapshots
+```
+
+`verify` is read-only and checks ledger → review → snapshot provenance/hashes.
+Exit codes are `20` for integrity/corruption, `21` when `status` finds unresolved
+artifact-scoped events, and `22` for a rejected prepared review. Runtime-data
+migration and Git cleanup are deliberately not part of phase 1.
+
 ## Project Memory
 
 TotoAI uses a repository-local memory bank for persistent project context.
