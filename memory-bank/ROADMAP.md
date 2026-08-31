@@ -1,5 +1,16 @@
 # Roadmap
 
+## 2026-08-31 project-local Git hardening
+
+- [x] Centralize production Git subprocess execution in a source-root-derived
+  helper that invokes `scripts/project-git` with the exact project `cwd`.
+- [x] Require canonical wrapper and Git top-level attestation; fail closed on
+  any project-root mismatch.
+- [x] Route `_git_code_version` revision and cleanliness reads through the
+  helper.
+- [x] Add outer HOME-repository, root-mismatch, delegation, and static
+  direct-command-literal regressions.
+
 ## 2026-08-31 paired prospective handoff
 
 - [x] Complete artifact-bound, aggregate-only post-draw attribution with

@@ -2,7 +2,6 @@ import hashlib
 import json
 import math
 import os
-import subprocess
 import sys
 import time
 from collections.abc import Callable, Mapping
@@ -272,6 +271,7 @@ from toto_ai.package.audit_reports import write_package_audit_reports
 from toto_ai.package.backtest import run_mvp_backtest, write_backtest_reports
 from toto_ai.package.mvp import generate_mvp_package
 from toto_ai.path_safety import probe_writable_directory, validate_output_paths
+from toto_ai.project_git import ProjectGitError, run_project_git
 from toto_ai.runner import (
     DEFAULT_MINIMUM_GROSS_EV,
     MORNING_DEFERRED_EXIT_CODE,
@@ -8142,19 +8142,9 @@ def _csv_parts(value: str, name: str) -> tuple[str, ...]:
 
 def _git_code_version() -> str:
     try:
-        revision = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-        dirty = subprocess.run(
-            ["git", "status", "--porcelain"],
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-    except (OSError, subprocess.CalledProcessError) as error:
+        revision = run_project_git("rev-parse", "HEAD")
+        dirty = run_project_git("status", "--porcelain")
+    except ProjectGitError as error:
         raise ValueError("Unable to resolve the Git code version.") from error
     if dirty:
         raise ValueError("Experiment freeze and evaluation require a clean checkout.")

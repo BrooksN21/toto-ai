@@ -1,5 +1,17 @@
 # Decisions
 
+## 2026-08-31 — Production Git has one repository-attested helper
+
+- Production Python Git execution goes through
+  `toto_ai.project_git.run_project_git`; direct command literals elsewhere in
+  `src/toto_ai` are prohibited by a static test.
+- The helper derives the root from its exact checked-in source layout, invokes
+  only the canonical executable `scripts/project-git`, and sets `cwd` to that
+  derived root. Caller working directory and HOME are never repository inputs.
+- Every command is preceded by a wrapper top-level attestation. A missing,
+  malformed, non-absolute, or canonical-path-mismatched root fails closed
+  before the requested command runs.
+
 ## 2026-08-31 — Post-draw attribution is artifact-bound and read-only
 
 - Attribution accepts one settled drawing plus generated `package.csv`,

@@ -1,5 +1,29 @@
 # Current State
 
+## Production Git execution hardened (2026-08-31)
+
+Production Git reads are centralized in `src/toto_ai/project_git.py`. The
+helper derives and validates the exact source-tree root, invokes the canonical
+`scripts/project-git` wrapper with that root as `cwd`, attests the wrapper's
+reported top-level before each command, and rejects any mismatch.
+`_git_code_version` no longer contains direct Git process calls.
+
+Regression coverage runs the helper from a nested directory inside a fake
+HOME Git repository and proves that the TotoAI root is selected instead of the
+outer repository. Separate coverage verifies fail-closed root mismatch,
+delegation by `_git_code_version`, and a static ban on direct production Git
+command literals outside the helper. Runtime ledgers and schedulers were not
+changed.
+
+Commit `7bdf44e` is pushed. Local Git-hardening commit `84dabe4` is one commit
+ahead and awaits explicit push approval. Latest verification is **2,237 passed
+/ 13 deselected** with Ruff clean.
+
+The remaining whole-home scan is a ChatGPT Desktop watcher invoking the
+absolute Xcode Git binary from `/Users/turshevr`, which is itself a work tree
+because it contains `.git`. TotoAI hardening prevents direct project Git
+escapes but cannot stop that application-level watcher.
+
 ## Operational and paired-quality snapshot (2026-08-31)
 
 - Drawing 4992 production is complete and its scheduler is unloaded.
@@ -8,8 +32,12 @@
 - Drawing 4993 (internal ID `12086`) is READY 15/15. Loaded scheduler plan
   `bd649bfd70e5b165` has deadline 2026-09-01 17:00 MSK and triggers at
   15:00/15:30/16:00/16:10/16:20/16:30/16:42/16:50 MSK. Bank is 4,980 RUB,
-  stake is 30 RUB, there is no wagering authorization, and automatic wagering
-  remains disabled.
+  stake is 30 RUB. Experimental manual authorization
+  `920919be7106…` is applied and valid through 2026-09-01 16:50 MSK;
+  automatic wagering remains disabled and no final operator package exists.
+- LaunchAgent cleanup removed 37 stale scheduler/preflight/post-draw jobs and
+  two expired goal-hybrid sidecars. Only the current 4993 scheduler, 4992
+  post-draw job, and morning/daytime/nightly jobs remain.
 
 The paired prospective core now exists in
 `src/toto_ai/optimizer/prospective_quality.py`. It evaluates quality-v2 as the
@@ -18,10 +46,9 @@ immutable input, bank and coupon capacity, with deterministic hashes and
 metrics and coupon-free settlement. It is not wired to the scheduler or CLI,
 does not switch strategies automatically, and makes no profitability claim.
 
-Latest recorded verification is **44 focused tests**, **2,208 passed / 13
-deselected** for the full suite, and Ruff clean. Remaining work is paired
-quality scheduler/CLI integration, post-settlement aggregation and its release
-gate, and automatic drawing-4993 post-draw handoff after the final package.
+Remaining work is paired quality scheduler/CLI integration, post-settlement
+aggregation and its release gate, and automatic drawing-4993 post-draw handoff
+after the final package.
 
 ## Post-draw attribution CLI implemented (2026-08-31)
 

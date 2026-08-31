@@ -3,17 +3,77 @@ set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
 
+before_command=true
 for argument in "$@"; do
+    if [ "$before_command" != true ]; then
+        continue
+    fi
     case "$argument" in
+        -C|-C?*|-c|-c?*|--bare|--config-env|--config-env=*|--git-dir|--git-dir=*|--namespace|--namespace=*|--work-tree|--work-tree=*)
+            echo "project-git: repository override is prohibited; TotoAI Git is pinned to $project_root" >&2
+            exit 64
+            ;;
+        --)
+            ;;
+        -*)
+            ;;
         ls-files)
             echo "project-git: git ls-files is prohibited for TotoAI" >&2
             exit 64
             ;;
-        -C|--git-dir|--work-tree|--git-dir=*|--work-tree=*)
-            echo "project-git: repository override is prohibited; TotoAI Git is pinned to $project_root" >&2
-            exit 64
+        *)
+            before_command=false
             ;;
     esac
 done
+
+unset GIT_ALTERNATE_OBJECT_DIRECTORIES \
+    GIT_CEILING_DIRECTORIES \
+    GIT_COMMON_DIR \
+    GIT_CONFIG_COUNT \
+    GIT_CONFIG_GLOBAL \
+    GIT_CONFIG_PARAMETERS \
+    GIT_CONFIG_SYSTEM \
+    GIT_DIR \
+    GIT_DISCOVERY_ACROSS_FILESYSTEM \
+    GIT_INDEX_FILE \
+    GIT_NAMESPACE \
+    GIT_OBJECT_DIRECTORY \
+    GIT_PREFIX \
+    GIT_QUARANTINE_PATH \
+    GIT_REPLACE_REF_BASE \
+    GIT_SHALLOW_FILE \
+    GIT_WORK_TREE
+
+attestation=$(
+    /usr/bin/git -C "$project_root" rev-parse \
+        --path-format=absolute \
+        --show-toplevel \
+        --git-dir \
+        --git-common-dir
+) || {
+    echo "project-git: unable to attest the TotoAI repository" >&2
+    exit 64
+}
+
+{
+    IFS= read -r reported_root || exit 64
+    IFS= read -r reported_git_dir || exit 64
+    IFS= read -r reported_common_dir || exit 64
+    if IFS= read -r extra_line; then
+        echo "project-git: malformed repository attestation" >&2
+        exit 64
+    fi
+} <<EOF
+$attestation
+EOF
+
+expected_git_dir=$project_root/.git
+if [ "$reported_root" != "$project_root" ] || \
+    [ "$reported_git_dir" != "$expected_git_dir" ] || \
+    [ "$reported_common_dir" != "$expected_git_dir" ]; then
+    echo "project-git: repository attestation mismatch" >&2
+    exit 64
+fi
 
 exec /usr/bin/git -C "$project_root" "$@"

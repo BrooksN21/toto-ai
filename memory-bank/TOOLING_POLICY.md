@@ -21,6 +21,11 @@ directory can enumerate the entire home directory. TotoAI Git commands must
 therefore use `scripts/project-git`; the wrapper pins operations to the TotoAI
 root, rejects `ls-files`, and rejects `-C`/work-tree overrides. Shell tool calls
 must also set `/Users/turshevr/toto-ai` as their explicit working directory.
+Production Python code must use `toto_ai.project_git.run_project_git`, which
+derives the exact project root, invokes that wrapper with the project root as
+`cwd`, and fails closed unless the wrapper reports the same canonical Git
+top-level. Direct production Git command literals outside that helper are
+prohibited.
 Do not perform whole-repository inventory by default. Use bounded,
 task-specific path inspection (`rg` on named directories,
 `scripts/project-git diff -- <paths>`, or

@@ -1,5 +1,20 @@
 # Architecture
 
+## Repository-attested production Git execution (2026-08-31)
+
+Production Python code never resolves Git from the process working directory.
+`toto_ai.project_git.run_project_git` derives the exact relocatable project
+root from the checked-in `src/toto_ai` layout, requires the canonical executable
+`scripts/project-git`, and invokes it with the project root as `cwd`. Before
+every requested command, the helper asks the wrapper for Git's top-level and
+requires that canonical path to equal the derived project root; malformed,
+missing, non-absolute, or mismatched roots fail closed.
+
+`_git_code_version` uses only this helper for revision and dirty-state reads.
+An outer HOME-like Git repository therefore cannot become the code-version
+source. A static regression rejects direct production Git command literals
+outside the helper, preserving one auditable execution boundary.
+
 ## Artifact-bound post-draw attribution (2026-08-31)
 
 `post-draw-attribution` is a read-only CLI over one settled drawing and the
