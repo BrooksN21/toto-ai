@@ -203,6 +203,10 @@ from toto_ai.operations.nightly_reconciliation import (
     generate_nightly_reconciliation_artifacts,
     run_nightly_reconciliation,
 )
+from toto_ai.operations.post_draw_attribution import (
+    PENDING_RESULTS,
+    generate_post_draw_attribution_reports,
+)
 from toto_ai.operations.reconciliation import (
     ReconciliationConfig,
     reconcile_finished_drawings,
@@ -526,6 +530,57 @@ def settle_drawing_command(
     except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
     typer.echo(json.dumps(result.to_dict(), ensure_ascii=False, sort_keys=True))
+
+
+@app.command("post-draw-attribution")
+def post_draw_attribution_command(
+    settled_drawing: str = typer.Option(..., "--settled-drawing"),
+    package_dir: str = typer.Option(
+        ...,
+        "--package-dir",
+        help=(
+            "Generated package directory containing package.csv, "
+            "package-archive.json and final-input.json."
+        ),
+    ),
+    operator_result: str = typer.Option(
+        ...,
+        "--operator-result",
+        help="Hash-bound scheduler schema-v3 PLAY operator-result.json.",
+    ),
+    output_dir: str = typer.Option(..., "--output-dir"),
+) -> None:
+    """Attribute a settled generated package; never creates betting artifacts."""
+
+    try:
+        report, paths = generate_post_draw_attribution_reports(
+            settled_drawing_file=settled_drawing,
+            package_dir=package_dir,
+            operator_result_file=operator_result,
+            output_dir=output_dir,
+        )
+    except (KeyError, OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": report["status"],
+                "drawing_id": report["identity"]["drawing_id"],
+                "drawing_number": report["identity"]["drawing_number"],
+                "excluded_event_orders": report["result_classification"][
+                    "excluded_event_orders"
+                ],
+                "pending_event_orders": report["result_classification"][
+                    "pending_event_orders"
+                ],
+                "reports": paths.to_dict(),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
+    if report["status"] == PENDING_RESULTS:
+        raise typer.Exit(code=2)
 
 
 @app.command("reconcile-finished")

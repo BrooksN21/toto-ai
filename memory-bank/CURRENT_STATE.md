@@ -1,5 +1,46 @@
 # Current State
 
+## Operational and paired-quality snapshot (2026-08-31)
+
+- Drawing 4992 production is complete and its scheduler is unloaded.
+  Post-draw LaunchAgent `com.toto-ai.post-draw-12083` is loaded; its first run
+  is 2026-09-01 12:00 MSK, and the last audit had 0/15 results.
+- Drawing 4993 (internal ID `12086`) is READY 15/15. Loaded scheduler plan
+  `bd649bfd70e5b165` has deadline 2026-09-01 17:00 MSK and triggers at
+  15:00/15:30/16:00/16:10/16:20/16:30/16:42/16:50 MSK. Bank is 4,980 RUB,
+  stake is 30 RUB, there is no wagering authorization, and automatic wagering
+  remains disabled.
+
+The paired prospective core now exists in
+`src/toto_ai/optimizer/prospective_quality.py`. It evaluates quality-v2 as the
+operator control and quality-v3 as the research challenger on the identical
+immutable input, bank and coupon capacity, with deterministic hashes and
+metrics and coupon-free settlement. It is not wired to the scheduler or CLI,
+does not switch strategies automatically, and makes no profitability claim.
+
+Latest recorded verification is **44 focused tests**, **2,208 passed / 13
+deselected** for the full suite, and Ruff clean. Remaining work is paired
+quality scheduler/CLI integration, post-settlement aggregation and its release
+gate, and automatic drawing-4993 post-draw handoff after the final package.
+
+## Post-draw attribution CLI implemented (2026-08-31)
+
+The local `post-draw-attribution` command now consumes one settled drawing and
+one exact scheduler-generated package directory plus its hash-valid schema-v3
+`PLAY` operator result. It verifies scheduler ownership and immutable
+operator/package/archive/final-input/result identities. Reports are
+aggregate-only: coupon strings, signatures, ranks and best-coupon outcomes are
+not exposed.
+
+Classification needs no per-drawing event-order lists. VOID, cancelled, or
+postponed exclusion requires an explicit `*` plus a reviewed HTTP(S) evidence
+source; status-only and otherwise missing results remain pending. Pending runs
+write reports and exit 2. JSON/CSV/Markdown views are atomically published with
+a manifest under one immutable generation hash, preventing mixed bundles.
+The completed tree's latest verification is recorded above; the earlier
+attribution-only checkpoint passed **35 focused** and **80 broader post-draw**
+tests.
+
 ## Schedule-evidence CLI phase 1 complete (2026-08-31)
 
 The phase-1 operator workflow exposes `schedule-evidence-status`,
@@ -47,6 +88,9 @@ unavailable rather than being inferred. Detailed analysis of the four missed
 positions, package exposure and BK/pool ranks is still pending.
 
 ## Drawing 4992 timing-consensus status (2026-08-30)
+
+This is the preserved pre-run snapshot; it is superseded by the current
+operational snapshot above.
 
 - Drawing 4992 (internal ID `12083`) is active with 15 events. Its operational
   cutoff is `2026-08-31 16:30 MSK`.

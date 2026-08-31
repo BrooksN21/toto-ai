@@ -1,5 +1,42 @@
 # Roadmap
 
+## 2026-08-31 paired prospective handoff
+
+- [x] Complete artifact-bound, aggregate-only post-draw attribution with
+  reviewed VOID evidence, fail-closed pending handling and an atomic generation
+  manifest.
+- [x] Complete the paired prospective core: quality-v2 operator control and
+  quality-v3 research challenger on identical immutable input, bank and coupon
+  capacity, with deterministic hashes/metrics and coupon-free settlement.
+- [ ] Wire paired prospective evaluation into the scheduler and CLI without
+  enabling automatic strategy switching.
+- [ ] Capture the quality-v2/quality-v3 pair prospectively for drawing 4993
+  from its scheduler-owned immutable final input.
+- [ ] Aggregate paired settlements and enforce a separately reviewed release
+  gate; do not claim profitability from incomplete evidence.
+
+## 2026-08-31 post-draw attribution
+
+- [x] Bind attribution to the exact settled drawing, generated package,
+  package archive, immutable final input and scheduler-owned schema-v3 `PLAY`
+  operator result.
+- [x] Classify resolved, VOID, cancelled, postponed and missing-pending events
+  without drawing-specific order lists.
+- [x] Require explicit reviewed evidence for VOID/cancelled/postponed
+  exclusions; keep status-only cases pending and report exclusions explicitly.
+- [x] Expose aggregate attribution only; never publish coupon signatures,
+  strings, ranks or best-coupon outcomes.
+- [x] Atomically publish generation-consistent JSON/CSV/Markdown with a
+  file-hash manifest and immutable generation hash.
+- [x] Add the read-only `post-draw-attribution` CLI with controlled pending
+  exit code 2 and no database/network/operator side effects.
+- [x] Cover actual 4991 attribution plus operator provenance, cancelled,
+  postponed, reviewed VOID, missing-pending, atomic bundle and CLI cases.
+- [x] Record focused attribution pytest (**35 passed**), broader post-draw
+  pytest (**80 passed**) and focused Ruff (clean).
+- [ ] Resolve unrelated repository Ruff findings in prospective-quality code;
+  no post-draw attribution Ruff findings remain.
+
 ## 2026-08-31 schedule-evidence operator workflow
 
 - [x] Add read-only status with ledger hashes and drawing/event reviewed,

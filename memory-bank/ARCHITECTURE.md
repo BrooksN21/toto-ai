@@ -1,5 +1,51 @@
 # Architecture
 
+## Artifact-bound post-draw attribution (2026-08-31)
+
+`post-draw-attribution` is a read-only CLI over one settled drawing and the
+exact generated `package.csv`, `package-archive.json`, and `final-input.json`,
+plus their scheduler-owned schema-v3 `PLAY` `operator-result.json`. It verifies
+operator provenance and record hash together with manifest, source-byte,
+canonical package, final-input, drawing, plan, event and result identities.
+Insufficient provenance fails closed; output is aggregate-only and never
+contains coupon strings, signatures, ranks, or best-coupon outcomes.
+
+Result classification is event-local and drawing-neutral. Resolved outcomes
+require scores. A terminal VOID/cancelled/postponed exclusion requires an
+explicit `*` result and a reviewed HTTP(S) evidence source; raw status alone
+remains pending. Other missing results remain pending. Pending runs still
+publish the classification bundle and return controlled exit code 2.
+
+JSON, event CSV, Markdown, and their manifest are staged together and
+atomically renamed into immutable `generations/<generation_sha256>/`. Every
+view is hash-listed by that manifest, preventing mixed-generation reads. The
+command never reads SQLite, calls the network, or creates an operator artifact,
+and every report is labelled `EXPIRED — ANALYSIS ONLY — NOT FOR WAGERING`.
+
+## Paired prospective quality core (2026-08-31)
+
+`optimizer.prospective_quality` implements a library-only paired protocol:
+quality-v2 remains the operator control and quality-v3 is the research
+challenger. Both strategies use the identical immutable input identity, bank,
+stake and coupon capacity. Deterministic input, configuration, seed and package
+hashes bind the recorded metrics; public summaries and settlement contain no
+coupon strings.
+
+The core has no scheduler or CLI integration. Its invariants prohibit
+automatic operator switching and profitability claims. Scheduler/CLI capture,
+post-settlement aggregation with a release gate, and automatic drawing-4993
+post-draw handoff after the final package remain separate work.
+
+## Current scheduler handoff state (2026-08-31)
+
+Drawing 4992 production is complete and its scheduler is unloaded. The
+non-betting post-draw LaunchAgent `com.toto-ai.post-draw-12083` is loaded for
+2026-09-01 12:00 MSK; the last audit had 0/15 results. Drawing 4993 (internal
+ID `12086`) is READY 15/15 under loaded plan `bd649bfd70e5b165`, deadline
+2026-09-01 17:00 MSK, triggers 15:00/15:30/16:00/16:10/16:20/16:30/16:42/
+16:50 MSK, bank 4,980 RUB and stake 30 RUB. It has no wagering authorization,
+and automatic wagering is disabled.
+
 ## Schedule-evidence operator CLI phase 1 (2026-08-31)
 
 Three top-level commands expose the existing evidence boundary without direct

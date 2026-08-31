@@ -41,6 +41,38 @@ python -m pytest -o addopts='' -m heavy
 See [`docs/testing.md`](docs/testing.md) for marker policy, CI commands, and
 full-suite commands.
 
+## Current verified state (2026-08-31)
+
+Post-draw attribution requires the scheduler-owned schema-v3 `PLAY`
+`operator-result.json` bound to the exact package, pre-bet archive and immutable
+final input. Output is aggregate-only. VOID exclusion requires explicit
+reviewed evidence; postponed or otherwise pending results fail closed. All
+views and hashes are published through one atomic generation manifest.
+
+The paired prospective core in
+`src/toto_ai/optimizer/prospective_quality.py` compares the production
+quality-v2 operator control with the quality-v3 research challenger on the
+same immutable input, bank and coupon capacity. It emits deterministic
+identities, hashes and metrics and supports coupon-free settlement. It is not
+wired to the scheduler or CLI, cannot switch the operator strategy
+automatically, and makes no profitability claim.
+
+Current operations:
+
+- Drawing 4992 production is complete and its scheduler is unloaded.
+  `com.toto-ai.post-draw-12083` is loaded for its first run at
+  2026-09-01 12:00 MSK; the last audit had 0/15 results.
+- Drawing 4993 (internal ID `12086`) is READY 15/15. Scheduler plan
+  `bd649bfd70e5b165` is loaded for the 2026-09-01 17:00 MSK deadline, with
+  triggers at 15:00, 15:30, 16:00, 16:10, 16:20, 16:30, 16:42 and 16:50 MSK.
+  Bank is 4,980 RUB at stake 30 RUB. There is no wagering authorization and
+  automatic wagering remains disabled.
+
+Latest recorded verification is 44 focused tests, the full suite at
+2,208 passed / 13 deselected, and Ruff clean. Remaining work is scheduler/CLI
+integration for paired quality, post-settlement aggregation and its release
+gate, and automatic drawing-4993 post-draw handoff after the final package.
+
 ## Morning Synchronization and Preparation
 
 Use one command to refresh TotoBrief page-one metadata, synchronize the exact
@@ -617,6 +649,33 @@ results, but category entitlement, return, and ROI remain unknown without
 explicit supported official category/payout evidence. For drawing 4952,
 payments are null, so return/ROI are null with `unknown_until_payouts`; they
 are not inferred from the lack of a 10+ hit, pool, or jackpot totals.
+
+Generate a read-only miss-attribution bundle from one settled drawing and the
+exact scheduler-generated package directory:
+
+```bash
+python -m toto_ai.cli post-draw-attribution \
+  --settled-drawing /absolute/settled-drawing.json \
+  --package-dir /absolute/final-attempt \
+  --operator-result /absolute/operator-result.json \
+  --output-dir reports/post-draw/<drawing>/attribution
+```
+
+`--package-dir` must contain the matching `package.csv`,
+`package-archive.json`, and `final-input.json`; `--operator-result` must be the
+hash-valid scheduler-owned schema-v3 `PLAY` record bound to those exact
+artifacts. Research, expired, paper, and `NO BET` packages are rejected. The
+reports expose aggregate attribution only, never coupon strings, signatures,
+or best-coupon outcomes. A VOID/cancelled/postponed exclusion requires an
+explicit `*` result plus a reviewed HTTP(S) `void_source`; status alone remains
+pending, as does any otherwise missing result. Pending runs write
+classification reports and exit `2`.
+
+Each JSON/CSV/Markdown bundle is staged and atomically published below
+`generations/<generation_sha256>/` with a hash manifest, so readers cannot mix
+views from different generations. The command uses no database or network,
+creates no betting artifact, and labels output
+`EXPIRED — ANALYSIS ONLY — NOT FOR WAGERING`.
 
 Generate optional local scheduler candidates without installing anything:
 

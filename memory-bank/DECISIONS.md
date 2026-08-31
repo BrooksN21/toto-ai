@@ -1,5 +1,43 @@
 # Decisions
 
+## 2026-08-31 — Post-draw attribution is artifact-bound and read-only
+
+- Attribution accepts one settled drawing plus generated `package.csv`,
+  `package-archive.json`, `final-input.json`, and a hash-valid scheduler-owned
+  schema-v3 `PLAY` operator result. Research, paper, expired, and `NO BET`
+  artifacts are not sufficient provenance.
+- Operator-record, manifest, source-byte, canonical package, final-input, plan,
+  drawing, event and normalized-result identities must agree before miss
+  attribution. Insufficient provenance fails closed to no attribution report.
+- Result classification uses only each event's raw result/status. Explicit
+  `*` plus a reviewed HTTP(S) evidence source is required before VOID,
+  cancelled, or postponed is terminal and excluded from hit/miss analysis.
+  Status-only and other missing results remain pending.
+- Pending runs produce classification reports and exit 2 rather than
+  manufacturing a complete settlement. No drawing-specific order list is
+  permitted.
+- Reports expose aggregate attribution only, never coupon strings, signatures,
+  ranks, or best-coupon outcomes.
+- JSON/CSV/Markdown and their file-hash manifest are staged and atomically
+  published under one immutable generation hash. Every view carries the
+  expired, analysis-only, not-for-wagering label.
+
+## 2026-08-31 — Paired quality remains deterministic research infrastructure
+
+- `optimizer.prospective_quality` keeps quality-v2 as the operator control and
+  quality-v3 as the research challenger.
+- Both strategies must use the same immutable input identity, bank, stake and
+  coupon capacity. Deterministic configuration, seed, package and result hashes
+  bind their metrics and settlement.
+- Public evaluation and settlement records are coupon-free. The paired core is
+  not a source of operator coupon publication.
+- The core remains library-only: no scheduler or CLI wiring, automatic
+  strategy switching, wagering authorization or profitability claim is
+  permitted.
+- Activation work requires scheduler/CLI integration, aggregate
+  post-settlement evidence and a separate release gate. Drawing 4993's
+  post-draw handoff must wait for its scheduler-owned final package.
+
 ## 2026-08-31 — Reviewed evidence requires an explicit hash-bound apply
 
 - Manual evidence ingestion accepts only prepared schema-v1 review JSON, not a
