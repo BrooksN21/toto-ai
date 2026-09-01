@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import plistlib
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -16,6 +19,99 @@ from toto_ai.sports_stats import final_hybrid_comparison, final_hybrid_sidecar
 from toto_ai.sports_stats.final_hybrid_sidecar import run_final_hybrid_sidecar
 
 UTC = timezone.utc
+
+
+def test_prepare_parallel_sidecar_artifacts_is_idempotent_and_t30_bound(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    plan_path = tmp_path / "scheduler-plan.json"
+    sports_path = tmp_path / "sports.json"
+    plan_path.write_text("{}", encoding="utf-8")
+    sports_path.write_text("{}", encoding="utf-8")
+    output = tmp_path / "evening"
+    output.mkdir()
+    plan = SimpleNamespace(
+        project_root=tmp_path,
+        output_dir=output,
+        plan_id="a" * 16,
+        operational_cutoff=datetime(2026, 9, 2, 14, 0, tzinfo=UTC),
+    )
+    monkeypatch.setattr(final_hybrid_sidecar, "load_scheduler_plan", lambda _: plan)
+
+    first = final_hybrid_sidecar.prepare_parallel_sidecar_artifacts(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        python_command=sys.executable,
+    )
+    second = final_hybrid_sidecar.prepare_parallel_sidecar_artifacts(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        python_command=sys.executable,
+    )
+
+    assert first == second
+    assert first.scheduled_at == datetime(2026, 9, 2, 13, 30, tzinfo=UTC)
+    wrapper = first.wrapper_path.read_text(encoding="utf-8")
+    assert "run-final-goal-hybrid-sidecar" in wrapper
+    assert str(plan_path) in wrapper
+    assert str(sports_path) in wrapper
+    plist = plistlib.loads(first.launch_agent_path.read_bytes())
+    assert plist["Label"] == "com.totoai.parallel-sidecar.v1." + "a" * 16
+    assert plist["StartCalendarInterval"] == {
+        "Year": 2026,
+        "Month": 9,
+        "Day": 2,
+        "Hour": 16,
+        "Minute": 30,
+    }
+
+
+def test_activate_parallel_sidecar_installs_verified_plist(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    plan_path = tmp_path / "scheduler-plan.json"
+    sports_path = tmp_path / "sports.json"
+    plan_path.write_text("{}", encoding="utf-8")
+    sports_path.write_text("{}", encoding="utf-8")
+    output = tmp_path / "evening"
+    output.mkdir()
+    plan = SimpleNamespace(
+        project_root=tmp_path,
+        output_dir=output,
+        plan_id="b" * 16,
+        operational_cutoff=datetime(2026, 9, 2, 14, 0, tzinfo=UTC),
+    )
+    monkeypatch.setattr(final_hybrid_sidecar, "load_scheduler_plan", lambda _: plan)
+    artifacts = final_hybrid_sidecar.prepare_parallel_sidecar_artifacts(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        python_command=sys.executable,
+    )
+    calls = []
+
+    def runner(command, **_kwargs):
+        calls.append(command)
+        return SimpleNamespace(returncode=0, stderr="")
+
+    launch_agents = tmp_path / "LaunchAgents"
+    final_hybrid_sidecar.activate_parallel_sidecar_launch_agent(
+        artifacts,
+        launch_agents_root=launch_agents,
+        command_runner=runner,
+    )
+
+    installed = launch_agents / f"{artifacts.launch_agent_label}.plist"
+    assert installed.read_bytes() == artifacts.launch_agent_path.read_bytes()
+    assert calls == [
+        (
+            "launchctl",
+            "bootstrap",
+            f"gui/{os.getuid()}",
+            str(installed),
+        )
+    ]
 
 
 def test_rebase_uses_final_bk_and_event_local_fallback() -> None:
@@ -449,7 +545,7 @@ def test_authorized_sidecar_exports_selected_challenger_before_t10(
         "execute_final_hybrid_comparison",
         fake_compare,
     )
-    authorization = final_hybrid_sidecar.authorize_parallel_manual_release(
+    final_hybrid_sidecar.authorize_parallel_manual_release(
         scheduler_plan_path=plan_path,
         output_root=tmp_path / "sidecar",
         acknowledged=True,
@@ -459,10 +555,9 @@ def test_authorized_sidecar_exports_selected_challenger_before_t10(
     result = run_final_hybrid_sidecar(
         scheduler_plan_path=plan_path,
         sports_artifact_path=sports_path,
-        output_root=tmp_path / "sidecar",
+        output_root=tmp_path / "sidecar" / "output",
         wait_seconds=0,
         minimum_runtime_seconds=240,
-        parallel_authorization_path=authorization,
         now=lambda: observed,
         sleeper=lambda _: None,
     )

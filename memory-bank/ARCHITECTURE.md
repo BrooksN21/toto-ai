@@ -1,5 +1,25 @@
 # Architecture
 
+## Automatic non-blocking four-strategy sidecar (2026-09-01)
+
+Every generated morning wrapper now requests an isolated T-30 parallel
+sidecar after READY scheduler preparation. The sidecar is a separate
+LaunchAgent and cannot mutate, delay or replace the primary quality-v2
+scheduler. It waits for the scheduler-owned final decision and then evaluates
+quality-v2, Sports Analytics v2 (`sports-shadow`), quality-v3 and robust from
+the same immutable final input, bank, stake and coupon capacity.
+
+Morning GOAL history remains frozen once per drawing. A reused history marker
+is aligned to the current exact TotoBrief detail-cache timestamp before Sports
+v2 seed construction, preventing a later cache refresh from appearing to be
+future data. Missing sports evidence remains event-local BK fallback.
+
+Parallel calculation is automatic and fail-open to the primary scheduler.
+An operator-compatible parallel package still requires a separate exact
+plan-bound pre-T-10 authorization. The sidecar discovers that authorization at
+runtime if it exists; its absence leaves all challenger output research-only.
+Automatic wagering remains prohibited.
+
 ## Optional exact parallel post-draw settlement (2026-09-01)
 
 The scheduler-owned primary post-draw plan remains bound to the package the

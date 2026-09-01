@@ -1,5 +1,28 @@
 # Current State
 
+## Drawing 4994 automatic four-model sidecar (2026-09-01)
+
+- Primary schema-v9 plan `a354758ef2aeb1cd` remains unchanged and loaded for
+  quality-v2 with bank 4,980 RUB, stake 30 and first checkpoint 15:00 MSK.
+- Separate LaunchAgent
+  `com.totoai.parallel-sidecar.v1.a354758ef2aeb1cd` is loaded for 2026-09-02
+  16:30 MSK (T-30). It will evaluate quality-v2, sports-shadow, quality-v3 and
+  robust without blocking or mutating the primary scheduler.
+- Exact parallel authorization is present for drawing 4994 through 16:50 MSK;
+  automatic wagering remains disabled and profitability remains unproven.
+- The strict Sports v2 seed covers 12/15 events; the remaining three use
+  event-local BK fallback. Reused GOAL history now advances its calculation
+  `as_of` to the current exact TotoBrief cache timestamp, closing the refresh
+  chronology race found during the first 4994 activation attempt.
+- The morning dispatcher now uses
+  `reports/rehearsal/morning-dispatcher-v10-parallel-safe/` every 15 minutes.
+  It retains the scheduler-owned training calculation and automatically
+  prepares the four-model sidecar for every future READY drawing. Future
+  sidecars calculate all models automatically but require exact per-plan
+  authorization before an alternative can become operator-compatible.
+- Focused sidecar/morning/post-draw verification is **85 passed**. Full project
+  verification is **2,274 passed / 13 deselected**, with Ruff clean.
+
 ## Drawing 4994 release and drawing 4993 post-draw comparison (2026-09-01)
 
 - Drawing 4994 (internal ID `12089`) is READY 15/15 under loaded schema-v9

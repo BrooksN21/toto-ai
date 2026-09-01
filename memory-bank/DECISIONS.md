@@ -1,5 +1,22 @@
 # Decisions
 
+## 2026-09-01 — Parallel calculation is automatic; release stays plan-bound
+
+- Every READY drawing must retain the scheduler-owned technical training
+  calculation and receive a separate non-blocking four-strategy sidecar.
+- The primary quality-v2 scheduler is the fail-open control. Sidecar setup or
+  execution failure must never delay, mutate or cancel it.
+- Quality-v2, sports-shadow, quality-v3 and robust use one immutable final
+  input, bank, stake and coupon capacity. This comparison is required for
+  prospective learning even when no challenger can be released.
+- Calculation and release are separate permissions. Future sidecars are
+  automatically prepared, but an alternative operator package requires an
+  exact plan-bound pre-T-10 experimental authorization. No blanket future
+  wagering authorization is created, and automatic wagering remains disabled.
+- Reused sports history is evaluated no earlier than the current exact
+  TotoBrief detail-cache timestamp. This preserves chronology without
+  discarding a valid earlier frozen sports collection.
+
 ## 2026-09-01 — Post-draw keeps the selected control and compares challengers
 
 - Drawing 4993's selected package is quality-v2; post-draw must settle that

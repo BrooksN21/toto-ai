@@ -1,5 +1,21 @@
 # Roadmap
 
+## 2026-09-01 automatic parallel challenger lifecycle
+
+- [x] Preserve scheduler-owned morning training for drawing 4994 and future
+  READY drawings; small early pools remain controlled deferrals.
+- [x] Add idempotent T-30 wrapper/plist generation and isolated LaunchAgent
+  activation for quality-v2, sports-shadow, quality-v3 and robust.
+- [x] Make every generated morning wrapper and identity-bound retry prepare the
+  parallel sidecar without blocking the primary quality-v2 scheduler.
+- [x] Keep alternative release behind an exact plan-bound authorization while
+  allowing research comparison to run automatically.
+- [x] Fix reused sports-history/current-detail-cache chronology alignment.
+- [x] Activate drawing 4994 sidecar for 16:30 MSK with exact authorization and
+  12/15 Sports v2 coverage plus three BK fallbacks.
+- [ ] Observe the 4994 primary and sidecar runs, preserve both results before
+  T-10 and settle all four packages after the drawing completes.
+
 ## 2026-09-01 drawing 4993/4994 operational handoff
 
 - [x] Keep drawing 4993 post-draw bound to the owner-selected quality-v2

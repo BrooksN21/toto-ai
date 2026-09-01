@@ -5,13 +5,18 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import plistlib
+import re
 import secrets
+import shlex
+import subprocess
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from toto_ai.optimizer.parallel_challenger import POLICY_VERSION
 from toto_ai.runner.final_input import load_final_input
@@ -30,6 +35,186 @@ class FinalHybridSidecarResult:
 
 
 PARALLEL_AUTHORIZATION_FILENAME = "parallel-release-authorization.json"
+PARALLEL_SIDECAR_WRAPPER_FILENAME = "run-parallel-sidecar.sh"
+PARALLEL_SIDECAR_LAUNCH_AGENT_FILENAME = "totoai-parallel-sidecar.plist"
+_PARALLEL_SIDECAR_LABEL = re.compile(
+    r"com\.totoai\.parallel-sidecar\.v1\.[0-9a-f]{16}\Z"
+)
+_MOSCOW = ZoneInfo("Europe/Moscow")
+
+
+@dataclass(frozen=True)
+class ParallelSidecarArtifacts:
+    root: Path
+    wrapper_path: Path
+    launch_agent_path: Path
+    launch_agent_label: str
+    sports_artifact_path: Path
+    authorization_path: Path | None
+    scheduled_at: datetime
+
+
+def prepare_parallel_sidecar_artifacts(
+    *,
+    scheduler_plan_path: str | Path,
+    sports_artifact_path: str | Path,
+    python_command: str | Path,
+    parallel_authorization_path: str | Path | None = None,
+) -> ParallelSidecarArtifacts:
+    """Create one immutable, non-blocking T-30 sidecar for an exact plan."""
+
+    plan_path = _regular_file(scheduler_plan_path, "scheduler plan")
+    sports_path = _regular_file(sports_artifact_path, "sports artifact")
+    plan = load_scheduler_plan(plan_path)
+    if not sports_path.is_relative_to(plan.project_root):
+        raise ValueError("sports artifact must remain inside project_root")
+    authorization_path = (
+        None
+        if parallel_authorization_path is None
+        else _regular_file(
+            parallel_authorization_path,
+            "parallel release authorization",
+        )
+    )
+    if authorization_path is not None:
+        _validate_parallel_authorization(plan, authorization_path)
+    executable = Path(python_command).absolute()
+    try:
+        executable_target = executable.resolve(strict=True)
+    except OSError as error:
+        raise ValueError("python command must resolve to an existing file") from error
+    if not executable_target.is_file():
+        raise ValueError("python command must resolve to a regular file")
+
+    root = plan.output_dir / "parallel-challenger"
+    root.mkdir(parents=True, exist_ok=True)
+    if root.is_symlink() or not root.is_dir():
+        raise ValueError("parallel sidecar root must be a regular directory")
+    wrapper_path = root / PARALLEL_SIDECAR_WRAPPER_FILENAME
+    launch_agent_path = root / PARALLEL_SIDECAR_LAUNCH_AGENT_FILENAME
+    label = f"com.totoai.parallel-sidecar.v1.{plan.plan_id}"
+    if not _PARALLEL_SIDECAR_LABEL.fullmatch(label):
+        raise ValueError("parallel sidecar label is invalid")
+    scheduled_at = plan.operational_cutoff - timedelta(minutes=30)
+    command = [
+        str(executable),
+        "-m",
+        "toto_ai.cli",
+        "run-final-goal-hybrid-sidecar",
+        "--scheduler-plan",
+        str(plan_path),
+        "--sports-artifact",
+        str(sports_path),
+        "--output-root",
+        str(root / "output"),
+        "--wait-seconds",
+        "900",
+        "--minimum-runtime-seconds",
+        "240",
+    ]
+    if authorization_path is not None:
+        command.extend(("--parallel-authorization", str(authorization_path)))
+    wrapper = (
+        "#!/bin/zsh\n"
+        "set -eu\n"
+        f"cd {shlex.quote(str(plan.project_root))}\n"
+        f"exec {shlex.join(command)}\n"
+    ).encode()
+    local = scheduled_at.astimezone(_MOSCOW)
+    plist = plistlib.dumps(
+        {
+            "Label": label,
+            "ProcessType": "Background",
+            "ProgramArguments": [str(wrapper_path)],
+            "StandardErrorPath": str(root / "parallel-sidecar.stderr.log"),
+            "StandardOutPath": str(root / "parallel-sidecar.stdout.log"),
+            "StartCalendarInterval": {
+                "Year": local.year,
+                "Month": local.month,
+                "Day": local.day,
+                "Hour": local.hour,
+                "Minute": local.minute,
+            },
+            "WorkingDirectory": str(plan.project_root),
+        },
+        fmt=plistlib.FMT_XML,
+        sort_keys=True,
+    )
+    _write_expected(wrapper_path, wrapper, mode=0o700)
+    _write_expected(launch_agent_path, plist, mode=0o600)
+    return ParallelSidecarArtifacts(
+        root=root,
+        wrapper_path=wrapper_path,
+        launch_agent_path=launch_agent_path,
+        launch_agent_label=label,
+        sports_artifact_path=sports_path,
+        authorization_path=authorization_path,
+        scheduled_at=scheduled_at,
+    )
+
+
+def activate_parallel_sidecar_launch_agent(
+    artifacts: ParallelSidecarArtifacts,
+    *,
+    launch_agents_root: Path | None = None,
+    command_runner: Callable[..., object] = subprocess.run,
+) -> None:
+    """Install one verified sidecar without touching the primary scheduler."""
+
+    if not isinstance(artifacts, ParallelSidecarArtifacts):
+        raise ValueError("parallel sidecar artifacts are invalid")
+    if not _PARALLEL_SIDECAR_LABEL.fullmatch(artifacts.launch_agent_label):
+        raise ValueError("parallel sidecar label is invalid")
+    candidate = _regular_file(
+        artifacts.launch_agent_path,
+        "parallel sidecar LaunchAgent",
+    )
+    try:
+        payload = plistlib.loads(candidate.read_bytes())
+    except (OSError, plistlib.InvalidFileException) as error:
+        raise ValueError("parallel sidecar LaunchAgent is invalid") from error
+    if (
+        not isinstance(payload, dict)
+        or payload.get("Label") != artifacts.launch_agent_label
+        or payload.get("ProgramArguments") != [str(artifacts.wrapper_path)]
+    ):
+        raise ValueError("parallel sidecar LaunchAgent binding mismatch")
+    _regular_file(artifacts.wrapper_path, "parallel sidecar wrapper")
+    root = (
+        Path.home() / "Library" / "LaunchAgents"
+        if launch_agents_root is None
+        else Path(launch_agents_root)
+    ).absolute()
+    root.mkdir(parents=True, exist_ok=True)
+    if root.is_symlink():
+        raise ValueError("LaunchAgents root cannot be a symlink")
+    destination = root / f"{artifacts.launch_agent_label}.plist"
+    _write_expected(destination, candidate.read_bytes(), mode=0o600)
+    domain = f"gui/{os.getuid()}"
+    completed = command_runner(
+        ("launchctl", "bootstrap", domain, str(destination)),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if getattr(completed, "returncode", None) == 0:
+        return
+    inspected = command_runner(
+        (
+            "launchctl",
+            "print",
+            f"{domain}/{artifacts.launch_agent_label}",
+        ),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if getattr(inspected, "returncode", None) != 0:
+        detail = str(getattr(completed, "stderr", "")).strip()
+        raise ValueError(
+            "parallel sidecar LaunchAgent bootstrap failed"
+            + (f": {detail[-500:]}" if detail else "")
+        )
 
 
 def authorize_parallel_manual_release(
@@ -102,6 +287,10 @@ def run_final_hybrid_sidecar(
     plan_path = _regular_file(scheduler_plan_path, "scheduler plan")
     sports_path = _regular_file(sports_artifact_path, "sports artifact")
     plan = load_scheduler_plan(plan_path)
+    root = Path(output_root).absolute()
+    root.mkdir(parents=True, exist_ok=True)
+    if root.is_symlink() or not root.is_dir():
+        raise ValueError("output root must be a regular directory")
     authorization_path = (
         None
         if parallel_authorization_path is None
@@ -110,12 +299,12 @@ def run_final_hybrid_sidecar(
             "parallel release authorization",
         )
     )
+    if authorization_path is None:
+        candidate = root.parent / PARALLEL_AUTHORIZATION_FILENAME
+        if candidate.is_file() and not candidate.is_symlink():
+            authorization_path = candidate
     if authorization_path is not None:
         _validate_parallel_authorization(plan, authorization_path)
-    root = Path(output_root).absolute()
-    root.mkdir(parents=True, exist_ok=True)
-    if root.is_symlink() or not root.is_dir():
-        raise ValueError("output root must be a regular directory")
     status_path = root / "sidecar-status.json"
     started_at = _utc(clock())
     latest_start = plan.publish_deadline - timedelta(
@@ -698,5 +887,33 @@ def _write_replace(path: Path, content: bytes) -> None:
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _write_expected(path: Path, content: bytes, *, mode: int) -> None:
+    """Create an immutable generated file or verify its exact existing bytes."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.parent.is_symlink() or path.is_symlink():
+        raise ValueError("sidecar artifact path cannot traverse a symlink")
+    if path.exists():
+        if not path.is_file() or path.read_bytes() != content:
+            raise ValueError("parallel sidecar artifact conflicts with expected bytes")
+        path.chmod(mode)
+        return
+    temporary = path.parent / f".{path.name}.{secrets.token_hex(8)}.tmp"
+    descriptor = os.open(
+        temporary,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+        mode,
+    )
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+        path.chmod(mode)
     finally:
         temporary.unlink(missing_ok=True)

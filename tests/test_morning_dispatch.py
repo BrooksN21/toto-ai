@@ -92,6 +92,30 @@ def _prepared(
     return MorningPreparedDrawing(**kwargs)
 
 
+def test_sports_seed_as_of_advances_to_reused_detail_cache(monkeypatch, tmp_path):
+    requested = datetime(2026, 9, 1, 14, 34, tzinfo=UTC)
+    fetched = requested + timedelta(hours=2)
+    observed = {}
+
+    def load_cache(drawing_id, **kwargs):
+        observed.update({"drawing_id": drawing_id, **kwargs})
+        return SimpleNamespace(fetched_at=fetched)
+
+    monkeypatch.setattr(cli, "load_drawing_detail_cache", load_cache)
+
+    result = cli._sports_seed_as_of(
+        drawing_id=12089,
+        requested_as_of=requested,
+        raw_cache_dir=tmp_path / "data" / "raw",
+        project_root=tmp_path,
+    )
+
+    assert result == fetched
+    assert observed["drawing_id"] == 12089
+    assert observed["max_age_seconds"] is None
+    assert observed["allowed_root"] == tmp_path
+
+
 @pytest.mark.parametrize(
     ("span_days", "expected"),
     ((None, None), (0, None), (1, 1), (2, 2)),
@@ -1316,6 +1340,160 @@ def test_reused_morning_cli_still_collects_goal_shadow(monkeypatch, tmp_path):
     assert payload["sports_shadow"]["package_influence"] == "NONE"
 
 
+def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
+    monkeypatch,
+    tmp_path,
+):
+    config = _config(tmp_path)
+    observed = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    evidence = _prepared(
+        number=4994,
+        drawing_id=12089,
+        deadline=observed + timedelta(hours=12),
+    )
+    plan = build_scheduler_plan(
+        drawing=evidence.drawing_number,
+        drawing_id=evidence.drawing_id,
+        ended_at=evidence.deadline,
+        bank=4980,
+        stake=30,
+        output_dir=config.scheduler_root / "evening-4994",
+        project_root=config.project_root,
+        db=config.db,
+        aliases=config.aliases,
+        env_file=config.env_file,
+    )
+    artifacts = prepare_scheduler_artifacts(plan, python_command=sys.executable)
+    monkeypatch.setattr(cli, "_prepare_current_for_morning", lambda **_: evidence)
+
+    def dispatch(_config, *, observed_at, prepare_current, **_kwargs):
+        prepare_current(observed_at)
+        return MorningDispatchResult(
+            status="reused",
+            reason="ready",
+            record_path=tmp_path / "ready.json",
+            plan_id=plan.plan_id,
+            plan_path=artifacts.plan_path,
+            launch_agent_path=artifacts.launch_agent_path,
+            activation_status="activated",
+        )
+
+    monkeypatch.setattr(cli, "dispatch_morning", dispatch)
+    monkeypatch.setattr(
+        cli,
+        "ensure_scheduler_training_package",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            TrainingPackageDeferred("small early pool")
+        ),
+    )
+    monkeypatch.setattr(cli, "load_goal_api_key", lambda _path: "goal-secret")
+    coverage = tmp_path / "coverage-summary.json"
+    coverage.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(
+        cli,
+        "ensure_goal_probe_input",
+        lambda **_kwargs: SimpleNamespace(
+            event_count=15,
+            history_source_count=26,
+            sports_eligible_count=13,
+            request_count=0,
+            quota_daily_remaining=900,
+            captured_at=observed,
+            coverage_summary_path=coverage,
+            reused=True,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "load_goal_probe_shadow",
+        lambda **_kwargs: SimpleNamespace(snapshot="snapshot", shadow="shadow"),
+    )
+    monkeypatch.setattr(
+        cli,
+        "_sports_seed_as_of",
+        lambda **_kwargs: observed,
+    )
+    sports_v2 = SimpleNamespace(sports_coverage_count=13)
+    monkeypatch.setattr(
+        cli,
+        "build_sports_v2_shadow_artifact",
+        lambda **_kwargs: sports_v2,
+    )
+    sports_path = tmp_path / "sports-v2.json"
+    sports_path.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(
+        cli,
+        "write_shadow_probability_artifact",
+        lambda *_args, **_kwargs: sports_path,
+    )
+    authorization = tmp_path / "parallel-authorization.json"
+    authorization.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(
+        cli,
+        "authorize_parallel_manual_release",
+        lambda **_kwargs: authorization,
+    )
+    parallel = SimpleNamespace(
+        scheduled_at=observed + timedelta(hours=11, minutes=30),
+        launch_agent_label="com.totoai.parallel-sidecar.v1." + plan.plan_id,
+    )
+    monkeypatch.setattr(
+        cli,
+        "prepare_parallel_sidecar_artifacts",
+        lambda **_kwargs: parallel,
+    )
+    activations = []
+    monkeypatch.setattr(
+        cli,
+        "activate_parallel_sidecar_launch_agent",
+        lambda value: activations.append(value),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(config.env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(config.state_root),
+            "--scheduler-root",
+            str(config.scheduler_root),
+            "--goal-shadow-auto",
+            "--parallel-challenger-auto",
+            "--parallel-release-auto",
+            "--activate",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert activations == [parallel]
+    assert payload["training_package"]["status"] == "deferred"
+    assert payload["parallel_challenger"] == {
+        "automatic_wagering": False,
+        "candidate_strategies": [
+            "quality-v2",
+            "sports-shadow",
+            "quality-v3",
+            "robust",
+        ],
+        "drawing_number": 4994,
+        "launch_agent_label": parallel.launch_agent_label,
+        "parallel_release_authorized": True,
+        "plan_id": plan.plan_id,
+        "primary_scheduler_affected": False,
+        "scheduled_at": parallel.scheduled_at.isoformat(),
+        "sports_artifact": str(sports_path),
+        "sports_coverage_count": 13,
+        "status": "PARALLEL_SIDECAR_ACTIVATED",
+    }
+
+
 def test_ready_morning_cli_ensures_scheduler_owned_training_package(
     monkeypatch,
     tmp_path,
@@ -2369,6 +2547,8 @@ def test_generated_morning_command_matches_current_cli_contract(tmp_path):
     argv = shlex.split(command)
     assert argv[:4] == [sys.executable, "-m", "toto_ai.cli", "morning-dispatch"]
     assert "--goal-shadow-auto" in argv
+    assert "--parallel-challenger-auto" in argv
+    assert "--parallel-release-auto" not in argv
 
     result = CliRunner().invoke(cli.app, [*argv[3:], "--help"])
 
@@ -2381,3 +2561,47 @@ def test_generated_morning_command_matches_current_cli_contract(tmp_path):
     )
     assert stale_result.exit_code == 2
     assert "No such option: --training-category" in stale_result.output
+
+
+def test_parallel_release_requires_parallel_and_goal_shadow(tmp_path):
+    config = _config(tmp_path)
+
+    release_without_parallel = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(config.env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(config.state_root),
+            "--scheduler-root",
+            str(config.scheduler_root),
+            "--parallel-release-auto",
+        ],
+    )
+    assert release_without_parallel.exit_code == 2
+    assert "requires --parallel-challenger-auto" in release_without_parallel.output
+
+    parallel_without_goal = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(config.env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(config.state_root),
+            "--scheduler-root",
+            str(config.scheduler_root),
+            "--parallel-challenger-auto",
+        ],
+    )
+    assert parallel_without_goal.exit_code == 2
+    assert "requires --goal-shadow-auto" in parallel_without_goal.output
