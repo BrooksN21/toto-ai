@@ -6080,3 +6080,28 @@ which is expected before the 15:00 first checkpoint. The plan hash remained
 
 Verification for event-level attribution: `2260 passed, 13 deselected`; Ruff
 and `git diff --check` passed.
+
+## Drawing 4993 final publication and sidecar race fix (2026-09-01)
+
+The schema-v9 primary scheduler completed every due phase without a recorded
+failure and published an actionable experimental-manual PLAY at 16:32 MSK,
+before the 16:50 MSK T-10 boundary. The immutable quality-v2 control contained
+166 coupons for 4,980 RUB under plan `bd649bfd70e5b165`; automatic wagering
+remained disabled.
+
+The independently scheduled sidecar initially observed the refresh-phase
+`LAST_KNOWN_GOOD_DEGRADED` / `PRE_FINAL_CHECKPOINT` record and incorrectly
+treated its non-actionable `NO BET` as terminal. Its frozen sports artifact
+also contained older BK rows than the final input. A final-input-bound retry
+rebased Sports v2 onto the final BK matrix, covered 10/15 events with five
+event-local fallbacks, completed at 16:40:50 MSK and selected `sports-shadow`
+under the predeclared non-degradation gate. The companion result contained 166
+coupons / 4,980 RUB and was published before T-10.
+
+The generic fix now keeps polling through an exact pre-final checkpoint and
+accepts ordinary pre-final-to-final BK movement while retaining drawing,
+deadline, event ID/order, chronology and final-input bindings. Sports residuals
+are always recomputed on the final BK rows. Regression coverage verifies both
+behaviors; the focused sidecar suite passes 8 tests and Ruff passes.
+Full verification passes `2261 passed, 13 deselected`; `git diff --check`
+passes.

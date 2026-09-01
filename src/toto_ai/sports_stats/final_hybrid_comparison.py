@@ -457,7 +457,7 @@ def _validate_sports_artifact_identity(
         ordered = tuple(sorted(sports.events, key=lambda event: event.event_order))
         if len(ordered) != 15:
             raise ValueError("sports artifact must contain exactly 15 events")
-        for target, frozen_event, sports_event in zip(
+        for target, _frozen_event, sports_event in zip(
             parsed.events,
             frozen.events,
             ordered,
@@ -466,14 +466,6 @@ def _validate_sports_artifact_identity(
             if (
                 sports_event.event_order != target.event_order
                 or str(sports_event.event_id) != str(target.event_id)
-                or any(
-                    not math.isclose(left, right, rel_tol=0.0, abs_tol=1e-12)
-                    for left, right in zip(
-                        sports_event.bk_probabilities,
-                        frozen_event.bk_probabilities,
-                        strict=True,
-                    )
-                )
             ):
                 raise ValueError("sports artifact event identity mismatch")
     elif (

@@ -214,6 +214,14 @@ format. A safe-start reserve suppresses the sidecar when too little time
 remains before T-10. It never mutates scheduler state or enables automatic
 wagering.
 
+A warmup/refresh `LAST_KNOWN_GOOD_DEGRADED` record with
+`PRE_FINAL_CHECKPOINT` provenance is explicitly non-terminal. The sidecar
+continues polling instead of interpreting its `decision=NO BET` as the final
+operator decision. Sports evidence remains bound to drawing/deadline/event
+identity and capture chronology, but its embedded earlier BK rows need not
+equal the final market rows: the bounded sports residual is rebased onto the
+immutable final BK matrix by design.
+
 The 2026-08-31 extension evaluates four same-input candidates: quality-v2,
 GOAL sports-shadow, bounded-uncertainty quality-v3, and a four-model robust
 recombination. Exact P13/P14/P15 is evaluated under BK, sports, flatten-10 and

@@ -116,7 +116,10 @@ def test_sports_identity_uses_operational_cutoff_fingerprint(monkeypatch) -> Non
             SimpleNamespace(
                 event_order=order,
                 event_id=100 + order,
-                bk_probabilities=(0.5, 0.3, 0.2),
+                # The sports evidence is captured before the final scheduler
+                # input, so its embedded BK row may legitimately be older.
+                # The comparison rebases the sports residual onto final BK.
+                bk_probabilities=(0.4, 0.35, 0.25),
             )
             for order in range(15)
         ),
@@ -128,6 +131,85 @@ def test_sports_identity_uses_operational_cutoff_fingerprint(monkeypatch) -> Non
         frozen=frozen,
         sports=sports,
     )
+
+
+def test_sidecar_waits_for_final_after_pre_final_checkpoint(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    plan_path = tmp_path / "scheduler-plan.json"
+    sports_path = tmp_path / "sports.json"
+    plan_path.write_text("{}", encoding="utf-8")
+    sports_path.write_text("{}", encoding="utf-8")
+    observed = datetime(2026, 9, 1, 13, 30, tzinfo=UTC)
+    scheduler_dir = tmp_path / "scheduler"
+    scheduler_dir.mkdir()
+    operator_path = scheduler_dir / "operator-result.json"
+    operator_path.write_text(
+        json.dumps(
+            {
+                "plan_id": "plan",
+                "drawing": 4993,
+                "drawing_id": 12086,
+                "decision": "NO BET",
+                "actionable": False,
+                "operator_status": "LAST_KNOWN_GOOD_DEGRADED",
+                "provenance": "PRE_FINAL_CHECKPOINT",
+                "reason": "validated refresh package available before final refresh",
+            }
+        ),
+        encoding="utf-8",
+    )
+    plan = SimpleNamespace(
+        output_dir=scheduler_dir,
+        publish_deadline=observed + timedelta(minutes=10),
+        plan_id="plan",
+        drawing=4993,
+        drawing_id=12086,
+    )
+    monkeypatch.setattr(final_hybrid_sidecar, "load_scheduler_plan", lambda _: plan)
+    executed = []
+
+    def fake_execute(**kwargs):
+        executed.append(kwargs["operator"])
+        result_path = tmp_path / "sidecar" / "sidecar-status.json"
+        result_path.write_text("{}", encoding="utf-8")
+        return final_hybrid_sidecar.FinalHybridSidecarResult(
+            status="READY_BEFORE_T10",
+            result_path=result_path,
+            output_dir=tmp_path / "sidecar",
+            reason=None,
+        )
+
+    def publish_final(_seconds: float) -> None:
+        operator_path.write_text(
+            json.dumps(
+                {
+                    "plan_id": "plan",
+                    "drawing": 4993,
+                    "drawing_id": 12086,
+                    "decision": "PLAY",
+                    "actionable": True,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(final_hybrid_sidecar, "_execute", fake_execute)
+
+    result = run_final_hybrid_sidecar(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        output_root=tmp_path / "sidecar",
+        wait_seconds=60,
+        minimum_runtime_seconds=240,
+        now=lambda: observed,
+        sleeper=publish_final,
+    )
+
+    assert result.status == "READY_BEFORE_T10"
+    assert len(executed) == 1
+    assert executed[0]["decision"] == "PLAY"
 
 
 def test_sidecar_skips_when_operator_is_not_ready_before_safe_start(

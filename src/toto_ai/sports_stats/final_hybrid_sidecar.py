@@ -155,7 +155,14 @@ def run_final_hybrid_sidecar(
                     parallel_authorization_path=authorization_path,
                     clock=clock,
                 )
-            if operator.get("decision") == "NO BET":
+            if _is_pre_final_checkpoint(operator):
+                # Warmup/refresh deliberately publish a non-actionable LKG
+                # record before atomic final starts.  It is not a terminal
+                # operator decision, so the sidecar must keep polling for the
+                # final PLAY/NO BET publication instead of racing the main
+                # scheduler and exiting early.
+                pass
+            elif operator.get("decision") == "NO BET":
                 if observed_at < latest_start:
                     final_input = _latest_final_input(plan)
                     if final_input is not None:
@@ -193,6 +200,15 @@ def run_final_hybrid_sidecar(
                 max(0.1, (stop_waiting - observed_at).total_seconds()),
             )
         )
+
+
+def _is_pre_final_checkpoint(operator: Mapping[str, Any]) -> bool:
+    return (
+        operator.get("decision") == "NO BET"
+        and operator.get("actionable") is False
+        and operator.get("operator_status") == "LAST_KNOWN_GOOD_DEGRADED"
+        and operator.get("provenance") == "PRE_FINAL_CHECKPOINT"
+    )
 
 
 def _execute(

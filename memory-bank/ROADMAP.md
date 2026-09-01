@@ -1345,8 +1345,13 @@ closed.
   15:00-16:50 MSK primary LaunchAgent.
 - [x] Replay equal-cost quality-v2/v3 packages for 4990 and 4991; generate the
   pending 4992 comparison for later settlement.
-- [ ] Observe the 4993 final run, report the selected strategy and exact manual
-  package path before T-10, then settle all four candidates post-draw.
+- [x] Observe the 4993 final run and report the selected strategy and exact
+  manual package path before T-10. Primary quality-v2 PLAY completed at 16:32
+  MSK; the final-input-bound companion selected Sports v2 at 16:40:50 MSK.
+- [x] Fix the sidecar race with pre-final LKG publication and allow a frozen
+  sports residual to rebase onto moved final BK rows without weakening event
+  identity or chronology.
+- [ ] Settle all four 4993 candidates post-draw.
 
 # Sports Analytics v2
 

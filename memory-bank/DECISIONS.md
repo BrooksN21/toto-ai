@@ -2376,7 +2376,9 @@ ambiguous reversed evidence remains unresolved.
   reuses quality-v2 exactly.
 - Operational-cutoff and raw-source fingerprints are distinct by design. A
   sports artifact validates against the former; final input source identity
-  validates against the latter. Event identity and BK rows must still match.
+  validates against the latter. Event ID/order must still match. Embedded
+  pre-final BK rows may differ after ordinary market movement because the
+  sports residual is explicitly rebased onto the immutable final BK matrix.
 - The 4990-4992 replay produced no 13+ and no Sports v2 win over quality-v2.
   V2 therefore remains research-only.
 
@@ -2402,3 +2404,15 @@ ambiguous reversed evidence remains unresolved.
   team strength/form, venue scoring, rest/congestion, standings, and only
   reliably sourced lineup/injury evidence. Every unavailable feature falls
   back event-locally to BK.
+
+## 2026-09-01 — A pre-final operator checkpoint is not terminal
+
+- `LAST_KNOWN_GOOD_DEGRADED` with `PRE_FINAL_CHECKPOINT` provenance is a
+  warmup/refresh availability record, even though its decision is `NO BET` and
+  it references a validated package.
+- A parallel sidecar must continue waiting for the final actionable PLAY or
+  terminal final NO BET. It must never exit merely because the pre-final record
+  was published before the atomic final result.
+- Ordinary BK movement between frozen sports collection and final input is not
+  an identity failure. Drawing/deadline/event/chronology checks remain strict;
+  the final comparison recomputes the residual blend from final BK.
