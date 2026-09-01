@@ -59,6 +59,7 @@ _GOAL_API_MATCHER_VERSION = "goal-api-candidate-v1"
 _GOAL_API_MIN_PAIR_SCORE = 0.62
 _GOAL_API_MIN_TEAM_SCORE = 0.50
 _GOAL_API_MIN_MARGIN = 0.10
+_EXACT_TARGET_BINDING = "exact_same_target_event_v1"
 _WOMEN_MARKER = re.compile(
     r"(?:^|[^\w])(?:women(?:'s)?|ladies|female|wfc|жфк|жен(?:щины|ский|ская)?\.?|ж)(?:$|[^\w])",
     re.IGNORECASE,
@@ -252,6 +253,7 @@ def collect_schedule_source_candidates(
                 "source_event_id": int(event["id"]),
                 "home_name": event["homeTeam"]["name"],
                 "away_name": event["awayTeam"]["name"],
+                **_exact_target_binding(row),
                 "orientation": "same",
                 "match_mode": "matched",
                 "source_status": source_status,
@@ -444,11 +446,17 @@ def _collect_goal_api_candidates(
                 "sport": "football",
                 "home_name": selected.home_team,
                 "away_name": selected.away_team,
-                "canonical_home_name": _canonical_candidate_name(
-                    selected.home_team, aliases
-                ),
-                "canonical_away_name": _canonical_candidate_name(
-                    selected.away_team, aliases
+                **(
+                    _exact_target_binding(row)
+                    if match_status == "matched" and orientation == "same"
+                    else {
+                        "canonical_home_name": _canonical_candidate_name(
+                            selected.home_team, aliases
+                        ),
+                        "canonical_away_name": _canonical_candidate_name(
+                            selected.away_team, aliases
+                        ),
+                    }
                 ),
                 "orientation": orientation,
                 "matcher_version": (
@@ -795,11 +803,17 @@ def _collect_thesportsdb_candidates(
                 "sport": selected.sport,
                 "home_name": selected.home_team,
                 "away_name": selected.away_team,
-                "canonical_home_name": _canonical_candidate_name(
-                    selected.home_team, aliases
-                ),
-                "canonical_away_name": _canonical_candidate_name(
-                    selected.away_team, aliases
+                **(
+                    _exact_target_binding(row)
+                    if match_status == "matched" and orientation == "same"
+                    else {
+                        "canonical_home_name": _canonical_candidate_name(
+                            selected.home_team, aliases
+                        ),
+                        "canonical_away_name": _canonical_candidate_name(
+                            selected.away_team, aliases
+                        ),
+                    }
                 ),
                 "orientation": orientation,
                 "matcher_version": MATCHER_VERSION,
@@ -1453,6 +1467,16 @@ def _base_record(row: Mapping[str, Any]) -> dict[str, object]:
         "target_event_id": int(row["target_event_id"]),
         "target_home_team": str(row["home_team"]),
         "target_away_team": str(row["away_team"]),
+    }
+
+
+def _exact_target_binding(row: Mapping[str, Any]) -> dict[str, object]:
+    """Bind a provider's exact same-orientation match to the queue identity."""
+
+    return {
+        "identity_binding": _EXACT_TARGET_BINDING,
+        "canonical_home_name": str(row["home_team"]),
+        "canonical_away_name": str(row["away_team"]),
     }
 
 

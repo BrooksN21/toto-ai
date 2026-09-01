@@ -6105,3 +6105,24 @@ are always recomputed on the final BK rows. Regression coverage verifies both
 behaviors; the focused sidecar suite passes 8 tests and Ruff passes.
 Full verification passes `2261 passed, 13 deselected`; `git diff --check`
 passes.
+
+## Drawing 4994 preparation and target-bound provider identity (2026-09-01)
+
+Drawing 4994 is synchronized as internal ID `12089`, fingerprint
+`dd617ca4894b31bd`, with a 2026-09-02 17:00 MSK deadline and 16:50 MSK T-10.
+The first preparation pass had ten unknown kickoff times. Independent schedule
+providers agreed on five of them, but source display variants such as
+`Mansfield`/`Mansfield Town` were incorrectly compared as canonical target
+identities.
+
+Exact same-orientation collector matches now carry
+`identity_binding=exact_same_target_event_v1`; their canonical identity fields
+bind to the immutable TotoBrief target teams while the original provider names
+remain preserved for review. Generic consensus requires that binding plus the
+exact drawing/event/order/home/away target identity. The real rerun reduced
+unknown times from 10 to 5 without accepting fuzzy GOAL matches. Remaining
+events are 4, 8, 9, 12 and 14 (one-based); the passive retry remains loaded and
+the evening scheduler remains intentionally inactive until all 15 times are
+strictly resolved.
+
+Focused collector/consensus/provider verification passes 43 tests.

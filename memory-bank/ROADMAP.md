@@ -1386,3 +1386,14 @@ closed.
   to simple coupon recombination as the primary improvement path.
 - [ ] Keep the prospective paired activation gate at at least 30 complete
   drawings / 450 events and require package-level non-degradation.
+
+# Drawing 4994 preparation
+
+- [x] Synchronize drawing 4994 and bind its 17:00 MSK deadline / 16:50 T-10.
+- [x] Replace cross-provider display-name equality with strict target-bound
+  exact-match identity; reduce unknown kickoff times from 10 to 5.
+- [ ] Resolve events 4, 8, 9, 12 and 14 from strict independent or reviewed
+  schedule evidence.
+- [ ] Activate and verify the evening scheduler only after READY 15/15.
+- [ ] Capture Sports v2 and parallel challengers without delaying the primary
+  operator result.

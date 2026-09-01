@@ -72,8 +72,8 @@ def _source_report(tmp_path, queue, *, starts_at=KICKOFF):
         "target_fingerprint": "a" * 64,
         "event_order": 4,
         "target_event_id": 180127,
-        "home_team": "Чако Фор Эвер",
-        "away_team": "Сан Мигель",
+        "target_home_team": "Чако Фор Эвер",
+        "target_away_team": "Сан Мигель",
         "source_name": "GOAL API",
         "source_provider": "goal-api-v1",
         "source_role": "independent",
@@ -85,6 +85,7 @@ def _source_report(tmp_path, queue, *, starts_at=KICKOFF):
         "canonical_away_name": "San Miguel",
         "orientation": "same",
         "match_mode": "matched",
+        "identity_binding": "exact_same_target_event_v1",
         "competition": "Primera Nacional",
         "starts_at": starts_at.isoformat().replace("+00:00", "Z"),
         "source_status": "scheduled",
@@ -180,8 +181,8 @@ def _add_sofascore_source_record(
             "target_fingerprint": "a" * 64,
             "event_order": 4,
             "target_event_id": 180127,
-            "home_team": "Чако Фор Эвер",
-            "away_team": "Сан Мигель",
+            "target_home_team": "Чако Фор Эвер",
+            "target_away_team": "Сан Мигель",
             "source_name": "Sofascore",
             "source_provider": "sofascore-v1",
             "source_role": "independent",
@@ -196,6 +197,7 @@ def _add_sofascore_source_record(
             "canonical_away_name": "San Miguel",
             "orientation": "same",
             "match_mode": "matched",
+            "identity_binding": "exact_same_target_event_v1",
             "source_status": "not_started",
             "status_eligible": True,
             "starts_at": starts_at.isoformat().replace("+00:00", "Z"),
@@ -229,8 +231,8 @@ def _add_thesportsdb_source_record(
             "target_fingerprint": "a" * 64,
             "event_order": 4,
             "target_event_id": 180127,
-            "home_team": "Чако Фор Эвер",
-            "away_team": "Сан Мигель",
+            "target_home_team": "Чако Фор Эвер",
+            "target_away_team": "Сан Мигель",
             "source_name": "TheSportsDB",
             "source_provider": "thesportsdb-v1",
             "source_role": "independent",
@@ -242,6 +244,7 @@ def _add_thesportsdb_source_record(
             "canonical_away_name": "San Miguel",
             "orientation": orientation,
             "match_mode": match_mode,
+            "identity_binding": "exact_same_target_event_v1",
             "competition": "Primera Nacional",
             "starts_at": starts_at.isoformat().replace("+00:00", "Z"),
             "source_status": source_status,
@@ -304,6 +307,39 @@ def test_exact_goal_thesportsdb_consensus_promotes_with_both_provenances(tmp_pat
     assert "goal-api-v1" in review
     assert "thesportsdb-v1" in review
     assert review.count("SHA-256") == 2
+
+
+def test_exact_target_bound_name_variants_promote(tmp_path):
+    queue_path, queue = _queue(tmp_path)
+    source = _source_report(tmp_path, queue)
+    payload = json.loads(source.read_text(encoding="utf-8"))
+    payload["records"][0]["home_name"] = "Chaco For Ever"
+    payload["records"][0]["canonical_home_name"] = "Чако Фор Эвер"
+    payload["records"][0]["canonical_away_name"] = "Сан Мигель"
+    payload.pop("report_sha256")
+    payload["report_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    source.write_text(json.dumps(payload), encoding="utf-8")
+    _add_thesportsdb_source_record(
+        source,
+        home_name="CSYD Chaco For Ever",
+        canonical_home_name="Чако Фор Эвер",
+    )
+    payload = json.loads(source.read_text(encoding="utf-8"))
+    payload["records"][-1]["canonical_away_name"] = "Сан Мигель"
+    payload.pop("report_sha256")
+    payload["report_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    source.write_text(json.dumps(payload), encoding="utf-8")
+    ledger = _ledger(tmp_path)
+
+    result = promote_independent_schedule_consensus(
+        queue_path,
+        source_candidates_path=source,
+        output_dir=tmp_path / "out",
+        schedule_evidence_ledger=ledger,
+        captured_at=CAPTURED_AT,
+    )
+
+    assert result.promoted_count == 1
 
 
 def test_single_independent_source_does_not_promote_without_second_evidence(tmp_path):

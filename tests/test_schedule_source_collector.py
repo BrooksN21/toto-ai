@@ -99,6 +99,9 @@ def test_collector_saves_raw_snapshot_and_independent_candidate(tmp_path):
     assert record["event_order"] == 8
     assert record["starts_at"] == "2026-08-14T18:45:00Z"
     assert record["source_role"] == "independent"
+    assert record["identity_binding"] == "exact_same_target_event_v1"
+    assert record["canonical_home_name"] == "Анси"
+    assert record["canonical_away_name"] == "Родез"
     assert record["ledger_eligible"] is False
     assert record["missing_requirements"] == ["official_source", "review"]
     snapshot = tmp_path / "out" / record["snapshot_path"]

@@ -2416,3 +2416,14 @@ ambiguous reversed evidence remains unresolved.
 - Ordinary BK movement between frozen sports collection and final input is not
   an identity failure. Drawing/deadline/event/chronology checks remain strict;
   the final comparison recomputes the residual blend from final BK.
+
+## 2026-09-01 — Consensus compares target identity, not provider spelling
+
+- An exact same-orientation provider match must be explicitly bound to the
+  queue's drawing/event/order/home/away target identity.
+- Provider display names remain immutable evidence, but differences such as
+  club prefixes, suffixes or translated city names are not themselves a
+  conflict after both providers independently bind to the exact same target.
+- Fuzzy, reversed, ambiguous, late or kickoff-conflicting candidates remain
+  non-promoting. This change does not permit fuzzy evidence to become
+  executable.

@@ -130,6 +130,15 @@ SHA-256 provenance in the generated review and ledger claims. This mechanism
 is schedule-only: it does not change match probabilities, package selection,
 release gates or automatic-wagering policy.
 
+Exact provider matches also carry an explicit
+`exact_same_target_event_v1` binding. Canonical identity in consensus means the
+immutable TotoBrief target identity proven by the collector match, not equal
+provider display spelling. Original provider team names remain frozen for
+audit. Consensus rejects a missing binding, changed target home/away identity,
+fuzzy/reversed/ambiguous matching, or kickoff disagreement. This permits
+independent sources to spell one team differently without weakening their
+separate binding to the same target event.
+
 For drawing 4992, the pre-fix preparation had two unknown times. Official MLSZ
 evidence exists for event `180353` at `17:30Z`, and GOAL plus TheSportsDB agree
 for event `180358` at `16:00Z`. These facts are pending review and a fresh

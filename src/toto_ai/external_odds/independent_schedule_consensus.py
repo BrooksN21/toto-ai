@@ -45,6 +45,7 @@ _SEARCH_ENDPOINT = "https://www.sofascore.com/api/v1/search/all?q={query}"
 _EVENT_ENDPOINT = "https://www.sofascore.com/api/v1/event/{event_id}"
 _ALLOWED_GOAL_STATUSES = {"independent_candidate", "timing_conflict"}
 _ALLOWED_MATCH_MODES = {"matched"}
+_EXACT_TARGET_BINDING = "exact_same_target_event_v1"
 _KICKOFF_TOLERANCE = timedelta(minutes=5)
 _PROVIDER_DOMAINS = {
     "goal-api-v1": frozenset({"goal-api.com", "api.goal-api.com"}),
@@ -263,6 +264,12 @@ def _strict_candidate(
         raise ValueError("source provider is not allowlisted and independent")
     if int(record.get("target_event_id", -1)) != int(row["target_event_id"]):
         raise ValueError("source candidate target identity conflicts")
+    if (
+        record.get("target_home_team") != row["home_team"]
+        or record.get("target_away_team") != row["away_team"]
+        or record.get("identity_binding") != _EXACT_TARGET_BINDING
+    ):
+        raise ValueError("source candidate target binding is missing or conflicts")
     if record.get("orientation") != "same" or record.get("match_mode") != "matched":
         raise ValueError("source candidate is fuzzy, reversed, or ambiguous")
     if record.get("source_status") not in {"scheduled", "not_started"}:
