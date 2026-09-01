@@ -2361,3 +2361,21 @@ ambiguous reversed evidence remains unresolved.
   insufficient event data falls back locally to BK.
 - V2 is research-only until chronological walk-forward calibration and
   equal-bank package settlement show non-degradation versus untouched BK.
+
+## 2026-09-01 — Sports v2 must pass exact-generator historical replay
+
+- Sports probability comparisons are insufficient on their own. V2 must also
+  run through the same quality-v2 package generator, bank, stake and coupon
+  capacity as the archived operator control.
+- Historical execution may use the hashes stored in the immutable plan for
+  deterministic selector seeding, but cannot pretend today's mutable schedule
+  ledger is the historical ledger. Operator provenance remains disabled and
+  the archived quality-v2 package must be reproduced exactly before results
+  are accepted.
+- Zero sports coverage is identity, not a new randomized candidate: Sports v2
+  reuses quality-v2 exactly.
+- Operational-cutoff and raw-source fingerprints are distinct by design. A
+  sports artifact validates against the former; final input source identity
+  validates against the latter. Event identity and BK rows must still match.
+- The 4990-4992 replay produced no 13+ and no Sports v2 win over quality-v2.
+  V2 therefore remains research-only.

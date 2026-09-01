@@ -1726,6 +1726,25 @@ Marker selection changes test
 orchestration only; production safety, objective ordering, provenance and the
 candidate universe are identical.
 
+## Historical four-strategy hybrid replay (2026-09-01)
+
+`optimizer.hybrid_replay` is a research-only bridge over immutable scheduler
+plans, final inputs, archived quality-v2 packages and Sports v2 probability
+artifacts. It reconstructs the exact historical quality-v2 configuration from
+the plan's bound selection context, seeds the unchanged selector from the
+stored immutable hashes without validating against today's append-only ledger,
+and requires byte-for-byte reproduction of the archived control before any
+challenger is evaluated. Sports v2, quality-v3 and robust then receive the same
+effective budget, stake and coupon capacity. Settlement uses one terminal
+result and exports only non-operator research artifacts.
+
+Sports final-input identity has two intentional time domains. The raw
+TotoBrief `ended_at` remains the final-input/source fingerprint, while sports
+evidence is bound to the Moscow-normalized operational cutoff used for match
+eligibility. Final hybrid validation recomputes the latter from the immutable
+payload and plan, checks every event ID/order/BK row, and does not equate it
+with the raw source fingerprint.
+
 ## Data-health contract v1.2
 
 `toto_ai.analytics.data_health` is the reusable read-only quality boundary for

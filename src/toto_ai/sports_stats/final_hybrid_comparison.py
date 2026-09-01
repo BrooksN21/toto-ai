@@ -25,6 +25,8 @@ from toto_ai.ev.package_quality import (
     package_quality_metrics,
     selection_probability_input_sha256,
 )
+from toto_ai.external_odds.eligibility import target_fingerprint
+from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.optimizer.parallel_challenger import (
     ExactCategoryMetrics,
     ParallelCandidate,
@@ -85,17 +87,12 @@ def execute_final_hybrid_comparison(
     snapshot = load_final_input(input_path, expected_plan=plan)
     frozen = frozen_input_from_snapshot(snapshot, plan)
     sports = load_shadow_probability_artifact(sports_path)
-    if (
-        sports.drawing_id != frozen.drawing_id
-        or sports.drawing_number != frozen.drawing_number
-        or sports.drawing_fingerprint != frozen.drawing_fingerprint
-        or sports.authoritative_target_fingerprint != frozen.drawing_fingerprint
-    ):
-        raise ValueError("sports artifact drawing identity mismatch")
-    if sports.as_of > snapshot.captured_at:
-        raise ValueError("sports artifact was captured after final input")
-    if len(sports.events) != 15:
-        raise ValueError("sports artifact must contain exactly 15 events")
+    _validate_sports_artifact_identity(
+        plan=plan,
+        snapshot=snapshot,
+        frozen=frozen,
+        sports=sports,
+    )
 
     runtime_budget = effective_selection_budget(
         requested_bank=plan.requested_bank,
@@ -149,10 +146,14 @@ def execute_final_hybrid_comparison(
         scheduler_plan_path=plan_path,
         selection_config=config,
     )
-    sports_result = run_ev_crowd_current(
-        sports_frozen,
-        config=config,
-        provenance=sports_provenance,
+    sports_result = (
+        baseline
+        if sports.sports_coverage_count == 0
+        else run_ev_crowd_current(
+            sports_frozen,
+            config=config,
+            provenance=sports_provenance,
+        )
     )
     quality_v3_config = QualityV3Config()
     uncertainty_models = build_uncertainty_models(
@@ -425,6 +426,67 @@ def _exact_model_metrics(
             }
         )
     return rows
+
+
+def _validate_sports_artifact_identity(
+    *,
+    plan: Any,
+    snapshot: Any,
+    frozen: FrozenStrategyInput,
+    sports: Any,
+) -> None:
+    """Bind sports evidence to the operational, not raw TotoBrief, cutoff."""
+
+    payload = getattr(snapshot, "payload", None)
+    if isinstance(payload, Mapping):
+        parsed = parse_target_drawing(payload, snapshot.captured_at)
+        operational_fingerprint = target_fingerprint(
+            drawing_id=parsed.drawing_id,
+            drawing_number=parsed.drawing_number,
+            deadline=plan.operational_cutoff,
+            events=parsed.events,
+        )
+        if (
+            sports.drawing_id != frozen.drawing_id
+            or sports.drawing_number != frozen.drawing_number
+            or sports.deadline != plan.operational_cutoff
+            or sports.drawing_fingerprint != operational_fingerprint
+            or sports.authoritative_target_fingerprint != operational_fingerprint
+        ):
+            raise ValueError("sports artifact drawing identity mismatch")
+        ordered = tuple(sorted(sports.events, key=lambda event: event.event_order))
+        if len(ordered) != 15:
+            raise ValueError("sports artifact must contain exactly 15 events")
+        for target, frozen_event, sports_event in zip(
+            parsed.events,
+            frozen.events,
+            ordered,
+            strict=True,
+        ):
+            if (
+                sports_event.event_order != target.event_order
+                or str(sports_event.event_id) != str(target.event_id)
+                or any(
+                    not math.isclose(left, right, rel_tol=0.0, abs_tol=1e-12)
+                    for left, right in zip(
+                        sports_event.bk_probabilities,
+                        frozen_event.bk_probabilities,
+                        strict=True,
+                    )
+                )
+            ):
+                raise ValueError("sports artifact event identity mismatch")
+    elif (
+        sports.drawing_id != frozen.drawing_id
+        or sports.drawing_number != frozen.drawing_number
+        or sports.drawing_fingerprint != frozen.drawing_fingerprint
+        or sports.authoritative_target_fingerprint != frozen.drawing_fingerprint
+    ):
+        raise ValueError("sports artifact drawing identity mismatch")
+    if sports.as_of > snapshot.captured_at:
+        raise ValueError("sports artifact was captured after final input")
+    if len(sports.events) != 15:
+        raise ValueError("sports artifact must contain exactly 15 events")
 
 
 def _parallel_candidate(

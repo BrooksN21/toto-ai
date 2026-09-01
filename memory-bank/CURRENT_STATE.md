@@ -6023,3 +6023,34 @@ activated for drawing 4993 and requires chronological walk-forward evidence.
 Verification for the parallel-challenger, historical-replay and Sports
 Analytics v2 change set passed: `2250 passed, 13 deselected`; Ruff and
 `git diff --check` also passed.
+
+## Historical Sports Analytics v2 hybrid replay (2026-09-01)
+
+The research CLI `replay-quality-sports-v2-robust` now compares the retained
+quality-v2 control, Sports Analytics v2 through the same quality-v2 package
+generator, quality-v3 and robust on one immutable historical final input,
+identical bank/stake and 166-coupon capacity. It never consults today's mutable
+schedule ledger, never mutates scheduler/operator state and refuses to run
+unless the unchanged quality-v2 generator reproduces the archived control
+package exactly.
+
+Settled equal-cost results at 4,980 RUB / 30 RUB were:
+
+- drawing 4990: quality-v2 11, Sports v2 9, quality-v3 11, robust 9;
+- drawing 4991: quality-v2 11, Sports v2 11, quality-v3 10, robust 11;
+  Sports v2 had 0/15 evidence and therefore exactly reused quality-v2;
+- drawing 4992: quality-v2 10, Sports v2 10, quality-v3 10, robust 10.
+
+No package achieved 13/14/15. Across these three drawings Sports v2 did not
+beat quality-v2 and is not eligible for activation. The sample is too small
+for a profitability conclusion.
+
+The replay exposed a generic identity defect in the live final sports sidecar:
+the sports artifact is bound to the Moscow-normalized operational cutoff,
+while the immutable final input retains raw TotoBrief `ended_at` for source
+identity. Final hybrid validation now recomputes and verifies the operational
+fingerprint plus every event ID/order/BK row instead of incorrectly requiring
+the raw fingerprint. The primary 4993 plan/plist were not modified; hashes
+remain `542baa48...` and `40b0babf...`.
+
+Verification: `2256 passed, 13 deselected`; Ruff passed.

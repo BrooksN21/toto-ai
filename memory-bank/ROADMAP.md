@@ -1352,7 +1352,11 @@ closed.
 
 - [x] Implement the first conservative venue-goals/Poisson projection with a
   20% maximum BK residual weight and local fallback.
-- [ ] Persist immutable v2 probability artifacts from feature snapshots.
+- [x] Persist immutable v2 probability artifacts from feature snapshots for
+  drawings 4990-4992 with explicit event-local fallback.
+- [x] Replay quality-v2, Sports v2, quality-v3 and robust through an equal-bank,
+  equal-capacity historical harness on drawings 4990-4992; no strategy reached
+  13+ and Sports v2 did not beat quality-v2.
 - [ ] Run chronological walk-forward v1/v2/BK probability calibration.
 - [ ] Compare v1/v2 package P13/P14/P15 and realized hits at equal bank.
 - [ ] Activate no v2 influence until the declared probability, package and

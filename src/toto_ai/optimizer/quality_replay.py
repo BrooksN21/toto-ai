@@ -21,8 +21,12 @@ from sqlalchemy import select
 from toto_ai.db.models import Drawing, DrawingResultSnapshot, Event
 from toto_ai.db.session import get_session_factory, open_readonly_db
 from toto_ai.ev.drawing import effective_selection_budget
+from toto_ai.ev.models import EVConfig
 from toto_ai.ev.package_quality import (
+    bound_selection_context,
     exact_category_probabilities,
+    quality_v2_config_payload,
+    selection_context_sha256,
 )
 from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.targets import parse_target_drawing
@@ -50,6 +54,9 @@ class _HistoricalReplayPlan:
     operational_cutoff: datetime
     requested_bank: int
     stake: int
+    quality_v2_ev_config: EVConfig
+    schedule_evidence_ledger_sha256: str
+    schedule_evidence_semantic_hash: str
 
 
 def execute_quality_replay(
@@ -66,7 +73,10 @@ def execute_quality_replay(
     plan_path = _regular_file(scheduler_plan_path, "scheduler plan")
     input_path = _regular_file(final_input_path, "final input")
     package_path = _regular_file(baseline_package_path, "baseline package")
-    plan, snapshot = _load_historical_artifacts(plan_path, input_path)
+    plan, snapshot = load_historical_replay_artifacts(
+        scheduler_plan_path=plan_path,
+        final_input_path=input_path,
+    )
     frozen = frozen_input_from_snapshot(snapshot, plan)
     baseline = parse_package(package_path)
     runtime_budget = effective_selection_budget(
@@ -309,6 +319,19 @@ def _terminal_event_result(event: Event) -> str | None:
     return None
 
 
+def load_historical_replay_artifacts(
+    *,
+    scheduler_plan_path: str | Path,
+    final_input_path: str | Path,
+) -> tuple[_HistoricalReplayPlan, FinalInputSnapshot]:
+    """Load frozen scheduler artifacts without consulting mutable live ledgers."""
+
+    return _load_historical_artifacts(
+        _regular_file(scheduler_plan_path, "scheduler plan"),
+        _regular_file(final_input_path, "final input"),
+    )
+
+
 def _load_historical_artifacts(
     plan_path: Path,
     input_path: Path,
@@ -337,6 +360,7 @@ def _load_historical_artifacts(
     config = plan_document["config"]
     if not isinstance(target, Mapping) or not isinstance(config, Mapping):
         raise ValueError("historical scheduler target/config are invalid")
+    quality_v2_config = _historical_quality_v2_config(config)
     plan = _HistoricalReplayPlan(
         plan_id=expected_plan_id,
         drawing=_positive_int(target.get("drawing"), "drawing"),
@@ -348,6 +372,15 @@ def _load_historical_artifacts(
         ),
         requested_bank=_positive_int(config.get("requested_bank"), "requested_bank"),
         stake=_positive_int(config.get("stake"), "stake"),
+        quality_v2_ev_config=quality_v2_config,
+        schedule_evidence_ledger_sha256=_sha256(
+            config.get("schedule_evidence_ledger_sha256"),
+            "schedule_evidence_ledger_sha256",
+        ),
+        schedule_evidence_semantic_hash=_sha256(
+            config.get("schedule_evidence_semantic_hash"),
+            "schedule_evidence_semantic_hash",
+        ),
     )
 
     document = _json_object(input_path, "final input")
@@ -410,6 +443,112 @@ def _load_historical_artifacts(
     return plan, snapshot
 
 
+def load_historical_final_input(
+    *,
+    scheduler_plan_path: str | Path,
+    final_input_path: str | Path,
+) -> FinalInputSnapshot:
+    """Validate one frozen final input without consulting mutable live ledgers."""
+
+    _plan, snapshot = load_historical_replay_artifacts(
+        scheduler_plan_path=scheduler_plan_path,
+        final_input_path=final_input_path,
+    )
+    return snapshot
+
+
+def load_historical_actual_result(
+    db_path: str | Path,
+    *,
+    drawing_number: int,
+) -> str | None:
+    """Load one terminal historical result under the replay settlement rules."""
+
+    return _load_actual_result(db_path, drawing_number=drawing_number)
+
+
+def _historical_quality_v2_config(config: Mapping[str, Any]) -> EVConfig:
+    context = config.get("selection_context")
+    quality = config.get("quality_v2")
+    if not isinstance(context, Mapping) or not isinstance(quality, Mapping):
+        raise ValueError("historical scheduler quality-v2 context is missing")
+    tolerances = quality.get("objective_tolerances")
+    if (
+        not isinstance(tolerances, list)
+        or len(tolerances) != 6
+        or len({float(value) for value in tolerances[:4]}) != 1
+    ):
+        raise ValueError("historical scheduler objective tolerances are invalid")
+    candidate = EVConfig(
+        bank=_positive_int(context.get("bank"), "selection bank"),
+        stake=_positive_int(context.get("stake"), "selection stake"),
+        mode=str(context.get("mode")),
+        min_gross_ev=float(context.get("minimum_gross_ev")),
+        effective_budget=_positive_int(
+            context.get("effective_budget"),
+            "selection effective_budget",
+        ),
+        package_safety_enabled=_boolean(
+            context.get("package_safety_enabled"),
+            "package_safety_enabled",
+        ),
+        package_near_fixed_share=float(context.get("near_fixed_share_limit")),
+        package_low_probability_threshold=float(
+            context.get("low_probability_threshold")
+        ),
+        package_material_probability_threshold=float(
+            context.get("material_probability_threshold")
+        ),
+        package_exposure_floor_scale=float(quality.get("exposure_floor_scale")),
+        package_exposure_floor_exponent=float(
+            quality.get("exposure_floor_exponent")
+        ),
+        package_concentration_headroom_share=float(
+            quality.get("concentration_headroom_share")
+        ),
+        package_diversity_close_distance=_non_negative_int(
+            quality.get("diversity_close_distance"),
+            "diversity_close_distance",
+        ),
+        package_quality_repair_iterations=_non_negative_int(
+            quality.get("repair_iterations"),
+            "repair_iterations",
+        ),
+        package_quality_candidate_count=_positive_int(
+            quality.get("candidate_count"),
+            "candidate_count",
+        ),
+        package_probability_samples=_positive_int(
+            quality.get("evaluation_samples"),
+            "evaluation_samples",
+        ),
+        package_optimization_probability_samples=_positive_int(
+            quality.get("optimization_samples"),
+            "optimization_samples",
+        ),
+        package_category_probability_tolerance=float(tolerances[0]),
+        package_diversity_tolerance=float(tolerances[4]),
+        package_robust_ev_tolerance=float(tolerances[5]),
+        package_provenance_required=_boolean(
+            context.get("provenance_required"),
+            "provenance_required",
+        ),
+    )
+    canonical_context = dict(context)
+    canonical_quality = dict(quality)
+    if bound_selection_context(candidate) != canonical_context:
+        raise ValueError("historical scheduler selection context mismatch")
+    if quality_v2_config_payload(candidate) != canonical_quality:
+        raise ValueError("historical scheduler quality-v2 config mismatch")
+    declared_context_hash = _sha256(
+        config.get("selection_context_sha256"),
+        "selection_context_sha256",
+    )
+    if selection_context_sha256(canonical_context) != declared_context_hash:
+        raise ValueError("historical scheduler selection context hash mismatch")
+    return candidate
+
+
 def _json_object(path: Path, label: str) -> dict[str, Any]:
     try:
         value = json.loads(path.read_bytes())
@@ -423,6 +562,28 @@ def _json_object(path: Path, label: str) -> dict[str, Any]:
 def _positive_int(value: object, label: str) -> int:
     if type(value) is not int or value <= 0:
         raise ValueError(f"{label} must be a positive integer")
+    return value
+
+
+def _non_negative_int(value: object, label: str) -> int:
+    if type(value) is not int or value < 0:
+        raise ValueError(f"{label} must be a non-negative integer")
+    return value
+
+
+def _boolean(value: object, label: str) -> bool:
+    if not isinstance(value, bool):
+        raise ValueError(f"{label} must be a boolean")
+    return value
+
+
+def _sha256(value: object, label: str) -> str:
+    if (
+        not isinstance(value, str)
+        or len(value) != 64
+        or set(value) - set("0123456789abcdef")
+    ):
+        raise ValueError(f"{label} must be a lowercase SHA-256")
     return value
 
 

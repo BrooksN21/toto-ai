@@ -57,6 +57,79 @@ def test_rebase_uses_final_bk_and_event_local_fallback() -> None:
     assert rows[1] == (0.5, 0.3, 0.2)
 
 
+def test_sports_identity_uses_operational_cutoff_fingerprint(monkeypatch) -> None:
+    operational_cutoff = datetime(2026, 8, 29, 13, 30, tzinfo=UTC)
+    captured_at = operational_cutoff - timedelta(minutes=30)
+    frozen = FrozenStrategyInput(
+        drawing_id=12077,
+        drawing_number=4990,
+        drawing_fingerprint="a" * 64,
+        source_captured_at=captured_at.isoformat(),
+        as_of=captured_at.isoformat(),
+        ended_at="2026-08-29T16:30:00+00:00",
+        bank=60,
+        stake=30,
+        pool_sum=1.0,
+        jackpot=0.0,
+        possible_winnings=1.0,
+        events=tuple(
+            FrozenStrategyEvent(
+                event_order=order,
+                name=f"Event {order + 1}",
+                bk_probabilities=(0.5, 0.3, 0.2),
+                crowd_probabilities=(0.4, 0.3, 0.3),
+            )
+            for order in range(15)
+        ),
+    )
+    targets = tuple(
+        SimpleNamespace(event_order=order, event_id=100 + order)
+        for order in range(15)
+    )
+    monkeypatch.setattr(
+        final_hybrid_comparison,
+        "parse_target_drawing",
+        lambda *_args: SimpleNamespace(
+            drawing_id=12077,
+            drawing_number=4990,
+            events=targets,
+        ),
+    )
+
+    def fingerprint(**kwargs):
+        assert kwargs["deadline"] == operational_cutoff
+        return "b" * 64
+
+    monkeypatch.setattr(
+        final_hybrid_comparison,
+        "target_fingerprint",
+        fingerprint,
+    )
+    sports = SimpleNamespace(
+        drawing_id=12077,
+        drawing_number=4990,
+        deadline=operational_cutoff,
+        drawing_fingerprint="b" * 64,
+        authoritative_target_fingerprint="b" * 64,
+        as_of=captured_at,
+        events=tuple(
+            SimpleNamespace(
+                event_order=order,
+                event_id=100 + order,
+                bk_probabilities=(0.5, 0.3, 0.2),
+            )
+            for order in range(15)
+        ),
+    )
+
+    final_hybrid_comparison._validate_sports_artifact_identity(
+        plan=SimpleNamespace(operational_cutoff=operational_cutoff),
+        snapshot=SimpleNamespace(payload={}, captured_at=captured_at),
+        frozen=frozen,
+        sports=sports,
+    )
+
+
 def test_sidecar_skips_when_operator_is_not_ready_before_safe_start(
     monkeypatch,
     tmp_path: Path,

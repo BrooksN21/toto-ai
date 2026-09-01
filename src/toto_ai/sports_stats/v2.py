@@ -8,11 +8,20 @@ the sports influence is capped, and strong disagreement reduces that influence.
 from __future__ import annotations
 
 import math
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from typing import Any
 
 from toto_ai.external_odds.domain import OutcomeTriplet
-from toto_ai.sports_stats.domain import FootballEventFeatureSnapshot
+from toto_ai.sports_stats.domain import (
+    FootballEventFeatureSnapshot,
+    SportsStatsRunSnapshot,
+    canonical_sha256,
+)
+from toto_ai.sports_stats.probabilities import (
+    SHADOW_STATUS,
+    ShadowEventProbability,
+    SportsShadowArtifact,
+)
 
 MODEL_VERSION = "sports-analytics-v2-poisson-venue-shrunk-v1"
 
@@ -60,6 +69,107 @@ class SportsV2Projection:
     disagreement: float
     blend_weight: float
     model_version: str = MODEL_VERSION
+
+
+def build_sports_v2_shadow_artifact(
+    *,
+    snapshot: SportsStatsRunSnapshot,
+    base_artifact: SportsShadowArtifact,
+    config: SportsV2Config | None = None,
+) -> SportsShadowArtifact:
+    """Build a hash-bound v2 candidate from validated frozen v1 evidence.
+
+    The base artifact remains the identity, chronology and orientation
+    authority.  V2 can alter probabilities only for rows that already passed
+    those checks; every base fallback remains an event-local BK fallback.
+    """
+
+    resolved = SportsV2Config() if config is None else config
+    if base_artifact.status != SHADOW_STATUS:
+        raise ValueError("base sports artifact must remain NOT_ACTIVATED")
+    if snapshot.drawing_id != base_artifact.drawing_id:
+        raise ValueError("sports v2 drawing id mismatch")
+    if snapshot.drawing_number != base_artifact.drawing_number:
+        raise ValueError("sports v2 drawing number mismatch")
+    if snapshot.drawing_fingerprint != base_artifact.drawing_fingerprint:
+        raise ValueError("sports v2 drawing fingerprint mismatch")
+    if snapshot.content_sha256 != base_artifact.snapshot_content_sha256:
+        raise ValueError("sports v2 snapshot hash mismatch")
+    if len(snapshot.events) != 15 or len(base_artifact.events) != 15:
+        raise ValueError("sports v2 requires exactly 15 events")
+
+    events: list[ShadowEventProbability] = []
+    for feature, base in zip(snapshot.events, base_artifact.events, strict=True):
+        if feature.event_order != base.event_order or feature.event_id != base.event_id:
+            raise ValueError("sports v2 event identity mismatch")
+        projection = project_event_v2(
+            feature=feature,
+            bk_probabilities=base.bk_probabilities,
+            config=resolved,
+        )
+        fallback_reason = (
+            base.fallback_reason
+            if base.probability_source != "sports_shadow"
+            else projection.fallback_reason
+        )
+        if fallback_reason is not None:
+            sports = base.bk_probabilities
+            candidate = base.bk_probabilities
+            source = "totobrief_bk_fallback"
+            weight = 0.0
+        else:
+            sports = projection.sports_probabilities
+            candidate = projection.candidate_probabilities
+            source = "sports_shadow"
+            weight = projection.blend_weight
+        events.append(
+            replace(
+                base,
+                sports_probabilities=sports,
+                candidate_blend_probabilities=candidate,
+                probability_source=source,
+                blend_weight=weight,
+                fallback_reason=fallback_reason,
+                features={
+                    **base.features,
+                    "sports_v2": {
+                        "model_version": MODEL_VERSION,
+                        "expected_home_goals": projection.expected_home_goals,
+                        "expected_away_goals": projection.expected_away_goals,
+                        "venue_confidence": projection.venue_confidence,
+                        "disagreement": projection.disagreement,
+                        "blend_weight": weight,
+                    },
+                },
+                provenance={
+                    **base.provenance,
+                    "sports_model": MODEL_VERSION if fallback_reason is None else None,
+                    "sports_v2_config": resolved.payload(),
+                    "base_artifact_sha256": base_artifact.artifact_sha256,
+                },
+            )
+        )
+
+    coverage = sum(event.probability_source == "sports_shadow" for event in events)
+    candidate_artifact = replace(
+        base_artifact,
+        model_status=(
+            "EXPERIMENTAL_UNTRAINED_V2" if coverage else "INSUFFICIENT_EVIDENCE"
+        ),
+        model_definition=(
+            "Sports Analytics v2: venue W/D/L plus smoothed independent-Poisson "
+            "goals, anchored to TotoBrief BK with capped confidence/disagreement "
+            "shrinkage and event-local fallback"
+        ),
+        sports_coverage_count=coverage,
+        fallback_count=15 - coverage,
+        events=tuple(events),
+        artifact_sha256="0" * 64,
+    )
+    return replace(
+        candidate_artifact,
+        artifact_sha256=canonical_sha256(candidate_artifact.canonical_payload()),
+    )
 
 
 def project_event_v2(

@@ -123,6 +123,11 @@ def test_plan_run_pending_results_then_restart_safe_complete(tmp_path):
     assert complete.reason == "SETTLEMENT_COMPLETE"
     assert complete.settlement_sha256 is not None
     assert complete.review_request_sha256 is not None
+    request = json.loads((plan_path.parent / "review-request.json").read_text())
+    assert request["status"] == "REVIEW_COMPLETE"
+    postmortem = plan_path.parent / "postmortem.md"
+    assert postmortem.is_file()
+    assert "## Improvement candidates" in postmortem.read_text()
 
     repeated = run_post_draw_plan(
         factory,
@@ -189,6 +194,7 @@ def test_authoritative_void_and_package_free_no_bet_complete(tmp_path):
     request = json.loads((plan_path.parent / "review-request.json").read_text())
     assert request["package_kind"] == "package_free_no_bet"
     assert request["best_hits"] is None
+    assert request["status"] == "REVIEW_COMPLETE"
 
 
 def test_postponed_without_authoritative_void_remains_pending(tmp_path):

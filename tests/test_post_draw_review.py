@@ -58,7 +58,9 @@ def test_review_request_is_durable_and_notification_is_advisory(tmp_path):
     assert request["zero_exposure_miss_events"] == [9]
     assert request["void_event_orders"] == [15]
     assert request["notification"]["status"] == "failed"
-    assert calls == ["Разбираем пакет тиража 5001?"]
+    assert len(calls) == 1
+    assert calls[0].startswith("Тираж 5001: лучший купон 14/15")
+    assert "postmortem.md" in calls[0]
     assert load_review_request(path) == request
     assert create_review_request(
         path,

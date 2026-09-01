@@ -885,6 +885,7 @@ def prepare_post_draw_scheduler_artifacts(
     void_event_orders: Sequence[int] = (),
     void_source: str | None = None,
     automation_installation: bool = False,
+    automatic_postmortem: bool = True,
 ) -> tuple[Path, Path, Path]:
     """Generate a hash-bound local launchd wrapper and plist candidate."""
     if (drawing_id is None) == (drawing_number is None):
@@ -957,6 +958,7 @@ def prepare_post_draw_scheduler_artifacts(
         "void_source": reviewed_void_source,
         "automatic_wagering": False,
         "automation_installation": automation_installation,
+        "automatic_postmortem": automatic_postmortem,
     }
     plan_payload["plan_sha256"] = _sha256_json(plan_payload)
     plan_bytes = (
@@ -1237,6 +1239,8 @@ def load_post_draw_plan(path: str | Path) -> dict[str, Any]:
             raise ValueError("post-draw plan cannot enable wagering")
         if not isinstance(payload.get("automation_installation"), bool):
             raise ValueError("post-draw automation installation flag is invalid")
+        if not isinstance(payload.get("automatic_postmortem", False), bool):
+            raise ValueError("post-draw automatic postmortem flag is invalid")
         _validate_post_draw_package_binding(payload.get("package_binding"))
         return payload
     except (KeyError, OSError, TypeError, ValueError) as error:
@@ -1464,6 +1468,18 @@ def _run_post_draw_plan_locked(
             requested_at=current,
             notifier=notifier,
         )
+        if plan.get("automatic_postmortem", False):
+            if request["status"] == "AWAITING_USER_REVIEW":
+                request = transition_review_request(
+                    plan["review_request_file"],
+                    transition="request",
+                    transitioned_at=current,
+                )
+            request = complete_post_draw_review(
+                plan["review_request_file"],
+                postmortem_path=plan["postmortem_file"],
+                completed_at=current,
+            )
     except Exception as error:  # classified into durable retry/integrity state
         reason, status = _classify_post_draw_error(error)
         state = _post_draw_plan_state(
@@ -1586,10 +1602,16 @@ def create_review_request(
     if snapshot_sha256 is None or actual is None:
         raise ValueError("review request requires result snapshot and actual result")
     question = f"Разбираем пакет тиража {drawing_number}?"
+    notification_message = _post_draw_notification_message(
+        drawing_number=drawing_number,
+        package_kind=package_kind,
+        settlement=settlement,
+        postmortem_path=Path(path).with_name("postmortem.md"),
+    )
     notification: dict[str, Any] = {"status": "not_attempted", "error": None}
     if notifier is not None:
         try:
-            notifier(question)
+            notifier(notification_message)
         except Exception as error:  # notification is advisory only
             notification = {"status": "failed", "error": _safe_reason(error)}
         else:
@@ -1735,6 +1757,7 @@ def complete_post_draw_review(
 
 
 def _render_postmortem(payload: Mapping[str, Any]) -> str:
+    improvement_lines = _post_draw_improvement_lines(payload)
     return (
         f"# Post-draw review: drawing {payload['drawing_number']}\n\n"
         f"- Package kind: `{payload['package_kind']}`\n"
@@ -1751,10 +1774,78 @@ def _render_postmortem(payload: Mapping[str, Any]) -> str:
         "BK / pool / Pin / sports-shadow / selected probabilities: "
         "not embedded in this settlement artifact; inspect the bound scheduler "
         "evidence before attributing errors.\n\n"
+        "## Improvement candidates\n\n"
+        + "\n".join(f"- {line}" for line in improvement_lines)
+        + "\n\n"
         "## Interpretation boundary\n\n"
         "This report is deterministic evidence for error analysis; one drawing "
         "cannot establish causality or profitability.\n"
     )
+
+
+def _post_draw_notification_message(
+    *,
+    drawing_number: int,
+    package_kind: str,
+    settlement: Mapping[str, Any] | None,
+    postmortem_path: Path,
+) -> str:
+    if package_kind == "package_free_no_bet" or settlement is None:
+        result = "ставочный пакет отсутствовал"
+    else:
+        categories = settlement.get("category_counts") or {}
+        result = (
+            f"лучший купон {settlement['best_hits']}/15; "
+            f"13/14/15: {categories.get(13, categories.get('13', 0))}/"
+            f"{categories.get(14, categories.get('14', 0))}/"
+            f"{categories.get(15, categories.get('15', 0))}"
+        )
+    return (
+        f"Тираж {drawing_number}: {result}. "
+        f"Отчёт: {postmortem_path.resolve()}"
+    )
+
+
+def _post_draw_improvement_lines(payload: Mapping[str, Any]) -> tuple[str, ...]:
+    if payload["package_kind"] == "package_free_no_bet":
+        return (
+            "No package was released; diagnose the release gate and data readiness "
+            "before changing forecast probabilities.",
+        )
+    best_hits = int(payload["best_hits"])
+    fixed = tuple(int(value) for value in payload["fixed_miss_events"])
+    zero = tuple(int(value) for value in payload["zero_exposure_miss_events"])
+    lines: list[str] = []
+    if best_hits < 13:
+        lines.append(
+            f"The best coupon reached only {best_hits}/15; keep the current strategy "
+            "unproven and compare every challenger at the same bank on frozen "
+            "pre-deadline inputs."
+        )
+    if fixed:
+        lines.append(
+            "Review single-outcome concentration at events "
+            + ", ".join(str(value) for value in fixed)
+            + "; broaden only when pre-match evidence supports the alternative."
+        )
+    if zero:
+        lines.append(
+            "The actual outcome had zero package exposure at events "
+            + ", ".join(str(value) for value in zero)
+            + "; enforce an exposure floor before optimizing joint coupons."
+        )
+    if not fixed and not zero and best_hits < 13:
+        lines.append(
+            "Every realized outcome appeared somewhere in the package, so the main "
+            "failure was joint coupon construction rather than a missing per-event "
+            "outcome; test stronger cross-event diversity and robust category "
+            "coverage."
+        )
+    lines.append(
+        "Re-score quality-v2, quality-v3, sports-shadow-v2 and robust on the same "
+        "settled drawing; do not promote a change from one drawing alone."
+    )
+    return tuple(lines)
 
 
 def _resolve_explicit_drawing(

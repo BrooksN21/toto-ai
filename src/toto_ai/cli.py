@@ -2,6 +2,7 @@ import hashlib
 import json
 import math
 import os
+import subprocess
 import sys
 import time
 from collections.abc import Callable, Mapping
@@ -62,6 +63,7 @@ from toto_ai.analytics.validation import run_validation, write_validation_report
 from toto_ai.api.client import TotoBriefClient
 from toto_ai.api.detail_cache import (
     load_drawing_detail_cache,
+    write_drawing_detail_cache,
 )
 from toto_ai.api.rate_limit import (
     DEFAULT_RATE_STATE_PATH,
@@ -234,7 +236,11 @@ from toto_ai.optimizer.hybrid_evaluation import (
     seal_hybrid_development,
     write_hybrid_evaluation_reports,
 )
-from toto_ai.optimizer.quality_replay import execute_quality_replay
+from toto_ai.optimizer.hybrid_replay import execute_historical_hybrid_replay
+from toto_ai.optimizer.quality_replay import (
+    execute_quality_replay,
+    load_historical_final_input,
+)
 from toto_ai.optimizer.strategy_backtest import (
     StrategyConfig,
     freeze_strategy_experiment_manifest,
@@ -354,6 +360,7 @@ from toto_ai.sports_stats.goal_probe_collection import (
     ensure_goal_probe_input,
 )
 from toto_ai.sports_stats.goal_probe_research import (
+    load_goal_probe_shadow,
     run_goal_probe_package_comparison,
 )
 from toto_ai.sports_stats.operation import (
@@ -364,10 +371,12 @@ from toto_ai.sports_stats.operation import (
 from toto_ai.sports_stats.preliminary_comparison import (
     compare_preliminary_packages,
 )
+from toto_ai.sports_stats.probabilities import write_shadow_probability_artifact
 from toto_ai.sports_stats.shadow_operation import (
     build_and_write_sports_probability_shadow,
     evaluate_stored_sports_probability_shadow,
 )
+from toto_ai.sports_stats.v2 import build_sports_v2_shadow_artifact
 from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 app = typer.Typer(help="TotoBrief API commands.")
@@ -935,6 +944,7 @@ def post_draw_run_command(
                 get_session_factory(init_db(db)),
                 TotoBriefClient(),
                 plan_path=plan,
+                notifier=_post_draw_desktop_notifier,
             )
         except (KeyError, OSError, SQLAlchemyError, TypeError, ValueError) as error:
             raise typer.BadParameter(str(error)) from error
@@ -974,6 +984,29 @@ def post_draw_run_command(
     typer.echo(json.dumps(state.to_dict(), ensure_ascii=False, sort_keys=True))
     if state.status != "complete":
         raise typer.Exit(code=2 if state.status == "pending" else 1)
+
+
+def _post_draw_desktop_notifier(message: str) -> None:
+    """Publish a local macOS notification without exposing project data."""
+
+    if sys.platform != "darwin":
+        raise RuntimeError("desktop post-draw notification requires macOS")
+    subprocess.run(
+        (
+            "/usr/bin/osascript",
+            "-e",
+            "on run argv",
+            "-e",
+            'display notification (item 1 of argv) with title "TotoAI post-draw"',
+            "-e",
+            "end run",
+            message,
+        ),
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
 
 
 @app.command("post-draw-plan")
@@ -6359,6 +6392,112 @@ def compare_goal_shadow_packages_command(
     )
 
 
+@app.command("build-goal-sports-v2-shadow")
+def build_goal_sports_v2_shadow_command(
+    drawing_id: int = typer.Option(..., "--drawing-id", min=1),
+    as_of: str = typer.Option(..., "--as-of"),
+    coverage_summary: Path = typer.Option(  # noqa: B008
+        ...,
+        "--coverage-summary",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    raw_cache_dir: Path = typer.Option(  # noqa: B008
+        Path("data/raw"),
+        "--raw-cache-dir",
+        exists=True,
+        file_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    final_input: Path | None = typer.Option(  # noqa: B008
+        None,
+        "--final-input",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    scheduler_plan: Path | None = typer.Option(  # noqa: B008
+        None,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        ...,
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+    ),
+) -> None:
+    """Build a frozen Sports Analytics v2 shadow — RESEARCH ONLY."""
+
+    try:
+        parsed_as_of = parse_historical_as_of(as_of)
+        if parsed_as_of is None:
+            raise ValueError("--as-of is required")
+        effective_cache = raw_cache_dir
+        if (final_input is None) != (scheduler_plan is None):
+            raise ValueError(
+                "--final-input and --scheduler-plan must be provided together"
+            )
+        if final_input is not None and scheduler_plan is not None:
+            frozen = load_historical_final_input(
+                scheduler_plan_path=scheduler_plan,
+                final_input_path=final_input,
+            )
+            if frozen.drawing_id != drawing_id:
+                raise ValueError("final input drawing id mismatch")
+            if parsed_as_of != frozen.captured_at:
+                raise ValueError("--as-of must equal final-input captured_at")
+            effective_cache = output_dir / "final-input-cache"
+            write_drawing_detail_cache(
+                dict(frozen.payload),
+                drawing_id=drawing_id,
+                cache_dir=effective_cache,
+                fetched_at=frozen.captured_at,
+                source=f"final-input:{frozen.snapshot_sha256}",
+                allowed_root=Path.cwd(),
+            )
+        bundle = load_goal_probe_shadow(
+            drawing_id=drawing_id,
+            as_of=parsed_as_of,
+            raw_cache_dir=effective_cache,
+            coverage_summary_path=coverage_summary,
+            project_root=Path.cwd(),
+        )
+        artifact = build_sports_v2_shadow_artifact(
+            snapshot=bundle.snapshot,
+            base_artifact=bundle.shadow,
+        )
+        path = write_shadow_probability_artifact(
+            artifact,
+            report_dir=output_dir,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": artifact.status,
+                "model_status": artifact.model_status,
+                "drawing_number": artifact.drawing_number,
+                "sports_coverage_count": artifact.sports_coverage_count,
+                "fallback_count": artifact.fallback_count,
+                "artifact": str(path),
+                "automatic_wagering": False,
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
+
+
 @app.command("compare-final-goal-hybrid")
 def compare_final_goal_hybrid_command(
     final_input: Path = typer.Option(  # noqa: B008
@@ -6486,6 +6625,91 @@ def replay_quality_v2_v3_command(
                 "equal_coupon_count": report["equal_coupon_count"],
                 "equal_cost": report["equal_cost"],
                 "settlement_comparison": report["settlement_comparison"],
+                "report": str(report_path),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+    )
+
+
+@app.command("replay-quality-sports-v2-robust")
+def replay_quality_sports_v2_robust_command(
+    final_input: Path = typer.Option(  # noqa: B008
+        ...,
+        "--final-input",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    scheduler_plan: Path = typer.Option(  # noqa: B008
+        ...,
+        "--scheduler-plan",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    baseline_package: Path = typer.Option(  # noqa: B008
+        ...,
+        "--baseline-package",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    sports_artifact: Path = typer.Option(  # noqa: B008
+        ...,
+        "--sports-artifact",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    db: Path = typer.Option(  # noqa: B008
+        Path("data/toto.db"),
+        "--db",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        ...,
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+    ),
+) -> None:
+    """Replay quality-v2, Sports v2, quality-v3 and robust — RESEARCH ONLY."""
+
+    try:
+        report, report_path = execute_historical_hybrid_replay(
+            final_input_path=final_input,
+            scheduler_plan_path=scheduler_plan,
+            baseline_package_path=baseline_package,
+            sports_artifact_path=sports_artifact,
+            db_path=db,
+            output_dir=output_dir,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": report["status"],
+                "drawing_number": report["drawing_number"],
+                "equal_coupon_count": report["equal_coupon_count"],
+                "equal_cost": report["equal_cost"],
+                "quality_v2_reproduced_exactly": report[
+                    "quality_v2_reproduced_exactly"
+                ],
+                "sports_coverage_count": report["sports_coverage_count"],
+                "settlements": {
+                    name: payload["settlement"]
+                    for name, payload in report["strategies"].items()
+                },
                 "report": str(report_path),
             },
             ensure_ascii=False,
