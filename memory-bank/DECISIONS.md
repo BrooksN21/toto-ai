@@ -2379,3 +2379,26 @@ ambiguous reversed evidence remains unresolved.
   validates against the latter. Event identity and BK rows must still match.
 - The 4990-4992 replay produced no 13+ and no Sports v2 win over quality-v2.
   V2 therefore remains research-only.
+
+## 2026-09-01 — Improve probabilities before rearranging packages
+
+- Event-level attribution is the required first diagnostic before adding
+  another sports feature or package heuristic. It must report model rank,
+  realized-outcome probability delta, package exposure and best-coupon misses
+  from one immutable historical input.
+- A model miss means the actual outcome was not probability top-ranked. A
+  package-alignment miss means the actual outcome was not maximally exposed in
+  that package. Their joint presence is descriptive and does not prove two
+  independent causes.
+- On 4990-4992, Sports v2 changed 29 covered events: 14 realized-outcome
+  probabilities increased and 15 decreased; top-outcome accuracy was 20/45
+  versus BK's 21/45. No activation or profitability claim is allowed.
+- Quality-v3 and robust mostly rearrange coupons under the same probability
+  family. Do not invest in further rearrangement until a walk-forward sports
+  residual demonstrably improves untouched BK probabilities. Retain them as
+  research comparators.
+- The next model must be a calibrated residual around BK, not an independent
+  replacement. Candidate inputs are opponent-adjusted and recency-weighted
+  team strength/form, venue scoring, rest/congestion, standings, and only
+  reliably sourced lineup/injury evidence. Every unavailable feature falls
+  back event-locally to BK.

@@ -34,3 +34,20 @@ Do not activate from one drawing. Required evidence:
 6. prospective settlement on at least the declared release sample.
 
 Until that gate passes, v2 may produce diagnostics and shadow packages only.
+
+## Exact-generator event attribution, 4990-4992
+
+The equal-bank historical replay now emits event-level attribution from the
+same immutable final inputs and exact package generator. Results:
+
+- BK top outcome correct: 21/45 events;
+- Sports v2 top outcome correct: 20/45 events;
+- Sports-v2 evidence coverage: 29/45 events;
+- realized-outcome probability raised: 14/29 covered events;
+- realized-outcome probability lowered: 15/29 covered events;
+- no compared package reached 13+.
+
+This sample is too small for a profitability conclusion, but it rejects
+activation of the current v2 candidate. The next iteration must improve the
+probability model through chronological walk-forward calibration before any
+further package rearrangement is treated as a primary improvement.

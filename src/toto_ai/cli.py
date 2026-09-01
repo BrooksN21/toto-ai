@@ -6706,6 +6706,7 @@ def replay_quality_sports_v2_robust_command(
                     "quality_v2_reproduced_exactly"
                 ],
                 "sports_coverage_count": report["sports_coverage_count"],
+                "event_attribution": report["event_attribution"],
                 "settlements": {
                     name: payload["settlement"]
                     for name, payload in report["strategies"].items()

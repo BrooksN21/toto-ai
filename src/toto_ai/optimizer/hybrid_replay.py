@@ -30,6 +30,10 @@ from toto_ai.ev.package_quality import (
 from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.operations.finished_draw import _compute_settlement
+from toto_ai.optimizer.hybrid_attribution import (
+    build_hybrid_event_attribution,
+    write_hybrid_event_attribution,
+)
 from toto_ai.optimizer.prospective_quality import QualityV3Config
 from toto_ai.optimizer.quality_replay import (
     load_historical_actual_result,
@@ -218,8 +222,26 @@ def execute_historical_hybrid_replay(
         name: _strategy_payload(coupons, models=models, actual=actual, stake=plan.stake)
         for name, coupons in packages.items()
     }
+    input_hashes = {
+        "final_input_sha256": snapshot.snapshot_sha256,
+        "probability_input_sha256": snapshot.probability_input_sha256,
+        "sports_probability_input_sha256": sports_probability_hash,
+        "sports_artifact_sha256": sports.artifact_sha256,
+        "scheduler_plan_sha256": plan_sha256,
+    }
+    attribution = build_hybrid_event_attribution(
+        drawing_id=frozen.drawing_id,
+        drawing_number=frozen.drawing_number,
+        plan_id=plan.plan_id,
+        event_names=tuple(event.name for event in frozen.events),
+        actual=actual,
+        probability_models=models,
+        packages=packages,
+        sports_events=sports.events,
+        source_hashes=input_hashes,
+    )
     report: dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": STATUS,
         "artifact_class": ARTIFACT_CLASS,
         "drawing_id": frozen.drawing_id,
@@ -243,12 +265,11 @@ def execute_historical_hybrid_replay(
             }
             for left in packages
         },
-        "inputs": {
-            "final_input_sha256": snapshot.snapshot_sha256,
-            "probability_input_sha256": snapshot.probability_input_sha256,
-            "sports_probability_input_sha256": sports_probability_hash,
-            "sports_artifact_sha256": sports.artifact_sha256,
-            "scheduler_plan_sha256": plan_sha256,
+        "inputs": input_hashes,
+        "event_attribution": {
+            "artifact_class": attribution["artifact_class"],
+            "report_sha256": attribution["report_sha256"],
+            "summary": attribution["summary"],
         },
         "historical_provenance_policy": (
             "declared immutable hashes seed the unchanged selector; live ledger "
@@ -269,6 +290,7 @@ def execute_historical_hybrid_replay(
     _write_replace(report_path, _pretty(report))
     _write_csv(output / "historical-hybrid-replay.csv", report)
     _write_markdown(output / "historical-hybrid-replay.md", report)
+    write_hybrid_event_attribution(attribution, output_dir=output)
     for name, coupons in packages.items():
         _write_research_package(
             output / f"{name}-research-coupons.txt",

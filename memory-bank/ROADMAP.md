@@ -1357,7 +1357,27 @@ closed.
 - [x] Replay quality-v2, Sports v2, quality-v3 and robust through an equal-bank,
   equal-capacity historical harness on drawings 4990-4992; no strategy reached
   13+ and Sports v2 did not beat quality-v2.
+- [x] Add event-level probability/package attribution and run it on 4990-4992.
+  BK top accuracy was 21/45 versus Sports v2 20/45; covered Sports-v2 changes
+  helped realized-outcome probability in 14 events and hurt it in 15.
 - [ ] Run chronological walk-forward v1/v2/BK probability calibration.
 - [ ] Compare v1/v2 package P13/P14/P15 and realized hits at equal bank.
 - [ ] Activate no v2 influence until the declared probability, package and
   prospective non-degradation gates pass.
+
+# Sports Analytics v3 sequence
+
+- [ ] Build an immutable event-attribution aggregate over all eligible settled
+  drawings; include model top transitions, calibration deltas and package
+  exposure failures.
+- [ ] Add leakage-safe residual features around BK: opponent-adjusted Elo/team
+  strength, recency decay, venue scoring, rest/congestion and standings.
+- [ ] Add lineups/injuries only when a stable source proves pre-match timestamps
+  and identity; missing evidence must remain BK fallback.
+- [ ] Fit/calibrate only in chronological walk-forward folds and reject any
+  candidate that worsens untouched BK log loss, Brier score or ECE.
+- [ ] Only after a probability candidate passes, test a global multi-scenario
+  P13 package optimizer at dynamic `floor(bank/stake)` capacity. Do not return
+  to simple coupon recombination as the primary improvement path.
+- [ ] Keep the prospective paired activation gate at at least 30 complete
+  drawings / 450 events and require package-level non-degradation.

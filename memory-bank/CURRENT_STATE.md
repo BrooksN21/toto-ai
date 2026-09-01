@@ -6054,3 +6054,29 @@ the raw fingerprint. The primary 4993 plan/plist were not modified; hashes
 remain `542baa48...` and `40b0babf...`.
 
 Verification: `2256 passed, 13 deselected`; Ruff passed.
+
+## Event-level hybrid attribution (2026-09-01)
+
+Historical hybrid replay now emits a separate event-level JSON/CSV/Markdown
+attribution without coupon strings. For every settled event it records BK and
+Sports v2 actual-outcome probability/rank, the Sports-v2 delta, actual-outcome
+exposure in every equal-bank package, zero/fixed exposure failures, and events
+missed by every best-scoring coupon. The report labels probability-ranking and
+package-alignment signals separately; they are descriptive and not causal.
+
+Exact-generator integration retained the previous settlement results. Across
+drawings 4990-4992, BK selected the actual top outcome in 21/45 events and
+Sports v2 in 20/45. Of the 29 events with Sports-v2 coverage, its adjustment
+raised the realized-outcome probability in 14 and lowered it in 15. Drawing
+4991 had 0/15 sports coverage and remained exact BK identity. This confirms
+that rearranging existing coupons is not the current bottleneck: the next
+research work is a leakage-safe, walk-forward-calibrated residual probability
+model. Sports v2, quality-v3 and robust remain ineligible for activation.
+
+Drawing 4993 production remains unchanged under plan `bd649bfd70e5b165`.
+At 14:12 MSK both main and sidecar LaunchAgents were loaded with zero runs,
+which is expected before the 15:00 first checkpoint. The plan hash remained
+`542baa48...`; no scheduler artifact was modified by attribution work.
+
+Verification for event-level attribution: `2260 passed, 13 deselected`; Ruff
+and `git diff --check` passed.

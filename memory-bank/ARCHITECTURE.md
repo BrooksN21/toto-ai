@@ -1745,6 +1745,16 @@ eligibility. Final hybrid validation recomputes the latter from the immutable
 payload and plan, checks every event ID/order/BK row, and does not equate it
 with the raw source fingerprint.
 
+`optimizer.hybrid_attribution` is a pure post-settlement diagnostic attached
+to the same historical replay. It receives the already verified probability
+matrices and packages in memory, excludes explicit VOID events, and emits no
+coupon strings. Per event it compares actual-outcome probability rank with
+actual-outcome package exposure, records Sports-v2 probability/top-prediction
+changes against BK, and measures whether all best-scoring coupons missed the
+event. Its probability/package labels are factual signal combinations, not a
+causal proof. The output is research-only, operator-incompatible, and cannot
+import or mutate scheduler/release state.
+
 ## Data-health contract v1.2
 
 `toto_ai.analytics.data_health` is the reusable read-only quality boundary for
