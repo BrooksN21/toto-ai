@@ -1468,6 +1468,12 @@ def _run_post_draw_plan_locked(
             requested_at=current,
             notifier=notifier,
         )
+        _settle_parallel_comparison_if_available(
+            plan,
+            result=synced,
+            completed_at=current,
+            notifier=notifier,
+        )
         if plan.get("automatic_postmortem", False):
             if request["status"] == "AWAITING_USER_REVIEW":
                 request = transition_review_request(
@@ -1514,6 +1520,92 @@ def _run_post_draw_plan_locked(
     )
     _write_state(state_path, state)
     return state
+
+
+def _settle_parallel_comparison_if_available(
+    plan: Mapping[str, Any],
+    *,
+    result: ResultSync,
+    completed_at: datetime,
+    notifier: Callable[[str], None] | None,
+) -> None:
+    """Settle exact final sidecar packages without changing primary settlement."""
+
+    post_draw_root = Path(plan["review_request_file"]).resolve().parent
+    scheduler_root = post_draw_root.parent
+    sidecar_status = (
+        scheduler_root
+        / "parallel-challenger"
+        / "output-final"
+        / "sidecar-status.json"
+    )
+    if not sidecar_status.exists():
+        return
+    status_path = post_draw_root / "parallel-comparison-status.json"
+    try:
+        from toto_ai.runner.scheduler import load_scheduler_plan
+        from toto_ai.sports_stats.final_hybrid_settlement import (
+            settle_final_hybrid_comparison,
+        )
+
+        scheduler_plan_path = scheduler_root / "scheduler-plan.json"
+        scheduler_plan = load_scheduler_plan(scheduler_plan_path)
+        if (
+            scheduler_plan.drawing_id != result.drawing_id
+            or scheduler_plan.drawing != result.drawing_number
+            or scheduler_plan.output_dir.resolve() != scheduler_root
+        ):
+            raise ValueError("parallel comparison scheduler identity mismatch")
+        report, paths = settle_final_hybrid_comparison(
+            sidecar_status_path=sidecar_status,
+            drawing_id=result.drawing_id,
+            drawing_number=result.drawing_number,
+            plan_id=scheduler_plan.plan_id,
+            actual=result.actual,
+            output_dir=post_draw_root / "parallel-comparison",
+        )
+        payload = {
+            "schema_version": 1,
+            "status": "complete",
+            "drawing_id": result.drawing_id,
+            "drawing_number": result.drawing_number,
+            "completed_at": _aware_utc(completed_at).isoformat(),
+            "report_sha256": report["report_sha256"],
+            "json_report": str(paths["json"]),
+            "markdown_report": str(paths["markdown"]),
+            "automatic_wagering": False,
+            "notification": "not_attempted",
+        }
+        if notifier is not None:
+            control = report["strategies"]["quality-v2"]
+            sports = report["strategies"]["sports-shadow"]
+            try:
+                notifier(
+                    f"Тираж {result.drawing_number}: quality-v2 "
+                    f"{control['best_hits']}/15, sports-shadow "
+                    f"{sports['best_hits']}/15. Сравнение: "
+                    f"{paths['markdown'].resolve()}"
+                )
+            except Exception as error:  # advisory only
+                payload["notification"] = "failed"
+                payload["notification_error"] = _safe_reason(error)
+            else:
+                payload["notification"] = "sent"
+        _write_json_replace(status_path, payload)
+    except Exception as error:  # comparison is advisory to primary settlement
+        _write_json_replace(
+            status_path,
+            {
+                "schema_version": 1,
+                "status": "failed",
+                "drawing_id": result.drawing_id,
+                "drawing_number": result.drawing_number,
+                "completed_at": _aware_utc(completed_at).isoformat(),
+                "error_type": type(error).__name__,
+                "error": _safe_reason(error),
+                "automatic_wagering": False,
+            },
+        )
 
 
 def _post_draw_plan_state(

@@ -1,5 +1,26 @@
 # Current State
 
+## Drawing 4994 release and drawing 4993 post-draw comparison (2026-09-01)
+
+- Drawing 4994 (internal ID `12089`) is READY 15/15 under loaded schema-v9
+  plan `a354758ef2aeb1cd`; deadline is 2026-09-02 17:00 MSK, T-10 is
+  16:50 MSK and the first checkpoint is 15:00 MSK. The exact primary
+  experimental-manual authorization is present and valid through T-10.
+  Automatic wagering remains disabled and profitability is unproven.
+- The package actually selected by the owner for drawing 4993 was
+  `quality-v2`, not `sports-shadow`. Post-draw LaunchAgent
+  `com.toto-ai.post-draw-12086` is loaded and correctly bound to the immutable
+  166-coupon quality-v2 package. Its first run is 2026-09-02 12:00 MSK, with
+  five three-hour fallback slots if terminal results are still incomplete.
+- The post-draw flow now detects the exact hash-bound final sidecar and, after
+  the primary result snapshot is complete, settles all four already frozen
+  equal-bank packages: quality-v2, sports-shadow, quality-v3 and robust. It
+  emits aggregate JSON/Markdown comparison without coupon strings and sends a
+  second local macOS notification with quality-v2 versus sports-shadow best
+  hits. Comparison failure is advisory and cannot change primary settlement.
+- Real 4993 artifact smoke verified all four package bindings at 166 coupons
+  each. Full verification is **2,269 passed / 13 deselected** with Ruff clean.
+
 ## Production Git execution hardened (2026-08-31)
 
 Production Git reads are centralized in `src/toto_ai/project_git.py`. The

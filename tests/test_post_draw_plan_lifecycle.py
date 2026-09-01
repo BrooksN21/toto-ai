@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 from toto_ai.db.models import Drawing
 from toto_ai.db.session import get_session_factory, init_db
@@ -137,6 +138,75 @@ def test_plan_run_pending_results_then_restart_safe_complete(tmp_path):
     )
     assert repeated == complete
     assert client.calls == 1
+
+
+def test_plan_run_settles_available_parallel_comparison_and_notifies(
+    tmp_path,
+    monkeypatch,
+):
+    factory, plan_path, plan = _setup(tmp_path)
+    sidecar_status = (
+        tmp_path / "parallel-challenger" / "output-final" / "sidecar-status.json"
+    )
+    sidecar_status.parent.mkdir(parents=True)
+    sidecar_status.write_text("{}", encoding="utf-8")
+    (tmp_path / "scheduler-plan.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(
+        "toto_ai.runner.scheduler.load_scheduler_plan",
+        lambda _path: SimpleNamespace(
+            drawing_id=12001,
+            drawing=5001,
+            output_dir=tmp_path,
+            plan_id="plan-1",
+        ),
+    )
+    calls = []
+
+    def settle(**kwargs):
+        calls.append(kwargs)
+        output = kwargs["output_dir"]
+        output.mkdir(parents=True)
+        paths = {
+            "json": output / "comparison.json",
+            "markdown": output / "comparison.md",
+        }
+        for path in paths.values():
+            path.write_text("report", encoding="utf-8")
+        return (
+            {
+                "report_sha256": "a" * 64,
+                "strategies": {
+                    "quality-v2": {"best_hits": 10},
+                    "sports-shadow": {"best_hits": 11},
+                },
+            },
+            paths,
+        )
+
+    monkeypatch.setattr(
+        "toto_ai.sports_stats.final_hybrid_settlement."
+        "settle_final_hybrid_comparison",
+        settle,
+    )
+    messages = []
+
+    state = run_post_draw_plan(
+        factory,
+        Client([_payload()]),
+        plan_path=plan_path,
+        now=lambda: _due(plan),
+        notifier=messages.append,
+    )
+
+    assert state.status == "complete"
+    assert len(calls) == 1
+    assert calls[0]["sidecar_status_path"] == sidecar_status
+    status = json.loads(
+        (plan_path.parent / "parallel-comparison-status.json").read_text()
+    )
+    assert status["status"] == "complete"
+    assert status["notification"] == "sent"
+    assert any("quality-v2 10/15, sports-shadow 11/15" in row for row in messages)
 
 
 def test_plan_run_transport_is_retryable_and_integrity_is_blocked(tmp_path):

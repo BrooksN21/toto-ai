@@ -1,5 +1,22 @@
 # Architecture
 
+## Optional exact parallel post-draw settlement (2026-09-01)
+
+The scheduler-owned primary post-draw plan remains bound to the package the
+owner actually selected. When the exact sibling final sidecar exists, the same
+completed result snapshot is additionally passed to
+`sports_stats.final_hybrid_settlement`. The module verifies sidecar and
+comparison hashes, drawing/plan identity, all four frozen package hashes,
+stake, count and cost before scoring quality-v2, sports-shadow, quality-v3 and
+robust.
+
+Only aggregate hit distributions, category counts, actual-outcome exposure
+and model deltas are emitted; coupon strings are never copied into settlement
+reports. This comparison is advisory: absence or failure cannot change the
+primary settlement, operator decision, package, release gate or automatic
+wagering state. A separate local desktop notification summarizes quality-v2
+versus sports-shadow after successful comparison.
+
 ## Repository-attested production Git execution (2026-08-31)
 
 Production Python code never resolves Git from the process working directory.

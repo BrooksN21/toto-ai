@@ -1,5 +1,19 @@
 # Roadmap
 
+## 2026-09-01 drawing 4993/4994 operational handoff
+
+- [x] Keep drawing 4993 post-draw bound to the owner-selected quality-v2
+  package and verify its LaunchAgent for 2026-09-02 12:00 MSK.
+- [x] Add automatic exact settlement of the frozen quality-v2, sports-shadow,
+  quality-v3 and robust sidecar packages after the primary result snapshot is
+  complete, without changing operator behavior.
+- [ ] Observe the 2026-09-02 12:00 MSK run and record quality-v2 versus
+  sports-shadow actual best hits and category counts.
+- [x] Prepare drawing 4994 READY 15/15 and authorize its exact primary
+  experimental manual release through 2026-09-02 16:50 MSK.
+- [ ] Observe every drawing 4994 evening checkpoint and preserve the final
+  operator result before T-10.
+
 ## 2026-08-31 project-local Git hardening
 
 - [x] Centralize production Git subprocess execution in a source-root-derived

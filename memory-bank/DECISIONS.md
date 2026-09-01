@@ -1,5 +1,18 @@
 # Decisions
 
+## 2026-09-01 — Post-draw keeps the selected control and compares challengers
+
+- Drawing 4993's selected package is quality-v2; post-draw must settle that
+  package as the primary record and must not silently substitute the sidecar's
+  modeled selection.
+- If a final hash-bound sidecar exists, settle its exact quality-v2,
+  sports-shadow, quality-v3 and robust packages against the same immutable
+  terminal result as a separate aggregate comparison.
+- Parallel comparison is advisory and coupon-free. Its absence, corruption or
+  failure cannot alter primary settlement, release state or wagering policy.
+- One drawing remains descriptive evidence only and cannot prove model
+  superiority or profitability.
+
 ## 2026-08-31 — Production Git has one repository-attested helper
 
 - Production Python Git execution goes through
