@@ -23,12 +23,14 @@ from toto_ai.ev.package_quality import (
     quality_v2_config_sha256,
     selection_context_sha256,
 )
+from toto_ai.optimizer.category_hit import CategoryHitSeedInfeasibleError
 from toto_ai.runner.scheduler import (
     SchedulerError,
     build_scheduler_plan,
     prepare_scheduler_artifacts,
 )
 from toto_ai.runner.training_package import (
+    TrainingPackageDeferred,
     _QualityV2TrainingOutput,
     ensure_scheduler_training_package,
     load_scheduler_training_package,
@@ -352,6 +354,11 @@ def test_quality_v2_training_uses_production_pipeline_and_runtime_budget(
             ),
         )
 
+    monkeypatch.setattr(
+        training_package,
+        "cover_14_bk_fill_seed",
+        lambda *_args, **_kwargs: COUPONS,
+    )
     monkeypatch.setattr(training_package, "build_open_ev_package", build)
     output = training_package._run_quality_v2_pipeline(plan, snapshot)
 
@@ -362,6 +369,37 @@ def test_quality_v2_training_uses_production_pipeline_and_runtime_budget(
         bound_selection_context(runtime_config)
     )
     assert captured["client"].__class__.__name__ == "_ImmutableInputClient"
+
+
+def test_quality_v2_training_defers_small_pool_before_expensive_pipeline(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    plan, record_path, cache_dir, _archive = _plan(tmp_path)
+    snapshot = training_package._ensure_training_input(
+        plan,
+        morning_record_path=record_path,
+        input_cache_dir=cache_dir,
+        generated_at=GENERATED_AT,
+    ).snapshot
+    monkeypatch.setattr(
+        training_package,
+        "cover_14_bk_fill_seed",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            CategoryHitSeedInfeasibleError("small seed")
+        ),
+    )
+    monkeypatch.setattr(
+        training_package,
+        "build_open_ev_package",
+        lambda **_kwargs: pytest.fail("expensive pipeline must not run"),
+    )
+
+    with pytest.raises(
+        TrainingPackageDeferred,
+        match="120 RUB / 4 coupons",
+    ):
+        training_package._run_quality_v2_pipeline(plan, snapshot)
 
 
 def test_resolve_morning_detail_hash_uses_verified_archive_snapshot(

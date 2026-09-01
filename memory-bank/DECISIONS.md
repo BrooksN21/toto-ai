@@ -2427,3 +2427,18 @@ ambiguous reversed evidence remains unresolved.
 - Fuzzy, reversed, ambiguous, late or kickoff-conflicting candidates remain
   non-promoting. This change does not permit fuzzy evidence to become
   executable.
+
+## 2026-09-01 — Small pools defer training; they do not weaken quality-v2
+
+- An exact Cover-14 seed that cannot satisfy production exposure bounds at the
+  current pool-supported coupon capacity is a domain infeasibility, not a
+  NumPy allocation error.
+- If the one-percent self-dilution cap has reduced the effective budget below
+  the requested bank, morning training reports `deferred` and leaves READY
+  scheduler activation intact. The feasibility check runs before the expensive
+  EV surface.
+- Do not add coupons beyond the pool-supported budget, relax concentration,
+  discard the exact-cover contract or silently change category to force a
+  preliminary package. Final phases always recompute from fresh pool data.
+- The same infeasibility at full requested bank remains a hard error requiring
+  investigation.

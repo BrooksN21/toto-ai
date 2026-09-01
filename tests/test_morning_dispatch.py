@@ -39,6 +39,7 @@ from toto_ai.runner.scheduler import (
     prepare_morning_preanalysis_artifacts,
     prepare_scheduler_artifacts,
 )
+from toto_ai.runner.training_package import TrainingPackageDeferred
 
 UTC = timezone.utc
 
@@ -1526,6 +1527,77 @@ def test_training_failure_preserves_successful_morning_activation(
     assert payload["training_package"] == {
         "error": "ValueError: quality-v2 training failed",
         "status": "failed",
+    }
+
+
+def test_training_pool_capacity_deferral_preserves_morning_activation(
+    monkeypatch,
+    tmp_path,
+):
+    config = _config(tmp_path)
+    now = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    plan = build_scheduler_plan(
+        drawing=4982,
+        drawing_id=12054,
+        ended_at=now + timedelta(hours=10),
+        bank=4980,
+        stake=30,
+        output_dir=config.scheduler_root / "evening-4982",
+        project_root=config.project_root,
+        db=config.db,
+        aliases=config.aliases,
+        env_file=config.env_file,
+    )
+    artifacts = prepare_scheduler_artifacts(plan, python_command=sys.executable)
+    monkeypatch.setattr(
+        cli,
+        "dispatch_morning",
+        lambda *_args, **_kwargs: MorningDispatchResult(
+            status="scheduled",
+            reason="ready",
+            record_path=tmp_path / "ready.json",
+            plan_id=plan.plan_id,
+            plan_path=artifacts.plan_path,
+            launch_agent_path=artifacts.launch_agent_path,
+            activation_status="activated",
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "ensure_scheduler_training_package",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            TrainingPackageDeferred(
+                "current pool supports only 180 RUB / 6 coupons"
+            )
+        ),
+    )
+
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "morning-dispatch",
+            "--bank",
+            "4980",
+            "--env-file",
+            str(config.env_file),
+            "--project-root",
+            str(tmp_path),
+            "--state-root",
+            str(config.state_root),
+            "--scheduler-root",
+            str(config.scheduler_root),
+            "--activate",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["status"] == "scheduled"
+    assert payload["activation_status"] == "activated"
+    assert payload["training_package"] == {
+        "detail": "current pool supports only 180 RUB / 6 coupons",
+        "reason": "pool_supported_capacity_infeasible",
+        "status": "deferred",
     }
 
 

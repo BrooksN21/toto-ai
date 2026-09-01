@@ -139,6 +139,20 @@ fuzzy/reversed/ambiguous matching, or kickoff disagreement. This permits
 independent sources to spell one team differently without weakening their
 separate binding to the same target event.
 
+## Small-pool category-seed boundary (2026-09-01)
+
+The quality-v2 training path preflights the exact Cover-14/BK seed before
+materializing the expensive EV surface. Invalid bounded allocations, including
+negative residual capacity when an exact core already exceeds an exposure
+bound, return domain-level infeasibility rather than reaching `numpy.repeat`.
+
+When the immutable morning pool's one-percent self-dilution cap is below the
+requested bank and the exact seed is infeasible, morning dispatch records a
+controlled training deferral while preserving successful READY activation.
+Full-bank infeasibility remains an error. The boundary never relaxes the exact
+cover, concentration limits, bank, release gate or automatic-wagering policy;
+later scheduler phases recompute against their own fresh immutable pool input.
+
 For drawing 4992, the pre-fix preparation had two unknown times. Official MLSZ
 evidence exists for event `180353` at `17:30Z`, and GOAL plus TheSportsDB agree
 for event `180358` at `16:00Z`. These facts are pending review and a fresh

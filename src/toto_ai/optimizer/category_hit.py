@@ -16,6 +16,10 @@ from toto_ai.optimizer.cover import verify_cover_package
 OUTCOMES = ("1", "X", "2")
 
 
+class CategoryHitSeedInfeasibleError(ValueError):
+    """The exact category seed cannot satisfy the bound package constraints."""
+
+
 @lru_cache(maxsize=32)
 def cover_14_bk_fill_seed(
     probabilities: tuple[tuple[float, float, float], ...],
@@ -78,8 +82,10 @@ def cover_14_bk_fill_seed(
         upper_bounds=soft_upper_bounds,
     )
     if filled is None:
-        raise ValueError(
-            "category-hit seed could not satisfy production exposure bounds"
+        raise CategoryHitSeedInfeasibleError(
+            "category-hit seed is infeasible at "
+            f"{capacity} coupons: the exact Cover-14 core cannot satisfy "
+            "production exposure bounds"
         )
     return filled
 
@@ -150,7 +156,14 @@ def _bounded_allocation(
     minimum: np.ndarray,
     maximum: np.ndarray,
 ) -> np.ndarray | None:
-    if int(minimum.sum()) > total or int(maximum.sum()) < total:
+    if (
+        total < 0
+        or np.any(minimum < 0)
+        or np.any(maximum < 0)
+        or np.any(minimum > maximum)
+        or int(minimum.sum()) > total
+        or int(maximum.sum()) < total
+    ):
         return None
     raw = np.asarray(probabilities, dtype=np.float64) * total
     allocation = np.clip(np.floor(raw).astype(np.int32), minimum, maximum)

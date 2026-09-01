@@ -6126,3 +6126,28 @@ the evening scheduler remains intentionally inactive until all 15 times are
 strictly resolved.
 
 Focused collector/consensus/provider verification passes 43 tests.
+
+## Drawing 4994 READY and small-pool training deferral (2026-09-01)
+
+The five remaining kickoff gaps were closed with strict reviewed
+official-plus-independent evidence for Luton Town/Stockport, AGF/Midtjylland,
+El Gouna/Al Mokawloon, Zbrojovka Brno/Hradec Kralove and Dundee/St Johnstone.
+The schedule ledger verifies with 163 observations, 19 prepared reviews and 62
+source snapshots. Drawing 4994 is now READY 15/15 under schema-v9 plan
+`a354758ef2aeb1cd`; LaunchAgent
+`com.totoai.production-scheduler.v9.a354758ef2aeb1cd` is activated for the
+2026-09-02 17:00 MSK cutoff and 16:50 MSK T-10 boundary. The first checkpoint
+is 15:00 MSK. The obsolete passive retry is inactive.
+
+The activation input's early pool supports only 180 RUB / 6 coupons under the
+unchanged one-percent self-dilution rule. Its exact Cover-14 core cannot satisfy
+the production concentration bounds at that capacity. This is now classified
+as a controlled `training_package.status=deferred`, not a NumPy exception and
+not a scheduler failure. The cheap seed-feasibility check runs before the
+expensive EV surface. It does not relax Cover-14, concentration, bank or release
+rules; evening phases will recompute from fresh pool data.
+
+The automatic sports probe is research-only and currently covers 13/15 events
+with 26 history sources; package influence remains `NONE`. No experimental
+manual release has yet been authorized for plan `a354758ef2aeb1cd`, and
+automatic wagering remains disabled.

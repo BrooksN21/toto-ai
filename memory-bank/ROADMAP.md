@@ -1392,8 +1392,11 @@ closed.
 - [x] Synchronize drawing 4994 and bind its 17:00 MSK deadline / 16:50 T-10.
 - [x] Replace cross-provider display-name equality with strict target-bound
   exact-match identity; reduce unknown kickoff times from 10 to 5.
-- [ ] Resolve events 4, 8, 9, 12 and 14 from strict independent or reviewed
+- [x] Resolve events 4, 8, 9, 12 and 14 from strict independent or reviewed
   schedule evidence.
-- [ ] Activate and verify the evening scheduler only after READY 15/15.
+- [x] Activate and verify schema-v9 plan `a354758ef2aeb1cd` only after READY
+  15/15; first checkpoint is 2026-09-02 15:00 MSK and T-10 is 16:50 MSK.
+- [x] Classify an infeasible six-coupon early-pool training seed as a fast,
+  controlled deferral without weakening quality-v2 or scheduler activation.
 - [ ] Capture Sports v2 and parallel challengers without delaying the primary
   operator result.

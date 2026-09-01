@@ -347,7 +347,10 @@ from toto_ai.runner.preflight_retry_scheduler import (
     prepare_preflight_retry_artifacts,
 )
 from toto_ai.runner.preflight_status import build_preflight_status
-from toto_ai.runner.training_package import ensure_scheduler_training_package
+from toto_ai.runner.training_package import (
+    TrainingPackageDeferred,
+    ensure_scheduler_training_package,
+)
 from toto_ai.sports_stats.final_hybrid_comparison import (
     execute_final_hybrid_comparison,
 )
@@ -4004,6 +4007,12 @@ def morning_dispatch_command(
                     input_cache_dir=resolved_raw_cache,
                     generated_at=datetime.now(timezone.utc),
                 )
+            except TrainingPackageDeferred as error:
+                training_package_status = {
+                    "status": "deferred",
+                    "reason": "pool_supported_capacity_infeasible",
+                    "detail": str(error),
+                }
             except Exception as error:
                 training_package_status = {
                     "status": "failed",

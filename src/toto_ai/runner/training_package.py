@@ -20,6 +20,11 @@ from toto_ai.ev.package_quality import (
     quality_v2_config_sha256,
     selection_context_sha256,
 )
+from toto_ai.external_odds.targets import parse_target_drawing
+from toto_ai.optimizer.category_hit import (
+    CategoryHitSeedInfeasibleError,
+    cover_14_bk_fill_seed,
+)
 from toto_ai.runner.final_input import (
     FinalInputSnapshot,
     load_final_input,
@@ -51,6 +56,10 @@ TRAINING_DIAGNOSTICS_FILENAME = "training-quality-v2.json"
 TRAINING_MODE = "TRAINING_PAPER"
 TRAINING_PIPELINE = "production_quality_v2_ev"
 _SHA256_LENGTH = 64
+
+
+class TrainingPackageDeferred(ValueError):
+    """The current immutable input is too early for a valid training package."""
 
 
 @dataclass(frozen=True)
@@ -648,6 +657,26 @@ def _run_quality_v2_pipeline(
         plan.quality_v2_ev_config,
         effective_budget=runtime_budget,
     )
+    target = parse_target_drawing(snapshot.payload, snapshot.captured_at)
+    try:
+        cover_14_bk_fill_seed(
+            tuple(event.bk_probabilities for event in target.events),
+            runtime_budget,
+            plan.stake,
+            runtime_config.package_exposure_floor_scale,
+            runtime_config.package_exposure_floor_exponent,
+            runtime_config.package_near_fixed_share,
+            runtime_config.package_concentration_headroom_share,
+        )
+    except CategoryHitSeedInfeasibleError as error:
+        if runtime_budget >= plan.requested_bank:
+            raise
+        capacity = runtime_budget // plan.stake
+        raise TrainingPackageDeferred(
+            "current pool supports only "
+            f"{runtime_budget} RUB / {capacity} coupons; the quality-v2 "
+            "training package is deferred until a later pool snapshot"
+        ) from error
     plan_path = plan.output_dir / SCHEDULER_PLAN_FILENAME
     provenance = PackageSelectionProvenance.from_artifacts(
         probability_snapshot_path=snapshot.path,
