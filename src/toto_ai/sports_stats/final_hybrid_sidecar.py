@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import plistlib
 import re
@@ -688,6 +689,11 @@ def _publish_parallel_selection(
         or len(coupons) * plan.stake > plan.requested_bank
     ):
         raise ValueError("selected parallel package binding mismatch")
+    ranking = _selected_coupon_ranking(
+        report=report,
+        selected_id=selected_id,
+        coupons=coupons,
+    )
 
     package_path = output / "selected-parallel-operator-package.txt"
     _write_replace(package_path, _operator_package_bytes(plan.stake, coupons))
@@ -709,6 +715,8 @@ def _publish_parallel_selection(
         "selection_policy_version": POLICY_VERSION,
         "selection_reason": selection.get("selection_reason"),
         "selection_promoted": selection.get("promoted"),
+        "coupon_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "highest_p13_single_coupon": ranking,
         "authorization_path": str(authorization_path),
         "authorization_sha256": authorization["record_sha256"],
         "published_at": _timestamp(completed_at),
@@ -723,6 +731,49 @@ def _publish_parallel_selection(
         _canonical(payload) + b"\n",
     )
     return payload
+
+
+def _selected_coupon_ranking(
+    *,
+    report: Mapping[str, Any],
+    selected_id: str,
+    coupons: tuple[str, ...],
+) -> Mapping[str, Any]:
+    rankings = report.get("highest_p13_single_coupons")
+    if not isinstance(rankings, Mapping):
+        raise ValueError("parallel comparison has no coupon probability ranking")
+    ranking = rankings.get(selected_id)
+    if not isinstance(ranking, Mapping):
+        raise ValueError("selected parallel package has no coupon probability ranking")
+    position = ranking.get("package_position")
+    coupon = ranking.get("coupon")
+    if (
+        type(position) is not int
+        or not 1 <= position <= len(coupons)
+        or not isinstance(coupon, str)
+        or coupons[position - 1] != coupon
+        or ranking.get("criterion") != "maximum_probability_at_least_13"
+        or ranking.get("package_order_semantics")
+        != "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK"
+    ):
+        raise ValueError("selected coupon probability ranking is not package-bound")
+    for key in (
+        "probability_at_least_13",
+        "probability_at_least_14",
+        "probability_at_least_15",
+    ):
+        value = ranking.get(key)
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(float(value))
+            or not 0.0 <= float(value) <= 1.0
+        ):
+            raise ValueError("selected coupon probability ranking is invalid")
+    reference_model = ranking.get("reference_model")
+    if not isinstance(reference_model, str) or not reference_model:
+        raise ValueError("selected coupon probability model is invalid")
+    return dict(ranking)
 
 
 def _validate_parallel_authorization(

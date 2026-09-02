@@ -1886,3 +1886,15 @@ the complete nested quality-v2 algorithm configuration. Provenance validates
 the exact object and canonical hash against current selector inputs and the
 referenced SchedulerPlan; the runner manifest and selector diagnostics must
 match the same plan context. Any absence or mismatch is fail-closed.
+
+# Explicit single-coupon probability ranking (2026-09-02)
+
+Package serialization order has no ranking semantics. The final hybrid
+comparison calculates exact single-coupon `P(13+)`, `P(14+)`, and `P(15)` with
+a Poisson-binomial distribution and emits `highest_p13_single_coupons` for all
+four strategies. Each record binds the coupon to its one-based package
+position, criterion, and declared reference model. The pre-T-10 parallel
+operator result validates that position against the selected hash-bound package
+and copies the selected strategy's record as `highest_p13_single_coupon`.
+Consumers must never infer a best coupon from the first package row. Post-draw
+maximum actual hits remain a separate hindsight metric.

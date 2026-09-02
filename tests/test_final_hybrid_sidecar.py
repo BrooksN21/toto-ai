@@ -601,6 +601,23 @@ def test_authorized_sidecar_exports_selected_challenger_before_t10(
         report = {
             "sports_coverage_count": 10,
             "sports_fallback_count": 5,
+            "coupon_order_semantics": (
+                "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK"
+            ),
+            "highest_p13_single_coupons": {
+                "quality-v3": {
+                    "coupon": challenger_coupon,
+                    "package_position": 1,
+                    "criterion": "maximum_probability_at_least_13",
+                    "reference_model": "bk",
+                    "probability_at_least_13": 0.1,
+                    "probability_at_least_14": 0.01,
+                    "probability_at_least_15": 0.001,
+                    "package_order_semantics": (
+                        "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK"
+                    ),
+                }
+            },
             "experimental_selection": {
                 "policy_version": "parallel-challenger-nondegradation-v1",
                 "selected_strategy_id": "quality-v3",
@@ -657,6 +674,16 @@ def test_authorized_sidecar_exports_selected_challenger_before_t10(
     assert release["decision"] == "PLAY"
     assert release["actionable"] is True
     assert release["selected_strategy_id"] == "quality-v3"
+    assert release["highest_p13_single_coupon"] == {
+        "coupon": challenger_coupon,
+        "package_position": 1,
+        "criterion": "maximum_probability_at_least_13",
+        "reference_model": "bk",
+        "probability_at_least_13": 0.1,
+        "probability_at_least_14": 0.01,
+        "probability_at_least_15": 0.001,
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+    }
     assert release["automatic_wagering"] is False
     package = Path(release["selected_package_path"])
     assert package.read_text(encoding="utf-8") == (

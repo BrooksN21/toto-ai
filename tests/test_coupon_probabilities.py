@@ -4,6 +4,8 @@ from itertools import product
 import pytest
 
 from toto_ai.optimizer.coupon_probabilities import (
+    best_coupon_by_p13,
+    coupon_category_probabilities,
     coupon_log_probability,
     normalize_probability_matrix,
     top_probability_coupons,
@@ -74,3 +76,53 @@ def test_top_probability_coupons_matches_exhaustive_order(limit):
     )
 
     assert top_probability_coupons(probabilities, limit=limit) == exhaustive[:limit]
+
+
+def test_coupon_category_probabilities_are_exact_for_one_coupon():
+    probabilities = normalize_probability_matrix(
+        [{"1": 8, "X": 1, "2": 1}] * 15
+    )
+
+    metrics = coupon_category_probabilities("1" * 15, probabilities)
+
+    assert metrics.probability_at_least_15 == pytest.approx(0.8**15)
+    assert metrics.probability_at_least_14 == pytest.approx(
+        0.8**15 + 15 * 0.8**14 * 0.2
+    )
+    assert metrics.probability_at_least_13 == pytest.approx(
+        0.8**15
+        + 15 * 0.8**14 * 0.2
+        + math.comb(15, 13) * 0.8**13 * 0.2**2
+    )
+
+
+def test_best_coupon_by_p13_does_not_treat_first_row_as_best():
+    probabilities = normalize_probability_matrix(
+        [{"1": 8, "X": 1, "2": 1}] * 15
+    )
+    weaker = "X" + "1" * 14
+    stronger = "1" * 15
+
+    result = best_coupon_by_p13((weaker, stronger), probabilities)
+
+    assert result.coupon == stronger
+    assert result.package_position == 2
+    assert result.criterion == "maximum_probability_at_least_13"
+
+
+def test_best_coupon_by_p13_is_invariant_to_package_order():
+    probabilities = normalize_probability_matrix(
+        [{"1": 8, "X": 1, "2": 1}] * 15
+    )
+    stronger = "1" * 15
+    weaker = "X" + "1" * 14
+
+    forward = best_coupon_by_p13((stronger, weaker), probabilities)
+    reversed_package = best_coupon_by_p13((weaker, stronger), probabilities)
+
+    assert forward.coupon == reversed_package.coupon == stronger
+    assert forward.probability_at_least_13 == pytest.approx(
+        reversed_package.probability_at_least_13
+    )
+    assert forward.package_position == 1
+    assert reversed_package.package_position == 2

@@ -127,6 +127,13 @@ Maintenance rules:
   definitions change.
 - Update `memory-bank/ROADMAP.md` when a phase or task is completed.
 - Do not silently change category, cover, budget, or probability definitions.
+- Coupon-file order is never a probability ranking. Never identify the first
+  coupon (or any package position) as "best" without an explicit calculation
+  from the exact hash-bound package and its bound probability input. A
+  pre-draw best-coupon statement must name the optimization criterion,
+  probability model, computed probability, and one-based package position.
+  A post-draw "best realized coupon" means maximum actual hits only and must
+  never be conflated with the pre-draw probability ranking.
 - Never synthesize, recommend, or present a BaltBet package from research,
   rehearsal, simulation, or otherwise non-operator artifacts. Before T-10,
   wagering coupons may come from either the current scheduler-owned

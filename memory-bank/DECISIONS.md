@@ -2483,3 +2483,21 @@ ambiguous reversed evidence remains unresolved.
   preliminary package. Final phases always recompute from fresh pool data.
 - The same infeasibility at full requested bank remains a hard error requiring
   investigation.
+
+# 2026-09-02 — Package order is not coupon rank
+
+- The physical order of coupons in any operator, research, CSV, or text
+  package is an implementation detail and is never evidence that the first
+  coupon is the most probable or otherwise "best" coupon.
+- A pre-draw best-coupon statement is valid only when computed from the exact
+  hash-bound package and its bound probability matrix. The report must state
+  the objective (for example `P(13+)`), probability model, computed value, and
+  one-based package position.
+- A post-draw best realized coupon is a different metric: maximum actual hits
+  after settlement. It must be labelled as hindsight evidence and must not be
+  presented as the pre-draw probability leader.
+- Package-level `P(13+)` is the probability of the union covered by all package
+  coupons; it is not the probability of any single coupon.
+- This is a persistent reporting invariant because relying on conversational
+  memory previously caused the first package row to be mislabelled as the best
+  coupon for drawing 4993.

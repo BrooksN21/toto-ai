@@ -3,10 +3,25 @@ from __future__ import annotations
 import heapq
 import math
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 
 OUTCOMES = ("1", "X", "2")
 OUTCOME_INDEX = {outcome: index for index, outcome in enumerate(OUTCOMES)}
 ProbabilityMatrix = tuple[tuple[float, float, float], ...]
+
+
+@dataclass(frozen=True)
+class CouponCategoryProbabilities:
+    coupon: str
+    probability_at_least_13: float
+    probability_at_least_14: float
+    probability_at_least_15: float
+
+
+@dataclass(frozen=True)
+class BestCouponByP13(CouponCategoryProbabilities):
+    package_position: int
+    criterion: str = "maximum_probability_at_least_13"
 
 
 def normalize_probability_matrix(
@@ -45,6 +60,75 @@ def coupon_log_probability(
         )
     except KeyError as error:
         raise ValueError("Coupon outcomes must be 1, X, or 2.") from error
+
+
+def coupon_category_probabilities(
+    coupon: str,
+    probabilities: ProbabilityMatrix,
+) -> CouponCategoryProbabilities:
+    """Return exact 13+/14+/15 probabilities for one 15-event coupon."""
+
+    if len(probabilities) != 15 or len(coupon) != 15:
+        raise ValueError("Coupon category probabilities require 15 events.")
+    try:
+        match_probabilities = tuple(
+            row[OUTCOME_INDEX[outcome]]
+            for outcome, row in zip(coupon, probabilities, strict=True)
+        )
+    except KeyError as error:
+        raise ValueError("Coupon outcomes must be 1, X, or 2.") from error
+    if any(
+        not math.isfinite(probability) or not 0.0 <= probability <= 1.0
+        for probability in match_probabilities
+    ):
+        raise ValueError("Coupon match probabilities must be finite in [0, 1].")
+
+    distribution = [1.0] + [0.0] * 15
+    for probability in match_probabilities:
+        updated = [0.0] * 16
+        for hits, mass in enumerate(distribution):
+            updated[hits] += mass * (1.0 - probability)
+            if hits < 15:
+                updated[hits + 1] += mass * probability
+        distribution = updated
+    return CouponCategoryProbabilities(
+        coupon=coupon,
+        probability_at_least_13=math.fsum(distribution[13:]),
+        probability_at_least_14=math.fsum(distribution[14:]),
+        probability_at_least_15=distribution[15],
+    )
+
+
+def best_coupon_by_p13(
+    coupons: Sequence[str],
+    probabilities: ProbabilityMatrix,
+) -> BestCouponByP13:
+    """Rank package coupons explicitly; package order has no score semantics."""
+
+    package = tuple(coupons)
+    if not package:
+        raise ValueError("Coupon package must not be empty.")
+    if len(set(package)) != len(package):
+        raise ValueError("Coupon package must contain unique coupons.")
+    metrics = tuple(
+        coupon_category_probabilities(coupon, probabilities) for coupon in package
+    )
+    selected = sorted(
+        metrics,
+        key=lambda row: (
+            -row.probability_at_least_13,
+            -row.probability_at_least_14,
+            -row.probability_at_least_15,
+            row.coupon,
+        ),
+    )[0]
+    return BestCouponByP13(
+        coupon=selected.coupon,
+        probability_at_least_13=selected.probability_at_least_13,
+        probability_at_least_14=selected.probability_at_least_14,
+        probability_at_least_15=selected.probability_at_least_15,
+        package_position=package.index(selected.coupon) + 1,
+    )
 
 
 def top_probability_coupons(

@@ -6218,3 +6218,23 @@ The automatic sports probe is research-only and currently covers 13/15 events
 with 26 history sources; package influence remains `NONE`. No experimental
 manual release has yet been authorized for plan `a354758ef2aeb1cd`, and
 automatic wagering remains disabled.
+
+# Drawing 4993 coupon-ranking reporting incident (2026-09-02)
+
+The sports-shadow package contained 166 coupons and settled with a best
+realized score of 10/15 at package position 93. That hindsight maximum was
+incorrectly compared with a pre-draw coupon that had been selected from package
+order rather than from an explicit probability ranking. Package position 1
+scored 1/15; the actual sports-probability leader by `P(13+)` was position 42
+and scored 4/15. The durable rule is now that package order is never ranking;
+every pre-draw best-coupon claim must be computed from the exact bound package,
+state the objective/model/value/position, and remain distinct from post-draw
+best realized hits.
+
+The implementation now computes exact single-coupon `P(13+)`, `P(14+)`, and
+`P(15)` independently of package order. Final hybrid comparison artifacts carry
+the highest-`P(13+)` coupon for every strategy; an actionable parallel operator
+result validates and carries the selected strategy's package-bound record.
+Regression coverage proves that moving the strongest coupon away from the first
+row does not change selection. Verification: 2280 tests passed, 13 deselected;
+Ruff passed.

@@ -27,6 +27,7 @@ from toto_ai.ev.package_quality import (
 )
 from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.targets import parse_target_drawing
+from toto_ai.optimizer.coupon_probabilities import best_coupon_by_p13
 from toto_ai.optimizer.parallel_challenger import (
     ExactCategoryMetrics,
     ParallelCandidate,
@@ -331,6 +332,29 @@ def execute_final_hybrid_comparison(
             "package_sha256": _package_sha256(quality_v3.selected_coupons),
         },
         "experimental_selection": experimental_selection.public_summary(),
+        "coupon_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "highest_p13_single_coupons": {
+            "quality-v2": _best_single_coupon_payload(
+                baseline.coupons,
+                frozen.bk_probability_matrix,
+                reference_model="bk",
+            ),
+            "sports-shadow": _best_single_coupon_payload(
+                sports_result.coupons,
+                sports_probabilities,
+                reference_model="sports",
+            ),
+            "quality-v3": _best_single_coupon_payload(
+                quality_v3.selected_coupons,
+                frozen.bk_probability_matrix,
+                reference_model="bk",
+            ),
+            "robust": _best_single_coupon_payload(
+                robust.selected_coupons,
+                frozen.bk_probability_matrix,
+                reference_model="bk",
+            ),
+        },
         "cross_evaluation": {
             "baseline_under_sports": asdict(baseline_quality_sports),
             "sports_under_bk": asdict(sports_quality_bk),
@@ -593,6 +617,20 @@ def _result_payload(result: StrategyResult, quality: Any) -> dict[str, Any]:
         "p14": result.probability_at_least_14,
         "p15": result.probability_at_least_15,
         "quality": asdict(quality),
+    }
+
+
+def _best_single_coupon_payload(
+    coupons: tuple[str, ...],
+    probabilities: tuple[tuple[float, float, float], ...],
+    *,
+    reference_model: str,
+) -> dict[str, Any]:
+    result = best_coupon_by_p13(coupons, probabilities)
+    return {
+        **asdict(result),
+        "reference_model": reference_model,
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
     }
 
 
