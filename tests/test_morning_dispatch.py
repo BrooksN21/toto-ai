@@ -1436,6 +1436,14 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
     parallel = SimpleNamespace(
         scheduled_at=observed + timedelta(hours=11, minutes=30),
         launch_agent_label="com.totoai.parallel-sidecar.v1." + plan.plan_id,
+        sports_artifact_path=sports_path,
+        authorization_path=authorization,
+        reused=False,
+    )
+    monkeypatch.setattr(
+        cli,
+        "load_shadow_probability_artifact",
+        lambda _path: sports_v2,
     )
     monkeypatch.setattr(
         cli,
@@ -1487,6 +1495,7 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
         "parallel_release_authorized": True,
         "plan_id": plan.plan_id,
         "primary_scheduler_affected": False,
+        "reused": False,
         "scheduled_at": parallel.scheduled_at.isoformat(),
         "sports_artifact": str(sports_path),
         "sports_coverage_count": 13,

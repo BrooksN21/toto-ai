@@ -68,6 +68,14 @@ class ResultSync:
 
 
 @dataclass(frozen=True)
+class _FrozenSchedulerIdentity:
+    plan_id: str
+    drawing_id: int
+    drawing_number: int
+    output_dir: Path
+
+
+@dataclass(frozen=True)
 class PackageArchive:
     archive_sha256: str
     package_sha256: str
@@ -1522,6 +1530,81 @@ def _run_post_draw_plan_locked(
     return state
 
 
+def _load_frozen_scheduler_identity(
+    path: str | Path,
+    *,
+    expected_output_dir: str | Path,
+) -> _FrozenSchedulerIdentity:
+    """Validate immutable plan identity without reopening mutable evidence."""
+
+    plan_path = Path(path).absolute()
+    output_dir = Path(expected_output_dir).absolute()
+    if plan_path.is_symlink() or not plan_path.is_file():
+        raise ValueError("frozen scheduler plan must be a regular file")
+    if plan_path != output_dir / "scheduler-plan.json":
+        raise ValueError("frozen scheduler plan path mismatch")
+    try:
+        payload = json.loads(plan_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("frozen scheduler plan is malformed") from error
+    if not isinstance(payload, dict) or set(payload) != {
+        "schema_version",
+        "plan_id",
+        "target",
+        "config",
+        "paths",
+        "deadlines",
+    }:
+        raise ValueError("frozen scheduler plan shape mismatch")
+    plan_id = payload["plan_id"]
+    if (
+        not isinstance(plan_id, str)
+        or len(plan_id) != 16
+        or set(plan_id) - set("0123456789abcdef")
+    ):
+        raise ValueError("frozen scheduler plan_id is invalid")
+    semantic = {
+        "schema_version": payload["schema_version"],
+        "target": payload["target"],
+        "config": payload["config"],
+        "paths": payload["paths"],
+    }
+    expected_plan_id = hashlib.sha256(
+        json.dumps(
+            semantic,
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()[:16]
+    if plan_id != expected_plan_id:
+        raise ValueError("frozen scheduler plan_id mismatch")
+    target = payload["target"]
+    paths = payload["paths"]
+    if not isinstance(target, dict) or not isinstance(paths, dict):
+        raise ValueError("frozen scheduler plan identity is invalid")
+    drawing_id = target.get("drawing_id")
+    drawing_number = target.get("drawing")
+    if (
+        type(drawing_id) is not int
+        or drawing_id <= 0
+        or type(drawing_number) is not int
+        or drawing_number <= 0
+    ):
+        raise ValueError("frozen scheduler drawing identity is invalid")
+    bound_output = paths.get("output_dir")
+    if not isinstance(bound_output, str):
+        raise ValueError("frozen scheduler output path is invalid")
+    if Path(bound_output).absolute() != output_dir:
+        raise ValueError("frozen scheduler output binding mismatch")
+    return _FrozenSchedulerIdentity(
+        plan_id=plan_id,
+        drawing_id=drawing_id,
+        drawing_number=drawing_number,
+        output_dir=output_dir,
+    )
+
+
 def _settle_parallel_comparison_if_available(
     plan: Mapping[str, Any],
     *,
@@ -1543,16 +1626,18 @@ def _settle_parallel_comparison_if_available(
         return
     status_path = post_draw_root / "parallel-comparison-status.json"
     try:
-        from toto_ai.runner.scheduler import load_scheduler_plan
         from toto_ai.sports_stats.final_hybrid_settlement import (
             settle_final_hybrid_comparison,
         )
 
         scheduler_plan_path = scheduler_root / "scheduler-plan.json"
-        scheduler_plan = load_scheduler_plan(scheduler_plan_path)
+        scheduler_plan = _load_frozen_scheduler_identity(
+            scheduler_plan_path,
+            expected_output_dir=scheduler_root,
+        )
         if (
             scheduler_plan.drawing_id != result.drawing_id
-            or scheduler_plan.drawing != result.drawing_number
+            or scheduler_plan.drawing_number != result.drawing_number
             or scheduler_plan.output_dir.resolve() != scheduler_root
         ):
             raise ValueError("parallel comparison scheduler identity mismatch")

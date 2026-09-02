@@ -1,5 +1,28 @@
 # Current State
 
+## Drawing 4993 settlement and 4994 noon automation (2026-09-02)
+
+- The 12:00 MSK post-draw run for drawing 4993 completed primary settlement.
+  Quality-v2 reached 8/15. The advisory four-strategy comparison initially
+  failed because post-draw reopened a mutable global schedule-evidence ledger
+  whose bytes had legitimately advanced after the frozen plan was created.
+- Post-draw comparison now validates the immutable serialized plan ID and
+  exact scheduler output binding without reopening mutable schedule evidence.
+  The recovered exact comparison is quality-v2 8/15, quality-v3 8/15, robust
+  8/15 and sports-shadow 10/15; every strategy had zero 13+ coupons.
+- Repeated morning preparation no longer changes generated wrapper bytes when
+  exact authorization exists or when later probability snapshots are seen.
+  It validates and reuses the first plan-bound sports input, while runtime
+  authorization discovery remains separate.
+- The real 12:15 MSK morning LaunchAgent run completed with exit code 0 and
+  reported the drawing 4994 four-strategy sidecar `ACTIVATED`, `reused=true`,
+  exact authorization present and primary scheduler unaffected.
+- Drawing 4994's technical training package remains a controlled deferral:
+  the early pool currently supports only 180 RUB / 6 coupons. The 15-minute
+  morning cycle continues retrying without affecting the evening scheduler.
+- Full verification after both fixes is **2,277 passed / 13 deselected**, with
+  Ruff clean.
+
 ## Drawing 4994 automatic four-model sidecar (2026-09-01)
 
 - Primary schema-v9 plan `a354758ef2aeb1cd` remains unchanged and loaded for

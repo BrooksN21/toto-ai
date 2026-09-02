@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-09-02 — Frozen workflows must not revalidate mutable global bytes
+
+- A post-draw comparison uses the content-derived ID of the frozen serialized
+  scheduler plan and the existing sidecar/package hash chain.
+- It must not require the current bytes of the append-only schedule-evidence
+  ledger to equal the bytes captured before the drawing. Legitimate evidence
+  for later drawings is not corruption of an older frozen plan.
+- Sidecar authorization is not part of generated wrapper identity. Repeated
+  preparation reuses the first validated plan-bound sports input and cannot
+  silently retarget a scheduled process.
+
 ## 2026-09-01 — Parallel calculation is automatic; release stays plan-bound
 
 - Every READY drawing must retain the scheduler-owned technical training

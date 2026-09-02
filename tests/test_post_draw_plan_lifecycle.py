@@ -1,9 +1,11 @@
+import hashlib
 import json
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
 from toto_ai.db.models import Drawing
 from toto_ai.db.session import get_session_factory, init_db
+from toto_ai.operations import finished_draw
 from toto_ai.operations.finished_draw import (
     load_post_draw_plan,
     prepare_post_draw_scheduler_artifacts,
@@ -11,6 +13,58 @@ from toto_ai.operations.finished_draw import (
 )
 
 ACTUAL = "1X22X222211X1XX"
+
+
+def test_frozen_scheduler_identity_survives_later_ledger_updates(tmp_path):
+    ledger = tmp_path / "schedule-evidence.json"
+    ledger.write_text('{"version":1}', encoding="utf-8")
+    semantic = {
+        "schema_version": 9,
+        "target": {
+            "drawing": 5001,
+            "drawing_id": 12001,
+            "ended_at": "2026-08-13T18:00:00+00:00",
+            "operational_cutoff": "2026-08-13T18:00:00+00:00",
+        },
+        "config": {
+            "schedule_evidence_ledger_sha256": hashlib.sha256(
+                ledger.read_bytes()
+            ).hexdigest(),
+        },
+        "paths": {
+            "output_dir": str(tmp_path),
+            "schedule_evidence_ledger": str(ledger),
+        },
+    }
+    plan_id = hashlib.sha256(
+        json.dumps(
+            semantic,
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()[:16]
+    plan_path = tmp_path / "scheduler-plan.json"
+    plan_path.write_text(
+        json.dumps(
+            {
+                **semantic,
+                "plan_id": plan_id,
+                "deadlines": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+    ledger.write_text('{"version":2,"new_drawing":true}', encoding="utf-8")
+
+    identity = finished_draw._load_frozen_scheduler_identity(
+        plan_path,
+        expected_output_dir=tmp_path,
+    )
+
+    assert identity.plan_id == plan_id
+    assert identity.drawing_id == 12001
+    assert identity.drawing_number == 5001
 
 
 class Client:
@@ -152,10 +206,10 @@ def test_plan_run_settles_available_parallel_comparison_and_notifies(
     sidecar_status.write_text("{}", encoding="utf-8")
     (tmp_path / "scheduler-plan.json").write_text("{}", encoding="utf-8")
     monkeypatch.setattr(
-        "toto_ai.runner.scheduler.load_scheduler_plan",
-        lambda _path: SimpleNamespace(
+        "toto_ai.operations.finished_draw._load_frozen_scheduler_identity",
+        lambda _path, **_kwargs: SimpleNamespace(
             drawing_id=12001,
-            drawing=5001,
+            drawing_number=5001,
             output_dir=tmp_path,
             plan_id="plan-1",
         ),

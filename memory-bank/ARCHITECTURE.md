@@ -1,5 +1,22 @@
 # Architecture
 
+## Stable sidecar reuse and frozen post-draw identity (2026-09-02)
+
+The parallel sidecar wrapper is authorization-independent. Authorization is a
+separate exact plan-bound record discovered and validated at runtime, so adding
+or observing it cannot alter generated wrapper bytes. Repeated morning runs
+validate and reuse the first immutable plan-bound sports artifact instead of
+trying to retarget an already scheduled sidecar to each later cache snapshot.
+The recognized legacy authorization-bound wrapper is migrated once to the
+canonical form; arbitrary byte differences still fail closed.
+
+Post-draw parallel comparison validates the serialized scheduler plan's
+content-derived plan ID, drawing identity and output binding. It deliberately
+does not reopen the shared schedule-evidence ledger, because that append-only
+ledger is expected to advance for later drawings after the operational plan is
+frozen. Package and comparison bytes remain protected by their existing exact
+hash chain.
+
 ## Automatic non-blocking four-strategy sidecar (2026-09-01)
 
 Every generated morning wrapper now requests an isolated T-30 parallel

@@ -52,6 +52,7 @@ class ParallelSidecarArtifacts:
     sports_artifact_path: Path
     authorization_path: Path | None
     scheduled_at: datetime
+    reused: bool
 
 
 def prepare_parallel_sidecar_artifacts(
@@ -68,14 +69,25 @@ def prepare_parallel_sidecar_artifacts(
     plan = load_scheduler_plan(plan_path)
     if not sports_path.is_relative_to(plan.project_root):
         raise ValueError("sports artifact must remain inside project_root")
-    authorization_path = (
-        None
-        if parallel_authorization_path is None
-        else _regular_file(
+    root = plan.output_dir / "parallel-challenger"
+    discovered_authorization = root / PARALLEL_AUTHORIZATION_FILENAME
+    if parallel_authorization_path is None:
+        authorization_path = (
+            _regular_file(
+                discovered_authorization,
+                "parallel release authorization",
+            )
+            if (
+                discovered_authorization.exists()
+                or discovered_authorization.is_symlink()
+            )
+            else None
+        )
+    else:
+        authorization_path = _regular_file(
             parallel_authorization_path,
             "parallel release authorization",
         )
-    )
     if authorization_path is not None:
         _validate_parallel_authorization(plan, authorization_path)
     executable = Path(python_command).absolute()
@@ -86,12 +98,22 @@ def prepare_parallel_sidecar_artifacts(
     if not executable_target.is_file():
         raise ValueError("python command must resolve to a regular file")
 
-    root = plan.output_dir / "parallel-challenger"
     root.mkdir(parents=True, exist_ok=True)
     if root.is_symlink() or not root.is_dir():
         raise ValueError("parallel sidecar root must be a regular directory")
     wrapper_path = root / PARALLEL_SIDECAR_WRAPPER_FILENAME
     launch_agent_path = root / PARALLEL_SIDECAR_LAUNCH_AGENT_FILENAME
+    if wrapper_path.exists() != launch_agent_path.exists():
+        raise ValueError("parallel sidecar artifact set is incomplete")
+    reused = wrapper_path.exists()
+    if reused:
+        executable, sports_path = _existing_parallel_wrapper_binding(
+            wrapper_path=wrapper_path,
+            plan=plan,
+            plan_path=plan_path,
+            root=root,
+            authorization_path=authorization_path,
+        )
     label = f"com.totoai.parallel-sidecar.v1.{plan.plan_id}"
     if not _PARALLEL_SIDECAR_LABEL.fullmatch(label):
         raise ValueError("parallel sidecar label is invalid")
@@ -112,14 +134,27 @@ def prepare_parallel_sidecar_artifacts(
         "--minimum-runtime-seconds",
         "240",
     ]
-    if authorization_path is not None:
-        command.extend(("--parallel-authorization", str(authorization_path)))
     wrapper = (
         "#!/bin/zsh\n"
         "set -eu\n"
         f"cd {shlex.quote(str(plan.project_root))}\n"
         f"exec {shlex.join(command)}\n"
     ).encode()
+    accepted_existing_wrappers: tuple[bytes, ...] = ()
+    if authorization_path is not None:
+        legacy_command = [
+            *command,
+            "--parallel-authorization",
+            str(authorization_path),
+        ]
+        accepted_existing_wrappers = (
+            (
+                "#!/bin/zsh\n"
+                "set -eu\n"
+                f"cd {shlex.quote(str(plan.project_root))}\n"
+                f"exec {shlex.join(legacy_command)}\n"
+            ).encode(),
+        )
     local = scheduled_at.astimezone(_MOSCOW)
     plist = plistlib.dumps(
         {
@@ -140,7 +175,12 @@ def prepare_parallel_sidecar_artifacts(
         fmt=plistlib.FMT_XML,
         sort_keys=True,
     )
-    _write_expected(wrapper_path, wrapper, mode=0o700)
+    _write_expected(
+        wrapper_path,
+        wrapper,
+        mode=0o700,
+        accepted_existing=accepted_existing_wrappers,
+    )
     _write_expected(launch_agent_path, plist, mode=0o600)
     return ParallelSidecarArtifacts(
         root=root,
@@ -150,6 +190,7 @@ def prepare_parallel_sidecar_artifacts(
         sports_artifact_path=sports_path,
         authorization_path=authorization_path,
         scheduled_at=scheduled_at,
+        reused=reused,
     )
 
 
@@ -891,14 +932,104 @@ def _write_replace(path: Path, content: bytes) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def _write_expected(path: Path, content: bytes, *, mode: int) -> None:
+def _existing_parallel_wrapper_binding(
+    *,
+    wrapper_path: Path,
+    plan: object,
+    plan_path: Path,
+    root: Path,
+    authorization_path: Path | None,
+) -> tuple[Path, Path]:
+    """Validate and reuse the immutable input already bound to one plan."""
+
+    wrapper = _regular_file(wrapper_path, "parallel sidecar wrapper")
+    try:
+        lines = wrapper.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError) as error:
+        raise ValueError("parallel sidecar wrapper is invalid") from error
+    if (
+        len(lines) != 4
+        or lines[:2] != ["#!/bin/zsh", "set -eu"]
+        or shlex.split(lines[2]) != ["cd", str(plan.project_root)]
+        or not lines[3].startswith("exec ")
+    ):
+        raise ValueError("parallel sidecar wrapper binding mismatch")
+    try:
+        command = shlex.split(lines[3][len("exec ") :])
+    except ValueError as error:
+        raise ValueError("parallel sidecar wrapper command is invalid") from error
+    if len(command) not in {14, 16} or command[1:4] != [
+        "-m",
+        "toto_ai.cli",
+        "run-final-goal-hybrid-sidecar",
+    ]:
+        raise ValueError("parallel sidecar wrapper command mismatch")
+    option_tokens = command[4:]
+    if len(option_tokens) % 2:
+        raise ValueError("parallel sidecar wrapper options are invalid")
+    options: dict[str, str] = {}
+    for name, value in zip(option_tokens[::2], option_tokens[1::2], strict=True):
+        if name in options:
+            raise ValueError("parallel sidecar wrapper option is duplicated")
+        options[name] = value
+    required = {
+        "--scheduler-plan",
+        "--sports-artifact",
+        "--output-root",
+        "--wait-seconds",
+        "--minimum-runtime-seconds",
+    }
+    allowed = required | {"--parallel-authorization"}
+    if set(options) - allowed or not required.issubset(options):
+        raise ValueError("parallel sidecar wrapper options mismatch")
+    if (
+        Path(options["--scheduler-plan"]).absolute() != plan_path
+        or Path(options["--output-root"]).absolute() != root / "output"
+        or options["--wait-seconds"] != "900"
+        or options["--minimum-runtime-seconds"] != "240"
+    ):
+        raise ValueError("parallel sidecar wrapper plan binding mismatch")
+    bound_authorization = options.get("--parallel-authorization")
+    if bound_authorization is not None and (
+        authorization_path is None
+        or Path(bound_authorization).absolute() != authorization_path
+    ):
+        raise ValueError("parallel sidecar wrapper authorization mismatch")
+    executable = Path(command[0]).absolute()
+    try:
+        executable_target = executable.resolve(strict=True)
+    except OSError as error:
+        raise ValueError("parallel sidecar wrapper Python is missing") from error
+    if not executable_target.is_file():
+        raise ValueError("parallel sidecar wrapper Python is invalid")
+    sports_path = _regular_file(
+        options["--sports-artifact"],
+        "parallel sidecar sports artifact",
+    )
+    if not sports_path.is_relative_to(plan.project_root):
+        raise ValueError("parallel sidecar sports artifact binding mismatch")
+    return executable, sports_path
+
+
+def _write_expected(
+    path: Path,
+    content: bytes,
+    *,
+    mode: int,
+    accepted_existing: tuple[bytes, ...] = (),
+) -> None:
     """Create an immutable generated file or verify its exact existing bytes."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.parent.is_symlink() or path.is_symlink():
         raise ValueError("sidecar artifact path cannot traverse a symlink")
     if path.exists():
-        if not path.is_file() or path.read_bytes() != content:
+        if not path.is_file():
+            raise ValueError("parallel sidecar artifact conflicts with expected bytes")
+        existing = path.read_bytes()
+        if existing in accepted_existing:
+            _write_replace(path, content)
+        elif existing != content:
             raise ValueError("parallel sidecar artifact conflicts with expected bytes")
         path.chmod(mode)
         return

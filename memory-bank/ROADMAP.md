@@ -1,5 +1,18 @@
 # Roadmap
 
+## 2026-09-02 noon operational validation
+
+- [x] Observe the drawing 4993 12:00 MSK primary post-draw settlement.
+- [x] Remove the invalid dependency of post-draw comparison on later mutable
+  schedule-ledger bytes and recover the exact four-strategy comparison.
+- [x] Make repeated sidecar preparation authorization-independent and safely
+  reusable across later morning snapshots.
+- [x] Observe a real 12:15 MSK LaunchAgent retry for drawing 4994 completing
+  with all four strategies activated and the primary scheduler unaffected.
+- [ ] Observe technical training transition from controlled deferral if the
+  pool-supported coupon capacity grows sufficiently before the evening run.
+- [ ] Observe drawing 4994 primary checkpoints and T-30 parallel execution.
+
 ## 2026-09-01 automatic parallel challenger lifecycle
 
 - [x] Preserve scheduler-owned morning training for drawing 4994 and future

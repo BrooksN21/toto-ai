@@ -376,7 +376,10 @@ from toto_ai.sports_stats.operation import (
 from toto_ai.sports_stats.preliminary_comparison import (
     compare_preliminary_packages,
 )
-from toto_ai.sports_stats.probabilities import write_shadow_probability_artifact
+from toto_ai.sports_stats.probabilities import (
+    load_shadow_probability_artifact,
+    write_shadow_probability_artifact,
+)
 from toto_ai.sports_stats.shadow_operation import (
     build_and_write_sports_probability_shadow,
     evaluate_stored_sports_probability_shadow,
@@ -4358,6 +4361,9 @@ def morning_dispatch_command(
                             python_command=python_executable,
                             parallel_authorization_path=authorization_path,
                         )
+                        bound_sports = load_shadow_probability_artifact(
+                            parallel_artifacts.sports_artifact_path
+                        )
                         if activate:
                             activate_parallel_sidecar_launch_agent(
                                 parallel_artifacts
@@ -4390,12 +4396,15 @@ def morning_dispatch_command(
                             "launch_agent_label": (
                                 parallel_artifacts.launch_agent_label
                             ),
-                            "sports_artifact": str(sports_artifact_path),
-                            "sports_coverage_count": (
-                                sports_v2.sports_coverage_count
+                            "sports_artifact": str(
+                                parallel_artifacts.sports_artifact_path
                             ),
+                            "sports_coverage_count": (
+                                bound_sports.sports_coverage_count
+                            ),
+                            "reused": parallel_artifacts.reused,
                             "parallel_release_authorized": (
-                                authorization_path is not None
+                                parallel_artifacts.authorization_path is not None
                             ),
                             "primary_scheduler_affected": False,
                             "automatic_wagering": False,
@@ -7063,6 +7072,9 @@ def parallel_sidecar_prepare_command(
             python_command=python_executable,
             parallel_authorization_path=authorization_path,
         )
+        bound_sports = load_shadow_probability_artifact(
+            artifacts.sports_artifact_path
+        )
         if activate:
             activate_parallel_sidecar_launch_agent(artifacts)
     except (OSError, TypeError, ValueError) as error:
@@ -7081,12 +7093,15 @@ def parallel_sidecar_prepare_command(
                     "quality-v3",
                     "robust",
                 ],
-                "sports_coverage_count": sports_v2.sports_coverage_count,
-                "sports_artifact": str(sports_path),
+                "sports_coverage_count": bound_sports.sports_coverage_count,
+                "sports_artifact": str(artifacts.sports_artifact_path),
                 "scheduled_at": artifacts.scheduled_at.isoformat(),
                 "launch_agent": str(artifacts.launch_agent_path),
                 "launch_agent_label": artifacts.launch_agent_label,
-                "parallel_release_authorized": authorization_path is not None,
+                "parallel_release_authorized": (
+                    artifacts.authorization_path is not None
+                ),
+                "reused": artifacts.reused,
                 "primary_scheduler_affected": False,
                 "automatic_wagering": False,
             },

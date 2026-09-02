@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import plistlib
+import shlex
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -50,7 +51,10 @@ def test_prepare_parallel_sidecar_artifacts_is_idempotent_and_t30_bound(
         python_command=sys.executable,
     )
 
-    assert first == second
+    assert first.wrapper_path == second.wrapper_path
+    assert first.launch_agent_path == second.launch_agent_path
+    assert first.reused is False
+    assert second.reused is True
     assert first.scheduled_at == datetime(2026, 9, 2, 13, 30, tzinfo=UTC)
     wrapper = first.wrapper_path.read_text(encoding="utf-8")
     assert "run-final-goal-hybrid-sidecar" in wrapper
@@ -65,6 +69,91 @@ def test_prepare_parallel_sidecar_artifacts_is_idempotent_and_t30_bound(
         "Hour": 16,
         "Minute": 30,
     }
+
+
+def test_prepare_parallel_sidecar_migrates_authorization_bound_wrapper(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    plan_path = tmp_path / "scheduler-plan.json"
+    sports_path = tmp_path / "sports.json"
+    plan_path.write_text("{}", encoding="utf-8")
+    sports_path.write_text("{}", encoding="utf-8")
+    output = tmp_path / "evening"
+    output.mkdir()
+    plan = SimpleNamespace(
+        project_root=tmp_path,
+        output_dir=output,
+        plan_id="c" * 16,
+        operational_cutoff=datetime(2026, 9, 2, 14, 0, tzinfo=UTC),
+    )
+    monkeypatch.setattr(final_hybrid_sidecar, "load_scheduler_plan", lambda _: plan)
+    first = final_hybrid_sidecar.prepare_parallel_sidecar_artifacts(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        python_command=sys.executable,
+    )
+    canonical = first.wrapper_path.read_bytes()
+    authorization = first.root / final_hybrid_sidecar.PARALLEL_AUTHORIZATION_FILENAME
+    authorization.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(
+        final_hybrid_sidecar,
+        "_validate_parallel_authorization",
+        lambda *_args, **_kwargs: {},
+    )
+    legacy = (
+        canonical.decode("utf-8").rstrip("\n")
+        + " --parallel-authorization "
+        + shlex.quote(str(authorization))
+        + "\n"
+    ).encode()
+    first.wrapper_path.write_bytes(legacy)
+
+    migrated = final_hybrid_sidecar.prepare_parallel_sidecar_artifacts(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        python_command=sys.executable,
+    )
+
+    assert migrated.authorization_path == authorization
+    assert migrated.wrapper_path.read_bytes() == canonical
+    assert b"--parallel-authorization" not in migrated.wrapper_path.read_bytes()
+
+
+def test_prepare_parallel_sidecar_reuses_first_frozen_sports_input(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    plan_path = tmp_path / "scheduler-plan.json"
+    first_sports = tmp_path / "sports-first.json"
+    later_sports = tmp_path / "sports-later.json"
+    plan_path.write_text("{}", encoding="utf-8")
+    first_sports.write_text("{}", encoding="utf-8")
+    later_sports.write_text('{"later":true}', encoding="utf-8")
+    output = tmp_path / "evening"
+    output.mkdir()
+    plan = SimpleNamespace(
+        project_root=tmp_path,
+        output_dir=output,
+        plan_id="d" * 16,
+        operational_cutoff=datetime(2026, 9, 2, 14, 0, tzinfo=UTC),
+    )
+    monkeypatch.setattr(final_hybrid_sidecar, "load_scheduler_plan", lambda _: plan)
+    first = final_hybrid_sidecar.prepare_parallel_sidecar_artifacts(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=first_sports,
+        python_command=sys.executable,
+    )
+
+    reused = final_hybrid_sidecar.prepare_parallel_sidecar_artifacts(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=later_sports,
+        python_command=sys.executable,
+    )
+
+    assert reused.reused is True
+    assert reused.sports_artifact_path == first.sports_artifact_path
+    assert str(later_sports) not in reused.wrapper_path.read_text(encoding="utf-8")
 
 
 def test_activate_parallel_sidecar_installs_verified_plist(
