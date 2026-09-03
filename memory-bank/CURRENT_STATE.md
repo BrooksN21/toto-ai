@@ -1,5 +1,34 @@
 # Current State
 
+## Drawing 4996 authorization and drawing 4995 post-draw recovery (2026-09-03)
+
+- Drawing 4996 plan `0d8c2cdfb10ef9c5` has an exact, immutable experimental
+  manual-release authorization for 4,980 RUB / stake 30 through T-10 at
+  2026-09-04 19:20 MSK. Profitability is explicitly unproven; wagering remains
+  manual-only and no automatic bet path exists.
+- Commit `2302580` (`Fix scheduler evidence races and post-draw discovery`) is
+  pushed to `origin/main`. It includes the concurrent-probability adoption,
+  immutable per-plan schedule-evidence binding, crash-recovery rebinding and
+  canonical parallel post-draw discovery fixes. Its verified baseline was
+  2,300 passed / 13 deselected with Ruff clean.
+- Drawing 4995 exposed a separate lifecycle defect: a terminal integrity error
+  during warmup bypassed normal finalization, so no post-draw job was created.
+  The generic fix now invokes advisory post-draw preparation for every early
+  terminal tick failure, binding a verified last-known-good package as
+  non-actionable `NO BET` evidence when available and otherwise using a
+  package-free binding. The regression test reproducing the 4995 sequence
+  passes; the related post-draw set is 25 passed.
+- Exact recovery launcher `com.toto-ai.post-draw-12092` is installed and loaded.
+  Its candidate and installed plist hashes match. It will first run on
+  2026-09-04 at 12:00 MSK, retry every three hours up to six attempts, and
+  settle the exact 166-coupon / 4,980-RUB pre-final LKG package. Automatic
+  wagering is false.
+- Remaining P0 operations work is owner-visible delivery receipt/retry (P0.9)
+  and automatic pre-evening owner intent/authorization prompting (P0.10).
+  Forecast work remains F2 equal-input replay completion followed by Sports
+  Analytics v3 and chronological calibration; no strategy has demonstrated
+  profitability.
+
 ## Constrained quality-v3/robust replay (2026-09-02)
 
 - Quality-v3 and robust construction now use quality-v2-style lower exposure

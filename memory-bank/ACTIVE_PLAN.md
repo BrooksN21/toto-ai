@@ -107,6 +107,11 @@ not reset this plan.
   `parallel-challenger/output/sidecar-status.json`. Preserve a bounded legacy
   fallback for `output-final`, but never silently omit the four-model
   post-draw comparison because producer and consumer disagree on the directory.
+- [x] P0.12 Keep post-draw synchronization independent from evening scheduler
+  success. An early terminal integrity/permanent failure must prepare and, for
+  a loaded scheduler, install the exact non-wagering post-draw lifecycle. Bind
+  the verified last-known-good package for analysis when available; otherwise
+  use an explicit package-free `NO BET` binding.
 
 ## Forecast improvement checklist
 
@@ -189,17 +194,23 @@ not reset this plan.
   `com.totoai.status-watcher.v1.0d8c2cdfb10ef9c5` is loaded for 17:30 MSK;
   the matching five-minute chat heartbeat has been proposed in Codex Desktop.
   Events 7, 11 and 13 were closed with hash-bound official-plus-independent
-  public schedule evidence.
+  public schedule evidence. Exact experimental manual-release authorization
+  was recorded on 2026-09-03 for bank 4,980 RUB / stake 30 and expires at T-10,
+  2026-09-04 19:20 MSK. Profitability remains unproven and automatic wagering
+  remains prohibited.
 - [x] P0.5 drawing 4994 post-draw completed automatically at 12:00 MSK:
   quality-v2 best hit count was 10/15, with no 13+/14+/15 coupon. The review
   remained local despite `notification.status=sent`; P0.9 tracks the delivery
   defect.
-- [ ] Drawing 4995 terminated during warmup at 18:05 MSK after a concurrent
+- [x] Drawing 4995 terminated during warmup at 18:05 MSK after a concurrent
   fresher market snapshot overtook the scheduler's in-flight snapshot. A
   validated 166-coupon / 4,980 RUB pre-final checkpoint existed but was
   non-actionable; no plan-bound experimental authorization was recorded, the
   sidecar skipped because operator PLAY was absent, and the package expired at
-  18:45 MSK. P0.7, P0.8 and P0.10 track the independent causes.
+  18:45 MSK. P0.7 and P0.8 fixed the triggering races. P0.12 now covers the
+  independent lifecycle gap: exact post-draw LaunchAgent
+  `com.toto-ai.post-draw-12092` is installed for 2026-09-04 12:00 MSK and is
+  hash-bound to that non-actionable LKG package for settlement only.
 - [x] The P0.7 race now preserves a slightly newer concurrently persisted
   probability snapshot while still rejecting materially stale evidence. The
   P0.8 plan builder now copies the exact schedule ledger and referenced review

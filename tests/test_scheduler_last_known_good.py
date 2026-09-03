@@ -4,8 +4,12 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
+
 from tests.schedule_evidence_helpers import write_empty_schedule_evidence_ledger
 from toto_ai.api.rate_limit import TotoBriefRequestError
+from toto_ai.db.models import Drawing
+from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.runner.scheduler import (
     SchedulerIntegrityError,
     SchedulerPhaseResult,
@@ -175,6 +179,83 @@ def test_t60_canary_lkg_survives_later_source_outage(tmp_path: Path):
     status = json.loads(result.status_path.read_text(encoding="utf-8"))
     assert status["operator_status"] == "LAST_KNOWN_GOOD_DEGRADED"
     assert status["provenance"] == "LAST_KNOWN_GOOD"
+
+
+def test_terminal_warmup_integrity_failure_installs_lkg_post_draw(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    from toto_ai.runner import scheduler as scheduler_module
+
+    plan = _plan(tmp_path)
+    engine = init_db(plan.db)
+    with get_session_factory(engine).begin() as session:
+        session.add(
+            Drawing(
+                id=plan.drawing_id,
+                number=plan.drawing,
+                name="baltbet-main",
+                ended_at=ENDED_AT.isoformat(),
+                status="active",
+            )
+        )
+    engine.dispose()
+    clock = _Clock(plan.freshness_preflight_at)
+    installed: list[tuple[Path, Path]] = []
+
+    monkeypatch.setattr(
+        scheduler_module,
+        "_scheduler_launch_agent_is_loaded",
+        lambda _plan: True,
+    )
+    monkeypatch.setattr(
+        scheduler_module,
+        "_post_draw_source_ended_at",
+        lambda _plan, _run_dir: ENDED_AT,
+    )
+
+    def install(plan_path: Path, plist_path: Path):
+        installed.append((Path(plan_path), Path(plist_path)))
+        return {
+            "label": f"com.toto-ai.post-draw-{plan.drawing_id}",
+            "installed_path": str(tmp_path / "installed.plist"),
+            "installed_verified": True,
+            "loaded_verified": True,
+            "active": True,
+        }
+
+    monkeypatch.setattr(
+        "toto_ai.operations.finished_draw.install_post_draw_launch_agent",
+        install,
+    )
+
+    def runner(context):
+        if context.scheduler_phase == "freshness_preflight":
+            return _candidate(source_captured_at=plan.freshness_preflight_at)
+        raise SchedulerIntegrityError(
+            "probability snapshot superseded during warmup",
+            category="probability_snapshot_integrity",
+        )
+
+    assert _tick(plan, runner, clock) is None
+    clock.current = plan.preflight_at
+
+    with pytest.raises(
+        SchedulerIntegrityError,
+        match="probability snapshot superseded",
+    ):
+        _tick(plan, runner, clock)
+
+    assert len(installed) == 1
+    post_draw = json.loads(installed[0][0].read_text(encoding="utf-8"))
+    assert post_draw["package_binding"]["kind"] == "package"
+    assert post_draw["automation_installation"] is True
+    paper = load_paper_package(plan)
+    assert paper.decision == "NO BET"
+    assert paper.actionable is False
+    assert paper.count == 166
+    assert paper.cost == 4980
+    assert paper.provenance == "LAST_KNOWN_GOOD"
 
 
 def test_4972_refresh_429_and_slow_final_deliver_lkg_before_t10(tmp_path: Path):

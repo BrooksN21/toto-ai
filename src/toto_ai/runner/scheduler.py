@@ -2612,6 +2612,12 @@ def execute_scheduler_tick(
             )
             save_state(state_path, state)
             if integrity or (permanent and phase == "final"):
+                _ensure_failed_tick_post_draw_plan_candidate(
+                    plan,
+                    run_dir=run_dir,
+                    reason=_safe_error(error),
+                    completed_at=completed,
+                )
                 raise
             if phase == "final" and scheduled_at >= plan.retry_at:
                 return _finalize_tick_from_lkg_or_no_bet(
@@ -5940,6 +5946,51 @@ def _ensure_post_draw_plan_candidate(
         except Exception:
             # Advisory reporting must never trigger a second primary finalization.
             return
+
+
+def _ensure_failed_tick_post_draw_plan_candidate(
+    plan: SchedulerPlan,
+    *,
+    run_dir: Path,
+    reason: str,
+    completed_at: datetime,
+) -> None:
+    """Keep post-draw settlement alive after an early terminal tick failure.
+
+    A terminal integrity/permanent failure bypasses normal scheduler
+    finalization.  Post-draw result synchronization is independent from wager
+    publication, so bind the latest verified pre-final package for analysis
+    when one exists, otherwise create a package-free NO BET lifecycle.
+    """
+
+    terminal_status: dict[str, object] = {
+        "outcome": "failed",
+        "decision": "FAILED",
+        "reason": f"terminal scheduler failure: {reason}",
+        "package_path": None,
+        "selected_count": None,
+        "selected_cost": None,
+        "provenance": None,
+    }
+    try:
+        package = _load_last_known_good(plan)
+    except Exception:
+        package = None
+    if package is not None:
+        terminal_status.update(
+            {
+                "package_path": str(package.path.parent / "package.csv"),
+                "selected_count": package.selected_count,
+                "selected_cost": package.selected_cost,
+                "provenance": "LAST_KNOWN_GOOD",
+            }
+        )
+    _ensure_post_draw_plan_candidate(
+        plan,
+        run_dir=run_dir,
+        terminal_status=terminal_status,
+        completed_at=completed_at,
+    )
 
 
 def _scheduler_launch_agent_is_loaded(plan: SchedulerPlan) -> bool:
