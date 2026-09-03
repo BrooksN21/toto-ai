@@ -57,7 +57,7 @@ def test_experimental_release_cli_writes_plan_bound_non_wagering_record(tmp_path
     assert result.exit_code == 0, result.output
     path = plan.output_dir / "experimental-manual-release-authorization.json"
     payload = json.loads(path.read_text())
-    assert payload["plan_id"] == plan.plan_id
+    assert payload["plan_id"] == artifacts.plan.plan_id
     assert payload["drawing"] == plan.drawing
     assert payload["requested_bank"] == 4980
     assert payload["risk_acknowledged"] is True

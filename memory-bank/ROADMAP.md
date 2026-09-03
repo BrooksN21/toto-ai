@@ -1,5 +1,34 @@
 # Roadmap
 
+The binding execution order and always-visible status checklist are maintained
+in `memory-bank/ACTIVE_PLAN.md`. Complete its P0 items before forecast work;
+continue the daily automation/settlement cycle in parallel.
+
+## 2026-09-02 immediate recovery after drawing 4994
+
+- [x] Finish and test canonical project-`.venv` binding plus validated
+  migration for generated parallel-sidecar wrappers.
+- [x] Run an import smoke before parallel LaunchAgent installation.
+- [x] Make zero/missing early pool a training-only deferral so morning dispatch
+  still prepares drawing 4995 timing evidence and scheduler artifacts.
+- [x] Resolve drawing 4995's remaining 3/15 unknown kickoff times and observe
+  one real automatic preparation/preflight.
+- [x] Observe one real automatic 4995 preparation/preflight before relying on
+  the evening LaunchAgent; then attach a five-minute status-only thread
+  heartbeat to the exact plan.
+- [x] Add a canonical plan-bound scheduler status command and read-only local
+  watcher; prepare drawing 4995 watcher output from the first checkpoint.
+- [ ] Observe and report the automatic four-package drawing-4994 post-draw run
+  from its 2026-09-03 12:00 MSK checkpoint.
+- [x] Add quality-v2 exposure floors and control-relative concentration limits
+  inside quality-v3 and robust generation.
+- [ ] Complete equal-bank constrained replay: 4990-4993 are complete with zero
+  13+ hits; add 4994 after authoritative post-draw results arrive.
+- [ ] Continue Sports Analytics v3 with leakage-safe chronological residual
+  features and walk-forward calibration before any activation decision.
+- [x] Consolidate the two-week operational/compaction handoff in
+  `memory-bank/OPERATIONS_HANDOFF.md`.
+
 ## 2026-09-02 noon operational validation
 
 - [x] Observe the drawing 4993 12:00 MSK primary post-draw settlement.
@@ -31,8 +60,9 @@
 
 ## 2026-09-01 drawing 4993/4994 operational handoff
 
-- [x] Keep drawing 4993 post-draw bound to the owner-selected quality-v2
-  package and verify its LaunchAgent for 2026-09-02 12:00 MSK.
+- [x] Keep drawing 4993 post-draw bound to its exact archived primary package
+  for historical settlement without treating that one-off choice as future
+  model policy; verify its LaunchAgent for 2026-09-02 12:00 MSK.
 - [x] Add automatic exact settlement of the frozen quality-v2, sports-shadow,
   quality-v3 and robust sidecar packages after the primary result snapshot is
   complete, without changing operator behavior.
@@ -1441,5 +1471,25 @@ closed.
   15/15; first checkpoint is 2026-09-02 15:00 MSK and T-10 is 16:50 MSK.
 - [x] Classify an infeasible six-coupon early-pool training seed as a fast,
   controlled deferral without weakening quality-v2 or scheduler activation.
-- [ ] Capture Sports v2 and parallel challengers without delaying the primary
-  operator result.
+- [x] Capture and settle Sports v2 and parallel challengers without delaying
+  the primary operator result. All four drawing-4994 packages reached 10/15 and
+  none reached 13+.
+
+# 2026-09-03 operational recovery and drawing 4996
+
+- [x] Diagnose drawing-4995 failure as a concurrent probability-snapshot race,
+  not a Cover Engine timeout.
+- [x] Preserve a slightly newer concurrently persisted probability snapshot
+  while retaining strict rejection of materially stale evidence.
+- [x] Bind new scheduler plans to immutable plan-local schedule evidence rather
+  than mutable global ledger bytes.
+- [x] Repair canonical parallel-sidecar discovery in post-draw settlement.
+- [x] Resolve all three drawing-4996 timing gaps with hash-bound
+  official-plus-independent public evidence and reach READY 15/15.
+- [x] Activate schema-v9 drawing-4996 plan `0d8c2cdfb10ef9c5` for the 19:30 MSK
+  cutoff and 19:20 MSK T-10 boundary.
+- [x] Complete full operational verification after immutable-plan migration:
+  2,300 tests passed, 13 deselected, Ruff clean.
+- [ ] Observe owner-facing post-draw delivery with a verifiable receipt.
+- [ ] Obtain drawing-4996 wager intent and exact plan-bound authorization before
+  the first evening calculation if a manual wager is planned.

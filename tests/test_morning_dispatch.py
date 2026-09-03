@@ -635,7 +635,8 @@ def test_actual_4964_current_plan_candidate_label_is_installable(
         return SimpleNamespace(returncode=0, stderr="")
 
     assert candidate["Label"] == (
-        f"com.totoai.production-scheduler.v{SCHEDULER_SCHEMA_VERSION}.{plan.plan_id}"
+        "com.totoai.production-scheduler."
+        f"v{SCHEDULER_SCHEMA_VERSION}.{artifacts.plan.plan_id}"
     )
 
     activate_scheduler_launch_agent(
@@ -890,7 +891,7 @@ def test_existing_exact_artifacts_are_reused_after_crash_before_record_write(
         schedule_evidence_ledger=config.schedule_evidence_ledger,
         env_file=config.env_file,
     )
-    prepare_scheduler_artifacts(plan, python_command=sys.executable)
+    prepared = prepare_scheduler_artifacts(plan, python_command=sys.executable)
 
     result = dispatch_morning(
         config,
@@ -901,7 +902,7 @@ def test_existing_exact_artifacts_are_reused_after_crash_before_record_write(
     )
 
     assert result.status == "scheduled"
-    assert result.plan_id == plan.plan_id
+    assert result.plan_id == prepared.plan.plan_id
     assert len(tuple(config.scheduler_root.rglob("scheduler-plan.json"))) == 1
 
 
@@ -1372,7 +1373,7 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
             status="reused",
             reason="ready",
             record_path=tmp_path / "ready.json",
-            plan_id=plan.plan_id,
+            plan_id=artifacts.plan.plan_id,
             plan_path=artifacts.plan_path,
             launch_agent_path=artifacts.launch_agent_path,
             activation_status="activated",
@@ -1435,7 +1436,9 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
     )
     parallel = SimpleNamespace(
         scheduled_at=observed + timedelta(hours=11, minutes=30),
-        launch_agent_label="com.totoai.parallel-sidecar.v1." + plan.plan_id,
+        launch_agent_label=(
+            "com.totoai.parallel-sidecar.v1." + artifacts.plan.plan_id
+        ),
         sports_artifact_path=sports_path,
         authorization_path=authorization,
         reused=False,
@@ -1493,7 +1496,7 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
         "drawing_number": 4994,
         "launch_agent_label": parallel.launch_agent_label,
         "parallel_release_authorized": True,
-        "plan_id": plan.plan_id,
+        "plan_id": payload["plan_id"],
         "primary_scheduler_affected": False,
         "reused": False,
         "scheduled_at": parallel.scheduled_at.isoformat(),
@@ -1529,7 +1532,7 @@ def test_ready_morning_cli_ensures_scheduler_owned_training_package(
             status="scheduled",
             reason="ready",
             record_path=tmp_path / "ready.json",
-            plan_id=plan.plan_id,
+            plan_id=artifacts.plan.plan_id,
             plan_path=artifacts.plan_path,
             launch_agent_path=artifacts.launch_agent_path,
             activation_status="generated",
@@ -1608,7 +1611,13 @@ def test_ready_morning_cli_ensures_scheduler_owned_training_package(
 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
-    assert calls == [(plan.plan_id, tmp_path / "ready.json", tmp_path / "data" / "raw")]
+    assert calls == [
+        (
+            artifacts.plan.plan_id,
+            tmp_path / "ready.json",
+            tmp_path / "data" / "raw",
+        )
+    ]
     assert payload["training_package"] == {
         "actionable": False,
         "bank_usage_reason": "pool_cap",

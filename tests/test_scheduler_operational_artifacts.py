@@ -109,7 +109,7 @@ def test_scheduler_child_lead_matches_triggering_phase(
     assert command[stop_index] == expected_safety_stop
 
 
-def test_drawing_4967_plan_binds_canonical_ledger_path_and_hashes(
+def test_drawing_4967_plan_binds_immutable_ledger_snapshot_and_hashes(
     tmp_path: Path,
 ):
     env_file = _env_file(tmp_path / ".env")
@@ -130,13 +130,19 @@ def test_drawing_4967_plan_binds_canonical_ledger_path_and_hashes(
     loaded = load_scheduler_plan(artifacts.plan_path)
     payload = json.loads(artifacts.plan_path.read_text(encoding="utf-8"))
 
-    assert loaded.schedule_evidence_ledger == ledger_path.resolve()
+    assert loaded.schedule_evidence_ledger != ledger_path.resolve()
+    assert loaded.schedule_evidence_ledger.parent.parent == (
+        plan.output_dir / "bindings"
+    )
+    assert loaded.schedule_evidence_ledger.read_bytes() == ledger_path.read_bytes()
     assert (
         loaded.schedule_evidence_ledger_sha256
-        == hashlib.sha256(ledger_path.read_bytes()).hexdigest()
+        == hashlib.sha256(loaded.schedule_evidence_ledger.read_bytes()).hexdigest()
     )
     assert len(loaded.schedule_evidence_semantic_hash) == 64
-    assert payload["paths"]["schedule_evidence_ledger"] == str(ledger_path.resolve())
+    assert payload["paths"]["schedule_evidence_ledger"] == str(
+        loaded.schedule_evidence_ledger
+    )
     assert payload["config"]["schedule_evidence_ledger_sha256"] == (
         loaded.schedule_evidence_ledger_sha256
     )

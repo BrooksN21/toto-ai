@@ -75,6 +75,7 @@ _LATIN_COMPATIBILITY_FOLD = {
 
 _EXPECTED_REVIEWED_CATALOG_HASH_UNSET = object()
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
+_CONCURRENT_PROBABILITY_REFRESH_GRACE = timedelta(minutes=2)
 
 
 @dataclass(frozen=True)
@@ -1484,6 +1485,16 @@ def refresh_ready_drawing_preparation_evidence(
         ):
             raise ValueError("invalid stored ready preparation evidence")
         if incoming_fetched_at < stored_fetched_at:
+            if (
+                stored_fetched_at - incoming_fetched_at
+                <= _CONCURRENT_PROBABILITY_REFRESH_GRACE
+            ):
+                # Another collector can finish after this caller fetched the same
+                # drawing but before its compare-and-swap.  The persisted row is
+                # already the strictly newer evidence, so preserving it is the
+                # monotonic and idempotent result.  Materially stale evidence still
+                # fails closed below the grace boundary.
+                return
             raise ValueError("older probability evidence cannot replace newer evidence")
         if incoming_fetched_at == stored_fetched_at:
             if (

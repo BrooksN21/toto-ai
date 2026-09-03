@@ -1,5 +1,64 @@
 # Decisions
 
+## 2026-09-02 — Constrained challengers are safety work, not an edge claim
+
+- Quality-v3 and robust must enforce material-outcome exposure floors and
+  concentration limits during construction, not rely only on rejection after
+  generation. Their concentration may never exceed the exact quality-v2
+  control; an infeasible constrained path falls back to that control.
+- On drawings 4990-4993 the constrained robust selector improved average best
+  hits versus its previous form by 0.75, but all strategies still produced zero
+  13+ coupons. This validates the safety boundary only. It does not authorize
+  activation or support a superiority/profitability claim.
+
+## 2026-09-02 — Payout screenshots, cumulative coefficients and status delivery
+
+- A cropped owner screenshot is sufficient payout evidence when it visibly
+  binds the BaltBet drawing and shows category, winner count and coefficient.
+  Preserve the source bytes/hash and exact decimal transcription, show all
+  extracted values to the owner, and require explicit confirmation before
+  observed payout/profit/ROI calculations.
+- BaltBet's official rules define cumulative threshold coefficients. For a
+  coupon with `N` hits and stake `S`, gross payout is
+  `S * sum(coefficient[h] for h in 9..N)`. A package not actually placed may
+  receive only counterfactual payout analysis, never observed ROI.
+- Scheduler status has one canonical read-only, plan-bound JSON contract. A
+  local watcher records state changes from this contract; a Codex heartbeat
+  may only deliver that state to chat. Neither component starts, repairs or
+  mutates scheduler work.
+
+## 2026-09-02 — Early pool absence is deferral; payout coefficients stay exact
+
+- Zero, partially zero, missing, or blank early pool triplets are unavailable
+  crowd evidence, not invalid event/BK targets. They defer pool-dependent
+  training while preparation continues. Negative and non-finite values remain
+  data corruption and fail closed.
+- Generated parallel wrappers prefer the project `.venv`, may migrate only a
+  completely validated older wrapper binding, and must pass a real project
+  import smoke before LaunchAgent installation.
+- Owner screenshots may establish displayed winner counts and payout
+  coefficients. Coefficients remain exact decimal strings; their cumulative
+  per-ruble semantics are now verified from official rules. Owner confirmation
+  remains mandatory before observed ROI.
+
+## 2026-09-02 — Active plan survives compaction; one-off choices do not
+
+- `memory-bank/ACTIVE_PLAN.md` is the binding incomplete checklist until the
+  owner changes it or every item is complete. Every progress report uses its
+  done/in-progress/remaining/blocker/next-checkpoint format.
+- A one-off owner package choice is retained only as historical settlement
+  provenance. It is never a permanent model preference. Every future drawing
+  compares all eligible same-input candidates again.
+- LaunchAgent executes, the plan-bound local watcher observes, and a Codex
+  heartbeat only relays watcher state to the chat. Heartbeat-only replacement
+  of the local watcher is prohibited.
+- Before every final calculation, ask whether a manual wager is planned. If it
+  is, exact drawing/plan-bound pre-cutoff authorization is required even when
+  the default gate is expected to produce `NO_BET`.
+- Authenticated payout evidence may be supplied by the owner as a redacted,
+  drawing-bound screenshot. Extracted values require owner confirmation before
+  they become observed payout/ROI evidence.
+
 ## 2026-09-02 — Frozen workflows must not revalidate mutable global bytes
 
 - A post-draw comparison uses the content-derived ID of the frozen serialized
@@ -28,11 +87,11 @@
   TotoBrief detail-cache timestamp. This preserves chronology without
   discarding a valid earlier frozen sports collection.
 
-## 2026-09-01 — Post-draw keeps the selected control and compares challengers
+## 2026-09-01 — Post-draw keeps the factual primary and compares challengers
 
-- Drawing 4993's selected package is quality-v2; post-draw must settle that
-  package as the primary record and must not silently substitute the sidecar's
-  modeled selection.
+- Drawing 4993 post-draw must settle the exact archived primary package and
+  must not silently substitute the sidecar's modeled selection. This is
+  historical provenance, not a future preference for quality-v2.
 - If a final hash-bound sidecar exists, settle its exact quality-v2,
   sports-shadow, quality-v3 and robust packages against the same immutable
   terminal result as a separate aggregate comparison.
@@ -2501,3 +2560,23 @@ ambiguous reversed evidence remains unresolved.
 - This is a persistent reporting invariant because relying on conversational
   memory previously caused the first package row to be mislabelled as the best
   coupon for drawing 4993.
+
+## 2026-09-03 — Concurrent refreshes are monotonic, not fatal
+
+- If a concurrent process persists a newer same-drawing probability snapshot
+  while another refresh is in flight, a small bounded chronology overlap is a
+  successful no-op: preserve the already stored newer snapshot.
+- Materially older evidence remains an integrity error. The bounded concurrency
+  grace must not become a general stale-data override.
+
+## 2026-09-03 — Scheduler evidence bindings are immutable per plan
+
+- A new scheduler plan copies the exact schedule-evidence ledger and every
+  referenced review document into a plan-local binding directory before it
+  records content and semantic hashes.
+- Existing plans keep their original binding. Later additions to the global
+  ledger must not invalidate scheduler status or execution for an unrelated
+  immutable plan.
+- Post-draw comparison consumes the producer's canonical parallel-sidecar path
+  `parallel-challenger/output/sidecar-status.json`; `output-final` is only a
+  bounded compatibility fallback.

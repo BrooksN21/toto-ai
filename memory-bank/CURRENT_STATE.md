@@ -1,5 +1,92 @@
 # Current State
 
+## Constrained quality-v3/robust replay (2026-09-02)
+
+- Quality-v3 and robust construction now use quality-v2-style lower exposure
+  bounds, a hard concentration cap and a cap no looser than the exact control.
+  If a constrained greedy path cannot safely fill the package, it falls back
+  to the intact control rather than publishing an unsafe challenger.
+- Focused implementation verification: 140 optimizer/sidecar tests passed.
+  Full-project verification after all current changes: 2,297 passed / 13
+  deselected; Ruff is clean.
+- Equal-bank 4,980-RUB replay on completed drawings 4990-4993 produced average
+  best hits: quality-v2 10.00, sports 10.00, quality-v3 9.75 and robust 10.25.
+  Every strategy produced zero 13+ coupons. Robust changed versus its old
+  selector by +2, 0, -1 and +2 best hits respectively (average +0.75).
+- Reports are under `reports/research/constrained-hybrid-replay-v2/`. Drawing
+  4994 remains pending until authoritative results are available. This is a
+  structural safety improvement, not evidence of predictive superiority or
+  profitability.
+
+## Drawing 4995 ready, canonical status watcher and payout semantics (2026-09-02)
+
+- The three unresolved kickoff times were closed with two-source public
+  evidence per event. The schedule ledger verifies at 178 observations, 22
+  prepared reviews and 92 verified snapshots; semantic hash
+  `aa28891551b7dc9ba983addef2cb794769ea723d5038ca265a629681915e4aac`.
+- The generic morning LaunchAgent then automatically prepared drawing 4995
+  plan `bfc008b4298d8f31` at
+  `reports/rehearsal/evening-4995-20260903T155500Z/`. Quality-v2 is the protected
+  control; sports-shadow, quality-v3 and robust are isolated challengers. The
+  first checkpoint is 2026-09-03 16:55 MSK and T-10 expiry is 18:45 MSK.
+- `scheduler-status` now provides one read-only plan-bound status contract, and
+  the local watcher label `com.totoai.status-watcher.v1.bfc008b4298d8f31`
+  records only state changes without running or repairing scheduler work.
+- BaltBet's official rules verify that displayed category coefficients are
+  cumulative per-ruble thresholds. For `N` hits, gross payout is
+  `stake * sum(coefficient[9..N])`. The owner-supplied 4993 transcription still
+  requires explicit owner confirmation before observed ROI is enabled.
+- Focused verification completed: schedule-evidence tests 17 passed; canonical
+  scheduler-status tests 6 passed; focused Ruff checks are clean. Full-project
+  verification is still required before commit.
+
+## Binding active plan (2026-09-02)
+
+`memory-bank/ACTIVE_PLAN.md` is the mandatory incomplete checklist and status
+contract. It survives context compaction. A one-off manual model choice on any
+drawing, including 4993, is not a future strategy-selection rule. The correct
+status path is LaunchAgent execution, plan-bound local watcher observation, and
+Codex heartbeat chat delivery only.
+
+## P0 wrapper/pool repair and first payout evidence (2026-09-02)
+
+- Generated parallel wrappers now prefer the exact project `.venv` and safely
+  migrate a fully validated older system-Python wrapper. Activation runs
+  `import toto_ai; import toto_ai.cli` before installing the LaunchAgent and
+  fails before installation if the runtime is unusable. Focused verification:
+  14 sidecar tests passed; focused Ruff is clean.
+- Target parsing now treats zero, partially zero, missing, or blank early pool
+  values as unavailable pool evidence instead of invalidating the event/BK
+  target. Negative and non-finite values remain corruption. Focused
+  verification: 9 relevant target/sync/morning tests passed; Ruff is clean.
+- Drawing 4995's pool has since matured and all 15 kickoff times are verified;
+  automatic scheduler preparation completed under plan `bfc008b4298d8f31`.
+- The owner-supplied drawing-4993 BaltBet payout screenshot and an unconfirmed
+  exact transcription are stored under `data/payout-evidence/4993/`. Official
+  rules verify cumulative coefficient semantics, but owner confirmation is
+  still required before the record is eligible for observed ROI.
+
+## Consolidated operational handoff and drawing 4995 gap (2026-09-02)
+
+The verified two-week operational context, compaction recovery rules,
+LaunchAgent/heartbeat separation, incident ledger, package-delivery contract,
+and forecast plan are consolidated in `memory-bank/OPERATIONS_HANDOFF.md`.
+That file is mandatory reading after context compaction.
+
+Drawing 4994 primary quality-v2 completed and published 166 coupons / 4,980
+RUB before T-10, then expired at 16:50 MSK. Its automatically scheduled
+parallel sidecar failed because the generated wrapper froze system Python and
+could not import `toto_ai`; an exact `.venv` rerun completed before T-10 and
+the non-degradation selector retained quality-v2. The canonical `.venv`
+wrapper migration is currently an uncommitted, unverified implementation.
+
+Drawing 4995 (internal ID 12092) is active with 15 synchronized events. The
+generic morning LaunchAgent is loaded, but its 17:07 MSK transition attempt
+failed on an early zero/missing pool with `pool probability must be finite and
+positive`; no 4995 scheduler exists yet. Early-pool handling must defer only
+training and continue operational preparation. Drawing 4994 post-draw job is
+loaded for 2026-09-03 12:00 MSK with bounded three-hour retries.
+
 ## Drawing 4993 settlement and 4994 noon automation (2026-09-02)
 
 - The 12:00 MSK post-draw run for drawing 4993 completed primary settlement.
@@ -53,11 +140,11 @@
   16:50 MSK and the first checkpoint is 15:00 MSK. The exact primary
   experimental-manual authorization is present and valid through T-10.
   Automatic wagering remains disabled and profitability is unproven.
-- The package actually selected by the owner for drawing 4993 was
-  `quality-v2`, not `sports-shadow`. Post-draw LaunchAgent
-  `com.toto-ai.post-draw-12086` is loaded and correctly bound to the immutable
-  166-coupon quality-v2 package. Its first run is 2026-09-02 12:00 MSK, with
-  five three-hour fallback slots if terminal results are still incomplete.
+- Drawing 4993 post-draw remains bound to its immutable archived primary
+  package for factual settlement. That one-off historical choice is not a
+  preference or selection rule for future drawings. Post-draw LaunchAgent
+  `com.toto-ai.post-draw-12086` was loaded with five three-hour fallback slots
+  after its first 2026-09-02 12:00 MSK run.
 - The post-draw flow now detects the exact hash-bound final sidecar and, after
   the primary result snapshot is complete, settles all four already frozen
   equal-bank packages: quality-v2, sports-shadow, quality-v3 and robust. It
@@ -6238,3 +6325,48 @@ result validates and carries the selected strategy's package-bound record.
 Regression coverage proves that moving the strongest coupon away from the first
 row does not change selection. Verification: 2280 tests passed, 13 deselected;
 Ruff passed.
+
+## Drawings 4994-4996 operational repair (2026-09-03)
+
+Drawing 4994 completed and its automatic 12:00 MSK post-draw job produced the
+primary settlement, but the result stayed local instead of reaching the owner.
+Quality-v2 scored a best 10/15 with no 13+/14+/15 coupon. The post-draw consumer
+also looked for the parallel sidecar in legacy `output-final`; the producer's
+canonical path is `parallel-challenger/output/sidecar-status.json`. The
+consumer now prefers the canonical path and retains only a bounded legacy
+fallback. Recovered exact-package settlement shows quality-v2, sports-shadow,
+quality-v3 and robust all at 10/15 with no 13+ result. Payout and ROI remain
+unknown until authoritative payout evidence is supplied.
+
+Drawing 4995 had a valid 166-coupon / 4,980-RUB pre-final checkpoint, but it was
+non-actionable and expired at T-10. The scheduler terminated when a concurrent
+collector persisted a slightly newer market snapshot before the in-flight
+scheduler refresh committed its own snapshot. No drawing/plan-bound owner
+authorization existed, so a PLAY was impossible even without that race. A
+mutable global schedule ledger also made read-only status fail after unrelated
+ledger updates. The probability refresh now adopts a slightly newer
+concurrently persisted snapshot while materially stale evidence still fails;
+new scheduler plans bind an immutable plan-local schedule ledger plus every
+referenced review document.
+
+Drawing 4996 is synchronized as internal ID 12096 with a 2026-09-04 19:30 MSK
+cutoff and 19:20 MSK T-10. Three missing times were reviewed from two distinct
+public sources each: Estudiantes Rio Cuarto-Sarmiento Junin at 22:45 MSK,
+Aalesund-Start at 20:00 MSK and Osters IF-Nordic United at 20:00 MSK. The
+preflight is READY 15/15 and schema-v9 plan `0d8c2cdfb10ef9c5` is loaded as
+`com.totoai.production-scheduler.v9.0d8c2cdfb10ef9c5`, with the first checkpoint
+at 17:30 MSK. Automatic wagering remains forbidden. Owner wager intent and an
+exact pre-T-10 plan-bound experimental authorization are still required before
+an actionable experimental release.
+
+The operational repair is fully verified: 2,300 tests passed with 13
+deselected, Ruff is clean, and diff whitespace checks pass. Test and CLI
+fixtures now consistently use the immutable materialized scheduler plan ID;
+crash recovery verifies and reuses the persisted plan instead of comparing its
+plan-local schedule snapshot path against the mutable source-ledger path.
+The code, test and memory changes are preserved in a local commit that has not
+been pushed. The drawing-4996 read-only watcher LaunchAgent
+`com.totoai.status-watcher.v1.0d8c2cdfb10ef9c5` is loaded for the first 17:30
+MSK checkpoint, and a matching five-minute Codex heartbeat was proposed for
+chat delivery. Owner wager intent and exact plan-bound authorization remain
+the only known release prerequisites not yet recorded.

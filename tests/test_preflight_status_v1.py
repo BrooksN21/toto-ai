@@ -263,7 +263,7 @@ def test_release_gate_status_distinguishes_paper_only_and_authorized_plan(tmp_pa
     assert paper_only["profitability_proven"] is False
 
     authorize_experimental_manual_release(
-        plan,
+        artifacts.plan,
         acknowledged=True,
         now=datetime(2029, 12, 31, 12, tzinfo=UTC),
     )

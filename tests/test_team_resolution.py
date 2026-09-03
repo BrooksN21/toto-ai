@@ -613,6 +613,75 @@ def test_refresh_probability_evidence_is_monotonic_and_equal_time_fail_closed(
         assert (row.readiness_summary, row.updated_at) == after_newer
 
 
+def test_refresh_probability_evidence_ignores_concurrent_slightly_older_snapshot(
+    session_factory,
+):
+    events = tuple(
+        TargetEvent(
+            **{
+                **_target(f"Home {order}", f"Away {order}").__dict__,
+                "event_id": 100 + order,
+                "event_order": order,
+            }
+        )
+        for order in range(15)
+    )
+    target = TargetDrawing(1, 1, NOW, NOW - timedelta(minutes=1), events)
+    candidates = tuple(
+        _candidate(
+            str(order),
+            f"Home {order}",
+            f"Away {order}",
+            home_id=f"home-{order}",
+            away_id=f"away-{order}",
+        )
+        for order in range(15)
+    )
+    prepared = prepare_drawing(
+        target,
+        candidates,
+        session_factory=session_factory,
+        event_contexts={
+            order: ResolutionContext("api-sports", league="Premier League")
+            for order in range(15)
+        },
+    )
+    incoming = json.loads(_readiness_summary_for_assertion(prepared, target))
+    newer = {
+        **incoming,
+        "target_fetched_at": (target.fetched_at + timedelta(seconds=30)).isoformat(),
+        "probability_input_sha256": "a" * 64,
+        "market_probability_input_sha256": "b" * 64,
+    }
+    refresh_ready_drawing_preparation_evidence(
+        session_factory,
+        drawing_id=1,
+        drawing_fingerprint=prepared.drawing_fingerprint,
+        provider="api-sports",
+        readiness_summary=json.dumps(newer),
+    )
+    with session_factory() as session:
+        row = session.scalar(select(DrawingPreparation))
+        assert row is not None
+        stored = (row.readiness_summary, row.updated_at)
+
+    refresh_ready_drawing_preparation_evidence(
+        session_factory,
+        drawing_id=1,
+        drawing_fingerprint=prepared.drawing_fingerprint,
+        provider="api-sports",
+        readiness_summary=json.dumps(incoming),
+    )
+
+    with session_factory() as session:
+        row = session.scalar(select(DrawingPreparation))
+        assert row is not None
+        assert (row.readiness_summary, row.updated_at) == stored
+        summary = json.loads(row.readiness_summary)
+        assert summary["target_fetched_at"] == newer["target_fetched_at"]
+        assert summary["probability_input_sha256"] == newer["probability_input_sha256"]
+
+
 def test_concurrent_probability_refresh_keeps_newest_evidence(tmp_path):
     engine = create_engine(f"sqlite+pysqlite:///{tmp_path / 'registry.db'}")
     Base.metadata.create_all(engine)

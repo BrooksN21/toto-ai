@@ -951,6 +951,7 @@ class SchedulerArtifacts:
     plan_path: Path
     wrapper_path: Path
     launch_agent_path: Path
+    plan: SchedulerPlan
 
 
 @dataclass(frozen=True)
@@ -1045,15 +1046,32 @@ def build_scheduler_plan(
     )
     if drawing_id is None and not _allow_missing_drawing_id:
         raise ValueError("drawing_id is required for actionable scheduler plans")
-    normalized_output = _normalized_path(output_dir)
-    normalized_db = _normalized_path(db)
-    normalized_aliases = _normalized_path(aliases)
-    root = _normalized_path(
+    root = _validated_project_root(
         Path(__file__).resolve().parents[3] if project_root is None else project_root
+    )
+    normalized_output = _validated_project_path(
+        root,
+        output_dir,
+        name="scheduler output_dir",
+    )
+    normalized_db = _validated_project_path(
+        root,
+        db,
+        name="scheduler database",
+    )
+    normalized_aliases = _validated_project_path(
+        root,
+        aliases,
+        name="scheduler aliases",
     )
     ledger_path = Path(schedule_evidence_ledger)
     if not ledger_path.is_absolute():
         ledger_path = root / ledger_path
+    ledger_path = _validated_project_path(
+        root,
+        ledger_path,
+        name="schedule evidence ledger",
+    )
     return SchedulerPlan(
         drawing=drawing,
         drawing_id=drawing_id,
@@ -1106,6 +1124,119 @@ def build_scheduler_plan(
         actionable_safety_bound=_actionable_safety_bound,
         source_schema_version=source_schema_version,
     )
+
+
+def _snapshot_schedule_evidence_ledger(
+    source: Path,
+    *,
+    output_dir: Path,
+) -> tuple[Path, str, str]:
+    """Copy one verified ledger and its review documents into a plan scope."""
+
+    source = Path(source)
+    _require_regular_file(source, name="schedule evidence ledger", reject_symlink=True)
+    before = _read_regular_file(
+        source,
+        name="schedule evidence ledger",
+        reject_symlink=True,
+    )
+    ledger = load_schedule_evidence_ledger(source)
+    if (
+        _read_regular_file(
+            source,
+            name="schedule evidence ledger",
+            reject_symlink=True,
+        )
+        != before
+    ):
+        raise ValueError("schedule evidence ledger changed while snapshotting")
+    content_sha256 = hashlib.sha256(before).hexdigest()
+    snapshot_root = (
+        Path(output_dir)
+        / "bindings"
+        / f"schedule-evidence-{content_sha256[:16]}"
+    )
+    source_root = source.resolve().parent
+    copied: set[Path] = set()
+    for observation in ledger.observations:
+        review_source = observation.review_document.resolve()
+        try:
+            relative = review_source.relative_to(source_root)
+        except ValueError as error:
+            raise ValueError(
+                "schedule review document escapes ledger directory"
+            ) from error
+        if relative in copied:
+            continue
+        review_bytes = _read_regular_file(
+            review_source,
+            name="schedule review document",
+            reject_symlink=True,
+        )
+        if hashlib.sha256(review_bytes).hexdigest() != (
+            observation.review_document_sha256
+        ):
+            raise ValueError("schedule review document hash mismatch")
+        _write_or_verify_snapshot_file(
+            Path(output_dir),
+            snapshot_root / relative,
+            review_bytes,
+        )
+        copied.add(relative)
+    snapshot_path = snapshot_root / source.name
+    _write_or_verify_snapshot_file(Path(output_dir), snapshot_path, before)
+    snapshot = load_schedule_evidence_ledger(snapshot_path)
+    snapshot_bytes = _read_regular_file(
+        snapshot_path,
+        name="schedule evidence snapshot",
+        reject_symlink=True,
+    )
+    if hashlib.sha256(snapshot_bytes).hexdigest() != content_sha256:
+        raise ValueError("schedule evidence snapshot content hash mismatch")
+    if snapshot.semantic_hash != ledger.semantic_hash:
+        raise ValueError("schedule evidence snapshot semantic hash mismatch")
+    return snapshot_path.resolve(), content_sha256, snapshot.semantic_hash
+
+
+def _materialize_schedule_evidence_plan(plan: SchedulerPlan) -> SchedulerPlan:
+    """Return the plan bound to one immutable plan-local ledger snapshot."""
+
+    bindings_root = plan.output_dir / "bindings"
+    if plan.schedule_evidence_ledger.is_relative_to(bindings_root):
+        return plan
+    snapshot_path, content_sha256, semantic_hash = (
+        _snapshot_schedule_evidence_ledger(
+            plan.schedule_evidence_ledger,
+            output_dir=plan.output_dir,
+        )
+    )
+    return replace(
+        plan,
+        schedule_evidence_ledger=snapshot_path,
+        schedule_evidence_ledger_sha256=content_sha256,
+        schedule_evidence_semantic_hash=semantic_hash,
+    )
+
+
+def _write_or_verify_snapshot_file(
+    output_dir: Path,
+    destination: Path,
+    content: bytes,
+) -> None:
+    if _path_exists(destination):
+        _require_regular_file(
+            destination,
+            name="schedule evidence snapshot artifact",
+            reject_symlink=True,
+        )
+        if _read_regular_file(
+            destination,
+            name="schedule evidence snapshot artifact",
+            reject_symlink=True,
+        ) != content:
+            raise ValueError("schedule evidence snapshot artifact conflicts")
+        return
+    _write_exclusive_atomic(output_dir, destination, content)
 
 
 def scheduler_plan_json(plan: SchedulerPlan) -> str:
@@ -1646,9 +1777,10 @@ def prepare_scheduler_artifacts(
     python_executable = _validated_python_executable(
         sys.executable if python_command is None else python_command
     )
-    output_dir = plan.output_dir
     if plan.env_file is not None:
         _require_secure_env_file(plan.env_file)
+    plan = _materialize_schedule_evidence_plan(plan)
+    output_dir = plan.output_dir
     _ensure_output_directory(output_dir, output_dir)
     _reject_unsafe_output_descendants(output_dir)
     logs_dir = output_dir / "logs"
@@ -1693,6 +1825,7 @@ def prepare_scheduler_artifacts(
         plan_path=plan_path,
         wrapper_path=wrapper_path,
         launch_agent_path=launch_agent_path,
+        plan=plan,
     )
 
 
@@ -1718,6 +1851,7 @@ def verify_scheduler_artifacts(
         plan_path=output_dir / SCHEDULER_PLAN_FILENAME,
         wrapper_path=output_dir / SCHEDULER_WRAPPER_FILENAME,
         launch_agent_path=output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME,
+        plan=plan,
     )
     _reject_stale_t12_scheduler_artifact(artifacts.plan_path)
     expected = {

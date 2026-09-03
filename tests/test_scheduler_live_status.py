@@ -23,7 +23,7 @@ def _record(tmp_path):
         aliases=tmp_path / "aliases.json",
     )
     artifacts = prepare_scheduler_artifacts(plan)
-    return plan, {
+    return artifacts.plan, {
         "activation_status": "activated",
         "plan_path": str(artifacts.plan_path),
     }

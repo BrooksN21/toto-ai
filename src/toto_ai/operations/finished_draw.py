@@ -1616,11 +1616,19 @@ def _settle_parallel_comparison_if_available(
 
     post_draw_root = Path(plan["review_request_file"]).resolve().parent
     scheduler_root = post_draw_root.parent
-    sidecar_status = (
+    canonical_sidecar_status = (
+        scheduler_root / "parallel-challenger" / "output" / "sidecar-status.json"
+    )
+    legacy_sidecar_status = (
         scheduler_root
         / "parallel-challenger"
         / "output-final"
         / "sidecar-status.json"
+    )
+    sidecar_status = (
+        canonical_sidecar_status
+        if canonical_sidecar_status.exists()
+        else legacy_sidecar_status
     )
     if not sidecar_status.exists():
         return

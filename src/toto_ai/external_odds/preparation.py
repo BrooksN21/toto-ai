@@ -321,6 +321,7 @@ def prepare_drawing(
             provider=provider,
             reviewed_catalog=reviewed_catalog,
             schedule_evidence_ledger=evidence_ledger,
+            evaluated_at=evaluated_at or datetime.now(timezone.utc),
         )
         existing_by_order = {pin.event_order: pin for pin in existing}
         existing_preview = _resolve_preparation_candidates(
@@ -1629,6 +1630,7 @@ def _validate_existing_pins_against_candidates(
     candidates: tuple[ProviderEvent, ...],
     *,
     provider: str,
+    evaluated_at: datetime,
     reviewed_catalog: ReviewedScheduleCatalog | None = None,
     schedule_evidence_ledger: ScheduleEvidenceLedger | None = None,
 ) -> None:
@@ -1656,7 +1658,7 @@ def _validate_existing_pins_against_candidates(
             resolution = resolve_schedule_evidence(
                 event,
                 schedule_evidence_ledger,
-                evaluated_at=datetime.now(timezone.utc),
+                evaluated_at=evaluated_at,
             )
             evidence = resolution.observation
             if (

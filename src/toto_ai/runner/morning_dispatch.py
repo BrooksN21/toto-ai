@@ -10,7 +10,7 @@ import re
 import secrets
 import subprocess
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Literal
@@ -21,6 +21,7 @@ from toto_ai.runner.scheduler import (
     SCHEDULER_PLAN_FILENAME,
     SCHEDULER_SCHEMA_VERSION,
     SCHEDULER_WRAPPER_FILENAME,
+    SchedulerIntegrityError,
     SchedulerPlan,
     build_scheduler_plan,
     load_scheduler_plan,
@@ -477,17 +478,31 @@ def _dispatch_morning_locked(
         plan.output_dir / SCHEDULER_WRAPPER_FILENAME,
         plan.output_dir / SCHEDULER_LAUNCH_AGENT_FILENAME,
     )
-    artifacts = (
-        verify_scheduler_artifacts(
+    if any(path.exists() for path in artifact_paths):
+        persisted_plan = load_scheduler_plan(artifact_paths[0])
+        rebound_plan = replace(
+            persisted_plan,
+            schedule_evidence_ledger=plan.schedule_evidence_ledger,
+            schedule_evidence_ledger_sha256=plan.schedule_evidence_ledger_sha256,
+            schedule_evidence_semantic_hash=(
+                plan.schedule_evidence_semantic_hash
+            ),
+        )
+        if rebound_plan != plan:
+            raise SchedulerIntegrityError(
+                "existing scheduler plan conflicts with morning target",
+                category="scheduler_artifact_integrity",
+            )
+        artifacts = verify_scheduler_artifacts(
+            persisted_plan,
+            python_command=python_command,
+        )
+    else:
+        artifacts = prepare_scheduler_artifacts(
             plan,
             python_command=python_command,
         )
-        if any(path.exists() for path in artifact_paths)
-        else prepare_scheduler_artifacts(
-            plan,
-            python_command=python_command,
-        )
-    )
+    plan = artifacts.plan
     activation_status: Literal["generated", "activated"] = "generated"
     launch_agent_label = scheduler_launch_agent_label(plan)
     record = _record(

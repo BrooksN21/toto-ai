@@ -37,8 +37,7 @@ def _plan(tmp_path: Path):
         db=tmp_path / "data" / "toto.db",
         aliases=tmp_path / "data" / "aliases.json",
     )
-    prepare_scheduler_artifacts(plan)
-    return plan
+    return prepare_scheduler_artifacts(plan).plan
 
 
 def _source_package(path: Path, coupons: tuple[str, ...]) -> Path:

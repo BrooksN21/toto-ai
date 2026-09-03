@@ -114,7 +114,7 @@ def _plan(tmp_path: Path):
         db=db,
         aliases=aliases,
     )
-    prepare_scheduler_artifacts(plan)
+    plan = prepare_scheduler_artifacts(plan).plan
     source_payload = _payload()
     archive = RawArchive(data / "raw" / "archive").archive(
         source_payload,

@@ -3,6 +3,8 @@ import json
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
+import pytest
+
 from toto_ai.db.models import Drawing
 from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.operations import finished_draw
@@ -194,13 +196,18 @@ def test_plan_run_pending_results_then_restart_safe_complete(tmp_path):
     assert client.calls == 1
 
 
+@pytest.mark.parametrize("sidecar_output_dir", ("output", "output-final"))
 def test_plan_run_settles_available_parallel_comparison_and_notifies(
     tmp_path,
     monkeypatch,
+    sidecar_output_dir,
 ):
     factory, plan_path, plan = _setup(tmp_path)
     sidecar_status = (
-        tmp_path / "parallel-challenger" / "output-final" / "sidecar-status.json"
+        tmp_path
+        / "parallel-challenger"
+        / sidecar_output_dir
+        / "sidecar-status.json"
     )
     sidecar_status.parent.mkdir(parents=True)
     sidecar_status.write_text("{}", encoding="utf-8")

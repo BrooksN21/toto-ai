@@ -635,7 +635,7 @@ def test_operator_export_cli_uses_only_verified_actionable_result(
     monkeypatch,
 ):
     plan = _plan(tmp_path)
-    scheduler.prepare_scheduler_artifacts(plan)
+    plan = scheduler.prepare_scheduler_artifacts(plan).plan
     _seed_atomic_drawing(plan)
     published = _tick(
         plan,
