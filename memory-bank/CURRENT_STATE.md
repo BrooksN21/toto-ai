@@ -3,6 +3,9 @@
 ## P0.10, five-drawing replay and Sports Analytics v3 seed (2026-09-03)
 
 - Commit `92ee5a7` is pushed to `origin/main` under the owner's exact approval.
+- Local commit `e649e69` contains the canonical status module, P0.10, completed
+  constrained replay/F1-F2 code, the Sports v3 attribution seed and tests. It
+  is not pushed; a new explicit owner approval is required.
 - P0.10 is implemented in canonical read-only `scheduler-status`: every plan
   now exposes a deterministic hash-bound manual-wager request. Missing intent
   and release authorization is an explicit pre-expiry blocker; a verified
