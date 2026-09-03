@@ -47,6 +47,8 @@ _MOSCOW = ZoneInfo("Europe/Moscow")
 @dataclass(frozen=True)
 class ParallelSidecarArtifacts:
     root: Path
+    project_root: Path
+    python_path: Path
     wrapper_path: Path
     launch_agent_path: Path
     launch_agent_label: str
@@ -91,13 +93,10 @@ def prepare_parallel_sidecar_artifacts(
         )
     if authorization_path is not None:
         _validate_parallel_authorization(plan, authorization_path)
-    executable = Path(python_command).absolute()
-    try:
-        executable_target = executable.resolve(strict=True)
-    except OSError as error:
-        raise ValueError("python command must resolve to an existing file") from error
-    if not executable_target.is_file():
-        raise ValueError("python command must resolve to a regular file")
+    executable = _parallel_sidecar_python(
+        project_root=plan.project_root,
+        requested=python_command,
+    )
 
     root.mkdir(parents=True, exist_ok=True)
     if root.is_symlink() or not root.is_dir():
@@ -107,14 +106,25 @@ def prepare_parallel_sidecar_artifacts(
     if wrapper_path.exists() != launch_agent_path.exists():
         raise ValueError("parallel sidecar artifact set is incomplete")
     reused = wrapper_path.exists()
+    accepted_existing_wrappers: tuple[bytes, ...] = ()
     if reused:
-        executable, sports_path = _existing_parallel_wrapper_binding(
+        existing_executable, sports_path = _existing_parallel_wrapper_binding(
             wrapper_path=wrapper_path,
             plan=plan,
             plan_path=plan_path,
             root=root,
             authorization_path=authorization_path,
         )
+        if existing_executable == executable:
+            executable = existing_executable
+        else:
+            # A dispatcher launched outside the project virtualenv used to
+            # freeze its system Python into this immutable wrapper.  The
+            # existing bytes are accepted only after the complete plan/input
+            # binding above has been validated, and only to migrate to the
+            # canonical project virtualenv selected by
+            # ``_parallel_sidecar_python``.
+            accepted_existing_wrappers = (wrapper_path.read_bytes(),)
     label = f"com.totoai.parallel-sidecar.v1.{plan.plan_id}"
     if not _PARALLEL_SIDECAR_LABEL.fullmatch(label):
         raise ValueError("parallel sidecar label is invalid")
@@ -141,7 +151,6 @@ def prepare_parallel_sidecar_artifacts(
         f"cd {shlex.quote(str(plan.project_root))}\n"
         f"exec {shlex.join(command)}\n"
     ).encode()
-    accepted_existing_wrappers: tuple[bytes, ...] = ()
     if authorization_path is not None:
         legacy_command = [
             *command,
@@ -149,6 +158,7 @@ def prepare_parallel_sidecar_artifacts(
             str(authorization_path),
         ]
         accepted_existing_wrappers = (
+            *accepted_existing_wrappers,
             (
                 "#!/bin/zsh\n"
                 "set -eu\n"
@@ -185,6 +195,8 @@ def prepare_parallel_sidecar_artifacts(
     _write_expected(launch_agent_path, plist, mode=0o600)
     return ParallelSidecarArtifacts(
         root=root,
+        project_root=plan.project_root,
+        python_path=executable,
         wrapper_path=wrapper_path,
         launch_agent_path=launch_agent_path,
         launch_agent_label=label,
@@ -222,6 +234,23 @@ def activate_parallel_sidecar_launch_agent(
     ):
         raise ValueError("parallel sidecar LaunchAgent binding mismatch")
     _regular_file(artifacts.wrapper_path, "parallel sidecar wrapper")
+    smoke = command_runner(
+        (
+            str(artifacts.python_path),
+            "-c",
+            "import toto_ai; import toto_ai.cli",
+        ),
+        cwd=str(artifacts.project_root),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if getattr(smoke, "returncode", None) != 0:
+        detail = str(getattr(smoke, "stderr", "")).strip()
+        raise ValueError(
+            "parallel sidecar Python import smoke failed"
+            + (f": {detail[-500:]}" if detail else "")
+        )
     root = (
         Path.home() / "Library" / "LaunchAgents"
         if launch_agents_root is None
@@ -951,6 +980,28 @@ def _timestamp(value: datetime) -> str:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _parallel_sidecar_python(
+    *,
+    project_root: Path,
+    requested: str | Path,
+) -> Path:
+    """Bind scheduled project work to its virtualenv when one is available."""
+
+    project_python = project_root / ".venv" / "bin" / "python"
+    executable = (
+        project_python.absolute()
+        if project_python.exists() or project_python.is_symlink()
+        else Path(requested).absolute()
+    )
+    try:
+        executable_target = executable.resolve(strict=True)
+    except OSError as error:
+        raise ValueError("python command must resolve to an existing file") from error
+    if not executable_target.is_file():
+        raise ValueError("python command must resolve to a regular file")
+    return executable
 
 
 def _canonical(value: Any) -> bytes:

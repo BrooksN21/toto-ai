@@ -2580,3 +2580,17 @@ ambiguous reversed evidence remains unresolved.
 - Post-draw comparison consumes the producer's canonical parallel-sidecar path
   `parallel-challenger/output/sidecar-status.json`; `output-final` is only a
   bounded compatibility fallback.
+
+## 2026-09-03 — Sports v3 starts from settled attribution, not feature intuition
+
+- Sports Analytics v3 remains research-only and begins with a hash-bound
+  aggregate of equal-input settled event attribution reports.
+- The aggregate records BK versus Sports-v2 top accuracy, multiclass Brier and
+  log loss, top-confidence ECE, sports top transitions, and package exposure
+  failures. It cannot activate a model or produce an operator package.
+- Ordinary bookmaker movement between an earlier Sports snapshot and the final
+  input is not event-identity drift. Drawing/deadline/fingerprint/event/order
+  and chronology stay strict; sports residuals are rebased onto final BK.
+- Opponent, recency, venue, rest/congestion and standings features may proceed
+  only through chronological walk-forward validation. No improvement claim is
+  allowed from the five-drawing / 75-event seed aggregate.

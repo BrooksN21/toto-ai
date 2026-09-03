@@ -11,6 +11,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from toto_ai.ev.models import EVConfig
 from toto_ai.optimizer.strategy_comparison import (
     FrozenStrategyEvent,
@@ -120,6 +122,49 @@ def test_prepare_parallel_sidecar_migrates_authorization_bound_wrapper(
     assert b"--parallel-authorization" not in migrated.wrapper_path.read_bytes()
 
 
+def test_prepare_parallel_sidecar_migrates_system_python_to_project_venv(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    plan_path = tmp_path / "scheduler-plan.json"
+    sports_path = tmp_path / "sports.json"
+    system_python = tmp_path / "system-python"
+    plan_path.write_text("{}", encoding="utf-8")
+    sports_path.write_text("{}", encoding="utf-8")
+    system_python.write_text("system", encoding="utf-8")
+    output = tmp_path / "evening"
+    output.mkdir()
+    plan = SimpleNamespace(
+        project_root=tmp_path,
+        output_dir=output,
+        plan_id="e" * 16,
+        operational_cutoff=datetime(2026, 9, 2, 14, 0, tzinfo=UTC),
+    )
+    monkeypatch.setattr(final_hybrid_sidecar, "load_scheduler_plan", lambda _: plan)
+
+    first = final_hybrid_sidecar.prepare_parallel_sidecar_artifacts(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        python_command=system_python,
+    )
+    assert first.python_path == system_python.absolute()
+
+    project_python = tmp_path / ".venv" / "bin" / "python"
+    project_python.parent.mkdir(parents=True)
+    project_python.write_text("venv", encoding="utf-8")
+    migrated = final_hybrid_sidecar.prepare_parallel_sidecar_artifacts(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        python_command=system_python,
+    )
+
+    assert migrated.reused is True
+    assert migrated.python_path == project_python.absolute()
+    assert migrated.wrapper_path.read_text(encoding="utf-8").splitlines()[3].startswith(
+        f"exec {project_python.absolute()} "
+    )
+
+
 def test_prepare_parallel_sidecar_reuses_first_frozen_sports_input(
     monkeypatch,
     tmp_path: Path,
@@ -195,12 +240,63 @@ def test_activate_parallel_sidecar_installs_verified_plist(
     assert installed.read_bytes() == artifacts.launch_agent_path.read_bytes()
     assert calls == [
         (
+            str(artifacts.python_path),
+            "-c",
+            "import toto_ai; import toto_ai.cli",
+        ),
+        (
             "launchctl",
             "bootstrap",
             f"gui/{os.getuid()}",
             str(installed),
         )
     ]
+
+
+def test_activate_parallel_sidecar_fails_before_install_when_import_smoke_fails(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    plan_path = tmp_path / "scheduler-plan.json"
+    sports_path = tmp_path / "sports.json"
+    plan_path.write_text("{}", encoding="utf-8")
+    sports_path.write_text("{}", encoding="utf-8")
+    output = tmp_path / "evening"
+    output.mkdir()
+    plan = SimpleNamespace(
+        project_root=tmp_path,
+        output_dir=output,
+        plan_id="f" * 16,
+        operational_cutoff=datetime(2026, 9, 2, 14, 0, tzinfo=UTC),
+    )
+    monkeypatch.setattr(final_hybrid_sidecar, "load_scheduler_plan", lambda _: plan)
+    artifacts = final_hybrid_sidecar.prepare_parallel_sidecar_artifacts(
+        scheduler_plan_path=plan_path,
+        sports_artifact_path=sports_path,
+        python_command=sys.executable,
+    )
+    calls = []
+
+    def runner(command, **_kwargs):
+        calls.append(command)
+        return SimpleNamespace(returncode=1, stderr="No module named toto_ai")
+
+    launch_agents = tmp_path / "LaunchAgents"
+    with pytest.raises(ValueError, match="Python import smoke failed"):
+        final_hybrid_sidecar.activate_parallel_sidecar_launch_agent(
+            artifacts,
+            launch_agents_root=launch_agents,
+            command_runner=runner,
+        )
+
+    assert calls == [
+        (
+            str(artifacts.python_path),
+            "-c",
+            "import toto_ai; import toto_ai.cli",
+        )
+    ]
+    assert not launch_agents.exists()
 
 
 def test_rebase_uses_final_bk_and_event_local_fallback() -> None:

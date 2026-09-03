@@ -44,6 +44,7 @@ from toto_ai.optimizer.strategy_comparison import run_ev_crowd_current
 from toto_ai.optimizer.strategy_execution import frozen_input_from_snapshot
 from toto_ai.optimizer.uncertainty_package import (
     build_uncertainty_models,
+    control_relative_exposure_constraints,
     outcome_exposure,
     select_uncertainty_package,
 )
@@ -159,6 +160,14 @@ def execute_historical_hybrid_replay(
         frozen.bk_probability_matrix,
         flatten_weights=quality_v3_config.flatten_weights,
     )
+    exposure_constraints = control_relative_exposure_constraints(
+        frozen.bk_probability_matrix,
+        control_coupons=archived_baseline,
+        package_size=coupon_capacity,
+        floor_scale=research_config.package_exposure_floor_scale,
+        floor_exponent=research_config.package_exposure_floor_exponent,
+        near_fixed_share=research_config.package_near_fixed_share,
+    )
     quality_v3_result = select_uncertainty_package(
         bk_probabilities=frozen.bk_probability_matrix,
         anchor_coupons=archived_baseline,
@@ -170,6 +179,8 @@ def execute_historical_hybrid_replay(
         mutation_limit=quality_v3_config.mutation_limit,
         selection_sample_count=quality_v3_config.scenario_sample_count,
         seed_material=f"quality-v3-{snapshot.snapshot_sha256}",
+        exposure_constraints=exposure_constraints,
+        fallback_coupons=archived_baseline,
     )
     if quality_v3_result.timed_out:
         raise ValueError("quality-v3 historical replay timed out")
@@ -199,6 +210,8 @@ def execute_historical_hybrid_replay(
             f"historical-hybrid-robust-{snapshot.snapshot_sha256}-"
             f"{sports_probability_hash}"
         ),
+        exposure_constraints=exposure_constraints,
+        fallback_coupons=archived_baseline,
     )
     if robust_result.timed_out:
         raise ValueError("robust historical replay timed out")
@@ -350,23 +363,14 @@ def _validate_sports_identity(
         raise ValueError("Sports v2 artifact was captured after final input")
     if len(sports.events) != 15:
         raise ValueError("Sports v2 artifact must contain exactly 15 events")
-    for target, frozen_event, sports_event in zip(
+    for target, sports_event in zip(
         parsed.events,
-        frozen.events,
         sorted(sports.events, key=lambda event: event.event_order),
         strict=True,
     ):
         if (
             sports_event.event_order != target.event_order
             or str(sports_event.event_id) != str(target.event_id)
-            or any(
-                not math.isclose(left, right, rel_tol=0.0, abs_tol=1e-12)
-                for left, right in zip(
-                    sports_event.bk_probabilities,
-                    frozen_event.bk_probabilities,
-                    strict=True,
-                )
-            )
         ):
             raise ValueError("Sports v2 artifact event identity mismatch")
 

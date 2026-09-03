@@ -43,6 +43,7 @@ from toto_ai.optimizer.strategy_comparison import (
 from toto_ai.optimizer.strategy_execution import frozen_input_from_snapshot
 from toto_ai.optimizer.uncertainty_package import (
     build_uncertainty_models,
+    control_relative_exposure_constraints,
     outcome_exposure,
     select_uncertainty_package,
 )
@@ -161,6 +162,14 @@ def execute_final_hybrid_comparison(
         frozen.bk_probability_matrix,
         flatten_weights=quality_v3_config.flatten_weights,
     )
+    exposure_constraints = control_relative_exposure_constraints(
+        frozen.bk_probability_matrix,
+        control_coupons=baseline.coupons,
+        package_size=runtime_budget // plan.stake,
+        floor_scale=config.package_exposure_floor_scale,
+        floor_exponent=config.package_exposure_floor_exponent,
+        near_fixed_share=config.package_near_fixed_share,
+    )
     quality_v3 = select_uncertainty_package(
         bk_probabilities=frozen.bk_probability_matrix,
         anchor_coupons=baseline.coupons,
@@ -172,6 +181,8 @@ def execute_final_hybrid_comparison(
         mutation_limit=quality_v3_config.mutation_limit,
         selection_sample_count=quality_v3_config.scenario_sample_count,
         seed_material=f"quality-v3-{snapshot.snapshot_sha256}",
+        exposure_constraints=exposure_constraints,
+        fallback_coupons=baseline.coupons,
         deadline=deadline,
     )
     candidate_union = tuple(
@@ -201,6 +212,8 @@ def execute_final_hybrid_comparison(
         seed_material=(
             f"final-hybrid-robust-{snapshot.snapshot_sha256}-{probability_hash}"
         ),
+        exposure_constraints=exposure_constraints,
+        fallback_coupons=baseline.coupons,
         deadline=deadline,
     )
     baseline_quality_bk = package_quality_metrics(

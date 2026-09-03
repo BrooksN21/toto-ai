@@ -99,10 +99,14 @@ not reset this plan.
   local `notification.status=sent` is not sufficient unless the owner-facing
   delivery channel has a verifiable receipt; undelivered review remains
   pending and must be retried/reported.
-- [ ] P0.10 Before the first evening calculation, create and verify the
+- [x] P0.10 Before the first evening calculation, create and verify the
   plan-bound owner prompt for manual-wager intent and experimental release.
   Missing owner authorization must be visible as an explicit blocker before
-  the final calculation, not discovered after expiry.
+  the final calculation, not discovered after expiry. Canonical
+  `scheduler-status` now emits a deterministic hash-bound
+  `manual_wager_request`; missing authorization is an explicit blocker and
+  exact plan authorization clears it. Drawing 4996 verifies the authorized
+  path without scheduler mutation.
 - [x] P0.11 Settle the canonical parallel sidecar from
   `parallel-challenger/output/sidecar-status.json`. Preserve a bounded legacy
   fallback for `output-final`, but never silently omit the four-model
@@ -118,10 +122,10 @@ not reset this plan.
 - [x] F1 Put quality-v2-style exposure floors, hard concentration caps, and
   control-relative concentration limits inside quality-v3 and robust
   construction, not only in the post-generation selector.
-- [ ] F2 Replay quality-v2, sports-shadow, corrected quality-v3, and corrected
+- [x] F2 Replay quality-v2, sports-shadow, corrected quality-v3, and corrected
   robust on drawings 4990-4994 with identical immutable inputs, bank, stake,
-  capacity, and chronology. Drawing 4994 is settled; its equal-input challenger
-  replay remains to be completed.
+  capacity, and chronology. All five drawings are complete; every strategy has
+  zero 13+ coupons and no superiority or profitability claim is supported.
 - [ ] F3 Build Sports Analytics v3 as a bounded residual to the calibrated
   market using opponent-adjusted team strength, recency/venue form, goals,
   rest, congestion, standings, and only reliable timestamped lineup evidence.
@@ -180,10 +184,15 @@ not reset this plan.
   concentration cap and a control-relative cap during construction, with an
   exact safe-control fallback. Full verification is 2,300 passed / 13
   deselected; Ruff clean.
-- [ ] F2 current work: constrained equal-input replay is complete for finished
-  drawings 4990-4993. Drawing 4994 is settled at 10/15 for quality-v2,
-  sports-shadow, quality-v3 and robust; the recovered canonical four-model
-  comparison is descriptive only and has no 13+ result.
+- [x] F2 constrained equal-input replay is complete for drawings 4990-4994.
+  Average best hits are quality-v2 10.00, sports-shadow 10.00, quality-v3 9.80
+  and robust 10.20. Every strategy has zero 13+ coupons; the comparison is
+  descriptive only.
+- [ ] F3 current work: the immutable 4990-4994 event-attribution aggregate is
+  complete over 75 resolved events. Sports v2 is 31/75 top-correct versus BK
+  32/75, while Brier/log loss are only marginally better. Next build the
+  leakage-safe opponent/recency/venue/rest/standings residual and evaluate it
+  only in chronological walk-forward folds.
 
 ### Blocked or pending observation
 

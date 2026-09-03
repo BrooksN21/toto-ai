@@ -213,6 +213,10 @@ from toto_ai.operations.reconciliation import (
     reconcile_finished_drawings,
     repair_from_canonical_raw,
 )
+from toto_ai.operations.scheduler_status import (
+    scheduler_status,
+    watch_scheduler_status,
+)
 from toto_ai.operations.sync_prepare import (
     DEFAULT_PREPARATION_DETAIL_CACHE_MAX_AGE_SECONDS,
     synchronize_open_drawing,
@@ -4603,6 +4607,47 @@ def schedule_evidence_verify_command(
         typer.echo(json.dumps({"status": "invalid", "error": str(error)}))
         raise typer.Exit(code=SCHEDULE_EVIDENCE_INTEGRITY_EXIT_CODE) from error
     typer.echo(json.dumps(result, ensure_ascii=False, sort_keys=True))
+
+
+@app.command("scheduler-status")
+def scheduler_status_command(
+    plan: str = typer.Option(..., "--plan"),
+    at: str | None = typer.Option(None, "--at"),
+) -> None:
+    """Print one read-only, plan-bound scheduler and challenger status."""
+
+    try:
+        observed_at = (
+            None
+            if at is None
+            else datetime.fromisoformat(at.replace("Z", "+00:00"))
+        )
+        result = scheduler_status(
+            load_scheduler_plan(plan), observed_at=observed_at
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(result, ensure_ascii=False, sort_keys=True))
+
+
+@app.command("scheduler-status-watch")
+def scheduler_status_watch_command(
+    plan: str = typer.Option(..., "--plan"),
+    latest: str = typer.Option(..., "--latest"),
+    history: str = typer.Option(..., "--history"),
+    interval_seconds: float = typer.Option(30.0, "--interval-seconds"),
+) -> None:
+    """Watch one exact plan and persist only read-only status changes."""
+
+    try:
+        watch_scheduler_status(
+            load_scheduler_plan(plan),
+            latest_path=Path(latest),
+            history_path=Path(history),
+            interval_seconds=interval_seconds,
+        )
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
 
 
 @app.command("scheduler-execute")

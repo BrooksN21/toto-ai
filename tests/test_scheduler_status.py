@@ -10,6 +10,7 @@ from toto_ai.operations.scheduler_status import (
 )
 from toto_ai.runner.scheduler import (
     SchedulerPlan,
+    authorize_experimental_manual_release,
     build_scheduler_plan,
     prepare_scheduler_artifacts,
 )
@@ -125,7 +126,34 @@ def test_status_before_first_checkpoint_is_pending_and_read_only(tmp_path):
     }
     assert result["operator_result_ready"] is False
     assert result["terminal"] is False
+    assert result["manual_wager_request"]["state"] == "owner_response_required"
+    assert result["manual_wager_request"]["action_required"] is True
+    assert result["manual_wager_request"]["drawing_number"] == plan.drawing
+    assert result["manual_wager_request"]["plan_id"] == plan.plan_id
+    assert len(result["manual_wager_request"]["request_sha256"]) == 64
+    assert result["blocker"] == "manual_wager_intent_and_release_not_recorded"
     assert result["mutated"] is False
+
+
+def test_status_verifies_plan_bound_manual_release_authorization(tmp_path):
+    plan = _plan(tmp_path)
+    authorize_experimental_manual_release(
+        plan,
+        acknowledged=True,
+        now=datetime(2026, 9, 3, 13, 30, tzinfo=timezone.utc),
+    )
+
+    result = scheduler_status(
+        plan,
+        observed_at=datetime(2026, 9, 3, 13, 31, tzinfo=timezone.utc),
+    )
+
+    request = result["manual_wager_request"]
+    assert request["state"] == "experimental_manual_authorized"
+    assert request["action_required"] is False
+    assert request["prompt"] is None
+    assert request["authorization_sha256"] is not None
+    assert result["blocker"] is None
 
 
 def test_status_reports_exact_failed_attempt(tmp_path):

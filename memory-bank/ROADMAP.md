@@ -18,12 +18,12 @@ continue the daily automation/settlement cycle in parallel.
   heartbeat to the exact plan.
 - [x] Add a canonical plan-bound scheduler status command and read-only local
   watcher; prepare drawing 4995 watcher output from the first checkpoint.
-- [ ] Observe and report the automatic four-package drawing-4994 post-draw run
+- [x] Observe and report the automatic four-package drawing-4994 post-draw run
   from its 2026-09-03 12:00 MSK checkpoint.
 - [x] Add quality-v2 exposure floors and control-relative concentration limits
   inside quality-v3 and robust generation.
-- [ ] Complete equal-bank constrained replay: 4990-4993 are complete with zero
-  13+ hits; add 4994 after authoritative post-draw results arrive.
+- [x] Complete equal-bank constrained replay for 4990-4994; every strategy has
+  zero 13+ hits and no superiority or profitability claim is supported.
 - [ ] Continue Sports Analytics v3 with leakage-safe chronological residual
   features and walk-forward calibration before any activation decision.
 - [x] Consolidate the two-week operational/compaction handoff in
@@ -1445,9 +1445,9 @@ closed.
 
 # Sports Analytics v3 sequence
 
-- [ ] Build an immutable event-attribution aggregate over all eligible settled
+- [x] Build an immutable event-attribution aggregate over all eligible settled
   drawings; include model top transitions, calibration deltas and package
-  exposure failures.
+  exposure failures. The first aggregate covers 4990-4994 / 75 resolved events.
 - [ ] Add leakage-safe residual features around BK: opponent-adjusted Elo/team
   strength, recency decay, venue scoring, rest/congestion and standings.
 - [ ] Add lineups/injuries only when a stable source proves pre-match timestamps

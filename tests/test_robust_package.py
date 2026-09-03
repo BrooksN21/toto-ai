@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from toto_ai.optimizer.robust_package import select_robust_package
+from toto_ai.optimizer.robust_package import (
+    ExposureConstraints,
+    select_robust_package,
+)
 
 
 def test_maximin_selector_covers_opposing_models() -> None:
@@ -88,6 +91,47 @@ def test_timeout_fails_closed_before_workload_construction() -> None:
 
     assert result.selected_coupons == ()
     assert result.timed_out is True
+
+
+def test_selector_enforces_exposure_bounds_during_construction() -> None:
+    result = select_robust_package(
+        candidates=["11", "12", "21", "22"],
+        probability_models={
+            "a": ((0.90, 0.05, 0.05),) * 2,
+            "b": ((0.80, 0.10, 0.10),) * 2,
+        },
+        category=15,
+        max_coupons=2,
+        sample_count=200,
+        exposure_constraints=ExposureConstraints(
+            lower_bounds=((1, 0, 1), (1, 0, 1)),
+            upper_bounds=((1, 2, 1), (1, 2, 1)),
+        ),
+        fallback_coupons=("11", "22"),
+    )
+
+    assert len(result.selected_coupons) == 2
+    assert {coupon[0] for coupon in result.selected_coupons} == {"1", "2"}
+    assert {coupon[1] for coupon in result.selected_coupons} == {"1", "2"}
+
+
+def test_selector_rejects_fallback_that_violates_exposure_bounds() -> None:
+    with pytest.raises(ValueError, match="fallback_coupons do not satisfy"):
+        select_robust_package(
+            candidates=["11", "12", "21", "22"],
+            probability_models={
+                "a": ((0.90, 0.05, 0.05),) * 2,
+                "b": ((0.80, 0.10, 0.10),) * 2,
+            },
+            category=15,
+            max_coupons=2,
+            sample_count=200,
+            exposure_constraints=ExposureConstraints(
+                lower_bounds=((1, 0, 1), (1, 0, 1)),
+                upper_bounds=((1, 2, 1), (1, 2, 1)),
+            ),
+            fallback_coupons=("11", "12"),
+        )
 
 
 @pytest.mark.parametrize(

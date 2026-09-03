@@ -46,6 +46,14 @@ class RobustPackageResult:
     timed_out: bool
 
 
+@dataclass(frozen=True)
+class ExposureConstraints:
+    """Integer per-event outcome bounds enforced during package construction."""
+
+    lower_bounds: tuple[tuple[int, int, int], ...]
+    upper_bounds: tuple[tuple[int, int, int], ...]
+
+
 @dataclass
 class _ModelWorkload:
     name: str
@@ -67,6 +75,8 @@ def select_robust_package(
     max_coupons: int,
     sample_count: int = 10_000,
     seed_material: str = "robust-package-v1",
+    exposure_constraints: ExposureConstraints | None = None,
+    fallback_coupons: Sequence[str] = (),
     deadline: float | None = None,
     time_func=time.perf_counter,
 ) -> RobustPackageResult:
@@ -87,8 +97,13 @@ def select_robust_package(
     max_errors = category_max_errors(category)
     models = _normalize_models(probability_models)
     event_count = len(models[0][1])
-    unique_candidates = tuple(dict.fromkeys(candidates))
+    fallback = tuple(dict.fromkeys(fallback_coupons))
+    unique_candidates = tuple(dict.fromkeys((*candidates, *fallback)))
     _validate_candidates(unique_candidates, event_count)
+    candidate_digits = tuple(
+        tuple(OUTCOMES.index(outcome) for outcome in coupon)
+        for coupon in unique_candidates
+    )
     if not unique_candidates or max_coupons == 0:
         return _empty_result(
             models=models,
@@ -96,6 +111,19 @@ def select_robust_package(
             sample_count=sample_count,
             category=category,
         )
+
+    limit = min(max_coupons, len(unique_candidates))
+    bounds = _normalize_exposure_constraints(
+        exposure_constraints,
+        event_count=event_count,
+        package_size=limit,
+    )
+    if fallback:
+        if len(fallback) != limit:
+            raise ValueError("fallback_coupons must fill the selected package")
+        _validate_candidates(fallback, event_count)
+        if bounds is not None and not _package_satisfies_bounds(fallback, bounds):
+            raise ValueError("fallback_coupons do not satisfy exposure constraints")
 
     candidate_index = {
         coupon: index for index, coupon in enumerate(unique_candidates)
@@ -144,7 +172,7 @@ def select_robust_package(
     )
     selected_indexes: set[int] = set()
     selected_order: list[int] = []
-    limit = min(max_coupons, len(unique_candidates))
+    exposure_counts = [[0, 0, 0] for _ in range(event_count)]
     timed_out = False
     while len(selected_order) < limit:
         if _expired(deadline, time_func):
@@ -158,6 +186,14 @@ def select_robust_package(
         best_index: int | None = None
         best_key: tuple[float, float, float, float] | None = None
         for index in remaining:
+            if bounds is not None and not _candidate_keeps_bounds_reachable(
+                candidate_digits[index],
+                counts=exposure_counts,
+                selected_count=len(selected_order),
+                package_size=limit,
+                bounds=bounds,
+            ):
+                continue
             projected = tuple(
                 (workload.covered_weight + workload.marginal_scores[index])
                 / workload.total_weight
@@ -184,11 +220,22 @@ def select_robust_package(
             break
         selected_indexes.add(best_index)
         selected_order.append(best_index)
+        for event, outcome_index in enumerate(candidate_digits[best_index]):
+            exposure_counts[event][outcome_index] += 1
         for workload in workloads:
             _apply_candidate(workload, best_index, selected_indexes)
 
     selected = tuple(unique_candidates[index] for index in selected_order)
-    metrics = _model_metrics(selected, workloads, event_count)
+    if (
+        bounds is not None
+        and not timed_out
+        and (len(selected) != limit or not _package_satisfies_bounds(selected, bounds))
+    ):
+        if not fallback:
+            raise ValueError("candidate universe cannot satisfy exposure constraints")
+        selected = fallback
+        selected_order = [candidate_index[coupon] for coupon in fallback]
+    metrics = _model_metrics(selected, selected_order, workloads, event_count)
     sampled = tuple(item.sampled_category_coverage for item in metrics)
     return RobustPackageResult(
         selected_coupons=selected,
@@ -240,6 +287,82 @@ def _validate_candidates(candidates: Sequence[str], event_count: int) -> None:
         raise ValueError("candidate and probability lengths must match")
     if any(set(coupon) - set(OUTCOMES) for coupon in candidates):
         raise ValueError("candidate outcomes must be 1, X, or 2")
+
+
+def _normalize_exposure_constraints(
+    constraints: ExposureConstraints | None,
+    *,
+    event_count: int,
+    package_size: int,
+) -> ExposureConstraints | None:
+    if constraints is None:
+        return None
+    if not isinstance(constraints, ExposureConstraints):
+        raise TypeError("exposure_constraints must be ExposureConstraints")
+    if (
+        len(constraints.lower_bounds) != event_count
+        or len(constraints.upper_bounds) != event_count
+    ):
+        raise ValueError("exposure constraints must match the event count")
+    for lower, upper in zip(
+        constraints.lower_bounds, constraints.upper_bounds, strict=True
+    ):
+        if len(lower) != 3 or len(upper) != 3:
+            raise ValueError("each exposure bound row must contain three outcomes")
+        if any(type(value) is not int for value in (*lower, *upper)):
+            raise ValueError("exposure bounds must be integers")
+        if any(value < 0 or value > package_size for value in (*lower, *upper)):
+            raise ValueError("exposure bounds must be within the package size")
+        if any(
+            minimum > maximum
+            for minimum, maximum in zip(lower, upper, strict=True)
+        ):
+            raise ValueError("exposure lower bounds must not exceed upper bounds")
+        if sum(lower) > package_size or sum(upper) < package_size:
+            raise ValueError("exposure bounds are not package-size feasible")
+    return constraints
+
+
+def _candidate_keeps_bounds_reachable(
+    coupon_digits: Sequence[int],
+    *,
+    counts: Sequence[Sequence[int]],
+    selected_count: int,
+    package_size: int,
+    bounds: ExposureConstraints,
+) -> bool:
+    remaining = package_size - selected_count - 1
+    for event, selected_outcome in enumerate(coupon_digits):
+        for outcome_index in range(3):
+            projected = counts[event][outcome_index] + int(
+                outcome_index == selected_outcome
+            )
+            if projected > bounds.upper_bounds[event][outcome_index]:
+                return False
+            if bounds.lower_bounds[event][outcome_index] - projected > remaining:
+                return False
+    return True
+
+
+def _package_satisfies_bounds(
+    coupons: Sequence[str], bounds: ExposureConstraints
+) -> bool:
+    if not coupons:
+        return False
+    counts = [[0, 0, 0] for _ in bounds.lower_bounds]
+    for coupon in coupons:
+        for event, outcome in enumerate(coupon):
+            counts[event][OUTCOMES.index(outcome)] += 1
+    return all(
+        minimum <= count <= maximum
+        for event, row in enumerate(counts)
+        for count, minimum, maximum in zip(
+            row,
+            bounds.lower_bounds[event],
+            bounds.upper_bounds[event],
+            strict=True,
+        )
+    )
 
 
 def _build_workload(
@@ -305,11 +428,18 @@ def _apply_candidate(
 
 def _model_metrics(
     coupons: tuple[str, ...],
+    selected_indexes: Sequence[int],
     workloads: Sequence[_ModelWorkload],
     event_count: int,
 ) -> tuple[RobustModelMetrics, ...]:
     result = []
     for workload in workloads:
+        covered_scenarios: set[int] = set()
+        for index in selected_indexes:
+            covered_scenarios.update(workload.candidate_to_scenarios[index])
+        covered_weight = sum(
+            workload.weights[index] for index in covered_scenarios
+        )
         exact = (
             exact_category_probabilities(coupons, workload.probabilities)
             if event_count == 15 and coupons
@@ -319,7 +449,7 @@ def _model_metrics(
             RobustModelMetrics(
                 model=workload.name,
                 sampled_category_coverage=(
-                    workload.covered_weight / workload.total_weight
+                    covered_weight / workload.total_weight
                 ),
                 exact_p13=exact[0],
                 exact_p14=exact[1],

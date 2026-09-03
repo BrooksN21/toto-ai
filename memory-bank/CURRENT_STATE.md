@@ -1,5 +1,33 @@
 # Current State
 
+## P0.10, five-drawing replay and Sports Analytics v3 seed (2026-09-03)
+
+- Commit `92ee5a7` is pushed to `origin/main` under the owner's exact approval.
+- P0.10 is implemented in canonical read-only `scheduler-status`: every plan
+  now exposes a deterministic hash-bound manual-wager request. Missing intent
+  and release authorization is an explicit pre-expiry blocker; a verified
+  exact authorization clears it. Live read-only status for drawing 4996 shows
+  `experimental_manual_authorized`, no blocker, first checkpoint 17:30 MSK and
+  T-10 expiry 19:20 MSK.
+- Equal-input replay is complete for drawings 4990-4994 at 166 coupons / 4,980
+  RUB per strategy. Average best hits are quality-v2 10.00, sports 10.00,
+  quality-v3 9.80 and robust 10.20. Every model produced zero 13+ coupons, so
+  no predictive superiority or profitability is established.
+- The 4994 replay exposed and fixed a stale validation rule: an earlier valid
+  Sports snapshot was rejected when final bookmaker probabilities changed.
+  Identity remains strict by drawing/deadline/fingerprint/event/order, while
+  sports residuals are rebased onto final BK probabilities.
+- Sports Analytics v3 has started with an immutable event-attribution aggregate
+  over 75 resolved events from 4990-4994. BK was top-correct 32/75 versus Sports
+  v2 31/75. Sports v2 marginally improved Brier (0.660728 vs 0.661616) and log
+  loss (1.091402 vs 1.092625), but this sample is too small for activation.
+- P0.9 remains open until an owner-visible post-draw report has a real delivery
+  observation. The exact drawing-4995 post-draw LaunchAgent is loaded for
+  2026-09-04 12:00 MSK; a plan-bound five-minute heartbeat card has been
+  prepared for chat delivery and must be accepted/observed before closure.
+- Verification for the current coherent change set is 2,304 passed / 13
+  deselected with full-project Ruff clean.
+
 ## Drawing 4996 authorization and drawing 4995 post-draw recovery (2026-09-03)
 
 - Drawing 4996 plan `0d8c2cdfb10ef9c5` has an exact, immutable experimental
@@ -23,11 +51,9 @@
   2026-09-04 at 12:00 MSK, retry every three hours up to six attempts, and
   settle the exact 166-coupon / 4,980-RUB pre-final LKG package. Automatic
   wagering is false.
-- Remaining P0 operations work is owner-visible delivery receipt/retry (P0.9)
-  and automatic pre-evening owner intent/authorization prompting (P0.10).
-  Forecast work remains F2 equal-input replay completion followed by Sports
-  Analytics v3 and chronological calibration; no strategy has demonstrated
-  profitability.
+- Remaining P0 operations work is owner-visible delivery receipt/retry (P0.9).
+  P0.10 and F2 are complete. Forecast work is now Sports Analytics v3 and
+  chronological calibration; no strategy has demonstrated profitability.
 
 ## Constrained quality-v3/robust replay (2026-09-02)
 
@@ -38,12 +64,11 @@
 - Focused implementation verification: 140 optimizer/sidecar tests passed.
   Full-project verification after all current changes: 2,297 passed / 13
   deselected; Ruff is clean.
-- Equal-bank 4,980-RUB replay on completed drawings 4990-4993 produced average
-  best hits: quality-v2 10.00, sports 10.00, quality-v3 9.75 and robust 10.25.
+- Equal-bank 4,980-RUB replay on completed drawings 4990-4994 produced average
+  best hits: quality-v2 10.00, sports 10.00, quality-v3 9.80 and robust 10.20.
   Every strategy produced zero 13+ coupons. Robust changed versus its old
-  selector by +2, 0, -1 and +2 best hits respectively (average +0.75).
-- Reports are under `reports/research/constrained-hybrid-replay-v2/`. Drawing
-  4994 remains pending until authoritative results are available. This is a
+  selector by +2, 0, -1, +2 and 0 best hits respectively (average +0.60).
+- Reports are under `reports/research/constrained-hybrid-replay-v2/`. This is a
   structural safety improvement, not evidence of predictive superiority or
   profitability.
 

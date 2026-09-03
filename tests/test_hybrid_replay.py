@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -8,10 +9,13 @@ from toto_ai.ev.package_quality import (
     quality_v2_config_payload,
     selection_context_sha256,
 )
+from toto_ai.external_odds.eligibility import target_fingerprint
+from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.optimizer.hybrid_replay import (
     _historical_provenance,
     _rebase_sports_probabilities,
     _strategy_payload,
+    _validate_sports_identity,
 )
 from toto_ai.optimizer.quality_replay import _historical_quality_v2_config
 
@@ -55,6 +59,71 @@ def test_sports_rebase_uses_event_fallback_and_blend_weight():
 
     assert result[0] == baseline[0]
     assert result[1] == pytest.approx((0.44, 0.3, 0.26))
+
+
+def test_sports_identity_allows_chronologically_earlier_bk_probabilities():
+    captured_at = datetime(2030, 1, 2, 9, 0, tzinfo=timezone.utc)
+    payload = {
+        "data": {
+            "id": 12089,
+            "number": 4994,
+            "name": "baltbet-main",
+            "ended_at": "2030-01-02T15:00:00Z",
+            "events": [
+                {
+                    "id": 180438 + order,
+                    "order": order,
+                    "championship": "Test league",
+                    "name": f"Home {order} — Away {order}",
+                    "start_at": None,
+                    "quotes": {
+                        "bk_win_1": 50,
+                        "bk_draw": 30,
+                        "bk_win_2": 20,
+                        "pool_win_1": 50,
+                        "pool_draw": 30,
+                        "pool_win_2": 20,
+                    },
+                }
+                for order in range(15)
+            ],
+        }
+    }
+    parsed = parse_target_drawing(payload, captured_at)
+    plan = SimpleNamespace(operational_cutoff=parsed.deadline)
+    fingerprint = target_fingerprint(
+        drawing_id=parsed.drawing_id,
+        drawing_number=parsed.drawing_number,
+        deadline=plan.operational_cutoff,
+        events=parsed.events,
+    )
+    frozen = SimpleNamespace(
+        drawing_id=parsed.drawing_id,
+        drawing_number=parsed.drawing_number,
+        events=tuple(
+            SimpleNamespace(bk_probabilities=event.bk_probabilities)
+            for event in parsed.events
+        ),
+    )
+    snapshot = SimpleNamespace(payload=payload, captured_at=captured_at)
+    sports = SimpleNamespace(
+        drawing_id=parsed.drawing_id,
+        drawing_number=parsed.drawing_number,
+        deadline=plan.operational_cutoff,
+        drawing_fingerprint=fingerprint,
+        authoritative_target_fingerprint=fingerprint,
+        as_of=datetime(2030, 1, 2, 8, 0, tzinfo=timezone.utc),
+        events=tuple(
+            SimpleNamespace(
+                event_order=event.event_order,
+                event_id=str(event.event_id),
+                bk_probabilities=(0.4, 0.3, 0.3),
+            )
+            for event in parsed.events
+        ),
+    )
+
+    _validate_sports_identity(plan, frozen, snapshot, sports)
 
 
 def test_historical_provenance_preserves_declared_seed_hashes():

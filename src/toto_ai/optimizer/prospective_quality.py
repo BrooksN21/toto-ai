@@ -40,6 +40,7 @@ from toto_ai.optimizer.strategy_comparison import (
 from toto_ai.optimizer.uncertainty_package import (
     DEFAULT_FLATTEN_WEIGHTS,
     build_uncertainty_models,
+    control_relative_exposure_constraints,
     outcome_exposure,
     select_uncertainty_package,
 )
@@ -494,6 +495,14 @@ def evaluate_paired_quality(
         raise PairedQualityIntegrityError("quality-v2 generation timed out")
 
     challenger_seed = f"{seed_sha256}:quality-v3"
+    exposure_constraints = control_relative_exposure_constraints(
+        frozen_input.bk_probability_matrix,
+        control_coupons=control_result.coupons,
+        package_size=coupon_capacity,
+        floor_scale=quality_v2_config.package_exposure_floor_scale,
+        floor_exponent=quality_v2_config.package_exposure_floor_exponent,
+        near_fixed_share=quality_v2_config.package_near_fixed_share,
+    )
     challenger_result = challenger_generator(
         bk_probabilities=frozen_input.bk_probability_matrix,
         anchor_coupons=control_result.coupons,
@@ -505,6 +514,8 @@ def evaluate_paired_quality(
         mutation_limit=resolved_v3_config.mutation_limit,
         selection_sample_count=resolved_v3_config.scenario_sample_count,
         seed_material=challenger_seed,
+        exposure_constraints=exposure_constraints,
+        fallback_coupons=control_result.coupons,
     )
     uncertainty_models = build_uncertainty_models(
         frozen_input.bk_probability_matrix,

@@ -4,6 +4,7 @@ import pytest
 
 from toto_ai.optimizer.uncertainty_package import (
     build_uncertainty_models,
+    control_relative_exposure_constraints,
     flatten_probabilities,
     outcome_exposure,
     select_uncertainty_package,
@@ -83,3 +84,17 @@ def test_outcome_exposure_reports_counts_and_shares() -> None:
         "shares": {"1": 0.75, "X": 0.0, "2": 0.25},
     }
     assert exposure[1]["counts"] == {"1": 1, "X": 2, "2": 1}
+
+
+def test_control_relative_constraints_bind_floor_and_maximum_to_control() -> None:
+    constraints = control_relative_exposure_constraints(
+        ((0.60, 0.25, 0.15),) * 2,
+        control_coupons=("11", "12", "21", "22"),
+        package_size=4,
+        floor_scale=0.15,
+        floor_exponent=1.0,
+        near_fixed_share=0.95,
+    )
+
+    assert constraints.lower_bounds == ((0, 0, 0), (0, 0, 0))
+    assert constraints.upper_bounds == ((2, 2, 2), (2, 2, 2))

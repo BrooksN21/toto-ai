@@ -12,9 +12,11 @@ import math
 import time
 from collections.abc import Mapping, Sequence
 
+from toto_ai.ev.package_quality import continuous_exposure_lower_bounds
 from toto_ai.optimizer.coupon_candidates import generate_candidate_coupons
 from toto_ai.optimizer.coupon_probabilities import ProbabilityMatrix
 from toto_ai.optimizer.robust_package import (
+    ExposureConstraints,
     RobustPackageResult,
     select_robust_package,
 )
@@ -104,6 +106,8 @@ def select_uncertainty_package(
     mutation_limit: int = 2_000,
     selection_sample_count: int = 10_000,
     seed_material: str = "uncertainty-package-v1",
+    exposure_constraints: ExposureConstraints | None = None,
+    fallback_coupons: Sequence[str] = (),
     deadline: float | None = None,
     time_func=time.perf_counter,
 ) -> RobustPackageResult:
@@ -151,9 +155,55 @@ def select_uncertainty_package(
         max_coupons=max_coupons,
         sample_count=selection_sample_count,
         seed_material=f"{seed_material}-selector",
+        exposure_constraints=exposure_constraints,
+        fallback_coupons=fallback_coupons,
         deadline=deadline,
         time_func=time_func,
     )
+
+
+def control_relative_exposure_constraints(
+    probabilities: Sequence[Sequence[float]],
+    *,
+    control_coupons: Sequence[str],
+    package_size: int,
+    floor_scale: float,
+    floor_exponent: float,
+    near_fixed_share: float,
+) -> ExposureConstraints:
+    """Build quality-v2 floors and a hard cap no looser than the control."""
+
+    rows = _normalize_probability_matrix(probabilities)
+    control = tuple(control_coupons)
+    if len(control) != package_size:
+        raise ValueError("control_coupons must fill the package")
+    exposure = outcome_exposure(control)
+    if len(exposure) != len(rows):
+        raise ValueError("control_coupons and probabilities must have equal events")
+    lower = tuple(
+        continuous_exposure_lower_bounds(
+            row,
+            package_size=package_size,
+            scale=floor_scale,
+            exponent=floor_exponent,
+        )
+        for row in rows
+    )
+    control_maximum = max(
+        int(count)
+        for event in exposure
+        for count in event["counts"].values()  # type: ignore[union-attr]
+    )
+    hard_maximum = math.ceil(near_fixed_share * package_size) - 1
+    maximum = min(control_maximum, hard_maximum)
+    upper = tuple((maximum, maximum, maximum) for _ in rows)
+    constraints = ExposureConstraints(lower_bounds=lower, upper_bounds=upper)
+    for event, counts in enumerate(exposure):
+        for outcome_index, outcome in enumerate("1X2"):
+            count = int(counts["counts"][outcome])  # type: ignore[index]
+            if not lower[event][outcome_index] <= count <= maximum:
+                raise ValueError("control package violates derived exposure bounds")
+    return constraints
 
 
 def _normalize_probability_matrix(
