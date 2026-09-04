@@ -152,6 +152,12 @@ not reset this plan.
 - [ ] F3 Build Sports Analytics v3 as a bounded residual to the calibrated
   market using opponent-adjusted team strength, recency/venue form, goals,
   rest, congestion, standings, and only reliable timestamped lineup evidence.
+  - [x] The 2026-09-04 attribution extension aggregated the six immutable
+    4990-4995 inputs into a canonical 90-event JSON/CSV/Markdown diagnostic
+    with exact frozen-final-input league identity, per-outcome metrics,
+    calibration bins and predeclared market segments. Semantic report SHA-256
+    is `94ab5d0641f23ba4a25f16830b4536cac4c4bdf8e916a83cc519ccf2e25a1189`.
+    It remains descriptive input to F3/F4 and cannot change a probability model.
 - [ ] F4 Validate probabilities chronologically with walk-forward log loss,
   Brier score, ECE, and top-outcome accuracy before package evaluation.
 - [ ] F5 Compare equal-bank package P(13+), P(14+), P(15), concentration,
@@ -216,11 +222,15 @@ not reset this plan.
   package to reach 10/15; quality-v2, sports-shadow and robust reached 9/15.
   No package reached 13+, so the result does not establish superiority or
   profitability.
-- [ ] F3 current work: the immutable 4990-4994 event-attribution aggregate is
-  complete over 75 resolved events. Sports v2 is 31/75 top-correct versus BK
-  32/75, while Brier/log loss are only marginally better. Next build the
-  leakage-safe opponent/recency/venue/rest/standings residual and evaluate it
-  only in chronological walk-forward folds.
+- [ ] F3 current work: the canonical schema-v2 aggregate is complete over all
+  90 resolved events from 4990-4995. Sports v2 is 37/90 top-correct versus BK
+  38/90; its Brier/log-loss deltas are -0.001184388/-0.001702241, while ECE is
+  worse by +0.026938554. Coverage is 64/90; 24 of 26 fallbacks are missing
+  sports history. Draws are 28 events with zero top-correct for both models and
+  worse Sports-v2 Brier/log loss. Next exact checkpoint: build a library-only
+  chronological feature table with exact team/event identity and pre-kickoff
+  opponent strength, recency/venue, goals and rest/congestion fields plus
+  per-feature missingness; do not fit or blend probabilities yet.
 
 ### Blocked or pending observation
 

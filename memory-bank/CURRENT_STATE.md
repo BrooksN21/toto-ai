@@ -1,5 +1,46 @@
 # Current State
 
+## Sports Analytics v3 canonical 90-event checkpoint (2026-09-04)
+
+- The canonical schema-v2 aggregate for drawings 4990-4995 is complete at
+  `reports/research/sports-v3-4990-4995/`. It contains 90/90 resolved events,
+  exact frozen-final-input league coverage for 90/90, and verified hashes for
+  all six attribution inputs, all six final inputs and all three report views.
+  Semantic report SHA-256 is
+  `94ab5d0641f23ba4a25f16830b4536cac4c4bdf8e916a83cc519ccf2e25a1189`.
+- All six attribution inputs are legacy schema v1. Their declared hashes use
+  the original `ensure_ascii=True` JSON canonicalization; applying schema-v2
+  UTF-8 canonicalization caused the compatibility failure. Verification now
+  dispatches strictly by schema version: v1 uses its original canonicalization,
+  v2 uses `ensure_ascii=False`, and missing, unsupported or tampered hashes
+  fail closed. The focused suite is 5 passed; Ruff is clean.
+- BK is 38/90 top-correct, Brier 0.659081482, log loss 1.088091883 and ECE
+  0.025804447. Sports v2 is 37/90, 0.657897094, 1.086389642 and 0.052743001.
+  Sports-v2 deltas are -0.001184388 Brier, -0.001702241 log loss,
+  -0.011111111 top accuracy and +0.026938554 ECE. The small probability-score
+  gains do not offset the top-accuracy/calibration regressions and do not prove
+  superiority or profitability.
+- Ordered research candidates are: (1) coverage-first exact-identity team
+  history and opponent/recency/venue/rest features because 26/90 events fall
+  back, including 24 `sports_history_missing`; (2) a draw-targeted residual
+  feature block because all 28 realized draws are top misses and Sports v2
+  worsens draw Brier by 0.000691724 and log loss by 0.001702630; (3) a
+  market-uncertainty/rank-aware shrinkage and calibration gate because the
+  30-event margin-below-0.05 segment loses 0.033333 top accuracy and worsens ECE
+  by 0.035350791, while the 26-event rank-3 segment worsens Brier/log loss by
+  0.000326593/0.001005921.
+- Limitations: six drawings / 90 events are below the 30-drawing / 450-event
+  gate; each drawing has only 15 events; nearly every league has 1-5 events
+  (the largest is England Championship at 11); margin >=0.20 has only 6 events;
+  entropy 0.90-0.95 has only 2, while 88/90 are in 0.95-1.00 and therefore do
+  not discriminate. No drawing-, league-, wide-margin- or low-entropy-specific
+  production rule is supported.
+- Next exact implementation checkpoint: create a library-only chronological
+  feature-table builder for 4990-4995 that requires exact drawing/event/team
+  identity and emits only pre-kickoff opponent-adjusted strength,
+  recency/venue, goals and rest/congestion values with explicit missingness.
+  Do not fit, calibrate, blend, package or connect it to scheduler/operator code.
+
 ## Parallel sidecar retry API checkpoint (2026-09-04)
 
 - Added a drawing-independent

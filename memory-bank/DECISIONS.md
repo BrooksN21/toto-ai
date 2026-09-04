@@ -2633,3 +2633,26 @@ ambiguous reversed evidence remains unresolved.
 - Opponent, recency, venue, rest/congestion and standings features may proceed
   only through chronological walk-forward validation. No improvement claim is
   allowed from the five-drawing / 75-event seed aggregate.
+
+## 2026-09-04 — Sports v3 follows coverage, draw and calibration evidence
+
+- Canonical attribution hashes are versioned contracts. Legacy schema-v1
+  reports retain their original ASCII-escaped canonicalization; schema v2 uses
+  canonical UTF-8 JSON. A verifier must select exactly by declared schema and
+  reject missing, unknown or tampered hashes rather than trying both formats.
+- The completed 4990-4995 aggregate has 90 resolved events and exact league
+  identity for all 90. Sports v2 marginally improves Brier and log loss but is
+  worse in top accuracy and ECE. This is descriptive evidence only and cannot
+  activate or select a model.
+- Candidate research order is fixed for the next experiment: first reduce the
+  26/90 event-local fallbacks through exact-identity pre-kickoff history and
+  opponent/recency/venue/rest features; second test a draw-targeted residual
+  against the 28-draw weakness; third test market-rank/margin-aware shrinkage
+  and calibration against the 30-event low-margin and 26-event rank-3 segments.
+- Actual draw and actual market rank remain evaluation labels only. They must
+  never enter pre-draw features or probabilities. Every candidate is evaluated
+  in chronological walk-forward folds against untouched BK.
+- Per-drawing samples (15), leagues with at most 11 events, margin >=0.20 (6),
+  and entropy 0.90-0.95 (2) are too small for an actionable rule. The 0.95-1.00
+  entropy bin contains 88/90 events and is too broad to discriminate. No
+  segment result establishes causality, superiority or profitability.
