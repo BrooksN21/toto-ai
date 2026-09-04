@@ -1,6 +1,6 @@
 # Active execution plan
 
-Last updated: 2026-09-03 Europe/Moscow.
+Last updated: 2026-09-04 Europe/Moscow.
 
 This is the binding TotoAI plan until every item is complete or the project
 owner explicitly changes it. Read this file before any operational,
@@ -99,6 +99,13 @@ not reset this plan.
   local `notification.status=sent` is not sufficient unless the owner-facing
   delivery channel has a verifiable receipt; undelivered review remains
   pending and must be retried/reported.
+  The drawing-independent storage/API boundary is implemented: completed
+  reviews create a separate hash-bound `review-delivery.json`; local send
+  success remains `pending`, send failure is `failed`, both remain retryable,
+  and only a hash-bound owner-channel receipt may produce `delivered`.
+  Drawing 4995 is currently `pending` / `OWNER_RECEIPT_REQUIRED` with no
+  receipt. P0.9 remains incomplete until an owner-visible delivery and receipt
+  are observed end to end.
 - [x] P0.10 Before the first evening calculation, create and verify the
   plan-bound owner prompt for manual-wager intent and experimental release.
   Missing owner authorization must be visible as an explicit blocker before
@@ -231,6 +238,19 @@ not reset this plan.
   `parallel-challenger/output/sidecar-status.json` with a bounded legacy
   `output-final` fallback. Recovered settlement for drawing 4994 shows all four
   packages at 10/15 and no 13+/14+/15 coupon.
+- [x] Drawing-independent post-draw sidecar consumption now recognizes
+  hash-valid producer terminal skip records such as
+  `SKIPPED_OPERATOR_NOT_READY` as non-settleable. Drawing 4995 records an
+  advisory `skipped` comparison instead of passing the record into the strict
+  ready-package identity validator; malformed skip records still fail closed.
+- [x] Drawing-4995 owner payout evidence is preserved under
+  `data/payout-evidence/4995/` with exact screenshot and record hashes. The
+  non-actionable 166-coupon package had four 9-hit coupons, yielding a strictly
+  counterfactual gross return of 1,029.83400 RUB, net -3,950.16600 RUB and ROI
+  -79.320602409638554216867469879518072289156626506024%. It is not observed
+  ROI because the package is not evidenced as placed.
+- [x] Final local verification for the drawing-4995 repair completed with
+  2,306 tests passed, 13 deselected, and full-project Ruff clean.
 - [ ] Drawing-4993 payout transcription awaits explicit owner confirmation;
   until then observed payout/profit/ROI stay disabled.
 - [ ] The constrained replay has zero 13+ hits on 4990-4993. Robust average

@@ -270,6 +270,67 @@ def test_plan_run_settles_available_parallel_comparison_and_notifies(
     assert any("quality-v2 10/15, sports-shadow 11/15" in row for row in messages)
 
 
+def test_plan_run_skips_legitimate_unready_parallel_sidecar(tmp_path, monkeypatch):
+    """Regression for drawing 4995's SKIPPED_OPERATOR_NOT_READY sidecar."""
+
+    factory, plan_path, plan = _setup(tmp_path)
+    sidecar_status = (
+        tmp_path
+        / "parallel-challenger"
+        / "output"
+        / "sidecar-status.json"
+    )
+    sidecar_status.parent.mkdir(parents=True)
+    payload = {
+        "schema_version": 1,
+        "status": "SKIPPED_OPERATOR_NOT_READY",
+        "started_at": "2026-09-03T15:25:02.844927Z",
+        "observed_at": "2026-09-03T15:40:02.915250Z",
+        "reason": "operator PLAY was not ready before sidecar safe start",
+        "automatic_wagering": False,
+    }
+    payload["record_sha256"] = hashlib.sha256(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    sidecar_status.write_text(json.dumps(payload), encoding="utf-8")
+
+    def unexpected_settlement(**_kwargs):
+        raise AssertionError("non-settleable sidecar reached package validator")
+
+    monkeypatch.setattr(
+        "toto_ai.sports_stats.final_hybrid_settlement."
+        "settle_final_hybrid_comparison",
+        unexpected_settlement,
+    )
+
+    state = run_post_draw_plan(
+        factory,
+        Client([_payload()]),
+        plan_path=plan_path,
+        now=lambda: _due(plan),
+    )
+
+    assert state.status == "complete"
+    status = json.loads(
+        (plan_path.parent / "parallel-comparison-status.json").read_text()
+    )
+    assert status == {
+        "schema_version": 1,
+        "status": "skipped",
+        "drawing_id": 12001,
+        "drawing_number": 5001,
+        "completed_at": _due(plan).isoformat(),
+        "sidecar_status": "SKIPPED_OPERATOR_NOT_READY",
+        "reason": "operator PLAY was not ready before sidecar safe start",
+        "automatic_wagering": False,
+    }
+
+
 def test_plan_run_transport_is_retryable_and_integrity_is_blocked(tmp_path):
     factory, plan_path, plan = _setup(tmp_path)
     transport = run_post_draw_plan(

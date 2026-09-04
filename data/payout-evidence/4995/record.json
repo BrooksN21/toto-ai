@@ -1,0 +1,63 @@
+{
+  "automatic_wagering": false,
+  "betting_closed_at_msk": "2026-09-03T18:55:00+03:00",
+  "categories": [
+    {
+      "hits": 15,
+      "payout_coefficient": "0.00000",
+      "winning_variants": 0
+    },
+    {
+      "hits": 14,
+      "payout_coefficient": "0.00000",
+      "winning_variants": 0
+    },
+    {
+      "hits": 13,
+      "payout_coefficient": "1440.21156",
+      "winning_variants": 7
+    },
+    {
+      "hits": 12,
+      "payout_coefficient": "129.02154",
+      "winning_variants": 88
+    },
+    {
+      "hits": 11,
+      "payout_coefficient": "35.92150",
+      "winning_variants": 645
+    },
+    {
+      "hits": 10,
+      "payout_coefficient": "15.13265",
+      "winning_variants": 3055
+    },
+    {
+      "hits": 9,
+      "payout_coefficient": "8.58195",
+      "winning_variants": 10814
+    }
+  ],
+  "coefficient_semantics": "official_rules_verified_cumulative_per_ruble",
+  "counterfactual_package_analysis_allowed": true,
+  "displayed_state_at_msk": "2026-09-04T12:16:00+03:00",
+  "drawing_number": 4995,
+  "drawing_status": "settled",
+  "eligible_for_observed_roi": false,
+  "observed_roi_ineligibility_reason": "bound package was non-actionable and is not evidenced as placed",
+  "owner_transcription_confirmed": true,
+  "payout_formula": "stake_rub * sum(payout_coefficient[h] for h in 9..coupon_hits)",
+  "possible_winnings_rub": 6471101,
+  "record_sha256": "bc62d59cc9081fa755e396d570302c1c672a967b745a590b5670f0481ec19979",
+  "rules_evidence": {
+    "section": "4.2, pages 7-8",
+    "source_url": "https://cdndocs.baltbet.ru/uni/docs/sd_GameRules.pdf?v5=",
+    "summary": "Each threshold from 9 through 15 participates independently in the prize-fund distribution; a coupon receives every threshold coefficient up to its realized hit count. The displayed coefficient is therefore multiplied by that coupon's stake for each eligible threshold.",
+    "verified_at": "2026-09-02T15:27:09Z"
+  },
+  "schema_version": 1,
+  "source_file": "baltbet-payout-4995.png",
+  "source_sha256": "3a04f6d0590981cb0ca335380320dc675c299961f540a4e225dd83cb83af7a82",
+  "source_type": "owner_supplied_baltbet_screenshot",
+  "superprize_rub": 2353768
+}

@@ -48,8 +48,17 @@ RESULT_SNAPSHOT_HASH_SCHEMA_VERSION = 3
 POST_DRAW_PLAN_SCHEMA_VERSION = 2
 POST_DRAW_STATE_SCHEMA_VERSION = 2
 POST_DRAW_REVIEW_SCHEMA_VERSION = 1
+POST_DRAW_DELIVERY_SCHEMA_VERSION = 1
+POST_DRAW_DELIVERY_RECEIPT_SCHEMA_VERSION = 1
 POST_DRAW_TIMEZONE = ZoneInfo("Europe/Moscow")
 _POST_DRAW_LAUNCH_AGENT_LABEL = re.compile(r"com\.toto-ai\.post-draw-\d+\Z")
+_NON_SETTLEABLE_PARALLEL_SIDECAR_STATUSES = frozenset(
+    {
+        "SKIPPED_INSUFFICIENT_RUNTIME",
+        "SKIPPED_OPERATOR_NO_BET",
+        "SKIPPED_OPERATOR_NOT_READY",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -1634,6 +1643,22 @@ def _settle_parallel_comparison_if_available(
         return
     status_path = post_draw_root / "parallel-comparison-status.json"
     try:
+        non_settleable = _load_non_settleable_parallel_sidecar(sidecar_status)
+        if non_settleable is not None:
+            _write_json_replace(
+                status_path,
+                {
+                    "schema_version": 1,
+                    "status": "skipped",
+                    "drawing_id": result.drawing_id,
+                    "drawing_number": result.drawing_number,
+                    "completed_at": _aware_utc(completed_at).isoformat(),
+                    "sidecar_status": non_settleable["status"],
+                    "reason": non_settleable["reason"],
+                    "automatic_wagering": False,
+                },
+            )
+            return
         from toto_ai.sports_stats.final_hybrid_settlement import (
             settle_final_hybrid_comparison,
         )
@@ -1699,6 +1724,47 @@ def _settle_parallel_comparison_if_available(
                 "automatic_wagering": False,
             },
         )
+
+
+def _load_non_settleable_parallel_sidecar(path: Path) -> dict[str, Any] | None:
+    """Validate producer terminal states before bypassing package settlement."""
+
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("parallel sidecar status must be a regular file")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("parallel sidecar status is malformed") from error
+    if not isinstance(payload, dict):
+        raise ValueError("parallel sidecar status must be an object")
+    if payload.get("status") not in _NON_SETTLEABLE_PARALLEL_SIDECAR_STATUSES:
+        return None
+    if set(payload) != {
+        "schema_version",
+        "status",
+        "started_at",
+        "observed_at",
+        "reason",
+        "automatic_wagering",
+        "record_sha256",
+    }:
+        raise ValueError("non-settleable parallel sidecar fields are invalid")
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("automatic_wagering") is not False
+        or not isinstance(payload.get("reason"), str)
+        or not payload["reason"].strip()
+    ):
+        raise ValueError("non-settleable parallel sidecar boundary is invalid")
+    started_at = _parse_timestamp(payload.get("started_at"))
+    observed_at = _parse_timestamp(payload.get("observed_at"))
+    if started_at is None or observed_at is None or observed_at < started_at:
+        raise ValueError("non-settleable parallel sidecar timing is invalid")
+    unsigned = dict(payload)
+    declared_hash = unsigned.pop("record_sha256")
+    if declared_hash != _sha256_json(unsigned):
+        raise ValueError("non-settleable parallel sidecar hash mismatch")
+    return payload
 
 
 def _post_draw_plan_state(
@@ -1927,6 +1993,7 @@ def complete_post_draw_review(
     if payload["status"] == "REVIEW_COMPLETE":
         if Path(payload["postmortem_path"]) != destination:
             raise ValueError("completed review postmortem path conflict")
+        _initialize_post_draw_delivery(Path(path), payload, completed_at=completed_at)
         return payload
     if payload["status"] not in {"REVIEW_REQUESTED", "REVIEW_SKIPPED"}:
         raise ValueError("review completion transition is not allowed")
@@ -1938,7 +2005,310 @@ def complete_post_draw_review(
     payload["postmortem_sha256"] = hashlib.sha256(postmortem).hexdigest()
     payload["request_sha256"] = _review_request_sha256(payload)
     _write_json_replace(Path(path), payload)
-    return load_review_request(path)
+    completed = load_review_request(path)
+    _initialize_post_draw_delivery(Path(path), completed, completed_at=completed_at)
+    return completed
+
+
+def load_post_draw_delivery(request_path: str | Path) -> dict[str, Any]:
+    """Load delivery state that is separate from local report completion."""
+
+    request = load_review_request(request_path)
+    if request["status"] != "REVIEW_COMPLETE":
+        raise ValueError("post-draw delivery requires a completed review")
+    path = _post_draw_delivery_path(request_path)
+    try:
+        if path.is_symlink() or not path.is_file():
+            raise ValueError("post-draw delivery state is unavailable")
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("post-draw delivery state must be an object")
+        unsigned = dict(payload)
+        declared_hash = unsigned.pop("record_sha256", None)
+        if declared_hash != _sha256_json(unsigned):
+            raise ValueError("post-draw delivery hash mismatch")
+        if (
+            payload.get("schema_version") != POST_DRAW_DELIVERY_SCHEMA_VERSION
+            or payload.get("drawing_id") != request["drawing_id"]
+            or payload.get("drawing_number") != request["drawing_number"]
+            or payload.get("review_request_sha256")
+            != request["request_sha256"]
+            or payload.get("postmortem_sha256") != request["postmortem_sha256"]
+            or payload.get("postmortem_path") != request["postmortem_path"]
+        ):
+            raise ValueError("post-draw delivery identity mismatch")
+        status = payload.get("status")
+        reason = payload.get("reason")
+        retryable = payload.get("retryable")
+        receipt = payload.get("receipt")
+        attempts = payload.get("attempts")
+        if (
+            status not in {"pending", "failed", "delivered"}
+            or not isinstance(reason, str)
+            or type(retryable) is not bool
+            or not isinstance(attempts, list)
+        ):
+            raise ValueError("post-draw delivery state is invalid")
+        if status == "delivered":
+            if retryable is not False or not isinstance(receipt, dict):
+                raise ValueError("delivered post-draw state requires receipt")
+            _validate_preserved_delivery_receipt(receipt, request=request)
+        elif receipt is not None or retryable is not True:
+            raise ValueError("undelivered post-draw state must remain retryable")
+        for attempt in attempts:
+            _validate_delivery_attempt(attempt)
+        _parse_timestamp_required(payload.get("updated_at"))
+        return payload
+    except (KeyError, OSError, TypeError, ValueError) as error:
+        raise ValueError("post-draw delivery state is malformed") from error
+
+
+def retry_post_draw_delivery(
+    request_path: str | Path,
+    *,
+    attempted_at: datetime,
+    notifier: Callable[[str], None],
+) -> dict[str, Any]:
+    """Retry owner-facing delivery without claiming a local send is receipt."""
+
+    if not callable(notifier):
+        raise ValueError("post-draw delivery retry requires a notifier")
+    request = load_review_request(request_path)
+    delivery = load_post_draw_delivery(request_path)
+    if delivery["status"] == "delivered":
+        return delivery
+    observed_at = _aware_utc(attempted_at).isoformat()
+    message = _post_draw_notification_message(
+        drawing_number=request["drawing_number"],
+        package_kind=request["package_kind"],
+        settlement=(
+            None if request["package_kind"] == "package_free_no_bet" else request
+        ),
+        postmortem_path=Path(request["postmortem_path"]),
+    )
+    try:
+        notifier(message)
+    except Exception as error:  # delivery remains retryable
+        attempt = {
+            "attempted_at": observed_at,
+            "channel": "local_desktop_notification",
+            "transport_status": "failed",
+            "error": _safe_reason(error),
+        }
+        delivery["status"] = "failed"
+        delivery["reason"] = "DELIVERY_ATTEMPT_FAILED"
+    else:
+        attempt = {
+            "attempted_at": observed_at,
+            "channel": "local_desktop_notification",
+            "transport_status": "sent",
+            "error": None,
+        }
+        delivery["status"] = "pending"
+        delivery["reason"] = "OWNER_RECEIPT_REQUIRED"
+    delivery["attempts"].append(attempt)
+    delivery["updated_at"] = observed_at
+    delivery["record_sha256"] = _delivery_sha256(delivery)
+    _write_json_replace(_post_draw_delivery_path(request_path), delivery)
+    return load_post_draw_delivery(request_path)
+
+
+def record_post_draw_delivery_receipt(
+    request_path: str | Path,
+    *,
+    receipt_path: str | Path,
+    recorded_at: datetime,
+) -> dict[str, Any]:
+    """Record a hash-bound owner-channel receipt for a completed report."""
+
+    request = load_review_request(request_path)
+    delivery = load_post_draw_delivery(request_path)
+    observed_at = _aware_utc(recorded_at)
+    source = Path(receipt_path).resolve()
+    if source.is_symlink() or not source.is_file():
+        raise ValueError("delivery receipt must be a regular file")
+    source_bytes = source.read_bytes()
+    try:
+        receipt = json.loads(source_bytes)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("delivery receipt is malformed") from error
+    _validate_delivery_receipt(receipt, request=request, recorded_at=observed_at)
+    preserved_path = _post_draw_delivery_path(request_path).with_name(
+        "review-delivery-receipt.json"
+    )
+    _write_immutable_file(
+        preserved_path,
+        source_bytes,
+        name="post-draw delivery receipt",
+    )
+    delivery["status"] = "delivered"
+    delivery["reason"] = "OWNER_DELIVERY_RECEIPT_VERIFIED"
+    delivery["retryable"] = False
+    delivery["receipt"] = {
+        "channel": receipt["channel"],
+        "receipt_id": receipt["receipt_id"],
+        "delivered_at": receipt["delivered_at"],
+        "receipt_sha256": receipt["receipt_sha256"],
+        "evidence_path": str(preserved_path.resolve()),
+        "evidence_sha256": hashlib.sha256(source_bytes).hexdigest(),
+        "recorded_at": observed_at.isoformat(),
+    }
+    delivery["updated_at"] = observed_at.isoformat()
+    delivery["record_sha256"] = _delivery_sha256(delivery)
+    _write_json_replace(_post_draw_delivery_path(request_path), delivery)
+    return load_post_draw_delivery(request_path)
+
+
+def _post_draw_delivery_path(request_path: str | Path) -> Path:
+    return Path(request_path).resolve().with_name("review-delivery.json")
+
+
+def _initialize_post_draw_delivery(
+    request_path: Path,
+    request: Mapping[str, Any],
+    *,
+    completed_at: datetime,
+) -> dict[str, Any]:
+    path = _post_draw_delivery_path(request_path)
+    if path.exists():
+        return load_post_draw_delivery(request_path)
+    notification = request.get("notification")
+    if not isinstance(notification, Mapping):
+        raise ValueError("review notification state is invalid")
+    transport_status = notification.get("status")
+    if transport_status not in {"not_attempted", "sent", "failed"}:
+        raise ValueError("review notification status is invalid")
+    attempts = []
+    if transport_status != "not_attempted":
+        attempts.append(
+            {
+                "attempted_at": request["requested_at"],
+                "channel": "local_desktop_notification",
+                "transport_status": transport_status,
+                "error": notification.get("error"),
+            }
+        )
+    failed = transport_status == "failed"
+    payload: dict[str, Any] = {
+        "schema_version": POST_DRAW_DELIVERY_SCHEMA_VERSION,
+        "status": "failed" if failed else "pending",
+        "reason": (
+            "DELIVERY_ATTEMPT_FAILED" if failed else "OWNER_RECEIPT_REQUIRED"
+        ),
+        "retryable": True,
+        "drawing_id": request["drawing_id"],
+        "drawing_number": request["drawing_number"],
+        "review_request_sha256": request["request_sha256"],
+        "postmortem_path": request["postmortem_path"],
+        "postmortem_sha256": request["postmortem_sha256"],
+        "attempts": attempts,
+        "receipt": None,
+        "updated_at": _aware_utc(completed_at).isoformat(),
+    }
+    payload["record_sha256"] = _delivery_sha256(payload)
+    _write_json_replace(path, payload)
+    return load_post_draw_delivery(request_path)
+
+
+def _delivery_sha256(payload: Mapping[str, Any]) -> str:
+    unsigned = dict(payload)
+    unsigned.pop("record_sha256", None)
+    return _sha256_json(unsigned)
+
+
+def _validate_delivery_attempt(value: Any) -> None:
+    if not isinstance(value, dict) or set(value) != {
+        "attempted_at",
+        "channel",
+        "transport_status",
+        "error",
+    }:
+        raise ValueError("post-draw delivery attempt is invalid")
+    _parse_timestamp_required(value["attempted_at"])
+    if (
+        value["channel"] != "local_desktop_notification"
+        or value["transport_status"] not in {"sent", "failed"}
+        or (
+            value["transport_status"] == "sent" and value["error"] is not None
+        )
+        or (
+            value["transport_status"] == "failed"
+            and not isinstance(value["error"], str)
+        )
+    ):
+        raise ValueError("post-draw delivery attempt boundary is invalid")
+
+
+def _validate_delivery_receipt(
+    receipt: Any,
+    *,
+    request: Mapping[str, Any],
+    recorded_at: datetime,
+) -> None:
+    if not isinstance(receipt, dict) or set(receipt) != {
+        "schema_version",
+        "drawing_id",
+        "drawing_number",
+        "review_request_sha256",
+        "postmortem_sha256",
+        "channel",
+        "receipt_id",
+        "delivered_at",
+        "receipt_sha256",
+    }:
+        raise ValueError("delivery receipt fields are invalid")
+    unsigned = dict(receipt)
+    declared_hash = unsigned.pop("receipt_sha256")
+    delivered_at = _parse_timestamp_required(receipt["delivered_at"])
+    if (
+        receipt["schema_version"] != POST_DRAW_DELIVERY_RECEIPT_SCHEMA_VERSION
+        or receipt["drawing_id"] != request["drawing_id"]
+        or receipt["drawing_number"] != request["drawing_number"]
+        or receipt["review_request_sha256"] != request["request_sha256"]
+        or receipt["postmortem_sha256"] != request["postmortem_sha256"]
+        or not isinstance(receipt["channel"], str)
+        or not receipt["channel"].strip()
+        or not isinstance(receipt["receipt_id"], str)
+        or not receipt["receipt_id"].strip()
+        or delivered_at > recorded_at
+        or declared_hash != _sha256_json(unsigned)
+    ):
+        raise ValueError("delivery receipt identity or hash mismatch")
+
+
+def _validate_preserved_delivery_receipt(
+    receipt: Mapping[str, Any],
+    *,
+    request: Mapping[str, Any],
+) -> None:
+    required = {
+        "channel",
+        "receipt_id",
+        "delivered_at",
+        "receipt_sha256",
+        "evidence_path",
+        "evidence_sha256",
+        "recorded_at",
+    }
+    if set(receipt) != required:
+        raise ValueError("preserved delivery receipt fields are invalid")
+    evidence = Path(receipt["evidence_path"])
+    if evidence.is_symlink() or not evidence.is_file():
+        raise ValueError("preserved delivery receipt is unavailable")
+    evidence_bytes = evidence.read_bytes()
+    if hashlib.sha256(evidence_bytes).hexdigest() != receipt["evidence_sha256"]:
+        raise ValueError("preserved delivery receipt hash mismatch")
+    source = json.loads(evidence_bytes)
+    _validate_delivery_receipt(
+        source,
+        request=request,
+        recorded_at=_parse_timestamp_required(receipt["recorded_at"]),
+    )
+    if any(
+        receipt[key] != source[key]
+        for key in ("channel", "receipt_id", "delivered_at", "receipt_sha256")
+    ):
+        raise ValueError("preserved delivery receipt identity mismatch")
 
 
 def _render_postmortem(payload: Mapping[str, Any]) -> str:

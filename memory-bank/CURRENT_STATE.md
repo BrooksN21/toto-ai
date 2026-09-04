@@ -1,5 +1,39 @@
 # Current State
 
+## Drawing 4995 post-draw repair and payout evidence (2026-09-04)
+
+- Completed-draw parallel comparison now validates producer terminal skip
+  records before package settlement. Hash-valid
+  `SKIPPED_OPERATOR_NOT_READY`, `SKIPPED_OPERATOR_NO_BET`, and
+  `SKIPPED_INSUFFICIENT_RUNTIME` records are persisted as advisory `skipped`
+  outcomes; malformed records fail closed and ready records retain the strict
+  package/identity validator. The drawing-4995 regression passes.
+- Completed local review and owner-visible delivery are separate states. A
+  hash-bound `review-delivery.json` records `pending`, `failed`, or
+  receipt-proven `delivered`; local desktop `sent` never proves delivery.
+  Pending and failed records are retryable. Receipt ingestion requires exact
+  drawing, review and postmortem hashes and preserves immutable receipt bytes.
+- Drawing 4995 delivery is `pending` with reason
+  `OWNER_RECEIPT_REQUIRED`, `retryable=true`, and `receipt=null`. P0.9 remains
+  incomplete until an owner-facing channel provides a durable receipt; no
+  receipt was fabricated.
+- The owner payout screenshot for drawing 4995 is preserved and hash-bound at
+  `data/payout-evidence/4995/`. Exact displayed coefficients are cumulative per
+  ruble. The scheduler-owned package/source/state/archive/settlement chain was
+  revalidated: 166 coupons, 30 RUB stake, 4,980 RUB cost, package SHA-256
+  `443dbf302ed89b489cd710ff44b89d7f459b24f91c562c004dc3d8367b28946f`.
+  Four coupons had exactly nine hits. Counterfactual gross return is
+  1,029.83400 RUB, net is -3,950.16600 RUB and ROI is
+  -79.320602409638554216867469879518072289156626506024%. The package was
+  non-actionable and is not evidenced as placed, so observed payout/profit/ROI
+  remain unavailable.
+- Verification: the two regressions pass together (2 passed), the directly
+  affected post-draw test files pass (12 passed), and final full-project
+  verification is 2,306 passed / 13 deselected with Ruff clean. A read-only
+  drawing-4996 `scheduler-status` returned `mutated=false`, plan
+  `0d8c2cdfb10ef9c5`, phase `scheduled`, no blocker, no operator result, and
+  the next checkpoint at 17:30 MSK.
+
 ## P0.10, five-drawing replay and Sports Analytics v3 seed (2026-09-03)
 
 - Commit `92ee5a7` is pushed to `origin/main` under the owner's exact approval.

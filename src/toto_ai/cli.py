@@ -183,10 +183,13 @@ from toto_ai.operations.finished_draw import (
     cleanup_post_draw_launch_agent,
     complete_post_draw_review,
     import_prebet_package_manifest,
+    load_post_draw_delivery,
     load_post_draw_plan,
     load_review_request,
     prepare_post_draw_scheduler_artifacts,
+    record_post_draw_delivery_receipt,
     resolve_explicit_drawing,
+    retry_post_draw_delivery,
     run_post_draw,
     run_post_draw_plan,
     settle_package_file,
@@ -1107,9 +1110,26 @@ def post_draw_review_status_command(
         request = load_review_request(request_file)
     except (OSError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
+    delivery = (
+        load_post_draw_delivery(request_file)
+        if request["status"] == "REVIEW_COMPLETE"
+        else None
+    )
     payload = {
         **request,
         "unacknowledged": request["status"] == "AWAITING_USER_REVIEW",
+        "owner_delivery_status": (
+            "not_ready" if delivery is None else delivery["status"]
+        ),
+        "owner_delivered": (
+            delivery is not None and delivery["status"] == "delivered"
+        ),
+        "delivery_retryable": (
+            False if delivery is None else delivery["retryable"]
+        ),
+        "delivery_record_sha256": (
+            None if delivery is None else delivery["record_sha256"]
+        ),
     }
     typer.echo(json.dumps(payload, ensure_ascii=False, sort_keys=True))
 
@@ -1143,6 +1163,42 @@ def post_draw_review_transition_command(
             )
         else:
             raise ValueError("--action must be request, skip, or complete")
+    except (OSError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(json.dumps(result, ensure_ascii=False, sort_keys=True))
+
+
+@app.command("post-draw-review-delivery")
+def post_draw_review_delivery_command(
+    request_file: str = typer.Option(..., "--request-file"),
+    action: str = typer.Option(..., "--action"),
+    at: str = typer.Option(..., "--at"),
+    receipt_file: str | None = typer.Option(None, "--receipt-file"),
+) -> None:
+    """Retry delivery or bind a durable owner-visible delivery receipt."""
+
+    try:
+        observed_at = datetime.fromisoformat(at.replace("Z", "+00:00"))
+        if observed_at.tzinfo is None or observed_at.utcoffset() is None:
+            raise ValueError("--at must be timezone-aware")
+        if action == "retry":
+            if receipt_file is not None:
+                raise ValueError("retry does not accept --receipt-file")
+            result = retry_post_draw_delivery(
+                request_file,
+                attempted_at=observed_at,
+                notifier=_post_draw_desktop_notifier,
+            )
+        elif action == "receipt":
+            if receipt_file is None:
+                raise ValueError("receipt requires --receipt-file")
+            result = record_post_draw_delivery_receipt(
+                request_file,
+                receipt_path=receipt_file,
+                recorded_at=observed_at,
+            )
+        else:
+            raise ValueError("--action must be retry or receipt")
     except (OSError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
     typer.echo(json.dumps(result, ensure_ascii=False, sort_keys=True))

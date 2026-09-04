@@ -1,0 +1,73 @@
+{
+  "actionable": false,
+  "actual_result_sha256": "c625d38f15cf29c41269843294dfa49eeddd31b4c8fdb5623d067e28bb66d43f",
+  "analysis_class": "COUNTERFACTUAL_NOT_OBSERVED",
+  "automatic_wagering": false,
+  "best_hits": 9,
+  "betting_closed_at_msk": "2026-09-03T18:55:00+03:00",
+  "calculation": {
+    "formula": "sum(coupon_count_with_N_hits * stake_rub * sum(coefficient[h] for h in 9..N))",
+    "gross_return_rub": "1029.83400",
+    "net_profit_rub": "-3950.16600",
+    "return_status": "counterfactual_not_observed_package_not_evidenced_as_placed",
+    "roi": "-0.79320602409638554216867469879518072289156626506024",
+    "roi_percent": "-79.320602409638554216867469879518072289156626506024"
+  },
+  "category_coupon_counts": {
+    "10": 0,
+    "11": 0,
+    "12": 0,
+    "13": 0,
+    "14": 0,
+    "15": 0,
+    "9": 4
+  },
+  "cumulative_return_per_ruble": {
+    "10": "23.71460",
+    "11": "59.63610",
+    "12": "188.65764",
+    "13": "1628.86920",
+    "14": "1628.86920",
+    "15": "1628.86920",
+    "9": "8.58195"
+  },
+  "drawing_id": 12092,
+  "drawing_number": 4995,
+  "payout_coefficients_per_ruble": {
+    "10": "15.13265",
+    "11": "35.92150",
+    "12": "129.02154",
+    "13": "1440.21156",
+    "14": "0.00000",
+    "15": "0.00000",
+    "9": "8.58195"
+  },
+  "payout_evidence": {
+    "eligible_for_observed_roi": false,
+    "owner_transcription_confirmed": true,
+    "record_file_sha256": "e4cb4d2b00d1ebe61451c924a23ac8750e75f9c3748cf5b12c3ae1194ae4d4ae",
+    "record_path": "/Users/turshevr/toto-ai/data/payout-evidence/4995/record.json",
+    "record_sha256": "bc62d59cc9081fa755e396d570302c1c672a967b745a590b5670f0481ec19979",
+    "source_path": "/Users/turshevr/toto-ai/data/payout-evidence/4995/baltbet-payout-4995.png",
+    "source_sha256": "3a04f6d0590981cb0ca335380320dc675c299961f540a4e225dd83cb83af7a82"
+  },
+  "record_sha256": "fa407ec50c9484dc8860f4ca534dd45a77bf0486226614bcb8d78dd115670825",
+  "scheduler_owned_binding": {
+    "archive_sha256": "12c01853934495afbc3616621fdf3c0456b03fe2029ccf981b48d48c829ef7eb",
+    "cost_rub": "4980.00",
+    "coupon_count": 166,
+    "evidenced_as_placed": false,
+    "operator_status": "NON_ACTIONABLE_LAST_KNOWN_GOOD_FOR_SETTLEMENT_ONLY",
+    "package_sha256": "443dbf302ed89b489cd710ff44b89d7f459b24f91c562c004dc3d8367b28946f",
+    "package_source_bytes_sha256": "abe13619476e922eb8be1f23424222b7f06e37ecc77ce11a93632daaecb7fb0e",
+    "package_source_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4995-20260903T155500Z/last-known-good/checkpoints/freshness_preflight-01-20260903T145504987711Z-d8fb031e-d4ee9d2216c7/package.csv",
+    "post_draw_plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4995-20260903T155500Z/post-draw/post-draw-12092.json",
+    "post_draw_plan_sha256": "a77ca4555285d99ce3c7dae90592257cc74c5b63404ab3713e0f2a3b458a8c46",
+    "result_snapshot_sha256": "de34d28e3f53bf1eb7d5d4be9918a03e8d13348b4117a901d914b6396c908154",
+    "review_request_sha256": "c06417ba4eda84d2c22aca37d020735721f901ce7b5b0eced6dfd4ddfdb30328",
+    "settlement_sha256": "2fb5549ad7ca953de20689837231e5091e37a86faf61892cc9f4bc088ea9336a",
+    "stake_rub": 30,
+    "state_sha256": "15c0c47bff677a2aab878739ec9af82b7aae73167632f3bd8a5ecae2f5357004"
+  },
+  "schema_version": 1
+}

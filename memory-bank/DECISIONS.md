@@ -1,5 +1,20 @@
 # Decisions
 
+## 2026-09-04 — Post-draw skip and owner-delivery evidence boundaries
+
+- Producer-emitted terminal `SKIPPED_*` parallel sidecar records are
+  non-settleable outcomes, not ready package records. Their schema, timing,
+  safety flag and record hash must validate before the post-draw consumer may
+  record `skipped`; malformed or unknown records still fail closed.
+- Local report completion and local desktop-notification success do not prove
+  owner delivery. A separate hash-bound delivery record remains `pending` or
+  `failed` and retryable until an immutable receipt binds the exact drawing,
+  review request and postmortem hashes. No receipt means not delivered.
+- A payout screenshot may support counterfactual settlement of an exact
+  hash-bound package that was not placed, but the result must remain explicitly
+  non-observed and non-actionable. Observed payout/profit/ROI require evidence
+  that the package was actually placed.
+
 ## 2026-09-02 — Constrained challengers are safety work, not an edge claim
 
 - Quality-v3 and robust must enforce material-outcome exposure floors and
