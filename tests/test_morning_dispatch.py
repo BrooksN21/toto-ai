@@ -1314,6 +1314,29 @@ def test_reused_morning_cli_still_collects_goal_shadow(monkeypatch, tmp_path):
             reused=True,
         ),
     )
+    snapshot = SimpleNamespace(
+        drawing_id=evidence.drawing_id,
+        drawing_number=evidence.drawing_number,
+        drawing_fingerprint=evidence.drawing_fingerprint,
+        provider="goal-api-v1",
+        run_id="c" * 64,
+        content_sha256="c" * 64,
+        events=tuple(SimpleNamespace() for _ in range(15)),
+    )
+    bundle = SimpleNamespace(snapshot=snapshot, shadow="shadow")
+    loads = []
+    saves = []
+    monkeypatch.setattr(cli, "_sports_seed_as_of", lambda **_kwargs: observed)
+    monkeypatch.setattr(
+        cli,
+        "load_goal_probe_shadow",
+        lambda **kwargs: loads.append(kwargs) or bundle,
+    )
+    monkeypatch.setattr(
+        cli,
+        "save_sports_stats_snapshot",
+        lambda _factory, value: saves.append(value) or value,
+    )
 
     result = CliRunner().invoke(
         cli.app,
@@ -1338,7 +1361,133 @@ def test_reused_morning_cli_still_collects_goal_shadow(monkeypatch, tmp_path):
     assert payload["status"] == "reused"
     assert payload["sports_shadow"]["status"] == ("PAPER_ONLY_COVERAGE_PROBE_READY")
     assert payload["sports_shadow"]["reused"] is True
+    assert payload["sports_shadow"]["persistence_status"] == "persisted"
+    assert payload["sports_shadow"]["run_id"] == snapshot.run_id
+    assert payload["sports_shadow"]["snapshot_sha256"] == snapshot.content_sha256
+    assert payload["sports_shadow"]["provider"] == "goal-api-v1"
+    assert payload["sports_shadow"]["persisted_event_count"] == 15
     assert payload["sports_shadow"]["package_influence"] == "NONE"
+    assert len(loads) == 1
+    assert saves == [snapshot]
+
+
+def test_goal_persistence_failure_is_visible_retryable_and_primary_nonblocking(
+    monkeypatch,
+    tmp_path,
+):
+    config = _config(tmp_path)
+    observed = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    evidence = _prepared(
+        number=4988,
+        drawing_id=12071,
+        deadline=observed + timedelta(hours=12),
+    )
+    primary = tmp_path / "operator-result.json"
+    primary_bytes = b'{"decision":"PLAY","sentinel":true}\n'
+    primary.write_bytes(primary_bytes)
+    monkeypatch.setattr(
+        cli,
+        "_prepare_current_for_morning",
+        lambda **_kwargs: evidence,
+    )
+
+    def reused_dispatch(_config, *, observed_at, prepare_current, **_kwargs):
+        prepare_current(observed_at)
+        return MorningDispatchResult(
+            status="reused",
+            reason="ready",
+            record_path=tmp_path / "ready.json",
+            plan_id="primary-plan",
+            plan_path=primary,
+            launch_agent_path=None,
+            activation_status="activated",
+        )
+
+    monkeypatch.setattr(cli, "dispatch_morning", reused_dispatch)
+    monkeypatch.setattr(cli, "load_goal_api_key", lambda _path: "goal-secret")
+    coverage = tmp_path / "coverage-summary.json"
+    coverage.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(
+        cli,
+        "ensure_goal_probe_input",
+        lambda **_kwargs: SimpleNamespace(
+            event_count=15,
+            history_source_count=30,
+            sports_eligible_count=15,
+            request_count=0,
+            quota_daily_remaining=900,
+            captured_at=observed,
+            coverage_summary_path=coverage,
+            reused=True,
+        ),
+    )
+    snapshot = SimpleNamespace(
+        drawing_id=evidence.drawing_id,
+        drawing_number=evidence.drawing_number,
+        drawing_fingerprint=evidence.drawing_fingerprint,
+        provider="goal-api-v1",
+        run_id="d" * 64,
+        content_sha256="d" * 64,
+        events=tuple(SimpleNamespace() for _ in range(15)),
+    )
+    monkeypatch.setattr(cli, "_sports_seed_as_of", lambda **_kwargs: observed)
+    monkeypatch.setattr(
+        cli,
+        "load_goal_probe_shadow",
+        lambda **_kwargs: SimpleNamespace(snapshot=snapshot, shadow="shadow"),
+    )
+    attempts = 0
+
+    def persist(_factory, value):
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise OSError("database is temporarily read-only")
+        return value
+
+    monkeypatch.setattr(cli, "save_sports_stats_snapshot", persist)
+    arguments = [
+        "morning-dispatch",
+        "--bank",
+        "4980",
+        "--env-file",
+        str(config.env_file),
+        "--project-root",
+        str(tmp_path),
+        "--state-root",
+        str(config.state_root),
+        "--scheduler-root",
+        str(config.scheduler_root),
+        "--goal-shadow-auto",
+    ]
+
+    failed = CliRunner().invoke(cli.app, arguments)
+
+    assert failed.exit_code == 0, failed.output
+    failed_payload = json.loads(failed.output)
+    assert failed_payload["status"] == "reused"
+    assert failed_payload["plan_id"] == "primary-plan"
+    assert failed_payload["sports_shadow"]["status"] == (
+        "PAPER_ONLY_PERSISTENCE_FAILED"
+    )
+    assert failed_payload["sports_shadow"]["persistence_status"] == "failed"
+    assert failed_payload["sports_shadow"]["retryable"] is True
+    assert failed_payload["sports_shadow"]["primary_scheduler_affected"] is False
+    assert "database is temporarily read-only" in (
+        failed_payload["sports_shadow"]["error"]
+    )
+    assert failed_payload["parallel_challenger"] is None
+    assert primary.read_bytes() == primary_bytes
+
+    retried = CliRunner().invoke(cli.app, arguments)
+
+    assert retried.exit_code == 0, retried.output
+    retried_payload = json.loads(retried.output)
+    assert retried_payload["status"] == "reused"
+    assert retried_payload["sports_shadow"]["persistence_status"] == "persisted"
+    assert retried_payload["sports_shadow"]["run_id"] == snapshot.run_id
+    assert attempts == 2
+    assert primary.read_bytes() == primary_bytes
 
 
 def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
@@ -1404,10 +1553,27 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
             reused=True,
         ),
     )
+    snapshot = SimpleNamespace(
+        drawing_id=evidence.drawing_id,
+        drawing_number=evidence.drawing_number,
+        drawing_fingerprint=evidence.drawing_fingerprint,
+        provider="goal-api-v1",
+        run_id="e" * 64,
+        content_sha256="e" * 64,
+        events=tuple(SimpleNamespace() for _ in range(15)),
+    )
+    bundle = SimpleNamespace(snapshot=snapshot, shadow="shadow")
+    loads = []
     monkeypatch.setattr(
         cli,
         "load_goal_probe_shadow",
-        lambda **_kwargs: SimpleNamespace(snapshot="snapshot", shadow="shadow"),
+        lambda **kwargs: loads.append(kwargs) or bundle,
+    )
+    persisted = []
+    monkeypatch.setattr(
+        cli,
+        "save_sports_stats_snapshot",
+        lambda _factory, value: persisted.append(value) or value,
     )
     monkeypatch.setattr(
         cli,
@@ -1415,11 +1581,13 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
         lambda **_kwargs: observed,
     )
     sports_v2 = SimpleNamespace(sports_coverage_count=13)
-    monkeypatch.setattr(
-        cli,
-        "build_sports_v2_shadow_artifact",
-        lambda **_kwargs: sports_v2,
-    )
+    sports_v2_inputs = []
+
+    def build_sports_v2(**kwargs):
+        sports_v2_inputs.append(kwargs)
+        return sports_v2
+
+    monkeypatch.setattr(cli, "build_sports_v2_shadow_artifact", build_sports_v2)
     sports_path = tmp_path / "sports-v2.json"
     sports_path.write_text("{}", encoding="utf-8")
     monkeypatch.setattr(
@@ -1484,6 +1652,13 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert activations == [parallel]
+    assert len(loads) == 1
+    assert persisted == [snapshot]
+    assert sports_v2_inputs == [
+        {"snapshot": snapshot, "base_artifact": bundle.shadow}
+    ]
+    assert payload["sports_shadow"]["persistence_status"] == "persisted"
+    assert payload["sports_shadow"]["run_id"] == snapshot.run_id
     assert payload["training_package"]["status"] == "deferred"
     assert payload["parallel_challenger"] == {
         "automatic_wagering": False,

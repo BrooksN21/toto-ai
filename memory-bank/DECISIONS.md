@@ -2679,3 +2679,51 @@ ambiguous reversed evidence remains unresolved.
 
 Next decision checkpoint: results of a deterministic 90-event feature coverage
 audit.
+
+## 2026-09-04 — Validated GOAL history must persist before optional consumers
+
+- A successfully collected automatic GOAL input is not complete until its
+  derived `SportsStatsRunSnapshot` passes the existing hash/identity validation
+  and is atomically saved with `save_sports_stats_snapshot()`.
+- Persistence is independent of parallel-sidecar enablement. The sidecar may
+  consume only the exact bundle whose snapshot was successfully persisted; an
+  unpersisted candidate is suppressed without changing or blocking the primary
+  scheduler/operator path.
+- Snapshot persistence identity is semantic within the exact drawing,
+  fingerprint, provider and as-of storage slot. It binds event/provider-team
+  identities, sports features, source evidence and hashes, but excludes
+  request/cache diagnostics and replay `captured_at`.
+- The existing single transaction remains the only store. Parent and all 15
+  event rows commit together or roll back together; no second GOAL-specific
+  store or drawing-specific branch is permitted.
+- Collection, validation and persistence failures must be explicit in
+  `sports_shadow` diagnostics. Storage failure is marked retryable, retains the
+  candidate run/hash for diagnosis, suppresses sidecar preparation, and is
+  never silently treated as persisted.
+- Focused bridge verification first passed `7 passed in 3.35s`; after the
+  semantic-identity correction, the previously failed API-Sports replay plus
+  those seven regressions pass `8 passed in 4.51s`. CLI compilation/import and
+  Ruff pass. Final direct ARM64 verification is `2,331 passed, 13 deselected in
+  182.68s`, with full-project Ruff clean. Historical backfill is deliberately
+  deferred as the next incomplete step and must reuse this exact offline,
+  hash-bound persistence boundary.
+
+## 2026-09-04 — Sports persistence identity is semantic, not diagnostic
+
+- `SportsStatsRunSnapshot.semantic_persistence_sha256()` is the idempotency
+  comparator inside one drawing/fingerprint/provider/as-of persistence slot.
+- It binds the exact drawing and 15 event identities, provider and team
+  identities, target timing, history/standing feature payloads, source request
+  fingerprints and payload SHA-256 values, event feature SHA-256 values, run
+  status/counts, history size, deadline, and drawing fingerprint.
+- It excludes collection/replay `captured_at`, `requests_made`, and
+  `cache_hits`. These diagnose transport execution and must not turn the same
+  immutable sports evidence into a conflicting retry.
+- The original full snapshot JSON, `run_id`, and `content_sha256` remain
+  immutable audit data. A semantic retry returns the already persisted
+  snapshot rather than rewriting it or adding duplicate children.
+- A changed sporting feature, drawing/event/provider/team identity, source
+  request fingerprint, source payload hash, or event feature hash is not an
+  idempotent retry and fails closed when it conflicts with the same persistence
+  slot. A later distinct as-of observation remains eligible for append-only
+  storage.

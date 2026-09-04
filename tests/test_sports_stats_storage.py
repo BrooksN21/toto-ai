@@ -1,11 +1,22 @@
 import sqlite3
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
+import pytest
 from sqlalchemy import inspect, select
 
-from toto_ai.db.models import ArchivedPackage
+from toto_ai.db.models import (
+    ArchivedPackage,
+    SportsEventFeatureSnapshot,
+    SportsStatsRun,
+)
 from toto_ai.db.session import get_session_factory, init_db
-from toto_ai.sports_stats.domain import build_event_snapshot, build_run_snapshot
+from toto_ai.sports_stats.domain import (
+    SourceEvidence,
+    build_event_snapshot,
+    build_run_snapshot,
+    canonical_sha256,
+)
 from toto_ai.sports_stats.storage import (
     load_latest_eligible_snapshot,
     load_sports_stats_snapshot,
@@ -46,7 +57,15 @@ def snapshot():
             away_window=None,
             home_standing=None,
             away_standing=None,
-            source_evidence=(),
+            source_evidence=(
+                SourceEvidence(
+                    provider="api-sports",
+                    endpoint="/fixtures",
+                    request_fingerprint=f"{order + 1:064x}",
+                    payload_sha256=f"{order + 101:064x}",
+                    fetched_at=captured - timedelta(minutes=1),
+                ),
+            ),
         )
         for order in range(15)
     )
@@ -92,6 +111,129 @@ def test_append_only_storage_is_idempotent_and_asof_bounded(tmp_path):
         )
         == expected
     )
+
+
+def test_semantic_identity_ignores_volatile_diagnostics_but_rejects_source_hash(
+    tmp_path,
+):
+    engine = init_db(tmp_path / "toto.db")
+    factory = get_session_factory(engine)
+    expected = snapshot()
+    replayed_at = expected.captured_at + timedelta(seconds=30)
+    replayed_events = tuple(
+        replace(
+            event,
+            captured_at=replayed_at,
+        )
+        for event in expected.events
+    )
+    replayed = build_run_snapshot(
+        drawing_id=expected.drawing_id,
+        drawing_number=expected.drawing_number,
+        drawing_fingerprint=expected.drawing_fingerprint,
+        provider=expected.provider,
+        requested_history_size=expected.requested_history_size,
+        captured_at=replayed_at,
+        as_of=expected.as_of,
+        deadline=expected.deadline,
+        events=replayed_events,
+        requests_made=expected.requests_made + 1,
+        cache_hits=expected.cache_hits + 15,
+    )
+    assert replayed.run_id != expected.run_id
+    assert (
+        replayed.semantic_persistence_sha256()
+        == expected.semantic_persistence_sha256()
+    )
+
+    save_sports_stats_snapshot(factory, expected)
+    persisted_replay = save_sports_stats_snapshot(factory, replayed)
+
+    assert persisted_replay == expected
+    with factory() as session:
+        assert len(tuple(session.scalars(select(SportsStatsRun)))) == 1
+        assert (
+            len(tuple(session.scalars(select(SportsEventFeatureSnapshot))))
+            == 15
+        )
+
+    changed_source = replace(
+        expected.events[0].source_evidence[0],
+        payload_sha256="f" * 64,
+    )
+    changed_candidate = replace(
+        expected.events[0],
+        source_evidence=(changed_source,),
+        feature_sha256="0" * 64,
+    )
+    changed_event = replace(
+        changed_candidate,
+        feature_sha256=canonical_sha256(changed_candidate.canonical_payload()),
+    )
+    conflicting = build_run_snapshot(
+        drawing_id=expected.drawing_id,
+        drawing_number=expected.drawing_number,
+        drawing_fingerprint=expected.drawing_fingerprint,
+        provider=expected.provider,
+        requested_history_size=expected.requested_history_size,
+        captured_at=expected.captured_at,
+        as_of=expected.as_of,
+        deadline=expected.deadline,
+        events=(changed_event, *expected.events[1:]),
+        requests_made=expected.requests_made,
+        cache_hits=expected.cache_hits,
+    )
+    assert (
+        conflicting.semantic_persistence_sha256()
+        != expected.semantic_persistence_sha256()
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="sports-stat run identity already has different content",
+    ):
+        save_sports_stats_snapshot(factory, conflicting)
+
+    assert load_sports_stats_snapshot(factory, expected.run_id) == expected
+    assert load_sports_stats_snapshot(factory, replayed.run_id) is None
+    assert load_sports_stats_snapshot(factory, conflicting.run_id) is None
+
+
+def test_child_insert_conflict_rolls_back_parent_and_every_child(tmp_path):
+    engine = init_db(tmp_path / "toto.db")
+    factory = get_session_factory(engine)
+    expected = snapshot()
+    duplicate_candidate = replace(
+        expected.events[1],
+        event_id=expected.events[0].event_id,
+        feature_sha256="0" * 64,
+    )
+    duplicate = replace(
+        duplicate_candidate,
+        feature_sha256=canonical_sha256(
+            duplicate_candidate.canonical_payload()
+        ),
+    )
+    conflicting = build_run_snapshot(
+        drawing_id=expected.drawing_id,
+        drawing_number=expected.drawing_number,
+        drawing_fingerprint=expected.drawing_fingerprint,
+        provider=expected.provider,
+        requested_history_size=expected.requested_history_size,
+        captured_at=expected.captured_at,
+        as_of=expected.as_of,
+        deadline=expected.deadline,
+        events=(expected.events[0], duplicate, *expected.events[2:]),
+        requests_made=expected.requests_made,
+        cache_hits=expected.cache_hits,
+    )
+
+    with pytest.raises(ValueError, match="sports-stat snapshot append conflict"):
+        save_sports_stats_snapshot(factory, conflicting)
+
+    with factory() as session:
+        assert tuple(session.scalars(select(SportsStatsRun))) == ()
+        assert tuple(session.scalars(select(SportsEventFeatureSnapshot))) == ()
 
 
 def test_existing_database_initialization_adds_sports_tables_without_data_loss(

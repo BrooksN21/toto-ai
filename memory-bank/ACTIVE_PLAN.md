@@ -313,3 +313,44 @@ not reset this plan.
 
 Boundary: no Sports v3 model fitting, probability blending, or operator
 integration exists yet.
+
+# GOAL sports-history persistence checkpoint (2026-09-04)
+
+- [x] Confirm the automatic GOAL path builds a validated provider-neutral
+  `SportsStatsRunSnapshot` but does not call the existing SQLite writer.
+- [x] Add failing-first focused regressions for the sidecar-disabled bridge,
+  exact conflicting-snapshot rejection, explicit retryable persistence
+  failure, and unchanged primary artifacts. The initial focused run produced
+  the expected `4 failed, 3 passed` result; atomic rollback and direct GOAL
+  storage/idempotency already passed through the existing transaction.
+- [x] Persist every validated automatic GOAL snapshot before any optional
+  sidecar work, expose the exact run/hash or retryable failure in status, and
+  suppress only the unpersisted challenger path.
+- [x] Run the focused sports storage/GOAL/morning-dispatch tests and Ruff over
+  the exact changed Python files. The bridge first passed `7 passed in 3.35s`;
+  the semantic-identity repair then passed the previously failed API-Sports
+  replay plus those seven regressions, `8 passed in 4.51s`. Ruff passes over
+  all six task-checked Python files, and the CLI remains runnable. Final direct
+  ARM64 verification passed `2,331` tests with `13` deselected in `182.68s`;
+  full-project Ruff is clean.
+- [ ] Backfill eligible historical hash-bound GOAL snapshots through the same
+  validation and `save_sports_stats_snapshot()` boundary. Keep this offline,
+  drawing-neutral, idempotent, and separate from the completed live-path fix.
+
+Verified behavior: automatic GOAL collection now validates the complete
+snapshot and atomically persists its parent plus 15 event rows independently
+of parallel-sidecar enablement. Persistence idempotency uses a stable semantic
+identity: drawing/event/provider/team identity, sports history and standings,
+source request/payload hashes, probability-relevant feature payloads, and
+feature hashes are binding; replay `captured_at` and request/cache diagnostics
+are not. Identical semantic cache replay reuses the stored parent and 15
+children even when its full diagnostic snapshot hash differs. A changed
+sporting payload, identity, or source hash in the same persistence slot fails
+closed. Child conflicts roll back the complete transaction; storage failures
+remain explicit and retryable in `sports_shadow`; and the primary
+scheduler/operator artifact is unchanged and nonblocking. No drawing-specific
+condition was added.
+
+Boundary: historical backfill remains incomplete. No network call, scheduler
+run, drawing-4996 artifact access, operator mutation, push, or PR was part of
+this task; finalization is local only.

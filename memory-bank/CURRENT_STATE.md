@@ -6547,3 +6547,51 @@ one consistent with the asserted PPG, goal-difference, and goals-against values.
 Current boundary: no Sports v3 model fitting, probability blending, or operator
 integration exists yet. Next checkpoint: a deterministic 90-event feature
 coverage audit.
+
+## Automatic GOAL sports-history persistence (verified 2026-09-04)
+
+Root cause was a missing bridge, not cleanup or SQLite data loss. The automatic
+GOAL research-shadow path froze history and built a valid provider-neutral
+`SportsStatsRunSnapshot`, but only the separate API-Sports audit command called
+`save_sports_stats_snapshot()`. Consequently GOAL snapshots could feed the
+optional parallel sidecar in memory without ever reaching `sports_stats_runs`.
+
+Morning dispatch now validates the hash-bound GOAL snapshot and immediately
+persists it through the existing atomic sports-statistics transaction before
+any optional parallel-sidecar work. This runs whenever automatic GOAL
+collection succeeds for a scheduled or reused drawing, including when the
+parallel sidecar is disabled. Successful status exposes the exact provider,
+run ID, snapshot SHA-256, drawing fingerprint and persisted event count.
+
+Persistence is semantic, stable, and fail closed. Its idempotency identity
+binds drawing, event, provider and canonical/provider team identity; target
+timing; sports history and standings; source request fingerprints and payload
+hashes; probability-relevant feature values; event feature hashes; run
+status/counts; and the immutable drawing fingerprint. Volatile request/cache
+transport counters and replay `captured_at` values are deliberately excluded.
+The persisted full snapshot and its original content hash remain immutable;
+the semantic identity only decides whether a retry is the same evidence.
+
+An API-Sports cache replay with identical semantic sporting evidence therefore
+reuses one stored parent and the same 15 child rows even when HTTP requests
+become cache hits and the replay diagnostic timestamp/full snapshot hash
+changes. A changed sporting payload, event/provider/team identity, or source
+payload hash within the same drawing/fingerprint/provider/as-of persistence
+slot is rejected. Different legitimate as-of observations remain append-only.
+Parent and child inserts remain one transaction, so a child uniqueness conflict
+leaves neither a parent nor partial children. Validation or storage failure
+suppresses only the unpersisted sports candidate, is visible as an explicit
+retryable `sports_shadow` state, and does not change or block the primary
+scheduler/operator artifact.
+
+Verification passed: `py_compile src/toto_ai/cli.py`, `import toto_ai.cli`, the
+original seven storage/GOAL/morning-dispatch regressions, and the previously
+failed API-Sports prospective-to-cache replay together (`8 passed in 4.51s`).
+The final direct ARM64 suite passed `2,331` tests with `13` deselected in
+`182.68s`; full-project Ruff is clean. The CLI is runnable. No network request,
+scheduler run, drawing-4996 artifact access, backfill, push, or PR occurred;
+finalization is local only.
+
+Next incomplete step: offline historical GOAL backfill from eligible immutable,
+hash-bound artifacts through this same validation and storage boundary. No
+backfill implementation exists yet.

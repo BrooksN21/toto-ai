@@ -10,14 +10,19 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from sqlalchemy import select
 
 from toto_ai.api.detail_cache import write_drawing_detail_cache
+from toto_ai.db.models import SportsEventFeatureSnapshot, SportsStatsRun
+from toto_ai.db.session import get_session_factory, init_db
 from toto_ai.sports_stats import goal_probe_research
+from toto_ai.sports_stats.domain import canonical_json
 from toto_ai.sports_stats.goal_probe_research import (
     ARTIFACT_CLASS,
     load_goal_probe_shadow,
     run_goal_probe_package_comparison,
 )
+from toto_ai.sports_stats.storage import save_sports_stats_snapshot
 
 _AS_OF = datetime(2026, 8, 26, 10, 0, tzinfo=timezone.utc)
 _DEADLINE = datetime(2026, 8, 26, 18, 45, tzinfo=timezone.utc)
@@ -91,6 +96,56 @@ def test_goal_probe_no_coverage_falls_back_to_bk(tmp_path):
     assert event.sports_probabilities == event.bk_probabilities
     assert event.candidate_blend_probabilities == event.bk_probabilities
     assert event.fallback_reason == "sports_history_missing"
+
+
+def test_validated_goal_snapshot_persists_exact_identity_and_hashes(tmp_path):
+    paths = _write_probe(tmp_path / "persistence")
+    bundle = _load(paths)
+    factory = get_session_factory(init_db(paths.root / "data" / "toto.db"))
+
+    persisted = save_sports_stats_snapshot(factory, bundle.snapshot)
+
+    assert persisted == bundle.snapshot
+    with factory() as session:
+        run = session.get(SportsStatsRun, bundle.snapshot.run_id)
+        rows = tuple(
+            session.scalars(
+                select(SportsEventFeatureSnapshot).order_by(
+                    SportsEventFeatureSnapshot.event_order
+                )
+            )
+        )
+    assert run is not None
+    assert run.drawing_id == bundle.snapshot.drawing_id
+    assert run.drawing_number == bundle.snapshot.drawing_number
+    assert run.drawing_fingerprint == bundle.snapshot.drawing_fingerprint
+    assert run.provider == "goal-api-v1"
+    assert run.content_sha256 == bundle.snapshot.content_sha256
+    assert run.snapshot_json == canonical_json(bundle.snapshot)
+    assert len(rows) == 15
+    for row, event in zip(rows, bundle.snapshot.events, strict=True):
+        assert row.target_event_id == event.event_id
+        assert row.provider_home_team_id == event.provider_home_team_id
+        assert row.provider_away_team_id == event.provider_away_team_id
+        assert row.feature_sha256 == event.feature_sha256
+        assert row.source_evidence_json == canonical_json(event.source_evidence)
+
+
+def test_validated_goal_snapshot_retry_is_idempotent(tmp_path):
+    paths = _write_probe(tmp_path / "idempotency")
+    bundle = _load(paths)
+    factory = get_session_factory(init_db(paths.root / "data" / "toto.db"))
+
+    first = save_sports_stats_snapshot(factory, bundle.snapshot)
+    second = save_sports_stats_snapshot(factory, bundle.snapshot)
+
+    assert first.run_id == second.run_id == bundle.snapshot.run_id
+    with factory() as session:
+        assert len(tuple(session.scalars(select(SportsStatsRun)))) == 1
+        assert (
+            len(tuple(session.scalars(select(SportsEventFeatureSnapshot))))
+            == 15
+        )
 
 
 def test_research_reports_are_equal_budget_secret_safe_and_scheduler_isolated(
