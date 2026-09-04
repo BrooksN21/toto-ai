@@ -13,7 +13,7 @@ import json
 import math
 import os
 import secrets
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -63,6 +63,7 @@ def execute_historical_hybrid_replay(
     sports_artifact_path: str | Path,
     db_path: str | Path,
     output_dir: str | Path,
+    progress_callback: Callable[[dict[str, object]], None] | None = None,
 ) -> tuple[dict[str, Any], Path]:
     """Replay four strategies on one historical input and realized result."""
 
@@ -75,6 +76,13 @@ def execute_historical_hybrid_replay(
         final_input_path=final_path,
     )
     frozen = frozen_input_from_snapshot(snapshot, plan)
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="all",
+        phase="validate-input",
+        status="complete",
+    )
     archived_baseline = parse_package(baseline_path)
     runtime_budget = effective_selection_budget(
         requested_bank=plan.requested_bank,
@@ -100,6 +108,12 @@ def execute_historical_hybrid_replay(
         probability_input_sha256=snapshot.probability_input_sha256,
         scheduler_plan_sha256=plan_sha256,
     )
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="quality-v2",
+        phase="generate-package",
+    )
     reproduced = run_ev_crowd_current(
         frozen,
         config=research_config,
@@ -109,7 +123,20 @@ def execute_historical_hybrid_replay(
         raise ValueError(
             "historical quality-v2 reproduction differs from archived control"
         )
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="quality-v2",
+        phase="generate-package",
+        status="complete",
+    )
 
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="sports-shadow",
+        phase="validate-and-rebase",
+    )
     sports = load_shadow_probability_artifact(sports_path)
     _validate_sports_identity(plan, frozen, snapshot, sports)
     sports_probabilities = _rebase_sports_probabilities(
@@ -143,6 +170,12 @@ def execute_historical_hybrid_replay(
         probability_input_sha256=sports_probability_hash,
         scheduler_plan_sha256=plan_sha256,
     )
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="sports-shadow",
+        phase="generate-package",
+    )
     sports_v2 = (
         reproduced
         if sports.sports_coverage_count == 0
@@ -154,6 +187,13 @@ def execute_historical_hybrid_replay(
     )
     if len(sports_v2.coupons) != coupon_capacity:
         raise ValueError("Sports v2 replay did not fill the equal coupon capacity")
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="sports-shadow",
+        phase="generate-package",
+        status="complete",
+    )
 
     quality_v3_config = QualityV3Config()
     uncertainty_models = build_uncertainty_models(
@@ -167,6 +207,12 @@ def execute_historical_hybrid_replay(
         floor_scale=research_config.package_exposure_floor_scale,
         floor_exponent=research_config.package_exposure_floor_exponent,
         near_fixed_share=research_config.package_near_fixed_share,
+    )
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="quality-v3",
+        phase="generate-package",
     )
     quality_v3_result = select_uncertainty_package(
         bk_probabilities=frozen.bk_probability_matrix,
@@ -187,6 +233,13 @@ def execute_historical_hybrid_replay(
     quality_v3 = tuple(quality_v3_result.selected_coupons)
     if len(quality_v3) != coupon_capacity:
         raise ValueError("quality-v3 replay did not fill the equal coupon capacity")
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="quality-v3",
+        phase="generate-package",
+        status="complete",
+    )
 
     models = {
         "bk": frozen.bk_probability_matrix,
@@ -199,6 +252,12 @@ def execute_historical_hybrid_replay(
     }
     candidates = tuple(
         dict.fromkeys((*archived_baseline, *sports_v2.coupons, *quality_v3))
+    )
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="robust",
+        phase="generate-package",
     )
     robust_result = select_robust_package(
         candidates=candidates,
@@ -218,7 +277,20 @@ def execute_historical_hybrid_replay(
     robust = tuple(robust_result.selected_coupons)
     if len(robust) != coupon_capacity:
         raise ValueError("robust replay did not fill the equal coupon capacity")
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="robust",
+        phase="generate-package",
+        status="complete",
+    )
 
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="all",
+        phase="settle-and-attribute",
+    )
     actual = load_historical_actual_result(
         db_path,
         drawing_number=frozen.drawing_number,
@@ -235,6 +307,19 @@ def execute_historical_hybrid_replay(
         name: _strategy_payload(coupons, models=models, actual=actual, stake=plan.stake)
         for name, coupons in packages.items()
     }
+    for name, strategy in strategies.items():
+        strategy["replay_disposition"] = {
+            "role": "control" if name == "quality-v2" else "challenger",
+            "selected_for_operator": False,
+            "eligible_for_operator": False,
+            "rejected_by_selector": False,
+            "status": "POST_DRAW_RESEARCH_ONLY",
+            "reason_code": "NO_ACTIVATION_SELECTOR_IN_HISTORICAL_REPLAY",
+            "reason": (
+                "equal-input post-draw replay is descriptive and cannot select "
+                "or activate an operator package"
+            ),
+        }
     input_hashes = {
         "final_input_sha256": snapshot.snapshot_sha256,
         "probability_input_sha256": snapshot.probability_input_sha256,
@@ -295,6 +380,12 @@ def execute_historical_hybrid_replay(
     }
     report["report_sha256"] = _sha256_json(report)
 
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="all",
+        phase="write-reports",
+    )
     output = Path(output_dir).absolute()
     output.mkdir(parents=True, exist_ok=True)
     if output.is_symlink() or not output.is_dir():
@@ -311,6 +402,13 @@ def execute_historical_hybrid_replay(
             stake=plan.stake,
             coupons=coupons,
         )
+    _notify_replay_progress(
+        progress_callback,
+        drawing_number=frozen.drawing_number,
+        model="all",
+        phase="complete",
+        status="complete",
+    )
     return report, report_path
 
 
@@ -441,6 +539,10 @@ def _strategy_payload(
         ],
         "settlement": {
             "best_hits": settlement["best_hits"],
+            "hit_distribution": {
+                str(hits): int(count)
+                for hits, count in sorted(settlement["hit_distribution"].items())
+            },
             "hit13": settlement["hit_distribution"][13],
             "hit14": settlement["hit_distribution"][14],
             "hit15": settlement["hit_distribution"][15],
@@ -451,6 +553,26 @@ def _strategy_payload(
             ],
         },
     }
+
+
+def _notify_replay_progress(
+    callback: Callable[[dict[str, object]], None] | None,
+    *,
+    drawing_number: int,
+    model: str,
+    phase: str,
+    status: str = "running",
+) -> None:
+    if callback is None:
+        return
+    callback(
+        {
+            "drawing_number": drawing_number,
+            "model": model,
+            "phase": phase,
+            "status": status,
+        }
+    )
 
 
 def _average_hits(coupons: Sequence[str], actual: str) -> float:

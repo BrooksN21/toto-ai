@@ -1,0 +1,2685 @@
+{
+  "actual_result_sha256": "c625d38f15cf29c41269843294dfa49eeddd31b4c8fdb5623d067e28bb66d43f",
+  "artifact_class": "HYBRID_EVENT_LEVEL_ATTRIBUTION",
+  "automatic_wagering": false,
+  "diagnostic_policy": "ranking and exposure attribution is descriptive, not causal; VOID events are excluded",
+  "drawing_id": 12092,
+  "drawing_number": 4995,
+  "events": [
+    {
+      "actual_outcome": "X",
+      "diagnosis": {
+        "quality-v2-vs-bk": "JOINT_PROBABILITY_AND_PACKAGE_MISS",
+        "sports-v2-vs-sports-model": "JOINT_PROBABILITY_AND_PACKAGE_MISS"
+      },
+      "event_name": "Реал Сосьедад — Сельта",
+      "event_order": 0,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.24752475247524752,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.5346534653465347,
+            "2": 0.21782178217821782,
+            "X": 0.24752475247524752
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.5346534653465347
+        },
+        "flatten_10": {
+          "actual_probability": 0.25610561056105613,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.5145214521452146,
+            "2": 0.22937293729372937,
+            "X": 0.25610561056105613
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.5145214521452146
+        },
+        "flatten_20": {
+          "actual_probability": 0.2646864686468647,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.4943894389438944,
+            "2": 0.24092409240924095,
+            "X": 0.2646864686468647
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.4943894389438944
+        },
+        "sports_v2": {
+          "actual_probability": 0.2506998057898258,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.528926959120019,
+            "2": 0.2203732350901552,
+            "X": 0.2506998057898258
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.528926959120019
+        }
+      },
+      "position": 1,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.003175053314578291,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.018318140710290354,
+        "covered": true,
+        "effect": "HELPED_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_TOP_MISS"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 19,
+          "actual_exposure_gap_to_max": 0.6626506024096386,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.1144578313253012,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 3,
+          "best_coupon_miss_share": 0.75,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 129,
+            "2": 18,
+            "X": 19
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7771084337349398,
+            "2": 0.10843373493975904,
+            "X": 0.1144578313253012
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 28,
+          "actual_exposure_gap_to_max": 0.608433734939759,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.1686746987951807,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 1.0,
+          "best_coupon_universal_miss": true,
+          "counts": {
+            "1": 129,
+            "2": 9,
+            "X": 28
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7771084337349398,
+            "2": 0.05421686746987952,
+            "X": 0.1686746987951807
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 26,
+          "actual_exposure_gap_to_max": 0.6204819277108433,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.1566265060240964,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.4,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 129,
+            "2": 11,
+            "X": 26
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7771084337349398,
+            "2": 0.06626506024096386,
+            "X": 0.1566265060240964
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 18,
+          "actual_exposure_gap_to_max": 0.6506024096385542,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.10843373493975904,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 126,
+            "2": 22,
+            "X": 18
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7590361445783133,
+            "2": 0.13253012048192772,
+            "X": 0.10843373493975904
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "2",
+      "diagnosis": {
+        "quality-v2-vs-bk": "NO_RANKING_OR_ALIGNMENT_MISS",
+        "sports-v2-vs-sports-model": "NO_RANKING_OR_ALIGNMENT_MISS"
+      },
+      "event_name": "Тулуза — Лилль",
+      "event_order": 1,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.49,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.23,
+            "2": 0.49,
+            "X": 0.28
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.49
+        },
+        "flatten_10": {
+          "actual_probability": 0.47433333333333333,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.24033333333333334,
+            "2": 0.47433333333333333,
+            "X": 0.2853333333333334
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.47433333333333333
+        },
+        "flatten_20": {
+          "actual_probability": 0.45866666666666667,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.2506666666666667,
+            "2": 0.45866666666666667,
+            "X": 0.2906666666666667
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.45866666666666667
+        },
+        "sports_v2": {
+          "actual_probability": 0.4852313303599341,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.23451872309102406,
+            "2": 0.4852313303599341,
+            "X": 0.2802499465490418
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.4852313303599341
+        }
+      },
+      "position": 2,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": -0.004768669640065892,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.10825302853344139,
+        "covered": true,
+        "effect": "HURT_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_CORRECT_TOP"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 126,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7590361445783133,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.25,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 19,
+            "2": 126,
+            "X": 21
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.1144578313253012,
+            "2": 0.7590361445783133,
+            "X": 0.12650602409638553
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 129,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7771084337349398,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 10,
+            "2": 129,
+            "X": 27
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.060240963855421686,
+            "2": 0.7771084337349398,
+            "X": 0.16265060240963855
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 129,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7771084337349398,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.2,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 9,
+            "2": 129,
+            "X": 28
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.05421686746987952,
+            "2": 0.7771084337349398,
+            "X": 0.1686746987951807
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 121,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7289156626506024,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 21,
+            "2": 121,
+            "X": 24
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.12650602409638553,
+            "2": 0.7289156626506024,
+            "X": 0.14457831325301204
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "1",
+      "diagnosis": {
+        "quality-v2-vs-bk": "NO_RANKING_OR_ALIGNMENT_MISS",
+        "sports-v2-vs-sports-model": "PACKAGE_ALIGNMENT_MISS"
+      },
+      "event_name": "Локомотив Горна-Оряховица — Добруджа",
+      "event_order": 2,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.36363636363636365,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.36363636363636365,
+            "2": 0.3333333333333333,
+            "X": 0.30303030303030304
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.36363636363636365
+        },
+        "flatten_10": {
+          "actual_probability": 0.3606060606060606,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.3606060606060606,
+            "2": 0.3333333333333333,
+            "X": 0.3060606060606061
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3606060606060606
+        },
+        "flatten_20": {
+          "actual_probability": 0.3575757575757576,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.3575757575757576,
+            "2": 0.3333333333333333,
+            "X": 0.3090909090909091
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3575757575757576
+        },
+        "sports_v2": {
+          "actual_probability": 0.3730858847514701,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.3730858847514701,
+            "2": 0.32758964618640374,
+            "X": 0.2993244690621263
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3730858847514701
+        }
+      },
+      "position": 3,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.00944952111510644,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.07000266029470185,
+        "covered": true,
+        "effect": "HELPED_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_CORRECT_TOP"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 61,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.3674698795180723,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 61,
+            "2": 56,
+            "X": 49
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3674698795180723,
+            "2": 0.3373493975903614,
+            "X": 0.29518072289156627
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 81,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.4879518072289157,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 81,
+            "2": 50,
+            "X": 35
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.4879518072289157,
+            "2": 0.30120481927710846,
+            "X": 0.21084337349397592
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 71,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.42771084337349397,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.4,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 71,
+            "2": 55,
+            "X": 40
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.42771084337349397,
+            "2": 0.3313253012048193,
+            "X": 0.24096385542168675
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 56,
+          "actual_exposure_gap_to_max": 0.030120481927710885,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3373493975903614,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 56,
+            "2": 61,
+            "X": 49
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3373493975903614,
+            "2": 0.3674698795180723,
+            "X": 0.29518072289156627
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "1",
+      "diagnosis": {
+        "quality-v2-vs-bk": "NO_RANKING_OR_ALIGNMENT_MISS",
+        "sports-v2-vs-sports-model": "PACKAGE_ALIGNMENT_MISS"
+      },
+      "event_name": "Грэмио РС — Интернациональ РС",
+      "event_order": 3,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.34,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.34,
+            "2": 0.32,
+            "X": 0.34
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1",
+            "X"
+          ],
+          "top_probability": 0.34
+        },
+        "flatten_10": {
+          "actual_probability": 0.3393333333333334,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.3393333333333334,
+            "2": 0.32133333333333336,
+            "X": 0.3393333333333334
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1",
+            "X"
+          ],
+          "top_probability": 0.3393333333333334
+        },
+        "flatten_20": {
+          "actual_probability": 0.33866666666666667,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.33866666666666667,
+            "2": 0.32266666666666666,
+            "X": 0.33866666666666667
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1",
+            "X"
+          ],
+          "top_probability": 0.33866666666666667
+        },
+        "sports_v2": {
+          "actual_probability": 0.34896995710209333,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.34896995710209333,
+            "2": 0.31450015539864234,
+            "X": 0.33652988749926444
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.34896995710209333
+        }
+      },
+      "position": 4,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.008969957102093307,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.04231105162812515,
+        "covered": true,
+        "effect": "HELPED_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_CORRECT_TOP"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 56,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.3373493975903614,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.25,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 56,
+            "2": 55,
+            "X": 55
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3373493975903614,
+            "2": 0.3313253012048193,
+            "X": 0.3313253012048193
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 60,
+          "actual_exposure_gap_to_max": 0.024096385542168697,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3614457831325301,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 1.0,
+          "best_coupon_universal_miss": true,
+          "counts": {
+            "1": 60,
+            "2": 42,
+            "X": 64
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3614457831325301,
+            "2": 0.25301204819277107,
+            "X": 0.3855421686746988
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 55,
+          "actual_exposure_gap_to_max": 0.01807228915662651,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3313253012048193,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.4,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 55,
+            "2": 53,
+            "X": 58
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3313253012048193,
+            "2": 0.3192771084337349,
+            "X": 0.3493975903614458
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 53,
+          "actual_exposure_gap_to_max": 0.048192771084337394,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3192771084337349,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 53,
+            "2": 61,
+            "X": 52
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3192771084337349,
+            "2": 0.3674698795180723,
+            "X": 0.3132530120481928
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "1",
+      "diagnosis": {
+        "quality-v2-vs-bk": "NO_RANKING_OR_ALIGNMENT_MISS",
+        "sports-v2-vs-sports-model": "NO_RANKING_OR_ALIGNMENT_MISS"
+      },
+      "event_name": "ФК Копенгаген — Нордсьелланд",
+      "event_order": 4,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.44,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.44,
+            "2": 0.31,
+            "X": 0.25
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.44
+        },
+        "flatten_10": {
+          "actual_probability": 0.42933333333333334,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.42933333333333334,
+            "2": 0.31233333333333335,
+            "X": 0.25833333333333336
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.42933333333333334
+        },
+        "flatten_20": {
+          "actual_probability": 0.4186666666666667,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.4186666666666667,
+            "2": 0.31466666666666665,
+            "X": 0.26666666666666666
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.4186666666666667
+        },
+        "sports_v2": {
+          "actual_probability": 0.44177978088235587,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.44177978088235587,
+            "2": 0.312939674441585,
+            "X": 0.2452805446760591
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.44177978088235587
+        }
+      },
+      "position": 5,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.0017797808823558636,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.06758596962566815,
+        "covered": true,
+        "effect": "HELPED_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_CORRECT_TOP"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 121,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7289156626506024,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.25,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 121,
+            "2": 26,
+            "X": 19
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7289156626506024,
+            "2": 0.1566265060240964,
+            "X": 0.1144578313253012
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 129,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7771084337349398,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 129,
+            "2": 29,
+            "X": 8
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7771084337349398,
+            "2": 0.1746987951807229,
+            "X": 0.04819277108433735
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 128,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7710843373493976,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.4,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 128,
+            "2": 28,
+            "X": 10
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7710843373493976,
+            "2": 0.1686746987951807,
+            "X": 0.060240963855421686
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 117,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7048192771084337,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 117,
+            "2": 31,
+            "X": 18
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7048192771084337,
+            "2": 0.18674698795180722,
+            "X": 0.10843373493975904
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "X",
+      "diagnosis": {
+        "quality-v2-vs-bk": "JOINT_PROBABILITY_AND_PACKAGE_MISS",
+        "sports-v2-vs-sports-model": "JOINT_PROBABILITY_AND_PACKAGE_MISS"
+      },
+      "event_name": "Новара — Ливорно",
+      "event_order": 5,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.297029702970297,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.38613861386138615,
+            "2": 0.31683168316831684,
+            "X": 0.297029702970297
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.38613861386138615
+        },
+        "flatten_10": {
+          "actual_probability": 0.30066006600660067,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.3808580858085809,
+            "2": 0.3184818481848185,
+            "X": 0.30066006600660067
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3808580858085809
+        },
+        "flatten_20": {
+          "actual_probability": 0.30429042904290426,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.3755775577557756,
+            "2": 0.3201320132013201,
+            "X": 0.30429042904290426
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3755775577557756
+        },
+        "sports_v2": {
+          "actual_probability": 0.29488756245622005,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.38365026702672783,
+            "2": 0.3214621705170521,
+            "X": 0.29488756245622005
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.38365026702672783
+        }
+      },
+      "position": 6,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": -0.0021421405140769623,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.06787117236704843,
+        "covered": true,
+        "effect": "HURT_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_TOP_MISS"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 54,
+          "actual_exposure_gap_to_max": 0.024096385542168697,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3253012048192771,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.25,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 58,
+            "2": 54,
+            "X": 54
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3493975903614458,
+            "2": 0.3253012048192771,
+            "X": 0.3253012048192771
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 25,
+          "actual_exposure_gap_to_max": 0.463855421686747,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.15060240963855423,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 102,
+            "2": 39,
+            "X": 25
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.6144578313253012,
+            "2": 0.23493975903614459,
+            "X": 0.15060240963855423
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 30,
+          "actual_exposure_gap_to_max": 0.35542168674698793,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.18072289156626506,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 3,
+          "best_coupon_miss_share": 0.6,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 89,
+            "2": 47,
+            "X": 30
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.536144578313253,
+            "2": 0.28313253012048195,
+            "X": 0.18072289156626506
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 49,
+          "actual_exposure_gap_to_max": 0.06626506024096385,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.29518072289156627,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 57,
+            "2": 60,
+            "X": 49
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3433734939759036,
+            "2": 0.3614457831325301,
+            "X": 0.29518072289156627
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "1",
+      "diagnosis": {
+        "quality-v2-vs-bk": "NO_RANKING_OR_ALIGNMENT_MISS",
+        "sports-v2-vs-sports-model": "NO_RANKING_OR_ALIGNMENT_MISS"
+      },
+      "event_name": "Хапоэль Тель-Авив — Бейтар Иерусалим",
+      "event_order": 6,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.40404040404040403,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.40404040404040403,
+            "2": 0.32323232323232326,
+            "X": 0.2727272727272727
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.40404040404040403
+        },
+        "flatten_10": {
+          "actual_probability": 0.396969696969697,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.396969696969697,
+            "2": 0.3242424242424243,
+            "X": 0.2787878787878788
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.396969696969697
+        },
+        "flatten_20": {
+          "actual_probability": 0.3898989898989899,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.3898989898989899,
+            "2": 0.3252525252525253,
+            "X": 0.28484848484848485
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3898989898989899
+        },
+        "sports_v2": {
+          "actual_probability": 0.4042632572949897,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.4042632572949897,
+            "2": 0.3238124307206584,
+            "X": 0.2719243119843519
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.4042632572949897
+        }
+      },
+      "position": 7,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.0002228532545856532,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.05815916489547514,
+        "covered": true,
+        "effect": "HELPED_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_CORRECT_TOP"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 122,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7349397590361446,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.25,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 122,
+            "2": 24,
+            "X": 20
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7349397590361446,
+            "2": 0.14457831325301204,
+            "X": 0.12048192771084337
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 121,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7289156626506024,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 1.0,
+          "best_coupon_universal_miss": true,
+          "counts": {
+            "1": 121,
+            "2": 36,
+            "X": 9
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7289156626506024,
+            "2": 0.21686746987951808,
+            "X": 0.05421686746987952
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 118,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7108433734939759,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.2,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 118,
+            "2": 36,
+            "X": 12
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7108433734939759,
+            "2": 0.21686746987951808,
+            "X": 0.07228915662650602
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 123,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7409638554216867,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 123,
+            "2": 23,
+            "X": 20
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7409638554216867,
+            "2": 0.13855421686746988,
+            "X": 0.12048192771084337
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "2",
+      "diagnosis": {
+        "quality-v2-vs-bk": "PROBABILITY_RANKING_MISS",
+        "sports-v2-vs-sports-model": "PROBABILITY_RANKING_MISS"
+      },
+      "event_name": "Омония Никосия — ФК Пафос",
+      "event_order": 7,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.35,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.37,
+            "2": 0.35,
+            "X": 0.28
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.37
+        },
+        "flatten_10": {
+          "actual_probability": 0.34833333333333333,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.36633333333333334,
+            "2": 0.34833333333333333,
+            "X": 0.2853333333333334
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.36633333333333334
+        },
+        "flatten_20": {
+          "actual_probability": 0.3466666666666666,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.36266666666666664,
+            "2": 0.3466666666666666,
+            "X": 0.2906666666666667
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.36266666666666664
+        },
+        "sports_v2": {
+          "actual_probability": 0.35,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.37,
+            "2": 0.35,
+            "X": 0.28
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.37
+        }
+      },
+      "position": 8,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.0,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.0,
+        "covered": false,
+        "effect": "FALLBACK",
+        "fallback_reason": "sports_history_missing",
+        "top_prediction_effect": "FALLBACK"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 59,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.35542168674698793,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.25,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 57,
+            "2": 59,
+            "X": 50
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3433734939759036,
+            "2": 0.35542168674698793,
+            "X": 0.30120481927710846
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 58,
+          "actual_exposure_gap_to_max": 0.1325301204819277,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3493975903614458,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 1.0,
+          "best_coupon_universal_miss": true,
+          "counts": {
+            "1": 80,
+            "2": 58,
+            "X": 28
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.4819277108433735,
+            "2": 0.3493975903614458,
+            "X": 0.1686746987951807
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 66,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.39759036144578314,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.4,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 65,
+            "2": 66,
+            "X": 35
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.39156626506024095,
+            "2": 0.39759036144578314,
+            "X": 0.21084337349397592
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 64,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.3855421686746988,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 56,
+            "2": 64,
+            "X": 46
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3373493975903614,
+            "2": 0.3855421686746988,
+            "X": 0.27710843373493976
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "2",
+      "diagnosis": {
+        "quality-v2-vs-bk": "JOINT_PROBABILITY_AND_PACKAGE_MISS",
+        "sports-v2-vs-sports-model": "JOINT_PROBABILITY_AND_PACKAGE_MISS"
+      },
+      "event_name": "Ригас Футбола Скола — Рига ФК",
+      "event_order": 8,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.31683168316831684,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.36633663366336633,
+            "2": 0.31683168316831684,
+            "X": 0.31683168316831684
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.36633663366336633
+        },
+        "flatten_10": {
+          "actual_probability": 0.3184818481848185,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.36303630363036304,
+            "2": 0.3184818481848185,
+            "X": 0.3184818481848185
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.36303630363036304
+        },
+        "flatten_20": {
+          "actual_probability": 0.3201320132013201,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.3597359735973597,
+            "2": 0.3201320132013201,
+            "X": 0.3201320132013201
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3597359735973597
+        },
+        "sports_v2": {
+          "actual_probability": 0.31683168316831684,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.36633663366336633,
+            "2": 0.31683168316831684,
+            "X": 0.31683168316831684
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.36633663366336633
+        }
+      },
+      "position": 9,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.0,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.0,
+        "covered": false,
+        "effect": "FALLBACK",
+        "fallback_reason": "sports_history_missing",
+        "top_prediction_effect": "FALLBACK"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 54,
+          "actual_exposure_gap_to_max": 0.03614457831325302,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3253012048192771,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 60,
+            "2": 54,
+            "X": 52
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.3614457831325301,
+            "2": 0.3253012048192771,
+            "X": 0.3132530120481928
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 36,
+          "actual_exposure_gap_to_max": 0.3012048192771084,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.21686746987951808,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 86,
+            "2": 36,
+            "X": 44
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.5180722891566265,
+            "2": 0.21686746987951808,
+            "X": 0.26506024096385544
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 44,
+          "actual_exposure_gap_to_max": 0.16265060240963852,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.26506024096385544,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.4,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 71,
+            "2": 44,
+            "X": 51
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.42771084337349397,
+            "2": 0.26506024096385544,
+            "X": 0.3072289156626506
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 53,
+          "actual_exposure_gap_to_max": 0.054216867469879526,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3192771084337349,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 62,
+            "2": 53,
+            "X": 51
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.37349397590361444,
+            "2": 0.3192771084337349,
+            "X": 0.3072289156626506
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "2",
+      "diagnosis": {
+        "quality-v2-vs-bk": "JOINT_PROBABILITY_AND_PACKAGE_MISS",
+        "sports-v2-vs-sports-model": "JOINT_PROBABILITY_AND_PACKAGE_MISS"
+      },
+      "event_name": "Ракув — Гурник Забрже",
+      "event_order": 9,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.36,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.37,
+            "2": 0.36,
+            "X": 0.27
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.37
+        },
+        "flatten_10": {
+          "actual_probability": 0.35733333333333334,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.36633333333333334,
+            "2": 0.35733333333333334,
+            "X": 0.2763333333333334
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.36633333333333334
+        },
+        "flatten_20": {
+          "actual_probability": 0.35466666666666663,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.36266666666666664,
+            "2": 0.35466666666666663,
+            "X": 0.2826666666666667
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.36266666666666664
+        },
+        "sports_v2": {
+          "actual_probability": 0.36240798949246383,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.37301113492427,
+            "2": 0.36240798949246383,
+            "X": 0.26458087558326615
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.37301113492427
+        }
+      },
+      "position": 10,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.0024079894924638467,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.06523093545019217,
+        "covered": true,
+        "effect": "HELPED_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_TOP_MISS"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 27,
+          "actual_exposure_gap_to_max": 0.5481927710843373,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.16265060240963855,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 118,
+            "2": 27,
+            "X": 21
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7108433734939759,
+            "2": 0.16265060240963855,
+            "X": 0.12650602409638553
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 72,
+          "actual_exposure_gap_to_max": 0.0060240963855421326,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.43373493975903615,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 73,
+            "2": 72,
+            "X": 21
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.4397590361445783,
+            "2": 0.43373493975903615,
+            "X": 0.12650602409638553
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 58,
+          "actual_exposure_gap_to_max": 0.1987951807228916,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3493975903614458,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.4,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 91,
+            "2": 58,
+            "X": 17
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.5481927710843374,
+            "2": 0.3493975903614458,
+            "X": 0.10240963855421686
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 32,
+          "actual_exposure_gap_to_max": 0.5120481927710843,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.1927710843373494,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 1.0,
+          "best_coupon_universal_miss": true,
+          "counts": {
+            "1": 117,
+            "2": 32,
+            "X": 17
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7048192771084337,
+            "2": 0.1927710843373494,
+            "X": 0.10240963855421686
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "X",
+      "diagnosis": {
+        "quality-v2-vs-bk": "JOINT_PROBABILITY_AND_PACKAGE_MISS",
+        "sports-v2-vs-sports-model": "JOINT_PROBABILITY_AND_PACKAGE_MISS"
+      },
+      "event_name": "Аль Фейха — Аль Хулуд",
+      "event_order": 10,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.27722772277227725,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.2871287128712871,
+            "2": 0.43564356435643564,
+            "X": 0.27722772277227725
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.43564356435643564
+        },
+        "flatten_10": {
+          "actual_probability": 0.2828382838283829,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.29174917491749175,
+            "2": 0.4254125412541254,
+            "X": 0.2828382838283829
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.4254125412541254
+        },
+        "flatten_20": {
+          "actual_probability": 0.28844884488448846,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.29636963696369634,
+            "2": 0.4151815181518152,
+            "X": 0.28844884488448846
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.4151815181518152
+        },
+        "sports_v2": {
+          "actual_probability": 0.2770121242136824,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.2889511786314921,
+            "2": 0.4340366971548255,
+            "X": 0.2770121242136824
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.4340366971548255
+        }
+      },
+      "position": 11,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": -0.0002155985585948761,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.05563210029057313,
+        "covered": true,
+        "effect": "HURT_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_TOP_MISS"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 21,
+          "actual_exposure_gap_to_max": 0.608433734939759,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.12650602409638553,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 23,
+            "2": 122,
+            "X": 21
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.13855421686746988,
+            "2": 0.7349397590361446,
+            "X": 0.12650602409638553
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 17,
+          "actual_exposure_gap_to_max": 0.6746987951807228,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.10240963855421686,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 20,
+            "2": 129,
+            "X": 17
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.12048192771084337,
+            "2": 0.7771084337349398,
+            "X": 0.10240963855421686
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 21,
+          "actual_exposure_gap_to_max": 0.6506024096385542,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.12650602409638553,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 3,
+          "best_coupon_miss_share": 0.6,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 16,
+            "2": 129,
+            "X": 21
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.0963855421686747,
+            "2": 0.7771084337349398,
+            "X": 0.12650602409638553
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 19,
+          "actual_exposure_gap_to_max": 0.6024096385542169,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.1144578313253012,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 2,
+          "best_coupon_miss_share": 1.0,
+          "best_coupon_universal_miss": true,
+          "counts": {
+            "1": 28,
+            "2": 119,
+            "X": 19
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.1686746987951807,
+            "2": 0.7168674698795181,
+            "X": 0.1144578313253012
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "X",
+      "diagnosis": {
+        "quality-v2-vs-bk": "JOINT_PROBABILITY_AND_PACKAGE_MISS",
+        "sports-v2-vs-sports-model": "JOINT_PROBABILITY_AND_PACKAGE_MISS"
+      },
+      "event_name": "Бодрумспор — Эрокспор",
+      "event_order": 11,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.3,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.38,
+            "2": 0.32,
+            "X": 0.3
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.38
+        },
+        "flatten_10": {
+          "actual_probability": 0.30333333333333334,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.37533333333333335,
+            "2": 0.32133333333333336,
+            "X": 0.30333333333333334
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.37533333333333335
+        },
+        "flatten_20": {
+          "actual_probability": 0.30666666666666664,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.3706666666666667,
+            "2": 0.32266666666666666,
+            "X": 0.30666666666666664
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3706666666666667
+        },
+        "sports_v2": {
+          "actual_probability": 0.30529682403771463,
+          "actual_rank": 3,
+          "probabilities": {
+            "1": 0.3754739256244051,
+            "2": 0.31922925033788024,
+            "X": 0.30529682403771463
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3754739256244051
+        }
+      },
+      "position": 12,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.0052968240377146425,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.06565818374895568,
+        "covered": true,
+        "effect": "HELPED_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_TOP_MISS"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 51,
+          "actual_exposure_gap_to_max": 0.06626506024096385,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3072289156626506,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 62,
+            "2": 53,
+            "X": 51
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.37349397590361444,
+            "2": 0.3192771084337349,
+            "X": 0.3072289156626506
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 27,
+          "actual_exposure_gap_to_max": 0.4036144578313253,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.16265060240963855,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 94,
+            "2": 45,
+            "X": 27
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.5662650602409639,
+            "2": 0.2710843373493976,
+            "X": 0.16265060240963855
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 32,
+          "actual_exposure_gap_to_max": 0.3614457831325301,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.1927710843373494,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 3,
+          "best_coupon_miss_share": 0.6,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 92,
+            "2": 42,
+            "X": 32
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.5542168674698795,
+            "2": 0.25301204819277107,
+            "X": 0.1927710843373494
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 47,
+          "actual_exposure_gap_to_max": 0.12048192771084337,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.28313253012048195,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 67,
+            "2": 52,
+            "X": 47
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.4036144578313253,
+            "2": 0.3132530120481928,
+            "X": 0.28313253012048195
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "2",
+      "diagnosis": {
+        "quality-v2-vs-bk": "NO_RANKING_OR_ALIGNMENT_MISS",
+        "sports-v2-vs-sports-model": "NO_RANKING_OR_ALIGNMENT_MISS"
+      },
+      "event_name": "Базель — Сьон",
+      "event_order": 12,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.41,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.34,
+            "2": 0.41,
+            "X": 0.25
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.41
+        },
+        "flatten_10": {
+          "actual_probability": 0.4023333333333333,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.3393333333333334,
+            "2": 0.4023333333333333,
+            "X": 0.25833333333333336
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.4023333333333333
+        },
+        "flatten_20": {
+          "actual_probability": 0.39466666666666667,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.33866666666666667,
+            "2": 0.39466666666666667,
+            "X": 0.26666666666666666
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.39466666666666667
+        },
+        "sports_v2": {
+          "actual_probability": 0.41227698317766087,
+          "actual_rank": 1,
+          "probabilities": {
+            "1": 0.33803828281141324,
+            "2": 0.41227698317766087,
+            "X": 0.24968473401092597
+          },
+          "top_correct": true,
+          "top_outcomes": [
+            "2"
+          ],
+          "top_probability": 0.41227698317766087
+        }
+      },
+      "position": 13,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.002276983177660896,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.07457170795083849,
+        "covered": true,
+        "effect": "HELPED_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_CORRECT_TOP"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 122,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7349397590361446,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 25,
+            "2": 122,
+            "X": 19
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.15060240963855423,
+            "2": 0.7349397590361446,
+            "X": 0.1144578313253012
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 110,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.6626506024096386,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 1.0,
+          "best_coupon_universal_miss": true,
+          "counts": {
+            "1": 49,
+            "2": 110,
+            "X": 7
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.29518072289156627,
+            "2": 0.6626506024096386,
+            "X": 0.04216867469879518
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 115,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.6927710843373494,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 39,
+            "2": 115,
+            "X": 12
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.23493975903614459,
+            "2": 0.6927710843373494,
+            "X": 0.07228915662650602
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 125,
+          "actual_exposure_gap_to_max": 0.0,
+          "actual_exposure_rank": 1,
+          "actual_is_max_exposure": true,
+          "actual_share": 0.7530120481927711,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 23,
+            "2": 125,
+            "X": 18
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.13855421686746988,
+            "2": 0.7530120481927711,
+            "X": 0.10843373493975904
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "2",
+      "diagnosis": {
+        "quality-v2-vs-bk": "JOINT_PROBABILITY_AND_PACKAGE_MISS",
+        "sports-v2-vs-sports-model": "JOINT_PROBABILITY_AND_PACKAGE_MISS"
+      },
+      "event_name": "Хиберниан — Хартс",
+      "event_order": 13,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.3465346534653465,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.38613861386138615,
+            "2": 0.3465346534653465,
+            "X": 0.26732673267326734
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.38613861386138615
+        },
+        "flatten_10": {
+          "actual_probability": 0.3452145214521452,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.3808580858085809,
+            "2": 0.3452145214521452,
+            "X": 0.27392739273927397
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3808580858085809
+        },
+        "flatten_20": {
+          "actual_probability": 0.34389438943894385,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.3755775577557756,
+            "2": 0.34389438943894385,
+            "X": 0.28052805280528054
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3755775577557756
+        },
+        "sports_v2": {
+          "actual_probability": 0.3474460860998476,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.3927919055745112,
+            "2": 0.3474460860998476,
+            "X": 0.25976200832564117
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.3927919055745112
+        }
+      },
+      "position": 14,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": 0.0009114326345011081,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.0559737320616559,
+        "covered": true,
+        "effect": "HELPED_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_TOP_MISS"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 25,
+          "actual_exposure_gap_to_max": 0.5783132530120482,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.15060240963855423,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 3,
+          "best_coupon_miss_share": 0.75,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 121,
+            "2": 25,
+            "X": 20
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7289156626506024,
+            "2": 0.15060240963855423,
+            "X": 0.12048192771084337
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 59,
+          "actual_exposure_gap_to_max": 0.17469879518072295,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.35542168674698793,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 88,
+            "2": 59,
+            "X": 19
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.5301204819277109,
+            "2": 0.35542168674698793,
+            "X": 0.1144578313253012
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 57,
+          "actual_exposure_gap_to_max": 0.21084337349397592,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.3433734939759036,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.2,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 92,
+            "2": 57,
+            "X": 17
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.5542168674698795,
+            "2": 0.3433734939759036,
+            "X": 0.10240963855421686
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 24,
+          "actual_exposure_gap_to_max": 0.5963855421686747,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.14457831325301204,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 123,
+            "2": 24,
+            "X": 19
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7409638554216867,
+            "2": 0.14457831325301204,
+            "X": 0.1144578313253012
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    },
+    {
+      "actual_outcome": "X",
+      "diagnosis": {
+        "quality-v2-vs-bk": "JOINT_PROBABILITY_AND_PACKAGE_MISS",
+        "sports-v2-vs-sports-model": "JOINT_PROBABILITY_AND_PACKAGE_MISS"
+      },
+      "event_name": "Либертад Лоха — Эмелек",
+      "event_order": 14,
+      "excluded_as_void": false,
+      "models": {
+        "bk": {
+          "actual_probability": 0.3069306930693069,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.4158415841584158,
+            "2": 0.27722772277227725,
+            "X": 0.3069306930693069
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.4158415841584158
+        },
+        "flatten_10": {
+          "actual_probability": 0.3095709570957096,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.4075907590759076,
+            "2": 0.2828382838283829,
+            "X": 0.3095709570957096
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.4075907590759076
+        },
+        "flatten_20": {
+          "actual_probability": 0.3122112211221122,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.39933993399339934,
+            "2": 0.28844884488448846,
+            "X": 0.3122112211221122
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.39933993399339934
+        },
+        "sports_v2": {
+          "actual_probability": 0.30022729776658397,
+          "actual_rank": 2,
+          "probabilities": {
+            "1": 0.4267357597529373,
+            "2": 0.2730369424804787,
+            "X": 0.30022729776658397
+          },
+          "top_correct": false,
+          "top_outcomes": [
+            "1"
+          ],
+          "top_probability": 0.4267357597529373
+        }
+      },
+      "position": 15,
+      "sports_v2_change": {
+        "actual_probability_delta_vs_bk": -0.006703395302722959,
+        "actual_rank_delta_vs_bk": 0,
+        "blend_weight": 0.05889224887789009,
+        "covered": true,
+        "effect": "HURT_ACTUAL_PROBABILITY",
+        "fallback_reason": null,
+        "top_prediction_effect": "RETAINED_TOP_MISS"
+      },
+      "strategies": {
+        "quality-v2": {
+          "actual_count": 22,
+          "actual_exposure_gap_to_max": 0.6024096385542169,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.13253012048192772,
+          "best_coupon_count": 4,
+          "best_coupon_miss_count": 4,
+          "best_coupon_miss_share": 1.0,
+          "best_coupon_universal_miss": true,
+          "counts": {
+            "1": 122,
+            "2": 22,
+            "X": 22
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7349397590361446,
+            "2": 0.13253012048192772,
+            "X": 0.13253012048192772
+          },
+          "zero_actual_exposure": false
+        },
+        "quality-v3": {
+          "actual_count": 39,
+          "actual_exposure_gap_to_max": 0.4337349397590361,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.23493975903614459,
+          "best_coupon_count": 1,
+          "best_coupon_miss_count": 0,
+          "best_coupon_miss_share": 0.0,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 111,
+            "2": 16,
+            "X": 39
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.6686746987951807,
+            "2": 0.0963855421686747,
+            "X": 0.23493975903614459
+          },
+          "zero_actual_exposure": false
+        },
+        "robust": {
+          "actual_count": 27,
+          "actual_exposure_gap_to_max": 0.5662650602409638,
+          "actual_exposure_rank": 2,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.16265060240963855,
+          "best_coupon_count": 5,
+          "best_coupon_miss_count": 4,
+          "best_coupon_miss_share": 0.8,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 121,
+            "2": 18,
+            "X": 27
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7289156626506024,
+            "2": 0.10843373493975904,
+            "X": 0.16265060240963855
+          },
+          "zero_actual_exposure": false
+        },
+        "sports-v2": {
+          "actual_count": 23,
+          "actual_exposure_gap_to_max": 0.5783132530120483,
+          "actual_exposure_rank": 3,
+          "actual_is_max_exposure": false,
+          "actual_share": 0.13855421686746988,
+          "best_coupon_count": 2,
+          "best_coupon_miss_count": 1,
+          "best_coupon_miss_share": 0.5,
+          "best_coupon_universal_miss": false,
+          "counts": {
+            "1": 119,
+            "2": 24,
+            "X": 23
+          },
+          "fixed_wrong": false,
+          "shares": {
+            "1": 0.7168674698795181,
+            "2": 0.14457831325301204,
+            "X": 0.13855421686746988
+          },
+          "zero_actual_exposure": false
+        }
+      }
+    }
+  ],
+  "operator_compatible": false,
+  "plan_id": "bfc008b4298d8f31",
+  "profitability_proven": false,
+  "report_sha256": "29807775c654461fe3ba20c91bd8c9a9cda25f16ac6312ef95a262883044910c",
+  "scheduler_state_mutated": false,
+  "schema_version": 1,
+  "source_hashes": {
+    "final_input_sha256": "821a62023469c054cdc1a208ac5ebff67fe17842357d2b2f6d3975fe401edc95",
+    "package:quality-v2": "443dbf302ed89b489cd710ff44b89d7f459b24f91c562c004dc3d8367b28946f",
+    "package:quality-v3": "58a9c8a00d71b7f98a0637a3bfc1182886e9c396952a54c181b318822ca1cff8",
+    "package:robust": "c6506899be8f4ddfb8a3af04212340c700dde3fe35ba9df6c777f0142aa398f7",
+    "package:sports-v2": "8ca5fa97ef58b066e5068bc5fa8ae6af8e8f49914abf34c881939c4d21fee3ba",
+    "probability_input_sha256": "34e2249650d0fff58f48b16a8de1540aa0e5d504e4a524c3371ee17bfb1711f9",
+    "scheduler_plan_sha256": "8a64a4bc25df41d7da96b259d0ee2448d8a19a6b2eb3314061bb28b2e2368058",
+    "sports_artifact_sha256": "a31e52864ef78d292cd8a4814c273659a48dd9915b116c1e55683ae0aab886bd",
+    "sports_probability_input_sha256": "67c9e95341b704df94fed5c6852aa344652e0221adf400fe915f5bffdbc471d2"
+  },
+  "status": "RESEARCH_ONLY_NOT_OPERATOR_COMPATIBLE",
+  "summary": {
+    "bk_top_correct_count": 6,
+    "diagnosis_counts": {
+      "quality-v2-vs-bk": {
+        "JOINT_PROBABILITY_AND_PACKAGE_MISS": 8,
+        "NO_RANKING_OR_ALIGNMENT_MISS": 6,
+        "PROBABILITY_RANKING_MISS": 1
+      },
+      "sports-v2-vs-sports-model": {
+        "JOINT_PROBABILITY_AND_PACKAGE_MISS": 8,
+        "NO_RANKING_OR_ALIGNMENT_MISS": 4,
+        "PACKAGE_ALIGNMENT_MISS": 2,
+        "PROBABILITY_RANKING_MISS": 1
+      }
+    },
+    "resolved_event_count": 15,
+    "sports_v2_effect_counts": {
+      "FALLBACK": 2,
+      "HELPED_ACTUAL_PROBABILITY": 9,
+      "HURT_ACTUAL_PROBABILITY": 4
+    },
+    "sports_v2_top_correct_count": 6,
+    "sports_v2_top_effect_counts": {
+      "FALLBACK": 2,
+      "RETAINED_CORRECT_TOP": 6,
+      "RETAINED_TOP_MISS": 7
+    },
+    "strategies": {
+      "quality-v2": {
+        "average_actual_exposure": 0.3775100401606426,
+        "best_coupon_count": 4,
+        "best_coupon_universal_miss_positions": [
+          15
+        ],
+        "best_hits": 9,
+        "fixed_wrong_positions": [],
+        "zero_actual_exposure_positions": []
+      },
+      "quality-v3": {
+        "average_actual_exposure": 0.39799196787148594,
+        "best_coupon_count": 1,
+        "best_coupon_universal_miss_positions": [
+          1,
+          4,
+          7,
+          8,
+          13
+        ],
+        "best_hits": 10,
+        "fixed_wrong_positions": [],
+        "zero_actual_exposure_positions": []
+      },
+      "robust": {
+        "average_actual_exposure": 0.3923694779116466,
+        "best_coupon_count": 5,
+        "best_coupon_universal_miss_positions": [],
+        "best_hits": 9,
+        "fixed_wrong_positions": [],
+        "zero_actual_exposure_positions": []
+      },
+      "sports-v2": {
+        "average_actual_exposure": 0.3710843373493976,
+        "best_coupon_count": 2,
+        "best_coupon_universal_miss_positions": [
+          10,
+          11
+        ],
+        "best_hits": 9,
+        "fixed_wrong_positions": [],
+        "zero_actual_exposure_positions": []
+      }
+    },
+    "void_event_positions": []
+  }
+}

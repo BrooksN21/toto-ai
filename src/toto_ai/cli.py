@@ -4,6 +4,7 @@ import math
 import os
 import subprocess
 import sys
+import threading
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass, replace
@@ -395,6 +396,91 @@ from toto_ai.sports_stats.v2 import build_sports_v2_shadow_artifact
 from toto_ai.totobrief_time import parse_totobrief_timestamp
 
 app = typer.Typer(help="TotoBrief API commands.")
+
+
+class _ReplayCommandProgress:
+    """Emit phase changes and periodic heartbeats for a long replay command."""
+
+    def __init__(
+        self,
+        *,
+        drawing_number: int,
+        interval_seconds: float = 10.0,
+        emit: Callable[[str], None] | None = None,
+    ) -> None:
+        if type(drawing_number) is not int or drawing_number <= 0:
+            raise ValueError("replay drawing number must be a positive integer")
+        if interval_seconds <= 0.0 or interval_seconds >= 30.0:
+            raise ValueError(
+                "replay heartbeat interval must be between 0 and 30 seconds"
+            )
+        self._drawing_number = drawing_number
+        self._interval_seconds = float(interval_seconds)
+        self._emit_line = typer.echo if emit is None else emit
+        self._started_at = 0.0
+        self._model = "all"
+        self._phase = "initializing"
+        self._status = "running"
+        self._lock = threading.Lock()
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+
+    def __enter__(self) -> "_ReplayCommandProgress":
+        self._started_at = time.monotonic()
+        self._emit("phase")
+        self._thread = threading.Thread(
+            target=self._heartbeat_loop,
+            name=f"replay-progress-{self._drawing_number}",
+            daemon=True,
+        )
+        self._thread.start()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        if exc_type is not None:
+            with self._lock:
+                self._status = "failed"
+            self._emit("phase")
+        self._stop.set()
+        if self._thread is not None:
+            self._thread.join(timeout=1.0)
+
+    def update(self, payload: Mapping[str, object]) -> None:
+        """Adopt the latest replay phase and print it immediately."""
+
+        with self._lock:
+            drawing_number = payload.get("drawing_number", self._drawing_number)
+            if type(drawing_number) is int and drawing_number > 0:
+                self._drawing_number = drawing_number
+            self._model = str(payload.get("model", self._model))
+            self._phase = str(payload.get("phase", self._phase))
+            self._status = str(payload.get("status", self._status))
+        self._emit("phase")
+
+    def _heartbeat_loop(self) -> None:
+        while not self._stop.wait(self._interval_seconds):
+            self._emit("heartbeat")
+
+    def _emit(self, kind: str) -> None:
+        with self._lock:
+            drawing_number = self._drawing_number
+            model = self._model
+            phase = self._phase
+            status = self._status
+        elapsed = max(time.monotonic() - self._started_at, 0.0)
+        self._emit_line(
+            "replay-progress "
+            f"drawing={drawing_number} model={model} phase={phase} "
+            f"status={status} elapsed={elapsed:.2f}s kind={kind}"
+        )
+
+
+def _replay_drawing_number(final_input: Path) -> int:
+    payload = json.loads(final_input.read_text(encoding="utf-8"))
+    drawing_number = payload.get("drawing_number")
+    if type(drawing_number) is not int or drawing_number <= 0:
+        raise ValueError("final input does not contain a valid drawing_number")
+    return drawing_number
 
 
 def _sports_seed_as_of(
@@ -6941,14 +7027,17 @@ def replay_quality_sports_v2_robust_command(
     """Replay quality-v2, Sports v2, quality-v3 and robust — RESEARCH ONLY."""
 
     try:
-        report, report_path = execute_historical_hybrid_replay(
-            final_input_path=final_input,
-            scheduler_plan_path=scheduler_plan,
-            baseline_package_path=baseline_package,
-            sports_artifact_path=sports_artifact,
-            db_path=db,
-            output_dir=output_dir,
-        )
+        drawing_number = _replay_drawing_number(final_input)
+        with _ReplayCommandProgress(drawing_number=drawing_number) as progress:
+            report, report_path = execute_historical_hybrid_replay(
+                final_input_path=final_input,
+                scheduler_plan_path=scheduler_plan,
+                baseline_package_path=baseline_package,
+                sports_artifact_path=sports_artifact,
+                db_path=db,
+                output_dir=output_dir,
+                progress_callback=progress.update,
+            )
     except (OSError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
     typer.echo(

@@ -133,6 +133,11 @@ not reset this plan.
   robust on drawings 4990-4994 with identical immutable inputs, bank, stake,
   capacity, and chronology. All five drawings are complete; every strategy has
   zero 13+ coupons and no superiority or profitability claim is supported.
+- [x] F2a Replay the same four models on drawing 4995 using its immutable final
+  input, 166-coupon / 4,980-RUB archived control and the latest eligible
+  pre-input Sports v2 snapshot. Quality-v2, sports-shadow and robust reached
+  9/15; quality-v3 reached 10/15; every package had zero 13+/14+/15 coupons.
+  The hash-bound report is under `reports/research/4995-equal-input-replay/`.
 - [ ] F3 Build Sports Analytics v3 as a bounded residual to the calibrated
   market using opponent-adjusted team strength, recency/venue form, goals,
   rest, congestion, standings, and only reliable timestamped lineup evidence.
@@ -195,6 +200,11 @@ not reset this plan.
   Average best hits are quality-v2 10.00, sports-shadow 10.00, quality-v3 9.80
   and robust 10.20. Every strategy has zero 13+ coupons; the comparison is
   descriptive only.
+- [x] Drawing 4995 equal-input replay completed in 157.02 seconds with visible
+  ten-second progress. Sports coverage was 13/15. Quality-v3 was the only
+  package to reach 10/15; quality-v2, sports-shadow and robust reached 9/15.
+  No package reached 13+, so the result does not establish superiority or
+  profitability.
 - [ ] F3 current work: the immutable 4990-4994 event-attribution aggregate is
   complete over 75 resolved events. Sports v2 is 31/75 top-correct versus BK
   32/75, while Brier/log loss are only marginally better. Next build the

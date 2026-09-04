@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
@@ -166,3 +167,45 @@ def test_strategy_payload_settles_equal_cost_package():
     assert payload["settlement"]["best_hits"] == 15
     assert payload["settlement"]["hit15"] == 1
     assert payload["models"][0]["model"] == "bk"
+
+
+def test_replay_command_progress_reports_phase_and_periodic_heartbeat():
+    from toto_ai.cli import _ReplayCommandProgress
+
+    lines: list[str] = []
+    reporter = _ReplayCommandProgress(
+        drawing_number=4995,
+        interval_seconds=0.01,
+        emit=lines.append,
+    )
+
+    with reporter:
+        reporter.update(
+            {
+                "drawing_number": 4995,
+                "model": "quality-v3",
+                "phase": "generate-package",
+                "status": "running",
+            }
+        )
+        deadline = time.monotonic() + 0.25
+        while not any("kind=heartbeat" in line for line in lines):
+            assert time.monotonic() < deadline
+            time.sleep(0.005)
+
+    assert any(
+        "drawing=4995" in line
+        and "model=quality-v3" in line
+        and "phase=generate-package" in line
+        and "elapsed=" in line
+        and "kind=phase" in line
+        for line in lines
+    )
+    assert any(
+        "drawing=4995" in line
+        and "model=quality-v3" in line
+        and "phase=generate-package" in line
+        and "elapsed=" in line
+        and "kind=heartbeat" in line
+        for line in lines
+    )
