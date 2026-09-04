@@ -1,5 +1,29 @@
 # Decisions
 
+## 2026-09-04 — Parallel retry identity and nonblocking boundary
+
+- A retry is eligible only for an identity- and hash-bound terminal
+  `SKIPPED_OPERATOR_NOT_READY` record followed by the exact matching,
+  actionable scheduler-owned operator result before T-10. Missing, malformed,
+  stale, cross-plan, or post-cutoff evidence fails closed.
+- Idempotency is keyed to the exact operator-result record hash and protected
+  by an atomic retry marker. Duplicate observation of the same ready state
+  cannot start the wrapper twice.
+- Retry launches the existing immutable sidecar wrapper as a detached child
+  and never waits for it, rewrites the primary operator result, or enables
+  automatic wagering. Primary publication must remain fail-open with respect
+  to all sidecar work.
+- The producer now emits identity-bound schema-v2 terminal skips. The
+  post-draw consumer accepts both strict schema v2 and the bounded historical
+  schema v1. The scheduler invokes the retry only after the primary operator
+  result is durably replaced and contains the entire advisory call behind an
+  exception boundary, so sidecar failure cannot suppress primary delivery.
+- Ten focused API, producer, scheduler-hook and compatibility cases passed as
+  separate direct `.venv` pytest invocations with 15-second bounds. Ruff
+  passed over every currently changed Python file. Earlier aggregate pytest
+  startup/collection stalls remain an infrastructure observation; no
+  individual case hung. No full-suite verification is claimed.
+
 ## 2026-09-04 — Post-draw skip and owner-delivery evidence boundaries
 
 - Producer-emitted terminal `SKIPPED_*` parallel sidecar records are

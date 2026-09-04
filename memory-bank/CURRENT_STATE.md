@@ -1,5 +1,30 @@
 # Current State
 
+## Parallel sidecar retry API checkpoint (2026-09-04)
+
+- Added a drawing-independent
+  `retry_parallel_sidecar_after_operator_publication` API. It requires the
+  exact scheduler-plan path and SHA-256, an identity- and hash-valid
+  `SKIPPED_OPERATOR_NOT_READY` record, and the matching hash-valid actionable
+  scheduler operator result. It rejects identity mismatch, does nothing at or
+  after T-10, uses an atomic operator-state-bound retry marker, launches the
+  existing sidecar wrapper without waiting, and does not rewrite the primary
+  operator result. Automatic wagering remains false.
+- Automatic integration is complete. The producer emits schema-v2 terminal
+  skips with exact identity and scheduler-plan hash, while post-draw remains
+  compatible with hash-valid legacy schema-v1 records. After atomically
+  publishing `operator-result.json`, the real scheduler invokes the retry as
+  an exception-isolated advisory hook before continuing unchanged primary
+  delivery. A repeated idempotent scheduler tick returns the same primary
+  result and does not launch a second retry.
+- Verification ran every new or modified retry/schema/hook case as a separate
+  direct `.venv` pytest process with verbose output and a 15-second bound:
+  ten cases passed. The earlier aggregate-process startup/collection stalls
+  were not reproduced in any individual case and no test-body, fixture, or
+  retry-launcher hang was observed. Ruff passed over all 11 currently changed
+  Python files. No full suite ran. No drawing 4996 scheduler or operator
+  artifact was accessed or mutated.
+
 ## Drawing 4995 post-draw repair and payout evidence (2026-09-04)
 
 - Completed-draw parallel comparison now validates producer terminal skip

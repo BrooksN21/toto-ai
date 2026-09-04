@@ -523,6 +523,13 @@ def test_sidecar_skips_when_operator_is_not_ready_before_safe_start(
 
     assert result.status == "SKIPPED_OPERATOR_NOT_READY"
     payload = json.loads(result.result_path.read_text(encoding="utf-8"))
+    assert payload["schema_version"] == 2
+    assert payload["plan_id"] == plan.plan_id
+    assert payload["drawing"] == plan.drawing
+    assert payload["drawing_id"] == plan.drawing_id
+    assert payload["scheduler_plan_sha256"] == hashlib.sha256(
+        plan_path.read_bytes()
+    ).hexdigest()
     assert payload["automatic_wagering"] is False
 
 

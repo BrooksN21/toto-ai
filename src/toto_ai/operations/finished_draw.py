@@ -1739,7 +1739,7 @@ def _load_non_settleable_parallel_sidecar(path: Path) -> dict[str, Any] | None:
         raise ValueError("parallel sidecar status must be an object")
     if payload.get("status") not in _NON_SETTLEABLE_PARALLEL_SIDECAR_STATUSES:
         return None
-    if set(payload) != {
+    legacy_fields = {
         "schema_version",
         "status",
         "started_at",
@@ -1747,15 +1747,33 @@ def _load_non_settleable_parallel_sidecar(path: Path) -> dict[str, Any] | None:
         "reason",
         "automatic_wagering",
         "record_sha256",
-    }:
+    }
+    bound_fields = legacy_fields | {
+        "plan_id",
+        "drawing",
+        "drawing_id",
+        "scheduler_plan_sha256",
+    }
+    schema_version = payload.get("schema_version")
+    expected_fields = legacy_fields if schema_version == 1 else bound_fields
+    if schema_version not in {1, 2} or set(payload) != expected_fields:
         raise ValueError("non-settleable parallel sidecar fields are invalid")
     if (
-        payload.get("schema_version") != 1
-        or payload.get("automatic_wagering") is not False
+        payload.get("automatic_wagering") is not False
         or not isinstance(payload.get("reason"), str)
         or not payload["reason"].strip()
     ):
         raise ValueError("non-settleable parallel sidecar boundary is invalid")
+    if schema_version == 2 and (
+        not isinstance(payload.get("plan_id"), str)
+        or not payload["plan_id"]
+        or type(payload.get("drawing")) is not int
+        or type(payload.get("drawing_id")) is not int
+        or not isinstance(payload.get("scheduler_plan_sha256"), str)
+        or re.fullmatch(r"[0-9a-f]{64}", payload["scheduler_plan_sha256"])
+        is None
+    ):
+        raise ValueError("non-settleable parallel sidecar identity is invalid")
     started_at = _parse_timestamp(payload.get("started_at"))
     observed_at = _parse_timestamp(payload.get("observed_at"))
     if started_at is None or observed_at is None or observed_at < started_at:

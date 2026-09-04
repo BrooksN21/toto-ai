@@ -3961,7 +3961,35 @@ def _publish_actionable_operator_result(
         plan.output_dir / "operator-result.json",
         _canonical_json_bytes(payload) + b"\n",
     )
+    _retry_parallel_sidecar_after_operator_publication(
+        plan,
+        observed_at=completed_at,
+    )
     _write_ready_operator_delivery(plan, operator_result=payload)
+
+
+def _retry_parallel_sidecar_after_operator_publication(
+    plan: SchedulerPlan,
+    *,
+    observed_at: datetime,
+) -> None:
+    """Best-effort detached sidecar retry after durable primary publication."""
+
+    try:
+        from toto_ai.sports_stats.final_hybrid_sidecar import (
+            retry_parallel_sidecar_after_operator_publication,
+        )
+
+        retry_parallel_sidecar_after_operator_publication(
+            plan=plan,
+            scheduler_plan_path=plan.output_dir / "scheduler-plan.json",
+            observed_at=observed_at,
+        )
+    except Exception:
+        # The primary operator result is already durable. Sidecar discovery,
+        # validation, claim, or launch failure must never change its bytes or
+        # block the scheduler-owned delivery path.
+        return
 
 
 def _validated_actionable_operator_upload(

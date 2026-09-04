@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -30,6 +31,7 @@ from toto_ai.runner.scheduler import (
     load_paper_package,
 )
 from toto_ai.runner.scheduler_state import initial_state, load_state, save_state
+from toto_ai.sports_stats import final_hybrid_sidecar
 
 ENDED_AT = datetime(2032, 2, 3, 12, 0, tzinfo=timezone.utc)
 
@@ -542,6 +544,155 @@ def test_bet_ready_publication_creates_verified_operator_export(tmp_path):
     assert destination.read_text(encoding="utf-8") == (
         "30; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1\n"
     )
+
+
+def test_ready_publication_retries_prior_skipped_sidecar_exactly_once(
+    tmp_path,
+    monkeypatch,
+):
+    plan = _plan(tmp_path)
+    _seed_atomic_drawing(plan)
+    plan_path = plan.output_dir / "scheduler-plan.json"
+    plan.output_dir.mkdir(parents=True)
+    plan_path.write_text(scheduler.scheduler_plan_json(plan), encoding="utf-8")
+    sidecar_root = plan.output_dir / "parallel-challenger"
+    wrapper_path = (
+        sidecar_root / final_hybrid_sidecar.PARALLEL_SIDECAR_WRAPPER_FILENAME
+    )
+    wrapper_path.parent.mkdir(parents=True)
+    wrapper_path.write_text("#!/bin/zsh\nexit 0\n", encoding="utf-8")
+    wrapper_path.chmod(0o700)
+    sidecar_status_path = sidecar_root / "output" / "sidecar-status.json"
+    sidecar_status_path.parent.mkdir(parents=True)
+    sidecar_status = {
+        "schema_version": 2,
+        "status": "SKIPPED_OPERATOR_NOT_READY",
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "scheduler_plan_sha256": hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+        "started_at": (plan.final_at - timedelta(minutes=15)).isoformat(),
+        "observed_at": (plan.final_at - timedelta(minutes=1)).isoformat(),
+        "reason": "operator PLAY was not ready before sidecar safe start",
+        "automatic_wagering": False,
+    }
+    sidecar_status["record_sha256"] = hashlib.sha256(
+        scheduler._canonical_json_bytes(sidecar_status)
+    ).hexdigest()
+    sidecar_status_path.write_bytes(
+        scheduler._canonical_json_bytes(sidecar_status) + b"\n"
+    )
+    launched = []
+    original_retry = (
+        final_hybrid_sidecar.retry_parallel_sidecar_after_operator_publication
+    )
+
+    def launch(*args, **kwargs):
+        launched.append((args, kwargs))
+
+    def retry_with_fake_process(**kwargs):
+        return original_retry(**kwargs, process_launcher=launch)
+
+    monkeypatch.setattr(
+        final_hybrid_sidecar,
+        "retry_parallel_sidecar_after_operator_publication",
+        retry_with_fake_process,
+    )
+
+    published = _tick(
+        plan,
+        _playing_runner(plan, _atomic_payload(plan, event_id_base=45105)),
+        plan.final_at,
+    )
+    operator_path = plan.output_dir / "operator-result.json"
+    operator_bytes = operator_path.read_bytes()
+    duplicate = _tick(
+        plan,
+        _playing_runner(plan, _atomic_payload(plan, event_id_base=45105)),
+        plan.final_at,
+    )
+
+    assert published is not None and published.outcome == "bet-ready"
+    assert duplicate == published
+    assert len(launched) == 1
+    assert launched[0][0][0] == [str(wrapper_path)]
+    assert operator_path.read_bytes() == operator_bytes
+    marker = json.loads(
+        (sidecar_root / "parallel-sidecar-retry.json").read_text(encoding="utf-8")
+    )
+    operator = json.loads(operator_bytes)
+    assert marker["operator_result_sha256"] == operator["record_sha256"]
+    assert marker["sidecar_status_sha256"] == sidecar_status["record_sha256"]
+    assert marker["automatic_wagering"] is False
+
+
+def test_ready_publication_ignores_mismatched_sidecar_without_primary_degradation(
+    tmp_path,
+    monkeypatch,
+):
+    plan = _plan(tmp_path)
+    _seed_atomic_drawing(plan)
+    plan_path = plan.output_dir / "scheduler-plan.json"
+    plan.output_dir.mkdir(parents=True)
+    plan_path.write_text(scheduler.scheduler_plan_json(plan), encoding="utf-8")
+    sidecar_root = plan.output_dir / "parallel-challenger"
+    wrapper_path = (
+        sidecar_root / final_hybrid_sidecar.PARALLEL_SIDECAR_WRAPPER_FILENAME
+    )
+    wrapper_path.parent.mkdir(parents=True)
+    wrapper_path.write_text("#!/bin/zsh\nexit 0\n", encoding="utf-8")
+    wrapper_path.chmod(0o700)
+    sidecar_status_path = sidecar_root / "output" / "sidecar-status.json"
+    sidecar_status_path.parent.mkdir(parents=True)
+    sidecar_status = {
+        "schema_version": 2,
+        "status": "SKIPPED_OPERATOR_NOT_READY",
+        "plan_id": "fedcba9876543210",
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "scheduler_plan_sha256": hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+        "started_at": (plan.final_at - timedelta(minutes=15)).isoformat(),
+        "observed_at": (plan.final_at - timedelta(minutes=1)).isoformat(),
+        "reason": "operator PLAY was not ready before sidecar safe start",
+        "automatic_wagering": False,
+    }
+    sidecar_status["record_sha256"] = hashlib.sha256(
+        scheduler._canonical_json_bytes(sidecar_status)
+    ).hexdigest()
+    sidecar_status_path.write_bytes(
+        scheduler._canonical_json_bytes(sidecar_status) + b"\n"
+    )
+    launched = []
+    original_retry = (
+        final_hybrid_sidecar.retry_parallel_sidecar_after_operator_publication
+    )
+
+    def launch(*args, **kwargs):
+        launched.append((args, kwargs))
+
+    def retry_with_fake_process(**kwargs):
+        return original_retry(**kwargs, process_launcher=launch)
+
+    monkeypatch.setattr(
+        final_hybrid_sidecar,
+        "retry_parallel_sidecar_after_operator_publication",
+        retry_with_fake_process,
+    )
+
+    published = _tick(
+        plan,
+        _playing_runner(plan, _atomic_payload(plan, event_id_base=45106)),
+        plan.final_at,
+    )
+
+    assert published is not None and published.outcome == "bet-ready"
+    operator = json.loads(
+        (plan.output_dir / "operator-result.json").read_text(encoding="utf-8")
+    )
+    assert operator["decision"] == "PLAY"
+    assert operator["actionable"] is True
+    assert launched == []
+    assert not (sidecar_root / "parallel-sidecar-retry.json").exists()
 
 
 def test_atomic_archive_import_uses_raw_baltbet_deadline_identity(tmp_path):

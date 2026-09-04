@@ -123,6 +123,17 @@ not reset this plan.
   a loaded scheduler, install the exact non-wagering post-draw lifecycle. Bind
   the verified last-known-good package for analysis when available; otherwise
   use an explicit package-free `NO BET` binding.
+- [x] P0.13 Retry a parallel sidecar after an identity-bound terminal
+  `SKIPPED_OPERATOR_NOT_READY` only when the exact scheduler-owned operator
+  result later becomes actionable before T-10. Terminal skips now carry
+  schema-v2 plan/drawing identity and scheduler-plan SHA-256; the post-draw
+  consumer retains bounded schema-v1 compatibility. The real scheduler hook
+  runs only after durable primary operator publication, catches every advisory
+  retry failure, and launches the immutable wrapper without waiting. Atomic
+  operator-hash-bound claiming makes duplicate observation idempotent.
+  Verification ran each of the ten focused API, producer, scheduler-hook and
+  compatibility cases separately: all passed. Ruff passed over all 11
+  currently changed Python files. No full suite ran.
 
 ## Forecast improvement checklist
 

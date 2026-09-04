@@ -270,7 +270,12 @@ def test_plan_run_settles_available_parallel_comparison_and_notifies(
     assert any("quality-v2 10/15, sports-shadow 11/15" in row for row in messages)
 
 
-def test_plan_run_skips_legitimate_unready_parallel_sidecar(tmp_path, monkeypatch):
+@pytest.mark.parametrize("sidecar_schema_version", (1, 2))
+def test_plan_run_skips_legitimate_unready_parallel_sidecar(
+    tmp_path,
+    monkeypatch,
+    sidecar_schema_version,
+):
     """Regression for drawing 4995's SKIPPED_OPERATOR_NOT_READY sidecar."""
 
     factory, plan_path, plan = _setup(tmp_path)
@@ -282,13 +287,22 @@ def test_plan_run_skips_legitimate_unready_parallel_sidecar(tmp_path, monkeypatc
     )
     sidecar_status.parent.mkdir(parents=True)
     payload = {
-        "schema_version": 1,
+        "schema_version": sidecar_schema_version,
         "status": "SKIPPED_OPERATOR_NOT_READY",
         "started_at": "2026-09-03T15:25:02.844927Z",
         "observed_at": "2026-09-03T15:40:02.915250Z",
         "reason": "operator PLAY was not ready before sidecar safe start",
         "automatic_wagering": False,
     }
+    if sidecar_schema_version == 2:
+        payload.update(
+            {
+                "plan_id": "0123456789abcdef",
+                "drawing": 5001,
+                "drawing_id": 12001,
+                "scheduler_plan_sha256": "a" * 64,
+            }
+        )
     payload["record_sha256"] = hashlib.sha256(
         json.dumps(
             payload,

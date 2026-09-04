@@ -58,6 +58,13 @@ class ParallelSidecarArtifacts:
     reused: bool
 
 
+@dataclass(frozen=True)
+class ParallelSidecarRetryResult:
+    status: str
+    operator_result_sha256: str | None
+    marker_path: Path | None
+
+
 def prepare_parallel_sidecar_artifacts(
     *,
     scheduler_plan_path: str | Path,
@@ -398,6 +405,8 @@ def run_final_hybrid_sidecar(
                 if observed_at >= latest_start:
                     return _terminal(
                         status_path,
+                        plan=plan,
+                        plan_path=plan_path,
                         status="SKIPPED_INSUFFICIENT_RUNTIME",
                         started_at=started_at,
                         observed_at=observed_at,
@@ -441,6 +450,8 @@ def run_final_hybrid_sidecar(
                         )
                 return _terminal(
                     status_path,
+                    plan=plan,
+                    plan_path=plan_path,
                     status="SKIPPED_OPERATOR_NO_BET",
                     started_at=started_at,
                     observed_at=observed_at,
@@ -449,6 +460,8 @@ def run_final_hybrid_sidecar(
         if observed_at >= stop_waiting:
             return _terminal(
                 status_path,
+                plan=plan,
+                plan_path=plan_path,
                 status="SKIPPED_OPERATOR_NOT_READY",
                 started_at=started_at,
                 observed_at=observed_at,
@@ -460,6 +473,108 @@ def run_final_hybrid_sidecar(
                 max(0.1, (stop_waiting - observed_at).total_seconds()),
             )
         )
+
+
+def retry_parallel_sidecar_after_operator_publication(
+    *,
+    plan: Any,
+    scheduler_plan_path: str | Path,
+    observed_at: datetime,
+    process_launcher: Callable[..., object] = subprocess.Popen,
+) -> ParallelSidecarRetryResult:
+    """Start one detached retry for one exact newly-ready operator record."""
+
+    observed = _utc(observed_at)
+    if observed >= _utc(plan.publish_deadline):
+        return ParallelSidecarRetryResult(
+            status="SKIPPED_POST_CUTOFF",
+            operator_result_sha256=None,
+            marker_path=None,
+        )
+
+    plan_path = _regular_file(scheduler_plan_path, "scheduler plan")
+    output_dir = Path(plan.output_dir).absolute()
+    if plan_path != output_dir / "scheduler-plan.json":
+        return _retry_identity_mismatch()
+    plan_sha256 = _sha256(plan_path)
+    sidecar_root = output_dir / "parallel-challenger"
+    status_path = sidecar_root / "output" / "sidecar-status.json"
+    wrapper_path = sidecar_root / PARALLEL_SIDECAR_WRAPPER_FILENAME
+    operator_path = output_dir / "operator-result.json"
+
+    try:
+        sidecar = _load_retry_sidecar_status(status_path)
+        operator = _load_retry_operator_result(operator_path)
+    except (OSError, TypeError, ValueError):
+        return _retry_identity_mismatch()
+    expected_identity = {
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+    }
+    if (
+        any(sidecar.get(key) != value for key, value in expected_identity.items())
+        or sidecar.get("scheduler_plan_sha256") != plan_sha256
+        or any(operator.get(key) != value for key, value in expected_identity.items())
+        or operator.get("decision") != "PLAY"
+        or operator.get("actionable") is not True
+        or operator.get("automatic_wagering") is not False
+        or _parse_retry_timestamp(operator.get("expires_at"))
+        != _utc(plan.publish_deadline)
+    ):
+        return _retry_identity_mismatch()
+
+    try:
+        wrapper = _regular_file(wrapper_path, "parallel sidecar wrapper")
+    except ValueError:
+        return _retry_identity_mismatch()
+    operator_sha256 = str(operator["record_sha256"])
+    marker_path = sidecar_root / "parallel-sidecar-retry.json"
+    marker = {
+        "schema_version": 1,
+        "status": "STARTED",
+        **expected_identity,
+        "scheduler_plan_sha256": plan_sha256,
+        "sidecar_status_sha256": sidecar["record_sha256"],
+        "operator_result_sha256": operator_sha256,
+        "requested_at": _timestamp(observed),
+        "automatic_wagering": False,
+    }
+    marker["record_sha256"] = hashlib.sha256(_canonical(marker)).hexdigest()
+    marker_bytes = _canonical(marker) + b"\n"
+    try:
+        _write_exclusive_retry_marker(marker_path, marker_bytes)
+    except FileExistsError:
+        try:
+            existing = _load_retry_marker(marker_path)
+        except (OSError, TypeError, ValueError):
+            return _retry_identity_mismatch()
+        if (
+            any(existing.get(key) != value for key, value in expected_identity.items())
+            or existing.get("scheduler_plan_sha256") != plan_sha256
+            or existing.get("sidecar_status_sha256") != sidecar["record_sha256"]
+            or existing.get("operator_result_sha256") != operator_sha256
+        ):
+            return _retry_identity_mismatch()
+        return ParallelSidecarRetryResult(
+            status="ALREADY_STARTED",
+            operator_result_sha256=operator_sha256,
+            marker_path=marker_path,
+        )
+
+    process_launcher(
+        [str(wrapper)],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        close_fds=True,
+        start_new_session=True,
+    )
+    return ParallelSidecarRetryResult(
+        status="STARTED",
+        operator_result_sha256=operator_sha256,
+        marker_path=marker_path,
+    )
 
 
 def _is_pre_final_checkpoint(operator: Mapping[str, Any]) -> bool:
@@ -893,14 +1008,20 @@ def _comparison_deadline(
 def _terminal(
     path: Path,
     *,
+    plan: Any,
+    plan_path: Path,
     status: str,
     started_at: datetime,
     observed_at: datetime,
     reason: str,
 ) -> FinalHybridSidecarResult:
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": status,
+        "plan_id": plan.plan_id,
+        "drawing": plan.drawing,
+        "drawing_id": plan.drawing_id,
+        "scheduler_plan_sha256": _sha256(plan_path),
         "started_at": _timestamp(started_at),
         "observed_at": _timestamp(observed_at),
         "reason": reason,
@@ -927,6 +1048,92 @@ def _load_operator_result(path: Path) -> Mapping[str, Any] | None:
     if not isinstance(value, Mapping):
         raise ValueError("operator result must be an object")
     return value
+
+
+def _retry_identity_mismatch() -> ParallelSidecarRetryResult:
+    return ParallelSidecarRetryResult(
+        status="IDENTITY_MISMATCH",
+        operator_result_sha256=None,
+        marker_path=None,
+    )
+
+
+def _load_retry_sidecar_status(path: Path) -> Mapping[str, Any]:
+    payload = _load_hashed_retry_record(path, "parallel sidecar status")
+    if (
+        payload.get("schema_version") != 2
+        or payload.get("status") != "SKIPPED_OPERATOR_NOT_READY"
+        or payload.get("automatic_wagering") is not False
+        or not isinstance(payload.get("reason"), str)
+        or not payload["reason"].strip()
+        or not isinstance(payload.get("scheduler_plan_sha256"), str)
+        or len(payload["scheduler_plan_sha256"]) != 64
+    ):
+        raise ValueError("parallel sidecar status is not retryable")
+    started_at = _parse_retry_timestamp(payload.get("started_at"))
+    sidecar_observed_at = _parse_retry_timestamp(payload.get("observed_at"))
+    if sidecar_observed_at < started_at:
+        raise ValueError("parallel sidecar status timing is invalid")
+    return payload
+
+
+def _load_retry_operator_result(path: Path) -> Mapping[str, Any]:
+    payload = _load_hashed_retry_record(path, "operator result")
+    if payload.get("schema_version") != 3:
+        raise ValueError("operator result schema is invalid")
+    return payload
+
+
+def _load_retry_marker(path: Path) -> Mapping[str, Any]:
+    payload = _load_hashed_retry_record(path, "parallel sidecar retry marker")
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("status") != "STARTED"
+        or payload.get("automatic_wagering") is not False
+    ):
+        raise ValueError("parallel sidecar retry marker is invalid")
+    _parse_retry_timestamp(payload.get("requested_at"))
+    return payload
+
+
+def _load_hashed_retry_record(path: Path, name: str) -> Mapping[str, Any]:
+    regular = _regular_file(path, name)
+    try:
+        payload = json.loads(regular.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"{name} is invalid") from error
+    if not isinstance(payload, Mapping):
+        raise ValueError(f"{name} must be an object")
+    unsigned = dict(payload)
+    declared = unsigned.pop("record_sha256", None)
+    if declared != hashlib.sha256(_canonical(unsigned)).hexdigest():
+        raise ValueError(f"{name} hash mismatch")
+    return payload
+
+
+def _parse_retry_timestamp(value: object) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(
+            _text(value, "retry timestamp").replace("Z", "+00:00")
+        )
+    except ValueError as error:
+        raise ValueError("retry timestamp is invalid") from error
+    return _utc(parsed)
+
+
+def _write_exclusive_retry_marker(path: Path, content: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.parent.is_symlink() or path.is_symlink():
+        raise ValueError("parallel sidecar retry marker path is invalid")
+    descriptor = os.open(
+        path,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    )
+    with os.fdopen(descriptor, "wb") as stream:
+        stream.write(content)
+        stream.flush()
+        os.fsync(stream.fileno())
 
 
 def _parse_operator_package(path: Path, stake: int) -> tuple[str, ...]:
