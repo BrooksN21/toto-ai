@@ -295,3 +295,21 @@ not reset this plan.
 3. **Remaining:** incomplete checklist items, ordered P0 then forecast.
 4. **Blocker/risk:** exact blocker or `none`.
 5. **Next checkpoint:** exact command-independent event/time or verification.
+# Sports v3 feature-table checkpoint (2026-09-04)
+
+- [x] Implement and verify the library-only deterministic
+  `build_sports_v3_feature_table` contract.
+- [x] Enforce exact event/team identities without normalization and include only
+  completed history with kickoff strictly earlier than the target kickoff.
+- [x] Cover rolling PPG and goal difference per game, opponent form, rolling
+  home/away goals, recency/rest, 7/14-day congestion, venue splits, explicit
+  null/missing markers, a deterministic semantic hash, and a predictor
+  allowlist that excludes result/actual/target/score/outcome labels.
+- [x] Verify the focused suite: `7/7` tests passed; the full ARM64 suite passed
+  `2,326` tests with `13` deselected; full-project Ruff is clean. Correct the
+  `a-2` fixture from `1:1` to `1:0` so its expected PPG, goal difference, and
+  goals-against aggregates are internally consistent.
+- [ ] Next checkpoint: run a deterministic 90-event feature coverage audit.
+
+Boundary: no Sports v3 model fitting, probability blending, or operator
+integration exists yet.

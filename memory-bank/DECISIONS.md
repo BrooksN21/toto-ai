@@ -2656,3 +2656,26 @@ ambiguous reversed evidence remains unresolved.
   and entropy 0.90-0.95 (2) are too small for an actionable rule. The 0.95-1.00
   entropy bin contains 88/90 events and is too broad to discriminate. No
   segment result establishes causality, superiority or profitability.
+# Sports v3 feature-table contract decision (2026-09-04)
+
+**Status:** accepted and covered by `7/7` focused tests.
+
+- Sports v3 starts with a library-only deterministic feature-table builder;
+  model fitting, probability blending, and operator integration are explicitly
+  out of scope and do not exist yet.
+- Event and team identities are exact and fail closed. Identity values are not
+  case-folded, normalized, or fuzzily matched.
+- Every predictor is pre-kickoff: only completed history with
+  `history kickoff < target kickoff` is eligible.
+- The predictor allowlist contains rolling team/opponent PPG and goal difference
+  per game, rolling home/away goals, recency/rest, congestion, and venue fields.
+  Result, actual, target, score, and outcome labels are excluded.
+- When the declared prior-match minimum is unmet, affected values are null and
+  accompanied by explicit missing reasons/features.
+- Feature-table semantics are bound by a deterministic, input-order-independent
+  semantic hash.
+- The `a-2` test fixture is `1:0`, corrected from `1:1` because only `1:0`
+  agrees with all asserted PPG, goal-difference, and goals-against aggregates.
+
+Next decision checkpoint: results of a deterministic 90-event feature coverage
+audit.

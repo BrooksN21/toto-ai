@@ -6527,3 +6527,23 @@ been pushed. The drawing-4996 read-only watcher LaunchAgent
 MSK checkpoint, and a matching five-minute Codex heartbeat was proposed for
 chat delivery. Owner wager intent and exact plan-bound authorization remain
 the only known release prerequisites not yet recorded.
+# Sports v3 feature-table state (verified 2026-09-04)
+
+The project now has a library-only, deterministic Sports v3 feature-table
+builder. Its verified contract fails closed on missing or duplicate event/team
+identity, performs no fuzzy identity normalization, and uses only completed
+matches whose kickoff is strictly earlier than the target kickoff. It exposes
+rolling team and opponent PPG and goal difference per game, rolling home/away
+goals, recency/rest, 7/14-day congestion, venue-split fields, explicit
+null/missing metadata when minimum history is unavailable, a deterministic
+semantic hash, and an explicit predictor allowlist excluding post-match and
+target labels.
+
+Verification: the focused feature-table suite passed `7/7`; the full ARM64
+suite passed `2,326` tests with `13` deselected; full-project Ruff is clean.
+The test fixture for `a-2` was corrected from `1:1` to `1:0`; that score is the
+one consistent with the asserted PPG, goal-difference, and goals-against values.
+
+Current boundary: no Sports v3 model fitting, probability blending, or operator
+integration exists yet. Next checkpoint: a deterministic 90-event feature
+coverage audit.
