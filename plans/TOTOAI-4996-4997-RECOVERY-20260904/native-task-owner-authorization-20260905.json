@@ -1,0 +1,37 @@
+{
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "recorded_at_msk": "2026-09-05T14:20:14.021732+03:00",
+  "owner_quote_verbatim": "я владелец и я разрешаю тебе закоммитить разрешение на продолжение работы в дочерних ветках",
+  "source": "Owner instruction relayed verbatim by parent in this implementation assignment",
+  "permission": "edit and commit narrowly scoped policy for two existing native Codex tasks; not external-model permission",
+  "parent_task": "019f7afa-72e2-7403-85cd-d05f408a4ef3",
+  "children": {
+    "review": {
+      "task_id": "01a06e1d-e0b9-7310-ba37-53a418668354",
+      "cwd": "/Users/turshevr/.codex/worktrees/ab34/toto-ai"
+    },
+    "models": {
+      "task_id": "01a06e1d-f37f-7763-ac2a-86200d3318e3",
+      "cwd": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai"
+    }
+  },
+  "remote_publication_authorized": false,
+  "new_tasks_authorized": false,
+  "external_models_authorized": false,
+  "implementation_worker_committed": false,
+  "policy_commit_pending": true,
+  "patch_base_head": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2",
+  "minimal_patch": "native-task-permission-only.patch",
+  "before_working_sha256": {
+    "AGENTS.md": "7cb5bebe2218bfe31f438f507bef60991fb687dad665a4e37f6f1487d1712591",
+    "memory-bank/TOOLING_POLICY.md": "2495aa1539d5ca3e9bd639d51ed61ba4aa87f8e398ad97566ba58f318e2b9486"
+  },
+  "after_working_sha256": {
+    "AGENTS.md": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+    "memory-bank/TOOLING_POLICY.md": "cd96772b5901238cf68c446649a67c555da74f8f7e40ee867633199e36959814"
+  },
+  "minimal_index_target_sha256": {
+    "AGENTS.md": "d87d058adaaaefa17cefb279f38b3effb3a0d59b0dbc537fadb3412994a53064",
+    "memory-bank/TOOLING_POLICY.md": "a8bf41045d14936c6b84c6b6fa371c8d47e081596f946607af0111f436600f7c"
+  }
+}

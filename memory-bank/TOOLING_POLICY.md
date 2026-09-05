@@ -53,6 +53,41 @@ inference for TotoAI. Model-backed subagents are prohibited. Static global
 instruction bundles distributed under `claude-plugins-official` and other
 third-party global skill bundles are not authorized; use project-local skills.
 
+### Existing native Codex tasks — owner authorization 2026-09-05
+
+The owner's deliberate policy-edit/commit instruction supersedes the earlier
+single-task cancellation ONLY for the following existing user-owned tasks:
+- Parent operations: `019f7afa-72e2-7403-85cd-d05f408a4ef3`,
+  `/Users/turshevr/toto-ai`.
+- Review: `01a06e1d-e0b9-7310-ba37-53a418668354`,
+  `/Users/turshevr/.codex/worktrees/ab34/toto-ai`.
+- Models: `01a06e1d-f37f-7763-ac2a-86200d3318e3`,
+  `/Users/turshevr/.codex/worktrees/a7aa/toto-ai`.
+
+Only that parent may resume/read/monitor those two task IDs using the native
+Codex app `send_message_to_thread`, `read_thread`, and `wait_threads` tools on
+host `local`. No other task IDs, new tasks/worktrees, fork, setup recreation,
+or alternative service/tool to bypass a denied action are authorized.
+Each task uses only its already-hosting Codex model; no model/provider override.
+No nested or model-backed SUBAGENTS may be started inside any of these tasks.
+This narrowly permits same-project minimal handoffs and local repository data
+between these existing native task contexts, not external-model inference or
+transmission. Never include credentials, tokens, secret files, or unrelated data.
+The absolute external-LLM/proxy/Claude/Anthropic/Eliza and Yandex/internal-service
+prohibitions remain unchanged; no remote upload or push is authorized here.
+
+Parent retains exclusive production operations, including drawing 4997.
+Children must first acknowledge their exact task ID, verified own cwd and scope.
+They may write only own reports and explicitly assigned code in the listed own
+worktree; production inspection is read-only. No production DB, jobs, scheduler,
+catalog, consent or operator artifact changes. Child shell cwd is its verified
+own worktree (this narrowly qualifies any main-cwd-only instruction); Git still
+requires a correctly attested project wrapper, never bare Git or git ls-files.
+Wrapper/baseline or filesystem permission failures block that operation, not
+permission to bypass it. Parent integrates only after review and separate scope
+approval. No worktree deletion or copying to children is authorized by this edit.
+Earlier cancellation/setup records are history, not broader task permissions.
+
 ## Absolute denylist
 
 Do not use Yandex, Arcadia, or internal-only skills, services, connectors, MCP
