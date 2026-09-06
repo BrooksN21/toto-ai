@@ -1846,19 +1846,45 @@
     "phase": "PUBLISHED_VERIFIED_METADATA_CLOSURE",
     "receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLICATION_RECEIPT_20260906.json",
     "source_or_runtime_changes": false,
-    "remaining_blocker": "REAL_PREFLIGHT_NOT_VERIFIED /CHILD_SILENCE_30S;4999consentmissing;SportsV3review05 REQUEST_CHANGES F4-1b pendingisolatedfix06",
+    "remaining_blocker": "4999 REAL_PREFLIGHT_NOT_VERIFIED /CHILD_SILENCE_30S; repeatapproval21:19 unanswered; exact4999consentmissing. SportsV3data/scope/equalinput70%gate remain, reviewfixesclosed.",
     "next": "Stop this finalization; parent owns next operational decision. No scheduled task or heartbeat added.",
     "sports_v3_latest": {
-      "source": "Fresh parent handoff, no isolated-worktree refetch",
-      "review": "05",
-      "verdict": "REQUEST_CHANGES",
-      "reported_at_msk": "2026-09-06T21:17:39+03:00",
-      "F4_1_origin_binding": "CLOSED;12+44PASS per review; groups not asserted unique",
-      "remaining": "P2F4-1b final5sdeadline boundary;2FAIL4PASS",
-      "next_author_job": "MODELS narrowfix06 assigned; not awaited",
+      "source": "Exact independent review06 Markdown read; task idleness and pending approval from current parent handoff",
+      "review": "06",
+      "verdict": "ACCEPT",
+      "accepted_at_msk": "2026-09-06T21:28:43+03:00",
+      "accepted_delta_sha256": "1ee698aa9b27f995bbd360894b93b7313101d8a0b596bd24d68ec74a59aef2a7",
+      "review_artifact_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_INDEPENDENT_REVIEW06.md",
+      "review_artifact_sha256": "e05e640121c0fe0a4a5a728f6b839fc5cb7b89d557706d78c0817952442e8db7",
+      "scope": "Exact isolated deadline correction; not full model or production eligibility acceptance",
+      "F4_1_origin_binding": "CLOSED; remains closed",
+      "F4_1b_final_deadline": "CLOSED; reject at or beyond5s, no remaining finding",
+      "independent_checks": {
+        "origin_probes": "12PASS2.75s",
+        "unchanged_boundary_probes": "6PASS1.01s",
+        "refit_inference_A0_A1_deadlines": "9PASS1.33s",
+        "ruff": "4filesPASS"
+      },
+      "remaining_review_fix_work": false,
+      "models_task": "idle per owner handoff",
+      "review_task": "idle per owner handoff",
+      "remaining_blockers": [
+        "data/scope evidence",
+        "equal-input70%coverage gate"
+      ],
       "integrated": false,
       "real_fit": false,
+      "production_eligible": false,
       "sports_files_published_by_finalizer": false
+    },
+    "status_only_followup": {
+      "at": "2026-09-06T18:31:20.361542+00:00",
+      "role": "separate status-only finalization",
+      "scope": "Review06 outcome metadata only; original operations/publication records retained",
+      "source_integration": false,
+      "operational_mutations": false,
+      "receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/F4_REVIEW06_STATUS_PUBLICATION_RECEIPT.json",
+      "next": "Publish one status commit, verify remote and stop; no task waits or automatic preflight retry."
     }
   }
 }

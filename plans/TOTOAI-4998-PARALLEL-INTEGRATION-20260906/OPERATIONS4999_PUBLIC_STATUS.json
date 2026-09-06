@@ -54,13 +54,14 @@
     "provider_specific_cause": "NOT_DIAGNOSED",
     "owned_process_group_gone": true,
     "retry_performed": false,
-    "pass_result_exists": false
+    "pass_result_exists": false,
+    "repeat_approval": "Requested21:19MSK, owner has not answered per current handoff; no automatic retry"
   },
   "readiness_limits": {
     "native_dispatch": "15/15 readiness, exit0,21.032s; not a preflight PASS",
     "sports_eligibility": "13/15, not trainedSportsV3",
     "training_package": "deferred:1020RUB/34capacity",
-    "sports_v3": "Review05 REQUEST_CHANGES21:17:39MSK: F4-1originbindingCLOSED12+44PASS; remainingP2F4-1b final5sdeadline2FAIL4PASS. MODELSfix06 isolated/assigned; no integration/realfit; no wait.",
+    "sports_v3": "Review06 ACCEPT21:28:43MSK closes F4-1b; F4-1 remainsclosed. MODELS/REVIEW idle, no reviewfix remains. Exact isolateddelta 1ee698aa9b27f995bbd360894b93b7313101d8a0b596bd24d68ec74a59aef2a7. Data/scope/equal-input70%gate unchanged; nofit/integration/productioneligibility.",
     "experimental_manual_consent": "None for4999; exact current-plan pre-cutoff owner authorization required before experimental operator release;4980/30 preparation is not consent",
     "operator_package": "None; no PLAY/wager"
   },
@@ -81,5 +82,35 @@
     "draft": true,
     "remote_branch": "codex/reviewed-stack-20260906",
     "merge": false
-  }
+  },
+  "sports_v3_latest": {
+    "source": "Exact independent review06 Markdown read; task idleness and pending approval from current parent handoff",
+    "review": "06",
+    "verdict": "ACCEPT",
+    "accepted_at_msk": "2026-09-06T21:28:43+03:00",
+    "accepted_delta_sha256": "1ee698aa9b27f995bbd360894b93b7313101d8a0b596bd24d68ec74a59aef2a7",
+    "review_artifact_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_INDEPENDENT_REVIEW06.md",
+    "review_artifact_sha256": "e05e640121c0fe0a4a5a728f6b839fc5cb7b89d557706d78c0817952442e8db7",
+    "scope": "Exact isolated deadline correction; not full model or production eligibility acceptance",
+    "F4_1_origin_binding": "CLOSED; remains closed",
+    "F4_1b_final_deadline": "CLOSED; reject at or beyond5s, no remaining finding",
+    "independent_checks": {
+      "origin_probes": "12PASS2.75s",
+      "unchanged_boundary_probes": "6PASS1.01s",
+      "refit_inference_A0_A1_deadlines": "9PASS1.33s",
+      "ruff": "4filesPASS"
+    },
+    "remaining_review_fix_work": false,
+    "models_task": "idle per owner handoff",
+    "review_task": "idle per owner handoff",
+    "remaining_blockers": [
+      "data/scope evidence",
+      "equal-input70%coverage gate"
+    ],
+    "integrated": false,
+    "real_fit": false,
+    "production_eligible": false,
+    "sports_files_published_by_finalizer": false
+  },
+  "status_followup_at": "2026-09-06T18:31:20.361542+00:00"
 }
