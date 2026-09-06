@@ -1,3 +1,10 @@
+## 2026-09-06T16:47:08.983096+03:00 — latest accepted source publication completed
+
+- [x] Durable cache/boolean wrapper plus relevant completed residual source published
+  as `b28647c` to draft [PR22](https://github.com/BrooksN21/toto-ai/pull/22); not merged.
+- Runtime comparison/finalPLAY and Sports-v3 training/profit remain distinct, unclaimed.
+- Publication limits/exclusions: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_INTEGRATED_PUBLICATION_RECEIPT_20260906.json`.
+
 #2026-09-06 —4998 engineering integration complete, runtime outcome pending
 Accepted GOAL/90min/G1+durablecache+booleanwrapper integrated; saved opt-in16:35:21.
 Actualcomparison/finalPLAY unverified; no training/profit milestone completed.

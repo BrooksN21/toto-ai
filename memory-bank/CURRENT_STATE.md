@@ -1,3 +1,24 @@
+# CURRENT — final accepted source PUBLISHED; runtime outcome unverified — 2026-09-06T16:47:08.983096+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Published source commit
+`b28647cb008c5bd1ed9281e69533fc4d23e6cb72`; GitHub verified draft [PR22](https://github.com/BrooksN21/toto-ai/pull/22)
+OPEN at that commit. No merge or origin/main push. This is its closing metadata commit.
+Cache durable recovery + boolean wrapper reuse and prior completed Git-wrapper,
+public-suffix/status regressions published; no source/job/API mutation by publisher.
+Verification:115initial+15wrapper rerun=130PASS; Ruff10PASS. Four legacy bare-Git
+fixture cases explicitly unverified under task restrictions, not reported as passing.
+Euler saved correctedV2/G1 opt-in16:35:21MSK; plan c1d243f5b6ca48f3,4980/30 and
+exact consent/calendar unchanged per saved integration receipt. Actual4998 comparison
+NOT checked; finalPLAY NOT claimed; enabled is not selected/improved/trainedSports-v3.
+Next primary17:00/final18:00/expiry18:20 per adopter receipt, not a new runtime check.
+After source push: index empty; sole tracked residual data/schedule-evidence/ledger.json
+(74append-only multi-drawing evidence records) preserved, not junk. Local raw/candidate/
+transient artifacts and separately owned retrospective tests retained; no whole-clean claim.
+BLOCKER:none for source publication. NEXT:push this metadata closure, verify remote,
+then stop; Euler owns read-only nonoperator diagnostic. No new engineering selected.
+Resume: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_INTEGRATED_PUBLICATION_RECEIPT_20260906.json
+
 # CURRENT —4998 integrated/opt-in ENABLED; final source publication prepared — 2026-09-06T16:43:25.638128+03:00
 
 Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Accepted cache durability+wrapper

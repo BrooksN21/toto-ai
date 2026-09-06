@@ -1,6 +1,6 @@
 {
   "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
-  "phase": "COMMIT_PREPARED",
+  "phase": "SOURCE_PUBLISHED_REMOTE_VERIFIED_CLOSING_METADATA",
   "started_at": "2026-09-06T16:38:57+03:00",
   "verified_at": "2026-09-06T16:41:12.822707+03:00",
   "source_paths": [
@@ -185,5 +185,32 @@
     "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md",
     "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_INTEGRATED_PUBLICATION_RECEIPT_20260906.json"
   ],
-  "prepared_at": "2026-09-06T16:43:25.638128+03:00"
+  "prepared_at": "2026-09-06T16:43:25.638128+03:00",
+  "source_publication": {
+    "commit": "b28647cb008c5bd1ed9281e69533fc4d23e6cb72",
+    "push_exit": 0,
+    "push_summary": "2bfd010..b28647c HEAD -> codex/reviewed-stack-20260906",
+    "remote_verified_at": "2026-09-06T16:47:08.983096+03:00",
+    "pr_url": "https://github.com/BrooksN21/toto-ai/pull/22",
+    "pr_state": "OPEN",
+    "isDraft": true,
+    "headRefName": "codex/reviewed-stack-20260906",
+    "headRefOid": "b28647cb008c5bd1ed9281e69533fc4d23e6cb72",
+    "merged": false,
+    "origin_main_updated": false
+  },
+  "post_source_push_local_state": {
+    "index_empty": true,
+    "tracked_dirty": [
+      "data/schedule-evidence/ledger.json"
+    ],
+    "full_checkout_clean_claim": false,
+    "untracked_artifacts": "Preserved; separately owned research tests, local raw/transient/candidate artifacts excluded without whole-repository inventory."
+  },
+  "closing_metadata": {
+    "prepared_at": "2026-09-06T16:47:08.983096+03:00",
+    "source_changed_after_verification": false,
+    "tests_repeated": false,
+    "reason": "Receipt/current-state closure only; verified source bytes unchanged. Following metadata commit is pushed separately and final remote head reported by submission response."
+  }
 }
