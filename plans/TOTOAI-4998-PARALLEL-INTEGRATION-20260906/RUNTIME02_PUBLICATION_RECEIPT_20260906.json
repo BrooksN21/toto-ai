@@ -1,7 +1,7 @@
 {
   "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
-  "at": "2026-09-06T20:49:41.740806+03:00",
-  "phase": "EXACT_ACCEPTED_RUNTIME02_VERIFIED_PUBLICATION_PREPARED",
+  "at": "2026-09-06T20:51:25.598687+03:00",
+  "phase": "RUNTIME02_SOURCE_PUBLISHED_VERIFIED_DRAFT_PR22",
   "work_summary": "Publish accepted runtime02: exact EV membership reuse/cooperative runtime bounds and PR1 current native-primary bytes/authority/expiry revalidation at reuse and companion publication; terminal optional failure preserves primary and completed research. No search/scoring/category/bank changes.",
   "review": {
     "verdict": "ACCEPT",
@@ -157,6 +157,19 @@
   "publish_pr": false,
   "target_branch": "codex/reviewed-stack-20260906",
   "publication_base_commit": "dfa9bb9af9657323ae5cd7df5caecc29411f4f66",
-  "next_action": "Commit exact accepted13 files and metadata, normal push, verify draft HEAD and stop",
-  "submission_skill": "Previously confirmed unavailable locally; authorized project-git/public GitHub fallback only"
+  "next_action": "Push this closing metadata, verify draft HEAD, stop; no runtime/job rollout",
+  "submission_skill": "Previously confirmed unavailable locally; authorized project-git/public GitHub fallback only",
+  "source_commit": "a651a05ed7c6fc507b0174951d87bbdf033ff234",
+  "remote_verified_at": "2026-09-06T20:50:37.465942+03:00",
+  "publication_result": "Existing PR updated; OPEN/draft; no merge/origin-main push",
+  "remaining_dirty_tracked": [
+    "data/schedule-evidence/ledger.json"
+  ],
+  "remaining_untracked_outside_task_evidence": [
+    "tests/test_retrospective_integrity.py",
+    "tests/test_retrospective_payouts.py",
+    "tests/test_retrospective_replay_binding.py"
+  ],
+  "remaining_local_task_evidence_scope": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "exact_leftover_snapshot_local_only": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_LEFTOVER_LOCAL_SCOPE.json"
 }

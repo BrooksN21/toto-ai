@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
-  "saved_at": "2026-09-06T20:49:41.740806+03:00",
+  "saved_at": "2026-09-06T20:51:25.598687+03:00",
   "path_root": "/Users/turshevr/toto-ai",
   "state": "OWNER_ROLE_BOUNDARY_CORRECTION",
   "observations": {
@@ -1598,10 +1598,10 @@
     "preserve_partial_artifacts": true
   },
   "current_4998_integration_checkpoint": {
-    "at": "2026-09-06T20:49:41.740806+03:00",
+    "at": "2026-09-06T20:51:25.598687+03:00",
     "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
     "role": "separate status-only submission/finalization",
-    "phase": "EXACT_ACCEPTED_RUNTIME02_VERIFIED_PUBLICATION_PREPARED",
+    "phase": "RUNTIME02_SOURCE_PUBLISHED_VERIFIED_DRAFT_PR22",
     "drawing": 4998,
     "plan_id": "c1d243f5b6ca48f3",
     "parallel_completed_at_msk": "2026-09-06T18:19:04.553592+03:00",
@@ -1652,17 +1652,18 @@
     },
     "historical_background_slowdown": "6–8x vs different NONFINAL; exact cause/share unresolved",
     "runtime_candidate": {
-      "status": "ACCEPTED_EXACT_CURRENT_BYTES_VERIFIED_PUBLICATION_PREPARED",
+      "status": "INDEPENDENT_ACCEPT_PUBLISHED",
       "verdict": "ACCEPT",
       "accepted_at_msk": "2026-09-06T20:39:37+03:00",
       "patch_sha256": "152c92c8e068e971b5c926dc70234c2b57c3815c3396ac0ba195b56d5d46bbab",
       "review_status_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME_REVIEW02_STATUS.json",
       "review_status_sha256": "8337e41e8925c31a30989de52a19fea53bf0f75e2ad37bb992f04cf94c1d1a67",
       "verification": "Independent22+79+10 tests/Ruff14PASS per parent handoff; groups not asserted unique",
-      "source_changes_published": false,
-      "publication_boundary": "This separate finalizer authorized to publish accepted13path snapshot only; no rollout",
+      "source_changes_published": true,
+      "publication_boundary": "Exact accepted runtime02 source published; no live rollout or wagering authority",
       "finalizer_verification": "101PASS3.27s/Ruff13PASS",
-      "publication_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_RECEIPT_20260906.json"
+      "publication_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_RECEIPT_20260906.json",
+      "published_commit": "a651a05ed7c6fc507b0174951d87bbdf033ff234"
     },
     "observer_candidate": {
       "verdict": "ACCEPT",
@@ -1742,11 +1743,11 @@
     "publish_pr": false,
     "verification_current_finalizer": "52 focused pytestPASS1.68s/Ruff10PASS; no candidate acceptance implied",
     "network_status": "Normal push succeeded; PR22 OPEN/draft and status commit HEAD verified",
-    "next_action": "Commit exact accepted13 files and metadata, normal push, verify draft HEAD and stop",
+    "next_action": "Push this closing metadata, verify draft HEAD, stop; no runtime/job rollout",
     "operations_mutated": false,
     "publication_base_commit": "b859562cf4dbea42e5041ff90c0be779bdd909ab",
     "target_branch": "codex/reviewed-stack-20260906",
-    "publication_status": "OBSERVER03_SOURCE_PUBLISHED_VERIFIED",
+    "publication_status": "RUNTIME02_SOURCE_PUBLISHED_VERIFIED",
     "published_status_commit": "ac59d358bae52245be79e8c0f49be96e2b86273d",
     "remote_verification_at": "2026-09-06T18:58:08.867582+03:00",
     "closure_verification": "52 focused pytestPASS1.73s/Ruff10PASS; status-only commit, not candidate acceptance",
@@ -1796,9 +1797,10 @@
       "supersedes": "Prior postmortem all4/binding-not-ready conclusion; NOT a change to unresolved4999 timings or real-wager evidence"
     },
     "published_observer03_commit": "f9de8a634d80aeb80942bec90b93953cd9566931",
-    "remote_verified_at": "2026-09-06T20:36:53.934648+03:00",
+    "remote_verified_at": "2026-09-06T20:50:37.465942+03:00",
     "postmortem_status_correction_at": "2026-09-06T20:39:51.678594+03:00",
     "postmortem_correction_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM_BINDING_STATUS_CORRECTION_RECEIPT_20260906.json",
-    "runtime_review_status_updated_at": "2026-09-06T20:40:53.873666+03:00"
+    "runtime_review_status_updated_at": "2026-09-06T20:40:53.873666+03:00",
+    "published_runtime02_commit": "a651a05ed7c6fc507b0174951d87bbdf033ff234"
   }
 }

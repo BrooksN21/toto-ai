@@ -7,3 +7,5 @@ PR1 pins the original exported primary hash, re-reads canonical current upload b
 Existing exact cache/cooperative deadline changes retain candidate space, scoring, categories, bank/stake and primary fallback. Historical84.44→76.70s and198.859s evidence is foreground research, not a new LaunchAgent benchmark or an explanation of the Background slowdown. Native validation tests use synthetic file contracts and an in-memory archive DAO; no real DB. Checks are not an atomic transaction against modifications after the last check.
 
 Source publication is not operational rollout, package generation, automatic betting, delivery confirmation, F4 fitting or 4999 readiness. Observer03 and optional postdraw all-four settlement retain their separate accepted contracts and current operational checkpoints.
+
+Exact accepted source published as `a651a05ed7c6fc507b0174951d87bbdf033ff234`; PR22 OPEN/draft HEAD verified2026-09-06T20:50:37.465942+03:00. No live rollout implied.

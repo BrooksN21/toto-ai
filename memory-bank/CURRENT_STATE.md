@@ -1,3 +1,11 @@
+# CURRENT — Runtime02 source PUBLISHED — 2026-09-06T20:51:25.598687+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Published exact accepted runtime02 as `a651a05ed7c6fc507b0174951d87bbdf033ff234`; remote OPEN/draft PR22 HEAD verified2026-09-06T20:50:37.465942+03:00. Independent ACCEPT20:39:37; current13files/8dependencies matched; finalizer101PASS3.27s/Ruff13PASS. No merge/origin-main push, source edits, jobs/DB/operator/consent/archive changes or F4 inclusion.
+DONE: accepted runtime source and durable context published. IN PROGRESS: closing metadata only. BLOCKER:none for this publication. NEXT: push closure, verify draft HEAD, stop. Historical Background slowdown/LaunchAgent e2e remains unproved; no new long replay or profitability claim.
+Left untouched: dirty data/schedule-evidence/ledger.json; untracked tests/test_retrospective_integrity.py, tests/test_retrospective_payouts.py, tests/test_retrospective_replay_binding.py; local task evidence/research/fixtures. No clean-whole-checkout claim.
+4998 all-four postmortem binding VERIFIED; inspect optional parallel-comparison-status07.09 12:00MSK.4999 timing/plan/consent and actual wager receipt/amount/bytes limitations unchanged; F4 separate/notfit.
+Receipt: /Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_RECEIPT_20260906.json. Earlier runtime “not published” statements below are historical and superseded.
+
 # CURRENT — Runtime02 exact ACCEPT verified; publication — 2026-09-06T20:49:41.740806+03:00
 
 Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. DONE: exact13 candidate hashes and8 dependencies match accepted patch152c92c8…; independent ACCEPT20:39:37MSK closes PR1. Fresh finalizer101PASS3.27s/Ruff13PASS under network/SQLite/write guard.
