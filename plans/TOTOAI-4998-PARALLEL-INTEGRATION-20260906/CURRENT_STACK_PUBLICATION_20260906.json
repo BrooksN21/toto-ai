@@ -1,6 +1,6 @@
 {
   "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
-  "phase": "COMMIT_PREPARED",
+  "phase": "SOURCE_PUBLISHED_TO_EXISTING_DRAFT_PR22",
   "started_at": "2026-09-06T16:17:13+03:00",
   "source_paths": [
     "src/toto_ai/sports_stats/parallel_g1.py",
@@ -174,5 +174,36 @@
     "memory-bank/THREAD_COORDINATION.json",
     "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CURRENT_STACK_PUBLICATION_20260906.json"
   ],
-  "selected_at": "2026-09-06T16:21:56.827892+03:00"
+  "selected_at": "2026-09-06T16:21:56.827892+03:00",
+  "source_commit": "aac678ce4143d3835523afcab34cd1ecad491c70",
+  "published_at_verified": "2026-09-06T16:23:41.017310+03:00",
+  "push_result": "1a42f35..aac678c HEAD -> codex/reviewed-stack-20260906; exit0",
+  "pr_after_source_push": {
+    "number": 22,
+    "state": "OPEN",
+    "isDraft": true,
+    "headRefOid": "aac678ce4143d3835523afcab34cd1ecad491c70",
+    "baseRefName": "main",
+    "url": "https://github.com/BrooksN21/toto-ai/pull/22"
+  },
+  "remaining_tracked_dirty_verified": [
+    "data/schedule-evidence/ledger.json",
+    "scripts/project-git",
+    "src/toto_ai/external_odds/schedule_evidence_admin.py",
+    "src/toto_ai/operations/scheduler_status.py",
+    "tests/test_schedule_evidence_admin_cli.py",
+    "tests/test_scheduler_status.py"
+  ],
+  "remaining_known_untracked_in_source_test_knowledge_scope": [
+    "knowledge/project_git_worktrees.md",
+    "tests/fixtures/scheduler_status/drawing_4996_attempt_delivery.json",
+    "tests/test_project_git_worktrees.py",
+    "tests/test_retrospective_integrity.py",
+    "tests/test_retrospective_payouts.py",
+    "tests/test_retrospective_replay_binding.py"
+  ],
+  "untracked_limit": "Task plans/candidates and operational reports were not globally inventoried or included; no whole-checkout cleanliness claim",
+  "index_after_source_commit": "empty",
+  "closing_metadata": "This receipt/current state is a following metadata-only commit, to be pushed to same PR; final remote head is confirmed in task output, no circular self-hash claim",
+  "workflow_fallback": "gena-submission unavailable/incompatible; authorized local project-git and public gh only"
 }

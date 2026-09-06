@@ -1,3 +1,26 @@
+# CURRENT — accepted GOAL/90min/G1 source PUBLISHED to draft PR22 — 2026-09-06T16:23:41.017310+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Source commit `aac678ce4143d3835523afcab34cd1ecad491c70`
+pushed successfully to `codex/reviewed-stack-20260906`; GitHub PR22 OPEN/draft,
+head verified at that source commit. PR https://github.com/BrooksN21/toto-ai/pull/22
+NOT MERGED; no push to origin/main. This is the following closing metadata commit.
+26files published:19accepted GOAL quarantine/90min/default-off G1 source/test/docs,
+related policy/decisions/current memory and bounded publication receipt.
+Verification247cases:246PASS8.15s +1PASS0.08s after allowing only disposable fake.env;
+Ruff14PASS. Real.env/network denied; no skipped/ignored regression or source fix.
+Corrected V2 research proof14/15/280accepted/0excluded remains NOT_ACTIVATED,
+EXPERIMENTAL_UNTRAINED_V2; no new manual forecast, operator package or profit claim.
+DOING:closing metadata commit/push only; source publication DONE.
+BLOCKER:none for published source. Cache durability/CLI composition + wrapper-parser
+fix remain separately owned and NOT included/applied in this publication.
+REMAINING:separate guarded integration/seed binding/G1opt-in after required review;
+no activation by this worker. Existing4998consent/plan/jobs untouched; schedule per
+owner16:30/18:00/18:20MSK, not a new runtime confirmation.
+Dirty checkout intentional:6tracked residuals; exact names/rationale in receipt.
+Untracked local candidates/reports retained, no global inventory or clean claim.
+NEXT CHECKPOINT: final metadata push/PR head, then return MAINWRITEFREEZE ownership.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CURRENT_STACK_PUBLICATION_20260906.json
+
 # CURRENT — accepted GOAL/90min/G1 source publication prepared — 2026-09-06T16:21:56.827892+03:00
 
 Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; publication only under MAINWRITEFREEZE.
