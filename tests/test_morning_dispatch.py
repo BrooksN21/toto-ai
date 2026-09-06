@@ -2798,3 +2798,199 @@ def test_parallel_release_requires_parallel_and_goal_shadow(tmp_path):
     )
     assert parallel_without_goal.exit_code == 2
     assert "requires --goal-shadow-auto" in parallel_without_goal.output
+
+
+@pytest.mark.parametrize("initial_timing", [False, True])
+def test_retry_policy_transition_is_not_identity_drift(tmp_path, initial_timing):
+    from tests.test_preflight_retry_scheduler import FakeRunner, Result
+    from toto_ai.runner.morning_dispatch import _update_preflight_escalation
+    from toto_ai.runner.preflight_retry_scheduler import (
+        install_preflight_retry_launch_agent,
+        prepare_preflight_retry_artifacts,
+        run_preflight_retry,
+    )
+
+    config = _config(tmp_path)
+    now = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    first_evidence = replace(
+        _prepared(
+            number=4997,
+            drawing_id=12100,
+            deadline=now + timedelta(days=1),
+            eligibility="unknown",
+            span_days=None,
+            status="not_ready",
+        ),
+        unresolved_events=(
+            MorningUnresolvedEvent(
+                event_order=1,
+                target_event_id=180604,
+                home_team="Home",
+                away_team="Away",
+                resolution_status="timing_unknown" if initial_timing else "missing",
+                reason="source evidence pending",
+            ),
+        ),
+    )
+    first = _update_preflight_escalation(
+        config, evidence=first_evidence, observed_at=now, python_command=sys.executable
+    )
+    before = json.loads(first.retry_plan_path.read_text())
+    runner = FakeRunner([Result(2), Result(2)])
+    launch_root = tmp_path / "LaunchAgents"
+    artifacts = prepare_preflight_retry_artifacts(first.retry_plan_path)
+    install_preflight_retry_launch_agent(
+        artifacts, launch_agents_root=launch_root, command_runner=runner
+    )
+    loaded_calendar = artifacts.candidate_path.read_bytes()
+    runner.running = True
+    runner.commands.clear()
+    updated = replace(
+        first_evidence,
+        unresolved_events=(
+            replace(
+                first_evidence.unresolved_events[0],
+                resolution_status="missing" if initial_timing else "timing_unknown",
+            ),
+        ),
+    )
+    first_due = datetime.fromisoformat(
+        before["attempts"][0]["scheduled_at"].replace("Z", "+00:00")
+    ) + timedelta(seconds=1)
+    refreshed_paths = []
+
+    def child_updates_policy(command, **kwargs):
+        assert command[0] != "launchctl"
+        assert ("--activate" in command) == initial_timing
+        refreshed_paths.append(_update_preflight_escalation(
+            config, evidence=updated, observed_at=first_due,
+            python_command=sys.executable,
+        ))
+        return runner(command, **kwargs)
+
+    assert run_preflight_retry(
+        first.retry_plan_path, now=first_due, command_runner=child_updates_policy,
+        launch_agents_root=launch_root,
+    ) == 2
+    second = refreshed_paths[0]
+    assert runner.loaded
+    runner.commands.clear()
+    encoded = second.retry_plan_path.read_bytes()
+    after = json.loads(encoded)
+    assert after["identity"] == before["identity"]
+    assert after["activate_evening"] is not initial_timing
+    assert after["hard_stop"] <= before["hard_stop"]
+    assert after["hard_stop"] == before["hard_stop"]
+    assert [item["scheduled_at"] for item in after["attempts"]] == [
+        item["scheduled_at"] for item in before["attempts"]
+    ]
+    assert all(
+        ("--activate" in item["command"]) == (not initial_timing)
+        for item in after["attempts"]
+    )
+    refreshed = prepare_preflight_retry_artifacts(second.retry_plan_path)
+    assert refreshed.candidate_path.read_bytes() == loaded_calendar
+    assert install_preflight_retry_launch_agent(
+        refreshed, launch_agents_root=launch_root, command_runner=runner
+    )["active"]
+    assert all(command[1] == "print" for command in runner.commands)
+    assert runner.bootstrap_count == 1
+    due = datetime.fromisoformat(
+        after["attempts"][1]["scheduled_at"].replace("Z", "+00:00")
+    ) + timedelta(seconds=1)
+    assert run_preflight_retry(
+        second.retry_plan_path, now=due, command_runner=runner,
+        launch_agents_root=launch_root,
+    ) == 2
+    child = [command for command in runner.commands if command[0] != "launchctl"]
+    assert len(child) == 1
+    assert ("--activate" in child[0]) == (not initial_timing)
+    assert not any(command[1] == "bootout" for command in runner.commands)
+    assert run_preflight_retry(
+        second.retry_plan_path, now=due, command_runner=runner,
+        launch_agents_root=launch_root,
+    ) == 0
+    assert len([c for c in runner.commands if c[0] != "launchctl"]) == 1
+    _update_preflight_escalation(
+        config,
+        evidence=updated,
+        observed_at=now + timedelta(minutes=2),
+        python_command=sys.executable,
+    )
+    assert second.retry_plan_path.read_bytes() == encoded
+
+
+@pytest.mark.parametrize("mutation", ["hash", "identity", "cutoff"])
+def test_retry_policy_transition_preserves_integrity_guards(tmp_path, mutation):
+    from toto_ai.runner.morning_dispatch import _update_preflight_escalation
+
+    config = _config(tmp_path)
+    now = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    evidence = replace(
+        _prepared(
+            number=4997,
+            drawing_id=12100,
+            deadline=now + timedelta(days=1),
+            eligibility="unknown",
+            span_days=None,
+            status="not_ready",
+        ),
+        unresolved_events=(
+            MorningUnresolvedEvent(
+                event_order=1,
+                target_event_id=180604,
+                home_team="Home",
+                away_team="Away",
+                resolution_status="missing",
+                reason="missing fixture",
+            ),
+        ),
+    )
+    evidence = replace(
+        evidence,
+        operational_cutoff=evidence.deadline - timedelta(hours=1),
+        cutoff_evidence=tmp_path / "cutoff.json",
+        cutoff_evidence_sha256="c" * 64,
+    )
+    paths = _update_preflight_escalation(
+        config, evidence=evidence, observed_at=now, python_command=sys.executable
+    )
+    before = paths.retry_plan_path.read_bytes()
+    updated = replace(
+        evidence,
+        unresolved_events=(
+            replace(evidence.unresolved_events[0], resolution_status="timing_unknown"),
+        ),
+    )
+    if mutation == "hash":
+        payload = json.loads(before)
+        payload["created_at"] = "2031-01-01T00:00:00Z"
+        paths.retry_plan_path.write_text(json.dumps(payload))
+        before = paths.retry_plan_path.read_bytes()
+    elif mutation == "identity":
+        payload = json.loads(before)
+        payload["identity"]["drawing_number"] = 4998
+        import hashlib
+
+        unsigned = dict(payload)
+        unsigned.pop("plan_sha256")
+        payload["plan_sha256"] = hashlib.sha256(
+            json.dumps(
+                unsigned,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=True,
+            ).encode()
+        ).hexdigest()
+        paths.retry_plan_path.write_text(json.dumps(payload))
+        before = paths.retry_plan_path.read_bytes()
+    else:
+        updated = replace(updated, operational_cutoff=evidence.deadline)
+    with pytest.raises(ValueError):
+        _update_preflight_escalation(
+            config,
+            evidence=updated,
+            observed_at=now + timedelta(minutes=1),
+            python_command=sys.executable,
+        )
+    assert paths.retry_plan_path.read_bytes() == before

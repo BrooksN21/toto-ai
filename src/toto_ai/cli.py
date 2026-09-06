@@ -376,6 +376,9 @@ from toto_ai.sports_stats.goal_probe_research import (
     load_goal_probe_shadow,
     run_goal_probe_package_comparison,
 )
+from toto_ai.sports_stats.history_backfill import (
+    backfill_sports_history_manifest,
+)
 from toto_ai.sports_stats.operation import (
     collect_and_store_sports_stats,
     load_api_sports_key,
@@ -6594,6 +6597,72 @@ def collect_sports_stats_command(
             separators=(",", ":"),
         )
     )
+
+
+@app.command("backfill-sports-history")
+def backfill_sports_history_command(
+    manifest: Path = typer.Option(  # noqa: B008
+        ...,
+        "--manifest",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Explicit hash-bound frozen raw-capture manifest.",
+    ),
+    db: Path = typer.Option(  # noqa: B008
+        Path("data/toto.db"),
+        "--db",
+        dir_okay=False,
+        resolve_path=True,
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        Path("reports/sports-history-backfill"),
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+    ),
+    validate_only: bool = typer.Option(
+        False,
+        "--validate-only",
+        help="Validate and audit without opening or writing SQLite.",
+    ),
+) -> None:
+    """Backfill verified raw sports history — OFFLINE AUDIT ONLY."""
+
+    try:
+        report, paths = backfill_sports_history_manifest(
+            manifest_path=manifest,
+            db=db,
+            output_dir=output_dir,
+            project_root=Path.cwd(),
+            validate_only=validate_only,
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": report["status"],
+                "mode": report["mode"],
+                "snapshot_count": report["snapshot_count"],
+                "inserted_count": report["inserted_count"],
+                "reused_count": report["reused_count"],
+                "validated_count": report["validated_count"],
+                "rejected_count": report["rejected_count"],
+                "network_requests": 0,
+                "database_writes": report["database_writes"],
+                "audit_json": str(paths.json),
+                "audit_csv": str(paths.csv),
+                "audit_markdown": str(paths.markdown),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    if report["rejected_count"]:
+        raise typer.Exit(code=2)
 
 
 @app.command("sports-probability-shadow")

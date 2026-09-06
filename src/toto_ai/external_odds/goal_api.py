@@ -294,6 +294,7 @@ class GoalAPIClient:
     ) -> tuple[GoalAPIScheduleEvent, ...]:
         requested = _bounded_dates(dates)
         events: dict[str, GoalAPIScheduleEvent] = {}
+        semantic_hashes: dict[str, str] = {}
         for requested_date in requested:
             offset = 0
             while True:
@@ -309,12 +310,20 @@ class GoalAPIClient:
                         endpoint=endpoint,
                         request_fingerprint=self._evidence[-1].request_fingerprint,
                     )
+                    semantic_hash = _schedule_semantic_hash(raw)
                     previous = events.get(event.provider_event_id)
-                    if previous is not None and previous != event:
+                    if (
+                        previous is not None
+                        and semantic_hashes[event.provider_event_id] != semantic_hash
+                    ):
                         raise GoalAPIError(
                             "GOAL API duplicate event identity conflicts"
                         )
-                    events[event.provider_event_id] = event
+                    if previous is None or _schedule_observation_key(
+                        event
+                    ) > _schedule_observation_key(previous):
+                        events[event.provider_event_id] = event
+                    semantic_hashes[event.provider_event_id] = semantic_hash
                 if not pagination.get("hasMore"):
                     break
                 next_offset = pagination.get("nextOffset")
@@ -572,6 +581,30 @@ class GoalAPIClient:
             snapshot_path=path.resolve(),
             snapshot_sha256=snapshot_sha256,
         )
+
+
+def _schedule_semantic_hash(value: object) -> str:
+    if not isinstance(value, Mapping):
+        raise GoalAPIError("GOAL API fixture must be an object")
+    # Only this provider bookkeeping field is excluded. Keep raw statuses,
+    # scores and unknown fields conflict-sensitive instead of normalizing them.
+    return _sha256_json(
+        {key: item for key, item in value.items() if key != "updatedAt"}
+    )
+
+
+def _schedule_observation_key(
+    event: GoalAPIScheduleEvent,
+) -> tuple[datetime, str, str, str]:
+    # Select one complete, real observation; never mix hashes and request data.
+    # Latest capture also prevents a pre-kickoff eligible observation winning
+    # over an otherwise identical post-kickoff observation.
+    return (
+        event.captured_at,
+        event.payload_hash,
+        event.source_endpoint,
+        event.request_fingerprint,
+    )
 
 
 def _parse_event(

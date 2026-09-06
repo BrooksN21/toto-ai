@@ -1,4 +1,40 @@
+# Accepted existing stack — publication candidate (2026-09-06T14:26:45+03:00)
+
+Backfill validation/retry-calendar, semantic GOAL pagination, O1+minimal F3/P1
+and optional G1 are applied and verified. Main and isolated selected-overlay
+checks each545 PASS/4 explicit deselections; Ruff28 PASS. O1 coverage183 was
+previously167+16, not a combined run; G1 acceptance119+3 benchmark exclusions.
+No new wiring/activation; Sportsv3 is not a validated/trained forecasting model.
+Source commit/push/PR pending below this checkpoint; exact outcome will follow.
+Original review/models cycle completed; historical setup-pending text below is
+superseded. Current operations stay in ACTIVE_PLAN; no4998 runtime modification.
+Unrelated dirty work intentionally excluded, not a clean-worktree claim.
+
+## Preserved previous state
+
 # Current State
+
+## Central + child recovery metadata (2026-09-04)
+
+Role routing and the shared child checkpoint template:
+`memory-bank/THREAD_COORDINATION.json`; operations resume at `ACTIVE_PLAN.md`.
+Registry saved; both children SETUP_PENDING / STARTUP_ACK_PENDING, actual IDs,
+checkouts and accepted baselines unknown. No child handoff or runtime recheck.
+Next: parent accepts each child's ID/cwd/checkpoint/boundaries, then baseline review.
+Evidence: coordination addendum in the existing task `IMPLEMENTATION_REPORT.md`.
+
+## Current recovery entry (2026-09-04)
+
+The sole live checkpoint is [ACTIVE_PLAN.md](ACTIVE_PLAN.md); historical text below
+is not the resume entry. Recovery implementation complete, no active commands.
+4997 plan `45b72ac58a45958b`: accepted15/15, scheduler/sidecar/local watcher loaded;
+exact owner primary+parallel experimental consent persisted before Sept5 16:20MSK.
+4996 retrospective loaded12:05 after primary12:00, real preflight pending0/15;
+original delivered archive untouched. Fullpytest2348 passed/13deselected, Ruff clean.
+Evidence, exact receipts, calendars and remaining limitations are in
+`plans/TOTOAI-4996-4997-RECOVERY-20260904/IMPLEMENTATION_REPORT.md`.
+No heartbeat, unattended chat promise, wagering or publication. Storage's existing
+semantic-method dependency and all prior dirty/history-backfill work are preserved.
 
 ## Sports Analytics v3 canonical 90-event checkpoint (2026-09-04)
 
@@ -6595,3 +6631,84 @@ finalization is local only.
 Next incomplete step: offline historical GOAL backfill from eligible immutable,
 hash-bound artifacts through this same validation and storage boundary. No
 backfill implementation exists yet.
+
+## Offline raw sports-history backfill (implemented 2026-09-04)
+
+`toto_ai.sports_stats.history_backfill` and the
+`backfill-sports-history` CLI now provide a drawing-neutral, offline-only path
+from an explicit frozen-capture manifest into the existing
+`sports_stats_runs` / `sports_event_feature_snapshots` store. The manifest is
+self-hashed and must contain an exact 15-event snapshot. It binds a
+file-hash-verified TotoBrief detail/metadata pair, a file- and
+semantic-hash-verified GOAL schedule report, drawing/fingerprint/deadline,
+provider fixture/team identities, target kickoffs, and each source's frozen raw
+GOAL response file SHA-256.
+
+The importer accepts only the exact production raw team-results envelope. It
+revalidates the provider, endpoint/team, limit, default GOAL request
+fingerprint, response-payload hash, team membership, terminal result schema,
+and strict chronology. A raw capture must predate its target kickoff, `as_of`,
+and the drawing deadline. Derived probability/normalized artifacts, missing
+claimed files, hash tamper, unverifiable identity, post-kickoff captures and
+partial 15-event manifests fail closed. An explicitly absent raw source is
+preserved as `historical_asof_unavailable`; target-fixture gaps remain
+`target_fixture_missing`. No history is inferred from probabilities or another
+derived artifact.
+
+Each fully validated snapshot is passed once through
+`save_sports_stats_snapshot()`, preserving its semantic retry and conflict
+rules plus atomic parent/15-child rollback. Multi-snapshot manifests are atomic
+per snapshot: accepted entries commit independently while rejected entries are
+reported. Deterministic JSON, CSV and Markdown audits contain inserted/reused/
+rejected status, hashes, counts, per-event availability and source provenance.
+The CLI exits nonzero when any manifest snapshot is rejected.
+
+Focused verification passed `19` tests in `1.66s` across the new backfill,
+existing sports storage and sports CLI contracts. Ruff passed over the four
+exact changed Python files. No network, real drawing-4990-4995 import,
+drawing-4996 access, scheduler/operator mutation, full suite, VCS operation,
+commit, push or PR occurred. Real import remains a separate, explicit owner
+checkpoint after the exact manifest is prepared and reviewed.
+
+## Frozen raw history manifest for 4990-4995 (validated 2026-09-04)
+
+The exact manifest is
+`plans/TOTOAI-SPORTS-HISTORY-PERSISTENCE-20260904/backfill-4990-4995-manifest.json`.
+Its semantic manifest SHA-256 is
+`dd6151f61f4d3ab89a28eeea778fa0d02f7e96deb956ecb6c9742c076758ca77`
+and its file SHA-256 is
+`07463e8831c8e1cbcd146b9243555c2efce72a160b4c527c3243573ade270e49`.
+It names only exact frozen final inputs, schedule reports and production-shape
+raw GOAL team-result responses; it does not discover files, infer history from
+probabilities, or reference drawing 4996.
+
+Write-disabled validation produced deterministic JSON/CSV/Markdown under
+`reports/research/sports-history-backfill-4990-4995-dry-run/`. Drawings
+4991-4995 validated. Their available/unavailable source counts are respectively
+0/30, 30/0, 22/8, 26/4 and 26/4. The all-missing 4991 history is explicitly
+unavailable, not synthesized. Drawing 4990 is rejected before storage because
+the legacy frozen final-input deadline does not equal its embedded detail
+deadline under the current Moscow-time contract.
+
+The validator reported `database_writes=0`, `inserted_count=0` and
+`reused_count=0`. Across the final validation command, `data/toto.db` remained
+byte- and metadata-identical: SHA-256
+`c2d3805a2169dce3ec38f5b52aba4e1f3a27db3667fd958914480a3eeeff8294`,
+size `186204160`, mtime_ns `1788536601051230665`. No network, scheduler,
+operator, drawing-4996, VCS, commit, push or PR operation occurred.
+This final pre-validation baseline differs from the earlier dry-run checkpoint
+(`feb2c706...`, size `186060800`), so an intervening process changed the
+database before the final command. Its source was deliberately not investigated
+under the no-scheduler/no-4996 scope; the backfill validator itself left the
+new baseline unchanged.
+
+Focused verification is `20 passed in 2.02s` for history backfill, sports
+storage and sports CLI tests; Ruff is clean for the four changed Python/test
+files. The blocker for a complete six-drawing backfill is separately
+verifiable current-contract target evidence for 4990. It must remain rejected
+or be omitted until that evidence exists; any database write remains a separate
+owner-authorized checkpoint.
+
+
+## Permission-only local commit - 2026-09-05T14:24:47.824354+03:00
+Actual commit `49bd9ed9f16f63b848119f720f1e5013c3e4c0a6`: only two narrow existing-native-task permission blocks and owner authorization provenance;7 focused pytest passed, scoped Ruff clean, exact staged/commit scope verified. No remote publication or child resume. Other dirty changes preserved and uncommitted. Final receipt: `plans/TOTOAI-4996-4997-RECOVERY-20260904/native-task-policy-finalization.md`. Parent next4997 checkpoint14:30MSK/cutoff16:20.

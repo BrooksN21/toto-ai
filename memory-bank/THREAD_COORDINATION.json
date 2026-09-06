@@ -1,0 +1,1043 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "saved_at": "2026-09-06T14:12:25+03:00",
+  "path_root": "/Users/turshevr/toto-ai",
+  "state": "OWNER_ROLE_BOUNDARY_CORRECTION",
+  "observations": {
+    "thread_source": "Explicit parent handoff: last list_threads showed only parent; not re-queried.",
+    "child_running_confirmed": false,
+    "unknown_values": "null; client_setup_id is never an actual thread_id",
+    "runtime_source": "plans/TOTOAI-4996-4997-RECOVERY-20260904/IMPLEMENTATION_REPORT.md",
+    "runtime_last_verified_at": "2026-09-04T23:20:24+03:00",
+    "runtime_rechecked": false,
+    "context_retention_guaranteed": false,
+    "child_setup_update_source": "2026-09-05: owner approved exactly two native tasks and requested policy correction. AGENTS.md and TOOLING_POLICY.md edited locally. Native create_thread still rejected: reviewer did not accept agent-applied policy change as a trusted basis. No actual task/worktree ID returned.",
+    "latest_owner_direction": "Preserve and continue the TWO ORIGINAL chats through native app tools; no replacements/forks/new setup. Main owns follow-up and operations; no nested agents. Context worker only persists identity/policy metadata.",
+    "worktree_inspection": {
+      "verified_at": "2026-09-05T13:49:34.838497+03:00",
+      "evidence": "plans/TOTOAI-4996-4997-RECOVERY-20260904/worktree-readonly-status-20260905.json",
+      "both_registered_attestation_passed": true,
+      "tracked_modifications_reported": false,
+      "untracked_materials_preserved": true,
+      "contents_audited": false,
+      "outside_primary_writes": false,
+      "native_task_setup_authorized": false,
+      "main_wrapper_readonly_mode": "--registered-worktree",
+      "own_worktree_wrappers_updated": false
+    },
+    "original_task_identity_recovery": {
+      "verified_at": "2026-09-05T14:09:04.328535+03:00",
+      "registry_saved_at": "2026-09-05T14:11:08.456456+03:00",
+      "evidence_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/original-task-id-findings.json",
+      "handoff_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/context-handoff-original-codex-tasks.md",
+      "source": "Exact cwd SQLite/index lookup corroborated by successful native read_thread and wait_threads for both actual IDs.",
+      "both_app_accessible": true,
+      "last_observed_status": "idle; latest turns completed",
+      "resume_attempted_by_context_worker": false,
+      "current_running_state_not_repolled": true,
+      "client_to_server_direct_mapping_verified": false
+    },
+    "child_running_observed_at": "2026-09-05T14:09:04.328535+03:00",
+    "latest_authoritative_update": {
+      "at": "2026-09-06T14:12:25+03:00",
+      "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+      "scope": "Current operational metadata, no new audit/checks; accepted receipts and latest parent instructions reused.",
+      "operator_4998": {
+        "drawing_id": 12102,
+        "drawing_number": 4998,
+        "plan_id": "c1d243f5b6ca48f3",
+        "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/scheduler-plan.json",
+        "target_fingerprint": "b3f20304ff03e14a5b252512c5e5b2f6b58e1b94e3d7b2b39f62c0589473cbb7",
+        "registration": "complete",
+        "scheduler_status": "scheduled_ready",
+        "mapped_count": 15,
+        "unresolved": [],
+        "primary_loaded": true,
+        "primary_schedule_msk": [
+          "16:30",
+          "17:00",
+          "17:30",
+          "17:40",
+          "17:50",
+          "18:00",
+          "18:12",
+          "18:20"
+        ],
+        "parallel_loaded": true,
+        "parallel_schedule_msk": "18:00",
+        "watcher_loaded": true,
+        "watcher_label": "com.totoai.status-watcher.v1.c1d243f5b6ca48f3",
+        "watcher_start_msk": "16:30",
+        "watcher_poll_seconds": 30,
+        "expiry_msk": "2026-09-06T18:20:00+03:00",
+        "closure_operational_cutoff_msk": "2026-09-06T18:30:00+03:00",
+        "closure_basis": "Accepted plan-bound deadline/cutoff evidence, not newly refetched live bookmaker closure.",
+        "manual_wager_intent": {
+          "expressed_today": true,
+          "bank": 4980,
+          "stake": 30,
+          "exact_plan_confirmation": "recorded",
+          "exact_owner_quote_source": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-owner-exact-consent-20260906.json",
+          "owner_message_timestamp": null
+        },
+        "release_authorization_claimed": true,
+        "operator_play_claimed": false,
+        "automatic_wagering": false,
+        "historical_errno35": "Own protected-coexistence guard probe only; not a failure of the existing successful scheduler/plan. Do not resume lock diagnosis or duplicate preflight.",
+        "experimental_release_authorization": {
+          "state": "experimental_manual_authorized",
+          "primary": {
+            "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/experimental-manual-release-authorization.json",
+            "file_sha256": "788b4bd358171a98909e7bd426228ed4e68fc8268db45c7a1984500a369900b1",
+            "record_sha256": "b9722aa6d382bdb03276a494575e8849bd3658cf227c00bc8cc59882f70013e1",
+            "authorized_at": "2026-09-06T09:57:14.587305Z",
+            "expires_at": "2026-09-06T15:20:00Z",
+            "validated": true
+          },
+          "parallel": {
+            "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-release-authorization.json",
+            "file_sha256": "470d9f82523b52dd98354d309990e9b4510481efd4f458f20f3f538158ec499e",
+            "record_sha256": "0fffa2b65b2e92d39cf4e618040b4927aac5fc36c077033ccf540f305a56cf01",
+            "authorized_at": "2026-09-06T09:57:15.158142Z",
+            "expires_at": "2026-09-06T15:20:00Z",
+            "validated": true
+          },
+          "parallel_release_enabled": true,
+          "parallel_binding": "Existing scheduled sidecar auto-discovers output_root.parent/parallel-release-authorization.json; no wrapper/job change.",
+          "read_only_validation": "strict primary/parallel validators and scheduler_status pass; action_required=false",
+          "source_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-owner-exact-consent-20260906.json",
+          "source_sha256": "152e7b736a8f529dffccf27c78303d7ab0a3ec9af42007d816eac5d30c7c5e36",
+          "receipt_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-experimental-release-authorization-receipt-20260906.json",
+          "authorization_is_not_play": true,
+          "automatic_wagering": false,
+          "safety_non_degradation_gates_preserved": true
+        }
+      },
+      "operator_4997_receipt": {
+        "recorded_at": "2026-09-06T12:47:09.094863+03:00",
+        "drawing_number": 4997,
+        "evidence_class": "User screenshot evidence as reported by parent in this continuation; not independently re-verified here.",
+        "receipt_id": "903070312",
+        "total_stake": 4980,
+        "return": 10154.48,
+        "net": 5174.48,
+        "currency": "RUB",
+        "strategy_attribution": null,
+        "coupon_strategy_binding": "Unproven: never assign a strategy without exact coupon proof.",
+        "model_comparison_max_hits": [
+          10,
+          13,
+          12,
+          12
+        ],
+        "model_comparison_source": "Existing inbound report, reused as reported; not rerun or newly reordered.",
+        "model_comparison_does_not_identify_wager_strategy": true,
+        "payout_table_intake": "pending",
+        "receipt_payout_reconciliation": "pending",
+        "no_new_operator_package_or_actionability": true
+      },
+      "engineering_state": {
+        "adoption": "10files accepted/applied;210tests passed,1deselected; no new checks in this metadata slice",
+        "goal_fix": "Previously accepted/applied locally;52 main tests and Ruff PASS per prior saved finalization; not reopened or rechecked here.",
+        "O1": "APPLIED_PASS_NOT_WIRED:183 cases covered as167 cleanup +16 F3 in separate runs, Ruff PASS; not a new combined183 run.",
+        "G1": "APPLIED_PASS_UNUSED: exact2 paths,32 guards unchanged,119 PASS/3 declared size benchmarks excluded, Ruff PASS; no forecast/CLI/scheduler activation."
+      },
+      "operator_next_checkpoint_msk": "2026-09-06T16:30:00+03:00",
+      "runtime_rechecked_in_this_metadata_slice": false,
+      "evidence_refs": [
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-registration-receipt.md",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-existing-plan-success-observed-20260906.json",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-watcher-setup-receipt-20260906.json",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.json",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.json",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-experimental-release-authorization-receipt-20260906.json"
+      ],
+      "canonical_observer": "Existing plan-bound local Python watcher; persist latest.json/history.jsonl; computed highest_p13_single_coupon only, never first row.",
+      "heartbeat_enabled": false,
+      "idle_chat_wakeup": false,
+      "active_chat_delivery_owner": "019f7afa-72e2-7403-85cd-d05f408a4ef3",
+      "watcher_lifecycle_limit": "Relies on scheduler terminal artifact; no independent wall-clock hard stop if terminal artifact is missing.",
+      "next_action": "Parent16:30MSK observes existing primary and advancing local watcher status. Exact4998plan consent is recorded for primary+gated parallel; do not request again for this unchanged plan or launch duplicate calculations/jobs.",
+      "scoped_model_finalization": {
+        "task_id": "TOTOAI-SPORTS-V3-MODEL-READINESS-20260904",
+        "at": "2026-09-06T14:12:25+03:00",
+        "status": "LOCAL_RESEARCH_CYCLE_FINALIZATION_COMPLETE",
+        "evidence": [
+          "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/G1_MAIN_INTEGRATION_RECEIPT_20260906.json",
+          "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP_RECEIPT_20260906.md",
+          "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/G1_4997_NEW_RETRO_EXEC_REPORT.md",
+          "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/G1_4997_NEW_RETRO_EXEC_RECEIPT.json"
+        ],
+        "evidence_basis": "Saved implementer receipts and current owner handoff; no new tests, dependencies, processes or runtime checks.",
+        "O1": {
+          "applied": true,
+          "cases_covered": 183,
+          "runs": [
+            167,
+            16
+          ],
+          "new_combined_run": false,
+          "ruff": "PASS",
+          "wired": false
+        },
+        "G1": {
+          "applied_paths": 2,
+          "guards_unchanged": 32,
+          "passed": 119,
+          "deselected_benchmarks": 3,
+          "ruff": "PASS",
+          "wired": false
+        },
+        "synthetic_performance": {
+          "source": "Existing owner-reported observations; not rerun in finalization",
+          "normal": {
+            "coupons": 166,
+            "candidates": 256,
+            "models": 3,
+            "seconds": 4.38,
+            "swaps": 0
+          },
+          "positive_control": {
+            "coupons": 166,
+            "candidates": 167,
+            "models": 3,
+            "seconds": 0.511,
+            "swaps": 1,
+            "checks": 14
+          },
+          "real_forecast_gain_or_profit_proven": false
+        },
+        "original_review": "PROTOCOL_AND_COMPATIBILITY_COMPLETE_THIS_CYCLE",
+        "original_models": "NEW_RETROSPECTIVE_EXPERIMENT_COMPLETE_THIS_CYCLE",
+        "historical_4997_engine": {
+          "status": "NOT_STARTED",
+          "blocker": "Historical exact-replay input contract not satisfied; new explicitly labelled retrospective protocol preparation is separate.",
+          "classification": "Historical exact-replay route only; not repaired. New separately approved retrospective engine run completed in current_research_experiment."
+        },
+        "sports_v3_fully_trained_or_complete": false,
+        "activation": false,
+        "operator_4998_saved_context": {
+          "plan_id": "c1d243f5b6ca48f3",
+          "start_msk": "16:30",
+          "final_msk": "18:00",
+          "expires_msk": "18:20",
+          "exact_consent": "recorded",
+          "runtime_rechecked": false,
+          "operational_mutations": false
+        },
+        "blocker": null,
+        "next_action": "Stop; no new work or rerun selected. Parent retains existing4998 checkpoint.",
+        "publication": "LOCAL_ONLY_NOTHING_TO_PUBLISH; no stage/commit/push/PR authorized or performed.",
+        "current_research_experiment": {
+          "experiment_id": "G1-4997-NEW-RETRO-V1",
+          "recorded_at": "2026-09-06T14:12:25+03:00",
+          "status": "COMPLETE_REFINED_RESEARCH_ONLY",
+          "evidence": [
+            "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/G1_4997_NEW_RETRO_EXEC_REPORT.md",
+            "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/G1_4997_NEW_RETRO_EXEC_RECEIPT.json"
+          ],
+          "evidence_basis": "Fresh saved execution receipts; no rerun, hash verification, source/process scan or runtime inspection in finalization. Protocol ACCEPT and cycle completion per owner handoff.",
+          "label": "NEW DERIVED RETROSPECTIVE RESEARCH INPUT — NOT AN ARCHIVED FORECAST",
+          "warning": "POST-CUTOFF RESEARCH ONLY — NOT FOR WAGERING OR UPLOAD",
+          "candidate_count": 408,
+          "initial_count": 166,
+          "bank": 4980,
+          "stake": 30,
+          "probability_scenarios": 4,
+          "engine_runs": 1,
+          "accepted_swaps": 1,
+          "checks": {
+            "budget": true,
+            "exact_binding_hashes": true,
+            "final_metrics_match_full": true,
+            "fixed_capacity_unique_universe": true,
+            "fixed_exposure_bounds": true,
+            "initial_metrics_match_pre_run": true,
+            "non_degrading_all12": true,
+            "objective_guard": true,
+            "research_only_flags": true,
+            "rollback_on_non_refined": true
+          },
+          "scenario_category_comparisons": 12,
+          "all_scenario_category_non_degrading": true,
+          "engine_wall_seconds": 37.24749624999822,
+          "prebinding_seconds_reported": 2.0228497089992743,
+          "postcomparison_seconds_reported": 0.3572399590011628,
+          "BK_P13_plus": {
+            "before": 0.01656382987987356,
+            "after": 0.016656755635169787
+          },
+          "worst_scenario_P13_plus": {
+            "before": 0.012877000395960219,
+            "after": 0.012941702854067315
+          },
+          "historical_exact_replay": {
+            "status": "BLOCKED_INPUT_CONTRACT_NOT_REPAIRED",
+            "disposition": "Historical failure preserved. Superseded as active research route by separately declared NEW derived retrospective inputs, not an archived forecast or exact replay."
+          },
+          "actual_outcomes_read": false,
+          "roi_or_payout": false,
+          "realized_scoring": false,
+          "prospective_profitability_proven": false,
+          "research_only": true,
+          "operator_compatible": false,
+          "automatic_wagering": false,
+          "activation_allowed": false,
+          "live_strategies_changed": false,
+          "source_adoption": "O1/G1 previously applied/PASS, not reopened",
+          "original_review": "COMPLETE_THIS_CYCLE",
+          "original_models": "COMPLETE_THIS_CYCLE",
+          "remaining_in_this_slice": [],
+          "next_action": "Stop; no new work or rerun selected. Parent retains existing4998 checkpoint."
+        }
+      }
+    },
+    "permission_retry_note": "Native followups accepted when citing verified owner commit49bd9ed; one later rejection was reassessed only after verifying exact committed/current exception. Never bypass refusal or create replacements.",
+    "historical_observations_note": "All earlier dated setup/runtime fields (including runtime_last_verified_at and older LIVE/ONLY headings in preserved memory) are historical evidence, not current commands. This latest_authoritative_update and the top CURRENT_OPERATIONAL_CHECKPOINT_20260906 in ACTIVE_PLAN are current. Preserve role boundaries; no re-audit or replay of completed4998 registration/scheduler/watcher."
+  },
+  "authoritative_refs": [
+    "memory-bank/ACTIVE_PLAN.md",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/IMPLEMENTATION_REPORT.md",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/ORCHESTRATION_CONTRACT.md",
+    "memory-bank/archive/ACTIVE_PLAN-before-recovery-20260904.md",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/owner-authorization-source.json",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/plan.md",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/context-current.md",
+    "reports/rehearsal/evening-4997-20260905T133000Z/experimental-manual-release-authorization.json",
+    "reports/rehearsal/evening-4997-20260905T133000Z/parallel-challenger/parallel-release-authorization.json",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/original-task-id-findings.json",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/context-handoff-original-codex-tasks.md",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/original-task-empty-turn-diagnostic.md"
+  ],
+  "threads": [
+    {
+      "role": "operations",
+      "owner": "019f7afa-72e2-7403-85cd-d05f408a4ef3",
+      "thread_id": "019f7afa-72e2-7403-85cd-d05f408a4ef3",
+      "client_setup_id": null,
+      "title": "TotoAI — автоматика и пакеты",
+      "status": "COORDINATION_OWNER",
+      "checkout": "/Users/turshevr/toto-ai",
+      "write_boundary": "Sole production operations owner; only task-specific authorized actions. This delegated slice edits coordination metadata only.",
+      "baseline_ref": null,
+      "baseline_hash": null,
+      "baseline_code_sha256": null,
+      "baseline_data_sha256": null,
+      "dirty_dependency": "baseline_gate",
+      "evidence": [
+        "plans/TOTOAI-4996-4997-RECOVERY-20260904/ORCHESTRATION_CONTRACT.md",
+        "plans/TOTOAI-4996-4997-RECOVERY-20260904/IMPLEMENTATION_REPORT.md"
+      ],
+      "checkpoint": "memory-bank/ACTIVE_PLAN.md",
+      "startup_ack": {
+        "status": "NOT_APPLICABLE",
+        "checkpoint_saved": true,
+        "accepted_boundaries": null,
+        "parent_received_at": null
+      },
+      "live_process_ownership": {
+        "status": "HISTORICAL_ONLY_SEE_ACTIVE",
+        "processes": null
+      },
+      "pending_approval": [
+        "No new integration, activation or remote publication authority."
+      ],
+      "next_action": "Parent16:30MSK observes existing primary and advancing local watcher status. Exact4998plan consent is recorded for primary+gated parallel; do not request again for this unchanged plan or launch duplicate calculations/jobs.",
+      "blocker": "No4998 authorization blocker. Unrelated4997 payout-table intake/reconciliation remains pending."
+    },
+    {
+      "role": "review",
+      "owner": "user-owned child; parent acceptance",
+      "thread_id": "01a06e1d-e0b9-7310-ba37-53a418668354",
+      "client_setup_id": "client-new-thread:2b5bc4b5-884f-4de7-9d1a-2b6a3ba49535",
+      "title": "TotoAI — ревью и упрощение проекта",
+      "status": "COMPLETE_THIS_CYCLE_SAVED_HANDOFF",
+      "checkout": "/Users/turshevr/.codex/worktrees/ab34/toto-ai",
+      "write_boundary": "Only explicitly assigned files in verified original own worktree; production/DB/jobs/receipts read-only.",
+      "baseline_ref": null,
+      "baseline_hash": null,
+      "baseline_code_sha256": null,
+      "baseline_data_sha256": null,
+      "dirty_dependency": "baseline_gate",
+      "evidence": [
+        "plans/TOTOAI-4996-4997-RECOVERY-20260904/ORCHESTRATION_CONTRACT.md",
+        "plans/TOTOAI-4996-4997-RECOVERY-20260904/IMPLEMENTATION_REPORT.md",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/original-task-id-findings.json",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/context-handoff-original-codex-tasks.md"
+      ],
+      "checkpoint": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/ACTIVE_WORK_STATUS.json",
+      "startup_ack": {
+        "status": "PREVIOUS_RESUMED_JOB_COMPLETED_WITH_ARTIFACTS",
+        "checkpoint_saved": true,
+        "parent_received_at": "2026-09-05T14:35:00+03:00",
+        "accepted_boundaries": "No nested agents/external models/main-runtime writes; own-worktree only."
+      },
+      "live_process_ownership": {
+        "status": "APP_IDLE_AT_OBSERVATION",
+        "observed_at": "2026-09-05T14:09:04.328535+03:00",
+        "processes": null,
+        "note": "No running turn reported. No PID ownership inferred and no fresh process scan."
+      },
+      "pending_approval": [
+        "This one retrospective experiment was authorized/completed. No repeat run, retuning, activation, staging/commit/push/PR authorization."
+      ],
+      "next_action": "Stop this completed cycle; no further tasks, rerun, activation or operational work selected.",
+      "blocker": null,
+      "host_id": "local",
+      "status_observed_at": "2026-09-05T15:58:55.611809+03:00",
+      "original_client_setup_id_historical": "client-new-thread:2b5bc4b5-884f-4de7-9d1a-2b6a3ba49535",
+      "client_id_linkage_verified": false,
+      "observed_checkout_commit": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2",
+      "accepted_baseline_status": "Exact task-specific baseline receipt accepted; production-wide release baseline remains separate.",
+      "original_report_checkpoint": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904-PRE_PUSH_REVIEW.md",
+      "current_context_handoff": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/context-handoff-original-codex-tasks.md",
+      "last_completed_turn": {
+        "id": "01a06e1d-e1eb-7660-b0c0-c6cc0c5f0a73",
+        "status": "completed",
+        "completed_at": "2026-09-04T23:45:03+03:00"
+      },
+      "monitor_after_cursor": "9223d22e-dbee-4332-87ed-9501fe62d18a:9",
+      "current_turn": {
+        "id": null,
+        "status": "completed_evidenced_by_local_handoff"
+      },
+      "checkpoint_observed_at": "2026-09-05T16:15:04.168979+03:00",
+      "checkpoint_mtime_msk": "2026-09-05T15:22:50.521631+03:00",
+      "checkpoint_phase": "PROTOCOL_AND_CURRENT_MAIN_COMPATIBILITY_COMPLETE",
+      "checkpoint_activity": "Original REVIEW completed protocol ACCEPT and compatibility work this cycle; source adoption already PASS.",
+      "checkpoint_basis": "Fresh saved execution receipts and owner-reported protocol ACCEPT/cycle completion; no app/process observation."
+    },
+    {
+      "role": "models",
+      "owner": "user-owned child; parent acceptance",
+      "thread_id": "01a06e1d-f37f-7763-ac2a-86200d3318e3",
+      "client_setup_id": "client-new-thread:41007dcf-86d4-4e50-8d6d-44a4afaeb8cf",
+      "title": "TotoAI — спортивные модели и качество…",
+      "status": "COMPLETE_THIS_CYCLE_SAVED_HANDOFF",
+      "checkout": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai",
+      "write_boundary": "Only explicitly assigned files in verified original own worktree; production/DB/jobs/receipts read-only.",
+      "baseline_ref": null,
+      "baseline_hash": null,
+      "baseline_code_sha256": null,
+      "baseline_data_sha256": null,
+      "dirty_dependency": "baseline_gate",
+      "evidence": [
+        "plans/TOTOAI-4996-4997-RECOVERY-20260904/ORCHESTRATION_CONTRACT.md",
+        "plans/TOTOAI-4996-4997-RECOVERY-20260904/IMPLEMENTATION_REPORT.md",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/original-task-id-findings.json",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/context-handoff-original-codex-tasks.md"
+      ],
+      "checkpoint": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/ACTIVE_WORK_STATUS.json",
+      "startup_ack": {
+        "status": "PREVIOUS_RESUMED_JOB_COMPLETED_WITH_ARTIFACTS",
+        "checkpoint_saved": true,
+        "parent_received_at": "2026-09-05T14:35:00+03:00",
+        "accepted_boundaries": "No nested agents/external models/main-runtime writes; own-worktree only."
+      },
+      "live_process_ownership": {
+        "status": "APP_IDLE_AT_OBSERVATION",
+        "observed_at": "2026-09-05T14:09:04.328535+03:00",
+        "processes": null,
+        "note": "No running turn reported. No PID ownership inferred and no fresh process scan."
+      },
+      "pending_approval": [
+        "This one retrospective experiment was authorized/completed. No repeat run, retuning, activation, staging/commit/push/PR authorization."
+      ],
+      "next_action": "Stop this completed cycle; no further tasks, rerun, activation or operational work selected.",
+      "blocker": null,
+      "host_id": "local",
+      "status_observed_at": "2026-09-05T15:58:55.611809+03:00",
+      "original_client_setup_id_historical": "client-new-thread:41007dcf-86d4-4e50-8d6d-44a4afaeb8cf",
+      "client_id_linkage_verified": false,
+      "observed_checkout_commit": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2",
+      "accepted_baseline_status": "Exact task-specific baseline receipt accepted; production-wide release baseline remains separate.",
+      "original_report_checkpoint": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/MODEL_READINESS_REPORT.md",
+      "current_context_handoff": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/context-handoff-original-codex-tasks.md",
+      "last_completed_turn": {
+        "id": "01a06e1d-f4ae-7e93-9f26-38fbb63adaf7",
+        "status": "completed",
+        "completed_at": "2026-09-04T23:38:07+03:00"
+      },
+      "monitor_after_cursor": "cef31e76-dda7-4081-a2cd-13bdf8247c1f:7",
+      "current_turn": {
+        "id": null,
+        "status": "completed_evidenced_by_local_handoff"
+      },
+      "checkpoint_observed_at": "2026-09-05T16:15:04.168979+03:00",
+      "checkpoint_mtime_msk": "2026-09-05T15:26:10.499341+03:00",
+      "checkpoint_phase": "G1_4997_NEW_RETRO_V1_COMPLETE_REFINED_RESEARCH_ONLY",
+      "checkpoint_activity": "One approved new-derived retrospective experiment completed:1 verified swap,10 guards/12 comparisons PASS; no outcomes/ROI/live strategy change. Historical exact-replay contract blocker preserved, not repaired.",
+      "checkpoint_basis": "Fresh saved execution receipts and owner-reported protocol ACCEPT/cycle completion; no app/process observation."
+    }
+  ],
+  "baseline_gate": {
+    "status": "REVIEW_PENDING",
+    "known_production_commit_prefix": "a17e077",
+    "accepted_ref": null,
+    "accepted_commit_sha": null,
+    "accepted_code_sha256": null,
+    "accepted_data_sha256": null,
+    "dirty_fingerprint": null,
+    "review_evidence": null,
+    "required_dependency": "src/toto_ai/sports_stats/domain.py::semantic_persistence_sha256",
+    "rule": "Review relevant dirty production changes plus committed a17e077 storage dependency before models receive a self-contained baseline and before any separately authorized push. Preserve other dirty/history-backfill work. A default worktree does NOT imply dirty changes are included. Child baseline remains unknown until own full ref/commit/code+data hashes and dirty dependencies verified; no silent checkout switching."
+  },
+  "operator_4997": {
+    "drawing": 4997,
+    "drawing_id": 12100,
+    "plan_id": "45b72ac58a45958b",
+    "requested_bank": 4980,
+    "stake": 30,
+    "deadline": "2026-09-05T16:30:00+03:00",
+    "t10": "2026-09-05T16:20:00+03:00",
+    "consent_source": "plans/TOTOAI-4996-4997-RECOVERY-20260904/owner-authorization-source.json",
+    "receipt_refs": [
+      {
+        "path": "reports/rehearsal/evening-4997-20260905T133000Z/experimental-manual-release-authorization.json",
+        "record_sha256_from_receipt": "f315191e2e6b24f4c8db2de83190e8a7f47fed59dbe5691181a9f651e46e81d9",
+        "observed_file_sha256": "14f2df9fe42bdbef4853765c9a83c9246c7342c5680a9d2ec296fdeeb9c9e320",
+        "canonical_record_sha256_verified": true
+      },
+      {
+        "path": "reports/rehearsal/evening-4997-20260905T133000Z/parallel-challenger/parallel-release-authorization.json",
+        "record_sha256_from_receipt": "62845d157ce795957375755cd9fad71a242a5676069134853a139c649bc464b9",
+        "observed_file_sha256": "ccd8473ba87496c1068e2497dc03cdec1c2872ef37a6730c2a0b28a0302a38b1",
+        "canonical_record_sha256_verified": true
+      }
+    ],
+    "verification": "Read-only static verification: SHA256 of UTF-8 JSON, sorted keys, compact separators, ensure_ascii=false, excluding record_sha256, equals embedded record_sha256 and original report record SHA-256 for both receipts. File-byte SHA256 is separate and unchanged. Exact drawing/id/plan/bank/stake/expiry/automatic_wagering fields matched. No reauthorization, runtime validity or actionability claimed.",
+    "rule": "Existing receipts remain authoritative; no duplicated consent or new permission from task split. Parent verifies binding/integrity/expiry before an authorized action. No automatic wager, model activation or remote approval inferred.",
+    "latest_observation": {
+      "recorded_at": "2026-09-06T12:47:09.094863+03:00",
+      "drawing_number": 4997,
+      "evidence_class": "User screenshot evidence as reported by parent in this continuation; not independently re-verified here.",
+      "receipt_id": "903070312",
+      "total_stake": 4980,
+      "return": 10154.48,
+      "net": 5174.48,
+      "currency": "RUB",
+      "strategy_attribution": null,
+      "coupon_strategy_binding": "Unproven: never assign a strategy without exact coupon proof.",
+      "model_comparison_max_hits": [
+        10,
+        13,
+        12,
+        12
+      ],
+      "model_comparison_source": "Existing inbound report, reused as reported; not rerun or newly reordered.",
+      "model_comparison_does_not_identify_wager_strategy": true,
+      "payout_table_intake": "pending",
+      "receipt_payout_reconciliation": "pending",
+      "no_new_operator_package_or_actionability": true
+    },
+    "latest_delivery_receipt": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4997-parent-delivery-receipt-20260905.json"
+  },
+  "cwd_resource_gate": {
+    "cwd": "Operations stays pinned to production. Future user-requested child commands/writes use confirmed own cwd; production inspection explicitly read-only. Unknown cwd blocks execution. No outside-root writes/worktree manipulation in this slice.",
+    "git_wrapper": "Before child Git, prove own scripts/project-git pins its actual checkout. Unknown or production target blocks child Git; no bare Git/ls-files/bypass.",
+    "resources": "Worktrees do not isolate CPU/RAM/processes/API quotas. Production first; check scheduled window before heavy work; unknown window blocks it. On conflict checkpoint and pause only proven-owned research processes, never production/unknown processes.",
+    "data": "Explicit own-worktree DB/output paths only; production inputs only frozen read-only exports. Unknown paths or implicit/backdoor production defaults block execution."
+  },
+  "child_checkpoint_template": {
+    "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+    "role": null,
+    "thread_id": null,
+    "parent_thread_id": "019f7afa-72e2-7403-85cd-d05f408a4ef3",
+    "cwd": null,
+    "updated_at": null,
+    "scope": null,
+    "write_boundary": null,
+    "baseline": {
+      "status": "UNKNOWN_BLOCKED",
+      "ref": null,
+      "commit_sha": null,
+      "code_sha256": null,
+      "data_sha256": null,
+      "dirty_fingerprint": null,
+      "review_evidence": null
+    },
+    "done_with_evidence": [],
+    "remaining": [],
+    "live_process_ownership": {
+      "status": "UNKNOWN",
+      "processes": null,
+      "required_if_active": [
+        "pid",
+        "session",
+        "started_at",
+        "command",
+        "cwd",
+        "log",
+        "expected_artifact",
+        "ownership_evidence",
+        "exit_evidence"
+      ]
+    },
+    "next_action": null,
+    "next_checkpoint": null,
+    "blockers": [],
+    "pending_approvals": [],
+    "startup_handoff": {
+      "actual_checkpoint_path": null,
+      "accepted_boundaries": null,
+      "parent_ack": "PENDING"
+    }
+  },
+  "resume_protocol": [
+    "Latest identity recovery: original review/models IDs and own cwds are now VERIFIED in threads and preserved_worktrees. Older unknown/setup instructions are history, not new-task instructions. Status is last observed, not proof of a newly resumed turn; parent sends native follow-up and obtains current-boundary ACK before meaningful work. See original_task_policy_conflicts; no policy bypass.",
+    "Parent uses existing ACTIVE_PLAN plus this registry, no extra parent checkpoint system.",
+    "After actual setup confirmation, child saves template in own confirmed checkout BEFORE meaningful work and returns actual ID/cwd/checkpoint/accepted boundaries to parent. Unknown hashes are explicit blockers, not invented values. Parent alone updates central registry/ACK; preserve client IDs, never create duplicate tasks.",
+    "After compaction child reads own checkpoint, validates identity/cwd/boundaries/baseline and follows its own next action. Parent ACTIVE_PLAN is read-only background, NEVER a child command. Missing/conflicting checkpoint requires targeted parent handoff.",
+    "Save checkpoint after material results and before long work/handoff. Verify only recorded live processes by command/cwd/start/ownership, not PID alone; unknown completion does not authorize rerun. Read linked history only for a specific uncertainty.",
+    "Return artifact paths/metrics/evidence/blockers to parent; parent alone reports consolidated done/in-progress/remaining/blocker/next-checkpoint."
+  ],
+  "delivery": {
+    "canonical_observer": "Existing local plan-bound Python watcher",
+    "heartbeat_allowed": false,
+    "idle_chat_wakeup": false,
+    "unattended_24h_delivery_promised": false
+  },
+  "preservation": {
+    "archive_path": "memory-bank/archive/ACTIVE_PLAN-before-recovery-20260904.md",
+    "archive_sha256": "20116a609f62429441be5eb51d9818c11da06583cd92db95fcca100571aae24f",
+    "pending_obligations": 27,
+    "closed_by_this_slice": 0,
+    "schedules": "Keep last verified schedules in ACTIVE_PLAN/report unchanged; check runtime only when due or after relevant mutation.",
+    "scope": "Metadata only; no code/model/DB/scheduler/LaunchAgent changes, runtime CLI, calculation, heavy tests, descendants, VCS or publication."
+  },
+  "owner_task_split_authorization": {
+    "date": "2026-09-05",
+    "quote": "Разрешаю две отдельные задачи Codex в изолированных рабочих копиях; запрет на субагентов внутри задач сохраняется",
+    "policy_correction_requested": true,
+    "roles": [
+      "review",
+      "models"
+    ],
+    "policy_refs": [
+      "AGENTS.md",
+      "memory-bank/TOOLING_POLICY.md"
+    ],
+    "nested_subagents_allowed": false,
+    "external_models_allowed": false,
+    "production_writes_allowed": false,
+    "local_policy_saved": true,
+    "policy_committed": false,
+    "history_classification": "Historical creation/split authorization followed by cancellation; NOT new creation permission. Current request concerns only discovered ORIGINAL existing tasks."
+  },
+  "preserved_worktrees": [
+    {
+      "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai",
+      "git_admin": "/Users/turshevr/toto-ai/.git/worktrees/toto-ai",
+      "created_at": "2026-09-04T23:30:45+03:00",
+      "head": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2",
+      "detached": true,
+      "removed": false,
+      "remove_attempt_exit": 128,
+      "remove_attempt_reason": "modified or untracked files; no --force used",
+      "task_id_confirmed": "01a06e1d-e0b9-7310-ba37-53a418668354",
+      "dirty_files_classified": false,
+      "sampled_AGENTS_memory_domain_equal_HEAD": true,
+      "central_registry_file_present": false,
+      "project_git_wrapper_worktree_support": "static attestation expects .git directory == common dir; incompatible with linked worktree",
+      "task_title_verbatim": "TotoAI — ревью и упрощение проекта",
+      "task_host_id": "local",
+      "identity_verified_at": "2026-09-05T14:09:04.328535+03:00",
+      "task_status_at_verification": "idle",
+      "source_reports_preserved": true
+    },
+    {
+      "path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai",
+      "git_admin": "/Users/turshevr/toto-ai/.git/worktrees/toto-ai1",
+      "created_at": "2026-09-04T23:30:50+03:00",
+      "head": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2",
+      "detached": true,
+      "removed": false,
+      "remove_attempt_exit": 128,
+      "remove_attempt_reason": "modified or untracked files; no --force used",
+      "task_id_confirmed": "01a06e1d-f37f-7763-ac2a-86200d3318e3",
+      "dirty_files_classified": false,
+      "sampled_AGENTS_memory_domain_equal_HEAD": true,
+      "central_registry_file_present": false,
+      "project_git_wrapper_worktree_support": "static attestation expects .git directory == common dir; incompatible with linked worktree",
+      "task_title_verbatim": "TotoAI — спортивные модели и качество…",
+      "task_host_id": "local",
+      "identity_verified_at": "2026-09-05T14:09:04.328535+03:00",
+      "task_status_at_verification": "idle",
+      "source_reports_preserved": true
+    }
+  ],
+  "coordination_history": [
+    {
+      "recorded_at": "2026-09-05T14:11:08.456456+03:00",
+      "reason": "Original actual task IDs recovered and verified; previous unknown identity/queued setup entries retained as history. No new creation or resume.",
+      "superseded_role_records": [
+        {
+          "role": "review",
+          "owner": "user-owned child; parent acceptance",
+          "thread_id": null,
+          "client_setup_id": "client-new-thread:2b5bc4b5-884f-4de7-9d1a-2b6a3ba49535",
+          "title": "TotoAI — ревью и упрощение проекта",
+          "status": "NOT_RUNNING_REUSE_UNCONFIRMED",
+          "checkout": null,
+          "write_boundary": "No writes until own checkout confirmed; then own assigned scope only. Production inspection explicitly read-only; never mutate production/DB/scheduler/operator artifacts or activate/publish.",
+          "baseline_ref": null,
+          "baseline_hash": null,
+          "baseline_code_sha256": null,
+          "baseline_data_sha256": null,
+          "dirty_dependency": "baseline_gate",
+          "evidence": [
+            "plans/TOTOAI-4996-4997-RECOVERY-20260904/ORCHESTRATION_CONTRACT.md",
+            "plans/TOTOAI-4996-4997-RECOVERY-20260904/IMPLEMENTATION_REPORT.md"
+          ],
+          "checkpoint": null,
+          "startup_ack": {
+            "status": "STARTUP_ACK_PENDING",
+            "checkpoint_saved": false,
+            "accepted_boundaries": null,
+            "parent_received_at": null
+          },
+          "live_process_ownership": {
+            "status": "UNKNOWN",
+            "processes": null
+          },
+          "pending_approval": [
+            "No new integration, activation or remote publication authority."
+          ],
+          "next_action": "No creation/deletion. Inspect existing-worktree reuse and preserve files; actual task identity is still unknown.",
+          "blocker": "No actual Codex task, old baseline and memory, own Git wrapper does not accept linked worktree."
+        },
+        {
+          "role": "models",
+          "owner": "user-owned child; parent acceptance",
+          "thread_id": null,
+          "client_setup_id": "client-new-thread:41007dcf-86d4-4e50-8d6d-44a4afaeb8cf",
+          "title": "TotoAI — спортивные модели и качество прогноза",
+          "status": "NOT_RUNNING_REUSE_UNCONFIRMED",
+          "checkout": null,
+          "write_boundary": "No writes until own checkout confirmed; then own assigned scope only. Production inspection explicitly read-only; never mutate production/DB/scheduler/operator artifacts or activate/publish.",
+          "baseline_ref": null,
+          "baseline_hash": null,
+          "baseline_code_sha256": null,
+          "baseline_data_sha256": null,
+          "dirty_dependency": "baseline_gate",
+          "evidence": [
+            "plans/TOTOAI-4996-4997-RECOVERY-20260904/ORCHESTRATION_CONTRACT.md",
+            "plans/TOTOAI-4996-4997-RECOVERY-20260904/IMPLEMENTATION_REPORT.md"
+          ],
+          "checkpoint": null,
+          "startup_ack": {
+            "status": "STARTUP_ACK_PENDING",
+            "checkpoint_saved": false,
+            "accepted_boundaries": null,
+            "parent_received_at": null
+          },
+          "live_process_ownership": {
+            "status": "UNKNOWN",
+            "processes": null
+          },
+          "pending_approval": [
+            "No new integration, activation or remote publication authority."
+          ],
+          "next_action": "No creation/deletion. Inspect existing-worktree reuse and preserve files; actual task identity is still unknown.",
+          "blocker": "No actual Codex task, old baseline and memory, own Git wrapper does not accept linked worktree."
+        }
+      ]
+    },
+    {
+      "recorded_at": "2026-09-06T12:47:09.094863+03:00",
+      "reason": "Operational metadata checkpoint only; accepted4998 registration/scheduler/watcher setup supersedes old15unknown/guard-probe state. No runtime recheck, source/job/authorization changes. Original role/policy fields preserved.",
+      "superseded_operational_metadata": {
+        "saved_at": "2026-09-06T11:53:01.522419+03:00",
+        "latest_authoritative_update": {
+          "at": "2026-09-05T16:15:04.168979+03:00",
+          "permission_commit": "49bd9ed9f16f63b848119f720f1e5013c3e4c0a6",
+          "native_continuation_accepted": true,
+          "review_job": "Complete: integration handoff includes both ACCEPT links",
+          "models_job": "Complete: extended scope evidence and NEXT_SPORTS_SLICE_SPEC proposal; no implementation",
+          "operator_last_result": "PrimaryPLAY16:01:33 delivered16:03; ROBUSTparallelPLAY16:12:29 delivered16:13; expires16:20",
+          "operator_next_checkpoint_msk": "2026-09-05T16:20:00+03:00",
+          "heartbeat_enabled": false
+        },
+        "historical_observations_note": "Older dated identity/setup/runtime fields are evidence only; latest_authoritative_update and live checkpoint supersede them.",
+        "operations_thread_next_action": "Current drawings, deadlines, scheduler observation, postmortem reporting and package delivery remain here; recover existing partial artifacts without duplicate collection.",
+        "operations_thread_blocker": null,
+        "operations_thread_pending_approval": [
+          "No new integration, activation or remote publication authority."
+        ],
+        "operator_4997_latest_observation": {
+          "observed_at_msk": "2026-09-05T15:26:21.901191+03:00",
+          "last_phase": "api_preflight",
+          "last_attempt": {
+            "completed_at": "2026-09-05T12:00:15.417201Z",
+            "decision": null,
+            "error": null,
+            "outcome": null,
+            "phase": "api_preflight",
+            "reason": "target, data access, configuration, and override catalog validated",
+            "result": "complete",
+            "run_id": "api_preflight-01-20260905T120005412104Z-d3ffeccd",
+            "state": "complete",
+            "time": "2026-09-05T12:00:15.417201Z"
+          },
+          "next_checkpoint": {
+            "at_msk": "2026-09-05T15:30:00+03:00",
+            "phase": "t_minus_60"
+          },
+          "blocker": null,
+          "operator_result_ready": false
+        }
+      }
+    },
+    {
+      "recorded_at": "2026-09-06T12:58:34.641807+03:00",
+      "reason": "Exact owner consent received and recorded through existing local authorization CLIs; preserve prior pending state as history, no role/policy/source/job change.",
+      "superseded_operational_consent_metadata": {
+        "saved_at": "2026-09-06T12:47:09.094863+03:00",
+        "latest_update_at": "2026-09-06T12:47:09.094863+03:00",
+        "operator_4998": {
+          "drawing_id": 12102,
+          "drawing_number": 4998,
+          "plan_id": "c1d243f5b6ca48f3",
+          "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/scheduler-plan.json",
+          "target_fingerprint": "b3f20304ff03e14a5b252512c5e5b2f6b58e1b94e3d7b2b39f62c0589473cbb7",
+          "registration": "complete",
+          "scheduler_status": "scheduled_ready",
+          "mapped_count": 15,
+          "unresolved": [],
+          "primary_loaded": true,
+          "primary_schedule_msk": [
+            "16:30",
+            "17:00",
+            "17:30",
+            "17:40",
+            "17:50",
+            "18:00",
+            "18:12",
+            "18:20"
+          ],
+          "parallel_loaded": true,
+          "parallel_schedule_msk": "18:00",
+          "watcher_loaded": true,
+          "watcher_label": "com.totoai.status-watcher.v1.c1d243f5b6ca48f3",
+          "watcher_start_msk": "16:30",
+          "watcher_poll_seconds": 30,
+          "expiry_msk": "2026-09-06T18:20:00+03:00",
+          "closure_operational_cutoff_msk": "2026-09-06T18:30:00+03:00",
+          "closure_basis": "Accepted plan-bound deadline/cutoff evidence, not newly refetched live bookmaker closure.",
+          "manual_wager_intent": {
+            "expressed_today": true,
+            "bank": 4980,
+            "stake": 30,
+            "exact_plan_confirmation": "requested_not_received"
+          },
+          "release_authorization_claimed": false,
+          "operator_play_claimed": false,
+          "automatic_wagering": false,
+          "historical_errno35": "Own protected-coexistence guard probe only; not a failure of the existing successful scheduler/plan. Do not resume lock diagnosis or duplicate preflight."
+        },
+        "latest_next_action": "Parent handles exact-plan consent; next runtime check16:30MSK observes existing primary and advancing watcher latest.json. No preflight, registration replay or job recreation.",
+        "operations_next_action": "Parent handles exact-plan consent; next runtime check16:30MSK observes existing primary and advancing watcher latest.json. No preflight, registration replay or job recreation.",
+        "operations_blocker": "4998 exact-plan manual-release confirmation requested, not received; no scheduler/registration/watcher setup blocker.4997 payout-table intake/reconciliation pending.",
+        "operations_pending_approval": [
+          "No new integration, activation or remote publication authority.",
+          "4998/c1d243f5b6ca48f3: owner expressed4980/stake30 manual intent; exact-plan confirmation requested/not received. No authorization/PLAY inferred; no new integration/runtime/publication permission."
+        ]
+      }
+    },
+    {
+      "recorded_at": "2026-09-06T13:56:46+03:00",
+      "reason": "O1/G1 receipt-backed local finalization; previous role phases preserved as history. No runtime observation or operational mutation.",
+      "superseded_scoped_metadata": {
+        "saved_at": "2026-09-06T12:58:34.641807+03:00",
+        "latest_update_at": "2026-09-06T12:58:34.641807+03:00",
+        "engineering_state": {
+          "adoption": "10files accepted/applied;210tests passed,1deselected; no new checks in this metadata slice",
+          "goal_fix": "awaiting independent review; not silently integrated",
+          "O1": "review changes pending",
+          "G1": "isolated, not production"
+        },
+        "thread_phase_fields": [
+          {
+            "thread_id": "01a06e1d-e0b9-7310-ba37-53a418668354",
+            "role": "review",
+            "fields": {
+              "status": "MISROUTED_OPERATIONAL_JOB_STOP_REQUESTED",
+              "checkpoint_phase": "STOPPED_4997_READ_ONLY_CONTEXT_REPORTED",
+              "checkpoint_activity": "Stopped: read-only 4997 context report delivered and durable checkpoint saved; no tool or process remains active. Prior integration handoff remains unchanged.",
+              "next_action": "Save existing partial checkpoint only, then stop operational job. Future work must stay in original role.",
+              "blocker": null,
+              "pending_approval": [
+                "No new integration, activation or remote publication authority."
+              ]
+            }
+          },
+          {
+            "thread_id": "01a06e1d-f37f-7763-ac2a-86200d3318e3",
+            "role": "models",
+            "fields": {
+              "status": "MISROUTED_OPERATIONAL_JOB_STOP_REQUESTED",
+              "checkpoint_phase": "4997_PRIMARY_SINGLE_RANKING_COMPLETE",
+              "checkpoint_activity": "No running process. Exact166-coupon primary ranking verified and saved; position72 maximizesP13+ under boundBK. Byte/semantic/probability namespaces checked; no production/release changes",
+              "next_action": "Save existing partial checkpoint only, then stop operational job. Future work must stay in original role.",
+              "blocker": null,
+              "pending_approval": [
+                "No new integration, activation or remote publication authority."
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "recorded_at": "2026-09-06T14:12:25+03:00",
+      "reason": "Completed separately approved NEW derived retrospective experiment supersedes preparation as current research phase; historical exact-replay contract remains unsatisfied, not silently reconstructed.",
+      "superseded_metadata": {
+        "saved_at": "2026-09-06T13:56:46+03:00",
+        "latest_update_at": "2026-09-06T13:56:46+03:00",
+        "scoped_model_finalization": {
+          "task_id": "TOTOAI-SPORTS-V3-MODEL-READINESS-20260904",
+          "at": "2026-09-06T13:56:46+03:00",
+          "status": "LOCAL_METADATA_FINALIZATION_COMPLETE",
+          "evidence": [
+            "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/G1_MAIN_INTEGRATION_RECEIPT_20260906.json",
+            "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP_RECEIPT_20260906.md"
+          ],
+          "evidence_basis": "Saved implementer receipts and current owner handoff; no new tests, dependencies, processes or runtime checks.",
+          "O1": {
+            "applied": true,
+            "cases_covered": 183,
+            "runs": [
+              167,
+              16
+            ],
+            "new_combined_run": false,
+            "ruff": "PASS",
+            "wired": false
+          },
+          "G1": {
+            "applied_paths": 2,
+            "guards_unchanged": 32,
+            "passed": 119,
+            "deselected_benchmarks": 3,
+            "ruff": "PASS",
+            "wired": false
+          },
+          "synthetic_performance": {
+            "source": "Existing owner-reported observations; not rerun in finalization",
+            "normal": {
+              "coupons": 166,
+              "candidates": 256,
+              "models": 3,
+              "seconds": 4.38,
+              "swaps": 0
+            },
+            "positive_control": {
+              "coupons": 166,
+              "candidates": 167,
+              "models": 3,
+              "seconds": 0.511,
+              "swaps": 1,
+              "checks": 14
+            },
+            "real_forecast_gain_or_profit_proven": false
+          },
+          "original_review": "COMPATIBILITY_COMPLETE",
+          "original_models": "RETROSPECTIVE_4997_PROTOCOL_PREPARATION_OWNER_REPORTED",
+          "historical_4997_engine": {
+            "status": "NOT_STARTED",
+            "blocker": "Historical exact-replay input contract not satisfied; new explicitly labelled retrospective protocol preparation is separate."
+          },
+          "sports_v3_fully_trained_or_complete": false,
+          "activation": false,
+          "operator_4998_saved_context": {
+            "plan_id": "c1d243f5b6ca48f3",
+            "start_msk": "16:30",
+            "final_msk": "18:00",
+            "expires_msk": "18:20",
+            "exact_consent": "recorded",
+            "runtime_rechecked": false,
+            "operational_mutations": false
+          },
+          "blocker": null,
+          "next_action": "Finalizer stops; original MODELS owns only separately assigned protocol preparation; parent retains existing16:30 operational checkpoint.",
+          "publication": "LOCAL_ONLY_NOTHING_TO_PUBLISH; no stage/commit/push/PR authorized or performed."
+        },
+        "thread_phase_fields": [
+          {
+            "thread_id": "01a06e1d-e0b9-7310-ba37-53a418668354",
+            "role": "review",
+            "fields": {
+              "status": "COMPATIBILITY_COMPLETE_RECEIPT_EVIDENCED",
+              "checkpoint_phase": "O1_G1_CURRENT_MAIN_COMPATIBILITY_COMPLETE",
+              "checkpoint_activity": "Independent compatibility ACCEPT complete; exact O1/G1 routes now locally applied and verified per implementer receipts.",
+              "next_action": "No remaining action in this bounded compatibility/finalization slice; do not reopen reviews or select new work.",
+              "blocker": null,
+              "pending_approval": [
+                "O1/G1 exact local adoption authorized and completed. No new integration, activation, engine execution or staging/commit/push/PR permission inferred."
+              ],
+              "checkpoint_basis": "Current owner handoff and saved receipts, not a fresh native-app/process observation; earlier observations retained as dated history."
+            }
+          },
+          {
+            "thread_id": "01a06e1d-f37f-7763-ac2a-86200d3318e3",
+            "role": "models",
+            "fields": {
+              "status": "RETROSPECTIVE_PROTOCOL_PREPARATION_OWNER_REPORTED",
+              "checkpoint_phase": "4997_RETROSPECTIVE_PROTOCOL_PREPARATION_ENGINE_NOT_STARTED",
+              "checkpoint_activity": "Separately preparing explicitly labelled retrospective4997 protocol. Historical exact-replay input contract remains blocked; no engine run or live probability change.",
+              "next_action": "Only separately assigned retrospective protocol preparation in original own worktree; no engine execution or operational work authorized by this checkpoint.",
+              "blocker": "Historical exact-replay input contract not satisfied; engine NOT STARTED. O1/G1 local integration is no longer blocked.",
+              "pending_approval": [
+                "O1/G1 exact local adoption authorized and completed. No new integration, activation, engine execution or staging/commit/push/PR permission inferred."
+              ],
+              "checkpoint_basis": "Current owner handoff and saved receipts, not a fresh native-app/process observation; earlier observations retained as dated history."
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "original_task_policy_conflicts": {
+    "observed_at": "2026-09-05T14:10:13.023128+03:00",
+    "evidence_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/original-task-id-findings.json",
+    "policy_files_edited": false,
+    "main_policy_version": "2026-09-05 13:38 MSK; still says single-task/cancelled native split",
+    "original_worktree_policy_version": "2026-09-04 23:30 MSK; old HEAD policies in both worktrees, same hashes",
+    "conflicts": [
+      "Main AGENTS lines25-29 and104-109 still say split cancelled/all workstreams in parent, while latest owner explicitly requests continuation of original existing chats.",
+      "All observed policy copies prohibit nested/model-backed agents and external-model/repository-derived transmission; original owner-directed native follow-up has not been acceptance-tested. Prior denied delivery remains historical; no workaround is authorized.",
+      "Old worktree memory/checkpoints predate noon fixes and main wrapper support; successful task lookup does not update policies, baseline, write boundaries or restore missing code/data."
+    ],
+    "required_boundary": "Main remains sole production operations owner. Native same-task continuation only if accepted by app; stop on rejection. No policy editing, new/forked tasks, nested agents, production writes by original worktree tasks or experiments before scope/baseline acceptance."
+  },
+  "owner_pause": {
+    "at": "2026-09-05T16:20:07.441635+03:00",
+    "packages_received": true,
+    "wager_placement_confirmed": false,
+    "new_work_allowed": false,
+    "existing_expiry_safeguards_disabled": false,
+    "resume_only_on_owner_message": true,
+    "superseded_by_owner_resume": "2026-09-06T11:41:25.175620+03:00"
+  },
+  "owner_resume": {
+    "at": "2026-09-06T11:41:25.175620+03:00",
+    "request": "продолжаем, дай общий статус",
+    "status_context_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/RESUME_STATUS_20260906.md"
+  },
+  "current_authorization": {
+    "request": "приступай",
+    "scope": "Continue stated priorities; existing original tasks only; context before fixes; no remote publication",
+    "at": "2026-09-06T11:49:59.800526+03:00"
+  },
+  "role_boundary_correction": {
+    "at": "2026-09-06T11:53:01.522419+03:00",
+    "reason": "Owner objected to assigning live4998 readiness/4997 automation context to original engineering/models tasks. Parent acknowledges wrong routing.",
+    "operations_owner": "019f7afa-72e2-7403-85cd-d05f408a4ef3",
+    "review_scope": "Isolated code/architecture simplification, local skills and specifically assigned engineering fixes; no current-drawing operation/status/postmortem delivery",
+    "models_scope": "Sports/other model improvements and offline evaluation from explicit frozen inputs; no current scheduler readiness or operator delivery",
+    "stop_requests_sent": true,
+    "stopped_confirmed": false,
+    "preserve_partial_artifacts": true
+  }
+}

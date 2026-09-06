@@ -1,0 +1,139 @@
+{
+  "current_disposition": "SUPERSEDED_BY_EXACT_MAIN_STACK_APPLY_WITH_RUFF_BLOCKER",
+  "superseded": true,
+  "superseded_at": "2026-09-06T13:29:42.779439+03:00",
+  "superseded_by": "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_STACK_ADOPTION_RECEIPT_20260906.json",
+  "supersession_note": "Old dependency mismatch is historical and retained below. New seven-path route applied and183 tests passed; current Ruff I001 blocker remains. This is not a fully verified success.",
+  "historical_fields_preserved": true,
+  "schema_version": 1,
+  "task_id": "TOTOAI-SPORTS-V3-MODEL-READINESS-20260904",
+  "finalizer_thread_id": "01a07606-3136-7093-8704-c42d59a2cfe8",
+  "cwd": "/Users/turshevr/toto-ai",
+  "status": "BLOCKED_EXACT_DEPENDENCY_MISMATCH_NOT_APPLIED",
+  "checked_at": "2026-09-06T13:08:31.502942+03:00",
+  "saved_at": "2026-09-06T13:09:46.555244+03:00",
+  "review_status": "ACCEPT",
+  "review_binding_verified": true,
+  "author_receipt_path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_REVIEW_FIX_RECEIPT.json",
+  "independent_review_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/O1_REVIEW_FIX_REREVIEW.md",
+  "independent_evidence_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/O1_REVIEW_FIX_REREVIEW_EVIDENCE.json",
+  "artifact_hashes": {
+    "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_REVIEW_FIX_HANDOFF.md": "7cb9a5373793ba4d65a006d764824d1df2b54f03b78e796fff3b4da15714179a",
+    "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_REVIEW_FIX_RECEIPT.json": "cbc12f7c616aada695c45c96c8616a9b6eb7543fd1aa925307ee8884791203cc",
+    "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_REVIEW_FIX_REPLACEMENT.patch": "4b490d12095c3fbab193f4a0ed874c7b0472496215c9f5feaaecb5a12c0f98fe",
+    "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_REVIEW_FIX.patch": "4f072a57f767173ea15e32c7eb5b6f13eb1ffea1d2f23dbc4627bb51a2e432cb",
+    "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/O1_REVIEW_FIX_REREVIEW.md": "13797c99fea9f76eef55b4de6baaeb8e161c8b717c421fc48f6e0b0a44acd4f3",
+    "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/O1_REVIEW_FIX_REREVIEW_EVIDENCE.json": "fe7797f29478cb9ff5cfc0a076c560ee7cd9643369eb03eb8a756995de440173",
+    "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/O1_INDEPENDENT_REVIEW_PROBES.py": "76a4bd999aa49e25fa592c844062fc5cdb18c92369a775ec2f432704eeec6491"
+  },
+  "target_route": "standalone",
+  "route_patch": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_REVIEW_FIX_REPLACEMENT.patch",
+  "route_sha256": "4b490d12095c3fbab193f4a0ed874c7b0472496215c9f5feaaecb5a12c0f98fe",
+  "target_preconditions": {
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_family_evidence.py": {
+      "required": "absent",
+      "actual_sha256": null,
+      "accepted_after_sha256": "046c8543007429b7f26d0de4056b8f7fce7faa7a35b3f8f207e831cdb295d22b"
+    },
+    "/Users/turshevr/toto-ai/tests/test_sports_v3_family_evidence.py": {
+      "required": "absent",
+      "actual_sha256": null,
+      "accepted_after_sha256": "20de9a204195385780369ab1da8f9f127663340445b2075136fe8db60a15ff39"
+    }
+  },
+  "dependency_checks": [
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+      "expected_sha256": "9664414b31134122474a7ffc33f15be24a58111f1a7ec42f915c3423db82dab8",
+      "actual_sha256": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb",
+      "matches": false
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/history_backfill.py",
+      "expected_sha256": "4117fff236aa9024471826b49ca7c8b929d4772a8bf96bc86e60f37c278aafd5",
+      "actual_sha256": "026ad030ee54b48b07741c69e0e40ddca89a7375c44877f28042ca072f7da742",
+      "matches": false
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_coverage_audit.py",
+      "expected_sha256": "689f69afb587fac474d8a91541651b6257bc3b403d9e82dc2c653b4174251ca4",
+      "actual_sha256": null,
+      "matches": false
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_features.py",
+      "expected_sha256": "90e6172afb5a0c982dd98be5015abac5f4f54a588eb8943798b75dc99bd96970",
+      "actual_sha256": "90e6172afb5a0c982dd98be5015abac5f4f54a588eb8943798b75dc99bd96970",
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_sports_v3_feature_table.py",
+      "expected_sha256": "cab7af30ee8710d9346d48d0b7104b93269d9859a8417235e81e55ab16211d0f",
+      "actual_sha256": "cab7af30ee8710d9346d48d0b7104b93269d9859a8417235e81e55ab16211d0f",
+      "matches": true
+    }
+  ],
+  "mismatches": [
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+      "expected_sha256": "9664414b31134122474a7ffc33f15be24a58111f1a7ec42f915c3423db82dab8",
+      "actual_sha256": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb",
+      "matches": false
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/history_backfill.py",
+      "expected_sha256": "4117fff236aa9024471826b49ca7c8b929d4772a8bf96bc86e60f37c278aafd5",
+      "actual_sha256": "026ad030ee54b48b07741c69e0e40ddca89a7375c44877f28042ca072f7da742",
+      "matches": false
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_coverage_audit.py",
+      "expected_sha256": "689f69afb587fac474d8a91541651b6257bc3b403d9e82dc2c653b4174251ca4",
+      "actual_sha256": null,
+      "matches": false
+    }
+  ],
+  "blocker": "Three isolated tested-dependency bindings do not match main: newer accepted GOAL/backfill bytes and absent v3_coverage_audit.py. Current task requires exact matching guards. No downgrade, dependency copying or scope expansion is allowed.",
+  "source_applied": false,
+  "main_tests_run": false,
+  "main_ruff_run": false,
+  "saved_test_evidence": {
+    "independent_cases": 94,
+    "independent_seconds": 0.25,
+    "ruff": "clean",
+    "source": "isolated rereview, not execution in main"
+  },
+  "head_or_live_process_guard_run": false,
+  "skip_reason": "Stopped at exact dependency prerequisite before application; no source mutation or post-adoption state exists.",
+  "index_sha256_before": "d1d658863037f248e41c4ec02e4ff731a87a36ee8a5471eee809935e6038fbeb",
+  "previous_jobs_reopened": false,
+  "g1_integrated_or_inspected": false,
+  "evaluation_activation_probability_changes": false,
+  "network_db_audit_fit_replay_or_cli_wiring": false,
+  "scheduler_plan_jobs_consent_changes": false,
+  "nested_agents": false,
+  "publication": {
+    "staging": false,
+    "commit": false,
+    "push": false,
+    "upload": false,
+    "pr": false,
+    "outcome": "Local-only, nothing to publish; no remote authorization. No code adopted."
+  },
+  "next_exact_checkpoint": "Receive a reviewed O1 integration/dependency contract bound to the current main hashes, with explicit handling of the absent auditor. Do not force-apply, revert accepted GOAL/backfill or copy other a7aa source.",
+  "roles": "Original a7aa author/models, ab34 independent review, parent operations unchanged. Current finalizer only checked this O1 adoption.",
+  "metadata_files": [
+    "/Users/turshevr/toto-ai/memory-bank/ACTIVE_PLAN.md",
+    "/Users/turshevr/toto-ai/memory-bank/ROADMAP.md",
+    "/Users/turshevr/toto-ai/knowledge/sports_v3_o1_local_adoption_boundary.md",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_LOCAL_ADOPTION_RECEIPT_20260906.json",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_LOCAL_ADOPTION_RECEIPT_20260906.md"
+  ],
+  "memory_preservation": {
+    "active_original_sha256": "4c9c9b3e22feb938533b472f823170ddcb0d69aad5413d081a66d9856597cf78",
+    "roadmap_original_sha256": "2c43c80457681480858a1bf02275ae9bd6cf26dabad6caa99c804ede207b1540",
+    "all_original_content_retained": true
+  },
+  "index_sha256_after": "d1d658863037f248e41c4ec02e4ff731a87a36ee8a5471eee809935e6038fbeb",
+  "index_unchanged": true
+}

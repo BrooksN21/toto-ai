@@ -1,0 +1,10 @@
+--- a/tests/test_sports_v3_coverage_audit.py
++++ b/tests/test_sports_v3_coverage_audit.py
+@@ -9,6 +9,7 @@
+ from pathlib import Path
+ 
+ import pytest
++
+ from toto_ai.sports_stats.v3_coverage_audit import (
+     audit_event,
+     audit_manifest,

@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "continuation": "Generic GOAL pagination local finalization only",
+  "finalizer_thread_id": "01a07606-3136-7093-8704-c42d59a2cfe8",
+  "cwd": "/Users/turshevr/toto-ai",
+  "saved_at": "2026-09-06T12:39:58.548882+03:00",
+  "status": "GUARDED_NOT_APPLIED_REVIEW_EVIDENCE_MISSING",
+  "blocker": "Review prerequisite not established: supplied GOAL report/manifest/receipt and scoped engineering checkpoint document implementation, tests and exact guards but contain no review verdict/acceptance reference tied to this patch. READY_FOR_MAIN_APPLY is not evidence of a completed review. No claim is made that a review cannot exist elsewhere.",
+  "context_file_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_FIX_REPORT.md",
+  "patch_sha256": "51308a1e9cafcbf506d33851ecfc60259ca484d249d2fda1a6da86a019af28a0",
+  "candidate_files": [
+    "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+    "/Users/turshevr/toto-ai/tests/test_goal_api_pagination_identity.py",
+    "/Users/turshevr/toto-ai/tests/fixtures/goal_pagination_duplicate.json",
+    "/Users/turshevr/toto-ai/knowledge/goal_pagination_identity_boundary.md"
+  ],
+  "changes": [
+    {
+      "path": "src/toto_ai/external_odds/goal_api.py",
+      "before_sha256": "9664414b31134122474a7ffc33f15be24a58111f1a7ec42f915c3423db82dab8",
+      "after_sha256": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb"
+    },
+    {
+      "path": "tests/test_goal_api_pagination_identity.py",
+      "before_sha256": null,
+      "after_sha256": "3466286b07075239a8134898444db44535b4b337335bb2ecbcdcc93b66e3c106"
+    },
+    {
+      "path": "tests/fixtures/goal_pagination_duplicate.json",
+      "before_sha256": null,
+      "after_sha256": "a7cc49f4b8789d261eb5e3c608fc987a8812d33c13b7198c6bc5f1b808768e7f"
+    },
+    {
+      "path": "knowledge/goal_pagination_identity_boundary.md",
+      "before_sha256": null,
+      "after_sha256": "4abfdc452ed36a5bee6c133286fc39afb4e999ec8cb5eaea2171419ad217535f"
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "AGENTS.md",
+      "before_sha256": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "memory-bank/TOOLING_POLICY.md",
+      "before_sha256": "cd96772b5901238cf68c446649a67c555da74f8f7e40ee867633199e36959814",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "scripts/project-git",
+      "before_sha256": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "pyproject.toml",
+      "before_sha256": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "tests/__init__.py",
+      "before_sha256": "b42ed020e57684598c001935032758481acfebc67f443c4ccb8cfc24864ac132",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "src/toto_ai/external_odds/schedule_source_collector.py",
+      "before_sha256": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "tests/test_goal_api_provider.py",
+      "before_sha256": "7cb7ef01efafbc407110722a060c06c5bf070b251d1a56ee3ebcaf668702c766",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "tests/test_goal_api_schedule_collection.py",
+      "before_sha256": "23f32f7e7e0d7aa0fc1bee8abd31c44d767e7df62b9ebe91faaad9ccd9f2c80d",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "tests/test_schedule_source_collector.py",
+      "before_sha256": "e661d538c28ab4835afd45ded9a06ba7f12a818736da779701a3bb2f86c8de99",
+      "role": "unchanged guard; do not overwrite"
+    }
+  ],
+  "artifact_sha256": {
+    "GOAL_PAGINATION_FIX_REPORT.md": "89e3ff3bef434a18f8d6a83716ed5cde277de90869e4e6ffdbc4d49df66b75c5",
+    "GOAL_PAGINATION_FIX.patch": "51308a1e9cafcbf506d33851ecfc60259ca484d249d2fda1a6da86a019af28a0",
+    "GOAL_PAGINATION_FIX_MANIFEST.json": "701b3bf6758fd51344a256cd57de46597e84e7e95595d13f3ee3d3117d430750",
+    "GOAL_PAGINATION_FIX_RECEIPT.json": "02f3f0a4a93298060254d52ffb456dd58083fb9729d2c30445288767756caa47",
+    "GOAL_PAGINATION_FIX_BEFORE.json": "d0b29e1d873154756bfeb5cfc4e2fac39699cbb878abaa304e53f07543b72e2a",
+    "VERIFY_MAIN_INTEGRATION.py": "fe0453dc586a639254c36fa250777ebd101db4212002f6d564760e081795348e"
+  },
+  "guard": {
+    "checked_at": "2026-09-06T12:39:11.547389+03:00",
+    "command": [
+      "/Users/turshevr/toto-ai/.venv/bin/python",
+      "-B",
+      "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/VERIFY_MAIN_INTEGRATION.py",
+      "--root",
+      "/Users/turshevr/toto-ai",
+      "--manifest",
+      "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_FIX_MANIFEST.json"
+    ],
+    "exit_code": 0,
+    "status": "READY_FOR_MAIN_APPLY",
+    "changed_files": 4,
+    "guarded_dependencies": 9,
+    "mutated": false,
+    "stderr": ""
+  },
+  "review_evidence_checked": {
+    "saved_report": true,
+    "saved_receipt": true,
+    "saved_manifest": true,
+    "engineering_checkpoint_phase": "GOAL_PAGINATION_FIX_READY_FOR_MAIN_APPLY",
+    "goal_named_artifacts_in_exact_handoff_directory": [
+      "GOAL_PAGINATION_FIX.patch",
+      "GOAL_PAGINATION_FIX_BEFORE.json",
+      "GOAL_PAGINATION_FIX_MANIFEST.json",
+      "GOAL_PAGINATION_FIX_RECEIPT.json",
+      "GOAL_PAGINATION_FIX_REPORT.md"
+    ],
+    "documented_review_verdict_found": false,
+    "new_review_performed": false
+  },
+  "existing_test_evidence": {
+    "provenance": "Author receipt, ab34; not current-main execution",
+    "focused_pytest": "52 passed in 3.12s",
+    "ruff": "5 focused Python files clean"
+  },
+  "source_applied": false,
+  "main_pytest_run": false,
+  "main_ruff_run": false,
+  "tests_skip_reason": "Stopped at review prerequisite before adoption; no after-adoption state exists to verify.",
+  "live_process_check": "Not performed: review prerequisite already blocks source application; no live-workstream waiting or operations were undertaken.",
+  "prior_ten_file_adoption": "Not repeated or modified; earlier source, knowledge, memory and finalization receipts preserved.",
+  "runtime_changes": false,
+  "network_calls": false,
+  "nested_agents_launched": false,
+  "workflow": "No unavailable/internal workflow used; local-only receipt.",
+  "publication": {
+    "staged": false,
+    "committed": false,
+    "pushed": false,
+    "uploaded": false,
+    "pr_created_or_updated": false,
+    "outcome": "Nothing published; no remote authorization and no code adopted in this slice."
+  },
+  "original_role_separation": "Parent operations, original ab34 engineering, original a7aa models unchanged. This finalizer performed no4998 registration/preparation, diagnostic source collection or model activation.",
+  "next_exact_checkpoint": "Provide the saved review outcome bound to patch SHA-256 51308a1e9cafcbf506d33851ecfc60259ca484d249d2fda1a6da86a019af28a0; then freshly check the exact guards and affected-live-process prerequisite before local apply. Do not force-apply or refetch historical diagnostics.",
+  "memory_checkpoint": {
+    "path": "/Users/turshevr/toto-ai/memory-bank/ACTIVE_PLAN.md",
+    "old_sha256": "b172740afeda6ba96ab24037f4a81b2428437083637069428efb2ac0c8f22b7e",
+    "preserved_existing_content": true,
+    "action": "Prepend bounded status block only; ROADMAP/CURRENT_STATE/DECISIONS/THREAD_COORDINATION unchanged.",
+    "new_sha256": "66f744649a9efabaef77a0ebd7b74ae19864352c97d0f05a4d86d8a195b9537c"
+  },
+  "markdown_sha256": "62ba52d4516c1b02ba27327c57dfe4b82ba331c3b33eff402903596f82629c2d"
+}

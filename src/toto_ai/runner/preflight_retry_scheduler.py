@@ -21,6 +21,7 @@ from toto_ai.runner.scheduler import (
 
 _LABEL = re.compile(r"com\.totoai\.preflight-retry\.\d+\.[0-9a-f]{16}\Z")
 _FORBIDDEN = ("run-drawing", ".bet-ready")
+_LAUNCHCTL_SERVICE_NOT_FOUND = 113
 
 
 @dataclass(frozen=True)
@@ -29,6 +30,9 @@ class PreflightRetryArtifacts:
     plan_path: Path
     wrapper_path: Path
     candidate_path: Path
+    plan_sha256: str
+    wrapper_sha256: str
+    candidate_sha256: str
 
 
 def prepare_preflight_retry_artifacts(
@@ -98,7 +102,11 @@ def prepare_preflight_retry_artifacts(
             )
         _write_replace(wrapper, wrapper_bytes, 0o700)
         _write_replace(candidate, plist_bytes, 0o600)
-    return PreflightRetryArtifacts(label, plan_path, wrapper, candidate)
+    return PreflightRetryArtifacts(
+        label, plan_path, wrapper, candidate, plan["plan_sha256"],
+        hashlib.sha256(wrapper_bytes).hexdigest(),
+        hashlib.sha256(plist_bytes).hexdigest(),
+    )
 
 
 def install_preflight_retry_launch_agent(
@@ -108,23 +116,56 @@ def install_preflight_retry_launch_agent(
     command_runner: Callable[..., object] = subprocess.run,
 ) -> dict[str, object]:
     """Explicitly install exact candidate bytes; repeated calls are harmless."""
+    current = prepare_preflight_retry_artifacts(artifacts.plan_path, write=False)
+    if artifacts != current:
+        raise ValueError("preflight retry artifacts conflict with current plan")
+    for path, expected in (
+        (artifacts.wrapper_path, artifacts.wrapper_sha256),
+        (artifacts.candidate_path, artifacts.candidate_sha256),
+    ):
+        if (
+            path.is_symlink()
+            or not path.is_file()
+            or hashlib.sha256(path.read_bytes()).hexdigest() != expected
+        ):
+            raise ValueError("preflight retry artifact hash conflicts with plan")
     root = (launch_agents_root or Path.home() / "Library/LaunchAgents").resolve()
-    root.mkdir(parents=True, exist_ok=True)
     destination = root / f"{artifacts.label}.plist"
     candidate = artifacts.candidate_path.read_bytes()
+    if destination.is_symlink():
+        raise ValueError("installed preflight retry plist is a symlink")
+    previous = destination.read_bytes() if destination.is_file() else None
+    if previous is not None:
+        try:
+            prior_payload = plistlib.loads(previous)
+            next_payload = plistlib.loads(candidate)
+            prior_payload.pop("StartCalendarInterval", None)
+            next_payload.pop("StartCalendarInterval", None)
+        except (ValueError, TypeError, AttributeError) as exc:
+            raise ValueError("installed preflight retry owner is invalid") from exc
+        if prior_payload != next_payload:
+            raise ValueError("installed preflight retry owner conflicts")
+    root.mkdir(parents=True, exist_ok=True)
     domain = f"gui/{os.getuid()}"
     probe = _launchctl(
         command_runner, "print", f"{domain}/{artifacts.label}"
     )
     loaded = getattr(probe, "returncode", 1) == 0
-    installed_changed = (
-        not destination.is_file()
-        or destination.is_symlink()
-        or destination.read_bytes() != candidate
-    )
-    if destination.is_symlink():
-        raise ValueError("installed preflight retry plist is a symlink")
+    if loaded and previous is None:
+        raise ValueError("loaded preflight retry job has no installed owner file")
+    installed_changed = previous != candidate
     if loaded and installed_changed:
+        output = str(getattr(probe, "stdout", ""))
+        if (
+            re.search(r"^\s*pid\s*=\s*[1-9]\d*\s*$", output, re.MULTILINE)
+            or not re.search(
+                r"^\s*state\s*=\s*not running\s*$", output, re.MULTILINE
+            )
+        ):
+            raise ValueError(
+                "preflight retry job is running or state is unknown; "
+                "calendar reload requires an idle owner"
+            )
         result = _launchctl(
             command_runner, "bootout", f"{domain}/{artifacts.label}"
         )
@@ -142,6 +183,8 @@ def install_preflight_retry_launch_agent(
                 launch_agents_root=root,
                 command_runner=command_runner,
             )
+            if previous is not None:
+                _write_replace(destination, previous, 0o600)
             raise ValueError("preflight retry LaunchAgent bootstrap failed")
     status = verify_preflight_retry_launch_agent(
         artifacts, launch_agents_root=root, command_runner=command_runner
@@ -152,6 +195,8 @@ def install_preflight_retry_launch_agent(
             launch_agents_root=root,
             command_runner=command_runner,
         )
+        if previous is not None:
+            _write_replace(destination, previous, 0o600)
         raise ValueError("preflight retry LaunchAgent did not verify active")
     return status
 
@@ -169,7 +214,10 @@ def cleanup_preflight_retry_launch_agent(
     probe = _launchctl(
         command_runner, "print", f"{domain}/{artifacts.label}"
     )
-    if getattr(probe, "returncode", 1) == 0:
+    probe_code = getattr(probe, "returncode", None)
+    if probe_code not in (0, _LAUNCHCTL_SERVICE_NOT_FOUND):
+        raise ValueError("preflight retry state query failed; absence unconfirmed")
+    if probe_code == 0:
         result = _launchctl(
             command_runner, "bootout", f"{domain}/{artifacts.label}"
         )
@@ -180,6 +228,8 @@ def cleanup_preflight_retry_launch_agent(
         )
         if getattr(verify, "returncode", 1) == 0:
             raise ValueError("preflight retry LaunchAgent remained loaded")
+        if getattr(verify, "returncode", None) != _LAUNCHCTL_SERVICE_NOT_FOUND:
+            raise ValueError("preflight retry state query failed; absence unconfirmed")
     if destination.is_symlink():
         raise ValueError("installed preflight retry plist is a symlink")
     destination.unlink(missing_ok=True)

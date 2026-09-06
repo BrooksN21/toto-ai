@@ -16,6 +16,9 @@ from pathlib import Path
 from typing import Literal
 from zoneinfo import ZoneInfo
 
+from toto_ai.runner.preflight_retry_scheduler import (
+    _load_plan as _load_passive_retry_plan,
+)
 from toto_ai.runner.scheduler import (
     SCHEDULER_LAUNCH_AGENT_FILENAME,
     SCHEDULER_PLAN_FILENAME,
@@ -1053,7 +1056,7 @@ def _update_preflight_escalation(
     prior_attempts = int(prior.get("attempts", 0)) if prior is not None else 0
     retry_plan_path = root / "retry-plan.json"
     if retry_plan_path.is_file():
-        retry_plan = _load_json_mapping(retry_plan_path)
+        retry_plan = _load_passive_retry_plan(retry_plan_path)
         identity = retry_plan.get("identity")
         if (
             not isinstance(identity, Mapping)
@@ -1062,7 +1065,6 @@ def _update_preflight_escalation(
             or identity.get("drawing_fingerprint") != evidence.drawing_fingerprint
             or identity.get("deadline") != _timestamp(evidence.deadline)
             or retry_plan.get("passive") is not True
-            or retry_plan.get("activate_evening") is not retry_can_activate_evening
         ):
             raise ValueError("existing passive retry plan identity conflicts")
         runner_upgrade_required = (
@@ -1073,13 +1075,35 @@ def _update_preflight_escalation(
         )
         if evidence.operational_cutoff > prior_cutoff:
             raise ValueError("passive retry cutoff cannot be relaxed")
-        if evidence.operational_cutoff < prior_cutoff or runner_upgrade_required:
+        # Policy-only refreshes can originate inside the loaded retry job.
+        # Preserve its calendar: replacing it here would require self-bootout.
+        policy_changed = (
+            retry_plan["activate_evening"] is not retry_can_activate_evening
+        )
+        if (
+            evidence.operational_cutoff < prior_cutoff
+            or runner_upgrade_required
+        ):
             retry_plan = _retry_plan_payload(
                 config,
                 evidence=evidence,
                 observed_at=observed_at,
                 python_command=python_command,
             )
+            _write_atomic(retry_plan_path, retry_plan, replace=True)
+        elif policy_changed:
+            retry_plan["activate_evening"] = retry_can_activate_evening
+            for attempt in retry_plan["attempts"]:
+                command = [
+                    value for value in attempt["command"] if value != "--activate"
+                ]
+                if retry_can_activate_evening:
+                    command.append("--activate")
+                attempt["command"] = command
+            retry_plan.pop("plan_sha256")
+            retry_plan["plan_sha256"] = hashlib.sha256(
+                _canonical(retry_plan)
+            ).hexdigest()
             _write_atomic(retry_plan_path, retry_plan, replace=True)
     else:
         retry_plan = _retry_plan_payload(
