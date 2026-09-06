@@ -1,6 +1,6 @@
 {
   "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
-  "phase": "SOURCE_PUBLISHED_TO_EXISTING_DRAFT_PR22",
+  "phase": "PUBLISHED_SOURCE_AND_METADATA_CLOSING_COUNT_CORRECTION",
   "started_at": "2026-09-06T16:17:13+03:00",
   "source_paths": [
     "src/toto_ai/sports_stats/parallel_g1.py",
@@ -112,7 +112,8 @@
       "src/toto_ai/external_odds/goal_api.py",
       "src/toto_ai/external_odds/schedule_source_collector.py",
       "tests/test_goal_api_fixture_quarantine.py"
-    ]
+    ],
+    "file_count": 15
   },
   "temporary_verification_root": "/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-publication-current-1mf2sk7b",
   "synthetic_env_guard_correction": {
@@ -122,7 +123,7 @@
     "exit": 0,
     "stdout": ".                                                                        [100%]\n1 passed in 0.08s\n"
   },
-  "verification_summary": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff14PASS.",
+  "verification_summary": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff15PASS.",
   "corrected_v2_proof_summary": {
     "artifact_file_sha256": "2d5003c79378fb0b5f425ddf8cfdc0902327e727c0c0f3bb43843b43f2139e78",
     "artifact_sha256": "ac04ea9b303590945dbdc3c12a451840d300350b641593f5cf07b74054d5f32e",
@@ -205,5 +206,12 @@
   "untracked_limit": "Task plans/candidates and operational reports were not globally inventoried or included; no whole-checkout cleanliness claim",
   "index_after_source_commit": "empty",
   "closing_metadata": "This receipt/current state is a following metadata-only commit, to be pushed to same PR; final remote head is confirmed in task output, no circular self-hash claim",
-  "workflow_fallback": "gena-submission unavailable/incompatible; authorized local project-git and public gh only"
+  "workflow_fallback": "gena-submission unavailable/incompatible; authorized local project-git and public gh only",
+  "metadata_publication_verified": {
+    "commit": "834f3efc3976ac569746e15658d82f497a1a8a3b",
+    "pr_head_verified": true,
+    "state": "OPEN",
+    "isDraft": true
+  },
+  "count_correction": "Earlier human summary said Ruff14; actual saved lint command contains15 files, all PASS. Corrected without source changes or rerunning tests."
 }

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
-  "saved_at": "2026-09-06T16:23:41.017310+03:00",
+  "saved_at": "2026-09-06T16:24:41.390629+03:00",
   "path_root": "/Users/turshevr/toto-ai",
   "state": "OWNER_ROLE_BOUNDARY_CORRECTION",
   "observations": {
@@ -1106,7 +1106,7 @@
       "role": "authorized publication/finalization worker",
       "phase": "TESTED_SOURCE_PUBLICATION_PREPARED_NOT_ACTIVATED",
       "source_scope": "GOAL quarantine/90min/default-off G1 plus related memory/policy",
-      "verification": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff14PASS.",
+      "verification": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff15PASS.",
       "pending": "Cache/CLI composition and wrapper correction not yet published; separate jobs",
       "main_write_freeze": true,
       "activation": false,
@@ -1126,7 +1126,7 @@
         "baseRefName": "main",
         "url": "https://github.com/BrooksN21/toto-ai/pull/22"
       },
-      "verification": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff14PASS.",
+      "verification": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff15PASS.",
       "remaining_tracked_dirty": [
         "data/schedule-evidence/ledger.json",
         "scripts/project-git",
@@ -1197,7 +1197,7 @@
       "baseRefName": "main",
       "url": "https://github.com/BrooksN21/toto-ai/pull/22"
     },
-    "verification": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff14PASS.",
+    "verification": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff15PASS.",
     "remaining_tracked_dirty": [
       "data/schedule-evidence/ledger.json",
       "scripts/project-git",
@@ -1209,6 +1209,7 @@
     "not_included": "cache durability/CLI composition, wrapper-parser fix, operational activation",
     "main_write_freeze": "release when this task returns after closing metadata push",
     "activation": false,
-    "next_action": "Closing metadata push then return; no new engineering work"
+    "next_action": "Return publication result/release write freeze; separate cache/wrapper integration and activation jobs only",
+    "metadata_commit_verified": "834f3efc3976ac569746e15658d82f497a1a8a3b"
   }
 }
