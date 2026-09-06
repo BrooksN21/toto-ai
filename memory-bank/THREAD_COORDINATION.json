@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
-  "saved_at": "2026-09-06T20:37:31.462942+03:00",
+  "saved_at": "2026-09-06T20:39:51.678594+03:00",
   "path_root": "/Users/turshevr/toto-ai",
   "state": "OWNER_ROLE_BOUNDARY_CORRECTION",
   "observations": {
@@ -1543,6 +1543,16 @@
           "owner_wager": "USER_REPORTED; receipt/actual_amount/bytes unverified"
         }
       }
+    },
+    {
+      "at": "2026-09-06T20:39:51.678594+03:00",
+      "reason": "Supersede false all4 postmortem blocker; latest saved context verified",
+      "superseded_postmortem4998": {
+        "scheduled_msk": "2026-09-07T12:00:00+03:00",
+        "basis": "Saved NEXT_DRAWING_AND_POSTMORTEM_STATUS, not rechecked/mutated by finalizer",
+        "all_four_and_actual_quality_v3_binding": "NOT_CONFIRMED; separate Leibniz context clarification pending",
+        "owner_wager": "USER_REPORTED; receipt/actual_amount/bytes unverified"
+      }
     }
   ],
   "original_task_policy_conflicts": {
@@ -1771,11 +1781,17 @@
     },
     "postmortem4998": {
       "scheduled_msk": "2026-09-07T12:00:00+03:00",
-      "basis": "Saved NEXT_DRAWING_AND_POSTMORTEM_STATUS, not rechecked/mutated by finalizer",
-      "all_four_and_actual_quality_v3_binding": "NOT_CONFIRMED; separate Leibniz context clarification pending",
-      "owner_wager": "USER_REPORTED; receipt/actual_amount/bytes unverified"
+      "basis": "Saved context latest clarification; no new runtime/archive/DB check by this finalizer",
+      "all_four_and_archived_quality_v3_binding": "VERIFIED: automatic optional all-four settlement after primary; four166-coupon hashes, archived qv3 and final-input links verified in context",
+      "extra_plan_or_activation_required": false,
+      "owner_wager": "USER_REPORTED; actual wager receipt/amount/bytes still unverified, not established by research settlement",
+      "remaining_risk": "Optional branch can fail/skip independently of primary complete; completed plan does not automatically retry it",
+      "next_checkpoint": "07.09 12:00MSK inspect primary state AND post-draw/parallel-comparison-status.json plus parallel-comparison/final-hybrid-settlement.json/.md",
+      "supersedes": "Prior postmortem all4/binding-not-ready conclusion; NOT a change to unresolved4999 timings or real-wager evidence"
     },
     "published_observer03_commit": "f9de8a634d80aeb80942bec90b93953cd9566931",
-    "remote_verified_at": "2026-09-06T20:36:53.934648+03:00"
+    "remote_verified_at": "2026-09-06T20:36:53.934648+03:00",
+    "postmortem_status_correction_at": "2026-09-06T20:39:51.678594+03:00",
+    "postmortem_correction_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM_BINDING_STATUS_CORRECTION_RECEIPT_20260906.json"
   }
 }

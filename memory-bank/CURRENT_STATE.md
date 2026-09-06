@@ -1,3 +1,10 @@
+# CURRENT CORRECTION —4998 automatic all-four postmortem VERIFIED — 2026-09-06T20:39:51.678594+03:00
+
+Saved context followup supersedes the earlier “all4/archived-qv3 binding unconfirmed” blocker. Existing postdraw4998 plan automatically invokes optional settlement for quality-v2, sports-shadow, quality-v3 and robust after primary; four166-coupon package hashes, archived quality-v3 and final-input bindings were verified. No extra plan/activation required.
+Remaining risk: optional failed/skipped can coexist with primary complete; completed plan does not automatically retry that branch. At07.09 12:00MSK inspect primary state AND post-draw/parallel-comparison-status.json and parallel-comparison/final-hybrid-settlement.json/.md. This is not proof of the owner's actual wager receipt/amount/bytes.
+DONE: metadata corrected from saved evidence;14focusedPASS0.55s/Ruff4PASS. NEXT: status-only commit/push and stop. No publication blocker; runtime02 excluded/not awaited,4999 timing/plan/consent limitations unchanged. No code/jobs/DB/archive/authority changes.
+Receipt: /Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM_BINDING_STATUS_CORRECTION_RECEIPT_20260906.json. Earlier contradictory postmortem conclusions below are historical and explicitly superseded.
+
 # CURRENT — Observer03 source PUBLISHED; runtime02 still pending — 2026-09-06T20:37:31.462942+03:00
 
 Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Published `f9de8a634d80aeb80942bec90b93953cd9566931` to OPEN/draft PR22; remote HEAD verified2026-09-06T20:36:53.934648+03:00. Exact observer03 ACCEPT4paths/8dependencies,76freshfocusedPASS2.81s/Ruff3PASS. No merge/origin-main push or watcher rollout.
