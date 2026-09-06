@@ -1,3 +1,11 @@
+#4999 STATUS PUBLISHED — 2026-09-06T18:19:49.519342+00:00
+
+SportsV3 latest (parent evidence21:17:39MSK): review05 REQUEST_CHANGES; F4-1 origin-binding CLOSED(12+44PASS), remainingP2F4-1b final5sdeadline boundary(2FAIL4PASS). MODELS narrowfix06 assigned, isolated/notintegrated/norealfit. Not awaited; noSportsfiles published.
+
+Completed publication of operational status as `efe44145337c520c331f9df41993e31c38b1e359`; remote OPEN/draftPR22 exactHEAD verified. Finalizer42pytestPASS2.81s/Ruff5PASS; these checks cover unchanged source, not real preflight. This metadata-only closure saves the receipt; no source/job/DB/ledger/consent/watch changes.
+4999plan b742aac1fea2d42d installed, but **REAL_PREFLIGHT_NOT_VERIFIED**: CHILD_SILENCE_30S,exit130,30.155s; waitingstageunknown; no retry/provider diagnosis. No4999consent/PLAY. Exactplan-bound pre-cutoff manual consent still required;4980/30prep does not authorize wagering. SportsV3F4 isolated/pendingreview/data, not adopted/activated.
+Remaining tracked dirty: data/schedule-evidence/ledger.json, unchanged by finalizer; old untracked research/tests/reviews/raw runtime remain local. No whole-checkout clean claim. NEXT: stop publication; separate parent decision on observablepreflight, nextinstalledprimary07.09 15:30MSK. Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLICATION_RECEIPT_20260906.json. Prior checkpoints below are historical.
+
 #4999 PUBLICATION CHECKPOINT — 2026-09-06T18:18:31.183833+00:00
 
 DONE: frozen4999operations evidence condensed for draftPR22; focused42pytestPASS2.81s/Ruff5PASS. Plan b742aac1fea2d42d installed per18:14:43UTC receipt; no new runtime check. IN PROGRESS: metadata-only commit/push from baseline854e0ea; no source/DB/jobs/consent changes.

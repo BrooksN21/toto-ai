@@ -60,7 +60,7 @@
     "native_dispatch": "15/15 readiness, exit0,21.032s; not a preflight PASS",
     "sports_eligibility": "13/15, not trainedSportsV3",
     "training_package": "deferred:1020RUB/34capacity",
-    "sports_v3": "F4 remains isolated, review/data prerequisites pending, not adopted or activated by this job",
+    "sports_v3": "Review05 REQUEST_CHANGES21:17:39MSK: F4-1originbindingCLOSED12+44PASS; remainingP2F4-1b final5sdeadline2FAIL4PASS. MODELSfix06 isolated/assigned; no integration/realfit; no wait.",
     "experimental_manual_consent": "None for4999; exact current-plan pre-cutoff owner authorization required before experimental operator release;4980/30 preparation is not consent",
     "operator_package": "None; no PLAY/wager"
   },

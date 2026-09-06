@@ -12,3 +12,8 @@ Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. This compact public record summa
 Finalizer regression checks:42pytest passed2.81s; Ruff5filesPASS. No source fixes or operational mutations. Full exact plan/review/ledger/evidence hashes and local-only boundaries are in OPERATIONS4999_PUBLIC_STATUS.json.
 
 Publish only this summary and current memory. Full mixed ledger(+3623lines includes earlier local history), rawHTML/source fixtures, live scheduler/watch/log/DB material, old untracked research/tests and isolatedSportsF4 are deliberately excluded and preserved. GitHubPR22 remains draft; no merge or origin/main push.
+
+##Latest isolatedSportsV3 status (parent handoff)
+
+SportsV3 latest (parent evidence21:17:39MSK): review05 REQUEST_CHANGES; F4-1 origin-binding CLOSED(12+44PASS), remainingP2F4-1b final5sdeadline boundary(2FAIL4PASS). MODELS narrowfix06 assigned, isolated/notintegrated/norealfit. Not awaited; noSportsfiles published.
+
