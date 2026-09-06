@@ -749,6 +749,11 @@ def test_authorized_sidecar_exports_selected_challenger_before_t10(
         )
 
     monkeypatch.setattr(final_hybrid_sidecar, "export_operator_package", fake_export)
+    # This selection/publication fixture stubs native export and its revalidation.
+    # Current upload integrity/native rejection has dedicated runtime PR-1 tests.
+    monkeypatch.setattr(
+        final_hybrid_sidecar, "_validate_current_primary_upload", lambda **k: None
+    )
     monkeypatch.setattr(
         final_hybrid_sidecar,
         "execute_final_hybrid_comparison",

@@ -185,6 +185,33 @@ def test_primary_bytes_and_computed_rank_exist_before_optional_g1(
     assert paths.baseline_package.read_text().splitlines()[4:] == list(COUPONS)
 
 
+def test_expired_comparison_never_starts_ev(comparison_input, monkeypatch):
+    comparison_input["deadline"] = time.perf_counter() - 1
+    monkeypatch.setattr(
+        comparison, "run_ev_crowd_current", lambda *a, **k: pytest.fail("EV started")
+    )
+    with pytest.raises(TimeoutError, match="deadline"):
+        comparison.execute_final_hybrid_comparison(**comparison_input)
+
+
+def test_completed_control_preserved_when_sports_expires(comparison_input, monkeypatch):
+    original = comparison._rebase_sports_probabilities
+
+    def expire(*args):
+        from toto_ai.ev.runtime import current_runtime
+
+        current_runtime().deadline = time.perf_counter() - 1
+        return original(*args)
+
+    monkeypatch.setattr(comparison, "_rebase_sports_probabilities", expire)
+    with pytest.raises(TimeoutError):
+        comparison.execute_final_hybrid_comparison(**comparison_input)
+    output = comparison_input["output_dir"]
+    assert (output / "primary-bk-ranking.json").is_file()
+    assert (output / "baseline-final-research-coupons.txt").is_file()
+    assert not (output / "comparison.json").exists()
+
+
 def test_unexpected_optional_side_failure_keeps_four_candidate_report(
     comparison_input,
     monkeypatch,

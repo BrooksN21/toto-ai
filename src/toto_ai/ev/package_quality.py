@@ -115,9 +115,7 @@ def bound_selection_context(config: EVConfig) -> dict[str, object]:
 def selection_context_sha256(context: EVConfig | dict[str, object]) -> str:
     """Hash one canonical selection context without accepting partial data."""
     payload = (
-        bound_selection_context(context)
-        if isinstance(context, EVConfig)
-        else context
+        bound_selection_context(context) if isinstance(context, EVConfig) else context
     )
     if not isinstance(payload, dict):
         raise TypeError("selection context must be an EVConfig or dict")
@@ -417,8 +415,7 @@ def _validate_scheduler_plan_artifact(
         or not isinstance(document.get("deadlines"), dict)
         or document.get("plan_id") != expected_plan_id
         or not isinstance(quality, dict)
-        or quality.get("release_protocol_version")
-        != QUALITY_RELEASE_PROTOCOL_VERSION
+        or quality.get("release_protocol_version") != QUALITY_RELEASE_PROTOCOL_VERSION
     ):
         reasons.append("scheduler_plan_invalid")
         return
@@ -795,6 +792,7 @@ class ExactCategoryCoverage:
         self._masses = [0.0, 0.0, 0.0]
         self._state_probability_cache: dict[tuple[int, ...], float] = {}
         self._ball_cache: dict[str, tuple[frozenset[tuple[int, ...]], ...]] = {}
+        self._swap_mass_cache: dict[str, tuple] = {}
         for coupon in coupons:
             self._add(coupon)
 
@@ -808,23 +806,39 @@ class ExactCategoryCoverage:
         incoming: str,
     ) -> tuple[float, float, float]:
         result = []
-        outgoing_balls = self._balls(outgoing)
-        incoming_balls = self._balls(incoming)
+        outgoing_balls, unique, _ = self._swap_states(outgoing)
+        incoming_balls, _, uncovered = self._swap_states(incoming)
         for radius in range(3):
-            outgoing_only = outgoing_balls[radius] - incoming_balls[radius]
-            incoming_only = incoming_balls[radius] - outgoing_balls[radius]
+            outgoing_only = unique[radius] - incoming_balls[radius]
+            incoming_only = uncovered[radius] - outgoing_balls[radius]
             removed = math.fsum(
-                self._state_probability(state)
-                for state in outgoing_only
-                if self._counts[radius].get(state) == 1
+                self._state_probability(state) for state in outgoing_only
             )
-            added = math.fsum(
-                self._state_probability(state)
-                for state in incoming_only
-                if self._counts[radius].get(state, 0) == 0
-            )
+            added = math.fsum(self._state_probability(state) for state in incoming_only)
             result.append(self._masses[radius] - removed + added)
         return tuple(result)  # type: ignore[return-value]
+
+    def _swap_states(self, coupon: str) -> tuple:
+        """Reuse unchanged coverage membership across proposals, never masses.
+
+        Filtering before set difference is algebraically identical. Each sum
+        still uses the exact original state masses and math.fsum; no subtraction
+        of rounded cached totals and no approximation of intersecting balls.
+        """
+        cached = self._swap_mass_cache.get(coupon)
+        if cached is None:
+            balls = self._balls(coupon)
+            unique = tuple(
+                frozenset(s for s in states if self._counts[r].get(s) == 1)
+                for r, states in enumerate(balls)
+            )
+            uncovered = tuple(
+                frozenset(s for s in states if self._counts[r].get(s, 0) == 0)
+                for r, states in enumerate(balls)
+            )
+            cached = balls, unique, uncovered
+            self._swap_mass_cache[coupon] = cached
+        return cached
 
     def probabilities_after_removal(
         self,
@@ -874,6 +888,7 @@ class ExactCategoryCoverage:
         return cached
 
     def _add(self, coupon: str) -> None:
+        self._swap_mass_cache.clear()
         for radius, states in enumerate(self._balls(coupon)):
             counts = self._counts[radius]
             for state in states:
@@ -883,6 +898,7 @@ class ExactCategoryCoverage:
                 counts[state] = count + 1
 
     def _remove(self, coupon: str) -> None:
+        self._swap_mass_cache.clear()
         for radius, states in enumerate(self._balls(coupon)):
             counts = self._counts[radius]
             for state in states:

@@ -33,6 +33,7 @@ from toto_ai.ev.package_quality import (
     selection_context_sha256,
     validate_selection_provenance,
 )
+from toto_ai.ev.runtime import checkpoint
 from toto_ai.ev.ternary import (
     MAX_EVENTS,
     OUTCOMES,
@@ -61,7 +62,9 @@ def rank_coupon_indices(surface: EVSurface) -> np.ndarray:
     scan sends only actual tolerance-tie candidate blocks for in-place sorting.
     """
     gross_ev, event_count = _validated_surface(surface)
+    checkpoint("ev_rank_start", candidates=gross_ev.size)
     order = np.argsort(gross_ev, kind="quicksort")
+    checkpoint("ev_rank_sorted", candidates=gross_ev.size)
     _reverse_in_place(order)
     _reorder_tolerance_ties(order, gross_ev)
 
@@ -89,6 +92,9 @@ def _reorder_tolerance_ties(order: np.ndarray, gross_ev: np.ndarray) -> None:
     edge_start = 0
     edge_count = order.size - 1
     while edge_start < edge_count:
+        checkpoint(
+            "ev_rank_ties", processed_candidates=edge_start, candidates=order.size
+        )
         edge_stop = min(edge_start + _TIE_SCAN_CHUNK_SIZE, edge_count)
         ordered_values = gross_ev[order[edge_start : edge_stop + 1]]
         close_edges = _adjacent_values_close(ordered_values)
@@ -444,6 +450,9 @@ def _select_safety_aware_package(
     pre_quality_objective = None
     post_quality_objective = None
     while universe_count:
+        checkpoint(
+            "ev_safety_repair", candidates=universe_count, coupon_capacity=required
+        )
         universe_indices = eligible_indices[:universe_count]
         universe_ranks = eligible_positions[:universe_count] + 1
         universe_digits = _coupon_digits(universe_indices, event_count)
@@ -617,9 +626,7 @@ def _eligible_hybrid_candidate_indices(
     ]
     maximum_count = min(int(eligible_indices.size), _SAFETY_MAX_CANDIDATES)
     ev_prefix = eligible_indices[:maximum_count]
-    ev_prefix = ev_prefix[
-        ~np.isin(ev_prefix, filtered_seed, assume_unique=True)
-    ]
+    ev_prefix = ev_prefix[~np.isin(ev_prefix, filtered_seed, assume_unique=True)]
     candidates = np.concatenate((filtered_seed, ev_prefix))[:maximum_count]
     return candidates, filtered_seed
 
@@ -641,6 +648,7 @@ def _repair_selection(
     coupon_exposures = _coupon_exposures(universe_digits)
     maximum_iterations = required * lower_bounds.shape[0]
     for _ in range(maximum_iterations):
+        checkpoint("ev_repair_iteration", candidates=universe_indices.size)
         violation = _constraint_violation(counts, lower_bounds, upper_bounds)
         headroom_violation = _upper_violation(counts, soft_upper_bounds)
         if violation == 0 and headroom_violation == 0:
@@ -755,10 +763,16 @@ def _improve_quality_selection(
             stream=OPTIMIZATION_MC_STREAM,
         )
     repairs = 0
+    evaluated_swaps = 0
     initial_quality: tuple[float, ...] | None = None
     final_quality: tuple[float, ...] | None = None
     tolerances = _quality_objective_tolerances(config)
-    for _ in range(config.package_quality_repair_iterations):
+    for iteration in range(config.package_quality_repair_iterations):
+        checkpoint(
+            "ev_quality_repair",
+            iteration=iteration,
+            iterations=config.package_quality_repair_iterations,
+        )
         selected_positions = np.flatnonzero(selected)
         selected_digits = universe_digits[selected_positions]
         pairwise = np.count_nonzero(
@@ -845,6 +859,11 @@ def _improve_quality_selection(
         best_pair: tuple[int, int] | None = None
         best_quality: tuple[float, ...] | None = None
         for outgoing_column in outgoing_order:
+            checkpoint(
+                "ev_quality_outgoing",
+                outgoing_column=int(outgoing_column),
+                candidates=int(candidate_positions.size),
+            )
             outgoing_position = int(selected_positions[outgoing_column])
             retained = np.delete(selected_digits, outgoing_column, axis=0)
             retained_sample_minimum = (
@@ -869,6 +888,8 @@ def _improve_quality_selection(
                 axis=2,
             )
             for row, incoming_position in enumerate(candidate_positions):
+                if row % 64 == 0:
+                    checkpoint("ev_quality_pairs", evaluated_candidate_rows=row)
                 candidate_counts = counts.copy()
                 _apply_count_swap(
                     candidate_counts,
@@ -937,6 +958,9 @@ def _improve_quality_selection(
                         int(universe_indices[incoming_position]),
                         MAX_EVENTS,
                     )
+                    evaluated_swaps += 1
+                    if evaluated_swaps % 64 == 0:
+                        checkpoint("ev_exact_swap", evaluated_swaps=evaluated_swaps)
                     candidate_p13, candidate_p14, candidate_exact_p15 = (
                         exact_coverage.probabilities_after_swap(
                             outgoing_coupon,
@@ -1244,6 +1268,11 @@ def _best_swap_from_groups(
         group_selected_ev = selected_ev[outgoing_columns]
         group_selected_ranks = selected_ranks[outgoing_columns]
         for start in range(0, incoming_group.size, _SAFETY_PAIR_CHUNK_SIZE):
+            checkpoint(
+                "ev_repair_pairs",
+                processed_candidates=start,
+                candidates=incoming_group.size,
+            )
             incoming_positions = incoming_group[start : start + _SAFETY_PAIR_CHUNK_SIZE]
             incoming_digits = universe_digits[incoming_positions]
             hard = current_violation + _pair_deltas(
@@ -1345,6 +1374,7 @@ def _improve_feasible_selection(
     soft_upper_bounds: np.ndarray,
 ) -> None:
     while True:
+        checkpoint("ev_feasible_improvement", candidates=universe_indices.size)
         selected_positions = np.flatnonzero(selected)
         selected_digits = universe_digits[selected_positions]
         selected_ev = gross_ev[universe_indices[selected_positions]]
@@ -1359,6 +1389,11 @@ def _improve_feasible_selection(
         best_key: tuple[float, int, int] | None = None
         best_pair: tuple[int, int] | None = None
         for start in range(0, universe_indices.size, _SAFETY_PAIR_CHUNK_SIZE):
+            checkpoint(
+                "ev_feasible_pairs",
+                processed_candidates=start,
+                candidates=universe_indices.size,
+            )
             stop = min(start + _SAFETY_PAIR_CHUNK_SIZE, universe_indices.size)
             incoming_positions = np.arange(start, stop, dtype=np.int64)
             eligible = (~selected[incoming_positions]) & (

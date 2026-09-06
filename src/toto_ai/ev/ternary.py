@@ -11,6 +11,7 @@ import numpy as np
 
 from toto_ai.ev.models import EVComponents, EVInput, EVSurface, ProbabilityMatrix
 from toto_ai.ev.prize import category_funds
+from toto_ai.ev.runtime import checkpoint
 
 OUTCOMES = ("1", "X", "2")
 MAX_EVENTS = 15
@@ -88,11 +89,15 @@ def ternary_convolve(
     left_array = _validated_flat_array(left, "left", size)
     right_array = _validated_flat_array(right, "right", size)
 
+    checkpoint("fft_left", states=size)
     left_fft = np.fft.fftn(left_array.reshape(shape))
+    checkpoint("fft_kernel", states=size)
     right_fft = np.fft.fftn(right_array.reshape(shape))
     left_fft *= right_fft
     del right_fft
+    checkpoint("fft_inverse", states=size)
     inverse = np.fft.ifftn(left_fft)
+    checkpoint("fft_complete", states=size)
     result = inverse.real.reshape(-1).copy()
     del inverse, left_fft
 
@@ -101,10 +106,7 @@ def ternary_convolve(
         * np.abs(right_array).sum(dtype=np.float64),
     )
     negative_tolerance = (
-        64.0
-        * np.finfo(np.float64).eps
-        * event_count
-        * convolution_scale
+        64.0 * np.finfo(np.float64).eps * event_count * convolution_scale
     )
     if float(result.min(initial=0.0)) < -negative_tolerance:
         raise FloatingPointError("FFT convolution produced a material negative value")
@@ -117,6 +119,7 @@ def compute_ev_components(
     progress_callback: ProgressCallback | None = None,
 ) -> EVComponents:
     """Compute reusable official 9..15 regular-prize and jackpot unit EV."""
+    checkpoint("ev_components_start")
     components, _ = _compute_official_components(
         ev_input,
         progress_callback=progress_callback,
@@ -270,6 +273,7 @@ def _accumulate_categories(
     started_at = time.perf_counter()
 
     for category in categories:
+        checkpoint("ev_category", category=category, category_total=len(categories))
         kernel = hamming_ball_kernel(event_count, category)
         crowd_tail = _crowd_qualifying_probabilities(crowd_matrix, category)
         denominator = pool_sum * crowd_tail
@@ -328,6 +332,12 @@ def _crowd_qualifying_probabilities(
     state_count = 3**event_count
     tails = np.empty(state_count, dtype=np.float64)
     for start in range(0, state_count, chunk_size):
+        checkpoint(
+            "crowd_tail",
+            category=minimum_hits,
+            processed_states=start,
+            states=state_count,
+        )
         stop = min(start + chunk_size, state_count)
         actual_indices = np.arange(start, stop, dtype=np.int64)
         tails[start:stop] = _poisson_binomial_tails_for_validated_indices(

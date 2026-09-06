@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
-  "saved_at": "2026-09-06T20:40:53.873666+03:00",
+  "saved_at": "2026-09-06T20:49:41.740806+03:00",
   "path_root": "/Users/turshevr/toto-ai",
   "state": "OWNER_ROLE_BOUNDARY_CORRECTION",
   "observations": {
@@ -1598,10 +1598,10 @@
     "preserve_partial_artifacts": true
   },
   "current_4998_integration_checkpoint": {
-    "at": "2026-09-06T20:37:31.462942+03:00",
+    "at": "2026-09-06T20:49:41.740806+03:00",
     "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
     "role": "separate status-only submission/finalization",
-    "phase": "OBSERVER03_PUBLISHED_VERIFIED_DRAFT_PR22",
+    "phase": "EXACT_ACCEPTED_RUNTIME02_VERIFIED_PUBLICATION_PREPARED",
     "drawing": 4998,
     "plan_id": "c1d243f5b6ca48f3",
     "parallel_completed_at_msk": "2026-09-06T18:19:04.553592+03:00",
@@ -1652,7 +1652,7 @@
     },
     "historical_background_slowdown": "6–8x vs different NONFINAL; exact cause/share unresolved",
     "runtime_candidate": {
-      "status": "INDEPENDENT_ACCEPT_NOT_PUBLISHED",
+      "status": "ACCEPTED_EXACT_CURRENT_BYTES_VERIFIED_PUBLICATION_PREPARED",
       "verdict": "ACCEPT",
       "accepted_at_msk": "2026-09-06T20:39:37+03:00",
       "patch_sha256": "152c92c8e068e971b5c926dc70234c2b57c3815c3396ac0ba195b56d5d46bbab",
@@ -1660,7 +1660,9 @@
       "review_status_sha256": "8337e41e8925c31a30989de52a19fea53bf0f75e2ad37bb992f04cf94c1d1a67",
       "verification": "Independent22+79+10 tests/Ruff14PASS per parent handoff; groups not asserted unique",
       "source_changes_published": false,
-      "publication_boundary": "No runtime source included in this status-only correction; separate runtime publication required"
+      "publication_boundary": "This separate finalizer authorized to publish accepted13path snapshot only; no rollout",
+      "finalizer_verification": "101PASS3.27s/Ruff13PASS",
+      "publication_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_RECEIPT_20260906.json"
     },
     "observer_candidate": {
       "verdict": "ACCEPT",
@@ -1735,12 +1737,12 @@
         "scope_bridge_alone_insufficient": true
       }
     },
-    "publication_scope": "Accepted observer03 only plus metadata; pending runtime02/F4 and raw inputs/coupons excluded",
+    "publication_scope": "Exact independently accepted runtime02 candidate13paths plus metadata only; F4/ledger/raw outputs excluded",
     "pr_url": "https://github.com/BrooksN21/toto-ai/pull/22",
     "publish_pr": false,
     "verification_current_finalizer": "52 focused pytestPASS1.68s/Ruff10PASS; no candidate acceptance implied",
     "network_status": "Normal push succeeded; PR22 OPEN/draft and status commit HEAD verified",
-    "next_action": "Status-only closure push and stop; runtime publication separate",
+    "next_action": "Commit exact accepted13 files and metadata, normal push, verify draft HEAD and stop",
     "operations_mutated": false,
     "publication_base_commit": "b859562cf4dbea42e5041ff90c0be779bdd909ab",
     "target_branch": "codex/reviewed-stack-20260906",

@@ -18,6 +18,7 @@ from toto_ai.ev.package_quality import (
     PackageSelectionProvenance,
     exact_category_probabilities,
 )
+from toto_ai.ev.runtime import checkpoint
 from toto_ai.ev.ternary import compute_ev_components, materialize_ev_surface
 from toto_ai.optimizer.brief import analyze_event, build_baseline_brief
 from toto_ai.optimizer.category_hit import cover_14_bk_fill_seed
@@ -180,8 +181,7 @@ class StrategyResult:
         if len(set(self.coupons)) != len(self.coupons):
             raise ValueError("strategy coupons must be unique")
         if any(
-            len(coupon) != 15 or set(coupon) - set(OUTCOMES)
-            for coupon in self.coupons
+            len(coupon) != 15 or set(coupon) - set(OUTCOMES) for coupon in self.coupons
         ):
             raise ValueError("strategy coupons must contain exactly 15 outcomes")
         if self.cost != len(self.coupons) * self.stake:
@@ -437,6 +437,9 @@ def run_ev_crowd_current(
     ),
 ) -> StrategyResult:
     """Run the existing EV/crowd selector over the same frozen input."""
+    checkpoint(
+        "ev_start", coupon_capacity=frozen.max_coupons, events=len(frozen.events)
+    )
     started = time.perf_counter()
     _validated_category(category)
     if config.bank != frozen.bank or config.stake != frozen.stake:
@@ -453,6 +456,7 @@ def run_ev_crowd_current(
         fetched_at=frozen.source_captured_at,
     )
     components = component_builder(ev_input)
+    checkpoint("ev_components_complete")
     surface = surface_materializer(
         components,
         frozen.possible_winnings,
@@ -465,6 +469,7 @@ def run_ev_crowd_current(
         provenance=provenance,
     )
     ranked = package.paper_coupons if package.paper_coupons else package.coupons
+    checkpoint("ev_selection_complete")
     coupons = tuple(coupon.coupon for coupon in ranked)
     fallback_reason = package.decision_reason
     return _strategy_result(
@@ -494,6 +499,7 @@ def _strategy_result(
     coverage_rate: float | None = None,
     guarantee_pass: bool | None = None,
 ) -> StrategyResult:
+    checkpoint("exact_result_metrics", coupons=len(coupons))
     probabilities = exact_category_probabilities(
         coupons,
         frozen.bk_probability_matrix,
@@ -569,9 +575,7 @@ def _aware_datetime(value: str, name: str) -> datetime:
     try:
         parsed = datetime.fromisoformat(normalized)
     except ValueError as error:
-        raise ValueError(
-            f"{name} must be a timezone-aware ISO-8601 string"
-        ) from error
+        raise ValueError(f"{name} must be a timezone-aware ISO-8601 string") from error
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise ValueError(f"{name} must be timezone-aware")
     return parsed
