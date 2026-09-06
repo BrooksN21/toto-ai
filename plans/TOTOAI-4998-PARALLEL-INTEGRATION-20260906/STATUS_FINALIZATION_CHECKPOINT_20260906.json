@@ -1,0 +1,108 @@
+{
+  "at": "2026-09-06T18:54:37.405495+03:00",
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "role": "separate status-only submission/finalization",
+  "phase": "STATUS_FINALIZED_REVIEW_PENDING_PUBLICATION_PREPARED",
+  "drawing": 4998,
+  "plan_id": "c1d243f5b6ca48f3",
+  "parallel_completed_at_msk": "2026-09-06T18:19:04.553592+03:00",
+  "duration_seconds": 1136.491525,
+  "selected_strategy": "quality-v3",
+  "BK_package_metrics": {
+    "quality-v2": {
+      "model": "bk",
+      "probability_at_least_13": 0.017643598165080737,
+      "probability_at_least_14": 0.0019638090135809367,
+      "probability_at_least_15": 9.340527001467878e-05
+    },
+    "sports-shadow": {
+      "model": "bk",
+      "probability_at_least_13": 0.017528234652225323,
+      "probability_at_least_14": 0.0019383340896830573,
+      "probability_at_least_15": 9.201488921199174e-05
+    },
+    "quality-v3": {
+      "model": "bk",
+      "probability_at_least_13": 0.02486823360849403,
+      "probability_at_least_14": 0.002643005595486519,
+      "probability_at_least_15": 0.00011089899814426064
+    },
+    "robust": {
+      "model": "bk",
+      "probability_at_least_13": 0.023604071059533684,
+      "probability_at_least_14": 0.002612052573597924,
+      "probability_at_least_15": 0.00011271764511152218
+    }
+  },
+  "owner_wager_report": {
+    "classification": "USER_REPORTED_UNVERIFIED",
+    "reported_choice": "quality-v3",
+    "receipt_verified": false,
+    "actual_amount_verified": false,
+    "actual_coupon_bytes_verified": false,
+    "one_off_not_future_strategy_policy": true
+  },
+  "delivery": "Chat delivery missed; local detection is not chat delivery",
+  "expires_at_msk": "2026-09-06T18:20:00+03:00",
+  "primary_and_parallel_actionable": false,
+  "runtime_cost_seconds": {
+    "serial_EV": 804.3091404160004,
+    "waiting_for_primary": 106.887349,
+    "G1_wall": 52.68400804200064,
+    "other_uninstrumented": 172.61102754199896
+  },
+  "historical_background_slowdown": "6–8x vs different NONFINAL; exact cause/share unresolved",
+  "runtime_candidate": {
+    "status": "FROZEN_IN_INDEPENDENT_REVIEW_NOT_ACCEPTED",
+    "author_verification": "58 focused PASS/Ruff10PASS",
+    "control_profile_seconds": [
+      84.4388876669982,
+      76.69686583399744
+    ],
+    "same_input_research_replay_seconds": 198.85896354099532,
+    "both_EV_recomputed": true,
+    "LaunchAgent_e2e_verified": false,
+    "not_a_19_minute_fix_claim": true,
+    "patch_sha256": "ce96d1f2f2888eb77359cb659a7ed59846b66c3b9d407cfb56300baf60cc97de"
+  },
+  "observer_candidate": {
+    "status": "REQUEST_CHANGES",
+    "findings": 4,
+    "author_correcting": true,
+    "accepted": false
+  },
+  "sports_v3_F4": {
+    "status": "ISOLATED_SNAPSHOT04_FROZEN_NOT_REVIEWED_NOT_MAIN",
+    "frozen_at_msk": "2026-09-06T18:49:22+03:00",
+    "author_synthetic_tests": 96,
+    "author_ruff_files": 11,
+    "author_checks_pass": true,
+    "delta_paths": 13,
+    "real_fit": false,
+    "activation": false,
+    "handoff": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_HANDOFF_04.md",
+    "entity_bridge": {
+      "partial_links": 52,
+      "complete_scope_proofs": 0
+    },
+    "corpus_blocker": {
+      "chronology_rejected": 30,
+      "missing": 8,
+      "best_case_valid_with_ideal_4996_extension": 67,
+      "corpus": 105,
+      "coverage_percent": 63.8095238095238,
+      "minimum_percent": 70,
+      "scope_bridge_alone_insufficient": true
+    }
+  },
+  "publication_scope": "Completed aggregate status/coordination memory only; pending runtime/observer/F4 code, raw inputs/coupons excluded",
+  "pr_url": "https://github.com/BrooksN21/toto-ai/pull/22",
+  "publish_pr": false,
+  "verification_current_finalizer": "52 focused pytestPASS1.68s/Ruff10PASS; no candidate acceptance implied",
+  "network_status": "Fresh gh PR22 OPEN/draft verified; head b859562cf4dbea42e5041ff90c0be779bdd909ab matches local HEAD",
+  "next_action": "Focused tests/Ruff, metadata-only commit and normal nonforce push to existing draft PR; never include pending code or change jobs/authority",
+  "operations_mutated": false,
+  "publication_base_commit": "b859562cf4dbea42e5041ff90c0be779bdd909ab",
+  "target_branch": "codex/reviewed-stack-20260906",
+  "publication_status": "PREPARED_METADATA_ONLY"
+}
