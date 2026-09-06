@@ -1,3 +1,22 @@
+# CURRENT —4998 integrated/opt-in ENABLED; final source publication prepared — 2026-09-06T16:43:25.638128+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Accepted cache durability+wrapper
+reuse source applied; correctedV2 seed/G1flag saved by Euler16:35:21MSK, after
+primary16:30TLS preflight. Plan c1d243f5b6ca48f3,4980/30,consent/calendars unchanged.
+14/15V2coverage; exact seedfile2d5003… /artifactac04…; not trainedSports-v3.
+Actual4998comparison NOT checked; finalPLAY NOT claimed. Enabled≠selected/improved.
+Next primary17:00/final18:00/expiry18:20 per integration receipt; publisher did not
+refresh runtime or start/mutate jobs/provider/DB/code. Euler diagnostic separately owned.
+DONE verification:115initial+15wrapper rerun=130PASS;4legacy bare-Git fixture tests
+explicitly unverified (guard denied execution, no source failure hidden); Ruff10PASS.
+DOING: scoped source/memory commit/push to existing draftPR22, NOT merge.
+Includes prior completed security-wrapper/status/public-suffix improvements+tests.
+Ledger74append-only multi-drawing operational records retained unchanged/local;
+raw/candidate/transient artifacts not uploaded. BLOCKER:none for scoped publication.
+NEXT:verify commit/remote head, then return; no further engineering/activation work.
+Resume: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_INTEGRATED_PUBLICATION_RECEIPT_20260906.json
+
 # CURRENT — accepted GOAL/90min/G1 source PUBLISHED to draft PR22 — 2026-09-06T16:23:41.017310+03:00
 
 Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Source commit `aac678ce4143d3835523afcab34cd1ecad491c70`

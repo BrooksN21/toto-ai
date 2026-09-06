@@ -14,6 +14,13 @@ from toto_ai.runner.scheduler import (
     build_scheduler_plan,
     prepare_scheduler_artifacts,
 )
+from toto_ai.runner.scheduler_state import (
+    initial_state,
+    save_state,
+    transition,
+)
+
+FIXTURES = Path(__file__).parent / "fixtures" / "scheduler_status"
 
 
 def _plan(tmp_path: Path) -> SchedulerPlan:
@@ -46,6 +53,26 @@ def _plan(tmp_path: Path) -> SchedulerPlan:
         db=database,
         aliases=aliases,
         schedule_evidence_ledger=ledger,
+    )
+
+
+def _drawing_4996_plan(tmp_path: Path) -> SchedulerPlan:
+    fixture = json.loads(
+        (FIXTURES / "drawing_4996_attempt_delivery.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    plan = _plan(tmp_path)
+    return SchedulerPlan(
+        drawing=fixture["drawing_number"],
+        drawing_id=fixture["drawing_id"],
+        ended_at=datetime.fromisoformat(fixture["ended_at"].replace("Z", "+00:00")),
+        requested_bank=plan.requested_bank,
+        output_dir=plan.output_dir,
+        project_root=plan.project_root,
+        db=plan.db,
+        aliases=plan.aliases,
+        schedule_evidence_ledger=plan.schedule_evidence_ledger,
     )
 
 
@@ -181,6 +208,181 @@ def test_status_reports_exact_failed_attempt(tmp_path):
     assert result["primary_quality_v2"]["status"] == "error"
     assert result["blocker"] == "source timeout"
     assert result["last_attempt"]["run_id"] == "preflight-01-test"
+    assert result["last_attempt"]["phase"] == "preflight"
+    assert result["last_attempt"]["result"] == "error"
+    assert result["last_attempt"]["time"] == "2026-09-03T15:06:00Z"
+
+
+def test_status_reports_failed_state_attempt_without_status_artifact(tmp_path):
+    plan = _plan(tmp_path)
+    started_at = datetime(2026, 9, 3, 15, 0, tzinfo=timezone.utc)
+    completed_at = datetime(2026, 9, 3, 15, 1, tzinfo=timezone.utc)
+    run_id = "api_preflight-01-state-only"
+    state = initial_state(plan.plan_id, started_at)
+    state = transition(
+        state,
+        phase="api_preflight",
+        status="running",
+        observed_at=started_at,
+        attempt_id=run_id,
+    )
+    state = transition(
+        state,
+        phase="api_preflight",
+        status="retryable_failed",
+        observed_at=completed_at,
+        attempt_id=run_id,
+        reason="source timeout",
+    )
+    save_state(plan.output_dir / "scheduler-state.json", state)
+
+    result = scheduler_status(plan, observed_at=completed_at)
+
+    assert result["last_attempt"] == {
+        "run_id": run_id,
+        "phase": "api_preflight",
+        "result": "retryable_failed",
+        "time": "2026-09-03T15:01:00Z",
+        "state": "failed",
+        "outcome": None,
+        "decision": None,
+        "reason": "source timeout",
+        "error": "source timeout",
+        "completed_at": "2026-09-03T15:01:00Z",
+    }
+    assert result["primary_quality_v2"] == {
+        "status": "retryable_failed",
+        "reason": "source timeout",
+    }
+    assert result["blocker"] == "source timeout"
+
+
+def test_drawing_4996_completed_attempts_reach_watcher_and_terminal_expiry(tmp_path):
+    fixture = json.loads(
+        (FIXTURES / "drawing_4996_attempt_delivery.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    plan = _drawing_4996_plan(tmp_path)
+    state_path = plan.output_dir / "scheduler-state.json"
+    state = initial_state(
+        plan.plan_id,
+        datetime.fromisoformat(
+            fixture["attempts"][0]["started_at"].replace("Z", "+00:00")
+        ),
+    )
+    observed_statuses = []
+
+    for attempt in fixture["attempts"]:
+        assert attempt.get("legacy_last_attempt") is None
+        started_at = datetime.fromisoformat(
+            attempt["started_at"].replace("Z", "+00:00")
+        )
+        completed_at = datetime.fromisoformat(
+            attempt["completed_at"].replace("Z", "+00:00")
+        )
+        state = transition(
+            state,
+            phase=attempt["phase"],
+            status="running",
+            observed_at=started_at,
+            attempt_id=attempt["run_id"],
+        )
+        state = transition(
+            state,
+            phase=attempt["phase"],
+            status=attempt["result"],
+            observed_at=completed_at,
+            attempt_id=attempt["run_id"],
+            reason=attempt["reason"],
+        )
+        save_state(state_path, state)
+        status_artifact = attempt.get("status_artifact")
+        if status_artifact is not None:
+            _write(
+                plan.output_dir / "attempts" / attempt["run_id"] / "status.json",
+                {
+                    "plan_id": plan.plan_id,
+                    "drawing": plan.drawing,
+                    "run_id": attempt["run_id"],
+                    "completed_at": attempt["completed_at"],
+                    "reason": attempt["reason"],
+                    **status_artifact,
+                },
+            )
+            _write(
+                plan.output_dir / "operator-result.json",
+                {
+                    "plan_id": plan.plan_id,
+                    "drawing": plan.drawing,
+                    **fixture["final_operator_result"],
+                },
+            )
+        status = scheduler_status(plan, observed_at=completed_at)
+        observed_statuses.append(status)
+        status_artifact = attempt.get("status_artifact", {})
+        assert status["last_attempt"] == {
+            "run_id": attempt["run_id"],
+            "phase": attempt["phase"],
+            "result": attempt["result"],
+            "time": attempt["completed_at"],
+            "state": status_artifact.get("state", attempt["result"]),
+            "outcome": status_artifact.get("outcome"),
+            "decision": status_artifact.get("decision"),
+            "reason": attempt["reason"],
+            "error": None,
+            "completed_at": attempt["completed_at"],
+        }
+        assert status["mutated"] is False
+
+    expiry = fixture["terminal_expiry"]
+    _write(
+        plan.output_dir / "operator-result.json",
+        {
+            "plan_id": plan.plan_id,
+            "drawing": plan.drawing,
+            **expiry["operator_result"],
+        },
+    )
+    expired_status = scheduler_status(
+        plan,
+        observed_at=datetime.fromisoformat(
+            expiry["observed_at"].replace("Z", "+00:00")
+        ),
+    )
+    observed_statuses.append(expired_status)
+    assert expired_status["terminal"] is True
+    assert (
+        expired_status["last_attempt"]["run_id"]
+        == fixture["attempts"][-1]["run_id"]
+    )
+    assert expired_status["operator_result"]["operator_status"] == "NO_BET"
+
+    state_before_watch = state_path.read_bytes()
+    operator_before_watch = (plan.output_dir / "operator-result.json").read_bytes()
+    watcher_result = watch_scheduler_status(
+        plan,
+        latest_path=plan.output_dir / "watcher" / "latest.json",
+        history_path=plan.output_dir / "watcher" / "history.jsonl",
+        interval_seconds=1,
+        status_provider=lambda _: observed_statuses.pop(0),
+        sleep=lambda _: None,
+    )
+
+    history = [
+        json.loads(row)
+        for row in (plan.output_dir / "watcher" / "history.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert [row["last_attempt"]["run_id"] for row in history[:-1]] == [
+        attempt["run_id"] for attempt in fixture["attempts"]
+    ]
+    assert watcher_result["terminal"] is True
+    assert state_path.read_bytes() == state_before_watch
+    assert (
+        plan.output_dir / "operator-result.json"
+    ).read_bytes() == operator_before_watch
 
 
 def test_status_reports_all_models_selection_and_computed_best_coupon(tmp_path):

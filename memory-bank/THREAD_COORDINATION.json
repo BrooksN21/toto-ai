@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
-  "saved_at": "2026-09-06T16:24:41.390629+03:00",
+  "saved_at": "2026-09-06T16:43:25.638128+03:00",
   "path_root": "/Users/turshevr/toto-ai",
   "state": "OWNER_ROLE_BOUNDARY_CORRECTION",
   "observations": {
@@ -1139,6 +1139,20 @@
       "main_write_freeze": "release when this task returns after closing metadata push",
       "activation": false,
       "next_action": "Closing metadata push then return; no new engineering work"
+    },
+    {
+      "at": "2026-09-06T16:43:25.638128+03:00",
+      "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+      "role": "final source/publication worker",
+      "phase": "INTEGRATED_ENABLED_OUTCOME_UNCHECKED_PUBLICATION_PREPARED",
+      "activation_owner": "Euler,16:35:21MSK",
+      "actual_comparison_checked": false,
+      "final_PLAY_claimed": false,
+      "plan_id": "c1d243f5b6ca48f3",
+      "source_verification": "115 initial PASS +15 exact wrapper-only rerun PASS=130 checked;4 legacy bare-Git fixture cases explicitly unverified, no source failure hidden. Ruff10PASS.",
+      "next_action": "Commit/push, verify PR22; Euler read-only diagnostic separately owned",
+      "resume_handoff": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md",
+      "publisher_job_mutations": false
     }
   ],
   "original_task_policy_conflicts": {
@@ -1184,32 +1198,17 @@
     "preserve_partial_artifacts": true
   },
   "current_4998_integration_checkpoint": {
-    "at": "2026-09-06T16:23:41.017310+03:00",
+    "at": "2026-09-06T16:43:25.638128+03:00",
     "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
-    "role": "authorized publication finalizer",
-    "phase": "SOURCE_PUBLISHED_TO_EXISTING_DRAFT_PR22",
-    "source_commit": "aac678ce4143d3835523afcab34cd1ecad491c70",
-    "pr": {
-      "number": 22,
-      "state": "OPEN",
-      "isDraft": true,
-      "headRefOid": "aac678ce4143d3835523afcab34cd1ecad491c70",
-      "baseRefName": "main",
-      "url": "https://github.com/BrooksN21/toto-ai/pull/22"
-    },
-    "verification": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff15PASS.",
-    "remaining_tracked_dirty": [
-      "data/schedule-evidence/ledger.json",
-      "scripts/project-git",
-      "src/toto_ai/external_odds/schedule_evidence_admin.py",
-      "src/toto_ai/operations/scheduler_status.py",
-      "tests/test_schedule_evidence_admin_cli.py",
-      "tests/test_scheduler_status.py"
-    ],
-    "not_included": "cache durability/CLI composition, wrapper-parser fix, operational activation",
-    "main_write_freeze": "release when this task returns after closing metadata push",
-    "activation": false,
-    "next_action": "Return publication result/release write freeze; separate cache/wrapper integration and activation jobs only",
-    "metadata_commit_verified": "834f3efc3976ac569746e15658d82f497a1a8a3b"
+    "role": "final source/publication worker",
+    "phase": "INTEGRATED_ENABLED_OUTCOME_UNCHECKED_PUBLICATION_PREPARED",
+    "activation_owner": "Euler,16:35:21MSK",
+    "actual_comparison_checked": false,
+    "final_PLAY_claimed": false,
+    "plan_id": "c1d243f5b6ca48f3",
+    "source_verification": "115 initial PASS +15 exact wrapper-only rerun PASS=130 checked;4 legacy bare-Git fixture cases explicitly unverified, no source failure hidden. Ruff10PASS.",
+    "next_action": "Commit/push, verify PR22; Euler read-only diagnostic separately owned",
+    "resume_handoff": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md",
+    "publisher_job_mutations": false
   }
 }

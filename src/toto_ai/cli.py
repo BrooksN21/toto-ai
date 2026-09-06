@@ -371,6 +371,7 @@ from toto_ai.sports_stats.final_hybrid_sidecar import (
 from toto_ai.sports_stats.goal_probe_collection import (
     collect_goal_probe_input,
     ensure_goal_probe_input,
+    goal_probe_failure_status,
 )
 from toto_ai.sports_stats.goal_probe_research import (
     load_goal_probe_shadow,
@@ -4447,7 +4448,7 @@ def morning_dispatch_command(
                     "status": "PAPER_ONLY_COLLECTION_FAILED",
                     "error": f"{type(error).__name__}: {str(error)[:300]}",
                     "persistence_status": "not_attempted",
-                    "retryable": True,
+                    **goal_probe_failure_status(error),
                     "primary_scheduler_affected": False,
                     "package_influence": "NONE",
                     "automatic_wagering": False,

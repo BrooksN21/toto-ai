@@ -2,19 +2,23 @@
 
 from __future__ import annotations
 
+import fcntl
 import hashlib
 import json
-from collections.abc import Mapping
+import os
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from toto_ai.api.detail_cache import load_drawing_detail_cache
 from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.goal_api import (
     PROVIDER_NAME,
     GoalAPIClient,
+    GoalAPIConfig,
     GoalAPITeamResults,
 )
 from toto_ai.external_odds.schedule_source_collector import (
@@ -24,6 +28,29 @@ from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.external_odds.thesportsdb import TheSportsDBConfig
 
 _TERMINAL_STATUSES = frozenset(("FINISHED", "AFTER_ET", "AFTER_PEN"))
+_FAILED_CACHE_RETRY_COOLDOWN_SECONDS = 15 * 60
+_FAILED_CACHE_RETRY_WINDOW_SECONDS = 60 * 60
+_FAILED_CACHE_RETRY_WINDOW_BUDGET = 120
+
+
+class GoalProbeCacheError(ValueError):
+    """Structured retry disposition for the existing caller cadence."""
+
+    def __init__(self, reason: str, *, next_retry_at: datetime | None = None):
+        super().__init__(f"GOAL probe {reason}")
+        self.reason = reason
+        self.retryable = next_retry_at is not None
+        self.next_retry_at = next_retry_at
+
+
+def goal_probe_failure_status(error: Exception) -> dict[str, object]:
+    """Unknown validation/integrity errors are not advertised as recoverable."""
+    next_retry = getattr(error, "next_retry_at", None)
+    return {
+        "retryable": bool(getattr(error, "retryable", False)),
+        "retry_reason": getattr(error, "reason", "collection_or_validation_error"),
+        "next_retry_at": _timestamp(next_retry) if next_retry is not None else None,
+    }
 
 
 @dataclass(frozen=True)
@@ -49,19 +76,352 @@ def ensure_goal_probe_input(
     project_root: str | Path = ".",
     captured_at: datetime | None = None,
 ) -> GoalProbeCollection:
-    """Collect one immutable GOAL input per drawing and reuse it afterwards."""
-
+    """Reuse good captures; recover failed caches via bounded immutable attempts."""
     root = Path(project_root).resolve()
     output = _contained_directory(root, output_root, create=True)
+    observed = _utc(captured_at or datetime.now(timezone.utc))
     marker_path = output / "current.json"
+    kwargs = dict(
+        drawing_id=drawing_id,
+        raw_cache_dir=raw_cache_dir,
+        output=output,
+        api_key=api_key,
+        request_budget=request_budget,
+        root=root,
+        observed=observed,
+    )
     if marker_path.is_file():
-        return _load_current_collection(
+        cached = _load_current_collection(
             root=root,
             marker_path=marker_path,
             drawing_id=drawing_id,
         )
+        if _failed_goal_source(cached) is None:
+            return cached
+        return _retry_failed_goal_probe_input(
+            cached=cached,
+            original_marker=marker_path,
+            clock=(lambda: observed)
+            if captured_at is not None
+            else (lambda: datetime.now(timezone.utc)),
+            **kwargs,
+        )
+    result = _capture_goal_probe_input(marker_path=marker_path, **kwargs)
+    _raise_source_failure(result)
+    return result
 
-    observed = _utc(captured_at or datetime.now(timezone.utc))
+
+def _raise_source_failure(result: GoalProbeCollection) -> None:
+    failure = _failed_goal_source(result)
+    if failure is None:
+        return
+    if failure.get("budget_exhausted") is True:
+        raise GoalProbeCacheError("source budget exhausted")
+    if result.quota_daily_remaining == 0:
+        raise GoalProbeCacheError("source quota exhausted")
+    raise GoalProbeCacheError(
+        "source failed; no usable fresh cache",
+        next_retry_at=result.captured_at
+        + timedelta(seconds=_FAILED_CACHE_RETRY_COOLDOWN_SECONDS),
+    )
+
+
+def _retry_failed_goal_probe_input(
+    *,
+    cached: GoalProbeCollection,
+    original_marker: Path,
+    drawing_id: int,
+    raw_cache_dir: str | Path,
+    output: Path,
+    api_key: str,
+    request_budget: int,
+    root: Path,
+    observed: datetime,
+    clock: Callable[[], datetime],
+) -> GoalProbeCollection:
+    # Validate before reserving any requests. No retry loop or provider preflight.
+    GoalAPIConfig(api_key=api_key, request_budget=request_budget)
+    retry_of = _sha256_file(original_marker)
+    retry_root = _contained_directory(
+        root,
+        output / "failed-cache-retry" / retry_of,
+        create=True,
+    )
+    # OS lock is held across collection; process death releases it. A lease alone
+    # would allow an expired but still-running collector to overlap its successor.
+    with (retry_root / "active.lock").open("ab") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise GoalProbeCacheError(
+                "retry already claimed; active collector",
+                next_retry_at=observed
+                + timedelta(seconds=_FAILED_CACHE_RETRY_COOLDOWN_SECONDS),
+            ) from error
+        try:
+            return _retry_locked(
+                cached=cached,
+                retry_root=retry_root,
+                retry_of=retry_of,
+                drawing_id=drawing_id,
+                raw_cache_dir=raw_cache_dir,
+                output=output,
+                api_key=api_key,
+                request_budget=request_budget,
+                root=root,
+                observed=observed,
+                clock=clock,
+            )
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
+
+
+def _retry_locked(
+    *,
+    cached: GoalProbeCollection,
+    retry_root: Path,
+    retry_of: str,
+    drawing_id: int,
+    raw_cache_dir: str | Path,
+    output: Path,
+    api_key: str,
+    request_budget: int,
+    root: Path,
+    observed: datetime,
+    clock: Callable[[], datetime],
+) -> GoalProbeCollection:
+    cooldown = timedelta(seconds=_FAILED_CACHE_RETRY_COOLDOWN_SECONDS)
+    next_eligible = cached.captured_at + cooldown
+    quota = cached.quota_daily_remaining
+    reserved = 0
+    window_claims: list[tuple[datetime, int]] = []
+    attempts = retry_root / "attempts"
+    # The root entry also supports evidence from the previous one-shot version.
+    generations = [retry_root, *sorted(attempts.glob("[0-9]*"))]
+    count = 0
+    for generation in generations:
+        claim_path = generation / "attempt.json"
+        marker_path = generation / "current.json"
+        if not claim_path.is_file():
+            if marker_path.is_file():
+                raise GoalProbeCacheError("retry marker without claim")
+            continue
+        claim = _json_object(claim_path)
+        if (
+            claim.get("retry_of_sha256") != retry_of
+            or claim.get("drawing_id") != drawing_id
+        ):
+            raise GoalProbeCacheError("retry claim binding mismatch")
+        claimed_at = _parse_utc(claim.get("claimed_at"), "claimed_at")
+        budget = claim.get("request_budget")
+        if (
+            isinstance(budget, bool)
+            or not isinstance(budget, int)
+            or not 1 <= budget <= 120
+        ):
+            raise GoalProbeCacheError("retry claim budget invalid")
+        count += 1
+        reserved += budget  # Unknown/crashed work spends its full reservation.
+        next_eligible = max(next_eligible, claimed_at + cooldown)
+        window_claims.append((claimed_at, budget))
+        if marker_path.is_file():
+            if _json_object(marker_path).get("retry_of_sha256") != retry_of:
+                raise GoalProbeCacheError("retry marker binding mismatch")
+            result = _load_current_collection(
+                root=root,
+                marker_path=marker_path,
+                drawing_id=drawing_id,
+            )
+            if _failed_goal_source(result) is None:
+                return result
+            next_eligible = max(next_eligible, result.captured_at + cooldown)
+            if _failed_goal_source(result).get("budget_exhausted") is True:
+                raise GoalProbeCacheError("source budget exhausted")
+            if result.quota_daily_remaining is not None:
+                # Bound remaining requests by every observed quota, including
+                # requests reserved after that observation.
+                quota = (
+                    min(quota, result.quota_daily_remaining + reserved)
+                    if quota is not None
+                    else result.quota_daily_remaining + reserved
+                )
+        outcome_path = generation / "outcome.json"
+        if outcome_path.is_file():
+            outcome = _json_object(outcome_path)
+            if outcome.get("claim_sha256") != _sha256_file(claim_path):
+                raise GoalProbeCacheError("retry outcome binding mismatch")
+            if outcome.get("status") == "FAILED" and outcome.get("retryable") is False:
+                raise GoalProbeCacheError(
+                    str(outcome.get("retry_reason", "terminal collection failure"))
+                )
+            next_eligible = max(
+                next_eligible,
+                _parse_utc(outcome.get("finished_at"), "finished_at") + cooldown,
+            )
+        elif not marker_path.is_file() and observed >= claimed_at + cooldown:
+            # Append crash recovery evidence; never rewrite the original claim.
+            _write_exact(
+                generation / "expired.json",
+                _pretty(
+                    {
+                        "schema_version": 1,
+                        "status": "LEASE_EXPIRED",
+                        "claim_sha256": _sha256_file(claim_path),
+                        "next_retry_at": _timestamp(claimed_at + cooldown),
+                        "reserved_requests": budget,
+                    }
+                ),
+            )
+    if _failed_goal_source(cached).get("budget_exhausted") is True:
+        raise GoalProbeCacheError("cached source budget exhausted")
+    if quota is not None and quota - reserved < request_budget:
+        raise GoalProbeCacheError("source quota exhausted or insufficient reservation")
+    if observed < next_eligible:
+        raise GoalProbeCacheError("retry cooldown active", next_retry_at=next_eligible)
+    # Fixed rolling-hour cap cannot be enlarged by changing the caller budget.
+    window = timedelta(seconds=_FAILED_CACHE_RETRY_WINDOW_SECONDS)
+    recent = [
+        (when, budget) for when, budget in window_claims if when + window > observed
+    ]
+    used = sum(budget for _, budget in recent)
+    if used + request_budget > _FAILED_CACHE_RETRY_WINDOW_BUDGET:
+        for when, budget in sorted(recent):
+            used -= budget
+            if used + request_budget <= _FAILED_CACHE_RETRY_WINDOW_BUDGET:
+                raise GoalProbeCacheError(
+                    "retry request window budget exhausted",
+                    next_retry_at=when + window,
+                )
+    generation = _contained_directory(
+        root,
+        attempts / f"{count + 1:06d}",
+        create=True,
+    )
+    claim_path = generation / "attempt.json"
+    claim = {
+        "schema_version": 2,
+        "status": "RESERVED",
+        "drawing_id": drawing_id,
+        "retry_of_sha256": retry_of,
+        "claimed_at": _timestamp(observed),
+        "lease_expires_at": _timestamp(observed + cooldown),
+        "next_retry_at": _timestamp(observed + cooldown),
+        "request_budget": request_budget,
+        "automatic_wagering": False,
+        "package_influence": "NONE",
+    }
+    _publish_retry_record(
+        claim_path, _pretty(claim), durable_root=output, exclusive=True
+    )
+    outcome = {
+        "schema_version": 1,
+        "claim_sha256": _sha256_file(claim_path),
+        "finished_at": _timestamp(observed),
+        "reserved_requests": request_budget,
+        "automatic_wagering": False,
+        "package_influence": "NONE",
+    }
+    try:
+        result = _capture_goal_probe_input(
+            marker_path=generation / "current.json",
+            retry_of=retry_of,
+            drawing_id=drawing_id,
+            raw_cache_dir=raw_cache_dir,
+            output=output,
+            api_key=api_key,
+            request_budget=request_budget,
+            root=root,
+            observed=observed,
+        )
+        outcome["finished_at"] = _timestamp(max(observed, result.captured_at, clock()))
+        _raise_source_failure(result)
+    except Exception as error:
+        finished = max(observed, clock())
+        outcome["finished_at"] = _timestamp(finished)
+        if isinstance(error, GoalProbeCacheError):
+            failure = error
+            if failure.retryable:
+                failure = GoalProbeCacheError(
+                    failure.reason,
+                    next_retry_at=max(failure.next_retry_at, finished + cooldown),
+                )
+        elif str(error) in {
+            "GOAL probe collection must finish before drawing deadline",
+            "GOAL probe collection crossed the drawing deadline",
+        }:
+            failure = GoalProbeCacheError("drawing deadline expired")
+        else:
+            failure = GoalProbeCacheError(
+                "retry collection interrupted",
+                next_retry_at=finished + cooldown,
+            )
+        outcome.update(status="FAILED", **goal_probe_failure_status(failure))
+        _publish_retry_record(
+            generation / "outcome.json", _pretty(outcome), durable_root=output
+        )
+        raise failure from error
+    outcome.update(status="READY", retryable=False, next_retry_at=None)
+    _publish_retry_record(
+        generation / "outcome.json", _pretty(outcome), durable_root=output
+    )
+    return result
+
+
+def _publish_retry_record(
+    path: Path, content: bytes, *, durable_root: Path, exclusive: bool = False
+) -> None:
+    """Publish complete retry metadata without exposing partial committed JSON.
+
+    Staging files are append-only evidence. No provider request starts before the
+    claim is linked; an interrupted outcome leaves the complete claim recoverable.
+    The enclosing flock remains held throughout publication and collection.
+    """
+    if not path.parent.is_relative_to(durable_root):
+        raise ValueError("retry publication escapes durability root")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        if exclusive:
+            raise FileExistsError(f"GOAL probe retry claim already exists: {path}")
+        if path.read_bytes() != content:
+            raise ValueError(f"GOAL probe artifact conflict: {path}")
+        _sync_retry_directories(path.parent, durable_root)
+        return
+    pending = path.with_name(f".{path.name}.{uuid4().hex}.pending")
+    with pending.open("xb") as stream:
+        stream.write(content)
+        stream.flush()
+        os.fsync(stream.fileno())
+    # Same-directory hard-link publication is atomic and cannot replace evidence.
+    os.link(pending, path)
+    _sync_retry_directories(path.parent, durable_root)
+
+
+def _sync_retry_directories(directory: Path, durable_root: Path) -> None:
+    # Bottom-up syncing persists the final link and every newly-created ancestor
+    # through the already-existing cache root, before collection or acknowledgement.
+    while True:
+        fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        if directory == durable_root:
+            return
+        directory = directory.parent
+
+
+def _capture_goal_probe_input(
+    *,
+    marker_path: Path,
+    drawing_id: int,
+    raw_cache_dir: str | Path,
+    output: Path,
+    api_key: str,
+    request_budget: int,
+    root: Path,
+    observed: datetime,
+    retry_of: str | None = None,
+) -> GoalProbeCollection:
     capture_id = observed.strftime("%Y%m%dT%H%M%S%fZ")
     capture = output / "captures" / capture_id
     client = GoalAPIClient(
@@ -99,8 +459,22 @@ def ensure_goal_probe_input(
         "package_influence": "NONE",
         "automatic_wagering": False,
     }
+    if retry_of is not None:
+        marker["retry_of_sha256"] = retry_of
     _write_exact(marker_path, _pretty(marker))
     return result
+
+
+def _failed_goal_source(collection: GoalProbeCollection) -> Mapping[str, Any] | None:
+    """A persisted paper report is not evidence that its provider succeeded."""
+    report = _json_object(collection.schedule_report_path)
+    providers = report.get("providers")
+    if not isinstance(providers, Mapping):
+        raise ValueError("GOAL probe provider status is missing")
+    status = providers.get(PROVIDER_NAME)
+    if not isinstance(status, Mapping):
+        raise ValueError("GOAL probe provider status is missing")
+    return status if status.get("status") == "source_failed" else None
 
 
 def collect_goal_probe_input(
@@ -151,9 +525,7 @@ def collect_goal_probe_input(
     )
     schedule_report = _json_object(collection.report_path)
     goal_rows = _ordered_goal_rows(schedule_report)
-    goal_rows_by_order = {
-        int(row["event_order"]): row for row in goal_rows
-    }
+    goal_rows_by_order = {int(row["event_order"]): row for row in goal_rows}
 
     target_events = tuple(sorted(target.events, key=lambda item: item.event_order))
     coverage_events: list[dict[str, Any]] = []
@@ -387,8 +759,7 @@ def _ordered_goal_rows(report: Mapping[str, Any]) -> tuple[Mapping[str, Any], ..
                 for row in values
                 if isinstance(row, Mapping)
                 and row.get("source_provider") == PROVIDER_NAME
-                and row.get("status")
-                in {"independent_candidate", "timing_conflict"}
+                and row.get("status") in {"independent_candidate", "timing_conflict"}
             ),
             key=lambda row: int(row["event_order"]),
         )

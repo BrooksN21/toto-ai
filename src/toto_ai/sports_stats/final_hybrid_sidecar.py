@@ -115,14 +115,20 @@ def prepare_parallel_sidecar_artifacts(
         raise ValueError("parallel sidecar artifact set is incomplete")
     reused = wrapper_path.exists()
     accepted_existing_wrappers: tuple[bytes, ...] = ()
+    existing_g1_refinement = False
     if reused:
-        existing_executable, sports_path = _existing_parallel_wrapper_binding(
-            wrapper_path=wrapper_path,
-            plan=plan,
-            plan_path=plan_path,
-            root=root,
-            authorization_path=authorization_path,
+        existing_executable, sports_path, existing_g1_refinement = (
+            _existing_parallel_wrapper_binding(
+                wrapper_path=wrapper_path,
+                plan=plan,
+                plan_path=plan_path,
+                root=root,
+                authorization_path=authorization_path,
+            )
         )
+        if existing_g1_refinement:
+            # Normalize only after complete binding validation, retaining opt-in.
+            accepted_existing_wrappers = (wrapper_path.read_bytes(),)
         if existing_executable == executable:
             executable = existing_executable
         else:
@@ -153,6 +159,8 @@ def prepare_parallel_sidecar_artifacts(
         "--minimum-runtime-seconds",
         "240",
     ]
+    if existing_g1_refinement:
+        command.append("--g1-refinement")
     wrapper = (
         "#!/bin/zsh\n"
         "set -eu\n"
@@ -1348,7 +1356,7 @@ def _existing_parallel_wrapper_binding(
     plan_path: Path,
     root: Path,
     authorization_path: Path | None,
-) -> tuple[Path, Path]:
+) -> tuple[Path, Path, bool]:
     """Validate and reuse the immutable input already bound to one plan."""
 
     wrapper = _regular_file(wrapper_path, "parallel sidecar wrapper")
@@ -1367,20 +1375,34 @@ def _existing_parallel_wrapper_binding(
         command = shlex.split(lines[3][len("exec ") :])
     except ValueError as error:
         raise ValueError("parallel sidecar wrapper command is invalid") from error
-    if len(command) not in {14, 16} or command[1:4] != [
+    if len(command) not in {14, 15, 16, 17} or command[1:4] != [
         "-m",
         "toto_ai.cli",
         "run-final-goal-hybrid-sidecar",
     ]:
         raise ValueError("parallel sidecar wrapper command mismatch")
     option_tokens = command[4:]
-    if len(option_tokens) % 2:
-        raise ValueError("parallel sidecar wrapper options are invalid")
     options: dict[str, str] = {}
-    for name, value in zip(option_tokens[::2], option_tokens[1::2], strict=True):
+    g1_refinement = False
+    index = 0
+    while index < len(option_tokens):
+        name = option_tokens[index]
+        if name == "--g1-refinement":
+            if g1_refinement:
+                raise ValueError("parallel sidecar wrapper option is duplicated")
+            g1_refinement = True
+            index += 1
+            continue
+        if (
+            index + 1 >= len(option_tokens)
+            or option_tokens[index + 1].startswith("--")
+        ):
+            raise ValueError("parallel sidecar wrapper options are invalid")
+        value = option_tokens[index + 1]
         if name in options:
             raise ValueError("parallel sidecar wrapper option is duplicated")
         options[name] = value
+        index += 2
     required = {
         "--scheduler-plan",
         "--sports-artifact",
@@ -1417,7 +1439,7 @@ def _existing_parallel_wrapper_binding(
     )
     if not sports_path.is_relative_to(plan.project_root):
         raise ValueError("parallel sidecar sports artifact binding mismatch")
-    return executable, sports_path
+    return executable, sports_path, g1_refinement
 
 
 def _write_expected(

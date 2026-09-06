@@ -14,6 +14,7 @@ from toto_ai.runner.scheduler import (
     SchedulerPlan,
     experimental_manual_release_status,
 )
+from toto_ai.runner.scheduler_state import load_state
 
 _MOSCOW = ZoneInfo("Europe/Moscow")
 _STRATEGIES = ("quality-v2", "sports-shadow", "quality-v3", "robust")
@@ -121,20 +122,104 @@ def _latest_attempt(
     output: Path, plan: SchedulerPlan
 ) -> Mapping[str, object] | None:
     attempts = output / "attempts"
-    if not attempts.is_dir():
-        return None
-    candidates: list[tuple[datetime, Mapping[str, object]]] = []
-    for path in attempts.glob("*/status.json"):
-        payload = _bound_json(path, plan)
-        if payload is None:
-            continue
-        completed = _timestamp(payload.get("completed_at"))
-        published = _timestamp(payload.get("published_at"))
-        fallback = datetime.min.replace(tzinfo=timezone.utc)
-        candidates.append((completed or published or fallback, payload))
+    fallback = datetime.min.replace(tzinfo=timezone.utc)
+    candidates: list[tuple[datetime, int, Mapping[str, object]]] = []
+    status_by_run_id: dict[str, Mapping[str, object]] = {}
+    if attempts.is_dir():
+        for path in attempts.glob("*/status.json"):
+            payload = _bound_json(path, plan)
+            if payload is None:
+                continue
+            normalized = _normalize_status_attempt(payload)
+            run_id = normalized.get("run_id")
+            if isinstance(run_id, str):
+                status_by_run_id[run_id] = normalized
+            completed = _timestamp(normalized.get("time"))
+            candidates.append((completed or fallback, 0, normalized))
+
+    state_attempt = _latest_completed_state_attempt(output, plan, status_by_run_id)
+    if state_attempt is not None:
+        completed = _timestamp(state_attempt.get("time"))
+        candidates.append((completed or fallback, 1, state_attempt))
     if not candidates:
         return None
-    return max(candidates, key=lambda item: item[0])[1]
+    return max(candidates, key=lambda item: (item[0], item[1]))[2]
+
+
+def _latest_completed_state_attempt(
+    output: Path,
+    plan: SchedulerPlan,
+    status_by_run_id: Mapping[str, Mapping[str, object]],
+) -> Mapping[str, object] | None:
+    state_path = output / "scheduler-state.json"
+    if not state_path.exists():
+        return None
+    state = load_state(state_path, plan_id=plan.plan_id, now=plan.ended_at)
+    transitions = state.get("transitions")
+    if not isinstance(transitions, list):
+        raise ValueError("scheduler state transitions are invalid")
+    candidates: list[tuple[datetime, int, Mapping[str, object]]] = []
+    for index, raw_transition in enumerate(transitions):
+        if not isinstance(raw_transition, Mapping):
+            raise ValueError("scheduler state transition is invalid")
+        phase = raw_transition.get("phase")
+        result = raw_transition.get("status")
+        run_id = raw_transition.get("attempt_id")
+        if result == "running" or run_id is None or phase == "publish":
+            continue
+        if not all(
+            isinstance(value, str) and value for value in (phase, result, run_id)
+        ):
+            raise ValueError("completed scheduler attempt identity is invalid")
+        completed_at = raw_transition.get("observed_at")
+        completed = _timestamp(completed_at)
+        if completed is None:
+            raise ValueError("completed scheduler attempt timestamp is invalid")
+        payload = dict(status_by_run_id.get(run_id, {}))
+        status_run_id = payload.get("run_id")
+        if status_run_id is not None and status_run_id != run_id:
+            raise ValueError("scheduler attempt status run identity mismatch")
+        failed = result.endswith("failed")
+        reason = raw_transition.get("reason") or payload.get("reason")
+        payload.update(
+            {
+                "run_id": run_id,
+                "phase": phase,
+                "result": result,
+                "time": completed_at,
+                "state": payload.get("state", "failed" if failed else result),
+                "reason": reason,
+                "error": payload.get("error") or (reason if failed else None),
+                "completed_at": completed_at,
+            }
+        )
+        candidates.append((completed, index, payload))
+    if not candidates:
+        return None
+    return max(candidates, key=lambda item: (item[0], item[1]))[2]
+
+
+def _normalize_status_attempt(
+    attempt: Mapping[str, object],
+) -> Mapping[str, object]:
+    payload = dict(attempt)
+    run_id = payload.get("run_id")
+    phase = payload.get("phase")
+    if not isinstance(phase, str) and isinstance(run_id, str):
+        phase = run_id.split("-", 1)[0]
+    result = payload.get("result", payload.get("outcome", payload.get("state")))
+    completed_at = payload.get("time", payload.get("completed_at"))
+    if _timestamp(completed_at) is None:
+        completed_at = payload.get("published_at")
+    payload.update(
+        {
+            "phase": phase,
+            "result": result,
+            "time": completed_at,
+            "completed_at": payload.get("completed_at", completed_at),
+        }
+    )
+    return payload
 
 
 def _bound_json(
@@ -258,7 +343,9 @@ def _primary_status(
         }
     if attempt is not None:
         return {
-            "status": attempt.get("outcome", attempt.get("state", "attempted")),
+            "status": attempt.get(
+                "outcome", attempt.get("result", attempt.get("state", "attempted"))
+            ),
             "reason": attempt.get("reason", attempt.get("error")),
         }
     return {"status": "pending", "reason": None}
@@ -273,6 +360,9 @@ def _attempt_summary(
         key: attempt.get(key)
         for key in (
             "run_id",
+            "phase",
+            "result",
+            "time",
             "state",
             "outcome",
             "decision",
@@ -319,7 +409,10 @@ def _blocker(
 ) -> str | None:
     if operator is not None and operator.get("operator_status") == "NO_BET":
         return str(operator.get("reason") or "operator returned NO_BET")
-    if attempt is not None and attempt.get("state") == "failed":
+    if attempt is not None and (
+        attempt.get("state") == "failed"
+        or str(attempt.get("result", "")).endswith("failed")
+    ):
         return str(attempt.get("error") or attempt.get("reason") or "attempt failed")
     if sidecar is not None and str(sidecar.get("status", "")).endswith("FAILED_OPEN"):
         return str(sidecar.get("error") or sidecar.get("status"))
@@ -385,6 +478,9 @@ def _last_phase(
     attempt: Mapping[str, object] | None,
 ) -> str:
     if attempt is not None:
+        phase = attempt.get("phase")
+        if isinstance(phase, str) and phase:
+            return phase
         run_id = attempt.get("run_id")
         if isinstance(run_id, str) and run_id:
             return run_id.split("-", 1)[0]

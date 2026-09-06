@@ -33,7 +33,16 @@ _MARKDOWN_EVIDENCE = re.compile(
     r"evidence:\s*`([^`]+)`\s+[^\n]*SHA-256\s*`([0-9a-f]{64})`"
 )
 _MULTIPART_PUBLIC_SUFFIXES = frozenset(
-    {"co.uk", "com.au", "com.br", "com.tr", "co.jp", "co.kr", "co.nz"}
+    {
+        "co.uk",
+        "com.au",
+        "com.br",
+        "com.cy",
+        "com.tr",
+        "co.jp",
+        "co.kr",
+        "co.nz",
+    }
 )
 _KNOWN_PUBLISHERS = {
     "goal-api.com": "goal-api",
