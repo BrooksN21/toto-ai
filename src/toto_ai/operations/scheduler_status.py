@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import stat
 import time
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from toto_ai.operations.scheduler_delivery import delivery_status
 from toto_ai.runner.scheduler import (
     SchedulerPlan,
     experimental_manual_release_status,
@@ -29,11 +32,16 @@ def scheduler_status(
     output = plan.output_dir.resolve()
     attempt = _latest_attempt(output, plan)
     operator = _bound_json(output / "operator-result.json", plan)
-    sidecar = _bound_json(
-        output / "parallel-challenger" / "output" / "sidecar-status.json",
-        plan,
-    )
-    comparison = _comparison(sidecar, output, plan)
+    try:
+        sidecar = _bound_json(
+            output / "parallel-challenger" / "output" / "sidecar-status.json",
+            plan,
+        )
+        comparison = _comparison(sidecar, output, plan)
+    except ValueError:
+        # A malformed optional sidecar must not hide the primary publication.
+        # The strict delivery consumer reports its own binding failure.
+        sidecar, comparison = None, None
     models = _model_states(comparison)
     selected_strategy = _selected_strategy(sidecar, comparison)
     best_coupon = _highest_p13(sidecar, comparison, selected_strategy)
@@ -44,6 +52,14 @@ def scheduler_status(
     manual_wager_request = _manual_wager_request(plan, observed_at)
     blocker = _blocker(attempt, operator, sidecar, manual_wager_request)
     expires_at = plan.deadlines["t_minus_10"]
+    delivery = delivery_status(plan, observed_at=observed_at)
+    operator_summary = _operator_summary(operator)
+    if operator_summary is not None:
+        operator_summary = dict(operator_summary)
+        operator_summary["actionable"] = any(
+            event["event"] == "READY_PRIMARY" and event["actionable"]
+            for event in delivery["events"]
+        )
     return {
         "schema_version": 1,
         "observed_at_msk": observed_at.astimezone(_MOSCOW).isoformat(),
@@ -57,7 +73,10 @@ def scheduler_status(
         "challengers": models,
         "selected_strategy": selected_strategy,
         "highest_p13_single_coupon": best_coupon,
-        "operator_result": _operator_summary(operator),
+        "operator_result": operator_summary,
+        "delivery": delivery,
+        "watch_complete": observed_at >= expires_at
+        or (terminal and operator is not None and operator.get("decision") != "PLAY"),
         "operator_result_ready": operator is not None,
         "manual_wager_request": manual_wager_request,
         "terminal": terminal,
@@ -90,8 +109,11 @@ def watch_scheduler_status(
         raise ValueError("watch interval must be positive")
     latest_path = _watch_path(plan, latest_path, "latest status")
     history_path = _watch_path(plan, history_path, "status history")
-    latest_path.parent.mkdir(parents=True, exist_ok=True)
-    history_path.parent.mkdir(parents=True, exist_ok=True)
+    delivery_path = _watch_path(
+        plan, latest_path.with_name("delivery-ready.json"), "delivery receipt"
+    )
+    if delivery_path in (latest_path, history_path):
+        raise ValueError("delivery receipt must be distinct from status/history")
     provider = status_provider or (lambda value: scheduler_status(value))
     previous: str | None = None
     last: dict[str, object] | None = None
@@ -103,13 +125,23 @@ def watch_scheduler_status(
             last, ensure_ascii=False, sort_keys=True, separators=(",", ":")
         )
         fingerprint = _status_fingerprint(last)
+        if isinstance(last.get("delivery"), Mapping):
+            _atomic_text(
+                delivery_path,
+                json.dumps(
+                    last["delivery"],
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+                + "\n",
+            )
         _atomic_text(latest_path, encoded + "\n")
         if fingerprint != previous:
-            with history_path.open("a", encoding="utf-8") as handle:
-                handle.write(encoded + "\n")
+            _append_text(history_path, encoded + "\n")
             print(encoded, flush=True)
             previous = fingerprint
-        if bool(last.get("terminal")):
+        if bool(last.get("watch_complete", last.get("terminal"))):
             return last
         if max_iterations is None or iteration < max_iterations:
             sleep(interval_seconds)
@@ -527,7 +559,9 @@ def _aware_utc(value: datetime | None) -> datetime:
 
 def _watch_path(plan: SchedulerPlan, path: Path, name: str) -> Path:
     output = plan.output_dir.resolve()
-    path = Path(path).resolve()
+    path = Path(path).absolute()
+    if ".." in path.parts or any(p.is_symlink() for p in (path, *path.parents)):
+        raise ValueError(f"{name} must not traverse parent components or symlinks")
     if path == output or output not in path.parents:
         raise ValueError(f"{name} must remain inside scheduler output")
     if path.is_symlink():
@@ -538,16 +572,98 @@ def _watch_path(plan: SchedulerPlan, path: Path, name: str) -> Path:
 def _status_fingerprint(status: Mapping[str, object]) -> str:
     stable = dict(status)
     stable.pop("observed_at_msk", None)
+    if isinstance(stable.get("delivery"), Mapping):
+        stable["delivery"] = {
+            k: v for k, v in stable["delivery"].items() if k != "observed_at"
+        }
     return json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
-def _atomic_text(path: Path, value: str) -> None:
-    temporary = path.with_name(f".{path.name}.tmp")
-    if temporary.exists():
-        raise ValueError(f"stale watcher temporary file exists: {temporary}")
+def _directory_fd(path: Path) -> int:
+    """Pin every ancestor without following symlinks, including newly created dirs."""
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    fd = os.open(path.anchor, flags)
     try:
-        temporary.write_text(value, encoding="utf-8")
-        temporary.replace(path)
-    except Exception:
-        temporary.unlink(missing_ok=True)
+        for part in path.parts[1:]:
+            try:
+                child = os.open(part, flags, dir_fd=fd)
+            except FileNotFoundError:
+                os.mkdir(part, mode=0o700, dir_fd=fd)
+                os.fsync(fd)
+                child = os.open(part, flags, dir_fd=fd)
+            os.close(fd)
+            fd = child
+        return fd
+    except BaseException:
+        os.close(fd)
         raise
+
+
+def _writable_entry(fd: int, name: str) -> os.stat_result | None:
+    try:
+        entry = os.stat(name, dir_fd=fd, follow_symlinks=False)
+    except FileNotFoundError:
+        return
+    if not stat.S_ISREG(entry.st_mode) or entry.st_nlink != 1:
+        raise ValueError("watcher destination must be regular, never a symlink")
+    return entry
+
+
+def _atomic_text(path: Path, value: str) -> None:
+    fd = _directory_fd(path.parent)
+    temporary = f".{path.name}.tmp"
+    created = False
+    try:
+        _writable_entry(fd, path.name)
+        try:
+            writer = os.open(
+                temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                0o600, dir_fd=fd,
+            )
+        except FileExistsError as error:
+            raise ValueError("stale watcher temporary file exists") from error
+        created = True
+        with os.fdopen(writer, "w", encoding="utf-8") as handle:
+            handle.write(value)
+            handle.flush()
+            os.fsync(handle.fileno())
+        _writable_entry(fd, path.name)
+        os.replace(temporary, path.name, src_dir_fd=fd, dst_dir_fd=fd)
+        created = False
+        os.fsync(fd)
+    finally:
+        if created:
+            os.unlink(temporary, dir_fd=fd)
+        os.close(fd)
+
+
+def _append_text(path: Path, value: str) -> None:
+    fd = _directory_fd(path.parent)
+    try:
+        expected = _writable_entry(fd, path.name)
+        flags = os.O_WRONLY | os.O_APPEND | os.O_NOFOLLOW | os.O_NONBLOCK
+        if expected is None:
+            flags |= os.O_CREAT | os.O_EXCL
+        writer = os.open(path.name, flags, 0o600, dir_fd=fd)
+        with os.fdopen(writer, "a", encoding="utf-8") as handle:
+            # O_NOFOLLOW does not reject hardlinks. Validate the opened inode,
+            # not just the pathname checked before open, before writing any byte.
+            opened = os.fstat(handle.fileno())
+            current = _writable_entry(fd, path.name)
+            identity = (opened.st_dev, opened.st_ino)
+            if (
+                not stat.S_ISREG(opened.st_mode)
+                or opened.st_nlink != 1
+                or current is None
+                or (current.st_dev, current.st_ino) != identity
+                or (
+                    expected is not None
+                    and (expected.st_dev, expected.st_ino) != identity
+                )
+            ):
+                raise ValueError("history append destination changed before write")
+            handle.write(value)
+            handle.flush()
+            os.fsync(handle.fileno())
+    finally:
+        os.close(fd)
