@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
-  "saved_at": "2026-09-06T14:12:25+03:00",
+  "saved_at": "2026-09-06T14:30:42+03:00",
   "path_root": "/Users/turshevr/toto-ai",
   "state": "OWNER_ROLE_BOUNDARY_CORRECTION",
   "observations": {
@@ -291,6 +291,21 @@
           "remaining_in_this_slice": [],
           "next_action": "Stop; no new work or rerun selected. Parent retains existing4998 checkpoint."
         }
+      },
+      "existing_stack_publication": {
+        "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+        "at": "2026-09-06T14:30:42+03:00",
+        "status": "PUBLISHED_DRAFT_PR",
+        "source_commit": "9df62a36834cd88f55640371d2d6e8a50e104ec4",
+        "verified_remote_tip": "dcaa08eedc31a6d5820e99808a898318ee079c7e",
+        "pr_url": "https://github.com/BrooksN21/toto-ai/pull/22",
+        "draft": true,
+        "main_directly_pushed": false,
+        "new_parallel_wiring_included": false,
+        "operations_unchanged": true,
+        "verification": "main and selected-only snapshot each545 PASS/4 exclusions; Ruff28 PASS",
+        "remaining_tracked_dirty_count": 9,
+        "final_metadata": "Follow-up committed/pushed on same PR; not a new engineering task."
       }
     },
     "permission_retry_note": "Native followups accepted when citing verified owner commit49bd9ed; one later rejection was reassessed only after verifying exact committed/current exception. Never bypass refusal or create replacements.",

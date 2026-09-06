@@ -1,3 +1,11 @@
+## 2026-09-06 — accepted stack publication completed
+
+- [x] Reviewed existing stack committed as `9df62a3` and pushed to
+  `codex/reviewed-stack-20260906`; [draft PR22](https://github.com/BrooksN21/toto-ai/pull/22). Main and selected-only
+  snapshot each545 PASS/4 exclusions; Ruff28 PASS. No activation/new wiring.
+- Prior publication-pending entries below are historical; remaining dirty owner
+  work/new parallel integration is separate. No auto-merge or new scope selected.
+
 ## 2026-09-06 — current accepted-stack publication checkpoint
 
 - [x] O1 cleanup finalized;183 prior cases accounted for, Ruff PASS. G1 exact
