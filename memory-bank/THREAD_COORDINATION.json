@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
-  "saved_at": "2026-09-06T20:51:25.598687+03:00",
+  "saved_at": "2026-09-06T18:14:43.468575+00:00",
   "path_root": "/Users/turshevr/toto-ai",
   "state": "OWNER_ROLE_BOUNDARY_CORRECTION",
   "observations": {
@@ -1775,16 +1775,15 @@
       "drawing": 4999,
       "drawing_id": 12106,
       "close_msk": "2026-09-07T17:30:00+03:00",
-      "unknown_timing_positions": [
-        9,
-        12,
-        14
-      ],
-      "plan_id": null,
-      "activation": false,
+      "unknown_timing_positions": [],
+      "plan_id": "b742aac1fea2d42d",
+      "activation": true,
       "new_consent": false,
-      "live_summary": "One GET ConnectTimeout6s, no retry; live source unverified",
-      "ready": false
+      "live_summary": "Native identity-bound morning-dispatch06.09 21:09MSK scheduled; priorGETtimeout is historical",
+      "ready": "SCHEDULER_PREPARED_15_OF15_REAL_PREFLIGHT_INTERRUPTED_NO_PASS",
+      "watcher_running": true,
+      "preflight_status": "INTERRUPTED_NO_PASS",
+      "next_checkpoint": "2026-09-07T15:30:00+03:00"
     },
     "postmortem4998": {
       "scheduled_msk": "2026-09-07T12:00:00+03:00",
@@ -1802,5 +1801,38 @@
     "postmortem_correction_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM_BINDING_STATUS_CORRECTION_RECEIPT_20260906.json",
     "runtime_review_status_updated_at": "2026-09-06T20:40:53.873666+03:00",
     "published_runtime02_commit": "a651a05ed7c6fc507b0174951d87bbdf033ff234"
+  },
+  "current_4999_operations": {
+    "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+    "at": "2026-09-06T18:14:43.468575+00:00",
+    "cwd": "/Users/turshevr/toto-ai",
+    "role": "operations",
+    "status_path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/LIVE_OPERATION_4999_STATUS.json",
+    "phase": "FROZEN_PLAN_ACTIVE_PREFLIGHT_INTERRUPTED_NO_PASS",
+    "plan_id": "b742aac1fea2d42d",
+    "consent_created": false,
+    "next_action": "Separate authorization required. Smallest safe verification: one exact-plan preflight-only with genuine phase-progress observability and bounded public-request timing; explicitly resolve incompatibility with current30s-silence bound before retry. No source/gate changes implied; no run now.",
+    "remaining_timing_positions": [],
+    "registered_positions": [
+      9,
+      12,
+      14
+    ],
+    "ledger_sha256": "245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9",
+    "activation": true,
+    "watcher_installed": true,
+    "preflight_executed": true,
+    "blocker": "REAL_PREFLIGHT_NOT_VERIFIED: CHILD_SILENCE_30S; exit130, recorded elapsed30.155s. Waiting callstack/stage unknown; no provider-specific cause captured. No retry authorized.",
+    "handoff": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_HANDOFF.md",
+    "owned_pid": null,
+    "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json",
+    "plan_sha256": "92ddec53c4554b7edc8c04de0e8a52f25400ed2450e61447eac2a01fc6e4f20d",
+    "watcher_running": true,
+    "watcher_pid": 48486,
+    "preflight_status": "INTERRUPTED_NO_PASS",
+    "preflight_exit_code": 130,
+    "retry": "Nativelydeactivated:drawing_ready",
+    "owned_child_gone": true,
+    "preflight_waiting_stage": "UNKNOWN_NO_CALLSTACK"
   }
 }

@@ -1,3 +1,31 @@
+#4999 PUBLICATION CHECKPOINT — 2026-09-06T18:18:31.183833+00:00
+
+DONE: frozen4999operations evidence condensed for draftPR22; focused42pytestPASS2.81s/Ruff5PASS. Plan b742aac1fea2d42d installed per18:14:43UTC receipt; no new runtime check. IN PROGRESS: metadata-only commit/push from baseline854e0ea; no source/DB/jobs/consent changes.
+BLOCKER: REAL_PREFLIGHT_NOT_VERIFIED /CHILD_SILENCE_30S, exit130/30.155s; waitingstageunknown, no provider diagnosis, no retry. No4999consent/PLAY; owner must give exactplan-bound pre-cutoff manual authorization before experimental release,4980/30prep is not consent. SportsV3F4 isolated, pendingreview/data, not adopted/activated.
+NEXT: verify draftPR22 remoteHEAD then stop; separate parent decision on observable preflight. Installed nextprimary07.09 15:30MSK; expiry17:20/close17:30. Compact public evidence: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLIC_STATUS.json. Mixedledger/rawruntime/unrelatedtests remain local. Historical checkpoints below preserved.
+
+# FROZEN ACCURACY CHECK — 2026-09-06T18:14:43.468575+00:00
+
+4999 plan b742aac1fea2d42d remains installed; watcherPID48486. **Preflight NO PASS:** REAL_PREFLIGHT_NOT_VERIFIED: CHILD_SILENCE_30S; exit130, recorded elapsed30.155s. Waiting callstack/stage unknown; no provider-specific cause captured. No retry authorized. Owned PID/process group48553 verified absent. Stored elapsed30.155s; supervisor final console clock30.156s is a separate immediate measurement, not a second run. No retry. Exact frozen handoff: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_HANDOFF.md.
+
+# CURRENT —4999 scheduled; watcher running; preflight NO PASS — 2026-09-06T21:14:18.557030+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. All3timings reviewed/native registered,251prior observations preserved (now252); native morning-dispatch ready15/15 exit0/21.032s. Malta MFA+Academia20:00MSK selected; old Sofa19:00 conflict preserved, no universal gate override.
+Plan **b742aac1fea2d42d** at `/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json`; primary/parallel loaded/runs0. Primary07.09 MSK15:30/16:00/16:30/16:40/16:50/17:00/17:12/17:20; parallel4models17:00; expiry17:20; close17:30. Old passive retry nativelydeactivated drawing_ready.
+Canonical localwatcher loaded/runningPID48486 poll30s, matchingstatus written; cannotwakeidlechat. GOAL13/15, trainingdeferred1020RUB/34capacity; no generatedmodelpackage/fullperformanceclaim.
+**BLOCKER:** actual scheduler-preflight-only PID48553 interrupted after30s childsilence peruserbound, exit130/30.156s; no result/PASS, no diagnosedAPI-specificcause, no retry. Protectedplan/bindings/wrappers/plists unchanged; primary mainstate notmutated.
+No4999consent/operator/PLAY: owner_response_required.4980/30prep only; parallel research/notreleased.
+NEXT: parentdecides separately boundedobservablepreflight continuation; nextnativecheckpoint07.09 15:30MSK. No automaticprivatewait/retry/heartbeat. Handoff plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_HANDOFF.md; exactstatus LIVE_OPERATION_4999_STATUS.json. No VCS/codechanges; operationalnative data/jobs changes authorized. HistoricalMalta/no-plan/retry21:50status below superseded.
+
+# CURRENT —4999 two timing reviews registered; Malta blocked — 2026-09-06T21:05:29.476279+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; drawing4999/DB12106, close07.09 17:30MSK=14:30UTC.
+DONE: positions12 Saudi18:30MSK and14 Serbia19:00MSK native dry-run/apply/verify PASS; read-only exact resolver RESOLVED. Genuine FSS raw obtained; earlier FSS timeout no longer blocker. Ledger249→251, all prior249 preserved.
+BLOCKER: only position9 Malta — MFA20:00MSK vs Sofa19:00MSK; safe agreeing club capture/conflict disposition missing, expired TLS not bypassed. Leibniz context-only search, sole operations ledger ownership retained.
+No4999plan/activation/watcher/real scheduler-preflight/consent/package. Existing passive retry loaded/idle, next21:50MSK; GOAL+parallel intent retained,4980/30 prep only. No source/DB/job/archive/push changes.
+NEXT: receive genuine Malta evidence, validate disposition, native review dry-run/apply/verify; fresh duplicate guard before one native morning-dispatch. No automatic private wait/resumption or chat heartbeat.
+Handoff: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_HANDOFF.md. Exact hashes/results in LIVE_OPERATION_4999_STATUS.json. Historical3-unknown and Serbia capture blockers below are superseded; no full pipeline-readiness claim.
+
 # CURRENT — Runtime02 source PUBLISHED — 2026-09-06T20:51:25.598687+03:00
 
 Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Published exact accepted runtime02 as `a651a05ed7c6fc507b0174951d87bbdf033ff234`; remote OPEN/draft PR22 HEAD verified2026-09-06T20:50:37.465942+03:00. Independent ACCEPT20:39:37; current13files/8dependencies matched; finalizer101PASS3.27s/Ruff13PASS. No merge/origin-main push, source edits, jobs/DB/operator/consent/archive changes or F4 inclusion.
