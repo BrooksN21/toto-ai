@@ -34,7 +34,9 @@ POLICY_VERSION = "parallel-g1-research-v1"
 class ParallelG1Config:
     family_refinement: bool = False
     diagnostics: bool = True
-    max_swap_evaluations: int = 50_000
+    # One evaluation is a raw remove/add pair, before exposure rejection;
+    # models multiply projection work, not this count. Keep full-round admission.
+    max_swap_evaluations: int = 65_536
     max_accepted_swaps: int = 1
     engine_seconds: float = 50.0
     hard_timeout_seconds: float = 60.0

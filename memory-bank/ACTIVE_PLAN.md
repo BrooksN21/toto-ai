@@ -1,3 +1,50 @@
+# CURRENT — G1 accepted profile verified; publication prepared — 2026-09-06T17:16:44.249348+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Finalizer only:24current pytest PASS
+1.01s/Ruff3PASS; accepted cap65536,50s/60s/reserve30 unchanged. No source/runtime edits.
+Euler's SAME-input NONFINAL4998 diagnostic completed17:09:48:53618pairs,1swap,
+engine40.928s,all12nondegradation PASS; robust BKP13 .0250222344→.0251446059.
+Overall winner remains quality-v3. Not finalPLAY, trainedSports-v3 or profit proof.
+DOING:publish accepted G1 source/test/knowledge plus compact handoff/memory to draftPR22.
+SportsV3 train/infer is separately owned/isolated, NOT included. Local context files
+SPORTS_V3_COMPLETION_CONTEXT.md and SPORTS_V3_LABEL_EVIDENCE_HANDOFF.md in the task
+plans directory contain model gaps and90+optional15already-saved timestamped labels;
+labels present is not F4 validation. Bulk label/capture/candidate data are not published.
+Protected primary plan c1d243f5b6ca48f3/4980/30,consent/scheduler unchanged by publisher.
+Ledger and unrelated local artifacts preserved. BLOCKER:none for bounded publication.
+NEXT:confirm remote draftPR22 head and stop;17:30primary/18:00final/18:20expiry remain
+owner's operational checkpoints, not newly polled here. Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_PUBLICATION_RECEIPT_20260906.json.
+
+# CURRENT — G1 profile adopted; real SAME-input NONFINAL replay COMPLETE — 2026-09-06T17:12:04.405881+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; Euler authorized main G1-only job DONE.
+Exact accepted3file patch c3fe388c… applied17:05:29;24pytestPASS1.05s/Ruff3PASS.
+Defaultcap65536; unchanged50s/60s/reserve30, no candidate cuts or scheduler logic change.
+Real repeat SAME frozen4998 input/seedac04…/4980/30 finished17:09:48 exit0;
+N166/U489/M4,53618pairs evaluated, G1 REFINED/applied1swap, engine40.928s/call42.488s.
+All12same-model P13/P14/P15 comparisons improve. BK robustP13 2.502223%→2.514461%.
+All4families eligible; unchanged overall selector still quality-v3, robust+G1 not winner.
+NONFINAL RESEARCH ONLY: no PLAY/profit/trainedSports-v3 claim or wagerable export.
+Prior diagnostic unchanged;8protectedfiles/5runtime-sourcehashes unchanged in replay;
+no API/DB/jobs/consent/wrapper/primary mutation. No owned PID/session remains.
+17:00api_preflight complete17:00:48/errornull; post-run primary idle/runs2/exit0.
+BLOCKER:none. NEXT:separate finalizer; existing17:30primary/18:00final/18:20expiry unchanged.
+Sports-v3 separately owned, no duplicated implementation. No commit/push in this job.
+Handoff: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_ADOPTION_AND_REPLAY_HANDOFF.md
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_ADOPTION_RECEIPT.json
+Status: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_EVALUATION_PROFILE_MAIN_STATUS.json
+
+# CURRENT — G1 accepted profile adopted; verification/replay pending — 2026-09-06T17:05:29.812911+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; Euler single authorized main job.
+Exact ACCEPT patch c3fe388c… applied3files; default count65536, times50/60/reserve30 unchanged.
+Primary17:00 api_preflight complete17:00:48, exit0; pre-write launchd idle/noPID.
+DOING scoped tests/Ruff then SAME frozen4998 NONFINAL research rerun in new output.
+No jobs/consent/wrapper changes; plan c1d243f5b6ca48f3/4980/30 unchanged.
+BLOCKER:none yet; G1 completion/improvement not claimed. Stop no later17:28 before17:30 primary.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_ADOPTION_RECEIPT.json
+Sports-v3 separately owned; no publication or automatic wagering.
+
 # CURRENT — final accepted source PUBLISHED; runtime outcome unverified — 2026-09-06T16:47:08.983096+03:00
 
 Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Published source commit

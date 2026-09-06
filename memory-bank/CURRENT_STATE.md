@@ -1,3 +1,20 @@
+# CURRENT — G1 accepted profile verified; publication prepared — 2026-09-06T17:16:44.249348+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Finalizer only:24current pytest PASS
+1.01s/Ruff3PASS; accepted cap65536,50s/60s/reserve30 unchanged. No source/runtime edits.
+Euler's SAME-input NONFINAL4998 diagnostic completed17:09:48:53618pairs,1swap,
+engine40.928s,all12nondegradation PASS; robust BKP13 .0250222344→.0251446059.
+Overall winner remains quality-v3. Not finalPLAY, trainedSports-v3 or profit proof.
+DOING:publish accepted G1 source/test/knowledge plus compact handoff/memory to draftPR22.
+SportsV3 train/infer is separately owned/isolated, NOT included. Local context files
+SPORTS_V3_COMPLETION_CONTEXT.md and SPORTS_V3_LABEL_EVIDENCE_HANDOFF.md in the task
+plans directory contain model gaps and90+optional15already-saved timestamped labels;
+labels present is not F4 validation. Bulk label/capture/candidate data are not published.
+Protected primary plan c1d243f5b6ca48f3/4980/30,consent/scheduler unchanged by publisher.
+Ledger and unrelated local artifacts preserved. BLOCKER:none for bounded publication.
+NEXT:confirm remote draftPR22 head and stop;17:30primary/18:00final/18:20expiry remain
+owner's operational checkpoints, not newly polled here. Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_PUBLICATION_RECEIPT_20260906.json.
+
 # CURRENT — final accepted source PUBLISHED; runtime outcome unverified — 2026-09-06T16:47:08.983096+03:00
 
 Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Published source commit
