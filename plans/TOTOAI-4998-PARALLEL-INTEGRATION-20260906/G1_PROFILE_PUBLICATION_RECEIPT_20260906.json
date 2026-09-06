@@ -1,6 +1,6 @@
 {
   "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
-  "phase": "VERIFIED_PUBLICATION_PREPARED",
+  "phase": "SOURCE_PUBLISHED_REMOTE_VERIFIED_CLOSING_METADATA",
   "at": "2026-09-06T17:15:40.185591+03:00",
   "workflow": "gena-submission-ci-flow unavailable/incompatible with local policy; explicitly authorized project-git/public gh fallback; no agents/internal services",
   "accepted_patch_sha256": "c3fe388cb3e2b230b506f8479bdcae7a883446f1fc2d087417a19347a3fba8e5",
@@ -96,5 +96,28 @@
   ],
   "knowledge_publication_addendum": "Accepted original retained; appended subsequent adopter diagnostic/current publisher test evidence, no behavioral change.",
   "source_after_verification_sha256": "9ca4ef440a779ef9f8f445fc625b8d20fb164ba15af2c762e5795e45d71304e5",
-  "prepared_at": "2026-09-06T17:16:44.249348+03:00"
+  "prepared_at": "2026-09-06T17:16:44.249348+03:00",
+  "source_publication": {
+    "commit": "01b5df262f64f4eadafa3cf5b5e3bd93f95d791b",
+    "push_exit": 0,
+    "remote_verified_at": "2026-09-06T17:18:28.655769+03:00",
+    "pr_state": "OPEN",
+    "isDraft": true,
+    "headRefOid": "01b5df262f64f4eadafa3cf5b5e3bd93f95d791b",
+    "headRefName": "codex/reviewed-stack-20260906",
+    "merged": false
+  },
+  "after_source_push": {
+    "index_empty": true,
+    "tracked_dirty": [
+      "data/schedule-evidence/ledger.json"
+    ],
+    "ledger_bytes_unchanged": true,
+    "untracked_scope": "Local context/labels/raw/candidates/transient diagnostics and separately owned retrospective tests preserved; no whole-checkout clean claim."
+  },
+  "closing_metadata": {
+    "at": "2026-09-06T17:18:28.655769+03:00",
+    "source_unchanged_since_24test_verification": true,
+    "description": "This follow-up metadata commit records verified source publication; its final pushed HEAD will be confirmed read-only and reported to caller."
+  }
 }

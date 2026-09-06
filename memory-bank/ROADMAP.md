@@ -1,3 +1,8 @@
+## 2026-09-06T17:18:28.655769+03:00 — G1 profile publication complete
+
+Source `01b5df2` verified on draftPR22, no merge;24tests/Ruff3PASS.
+Only modeled NONFINAL research improvement; SportsV3 probability work remains separate.
+
 ## 2026-09-06T17:16:44.249348+03:00 — accepted G1 profile complete, publication pending
 
 Default pair budget65536 adopted and independently accepted. Current24tests/Ruff3
