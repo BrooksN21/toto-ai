@@ -327,6 +327,8 @@ def _write_probe(
                         ),
                         "homeTeamScore": "2" if side == "home" else "1",
                         "awayTeamScore": "0",
+                        "homeTeamFtScore": "2" if side == "home" else "1",
+                        "awayTeamFtScore": "0",
                     }
                 ]
             snapshot = {

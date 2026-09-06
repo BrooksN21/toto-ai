@@ -7222,6 +7222,7 @@ def run_final_goal_hybrid_sidecar_command(
         resolve_path=True,
     ),
     wait_seconds: int = typer.Option(600, "--wait-seconds", min=0, max=900),
+    g1_refinement: bool = typer.Option(False, "--g1-refinement"),
     minimum_runtime_seconds: int = typer.Option(
         240,
         "--minimum-runtime-seconds",
@@ -7247,6 +7248,7 @@ def run_final_goal_hybrid_sidecar_command(
             wait_seconds=wait_seconds,
             minimum_runtime_seconds=minimum_runtime_seconds,
             parallel_authorization_path=parallel_authorization,
+            g1_refinement=g1_refinement,
         )
     except (OSError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error

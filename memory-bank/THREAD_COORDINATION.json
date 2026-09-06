@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
-  "saved_at": "2026-09-06T14:30:42+03:00",
+  "saved_at": "2026-09-06T16:21:56.827892+03:00",
   "path_root": "/Users/turshevr/toto-ai",
   "state": "OWNER_ROLE_BOUNDARY_CORRECTION",
   "observations": {
@@ -1011,6 +1011,106 @@
           }
         ]
       }
+    },
+    {
+      "at": "2026-09-06T14:54:39.689048+03:00",
+      "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+      "role": "explicitly assigned fresh GOAL capture and research-seed worker",
+      "cwd": "/Users/turshevr/toto-ai",
+      "phase": "FRESH_CAPTURE_AND_RESEARCH_SEED_VERIFIED_NOT_ACTIVATED",
+      "done": "68/120 requests; schedule complete;2 quarantined;14/15 bindings;28 history sources;280 terminal observations; research seed14/15+1BKfallback; no owned process",
+      "receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998-fresh-goal-collection-receipt.json",
+      "seed_file_sha256": "135e0d3d2e33894d7793116c69805bc9acb8dca2df7214d5f6fe50b1e1ff0330",
+      "controls": "Recorded plan/jobs/auth/old pinned seed/current-marker unchanged. No activation/publication. Other roles unaffected.",
+      "remaining": "No further action in this job; separate authorized rebind only. Event9 fixture missing."
+    },
+    {
+      "at": "2026-09-06T15:05:34.911394+03:00",
+      "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+      "role": "fresh-capture worker exact version/score follow-up",
+      "cwd": "/Users/turshevr/toto-ai",
+      "phase": "V2_VERSION_CORRECTED_RESEARCH_ONLY_BLOCKED_90_MINUTE_SCORE_AUTHORITY",
+      "done": "Native V2 from identical frozen V1 evidence; Poisson+venueWDL/prior3/maxweight0.2;14/15 coverage. Native artifact/rebase compatibility at seed BK verified, not future final-input authority.",
+      "blocker": "Generic Score versus explicit FtScore differs for12/13 AFTER_ET/AFTER_PEN history observations, target events1,2,4,5,6,13. Existing importer has no verified90-minute normalization. No data/policy fix applied.",
+      "receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998-fresh-goal-collection-receipt.json",
+      "promotion_allowed": false,
+      "next_action": "Return blocker; no automatic fixes or activation",
+      "controls": "19 protected paths and originalseed unchanged; no new API or source/runtime changes"
+    },
+    {
+      "at": "2026-09-06T15:56:42.305943+03:00",
+      "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+      "role": "scoped regulation90 implementation worker",
+      "cwd": "/Users/turshevr/toto-ai",
+      "phase": "IMPLEMENTED_VERIFIED_PENDING_INDEPENDENT_REVIEW",
+      "done": "5paths;81pytestPASS/Ruff3PASS; corrected V2 14/15/280accepted0excluded,13FT+28aggregate checks",
+      "handoff": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-handoff.md",
+      "next_action": "Independent review separately; no activation/push",
+      "protected": "19guards unchanged; primary/jobs/plan/consent/pinnedseed preserved",
+      "owned_processes": []
+    },
+    {
+      "at": "2026-09-06T15:59:16.564328+03:00",
+      "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+      "cwd": "/Users/turshevr/toto-ai",
+      "role": "metadata-only coordination checkpoint",
+      "phase": "SOURCE_REVIEWS_PENDING_NO_OPERATIONAL_ACTIVATION",
+      "goals": {
+        "goal_quarantine": "ACCEPT, applied in main",
+        "history90": "81pytest PASS/Ruff3PASS; independent review assigned to original MODELS, verdict pending",
+        "corrected_v2": "14/15 coverage,280 accepted/0 excluded; not activated; event9 BK fallback",
+        "g1": "Frozen candidate94PASS; independent review assigned to original REVIEW ab34; verdict not asserted",
+        "cache_atomic_fix": "Euler owns final atomic fix; completion/ACCEPT not asserted"
+      },
+      "publication": {
+        "pr": "https://github.com/BrooksN21/toto-ai/pull/22",
+        "status": "published draft, not merged",
+        "current_slice_pushed": false,
+        "checkout_clean_claim": false
+      },
+      "existing_4998": {
+        "plan_id": "c1d243f5b6ca48f3",
+        "drawing_id": 12102,
+        "drawing_number": 4998,
+        "bank": 4980,
+        "stake": 30,
+        "consent": "Exact existing pre-cutoff experimental/manual and parallel authorization remains recorded; no new consent or scope expansion",
+        "timezone": "Europe/Moscow",
+        "first": "2026-09-06T16:30:00+03:00",
+        "final": "2026-09-06T18:00:00+03:00",
+        "expiry": "2026-09-06T18:20:00+03:00",
+        "source": "Owner coordination and existing receipts; no runtime recheck in this metadata-only pass"
+      },
+      "handoff_refs": {
+        "goal_quarantine_accept": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-independent-review.md",
+        "goal_quarantine_evidence": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-independent-review-evidence.json",
+        "history90_handoff": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-handoff.md",
+        "history90_receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-receipt.json",
+        "fresh_capture_receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998-fresh-goal-collection-receipt.json",
+        "existing_publication_receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/EXISTING_STACK_SUBMISSION_RECEIPT_20260906.json",
+        "exact_existing_consent": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-experimental-release-authorization-receipt-20260906.md",
+        "parallel_scope_context": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/context.md"
+      },
+      "remaining": "Independent verdicts required. Subsequent assigned job: guarded operational integration/new seed binding and G1 opt-in activation; source publication via separate finalization afterward, not in this pass.",
+      "next_action": "Return metadata checkpoint only; do not start activation/publication or wait for other workers.",
+      "write_scope": [
+        "memory-bank/ACTIVE_PLAN.md",
+        "memory-bank/THREAD_COORDINATION.json"
+      ],
+      "source_of_external_worker_status": "Current owner message; no new worker/process/source inventory",
+      "no_whole_ready_claim": true
+    },
+    {
+      "at": "2026-09-06T16:21:56.827892+03:00",
+      "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+      "role": "authorized publication/finalization worker",
+      "phase": "TESTED_SOURCE_PUBLICATION_PREPARED_NOT_ACTIVATED",
+      "source_scope": "GOAL quarantine/90min/default-off G1 plus related memory/policy",
+      "verification": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff14PASS.",
+      "pending": "Cache/CLI composition and wrapper correction not yet published; separate jobs",
+      "main_write_freeze": true,
+      "activation": false,
+      "publication_receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CURRENT_STACK_PUBLICATION_20260906.json"
     }
   ],
   "original_task_policy_conflicts": {
@@ -1054,5 +1154,17 @@
     "stop_requests_sent": true,
     "stopped_confirmed": false,
     "preserve_partial_artifacts": true
+  },
+  "current_4998_integration_checkpoint": {
+    "at": "2026-09-06T16:21:56.827892+03:00",
+    "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+    "role": "authorized publication/finalization worker",
+    "phase": "TESTED_SOURCE_PUBLICATION_PREPARED_NOT_ACTIVATED",
+    "source_scope": "GOAL quarantine/90min/default-off G1 plus related memory/policy",
+    "verification": "246 passed in initial8.15s run;1 synthetic-env test blocked by over-strict local guard, then1PASS after temp-only guard correction.247 cases accounted,0 skipped; Ruff14PASS.",
+    "pending": "Cache/CLI composition and wrapper correction not yet published; separate jobs",
+    "main_write_freeze": true,
+    "activation": false,
+    "publication_receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CURRENT_STACK_PUBLICATION_20260906.json"
   }
 }

@@ -25,6 +25,7 @@ from toto_ai.runner.scheduler import export_operator_package, load_scheduler_pla
 from toto_ai.sports_stats.final_hybrid_comparison import (
     execute_final_hybrid_comparison,
 )
+from toto_ai.sports_stats.parallel_g1 import ParallelG1Config
 
 
 @dataclass(frozen=True)
@@ -356,6 +357,7 @@ def run_final_hybrid_sidecar(
     poll_seconds: float = 5.0,
     now: Callable[[], datetime] | None = None,
     sleeper: Callable[[float], None] = time.sleep,
+    g1_refinement: bool = False,
 ) -> FinalHybridSidecarResult:
     """Wait for scheduler PLAY, then compute the isolated research pair."""
 
@@ -383,6 +385,10 @@ def run_final_hybrid_sidecar(
             authorization_path = candidate
     if authorization_path is not None:
         _validate_parallel_authorization(plan, authorization_path)
+    if g1_refinement and authorization_path is None:
+        raise ValueError(
+            "G1 family refinement requires existing parallel authorization"
+        )
     status_path = root / "sidecar-status.json"
     started_at = _utc(clock())
     latest_start = plan.publish_deadline - timedelta(
@@ -402,6 +408,21 @@ def run_final_hybrid_sidecar(
                 and operator.get("decision") == "PLAY"
                 and operator.get("actionable") is True
             ):
+                if g1_refinement and not _primary_delivery_ready(plan, operator):
+                    if observed_at >= stop_waiting:
+                        return _terminal(
+                            status_path,
+                            plan=plan,
+                            plan_path=plan_path,
+                            status="SKIPPED_OPERATOR_NOT_READY",
+                            started_at=started_at,
+                            observed_at=observed_at,
+                            reason="primary delivery is not ready for optional work",
+                        )
+                    sleeper(
+                        min(poll_seconds, (stop_waiting - observed_at).total_seconds())
+                    )
+                    continue
                 if observed_at >= latest_start:
                     return _terminal(
                         status_path,
@@ -423,6 +444,7 @@ def run_final_hybrid_sidecar(
                     observed_at=observed_at,
                     parallel_authorization_path=authorization_path,
                     clock=clock,
+                    g1_refinement=g1_refinement,
                 )
             if _is_pre_final_checkpoint(operator):
                 # Warmup/refresh deliberately publish a non-actionable LKG
@@ -598,6 +620,7 @@ def _execute(
     observed_at: datetime,
     parallel_authorization_path: Path | None,
     clock: Callable[[], datetime],
+    g1_refinement: bool = False,
 ) -> FinalHybridSidecarResult:
     run_id = _text(operator.get("run_id"), "operator run_id")
     source_path = _regular_file(
@@ -615,14 +638,17 @@ def _execute(
         destination=operator_export,
         observed_at=observed_at,
     )
+    operator_coupons = _parse_operator_package(operator_export, plan.stake)
     report, paths = execute_final_hybrid_comparison(
         final_input_path=final_input,
         scheduler_plan_path=plan_path,
         sports_artifact_path=sports_path,
         output_dir=output / "research-comparison",
         deadline=_comparison_deadline(plan.publish_deadline, observed_at),
+        g1_config=ParallelG1Config(family_refinement=True) if g1_refinement else None,
+        expected_primary_coupons=operator_coupons,
+        primary_package_sha256=_sha256(operator_export),
     )
-    operator_coupons = _parse_operator_package(operator_export, plan.stake)
     baseline_coupons = _parse_research_package(paths.baseline_package)
     quality_v3_package = getattr(
         paths,
@@ -838,6 +864,12 @@ def _publish_parallel_selection(
         selected_id=selected_id,
         coupons=coupons,
     )
+    selected_lineage = _selected_refinement_lineage(
+        report=report,
+        selected_id=selected_id,
+        coupons=coupons,
+        selected_hash=selected_hash,
+    )
 
     package_path = output / "selected-parallel-operator-package.txt"
     _write_replace(package_path, _operator_package_bytes(plan.stake, coupons))
@@ -851,6 +883,7 @@ def _publish_parallel_selection(
         "drawing": plan.drawing,
         "drawing_id": plan.drawing_id,
         "selected_strategy_id": selected_id,
+        "selected_strategy_lineage": selected_lineage,
         "selected_package_sha256": selected_hash,
         "selected_coupon_count": len(coupons),
         "selected_cost": len(coupons) * plan.stake,
@@ -875,6 +908,53 @@ def _publish_parallel_selection(
         _canonical(payload) + b"\n",
     )
     return payload
+
+
+def _selected_refinement_lineage(
+    *,
+    report: Mapping[str, Any],
+    selected_id: str,
+    coupons: tuple[str, ...],
+    selected_hash: str,
+) -> dict[str, Any] | None:
+    if selected_id != "robust":
+        return None
+    robust = report.get("robust")
+    lineage = robust.get("refinement_lineage") if isinstance(robust, Mapping) else None
+    g1 = report.get("g1_research_refinement", {})
+    if not isinstance(g1, Mapping):
+        g1 = {}
+    returned = g1.get("selected_coupons")
+    matching_refinement = (
+        g1.get("status") == "REFINED"
+        and isinstance(returned, (list, tuple))
+        and tuple(returned) == coupons
+    )
+    applied = isinstance(lineage, Mapping) and lineage.get("applied") is True
+    if not matching_refinement and not applied:
+        return dict(lineage) if isinstance(lineage, Mapping) else None
+    try:
+        valid = (
+            matching_refinement
+            and applied
+            and lineage["policy_version"] == "robust-family-g1-v1"
+            and lineage["strategy_family"] == "robust"
+            and lineage["selected_package_sha256"] == selected_hash
+            and g1["family_candidate_verified"] is True
+            and g1["runtime_contract"]["family_refinement"] is True
+            and g1["binding"]["input_sha256"] == report["final_input_snapshot_sha256"]
+            and all(
+                g1["binding"][key] == report[key]
+                for key in ("bank", "effective_budget", "stake")
+            )
+            and g1["engine"]["input_hashes"]["selected_package_sha256"]
+            == hashlib.sha256(_canonical(coupons)).hexdigest()
+        )
+    except (KeyError, TypeError):
+        valid = False
+    if not valid:
+        raise ValueError("invalid G1 robust-family publication lineage")
+    return dict(lineage)
 
 
 def _selected_coupon_ranking(
@@ -1034,6 +1114,26 @@ def _terminal(
         result_path=path,
         output_dir=None,
         reason=reason,
+    )
+
+
+def _primary_delivery_ready(plan: Any, operator: Mapping[str, Any]) -> bool:
+    try:
+        delivery = _load_hashed_retry_record(
+            plan.output_dir / "operator-delivery.json",
+            "primary delivery",
+        )
+    except (OSError, ValueError):
+        return False
+    return (
+        delivery.get("plan_id") == plan.plan_id
+        and delivery.get("drawing_id") == plan.drawing_id
+        and delivery.get("run_id") == operator.get("run_id")
+        and delivery.get("published_operator_result_sha256")
+        == operator.get("record_sha256")
+        and delivery.get("delivery_state") == "READY"
+        and delivery.get("decision") == "PLAY"
+        and delivery.get("actionable") is True
     )
 
 

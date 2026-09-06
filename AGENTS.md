@@ -20,7 +20,16 @@ project memory. Globally installed skills are not TotoAI memory and are not
 authorized for engineering work unless explicitly allowlisted below.
 
 Before making changes:
-- Read all files in `memory-bank/`.
+- Read the short `memory-bank/ACTIVE_PLAN.md` checkpoint first. Its linked
+  unfinished checklist remains binding until explicitly changed or completed.
+- Before work or after compaction, read `memory-bank/THREAD_COORDINATION.json`
+  and match the exact task ID, cwd and assigned role. Only the two existing tasks
+  named in the native-task exception below may be resumed by their parent.
+  Preserve historical cancellation/setup evidence; do not restart setup.
+- Follow only your role's exact next action; read linked memory/history only for
+  a specific uncertainty. Never restart a full memory reread or project audit.
+- Validate actual time-sensitive runtime state before relying on it, after a
+  relevant mutation or at the due checkpoint; do not recheck unchanged history.
 - Treat `memory-bank/` as the source of project context for TotoAI.
 - Do not use user-local or globally installed skills, personal or team
   knowledge bases, chat memory, or unrelated memory stores as project memory.
@@ -42,6 +51,8 @@ rules below:
 - `openai-docs` for public OpenAI documentation;
 - browser access to public sites and public web research;
 - public sports and public data APIs;
+- No Codex heartbeat is authorized: the owner removed chat heartbeats. Use
+  the local plan-bound Python watcher; it cannot wake an idle Codex chat;
 - `git` and public `gh` workflows. These are the only authorized VCS CLIs.
 
 Repository enumeration safety:
@@ -51,9 +62,15 @@ Repository enumeration safety:
   `scripts/project-git`, which pins every operation to this repository and
   rejects repository overrides. This is required because `$HOME` is itself a
   Git work tree and an accidental command there can scan the whole home
-  directory.
-- In every shell tool call, set the working directory explicitly to
-  `/Users/turshevr/toto-ai` even when using `scripts/project-git`.
+  directory. In a user-requested child worktree, first verify which checkout
+  that worktree's wrapper actually pins; if it targets production or is unknown,
+  do not use it for child Git operations. Do not bypass it with bare Git.
+- Operations-owner shell calls remain explicitly pinned to
+  `/Users/turshevr/toto-ai`, including `scripts/project-git`. A user-requested
+  isolated child instead sets every command/write to its verified own worktree;
+  production inspection is explicitly read-only, not permission to write there.
+  Unknown own cwd blocks execution. This does not authorize creating or modifying
+  outside-root worktrees in the current metadata-only task.
 - Never use a whole-repository inventory as a default discovery step.
 - Inspect only task-relevant paths with bounded commands such as targeted
   `rg`, `scripts/project-git diff -- <paths>`, or
@@ -155,6 +172,28 @@ The concise durable version of this boundary is
 [`memory-bank/TOOLING_POLICY.md`](memory-bank/TOOLING_POLICY.md).
 
 Maintenance rules:
+- Keep `memory-bank/ACTIVE_PLAN.md` current after every meaningful operational
+  or research step. Every user-facing progress report must state what is done,
+  what is in progress, what remains, the current blocker, and the next exact
+  checkpoint.
+- A one-off package choice by the owner is historical evidence, not a permanent
+  strategy-selection rule. Every future drawing must compare the eligible
+  same-input candidates anew.
+- For each active drawing, ask before the final calculation whether the owner
+  plans to place a manual wager. If yes, obtain exact drawing/plan-bound
+  pre-cutoff authorization before any experimental operator release. Ask even
+  when the default release gate is expected to return `NO_BET`; lack of a
+  timely answer fails closed. Never convert a post-cutoff or research package
+  into an actionable package.
+- Every final drawing report must include the exact downloadable operator
+  package when a valid `PLAY` exists and the explicitly computed highest-P(13+)
+  coupon with model, objective, probability, and one-based position. For
+  `NO_BET`, report the exact reason and do not synthesize a wagering file.
+- The local plan-bound Python watcher is the sole canonical read-only status
+  observer. Do not recreate removed chat heartbeats or promise an unattended
+  chat wakeup: the local watcher cannot provide one.
+- Use reasonable per-command bounds and visible progress for long work; no
+  blanket 30-second no-output interruption rule applies. Do not change globals.
 - After every completed feature, update the project knowledge base first:
   `memory-bank/`, `knowledge/`, `skills/`, or `prompts/` as relevant.
 - Update `memory-bank/CURRENT_STATE.md` after every meaningful commit.

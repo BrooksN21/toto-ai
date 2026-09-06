@@ -1,3 +1,23 @@
+# CURRENT — accepted GOAL/90min/G1 source publication prepared — 2026-09-06T16:21:56.827892+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; publication only under MAINWRITEFREEZE.
+DONE: accepted GOAL quarantine + shared90min normalization + default-off G1 main
+integration/import cleanup selected;19source/test/doc paths hash-bound to receipts.
+Current-main verification:246PASS +1PASS targeted synthetic-env guard correction;
+247cases accounted,0skipped; Ruff14PASS. No source fix during publication.
+Corrected native V2 research seed14/15,280accepted/0excluded;13FT and28aggregate
+checks retained; NOT_ACTIVATED, EXPERIMENTAL_UNTRAINED_V2, not trained Sports-v3.
+DOING: scoped commit/push to existing draft PR22, not origin/main or auto-merge.
+BLOCKER:none for selected source publication; commit/push outcome not yet claimed.
+Cache durability/CLI composition and wrapper-parser compatibility NOT included;
+these remain separate integration/publication jobs. No current seed rebind or G1
+opt-in activation performed by this worker.4998 schedule/consent unchanged by this job;
+16:30first/18:00final/18:20expiry per owner, no fresh runtime claim.
+Prior residual9files assessed:policy/decisions included; ledger+unaccepted
+wrapper/status/publisher-authority source/test changes retained dirty separately.
+NEXT CHECKPOINT: source commit/push and verified PR22 head; no clean checkout claim.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CURRENT_STACK_PUBLICATION_20260906.json
+
 # CURRENT — existing stack published as draft PR22 — 2026-09-06T14:30:42+03:00
 
 Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; source commit `9df62a36834cd88f55640371d2d6e8a50e104ec4`.

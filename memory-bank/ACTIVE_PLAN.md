@@ -1,3 +1,108 @@
+# CURRENT — accepted GOAL/90min/G1 source publication prepared — 2026-09-06T16:21:56.827892+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; publication only under MAINWRITEFREEZE.
+DONE: accepted GOAL quarantine + shared90min normalization + default-off G1 main
+integration/import cleanup selected;19source/test/doc paths hash-bound to receipts.
+Current-main verification:246PASS +1PASS targeted synthetic-env guard correction;
+247cases accounted,0skipped; Ruff14PASS. No source fix during publication.
+Corrected native V2 research seed14/15,280accepted/0excluded;13FT and28aggregate
+checks retained; NOT_ACTIVATED, EXPERIMENTAL_UNTRAINED_V2, not trained Sports-v3.
+DOING: scoped commit/push to existing draft PR22, not origin/main or auto-merge.
+BLOCKER:none for selected source publication; commit/push outcome not yet claimed.
+Cache durability/CLI composition and wrapper-parser compatibility NOT included;
+these remain separate integration/publication jobs. No current seed rebind or G1
+opt-in activation performed by this worker.4998 schedule/consent unchanged by this job;
+16:30first/18:00final/18:20expiry per owner, no fresh runtime claim.
+Prior residual9files assessed:policy/decisions included; ledger+unaccepted
+wrapper/status/publisher-authority source/test changes retained dirty separately.
+NEXT CHECKPOINT: source commit/push and verified PR22 head; no clean checkout claim.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CURRENT_STACK_PUBLICATION_20260906.json
+
+# CURRENT —cache atomic review REQUEST_CHANGES — 2026-09-06T16:04:02+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; exact candidate75bd7b86…NOT applied.
+DONE:18PASS0.73s/Ruff4PASS;4target+49dependency bytes unchanged.
+BLOCKER:P1 durable-directory publication missing after link (claim/outcome);
+process-crash safety is not host/power-crash durability. DOING:none, no owned process.
+NEXT:parent routes narrow directory-sync correction; no activation/publication here.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_INDEPENDENT_REVIEW.json
+90min/G1 reviews remain separately owned; primary plan/jobs/consent untouched.
+
+# CURRENT —4998 coordination; independent verdicts pending — 2026-09-06T15:59:16.564328+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; this pass METADATA ONLY.
+- GOAL schedule quarantine: ACCEPT, applied main.
+- Shared90min scoring:81pytestPASS/Ruff3PASS; original MODELS independently reviews now.
+  Corrected native V2 seed14/15,280accepted/0excluded; not activated, event9BKfallback.
+- G1 frozen candidate94PASS; original REVIEW ab34 owns independent review, not ACCEPT yet.
+- Final atomic failed-cache fix: Euler-owned; no completion/ACCEPT inferred here.
+- PR22 published draft, NOT MERGED; this metadata not pushed, no clean-checkout claim.
+4998 exact existing plan `c1d243f5b6ca48f3`, bank4980/stake30; recorded pre-cutoff
+experimental/manual+parallel consent preserved, no new authorization written.
+Schedule per owner/existing receipts:16:30first /18:00final /18:20expiry MSK.
+Runtime not rechecked. Primary/jobs/plan/pinnedseed untouched in this pass.
+DONE: coordination saved. DOING: independent reviews in separately owned tasks.
+BLOCKER/gate: verdicts pending; no whole-system READY/trained/profit claim.
+NEXT: after verdict, separately dispatched guarded integration/newseed binding+G1opt-in;
+source publication is a separate finalization afterward. No activation/push now.
+Current handoffs (do not restart historical audit):
+- goal_quarantine_accept: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-independent-review.md`
+- goal_quarantine_evidence: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-independent-review-evidence.json`
+- history90_handoff: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-handoff.md`
+- history90_receipt: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-receipt.json`
+- fresh_capture_receipt: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998-fresh-goal-collection-receipt.json`
+- existing_publication_receipt: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/EXISTING_STACK_SUBMISSION_RECEIPT_20260906.json`
+- exact_existing_consent: `plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-experimental-release-authorization-receipt-20260906.md`
+- parallel_scope_context: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/context.md`
+
+Prior checkpoints/history retained below.
+
+# CURRENT — shared90min history fixed; independent review pending — 2026-09-06T15:56:42.305943+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Five-path candidate only:
+GOAL research history parser, two tests, exact local fixture, knowledge boundary.
+RED2failures→GREEN81PASS1.05s/Ruff3PASS. AET/PEN FtScore only; missing/invalid skips;
+FINISHED preserved. Native corrected V2 from same immutable fresh capture:14/15,
+280accepted/0excluded;13FT observations and28goals/WDL aggregates verified.
+Seed fileSHA `2d5003c79378fb0b5f425ddf8cfdc0902327e727c0c0f3bb43843b43f2139e78`.
+DONE implementation/verification; DOING:none, owned processes:none.
+BLOCKER/gate: independent review pending; no operational rebind/activation/publication.
+19 protected paths/pinnedseed unchanged. Event9fallback remains. Sports-v3 not trained.
+NEXT: parent routes exact candidate to independent reviewer; no further work chosen.
+Handoff: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-handoff.md`. Prior contaminated seeds retained, not approved.
+Requested10min missed; no claim of continuous work over the earlier timestamp gap.
+
+# CURRENT —4998 V2 version corrected; SCORE-AUTHORITY BLOCKER — 2026-09-06T15:05:34.911394+03:00
+
+Fresh capture retained:68requests/14bindings/28histories/280terminal observations.
+CORRECTION: earlier seed labelled Sports-v2 was V1. Native V2 projection now saved
+from same immutable capture/as_of (Poisson+venueWDL,prior3,cap0.2);14/15+1fallback,
+roundtrip/native-rebasePASS against frozen seed BK, not future final-input authority.
+BLOCKER:12/13 AET/PEN observations generic Score differs from FtScore; no verified90min
+normalization in importer. Targets1,2,4,5,6,13 affected. Neither artifact cleared to bind.
+DOING:none; no owned process. NEXT:parent receives precise blocker; separate reviewed
+score-authority correction required, no new work selected.19 protected paths/old seed
+unchanged; no new API/DB/code/jobs/activation/publication. Sports-v3 remains untrained.
+Receipt: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998-fresh-goal-collection-receipt.json`; version proof `reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-v2-research-DO-NOT-ACTIVATE/VERSION_AND_SCORE_HANDOFF.json`.
+Requested15:00 handoff missed; actual proof completed 2026-09-06T15:04:52.778492+03:00.
+Previous completion notes below are historical and superseded on model/activation claims.
+
+# CURRENT —4998 fresh GOAL input verified, NOT ACTIVATED — 2026-09-06T14:54:39.689048+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; explicit fresh-collection-only job.
+DONE:68/120 requests, complete schedule,2 quarantined conflicts;14/15 bindings,
+28 histories/280 accepted terminal observations. New Sports-v2 research seed14/15,
+1 BKfallback (#9 target_fixture_missing); native validation failures0/roundtripPASS.
+Seed file SHA256 `135e0d3d2e33894d7793116c69805bc9acb8dca2df7214d5f6fe50b1e1ff0330`.
+NOT_ACTIVATED / EXPERIMENTAL_UNTRAINED: not trained Sports-v3 or profit proof.
+Old pinned seed/current-marker/plan c1d243f5b6ca48f3/jobs/auth/ledger unchanged
+across19 recorded guards. No package/DB/code/VCS changes; prior PR22 unchanged.
+DOING:none; no owned process. BLOCKER:none for this completed data/seed slice.
+REMAINING: separate authorized seed-rebinding job only; #9 keeps BKfallback.
+NEXT CHECKPOINT: hand off this verified seed/receipt, do not activate or choose work.
+Receipt: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998-fresh-goal-collection-receipt.json`; adjacent .md and new capture contain exact paths/hashes.
+Prior publication/review/model/operational checkpoints are retained below as history.
+
 # CURRENT — existing stack published as draft PR22 — 2026-09-06T14:30:42+03:00
 
 Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; source commit `9df62a36834cd88f55640371d2d6e8a50e104ec4`.

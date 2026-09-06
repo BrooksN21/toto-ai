@@ -367,7 +367,7 @@ def _collect_goal_api_candidates(
     try:
         events = tuple(
             event
-            for event in client.fetch_schedule(dates)
+            for event in client.fetch_schedule_for_collection(dates)
             if event.starts_at <= window_end
         )
     except Exception as error:
@@ -389,6 +389,10 @@ def _collect_goal_api_candidates(
         ]
         return failed, {
             "status": "source_failed",
+            "pagination_complete": False,
+            "quarantined_fixtures": [
+                c.public_summary() for c in client.schedule_conflicts
+            ],
             "candidate_count": 0,
             "request_count": client.requests_made,
             "attempted": client.requests_made,
@@ -404,6 +408,37 @@ def _collect_goal_api_candidates(
     diagnostics = _goal_api_diagnostics(client)
     records: list[dict[str, object]] = []
     for row in queue["records"]:
+        # Every potentially matching observation of a quarantined ID vetoes binding.
+        # Do not let a second ID with convenient names replace an affected target.
+        quarantined_ids = [
+            conflict.provider_event_id
+            for conflict in client.schedule_conflicts
+            if str(row.get("source_fixture_id")) == conflict.provider_event_id
+            or any(
+                _match_goal_api_candidates(
+                    row, (event,), aliases=aliases, deadline=deadline
+                )[0]
+                is not None
+                for event in conflict.observations
+            )
+        ]
+        if quarantined_ids:
+            records.append(
+                _base_record(row)
+                | {
+                    "status": "conflict",
+                    "source_name": "GOAL API",
+                    "source_provider": GOAL_API_PROVIDER,
+                    "source_role": "independent",
+                    "captured_at": _timestamp(observed),
+                    "quarantined_fixture_ids": quarantined_ids,
+                    "provider_attempts": diagnostics,
+                    **snapshot_fields,
+                    "ledger_eligible": False,
+                    "missing_requirements": ["official_source", "review"],
+                }
+            )
+            continue
         selected, orientation, candidate_ids, match_status = _match_goal_api_candidates(
             row,
             events,
@@ -488,7 +523,10 @@ def _collect_goal_api_candidates(
     timing_conflict_count = sum(item["status"] == "timing_conflict" for item in records)
     quota = client.quota_state
     return records, {
-        "status": "collected",
+        "status": "partial_conflicts" if client.schedule_conflicts else "collected",
+        "pagination_complete": client.schedule_pagination_complete,
+        "quarantined_fixture_count": len(client.schedule_conflicts),
+        "quarantined_fixtures": [c.public_summary() for c in client.schedule_conflicts],
         "candidate_count": candidate_count,
         "matched_count": candidate_count + timing_conflict_count,
         "timing_conflict_count": timing_conflict_count,

@@ -170,6 +170,36 @@ class GoalAPIScheduleEvent:
         )
 
 
+@dataclass(frozen=True)
+class GoalAPIScheduleConflict:
+    """Quarantined ID; full raw observations remain in immutable page snapshots."""
+
+    provider_event_id: str
+    differing_fields: tuple[str, ...]
+    observations: tuple[GoalAPIScheduleEvent, ...]
+    evidence: tuple[GoalAPIRequestEvidence, ...]
+
+    def public_summary(self) -> dict[str, object]:
+        return {
+            "provider_event_id": self.provider_event_id,
+            "differing_fields": list(self.differing_fields),
+            "eligible": False,
+            "observations": [
+                {
+                    "event_payload_sha256": event.payload_hash,
+                    "snapshot_path": str(source.snapshot_path),
+                    "snapshot_sha256": source.snapshot_sha256,
+                    "response_hash": source.response_hash,
+                    "request_fingerprint": source.request_fingerprint,
+                    "endpoint": source.endpoint,
+                    "params": list(source.params),
+                    "fetched_at": _timestamp(source.fetched_at),
+                }
+                for event, source in zip(self.observations, self.evidence, strict=True)
+            ],
+        }
+
+
 def load_goal_api_config(
     environment: Mapping[str, str] | None = None,
     **overrides: object,
@@ -292,9 +322,41 @@ class GoalAPIClient:
         self,
         dates: tuple[date, ...],
     ) -> tuple[GoalAPIScheduleEvent, ...]:
+        return self._fetch_schedule(dates, quarantine=False)
+
+    def fetch_schedule_for_collection(
+        self, dates: tuple[date, ...]
+    ) -> tuple[GoalAPIScheduleEvent, ...]:
+        """Opt-in candidate collection; never trust any version of a conflicting ID.
+
+        Pagination/transport/budget errors still raise: no partial candidate return.
+        Only completed pagination may yield independent, non-ledger candidates.
+        """
+        return self._fetch_schedule(dates, quarantine=True)
+
+    @property
+    def schedule_conflicts(self) -> tuple[GoalAPIScheduleConflict, ...]:
+        conflicts = getattr(self, "_schedule_conflicts", {})
+        return tuple(conflicts[key] for key in sorted(conflicts))
+
+    @property
+    def schedule_pagination_complete(self) -> bool:
+        return getattr(self, "_schedule_pagination_complete", False)
+
+    def _fetch_schedule(
+        self, dates: tuple[date, ...], *, quarantine: bool
+    ) -> tuple[GoalAPIScheduleEvent, ...]:
+        self._schedule_conflicts: dict[str, GoalAPIScheduleConflict] = {}
+        self._schedule_pagination_complete = False
         requested = _bounded_dates(dates)
         events: dict[str, GoalAPIScheduleEvent] = {}
         semantic_hashes: dict[str, str] = {}
+        observations: dict[
+            str,
+            list[
+                tuple[Mapping[str, Any], GoalAPIScheduleEvent, GoalAPIRequestEvidence]
+            ],
+        ] = {}
         for requested_date in requested:
             offset = 0
             while True:
@@ -311,14 +373,42 @@ class GoalAPIClient:
                         request_fingerprint=self._evidence[-1].request_fingerprint,
                     )
                     semantic_hash = _schedule_semantic_hash(raw)
-                    previous = events.get(event.provider_event_id)
-                    if (
-                        previous is not None
-                        and semantic_hashes[event.provider_event_id] != semantic_hash
-                    ):
+                    identity = event.provider_event_id
+                    previous = events.get(identity)
+                    conflict = (
+                        identity in semantic_hashes
+                        and semantic_hashes[identity] != semantic_hash
+                    )
+                    if conflict and not quarantine:
                         raise GoalAPIError(
                             "GOAL API duplicate event identity conflicts"
                         )
+                    if quarantine:
+                        observed = observations.setdefault(identity, [])
+                        observed.append((raw, event, self._evidence[-1]))
+                        if conflict or identity in self._schedule_conflicts:
+                            baseline_raw = observed[0][0]
+                            fields = {
+                                key
+                                for other, _, _ in observed
+                                for key in set(baseline_raw) | set(other)
+                                if key != "updatedAt"
+                                and (
+                                    key not in baseline_raw
+                                    or key not in other
+                                    or baseline_raw[key] != other[key]
+                                )
+                            }
+                            self._schedule_conflicts[identity] = (
+                                GoalAPIScheduleConflict(
+                                    provider_event_id=identity,
+                                    differing_fields=tuple(sorted(fields)),
+                                    observations=tuple(item[1] for item in observed),
+                                    evidence=tuple(item[2] for item in observed),
+                                )
+                            )
+                            events.pop(identity, None)
+                            continue
                     if previous is None or _schedule_observation_key(
                         event
                     ) > _schedule_observation_key(previous):
@@ -335,6 +425,7 @@ class GoalAPIClient:
                 if candidate <= offset:
                     raise GoalAPIError("GOAL API pagination did not advance")
                 offset = candidate
+        self._schedule_pagination_complete = True
         allowed = frozenset(requested)
         return tuple(
             event

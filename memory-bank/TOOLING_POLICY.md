@@ -99,6 +99,16 @@ Experiments/DataLens/Tanker/TMS clients, and `yandex-team.ru` endpoints.
 Use `git`/`gh`; never use `arc`. The denylist remains prohibited even when a
 tool is installed or globally advertised.
 
+## Recovery and local observation
+
+Read the short `memory-bank/ACTIVE_PLAN.md` first, then its literal next command.
+Read linked historical memory only for a specific uncertainty; do not restart a
+full audit on compaction. All unfinished obligations remain in its hash-bound
+archive. Validate exact live state when needed, not unchanged historical facts.
+The owner removed chat heartbeats: use only the local plan-bound Python watcher.
+It cannot wake an idle chat; do not promise unattended chat delivery. Bound long
+commands reasonably and show progress; no blanket 30-second no-output rule.
+
 ## Memory and data handling
 
 TotoAI project memory is limited to `AGENTS.md`, `memory-bank/`, `knowledge/`,
