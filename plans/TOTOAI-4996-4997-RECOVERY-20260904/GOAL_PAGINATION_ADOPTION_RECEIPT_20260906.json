@@ -1,0 +1,494 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "continuation": "GOAL pagination patch only; separately delegated local finalization",
+  "finalizer_thread_id": "01a07606-3136-7093-8704-c42d59a2cfe8",
+  "cwd": "/Users/turshevr/toto-ai",
+  "started_at": "2026-09-06T12:51:52.197278+03:00",
+  "status": "APPLIED_VERIFIED_UNCOMMITTED",
+  "source_applied": true,
+  "review": {
+    "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.json",
+    "sha256": "d61c7fa00e76a3f233b5fa3595f4550ac91afa13e89e231ed99439184d50f05c",
+    "verdict": "ACCEPT",
+    "patch_sha256": "51308a1e9cafcbf506d33851ecfc60259ca484d249d2fda1a6da86a019af28a0",
+    "author_focused_cases": 52,
+    "additional_independent_cases": 169,
+    "independent_total": 221,
+    "report_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.md",
+    "report_sha256": "61ee966489bd6445346f2012d1240690c9285aab7edf899f5ac28df0c1cff6a8"
+  },
+  "changes": [
+    {
+      "path": "src/toto_ai/external_odds/goal_api.py",
+      "before_sha256": "9664414b31134122474a7ffc33f15be24a58111f1a7ec42f915c3423db82dab8",
+      "after_sha256": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb"
+    },
+    {
+      "path": "tests/test_goal_api_pagination_identity.py",
+      "before_sha256": null,
+      "after_sha256": "3466286b07075239a8134898444db44535b4b337335bb2ecbcdcc93b66e3c106"
+    },
+    {
+      "path": "tests/fixtures/goal_pagination_duplicate.json",
+      "before_sha256": null,
+      "after_sha256": "a7cc49f4b8789d261eb5e3c608fc987a8812d33c13b7198c6bc5f1b808768e7f"
+    },
+    {
+      "path": "knowledge/goal_pagination_identity_boundary.md",
+      "before_sha256": null,
+      "after_sha256": "4abfdc452ed36a5bee6c133286fc39afb4e999ec8cb5eaea2171419ad217535f"
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "AGENTS.md",
+      "before_sha256": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "memory-bank/TOOLING_POLICY.md",
+      "before_sha256": "cd96772b5901238cf68c446649a67c555da74f8f7e40ee867633199e36959814",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "scripts/project-git",
+      "before_sha256": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "pyproject.toml",
+      "before_sha256": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "tests/__init__.py",
+      "before_sha256": "b42ed020e57684598c001935032758481acfebc67f443c4ccb8cfc24864ac132",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "src/toto_ai/external_odds/schedule_source_collector.py",
+      "before_sha256": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "tests/test_goal_api_provider.py",
+      "before_sha256": "7cb7ef01efafbc407110722a060c06c5bf070b251d1a56ee3ebcaf668702c766",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "tests/test_goal_api_schedule_collection.py",
+      "before_sha256": "23f32f7e7e0d7aa0fc1bee8abd31c44d767e7df62b9ebe91faaad9ccd9f2c80d",
+      "role": "unchanged guard; do not overwrite"
+    },
+    {
+      "path": "tests/test_schedule_source_collector.py",
+      "before_sha256": "e661d538c28ab4835afd45ded9a06ba7f12a818736da779701a3bb2f86c8de99",
+      "role": "unchanged guard; do not overwrite"
+    }
+  ],
+  "commands": [
+    {
+      "at": "2026-09-06T12:51:52.266026+03:00",
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/VERIFY_MAIN_INTEGRATION.py",
+        "--root",
+        "/Users/turshevr/toto-ai",
+        "--manifest",
+        "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_FIX_MANIFEST.json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"changed_files\": 4, \"guarded_dependencies\": 9, \"mutated\": false, \"patch_sha256\": \"51308a1e9cafcbf506d33851ecfc60259ca484d249d2fda1a6da86a019af28a0\", \"status\": \"READY_FOR_MAIN_APPLY\"}\n",
+      "stderr": ""
+    },
+    {
+      "at": "2026-09-06T12:51:52.305113+03:00",
+      "command": [
+        "/Users/turshevr/toto-ai/scripts/project-git",
+        "status",
+        "--short",
+        "--untracked-files=no"
+      ],
+      "exit_code": 0,
+      "stdout": " M AGENTS.md\n M data/schedule-evidence/ledger.json\n M memory-bank/ACTIVE_PLAN.md\n M memory-bank/CURRENT_STATE.md\n M memory-bank/DECISIONS.md\n M memory-bank/ROADMAP.md\n M memory-bank/TOOLING_POLICY.md\n M scripts/project-git\n M src/toto_ai/cli.py\n M src/toto_ai/external_odds/schedule_evidence_admin.py\n M src/toto_ai/external_odds/targets.py\n M src/toto_ai/operations/scheduler_status.py\n M src/toto_ai/runner/morning_dispatch.py\n M src/toto_ai/runner/preflight_retry_scheduler.py\n M src/toto_ai/sports_stats/domain.py\n M tests/test_external_odds_targets.py\n M tests/test_morning_dispatch.py\n M tests/test_preflight_retry_scheduler.py\n M tests/test_schedule_evidence_admin_cli.py\n M tests/test_scheduler_status.py\n M tests/test_sports_stats_cli.py\n",
+      "stderr": ""
+    },
+    {
+      "at": "2026-09-06T12:51:52.386811+03:00",
+      "command": [
+        "/Users/turshevr/toto-ai/scripts/project-git",
+        "apply",
+        "--check",
+        "--whitespace=error-all",
+        "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_FIX.patch"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "at": "2026-09-06T12:51:52.476533+03:00",
+      "command": [
+        "/Users/turshevr/toto-ai/scripts/project-git",
+        "apply",
+        "--whitespace=error-all",
+        "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_FIX.patch"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "tests": {
+    "at": "2026-09-06T12:52:48.364705+03:00",
+    "command": [
+      "/Users/turshevr/toto-ai/.venv/bin/python",
+      "-B",
+      "/private/tmp/goal-main-finalization-grekre1q/runner.py"
+    ],
+    "execution_cwd": "/Users/turshevr/toto-ai",
+    "timeout_seconds": 30,
+    "exit_code": 0,
+    "stdout": "....................................................                     [100%]\n52 passed in 0.39s\n",
+    "stderr": "",
+    "files": [
+      "tests/test_goal_api_pagination_identity.py",
+      "tests/test_goal_api_provider.py",
+      "tests/test_goal_api_schedule_collection.py",
+      "tests/test_schedule_source_collector.py"
+    ],
+    "environment_sanitized": true,
+    "network_process_db_denied": true,
+    "writes_confined_to_temporary_root": true,
+    "main_source_import": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+    "runtime": {
+      "exit_code": 0,
+      "blocked_actions": [
+        {
+          "event": "socket.getaddrinfo",
+          "test": "tests/test_schedule_source_collector.py::test_collector_saves_raw_snapshot_and_independent_candidate (call)"
+        }
+      ],
+      "loaded_source_sha256": {
+        "/Users/turshevr/toto-ai/src/toto_ai/api/safe_paths.py": "109743f84b527139caf9e3e8e26a657fc8fe279ea5c64e19824051bbcbf451fe",
+        "/Users/turshevr/toto-ai/src/toto_ai/api/rate_limit.py": "0d7210c24c706256dbd6b285c0243cfe2d6f97b0fb0ef39116c7d559b5a95366",
+        "/Users/turshevr/toto-ai/src/toto_ai/api/client.py": "47d849eb47df71a5136e3a04c153c7f0cb404eac2c4e927174260ccc567c975a",
+        "/Users/turshevr/toto-ai/src/toto_ai/api/__init__.py": "42cd35f0390813eff79efded2cfd05769bbc936c8588417f166716fda1abd54c",
+        "/Users/turshevr/toto-ai/src/toto_ai/__init__.py": "5b191cc228c9112b821fd4ead0cf7de40588ecc82812a6d48c51c48d239aa1a8",
+        "/Users/turshevr/toto-ai/src/toto_ai/external_odds/domain.py": "c09141bb061c76c5e2628f3edfc289ccc1bb5a64d999087c11c6f5e174fa3797",
+        "/Users/turshevr/toto-ai/src/toto_ai/totobrief_time.py": "f1d665535bc60cc265bca351bbebab8e81d675136a0a2e1a2a3189a292ab7d9f",
+        "/Users/turshevr/toto-ai/src/toto_ai/external_odds/targets.py": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497",
+        "/Users/turshevr/toto-ai/src/toto_ai/external_odds/__init__.py": "45f854d807c7f3339f3cfd1bec24395370cc29104558c36ff30616857f3d8453",
+        "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb",
+        "/Users/turshevr/toto-ai/tests/__init__.py": "b42ed020e57684598c001935032758481acfebc67f443c4ccb8cfc24864ac132",
+        "/Users/turshevr/toto-ai/tests/test_goal_api_provider.py": "7cb7ef01efafbc407110722a060c06c5bf070b251d1a56ee3ebcaf668702c766",
+        "/Users/turshevr/toto-ai/src/toto_ai/external_odds/matching.py": "8156642a2eb0cee8be4d255ecfee22ff767ecf9ae1907ea8d577d0d12dbdfd50",
+        "/Users/turshevr/toto-ai/src/toto_ai/db/models.py": "ec41d08df9595d6bc9ef361e4093fbea8b6ecfc2645d8c0b2f8392296f2572f2",
+        "/Users/turshevr/toto-ai/src/toto_ai/db/session.py": "6af8659a4be53b686944dcabaf13b00331be3a609a6748ea0629699ec51389a1",
+        "/Users/turshevr/toto-ai/src/toto_ai/db/__init__.py": "f9e851864d26ac532cdf9d00148e1dccfea8a569574361f464c0eea87c867347",
+        "/Users/turshevr/toto-ai/src/toto_ai/external_odds/countries.py": "1ad2458ecc4b658ec9738a560e30c608cd2c241affc225e78c8df903decca8f7",
+        "/Users/turshevr/toto-ai/src/toto_ai/external_odds/team_registry.py": "9a05035e29b4693d419c5a7a3b583796f9c8bc03b801aff0ceb2bbf8167eccc4",
+        "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_evidence.py": "913020a1aa32a2dac5c05a2735783927da11b57678be8b99094fd8dcdff9c4ec",
+        "/Users/turshevr/toto-ai/src/toto_ai/external_odds/thesportsdb.py": "ef26f20a1edfaf983b67cfbd19eb0a2939d85ae683ef1272b7277704660c1301",
+        "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_source_collector.py": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328",
+        "/Users/turshevr/toto-ai/tests/test_goal_api_schedule_collection.py": "23f32f7e7e0d7aa0fc1bee8abd31c44d767e7df62b9ebe91faaad9ccd9f2c80d",
+        "/Users/turshevr/toto-ai/tests/test_goal_api_pagination_identity.py": "3466286b07075239a8134898444db44535b4b337335bb2ecbcdcc93b66e3c106",
+        "/Users/turshevr/toto-ai/tests/test_schedule_source_collector.py": "e661d538c28ab4835afd45ded9a06ba7f12a818736da779701a3bb2f86c8de99"
+      }
+    },
+    "full_suite_run": false
+  },
+  "publication": {
+    "staging": false,
+    "commit": false,
+    "push": false,
+    "upload": false,
+    "pr": false,
+    "outcome": "Nothing to publish under current local-only authorization. No staging, commit, push, upload or PR; no remote authorization."
+  },
+  "supersedes_blocked_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.json",
+  "prior_ten_file_adoption_repeated": false,
+  "nested_agents": false,
+  "network_calls": false,
+  "operational_actions": false,
+  "authorization": "Current user explicitly authorizes exact guarded GOAL local adoption only; no4998 operations or commit/publication.",
+  "role_separation": "Parent operations; original ab34 engineering; original a7aa models retained. Finalizer owns only this local adoption.",
+  "input_artifacts": {
+    "GOAL_PAGINATION_FIX_REPORT.md": "89e3ff3bef434a18f8d6a83716ed5cde277de90869e4e6ffdbc4d49df66b75c5",
+    "GOAL_PAGINATION_FIX_MANIFEST.json": "701b3bf6758fd51344a256cd57de46597e84e7e95595d13f3ee3d3117d430750",
+    "GOAL_PAGINATION_FIX_RECEIPT.json": "02f3f0a4a93298060254d52ffb456dd58083fb9729d2c30445288767756caa47",
+    "GOAL_PAGINATION_FIX_BEFORE.json": "d0b29e1d873154756bfeb5cfc4e2fac39699cbb878abaa304e53f07543b72e2a",
+    "GOAL_PAGINATION_FIX.patch": "51308a1e9cafcbf506d33851ecfc60259ca484d249d2fda1a6da86a019af28a0"
+  },
+  "updated_at": "2026-09-06T12:54:04.291577+03:00",
+  "preservation_before": {
+    "AGENTS.md": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+    "data/schedule-evidence/ledger.json": "67ca1b2e8091005a1ebf5b8f508059f9e6ec4e7610b4d8df2c3fa54963b1a06c",
+    "knowledge/backfill_retry_integration_boundary.md": "a8bf636c94ffd2cc7abaa8884dcfcdae29370523bde075a7fe5cf39e2dbff039",
+    "knowledge/history_backfill_validation_boundary.md": "d3ea8bcaeb743f1e82f104d8980a2924b3899063f057b70155084f3423495a35",
+    "knowledge/preflight_retry_calendar_boundary.md": "899b1fe3c545a789297d4b48c3b8828b44f965468b6aa56ae185dcef8d1e7fca",
+    "memory-bank/ACTIVE_PLAN.md": "02551712eae42341fb8855b6899501a31d28e4df1be96d91d58e908a88c6c91d",
+    "memory-bank/CURRENT_STATE.md": "c9979e99804699df74c2243bf9323d9b8cf246735de72e56cdd2475fd037c024",
+    "memory-bank/DECISIONS.md": "732efc080c855e8f730f984df9715387c6436b465d8f6c69bcb6e01411381ae5",
+    "memory-bank/ROADMAP.md": "14b065f19683b810c80c0568c1f25520f53bad135f99e9f52188e0604c69120c",
+    "memory-bank/TOOLING_POLICY.md": "cd96772b5901238cf68c446649a67c555da74f8f7e40ee867633199e36959814",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.json": "d61c7fa00e76a3f233b5fa3595f4550ac91afa13e89e231ed99439184d50f05c",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.md": "61ee966489bd6445346f2012d1240690c9285aab7edf899f5ac28df0c1cff6a8",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.json": "90d22423cbc26bd33bc187dfeef80bfcc8d387b709d2dba0a3a399275b95ba6f",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.md": "62ba52d4516c1b02ba27327c57dfe4b82ba331c3b33eff402903596f82629c2d",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.json": "a8bea4cd0f179c0bb6c097290c6133e70991f6fa4b8189f04bce5605542681b7",
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.md": "f88916ea16c6af8bd23b6008cf5e274535945aff754a49a7167df74059e96159",
+    "scripts/project-git": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+    "src/toto_ai/cli.py": "5b11f3c9cc2ac9feaddc6f935150fcbc55eeffba3aefae48640f0b8f4e29f88c",
+    "src/toto_ai/external_odds/schedule_evidence_admin.py": "76b0b780bdab22909c75654f549d9096e36a1853e67562ec8ef5eba679fea47e",
+    "src/toto_ai/external_odds/targets.py": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497",
+    "src/toto_ai/operations/scheduler_status.py": "5c3bfb00238b00772febe36f055d28414e44c1ec08295f09dfc83668474f2956",
+    "src/toto_ai/runner/morning_dispatch.py": "b9eff44b167cd1dce0bf6d7515f561b0108a8d7bad6396487b7fc20ba5ac0605",
+    "src/toto_ai/runner/preflight_retry_scheduler.py": "32c0123ca8134e8cb2b8826b94578597604a705d304e2e2cab7aa2d790176481",
+    "src/toto_ai/sports_stats/domain.py": "cdebd1a59f67240b3a3973fa5ba8d22b9ee48224515976e5808f9c1dc9bc07b8",
+    "src/toto_ai/sports_stats/history_backfill.py": "026ad030ee54b48b07741c69e0e40ddca89a7375c44877f28042ca072f7da742",
+    "tests/test_external_odds_targets.py": "7bf147921e42d077302e8409efc434e3279061fb938555c4ae02150b60555148",
+    "tests/test_morning_dispatch.py": "57e6daab303c8922a753bf1dd8b4d462af58096d870e5eced36d8e469c84eda7",
+    "tests/test_preflight_retry_scheduler.py": "aebdc0e16bf932ddbae2e2384f3bf13ef7dde54f4901f4a2fa4349a48ba7ec92",
+    "tests/test_schedule_evidence_admin_cli.py": "a36908d85502446f78a641cb07ce5b5001c75d2cc78cf8c52d5fced325987a4e",
+    "tests/test_scheduler_status.py": "9661ce17d6aacbf3e12fbad32c8c7e6fc86ab7999432aeb29b023e54664ef39f",
+    "tests/test_sports_history_backfill.py": "070e81b6f3fd67412dd4fbdb349d9b388db0dea5971ff3583e4a1921d49b6698",
+    "tests/test_sports_history_backfill_cli.py": "a51cc9bcd5480991781f14da6ceafc7a8c2d31228a566d5a9540d486398329ed",
+    "tests/test_sports_stats_cli.py": "ab7e9cbea8cf7bdd5023d680345472cf93f716c0146ac913c8c07fa0a30ba7df"
+  },
+  "index_before_sha256": "d1d658863037f248e41c4ec02e4ff731a87a36ee8a5471eee809935e6038fbeb",
+  "immediate_pre_apply_process_guard": {
+    "at": "2026-09-06T12:51:52.432746+03:00",
+    "method": "Read-only ps, finalizer ancestor chain excluded; other Python/project process candidates fail closed. No job control.",
+    "candidates": []
+  },
+  "applied_at": "2026-09-06T12:51:52.480977+03:00",
+  "after_hashes": {
+    "src/toto_ai/external_odds/goal_api.py": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb",
+    "tests/test_goal_api_pagination_identity.py": "3466286b07075239a8134898444db44535b4b337335bb2ecbcdcc93b66e3c106",
+    "tests/fixtures/goal_pagination_duplicate.json": "a7cc49f4b8789d261eb5e3c608fc987a8812d33c13b7198c6bc5f1b808768e7f",
+    "knowledge/goal_pagination_identity_boundary.md": "4abfdc452ed36a5bee6c133286fc39afb4e999ec8cb5eaea2171419ad217535f"
+  },
+  "dependency_hashes_after": {
+    "AGENTS.md": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+    "memory-bank/TOOLING_POLICY.md": "cd96772b5901238cf68c446649a67c555da74f8f7e40ee867633199e36959814",
+    "scripts/project-git": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+    "pyproject.toml": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6",
+    "tests/__init__.py": "b42ed020e57684598c001935032758481acfebc67f443c4ccb8cfc24864ac132",
+    "src/toto_ai/external_odds/schedule_source_collector.py": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328",
+    "tests/test_goal_api_provider.py": "7cb7ef01efafbc407110722a060c06c5bf070b251d1a56ee3ebcaf668702c766",
+    "tests/test_goal_api_schedule_collection.py": "23f32f7e7e0d7aa0fc1bee8abd31c44d767e7df62b9ebe91faaad9ccd9f2c80d",
+    "tests/test_schedule_source_collector.py": "e661d538c28ab4835afd45ded9a06ba7f12a818736da779701a3bb2f86c8de99"
+  },
+  "preserved_immediately_after_apply": {
+    "AGENTS.md": true,
+    "data/schedule-evidence/ledger.json": true,
+    "knowledge/backfill_retry_integration_boundary.md": true,
+    "knowledge/history_backfill_validation_boundary.md": true,
+    "knowledge/preflight_retry_calendar_boundary.md": true,
+    "memory-bank/ACTIVE_PLAN.md": true,
+    "memory-bank/CURRENT_STATE.md": true,
+    "memory-bank/DECISIONS.md": true,
+    "memory-bank/ROADMAP.md": true,
+    "memory-bank/TOOLING_POLICY.md": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.json": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.md": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.json": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.md": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.json": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.md": true,
+    "scripts/project-git": true,
+    "src/toto_ai/cli.py": true,
+    "src/toto_ai/external_odds/schedule_evidence_admin.py": true,
+    "src/toto_ai/external_odds/targets.py": true,
+    "src/toto_ai/operations/scheduler_status.py": true,
+    "src/toto_ai/runner/morning_dispatch.py": true,
+    "src/toto_ai/runner/preflight_retry_scheduler.py": true,
+    "src/toto_ai/sports_stats/domain.py": true,
+    "src/toto_ai/sports_stats/history_backfill.py": true,
+    "tests/test_external_odds_targets.py": true,
+    "tests/test_morning_dispatch.py": true,
+    "tests/test_preflight_retry_scheduler.py": true,
+    "tests/test_schedule_evidence_admin_cli.py": true,
+    "tests/test_scheduler_status.py": true,
+    "tests/test_sports_history_backfill.py": true,
+    "tests/test_sports_history_backfill_cli.py": true,
+    "tests/test_sports_stats_cli.py": true
+  },
+  "active_plan_preserved_tail_sha256": "02551712eae42341fb8855b6899501a31d28e4df1be96d91d58e908a88c6c91d",
+  "memory_files": [
+    "memory-bank/ACTIVE_PLAN.md",
+    "memory-bank/ROADMAP.md"
+  ],
+  "test_harness_source": "import hashlib, json, os, sys\nfrom pathlib import Path\nMAIN = Path('/Users/turshevr/toto-ai')\nTEMP = Path(__file__).parent.resolve()\nsys.dont_write_bytecode = True\nblocked = []\ndef audit(event, args):\n    if event.startswith(('socket.connect', 'socket.getaddrinfo', 'socket.gethostby', 'socket.sendto', 'subprocess.Popen', 'os.system', 'os.posix_spawn', 'os.exec')) or event == 'sqlite3.connect':\n        blocked.append({'event': event, 'test': os.environ.get('PYTEST_CURRENT_TEST')})\n        raise RuntimeError('local finalization forbids network/process/DB access: ' + event)\n    paths = []\n    if event == 'open' and isinstance(args[0], (str, bytes, os.PathLike)):\n        path, mode, flags = args\n        resolved = Path(os.fsdecode(path)).resolve()\n        if (isinstance(mode, str) and any(c in mode for c in 'wax+')) or (isinstance(flags, int) and flags & (os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_TRUNC | os.O_APPEND)):\n            paths = [path]\n        elif resolved.name.startswith('.env') and not resolved.is_relative_to(TEMP):\n            raise RuntimeError('local finalization forbids real secret-file reads')\n    elif event in ('os.mkdir', 'os.remove', 'os.rmdir', 'os.chmod', 'os.utime'):\n        paths = [args[0]]\n    elif event in ('os.rename', 'os.link', 'os.symlink'):\n        paths = [args[0], args[1]]\n    for path in paths:\n        if isinstance(path, (str, bytes, os.PathLike)) and not Path(os.fsdecode(path)).resolve().is_relative_to(TEMP):\n            blocked.append({'event': event, 'test': os.environ.get('PYTEST_CURRENT_TEST')})\n            raise RuntimeError('local finalization forbids writes outside temporary test root')\nsys.addaudithook(audit)\nsys.path[:0] = [str(MAIN), str(MAIN / 'src')]\nimport toto_ai.external_odds.goal_api as goal\nassert Path(goal.__file__).resolve() == MAIN / 'src/toto_ai/external_odds/goal_api.py'\nassert hashlib.sha256(Path(goal.__file__).read_bytes()).hexdigest() == '73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb'\nimport pytest\nfiles = ['tests/test_goal_api_pagination_identity.py', 'tests/test_goal_api_provider.py', 'tests/test_goal_api_schedule_collection.py', 'tests/test_schedule_source_collector.py']\ncode = pytest.main(['-q', '-x', '--tb=short', '-p', 'no:cacheprovider', '-c', str(MAIN / 'pyproject.toml'), '--rootdir', str(MAIN), '--basetemp', str(TEMP / 'pytest-main'), '--log-file', str(TEMP / 'pytest.log'), *[str(MAIN / f) for f in files]])\nloaded = {}\nfor key, value in list(sys.modules.items()):\n    if key.startswith(('toto_ai', 'tests')) and getattr(value, '__file__', None):\n        path = Path(value.__file__).resolve()\n        if path.suffix == '.py' and path.is_file():\n            loaded[str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()\n(TEMP / 'runtime.json').write_text(json.dumps({'exit_code': code, 'blocked_actions': blocked, 'loaded_source_sha256': loaded}, indent=2))\nraise SystemExit(code)\n",
+  "test_harness_sha256": "c05299583e8564f12e18e20174360afd1a21a073f2cf74a7d3a20b472dc1c4a3",
+  "ruff": {
+    "at": "2026-09-06T12:53:16.218070+03:00",
+    "command": [
+      "/Users/turshevr/toto-ai/.venv/bin/ruff",
+      "check",
+      "--no-cache",
+      "src/toto_ai/external_odds/goal_api.py",
+      "tests/test_goal_api_pagination_identity.py",
+      "tests/test_goal_api_provider.py",
+      "tests/test_goal_api_schedule_collection.py",
+      "tests/test_schedule_source_collector.py"
+    ],
+    "exit_code": 0,
+    "stdout": "All checks passed!\n",
+    "stderr": "",
+    "timeout_seconds": 30
+  },
+  "format_check": {
+    "at": "2026-09-06T12:53:16.228192+03:00",
+    "command": [
+      "/Users/turshevr/toto-ai/.venv/bin/ruff",
+      "format",
+      "--check",
+      "--no-cache",
+      "src/toto_ai/external_odds/goal_api.py",
+      "tests/test_goal_api_pagination_identity.py"
+    ],
+    "exit_code": 0,
+    "stdout": "2 files already formatted\n",
+    "stderr": "",
+    "timeout_seconds": 30
+  },
+  "diff_check": {
+    "at": "2026-09-06T12:53:16.270826+03:00",
+    "command": [
+      "/Users/turshevr/toto-ai/scripts/project-git",
+      "diff",
+      "--check",
+      "--",
+      "src/toto_ai/external_odds/goal_api.py",
+      "tests/test_goal_api_pagination_identity.py",
+      "tests/fixtures/goal_pagination_duplicate.json",
+      "knowledge/goal_pagination_identity_boundary.md"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "",
+    "timeout_seconds": 15
+  },
+  "final_source_verification": {
+    "at": "2026-09-06T12:53:16.275280+03:00",
+    "after_hashes": {
+      "src/toto_ai/external_odds/goal_api.py": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb",
+      "tests/test_goal_api_pagination_identity.py": "3466286b07075239a8134898444db44535b4b337335bb2ecbcdcc93b66e3c106",
+      "tests/fixtures/goal_pagination_duplicate.json": "a7cc49f4b8789d261eb5e3c608fc987a8812d33c13b7198c6bc5f1b808768e7f",
+      "knowledge/goal_pagination_identity_boundary.md": "4abfdc452ed36a5bee6c133286fc39afb4e999ec8cb5eaea2171419ad217535f"
+    },
+    "dependency_hashes": {
+      "AGENTS.md": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+      "memory-bank/TOOLING_POLICY.md": "cd96772b5901238cf68c446649a67c555da74f8f7e40ee867633199e36959814",
+      "scripts/project-git": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+      "pyproject.toml": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6",
+      "tests/__init__.py": "b42ed020e57684598c001935032758481acfebc67f443c4ccb8cfc24864ac132",
+      "src/toto_ai/external_odds/schedule_source_collector.py": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328",
+      "tests/test_goal_api_provider.py": "7cb7ef01efafbc407110722a060c06c5bf070b251d1a56ee3ebcaf668702c766",
+      "tests/test_goal_api_schedule_collection.py": "23f32f7e7e0d7aa0fc1bee8abd31c44d767e7df62b9ebe91faaad9ccd9f2c80d",
+      "tests/test_schedule_source_collector.py": "e661d538c28ab4835afd45ded9a06ba7f12a818736da779701a3bb2f86c8de99"
+    }
+  },
+  "preserved_after_tests": {
+    "AGENTS.md": true,
+    "data/schedule-evidence/ledger.json": true,
+    "knowledge/backfill_retry_integration_boundary.md": true,
+    "knowledge/history_backfill_validation_boundary.md": true,
+    "knowledge/preflight_retry_calendar_boundary.md": true,
+    "memory-bank/CURRENT_STATE.md": true,
+    "memory-bank/DECISIONS.md": true,
+    "memory-bank/ROADMAP.md": true,
+    "memory-bank/TOOLING_POLICY.md": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.json": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.md": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.json": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.md": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.json": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.md": true,
+    "scripts/project-git": true,
+    "src/toto_ai/cli.py": true,
+    "src/toto_ai/external_odds/schedule_evidence_admin.py": true,
+    "src/toto_ai/external_odds/targets.py": true,
+    "src/toto_ai/operations/scheduler_status.py": true,
+    "src/toto_ai/runner/morning_dispatch.py": true,
+    "src/toto_ai/runner/preflight_retry_scheduler.py": true,
+    "src/toto_ai/sports_stats/domain.py": true,
+    "src/toto_ai/sports_stats/history_backfill.py": true,
+    "tests/test_external_odds_targets.py": true,
+    "tests/test_morning_dispatch.py": true,
+    "tests/test_preflight_retry_scheduler.py": true,
+    "tests/test_schedule_evidence_admin_cli.py": true,
+    "tests/test_scheduler_status.py": true,
+    "tests/test_sports_history_backfill.py": true,
+    "tests/test_sports_history_backfill_cli.py": true,
+    "tests/test_sports_stats_cli.py": true
+  },
+  "index_after_sha256": "d1d658863037f248e41c4ec02e4ff731a87a36ee8a5471eee809935e6038fbeb",
+  "index_unchanged": true,
+  "memory_preservation": {
+    "active_plan_original_tail_sha256": "02551712eae42341fb8855b6899501a31d28e4df1be96d91d58e908a88c6c91d",
+    "active_plan_original_tail_preserved": true,
+    "roadmap_original_sha256": "14b065f19683b810c80c0568c1f25520f53bad135f99e9f52188e0604c69120c",
+    "roadmap_original_content_preserved": true,
+    "operational_checkpoint_text_modified": false,
+    "prior_blocked_receipt_overwritten": false,
+    "coordination_registry_modified": false,
+    "current_state_or_decisions_modified": false
+  },
+  "completed_at": "2026-09-06T12:54:04.291577+03:00",
+  "blocker": null,
+  "exact_applied_files": [
+    "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+    "/Users/turshevr/toto-ai/tests/test_goal_api_pagination_identity.py",
+    "/Users/turshevr/toto-ai/tests/fixtures/goal_pagination_duplicate.json",
+    "/Users/turshevr/toto-ai/knowledge/goal_pagination_identity_boundary.md"
+  ],
+  "remaining": [
+    "No remaining work in this bounded local adoption",
+    "Separate release verification and explicit authorization required before any later staging/commit/remote publication"
+  ],
+  "verification_caveat": "One unchanged existing collector test attempted optional-provider DNS; the audit hook denied socket.getaddrinfo before execution. No network call completed. All52 main tests passed with subprocess/DB/write isolation. Independent221-case acceptance is saved prior evidence, not rerun here.",
+  "final_preserved_other_files": {
+    "AGENTS.md": true,
+    "data/schedule-evidence/ledger.json": true,
+    "knowledge/backfill_retry_integration_boundary.md": true,
+    "knowledge/history_backfill_validation_boundary.md": true,
+    "knowledge/preflight_retry_calendar_boundary.md": true,
+    "memory-bank/CURRENT_STATE.md": true,
+    "memory-bank/DECISIONS.md": true,
+    "memory-bank/TOOLING_POLICY.md": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.json": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.md": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.json": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.md": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.json": true,
+    "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.md": true,
+    "scripts/project-git": true,
+    "src/toto_ai/cli.py": true,
+    "src/toto_ai/external_odds/schedule_evidence_admin.py": true,
+    "src/toto_ai/external_odds/targets.py": true,
+    "src/toto_ai/operations/scheduler_status.py": true,
+    "src/toto_ai/runner/morning_dispatch.py": true,
+    "src/toto_ai/runner/preflight_retry_scheduler.py": true,
+    "src/toto_ai/sports_stats/domain.py": true,
+    "src/toto_ai/sports_stats/history_backfill.py": true,
+    "tests/test_external_odds_targets.py": true,
+    "tests/test_morning_dispatch.py": true,
+    "tests/test_preflight_retry_scheduler.py": true,
+    "tests/test_schedule_evidence_admin_cli.py": true,
+    "tests/test_scheduler_status.py": true,
+    "tests/test_sports_history_backfill.py": true,
+    "tests/test_sports_history_backfill_cli.py": true,
+    "tests/test_sports_stats_cli.py": true
+  },
+  "receipt_markdown_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_ADOPTION_RECEIPT_20260906.md",
+  "receipt_markdown_sha256": "4987b4fec9b75ce18ba956c767a035a2baa3c7f5082c7b96988a3e8d2b945b3e",
+  "memory_hashes_after": {
+    "memory-bank/ACTIVE_PLAN.md": "57a10c44b8200f111fb62cf57324a2877c3259b8e6a6a85fb85f0cd14cc790e1",
+    "memory-bank/ROADMAP.md": "2c43c80457681480858a1bf02275ae9bd6cf26dabad6caa99c804ede207b1540"
+  }
+}

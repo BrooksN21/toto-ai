@@ -3,6 +3,18 @@ set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
 
+# Explicit read-only inspection from the owning main checkout. This is not a
+# generic -C override and does not install or trust a wrapper in the target.
+registered_worktree=
+if [ "${1-}" = "--registered-worktree" ]; then
+    if [ "$#" -lt 3 ] || [ -z "$2" ]; then
+        echo "project-git: --registered-worktree requires an absolute path and read-only command" >&2
+        exit 64
+    fi
+    registered_worktree=$2
+    shift 2
+fi
+
 before_command=true
 for argument in "$@"; do
     if [ "$before_command" != true ]; then
@@ -69,11 +81,81 @@ $attestation
 EOF
 
 expected_git_dir=$project_root/.git
-if [ "$reported_root" != "$project_root" ] || \
+if [ -L "$0" ] || [ -L "$expected_git_dir" ] || \
+    [ ! -d "$expected_git_dir" ] || \
+    [ "$reported_root" != "$project_root" ] || \
     [ "$reported_git_dir" != "$expected_git_dir" ] || \
     [ "$reported_common_dir" != "$expected_git_dir" ]; then
     echo "project-git: repository attestation mismatch" >&2
     exit 64
+fi
+
+if [ -n "$registered_worktree" ]; then
+    reject_worktree() {
+        echo "project-git: registered worktree attestation mismatch" >&2
+        exit 64
+    }
+    # Only inspection is authorized through this explicit cross-checkout mode.
+    # No aliases, writes, external diff/text conversion, or output-file routes.
+    case "${1-}" in
+        rev-parse|status) ;;
+        diff)
+            # Name/stat inspection only: arbitrary diff drivers and output paths
+            # (including abbreviated options) must never execute in this mode.
+            for argument in "$@"; do
+                case "$argument" in
+                    diff|--name-only|--name-status|--stat|--no-ext-diff|--no-textconv|--cached|--staged|--relative|-z|HEAD) ;;
+                    *) echo "project-git: registered diff permits name/stat inspection only" >&2; exit 64 ;;
+                esac
+            done
+            ;;
+        *) echo "project-git: registered worktree mode is read-only" >&2; exit 64 ;;
+    esac
+    for argument in "$@"; do
+        case "$argument" in
+            --output*|--ext-diff|--textconv|--no-index)
+                echo "project-git: registered worktree output/driver override prohibited" >&2
+                exit 64 ;;
+        esac
+    done
+    case "$registered_worktree" in /*) ;; *) reject_worktree ;; esac
+    [ "$registered_worktree" != "${HOME-}" ] || reject_worktree
+    [ ! -L "$registered_worktree" ] || reject_worktree
+    canonical_root=$(CDPATH= cd -- "$registered_worktree" && pwd -P) || reject_worktree
+    [ "$canonical_root" = "$registered_worktree" ] || reject_worktree
+    gitfile=$registered_worktree/.git
+    [ -f "$gitfile" ] && [ ! -L "$gitfile" ] || reject_worktree
+    gitfile_value=$(cat -- "$gitfile") || reject_worktree
+    case "$gitfile_value" in "gitdir: $expected_git_dir/worktrees/"*) ;; *) reject_worktree ;; esac
+    child_git_dir=${gitfile_value#gitdir: }
+    [ "$(dirname -- "$child_git_dir")" = "$expected_git_dir/worktrees" ] || reject_worktree
+    [ ! -L "$child_git_dir" ] || reject_worktree
+    canonical_git_dir=$(CDPATH= cd -- "$child_git_dir" && pwd -P) || reject_worktree
+    [ "$canonical_git_dir" = "$child_git_dir" ] || reject_worktree
+    [ -f "$child_git_dir/gitdir" ] && [ ! -L "$child_git_dir/gitdir" ] || reject_worktree
+    [ -f "$child_git_dir/commondir" ] && [ ! -L "$child_git_dir/commondir" ] || reject_worktree
+    [ "$(cat -- "$child_git_dir/gitdir")" = "$gitfile" ] || reject_worktree
+    common_route=$(cat -- "$child_git_dir/commondir") || reject_worktree
+    case "$common_route" in
+        /*) common_candidate=$common_route ;;
+        *) common_candidate=$child_git_dir/$common_route ;;
+    esac
+    canonical_common=$(CDPATH= cd -- "$common_candidate" && pwd -P) || reject_worktree
+    [ "$canonical_common" = "$expected_git_dir" ] || reject_worktree
+    # Independent Git attestation must agree with both registration directions.
+    child_attestation=$(
+        /usr/bin/git -C "$registered_worktree" rev-parse --path-format=absolute \
+            --show-toplevel --git-dir --git-common-dir
+    ) || reject_worktree
+    expected_attestation=$(printf '%s\n%s\n%s' "$registered_worktree" "$child_git_dir" "$expected_git_dir")
+    [ "$child_attestation" = "$expected_attestation" ] || reject_worktree
+    export GIT_OPTIONAL_LOCKS=0
+    if [ "$1" = diff ]; then
+        shift
+        exec /usr/bin/git --no-pager -c core.fsmonitor=false -C "$registered_worktree" \
+            diff --no-ext-diff --no-textconv "$@"
+    fi
+    exec /usr/bin/git --no-pager -c core.fsmonitor=false -C "$registered_worktree" "$@"
 fi
 
 exec /usr/bin/git -C "$project_root" "$@"

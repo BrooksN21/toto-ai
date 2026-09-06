@@ -466,6 +466,37 @@ class SportsStatsRunSnapshot:
         payload.pop("content_sha256")
         return payload
 
+    def semantic_persistence_payload(self) -> dict[str, Any]:
+        """Return stable sporting evidence, excluding replay diagnostics."""
+
+        return {
+            "schema_version": self.schema_version,
+            "drawing_id": self.drawing_id,
+            "drawing_number": self.drawing_number,
+            "drawing_fingerprint": self.drawing_fingerprint,
+            "provider": self.provider,
+            "requested_history_size": self.requested_history_size,
+            "deadline": _json_ready(self.deadline),
+            "status": self.status,
+            "events": [
+                {
+                    "feature_sha256": event.feature_sha256,
+                    "payload": event.canonical_payload(),
+                }
+                for event in self.events
+            ],
+            "complete_count": self.complete_count,
+            "partial_count": self.partial_count,
+            "missing_count": self.missing_count,
+            "unsupported_count": self.unsupported_count,
+            "source_request_fingerprints": list(
+                self.source_request_fingerprints
+            ),
+        }
+
+    def semantic_persistence_sha256(self) -> str:
+        return canonical_sha256(self.semantic_persistence_payload())
+
 
 def build_event_snapshot(**values: Any) -> FootballEventFeatureSnapshot:
     candidate = FootballEventFeatureSnapshot(feature_sha256="0" * 64, **values)

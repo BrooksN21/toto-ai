@@ -1,0 +1,123 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "phase": "SOURCE_PUBLISHED_REMOTE_VERIFIED_CLOSING_METADATA",
+  "at": "2026-09-06T17:15:40.185591+03:00",
+  "workflow": "gena-submission-ci-flow unavailable/incompatible with local policy; explicitly authorized project-git/public gh fallback; no agents/internal services",
+  "accepted_patch_sha256": "c3fe388cb3e2b230b506f8479bdcae7a883446f1fc2d087417a19347a3fba8e5",
+  "accepted_changes": [
+    {
+      "path": "src/toto_ai/sports_stats/parallel_g1.py",
+      "before_sha256": "ce71c517c8c9f537b3bfc37ba9d024aeace1210f0c58c27accae7506bd698e85",
+      "after_sha256": "9ca4ef440a779ef9f8f445fc625b8d20fb164ba15af2c762e5795e45d71304e5"
+    },
+    {
+      "path": "tests/test_parallel_g1_evaluation_profile.py",
+      "before_sha256": null,
+      "after_sha256": "e07891b3daa1e5e07a1252db477c23fa21812287d2a22eafcb3cef5fbe6e19cc"
+    },
+    {
+      "path": "knowledge/parallel_g1_evaluation_profile.md",
+      "before_sha256": null,
+      "after_sha256": "8ed3c421a94a5b445c9300198e14e77076b702e95838c873a74320914b07bdbf"
+    }
+  ],
+  "verification": [
+    {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--basetemp=/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-g1-publish-bc5wz3pk/pytest",
+        "tests/test_parallel_g1_evaluation_profile.py",
+        "tests/test_final_hybrid_g1_integration.py"
+      ],
+      "exit_code": 0,
+      "stdout": "........................                                                 [100%]\n24 passed in 1.01s\n",
+      "stderr": "",
+      "timeout_seconds": 30
+    },
+    {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/ruff",
+        "check",
+        "--no-cache",
+        "src/toto_ai/sports_stats/parallel_g1.py",
+        "tests/test_parallel_g1_evaluation_profile.py",
+        "tests/test_final_hybrid_g1_integration.py"
+      ],
+      "exit_code": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": "",
+      "timeout_seconds": 30
+    }
+  ],
+  "verification_summary": "24pytest PASS; Ruff3Pythonfiles PASS; no network/SQLite/secret reads; temporary-only writes",
+  "test_temp_root": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-g1-publish-bc5wz3pk",
+  "handoff_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_ADOPTION_AND_REPLAY_HANDOFF.md",
+  "handoff_sha256": "d0b07806659cd8c890ff7cc04b7c9a878ae8f066eabf0c30e0983b38700416e8",
+  "prior_pr_head": "c43fa702435ad9a4cff33027f2fa5cdc80d50b6f",
+  "pr_url": "https://github.com/BrooksN21/toto-ai/pull/22",
+  "publish_pr": false,
+  "runtime_result_from_adopter": {
+    "kind": "NONFINAL_RESEARCH_ONLY",
+    "completed_at": "2026-09-06T17:09:48.812587+03:00",
+    "pairs": 53618,
+    "accepted_swaps": 1,
+    "engine_seconds": 40.9280342,
+    "nondegradation_comparisons_pass": 12,
+    "robust_bk_p13_before": 0.0250222344217312,
+    "robust_bk_p13_after": 0.0251446059127983,
+    "overall_selector_winner": "quality-v3",
+    "final_operator_PLAY_claimed": false,
+    "profitability_proven": false
+  },
+  "context_only_local_refs": [
+    "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_COMPLETION_CONTEXT.md",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_LABEL_EVIDENCE_HANDOFF.md"
+  ],
+  "sports_v3_status": "Probability implementation separately owned/isolated, not included or declared complete. Saved local label evidence found90rows+optional15, not training validation.",
+  "excluded": "Operational ledger/raw captures/real operator coupons/provisional child code and large local candidate/diagnostic bundles retained, not uploaded.",
+  "ledger_before_sha256": "67ca1b2e8091005a1ebf5b8f508059f9e6ec4e7610b4d8df2c3fa54963b1a06c",
+  "source_or_runtime_mutated_by_publisher": false,
+  "selected_paths": [
+    "src/toto_ai/sports_stats/parallel_g1.py",
+    "tests/test_parallel_g1_evaluation_profile.py",
+    "knowledge/parallel_g1_evaluation_profile.md",
+    "memory-bank/ACTIVE_PLAN.md",
+    "memory-bank/CURRENT_STATE.md",
+    "memory-bank/ROADMAP.md",
+    "memory-bank/THREAD_COORDINATION.json",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_ADOPTION_AND_REPLAY_HANDOFF.md",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_PUBLICATION_RECEIPT_20260906.json"
+  ],
+  "knowledge_publication_addendum": "Accepted original retained; appended subsequent adopter diagnostic/current publisher test evidence, no behavioral change.",
+  "source_after_verification_sha256": "9ca4ef440a779ef9f8f445fc625b8d20fb164ba15af2c762e5795e45d71304e5",
+  "prepared_at": "2026-09-06T17:16:44.249348+03:00",
+  "source_publication": {
+    "commit": "01b5df262f64f4eadafa3cf5b5e3bd93f95d791b",
+    "push_exit": 0,
+    "remote_verified_at": "2026-09-06T17:18:28.655769+03:00",
+    "pr_state": "OPEN",
+    "isDraft": true,
+    "headRefOid": "01b5df262f64f4eadafa3cf5b5e3bd93f95d791b",
+    "headRefName": "codex/reviewed-stack-20260906",
+    "merged": false
+  },
+  "after_source_push": {
+    "index_empty": true,
+    "tracked_dirty": [
+      "data/schedule-evidence/ledger.json"
+    ],
+    "ledger_bytes_unchanged": true,
+    "untracked_scope": "Local context/labels/raw/candidates/transient diagnostics and separately owned retrospective tests preserved; no whole-checkout clean claim."
+  },
+  "closing_metadata": {
+    "at": "2026-09-06T17:18:28.655769+03:00",
+    "source_unchanged_since_24test_verification": true,
+    "description": "This follow-up metadata commit records verified source publication; its final pushed HEAD will be confirmed read-only and reported to caller."
+  }
+}

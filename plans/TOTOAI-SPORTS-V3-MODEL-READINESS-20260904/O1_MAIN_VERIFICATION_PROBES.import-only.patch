@@ -1,0 +1,20 @@
+--- READ_ONLY_SOURCE/O1_INDEPENDENT_REVIEW_PROBES.py
++++ LOCAL_VERIFICATION_COPY/O1_MAIN_VERIFICATION_PROBES.py
+@@ -11,6 +11,8 @@
+ from datetime import datetime
+ 
+ import pytest
++
++from toto_ai.external_odds.goal_api import _sha256_json as provider_hash
+ from toto_ai.sports_stats.v3_coverage_audit import _goals as legacy_goals
+ from toto_ai.sports_stats.v3_family_evidence import (
+     EvidenceBytes,
+@@ -18,8 +20,6 @@
+     ReviewedReference,
+     assess_family_evidence,
+ )
+-
+-from toto_ai.external_odds.goal_api import _sha256_json as provider_hash
+ from toto_ai.sports_stats.v3_features import build_sports_v3_feature_table
+ 
+ 

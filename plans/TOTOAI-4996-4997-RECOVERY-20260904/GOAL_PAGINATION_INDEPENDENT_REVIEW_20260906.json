@@ -1,0 +1,339 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "role": "delegated independent engineering reviewer",
+  "reviewed_at_msk": "2026-09-06T12:48:14.821577+03:00",
+  "verdict": "ACCEPT",
+  "findings": [],
+  "patch_sha256": "51308a1e9cafcbf506d33851ecfc60259ca484d249d2fda1a6da86a019af28a0",
+  "patch_bytes": 20141,
+  "manifest_sha256": "701b3bf6758fd51344a256cd57de46597e84e7e95595d13f3ee3d3117d430750",
+  "implementation_receipt_sha256": "02f3f0a4a93298060254d52ffb456dd58083fb9729d2c30445288767756caa47",
+  "scope": "Exactly the four-file generic GOAL metadata-only pagination dedup fix; acceptance does not authorize main adoption or operational use.",
+  "context_report": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_FIX_REPORT.md",
+  "input_artifact_hashes": {
+    "GOAL_PAGINATION_FIX_REPORT.md": "89e3ff3bef434a18f8d6a83716ed5cde277de90869e4e6ffdbc4d49df66b75c5",
+    "GOAL_PAGINATION_FIX_MANIFEST.json": "701b3bf6758fd51344a256cd57de46597e84e7e95595d13f3ee3d3117d430750",
+    "GOAL_PAGINATION_FIX_RECEIPT.json": "02f3f0a4a93298060254d52ffb456dd58083fb9729d2c30445288767756caa47",
+    "GOAL_PAGINATION_FIX_BEFORE.json": "d0b29e1d873154756bfeb5cfc4e2fac39699cbb878abaa304e53f07543b72e2a",
+    "GOAL_PAGINATION_FIX.patch": "51308a1e9cafcbf506d33851ecfc60259ca484d249d2fda1a6da86a019af28a0"
+  },
+  "changes": [
+    {
+      "path": "src/toto_ai/external_odds/goal_api.py",
+      "before_sha256": "9664414b31134122474a7ffc33f15be24a58111f1a7ec42f915c3423db82dab8",
+      "after_sha256": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb"
+    },
+    {
+      "path": "tests/test_goal_api_pagination_identity.py",
+      "before_sha256": null,
+      "after_sha256": "3466286b07075239a8134898444db44535b4b337335bb2ecbcdcc93b66e3c106"
+    },
+    {
+      "path": "tests/fixtures/goal_pagination_duplicate.json",
+      "before_sha256": null,
+      "after_sha256": "a7cc49f4b8789d261eb5e3c608fc987a8812d33c13b7198c6bc5f1b808768e7f"
+    },
+    {
+      "path": "knowledge/goal_pagination_identity_boundary.md",
+      "before_sha256": null,
+      "after_sha256": "4abfdc452ed36a5bee6c133286fc39afb4e999ec8cb5eaea2171419ad217535f"
+    }
+  ],
+  "manifest_expected_head": "49bd9ed9f16f63b848119f720f1e5013c3e4c0a6",
+  "head_independently_rechecked": false,
+  "patch_verification": "Parsed unified patch with exact old hunk coordinates/context/counts; reconstructed all four outputs in temporary space and matched every manifest after-hash. Main before-hashes and nine dependency hashes matched before and after tests. No VCS/application performed.",
+  "final_main_hash_guards": [
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+      "expected_sha256": "9664414b31134122474a7ffc33f15be24a58111f1a7ec42f915c3423db82dab8",
+      "actual_sha256": "9664414b31134122474a7ffc33f15be24a58111f1a7ec42f915c3423db82dab8",
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_goal_api_pagination_identity.py",
+      "expected_sha256": null,
+      "actual_sha256": null,
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/fixtures/goal_pagination_duplicate.json",
+      "expected_sha256": null,
+      "actual_sha256": null,
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/knowledge/goal_pagination_identity_boundary.md",
+      "expected_sha256": null,
+      "actual_sha256": null,
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/AGENTS.md",
+      "expected_sha256": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+      "actual_sha256": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/memory-bank/TOOLING_POLICY.md",
+      "expected_sha256": "cd96772b5901238cf68c446649a67c555da74f8f7e40ee867633199e36959814",
+      "actual_sha256": "cd96772b5901238cf68c446649a67c555da74f8f7e40ee867633199e36959814",
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/scripts/project-git",
+      "expected_sha256": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+      "actual_sha256": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/pyproject.toml",
+      "expected_sha256": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6",
+      "actual_sha256": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6",
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/__init__.py",
+      "expected_sha256": "b42ed020e57684598c001935032758481acfebc67f443c4ccb8cfc24864ac132",
+      "actual_sha256": "b42ed020e57684598c001935032758481acfebc67f443c4ccb8cfc24864ac132",
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_source_collector.py",
+      "expected_sha256": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328",
+      "actual_sha256": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328",
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_goal_api_provider.py",
+      "expected_sha256": "7cb7ef01efafbc407110722a060c06c5bf070b251d1a56ee3ebcaf668702c766",
+      "actual_sha256": "7cb7ef01efafbc407110722a060c06c5bf070b251d1a56ee3ebcaf668702c766",
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_goal_api_schedule_collection.py",
+      "expected_sha256": "23f32f7e7e0d7aa0fc1bee8abd31c44d767e7df62b9ebe91faaad9ccd9f2c80d",
+      "actual_sha256": "23f32f7e7e0d7aa0fc1bee8abd31c44d767e7df62b9ebe91faaad9ccd9f2c80d",
+      "matches": true
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_schedule_source_collector.py",
+      "expected_sha256": "e661d538c28ab4835afd45ded9a06ba7f12a818736da779701a3bb2f86c8de99",
+      "actual_sha256": "e661d538c28ab4835afd45ded9a06ba7f12a818736da779701a3bb2f86c8de99",
+      "matches": true
+    }
+  ],
+  "source_fixture_provenance": [
+    {
+      "source_snapshot": "data/scheduler/morning-dispatch/preflight/drawing-12102-20260906T153000Z-b3f20304ff03e14a/source-collector/goal-api-v1/snapshots/2b2fce419c3a1ad916752005f53e4eff00435f3aba0b69de0e6d1189def60449-1f4e98bfea4f635b.json",
+      "source_snapshot_sha256": "1f4e98bfea4f635b436b6a163e4e93ec723aa0d924d5537fe2f98ebb85734ba7",
+      "source_request_fingerprint": "2b2fce419c3a1ad916752005f53e4eff00435f3aba0b69de0e6d1189def60449",
+      "source_endpoint": "/fixtures/date/2026-09-05",
+      "source_offset": "700",
+      "captured_at": "2026-09-06T07:49:25.837746Z",
+      "raw_event_sha256": "2e8cbc48011578070f2cc821043ecb32edb4b9c1b9c92d5bac2da52058cb505f"
+    },
+    {
+      "source_snapshot": "data/scheduler/morning-dispatch/preflight/drawing-12102-20260906T153000Z-b3f20304ff03e14a/source-collector/goal-api-v1/snapshots/403a67bd923cc65b92d6054455677a241f4aae5aa29bc89d11b1d48486914d5e-02749c67b906d243.json",
+      "source_snapshot_sha256": "02749c67b906d243a6fe5c9d1e96dee72a23521bf9c908f55221a1e83918444b",
+      "source_request_fingerprint": "403a67bd923cc65b92d6054455677a241f4aae5aa29bc89d11b1d48486914d5e",
+      "source_endpoint": "/fixtures/date/2026-09-05",
+      "source_offset": "800",
+      "captured_at": "2026-09-06T07:49:25.837746Z",
+      "raw_event_sha256": "b8a45e3ffd8e3eeb26da1b8e54be33bc5067558c249c4783398239cb6500c108"
+    }
+  ],
+  "results": {
+    "focused": {
+      "argv": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "/private/tmp/goal-independent-review-1mldlu1m/runner.py",
+        "focused"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.5391969999982393,
+      "timeout_seconds": 30,
+      "output": "....................................................                     [100%]\n52 passed in 0.29s\n",
+      "output_sha256": "91e0da79f5142b1bbcbb4aed5fdfeaf8b1f201a915c6c9998848240eedf06bca",
+      "runtime": {
+        "exit_code": 0,
+        "blocked_actions": [
+          {
+            "event": "socket.getaddrinfo",
+            "test": "tests/test_schedule_source_collector.py::test_collector_saves_raw_snapshot_and_independent_candidate (call)"
+          }
+        ],
+        "loaded_source_sha256": {
+          "/Users/turshevr/toto-ai/src/toto_ai/api/safe_paths.py": "109743f84b527139caf9e3e8e26a657fc8fe279ea5c64e19824051bbcbf451fe",
+          "/Users/turshevr/toto-ai/src/toto_ai/api/rate_limit.py": "0d7210c24c706256dbd6b285c0243cfe2d6f97b0fb0ef39116c7d559b5a95366",
+          "/Users/turshevr/toto-ai/src/toto_ai/api/client.py": "47d849eb47df71a5136e3a04c153c7f0cb404eac2c4e927174260ccc567c975a",
+          "/Users/turshevr/toto-ai/src/toto_ai/api/__init__.py": "42cd35f0390813eff79efded2cfd05769bbc936c8588417f166716fda1abd54c",
+          "/Users/turshevr/toto-ai/src/toto_ai/__init__.py": "5b191cc228c9112b821fd4ead0cf7de40588ecc82812a6d48c51c48d239aa1a8",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/domain.py": "c09141bb061c76c5e2628f3edfc289ccc1bb5a64d999087c11c6f5e174fa3797",
+          "/Users/turshevr/toto-ai/src/toto_ai/totobrief_time.py": "f1d665535bc60cc265bca351bbebab8e81d675136a0a2e1a2a3189a292ab7d9f",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/targets.py": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/__init__.py": "45f854d807c7f3339f3cfd1bec24395370cc29104558c36ff30616857f3d8453",
+          "/private/tmp/goal-independent-review-1mldlu1m/src/toto_ai/external_odds/goal_api.py": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb",
+          "/private/tmp/goal-independent-review-1mldlu1m/tests/__init__.py": "b42ed020e57684598c001935032758481acfebc67f443c4ccb8cfc24864ac132",
+          "/private/tmp/goal-independent-review-1mldlu1m/tests/test_goal_api_provider.py": "7cb7ef01efafbc407110722a060c06c5bf070b251d1a56ee3ebcaf668702c766",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/matching.py": "8156642a2eb0cee8be4d255ecfee22ff767ecf9ae1907ea8d577d0d12dbdfd50",
+          "/Users/turshevr/toto-ai/src/toto_ai/db/models.py": "ec41d08df9595d6bc9ef361e4093fbea8b6ecfc2645d8c0b2f8392296f2572f2",
+          "/Users/turshevr/toto-ai/src/toto_ai/db/session.py": "6af8659a4be53b686944dcabaf13b00331be3a609a6748ea0629699ec51389a1",
+          "/Users/turshevr/toto-ai/src/toto_ai/db/__init__.py": "f9e851864d26ac532cdf9d00148e1dccfea8a569574361f464c0eea87c867347",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/countries.py": "1ad2458ecc4b658ec9738a560e30c608cd2c241affc225e78c8df903decca8f7",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/team_registry.py": "9a05035e29b4693d419c5a7a3b583796f9c8bc03b801aff0ceb2bbf8167eccc4",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_evidence.py": "913020a1aa32a2dac5c05a2735783927da11b57678be8b99094fd8dcdff9c4ec",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/thesportsdb.py": "ef26f20a1edfaf983b67cfbd19eb0a2939d85ae683ef1272b7277704660c1301",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_source_collector.py": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328",
+          "/private/tmp/goal-independent-review-1mldlu1m/tests/test_goal_api_schedule_collection.py": "23f32f7e7e0d7aa0fc1bee8abd31c44d767e7df62b9ebe91faaad9ccd9f2c80d",
+          "/private/tmp/goal-independent-review-1mldlu1m/tests/test_goal_api_pagination_identity.py": "3466286b07075239a8134898444db44535b4b337335bb2ecbcdcc93b66e3c106",
+          "/private/tmp/goal-independent-review-1mldlu1m/tests/test_schedule_source_collector.py": "e661d538c28ab4835afd45ded9a06ba7f12a818736da779701a3bb2f86c8de99"
+        }
+      },
+      "test_count": 52,
+      "runner_sha256": "58c440a193a671243dad09be2a154dae895f78828410253eaf468a40d2d99d04"
+    },
+    "independent": {
+      "argv": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "/private/tmp/goal-independent-review-1mldlu1m/runner.py",
+        "independent"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.8036392920002982,
+      "timeout_seconds": 30,
+      "output": "........................................................................ [ 42%]\n........................................................................ [ 85%]\n.........................                                                [100%]\n169 passed in 0.56s\n",
+      "output_sha256": "00aedf5412cb46bcb58ea2bb20add71c66eb3fd761f4a17d7fe699e36e77ce16",
+      "runtime": {
+        "exit_code": 0,
+        "blocked_actions": [],
+        "loaded_source_sha256": {
+          "/Users/turshevr/toto-ai/src/toto_ai/api/safe_paths.py": "109743f84b527139caf9e3e8e26a657fc8fe279ea5c64e19824051bbcbf451fe",
+          "/Users/turshevr/toto-ai/src/toto_ai/api/rate_limit.py": "0d7210c24c706256dbd6b285c0243cfe2d6f97b0fb0ef39116c7d559b5a95366",
+          "/Users/turshevr/toto-ai/src/toto_ai/api/client.py": "47d849eb47df71a5136e3a04c153c7f0cb404eac2c4e927174260ccc567c975a",
+          "/Users/turshevr/toto-ai/src/toto_ai/api/__init__.py": "42cd35f0390813eff79efded2cfd05769bbc936c8588417f166716fda1abd54c",
+          "/Users/turshevr/toto-ai/src/toto_ai/__init__.py": "5b191cc228c9112b821fd4ead0cf7de40588ecc82812a6d48c51c48d239aa1a8",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/domain.py": "c09141bb061c76c5e2628f3edfc289ccc1bb5a64d999087c11c6f5e174fa3797",
+          "/Users/turshevr/toto-ai/src/toto_ai/totobrief_time.py": "f1d665535bc60cc265bca351bbebab8e81d675136a0a2e1a2a3189a292ab7d9f",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/targets.py": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/__init__.py": "45f854d807c7f3339f3cfd1bec24395370cc29104558c36ff30616857f3d8453",
+          "/private/tmp/goal-independent-review-1mldlu1m/src/toto_ai/external_odds/goal_api.py": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb",
+          "/private/tmp/goal-independent-review-1mldlu1m/tests/__init__.py": "b42ed020e57684598c001935032758481acfebc67f443c4ccb8cfc24864ac132",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/matching.py": "8156642a2eb0cee8be4d255ecfee22ff767ecf9ae1907ea8d577d0d12dbdfd50",
+          "/Users/turshevr/toto-ai/src/toto_ai/db/models.py": "ec41d08df9595d6bc9ef361e4093fbea8b6ecfc2645d8c0b2f8392296f2572f2",
+          "/Users/turshevr/toto-ai/src/toto_ai/db/session.py": "6af8659a4be53b686944dcabaf13b00331be3a609a6748ea0629699ec51389a1",
+          "/Users/turshevr/toto-ai/src/toto_ai/db/__init__.py": "f9e851864d26ac532cdf9d00148e1dccfea8a569574361f464c0eea87c867347",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/countries.py": "1ad2458ecc4b658ec9738a560e30c608cd2c241affc225e78c8df903decca8f7",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/team_registry.py": "9a05035e29b4693d419c5a7a3b583796f9c8bc03b801aff0ceb2bbf8167eccc4",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_evidence.py": "913020a1aa32a2dac5c05a2735783927da11b57678be8b99094fd8dcdff9c4ec",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/thesportsdb.py": "ef26f20a1edfaf983b67cfbd19eb0a2939d85ae683ef1272b7277704660c1301",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_source_collector.py": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328",
+          "/private/tmp/goal-independent-review-1mldlu1m/tests/test_goal_api_provider.py": "7cb7ef01efafbc407110722a060c06c5bf070b251d1a56ee3ebcaf668702c766",
+          "/private/tmp/goal-independent-review-1mldlu1m/tests/test_goal_api_schedule_collection.py": "23f32f7e7e0d7aa0fc1bee8abd31c44d767e7df62b9ebe91faaad9ccd9f2c80d",
+          "/private/tmp/goal-independent-review-1mldlu1m/tests/test_independent_review.py": "9b808ccfc04a4f169a18620d3fbcb9c29fc733d6b261bed53ed67ee95a69c339",
+          "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py": "9664414b31134122474a7ffc33f15be24a58111f1a7ec42f915c3423db82dab8"
+        }
+      },
+      "test_count": 169,
+      "runner_sha256": "4073fc37f8615d779da4f476ff9ece6e30ed57514fa06e683db26fb3cb3060a8",
+      "probe_sha256": "9b808ccfc04a4f169a18620d3fbcb9c29fc733d6b261bed53ed67ee95a69c339"
+    },
+    "ruff": {
+      "argv": [
+        "/Users/turshevr/toto-ai/.venv/bin/ruff",
+        "check",
+        "--no-cache",
+        "--config",
+        "/Users/turshevr/toto-ai/pyproject.toml",
+        "/private/tmp/goal-independent-review-1mldlu1m/src/toto_ai/external_odds/goal_api.py",
+        "/private/tmp/goal-independent-review-1mldlu1m/tests/test_goal_api_pagination_identity.py",
+        "/private/tmp/goal-independent-review-1mldlu1m/tests/test_goal_api_provider.py",
+        "/private/tmp/goal-independent-review-1mldlu1m/tests/test_goal_api_schedule_collection.py",
+        "/private/tmp/goal-independent-review-1mldlu1m/tests/test_schedule_source_collector.py"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.012538584000139963,
+      "timeout_seconds": 30,
+      "output": "All checks passed!\n",
+      "output_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "format": {
+      "argv": [
+        "/Users/turshevr/toto-ai/.venv/bin/ruff",
+        "format",
+        "--check",
+        "--no-cache",
+        "--config",
+        "/Users/turshevr/toto-ai/pyproject.toml",
+        "/private/tmp/goal-independent-review-1mldlu1m/src/toto_ai/external_odds/goal_api.py",
+        "/private/tmp/goal-independent-review-1mldlu1m/tests/test_goal_api_pagination_identity.py"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.01119454199942993,
+      "timeout_seconds": 30,
+      "output": "2 files already formatted\n",
+      "output_sha256": "3bc53bf3e981a98a34a852e175bf9b77af841edea74fca595d9aedcbaf9a4938"
+    }
+  },
+  "unique_passing_pytest_cases": 221,
+  "independent_coverage": [
+    "Semantic hash distinguishes changes/deletions in all 42 non-updatedAt fields of the exact frozen witness.",
+    "82 public-fetch probes mutate 41 same-identity fields in both orders; each fails closed via semantic conflict or pre-existing raw validation. Different event IDs remain separate identities; normalized-same ID differences are separately rejected.",
+    "Nested updatedAt, createdAt, absent versus null, list order, bool/int, string/int, raw status aliases, and normalized-same IDs remain conflict-sensitive.",
+    "Only top-level updatedAt including absence is ignored; reordered mapping keys remain canonical-equivalent.",
+    "Six three-observation permutations with latest-capture and tied-time/hash selection; request-fingerprint and cross-date endpoint tie-breaks; date order and mixed-ID output order.",
+    "Both frozen witness page orders at their exact recorded capture times; whole selected dataclass corresponds to one complete raw snapshot, including request/capture/endpoint/hash. All synthetic response/snapshot hashes verified.",
+    "Pre-kickoff versus exact-kickoff with timezone offsets cannot retain earlier eligibility; provider updatedAt does not supply observation time.",
+    "Equivalent chains cannot hide later semantic conflicts; downstream collector returns source_failed with zero partial candidates on true conflicts.",
+    "12 differential cases across six statuses and pre/post kickoff: exact original and patched parser emit identical single-observation fields, diagnostics, and raw snapshot bytes.",
+    "Author 52-case suite independently replayed; includes metadata-duplicate collector success while official-source/review requirements remain mandatory."
+  ],
+  "safety": {
+    "shell_cwd": "/Users/turshevr/toto-ai",
+    "isolated_temporary_root": "/private/tmp/goal-independent-review-1mldlu1m",
+    "network_guard": "Python audit hook denied DNS/connect before execution; no network/API request completed. Existing unchanged collector test attempted DNS once and handled denial; independent probes attempted none.",
+    "subprocess_and_db_blocked_inside_pytest": true,
+    "real_env_files_read": false,
+    "main_source_edits": false,
+    "production_db_jobs_scheduler_or_operator_actions": false,
+    "stage_commit_push_or_pr": false,
+    "nested_agents": false,
+    "main_report_files_only": [
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.md",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.json"
+    ]
+  },
+  "harness_notes": [
+    {
+      "event": "Initial focused harness configuration failed before tests: pytest default log target /dev/null was denied by write guard. Set log file explicitly inside temporary root; guard was not relaxed.",
+      "evidence_log_sha256": "a5c4815afcbb5abf9ab09f6c8c4700d2f3bc7b09e062607f78a2cc5040c18e28"
+    },
+    {
+      "event": "Expanded independent harness initially reused basetemp: pytest cleanup uses dir_fd-relative unlink, conservatively denied by path guard (42 passed, 127 setup errors). New run used a fresh unique basetemp with the same guard; all 169 passed. No candidate source changes.",
+      "evidence_log_sha256": "28a5b3048b7f34a1a68090300be83ebba87ae7c28f0b594b1101159c7d3b2d6d"
+    }
+  ],
+  "reproduction": {
+    "requires": "Existing local Python environment; exact four after-hash candidate outputs in an isolated temp root, three baseline focused test files and tests/__init__.py; same read-only main dependencies. No install/download needed.",
+    "commands": "Run hosting project .venv/bin/python -B <temp>/runner.py focused and independent from /Users/turshevr/toto-ai with 30-second subprocess timeout, sanitized environment and bytecode disabled. Independent test code below belongs at <temp>/tests/test_independent_review.py; runner ROOT is derived from its file path. Use pytest.ini with empty addopts.",
+    "probe_source": "\"\"\"Independently designed raw-field, chronology, permutation and provenance probes.\"\"\"\nfrom copy import deepcopy\nfrom dataclasses import asdict\nfrom datetime import date, datetime, timedelta, timezone\nimport hashlib\nimport importlib.util\nfrom itertools import permutations\nimport json\nfrom pathlib import Path\nimport sys\n\nimport pytest\n\nfrom toto_ai.external_odds.goal_api import GoalAPIClient, GoalAPIError, _parse_event, _schedule_semantic_hash\nfrom toto_ai.external_odds.schedule_source_collector import _collect_goal_api_candidates\nfrom tests.test_goal_api_provider import FakeResponse, FakeSession, _fixture, _now\nfrom tests.test_goal_api_schedule_collection import _queue\n\nFROZEN = json.loads((Path(__file__).parent / 'fixtures/goal_pagination_duplicate.json').read_text())\nBASE = FROZEN['observations'][0]['raw_event']\nUTC = timezone.utc\n\ndef h(obj):\n    return hashlib.sha256(json.dumps(obj, ensure_ascii=True, sort_keys=True, separators=(',', ':')).encode()).hexdigest()\n\ndef run(tmp, rows, times=None, requested=None):\n    bodies = [{'success': True, 'data': [row], 'pagination': {'hasMore': i + 1 < len(rows), 'nextOffset': i + 1}} for i, row in enumerate(rows)]\n    clock = iter(times or [_now()] * len(rows))\n    client = GoalAPIClient('independent-synthetic-key', session=FakeSession([FakeResponse(b) for b in bodies]), snapshot_dir=tmp, now=lambda: next(clock), max_retries=0)\n    result = client.fetch_schedule(requested or (date(2026, 8, 26),))\n    for body, evidence in zip(bodies, client.request_evidence, strict=True):\n        content = evidence.snapshot_path.read_bytes()\n        doc = json.loads(content)\n        assert hashlib.sha256(content).hexdigest() == evidence.snapshot_sha256\n        assert doc['payload'] == body and h(body) == evidence.response_hash == doc['response_hash']\n        assert doc['request_fingerprint'] == evidence.request_fingerprint\n        assert doc['endpoint'] == evidence.endpoint\n        assert datetime.fromisoformat(doc['fetched_at'].replace('Z', '+00:00')) == evidence.fetched_at\n    for event in result:\n        matches = [e for e in client.request_evidence if (e.fetched_at, e.endpoint, e.request_fingerprint) == (event.captured_at, event.source_endpoint, event.request_fingerprint)]\n        assert len(matches) == 1\n        raw = json.loads(matches[0].snapshot_path.read_text())['payload']['data'][0]\n        expected = _parse_event(raw, fetched_at=event.captured_at, endpoint=event.source_endpoint, request_fingerprint=event.request_fingerprint)\n        assert event == expected and event.payload_hash == h(raw)\n        provider = event.as_provider_event()\n        assert provider.payload_hash == event.payload_hash and provider.fetched_at == event.captured_at\n    return result, client\n\n@pytest.mark.parametrize('field', sorted(set(BASE) - {'updatedAt'}))\ndef test_every_frozen_raw_field_remains_semantic(field):\n    changed = deepcopy(BASE)\n    changed[field] = {'independent_change': BASE[field]}\n    assert _schedule_semantic_hash(changed) != _schedule_semantic_hash(BASE)\n    del changed[field]\n    assert _schedule_semantic_hash(changed) != _schedule_semantic_hash(BASE)\n\n@pytest.mark.parametrize('field', sorted(set(BASE) - {'id', 'updatedAt'}))\n@pytest.mark.parametrize('reverse', [False, True])\ndef test_each_frozen_field_conflict_rejects_at_public_fetch(tmp_path, field, reverse):\n    changed = deepcopy(BASE)\n    old = changed[field]\n    changed[field] = old + ' independent change' if isinstance(old, str) else {'independent_change': old}\n    rows = [BASE, changed][::-1] if reverse else [BASE, changed]\n    with pytest.raises(GoalAPIError):\n        run(tmp_path, rows, requested=(date(2026, 9, 5),))\n\n@pytest.mark.parametrize('mutation', ['nested_updatedAt', 'createdAt', 'absent_null', 'list_order', 'bool_int', 'string_int', 'raw_status_alias', 'same_normalized_id'])\n@pytest.mark.parametrize('reverse', [False, True])\ndef test_sensitive_non_metadata_differences(tmp_path, mutation, reverse):\n    first = _fixture()\n    second = deepcopy(first)\n    if mutation == 'nested_updatedAt':\n        first['extra'] = {'updatedAt': 'a'}\n        second['extra'] = {'updatedAt': 'b'}\n    elif mutation == 'createdAt':\n        first['createdAt'] = 'a'\n        second['createdAt'] = 'b'\n    elif mutation == 'absent_null':\n        second['unknown'] = None\n    elif mutation == 'list_order':\n        first['unknown'] = [1, 2]\n        second['unknown'] = [2, 1]\n    elif mutation == 'bool_int':\n        first['unknown'] = True\n        second['unknown'] = 1\n    elif mutation == 'string_int':\n        first['unknown'] = '1'\n        second['unknown'] = 1\n    elif mutation == 'raw_status_alias':\n        second['matchStatus'] = 'NS'\n    else:\n        second['id'] = ' 7001 '\n    with pytest.raises(GoalAPIError, match='duplicate event identity conflicts'):\n        run(tmp_path, [second, first] if reverse else [first, second])\n\n@pytest.mark.parametrize('value', [None, '', 'new timestamp', 42, {'nested': ['bookkeeping']}])\ndef test_only_top_level_updated_at_is_ignored_including_absence(tmp_path, value):\n    first = _fixture()\n    second = first | {'updatedAt': value}\n    events, _ = run(tmp_path, [first, second])\n    assert len(events) == 1 and events[0].eligible\n\ndef test_nested_object_key_order_not_a_conflict(tmp_path):\n    first = _fixture() | {'unknown': {'a': 1, 'b': {'x': 1, 'y': 2}}}\n    second = dict(reversed(list(first.items())))\n    second['unknown'] = {'b': {'y': 2, 'x': 1}, 'a': 1}\n    events, _ = run(tmp_path, [first, second])\n    assert len(events) == 1\n\n@pytest.mark.parametrize('tie', [False, True])\ndef test_six_fixed_observation_permutations_select_same_real_row(tmp_path, tie):\n    rows = [_fixture() | {'updatedAt': x} for x in ('provider-newest', 'provider-oldest', 'provider-middle')]\n    times = [_now()] * 3 if tie else [_now() + timedelta(seconds=x) for x in (2, 0, 1)]\n    selected = []\n    for i, perm in enumerate(permutations(range(3))):\n        (event,), _ = run(tmp_path / str(i), [rows[x] for x in perm], [times[x] for x in perm])\n        assert event.captured_at == max(times)\n        selected.append((event.payload_hash, event.captured_at, event.status, event.eligible))\n    assert len(set(selected)) == 1\n    expected = max(range(3), key=lambda x: (times[x], h(rows[x])))\n    assert selected[0][0] == h(rows[expected])\n\ndef test_identical_raw_tied_time_fingerprint_tie_break(tmp_path):\n    (event,), client = run(tmp_path, [_fixture()] * 3)\n    assert event.request_fingerprint == max(e.request_fingerprint for e in client.request_evidence)\n\n@pytest.mark.parametrize('reverse', [False, True])\ndef test_frozen_records_with_original_captures(tmp_path, reverse):\n    observations = FROZEN['observations'][::-1] if reverse else FROZEN['observations']\n    rows = [o['raw_event'] for o in observations]\n    times = [datetime.fromisoformat(o['captured_at'].replace('Z', '+00:00')) for o in observations]\n    (event,), _ = run(tmp_path, rows, times, (date(2026, 9, 5),))\n    assert event.payload_hash == max(h(r) for r in rows)\n    assert not event.eligible and event.status == 'finished'\n\n@pytest.mark.parametrize('reverse', [False, True])\ndef test_exact_kickoff_and_utc_offset_do_not_preserve_old_eligibility(tmp_path, reverse):\n    kickoff = datetime(2026, 8, 26, 19, tzinfo=UTC)\n    rows = [_fixture() | {'updatedAt': 'one'}, _fixture() | {'updatedAt': 'two'}]\n    times = [kickoff - timedelta(microseconds=1), kickoff.astimezone(timezone(timedelta(hours=3)))]\n    (event,), _ = run(tmp_path, rows[::-1] if reverse else rows, times[::-1] if reverse else times)\n    assert not event.eligible and event.captured_at == kickoff\n\ndef test_conflict_after_equivalent_chain_is_not_hidden(tmp_path):\n    rows = [_fixture() | {'updatedAt': x} for x in ('one', 'two')]\n    rows.append(_fixture() | {'homeTeamScore': '1'})\n    for i, perm in enumerate(permutations(rows)):\n        with pytest.raises(GoalAPIError, match='duplicate event identity conflicts'):\n            run(tmp_path / str(i), perm)\n\ndef test_mixed_identity_results_sorted_not_discovery_order(tmp_path):\n    first = _fixture(event_id=7001)\n    second = _fixture(event_id=7002)\n    results = []\n    for i, rows in enumerate(([second, first, first], [first, first, second])):\n        events, _ = run(tmp_path / str(i), rows)\n        results.append([(e.provider_event_id, e.status, e.eligible, e.payload_hash) for e in events])\n    assert results[0] == results[1]\n\ndef test_collector_real_conflict_has_no_partial_candidates(tmp_path):\n    class Session:\n        def get(self, url, *, params, headers, timeout):\n            data = []\n            more = False\n            if url.endswith('2026-08-26'):\n                later = params['offset'] != '0'\n                data = [_fixture() | ({'homeTeamScore': '1'} if later else {})]\n                more = not later\n            return FakeResponse({'success': True, 'data': data, 'pagination': {'hasMore': more, 'nextOffset': 1}})\n    client = GoalAPIClient('independent-synthetic-key', session=Session(), snapshot_dir=tmp_path / 'snapshots', now=_now)\n    records, status = _collect_goal_api_candidates(json.loads(_queue(tmp_path).read_text()), output=tmp_path / 'out', observed=_now(), deadline=datetime(2026, 8, 26, 18, 45, tzinfo=UTC), ledger=None, config=None, client=client, team_aliases={'Викинг': 'Viking', 'Динамо Загреб': 'Dinamo Zagreb'})\n    assert status['status'] == 'source_failed' and status['candidate_count'] == 0\n    assert all(r['status'] == 'source_failed' and r['ledger_eligible'] is False for r in records)\n\n@pytest.mark.parametrize('status', ['Not Started', 'Scheduled', 'UNKNOWN', 'FINISHED', 'POSTPONED', 'CANCELLED'])\n@pytest.mark.parametrize('after_kickoff', [False, True])\ndef test_single_observation_matches_exact_unpatched_behavior(tmp_path, status, after_kickoff):\n    path = Path('/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py')\n    assert hashlib.sha256(path.read_bytes()).hexdigest() == '9664414b31134122474a7ffc33f15be24a58111f1a7ec42f915c3423db82dab8'\n    name = 'toto_ai.external_odds.goal_api_review_baseline'\n    if name not in sys.modules:\n        spec = importlib.util.spec_from_file_location(name, path)\n        baseline = importlib.util.module_from_spec(spec)\n        sys.modules[name] = baseline\n        spec.loader.exec_module(baseline)\n    baseline = sys.modules[name]\n    clock = datetime(2026, 8, 26, 20, tzinfo=UTC) if after_kickoff else _now()\n    raw = _fixture() | {'matchStatus': status, 'updatedAt': 'opaque metadata', 'extra': {'updatedAt': 'nested', 'unicode': 'Пример', 'scores': [None, '0', 0, False]}}\n    body = {'success': True, 'data': [raw], 'pagination': {'hasMore': False}}\n    outputs = []\n    for label, cls in [('before', baseline.GoalAPIClient), ('after', GoalAPIClient)]:\n        client = cls('independent-synthetic-key', session=FakeSession([FakeResponse(deepcopy(body))]), snapshot_dir=tmp_path / label, now=lambda: clock)\n        events = client.fetch_schedule((date(2026, 8, 26),))\n        outputs.append(([asdict(e) for e in events], client.request_evidence[0].snapshot_path.read_bytes(), [asdict(d) for d in client.request_diagnostics]))\n    assert outputs[0] == outputs[1]\n\ndef test_date_order_and_equal_capture_endpoint_tie_break(tmp_path):\n    class Session:\n        def get(self, url, *, params, headers, timeout):\n            return FakeResponse({'success': True, 'data': [_fixture()], 'pagination': {'hasMore': False}})\n    outputs = []\n    dates = (date(2026, 8, 25), date(2026, 8, 26))\n    for i, order in enumerate((dates, dates[::-1])):\n        client = GoalAPIClient('independent-synthetic-key', session=Session(), snapshot_dir=tmp_path / str(i), now=_now)\n        (event,) = client.fetch_schedule(order)\n        outputs.append(event)\n        assert event.source_endpoint.endswith('2026-08-26')\n        assert event.request_fingerprint == client.request_evidence[1].request_fingerprint\n        assert event.captured_at == client.request_evidence[1].fetched_at\n        assert h(json.loads(client.request_evidence[1].snapshot_path.read_text())['payload']['data'][0]) == event.payload_hash\n    assert outputs[0] == outputs[1]\n",
+    "probe_sha256": "9b808ccfc04a4f169a18620d3fbcb9c29fc733d6b261bed53ed67ee95a69c339",
+    "focused_runner_source": "\"\"\"Run exact candidate with read-only main dependencies and offline/write guards.\"\"\"\nimport hashlib\nimport importlib.util\nimport json\nimport os\nfrom pathlib import Path\nimport sys\nimport uuid\n\nROOT = Path(__file__).parent.resolve()\nMAIN = Path('/Users/turshevr/toto-ai')\nMODE = sys.argv[1]\nsys.dont_write_bytecode = True\nblocked = []\n\ndef audit(event, args):\n    if event.startswith(('socket.connect', 'socket.getaddrinfo', 'subprocess.Popen', 'os.system')) or event == 'sqlite3.connect':\n        blocked.append({'event': event, 'test': os.environ.get('PYTEST_CURRENT_TEST')})\n        raise RuntimeError('review forbids network/process/DB access: ' + event)\n    paths = []\n    if event == 'open' and isinstance(args[0], (str, bytes, os.PathLike)):\n        path, mode, flags = args\n        if isinstance(mode, str) and any(c in mode for c in 'wax+') or isinstance(flags, int) and flags & (os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_TRUNC | os.O_APPEND):\n            paths = [path]\n        elif Path(path).name == '.env' and not Path(path).resolve().is_relative_to(ROOT):\n            raise RuntimeError('review forbids real secret files')\n    elif event in ('os.mkdir', 'os.remove', 'os.rmdir', 'os.chmod', 'os.utime'):\n        paths = [args[0]]\n    elif event in ('os.rename', 'os.link', 'os.symlink'):\n        paths = [args[0], args[1]]\n    for path in paths:\n        if isinstance(path, (str, bytes, os.PathLike)) and not Path(os.fsdecode(path)).resolve().is_relative_to(ROOT):\n            blocked.append({'event': event, 'test': os.environ.get('PYTEST_CURRENT_TEST')})\n            raise RuntimeError('review forbids write outside temporary root')\n\nsys.addaudithook(audit)\nos.environ['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'\nsys.path[:0] = [str(ROOT), str(MAIN / 'src')]\nimport toto_ai.external_odds\n\nname = 'toto_ai.external_odds.goal_api'\ncandidate = ROOT / 'src/toto_ai/external_odds/goal_api.py'\nspec = importlib.util.spec_from_file_location(name, candidate)\nmodule = importlib.util.module_from_spec(spec)\nsys.modules[name] = module\nspec.loader.exec_module(module)\nsetattr(toto_ai.external_odds, 'goal_api', module)\nassert hashlib.sha256(candidate.read_bytes()).hexdigest() == '73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb'\n\nimport pytest\ntests = ['tests/test_goal_api_pagination_identity.py', 'tests/test_goal_api_provider.py', 'tests/test_goal_api_schedule_collection.py', 'tests/test_schedule_source_collector.py'] if MODE == 'focused' else ['tests/test_independent_review.py']\ncode = pytest.main(['-q', '-x', '--tb=short', '--log-file', str(ROOT / (MODE + '-pytest.log')), '-p', 'no:cacheprovider', '-c', str(ROOT / 'pytest.ini'), '--rootdir', str(ROOT), '--basetemp', str(ROOT / ('pytest-' + MODE + '-' + uuid.uuid4().hex)), *[str(ROOT / t) for t in tests]])\nloaded = {}\nfor key, value in list(sys.modules.items()):\n    if key.startswith(('toto_ai', 'tests')) and getattr(value, '__file__', None):\n        path = Path(value.__file__).resolve()\n        if path.suffix == '.py' and path.exists():\n            loaded[str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()\n(ROOT / (MODE + '-runtime.json')).write_text(json.dumps({'exit_code': code, 'blocked_actions': blocked, 'loaded_source_sha256': loaded}, indent=2))\nraise SystemExit(code)\n",
+    "independent_runner_source": "\"\"\"Run exact candidate with read-only main dependencies and offline/write guards.\"\"\"\nimport hashlib\nimport importlib.util\nimport json\nimport os\nfrom pathlib import Path\nimport sys\nimport uuid\n\nROOT = Path(__file__).parent.resolve()\nMAIN = Path('/Users/turshevr/toto-ai')\nMODE = sys.argv[1]\nsys.dont_write_bytecode = True\nblocked = []\n\ndef audit(event, args):\n    if event.startswith(('socket.connect', 'socket.getaddrinfo', 'subprocess.Popen', 'os.system')) or event == 'sqlite3.connect':\n        blocked.append(event)\n        raise RuntimeError('review forbids network/process/DB access: ' + event)\n    paths = []\n    if event == 'open' and isinstance(args[0], (str, bytes, os.PathLike)):\n        path, mode, flags = args\n        if isinstance(mode, str) and any(c in mode for c in 'wax+') or isinstance(flags, int) and flags & (os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_TRUNC | os.O_APPEND):\n            paths = [path]\n        elif Path(path).name == '.env' and not Path(path).resolve().is_relative_to(ROOT):\n            raise RuntimeError('review forbids real secret files')\n    elif event in ('os.mkdir', 'os.remove', 'os.rmdir', 'os.chmod', 'os.utime'):\n        paths = [args[0]]\n    elif event in ('os.rename', 'os.link', 'os.symlink'):\n        paths = [args[0], args[1]]\n    for path in paths:\n        if isinstance(path, (str, bytes, os.PathLike)) and not Path(os.fsdecode(path)).resolve().is_relative_to(ROOT):\n            blocked.append(event)\n            raise RuntimeError('review forbids write outside temporary root')\n\nsys.addaudithook(audit)\nos.environ['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'\nsys.path[:0] = [str(ROOT), str(MAIN / 'src')]\nimport toto_ai.external_odds\n\nname = 'toto_ai.external_odds.goal_api'\ncandidate = ROOT / 'src/toto_ai/external_odds/goal_api.py'\nspec = importlib.util.spec_from_file_location(name, candidate)\nmodule = importlib.util.module_from_spec(spec)\nsys.modules[name] = module\nspec.loader.exec_module(module)\nsetattr(toto_ai.external_odds, 'goal_api', module)\nassert hashlib.sha256(candidate.read_bytes()).hexdigest() == '73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb'\n\nimport pytest\ntests = ['tests/test_goal_api_pagination_identity.py', 'tests/test_goal_api_provider.py', 'tests/test_goal_api_schedule_collection.py', 'tests/test_schedule_source_collector.py'] if MODE == 'focused' else ['tests/test_independent_review.py']\ncode = pytest.main(['-q', '-x', '--tb=short', '--log-file', str(ROOT / (MODE + '-pytest.log')), '-p', 'no:cacheprovider', '-c', str(ROOT / 'pytest.ini'), '--rootdir', str(ROOT), '--basetemp', str(ROOT / ('pytest-' + MODE + '-' + uuid.uuid4().hex)), *[str(ROOT / t) for t in tests]])\nloaded = {}\nfor key, value in list(sys.modules.items()):\n    if key.startswith(('toto_ai', 'tests')) and getattr(value, '__file__', None):\n        path = Path(value.__file__).resolve()\n        if path.suffix == '.py' and path.exists():\n            loaded[str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()\n(ROOT / (MODE + '-runtime.json')).write_text(json.dumps({'exit_code': code, 'blocked_actions': blocked, 'loaded_source_sha256': loaded}, indent=2))\nraise SystemExit(code)\n",
+    "runner_hashes": {
+      "focused": "58c440a193a671243dad09be2a154dae895f78828410253eaf468a40d2d99d04",
+      "independent": "4073fc37f8615d779da4f476ff9ece6e30ed57514fa06e683db26fb3cb3060a8"
+    }
+  },
+  "limitations": [
+    "Bounded engineering review, not an exhaustive/full-suite or clean-checkout release certification.",
+    "No live GOAL fetch, current drawing validation, operational activation or historical audit.",
+    "Main HEAD was not rechecked; expected HEAD is manifest metadata. Adopter must freshly verify HEAD, before/dependency hashes and its own runtime guards.",
+    "Order invariance is for the same captured observations; assigning a payload to a different physical page changes legitimate request provenance and is not required to preserve the old fingerprint."
+  ],
+  "next_checkpoint": "Separate authorized main adoption: revalidate exact HEAD/before/dependency/runtime guards, apply this unchanged patch, then scoped main verification. No further review work is running.",
+  "report_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.md",
+  "report_sha256": "61ee966489bd6445346f2012d1240690c9285aab7edf899f5ac28df0c1cff6a8"
+}

@@ -1070,18 +1070,43 @@ def _load_history_snapshot(
             away_team_id = _nonempty_text(
                 raw_row.get("awayTeamId"), "history away team id"
             )
-            home_goals = _nonnegative_int(
-                raw_row.get("homeTeamScore"), "history home score"
-            )
-            away_goals = _nonnegative_int(
-                raw_row.get("awayTeamScore"), "history away score"
-            )
         except ValueError:
             excluded["invalid_terminal_row"] += 1
             continue
         if fixture_id in seen_ids:
             raise ValueError("history snapshot contains duplicate fixture ids")
         seen_ids.add(fixture_id)
+        # GOAL generic Score can include extra-time/penalty contributions.
+        # For extended matches only the explicit regulation-time pair is
+        # authoritative; never reconstruct it from aggregate/extra/penalty data.
+        regulation_required = raw_status in ("AFTER_ET", "AFTER_PEN")
+        home_score_field = (
+            "homeTeamFtScore" if regulation_required else "homeTeamScore"
+        )
+        away_score_field = (
+            "awayTeamFtScore" if regulation_required else "awayTeamScore"
+        )
+        if regulation_required and (
+            raw_row.get(home_score_field) is None
+            or raw_row.get(away_score_field) is None
+        ):
+            excluded["regulation_score_missing"] += 1
+            continue
+        try:
+            home_goals = _nonnegative_int(
+                raw_row.get(home_score_field), home_score_field
+            )
+            away_goals = _nonnegative_int(
+                raw_row.get(away_score_field), away_score_field
+            )
+        except ValueError:
+            reason = (
+                "invalid_regulation_score"
+                if regulation_required
+                else "invalid_terminal_row"
+            )
+            excluded[reason] += 1
+            continue
         if fixture_id == target_fixture_id:
             excluded["target_fixture"] += 1
             continue

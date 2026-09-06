@@ -1,0 +1,279 @@
+{
+  "schema_version": 1,
+  "description": "Minimal exact local contracts:13 AET/PEN observations including12 generic-vs-FT mismatches; no secret fields",
+  "cases": [
+    {
+      "target_event_number": 1,
+      "side": "away",
+      "source_sha256": "7f5d5672247dd388a48c44675d9577e8588d12edd1ae830a758cf8a54375a977",
+      "team_id": "cmr7uolso8mgcrx06cn6sa9ix",
+      "row": {
+        "id": "cmsp4lj18txwspn068rn63wue",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-08-19T15:30:00.000Z",
+        "homeTeamId": "cmr7uolso8mgbrx06e5bwsovt",
+        "awayTeamId": "cmr7uolso8mgcrx06cn6sa9ix",
+        "homeTeamScore": "3",
+        "awayTeamScore": "1",
+        "homeTeamFtScore": "1",
+        "awayTeamFtScore": "1",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "0",
+        "homeTeamPenaltyScore": "5",
+        "awayTeamPenaltyScore": "3"
+      }
+    },
+    {
+      "target_event_number": 1,
+      "side": "away",
+      "source_sha256": "7f5d5672247dd388a48c44675d9577e8588d12edd1ae830a758cf8a54375a977",
+      "team_id": "cmr7uolso8mgcrx06cn6sa9ix",
+      "row": {
+        "id": "cmrqbeqfh3tmbte08ltpedjzd",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-07-18T16:30:00.000Z",
+        "homeTeamId": "cmr7uolst8mgfrx06mqhdh3qs",
+        "awayTeamId": "cmr7uolso8mgcrx06cn6sa9ix",
+        "homeTeamScore": "2",
+        "awayTeamScore": "1",
+        "homeTeamFtScore": "1",
+        "awayTeamFtScore": "1",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "0",
+        "homeTeamPenaltyScore": "4",
+        "awayTeamPenaltyScore": "2"
+      }
+    },
+    {
+      "target_event_number": 2,
+      "side": "home",
+      "source_sha256": "b474912c24978af940f47982fc73d67d94346b8df876596241bd2aa6aad733e5",
+      "team_id": "cmr7uolsf8mg8rx06mricgkwz",
+      "row": {
+        "id": "cmt1fi97a78vcpd07hy023f5k",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-09-02T17:45:00.000Z",
+        "homeTeamId": "cmr7uolsf8mg8rx06mricgkwz",
+        "awayTeamId": "cmr7uolt48mgkrx06mtepmfuh",
+        "homeTeamScore": "0",
+        "awayTeamScore": "2",
+        "homeTeamFtScore": "0",
+        "awayTeamFtScore": "0",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "0",
+        "homeTeamPenaltyScore": "3",
+        "awayTeamPenaltyScore": "5"
+      }
+    },
+    {
+      "target_event_number": 2,
+      "side": "home",
+      "source_sha256": "b474912c24978af940f47982fc73d67d94346b8df876596241bd2aa6aad733e5",
+      "team_id": "cmr7uolsf8mg8rx06mricgkwz",
+      "row": {
+        "id": "cmsp4lmnqtyf7pn06cm4sqp87",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-08-20T17:45:00.000Z",
+        "homeTeamId": "cmr7uolsf8mg8rx06mricgkwz",
+        "awayTeamId": "cmr7uolt08mgjrx06xj1x745j",
+        "homeTeamScore": "3",
+        "awayTeamScore": "1",
+        "homeTeamFtScore": "1",
+        "awayTeamFtScore": "1",
+        "homeTeamExtraScore": null,
+        "awayTeamExtraScore": null,
+        "homeTeamPenaltyScore": "5",
+        "awayTeamPenaltyScore": "4"
+      }
+    },
+    {
+      "target_event_number": 2,
+      "side": "away",
+      "source_sha256": "2901d33b9ac8419154200b1a00287b3593cf89b99cbdfcf2209fdda04bc20ed8",
+      "team_id": "cmr7uolsb8mg7rx06aps282s2",
+      "row": {
+        "id": "cmt1fhw7t77b2pd078qq5esta",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-09-01T13:15:00.000Z",
+        "homeTeamId": "cmr7uolsj8mg9rx06lps3j1ye",
+        "awayTeamId": "cmr7uolsb8mg7rx06aps282s2",
+        "homeTeamScore": "1",
+        "awayTeamScore": "0",
+        "homeTeamFtScore": "0",
+        "awayTeamFtScore": "0",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "0",
+        "homeTeamPenaltyScore": "5",
+        "awayTeamPenaltyScore": "4"
+      }
+    },
+    {
+      "target_event_number": 2,
+      "side": "away",
+      "source_sha256": "2901d33b9ac8419154200b1a00287b3593cf89b99cbdfcf2209fdda04bc20ed8",
+      "team_id": "cmr7uolsb8mg7rx06aps282s2",
+      "row": {
+        "id": "cms3w62brj41tkw064ectwtn2",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-08-04T17:45:00.000Z",
+        "homeTeamId": "cmr7uolsb8mg7rx06aps282s2",
+        "awayTeamId": "cmr7uolsu8mggrx06zkk540w9",
+        "homeTeamScore": "1",
+        "awayTeamScore": "3",
+        "homeTeamFtScore": "1",
+        "awayTeamFtScore": "1",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "0",
+        "homeTeamPenaltyScore": "4",
+        "awayTeamPenaltyScore": "5"
+      }
+    },
+    {
+      "target_event_number": 4,
+      "side": "home",
+      "source_sha256": "3779e8e7f9110e2cdda02d5e36ca9ac9cdcf4f28fbd75b792d969402650bcdfb",
+      "team_id": "cmr7m55ue5eg4rx06vdyle9qd",
+      "row": {
+        "id": "cms86gni6nwoekw06ka63uvsg",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-08-07T17:30:00.000Z",
+        "homeTeamId": "cmr7m55rl5eejrx062tzrza9u",
+        "awayTeamId": "cmr7m55ue5eg4rx06vdyle9qd",
+        "homeTeamScore": "1",
+        "awayTeamScore": "3",
+        "homeTeamFtScore": "1",
+        "awayTeamFtScore": "1",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "0",
+        "homeTeamPenaltyScore": "6",
+        "awayTeamPenaltyScore": "7"
+      }
+    },
+    {
+      "target_event_number": 5,
+      "side": "away",
+      "source_sha256": "4e4334d28c99826813cd8a376927495bf81156f13793ac11de19a73421fa4d70",
+      "team_id": "cmr7htgw33dbdrx067ep7wdxc",
+      "row": {
+        "id": "cmrmqt9x339crt007wpe19b7b",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-07-23T19:00:00.000Z",
+        "homeTeamId": "cmr7m55qz5ee3rx06kja40gwd",
+        "awayTeamId": "cmr7htgw33dbdrx067ep7wdxc",
+        "homeTeamScore": "0",
+        "awayTeamScore": "2",
+        "homeTeamFtScore": "0",
+        "awayTeamFtScore": "0",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "0",
+        "homeTeamPenaltyScore": "4",
+        "awayTeamPenaltyScore": "5"
+      }
+    },
+    {
+      "target_event_number": 6,
+      "side": "away",
+      "source_sha256": "d3998bb3ef37529dae5817cf7214c2e098b7ebfa644cac9477843949906dc94a",
+      "team_id": "cmr7m6brf5t2vrx06qg58pp46",
+      "row": {
+        "id": "cmt1fi4k078c8pd07byc7ia3i",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-09-02T13:00:00.000Z",
+        "homeTeamId": "cmr7m6brf5t2vrx06qg58pp46",
+        "awayTeamId": "cmr7m6bwl5t4hrx06k2m8r0t7",
+        "homeTeamScore": "3",
+        "awayTeamScore": "1",
+        "homeTeamFtScore": "1",
+        "awayTeamFtScore": "1",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "0",
+        "homeTeamPenaltyScore": "4",
+        "awayTeamPenaltyScore": "3"
+      }
+    },
+    {
+      "target_event_number": 6,
+      "side": "away",
+      "source_sha256": "d3998bb3ef37529dae5817cf7214c2e098b7ebfa644cac9477843949906dc94a",
+      "team_id": "cmr7m6brf5t2vrx06qg58pp46",
+      "row": {
+        "id": "cms3j8u6zi70okw06o6lg29kh",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-07-25T15:00:00.000Z",
+        "homeTeamId": "cmr7m6brf5t2vrx06qg58pp46",
+        "awayTeamId": "cmr7m6brh5t2xrx061j6yk7qx",
+        "homeTeamScore": "0",
+        "awayTeamScore": "1",
+        "homeTeamFtScore": "0",
+        "awayTeamFtScore": "0",
+        "homeTeamExtraScore": null,
+        "awayTeamExtraScore": null,
+        "homeTeamPenaltyScore": null,
+        "awayTeamPenaltyScore": null
+      }
+    },
+    {
+      "target_event_number": 11,
+      "side": "home",
+      "source_sha256": "2bc601cdfb804a96cafd2869c2f47d371c99ad42eedd38d4e35f4d37f2b419c0",
+      "team_id": "cmri6ui4oe0t5lb07j6isvalw",
+      "row": {
+        "id": "cmrjg0n62fz8xt507nvkww9dn",
+        "matchStatus": "AFTER_PEN",
+        "kickoffUtc": "2026-05-29T16:00:00.000Z",
+        "homeTeamId": "cmri0gzohbwsblb07sf5h2m2m",
+        "awayTeamId": "cmri6ui4oe0t5lb07j6isvalw",
+        "homeTeamScore": "0",
+        "awayTeamScore": "0",
+        "homeTeamFtScore": "0",
+        "awayTeamFtScore": "0",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "0",
+        "homeTeamPenaltyScore": "3",
+        "awayTeamPenaltyScore": "1"
+      }
+    },
+    {
+      "target_event_number": 13,
+      "side": "home",
+      "source_sha256": "4f0feffce4a41ac4728858914a28ad928e959532b1c6c5a9238215eb9ece2f71",
+      "team_id": "cmri0gzonbwsflb07dlxlvjpg",
+      "row": {
+        "id": "cmsvp3tsw992cpg07t458yjby",
+        "matchStatus": "AFTER_ET",
+        "kickoffUtc": "2026-08-27T17:00:00.000Z",
+        "homeTeamId": "cmr7fq61131nvrx06s2o3c4u2",
+        "awayTeamId": "cmri0gzonbwsflb07dlxlvjpg",
+        "homeTeamScore": "1",
+        "awayTeamScore": "2",
+        "homeTeamFtScore": "1",
+        "awayTeamFtScore": "1",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "1",
+        "homeTeamPenaltyScore": null,
+        "awayTeamPenaltyScore": null
+      }
+    },
+    {
+      "target_event_number": 13,
+      "side": "home",
+      "source_sha256": "4f0feffce4a41ac4728858914a28ad928e959532b1c6c5a9238215eb9ece2f71",
+      "team_id": "cmri0gzonbwsflb07dlxlvjpg",
+      "row": {
+        "id": "cmsdw8yvtxmkgkw061p5hl2ff",
+        "matchStatus": "AFTER_ET",
+        "kickoffUtc": "2026-08-11T17:30:00.000Z",
+        "homeTeamId": "cmri0gzr0bwualb072i3ilbz5",
+        "awayTeamId": "cmri0gzonbwsflb07dlxlvjpg",
+        "homeTeamScore": "1",
+        "awayTeamScore": "2",
+        "homeTeamFtScore": "1",
+        "awayTeamFtScore": "1",
+        "homeTeamExtraScore": "0",
+        "awayTeamExtraScore": "1",
+        "homeTeamPenaltyScore": null,
+        "awayTeamPenaltyScore": null
+      }
+    }
+  ]
+}

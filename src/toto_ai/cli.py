@@ -371,10 +371,14 @@ from toto_ai.sports_stats.final_hybrid_sidecar import (
 from toto_ai.sports_stats.goal_probe_collection import (
     collect_goal_probe_input,
     ensure_goal_probe_input,
+    goal_probe_failure_status,
 )
 from toto_ai.sports_stats.goal_probe_research import (
     load_goal_probe_shadow,
     run_goal_probe_package_comparison,
+)
+from toto_ai.sports_stats.history_backfill import (
+    backfill_sports_history_manifest,
 )
 from toto_ai.sports_stats.operation import (
     collect_and_store_sports_stats,
@@ -392,6 +396,7 @@ from toto_ai.sports_stats.shadow_operation import (
     build_and_write_sports_probability_shadow,
     evaluate_stored_sports_probability_shadow,
 )
+from toto_ai.sports_stats.storage import save_sports_stats_snapshot
 from toto_ai.sports_stats.v2 import build_sports_v2_shadow_artifact
 from toto_ai.totobrief_time import parse_totobrief_timestamp
 
@@ -4442,119 +4447,182 @@ def morning_dispatch_command(
                 sports_shadow_status = {
                     "status": "PAPER_ONLY_COLLECTION_FAILED",
                     "error": f"{type(error).__name__}: {str(error)[:300]}",
+                    "persistence_status": "not_attempted",
+                    **goal_probe_failure_status(error),
+                    "primary_scheduler_affected": False,
                     "package_influence": "NONE",
                     "automatic_wagering": False,
                 }
             else:
-                sports_shadow_status = {
-                    "status": "PAPER_ONLY_COVERAGE_PROBE_READY",
-                    "drawing_id": prepared_evidence.drawing_id,
-                    "drawing_number": prepared_evidence.drawing_number,
-                    "event_count": shadow.event_count,
-                    "history_source_count": shadow.history_source_count,
-                    "sports_eligible_count": shadow.sports_eligible_count,
-                    "request_count": shadow.request_count,
-                    "quota_daily_remaining": shadow.quota_daily_remaining,
-                    "captured_at": shadow.captured_at.isoformat(),
-                    "coverage_summary": str(shadow.coverage_summary_path),
-                    "reused": shadow.reused,
-                    "package_influence": "NONE",
-                    "automatic_wagering": False,
-                }
-                if parallel_challenger_auto and result.plan_path is not None:
+                try:
+                    sports_seed_as_of = _sports_seed_as_of(
+                        drawing_id=prepared_evidence.drawing_id,
+                        requested_as_of=shadow.captured_at,
+                        raw_cache_dir=resolved_raw_cache,
+                        project_root=root,
+                    )
+                    bundle = load_goal_probe_shadow(
+                        drawing_id=prepared_evidence.drawing_id,
+                        as_of=sports_seed_as_of,
+                        raw_cache_dir=resolved_raw_cache,
+                        coverage_summary_path=shadow.coverage_summary_path,
+                        project_root=root,
+                    )
+                except Exception as error:
+                    sports_shadow_status = {
+                        "status": "PAPER_ONLY_SNAPSHOT_VALIDATION_FAILED",
+                        "drawing_id": prepared_evidence.drawing_id,
+                        "drawing_number": prepared_evidence.drawing_number,
+                        "error": f"{type(error).__name__}: {str(error)[:300]}",
+                        "persistence_status": "not_attempted",
+                        "retryable": True,
+                        "primary_scheduler_affected": False,
+                        "package_influence": "NONE",
+                        "automatic_wagering": False,
+                    }
+                else:
                     try:
-                        plan = load_scheduler_plan(result.plan_path)
-                        sports_seed_as_of = _sports_seed_as_of(
-                            drawing_id=prepared_evidence.drawing_id,
-                            requested_as_of=shadow.captured_at,
-                            raw_cache_dir=resolved_raw_cache,
-                            project_root=root,
+                        persisted = save_sports_stats_snapshot(
+                            get_session_factory(init_db(config.db)),
+                            bundle.snapshot,
                         )
-                        bundle = load_goal_probe_shadow(
-                            drawing_id=prepared_evidence.drawing_id,
-                            as_of=sports_seed_as_of,
-                            raw_cache_dir=resolved_raw_cache,
-                            coverage_summary_path=shadow.coverage_summary_path,
-                            project_root=root,
-                        )
-                        sports_v2 = build_sports_v2_shadow_artifact(
-                            snapshot=bundle.snapshot,
-                            base_artifact=bundle.shadow,
-                        )
-                        sports_artifact_path = write_shadow_probability_artifact(
-                            sports_v2,
-                            report_dir=(
-                                plan.output_dir
-                                / "parallel-challenger"
-                                / "sports-seed"
-                            ),
-                        )
-                        parallel_root = (
-                            plan.output_dir / "parallel-challenger"
-                        )
-                        authorization_path = (
-                            authorize_parallel_manual_release(
-                                scheduler_plan_path=result.plan_path,
-                                output_root=parallel_root,
-                                acknowledged=True,
-                            )
-                            if parallel_release_auto
-                            else None
-                        )
-                        parallel_artifacts = prepare_parallel_sidecar_artifacts(
-                            scheduler_plan_path=result.plan_path,
-                            sports_artifact_path=sports_artifact_path,
-                            python_command=python_executable,
-                            parallel_authorization_path=authorization_path,
-                        )
-                        bound_sports = load_shadow_probability_artifact(
-                            parallel_artifacts.sports_artifact_path
-                        )
-                        if activate:
-                            activate_parallel_sidecar_launch_agent(
-                                parallel_artifacts
-                            )
                     except Exception as error:
-                        parallel_challenger_status = {
-                            "status": "PARALLEL_SIDECAR_FAILED_OPEN",
+                        sports_shadow_status = {
+                            "status": "PAPER_ONLY_PERSISTENCE_FAILED",
+                            "drawing_id": bundle.snapshot.drawing_id,
+                            "drawing_number": bundle.snapshot.drawing_number,
+                            "drawing_fingerprint": (
+                                bundle.snapshot.drawing_fingerprint
+                            ),
+                            "provider": bundle.snapshot.provider,
+                            "candidate_run_id": bundle.snapshot.run_id,
+                            "snapshot_sha256": (
+                                bundle.snapshot.content_sha256
+                            ),
                             "error": (
                                 f"{type(error).__name__}: {str(error)[:300]}"
                             ),
+                            "persistence_status": "failed",
+                            "retryable": True,
                             "primary_scheduler_affected": False,
+                            "package_influence": "NONE",
                             "automatic_wagering": False,
                         }
                     else:
-                        parallel_challenger_status = {
-                            "status": "PARALLEL_SIDECAR_ACTIVATED"
-                            if activate
-                            else "PARALLEL_SIDECAR_PREPARED",
-                            "drawing_number": plan.drawing,
-                            "plan_id": plan.plan_id,
-                            "candidate_strategies": [
-                                "quality-v2",
-                                "sports-shadow",
-                                "quality-v3",
-                                "robust",
-                            ],
-                            "scheduled_at": (
-                                parallel_artifacts.scheduled_at.isoformat()
-                            ),
-                            "launch_agent_label": (
-                                parallel_artifacts.launch_agent_label
-                            ),
-                            "sports_artifact": str(
-                                parallel_artifacts.sports_artifact_path
-                            ),
-                            "sports_coverage_count": (
-                                bound_sports.sports_coverage_count
-                            ),
-                            "reused": parallel_artifacts.reused,
-                            "parallel_release_authorized": (
-                                parallel_artifacts.authorization_path is not None
-                            ),
+                        sports_shadow_status = {
+                            "status": "PAPER_ONLY_COVERAGE_PROBE_READY",
+                            "drawing_id": prepared_evidence.drawing_id,
+                            "drawing_number": prepared_evidence.drawing_number,
+                            "drawing_fingerprint": persisted.drawing_fingerprint,
+                            "event_count": shadow.event_count,
+                            "history_source_count": shadow.history_source_count,
+                            "sports_eligible_count": shadow.sports_eligible_count,
+                            "request_count": shadow.request_count,
+                            "quota_daily_remaining": shadow.quota_daily_remaining,
+                            "captured_at": shadow.captured_at.isoformat(),
+                            "coverage_summary": str(shadow.coverage_summary_path),
+                            "reused": shadow.reused,
+                            "persistence_status": "persisted",
+                            "provider": persisted.provider,
+                            "run_id": persisted.run_id,
+                            "snapshot_sha256": persisted.content_sha256,
+                            "persisted_event_count": len(persisted.events),
                             "primary_scheduler_affected": False,
+                            "package_influence": "NONE",
                             "automatic_wagering": False,
                         }
+                        if (
+                            parallel_challenger_auto
+                            and result.plan_path is not None
+                        ):
+                            try:
+                                plan = load_scheduler_plan(result.plan_path)
+                                sports_v2 = build_sports_v2_shadow_artifact(
+                                    snapshot=persisted,
+                                    base_artifact=bundle.shadow,
+                                )
+                                sports_artifact_path = (
+                                    write_shadow_probability_artifact(
+                                        sports_v2,
+                                        report_dir=(
+                                            plan.output_dir
+                                            / "parallel-challenger"
+                                            / "sports-seed"
+                                        ),
+                                    )
+                                )
+                                parallel_root = (
+                                    plan.output_dir / "parallel-challenger"
+                                )
+                                authorization_path = (
+                                    authorize_parallel_manual_release(
+                                        scheduler_plan_path=result.plan_path,
+                                        output_root=parallel_root,
+                                        acknowledged=True,
+                                    )
+                                    if parallel_release_auto
+                                    else None
+                                )
+                                parallel_artifacts = (
+                                    prepare_parallel_sidecar_artifacts(
+                                        scheduler_plan_path=result.plan_path,
+                                        sports_artifact_path=sports_artifact_path,
+                                        python_command=python_executable,
+                                        parallel_authorization_path=(
+                                            authorization_path
+                                        ),
+                                    )
+                                )
+                                bound_sports = load_shadow_probability_artifact(
+                                    parallel_artifacts.sports_artifact_path
+                                )
+                                if activate:
+                                    activate_parallel_sidecar_launch_agent(
+                                        parallel_artifacts
+                                    )
+                            except Exception as error:
+                                parallel_challenger_status = {
+                                    "status": "PARALLEL_SIDECAR_FAILED_OPEN",
+                                    "error": (
+                                        f"{type(error).__name__}: "
+                                        f"{str(error)[:300]}"
+                                    ),
+                                    "primary_scheduler_affected": False,
+                                    "automatic_wagering": False,
+                                }
+                            else:
+                                parallel_challenger_status = {
+                                    "status": "PARALLEL_SIDECAR_ACTIVATED"
+                                    if activate
+                                    else "PARALLEL_SIDECAR_PREPARED",
+                                    "drawing_number": plan.drawing,
+                                    "plan_id": plan.plan_id,
+                                    "candidate_strategies": [
+                                        "quality-v2",
+                                        "sports-shadow",
+                                        "quality-v3",
+                                        "robust",
+                                    ],
+                                    "scheduled_at": (
+                                        parallel_artifacts.scheduled_at.isoformat()
+                                    ),
+                                    "launch_agent_label": (
+                                        parallel_artifacts.launch_agent_label
+                                    ),
+                                    "sports_artifact": str(
+                                        parallel_artifacts.sports_artifact_path
+                                    ),
+                                    "sports_coverage_count": (
+                                        bound_sports.sports_coverage_count
+                                    ),
+                                    "reused": parallel_artifacts.reused,
+                                    "parallel_release_authorized": (
+                                        parallel_artifacts.authorization_path
+                                        is not None
+                                    ),
+                                    "primary_scheduler_affected": False,
+                                    "automatic_wagering": False,
+                                }
         if (
             activate
             and not preflight_retry_child
@@ -6532,6 +6600,72 @@ def collect_sports_stats_command(
     )
 
 
+@app.command("backfill-sports-history")
+def backfill_sports_history_command(
+    manifest: Path = typer.Option(  # noqa: B008
+        ...,
+        "--manifest",
+        exists=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Explicit hash-bound frozen raw-capture manifest.",
+    ),
+    db: Path = typer.Option(  # noqa: B008
+        Path("data/toto.db"),
+        "--db",
+        dir_okay=False,
+        resolve_path=True,
+    ),
+    output_dir: Path = typer.Option(  # noqa: B008
+        Path("reports/sports-history-backfill"),
+        "--output-dir",
+        file_okay=False,
+        resolve_path=True,
+    ),
+    validate_only: bool = typer.Option(
+        False,
+        "--validate-only",
+        help="Validate and audit without opening or writing SQLite.",
+    ),
+) -> None:
+    """Backfill verified raw sports history — OFFLINE AUDIT ONLY."""
+
+    try:
+        report, paths = backfill_sports_history_manifest(
+            manifest_path=manifest,
+            db=db,
+            output_dir=output_dir,
+            project_root=Path.cwd(),
+            validate_only=validate_only,
+        )
+    except (OSError, SQLAlchemyError, TypeError, ValueError) as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(
+        json.dumps(
+            {
+                "status": report["status"],
+                "mode": report["mode"],
+                "snapshot_count": report["snapshot_count"],
+                "inserted_count": report["inserted_count"],
+                "reused_count": report["reused_count"],
+                "validated_count": report["validated_count"],
+                "rejected_count": report["rejected_count"],
+                "network_requests": 0,
+                "database_writes": report["database_writes"],
+                "audit_json": str(paths.json),
+                "audit_csv": str(paths.csv),
+                "audit_markdown": str(paths.markdown),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    if report["rejected_count"]:
+        raise typer.Exit(code=2)
+
+
 @app.command("sports-probability-shadow")
 def sports_probability_shadow_command(
     drawing_id: int | None = typer.Option(None, "--drawing-id", min=1),
@@ -7089,6 +7223,7 @@ def run_final_goal_hybrid_sidecar_command(
         resolve_path=True,
     ),
     wait_seconds: int = typer.Option(600, "--wait-seconds", min=0, max=900),
+    g1_refinement: bool = typer.Option(False, "--g1-refinement"),
     minimum_runtime_seconds: int = typer.Option(
         240,
         "--minimum-runtime-seconds",
@@ -7114,6 +7249,7 @@ def run_final_goal_hybrid_sidecar_command(
             wait_seconds=wait_seconds,
             minimum_runtime_seconds=minimum_runtime_seconds,
             parallel_authorization_path=parallel_authorization,
+            g1_refinement=g1_refinement,
         )
     except (OSError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error

@@ -1,33 +1,31 @@
-"""Audit-only sports-statistics evidence collection."""
+"""Public exports loaded on demand; pure readers do not load other workflows."""
 
-from toto_ai.sports_stats.collection import collect_sports_stats
-from toto_ai.sports_stats.domain import (
-    CompletedFixture,
-    FootballEventFeatureSnapshot,
-    FootballTeamWindow,
-    ProviderFixtureContext,
-    SourceEvidence,
-    SportsStatsRunSnapshot,
-    StandingRow,
-    StatsTargetEvent,
-)
-from toto_ai.sports_stats.storage import (
-    load_latest_eligible_snapshot,
-    load_sports_stats_snapshot,
-    save_sports_stats_snapshot,
-)
+from importlib import import_module
 
-__all__ = [
-    "CompletedFixture",
-    "FootballEventFeatureSnapshot",
-    "FootballTeamWindow",
-    "ProviderFixtureContext",
-    "SourceEvidence",
-    "SportsStatsRunSnapshot",
-    "StandingRow",
-    "StatsTargetEvent",
-    "collect_sports_stats",
-    "load_latest_eligible_snapshot",
-    "load_sports_stats_snapshot",
-    "save_sports_stats_snapshot",
-]
+_EXPORTS = {
+    "CompletedFixture": "domain",
+    "FootballEventFeatureSnapshot": "domain",
+    "FootballTeamWindow": "domain",
+    "ProviderFixtureContext": "domain",
+    "SourceEvidence": "domain",
+    "SportsStatsRunSnapshot": "domain",
+    "StandingRow": "domain",
+    "StatsTargetEvent": "domain",
+    "collect_sports_stats": "collection",
+    "load_latest_eligible_snapshot": "storage",
+    "load_sports_stats_snapshot": "storage",
+    "save_sports_stats_snapshot": "storage",
+}
+__all__ = list(_EXPORTS)
+
+
+def __dir__():
+    return sorted(set(globals()) | set(__all__))
+
+
+def __getattr__(name):
+    if name not in _EXPORTS:
+        raise AttributeError(name)
+    value = getattr(import_module(f"{__name__}.{_EXPORTS[name]}"), name)
+    globals()[name] = value
+    return value

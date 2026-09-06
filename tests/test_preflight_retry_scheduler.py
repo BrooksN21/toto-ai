@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from toto_ai.runner.preflight_retry_scheduler import (
+    cleanup_preflight_retry_launch_agent,
     install_preflight_retry_launch_agent,
     prepare_preflight_retry_artifacts,
     run_preflight_retry,
@@ -31,6 +32,7 @@ class FakeRunner:
     def __init__(self, morning: list[Result] | None = None) -> None:
         self.loaded = False
         self.bootstrap_count = 0
+        self.running = False
         self.morning = list(morning or [])
         self.commands: list[tuple[str, ...]] = []
 
@@ -40,7 +42,13 @@ class FakeRunner:
         if command[0] != "launchctl":
             return self.morning.pop(0)
         if command[1] == "print":
-            return Result(0 if self.loaded else 113)
+            return Result(
+                0 if self.loaded else 113,
+                (
+                    "state = running\n\tpid = 12345\n"
+                    if self.running else "state = not running\n"
+                ),
+            )
         if command[1] == "bootstrap":
             self.loaded = True
             self.bootstrap_count += 1
@@ -397,6 +405,246 @@ def test_changed_identity_cannot_replace_existing_retry_artifacts(tmp_path):
 
     with pytest.raises(ValueError, match="identity conflicts"):
         prepare_preflight_retry_artifacts(plan_path)
+
+
+def _resign_retry_plan(path, payload):
+    payload.pop("plan_sha256", None)
+    payload["plan_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+    path.write_text(json.dumps(payload))
+
+
+def test_missing_loaded_job_is_repaired_once(tmp_path):
+    runner = FakeRunner()
+    artifacts, root = _installed(tmp_path, runner)
+    runner.loaded = False
+    runner.commands.clear()
+    for _ in range(2):
+        assert install_preflight_retry_launch_agent(
+            artifacts, launch_agents_root=root, command_runner=runner
+        )["active"]
+    assert [x[1] for x in runner.commands] == [
+        "print", "bootstrap", "print", "print", "print"
+    ]
+    assert runner.bootstrap_count == 2
+
+
+@pytest.mark.parametrize(
+    "mutation", ["plan_hash", "candidate", "wrapper", "foreign_plan", "stale_plan"]
+)
+def test_install_rejects_stale_or_foreign_artifacts_before_launchctl(
+    tmp_path, mutation,
+):
+    runner = FakeRunner()
+    artifacts, root = _installed(tmp_path, runner)
+    before = (root / artifacts.candidate_path.name).read_bytes()
+    if mutation in {"plan_hash", "foreign_plan", "stale_plan"}:
+        payload = json.loads(artifacts.plan_path.read_text())
+        if mutation == "plan_hash":
+            payload["created_at"] = "2030-01-01T00:00:00Z"
+            artifacts.plan_path.write_text(json.dumps(payload))
+        elif mutation == "stale_plan":
+            payload["activate_evening"] = True
+            for attempt in payload["attempts"]:
+                attempt["command"].append("--activate")
+            _resign_retry_plan(artifacts.plan_path, payload)
+        else:
+            payload["identity"]["drawing_id"] = 12000
+            for attempt in payload["attempts"]:
+                i = attempt["command"].index("--expected-drawing-id")
+                attempt["command"][i + 1] = "12000"
+            _resign_retry_plan(artifacts.plan_path, payload)
+    else:
+        path = (
+            artifacts.candidate_path
+            if mutation == "candidate" else artifacts.wrapper_path
+        )
+        path.write_bytes(path.read_bytes() + b"\n")
+    runner.commands.clear()
+    with pytest.raises(ValueError):
+        install_preflight_retry_launch_agent(
+            artifacts, launch_agents_root=root, command_runner=runner
+        )
+    assert runner.commands == []
+    assert (root / artifacts.candidate_path.name).read_bytes() == before
+    assert runner.loaded
+
+
+def _changed_calendar(artifacts):
+    payload = json.loads(artifacts.plan_path.read_text())
+    payload["attempts"][0]["scheduled_at"] = "2026-07-31T10:30:00Z"
+    _resign_retry_plan(artifacts.plan_path, payload)
+    return prepare_preflight_retry_artifacts(artifacts.plan_path)
+
+
+@pytest.mark.parametrize("loaded_state", ["running", "unknown"])
+def test_running_calendar_reload_is_refused_without_self_bootout(
+    tmp_path, loaded_state,
+):
+    runner = FakeRunner()
+    artifacts, root = _installed(tmp_path, runner)
+    destination = root / artifacts.candidate_path.name
+    before = destination.read_bytes()
+    artifacts = _changed_calendar(artifacts)
+    runner.running = True
+    runner.commands.clear()
+
+    def probe_state(command, **kwargs):
+        result = runner(command, **kwargs)
+        if loaded_state == "unknown" and tuple(command)[:2] == ("launchctl", "print"):
+            result.stdout = ""
+        return result
+
+    with pytest.raises(ValueError, match="running"):
+        install_preflight_retry_launch_agent(
+            artifacts, launch_agents_root=root, command_runner=probe_state
+        )
+    assert [x[1] for x in runner.commands] == ["print"]
+    assert destination.read_bytes() == before
+    assert runner.loaded
+
+
+def test_loaded_job_without_owner_file_is_not_booted_out(tmp_path):
+    runner = FakeRunner()
+    artifacts = prepare_preflight_retry_artifacts(_plan(tmp_path / "retry-plan.json"))
+    runner.loaded = True
+    with pytest.raises(ValueError, match="owner"):
+        install_preflight_retry_launch_agent(
+            artifacts, launch_agents_root=tmp_path / "LaunchAgents",
+            command_runner=runner,
+        )
+    assert [x[1] for x in runner.commands] == ["print"]
+    assert runner.loaded
+
+
+def test_foreign_installed_owner_is_preserved_without_launchctl(tmp_path):
+    import plistlib
+
+    runner = FakeRunner()
+    artifacts, root = _installed(tmp_path, runner)
+    destination = root / artifacts.candidate_path.name
+    payload = plistlib.loads(destination.read_bytes())
+    payload["ProgramArguments"] = ["/foreign/run-preflight-retry"]
+    destination.write_bytes(plistlib.dumps(payload))
+    before = destination.read_bytes()
+    runner.commands.clear()
+    with pytest.raises(ValueError, match="owner"):
+        install_preflight_retry_launch_agent(
+            artifacts, launch_agents_root=root, command_runner=runner
+        )
+    assert runner.commands == []
+    assert destination.read_bytes() == before
+    assert runner.loaded
+
+
+def test_failed_idle_reload_restores_installed_bytes_but_stays_unloaded(tmp_path):
+    runner = FakeRunner()
+    artifacts, root = _installed(tmp_path, runner)
+    destination = root / artifacts.candidate_path.name
+    before = destination.read_bytes()
+    artifacts = _changed_calendar(artifacts)
+    runner.commands.clear()
+
+    def fail_bootstrap(command, **kwargs):
+        if tuple(command)[:2] == ("launchctl", "bootstrap"):
+            runner.commands.append(tuple(command))
+            return Result(5)
+        return runner(command, **kwargs)
+
+    with pytest.raises(ValueError, match="bootstrap"):
+        install_preflight_retry_launch_agent(
+            artifacts, launch_agents_root=root, command_runner=fail_bootstrap
+        )
+    assert destination.read_bytes() == before
+    assert runner.loaded is False
+    assert [x[1] for x in runner.commands] == ["print", "bootout", "bootstrap", "print"]
+
+
+@pytest.mark.parametrize("query_error", [None, 1, 5, 64, 127, -9])
+@pytest.mark.parametrize("bootstrap_failed", [False, True])
+def test_unknown_cleanup_after_reload_never_restores_old_plist(
+    tmp_path, query_error, bootstrap_failed,
+):
+    runner = FakeRunner()
+    artifacts, root = _installed(tmp_path, runner)
+    destination = root / artifacts.candidate_path.name
+    old_bytes = destination.read_bytes()
+    artifacts = _changed_calendar(artifacts)
+    candidate_bytes = artifacts.candidate_path.read_bytes()
+    assert candidate_bytes != old_bytes
+    runner.commands.clear()
+
+    def errors_after_bootstrap(command, **kwargs):
+        result = runner(command, **kwargs)
+        if command[1] == "print" and runner.bootstrap_count == 2:
+            return Result(query_error)
+        if command[1] == "bootstrap" and bootstrap_failed:
+            return Result(5)
+        return result
+
+    with pytest.raises(ValueError, match="state query failed"):
+        install_preflight_retry_launch_agent(
+            artifacts, launch_agents_root=root, command_runner=errors_after_bootstrap
+        )
+    assert [c[1] for c in runner.commands] == [
+        "print", "bootout", "bootstrap",
+    ] + ["print"] * (1 if bootstrap_failed else 2)
+    assert runner.loaded is True
+    assert destination.read_bytes() == candidate_bytes
+
+
+@pytest.mark.parametrize("failure", ["query", "bootout", "verify"])
+def test_cleanup_failure_never_removes_installed_plist(tmp_path, failure):
+    runner = FakeRunner()
+    artifacts, root = _installed(tmp_path, runner)
+    destination = root / artifacts.candidate_path.name
+    before = destination.read_bytes()
+    runner.commands.clear()
+
+    def fail_cleanup(command, **kwargs):
+        action = command[1]
+        if (failure == "query" and action == "print") or (
+            failure == "bootout" and action == "bootout"
+        ):
+            runner.commands.append(tuple(command))
+            return Result(5)
+        result = runner(command, **kwargs)
+        if failure == "verify" and action == "print" and not runner.loaded:
+            return Result(5)
+        return result
+
+    with pytest.raises(ValueError, match="bootout failed|state query failed"):
+        cleanup_preflight_retry_launch_agent(
+            artifacts, launch_agents_root=root, command_runner=fail_cleanup
+        )
+    assert destination.read_bytes() == before
+    assert [c[1] for c in runner.commands] == {
+        "query": ["print"],
+        "bootout": ["print", "bootout"],
+        "verify": ["print", "bootout", "print"],
+    }[failure]
+
+
+def test_reload_bootout_failure_preserves_old_bytes(tmp_path):
+    runner = FakeRunner()
+    artifacts, root = _installed(tmp_path, runner)
+    destination = root / artifacts.candidate_path.name
+    old_bytes = destination.read_bytes()
+    artifacts = _changed_calendar(artifacts)
+    runner.commands.clear()
+
+    def fail_bootout(command, **kwargs):
+        if command[1] == "bootout":
+            runner.commands.append(tuple(command))
+            return Result(5)
+        return runner(command, **kwargs)
+
+    with pytest.raises(ValueError, match="bootout failed"):
+        install_preflight_retry_launch_agent(
+            artifacts, launch_agents_root=root, command_runner=fail_bootout
+        )
+    assert destination.read_bytes() == old_bytes
+    assert runner.loaded
+    assert [c[1] for c in runner.commands] == ["print", "bootout"]
 
 
 def test_retry_wrapper_loads_secure_env_and_fails_before_command_when_key_missing(

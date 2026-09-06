@@ -1,0 +1,452 @@
+{
+  "schema_version": 1,
+  "artifact_class": "P1_DECLARATIVE_FIXTURE_TEST_SPEC",
+  "execution_status": "NOT_IMPLEMENTED_NOT_RUN",
+  "synthetic": true,
+  "has_real_target_results": false,
+  "thresholds": [
+    1,
+    3,
+    5,
+    10
+  ],
+  "production_threshold": null,
+  "wrapper_fixture": {
+    "drawing_id": 990001,
+    "drawing_number": 990001,
+    "event_orders": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "provider": "synthetic-fixtures",
+    "target_kickoff": "2020-02-01T18:00:00Z",
+    "deadline": "2020-02-01T16:30:00Z",
+    "cutoff": "2020-02-01T16:20:00Z",
+    "as_of": "2020-01-31T12:00:00Z",
+    "final_captured_at": "2020-01-31T12:00:00Z",
+    "raw_fetched_at": "2020-01-31T11:00:00Z",
+    "gender": "women",
+    "age_group": "senior",
+    "squad_type": "first_team",
+    "league_id": "L",
+    "season": "2019-2020",
+    "construction": "Event 0 uses detailed history below. Other 14 events have explicit unavailable sources and unique IDs. Outer wrapper test adapter uses exact existing raw-envelope/hash schema with goal-api-v1 namespace; synthetic IDs/data must never be sent to a service."
+  },
+  "core_event": {
+    "target_event_id": "target-0",
+    "home_team_id": "H",
+    "away_team_id": "A",
+    "history": [
+      {
+        "id": "h1",
+        "kickoff": "2020-01-29T18:00:00Z",
+        "home": "H",
+        "away": "X1",
+        "home_goals": 2,
+        "away_goals": 0,
+        "status": "FT"
+      },
+      {
+        "id": "h2",
+        "kickoff": "2020-01-27T18:00:00Z",
+        "home": "X2",
+        "away": "H",
+        "home_goals": 2,
+        "away_goals": 1,
+        "status": "FT"
+      },
+      {
+        "id": "h3",
+        "kickoff": "2020-01-25T18:00:00Z",
+        "home": "H",
+        "away": "X3",
+        "home_goals": 0,
+        "away_goals": 0,
+        "status": "FT"
+      },
+      {
+        "id": "h4",
+        "kickoff": "2020-01-23T18:00:00Z",
+        "home": "X4",
+        "away": "H",
+        "home_goals": 0,
+        "away_goals": 1,
+        "status": "FT"
+      },
+      {
+        "id": "h5",
+        "kickoff": "2020-01-21T18:00:00Z",
+        "home": "H",
+        "away": "X5",
+        "home_goals": 0,
+        "away_goals": 1,
+        "status": "FT"
+      },
+      {
+        "id": "a1",
+        "kickoff": "2020-01-30T18:00:00Z",
+        "home": "Y1",
+        "away": "A",
+        "home_goals": 0,
+        "away_goals": 1,
+        "status": "FT"
+      },
+      {
+        "id": "a2",
+        "kickoff": "2020-01-26T18:00:00Z",
+        "home": "A",
+        "away": "Y2",
+        "home_goals": 1,
+        "away_goals": 1,
+        "status": "FT"
+      },
+      {
+        "id": "a3",
+        "kickoff": "2020-01-22T18:00:00Z",
+        "home": "A",
+        "away": "Y3",
+        "home_goals": 0,
+        "away_goals": 2,
+        "status": "FT"
+      }
+    ],
+    "expected_raw_counts": {
+      "home": 5,
+      "away": 3
+    },
+    "expected_prior_counts": {
+      "home": 5,
+      "away": 3
+    },
+    "expected_venue_counts": {
+      "home": 3,
+      "away": 1
+    },
+    "expected_numeric_values_when_eligible": {
+      "home_ppg": "7/5",
+      "away_ppg": "4/3",
+      "home_gf": "4/5",
+      "home_ga": "4/5",
+      "away_gf": "2/3",
+      "away_ga": "1",
+      "home_venue_gf": "2/3",
+      "home_venue_ga": "1/3",
+      "away_venue_gf": "1",
+      "away_venue_ga": "0",
+      "home_rest_days": 3,
+      "away_rest_days": 2
+    },
+    "expected_by_threshold": [
+      {
+        "t": 1,
+        "home_core": true,
+        "away_core": true,
+        "both_core": true,
+        "home_venue": true,
+        "away_venue": true,
+        "full_current_28_features": true
+      },
+      {
+        "t": 3,
+        "home_core": true,
+        "away_core": true,
+        "both_core": true,
+        "home_venue": true,
+        "away_venue": false,
+        "full_current_28_features": false
+      },
+      {
+        "t": 5,
+        "home_core": true,
+        "away_core": false,
+        "both_core": false,
+        "home_venue": false,
+        "away_venue": false,
+        "full_current_28_features": false
+      },
+      {
+        "t": 10,
+        "home_core": false,
+        "away_core": false,
+        "both_core": false,
+        "home_venue": false,
+        "away_venue": false,
+        "full_current_28_features": false
+      }
+    ]
+  },
+  "threshold_boundaries": [
+    {
+      "eligible_prior_count": 0,
+      "passing_thresholds": []
+    },
+    {
+      "eligible_prior_count": 1,
+      "passing_thresholds": [
+        1
+      ]
+    },
+    {
+      "eligible_prior_count": 2,
+      "passing_thresholds": [
+        1
+      ]
+    },
+    {
+      "eligible_prior_count": 3,
+      "passing_thresholds": [
+        1,
+        3
+      ]
+    },
+    {
+      "eligible_prior_count": 4,
+      "passing_thresholds": [
+        1,
+        3
+      ]
+    },
+    {
+      "eligible_prior_count": 5,
+      "passing_thresholds": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "eligible_prior_count": 9,
+      "passing_thresholds": [
+        1,
+        3,
+        5
+      ]
+    },
+    {
+      "eligible_prior_count": 10,
+      "passing_thresholds": [
+        1,
+        3,
+        5,
+        10
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "id": "C01",
+      "name": "valid_base",
+      "mutation": "Use core_event with exact gender/season/source identity.",
+      "expected": "15 rows, event0 counts and all four threshold blocks exactly as specified; other events missing."
+    },
+    {
+      "id": "C02",
+      "name": "source_unavailable",
+      "mutation": "Replace home raw reference with explicit unavailable.",
+      "expected": "home raw_payload_row_count=null; no fake empty history; available away retained; full coverage false."
+    },
+    {
+      "id": "C03",
+      "name": "available_empty",
+      "mutation": "Valid hashed home payload data=[].",
+      "expected": "home raw_payload_row_count=0 and eligible_prior_count=0; distinct reason from unavailable."
+    },
+    {
+      "id": "C04",
+      "name": "nonterminal_rows",
+      "mutation": "Append NS and LIVE rows to a valid source within limit10.",
+      "expected": "Raw count increases; terminal/eligible counts and features unchanged; reason counts recorded."
+    },
+    {
+      "id": "C05",
+      "name": "capture_equal_asof",
+      "mutation": "Set fetched_at=as_of with all prior kickoffs earlier.",
+      "expected": "Accepted time boundary."
+    },
+    {
+      "id": "C06",
+      "name": "capture_after_asof",
+      "mutation": "Set fetched_at=as_of+1 microsecond and re-seal hashes.",
+      "expected": "SOURCE_REJECTED; chronology violation detected; zero invalid history used."
+    },
+    {
+      "id": "C07",
+      "name": "capture_at_cutoff",
+      "mutation": "Set source/as_of/final capture to exact cutoff, before target kickoff.",
+      "expected": "Pre-cutoff gate fails; never prospective even with valid hashes."
+    },
+    {
+      "id": "C08",
+      "name": "target_or_future_fixture",
+      "mutation": "Put target fixture ID or history kickoff>=as_of/capture/target into raw source.",
+      "expected": "Reject source; same/future/target history use remains0."
+    },
+    {
+      "id": "C09",
+      "name": "missing_cutoff",
+      "mutation": "Remove optional plan/cutoff evidence reference.",
+      "expected": "cutoff_verified=false, diagnostic pre-kickoff counts allowed, prospective eligibility false."
+    },
+    {
+      "id": "C10",
+      "name": "asof_after_final",
+      "mutation": "Set as_of=final_captured_at+1 microsecond.",
+      "expected": "Explicit ASOF_AFTER_FINAL_INPUT; no chronology repair; no prospective pass."
+    },
+    {
+      "id": "C11",
+      "name": "naive_time",
+      "mutation": "Remove timezone from any provenance timestamp.",
+      "expected": "Reject ambiguous timestamp before feature computation."
+    },
+    {
+      "id": "C12",
+      "name": "wrong_team_or_orientation",
+      "mutation": "Swap home/away IDs or use unrelated payload teamId / endpoint.",
+      "expected": "Identity failure; do not fuzzy-match names or swap orientations."
+    },
+    {
+      "id": "C13",
+      "name": "gender_collision",
+      "mutation": "Same display name, different IDs or explicit men/women evidence conflict.",
+      "expected": "No merge; gender conflict fails strict eligibility."
+    },
+    {
+      "id": "C14",
+      "name": "gender_unknown",
+      "mutation": "Remove gender evidence without inventing a value.",
+      "expected": "Raw counts preserved; gender=UNKNOWN and strict scoped eligibility=false."
+    },
+    {
+      "id": "C15",
+      "name": "season_unknown",
+      "mutation": "Remove season and keep calendar year in kickoff.",
+      "expected": "season=UNKNOWN; do not infer season; season-dependent features null."
+    },
+    {
+      "id": "C16",
+      "name": "genuine_prior_season",
+      "mutation": "Add exact same-team older fixture from prior season.",
+      "expected": "Preserve raw history/cross-season count; never substitute target-season standings."
+    },
+    {
+      "id": "C17",
+      "name": "conflicting_same_fixture_season",
+      "mutation": "Two witnesses of same fixture claim different seasons.",
+      "expected": "Conflicting identity rejected."
+    },
+    {
+      "id": "C18",
+      "name": "duplicate_in_one_response",
+      "mutation": "Repeat fixture ID inside one raw payload.",
+      "expected": "Preserve current validator rejection; no inflation or silent dedup."
+    },
+    {
+      "id": "C19",
+      "name": "duplicate_cross_side_witness",
+      "mutation": "Same identical head-to-head fixture appears in home and away responses.",
+      "expected": "One normalized fixture per event, both witnesses retained, each team's match count counts it once."
+    },
+    {
+      "id": "C20",
+      "name": "duplicate_conflict",
+      "mutation": "Same fixture ID has different teams/scores/kickoff in two witnesses.",
+      "expected": "Reject conflict; never latest-wins."
+    },
+    {
+      "id": "C21",
+      "name": "event_local_sources",
+      "mutation": "Late event source contains fixture also relevant to earlier event whose source is missing.",
+      "expected": "Earlier event stays missing; no drawing-wide/global history union."
+    },
+    {
+      "id": "C22",
+      "name": "hash_tamper",
+      "mutation": "Change one raw byte without updating its manifest hash.",
+      "expected": "Fail before payload parse; no final PASS."
+    },
+    {
+      "id": "C23",
+      "name": "resealed_timestamp",
+      "mutation": "Change valid fetched_at and re-seal every affected hash.",
+      "expected": "Lineage hash changes even if numeric features stay identical."
+    },
+    {
+      "id": "C24",
+      "name": "path_or_output_escape",
+      "mutation": "Reference unlisted file, parent path, symlink escape or output under production.",
+      "expected": "Fail closed with no outside writes."
+    },
+    {
+      "id": "C25",
+      "name": "target_label_injection",
+      "mutation": "Add actual_outcome/target_score fields to untrusted final/history metadata.",
+      "expected": "Explicit predictor allowlist ignores target labels; feature and probability-related decisions unchanged."
+    },
+    {
+      "id": "C26",
+      "name": "4990_rejection_regression",
+      "mutation": "Replay only synthetic deadline mismatch with original expected disposition.",
+      "expected": "15 diagnostic SOURCE_REJECTED rows remain in denominator; no timestamp correction or BK probability calculation."
+    },
+    {
+      "id": "C27",
+      "name": "4991_missing_regression",
+      "mutation": "All 30 sides explicitly unavailable.",
+      "expected": "15 rows; all strict eligibility false across1/3/5/10; null raw counts, no synthetic fixtures."
+    },
+    {
+      "id": "C28",
+      "name": "threshold_monotonicity",
+      "mutation": "Use threshold_boundaries and venue counts independently.",
+      "expected": "Raw counts independent of t; eligible feature coverage cannot increase with t."
+    },
+    {
+      "id": "C29",
+      "name": "order_determinism",
+      "mutation": "Reverse raw history order or input event traversal in a newly sealed fixture.",
+      "expected": "Canonical feature output same; source lineage hash may change; output orders0..14."
+    },
+    {
+      "id": "C30",
+      "name": "no_effects",
+      "mutation": "Block DB APIs, sockets, dotenv/environment secret reads, operational imports and all writes except output.",
+      "expected": "No forbidden operation attempted; both success and rejected mixed-fold paths obey."
+    },
+    {
+      "id": "C31",
+      "name": "partial_manifest_failure",
+      "mutation": "One of six folds has new integrity failure besides known4990 mismatch.",
+      "expected": "Keep full diagnostic denominator; INCOMPLETE/exit2 and zero DB writes; no silent fold dropping."
+    },
+    {
+      "id": "C32",
+      "name": "source_truncation",
+      "mutation": "Only ten returned matches although observed time span covers less than14days.",
+      "expected": "Congestion labelled observed_in_capture; calendar-completeness unknown; no fabricated older matches."
+    }
+  ],
+  "planned_assertions": {
+    "numeric_tolerance": 1e-12,
+    "target_event_rows": 15,
+    "network_requests": 0,
+    "database_accesses": 0,
+    "production_writes": 0
+  },
+  "prospective_claim": false,
+  "model_fitting": false
+}
+

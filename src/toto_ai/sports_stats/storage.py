@@ -42,7 +42,10 @@ def save_sports_stats_snapshot(
         if same_identity is not None:
             stored = _run_from_json(same_identity.snapshot_json)
             _verify_hashes(stored)
-            if _same_snapshot_evidence(stored, snapshot):
+            if (
+                stored.semantic_persistence_sha256()
+                == snapshot.semantic_persistence_sha256()
+            ):
                 return stored
             raise ValueError("sports-stat run identity already has different content")
         session.add(
@@ -97,33 +100,6 @@ def save_sports_stats_snapshot(
         except IntegrityError as error:
             raise ValueError("sports-stat snapshot append conflict") from error
     return snapshot
-
-
-def _same_snapshot_evidence(
-    left: SportsStatsRunSnapshot,
-    right: SportsStatsRunSnapshot,
-) -> bool:
-    return (
-        left.schema_version == right.schema_version
-        and left.drawing_id == right.drawing_id
-        and left.drawing_number == right.drawing_number
-        and left.drawing_fingerprint == right.drawing_fingerprint
-        and left.provider == right.provider
-        and left.requested_history_size == right.requested_history_size
-        and left.captured_at == right.captured_at
-        and left.as_of == right.as_of
-        and left.deadline == right.deadline
-        and left.status == right.status
-        and left.events == right.events
-        and left.complete_count == right.complete_count
-        and left.partial_count == right.partial_count
-        and left.missing_count == right.missing_count
-        and left.unsupported_count == right.unsupported_count
-        and (
-            left.source_request_fingerprints
-            == right.source_request_fingerprints
-        )
-    )
 
 
 def load_sports_stats_snapshot(

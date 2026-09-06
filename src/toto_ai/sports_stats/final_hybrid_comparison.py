@@ -15,7 +15,9 @@ import secrets
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timezone
+from functools import wraps
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 from toto_ai.ev.drawing import effective_selection_budget
@@ -25,6 +27,7 @@ from toto_ai.ev.package_quality import (
     package_quality_metrics,
     selection_probability_input_sha256,
 )
+from toto_ai.ev.runtime import RuntimeBudget, checkpoint, phase, runtime_scope
 from toto_ai.external_odds.eligibility import target_fingerprint
 from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.optimizer.coupon_probabilities import best_coupon_by_p13
@@ -50,6 +53,11 @@ from toto_ai.optimizer.uncertainty_package import (
 from toto_ai.package.audit import evaluate_package_safety
 from toto_ai.runner.final_input import load_final_input
 from toto_ai.runner.scheduler import load_scheduler_plan
+from toto_ai.sports_stats.parallel_g1 import (
+    ParallelG1Config,
+    family_refinement_coupons,
+    run_parallel_g1,
+)
 from toto_ai.sports_stats.probabilities import load_shadow_probability_artifact
 
 STATUS = "PAPER_ONLY_NOT_ACTIVATED"
@@ -67,6 +75,53 @@ class FinalHybridComparisonPaths:
     sports_probability_snapshot: Path
 
 
+def _runtime_comparison(function):
+    @wraps(function)
+    def run(**kwargs):
+        output = Path(kwargs["output_dir"]).absolute()
+        if output.is_symlink():
+            raise ValueError("output directory must be a regular directory")
+        output.mkdir(parents=True, exist_ok=True)
+
+        def progress(payload):
+            payload = {
+                **payload,
+                "observed_at": _timestamp(datetime.now(timezone.utc)),
+                "operator_compatible": False,
+                "automatic_wagering": False,
+            }
+            _write_replace(output / "runtime-progress.json", _pretty(payload))
+            with (output / "runtime-progress.jsonl").open("ab") as stream:
+                stream.write(_canonical(payload) + b"\n")
+            print(json.dumps(payload, sort_keys=True), flush=True)
+
+        budget = RuntimeBudget(deadline=kwargs.get("deadline"), progress=progress)
+        with runtime_scope(budget):
+            budget.check("started", force=True)
+            try:
+                result = function(**kwargs)
+                budget.check("completed", force=True)
+                return result
+            except Exception as exc:
+                _write_replace(
+                    output / "runtime-failure.json",
+                    _pretty(
+                        {
+                            "phase": budget.phase,
+                            "reason": str(exc),
+                            "error_type": type(exc).__name__,
+                            "operator_compatible": False,
+                            "automatic_wagering": False,
+                            "completed_research_retained": True,
+                        }
+                    ),
+                )
+                raise
+
+    return run
+
+
+@_runtime_comparison
 def execute_final_hybrid_comparison(
     *,
     final_input_path: str | Path,
@@ -74,6 +129,10 @@ def execute_final_hybrid_comparison(
     sports_artifact_path: str | Path,
     output_dir: str | Path,
     deadline: float | None = None,
+    g1_config: ParallelG1Config | None = None,
+    expected_primary_coupons: tuple[str, ...] | None = None,
+    primary_package_sha256: str | None = None,
+    primary_control_record: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, Any], FinalHybridComparisonPaths]:
     """Generate equal-config BK and sports packages from one final input."""
 
@@ -109,13 +168,63 @@ def execute_final_hybrid_comparison(
         scheduler_plan_path=plan_path,
         selection_config=config,
     )
-    baseline = run_ev_crowd_current(
-        frozen,
-        config=config,
-        provenance=baseline_provenance,
+    phase("control_ev")
+    baseline = (
+        run_ev_crowd_current(frozen, config=config, provenance=baseline_provenance)
+        if primary_control_record is None
+        else _reuse_verified_control(
+            plan=plan,
+            snapshot=snapshot,
+            frozen=frozen,
+            config=config,
+            provenance=baseline_provenance,
+            operator=primary_control_record,
+            expected_coupons=expected_primary_coupons,
+            upload_sha256=primary_package_sha256,
+        )
     )
 
+    # Persist the primary control and calculated ranking before any side work.
+    # These research files do not replace the scheduler-owned operator record.
+    if (
+        expected_primary_coupons is not None
+        and baseline.coupons != expected_primary_coupons
+    ):
+        raise ValueError("recomputed primary control differs from operator package")
+    baseline_package = output / "baseline-final-research-coupons.txt"
+    _write_replace(
+        baseline_package,
+        _research_package_bytes("FINAL_BK_CONTROL", plan.stake, baseline.coupons),
+    )
+    primary_ranking = _best_single_coupon_payload(
+        baseline.coupons,
+        frozen.bk_probability_matrix,
+        reference_model="bk",
+    )
+    primary_ranking_document = {
+        "schema_version": 1,
+        "artifact_class": "PRIMARY_CONTROL_RANKING_ANALYSIS_ONLY",
+        "plan_id": plan.plan_id,
+        "plan_file_sha256": hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+        "final_input_snapshot_sha256": snapshot.snapshot_sha256,
+        "probability_input_sha256": snapshot.probability_input_sha256,
+        "package_sha256": _package_sha256(baseline.coupons),
+        "operator_package_sha256": primary_package_sha256,
+        "operator_control_verified": expected_primary_coupons is not None,
+        "highest_p13_single_coupon": primary_ranking,
+        "automatic_wagering": False,
+        "operator_compatible": False,
+    }
+    primary_ranking_document["record_sha256"] = hashlib.sha256(
+        _canonical(primary_ranking_document),
+    ).hexdigest()
+    _write_replace(
+        output / "primary-bk-ranking.json", _pretty(primary_ranking_document)
+    )
+
+    phase("sports_preparation")
     sports_probabilities = _rebase_sports_probabilities(frozen, sports.events)
+    checkpoint("sports_rebased")
     sports_frozen = replace(
         frozen,
         events=tuple(
@@ -148,6 +257,7 @@ def execute_final_hybrid_comparison(
         scheduler_plan_path=plan_path,
         selection_config=config,
     )
+    phase("sports_ev")
     sports_result = (
         baseline
         if sports.sports_coverage_count == 0
@@ -157,6 +267,13 @@ def execute_final_hybrid_comparison(
             provenance=sports_provenance,
         )
     )
+    _write_replace(
+        output / "sports-final-research-coupons.txt",
+        _research_package_bytes(
+            "FINAL_GOAL_SPORTS_SHADOW", plan.stake, sports_result.coupons
+        ),
+    )
+    phase("quality_v3")
     quality_v3_config = QualityV3Config()
     uncertainty_models = build_uncertainty_models(
         frozen.bk_probability_matrix,
@@ -185,6 +302,15 @@ def execute_final_hybrid_comparison(
         fallback_coupons=baseline.coupons,
         deadline=deadline,
     )
+    _write_replace(
+        output / "quality-v3-final-research-coupons.txt",
+        _research_package_bytes(
+            "QUALITY_V3_BOUNDED_UNCERTAINTY_CHALLENGER",
+            plan.stake,
+            quality_v3.selected_coupons,
+        ),
+    )
+    phase("robust")
     candidate_union = tuple(
         dict.fromkeys(
             (
@@ -194,15 +320,17 @@ def execute_final_hybrid_comparison(
             )
         )
     )
-    combined_models = {
-        "bk": frozen.bk_probability_matrix,
-        "sports": sports_probabilities,
-        **{
-            name: probabilities
-            for name, probabilities in uncertainty_models.items()
-            if name != "bk"
-        },
-    }
+    combined_models = MappingProxyType(
+        {
+            "bk": frozen.bk_probability_matrix,
+            "sports": sports_probabilities,
+            **{
+                name: probabilities
+                for name, probabilities in uncertainty_models.items()
+                if name != "bk"
+            },
+        }
+    )
     robust = select_robust_package(
         candidates=candidate_union,
         probability_models=combined_models,
@@ -216,30 +344,111 @@ def execute_final_hybrid_comparison(
         fallback_coupons=baseline.coupons,
         deadline=deadline,
     )
+    _write_replace(
+        output / "robust-final-research-coupons.txt",
+        _research_package_bytes(
+            "FINAL_PARALLEL_MODEL_MAXIMIN_RECOMBINATION",
+            plan.stake,
+            robust.selected_coupons,
+        ),
+    )
+    phase("g1")
+    checkpoint(
+        "g1_admission",
+        initial=len(robust.selected_coupons),
+        universe=len(candidate_union),
+        models=len(combined_models),
+    )
+    try:
+        g1_research = (
+            {
+                "status": "DISABLED",
+                "operator_compatible": False,
+                "automatic_wagering": False,
+                "research_only": True,
+            }
+            if g1_config is None
+            else run_parallel_g1(
+                initial_coupons=robust.selected_coupons,
+                control_coupons=baseline.coupons,
+                candidate_coupons=candidate_union,
+                probability_models=combined_models,
+                exposure_constraints=exposure_constraints,
+                input_sha256=snapshot.snapshot_sha256,
+                plan_sha256=hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+                bank=plan.requested_bank,
+                effective_budget=runtime_budget,
+                stake=plan.stake,
+                safety_config=config.package_safety_config,
+                deadline=deadline,
+                config=g1_config,
+            )
+        )
+    except Exception as exc:
+        # Even unexpected adapter failures cannot replace any existing candidate.
+        g1_research = {
+            "status": "FALLBACK",
+            "reason": type(exc).__name__,
+            "selected_coupons": list(robust.selected_coupons),
+            "research_only": True,
+            "operator_compatible": False,
+            "automatic_wagering": False,
+            "activation_allowed": False,
+        }
+    robust_coupons = robust.selected_coupons
+    refinement_lineage = {
+        "policy_version": "robust-family-g1-v1",
+        "strategy_family": "robust",
+        "variant": "g1-exact-maximin-refinement-v2",
+        "applied": False,
+        "parent_package_sha256": _package_sha256(robust_coupons),
+        "authorization_route": "EXPLICIT_OPT_IN_EXISTING_ROBUST_FAMILY",
+    }
+    if isinstance(g1_config, ParallelG1Config) and g1_config.family_refinement:
+        refined = family_refinement_coupons(
+            g1_research,
+            initial_coupons=robust.selected_coupons,
+            candidate_coupons=candidate_union,
+            models=combined_models,
+            bounds=exposure_constraints,
+            input_sha256=snapshot.snapshot_sha256,
+            bank=plan.requested_bank,
+            effective_budget=runtime_budget,
+            stake=plan.stake,
+            plan_sha256=hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+        )
+        if refined is not None:
+            robust_coupons = refined
+            refinement_lineage["applied"] = True
+    phase("cross_evaluation")
     baseline_quality_bk = package_quality_metrics(
         baseline.coupons,
         frozen.bk_probability_matrix,
         seed_material=f"final-hybrid-bk-{snapshot.snapshot_sha256}",
         monte_carlo_samples=config.package_probability_samples,
     )
+    checkpoint("baseline_sports_quality")
     baseline_quality_sports = package_quality_metrics(
         baseline.coupons,
         sports_probabilities,
         seed_material=f"final-hybrid-bk-sports-{probability_hash}",
         monte_carlo_samples=config.package_probability_samples,
     )
+    checkpoint("sports_bk_quality")
     sports_quality_bk = package_quality_metrics(
         sports_result.coupons,
         frozen.bk_probability_matrix,
         seed_material=f"final-hybrid-sports-bk-{snapshot.snapshot_sha256}",
         monte_carlo_samples=config.package_probability_samples,
     )
+    checkpoint("sports_quality")
     sports_quality_sports = package_quality_metrics(
         sports_result.coupons,
         sports_probabilities,
         seed_material=f"final-hybrid-sports-{probability_hash}",
         monte_carlo_samples=config.package_probability_samples,
     )
+    phase("selector_verification")
     candidates = (
         _parallel_candidate(
             strategy_id="quality-v2",
@@ -268,7 +477,7 @@ def execute_final_hybrid_comparison(
         ),
         _parallel_candidate(
             strategy_id="robust",
-            coupons=robust.selected_coupons,
+            coupons=robust_coupons,
             models=combined_models,
             probabilities=frozen.bk_probability_matrix,
             safety_config=config.package_safety_config,
@@ -277,6 +486,25 @@ def execute_final_hybrid_comparison(
         ),
     )
     experimental_selection = select_parallel_candidate(candidates)
+    if refinement_lineage["applied"] and "robust" in experimental_selection.rejections:
+        # The parent caller remains authoritative even after worker verification.
+        robust_coupons = robust.selected_coupons
+        candidates = (
+            *candidates[:-1],
+            _parallel_candidate(
+                strategy_id="robust",
+                coupons=robust_coupons,
+                models=combined_models,
+                probabilities=frozen.bk_probability_matrix,
+                safety_config=config.package_safety_config,
+                stake=plan.stake,
+                timed_out=robust.timed_out,
+            ),
+        )
+        experimental_selection = select_parallel_candidate(candidates)
+        refinement_lineage["applied"] = False
+        refinement_lineage["fallback_reason"] = "CALLER_SELECTOR_REJECTED_REFINEMENT"
+    refinement_lineage["selected_package_sha256"] = _package_sha256(robust_coupons)
     overlap = len(set(baseline.coupons) & set(sports_result.coupons))
     report: dict[str, Any] = {
         "schema_version": 1,
@@ -293,22 +521,42 @@ def execute_final_hybrid_comparison(
         "sports_artifact_sha256": sports.artifact_sha256,
         "sports_coverage_count": sports.sports_coverage_count,
         "sports_fallback_count": sports.fallback_count,
+        "g1_research_refinement": g1_research,
+        "o1_family_readiness": {
+            "status": "UNAVAILABLE",
+            "reason": "NO_INDEPENDENTLY_REVIEWED_EVENT_LOCAL_INPUT_ADAPTER",
+            "assessment_executed": False,
+            "role": "DESCRIPTIVE_EVIDENCE_ONLY_NOT_A_PROBABILITY_MODEL",
+            "changes_probabilities": False,
+            "strict_eligibility_reassessed": False,
+            "gates_opened": [],
+            "activation_allowed": False,
+        },
         "baseline": _result_payload(baseline, baseline_quality_bk),
+        "control_execution": {
+            "mode": "RECOMPUTED"
+            if primary_control_record is None
+            else "VERIFIED_PRIMARY_REUSE",
+            "operator_record_sha256": None
+            if primary_control_record is None
+            else primary_control_record.get("record_sha256"),
+            "archive_manifest_sha256": None
+            if primary_control_record is None
+            else primary_control_record.get("archive_manifest_sha256"),
+            "input_and_config_revalidated": True,
+        },
         "sports": _result_payload(sports_result, sports_quality_sports),
         "robust": {
-            "coupon_count": len(robust.selected_coupons),
-            "cost": len(robust.selected_coupons) * plan.stake,
-            "unused_bank": runtime_budget
-            - len(robust.selected_coupons) * plan.stake,
+            "refinement_lineage": refinement_lineage,
+            "sampled_metrics_scope": "PRE_G1_PARENT_PACKAGE",
+            "coupon_count": len(robust_coupons),
+            "cost": len(robust_coupons) * plan.stake,
+            "unused_bank": runtime_budget - len(robust_coupons) * plan.stake,
             "candidate_count": robust.candidate_count,
             "category": robust.category,
             "sample_count_per_model": robust.sample_count_per_model,
-            "worst_sampled_category_coverage": (
-                robust.worst_sampled_category_coverage
-            ),
-            "mean_sampled_category_coverage": (
-                robust.mean_sampled_category_coverage
-            ),
+            "worst_sampled_category_coverage": (robust.worst_sampled_category_coverage),
+            "mean_sampled_category_coverage": (robust.mean_sampled_category_coverage),
             "timed_out": robust.timed_out,
             "models": [asdict(item) for item in robust.model_metrics],
         },
@@ -347,11 +595,7 @@ def execute_final_hybrid_comparison(
         "experimental_selection": experimental_selection.public_summary(),
         "coupon_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
         "highest_p13_single_coupons": {
-            "quality-v2": _best_single_coupon_payload(
-                baseline.coupons,
-                frozen.bk_probability_matrix,
-                reference_model="bk",
-            ),
+            "quality-v2": primary_ranking,
             "sports-shadow": _best_single_coupon_payload(
                 sports_result.coupons,
                 sports_probabilities,
@@ -363,7 +607,7 @@ def execute_final_hybrid_comparison(
                 reference_model="bk",
             ),
             "robust": _best_single_coupon_payload(
-                robust.selected_coupons,
+                robust_coupons,
                 frozen.bk_probability_matrix,
                 reference_model="bk",
             ),
@@ -382,10 +626,10 @@ def execute_final_hybrid_comparison(
                 set(sports_result.coupons) - set(baseline.coupons)
             ),
             "robust_baseline_overlap_count": len(
-                set(robust.selected_coupons) & set(baseline.coupons)
+                set(robust_coupons) & set(baseline.coupons)
             ),
             "robust_sports_overlap_count": len(
-                set(robust.selected_coupons) & set(sports_result.coupons)
+                set(robust_coupons) & set(sports_result.coupons)
             ),
         },
         "automatic_wagering": False,
@@ -393,6 +637,7 @@ def execute_final_hybrid_comparison(
         "scheduler_state_mutated": False,
         "profitability_proven": False,
     }
+    phase("research_persistence")
     report["report_sha256"] = hashlib.sha256(_canonical(report)).hexdigest()
 
     baseline_package = output / "baseline-final-research-coupons.txt"
@@ -416,7 +661,7 @@ def execute_final_hybrid_comparison(
         _research_package_bytes(
             "FINAL_PARALLEL_MODEL_MAXIMIN_RECOMBINATION",
             plan.stake,
-            robust.selected_coupons,
+            robust_coupons,
         ),
     )
     _write_replace(
@@ -447,12 +692,185 @@ def execute_final_hybrid_comparison(
     )
 
 
+class PrimaryControlInvalid(ValueError):
+    """Optional sidecar work lost its still-current native primary authority."""
+
+
+def _validate_current_primary_upload(*, plan, operator, upload_sha256, now=None):
+    """Revalidate native authority and current bytes, never reseal changed data.
+
+    ``upload_sha256`` is pinned at the original native export. Native validation
+    includes expiry, release authority, run paths/status/marker, CSV and archive.
+    Re-read after validation as well: its IO must not hide a concurrent swap.
+    """
+    from toto_ai.runner.scheduler import (
+        SchedulerError,
+        _validated_actionable_operator_upload,
+    )
+
+    clock = now or (lambda: datetime.now(timezone.utc))
+
+    def check_current():
+        if clock() >= plan.publish_deadline:
+            raise ValueError("primary expired at T-10")
+        current = json.loads(
+            _regular_file(
+                plan.output_dir / "operator-result.json", "primary operator"
+            ).read_bytes()
+        )
+        if current != operator or operator.get("package_sha256") != upload_sha256:
+            raise ValueError("primary record/export binding changed")
+        upload = _regular_file(operator.get("coupon_path"), "primary upload")
+        source = _regular_file(operator.get("source_package_path"), "primary source")
+        if upload != source.parent / "baltbet-upload.txt":
+            raise ValueError("primary upload is not canonical run path")
+        data = upload.read_bytes()
+        if hashlib.sha256(data).hexdigest() != upload_sha256:
+            raise ValueError("current primary upload hash mismatch")
+        return data
+
+    try:
+        original = check_current()
+        validated = _validated_actionable_operator_upload(
+            plan, observed_at=clock(), allow_at_deadline=False
+        )
+        if validated != original or check_current() != original:
+            raise ValueError("current primary bytes changed during validation")
+    except (OSError, SchedulerError, TypeError, ValueError) as exc:
+        raise PrimaryControlInvalid(f"verified primary reuse invalid: {exc}") from exc
+
+
+def _reuse_verified_control(
+    *,
+    plan,
+    snapshot,
+    frozen,
+    config,
+    provenance,
+    operator,
+    expected_coupons,
+    upload_sha256,
+):
+    """Reuse only a native-validated, same-plan final primary, not a loose TXT.
+
+    The sidecar first performs the existing full actionable operator export
+    (including authority/DB archive validation). This pure reader rechecks its
+    record, current file identity, archive, source bytes, final input and exact
+    probability/config provenance. It grants no release authority of its own.
+    """
+    import time
+
+    from toto_ai.ev.package_quality import validate_selection_provenance
+    from toto_ai.optimizer.strategy_comparison import _strategy_result
+    from toto_ai.runner.scheduler import (
+        _operator_result_sha256,
+        _validate_experimental_manual_release,
+        _validate_package_csv,
+    )
+
+    started = time.perf_counter()
+    _validate_current_primary_upload(
+        plan=plan, operator=operator, upload_sha256=upload_sha256
+    )
+    current = json.loads(
+        _regular_file(
+            plan.output_dir / "operator-result.json", "primary operator"
+        ).read_bytes()
+    )
+    if (
+        current != operator
+        or operator.get("record_sha256") != _operator_result_sha256(operator)
+        or operator.get("plan_id") != plan.plan_id
+        or operator.get("drawing") != frozen.drawing_number
+        or operator.get("drawing_id") != frozen.drawing_id
+        or operator.get("decision") != "PLAY"
+        or operator.get("operator_status") != "FINAL_FRESH"
+        or operator.get("provenance") != "FINAL_FRESH"
+        or operator.get("actionable") is not True
+        or operator.get("automatic_wagering") is not False
+        or operator.get("requested_bank") != config.bank
+        or operator.get("stake") != config.stake
+        or operator.get("effective_bank") != config.selection_budget
+        or not expected_coupons
+        or operator.get("package_sha256") != upload_sha256
+    ):
+        raise ValueError("verified primary reuse operator binding mismatch")
+    if operator.get("release_mode") == "EXPERIMENTAL_MANUAL":
+        auth = _validate_experimental_manual_release(plan)
+        if auth["record_sha256"] != operator.get("release_authorization_sha256"):
+            raise ValueError("verified primary reuse authorization mismatch")
+    elif operator.get("release_mode") != "STANDARD":
+        raise ValueError("verified primary reuse release mode mismatch")
+    valid, reasons, _, _ = validate_selection_provenance(
+        provenance, frozen.bk_probability_matrix, config=config, required=True
+    )
+    if not valid:
+        raise ValueError(f"verified primary reuse provenance mismatch: {reasons}")
+    run = snapshot.path.parent
+    if (
+        run != plan.output_dir / "attempts" / snapshot.attempt_id
+        or operator.get("run_id") != snapshot.attempt_id
+        or operator.get("source_package_path") != str(run / "package.csv")
+        or operator.get("archive_manifest_path") != str(run / "package-archive.json")
+    ):
+        raise ValueError("verified primary reuse run path mismatch")
+    source = _regular_file(run / "package.csv", "primary source").read_bytes()
+    source_hash = hashlib.sha256(source).hexdigest()
+    if source_hash != operator.get("source_package_sha256"):
+        raise ValueError("verified primary reuse source hash mismatch")
+    archive = json.loads(
+        _regular_file(run / "package-archive.json", "primary archive").read_bytes()
+    )
+    unsigned = dict(archive)
+    digest = unsigned.pop("archive_manifest_sha256", None)
+    if (
+        digest != operator.get("archive_manifest_sha256")
+        or digest != hashlib.sha256(_canonical(unsigned)).hexdigest()
+        or archive.get("final_input_sha256") != snapshot.snapshot_sha256
+        or archive.get("probability_input_sha256") != snapshot.probability_input_sha256
+        or archive.get("source_bytes_sha256") != source_hash
+        or archive.get("source_path") != str(run / "package.csv")
+        or archive.get("drawing_id") != frozen.drawing_id
+        or archive.get("drawing_number") != frozen.drawing_number
+        or archive.get("stake") != frozen.stake
+        or archive.get("cost") != config.selection_budget
+        or archive.get("coupon_count") != config.max_coupons
+        or archive.get("provenance") != "pre_bet_runner"
+    ):
+        raise ValueError("verified primary reuse final/archive binding mismatch")
+    validated = _validate_package_csv(
+        source,
+        stake=frozen.stake,
+        minimum_gross_ev=config.min_gross_ev,
+        expected_count=config.max_coupons,
+        expected_cost=config.selection_budget,
+    )
+    if validated.coupons != expected_coupons or _package_sha256(
+        validated.coupons
+    ) != archive.get("canonical_package_sha256"):
+        raise ValueError("verified primary reuse coupon binding mismatch")
+    checkpoint(
+        "verified_primary_reuse", coupons=len(validated.coupons), ev_calls_avoided=1
+    )
+    result = _strategy_result(
+        strategy_id="EV_CROWD_CURRENT",
+        source_engine="verified_scheduler_primary",
+        category=13,
+        frozen=frozen,
+        coupons=validated.coupons,
+        config={"category": 13, "ev_config": asdict(config)},
+        runtime_seconds=time.perf_counter() - started,
+    )
+    return replace(result, runtime_seconds=time.perf_counter() - started)
+
+
 def _exact_model_metrics(
     coupons: tuple[str, ...],
     models: Mapping[str, tuple[tuple[float, float, float], ...]],
 ) -> list[dict[str, float | str]]:
     rows = []
     for name, probabilities in models.items():
+        checkpoint("exact_model_metrics", model=name, coupons=len(coupons))
         p13, p14, p15 = exact_category_probabilities(coupons, probabilities)
         rows.append(
             {
@@ -500,10 +918,9 @@ def _validate_sports_artifact_identity(
             ordered,
             strict=True,
         ):
-            if (
-                sports_event.event_order != target.event_order
-                or str(sports_event.event_id) != str(target.event_id)
-            ):
+            if sports_event.event_order != target.event_order or str(
+                sports_event.event_id
+            ) != str(target.event_id):
                 raise ValueError("sports artifact event identity mismatch")
     elif (
         sports.drawing_id != frozen.drawing_id
@@ -540,9 +957,7 @@ def _parallel_candidate(
             config=safety_config,
         )
         if safety.decision != "PLAY":
-            reasons.extend(
-                f"package_safety:{code}" for code in safety.reason_codes
-            )
+            reasons.extend(f"package_safety:{code}" for code in safety.reason_codes)
     model_metrics = tuple(
         _exact_category_metrics(coupons, name=name, probabilities=rows)
         for name, rows in models.items()
@@ -580,10 +995,7 @@ def _exact_category_metrics(
 def _maximum_outcome_share(coupons: tuple[str, ...]) -> float:
     if not coupons:
         return 1.0
-    return max(
-        max(row["shares"].values())
-        for row in outcome_exposure(coupons)
-    )
+    return max(max(row["shares"].values()) for row in outcome_exposure(coupons))
 
 
 def _package_sha256(coupons: tuple[str, ...]) -> str:

@@ -1,0 +1,216 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "phase": "SOURCE_PUBLISHED_REMOTE_VERIFIED_CLOSING_METADATA",
+  "started_at": "2026-09-06T16:38:57+03:00",
+  "verified_at": "2026-09-06T16:41:12.822707+03:00",
+  "source_paths": [
+    "src/toto_ai/sports_stats/goal_probe_collection.py",
+    "tests/test_goal_probe_collection.py",
+    "knowledge/goal_probe_failed_cache_boundary.md",
+    "src/toto_ai/cli.py",
+    "src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+    "tests/test_g1_wrapper_reuse.py",
+    "scripts/project-git",
+    "tests/test_project_git_worktrees.py",
+    "knowledge/project_git_worktrees.md",
+    "src/toto_ai/external_odds/schedule_evidence_admin.py",
+    "tests/test_schedule_evidence_admin_cli.py",
+    "src/toto_ai/operations/scheduler_status.py",
+    "tests/test_scheduler_status.py",
+    "tests/fixtures/scheduler_status/drawing_4996_attempt_delivery.json"
+  ],
+  "source_sha256": {
+    "src/toto_ai/sports_stats/goal_probe_collection.py": "703d7e8cee03130d6b2ed26391ba5e0b370252cb31b32e340328b8a439f7ae80",
+    "tests/test_goal_probe_collection.py": "3bc0e70bd1bfb1471e3fe26fce1bee18f24e5cf0e84570d544368b0f83e6575a",
+    "knowledge/goal_probe_failed_cache_boundary.md": "dcb8fbdcf10d066e4db622c4dd53359ec86dc8fb8194af05e2675568902dfdd0",
+    "src/toto_ai/cli.py": "fc7f04615930e8f2083b411ecb04a42e0f9504027f13cf817b6a789978e5b5dc",
+    "src/toto_ai/sports_stats/final_hybrid_sidecar.py": "e76b627ae82af047e777b0d9d5b615ebf4fa1a6eee5a44f0d040b67c48dd8434",
+    "tests/test_g1_wrapper_reuse.py": "adba988c435bcd10c30a71b828d8cee21517d88174bd18cfd8a28b03eb8db816",
+    "scripts/project-git": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+    "tests/test_project_git_worktrees.py": "9e7e63f857f25c7467ce3dd16cb5806d0ac0ca9083ae44a86995bc1c6d725f7f",
+    "knowledge/project_git_worktrees.md": "bc5adadd8bcdb026ecdfb346ea214d3611ce3f729e6b5d04aff99bae1567cb44",
+    "src/toto_ai/external_odds/schedule_evidence_admin.py": "76b0b780bdab22909c75654f549d9096e36a1853e67562ec8ef5eba679fea47e",
+    "tests/test_schedule_evidence_admin_cli.py": "a36908d85502446f78a641cb07ce5b5001c75d2cc78cf8c52d5fced325987a4e",
+    "src/toto_ai/operations/scheduler_status.py": "5c3bfb00238b00772febe36f055d28414e44c1ec08295f09dfc83668474f2956",
+    "tests/test_scheduler_status.py": "9661ce17d6aacbf3e12fbad32c8c7e6fc86ab7999432aeb29b023e54664ef39f",
+    "tests/fixtures/scheduler_status/drawing_4996_attempt_delivery.json": "c63d5ddc3944df8641f7d8d0f5fcfcbe25e4e2a99343cf6c3d407d86fe270616"
+  },
+  "pytest": {
+    "exit": 1,
+    "stdout": "........................................................................ [ 53%]\n.FFFFFFFFFFFFFFFFF...............FF...........................           [100%]\n=================================== FAILURES ===================================\n________________ test_project_git_is_pinned_to_repository_root _________________\ntests/test_project_git_guard.py:202: in test_project_git_is_pinned_to_repository_root\n    result = _run(\"rev-parse\", \"--show-toplevel\", cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n______________________ test_project_git_rejects_ls_files _______________________\ntests/test_project_git_guard.py:209: in test_project_git_rejects_ls_files\n    result = _run(\"ls-files\", cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n_________ test_project_git_rejects_repository_override[raw_arguments0] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n_________ test_project_git_rejects_repository_override[raw_arguments1] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n_________ test_project_git_rejects_repository_override[raw_arguments2] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n_________ test_project_git_rejects_repository_override[raw_arguments3] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n_________ test_project_git_rejects_repository_override[raw_arguments4] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n_________ test_project_git_rejects_repository_override[raw_arguments5] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n_________ test_project_git_rejects_repository_override[raw_arguments6] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n_________ test_project_git_rejects_repository_override[raw_arguments7] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n_________ test_project_git_rejects_repository_override[raw_arguments8] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n_________ test_project_git_rejects_repository_override[raw_arguments9] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n________ test_project_git_rejects_repository_override[raw_arguments10] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n________ test_project_git_rejects_repository_override[raw_arguments11] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n________ test_project_git_rejects_repository_override[raw_arguments12] _________\ntests/test_project_git_guard.py:238: in test_project_git_rejects_repository_override\n    result = _run(*arguments, cwd=tmp_path)\ntests/test_project_git_guard.py:192: in _run\n    return subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n__________ test_project_git_sanitizes_repository_routing_environment ___________\ntests/test_project_git_guard.py:245: in test_project_git_sanitizes_repository_routing_environment\n    subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n___________ test_production_git_helper_ignores_outer_home_repository ___________\ntests/test_project_git_guard.py:280: in test_production_git_helper_ignores_outer_home_repository\n    subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n____________ test_home_git_guard_rejects_status_at_home_repository _____________\ntests/test_project_git_guard.py:481: in test_home_git_guard_rejects_status_at_home_repository\n    subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n____________ test_home_git_guard_allows_status_in_nested_repository ____________\ntests/test_project_git_guard.py:505: in test_home_git_guard_allows_status_in_nested_repository\n    subprocess.run(\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:501: in run\n    with Popen(*popenargs, **kwargs) as process:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:966: in __init__\n    self._execute_child(args, executable, preexec_fn, close_fds,\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1714: in _execute_child\n    sys.audit(\"subprocess.Popen\", executable, args, cwd, env)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n/bootstrap/sitecustomize.py:41: in _audit\n    raise PermissionError(\"verification allows only owned local Python workers\")\nE   PermissionError: verification allows only owned local Python workers\n=========================== short test summary info ============================\nFAILED tests/test_project_git_guard.py::test_project_git_is_pinned_to_repository_root\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_ls_files - P...\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments0]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments1]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments2]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments3]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments4]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments5]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments6]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments7]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments8]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments9]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments10]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments11]\nFAILED tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments12]\nFAILED tests/test_project_git_guard.py::test_project_git_sanitizes_repository_routing_environment\nFAILED tests/test_project_git_guard.py::test_production_git_helper_ignores_outer_home_repository\nFAILED tests/test_project_git_guard.py::test_home_git_guard_rejects_status_at_home_repository\nFAILED tests/test_project_git_guard.py::test_home_git_guard_allows_status_in_nested_repository\n19 failed, 115 passed in 10.98s\n",
+    "stderr": "",
+    "test_paths": [
+      "tests/test_goal_probe_collection.py",
+      "tests/test_g1_wrapper_reuse.py",
+      "tests/test_project_git_worktrees.py",
+      "tests/test_project_git_guard.py",
+      "tests/test_schedule_evidence_admin_cli.py",
+      "tests/test_scheduler_status.py"
+    ],
+    "timeout_seconds": 30,
+    "runtime": {
+      "exit": 1,
+      "blocked": [
+        "socket.bind"
+      ]
+    }
+  },
+  "ruff": {
+    "exit": 0,
+    "stdout": "All checks passed!\n",
+    "paths": [
+      "src/toto_ai/sports_stats/goal_probe_collection.py",
+      "tests/test_goal_probe_collection.py",
+      "src/toto_ai/cli.py",
+      "src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+      "tests/test_g1_wrapper_reuse.py",
+      "tests/test_project_git_worktrees.py",
+      "src/toto_ai/external_odds/schedule_evidence_admin.py",
+      "tests/test_schedule_evidence_admin_cli.py",
+      "src/toto_ai/operations/scheduler_status.py",
+      "tests/test_scheduler_status.py"
+    ],
+    "file_count": 10
+  },
+  "temporary_root": "/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-final-publish-ynb71a3n",
+  "classified_previous_residuals": {
+    "publish": "project-git security wrapper+tests/docs; public-suffix authority correction+regression; readonly completed-attempt scheduler status+regressions",
+    "retain_dirty": "data/schedule-evidence/ledger.json:74append-only multi-drawing operational evidence records; preserve whole authority state, do not publish partial/raw evidence bundle"
+  },
+  "ledger_sha256": "67ca1b2e8091005a1ebf5b8f508059f9e6ec4e7610b4d8df2c3fa54963b1a06c",
+  "adopter_receipt_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998_CACHE_WRAPPER_OPERATIONAL_INTEGRATION_RECEIPT.json",
+  "adopter_receipt_sha256": "10584f0301d845261168724ce5a93e5ba712e6051efa9ffaa830de64010f2fc6",
+  "operational_summary": {
+    "plan_id": "c1d243f5b6ca48f3",
+    "drawing": 4998,
+    "drawing_id": 12102,
+    "bank": 4980,
+    "stake": 30,
+    "activated_at": "2026-09-06T13:35:21.147382+00:00",
+    "activated_before_1630": false,
+    "enabled": true,
+    "target_seed_file_sha256": "2d5003c79378fb0b5f425ddf8cfdc0902327e727c0c0f3bb43843b43f2139e78",
+    "target_seed_artifact_sha256": "ac04ea9b303590945dbdc3c12a451840d300350b641593f5cf07b74054d5f32e",
+    "wrapper_after_sha256": "55488ab682ca35d5fcc145555471707c595bb2077c4266547cb5f98d137a2389",
+    "protected_binding_unchanged": true,
+    "warmup_forecast_created": false,
+    "sidecar_executed": false,
+    "operator_PLAY_claimed": false,
+    "next_primary_checkpoint_msk": "17:00",
+    "final_msk": "18:00",
+    "expires_msk": "18:20"
+  },
+  "publisher_changed_jobs_or_source": false,
+  "publication_target": "existing draft PR22",
+  "workflow": "gena unavailable/incompatible; authorized project-git/public gh fallback",
+  "wrapper_guard_rerun": {
+    "exit": 0,
+    "stdout": "...............                                                          [100%]\n15 passed in 0.62s\n",
+    "nodes": [
+      "tests/test_project_git_guard.py::test_project_git_is_pinned_to_repository_root",
+      "tests/test_project_git_guard.py::test_project_git_rejects_ls_files",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments0]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments1]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments2]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments3]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments4]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments5]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments6]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments7]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments8]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments9]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments10]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments11]",
+      "tests/test_project_git_guard.py::test_project_git_rejects_repository_override[raw_arguments12]"
+    ],
+    "scope": "Exact main scripts/project-git read-only/rejection probes allowed; bare git still prohibited"
+  },
+  "explicit_unverified_legacy_cases": [
+    {
+      "test": "tests/test_project_git_guard.py::test_project_git_sanitizes_repository_routing_environment",
+      "reason": "Legacy fixture setup invokes bare Git; blocked before execution and excluded from this constrained publication verification"
+    },
+    {
+      "test": "tests/test_project_git_guard.py::test_production_git_helper_ignores_outer_home_repository",
+      "reason": "Legacy fixture setup invokes bare Git; blocked before execution and excluded from this constrained publication verification"
+    },
+    {
+      "test": "tests/test_project_git_guard.py::test_home_git_guard_rejects_status_at_home_repository",
+      "reason": "Legacy fixture setup invokes bare Git; blocked before execution and excluded from this constrained publication verification"
+    },
+    {
+      "test": "tests/test_project_git_guard.py::test_home_git_guard_allows_status_in_nested_repository",
+      "reason": "Legacy fixture setup invokes bare Git; blocked before execution and excluded from this constrained publication verification"
+    }
+  ],
+  "verification_summary": "115 initial PASS +15 exact wrapper-only rerun PASS=130 checked;4 legacy bare-Git fixture cases explicitly unverified, no source failure hidden. Ruff10PASS.",
+  "operational_state_source": "Euler saved integration receipt/owner handoff, activation16:35:21MSK; no fresh runtime polling by publisher",
+  "operator_state_distinction": {
+    "integrated": true,
+    "saved_g1_opt_in_enabled": true,
+    "actual_4998_comparison_checked": false,
+    "final_PLAY_exists_claim": false,
+    "sports_v3_trained_claim": false
+  },
+  "prior_source_commits": [
+    "aac678ce4143d3835523afcab34cd1ecad491c70",
+    "2bfd0102639078a00c0e583b68b7d959d8361299"
+  ],
+  "pr_before": {
+    "url": "https://github.com/BrooksN21/toto-ai/pull/22",
+    "state": "OPEN",
+    "isDraft": true,
+    "headRefOid": "2bfd0102639078a00c0e583b68b7d959d8361299"
+  },
+  "retained_untracked_scope": "Local author/reviewer candidates/raw captures/transient reports and separately owned retrospective tests preserved; not junk, not a whole-repository clean claim.",
+  "selected_paths": [
+    "src/toto_ai/sports_stats/goal_probe_collection.py",
+    "tests/test_goal_probe_collection.py",
+    "knowledge/goal_probe_failed_cache_boundary.md",
+    "src/toto_ai/cli.py",
+    "src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+    "tests/test_g1_wrapper_reuse.py",
+    "scripts/project-git",
+    "tests/test_project_git_worktrees.py",
+    "knowledge/project_git_worktrees.md",
+    "src/toto_ai/external_odds/schedule_evidence_admin.py",
+    "tests/test_schedule_evidence_admin_cli.py",
+    "src/toto_ai/operations/scheduler_status.py",
+    "tests/test_scheduler_status.py",
+    "tests/fixtures/scheduler_status/drawing_4996_attempt_delivery.json",
+    "memory-bank/ACTIVE_PLAN.md",
+    "memory-bank/CURRENT_STATE.md",
+    "memory-bank/ROADMAP.md",
+    "memory-bank/THREAD_COORDINATION.json",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_INTEGRATED_PUBLICATION_RECEIPT_20260906.json"
+  ],
+  "prepared_at": "2026-09-06T16:43:25.638128+03:00",
+  "source_publication": {
+    "commit": "b28647cb008c5bd1ed9281e69533fc4d23e6cb72",
+    "push_exit": 0,
+    "push_summary": "2bfd010..b28647c HEAD -> codex/reviewed-stack-20260906",
+    "remote_verified_at": "2026-09-06T16:47:08.983096+03:00",
+    "pr_url": "https://github.com/BrooksN21/toto-ai/pull/22",
+    "pr_state": "OPEN",
+    "isDraft": true,
+    "headRefName": "codex/reviewed-stack-20260906",
+    "headRefOid": "b28647cb008c5bd1ed9281e69533fc4d23e6cb72",
+    "merged": false,
+    "origin_main_updated": false
+  },
+  "post_source_push_local_state": {
+    "index_empty": true,
+    "tracked_dirty": [
+      "data/schedule-evidence/ledger.json"
+    ],
+    "full_checkout_clean_claim": false,
+    "untracked_artifacts": "Preserved; separately owned research tests, local raw/transient/candidate artifacts excluded without whole-repository inventory."
+  },
+  "closing_metadata": {
+    "prepared_at": "2026-09-06T16:47:08.983096+03:00",
+    "source_changed_after_verification": false,
+    "tests_repeated": false,
+    "reason": "Receipt/current-state closure only; verified source bytes unchanged. Following metadata commit is pushed separately and final remote head reported by submission response."
+  }
+}

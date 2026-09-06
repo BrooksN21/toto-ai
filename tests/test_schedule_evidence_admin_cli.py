@@ -172,6 +172,19 @@ def test_review_apply_is_idempotent(tmp_path):
     assert len(json.loads(applied)["observations"]) == 1
 
 
+def test_review_accepts_distinct_publishers_under_com_cy(tmp_path):
+    fixture = _fixture(tmp_path)
+    payload = deepcopy(fixture["payload"])
+    payload["sources"][0]["source_url"] = "https://alpha.com.cy/event/1"
+    payload["sources"][1]["source_url"] = "https://beta.com.cy/event/2"
+    _rewrite_review(fixture, payload)
+
+    result = CliRunner().invoke(app, _arguments(fixture))
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output)["status"] == "validated_dry_run"
+
+
 @pytest.mark.parametrize(
     ("kind", "mutate"),
     [

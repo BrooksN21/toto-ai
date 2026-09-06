@@ -1,5 +1,15 @@
 # Decisions
 
+## 2026-09-04 — bounded compaction recovery and local observation
+
+Owner-authorized recovery entry is the short ACTIVE_PLAN checkpoint, with one
+literal next command and explicit execution owner/process state. Prior obligations
+remain byte-exact in its hash-bound archive; linked history is read only for a
+specific uncertainty, not wholesale on every compaction. Actual runtime is
+validated at due checkpoints/after mutations. Chat heartbeats are removed; local
+Python watcher only, with no idle-chat wakeup guarantee. This changes operational
+recovery policy, not probability, category, budget or wager definitions.
+
 ## 2026-09-04 — Parallel retry identity and nonblocking boundary
 
 - A retry is eligible only for an identity- and hash-bound terminal
@@ -2679,3 +2689,94 @@ ambiguous reversed evidence remains unresolved.
 
 Next decision checkpoint: results of a deterministic 90-event feature coverage
 audit.
+
+## 2026-09-04 — Validated GOAL history must persist before optional consumers
+
+- A successfully collected automatic GOAL input is not complete until its
+  derived `SportsStatsRunSnapshot` passes the existing hash/identity validation
+  and is atomically saved with `save_sports_stats_snapshot()`.
+- Persistence is independent of parallel-sidecar enablement. The sidecar may
+  consume only the exact bundle whose snapshot was successfully persisted; an
+  unpersisted candidate is suppressed without changing or blocking the primary
+  scheduler/operator path.
+- Snapshot persistence identity is semantic within the exact drawing,
+  fingerprint, provider and as-of storage slot. It binds event/provider-team
+  identities, sports features, source evidence and hashes, but excludes
+  request/cache diagnostics and replay `captured_at`.
+- The existing single transaction remains the only store. Parent and all 15
+  event rows commit together or roll back together; no second GOAL-specific
+  store or drawing-specific branch is permitted.
+- Collection, validation and persistence failures must be explicit in
+  `sports_shadow` diagnostics. Storage failure is marked retryable, retains the
+  candidate run/hash for diagnosis, suppresses sidecar preparation, and is
+  never silently treated as persisted.
+- Focused bridge verification first passed `7 passed in 3.35s`; after the
+  semantic-identity correction, the previously failed API-Sports replay plus
+  those seven regressions pass `8 passed in 4.51s`. CLI compilation/import and
+  Ruff pass. Final direct ARM64 verification is `2,331 passed, 13 deselected in
+  182.68s`, with full-project Ruff clean. Historical backfill is deliberately
+  deferred as the next incomplete step and must reuse this exact offline,
+  hash-bound persistence boundary.
+
+## 2026-09-04 — Sports persistence identity is semantic, not diagnostic
+
+- `SportsStatsRunSnapshot.semantic_persistence_sha256()` is the idempotency
+  comparator inside one drawing/fingerprint/provider/as-of persistence slot.
+- It binds the exact drawing and 15 event identities, provider and team
+  identities, target timing, history/standing feature payloads, source request
+  fingerprints and payload SHA-256 values, event feature SHA-256 values, run
+  status/counts, history size, deadline, and drawing fingerprint.
+- It excludes collection/replay `captured_at`, `requests_made`, and
+  `cache_hits`. These diagnose transport execution and must not turn the same
+  immutable sports evidence into a conflicting retry.
+- The original full snapshot JSON, `run_id`, and `content_sha256` remain
+  immutable audit data. A semantic retry returns the already persisted
+  snapshot rather than rewriting it or adding duplicate children.
+- A changed sporting feature, drawing/event/provider/team identity, source
+  request fingerprint, source payload hash, or event feature hash is not an
+  idempotent retry and fails closed when it conflicts with the same persistence
+  slot. A later distinct as-of observation remains eligible for append-only
+  storage.
+
+## 2026-09-04 — Historical sports backfill requires raw explicit evidence
+
+- Historical GOAL persistence accepts only a self-hashed explicit manifest;
+  it never discovers drawings or source files by directory scan.
+- Every snapshot must bind exactly 15 TotoBrief events to a hash-verified raw
+  detail/metadata pair and a hash- plus semantic-hash-verified GOAL schedule
+  report. Provider fixture/team identity and kickoff are exact, not normalized
+  or inferred.
+- History input authority is limited to production-shape frozen raw GOAL
+  `/teams/<id>/results` responses. Normalized history, probability files and
+  all other derived-only artifacts are not substitutes and fail closed.
+- A claimed raw source must pass file SHA-256, request fingerprint, payload
+  hash, schema, provider/team and strict pre-kickoff/pre-`as_of` chronology.
+  A source that was never captured is usable only when the manifest explicitly
+  marks it unavailable; no sporting row is invented.
+- The existing `save_sports_stats_snapshot()` transaction remains the sole
+  write boundary. Semantic retries reuse one parent and 15 children; changed
+  evidence in the same identity slot is rejected without modifying the stored
+  snapshot. A multi-entry manifest commits or rejects each complete snapshot
+  independently and exposes every outcome in deterministic JSON/CSV/Markdown.
+- The command is audit-only, performs zero network requests, has no package or
+  scheduler authority, and exits nonzero if any entry is rejected.
+
+## 2026-09-04 — Real historical manifests pass a write-disabled gate first
+
+- `--validate-only` performs the complete manifest, artifact, identity, schema,
+  hash and chronology validation while never opening or initializing a sports
+  database. Valid rows are reported as `validated`; inserted/reused counts and
+  database writes remain zero.
+- A frozen final-input artifact is an allowed target-identity binding only when
+  its file hash, self hash, detail payload hash, drawing ID/number/fingerprint,
+  captured-at time and deadline all verify exactly. It contributes no sports
+  history and cannot replace raw GOAL responses.
+- Real manifest preparation remains explicit and drawing-bounded. The
+  4990-4995 manifest includes only named frozen files and preserves absent
+  history as unavailable. Drawing 4990 remains rejected because its legacy
+  final-input/detail deadline pair does not satisfy the current timestamp
+  contract; validation must not weaken that contract or synthesize a repair.
+- A partially valid multi-snapshot manifest may report validated and rejected
+  entries together, but no database write is authorized by validation. A later
+  persistence run requires a separately reviewed manifest and explicit owner
+  checkpoint.

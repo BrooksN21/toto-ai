@@ -1314,6 +1314,29 @@ def test_reused_morning_cli_still_collects_goal_shadow(monkeypatch, tmp_path):
             reused=True,
         ),
     )
+    snapshot = SimpleNamespace(
+        drawing_id=evidence.drawing_id,
+        drawing_number=evidence.drawing_number,
+        drawing_fingerprint=evidence.drawing_fingerprint,
+        provider="goal-api-v1",
+        run_id="c" * 64,
+        content_sha256="c" * 64,
+        events=tuple(SimpleNamespace() for _ in range(15)),
+    )
+    bundle = SimpleNamespace(snapshot=snapshot, shadow="shadow")
+    loads = []
+    saves = []
+    monkeypatch.setattr(cli, "_sports_seed_as_of", lambda **_kwargs: observed)
+    monkeypatch.setattr(
+        cli,
+        "load_goal_probe_shadow",
+        lambda **kwargs: loads.append(kwargs) or bundle,
+    )
+    monkeypatch.setattr(
+        cli,
+        "save_sports_stats_snapshot",
+        lambda _factory, value: saves.append(value) or value,
+    )
 
     result = CliRunner().invoke(
         cli.app,
@@ -1338,7 +1361,133 @@ def test_reused_morning_cli_still_collects_goal_shadow(monkeypatch, tmp_path):
     assert payload["status"] == "reused"
     assert payload["sports_shadow"]["status"] == ("PAPER_ONLY_COVERAGE_PROBE_READY")
     assert payload["sports_shadow"]["reused"] is True
+    assert payload["sports_shadow"]["persistence_status"] == "persisted"
+    assert payload["sports_shadow"]["run_id"] == snapshot.run_id
+    assert payload["sports_shadow"]["snapshot_sha256"] == snapshot.content_sha256
+    assert payload["sports_shadow"]["provider"] == "goal-api-v1"
+    assert payload["sports_shadow"]["persisted_event_count"] == 15
     assert payload["sports_shadow"]["package_influence"] == "NONE"
+    assert len(loads) == 1
+    assert saves == [snapshot]
+
+
+def test_goal_persistence_failure_is_visible_retryable_and_primary_nonblocking(
+    monkeypatch,
+    tmp_path,
+):
+    config = _config(tmp_path)
+    observed = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    evidence = _prepared(
+        number=4988,
+        drawing_id=12071,
+        deadline=observed + timedelta(hours=12),
+    )
+    primary = tmp_path / "operator-result.json"
+    primary_bytes = b'{"decision":"PLAY","sentinel":true}\n'
+    primary.write_bytes(primary_bytes)
+    monkeypatch.setattr(
+        cli,
+        "_prepare_current_for_morning",
+        lambda **_kwargs: evidence,
+    )
+
+    def reused_dispatch(_config, *, observed_at, prepare_current, **_kwargs):
+        prepare_current(observed_at)
+        return MorningDispatchResult(
+            status="reused",
+            reason="ready",
+            record_path=tmp_path / "ready.json",
+            plan_id="primary-plan",
+            plan_path=primary,
+            launch_agent_path=None,
+            activation_status="activated",
+        )
+
+    monkeypatch.setattr(cli, "dispatch_morning", reused_dispatch)
+    monkeypatch.setattr(cli, "load_goal_api_key", lambda _path: "goal-secret")
+    coverage = tmp_path / "coverage-summary.json"
+    coverage.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(
+        cli,
+        "ensure_goal_probe_input",
+        lambda **_kwargs: SimpleNamespace(
+            event_count=15,
+            history_source_count=30,
+            sports_eligible_count=15,
+            request_count=0,
+            quota_daily_remaining=900,
+            captured_at=observed,
+            coverage_summary_path=coverage,
+            reused=True,
+        ),
+    )
+    snapshot = SimpleNamespace(
+        drawing_id=evidence.drawing_id,
+        drawing_number=evidence.drawing_number,
+        drawing_fingerprint=evidence.drawing_fingerprint,
+        provider="goal-api-v1",
+        run_id="d" * 64,
+        content_sha256="d" * 64,
+        events=tuple(SimpleNamespace() for _ in range(15)),
+    )
+    monkeypatch.setattr(cli, "_sports_seed_as_of", lambda **_kwargs: observed)
+    monkeypatch.setattr(
+        cli,
+        "load_goal_probe_shadow",
+        lambda **_kwargs: SimpleNamespace(snapshot=snapshot, shadow="shadow"),
+    )
+    attempts = 0
+
+    def persist(_factory, value):
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise OSError("database is temporarily read-only")
+        return value
+
+    monkeypatch.setattr(cli, "save_sports_stats_snapshot", persist)
+    arguments = [
+        "morning-dispatch",
+        "--bank",
+        "4980",
+        "--env-file",
+        str(config.env_file),
+        "--project-root",
+        str(tmp_path),
+        "--state-root",
+        str(config.state_root),
+        "--scheduler-root",
+        str(config.scheduler_root),
+        "--goal-shadow-auto",
+    ]
+
+    failed = CliRunner().invoke(cli.app, arguments)
+
+    assert failed.exit_code == 0, failed.output
+    failed_payload = json.loads(failed.output)
+    assert failed_payload["status"] == "reused"
+    assert failed_payload["plan_id"] == "primary-plan"
+    assert failed_payload["sports_shadow"]["status"] == (
+        "PAPER_ONLY_PERSISTENCE_FAILED"
+    )
+    assert failed_payload["sports_shadow"]["persistence_status"] == "failed"
+    assert failed_payload["sports_shadow"]["retryable"] is True
+    assert failed_payload["sports_shadow"]["primary_scheduler_affected"] is False
+    assert "database is temporarily read-only" in (
+        failed_payload["sports_shadow"]["error"]
+    )
+    assert failed_payload["parallel_challenger"] is None
+    assert primary.read_bytes() == primary_bytes
+
+    retried = CliRunner().invoke(cli.app, arguments)
+
+    assert retried.exit_code == 0, retried.output
+    retried_payload = json.loads(retried.output)
+    assert retried_payload["status"] == "reused"
+    assert retried_payload["sports_shadow"]["persistence_status"] == "persisted"
+    assert retried_payload["sports_shadow"]["run_id"] == snapshot.run_id
+    assert attempts == 2
+    assert primary.read_bytes() == primary_bytes
 
 
 def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
@@ -1404,10 +1553,27 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
             reused=True,
         ),
     )
+    snapshot = SimpleNamespace(
+        drawing_id=evidence.drawing_id,
+        drawing_number=evidence.drawing_number,
+        drawing_fingerprint=evidence.drawing_fingerprint,
+        provider="goal-api-v1",
+        run_id="e" * 64,
+        content_sha256="e" * 64,
+        events=tuple(SimpleNamespace() for _ in range(15)),
+    )
+    bundle = SimpleNamespace(snapshot=snapshot, shadow="shadow")
+    loads = []
     monkeypatch.setattr(
         cli,
         "load_goal_probe_shadow",
-        lambda **_kwargs: SimpleNamespace(snapshot="snapshot", shadow="shadow"),
+        lambda **kwargs: loads.append(kwargs) or bundle,
+    )
+    persisted = []
+    monkeypatch.setattr(
+        cli,
+        "save_sports_stats_snapshot",
+        lambda _factory, value: persisted.append(value) or value,
     )
     monkeypatch.setattr(
         cli,
@@ -1415,11 +1581,13 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
         lambda **_kwargs: observed,
     )
     sports_v2 = SimpleNamespace(sports_coverage_count=13)
-    monkeypatch.setattr(
-        cli,
-        "build_sports_v2_shadow_artifact",
-        lambda **_kwargs: sports_v2,
-    )
+    sports_v2_inputs = []
+
+    def build_sports_v2(**kwargs):
+        sports_v2_inputs.append(kwargs)
+        return sports_v2
+
+    monkeypatch.setattr(cli, "build_sports_v2_shadow_artifact", build_sports_v2)
     sports_path = tmp_path / "sports-v2.json"
     sports_path.write_text("{}", encoding="utf-8")
     monkeypatch.setattr(
@@ -1484,6 +1652,13 @@ def test_ready_morning_cli_prepares_and_activates_parallel_challenger(
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert activations == [parallel]
+    assert len(loads) == 1
+    assert persisted == [snapshot]
+    assert sports_v2_inputs == [
+        {"snapshot": snapshot, "base_artifact": bundle.shadow}
+    ]
+    assert payload["sports_shadow"]["persistence_status"] == "persisted"
+    assert payload["sports_shadow"]["run_id"] == snapshot.run_id
     assert payload["training_package"]["status"] == "deferred"
     assert payload["parallel_challenger"] == {
         "automatic_wagering": False,
@@ -2623,3 +2798,199 @@ def test_parallel_release_requires_parallel_and_goal_shadow(tmp_path):
     )
     assert parallel_without_goal.exit_code == 2
     assert "requires --goal-shadow-auto" in parallel_without_goal.output
+
+
+@pytest.mark.parametrize("initial_timing", [False, True])
+def test_retry_policy_transition_is_not_identity_drift(tmp_path, initial_timing):
+    from tests.test_preflight_retry_scheduler import FakeRunner, Result
+    from toto_ai.runner.morning_dispatch import _update_preflight_escalation
+    from toto_ai.runner.preflight_retry_scheduler import (
+        install_preflight_retry_launch_agent,
+        prepare_preflight_retry_artifacts,
+        run_preflight_retry,
+    )
+
+    config = _config(tmp_path)
+    now = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    first_evidence = replace(
+        _prepared(
+            number=4997,
+            drawing_id=12100,
+            deadline=now + timedelta(days=1),
+            eligibility="unknown",
+            span_days=None,
+            status="not_ready",
+        ),
+        unresolved_events=(
+            MorningUnresolvedEvent(
+                event_order=1,
+                target_event_id=180604,
+                home_team="Home",
+                away_team="Away",
+                resolution_status="timing_unknown" if initial_timing else "missing",
+                reason="source evidence pending",
+            ),
+        ),
+    )
+    first = _update_preflight_escalation(
+        config, evidence=first_evidence, observed_at=now, python_command=sys.executable
+    )
+    before = json.loads(first.retry_plan_path.read_text())
+    runner = FakeRunner([Result(2), Result(2)])
+    launch_root = tmp_path / "LaunchAgents"
+    artifacts = prepare_preflight_retry_artifacts(first.retry_plan_path)
+    install_preflight_retry_launch_agent(
+        artifacts, launch_agents_root=launch_root, command_runner=runner
+    )
+    loaded_calendar = artifacts.candidate_path.read_bytes()
+    runner.running = True
+    runner.commands.clear()
+    updated = replace(
+        first_evidence,
+        unresolved_events=(
+            replace(
+                first_evidence.unresolved_events[0],
+                resolution_status="missing" if initial_timing else "timing_unknown",
+            ),
+        ),
+    )
+    first_due = datetime.fromisoformat(
+        before["attempts"][0]["scheduled_at"].replace("Z", "+00:00")
+    ) + timedelta(seconds=1)
+    refreshed_paths = []
+
+    def child_updates_policy(command, **kwargs):
+        assert command[0] != "launchctl"
+        assert ("--activate" in command) == initial_timing
+        refreshed_paths.append(_update_preflight_escalation(
+            config, evidence=updated, observed_at=first_due,
+            python_command=sys.executable,
+        ))
+        return runner(command, **kwargs)
+
+    assert run_preflight_retry(
+        first.retry_plan_path, now=first_due, command_runner=child_updates_policy,
+        launch_agents_root=launch_root,
+    ) == 2
+    second = refreshed_paths[0]
+    assert runner.loaded
+    runner.commands.clear()
+    encoded = second.retry_plan_path.read_bytes()
+    after = json.loads(encoded)
+    assert after["identity"] == before["identity"]
+    assert after["activate_evening"] is not initial_timing
+    assert after["hard_stop"] <= before["hard_stop"]
+    assert after["hard_stop"] == before["hard_stop"]
+    assert [item["scheduled_at"] for item in after["attempts"]] == [
+        item["scheduled_at"] for item in before["attempts"]
+    ]
+    assert all(
+        ("--activate" in item["command"]) == (not initial_timing)
+        for item in after["attempts"]
+    )
+    refreshed = prepare_preflight_retry_artifacts(second.retry_plan_path)
+    assert refreshed.candidate_path.read_bytes() == loaded_calendar
+    assert install_preflight_retry_launch_agent(
+        refreshed, launch_agents_root=launch_root, command_runner=runner
+    )["active"]
+    assert all(command[1] == "print" for command in runner.commands)
+    assert runner.bootstrap_count == 1
+    due = datetime.fromisoformat(
+        after["attempts"][1]["scheduled_at"].replace("Z", "+00:00")
+    ) + timedelta(seconds=1)
+    assert run_preflight_retry(
+        second.retry_plan_path, now=due, command_runner=runner,
+        launch_agents_root=launch_root,
+    ) == 2
+    child = [command for command in runner.commands if command[0] != "launchctl"]
+    assert len(child) == 1
+    assert ("--activate" in child[0]) == (not initial_timing)
+    assert not any(command[1] == "bootout" for command in runner.commands)
+    assert run_preflight_retry(
+        second.retry_plan_path, now=due, command_runner=runner,
+        launch_agents_root=launch_root,
+    ) == 0
+    assert len([c for c in runner.commands if c[0] != "launchctl"]) == 1
+    _update_preflight_escalation(
+        config,
+        evidence=updated,
+        observed_at=now + timedelta(minutes=2),
+        python_command=sys.executable,
+    )
+    assert second.retry_plan_path.read_bytes() == encoded
+
+
+@pytest.mark.parametrize("mutation", ["hash", "identity", "cutoff"])
+def test_retry_policy_transition_preserves_integrity_guards(tmp_path, mutation):
+    from toto_ai.runner.morning_dispatch import _update_preflight_escalation
+
+    config = _config(tmp_path)
+    now = datetime(2032, 1, 1, 7, 0, tzinfo=UTC)
+    evidence = replace(
+        _prepared(
+            number=4997,
+            drawing_id=12100,
+            deadline=now + timedelta(days=1),
+            eligibility="unknown",
+            span_days=None,
+            status="not_ready",
+        ),
+        unresolved_events=(
+            MorningUnresolvedEvent(
+                event_order=1,
+                target_event_id=180604,
+                home_team="Home",
+                away_team="Away",
+                resolution_status="missing",
+                reason="missing fixture",
+            ),
+        ),
+    )
+    evidence = replace(
+        evidence,
+        operational_cutoff=evidence.deadline - timedelta(hours=1),
+        cutoff_evidence=tmp_path / "cutoff.json",
+        cutoff_evidence_sha256="c" * 64,
+    )
+    paths = _update_preflight_escalation(
+        config, evidence=evidence, observed_at=now, python_command=sys.executable
+    )
+    before = paths.retry_plan_path.read_bytes()
+    updated = replace(
+        evidence,
+        unresolved_events=(
+            replace(evidence.unresolved_events[0], resolution_status="timing_unknown"),
+        ),
+    )
+    if mutation == "hash":
+        payload = json.loads(before)
+        payload["created_at"] = "2031-01-01T00:00:00Z"
+        paths.retry_plan_path.write_text(json.dumps(payload))
+        before = paths.retry_plan_path.read_bytes()
+    elif mutation == "identity":
+        payload = json.loads(before)
+        payload["identity"]["drawing_number"] = 4998
+        import hashlib
+
+        unsigned = dict(payload)
+        unsigned.pop("plan_sha256")
+        payload["plan_sha256"] = hashlib.sha256(
+            json.dumps(
+                unsigned,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=True,
+            ).encode()
+        ).hexdigest()
+        paths.retry_plan_path.write_text(json.dumps(payload))
+        before = paths.retry_plan_path.read_bytes()
+    else:
+        updated = replace(updated, operational_cutoff=evidence.deadline)
+    with pytest.raises(ValueError):
+        _update_preflight_escalation(
+            config,
+            evidence=updated,
+            observed_at=now + timedelta(minutes=1),
+            python_command=sys.executable,
+        )
+    assert paths.retry_plan_path.read_bytes() == before

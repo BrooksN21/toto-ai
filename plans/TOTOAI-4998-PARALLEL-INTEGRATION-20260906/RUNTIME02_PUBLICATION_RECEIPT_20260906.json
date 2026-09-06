@@ -1,0 +1,175 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "at": "2026-09-06T20:51:25.598687+03:00",
+  "phase": "RUNTIME02_SOURCE_PUBLISHED_VERIFIED_DRAFT_PR22",
+  "work_summary": "Publish accepted runtime02: exact EV membership reuse/cooperative runtime bounds and PR1 current native-primary bytes/authority/expiry revalidation at reuse and companion publication; terminal optional failure preserves primary and completed research. No search/scoring/category/bank changes.",
+  "review": {
+    "verdict": "ACCEPT",
+    "completed_at_msk": "2026-09-06T20:39:37+03:00",
+    "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME_INDEPENDENT_REVIEW02.json",
+    "sha256": "efc39194c1ebde591c3356930b303fd2349e8bb51487965f5a16c426f1b3b526",
+    "patch_sha256": "152c92c8e068e971b5c926dc70234c2b57c3815c3396ac0ba195b56d5d46bbab",
+    "manifest_sha256": "1fbdbd82c0872f7f0b319c23570cc195b03ad70126d12ba0fb9f7171cd60321b",
+    "prior_not_accepted_handoff_superseded": true,
+    "independent_verification": "22 unchanged +79 focused +10 boundary tests, Ruff14PASS; fixture limits preserved"
+  },
+  "candidate_files": [
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_comparison.py",
+      "base_sha256": "c92acdde77bb3443531e8ebac081aae29424ad014633ffeaeb3ecf17f6127782",
+      "runtime01_sha256": "d403ba2afb63305c7153036267511c4762033661f66346c2357d79fd6bd7c234",
+      "after_sha256": "51118611bb4956618df2e888a31b9eda01691c3d82dbe24dea6383fdf452a643",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/sports_stats/final_hybrid_comparison.py"
+    },
+    {
+      "path": "src/toto_ai/optimizer/strategy_comparison.py",
+      "base_sha256": "9b67c3912760d8166824ee6b91c33df501de90ca1d80920187be14b585d81b75",
+      "runtime01_sha256": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473",
+      "after_sha256": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/optimizer/strategy_comparison.py"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+      "base_sha256": "e76b627ae82af047e777b0d9d5b615ebf4fa1a6eee5a44f0d040b67c48dd8434",
+      "runtime01_sha256": "b428cd68cbf9129fc1ca601bda38d9ad8fba8dfa64e1658643b1533861fee96c",
+      "after_sha256": "56c3d293c41b637464d2af9372634e2e1bc87100b9b60674b0448a29d4023e00",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/sports_stats/final_hybrid_sidecar.py"
+    },
+    {
+      "path": "src/toto_ai/ev/ternary.py",
+      "base_sha256": "eee2a0c97e04eba467abdbf7d7622a0447b2e61a08e9793c4e0416e60e17477d",
+      "runtime01_sha256": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae",
+      "after_sha256": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/ternary.py"
+    },
+    {
+      "path": "src/toto_ai/ev/package.py",
+      "base_sha256": "7f360752587e370e2b2e46592adfa650e0cebafc840aeff82cf503504a6357a9",
+      "runtime01_sha256": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947",
+      "after_sha256": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/package.py"
+    },
+    {
+      "path": "src/toto_ai/ev/package_quality.py",
+      "base_sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb",
+      "runtime01_sha256": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93",
+      "after_sha256": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/package_quality.py"
+    },
+    {
+      "path": "tests/test_final_hybrid_g1_integration.py",
+      "base_sha256": "880463b07461334f6d88b0061f316bc0d8c20088e7e1853dc9fb9b335a20daf7",
+      "runtime01_sha256": "bfba60730b8467b52fda6296d33c3545b0fb2a278c7430fea7be9aed932c8249",
+      "after_sha256": "bfba60730b8467b52fda6296d33c3545b0fb2a278c7430fea7be9aed932c8249",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_g1_integration.py"
+    },
+    {
+      "path": "src/toto_ai/ev/runtime.py",
+      "base_sha256": null,
+      "runtime01_sha256": "cc1325edd5165959765c9299cb3e91dcd8776ecff2419eed2f6ae11ca0f8bdb8",
+      "after_sha256": "cc1325edd5165959765c9299cb3e91dcd8776ecff2419eed2f6ae11ca0f8bdb8",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/runtime.py"
+    },
+    {
+      "path": "tests/test_ev_runtime_budget.py",
+      "base_sha256": null,
+      "runtime01_sha256": "14dfc9d4c4403a48a436a1a62c49804ff58a8d812128e73178e290b78e7cef63",
+      "after_sha256": "14dfc9d4c4403a48a436a1a62c49804ff58a8d812128e73178e290b78e7cef63",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_ev_runtime_budget.py"
+    },
+    {
+      "path": "tests/test_final_hybrid_runtime_contracts.py",
+      "base_sha256": null,
+      "runtime01_sha256": "c2d1272642fe71c7a204e5f1890c77b39f7e5f9e98dda550e1525e25028e5fad",
+      "after_sha256": "8ce03a2bc0240a48692618d6ed1fedb8efdfd7aafa1acf4ac74de3be035ecc84",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_runtime_contracts.py"
+    },
+    {
+      "path": "knowledge/parallel_runtime.md",
+      "base_sha256": null,
+      "runtime01_sha256": "100cf0b82711b14f481f24fe5134ad77eb45d15cf76edfce2871b552aa3a796f",
+      "after_sha256": "3d1733334a2eab8ec5a02eea993f39df11350ed17fb78a3dd6a33d992f17108e",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/knowledge/parallel_runtime.md"
+    },
+    {
+      "path": "tests/test_final_hybrid_sidecar.py",
+      "base_sha256": "96799cd77118e796aec73c33215a66980d61c2c890287bd7b2de93f30d55d08f",
+      "runtime01_sha256": "96799cd77118e796aec73c33215a66980d61c2c890287bd7b2de93f30d55d08f",
+      "after_sha256": "153f12d69d4077d9fc8d5232fef8980eab0d8ab5d8c536b8631e49e39692136d",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_sidecar.py"
+    },
+    {
+      "path": "tests/test_final_hybrid_primary_validity.py",
+      "base_sha256": null,
+      "runtime01_sha256": null,
+      "after_sha256": "9c187575171bdc003b888f1cad321340885858577be1b014531095b4937dc789",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_primary_validity.py"
+    }
+  ],
+  "dependencies": {
+    "src/toto_ai/runner/scheduler.py": "07e23f28ebff084bc4e3fe13a3b185d201050ac983c64ce1be5ea0dc014848c4",
+    "src/toto_ai/runner/final_input.py": "3330deb14d17e9628bf5eb6202d6b89d9d2acf5b22717e534421f9a90f6c235a",
+    "src/toto_ai/ev/models.py": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5",
+    "src/toto_ai/optimizer/parallel_challenger.py": "5b3cdea811c9d2a3acab09e54917c58bac63ae0c5f53ad3b4c5e8ee611bd6d5b",
+    "src/toto_ai/sports_stats/parallel_g1.py": "9ca4ef440a779ef9f8f445fc625b8d20fb164ba15af2c762e5795e45d71304e5",
+    "src/toto_ai/optimizer/robust_package.py": "9c7913e1b3c41d19c9a5e29f5dbaaddc358697941e3c5be46c976a913b1c315f",
+    "src/toto_ai/optimizer/uncertainty_package.py": "33b55ec8b3f7ca59e8d8c5ef1327d623bc1e0934ba05963f7a4df81a6e5d3b31",
+    "src/toto_ai/optimizer/strategy_execution.py": "0c0bbdc1acd78d6369e2fc3c558949dee887977cabc44bab37480ae0c18e149b"
+  },
+  "verification": {
+    "pytest": "101PASS3.27s",
+    "ruff": "13Python paths PASS (12 candidate + unchanged independent probe)",
+    "bounded_seconds": [
+      25,
+      15
+    ],
+    "receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_VERIFY/verification.json",
+    "live_candidate13_and_dependency8_hashes": "MATCH",
+    "reverse_patch_check": "PASS",
+    "guard": "Network/SQLite/outside-fixture writes denied; import-time socket.bind blocked"
+  },
+  "limitations": [
+    "No full historical replay or new speed claim;84.44→76.70/198.859s are prior author foreground measurements, bothEV recomputed in full replay",
+    "Historical Background slowdown not causally resolved; publication is not LaunchAgent e2e validation",
+    "Repeated native checks are not a filesystem transaction against changes after the final check",
+    "No source edits by finalizer; no jobs/DB/operator/consent/archive mutation or F4 incorporation"
+  ],
+  "durable_context": {
+    "postmortem4998": "Automatic all4 optional settlement + archived qv3/final-input bindings verified; inspect parallel-comparison-status07.09 12:00MSK, primary complete does not prove optional success",
+    "actual_wager": "USER_REPORTED, receipt/amount/bytes unverified",
+    "next4999": "Three unknown times positions9/12/14; no plan/activation/new consent; previous liveGET6s timeout/no retry",
+    "F4": "Isolated/notmain/no realfit; no readiness claim"
+  },
+  "pr_url": "https://github.com/BrooksN21/toto-ai/pull/22",
+  "publish_pr": false,
+  "target_branch": "codex/reviewed-stack-20260906",
+  "publication_base_commit": "dfa9bb9af9657323ae5cd7df5caecc29411f4f66",
+  "next_action": "Push this closing metadata, verify draft HEAD, stop; no runtime/job rollout",
+  "submission_skill": "Previously confirmed unavailable locally; authorized project-git/public GitHub fallback only",
+  "source_commit": "a651a05ed7c6fc507b0174951d87bbdf033ff234",
+  "remote_verified_at": "2026-09-06T20:50:37.465942+03:00",
+  "publication_result": "Existing PR updated; OPEN/draft; no merge/origin-main push",
+  "remaining_dirty_tracked": [
+    "data/schedule-evidence/ledger.json"
+  ],
+  "remaining_untracked_outside_task_evidence": [
+    "tests/test_retrospective_integrity.py",
+    "tests/test_retrospective_payouts.py",
+    "tests/test_retrospective_replay_binding.py"
+  ],
+  "remaining_local_task_evidence_scope": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "exact_leftover_snapshot_local_only": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_LEFTOVER_LOCAL_SCOPE.json"
+}

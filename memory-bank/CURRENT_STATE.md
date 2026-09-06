@@ -1,4 +1,330 @@
+#CURRENT — ready-source merge finalization;4999preflightPASS — 2026-09-06T18:56:43.844681+00:00
+
+DONE: exact independentPR22scopedACCEPT closes all namedproofgaps forsourceHEAD71afde0/basea59;121fileHEADhashes+10newreviewhashes andoriginalanchors verified; no source changes sinceacceptance. Finalizer42pytestPASS2.39s/Ruff5. Scopeincludes proposedplanonly withwholedefinedscope approvalclarification, notimplementation. No completedcode-simplification/bankpercentageclaim.
+4999nativepreflight **PASS/exit0/5.888s**, resultbe087782…; planb742aac1fea2d42d/launchersunchanged. Prior130/30.155s preserved, causeUNKNOWN; no newpreflight. Exact4999consent absent; nooperatorpackage. Nextprimary07.09 15:30MSK/parallel17:00/expiry17:20/close17:30. SportsF4data/scope/70%gate remains; nofit/integration.
+IN PROGRESS: single metadata/docpublication then ordinary head-guardedmerge ifnormalpolicyallows; no settingsread/admin/force. NEXT: verifymerge/localalignment withtree-equality andledgerpreservation, stop. Receiptlocal: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_READY_MERGE_PUBLICATION_RECEIPT_20260906.json. Historicalgap/noPASSbelow superseded; no wholecheckoutcleanclaim.
+
+# CURRENT —4999 REAL PREFLIGHT PASS; no consent/package — 2026-09-06T21:46:44.278464+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Explicit authorized monitored repeat: **PASS,exit0,5.888s**,06.09 21:44:43MSK, exactplan **b742aac1fea2d42d** /4999/12106. Native resultSHA `be087782be358844dc6e25d3c1a5cf1eed96d6f1bedfbccca9e1eb1ffc2af5b0`. Target/data/config/catalog validated; training/package_generation/automatic_wagering=false.
+Plan/bindings/primary+parallel wrappers/plists unchanged; PIDs53702/53705 and group absent. Watcher48486 running; primary/parallel loaded,runs0. Oldretry nativelydeactivated: **no21:50retry**. Nextprimary07.09 15:30MSK, parallel17:00, expiry17:20, close17:30.
+DONE: realpreflight verification/cleanup. BLOCKER:none forpreflight; **no4999manualconsent/operatorpackage**, ownerresponse separate. Not packagee2e/LaunchAgentperformance/SportsV3fit. Prior exit130/30.155s preserved, causeUNKNOWN.
+Nativeprepare300s, no nativeglobalbudget; supervisor360s, old30s quietkill waived only for this authorized run. Completed before first15s sample. NEXT: stop and handoff toparent/finalizer; no further network/modelrun/publication. UnrelatedF4/data limitations unchanged. Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PREFLIGHT4999_RETRY_AUTHORIZED_HANDOFF.md/json. Older NO-PASS/approval-pending below superseded by this exact result.
+
+#STATUS — F4review06 accepted;4999 preflight still NO PASS — 2026-09-06T18:31:20.361542+00:00
+
+SportsV3 isolated review06 **ACCEPT** at21:28:43MSK: F4-1b CLOSED; originalF4-1 remains CLOSED. Exact delta `1ee698aa9b27f995bbd360894b93b7313101d8a0b596bd24d68ec74a59aef2a7`. Independent12+6+9=27narrow syntheticPASS/Ruff4PASS; not full model/production acceptance. MODELS/REVIEW idle per parent, no review-fix work remains. Data/scope/equal-input70%gate blockers unchanged; no realfit/integration/eligibility or activation. Prior review05 REQUEST_CHANGES/fix06-in-progress checkpoints below are superseded, retained as history.
+
+4999 unchanged: all3timingsresolved; planb742aac1fea2d42d scheduler/parallel/watcher installed per frozen operations receipt. Preflight exit130/30.155s CHILD_SILENCE_30S, waitingstageunknown, NOTPASS. Repeatapproval requested21:19MSK remains unanswered per parent; no automaticretry. Exact4999plan-bound manualconsent absent, noPLAY. Nextinstalledprimary07.09 15:30MSK; expiry17:20/close17:30. No fresh runtime check or mutation.
+Completed: review-context reconciliation and existing focused finalizer pytest/Ruff. One status-only commit targets existing draftPR22; local publication receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/F4_REVIEW06_STATUS_PUBLICATION_RECEIPT.json. No source/sports implementation publication, new testsuite, replay, fit, preflight or jobs/DB/consent changes. NEXT: verify remotepublication and stop; parent retains operational decisions, no further work/wait selected.
+
+#4999 STATUS PUBLISHED — 2026-09-06T18:19:49.519342+00:00
+
+SportsV3 latest (parent evidence21:17:39MSK): review05 REQUEST_CHANGES; F4-1 origin-binding CLOSED(12+44PASS), remainingP2F4-1b final5sdeadline boundary(2FAIL4PASS). MODELS narrowfix06 assigned, isolated/notintegrated/norealfit. Not awaited; noSportsfiles published.
+
+Completed publication of operational status as `efe44145337c520c331f9df41993e31c38b1e359`; remote OPEN/draftPR22 exactHEAD verified. Finalizer42pytestPASS2.81s/Ruff5PASS; these checks cover unchanged source, not real preflight. This metadata-only closure saves the receipt; no source/job/DB/ledger/consent/watch changes.
+4999plan b742aac1fea2d42d installed, but **REAL_PREFLIGHT_NOT_VERIFIED**: CHILD_SILENCE_30S,exit130,30.155s; waitingstageunknown; no retry/provider diagnosis. No4999consent/PLAY. Exactplan-bound pre-cutoff manual consent still required;4980/30prep does not authorize wagering. SportsV3F4 isolated/pendingreview/data, not adopted/activated.
+Remaining tracked dirty: data/schedule-evidence/ledger.json, unchanged by finalizer; old untracked research/tests/reviews/raw runtime remain local. No whole-checkout clean claim. NEXT: stop publication; separate parent decision on observablepreflight, nextinstalledprimary07.09 15:30MSK. Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLICATION_RECEIPT_20260906.json. Prior checkpoints below are historical.
+
+#4999 PUBLICATION CHECKPOINT — 2026-09-06T18:18:31.183833+00:00
+
+DONE: frozen4999operations evidence condensed for draftPR22; focused42pytestPASS2.81s/Ruff5PASS. Plan b742aac1fea2d42d installed per18:14:43UTC receipt; no new runtime check. IN PROGRESS: metadata-only commit/push from baseline854e0ea; no source/DB/jobs/consent changes.
+BLOCKER: REAL_PREFLIGHT_NOT_VERIFIED /CHILD_SILENCE_30S, exit130/30.155s; waitingstageunknown, no provider diagnosis, no retry. No4999consent/PLAY; owner must give exactplan-bound pre-cutoff manual authorization before experimental release,4980/30prep is not consent. SportsV3F4 isolated, pendingreview/data, not adopted/activated.
+NEXT: verify draftPR22 remoteHEAD then stop; separate parent decision on observable preflight. Installed nextprimary07.09 15:30MSK; expiry17:20/close17:30. Compact public evidence: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLIC_STATUS.json. Mixedledger/rawruntime/unrelatedtests remain local. Historical checkpoints below preserved.
+
+# FROZEN ACCURACY CHECK — 2026-09-06T18:14:43.468575+00:00
+
+4999 plan b742aac1fea2d42d remains installed; watcherPID48486. **Preflight NO PASS:** REAL_PREFLIGHT_NOT_VERIFIED: CHILD_SILENCE_30S; exit130, recorded elapsed30.155s. Waiting callstack/stage unknown; no provider-specific cause captured. No retry authorized. Owned PID/process group48553 verified absent. Stored elapsed30.155s; supervisor final console clock30.156s is a separate immediate measurement, not a second run. No retry. Exact frozen handoff: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_HANDOFF.md.
+
+# CURRENT —4999 scheduled; watcher running; preflight NO PASS — 2026-09-06T21:14:18.557030+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. All3timings reviewed/native registered,251prior observations preserved (now252); native morning-dispatch ready15/15 exit0/21.032s. Malta MFA+Academia20:00MSK selected; old Sofa19:00 conflict preserved, no universal gate override.
+Plan **b742aac1fea2d42d** at `/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json`; primary/parallel loaded/runs0. Primary07.09 MSK15:30/16:00/16:30/16:40/16:50/17:00/17:12/17:20; parallel4models17:00; expiry17:20; close17:30. Old passive retry nativelydeactivated drawing_ready.
+Canonical localwatcher loaded/runningPID48486 poll30s, matchingstatus written; cannotwakeidlechat. GOAL13/15, trainingdeferred1020RUB/34capacity; no generatedmodelpackage/fullperformanceclaim.
+**BLOCKER:** actual scheduler-preflight-only PID48553 interrupted after30s childsilence peruserbound, exit130/30.156s; no result/PASS, no diagnosedAPI-specificcause, no retry. Protectedplan/bindings/wrappers/plists unchanged; primary mainstate notmutated.
+No4999consent/operator/PLAY: owner_response_required.4980/30prep only; parallel research/notreleased.
+NEXT: parentdecides separately boundedobservablepreflight continuation; nextnativecheckpoint07.09 15:30MSK. No automaticprivatewait/retry/heartbeat. Handoff plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_HANDOFF.md; exactstatus LIVE_OPERATION_4999_STATUS.json. No VCS/codechanges; operationalnative data/jobs changes authorized. HistoricalMalta/no-plan/retry21:50status below superseded.
+
+# CURRENT —4999 two timing reviews registered; Malta blocked — 2026-09-06T21:05:29.476279+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; drawing4999/DB12106, close07.09 17:30MSK=14:30UTC.
+DONE: positions12 Saudi18:30MSK and14 Serbia19:00MSK native dry-run/apply/verify PASS; read-only exact resolver RESOLVED. Genuine FSS raw obtained; earlier FSS timeout no longer blocker. Ledger249→251, all prior249 preserved.
+BLOCKER: only position9 Malta — MFA20:00MSK vs Sofa19:00MSK; safe agreeing club capture/conflict disposition missing, expired TLS not bypassed. Leibniz context-only search, sole operations ledger ownership retained.
+No4999plan/activation/watcher/real scheduler-preflight/consent/package. Existing passive retry loaded/idle, next21:50MSK; GOAL+parallel intent retained,4980/30 prep only. No source/DB/job/archive/push changes.
+NEXT: receive genuine Malta evidence, validate disposition, native review dry-run/apply/verify; fresh duplicate guard before one native morning-dispatch. No automatic private wait/resumption or chat heartbeat.
+Handoff: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_HANDOFF.md. Exact hashes/results in LIVE_OPERATION_4999_STATUS.json. Historical3-unknown and Serbia capture blockers below are superseded; no full pipeline-readiness claim.
+
+# CURRENT — Runtime02 source PUBLISHED — 2026-09-06T20:51:25.598687+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Published exact accepted runtime02 as `a651a05ed7c6fc507b0174951d87bbdf033ff234`; remote OPEN/draft PR22 HEAD verified2026-09-06T20:50:37.465942+03:00. Independent ACCEPT20:39:37; current13files/8dependencies matched; finalizer101PASS3.27s/Ruff13PASS. No merge/origin-main push, source edits, jobs/DB/operator/consent/archive changes or F4 inclusion.
+DONE: accepted runtime source and durable context published. IN PROGRESS: closing metadata only. BLOCKER:none for this publication. NEXT: push closure, verify draft HEAD, stop. Historical Background slowdown/LaunchAgent e2e remains unproved; no new long replay or profitability claim.
+Left untouched: dirty data/schedule-evidence/ledger.json; untracked tests/test_retrospective_integrity.py, tests/test_retrospective_payouts.py, tests/test_retrospective_replay_binding.py; local task evidence/research/fixtures. No clean-whole-checkout claim.
+4998 all-four postmortem binding VERIFIED; inspect optional parallel-comparison-status07.09 12:00MSK.4999 timing/plan/consent and actual wager receipt/amount/bytes limitations unchanged; F4 separate/notfit.
+Receipt: /Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_RECEIPT_20260906.json. Earlier runtime “not published” statements below are historical and superseded.
+
+# CURRENT — Runtime02 exact ACCEPT verified; publication — 2026-09-06T20:49:41.740806+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. DONE: exact13 candidate hashes and8 dependencies match accepted patch152c92c8…; independent ACCEPT20:39:37MSK closes PR1. Fresh finalizer101PASS3.27s/Ruff13PASS under network/SQLite/write guard.
+IN PROGRESS: publish accepted runtime02 plus durable context, no code edits. Earlier runtime01/02 NOT ACCEPTED and pending-review labels below are superseded by exact acceptance. Existing historical slowdown is not claimed resolved; no new replay/e2e benchmark.
+Observer03 already published. Postmortem4998 all4 automatic optional branch/archived-qv3/final-input bindings verified; inspect optional parallel-comparison-status07.09 12:00MSK, no guarantee optional success from primary complete. Actual wager receipt/amount/bytes still unverified.4999 timings9/12/14/plan/consent unresolved; F4 excluded/no realfit.
+BLOCKER:none for runtime publication. NEXT: exact whitelist commit/push to draftPR22, verify HEAD and stop. No merge/source edits/jobs/DB/operator/consent/archive changes.
+Receipt: /Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_RECEIPT_20260906.json. Historical snapshots below remain intact.
+
+# CURRENT STATUS UPDATE — Runtime02 ACCEPT, NOT PUBLISHED — 2026-09-06T20:40:53.873666+03:00
+
+Exact runtime02 patch152c92c8e068e971b5c926dc70234c2b57c3815c3396ac0ba195b56d5d46bbab independently ACCEPTED20:39:37MSK (review status verified;22+79+10 tests/Ruff14PASS reported). Earlier “pending review” labels are superseded; source remains local/unpublished. No runtime publication, new tests, replay or code change in this status-only job.
+Postmortem correction already published as08c7eaf3408bdd55e86cf9ad09dcf65791d1df27, remote OPEN/draft PR22 verified: all-four/archived-qv3/final-input bindings confirmed, inspect optional parallel-comparison-status07.09 12:00MSK. Actual owner wager receipt/amount/bytes remain unverified;4999 limitations unchanged.
+DONE: status corrections verified. NEXT: push this final metadata update then stop; nothing else in this job.
+
+# CURRENT CORRECTION —4998 automatic all-four postmortem VERIFIED — 2026-09-06T20:39:51.678594+03:00
+
+Saved context followup supersedes the earlier “all4/archived-qv3 binding unconfirmed” blocker. Existing postdraw4998 plan automatically invokes optional settlement for quality-v2, sports-shadow, quality-v3 and robust after primary; four166-coupon package hashes, archived quality-v3 and final-input bindings were verified. No extra plan/activation required.
+Remaining risk: optional failed/skipped can coexist with primary complete; completed plan does not automatically retry that branch. At07.09 12:00MSK inspect primary state AND post-draw/parallel-comparison-status.json and parallel-comparison/final-hybrid-settlement.json/.md. This is not proof of the owner's actual wager receipt/amount/bytes.
+DONE: metadata corrected from saved evidence;14focusedPASS0.55s/Ruff4PASS. NEXT: status-only commit/push and stop. No publication blocker; runtime02 excluded/not awaited,4999 timing/plan/consent limitations unchanged. No code/jobs/DB/archive/authority changes.
+Receipt: /Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM_BINDING_STATUS_CORRECTION_RECEIPT_20260906.json. Earlier contradictory postmortem conclusions below are historical and explicitly superseded.
+
+# CURRENT — Observer03 source PUBLISHED; runtime02 still pending — 2026-09-06T20:37:31.462942+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Published `f9de8a634d80aeb80942bec90b93953cd9566931` to OPEN/draft PR22; remote HEAD verified2026-09-06T20:36:53.934648+03:00. Exact observer03 ACCEPT4paths/8dependencies,76freshfocusedPASS2.81s/Ruff3PASS. No merge/origin-main push or watcher rollout.
+DONE: accepted observer publication plus readiness checkpoint. IN PROGRESS: closing metadata only. Runtime02 remains uncommitted pending independent exact-snapshot ACCEPT (latest phase hash verification); F4 isolated/no real fit.
+4999 unknown timing positions9/12/14, no plan/activation/new consent; liveGET6s timed out. Postmortem4998 scheduled07.09 12:00MSK but all4/actual-qv3 binding unconfirmed. Tomorrow flow NOT READY. No new jobs/DB/consent/archive operations.
+BLOCKER:none for observer publication; remaining engineering/operational questions separate. NEXT: push closure metadata, verify draft HEAD and stop; do not wait for runtime/F4/3timings in this finalization.
+Receipt: /Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_RECEIPT_20260906.json. Prior history preserved below.
+
+# CURRENT — Observer03 ACCEPT; scoped publication — 2026-09-06T20:35:58.383001+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. DONE: exact observer03 ACCEPT20:30:03 verified (patch041bcc6e…),4files/8dependencies match; fresh76focusedPASS2.81s/Ruff3PASS. DO1..4/DO1b closed.
+IN PROGRESS: publish only accepted observer source/tests/local skill plus status. Runtime02 author101PASS but independent exact-snapshot ACCEPT not yet found: code pending/excluded, no claim historical19min incident fixed. F4 isolated/notreviewed/notmain/no realfit;67/105=63.81%<70%.
+4999/12106 local close07.09 17:30MSK; timings unknown positions9/12/14; no plan/activation/new consent. Live summary GET6s timeout/no retry. Tomorrow flow NOT READY.
+4998 postmortem scheduled07.09 12:00MSK per saved context; all4/actual-qv3 binding NOT CONFIRMED, separate clarification pending. USER_REPORTED qv3 wager remains unverified receipt/amount/bytes;4998 packages expired.
+BLOCKER:none for observer publication; runtime acceptance/4999timings/postmortem binding separate. NEXT: metadata/source whitelist commit/push, verify draftPR22 then stop. No jobs/DB/consent/archive changes, no new generation/heartbeat; watcher code publication is not rollout or idle-chat delivery.
+Receipt: /Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_RECEIPT_20260906.json. Previous history preserved below.
+
+# CURRENT — STATUS PUBLISHED; pending code excluded — 2026-09-06T18:58:42.957038+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Status commit `ac59d358bae52245be79e8c0f49be96e2b86273d`
+was pushed and verified in OPEN/draft PR22 at 2026-09-06T18:58:08.867582+03:00. No merge/main push.
+Only five aggregate status/memory files published; pending runtime/observer/F4 code
+and raw coupon packages/model inputs excluded. Finalizer52focused tests/Ruff PASS.
+Observer02 frozen18:56:04: author DO1-4 corrected,73tests/RuffPASS; unmodified
+independent suite10PASS/5fixture-spy failures. NOT ACCEPTED/NOT CODE-PUBLISHED.
+Patch f244c0873f5c43dce193af093fc7ddf3656f78753580ea6ba7f4c5b903cd2579;
+DELIVERY_OBSERVER_REVIEW_FIX02_HANDOFF.md. REVIEW checks02 after runtime.
+Runtime remains in independent review; foreground198.859s is not LaunchAgent proof.
+F4snapshot04 remains isolated/notreviewed/notmain/norealfit: even ideal4996extension
+67/105=63.81%<70%; scope bridge alone cannot pass. Full prior facts preserved below.
+4998 packages expired18:20; qv3 wager USER-REPORTED only, bytes/receipt/amount unverified.
+DONE: status publication. IN PROGRESS: metadata closure only. BLOCKER:none for docs;
+code acceptance pending separately. NEXT: push closure, verify draft HEAD, stop.
+No jobs/DB/consent/archive changes; pending local code/evidence preserved.
+
+# CURRENT —4998 EXPIRED; status finalization ONLY; code reviews pending — 2026-09-06T18:54:37.405495+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Plan c1d243f5b6ca48f3.
+Parallel finished18:19:04 after18m56s; selected quality-v3. BK package P13+:
+quality-v3 2.48682336%, robust2.36040711%, quality-v2 1.76435982%,
+sports-shadow1.75282347%; robust slightly higher P15. These are model probabilities,
+not realized wins/profit. Owner USER-REPORTED he placed quality-v3; receipt, actual
+amount and actual coupon bytes UNVERIFIED. One-off choice, not future selection policy.
+Chat delivery missed; both operator packages EXPIRED18:20. No further4998 release/job.
+Costs: serialEV804.309s +primary wait106.887s +G1 52.684s +other172.611s.
+Historical Background6–8x slowdown cause/share remains unresolved.
+Runtime candidate FROZEN/in independent review, NOT ACCEPTED:58focusedPASS/Ruff;
+control84.44→76.70s exact bytes/metrics. Full same-input research198.859s recomputed
+BOTH EV calls; no primary-cache shortcut, no full LaunchAgent/19-minute-fix proof.
+Observer candidate REQUEST_CHANGES4findings; author correcting; NOT ACCEPTED.
+Sports-v3 F4 snapshot04 frozen18:49:22 in isolated MODELS:96author synthetic tests,
+Ruff11PASS,13paths; NOT REVIEWED/NOT MAIN/NO REAL FIT/NO ACTIVATION.
+Entity bridge52partial links,0complete scope proofs. F4 disposition30chronology
+rejected+8missing: even ideal4996extension gives67/105=63.81%<70%; bridge alone
+cannot make this corpus PASS. Never announce Sports-v3 as a ready predictor.
+FINALIZER VERIFIED:52focusedpytestPASS1.68s/Ruff10PASS; PR22 OPEN/draft,
+HEAD b859562cf4dbea42e5041ff90c0be779bdd909ab; not candidate acceptance.
+DOING: publish completed status/memory only to existing draftPR22; pending code,
+raw coupon packages/model inputs excluded. No jobs/DB/consent/archive changes.
+BLOCKERS: pending runtime/observer/F4 acceptance; historical slowdown and F4coverage.
+NEXT: focused finalizer pytest/Ruff, metadata-only commit/push/remote verification;
+no new engineering/run/restart. Preserve all pending local edits and original histories.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/STATUS_FINALIZATION_CHECKPOINT_20260906.json.
+F4 handoff: /Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_HANDOFF_04.md.
+
+# CURRENT — G1 profile source PUBLISHED to draftPR22 — 2026-09-06T17:18:28.655769+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Source `01b5df262f64f4eadafa3cf5b5e3bd93f95d791b` pushed;
+GitHub PR22 OPEN/draft HEAD verified. No merge/origin-main push; this is closing metadata.
+Current24pytest PASS1.01s/Ruff3PASS. Euler NONFINAL research:53618pairs/1swap/all12PASS;
+overall winner quality-v3, not refined robust. No finalPLAY or prediction/profit proof.
+SportsV3 remains separately owned/isolated, not published by this slice; local context
+and timestamped-label references retained in receipt, not bulk-uploaded. Ledger unchanged;
+index empty after source push, no whole-checkout clean claim. No runtime/job/DB changes.
+NEXT:push this metadata/confirm remote then stop. Owner17:30primary/18:00final/18:20expiry
+checkpoints unchanged; no polling/activation by finalizer. BLOCKER:none for publication.
+Receipt/resume: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_PUBLICATION_RECEIPT_20260906.json.
+
+# CURRENT — G1 accepted profile verified; publication prepared — 2026-09-06T17:16:44.249348+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Finalizer only:24current pytest PASS
+1.01s/Ruff3PASS; accepted cap65536,50s/60s/reserve30 unchanged. No source/runtime edits.
+Euler's SAME-input NONFINAL4998 diagnostic completed17:09:48:53618pairs,1swap,
+engine40.928s,all12nondegradation PASS; robust BKP13 .0250222344→.0251446059.
+Overall winner remains quality-v3. Not finalPLAY, trainedSports-v3 or profit proof.
+DOING:publish accepted G1 source/test/knowledge plus compact handoff/memory to draftPR22.
+SportsV3 train/infer is separately owned/isolated, NOT included. Local context files
+SPORTS_V3_COMPLETION_CONTEXT.md and SPORTS_V3_LABEL_EVIDENCE_HANDOFF.md in the task
+plans directory contain model gaps and90+optional15already-saved timestamped labels;
+labels present is not F4 validation. Bulk label/capture/candidate data are not published.
+Protected primary plan c1d243f5b6ca48f3/4980/30,consent/scheduler unchanged by publisher.
+Ledger and unrelated local artifacts preserved. BLOCKER:none for bounded publication.
+NEXT:confirm remote draftPR22 head and stop;17:30primary/18:00final/18:20expiry remain
+owner's operational checkpoints, not newly polled here. Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_PUBLICATION_RECEIPT_20260906.json.
+
+# CURRENT — final accepted source PUBLISHED; runtime outcome unverified — 2026-09-06T16:47:08.983096+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Published source commit
+`b28647cb008c5bd1ed9281e69533fc4d23e6cb72`; GitHub verified draft [PR22](https://github.com/BrooksN21/toto-ai/pull/22)
+OPEN at that commit. No merge or origin/main push. This is its closing metadata commit.
+Cache durable recovery + boolean wrapper reuse and prior completed Git-wrapper,
+public-suffix/status regressions published; no source/job/API mutation by publisher.
+Verification:115initial+15wrapper rerun=130PASS; Ruff10PASS. Four legacy bare-Git
+fixture cases explicitly unverified under task restrictions, not reported as passing.
+Euler saved correctedV2/G1 opt-in16:35:21MSK; plan c1d243f5b6ca48f3,4980/30 and
+exact consent/calendar unchanged per saved integration receipt. Actual4998 comparison
+NOT checked; finalPLAY NOT claimed; enabled is not selected/improved/trainedSports-v3.
+Next primary17:00/final18:00/expiry18:20 per adopter receipt, not a new runtime check.
+After source push: index empty; sole tracked residual data/schedule-evidence/ledger.json
+(74append-only multi-drawing evidence records) preserved, not junk. Local raw/candidate/
+transient artifacts and separately owned retrospective tests retained; no whole-clean claim.
+BLOCKER:none for source publication. NEXT:push this metadata closure, verify remote,
+then stop; Euler owns read-only nonoperator diagnostic. No new engineering selected.
+Resume: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_INTEGRATED_PUBLICATION_RECEIPT_20260906.json
+
+# CURRENT —4998 integrated/opt-in ENABLED; final source publication prepared — 2026-09-06T16:43:25.638128+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Accepted cache durability+wrapper
+reuse source applied; correctedV2 seed/G1flag saved by Euler16:35:21MSK, after
+primary16:30TLS preflight. Plan c1d243f5b6ca48f3,4980/30,consent/calendars unchanged.
+14/15V2coverage; exact seedfile2d5003… /artifactac04…; not trainedSports-v3.
+Actual4998comparison NOT checked; finalPLAY NOT claimed. Enabled≠selected/improved.
+Next primary17:00/final18:00/expiry18:20 per integration receipt; publisher did not
+refresh runtime or start/mutate jobs/provider/DB/code. Euler diagnostic separately owned.
+DONE verification:115initial+15wrapper rerun=130PASS;4legacy bare-Git fixture tests
+explicitly unverified (guard denied execution, no source failure hidden); Ruff10PASS.
+DOING: scoped source/memory commit/push to existing draftPR22, NOT merge.
+Includes prior completed security-wrapper/status/public-suffix improvements+tests.
+Ledger74append-only multi-drawing operational records retained unchanged/local;
+raw/candidate/transient artifacts not uploaded. BLOCKER:none for scoped publication.
+NEXT:verify commit/remote head, then return; no further engineering/activation work.
+Resume: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_INTEGRATED_PUBLICATION_RECEIPT_20260906.json
+
+# CURRENT — accepted GOAL/90min/G1 source PUBLISHED to draft PR22 — 2026-09-06T16:23:41.017310+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Source commit `aac678ce4143d3835523afcab34cd1ecad491c70`
+pushed successfully to `codex/reviewed-stack-20260906`; GitHub PR22 OPEN/draft,
+head verified at that source commit. PR https://github.com/BrooksN21/toto-ai/pull/22
+NOT MERGED; no push to origin/main. This is the following closing metadata commit.
+26files published:19accepted GOAL quarantine/90min/default-off G1 source/test/docs,
+related policy/decisions/current memory and bounded publication receipt.
+Verification247cases:246PASS8.15s +1PASS0.08s after allowing only disposable fake.env;
+Ruff15PASS. Real.env/network denied; no skipped/ignored regression or source fix.
+Corrected V2 research proof14/15/280accepted/0excluded remains NOT_ACTIVATED,
+EXPERIMENTAL_UNTRAINED_V2; no new manual forecast, operator package or profit claim.
+DOING:none for source work; source and metadata publication verified.
+BLOCKER:none for published source. Cache durability/CLI composition + wrapper-parser
+fix remain separately owned and NOT included/applied in this publication.
+REMAINING:separate guarded integration/seed binding/G1opt-in after required review;
+no activation by this worker. Existing4998consent/plan/jobs untouched; schedule per
+owner16:30/18:00/18:20MSK, not a new runtime confirmation.
+Dirty checkout intentional:6tracked residuals; exact names/rationale in receipt.
+Untracked local candidates/reports retained, no global inventory or clean claim.
+NEXT: return MAINWRITEFREEZE after this count-only metadata push; subsequent work separately dispatched.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CURRENT_STACK_PUBLICATION_20260906.json
+
+# CURRENT — accepted GOAL/90min/G1 source publication prepared — 2026-09-06T16:21:56.827892+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; publication only under MAINWRITEFREEZE.
+DONE: accepted GOAL quarantine + shared90min normalization + default-off G1 main
+integration/import cleanup selected;19source/test/doc paths hash-bound to receipts.
+Current-main verification:246PASS +1PASS targeted synthetic-env guard correction;
+247cases accounted,0skipped; Ruff15PASS. No source fix during publication.
+Corrected native V2 research seed14/15,280accepted/0excluded;13FT and28aggregate
+checks retained; NOT_ACTIVATED, EXPERIMENTAL_UNTRAINED_V2, not trained Sports-v3.
+DOING: scoped commit/push to existing draft PR22, not origin/main or auto-merge.
+BLOCKER:none for selected source publication; commit/push outcome not yet claimed.
+Cache durability/CLI composition and wrapper-parser compatibility NOT included;
+these remain separate integration/publication jobs. No current seed rebind or G1
+opt-in activation performed by this worker.4998 schedule/consent unchanged by this job;
+16:30first/18:00final/18:20expiry per owner, no fresh runtime claim.
+Prior residual9files assessed:policy/decisions included; ledger+unaccepted
+wrapper/status/publisher-authority source/test changes retained dirty separately.
+NEXT CHECKPOINT: source commit/push and verified PR22 head; no clean checkout claim.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CURRENT_STACK_PUBLICATION_20260906.json
+
+# CURRENT — existing stack published as draft PR22 — 2026-09-06T14:30:42+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906; source commit `9df62a36834cd88f55640371d2d6e8a50e104ec4`.
+DONE: user-authorized push to `codex/reviewed-stack-20260906`; draft PR https://github.com/BrooksN21/toto-ai/pull/22.
+Remote source/documentation tip `dcaa08eedc31a6d5820e99808a898318ee079c7e` verified; origin/main
+unchanged. This closing metadata is a follow-up commit on the same PR.
+Main545 PASS/4 explicit exclusions; selected-only HEAD overlay545 PASS/4 exclusions;
+Ruff28 PASS. Source/4998 controls and unrelated dirty owner bytes preserved.
+No new parallel wiring, activation or live strategy/probability changes. Sportsv3
+remains component-tested/research, not a fully trained/validated predictor.
+DOING: final metadata push only. BLOCKER:none for published existing-stack slice.
+REMAINING: separate parallel work/release decisions; no auto-merge or new task chosen.
+Dirty checkout intentionally retained: 9 tracked changes plus
+104 untracked paths in inspected scope; exact names and limits in receipt.
+Parent retains4998 plan c1d243f5b6ca48f3 with recorded consent and existing schedule;
+no runtime-state refresh is implied. Original role and historical evidence retained.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/EXISTING_STACK_SUBMISSION_RECEIPT_20260906.json
+
+# Existing-stack source commit recorded — 2026-09-06T14:28:37.866143+03:00
+
+Source commit `9df62a36834cd88f55640371d2d6e8a50e104ec4` contains the reviewed55-file stack/docs. Main and selected-only
+snapshot each545 PASS/4 explicit exclusions; Ruff28 PASS. No code changed during
+submission. User-authorized origin push/draft PR is next, not yet claimed successful.
+No direct origin/main update, new parallel wiring or operational4998 changes.
+Current blocker:none. Finalizer next:push codex/reviewed-stack-20260906, record PR;
+parent/isolated implementer work stays separate. Prior checkpoints retained below.
+
+# Accepted existing stack — publication candidate (2026-09-06T14:26:45+03:00)
+
+Backfill validation/retry-calendar, semantic GOAL pagination, O1+minimal F3/P1
+and optional G1 are applied and verified. Main and isolated selected-overlay
+checks each545 PASS/4 explicit deselections; Ruff28 PASS. O1 coverage183 was
+previously167+16, not a combined run; G1 acceptance119+3 benchmark exclusions.
+No new wiring/activation; Sportsv3 is not a validated/trained forecasting model.
+Source commit/push/PR pending below this checkpoint; exact outcome will follow.
+Original review/models cycle completed; historical setup-pending text below is
+superseded. Current operations stay in ACTIVE_PLAN; no4998 runtime modification.
+Unrelated dirty work intentionally excluded, not a clean-worktree claim.
+
+## Preserved previous state
+
 # Current State
+
+## Central + child recovery metadata (2026-09-04)
+
+Role routing and the shared child checkpoint template:
+`memory-bank/THREAD_COORDINATION.json`; operations resume at `ACTIVE_PLAN.md`.
+Registry saved; both children SETUP_PENDING / STARTUP_ACK_PENDING, actual IDs,
+checkouts and accepted baselines unknown. No child handoff or runtime recheck.
+Next: parent accepts each child's ID/cwd/checkpoint/boundaries, then baseline review.
+Evidence: coordination addendum in the existing task `IMPLEMENTATION_REPORT.md`.
+
+## Current recovery entry (2026-09-04)
+
+The sole live checkpoint is [ACTIVE_PLAN.md](ACTIVE_PLAN.md); historical text below
+is not the resume entry. Recovery implementation complete, no active commands.
+4997 plan `45b72ac58a45958b`: accepted15/15, scheduler/sidecar/local watcher loaded;
+exact owner primary+parallel experimental consent persisted before Sept5 16:20MSK.
+4996 retrospective loaded12:05 after primary12:00, real preflight pending0/15;
+original delivered archive untouched. Fullpytest2348 passed/13deselected, Ruff clean.
+Evidence, exact receipts, calendars and remaining limitations are in
+`plans/TOTOAI-4996-4997-RECOVERY-20260904/IMPLEMENTATION_REPORT.md`.
+No heartbeat, unattended chat promise, wagering or publication. Storage's existing
+semantic-method dependency and all prior dirty/history-backfill work are preserved.
 
 ## Sports Analytics v3 canonical 90-event checkpoint (2026-09-04)
 
@@ -6547,3 +6873,132 @@ one consistent with the asserted PPG, goal-difference, and goals-against values.
 Current boundary: no Sports v3 model fitting, probability blending, or operator
 integration exists yet. Next checkpoint: a deterministic 90-event feature
 coverage audit.
+
+## Automatic GOAL sports-history persistence (verified 2026-09-04)
+
+Root cause was a missing bridge, not cleanup or SQLite data loss. The automatic
+GOAL research-shadow path froze history and built a valid provider-neutral
+`SportsStatsRunSnapshot`, but only the separate API-Sports audit command called
+`save_sports_stats_snapshot()`. Consequently GOAL snapshots could feed the
+optional parallel sidecar in memory without ever reaching `sports_stats_runs`.
+
+Morning dispatch now validates the hash-bound GOAL snapshot and immediately
+persists it through the existing atomic sports-statistics transaction before
+any optional parallel-sidecar work. This runs whenever automatic GOAL
+collection succeeds for a scheduled or reused drawing, including when the
+parallel sidecar is disabled. Successful status exposes the exact provider,
+run ID, snapshot SHA-256, drawing fingerprint and persisted event count.
+
+Persistence is semantic, stable, and fail closed. Its idempotency identity
+binds drawing, event, provider and canonical/provider team identity; target
+timing; sports history and standings; source request fingerprints and payload
+hashes; probability-relevant feature values; event feature hashes; run
+status/counts; and the immutable drawing fingerprint. Volatile request/cache
+transport counters and replay `captured_at` values are deliberately excluded.
+The persisted full snapshot and its original content hash remain immutable;
+the semantic identity only decides whether a retry is the same evidence.
+
+An API-Sports cache replay with identical semantic sporting evidence therefore
+reuses one stored parent and the same 15 child rows even when HTTP requests
+become cache hits and the replay diagnostic timestamp/full snapshot hash
+changes. A changed sporting payload, event/provider/team identity, or source
+payload hash within the same drawing/fingerprint/provider/as-of persistence
+slot is rejected. Different legitimate as-of observations remain append-only.
+Parent and child inserts remain one transaction, so a child uniqueness conflict
+leaves neither a parent nor partial children. Validation or storage failure
+suppresses only the unpersisted sports candidate, is visible as an explicit
+retryable `sports_shadow` state, and does not change or block the primary
+scheduler/operator artifact.
+
+Verification passed: `py_compile src/toto_ai/cli.py`, `import toto_ai.cli`, the
+original seven storage/GOAL/morning-dispatch regressions, and the previously
+failed API-Sports prospective-to-cache replay together (`8 passed in 4.51s`).
+The final direct ARM64 suite passed `2,331` tests with `13` deselected in
+`182.68s`; full-project Ruff is clean. The CLI is runnable. No network request,
+scheduler run, drawing-4996 artifact access, backfill, push, or PR occurred;
+finalization is local only.
+
+Next incomplete step: offline historical GOAL backfill from eligible immutable,
+hash-bound artifacts through this same validation and storage boundary. No
+backfill implementation exists yet.
+
+## Offline raw sports-history backfill (implemented 2026-09-04)
+
+`toto_ai.sports_stats.history_backfill` and the
+`backfill-sports-history` CLI now provide a drawing-neutral, offline-only path
+from an explicit frozen-capture manifest into the existing
+`sports_stats_runs` / `sports_event_feature_snapshots` store. The manifest is
+self-hashed and must contain an exact 15-event snapshot. It binds a
+file-hash-verified TotoBrief detail/metadata pair, a file- and
+semantic-hash-verified GOAL schedule report, drawing/fingerprint/deadline,
+provider fixture/team identities, target kickoffs, and each source's frozen raw
+GOAL response file SHA-256.
+
+The importer accepts only the exact production raw team-results envelope. It
+revalidates the provider, endpoint/team, limit, default GOAL request
+fingerprint, response-payload hash, team membership, terminal result schema,
+and strict chronology. A raw capture must predate its target kickoff, `as_of`,
+and the drawing deadline. Derived probability/normalized artifacts, missing
+claimed files, hash tamper, unverifiable identity, post-kickoff captures and
+partial 15-event manifests fail closed. An explicitly absent raw source is
+preserved as `historical_asof_unavailable`; target-fixture gaps remain
+`target_fixture_missing`. No history is inferred from probabilities or another
+derived artifact.
+
+Each fully validated snapshot is passed once through
+`save_sports_stats_snapshot()`, preserving its semantic retry and conflict
+rules plus atomic parent/15-child rollback. Multi-snapshot manifests are atomic
+per snapshot: accepted entries commit independently while rejected entries are
+reported. Deterministic JSON, CSV and Markdown audits contain inserted/reused/
+rejected status, hashes, counts, per-event availability and source provenance.
+The CLI exits nonzero when any manifest snapshot is rejected.
+
+Focused verification passed `19` tests in `1.66s` across the new backfill,
+existing sports storage and sports CLI contracts. Ruff passed over the four
+exact changed Python files. No network, real drawing-4990-4995 import,
+drawing-4996 access, scheduler/operator mutation, full suite, VCS operation,
+commit, push or PR occurred. Real import remains a separate, explicit owner
+checkpoint after the exact manifest is prepared and reviewed.
+
+## Frozen raw history manifest for 4990-4995 (validated 2026-09-04)
+
+The exact manifest is
+`plans/TOTOAI-SPORTS-HISTORY-PERSISTENCE-20260904/backfill-4990-4995-manifest.json`.
+Its semantic manifest SHA-256 is
+`dd6151f61f4d3ab89a28eeea778fa0d02f7e96deb956ecb6c9742c076758ca77`
+and its file SHA-256 is
+`07463e8831c8e1cbcd146b9243555c2efce72a160b4c527c3243573ade270e49`.
+It names only exact frozen final inputs, schedule reports and production-shape
+raw GOAL team-result responses; it does not discover files, infer history from
+probabilities, or reference drawing 4996.
+
+Write-disabled validation produced deterministic JSON/CSV/Markdown under
+`reports/research/sports-history-backfill-4990-4995-dry-run/`. Drawings
+4991-4995 validated. Their available/unavailable source counts are respectively
+0/30, 30/0, 22/8, 26/4 and 26/4. The all-missing 4991 history is explicitly
+unavailable, not synthesized. Drawing 4990 is rejected before storage because
+the legacy frozen final-input deadline does not equal its embedded detail
+deadline under the current Moscow-time contract.
+
+The validator reported `database_writes=0`, `inserted_count=0` and
+`reused_count=0`. Across the final validation command, `data/toto.db` remained
+byte- and metadata-identical: SHA-256
+`c2d3805a2169dce3ec38f5b52aba4e1f3a27db3667fd958914480a3eeeff8294`,
+size `186204160`, mtime_ns `1788536601051230665`. No network, scheduler,
+operator, drawing-4996, VCS, commit, push or PR operation occurred.
+This final pre-validation baseline differs from the earlier dry-run checkpoint
+(`feb2c706...`, size `186060800`), so an intervening process changed the
+database before the final command. Its source was deliberately not investigated
+under the no-scheduler/no-4996 scope; the backfill validator itself left the
+new baseline unchanged.
+
+Focused verification is `20 passed in 2.02s` for history backfill, sports
+storage and sports CLI tests; Ruff is clean for the four changed Python/test
+files. The blocker for a complete six-drawing backfill is separately
+verifiable current-contract target evidence for 4990. It must remain rejected
+or be omitted until that evidence exists; any database write remains a separate
+owner-authorized checkpoint.
+
+
+## Permission-only local commit - 2026-09-05T14:24:47.824354+03:00
+Actual commit `49bd9ed9f16f63b848119f720f1e5013c3e4c0a6`: only two narrow existing-native-task permission blocks and owner authorization provenance;7 focused pytest passed, scoped Ruff clean, exact staged/commit scope verified. No remote publication or child resume. Other dirty changes preserved and uncommitted. Final receipt: `plans/TOTOAI-4996-4997-RECOVERY-20260904/native-task-policy-finalization.md`. Parent next4997 checkpoint14:30MSK/cutoff16:20.

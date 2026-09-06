@@ -1,0 +1,305 @@
+{
+  "task_id": "TOTOAI-SPORTS-V3-MODEL-READINESS-20260904",
+  "worker_thread_id": "01a0760b-b663-7e21-8c46-69d9d0cc83f7",
+  "cwd": "/Users/turshevr/toto-ai",
+  "started_at": "2026-09-06T10:33:03.805699+00:00",
+  "phase": "COMPLETE_IMPORT_ONLY_VERIFIED",
+  "adoption_receipt_path": "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_STACK_ADOPTION_RECEIPT_20260906.json",
+  "adoption_receipt_sha256": "6efba4e9e272f94e4f1ae3b6e43933c9f163932e9f71b6d736740ede4a02fb8e",
+  "diagnosis": {
+    "main_test": {
+      "path": "/Users/turshevr/toto-ai/tests/test_sports_v3_coverage_audit.py",
+      "code": "I001",
+      "line": 3,
+      "fix": "Blank line separating third-party pytest from first-party toto_ai."
+    },
+    "foreign_original": {
+      "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/O1_INDEPENDENT_REVIEW_PROBES.py",
+      "code": "I001",
+      "line": 7,
+      "current_main_config_exit": 1,
+      "own_ab34_config_exit": 1,
+      "same_diagnostic_and_safe_fix_in_both_configs": true,
+      "not_only_context_mismatch": true,
+      "immutable_original_will_not_be_modified": true
+    }
+  },
+  "local_verification_copy": {
+    "path": "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.py",
+    "source_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/O1_INDEPENDENT_REVIEW_PROBES.py",
+    "source_sha256": "76a4bd999aa49e25fa592c844062fc5cdb18c92369a775ec2f432704eeec6491",
+    "meaning": "Current-main verification copy, not original reviewer evidence rewritten or declared lint-clean."
+  },
+  "protected_before_sha256": {
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/__init__.py": "d254f69250488f262d9fc3f7035ff8da58157ea76c669316a18da7897b6f2698",
+    "/Users/turshevr/toto-ai/src/toto_ai/package/__init__.py": "167b055e9f0871ca14612f287beb895aed26a397874ba6458da13cf87af2686d",
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_coverage_audit.py": "689f69afb587fac474d8a91541651b6257bc3b403d9e82dc2c653b4174251ca4",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/P1_FIXTURE_CASES.json": "2a19ae40b92dd68bf2f5b78466207cdcb6515244b5c74aba0bfd8263d95802e4",
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_family_evidence.py": "046c8543007429b7f26d0de4056b8f7fce7faa7a35b3f8f207e831cdb295d22b",
+    "/Users/turshevr/toto-ai/tests/test_sports_v3_family_evidence.py": "20de9a204195385780369ab1da8f9f127663340445b2075136fe8db60a15ff39",
+    "/Users/turshevr/toto-ai/pyproject.toml": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6",
+    "/Users/turshevr/toto-ai/AGENTS.md": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+    "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/O1_INDEPENDENT_REVIEW_PROBES.py": "76a4bd999aa49e25fa592c844062fc5cdb18c92369a775ec2f432704eeec6491",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_STACK_ADOPTION_RECEIPT_20260906.json": "6efba4e9e272f94e4f1ae3b6e43933c9f163932e9f71b6d736740ede4a02fb8e"
+  },
+  "main_test_before_sha256": "3de1796c055e1f5292a10951b7132bb521d2a7e629ae60ea47d266621f4e9306",
+  "commands": [
+    {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/ruff",
+        "check",
+        "--no-cache",
+        "--config",
+        "/Users/turshevr/toto-ai/pyproject.toml",
+        "--fix",
+        "/Users/turshevr/toto-ai/tests/test_sports_v3_coverage_audit.py",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.py"
+      ],
+      "exit_code": 0,
+      "stdout": "Found 2 errors (2 fixed, 0 remaining).\n",
+      "stderr": ""
+    },
+    {
+      "name": "final_scoped_ruff",
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/ruff",
+        "check",
+        "--no-cache",
+        "--config",
+        "/Users/turshevr/toto-ai/pyproject.toml",
+        "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/__init__.py",
+        "/Users/turshevr/toto-ai/src/toto_ai/package/__init__.py",
+        "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_coverage_audit.py",
+        "/Users/turshevr/toto-ai/tests/test_sports_v3_coverage_audit.py",
+        "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_family_evidence.py",
+        "/Users/turshevr/toto-ai/tests/test_sports_v3_family_evidence.py",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.py"
+      ],
+      "timeout_seconds": 15,
+      "exit_code": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    {
+      "name": "guarded_pertinent_pytest",
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "/private/tmp/o1-import-cleanup-20og_1_7/runner.py"
+      ],
+      "timeout_seconds": 30,
+      "elapsed_seconds": 1.893,
+      "exit_code": 0,
+      "stdout": ".......................................................................................................................................................................\n167 passed in 1.33s\n",
+      "stderr": ""
+    }
+  ],
+  "main_memory_updated": false,
+  "source_or_gate_changes": false,
+  "owned_pid": null,
+  "main_test_after_sha256": "71484467fa1a90936ff90195128f46130f09aad500cf724fa94b504286f4f2f9",
+  "local_verification_copy_after_sha256": "a7ae117fdc276b945e73e249bfd013f48909c0cdf52c8decd0334243679ae8a0",
+  "main_patch": {
+    "path": "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP.patch",
+    "sha256": "c649032d5b35889159d210ab7744a956c5f6971f7a3a53e675970210ad2c5d48"
+  },
+  "probe_import_only_delta": {
+    "path": "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.import-only.patch",
+    "sha256": "14e0754776ed22d636d4d8715ac6aea4cb33e3000814afbd14836191699a9b68",
+    "not_to_be_applied_to_foreign_original": true
+  },
+  "ast_non_imports_and_suffix_bytes_unchanged": true,
+  "main_test_only_one_blank_line_added": true,
+  "foreign_original_bytes_unchanged": true,
+  "verification_started_at": "2026-09-06T10:35:03.574613+00:00",
+  "verification_runtime": {
+    "exit_code": 0,
+    "all_project_imports_from_main": true,
+    "imports": {
+      "toto_ai": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/__init__.py",
+        "sha256": "5b191cc228c9112b821fd4ead0cf7de40588ecc82812a6d48c51c48d239aa1a8"
+      },
+      "toto_ai.api": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/api/__init__.py",
+        "sha256": "42cd35f0390813eff79efded2cfd05769bbc936c8588417f166716fda1abd54c"
+      },
+      "toto_ai.api.client": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/api/client.py",
+        "sha256": "47d849eb47df71a5136e3a04c153c7f0cb404eac2c4e927174260ccc567c975a"
+      },
+      "toto_ai.api.rate_limit": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/api/rate_limit.py",
+        "sha256": "0d7210c24c706256dbd6b285c0243cfe2d6f97b0fb0ef39116c7d559b5a95366"
+      },
+      "toto_ai.api.safe_paths": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/api/safe_paths.py",
+        "sha256": "109743f84b527139caf9e3e8e26a657fc8fe279ea5c64e19824051bbcbf451fe"
+      },
+      "toto_ai.db": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/db/__init__.py",
+        "sha256": "f9e851864d26ac532cdf9d00148e1dccfea8a569574361f464c0eea87c867347"
+      },
+      "toto_ai.db.models": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/db/models.py",
+        "sha256": "ec41d08df9595d6bc9ef361e4093fbea8b6ecfc2645d8c0b2f8392296f2572f2"
+      },
+      "toto_ai.db.session": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/db/session.py",
+        "sha256": "6af8659a4be53b686944dcabaf13b00331be3a609a6748ea0629699ec51389a1"
+      },
+      "toto_ai.external_odds": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/__init__.py",
+        "sha256": "45f854d807c7f3339f3cfd1bec24395370cc29104558c36ff30616857f3d8453"
+      },
+      "toto_ai.external_odds.api_sports": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/api_sports.py",
+        "sha256": "196028d5b8f24007d7d822c59d2e1c1d35e577570a36968cef8c24d722d1a328"
+      },
+      "toto_ai.external_odds.consensus": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/consensus.py",
+        "sha256": "6bceed5c5e4c9bf445344d30f23025932ad81dcc6ba74e0de3b5df4971326120"
+      },
+      "toto_ai.external_odds.countries": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/countries.py",
+        "sha256": "1ad2458ecc4b658ec9738a560e30c608cd2c241affc225e78c8df903decca8f7"
+      },
+      "toto_ai.external_odds.domain": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/domain.py",
+        "sha256": "c09141bb061c76c5e2628f3edfc289ccc1bb5a64d999087c11c6f5e174fa3797"
+      },
+      "toto_ai.external_odds.eligibility": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/eligibility.py",
+        "sha256": "f0dbd942fd1641a04382af8d6cc0a3b20830b5075d527183af22f48f247a130d"
+      },
+      "toto_ai.external_odds.goal_api": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+        "sha256": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb"
+      },
+      "toto_ai.external_odds.matching": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/matching.py",
+        "sha256": "8156642a2eb0cee8be4d255ecfee22ff767ecf9ae1907ea8d577d0d12dbdfd50"
+      },
+      "toto_ai.external_odds.targets": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/targets.py",
+        "sha256": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497"
+      },
+      "toto_ai.external_odds.team_registry": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/team_registry.py",
+        "sha256": "9a05035e29b4693d419c5a7a3b583796f9c8bc03b801aff0ceb2bbf8167eccc4"
+      },
+      "toto_ai.package": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/package/__init__.py",
+        "sha256": "167b055e9f0871ca14612f287beb895aed26a397874ba6458da13cf87af2686d"
+      },
+      "toto_ai.package.audit": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/package/audit.py",
+        "sha256": "f36da1153d6f44e0cae00ab5f42781c415bce377d9531c4efdf68e7df8c8fc00"
+      },
+      "toto_ai.package.mvp": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/package/mvp.py",
+        "sha256": "86d357e19e88f61524eb709fa71707c6857c11617bb19b53a32e711cd55183fc"
+      },
+      "toto_ai.sports_stats": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/__init__.py",
+        "sha256": "d254f69250488f262d9fc3f7035ff8da58157ea76c669316a18da7897b6f2698"
+      },
+      "toto_ai.sports_stats.collection": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/collection.py",
+        "sha256": "72ae470ae768965803eae3fd85c46fbd56b9da766f551cb71eb19ec5c21dc6ed"
+      },
+      "toto_ai.sports_stats.domain": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/domain.py",
+        "sha256": "cdebd1a59f67240b3a3973fa5ba8d22b9ee48224515976e5808f9c1dc9bc07b8"
+      },
+      "toto_ai.sports_stats.features": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/features.py",
+        "sha256": "db786d81f27620afe23137a488f025e690a13029f30804591070fbdecc098821"
+      },
+      "toto_ai.sports_stats.provider": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/provider.py",
+        "sha256": "fb8a87959b26d833b564ca4c79b9ca343939cd9aa2708b996f0f03cc5437df9a"
+      },
+      "toto_ai.sports_stats.storage": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/storage.py",
+        "sha256": "3342b6ab721180c5e3a96bc932f5e8c062a7ce0ccf53369e1a09df78a3a85478"
+      },
+      "toto_ai.sports_stats.v3_coverage_audit": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_coverage_audit.py",
+        "sha256": "689f69afb587fac474d8a91541651b6257bc3b403d9e82dc2c653b4174251ca4"
+      },
+      "toto_ai.sports_stats.v3_family_evidence": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_family_evidence.py",
+        "sha256": "046c8543007429b7f26d0de4056b8f7fce7faa7a35b3f8f207e831cdb295d22b"
+      },
+      "toto_ai.sports_stats.v3_features": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_features.py",
+        "sha256": "90e6172afb5a0c982dd98be5015abac5f4f54a588eb8943798b75dc99bd96970"
+      },
+      "toto_ai.totobrief_time": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/totobrief_time.py",
+        "sha256": "f1d665535bc60cc265bca351bbebab8e81d675136a0a2e1a2a3189a292ab7d9f"
+      }
+    },
+    "blocked_actions": [],
+    "allowed_cold_import_subprocesses": [
+      "tests/test_sports_v3_coverage_audit.py::test_declarative_cases[30] (call)",
+      "tests/test_sports_v3_coverage_audit.py::test_cold_dir_and_all_exports_do_not_connect_to_services (call)"
+    ],
+    "backfill_imported": false
+  },
+  "verification_harness": {
+    "origin": "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_STACK_ADOPTION_RECEIPT_20260906.json",
+    "bootstrap_sha256": "41c6fa80bbf902d9737203667c99c7c4f03c90e307bdd4eb89e86f08554ee318",
+    "runner_sha256": "2093861958c1cf8ac45f6d41a54c99a48bdfacf8d5c1dc5d6a02dee2a85ea319",
+    "bootstrap_unchanged": true,
+    "runner_delta": [
+      "Use local import-only verification copy instead of immutable foreign original.",
+      "Omit previous temporary F3 probes, which are not part of this import-order cleanup."
+    ],
+    "runner_source": "import hashlib, json, sys\nfrom pathlib import Path\nimport sitecustomize as guard\nassert guard.O1_MAIN_GUARD_INSTALLED\nMAIN=Path('/Users/turshevr/toto-ai');TEMP=Path(__file__).resolve().parent\nsys.path[:0]=[str(MAIN),str(MAIN/'src')]\nimport pytest\nfiles=[str(MAIN/'tests/test_sports_v3_family_evidence.py'),str(MAIN/'tests/test_sports_v3_feature_table.py'),'/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.py',str(MAIN/'tests/test_sports_v3_coverage_audit.py')]\ncode=pytest.main(['-q','-s','-p','no:cacheprovider','-p','no:logging','-c',str(MAIN/'pyproject.toml'),'--confcutdir',str(MAIN),'--rootdir',str(MAIN),'-o','pythonpath=','--tb=short','-x','--basetemp',str(TEMP/'pytest-main'),*files])\nloaded={}\nfor name,mod in sorted(sys.modules.items()):\n    if name=='toto_ai' or name.startswith('toto_ai.'):\n        p=getattr(mod,'__file__',None)\n        if p:\n            p=Path(p).resolve();assert p.is_relative_to(MAIN/'src'),(name,str(p))\n            loaded[name]={'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}\nfor name in ['toto_ai.sports_stats','toto_ai.package','toto_ai.sports_stats.v3_family_evidence','toto_ai.sports_stats.v3_coverage_audit']:assert name in loaded\nassert loaded['toto_ai.external_odds.goal_api']['sha256']=='73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb'\nassert 'toto_ai.sports_stats.history_backfill' not in loaded\n(TEMP/'runtime.json').write_text(json.dumps({'exit_code':int(code),'all_project_imports_from_main':True,'imports':loaded,'blocked_actions':guard.blocked,'allowed_cold_import_subprocesses':guard.allowed_python_subprocesses,'backfill_imported':False},indent=2))\nraise SystemExit(code)\n",
+    "temporary_harness_removed_after_run": true,
+    "environment_sanitized": true,
+    "four_explicit_test_files_only": true
+  },
+  "finished_at": "2026-09-06T10:35:39.206823+00:00",
+  "protected_after_sha256": {
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/__init__.py": "d254f69250488f262d9fc3f7035ff8da58157ea76c669316a18da7897b6f2698",
+    "/Users/turshevr/toto-ai/src/toto_ai/package/__init__.py": "167b055e9f0871ca14612f287beb895aed26a397874ba6458da13cf87af2686d",
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_coverage_audit.py": "689f69afb587fac474d8a91541651b6257bc3b403d9e82dc2c653b4174251ca4",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/P1_FIXTURE_CASES.json": "2a19ae40b92dd68bf2f5b78466207cdcb6515244b5c74aba0bfd8263d95802e4",
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_family_evidence.py": "046c8543007429b7f26d0de4056b8f7fce7faa7a35b3f8f207e831cdb295d22b",
+    "/Users/turshevr/toto-ai/tests/test_sports_v3_family_evidence.py": "20de9a204195385780369ab1da8f9f127663340445b2075136fe8db60a15ff39",
+    "/Users/turshevr/toto-ai/pyproject.toml": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6",
+    "/Users/turshevr/toto-ai/AGENTS.md": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+    "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/O1_INDEPENDENT_REVIEW_PROBES.py": "76a4bd999aa49e25fa592c844062fc5cdb18c92369a775ec2f432704eeec6491",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_STACK_ADOPTION_RECEIPT_20260906.json": "6efba4e9e272f94e4f1ae3b6e43933c9f163932e9f71b6d736740ede4a02fb8e"
+  },
+  "protected_hashes_unchanged": true,
+  "pytest_result": {
+    "passed": 167,
+    "reported_seconds": 1.33,
+    "scope": "Four explicit main synthetic test files including import-only local O1 verification copy; prior temporary F3 probes not rerun.",
+    "prior_183_not_claimed_rerun": true
+  },
+  "ruff_result": {
+    "exit_code": 0,
+    "checked_python_files": 7,
+    "config": "/Users/turshevr/toto-ai/pyproject.toml",
+    "all_current_main_rules_enabled": true,
+    "foreign_original_excluded_from_green_claim": true
+  },
+  "blocker": null,
+  "owned_session": null,
+  "finalizer_next_action": "Separately verify/accept exact import-only delta and update main memory; do not alter immutable original or its historical hashes. No stack reapplication.",
+  "foreign_original_lint_status": "Preserved original remains I001 as recorded under both main and ab34 configs; only new local verification copy is lint-clean.",
+  "changed_paths": [
+    "/Users/turshevr/toto-ai/tests/test_sports_v3_coverage_audit.py",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.py",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP.patch",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.import-only.patch",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP_RECEIPT_20260906.json",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP_RECEIPT_20260906.md"
+  ],
+  "forbidden_actions_performed": []
+}

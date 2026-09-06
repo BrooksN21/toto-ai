@@ -64,6 +64,47 @@ def test_null_event_start_is_preserved_as_missing_target_time():
     assert drawing.events[14].starts_at is None
 
 
+@pytest.mark.parametrize(
+    "pool",
+    [
+        (0, 0, 0),
+        (0, 40, 60),
+        (None, 40, 60),
+        ("", 40, 60),
+    ],
+)
+def test_immature_pool_is_preserved_as_unavailable(pool):
+    data = payload()
+    for event in data["data"]["events"]:
+        event["quotes"].update(
+            {
+                "pool_win_1": pool[0],
+                "pool_draw": pool[1],
+                "pool_win_2": pool[2],
+            }
+        )
+
+    drawing = parse_target_drawing(data, fetched_at="2026-07-14T12:00:00Z")
+
+    assert all(event.pool_probabilities is None for event in drawing.events)
+    assert all(event.bk_probabilities is not None for event in drawing.events)
+
+
+def test_negative_or_nonfinite_pool_is_rejected_as_corruption():
+    for invalid in (-1, float("inf")):
+        data = payload()
+        data["data"]["events"][0]["quotes"].update(
+            {
+                "pool_win_1": invalid,
+                "pool_draw": 40,
+                "pool_win_2": 60,
+            }
+        )
+
+        with pytest.raises(ValueError, match="pool probability"):
+            parse_target_drawing(data, fetched_at="2026-07-14T12:00:00Z")
+
+
 def test_non_empty_non_hockey_championship_defaults_to_football():
     assert classify_sport("Неизвестный турнир", None) == "football"
 

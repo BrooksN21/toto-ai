@@ -1,18 +1,25 @@
-"""Package generation and audit helpers."""
+"""Public exports loaded on demand; pure readers do not load other workflows."""
 
-from toto_ai.package.audit import (
-    PackageAudit,
-    PackageStrategy,
-    build_package_audit,
-    recompute_audit_sha256,
-)
-from toto_ai.package.mvp import MvpPackageResult, generate_mvp_package
+from importlib import import_module
 
-__all__ = [
-    "MvpPackageResult",
-    "PackageAudit",
-    "PackageStrategy",
-    "build_package_audit",
-    "recompute_audit_sha256",
-    "generate_mvp_package",
-]
+_EXPORTS = {
+    "MvpPackageResult": "mvp",
+    "PackageAudit": "audit",
+    "PackageStrategy": "audit",
+    "build_package_audit": "audit",
+    "generate_mvp_package": "mvp",
+    "recompute_audit_sha256": "audit",
+}
+__all__ = list(_EXPORTS)
+
+
+def __dir__():
+    return sorted(set(globals()) | set(__all__))
+
+
+def __getattr__(name):
+    if name not in _EXPORTS:
+        raise AttributeError(name)
+    value = getattr(import_module(f"{__name__}.{_EXPORTS[name]}"), name)
+    globals()[name] = value
+    return value

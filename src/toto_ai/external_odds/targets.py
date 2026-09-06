@@ -147,13 +147,27 @@ def _normalized_pool_probabilities(quotes: object) -> OutcomeTriplet | None:
     raw = tuple(
         values.get(key) for key in ("pool_win_1", "pool_draw", "pool_win_2")
     )
-    if raw == (None, None, None):
+    if any(_pool_value_is_immature(value) for value in raw):
         return None
     numbers = tuple(
         _finite_positive_number(value, "pool probability") for value in raw
     )
     total = sum(numbers)
     return numbers[0] / total, numbers[1] / total, numbers[2] / total
+
+
+def _pool_value_is_immature(value: object) -> bool:
+    """Return true for early pool values that carry no usable probability."""
+
+    if value is None or (isinstance(value, str) and not value.strip()):
+        return True
+    if isinstance(value, bool):
+        return False
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return False
+    return isfinite(number) and number == 0.0
 
 
 def _split_teams(value: str, field_name: str) -> tuple[str, str]:

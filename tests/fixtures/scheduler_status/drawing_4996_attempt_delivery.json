@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "drawing_number": 4996,
+  "drawing_id": 12096,
+  "ended_at": "2026-09-04T16:30:00Z",
+  "attempts": [
+    {
+      "phase": "api_preflight",
+      "run_id": "api_preflight-01-20260904T150005778261Z-21efa359",
+      "started_at": "2026-09-04T15:00:05.778261Z",
+      "completed_at": "2026-09-04T15:00:42.111210Z",
+      "result": "complete",
+      "reason": "target, data access, configuration, and override catalog validated",
+      "legacy_last_attempt": null
+    },
+    {
+      "phase": "freshness_preflight",
+      "run_id": "freshness_preflight-01-20260904T153002964474Z-19519aa1",
+      "started_at": "2026-09-04T15:30:02.964474Z",
+      "completed_at": "2026-09-04T15:32:43.396297Z",
+      "result": "complete",
+      "reason": "quality_v2_real_money_release_gate_closed",
+      "legacy_last_attempt": null
+    },
+    {
+      "phase": "refresh",
+      "run_id": "refresh-01-20260904T155005139030Z-1bc1dae0",
+      "started_at": "2026-09-04T15:50:05.139030Z",
+      "completed_at": "2026-09-04T15:52:12.495634Z",
+      "result": "complete",
+      "reason": "quality_v2_real_money_release_gate_closed",
+      "legacy_last_attempt": null
+    },
+    {
+      "phase": "final",
+      "run_id": "final-01-20260904T160012030915Z-7fb29508",
+      "started_at": "2026-09-04T16:00:12.030915Z",
+      "completed_at": "2026-09-04T16:02:46.274666Z",
+      "result": "complete",
+      "reason": "final package verified and published no later than T-10",
+      "status_artifact": {
+        "state": "complete",
+        "outcome": "bet-ready",
+        "decision": "PLAY"
+      }
+    }
+  ],
+  "final_operator_result": {
+    "operator_status": "FINAL_FRESH",
+    "decision": "PLAY",
+    "actionable": true,
+    "reason": "final package verified and published no later than T-10",
+    "package_sha256": "42e6e55a1c6b7d642ad749257849e94e4216e57c6cacfa08d26fca74e9c44b37",
+    "selected_count": 166,
+    "selected_cost": 4980,
+    "completed_at": "2026-09-04T16:02:46.274666Z"
+  },
+  "terminal_expiry": {
+    "observed_at": "2026-09-04T16:20:15.655086Z",
+    "operator_result": {
+      "operator_status": "NO_BET",
+      "decision": "NO BET",
+      "actionable": false,
+      "reason": "operator package expired at T-10; audit archive retained",
+      "coupon_path": null,
+      "package_sha256": null,
+      "selected_count": null,
+      "selected_cost": null,
+      "completed_at": "2026-09-04T16:20:02.335979Z"
+    }
+  }
+}

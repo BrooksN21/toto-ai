@@ -1,0 +1,82 @@
+{
+  "phase": "SOURCE_STATUS_PUBLISHED_REMOTE_VERIFIED_CLOSING_METADATA",
+  "at": "2026-09-06T18:18:31.183833+00:00",
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "gena_workflow": "Already confirmed unavailable/incompatible; not invoked/installed. Authorized public GitHub fallback.",
+  "baseline_head": "854e0ea0a105e83d6db93d1a4c2e344e5d5c9d5e",
+  "pr": {
+    "url": "https://github.com/BrooksN21/toto-ai/pull/22",
+    "draft": true,
+    "remote_branch": "codex/reviewed-stack-20260906",
+    "merge": false
+  },
+  "files": [
+    "memory-bank/ACTIVE_PLAN.md",
+    "memory-bank/CURRENT_STATE.md",
+    "memory-bank/THREAD_COORDINATION.json",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLIC_STATUS.md",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLIC_STATUS.json"
+  ],
+  "checks": {
+    "pytest_command": ".venv/bin/python -m pytest -q tests/test_schedule_evidence_admin_cli.py tests/test_schedule_evidence_v2.py tests/test_scheduler_status.py",
+    "pytest": "42 passed in2.81s",
+    "ruff": "PASS5files",
+    "real_preflight_rerun": false
+  },
+  "ledger_sha256_preserved": "245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9",
+  "handoff_sha256_preserved": "1bba64c7c864010ae410da8c59ce2880b6f612693e18619ad50aa9400e47c16f",
+  "initial_index_empty": true,
+  "raw_and_unrelated_excluded": true,
+  "secret_pattern_scan": "PASS on publication deltas and new compact summaries",
+  "remote_before": "OPEN draftPR22 exact baselineHEAD confirmed with approved network access",
+  "commit": "efe44145337c520c331f9df41993e31c38b1e359",
+  "remaining_scope": {
+    "tracked_modified": [
+      "data/schedule-evidence/ledger.json"
+    ],
+    "initial_index_was_empty": true,
+    "bounded_untracked_entry_counts": {
+      "schedule-evidence-reviews": 130,
+      "task-local-evidence": 160,
+      "tests": 3
+    },
+    "note": "Counts are status entries including collapsed directories, not recursive file counts; raw data/reports outside this bounded listing remain untouched and unenumerated."
+  },
+  "published_commit": "efe44145337c520c331f9df41993e31c38b1e359",
+  "push": {
+    "exit_code": 0,
+    "destination": "origin HEAD:refs/heads/codex/reviewed-stack-20260906",
+    "no_force": true,
+    "origin_main_not_pushed": true
+  },
+  "remote_verification": {
+    "verified_at": "2026-09-06T18:19:49.519342+00:00",
+    "number": 22,
+    "headRefOid": "efe44145337c520c331f9df41993e31c38b1e359",
+    "headRefName": "codex/reviewed-stack-20260906",
+    "baseRefName": "main",
+    "state": "OPEN",
+    "isDraft": true
+  },
+  "finalization": {
+    "complete_for_requested_slice": true,
+    "code_or_operations_changed": false,
+    "new_real_preflight_run": false,
+    "merge": false,
+    "remaining_blocker": "Real preflight INTERRUPTED_NO_PASS / CHILD_SILENCE_30S,130,30.155s; waiting stage unknown; no4999manual experimental consent; SportsV3F4 remains isolated/pendingreview/data.",
+    "next_checkpoint": "Separate owner decision on observable bounded preflight; next installed primary2026-09-07 15:30MSK.",
+    "receipt_boundary": "This receipt records verified publication of the operational metadata commit. The following metadata-only closure commit contains this receipt; its final remoteHEAD is reported by final verification, not self-referentially embedded.",
+    "sports_v3_latest": {
+      "source": "Fresh parent handoff, no isolated-worktree refetch",
+      "review": "05",
+      "verdict": "REQUEST_CHANGES",
+      "reported_at_msk": "2026-09-06T21:17:39+03:00",
+      "F4_1_origin_binding": "CLOSED;12+44PASS per review; groups not asserted unique",
+      "remaining": "P2F4-1b final5sdeadline boundary;2FAIL4PASS",
+      "next_author_job": "MODELS narrowfix06 assigned; not awaited",
+      "integrated": false,
+      "real_fit": false,
+      "sports_files_published_by_finalizer": false
+    }
+  }
+}

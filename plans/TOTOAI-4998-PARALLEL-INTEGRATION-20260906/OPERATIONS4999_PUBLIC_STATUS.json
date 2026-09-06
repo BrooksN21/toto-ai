@@ -1,0 +1,150 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "documented_at": "2026-09-06T18:18:31.183833+00:00",
+  "operational_verified_at": "2026-09-06T18:14:43.468575+00:00",
+  "scope": "Publication of completed operational status/evidence metadata only; no fresh operations or source changes",
+  "drawing": 4999,
+  "drawing_id": 12106,
+  "plan_id": "b742aac1fea2d42d",
+  "plan_sha256": "92ddec53c4554b7edc8c04de0e8a52f25400ed2450e61447eac2a01fc6e4f20d",
+  "timing_registration": {
+    "positions": [
+      9,
+      12,
+      14
+    ],
+    "native_verified": true,
+    "ledger_observations": 252,
+    "prior_observations_preserved": true,
+    "ledger_sha256": "245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9",
+    "malta": "Reviewed official MFA plus independent Academia agree17:00UTC/20:00MSK. Original Sofa16:00UTC conflict and bytes retained; no universal priority rule.",
+    "review_sha256": {
+      "9": "6afe3f58360a74dcf69f505ed2b4298d7723f16e749c8f833ac3c1ae015d5696",
+      "12": "e37a3ddc5ba68df19d7abe126d8882a887b06c6f4556ae57958bb6b0a451b4ed",
+      "14": "8b13c267c6b7c699f8054c3c4b2c9a8f2c74a21d187baa639c7e7dbaf7128034"
+    }
+  },
+  "scheduled": {
+    "primary_loaded": true,
+    "parallel_loaded": true,
+    "primary_20260907_msk": [
+      "15:30",
+      "16:00",
+      "16:30",
+      "16:40",
+      "16:50",
+      "17:00",
+      "17:12",
+      "17:20"
+    ],
+    "parallel_20260907_msk": "17:00",
+    "expires_msk": "2026-09-07T17:20:00+03:00",
+    "closes_msk": "2026-09-07T17:30:00+03:00",
+    "watcher_pid_at_last_operational_verification": 48486,
+    "watcher_poll_seconds": 30,
+    "watcher_can_wake_idle_chat": false,
+    "old_passive_retry": "natively deactivated: drawing_ready"
+  },
+  "preflight": {
+    "status": "PASS",
+    "exit_code": 0,
+    "recorded_elapsed_seconds": 5.888,
+    "started_at": "2026-09-06T18:44:37.914711Z",
+    "finished_at": "2026-09-06T18:44:43.231879Z",
+    "result_sha256": "be087782be358844dc6e25d3c1a5cf1eed96d6f1bedfbccca9e1eb1ffc2af5b0",
+    "artifact_type": "REAL_PREFLIGHT_ONLY_NO_PACKAGE",
+    "training": false,
+    "package_generation": false,
+    "automatic_wagering": false,
+    "authorization": "One explicitly authorized repeat, not recurring retries",
+    "prior_interruption": "Retained exit130/30.155s; prior waiting cause unknown, not diagnosed by success"
+  },
+  "readiness_limits": {
+    "native_dispatch": "15/15 readiness, exit0,21.032s; not a preflight PASS",
+    "sports_eligibility": "13/15, not trainedSportsV3",
+    "training_package": "deferred:1020RUB/34capacity",
+    "sports_v3": "Review06 ACCEPT21:28:43MSK closes F4-1b; F4-1 remainsclosed. MODELS/REVIEW idle, no reviewfix remains. Exact isolateddelta 1ee698aa9b27f995bbd360894b93b7313101d8a0b596bd24d68ec74a59aef2a7. Data/scope/equal-input70%gate unchanged; nofit/integration/productioneligibility.",
+    "experimental_manual_consent": "None for4999; exact current-plan pre-cutoff owner authorization required before experimental operator release;4980/30 preparation is not consent",
+    "operator_package": "None; no PLAY/wager",
+    "real_preflight": "PASS verifies target/data/config/catalog only; no package e2e or model-fit proof"
+  },
+  "next": "No further preflight. Exact4999plan-bound manualconsent remains needed; nextprimary07.09 15:30MSK. Proposedquality/skillsplan not implementation authorization.",
+  "evidence_local_only": {
+    "handoff": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_HANDOFF.md",
+    "handoff_sha256": "1bba64c7c864010ae410da8c59ce2880b6f612693e18619ad50aa9400e47c16f",
+    "note": "Raw source bodies, full mixed ledger, live plans/bindings/logs/DB/operator material remain local, not uploaded. Summary hashes identify evidence without uploading it."
+  },
+  "finalizer_checks": {
+    "pytest_command": ".venv/bin/python -m pytest -q tests/test_schedule_evidence_admin_cli.py tests/test_schedule_evidence_v2.py tests/test_scheduler_status.py",
+    "pytest": "42 passed in2.81s",
+    "ruff": "PASS5files",
+    "real_preflight_rerun": false
+  },
+  "publication_target": {
+    "url": "https://github.com/BrooksN21/toto-ai/pull/22",
+    "draft": true,
+    "remote_branch": "codex/reviewed-stack-20260906",
+    "merge": false
+  },
+  "sports_v3_latest": {
+    "source": "Exact independent review06 Markdown read; task idleness and pending approval from current parent handoff",
+    "review": "06",
+    "verdict": "ACCEPT",
+    "accepted_at_msk": "2026-09-06T21:28:43+03:00",
+    "accepted_delta_sha256": "1ee698aa9b27f995bbd360894b93b7313101d8a0b596bd24d68ec74a59aef2a7",
+    "review_artifact_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_INDEPENDENT_REVIEW06.md",
+    "review_artifact_sha256": "e05e640121c0fe0a4a5a728f6b839fc5cb7b89d557706d78c0817952442e8db7",
+    "scope": "Exact isolated deadline correction; not full model or production eligibility acceptance",
+    "F4_1_origin_binding": "CLOSED; remains closed",
+    "F4_1b_final_deadline": "CLOSED; reject at or beyond5s, no remaining finding",
+    "independent_checks": {
+      "origin_probes": "12PASS2.75s",
+      "unchanged_boundary_probes": "6PASS1.01s",
+      "refit_inference_A0_A1_deadlines": "9PASS1.33s",
+      "ruff": "4filesPASS"
+    },
+    "remaining_review_fix_work": false,
+    "models_task": "idle per owner handoff",
+    "review_task": "idle per owner handoff",
+    "remaining_blockers": [
+      "data/scope evidence",
+      "equal-input70%coverage gate"
+    ],
+    "integrated": false,
+    "real_fit": false,
+    "production_eligible": false,
+    "sports_files_published_by_finalizer": false
+  },
+  "status_followup_at": "2026-09-06T18:56:43.844681+00:00",
+  "historical_preflight_attempts": [
+    {
+      "status": "INTERRUPTED_NO_PASS",
+      "reason": "CHILD_SILENCE_30S",
+      "exit_code": 130,
+      "recorded_elapsed_seconds": 30.155,
+      "waiting_stage": "UNKNOWN_NO_CALLSTACK",
+      "provider_specific_cause": "NOT_DIAGNOSED",
+      "owned_process_group_gone": true,
+      "retry_performed": false,
+      "pass_result_exists": false,
+      "repeat_approval": "Requested21:19MSK, owner has not answered per current handoff; no automatic retry"
+    }
+  ],
+  "proposed_next_plan": {
+    "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MODEL_QUALITY_SKILLS_NEXT_PLAN.md",
+    "sha256": "0b304a5f1c236f02e8d63a9365c7149ed3de152c38eca5e1ddca98d181ec0b0a",
+    "status": "PROPOSED_ONLY",
+    "routine_checkpoints": "Once wholedefinedscope is approved, routine included checkpoints do not need fresh approval each step",
+    "implementation_started": false,
+    "bank_percentage_gain_measured": false,
+    "code_simplification_completed": false
+  },
+  "merge_review": {
+    "verdict": "ACCEPT_NAMED_GAPS_CLOSED_EXACT_PR22_HEAD_ELIGIBLE_FOR_AUTHORIZED_FINALIZATION",
+    "accepted_source_head": "71afde0050f37cf9a208831d64da403b0605fef2",
+    "base": "a59e3e54a1698efe60a862bbab681996c06ff8f7",
+    "review_sha256": "8f6381d2cb670ae6e7cf737c6065f672f64d40cd4dffee17d1e52844cc24d6ff",
+    "review_path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PR22_FINAL_SCOPED_REVIEW.json",
+    "no_source_additions_since_acceptance": true
+  }
+}

@@ -18,6 +18,18 @@ def test_collect_sports_stats_help_exposes_safe_selectors():
     assert "AUDIT ONLY" in result.output
 
 
+def test_sports_history_backfill_help_exposes_offline_manifest_contract():
+    result = CliRunner().invoke(app, ["backfill-sports-history", "--help"])
+
+    assert result.exit_code == 0
+    assert "OFFLINE AUDIT ONLY" in result.output
+    assert "--manifest" in result.output
+    assert "--db" in result.output
+    assert "--output-dir" in result.output
+    assert "--validate-only" in result.output
+    assert "network" not in result.output.lower()
+
+
 def test_sports_probability_cli_help_exposes_shadow_only_contract():
     shadow = CliRunner().invoke(app, ["sports-probability-shadow", "--help"])
     evaluation = CliRunner().invoke(

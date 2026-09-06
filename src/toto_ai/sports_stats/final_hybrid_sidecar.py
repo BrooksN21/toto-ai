@@ -19,12 +19,16 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from toto_ai.ev.runtime import RuntimeDeadlineExceeded
 from toto_ai.optimizer.parallel_challenger import POLICY_VERSION
 from toto_ai.runner.final_input import load_final_input
 from toto_ai.runner.scheduler import export_operator_package, load_scheduler_plan
 from toto_ai.sports_stats.final_hybrid_comparison import (
+    PrimaryControlInvalid,
+    _validate_current_primary_upload,
     execute_final_hybrid_comparison,
 )
+from toto_ai.sports_stats.parallel_g1 import ParallelG1Config
 
 
 @dataclass(frozen=True)
@@ -114,14 +118,20 @@ def prepare_parallel_sidecar_artifacts(
         raise ValueError("parallel sidecar artifact set is incomplete")
     reused = wrapper_path.exists()
     accepted_existing_wrappers: tuple[bytes, ...] = ()
+    existing_g1_refinement = False
     if reused:
-        existing_executable, sports_path = _existing_parallel_wrapper_binding(
-            wrapper_path=wrapper_path,
-            plan=plan,
-            plan_path=plan_path,
-            root=root,
-            authorization_path=authorization_path,
+        existing_executable, sports_path, existing_g1_refinement = (
+            _existing_parallel_wrapper_binding(
+                wrapper_path=wrapper_path,
+                plan=plan,
+                plan_path=plan_path,
+                root=root,
+                authorization_path=authorization_path,
+            )
         )
+        if existing_g1_refinement:
+            # Normalize only after complete binding validation, retaining opt-in.
+            accepted_existing_wrappers = (wrapper_path.read_bytes(),)
         if existing_executable == executable:
             executable = existing_executable
         else:
@@ -152,6 +162,8 @@ def prepare_parallel_sidecar_artifacts(
         "--minimum-runtime-seconds",
         "240",
     ]
+    if existing_g1_refinement:
+        command.append("--g1-refinement")
     wrapper = (
         "#!/bin/zsh\n"
         "set -eu\n"
@@ -356,6 +368,7 @@ def run_final_hybrid_sidecar(
     poll_seconds: float = 5.0,
     now: Callable[[], datetime] | None = None,
     sleeper: Callable[[float], None] = time.sleep,
+    g1_refinement: bool = False,
 ) -> FinalHybridSidecarResult:
     """Wait for scheduler PLAY, then compute the isolated research pair."""
 
@@ -383,11 +396,13 @@ def run_final_hybrid_sidecar(
             authorization_path = candidate
     if authorization_path is not None:
         _validate_parallel_authorization(plan, authorization_path)
+    if g1_refinement and authorization_path is None:
+        raise ValueError(
+            "G1 family refinement requires existing parallel authorization"
+        )
     status_path = root / "sidecar-status.json"
     started_at = _utc(clock())
-    latest_start = plan.publish_deadline - timedelta(
-        seconds=minimum_runtime_seconds
-    )
+    latest_start = plan.publish_deadline - timedelta(seconds=minimum_runtime_seconds)
     stop_waiting = min(started_at + timedelta(seconds=wait_seconds), latest_start)
 
     while True:
@@ -402,6 +417,21 @@ def run_final_hybrid_sidecar(
                 and operator.get("decision") == "PLAY"
                 and operator.get("actionable") is True
             ):
+                if g1_refinement and not _primary_delivery_ready(plan, operator):
+                    if observed_at >= stop_waiting:
+                        return _terminal(
+                            status_path,
+                            plan=plan,
+                            plan_path=plan_path,
+                            status="SKIPPED_OPERATOR_NOT_READY",
+                            started_at=started_at,
+                            observed_at=observed_at,
+                            reason="primary delivery is not ready for optional work",
+                        )
+                    sleeper(
+                        min(poll_seconds, (stop_waiting - observed_at).total_seconds())
+                    )
+                    continue
                 if observed_at >= latest_start:
                     return _terminal(
                         status_path,
@@ -423,6 +453,7 @@ def run_final_hybrid_sidecar(
                     observed_at=observed_at,
                     parallel_authorization_path=authorization_path,
                     clock=clock,
+                    g1_refinement=g1_refinement,
                 )
             if _is_pre_final_checkpoint(operator):
                 # Warmup/refresh deliberately publish a non-actionable LKG
@@ -598,6 +629,7 @@ def _execute(
     observed_at: datetime,
     parallel_authorization_path: Path | None,
     clock: Callable[[], datetime],
+    g1_refinement: bool = False,
 ) -> FinalHybridSidecarResult:
     run_id = _text(operator.get("run_id"), "operator run_id")
     source_path = _regular_file(
@@ -615,14 +647,45 @@ def _execute(
         destination=operator_export,
         observed_at=observed_at,
     )
-    report, paths = execute_final_hybrid_comparison(
-        final_input_path=final_input,
-        scheduler_plan_path=plan_path,
-        sports_artifact_path=sports_path,
-        output_dir=output / "research-comparison",
-        deadline=_comparison_deadline(plan.publish_deadline, observed_at),
-    )
     operator_coupons = _parse_operator_package(operator_export, plan.stake)
+    verified_upload_sha256 = _sha256(operator_export)
+    try:
+        report, paths = execute_final_hybrid_comparison(
+            final_input_path=final_input,
+            scheduler_plan_path=plan_path,
+            sports_artifact_path=sports_path,
+            output_dir=output / "research-comparison",
+            deadline=_comparison_deadline(plan.publish_deadline, _utc(clock())),
+            g1_config=ParallelG1Config(family_refinement=True)
+            if g1_refinement
+            else None,
+            expected_primary_coupons=operator_coupons,
+            primary_package_sha256=verified_upload_sha256,
+            primary_control_record=operator,
+        )
+    except RuntimeDeadlineExceeded as exc:
+        return _terminal(
+            status_path,
+            plan=plan,
+            plan_path=plan_path,
+            status="SKIPPED_RUNTIME_DEADLINE",
+            started_at=started_at,
+            observed_at=_utc(clock()),
+            reason=(
+                f"{exc}; completed research retained at "
+                f"{output / 'research-comparison'}; primary unchanged"
+            ),
+        )
+    except PrimaryControlInvalid as exc:
+        return _terminal(
+            status_path,
+            plan=plan,
+            plan_path=plan_path,
+            status="SKIPPED_PRIMARY_CHANGED",
+            started_at=started_at,
+            observed_at=_utc(clock()),
+            reason=f"{exc}; completed research retained; primary unchanged by sidecar",
+        )
     baseline_coupons = _parse_research_package(paths.baseline_package)
     quality_v3_package = getattr(
         paths,
@@ -632,17 +695,80 @@ def _execute(
     if operator_coupons != baseline_coupons:
         raise ValueError("recomputed BK control differs from operator package")
     completed_at = _utc(clock())
+    if completed_at >= plan.publish_deadline:
+        return _terminal(
+            status_path,
+            plan=plan,
+            plan_path=plan_path,
+            status="EXPIRED_RESEARCH_ONLY",
+            started_at=started_at,
+            observed_at=completed_at,
+            reason=(
+                "comparison completed after T-10; research retained at "
+                f"{output}; primary unchanged"
+            ),
+        )
     parallel_release = None
     if parallel_authorization_path is not None:
-        parallel_release = _publish_parallel_selection(
-            plan=plan,
-            report=report,
-            paths=paths,
-            operator_export=operator_export,
-            output=output,
-            authorization_path=parallel_authorization_path,
-            observed_at=completed_at,
-        )
+        if _load_operator_result(plan.output_dir / "operator-result.json") != operator:
+            return _terminal(
+                status_path,
+                plan=plan,
+                plan_path=plan_path,
+                status="SKIPPED_PRIMARY_CHANGED",
+                started_at=started_at,
+                observed_at=_utc(clock()),
+                reason=(
+                    "primary changed during comparison; research retained; "
+                    "primary unchanged by sidecar"
+                ),
+            )
+        def validate_primary():
+            _validate_current_primary_upload(
+                plan=plan,
+                operator=operator,
+                upload_sha256=verified_upload_sha256,
+                now=clock,
+            )
+            try:
+                if _sha256(operator_export) != verified_upload_sha256:
+                    raise PrimaryControlInvalid("verified primary export changed")
+            except (OSError, ValueError) as exc:
+                raise PrimaryControlInvalid("verified primary export changed") from exc
+
+        try:
+            validate_primary()
+            parallel_release = _publish_parallel_selection(
+                plan=plan,
+                report=report,
+                paths=paths,
+                operator_export=operator_export,
+                output=output,
+                authorization_path=parallel_authorization_path,
+                observed_at=completed_at,
+                now=clock,
+                validate_primary=validate_primary,
+            )
+        except PrimaryControlInvalid as exc:
+            return _terminal(
+                status_path,
+                plan=plan,
+                plan_path=plan_path,
+                status="SKIPPED_PRIMARY_CHANGED",
+                started_at=started_at,
+                observed_at=_utc(clock()),
+                reason=f"{exc}; research retained; primary unchanged by sidecar",
+            )
+        except RuntimeDeadlineExceeded as exc:
+            return _terminal(
+                status_path,
+                plan=plan,
+                plan_path=plan_path,
+                status="EXPIRED_RESEARCH_ONLY",
+                started_at=started_at,
+                observed_at=_utc(clock()),
+                reason=f"{exc}; primary unchanged",
+            )
     payload = {
         "schema_version": 1,
         "status": "READY_BEFORE_T10",
@@ -665,9 +791,7 @@ def _execute(
         "quality_v3_research_package": str(quality_v3_package),
         "quality_v3_research_package_sha256": _sha256(quality_v3_package),
         "uncertainty_research_package": str(paths.uncertainty_package),
-        "uncertainty_research_package_sha256": _sha256(
-            paths.uncertainty_package
-        ),
+        "uncertainty_research_package_sha256": _sha256(paths.uncertainty_package),
         "baseline_matches_operator": True,
         "sports_coverage_count": report["sports_coverage_count"],
         "sports_fallback_count": report["sports_fallback_count"],
@@ -708,13 +832,24 @@ def _execute_no_bet_research(
     run_id = final_input.parent.name
     output = output_root / f"run-{run_id}"
     output.mkdir(parents=True, exist_ok=True)
-    report, paths = execute_final_hybrid_comparison(
-        final_input_path=final_input,
-        scheduler_plan_path=plan_path,
-        sports_artifact_path=sports_path,
-        output_dir=output / "research-comparison",
-        deadline=_comparison_deadline(plan.publish_deadline, observed_at),
-    )
+    try:
+        report, paths = execute_final_hybrid_comparison(
+            final_input_path=final_input,
+            scheduler_plan_path=plan_path,
+            sports_artifact_path=sports_path,
+            output_dir=output / "research-comparison",
+            deadline=_comparison_deadline(plan.publish_deadline, observed_at),
+        )
+    except RuntimeDeadlineExceeded as exc:
+        return _terminal(
+            status_path,
+            plan=plan,
+            plan_path=plan_path,
+            status="SKIPPED_RUNTIME_DEADLINE",
+            started_at=started_at,
+            observed_at=datetime.now(timezone.utc),
+            reason=f"{exc}; completed research retained at {output}; primary unchanged",
+        )
     completed_at = datetime.now(timezone.utc)
     quality_v3_package = getattr(
         paths,
@@ -745,9 +880,7 @@ def _execute_no_bet_research(
         "quality_v3_research_package": str(quality_v3_package),
         "quality_v3_research_package_sha256": _sha256(quality_v3_package),
         "uncertainty_research_package": str(paths.uncertainty_package),
-        "uncertainty_research_package_sha256": _sha256(
-            paths.uncertainty_package
-        ),
+        "uncertainty_research_package_sha256": _sha256(paths.uncertainty_package),
         "sports_coverage_count": report["sports_coverage_count"],
         "sports_fallback_count": report["sports_fallback_count"],
         "automatic_wagering": False,
@@ -774,7 +907,31 @@ def _publish_parallel_selection(
     output: Path,
     authorization_path: Path,
     observed_at: datetime,
+    now: Callable[[], datetime] | None = None,
+    validate_primary: Callable[[], None] | None = None,
 ) -> dict[str, Any]:
+    clock = now or (lambda: datetime.now(timezone.utc))
+
+    def check_publication_time():
+        if _utc(clock()) >= plan.publish_deadline:
+            raise RuntimeDeadlineExceeded(
+                "parallel publication deadline exceeded at T-10"
+            )
+        if validate_primary is not None:
+            validate_primary()
+        try:
+            if (
+                _validate_parallel_authorization(plan, authorization_path)
+                != authorization
+            ):
+                raise ValueError("parallel release authorization changed")
+        except (OSError, TypeError, ValueError) as exc:
+            raise PrimaryControlInvalid(
+                "parallel release authorization invalid"
+            ) from exc
+        if _utc(clock()) >= plan.publish_deadline:
+            raise RuntimeDeadlineExceeded("parallel validation crossed T-10")
+
     authorization = _validate_parallel_authorization(plan, authorization_path)
     completed_at = _utc(observed_at)
     if completed_at >= plan.publish_deadline:
@@ -821,9 +978,7 @@ def _publish_parallel_selection(
         coupons = _parse_operator_package(package_paths[selected_id], plan.stake)
     else:
         coupons = _parse_research_package(package_paths[selected_id])
-    canonical_hash = hashlib.sha256(
-        ",".join(coupons).encode("utf-8")
-    ).hexdigest()
+    canonical_hash = hashlib.sha256(",".join(coupons).encode("utf-8")).hexdigest()
     expected_count = selected_candidate.get("coupon_count")
     expected_cost = selected_candidate.get("cost")
     if (
@@ -838,9 +993,27 @@ def _publish_parallel_selection(
         selected_id=selected_id,
         coupons=coupons,
     )
+    selected_lineage = _selected_refinement_lineage(
+        report=report,
+        selected_id=selected_id,
+        coupons=coupons,
+        selected_hash=selected_hash,
+    )
 
     package_path = output / "selected-parallel-operator-package.txt"
+    companion_path = output / "parallel-operator-result.json"
+    if package_path.exists() or companion_path.exists():
+        raise ValueError(
+            "parallel publication already exists; immutable result preserved"
+        )
+    check_publication_time()
     _write_replace(package_path, _operator_package_bytes(plan.stake, coupons))
+    try:
+        check_publication_time()
+    except (RuntimeDeadlineExceeded, PrimaryControlInvalid):
+        package_path.unlink()
+        raise
+    completed_at = _utc(clock())
     payload: dict[str, Any] = {
         "schema_version": 1,
         "status": "READY_PARALLEL_PLAY_BEFORE_T10",
@@ -851,6 +1024,7 @@ def _publish_parallel_selection(
         "drawing": plan.drawing,
         "drawing_id": plan.drawing_id,
         "selected_strategy_id": selected_id,
+        "selected_strategy_lineage": selected_lineage,
         "selected_package_sha256": selected_hash,
         "selected_coupon_count": len(coupons),
         "selected_cost": len(coupons) * plan.stake,
@@ -870,11 +1044,62 @@ def _publish_parallel_selection(
         "automatic_wagering": False,
     }
     payload["record_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
-    _write_replace(
-        output / "parallel-operator-result.json",
-        _canonical(payload) + b"\n",
-    )
+    try:
+        check_publication_time()
+        _write_replace(companion_path, _canonical(payload) + b"\n")
+        check_publication_time()
+    except (RuntimeDeadlineExceeded, PrimaryControlInvalid):
+        companion_path.unlink(missing_ok=True)
+        package_path.unlink(missing_ok=True)
+        raise
     return payload
+
+
+def _selected_refinement_lineage(
+    *,
+    report: Mapping[str, Any],
+    selected_id: str,
+    coupons: tuple[str, ...],
+    selected_hash: str,
+) -> dict[str, Any] | None:
+    if selected_id != "robust":
+        return None
+    robust = report.get("robust")
+    lineage = robust.get("refinement_lineage") if isinstance(robust, Mapping) else None
+    g1 = report.get("g1_research_refinement", {})
+    if not isinstance(g1, Mapping):
+        g1 = {}
+    returned = g1.get("selected_coupons")
+    matching_refinement = (
+        g1.get("status") == "REFINED"
+        and isinstance(returned, (list, tuple))
+        and tuple(returned) == coupons
+    )
+    applied = isinstance(lineage, Mapping) and lineage.get("applied") is True
+    if not matching_refinement and not applied:
+        return dict(lineage) if isinstance(lineage, Mapping) else None
+    try:
+        valid = (
+            matching_refinement
+            and applied
+            and lineage["policy_version"] == "robust-family-g1-v1"
+            and lineage["strategy_family"] == "robust"
+            and lineage["selected_package_sha256"] == selected_hash
+            and g1["family_candidate_verified"] is True
+            and g1["runtime_contract"]["family_refinement"] is True
+            and g1["binding"]["input_sha256"] == report["final_input_snapshot_sha256"]
+            and all(
+                g1["binding"][key] == report[key]
+                for key in ("bank", "effective_budget", "stake")
+            )
+            and g1["engine"]["input_hashes"]["selected_package_sha256"]
+            == hashlib.sha256(_canonical(coupons)).hexdigest()
+        )
+    except (KeyError, TypeError):
+        valid = False
+    if not valid:
+        raise ValueError("invalid G1 robust-family publication lineage")
+    return dict(lineage)
 
 
 def _selected_coupon_ranking(
@@ -1034,6 +1259,26 @@ def _terminal(
         result_path=path,
         output_dir=None,
         reason=reason,
+    )
+
+
+def _primary_delivery_ready(plan: Any, operator: Mapping[str, Any]) -> bool:
+    try:
+        delivery = _load_hashed_retry_record(
+            plan.output_dir / "operator-delivery.json",
+            "primary delivery",
+        )
+    except (OSError, ValueError):
+        return False
+    return (
+        delivery.get("plan_id") == plan.plan_id
+        and delivery.get("drawing_id") == plan.drawing_id
+        and delivery.get("run_id") == operator.get("run_id")
+        and delivery.get("published_operator_result_sha256")
+        == operator.get("record_sha256")
+        and delivery.get("delivery_state") == "READY"
+        and delivery.get("decision") == "PLAY"
+        and delivery.get("actionable") is True
     )
 
 
@@ -1248,7 +1493,7 @@ def _existing_parallel_wrapper_binding(
     plan_path: Path,
     root: Path,
     authorization_path: Path | None,
-) -> tuple[Path, Path]:
+) -> tuple[Path, Path, bool]:
     """Validate and reuse the immutable input already bound to one plan."""
 
     wrapper = _regular_file(wrapper_path, "parallel sidecar wrapper")
@@ -1267,20 +1512,31 @@ def _existing_parallel_wrapper_binding(
         command = shlex.split(lines[3][len("exec ") :])
     except ValueError as error:
         raise ValueError("parallel sidecar wrapper command is invalid") from error
-    if len(command) not in {14, 16} or command[1:4] != [
+    if len(command) not in {14, 15, 16, 17} or command[1:4] != [
         "-m",
         "toto_ai.cli",
         "run-final-goal-hybrid-sidecar",
     ]:
         raise ValueError("parallel sidecar wrapper command mismatch")
     option_tokens = command[4:]
-    if len(option_tokens) % 2:
-        raise ValueError("parallel sidecar wrapper options are invalid")
     options: dict[str, str] = {}
-    for name, value in zip(option_tokens[::2], option_tokens[1::2], strict=True):
+    g1_refinement = False
+    index = 0
+    while index < len(option_tokens):
+        name = option_tokens[index]
+        if name == "--g1-refinement":
+            if g1_refinement:
+                raise ValueError("parallel sidecar wrapper option is duplicated")
+            g1_refinement = True
+            index += 1
+            continue
+        if index + 1 >= len(option_tokens) or option_tokens[index + 1].startswith("--"):
+            raise ValueError("parallel sidecar wrapper options are invalid")
+        value = option_tokens[index + 1]
         if name in options:
             raise ValueError("parallel sidecar wrapper option is duplicated")
         options[name] = value
+        index += 2
     required = {
         "--scheduler-plan",
         "--sports-artifact",
@@ -1317,7 +1573,7 @@ def _existing_parallel_wrapper_binding(
     )
     if not sports_path.is_relative_to(plan.project_root):
         raise ValueError("parallel sidecar sports artifact binding mismatch")
-    return executable, sports_path
+    return executable, sports_path, g1_refinement
 
 
 def _write_expected(

@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "fixture_id": "cmt63iloyf75yt107cumpinto",
+  "raw_differing_keys": [
+    "updatedAt"
+  ],
+  "observations": [
+    {
+      "source_snapshot": "data/scheduler/morning-dispatch/preflight/drawing-12102-20260906T153000Z-b3f20304ff03e14a/source-collector/goal-api-v1/snapshots/2b2fce419c3a1ad916752005f53e4eff00435f3aba0b69de0e6d1189def60449-1f4e98bfea4f635b.json",
+      "source_snapshot_sha256": "1f4e98bfea4f635b436b6a163e4e93ec723aa0d924d5537fe2f98ebb85734ba7",
+      "source_request_fingerprint": "2b2fce419c3a1ad916752005f53e4eff00435f3aba0b69de0e6d1189def60449",
+      "source_endpoint": "/fixtures/date/2026-09-05",
+      "source_offset": "700",
+      "captured_at": "2026-09-06T07:49:25.837746Z",
+      "raw_event_sha256": "2e8cbc48011578070f2cc821043ecb32edb4b9c1b9c92d5bac2da52058cb505f",
+      "raw_event": {
+        "apiId": "844789",
+        "awayTeam": {
+          "badge": "https://media.goal-api.com/badges/2111_chernomorets-balchik.jpg",
+          "id": "cmri6uo9oe35ylb07g92fw5gm",
+          "name": "Chernomorets Balchik"
+        },
+        "awayTeamExtraScore": null,
+        "awayTeamFtScore": "4",
+        "awayTeamHalftimeScore": "2",
+        "awayTeamId": "cmri6uo9oe35ylb07g92fw5gm",
+        "awayTeamName": "Chernomorets Balchik",
+        "awayTeamPenaltyScore": null,
+        "awayTeamScore": "4",
+        "awayTeamSystem": null,
+        "countryId": "28",
+        "countryLogo": "https://media.goal-api.com/badges/logo_country/28_bulgaria.png",
+        "countryName": "Bulgaria",
+        "createdAt": "2026-08-23T17:43:21.422Z",
+        "fkStageKey": "763",
+        "homeTeam": {
+          "badge": "https://media.goal-api.com/badges/36968_aksakovo.jpg",
+          "id": "cmri6uoa6e368lb0753qj3pmv",
+          "name": "Aksakovo"
+        },
+        "homeTeamExtraScore": null,
+        "homeTeamFtScore": "1",
+        "homeTeamHalftimeScore": "0",
+        "homeTeamId": "cmri6uoa6e368lb0753qj3pmv",
+        "homeTeamName": "Aksakovo",
+        "homeTeamPenaltyScore": null,
+        "homeTeamScore": "1",
+        "homeTeamSystem": null,
+        "id": "cmt63iloyf75yt107cumpinto",
+        "kickoffUtc": "2026-09-05T14:00:00.000Z",
+        "league": {
+          "id": "cmr77dw9r00harx06b6e84m66",
+          "logo": "https://media.goal-api.com/badges/logo_leagues/110_third-league.png",
+          "name": "Third League",
+          "popularity": 20
+        },
+        "leagueId": "cmr77dw9r00harx06b6e84m66",
+        "leagueLogo": "https://media.goal-api.com/badges/logo_leagues/110_third-league.png",
+        "leagueName": "Third League - North-East",
+        "leagueYear": "2026/2027",
+        "matchDate": "2026-09-05",
+        "matchLive": "0",
+        "matchReferee": null,
+        "matchRound": "4",
+        "matchStadium": null,
+        "matchStatus": "FINISHED",
+        "matchTime": "14:00",
+        "stageName": "North-East",
+        "teamAwayBadge": "https://media.goal-api.com/badges/2111_chernomorets-balchik.jpg",
+        "teamHomeBadge": "https://media.goal-api.com/badges/36968_aksakovo.jpg",
+        "updatedAt": "2026-09-06T08:00:39.247Z",
+        "videosCheckedAt": null
+      }
+    },
+    {
+      "source_snapshot": "data/scheduler/morning-dispatch/preflight/drawing-12102-20260906T153000Z-b3f20304ff03e14a/source-collector/goal-api-v1/snapshots/403a67bd923cc65b92d6054455677a241f4aae5aa29bc89d11b1d48486914d5e-02749c67b906d243.json",
+      "source_snapshot_sha256": "02749c67b906d243a6fe5c9d1e96dee72a23521bf9c908f55221a1e83918444b",
+      "source_request_fingerprint": "403a67bd923cc65b92d6054455677a241f4aae5aa29bc89d11b1d48486914d5e",
+      "source_endpoint": "/fixtures/date/2026-09-05",
+      "source_offset": "800",
+      "captured_at": "2026-09-06T07:49:25.837746Z",
+      "raw_event_sha256": "b8a45e3ffd8e3eeb26da1b8e54be33bc5067558c249c4783398239cb6500c108",
+      "raw_event": {
+        "apiId": "844789",
+        "awayTeam": {
+          "badge": "https://media.goal-api.com/badges/2111_chernomorets-balchik.jpg",
+          "id": "cmri6uo9oe35ylb07g92fw5gm",
+          "name": "Chernomorets Balchik"
+        },
+        "awayTeamExtraScore": null,
+        "awayTeamFtScore": "4",
+        "awayTeamHalftimeScore": "2",
+        "awayTeamId": "cmri6uo9oe35ylb07g92fw5gm",
+        "awayTeamName": "Chernomorets Balchik",
+        "awayTeamPenaltyScore": null,
+        "awayTeamScore": "4",
+        "awayTeamSystem": null,
+        "countryId": "28",
+        "countryLogo": "https://media.goal-api.com/badges/logo_country/28_bulgaria.png",
+        "countryName": "Bulgaria",
+        "createdAt": "2026-08-23T17:43:21.422Z",
+        "fkStageKey": "763",
+        "homeTeam": {
+          "badge": "https://media.goal-api.com/badges/36968_aksakovo.jpg",
+          "id": "cmri6uoa6e368lb0753qj3pmv",
+          "name": "Aksakovo"
+        },
+        "homeTeamExtraScore": null,
+        "homeTeamFtScore": "1",
+        "homeTeamHalftimeScore": "0",
+        "homeTeamId": "cmri6uoa6e368lb0753qj3pmv",
+        "homeTeamName": "Aksakovo",
+        "homeTeamPenaltyScore": null,
+        "homeTeamScore": "1",
+        "homeTeamSystem": null,
+        "id": "cmt63iloyf75yt107cumpinto",
+        "kickoffUtc": "2026-09-05T14:00:00.000Z",
+        "league": {
+          "id": "cmr77dw9r00harx06b6e84m66",
+          "logo": "https://media.goal-api.com/badges/logo_leagues/110_third-league.png",
+          "name": "Third League",
+          "popularity": 20
+        },
+        "leagueId": "cmr77dw9r00harx06b6e84m66",
+        "leagueLogo": "https://media.goal-api.com/badges/logo_leagues/110_third-league.png",
+        "leagueName": "Third League - North-East",
+        "leagueYear": "2026/2027",
+        "matchDate": "2026-09-05",
+        "matchLive": "0",
+        "matchReferee": null,
+        "matchRound": "4",
+        "matchStadium": null,
+        "matchStatus": "FINISHED",
+        "matchTime": "14:00",
+        "stageName": "North-East",
+        "teamAwayBadge": "https://media.goal-api.com/badges/2111_chernomorets-balchik.jpg",
+        "teamHomeBadge": "https://media.goal-api.com/badges/36968_aksakovo.jpg",
+        "updatedAt": "2026-09-06T06:40:22.852Z",
+        "videosCheckedAt": null
+      }
+    }
+  ]
+}

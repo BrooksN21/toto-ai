@@ -1,4 +1,96 @@
+## 2026-09-06T17:18:28.655769+03:00 — G1 profile publication complete
+
+Source `01b5df2` verified on draftPR22, no merge;24tests/Ruff3PASS.
+Only modeled NONFINAL research improvement; SportsV3 probability work remains separate.
+
+## 2026-09-06T17:16:44.249348+03:00 — accepted G1 profile complete, publication pending
+
+Default pair budget65536 adopted and independently accepted. Current24tests/Ruff3
+PASS; separate same-input NONFINAL diagnostic refined robust with1verified swap,
+while overall winner remains quality-v3. Not a SportsV3 prediction-quality milestone.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_PUBLICATION_RECEIPT_20260906.json.
+
+## 2026-09-06T16:47:08.983096+03:00 — latest accepted source publication completed
+
+- [x] Durable cache/boolean wrapper plus relevant completed residual source published
+  as `b28647c` to draft [PR22](https://github.com/BrooksN21/toto-ai/pull/22); not merged.
+- Runtime comparison/finalPLAY and Sports-v3 training/profit remain distinct, unclaimed.
+- Publication limits/exclusions: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_INTEGRATED_PUBLICATION_RECEIPT_20260906.json`.
+
+#2026-09-06 —4998 engineering integration complete, runtime outcome pending
+Accepted GOAL/90min/G1+durablecache+booleanwrapper integrated; saved opt-in16:35:21.
+Actualcomparison/finalPLAY unverified; no training/profit milestone completed.
+Publication/resume: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md
+
+## 2026-09-06 — accepted stack publication completed
+
+- [x] Reviewed existing stack committed as `9df62a3` and pushed to
+  `codex/reviewed-stack-20260906`; [draft PR22](https://github.com/BrooksN21/toto-ai/pull/22). Main and selected-only
+  snapshot each545 PASS/4 exclusions; Ruff28 PASS. No activation/new wiring.
+- Prior publication-pending entries below are historical; remaining dirty owner
+  work/new parallel integration is separate. No auto-merge or new scope selected.
+
+## 2026-09-06 — current accepted-stack publication checkpoint
+
+- [x] O1 cleanup finalized;183 prior cases accounted for, Ruff PASS. G1 exact
+  two-path optional module adopted:119 PASS/3 benchmark exclusions, Ruff PASS.
+- [x] Selected existing stack rechecked:545 PASS/4 exclusions on main and on
+  independent HEAD+selected overlay, Ruff28 PASS. Old lint/adoption blockers below
+  are historical and superseded; research is not forecast/profit validation.
+- [ ] Complete the explicitly authorized existing-stack push and draft PR.
+  New parallel wiring and operational4998 artifacts are outside this release.
+
 # Roadmap
+
+## 2026-09-06 — O1 current-main minimal stack applied; lint pending
+
+- [x] Apply the exact reviewed seven-path O1+minimal F3/P1 stack; preserve newer
+  GOAL/backfill, all32 dependency guards, index and16 operational control/auth files.
+  Main183 tests pass in1.52s with main-only project imports; no live activation.
+- [ ] Complete lint verification: current-main Ruff reports I001 in the accepted
+  auditor test and unchanged reviewer probe. No fix/suppression or widened patch.
+- Earlier three-dependency adoption blocker is historical/superseded; previous
+  failure remains saved. G1, model/operational work and release authorization unchanged.
+- Receipt: plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_STACK_ADOPTION_RECEIPT_20260906.json
+
+## 2026-09-06 — O1 acceptance complete; local adoption blocked
+
+- [x] Independent O1 R1/R2/R3 rereview ACCEPT bound to exact two-file routes;
+  saved isolated94-test/Ruff evidence verified, not rerun in main.
+- [ ] Main adoption: exact tested dependency hashes do not match newer accepted
+  GOAL/backfill, and v3_coverage_audit.py is absent. No source applied or downgraded.
+  Requires a reviewed current-main dependency contract, not copying more a7aa code.
+- O1/G1 evaluation/activation and all operational/probability work remain unchanged.
+  Receipt: plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_LOCAL_ADOPTION_RECEIPT_20260906.json
+
+## 2026-09-06 — reviewed GOAL pagination fix adopted locally
+
+- [x] Apply exact independently accepted4-file metadata-only pagination duplicate
+  fix; main52tests pass,5-file Ruff clean,4 after-hashes and9 dependencies verified.
+  Conflicting fixture/status/score fields and raw provenance remain guarded.
+- Earlier10-file adoption and unrelated dirty work preserved. No4998 operations,
+  source collection, DB/ledger/consent/plan/watcher changes, commit or publication.
+  Separate release verification/authorization remains outside this completed slice.
+- Receipt: plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_ADOPTION_RECEIPT_20260906.json
+
+## 2026-09-06 — accepted engineering candidate adopted locally
+
+- [x] Apply the reviewed10-file backfill validation/retry-calendar/unknown-cleanup
+  candidate under exact before/after and14 dependency guards; focused pytest210passed,
+  1 deliberately deselected;18-file Ruff clean. Existing dirty work/index preserved.
+- [ ] Separately authorize and verify coherent release/clean-checkout plus local commit;
+  no staging, commit, push, PR or runtime activation in this slice.
+- Original roles remain separated: parent operations, ab34 engineering, a7aa models.
+  This does not close drawing operations, Sports research or the overall recovery task.
+- Receipt: plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.json
+
+## 2026-09-04 — recovery / next-drawing preparation slice
+
+Completed bounded recovery checkpoint, generic retry-policy transition repair,
+4996 retrospective installation and verified4997 15/15 scheduler/sidecar/watcher
+preparation with exact owner manual-release authorization. Actual Sept5 outcomes,
+operator publication, delivery receipts and Sportsv3 research remain pending; see
+ACTIVE_PLAN and the task IMPLEMENTATION_REPORT, not a renewed historical audit.
 
 The binding execution order and always-visible status checklist are maintained
 in `memory-bank/ACTIVE_PLAN.md`. Complete its P0 items before forecast work;
@@ -748,6 +840,18 @@ probability-aware Cover generation and common EV/Cover comparison are also
 future work. Completion of the audit foundation is not evidence of
 profitability or a proven winning strategy.
 
+### Offline GOAL raw-history backfill checkpoint (2026-09-04)
+
+- [x] Add an explicit-manifest, hash-verified, zero-network importer for frozen
+  raw GOAL team-history captures into the existing atomic sports-stat store.
+- [x] Preserve missing-source unavailability and reject tamper, identity/
+  chronology gaps, derived-only input, conflicts and incomplete snapshots.
+- [x] Emit deterministic JSON/CSV/Markdown audits and expose an offline CLI.
+- [x] Verify the focused backfill/storage/CLI surface: `19 passed`; exact-file
+  Ruff clean.
+- [ ] Prepare and manually review the real 4990-4995 manifest before any
+  production database import. This implementation did not run that backfill.
+
 ## Phase 1: Infrastructure - completed
 
 - API client
@@ -1450,6 +1554,13 @@ closed.
   exposure failures. The first aggregate covers 4990-4994 / 75 resolved events.
 - [ ] Add leakage-safe residual features around BK: opponent-adjusted Elo/team
   strength, recency decay, venue scoring, rest/congestion and standings.
+- [x] Prepare and write-disable-validate an explicit hash-bound raw-history
+  manifest for drawings 4990-4995. Drawings 4991-4995 validate; 4990 remains
+  fail-closed on a legacy final-input/detail deadline mismatch. No history was
+  synthesized and no database write ran.
+- [ ] Resolve 4990 with independently verifiable target evidence or keep it
+  excluded, then require an explicit owner checkpoint before any historical
+  persistence run.
 - [ ] Add lineups/injuries only when a stable source proves pre-match timestamps
   and identity; missing evidence must remain BK fallback.
 - [ ] Fit/calibrate only in chronological walk-forward folds and reject any
