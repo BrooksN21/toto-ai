@@ -1,0 +1,223 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "audited_at": "2026-09-06T18:48:05.681458+00:00",
+  "role": "context-only merge-readiness evidence collector",
+  "verdict": "CONDITIONAL_NOT_YET_FULL_PR_ACCEPTANCE_PROVEN",
+  "not_a_bug_verdict": true,
+  "safe_scope": "Reviewed existing PR source candidates and documentation only, conditional on exact attribution gaps. Whole PR cannot be partially merged; no blanket greenlight from onlyruntime02/observer03.",
+  "pr": {
+    "number": 22,
+    "url": "https://github.com/BrooksN21/toto-ai/pull/22",
+    "state": "OPEN",
+    "isDraft": true,
+    "baseRefName": "main",
+    "baseRefOid": "a59e3e54a1698efe60a862bbab681996c06ff8f7",
+    "headRefName": "codex/reviewed-stack-20260906",
+    "headRefOid": "71afde0050f37cf9a208831d64da403b0605fef2",
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "CLEAN",
+    "reviewDecision": "",
+    "statusCheckRollup": [],
+    "reviews": []
+  },
+  "inventory": {
+    "files": 121,
+    "commits": 23,
+    "code_script_test_entries": 58,
+    "hash_matched_to_saved_candidate_or_publication_maps": 56,
+    "hash_match_is_not_independent_review": true,
+    "gh_pr_view_truncation_detected": 100,
+    "complete_rest_pages": 2,
+    "all121remote_git_blobs_equal_local_HEAD": true,
+    "base_head_diff_inventory_exact": true
+  },
+  "accepted_scope": {
+    "runtime02": {
+      "status": "EXACT_INDEPENDENT_ACCEPT_BOUND",
+      "patch_sha256": "152c92c8e068e971b5c926dc70234c2b57c3815c3396ac0ba195b56d5d46bbab",
+      "review_json_hash_matched": true,
+      "head_files_match": "13/13",
+      "dependencies_match": "8/8",
+      "publication": "a651a05ed7c6fc507b0174951d87bbdf033ff234"
+    },
+    "observer03": {
+      "status": "EXACT_INDEPENDENT_ACCEPT_BOUND",
+      "patch_sha256": "041bcc6eeaacb22e55c9400619b63e62efa35606c1265ee38257b81e83f9051c",
+      "review_json_hash_matched": true,
+      "head_files_match": "4/4",
+      "dependencies_match": "8/8",
+      "publication": "f9de8a634d80aeb80942bec90b93953cd9566931"
+    },
+    "backfill_retry_cleanup": {
+      "status": "SAVED_ACCEPTED_ROUTE_HASH_CHAIN_MATCH",
+      "patch_sha256": "524d64e628aa32104cdcef361f52e3a49b133e6403cd40bad392f7f7b5e42f64",
+      "six_input_artifact_hashes_match": true,
+      "source_bytes_match": true,
+      "scope_note": "Route explicitly guards but does not overwrite/re-review dirty domain/storage/targets dependencies; not acceptance of entire PR baseline."
+    },
+    "O1_minimal_F3_P1": {
+      "status": "SAVED_INDEPENDENT_MAIN_COMPATIBILITY_ACCEPT_CHAIN_MATCH",
+      "patch_sha256": "88a0366275a6022049087a54647c6279de2a4006616906a9e0427a8c9e2274c6",
+      "four_input_artifact_hashes_match": true,
+      "source_bytes_match": true,
+      "test_import_only_change": "Separately preserved O1_IMPORT_ORDER_CLEANUP receipts;183 accounted as167+16 probes, not dropped cases",
+      "boundary": "Pure evidence/auditor stack, not SportsV3 learned probability model."
+    },
+    "GOAL_pagination_quarantine": {
+      "status": "ACCEPTED_REVIEW_CHAIN_AND_CURRENT_QUARANTINE_HASHES_MATCH",
+      "pagination_patch_sha256": "51308a1e9cafcbf506d33851ecfc60259ca484d249d2fda1a6da86a019af28a0",
+      "quarantine_patch_sha256": "b463ced484c99b6ff12400329b876d3cdd1f0bb2a3e95d032dc7f621afad3b54",
+      "quarantine_review_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-independent-review-evidence.json",
+      "supersession": "Quarantine after hashes supersede older pagination goal_api full-file hash; preserved identity tests still exact."
+    },
+    "G1": {
+      "status": "INDEPENDENT_CALLER_REVIEW_PLUS_HASH_MATCHED_PUBLISHED_PROFILE",
+      "caller_patch_sha256": "f22702a748bb7c1ad091405956d649b5255064f449ee2d16a49db65d2a5d2b5c",
+      "caller_review_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_FINAL_INDEPENDENT_REVIEW.md",
+      "caller_review_read": true,
+      "profile_patch_sha256": "c3fe388cb3e2b230b506f8479bdcae7a883446f1fc2d087417a19347a3fba8e5",
+      "current_profile_source_sha256": "9ca4ef440a779ef9f8f445fc625b8d20fb164ba15af2c762e5795e45d71304e5",
+      "profile_source_and_test_match": true,
+      "profile_knowledge_diff": "Later publication addendum; not an unexplained source change.",
+      "limitations": "Cap-profile independent original reviewer artifact was not separately located in bounded handoff pass; accepted publication/adoption receipt reused. Current source also exactly pinned in runtime02 independent dependency guard."
+    },
+    "cache": {
+      "status": "COMPOSED_REVIEW_CHAIN_NOT_SINGLE_BLANKET_ACCEPT",
+      "atomic_patch_sha256": "75bd7b86efcd20329375ad40b45055a2a75d7ca0fc107d5fb1f888af47abde1c",
+      "atomic_review_verdict": "REQUEST_CHANGES",
+      "atomic_remaining_finding": {
+        "priority": "P1",
+        "path": "src/toto_ai/sports_stats/goal_probe_collection.py",
+        "symbol": "_publish_retry_record",
+        "issue": "Only pending file is fsynced; after os.link no directory fsync and newly-created generation ancestors are not durably published before network starts. OS/power failure can lose claim directory entry after requests begin, releasing reservation on restart. Atomic visibility is fixed; durable reservation is not.",
+        "required": "Durably sync final link and newly-created directory entries before returning claim publication, and outcome publication before success; test directory-sync ordering/failure before collector entry. No retry-policy redesign needed."
+      },
+      "fix_full_candidate_sha256": "e914a0976e6434198ee4f2164c2877debf1caa33b20c959ed5d282b65aa05597",
+      "fix_delta_sha256": "11b2d765d90a87120d2111d63773dd478d768ed3bc809e1c52818c7ba12c7af4",
+      "fix_verdict": "ACCEPT_FSYNC_DELTA_ONLY",
+      "fix_scope": "Only directory-fsync delta; no independent reacceptance of own atomic/functionality part",
+      "current_published_collection_sha256": "703d7e8cee03130d6b2ed26391ba5e0b370252cb31b32e340328b8a439f7ae80",
+      "current_bytes_match_published_final": true,
+      "caution": "Do not label old REQUEST_CHANGES as current failure without following the fsync closure. Conversely fsync-only ACCEPT is not standalone reacceptance of all earlier code; finalizer must retain the composed atomic18-case +delta4-case proof."
+    },
+    "history90": {
+      "status": "HASH_MATCHED_PUBLISHED_OWNER_CONFIRMED_ACCEPTANCE; INDEPENDENT_ORIGINAL_REPORT_NOT_BOUND_IN_THIS_PASS",
+      "current_source_sha256": "73f2c05dd2f2a4f417f12fcffbd431cbdece1c08ab7ad629575786fb5143c93e",
+      "proof": "CURRENT_STACK_PUBLICATION_20260906 acceptance_sources.history90; raw implementation knowledge still says pending independent review (historical).",
+      "required": "Cite exact independent90min acceptance/closure receipt or explicitly distinguish owner-confirmed accepted state from reviewer proof; do not rerun live seed/research."
+    }
+  },
+  "unattributed_carry_in": [
+    {
+      "path": "src/toto_ai/sports_stats/storage.py",
+      "head_sha256": "3342b6ab721180c5e3a96bc932f5e8c062a7ce0ccf53369e1a09df78a3a85478",
+      "origin_commit": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2",
+      "reason": "Not present in any inspected candidate/publisher file hash map; original persistence context exists but no independent ACCEPT linkage established."
+    },
+    {
+      "path": "tests/test_sports_stats_storage.py",
+      "head_sha256": "ad80fd97d47a790fe08215c492186ec52ab7468c72d4bb176a7ede3497534c56",
+      "origin_commit": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2",
+      "reason": "Not present in any inspected candidate/publisher file hash map; original persistence context exists but no independent ACCEPT linkage established."
+    }
+  ],
+  "publisher_verified_but_independent_acceptance_not_established": [
+    "scripts/project-git",
+    "tests/test_project_git_worktrees.py",
+    "src/toto_ai/external_odds/schedule_evidence_admin.py",
+    "tests/test_schedule_evidence_admin_cli.py",
+    "src/toto_ai/external_odds/targets.py",
+    "tests/test_external_odds_targets.py",
+    "src/toto_ai/sports_stats/domain.py",
+    "tests/test_sports_stats_cli.py"
+  ],
+  "residual_note": "Hash/test provenance exists; unchanged-dependency pins are not independent review of the delta. This is a bounded evidence gap, not a claim the wholeproject has no review. scripts/skills simplification audit separately owned; no duplicate audit here.",
+  "unreviewed_sports_exclusion": "PR additions include acceptedO1/F3/P1evidence/auditor and G1, not isolated SportsV3 probability/training/F4snapshot06 implementation. ACCEPT06 is not adoption permission; do not add any a7aa/ab34 Sports source/data to this PR. Existing v3_features.py is in basea59, not newly introduced byPR22.",
+  "known_rejected_code": "No presently unclosed runtime02/observer03 bug found. Historical cache/requestchanges have bounded subsequentdelta closure; validate chain rather than treating historical reject as either fullcurrentreject or blanketaccept.",
+  "verification": {
+    "tests_run_by_this_audit": false,
+    "github_checks": [],
+    "github_reviews": [],
+    "meaning": "No GitHub checks/reviews reported, NOT checks PASS. Full121-file integration suite not established on current finalHEAD.",
+    "saved_tests": {
+      "initial_stack": "545passed/4deselected on each of main and selected snapshot;12 prior verifier probes not rerun",
+      "current_stack": "247 cases accounted, Ruff15",
+      "cache_wrapper_residuals": "115+15publisher cases;4legacybareGit fixture tests unverified",
+      "G1_profile": "24PASS/Ruff3",
+      "observer03": "76PASS/Ruff3",
+      "runtime02": "101PASS/Ruff13",
+      "latest_status_only": "42PASS/Ruff5; not wholePR validation"
+    },
+    "explicit_unverified_legacy_cases": [
+      {
+        "test": "tests/test_project_git_guard.py::test_project_git_sanitizes_repository_routing_environment",
+        "reason": "Legacy fixture setup invokes bare Git; blocked before execution and excluded from this constrained publication verification"
+      },
+      {
+        "test": "tests/test_project_git_guard.py::test_production_git_helper_ignores_outer_home_repository",
+        "reason": "Legacy fixture setup invokes bare Git; blocked before execution and excluded from this constrained publication verification"
+      },
+      {
+        "test": "tests/test_project_git_guard.py::test_home_git_guard_rejects_status_at_home_repository",
+        "reason": "Legacy fixture setup invokes bare Git; blocked before execution and excluded from this constrained publication verification"
+      },
+      {
+        "test": "tests/test_project_git_guard.py::test_home_git_guard_allows_status_in_nested_repository",
+        "reason": "Legacy fixture setup invokes bare Git; blocked before execution and excluded from this constrained publication verification"
+      }
+    ],
+    "minimal_before_merge": [
+      "Close exact acceptance attribution for carry-in storage.py/test_sports_stats_storage.py and publisher-only residual deltas; use saved independent proof if available, otherwise narrowly review those actual hunks via already authorized review role, not a whole-project re-audit.",
+      "Resolve/acknowledge missing original90min and cap-profile review anchors; preserve composed cache closure proof. Coordinate separate code-simplification/skills reviewer rather than duplicate its work.",
+      "Once attribution closes, run bounded network/DB-isolated relevant source suites, not livejobs: tests/test_sports_stats_storage.py, tests/test_external_odds_targets.py, tests/test_schedule_evidence_admin_cli.py, tests/test_project_git_worktrees.py, tests/test_goal_history_regulation_score.py, tests/test_goal_probe_collection.py; keep legacybareGit exclusions explicit or provide policy-compliant equivalent verification, never bypass wrapper.",
+      "For latest main composition, reuse exact-hash prior101runtime/76observer/24G1 evidence if unchanged; finalizer pytest/Ruff before any new commit and focused common-path regressions if acceptance repair changes source. No broad tests concurrent with active preflight.",
+      "Re-read exact remote base/head/mergeability/checks at merge time; use --match-head-commit71afde0050f37cf9a208831d64da403b0605fef2 only if stillcurrent. Draft must be marked ready explicitly before merge; no auto/admin bypass."
+    ]
+  },
+  "local_alignment": {
+    "local_refs": {
+      "refs/heads/main": "71afde0050f37cf9a208831d64da403b0605fef2",
+      "refs/remotes/origin/main": "a59e3e54a1698efe60a862bbab681996c06ff8f7",
+      "refs/remotes/origin/codex/reviewed-stack-20260906": "71afde0050f37cf9a208831d64da403b0605fef2"
+    },
+    "local_main_ahead_of_remote_main_commits": 23,
+    "base_is_ancestor": true,
+    "index_empty": true,
+    "tracked_dirty": [
+      "data/schedule-evidence/ledger.json"
+    ],
+    "known_untracked_preserved": [
+      "tests/test_retrospective_integrity.py",
+      "tests/test_retrospective_payouts.py",
+      "tests/test_retrospective_replay_binding.py",
+      "task-local review/candidate/raw/receipt directories",
+      "data/schedule-evidence/reviews and original source snapshots",
+      "reports/rehearsal runtime/watch/preflight/plan bindings",
+      "isolated ab34 and a7aa worktrees including accepted-but-unintegratedSportsV3F4"
+    ],
+    "untracked_inventory": "Only exact3known tests rechecked; other domains preserved/not recursively enumerated. No clean-whole-checkout claim.",
+    "operational_race": "Owner says authorized preflight currently running. This supersedes earlier memory no-retry-pending status as live-task context; audit did not inspect/stop/wait on it or mutate memory. Euler alone updates currentoperations.",
+    "safe_recommendation": "After fullPR review attribution closes and operations owner permits checkout update, prefer server merge commit if allowed: retains all23local ancestors and permits localmain fast-forward. Do not squash/rebase then reset current dirtymain. Do not auto-delete PRbranch/worktrees.",
+    "after_server_merge": "Fetch only origin/main via scripts/project-git in separate finalization when authorized; verify currentHEAD is ancestor and HEAD..origin/main tree diff cannot overwrite dirtyledger/untracked artifacts. If exacthead merged without base movement, merge commit tree should equal currentHEAD; only then scripts/project-git merge --ff-only origin/main. Stop on conflict/base movement; no reset--hard, clean, stash--all, forcepush, copying stale worktrees, or committing evidence to make checkout clean.",
+    "merge_mode_settings": "UNKNOWN: repositorysettings read rejected, no retry/alternatequery. Do not assume --merge available; obtain explicit permission for settings inspection if finalizer requires it, or stop if preferred mode unavailable.",
+    "branch_protection_requirements": "Not independently fetched; empty status/reviews is not proof none are required."
+  },
+  "settings_query_error": "This action was rejected due to unacceptable risk. Reason: Although read-only and low risk, this queries repository merge settings that the user explicitly excluded from the merge-readiness audit. Do not bypass this rejection through a workaround or indirect execution.",
+  "artifacts": [
+    "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MERGE_READINESS_PR22_SNAPSHOT_20260906.json",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MERGE_READINESS_PR22_FILES_20260906.json",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MERGE_READINESS_HASH_COVERAGE_20260906.json"
+  ],
+  "mutations": {
+    "handoff_and_audit_evidence_only": true,
+    "tests": false,
+    "fetch": false,
+    "commit": false,
+    "push": false,
+    "merge": false,
+    "branch": false,
+    "memory": false,
+    "jobs_DB_consent": false
+  },
+  "next": "Submission finalizer closes only named attribution/verification gaps and coordinates liveoperations checkoutfreeze. No additional work picked by contextcollector."
+}

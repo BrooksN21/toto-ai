@@ -46,16 +46,18 @@
     "old_passive_retry": "natively deactivated: drawing_ready"
   },
   "preflight": {
-    "status": "INTERRUPTED_NO_PASS",
-    "reason": "CHILD_SILENCE_30S",
-    "exit_code": 130,
-    "recorded_elapsed_seconds": 30.155,
-    "waiting_stage": "UNKNOWN_NO_CALLSTACK",
-    "provider_specific_cause": "NOT_DIAGNOSED",
-    "owned_process_group_gone": true,
-    "retry_performed": false,
-    "pass_result_exists": false,
-    "repeat_approval": "Requested21:19MSK, owner has not answered per current handoff; no automatic retry"
+    "status": "PASS",
+    "exit_code": 0,
+    "recorded_elapsed_seconds": 5.888,
+    "started_at": "2026-09-06T18:44:37.914711Z",
+    "finished_at": "2026-09-06T18:44:43.231879Z",
+    "result_sha256": "be087782be358844dc6e25d3c1a5cf1eed96d6f1bedfbccca9e1eb1ffc2af5b0",
+    "artifact_type": "REAL_PREFLIGHT_ONLY_NO_PACKAGE",
+    "training": false,
+    "package_generation": false,
+    "automatic_wagering": false,
+    "authorization": "One explicitly authorized repeat, not recurring retries",
+    "prior_interruption": "Retained exit130/30.155s; prior waiting cause unknown, not diagnosed by success"
   },
   "readiness_limits": {
     "native_dispatch": "15/15 readiness, exit0,21.032s; not a preflight PASS",
@@ -63,9 +65,10 @@
     "training_package": "deferred:1020RUB/34capacity",
     "sports_v3": "Review06 ACCEPT21:28:43MSK closes F4-1b; F4-1 remainsclosed. MODELS/REVIEW idle, no reviewfix remains. Exact isolateddelta 1ee698aa9b27f995bbd360894b93b7313101d8a0b596bd24d68ec74a59aef2a7. Data/scope/equal-input70%gate unchanged; nofit/integration/productioneligibility.",
     "experimental_manual_consent": "None for4999; exact current-plan pre-cutoff owner authorization required before experimental operator release;4980/30 preparation is not consent",
-    "operator_package": "None; no PLAY/wager"
+    "operator_package": "None; no PLAY/wager",
+    "real_preflight": "PASS verifies target/data/config/catalog only; no package e2e or model-fit proof"
   },
-  "next": "Separate explicitly authorized observable preflight decision; no silent rerun. Next installed primary checkpoint2026-09-07 15:30MSK. Ask owner for exact plan-bound manual consent before final calculation; no consent requested/minted by this finalizer.",
+  "next": "No further preflight. Exact4999plan-bound manualconsent remains needed; nextprimary07.09 15:30MSK. Proposedquality/skillsplan not implementation authorization.",
   "evidence_local_only": {
     "handoff": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_HANDOFF.md",
     "handoff_sha256": "1bba64c7c864010ae410da8c59ce2880b6f612693e18619ad50aa9400e47c16f",
@@ -112,5 +115,36 @@
     "production_eligible": false,
     "sports_files_published_by_finalizer": false
   },
-  "status_followup_at": "2026-09-06T18:31:20.361542+00:00"
+  "status_followup_at": "2026-09-06T18:56:43.844681+00:00",
+  "historical_preflight_attempts": [
+    {
+      "status": "INTERRUPTED_NO_PASS",
+      "reason": "CHILD_SILENCE_30S",
+      "exit_code": 130,
+      "recorded_elapsed_seconds": 30.155,
+      "waiting_stage": "UNKNOWN_NO_CALLSTACK",
+      "provider_specific_cause": "NOT_DIAGNOSED",
+      "owned_process_group_gone": true,
+      "retry_performed": false,
+      "pass_result_exists": false,
+      "repeat_approval": "Requested21:19MSK, owner has not answered per current handoff; no automatic retry"
+    }
+  ],
+  "proposed_next_plan": {
+    "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MODEL_QUALITY_SKILLS_NEXT_PLAN.md",
+    "sha256": "0b304a5f1c236f02e8d63a9365c7149ed3de152c38eca5e1ddca98d181ec0b0a",
+    "status": "PROPOSED_ONLY",
+    "routine_checkpoints": "Once wholedefinedscope is approved, routine included checkpoints do not need fresh approval each step",
+    "implementation_started": false,
+    "bank_percentage_gain_measured": false,
+    "code_simplification_completed": false
+  },
+  "merge_review": {
+    "verdict": "ACCEPT_NAMED_GAPS_CLOSED_EXACT_PR22_HEAD_ELIGIBLE_FOR_AUTHORIZED_FINALIZATION",
+    "accepted_source_head": "71afde0050f37cf9a208831d64da403b0605fef2",
+    "base": "a59e3e54a1698efe60a862bbab681996c06ff8f7",
+    "review_sha256": "8f6381d2cb670ae6e7cf737c6065f672f64d40cd4dffee17d1e52844cc24d6ff",
+    "review_path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PR22_FINAL_SCOPED_REVIEW.json",
+    "no_source_additions_since_acceptance": true
+  }
 }

@@ -1,0 +1,1087 @@
+{
+  "base": "a59e3e54a1698efe60a862bbab681996c06ff8f7",
+  "head": "71afde0050f37cf9a208831d64da403b0605fef2",
+  "remote_files": 121,
+  "local_diff_exact_remote_inventory": true,
+  "all_remote_blobs_exact_head": true,
+  "base_is_ancestor_of_head": true,
+  "local_refs": {
+    "refs/heads/main": "71afde0050f37cf9a208831d64da403b0605fef2",
+    "refs/remotes/origin/main": "a59e3e54a1698efe60a862bbab681996c06ff8f7",
+    "refs/remotes/origin/codex/reviewed-stack-20260906": "71afde0050f37cf9a208831d64da403b0605fef2"
+  },
+  "ahead_count": 23,
+  "rows": [
+    {
+      "path": "AGENTS.md",
+      "head_sha256": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/backfill_retry_integration_boundary.md",
+      "head_sha256": "a8bf636c94ffd2cc7abaa8884dcfcdae29370523bde075a7fe5cf39e2dbff039",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/goal_history_regulation_score.md",
+      "head_sha256": "4920647dac30eecc840e162a11e463177ddecd2558cec90408523b5c81d4fecb",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/goal_pagination_identity_boundary.md",
+      "head_sha256": "4abfdc452ed36a5bee6c133286fc39afb4e999ec8cb5eaea2171419ad217535f",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/goal_probe_failed_cache_boundary.md",
+      "head_sha256": "dcb8fbdcf10d066e4db622c4dd53359ec86dc8fb8194af05e2675568902dfdd0",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/goal_schedule_fixture_quarantine.md",
+      "head_sha256": "467d9cfa5dab502da7af440e5cbb42597f2eefed19e64ee76d443dabb5939031",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/history_backfill_validation_boundary.md",
+      "head_sha256": "d3ea8bcaeb743f1e82f104d8980a2924b3899063f057b70155084f3423495a35",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/operator_observer_release.md",
+      "head_sha256": "248dd88a297d3c669ca5b94494bc9f989ea6a95b1ac37909340dc9e68cc43db7",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/parallel_g1_evaluation_profile.md",
+      "head_sha256": "44c5e361c3dea3ba8b0330962eeea6aae3c8e0c9e5ed0d4b85c66f179a162d73",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/parallel_runtime.md",
+      "head_sha256": "3d1733334a2eab8ec5a02eea993f39df11350ed17fb78a3dd6a33d992f17108e",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/parallel_runtime_release.md",
+      "head_sha256": "684307860c64f3aac73ea3831f239afee6a367c8f3f59462a7623b277e1230da",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/preflight_retry_calendar_boundary.md",
+      "head_sha256": "899b1fe3c545a789297d4b48c3b8828b44f965468b6aa56ae185dcef8d1e7fca",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/project_git_worktrees.md",
+      "head_sha256": "bc5adadd8bcdb026ecdfb346ea214d3611ce3f729e6b5d04aff99bae1567cb44",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "knowledge/sports_v3_o1_local_adoption_boundary.md",
+      "head_sha256": "4c3306bdbe4c0d361af7864821901568dccc097316656c3e30a46dd45041a48b",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "memory-bank/ACTIVE_PLAN.md",
+      "head_sha256": "39749636eef63c2dcd140a9c67a2724f2462361dbc130789c3afd81fc6325a2f",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "memory-bank/CURRENT_STATE.md",
+      "head_sha256": "7069b566ea5e85247657f580e77a97eaca2fc88ece80d5e0a1f95b025e5f3825",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "memory-bank/DECISIONS.md",
+      "head_sha256": "732efc080c855e8f730f984df9715387c6436b465d8f6c69bcb6e01411381ae5",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "memory-bank/ROADMAP.md",
+      "head_sha256": "17df044825b94dfe597bc9b0269e39cc36b8a367fa87dd80e069aa663ec1b021",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "memory-bank/THREAD_COORDINATION.json",
+      "head_sha256": "5b56c8843602f22d103ea89d4a3fe0d2ab9aa3f30a185afeb83c36d3f7e7cacf",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "memory-bank/TOOLING_POLICY.md",
+      "head_sha256": "cd96772b5901238cf68c446649a67c555da74f8f7e40ee867633199e36959814",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "memory-bank/archive/ACTIVE_PLAN-before-recovery-20260904.md",
+      "head_sha256": "20116a609f62429441be5eb51d9818c11da06583cd92db95fcca100571aae24f",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_ADOPTION_RECEIPT_20260906.json",
+      "head_sha256": "5ab4640d141ce2c8e1d5f39ce79c60aa14038cae2401529e428bb2878005c94f",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_ADOPTION_RECEIPT_20260906.md",
+      "head_sha256": "4987b4fec9b75ce18ba956c767a035a2baa3c7f5082c7b96988a3e8d2b945b3e",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.json",
+      "head_sha256": "d61c7fa00e76a3f233b5fa3595f4550ac91afa13e89e231ed99439184d50f05c",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.md",
+      "head_sha256": "61ee966489bd6445346f2012d1240690c9285aab7edf899f5ac28df0c1cff6a8",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.json",
+      "head_sha256": "90d22423cbc26bd33bc187dfeef80bfcc8d387b709d2dba0a3a399275b95ba6f",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.md",
+      "head_sha256": "62ba52d4516c1b02ba27327c57dfe4b82ba331c3b33eff402903596f82629c2d",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.json",
+      "head_sha256": "a8bea4cd0f179c0bb6c097290c6133e70991f6fa4b8189f04bce5605542681b7",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.md",
+      "head_sha256": "f88916ea16c6af8bd23b6008cf5e274535945aff754a49a7167df74059e96159",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/native-task-owner-authorization-20260905.json",
+      "head_sha256": "167084ef9b2787ede6e64bd80f67d1695ec65bf49725b4af94d74dc50975ef3b",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CURRENT_STACK_PUBLICATION_20260906.json",
+      "head_sha256": "55db5350fd0c0cf20249ed2b13846393ea898f6607e48869a96f4ff2464869bb",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/EXISTING_STACK_SUBMISSION_RECEIPT_20260906.json",
+      "head_sha256": "eb9ed38d14ca5139beeecf4d9590db83df052d3158304de4b7e30b7bde8baff2",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/EXISTING_STACK_SUBMISSION_RECEIPT_20260906.md",
+      "head_sha256": "d377aff4d06928cae643897b01c8dfbba8fd9832cbca5442d44c774c44ec4ea2",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md",
+      "head_sha256": "7d5ab6736eb55a151a8d59af5a7d88af2e1c17479413c34d11de13f85ff99f0b",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_INTEGRATED_PUBLICATION_RECEIPT_20260906.json",
+      "head_sha256": "0e7756e5bfedaad0afec752df745f5c439782ec6831726d66ae21d15d574d2ab",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_STATUS_SUMMARY_20260906.md",
+      "head_sha256": "45923dbb17de08ab1c56f3819a45a65b5d0f4621ae45096c54b53491f0f9e152",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_ADOPTION_AND_REPLAY_HANDOFF.md",
+      "head_sha256": "d0b07806659cd8c890ff7cc04b7c9a878ae8f066eabf0c30e0983b38700416e8",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_PUBLICATION_RECEIPT_20260906.json",
+      "head_sha256": "a59dd838676bd4cfcbd29bf0c5577ea057152c14aba508cc421fd745f04bc129",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_RECEIPT_20260906.json",
+      "head_sha256": "8d8510e27744898a791ebc7bd75282052f7b78c01b36c6f4113e400ffea81f15",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLICATION_RECEIPT_20260906.json",
+      "head_sha256": "4a2e342480c679a3f1373ab00f7c8881ed62fd53f67c0dc2f6eb01748ec99f65",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLIC_STATUS.json",
+      "head_sha256": "d880473a568465e33fe74106123e54c905572a38285bb02e53f64abb54e669c2",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLIC_STATUS.md",
+      "head_sha256": "178beb5a01f7ad4e79daf0f2586e9133a805e6401937172ced93f30b4dc5eaba",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM_BINDING_STATUS_CORRECTION_RECEIPT_20260906.json",
+      "head_sha256": "1afa106d2f658b0aa933b455b8e989bf51c4f78d25de2462cd13e7cabbee0dea",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_RECEIPT_20260906.json",
+      "head_sha256": "c4171b7c640ea16603891629bb1e53100869d98ef19e0889f79e46a520508c40",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/STATUS_FINALIZATION_CHECKPOINT_20260906.json",
+      "head_sha256": "3461a06838cd19a2a131cc843bac702572db6d2d2f306d8542fb0bdd5c782bc7",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-HISTORY-PERSISTENCE-20260904/context.md",
+      "head_sha256": "18cb113d528bf6da407cf44924887360f18ae912b4183546e58442863c2924ad",
+      "matches": [],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/G1_MAIN_INTEGRATION_RECEIPT_20260906.json",
+      "head_sha256": "bbc7eee1ecbd59f8417a98dd2003623526a5fd3e62967397e435a2ede7c8c700",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/G1_MAIN_INTEGRATION_RECEIPT_20260906.md",
+      "head_sha256": "345657e2d81d5b1fe149dc8ef231522a491c231fd5ce68c89b67336e9d50453d",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP.patch",
+      "head_sha256": "c649032d5b35889159d210ab7744a956c5f6971f7a3a53e675970210ad2c5d48",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP_RECEIPT_20260906.json",
+      "head_sha256": "8a0227b5c25253d8a38e0c5321da607f37b00fd771778cdbcf9c0e344f5ab5d1",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP_RECEIPT_20260906.md",
+      "head_sha256": "6645ea32e19933fe1ce6c57ea404c2a4135aaa21bc041607a4ce69aa3943d62b",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_LOCAL_ADOPTION_RECEIPT_20260906.json",
+      "head_sha256": "2fb0c50050503531c3f2996aba043924ad73c7de2c445dfe4c166e46f563bac4",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_LOCAL_ADOPTION_RECEIPT_20260906.md",
+      "head_sha256": "99589af95ddfd9720d7e9c76f09d650a8fc100296a90a25397f5409fcd64b300",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_STACK_ADOPTION_RECEIPT_20260906.json",
+      "head_sha256": "6efba4e9e272f94e4f1ae3b6e43933c9f163932e9f71b6d736740ede4a02fb8e",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_STACK_ADOPTION_RECEIPT_20260906.md",
+      "head_sha256": "699595436a0df80996876677a3cebddd639089b9c36ebd9c4d9df52da421684c",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.import-only.patch",
+      "head_sha256": "14e0754776ed22d636d4d8715ac6aea4cb33e3000814afbd14836191699a9b68",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.py",
+      "head_sha256": "a7ae117fdc276b945e73e249bfd013f48909c0cdf52c8decd0334243679ae8a0",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/P1_FIXTURE_CASES.json",
+      "head_sha256": "2a19ae40b92dd68bf2f5b78466207cdcb6515244b5c74aba0bfd8263d95802e4",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "scripts/project-git",
+      "head_sha256": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "skills/operator-delivery.md",
+      "head_sha256": "77442b436cebe7f354aa3e76af6459922e24732b828a5ae2935100d09ce0f7d7",
+      "matches": [
+        "observer03_independent_ACCEPT"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/cli.py",
+      "head_sha256": "fc7f04615930e8f2083b411ecb04a42e0f9504027f13cf817b6a789978e5b5dc",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/ev/package.py",
+      "head_sha256": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/ev/package_quality.py",
+      "head_sha256": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/ev/runtime.py",
+      "head_sha256": "cc1325edd5165959765c9299cb3e91dcd8776ecff2419eed2f6ae11ca0f8bdb8",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/ev/ternary.py",
+      "head_sha256": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/external_odds/goal_api.py",
+      "head_sha256": "026e393656eb24728f9c25a1563f4e0615c0811d468644d59a7962645e938db9",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/external_odds/schedule_evidence_admin.py",
+      "head_sha256": "76b0b780bdab22909c75654f549d9096e36a1853e67562ec8ef5eba679fea47e",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/external_odds/schedule_source_collector.py",
+      "head_sha256": "51901ca513206dc154a8c211e702f7a4b4a4283a9c3068907ff3ccd752fafe0c",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/external_odds/targets.py",
+      "head_sha256": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/operations/scheduler_delivery.py",
+      "head_sha256": "44222cbda709ee2c5c58c3bedb27ccc18a247c9b93395e85f51aca0cfd4a0357",
+      "matches": [
+        "observer03_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/operations/scheduler_status.py",
+      "head_sha256": "fb468e00a4176398756047ba0f782e35133147ea762100cade72760768c05c2c",
+      "matches": [
+        "observer03_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/optimizer/exact_maximin_refinement.py",
+      "head_sha256": "b249971911e80d353ff719f0bd58e088c1ac4a183c4764ce32ed838147df62ee",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/optimizer/strategy_comparison.py",
+      "head_sha256": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/package/__init__.py",
+      "head_sha256": "167b055e9f0871ca14612f287beb895aed26a397874ba6458da13cf87af2686d",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/runner/morning_dispatch.py",
+      "head_sha256": "b9eff44b167cd1dce0bf6d7515f561b0108a8d7bad6396487b7fc20ba5ac0605",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/runner/preflight_retry_scheduler.py",
+      "head_sha256": "32c0123ca8134e8cb2b8826b94578597604a705d304e2e2cab7aa2d790176481",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/__init__.py",
+      "head_sha256": "d254f69250488f262d9fc3f7035ff8da58157ea76c669316a18da7897b6f2698",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/domain.py",
+      "head_sha256": "cdebd1a59f67240b3a3973fa5ba8d22b9ee48224515976e5808f9c1dc9bc07b8",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_comparison.py",
+      "head_sha256": "51118611bb4956618df2e888a31b9eda01691c3d82dbe24dea6383fdf452a643",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+      "head_sha256": "56c3d293c41b637464d2af9372634e2e1bc87100b9b60674b0448a29d4023e00",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/goal_probe_collection.py",
+      "head_sha256": "703d7e8cee03130d6b2ed26391ba5e0b370252cb31b32e340328b8a439f7ae80",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/goal_probe_research.py",
+      "head_sha256": "73f2c05dd2f2a4f417f12fcffbd431cbdece1c08ab7ad629575786fb5143c93e",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/history_backfill.py",
+      "head_sha256": "026ad030ee54b48b07741c69e0e40ddca89a7375c44877f28042ca072f7da742",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/parallel_g1.py",
+      "head_sha256": "9ca4ef440a779ef9f8f445fc625b8d20fb164ba15af2c762e5795e45d71304e5",
+      "matches": [
+        "g1_profile_published_acceptance"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/storage.py",
+      "head_sha256": "3342b6ab721180c5e3a96bc932f5e8c062a7ce0ccf53369e1a09df78a3a85478",
+      "matches": [],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_coverage_audit.py",
+      "head_sha256": "689f69afb587fac474d8a91541651b6257bc3b403d9e82dc2c653b4174251ca4",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_family_evidence.py",
+      "head_sha256": "046c8543007429b7f26d0de4056b8f7fce7faa7a35b3f8f207e831cdb295d22b",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/fixtures/goal_pagination_duplicate.json",
+      "head_sha256": "a7cc49f4b8789d261eb5e3c608fc987a8812d33c13b7198c6bc5f1b808768e7f",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/fixtures/goal_regulation_score_captured_contracts.json",
+      "head_sha256": "eb4ac9b13d60df79091961c317c7b40fe6c45921bc0926a728cb411aced27d18",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/fixtures/goal_schedule_quarantine_conflicts.json",
+      "head_sha256": "a2a6fec36b0d5ff3a3be4d47b15bc1b944e3eb34041b6f28915d4d5942c853ca",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/fixtures/parallel_g1_acceptance_oracles.py",
+      "head_sha256": "cbe374efafe8e7632ee037474dd427892a59d400fa870d5f22cb30904bba1fd4",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/fixtures/scheduler_status/drawing_4996_attempt_delivery.json",
+      "head_sha256": "c63d5ddc3944df8641f7d8d0f5fcfcbe25e4e2a99343cf6c3d407d86fe270616",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": false,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_ev_runtime_budget.py",
+      "head_sha256": "14dfc9d4c4403a48a436a1a62c49804ff58a8d812128e73178e290b78e7cef63",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_exact_maximin_refinement.py",
+      "head_sha256": "8af5ddb92dc57b70d359bd91d367a41a85807c18c33f06c7b57b957476856504",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_external_odds_targets.py",
+      "head_sha256": "7bf147921e42d077302e8409efc434e3279061fb938555c4ae02150b60555148",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_final_hybrid_g1_integration.py",
+      "head_sha256": "bfba60730b8467b52fda6296d33c3545b0fb2a278c7430fea7be9aed932c8249",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_final_hybrid_primary_validity.py",
+      "head_sha256": "9c187575171bdc003b888f1cad321340885858577be1b014531095b4937dc789",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_final_hybrid_runtime_contracts.py",
+      "head_sha256": "8ce03a2bc0240a48692618d6ed1fedb8efdfd7aafa1acf4ac74de3be035ecc84",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_final_hybrid_sidecar.py",
+      "head_sha256": "153f12d69d4077d9fc8d5232fef8980eab0d8ab5d8c536b8631e49e39692136d",
+      "matches": [
+        "runtime02_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_g1_wrapper_reuse.py",
+      "head_sha256": "adba988c435bcd10c30a71b828d8cee21517d88174bd18cfd8a28b03eb8db816",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_goal_api_fixture_quarantine.py",
+      "head_sha256": "01b0f4fc84c6ee7f850e958ec47ecc6eb48c588da5d07eb37bfd70099b621f48",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_goal_api_pagination_identity.py",
+      "head_sha256": "3466286b07075239a8134898444db44535b4b337335bb2ecbcdcc93b66e3c106",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_goal_history_regulation_score.py",
+      "head_sha256": "e02ef14e70b01711d1322df4b99a9212ed3a1bf36a1ff0c21b3f266f2c841579",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_goal_probe_collection.py",
+      "head_sha256": "3bc0e70bd1bfb1471e3fe26fce1bee18f24e5cf0e84570d544368b0f83e6575a",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_goal_probe_research.py",
+      "head_sha256": "c0cf0f854b8614757dc16fa13a954191b2294acbc27b12e05d2a980cb3fed292",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_morning_dispatch.py",
+      "head_sha256": "57e6daab303c8922a753bf1dd8b4d462af58096d870e5eced36d8e469c84eda7",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_parallel_g1.py",
+      "head_sha256": "4b1c6af7862c8a7fe111b108aa3eb4d9d6345158aca7177f7f256972a28388ee",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_parallel_g1_acceptance.py",
+      "head_sha256": "de2539a072efb20abd9aa8e16bb3031ae34517f56eb47f71973363bdc050afdf",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_parallel_g1_contract_edges.py",
+      "head_sha256": "97602e387850df15633b62244e01cbe27f7adbc9f8e98fbd5ae430fcda178668",
+      "matches": [
+        "current_stack"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_parallel_g1_evaluation_profile.py",
+      "head_sha256": "e07891b3daa1e5e07a1252db477c23fa21812287d2a22eafcb3cef5fbe6e19cc",
+      "matches": [
+        "g1_profile_published_acceptance"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_preflight_retry_scheduler.py",
+      "head_sha256": "aebdc0e16bf932ddbae2e2384f3bf13ef7dde54f4901f4a2fa4349a48ba7ec92",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_project_git_worktrees.py",
+      "head_sha256": "9e7e63f857f25c7467ce3dd16cb5806d0ac0ca9083ae44a86995bc1c6d725f7f",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_schedule_evidence_admin_cli.py",
+      "head_sha256": "a36908d85502446f78a641cb07ce5b5001c75d2cc78cf8c52d5fced325987a4e",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_scheduler_delivery.py",
+      "head_sha256": "6ad89693465f7fb31d7c6703921991c9f2d941884fa210523870f99c33fd5fee",
+      "matches": [
+        "observer03_independent_ACCEPT"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_scheduler_status.py",
+      "head_sha256": "9661ce17d6aacbf3e12fbad32c8c7e6fc86ab7999432aeb29b023e54664ef39f",
+      "matches": [
+        "cache_wrapper_legacy"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_sports_history_backfill.py",
+      "head_sha256": "070e81b6f3fd67412dd4fbdb349d9b388db0dea5971ff3583e4a1921d49b6698",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_sports_history_backfill_cli.py",
+      "head_sha256": "a51cc9bcd5480991781f14da6ceafc7a8c2d31228a566d5a9540d486398329ed",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_sports_stats_cli.py",
+      "head_sha256": "ab7e9cbea8cf7bdd5023d680345472cf93f716c0146ac913c8c07fa0a30ba7df",
+      "matches": [
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_sports_stats_storage.py",
+      "head_sha256": "ad80fd97d47a790fe08215c492186ec52ab7468c72d4bb176a7ede3497534c56",
+      "matches": [],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_sports_v3_coverage_audit.py",
+      "head_sha256": "71484467fa1a90936ff90195128f46130f09aad500cf724fa94b504286f4f2f9",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    },
+    {
+      "path": "tests/test_sports_v3_family_evidence.py",
+      "head_sha256": "20de9a204195385780369ab1da8f9f127663340445b2075136fe8db60a15ff39",
+      "matches": [
+        "initial_candidate_after",
+        "initial_staged_verified_bytes"
+      ],
+      "code_or_test": true,
+      "remote_git_blob_match": true
+    }
+  ],
+  "direct_independent_refs": {
+    "runtime02": {
+      "verdict": "ACCEPT",
+      "completed_at_msk": "2026-09-06T20:39:37+03:00",
+      "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME_INDEPENDENT_REVIEW02.json",
+      "sha256": "efc39194c1ebde591c3356930b303fd2349e8bb51487965f5a16c426f1b3b526",
+      "patch_sha256": "152c92c8e068e971b5c926dc70234c2b57c3815c3396ac0ba195b56d5d46bbab",
+      "manifest_sha256": "1fbdbd82c0872f7f0b319c23570cc195b03ad70126d12ba0fb9f7171cd60321b",
+      "prior_not_accepted_handoff_superseded": true,
+      "independent_verification": "22 unchanged +79 focused +10 boundary tests, Ruff14PASS; fixture limits preserved"
+    },
+    "observer03": {
+      "verdict": "ACCEPT",
+      "review_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_INDEPENDENT_REVIEW03.json",
+      "review_sha256": "d77fc334a534ae30001cba8cff22c77350f3df2dbbeff8dee596fd9cf5e29f74",
+      "patch_sha256": "041bcc6eeaacb22e55c9400619b63e62efa35606c1265ee38257b81e83f9051c"
+    }
+  }
+}

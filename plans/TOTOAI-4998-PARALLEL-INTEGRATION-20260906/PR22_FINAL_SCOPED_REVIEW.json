@@ -1,0 +1,169 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "completed_at_utc": "2026-09-06 18:54:32 UTC",
+  "started_at_utc": "2026-09-06 18:50:06 UTC",
+  "verdict": "ACCEPT_NAMED_GAPS_CLOSED_EXACT_PR22_HEAD_ELIGIBLE_FOR_AUTHORIZED_FINALIZATION",
+  "blocking_findings": [],
+  "remaining_review_proof_blockers": [],
+  "scope": "Independent narrow residual-hunk review and exact prior acceptance attribution. Compose with hash-bound MERGE_READINESS for whole current PR eligibility; not a fresh121-file review or full-suite PASS.",
+  "pr": {
+    "base": "a59e3e54a1698efe60a862bbab681996c06ff8f7",
+    "head": "71afde0050f37cf9a208831d64da403b0605fef2",
+    "local_head_confirmed": true,
+    "remote_rechecked": false,
+    "normal_finalizer_requirements": [
+      "Reconfirm remote base/head/checks/protection and approved merge method",
+      "Revalidate newly changed metadata separately; this acceptance does not cover future source changes",
+      "Owner clearance for checkout alignment; preserve dirty ledger/local evidence/worktrees"
+    ]
+  },
+  "input": {
+    "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MERGE_READINESS_20260906.json",
+    "sha256": "836fd9e824ef560402da05a38815a8912f1402e3b0bcd28bc98d0c1ffd942ea8",
+    "reused_without_re_review": [
+      "runtime02 exact13files+8dependencies independent ACCEPT",
+      "observer03 exact4files+8dependencies independent ACCEPT",
+      "Backfill/retry/cleanup, O1/minimalF3/P1, GOAL pagination/quarantine and G1 caller acceptance chains described in bound readiness"
+    ]
+  },
+  "new_hunk_review": {
+    "comparison": "scripts/project-git diff a59e3e54a1698efe60a862bbab681996c06ff8f7 71afde0050f37cf9a208831d64da403b0605fef2 -- <exact ten paths>",
+    "head_file_sha256": {
+      "src/toto_ai/sports_stats/storage.py": "3342b6ab721180c5e3a96bc932f5e8c062a7ce0ccf53369e1a09df78a3a85478",
+      "tests/test_sports_stats_storage.py": "ad80fd97d47a790fe08215c492186ec52ab7468c72d4bb176a7ede3497534c56",
+      "scripts/project-git": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+      "tests/test_project_git_worktrees.py": "9e7e63f857f25c7467ce3dd16cb5806d0ac0ca9083ae44a86995bc1c6d725f7f",
+      "src/toto_ai/external_odds/schedule_evidence_admin.py": "76b0b780bdab22909c75654f549d9096e36a1853e67562ec8ef5eba679fea47e",
+      "tests/test_schedule_evidence_admin_cli.py": "a36908d85502446f78a641cb07ce5b5001c75d2cc78cf8c52d5fced325987a4e",
+      "src/toto_ai/external_odds/targets.py": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497",
+      "tests/test_external_odds_targets.py": "7bf147921e42d077302e8409efc434e3279061fb938555c4ae02150b60555148",
+      "src/toto_ai/sports_stats/domain.py": "cdebd1a59f67240b3a3973fa5ba8d22b9ee48224515976e5808f9c1dc9bc07b8",
+      "tests/test_sports_stats_cli.py": "ab7e9cbea8cf7bdd5023d680345472cf93f716c0146ac913c8c07fa0a30ba7df"
+    },
+    "all_ten_working_files_equal_exact_head_blobs": true,
+    "decisions": [
+      {
+        "scope": "storage.py + domain.py + storage tests; carry-in a17 included",
+        "verdict": "ACCEPT",
+        "reason": "Same-identity query still keys drawing/fingerprint/provider/as_of; incoming/stored full hashes verified before semantic equality. Semantic payload retains source evidence/feature hashes/deadline/history size; replay captured_at/request/cache diagnostics excluded intentionally. Append transaction and duplicate-child rollback retained."
+      },
+      {
+        "scope": "scripts/project-git + test_project_git_worktrees.py",
+        "verdict": "ACCEPT",
+        "reason": "Registered read-only mode verifies owning root, both registration directions and common directory, rejects symlinks/noncanonical paths/routing overrides/write commands; copied exact wrapper synthetic18cases PASS. Four legacy bareGit cases not claimed."
+      },
+      {
+        "scope": "schedule_evidence_admin.py + corresponding test",
+        "verdict": "ACCEPT",
+        "reason": "Only multipart publisher suffix com.cy addition; separate registrants remain distinct publishers. Other identity/evidence/apply logic unchanged."
+      },
+      {
+        "scope": "targets.py + corresponding tests",
+        "verdict": "ACCEPT",
+        "reason": "Missing/blank/finite-zero pool legs produce unavailable pool instead of normalized probabilities; complete usable triplets retain existing finite-positive validation. BK probabilities preserved; no scoring/ranking definition change. No corruption-only recommendation generated."
+      },
+      {
+        "scope": "sports_stats_cli.py test delta",
+        "verdict": "ACCEPT",
+        "reason": "Additional read-only backfill help-contract assertion; actual backfill source acceptance remains prior scoped chain."
+      }
+    ]
+  },
+  "resolved_anchors": {
+    "history90": {
+      "verdict": "EXACT_ORIGINAL_INDEPENDENT_ACCEPT_FOUND",
+      "path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/HISTORY90_INDEPENDENT_REVIEW.md",
+      "review_sha256": "6101edac61a4f58bcd6f1095d46d67afd9e593d7278b5bfd1e6c26996c97feea",
+      "probe_path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/HISTORY90_INDEPENDENT_PROBE.py",
+      "probe_sha256": "0868c6debd003128b02e590f02c65266798b9d24a93f9f8ed924a63b800b82b4",
+      "patch_sha256": "dc150fdc3ccd10fdbc9280b97ff99974248f233add7dda1a668947a75e011275",
+      "five_candidate_files_and_patch_match_original_probe_manifest": true,
+      "current_source_sha256": "73f2c05dd2f2a4f417f12fcffbd431cbdece1c08ab7ad629575786fb5143c93e",
+      "limits": "Original79PASS;2SQLite cases blocked, not author's81PASS reproduced. Original raw13observations/seed validation reused as historical evidence; no raw/seed rerun here."
+    },
+    "G1_profile": {
+      "verdict": "EXACT_ORIGINAL_INDEPENDENT_ACCEPT_FOUND",
+      "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_EVALUATION_PROFILE_INDEPENDENT_REVIEW.json",
+      "review_sha256": "1a64cf9f686043e4ff51cf75f727e4166d50fb7685da328d4e4358defd60a549",
+      "patch_sha256": "c3fe388cb3e2b230b506f8479bdcae7a883446f1fc2d087417a19347a3fba8e5",
+      "source_and_test_match": true,
+      "source_sha256": "9ca4ef440a779ef9f8f445fc625b8d20fb164ba15af2c762e5795e45d71304e5",
+      "test_sha256": "e07891b3daa1e5e07a1252db477c23fa21812287d2a22eafcb3cef5fbe6e19cc",
+      "limits": "Original14syntheticPASS/Ruff. Cap50000→65536 only; not dense-engine completion/performance or operational eligibility."
+    },
+    "cache": {
+      "verdict": "COMPOSED_ATOMIC_REVIEW_AND_EXACT_FSYNC_CLOSURE",
+      "atomic_review_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_INDEPENDENT_REVIEW.json",
+      "atomic_review_sha256": "24fd6a9ce5731d3eb3871a98af78d39920642718de91da7e15b62540f98a456e",
+      "atomic_patch_sha256": "75bd7b86efcd20329375ad40b45055a2a75d7ca0fc107d5fb1f888af47abde1c",
+      "atomic_verdict": "REQUEST_CHANGES;18PASS with one remaining directory-fsync finding",
+      "durable_review_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_INDEPENDENT_REVIEW.json",
+      "durable_review_sha256": "37ca10946853950afa38639562304e6f3b45a42cb1289d7b959117462f815dd8",
+      "durable_verdict": "ACCEPT_FSYNC_DELTA_ONLY;4PASS",
+      "full_candidate_sha256": "e914a0976e6434198ee4f2164c2877debf1caa33b20c959ed5d282b65aa05597",
+      "delta_sha256": "11b2d765d90a87120d2111d63773dd478d768ed3bc809e1c52818c7ba12c7af4",
+      "both_frozen_patch_hashes_and_delta_match": true,
+      "current_source_sha256": "703d7e8cee03130d6b2ed26391ba5e0b370252cb31b32e340328b8a439f7ae80",
+      "current_test_sha256": "3bc0e70bd1bfb1471e3fe26fce1bee18f24e5cf0e84570d544368b0f83e6575a",
+      "source_and_test_match_final_manifest": true,
+      "limits": "Composed closure, not standalone fsync-only blanket acceptance/power-loss certification."
+    }
+  },
+  "verification": {
+    "runner": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/.pr22-final-scoped-review/run_review.py",
+    "first_run": {
+      "passed": 144,
+      "failed": 18,
+      "deselected": 1,
+      "seconds": 3.29,
+      "classification": "All18 failures were own subprocess audit guard comparing Path cwd to str; wrapper execution denied before Git; not code defects. Import-time socket.bind also denied and handled."
+    },
+    "rerun": {
+      "selection": "tests/test_project_git_worktrees.py only",
+      "passed": 18,
+      "seconds": 4.21,
+      "exit": 0,
+      "blocked_actions": [],
+      "correction": "Own harness only: Path(cwd).resolve()==MAIN; same exact wrapper-byte check, temp scope, no bareGit permission expansion"
+    },
+    "final_accounting": "144+18PASS; one non-delta multiprocess schedule case deselected. Not a fullPR test suite PASS.",
+    "ruff": {
+      "python_paths": 14,
+      "exit": 0,
+      "result": "All checks passed",
+      "timeout_s": 15
+    },
+    "pytest_timeout_s": 25,
+    "network": "DENIED",
+    "live_sqlite": "DENIED",
+    "sqlite_allowed": "Only temporary fixture DBs and :memory:",
+    "writes": "Only fresh own review fixture roots and /dev/null; no source/main changes",
+    "legacy_bare_git_tests_not_run": [
+      "tests/test_project_git_guard.py::test_project_git_sanitizes_repository_routing_environment",
+      "tests/test_project_git_guard.py::test_production_git_helper_ignores_outer_home_repository",
+      "tests/test_project_git_guard.py::test_home_git_guard_rejects_status_at_home_repository",
+      "tests/test_project_git_guard.py::test_home_git_guard_allows_status_in_nested_repository"
+    ],
+    "other_deselected": "tests/test_schedule_evidence_admin_cli.py::test_concurrent_apply_is_locked_and_never_loses_updates (unchanged multiprocessing apply behavior outside one-line com.cy delta)"
+  },
+  "compatibility": {
+    "main_head_still_bound": true,
+    "operational_memory": "ACTIVE_PLAN/THREAD_COORDINATION now describe authorized4999preflightPASS at21:46:44MSK; historical noPASS statements superseded. Read-only metadata observation, no independent live check.",
+    "memory_delta": "Not included in exact71afde0 source acceptance; finalizer must treat later metadata commit separately.",
+    "sports_F4": "Still excluded; neither model readiness, data/train code, nor realfit admitted by this PR review."
+  },
+  "mutations": {
+    "main": false,
+    "source": false,
+    "AGENTS": false,
+    "skills": false,
+    "live_DB": false,
+    "jobs": false,
+    "consent": false,
+    "branch": false,
+    "push": false,
+    "merge": false,
+    "new_agents": false,
+    "review_outputs_and_synthetic_fixtures_only": true
+  }
+}

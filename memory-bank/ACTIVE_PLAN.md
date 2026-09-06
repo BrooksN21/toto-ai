@@ -1,3 +1,22 @@
+#CURRENT — ready-source merge finalization;4999preflightPASS — 2026-09-06T18:56:43.844681+00:00
+
+DONE: exact independentPR22scopedACCEPT closes all namedproofgaps forsourceHEAD71afde0/basea59;121fileHEADhashes+10newreviewhashes andoriginalanchors verified; no source changes sinceacceptance. Finalizer42pytestPASS2.39s/Ruff5. Scopeincludes proposedplanonly withwholedefinedscope approvalclarification, notimplementation. No completedcode-simplification/bankpercentageclaim.
+4999nativepreflight **PASS/exit0/5.888s**, resultbe087782…; planb742aac1fea2d42d/launchersunchanged. Prior130/30.155s preserved, causeUNKNOWN; no newpreflight. Exact4999consent absent; nooperatorpackage. Nextprimary07.09 15:30MSK/parallel17:00/expiry17:20/close17:30. SportsF4data/scope/70%gate remains; nofit/integration.
+IN PROGRESS: single metadata/docpublication then ordinary head-guardedmerge ifnormalpolicyallows; no settingsread/admin/force. NEXT: verifymerge/localalignment withtree-equality andledgerpreservation, stop. Receiptlocal: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_READY_MERGE_PUBLICATION_RECEIPT_20260906.json. Historicalgap/noPASSbelow superseded; no wholecheckoutcleanclaim.
+
+# PROPOSED NEXT PLAN — 2026-09-06T21:53:09.513770+03:00
+
+По запросу пользователя подготовлен **только план**, не разрешение на реализацию/rollout: [MODEL_QUALITY_SKILLS_NEXT_PLAN.md](/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MODEL_QUALITY_SKILLS_NEXT_PLAN.md). Приоритет: frozen evaluation/provenance → calibration/market residual → equal-input package/bank evidence → actual ROI; отдельно bounded duplicate removal и два локальных skill. Все прежние незавершённые checklist/items ниже сохранены, новый план их не заменяет и не помечает выполненными.
+4999: по последнему сохранённому receipt реальный preflight **PASS,exit0,5.888s**, plan b742aac1fea2d42d. Jobs/watcher/банк/сроки не менялись и заново не проверялись. **Exact4999 manual-release consent по-прежнему отсутствует**; план улучшений и подготовка4980/30 не дают release authority.
+DONE: planner-only handoff. NEXT: отдельное утверждение выбранного checkpoint и реализации; финализатор отдельно публикует. BLOCKERS: V3data/provenance/63.81%<70% и prospectivequality, банковый количественный gain не измерен; preflight blocker снят. Никаких source/skills/DB/API/job/VCS изменений; ACTIVE_PLAN дополнен только этой ссылкой/пояснением.
+
+# CURRENT —4999 REAL PREFLIGHT PASS; no consent/package — 2026-09-06T21:46:44.278464+03:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Explicit authorized monitored repeat: **PASS,exit0,5.888s**,06.09 21:44:43MSK, exactplan **b742aac1fea2d42d** /4999/12106. Native resultSHA `be087782be358844dc6e25d3c1a5cf1eed96d6f1bedfbccca9e1eb1ffc2af5b0`. Target/data/config/catalog validated; training/package_generation/automatic_wagering=false.
+Plan/bindings/primary+parallel wrappers/plists unchanged; PIDs53702/53705 and group absent. Watcher48486 running; primary/parallel loaded,runs0. Oldretry nativelydeactivated: **no21:50retry**. Nextprimary07.09 15:30MSK, parallel17:00, expiry17:20, close17:30.
+DONE: realpreflight verification/cleanup. BLOCKER:none forpreflight; **no4999manualconsent/operatorpackage**, ownerresponse separate. Not packagee2e/LaunchAgentperformance/SportsV3fit. Prior exit130/30.155s preserved, causeUNKNOWN.
+Nativeprepare300s, no nativeglobalbudget; supervisor360s, old30s quietkill waived only for this authorized run. Completed before first15s sample. NEXT: stop and handoff toparent/finalizer; no further network/modelrun/publication. UnrelatedF4/data limitations unchanged. Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PREFLIGHT4999_RETRY_AUTHORIZED_HANDOFF.md/json. Older NO-PASS/approval-pending below superseded by this exact result.
+
 #STATUS — F4review06 accepted;4999 preflight still NO PASS — 2026-09-06T18:31:20.361542+00:00
 
 SportsV3 isolated review06 **ACCEPT** at21:28:43MSK: F4-1b CLOSED; originalF4-1 remains CLOSED. Exact delta `1ee698aa9b27f995bbd360894b93b7313101d8a0b596bd24d68ec74a59aef2a7`. Independent12+6+9=27narrow syntheticPASS/Ruff4PASS; not full model/production acceptance. MODELS/REVIEW idle per parent, no review-fix work remains. Data/scope/equal-input70%gate blockers unchanged; no realfit/integration/eligibility or activation. Prior review05 REQUEST_CHANGES/fix06-in-progress checkpoints below are superseded, retained as history.
