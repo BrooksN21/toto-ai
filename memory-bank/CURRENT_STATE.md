@@ -15,7 +15,7 @@ Task: TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Finished scope only:
   publication does not alter or revalidate jobs, DB, consent, plans or packages.
 
 DONE: accepted skills and completed settlement bookkeeping. IN PROGRESS:
-scoped GitHub finalization. REMAINS: C6 simplification and the general model
+accepted C7 source committed as `52eece6e7583a5cbcfab7b3715e6da01222e25bc`; GitHub publication is next. REMAINS: C6 simplification and the general model
 improvement plan are not completed and await the owner's separate signal;
 7,470-RUB budget work is unfinished, not an operator-ready feature. BLOCKER:
 none for C7 publication; no Sports-v3 fit/activation or bank-gain claim.
