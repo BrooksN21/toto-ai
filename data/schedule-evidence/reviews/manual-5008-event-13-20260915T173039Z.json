@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12130,
+    "drawing_number": 5008,
+    "event_order": 12,
+    "target_event_id": 181065,
+    "sport": "football",
+    "championship": "Испания. Кубок Федерации",
+    "home_team": "Рекреативо",
+    "away_team": "Касереньо"
+  },
+  "observation": {
+    "observation_id": "manual-reviewed-5008-13-55d0aeaa-f9856e17",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Испания. Кубок Федерации",
+      "Copa Federacion - 1/8-finals",
+      "Copa Federacion",
+      "Copa Federación"
+    ],
+    "home_entity": "Recreativo de Huelva",
+    "home_aliases": [
+      "Рекреативо",
+      "Recreativo Huelva",
+      "Recreativo de Huelva",
+      "Рекреативо Уэльва"
+    ],
+    "away_entity": "CP Cacereño",
+    "away_aliases": [
+      "Касереньо",
+      "Cacereno",
+      "Cacereño",
+      "CP Cacereño",
+      "ФК Касeрено"
+    ],
+    "starts_at": "2026-09-16T18:30:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+    "reviewed_at": "2026-09-15T17:30:39.182922Z"
+  },
+  "sources": [
+    {
+      "source_name": "GOAL API",
+      "role": "independent",
+      "source_url": "https://goal-api.com",
+      "snapshot": "manual-5008-13-goal-api-55d0aeaa62a5c19d.json",
+      "snapshot_sha256": "55d0aeaa62a5c19d9f3180c99da64e0329cc9d4b66685b379c8c39072d8a4e3b",
+      "home_team": "Recreativo Huelva",
+      "away_team": "Cacereño",
+      "starts_at": "2026-09-16T18:30:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    },
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/recreativo-de-huelva-cp-cacereno/DhbsBQFb#id:17081844",
+      "snapshot": "manual-5008-13-sofascore-f9856e17bdf13447.json",
+      "snapshot_sha256": "f9856e17bdf134474a2b42908eb475f610e629607262cc11910c5bd886025f7d",
+      "home_team": "Recreativo de Huelva",
+      "away_team": "CP Cacereño",
+      "starts_at": "2026-09-16T18:30:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    }
+  ]
+}

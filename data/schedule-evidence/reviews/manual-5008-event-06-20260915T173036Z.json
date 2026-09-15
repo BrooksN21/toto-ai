@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12130,
+    "drawing_number": 5008,
+    "event_order": 5,
+    "target_event_id": 181058,
+    "sport": "football",
+    "championship": "Англия. Кубок Лиги",
+    "home_team": "Ковентри Сити",
+    "away_team": "Астон Вилла"
+  },
+  "observation": {
+    "observation_id": "manual-reviewed-5008-06-55d0aeaa-366d0155",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Кубок Лиги",
+      "League Cup - 1/16-finals",
+      "League Cup",
+      "EFL Cup"
+    ],
+    "home_entity": "Coventry City",
+    "home_aliases": [
+      "Ковентри Сити",
+      "Coventry",
+      "Coventry City"
+    ],
+    "away_entity": "Aston Villa",
+    "away_aliases": [
+      "Астон Вилла",
+      "Aston Villa"
+    ],
+    "starts_at": "2026-09-16T19:00:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+    "reviewed_at": "2026-09-15T17:30:36.217181Z"
+  },
+  "sources": [
+    {
+      "source_name": "GOAL API",
+      "role": "independent",
+      "source_url": "https://goal-api.com",
+      "snapshot": "manual-5008-06-goal-api-55d0aeaa62a5c19d.json",
+      "snapshot_sha256": "55d0aeaa62a5c19d9f3180c99da64e0329cc9d4b66685b379c8c39072d8a4e3b",
+      "home_team": "Coventry City",
+      "away_team": "Aston Villa",
+      "starts_at": "2026-09-16T19:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    },
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/aston-villa-coventry-city/lsP#id:16950628",
+      "snapshot": "manual-5008-06-sofascore-366d01550f7dab30.json",
+      "snapshot_sha256": "366d01550f7dab302a9e366c836346accf2c61ee2220ee560c1df545188905c2",
+      "home_team": "Coventry City",
+      "away_team": "Aston Villa",
+      "starts_at": "2026-09-16T19:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    }
+  ]
+}

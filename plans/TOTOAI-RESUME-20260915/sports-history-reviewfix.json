@@ -1,0 +1,198 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "completed_at": "2026-09-15T17:42:40.368249+00:00",
+  "status": "S1_S2_FIXED_PENDING_INDEPENDENT_REVIEW",
+  "verification": {
+    "red": "11 new regressions failed;20 oldtests passed before fixes",
+    "green": "37passed0.45s",
+    "ruff": "PASS changedadapter/tests",
+    "actual_pilot_run": "PASS verifiedmetadata+mapping->0supportedhistory,notblanketlackofhistory",
+    "cache_reassembly": "PASS120rows;21completion-supported candidatefeature rows;13directtargetIDbound+8provisional",
+    "checks": "all retained rows completed_by<cutoff; target IDs excluded; unknown completion/class/availability never promoted",
+    "new_api_calls": 0,
+    "training": 0,
+    "global_process_audit": false
+  },
+  "hashes": {
+    "/Users/turshevr/toto-ai/src/toto_ai/research/sports_history_reconstruction.py": "f6be8613b598d8b7cb1bac2228dedecc117026dd593fe669d6169988549a2206",
+    "/Users/turshevr/toto-ai/tests/test_sports_history_reconstruction.py": "f7df1486beca7614e0d5067ac6a54666d43c2b44a19a20ca28f43848d79cc9ae",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/cache-sports-assembly/assemble.py": "e86ebe7d4effa8a24fee14d4deedce908e6c2cd01e7186a1132ad1f3daa73383",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/sports-history-reconstruction/5004-pilot-run-manifest-reviewfix.json": "8fdc4a8a64c6befa6b3b7c7f56b7c4b58c3b2c142474813b65155b01e120bbaa",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/sports-history-reconstruction/5004-fixture-mapping-reviewfix.json": "887b421bb1224dc92ac9109400d4216b8cf7fd8d9327e827a6da3ba08f32c2f6",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/sports-history-reconstruction/5004-pilot-post-reviewfix.json": "78a3090d8d56a19324529015f0a910c2a0618d12ede676b2f824ad0ed07f3e3e",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/cache-sports-assembly/post-reviewfix/summary.json": "8adc338499f42953453d2b0683b5fc660641c1769841261bc48d23269b593cf4",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/cache-sports-assembly/post-reviewfix/actual-event-feature-readiness.json": "91012ae88c2709e854ba9fa1a6383238f5007410a826804fe701428014ff30cf",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/cache-sports-assembly/post-reviewfix/source-hashes.json": "32f0c2dbf82f30a51fb0dcc0c21540eded917f7272895211f8f17d187b13c1ed"
+  },
+  "pilot_counts": {
+    "received": 20,
+    "excluded": 20,
+    "retained_unique": 0,
+    "numeric_features": 8,
+    "feature_slots": 28,
+    "historical_availability_proven": 0,
+    "class_proven": 0,
+    "completion_before_cutoff_evidenced": 0
+  },
+  "cache_counts": [
+    {
+      "drawing": 4999,
+      "target_rows": 15,
+      "numerical_feature_rows": 13,
+      "direct_event_id_bound_feature_rows": 13,
+      "provisional_compound_feature_rows": 0,
+      "full28_numeric_rows": 4,
+      "completion_supported_feature_rows": 13,
+      "empty_history_counter_only_rows": 0,
+      "rows_with_late_capture": 0,
+      "unresolved_rows": 2,
+      "fit_eligible_rows": 0
+    },
+    {
+      "drawing": 5000,
+      "target_rows": 15,
+      "numerical_feature_rows": 5,
+      "direct_event_id_bound_feature_rows": 0,
+      "provisional_compound_feature_rows": 5,
+      "full28_numeric_rows": 1,
+      "completion_supported_feature_rows": 5,
+      "empty_history_counter_only_rows": 0,
+      "rows_with_late_capture": 0,
+      "unresolved_rows": 10,
+      "fit_eligible_rows": 0
+    },
+    {
+      "drawing": 5001,
+      "target_rows": 15,
+      "numerical_feature_rows": 1,
+      "direct_event_id_bound_feature_rows": 0,
+      "provisional_compound_feature_rows": 1,
+      "full28_numeric_rows": 0,
+      "completion_supported_feature_rows": 1,
+      "empty_history_counter_only_rows": 0,
+      "rows_with_late_capture": 0,
+      "unresolved_rows": 14,
+      "fit_eligible_rows": 0
+    },
+    {
+      "drawing": 5002,
+      "target_rows": 15,
+      "numerical_feature_rows": 0,
+      "direct_event_id_bound_feature_rows": 0,
+      "provisional_compound_feature_rows": 0,
+      "full28_numeric_rows": 0,
+      "completion_supported_feature_rows": 0,
+      "empty_history_counter_only_rows": 0,
+      "rows_with_late_capture": 0,
+      "unresolved_rows": 15,
+      "fit_eligible_rows": 0
+    },
+    {
+      "drawing": 5003,
+      "target_rows": 15,
+      "numerical_feature_rows": 0,
+      "direct_event_id_bound_feature_rows": 0,
+      "provisional_compound_feature_rows": 0,
+      "full28_numeric_rows": 0,
+      "completion_supported_feature_rows": 0,
+      "empty_history_counter_only_rows": 0,
+      "rows_with_late_capture": 0,
+      "unresolved_rows": 15,
+      "fit_eligible_rows": 0
+    },
+    {
+      "drawing": 5004,
+      "target_rows": 15,
+      "numerical_feature_rows": 2,
+      "direct_event_id_bound_feature_rows": 0,
+      "provisional_compound_feature_rows": 2,
+      "full28_numeric_rows": 0,
+      "completion_supported_feature_rows": 2,
+      "empty_history_counter_only_rows": 0,
+      "rows_with_late_capture": 0,
+      "unresolved_rows": 13,
+      "fit_eligible_rows": 0
+    },
+    {
+      "drawing": 5005,
+      "target_rows": 15,
+      "numerical_feature_rows": 0,
+      "direct_event_id_bound_feature_rows": 0,
+      "provisional_compound_feature_rows": 0,
+      "full28_numeric_rows": 0,
+      "completion_supported_feature_rows": 0,
+      "empty_history_counter_only_rows": 0,
+      "rows_with_late_capture": 0,
+      "unresolved_rows": 15,
+      "fit_eligible_rows": 0
+    },
+    {
+      "drawing": 5006,
+      "target_rows": 15,
+      "numerical_feature_rows": 0,
+      "direct_event_id_bound_feature_rows": 0,
+      "provisional_compound_feature_rows": 0,
+      "full28_numeric_rows": 0,
+      "completion_supported_feature_rows": 0,
+      "empty_history_counter_only_rows": 0,
+      "rows_with_late_capture": 0,
+      "unresolved_rows": 15,
+      "fit_eligible_rows": 0
+    }
+  ],
+  "recovery_sample": {
+    "drawing": 5004,
+    "event_order": 8,
+    "name": "Осасуна — Эспаньол",
+    "two_late_sources_supported_history": 0,
+    "merged_cached_supported_history": 21,
+    "native_numeric_features_after_merge": 26,
+    "raw_history_files_used": 3,
+    "retained_completion_kinds": {
+      "TERMINAL_OBSERVED_BEFORE_CUTOFF": 21
+    },
+    "excluded": {
+      "TARGET": 2,
+      "COMPLETION_BEFORE_CUTOFF_UNPROVEN": 18
+    },
+    "binding_grade": "COMPOUND_PROVIDER_FIXTURE_CANDIDATE_TARGET_MAPPING_UNREVIEWED",
+    "history_before_fix": 23,
+    "features_before_fix": 26,
+    "observations": [
+      {
+        "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T145957325848Z/9aa46877eae7f3cf.json",
+        "observed_at": "2026-09-06T15:00:34.284532Z",
+        "completed_by": "2026-09-06T15:00:34.284532Z"
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T145957325848Z/9aa46877eae7f3cf.json",
+        "observed_at": "2026-09-06T15:00:34.284532Z",
+        "completed_by": "2026-09-06T15:00:34.284532Z"
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T145957325848Z/9aa46877eae7f3cf.json",
+        "observed_at": "2026-09-06T15:00:34.284532Z",
+        "completed_by": "2026-09-06T15:00:34.284532Z"
+      }
+    ]
+  },
+  "policy": {
+    "completion": "explicit source finishedAt beforecutoff OR actual terminal observation beforecutoff; kickoff/updatedAt alone never enough; no invented durations/finish dates",
+    "late_capture": "supported explicitoldfinish canpassnumericreconstruction; unknownfinish is excluded with reason, not declared known unfinished",
+    "metadata": "required sourcebytes hash+exact local_event_id/drawing_number/event_order/close; required hash-bound fixturemapping; native GOALfixture ID/team/kickoff checks retained",
+    "mapping_authority": "prior explicitly tasked researchfixture binding only; no new independentclass/review authority",
+    "fit": false
+  },
+  "superseded_manifest": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/sports-history-reconstruction/superseded-artifacts-reviewfix.json",
+  "original_source_hashes_unchanged": true,
+  "next": "Independent review new hashes; cachemapping/class/feature missingness remain; exactmissing-request plan incomplete for unboundtargets; no API untilapproved",
+  "unmodified": [
+    "marketbatch/Bfiles",
+    "productionSportsV3",
+    "DB",
+    "scheduler",
+    "ops5008",
+    "ACTIVE_PLAN",
+    "Git"
+  ]
+}

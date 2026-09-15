@@ -1,3 +1,13 @@
+# Resume milestone — 2026-09-15T20:51:21.114311+03:00
+
+Task TOTOAI-RESUME-20260915. Completed research slice; prior checkpoints are history.
+- DONE R1:8/8drawings4999–5006,24native market packages,4980/30/166each; generation747s total, hash-bound before scoring. Unknown-asof finished quotes =>SCENARIO ONLY, not faithfulpredrawbacktest or profitability evidence. No13+ on8draws; qv3maxhits lower on4/tied4; robust5identical couponsets, causeunknown—not provenfallback. True4999archivedmax11 remains separate from finished-scenario max10.
+- DONE R2 CODE: independent re-review PASS for completion-before-cutoff and targetmetadata/fixturemapping binding; R1set-vs-order reportfixPASS.62focusedtestsPASS,RuffPASS in re-review; noSportsV3fit/deployment. Two-late-source5004pilot0validprior; cachemerge restores21prior/26of28features with provisionalmapping. Across120targets:21feature rows=13direct+8provisional,0fiteligible. Cachehelper/fullcorpus not independently reviewed by the generic-fix review.
+- USER FACT:5007 manualquality-v3/4980 is USER_REPORTED, not brokerconfirmed; payoutUNKNOWN/null, no future strategy rule. Existing loaded5007postmortem16Sep12MSK retries15/18/21 per parent-confirmed evidence, no reinstall/re-audit here.
+- OPS5008(parent saved20:45checkpoint): closes16Sep18:30MSK;14/15timingaccepted, event9officialtime/TZconflict, planNULL.20:25/20:45deferred75; nextnative21:15/23:15. Pending readonlytwo-sourcecheck belongs to parent/Pauli; no claimconflictresolved orPLAYready.
+- NEXT EXACT:R2a bounded eligibleearliertrainingroster + exactmapping/requestgaps per plans/TOTOAI-RESUME-20260915/model-improvements-next.md; then independentclassification/domainreview, limitedhistoryfill, realfitpilot, genuinefivewaycomparison and separately approved researchsidecar. Do not restartA/B/R1 or train on these knownconfirmationlabels and call it unseen.
+- BLOCKERS:unknownhistoricalmarketasof, incompleteidentity/class/completion/features, realV3fitabsent. Primarynewdrawingflow protected; no resourcecompetition/releasebypass. Currentjob publishes reviewedcode/docs/evidence metadata only; rawHTML/DB/credentials/coupons remainlocal.
+
 # 5007 expiry / confirmed postmortem checkpoint — 2026-09-15T19:58:52.815073+03:00
 
 Task TOTOAI-RESUME-20260915. This current checkpoint supersedes earlier verification status; older entries remain historical.

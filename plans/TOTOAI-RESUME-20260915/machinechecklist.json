@@ -1,9 +1,9 @@
 {
   "task_id": "TOTOAI-RESUME-20260915",
-  "version": "20260915-plan-v1",
+  "version": "20260915-plan-v2-retrospective",
   "created_at": "2026-09-15T14:07:31.908300+00:00",
   "kind": "EXECUTION_CHECKLIST",
-  "current_step": "5007 primary andparallel released before expiry;actual wager unconfirmed;wait outcomes for all4modelpostmortem. Cclassification contract remains proposed;C/D/Fblocked.",
+  "current_step": "R1 COMPLETE8draw24scoredscenarios; R2genericfixes independentlyPASS, actual21feature rows13direct8provisional/no fit. NEXT R2a eligibleolderroster+exactmapping/requestgaps.",
   "context": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-context.md",
   "active_plan_modified": true,
   "protected": {
@@ -134,7 +134,8 @@
         "B2-native-replay.json",
         "BC-integration-review.json"
       ],
-      "completion_scope": "One5000 early-pool780/26 research case and166-ordered-coupon4999parity; sports skipped, no quality/ROI claim"
+      "completion_scope": "One5000 early-pool780/26 research case and166-ordered-coupon4999parity; sports skipped, no quality/ROI claim",
+      "next_increment": "R1extensionCOMPLETE8/24; do notrerun; nextworkR2a"
     },
     {
       "id": "C",
@@ -143,7 +144,7 @@
         "C2"
       ],
       "title": "Point-in-time sports and market availability table for4999–5006",
-      "status": "BLOCKED_INPUT",
+      "status": "PARTIAL_IMPLEMENTED_REVIEWED",
       "owner": "data-evidence worker, independent provenance reviewer",
       "depends_on": [],
       "inputs": [
@@ -169,7 +170,7 @@
       ],
       "exit_criteria": [
         "one per-event/family availability ledger with exact identity/source/time/row hashes and evidence-domain",
-        "5001–5006 missing market/pool retained; football-history reconstruction does not fabricate them",
+        "All8 finished market/pool values present; quote as-of UNKNOWN remains graded, not fabricated historical availability",
         "two separate corpus domains: original frozen captures and explicitly reconstructed historical research",
         "accepted independent source/scope receipt or explicit missing status for every required field",
         "no changes to original chronology rejected rows, denominator, DB or operational ledger"
@@ -189,7 +190,8 @@
         "C-envelope-independent-references.json",
         "plans/TOTOAI-RESUME-20260915/C-scope-classification-handoff.md"
       ],
-      "completion_scope": "Inactive lossless format adapter only; corpus incomplete, no training authorization"
+      "completion_scope": "Inactive lossless format adapter only; corpus incomplete, no training authorization",
+      "next_increment": "R2a boundedoldereligiblehistory+mapping/requestgaps;21/120feature rows including8provisional, notfitready"
     },
     {
       "id": "D",
@@ -245,7 +247,8 @@
         "walkforward-v2/predictions/",
         "walkforward-v2/probability-evaluation.json",
         "walkforward-v2/independent-gate.json"
-      ]
+      ],
+      "next_increment": "R3: reviewed reconstructed-domain contract; earlier eligible training, frozen5004–5006 confirmation not pristine unseen; no unknown-asof market in causal fit."
     },
     {
       "id": "E",
@@ -255,7 +258,7 @@
         "C5"
       ],
       "title": "Five labelled arms, common comparisons, complete missingness reporting",
-      "status": "PARTIAL_4999_DONE_REMAINDER_BLOCKED",
+      "status": "PARTIAL_THREE_ARMS_COMPLETE",
       "owner": "offline evaluation solver; independent algorithm reviewer",
       "depends_on": [
         "B",
@@ -289,14 +292,15 @@
         "all8 drawings and5arms retained even if NOT_EVALUABLE; paired quality comparisons on same eligible subset with coverage and fallback slices",
         "ROI only if payout evidence verified; no lift/profit claim fromn1 or posthoc model choice"
       ],
-      "blocker": "5000 has only three-arm early-market scope;5001–5006 no predraw market/sports inputs; V3 needsD. Complete table with explicit missing statuses can be produced now.",
+      "blocker": "8draw3nativearmsSCENARIOcomplete; genuineSportsV2/V3 require qualified sportsinputs/model. No causaledgeclaim fromunknown-asofquotes.",
       "outputs": [
         "evaluation4999-5006/arm-matrix.json",
         "evaluation4999-5006/report.md",
         "evaluation4999-5006/category-metrics.csv",
         "evaluation4999-5006/probability-metrics.json",
         "evaluation4999-5006/roi-evidence.json"
-      ]
+      ],
+      "next_increment": "R4 per-arm matrix; no fake sports fallback presented as model execution; scenario and archive cohorts separated."
     },
     {
       "id": "F",
@@ -347,11 +351,11 @@
     }
   ],
   "now_without_missing_data": [
-    "Review and approve/reject the ONE documented classification binding proposal",
-    "Continue parent-owned5007scheduled operations; no new experiment on critical path",
-    "Maintain explicit missingness table without fabricating taxonomy/availability/market captures"
+    "Execute R2a exact eligibleearlierhistory roster and mapping/request gap inventory using existing indexed cache",
+    "Use completed8draw3arm outputs for predeclared diagnostic priorities; no rerun forreport-onlyfix",
+    "Resolve5008event9timeconflict via parent; do not claimreadyplan"
   ],
-  "ordering": "FirstA scoped library only; thenB adapter/pilot; C verified source availability in independently scoped work; D after eligible evidence, E after frozen outputs, F after separate prospective acceptance. Do not wait onC to implementA/B.",
+  "ordering": "R1 immediately independent ofR2; R3chronologicalfit after eligible corpus/domain review; R4fullfivearms after realSportsV2/V3inputs; R5prospective sidecar only after separate acceptance.",
   "change_claims": {
     "quality_v2": "retain frozen control; calibration only separately trained predictor hypothesis",
     "quality_v3": "higher rawP13/24coupons9+on4999 is descriptive; do not remove P15 safety gate fromn1",
@@ -367,9 +371,11 @@
     "C-SCOPE-ENTITY-BINDING-V1 implementation",
     "real qualified SportsV3 fitting",
     "five-arm full retrospective evaluation on4999–5006",
-    "SportsV3 activation"
+    "SportsV3 activation",
+    "R2 fullqualifiedsports reconstruction for5000–5006 (partialcache workcompleted)",
+    "R3 reviewed reconstructed fit protocol/real training"
   ],
-  "next_checkpoint": "Parent19:50expiry; all4modelpostmortem after verified completed outcomes, first confirm actual userchoice/placement/payout. Research contract approval still required.",
+  "next_checkpoint": "Parent5008native21:15/23:15 andSep16postmortem12MSK; researchR2a bounded roster/mapping receipt≤5min, notnewplan/fit.",
   "execution_checkpoint": {
     "at": "2026-09-15T19:46:59.919439+03:00",
     "A": "COMPLETE_INERT_PUBLISHED",
@@ -417,5 +423,115 @@
     "actual_wager_confirmed": false,
     "expiry_msk": "2026-09-15T19:50:00+03:00",
     "postmortem_scheduler_verified": false
+  },
+  "updated_at": "2026-09-15T20:51:21.114311+03:00",
+  "retrospective_revision": {
+    "recorded_at": "2026-09-15T20:12:51.617820+03:00",
+    "protocol": "plans/TOTOAI-RESUME-20260915/retrospective-reconstruction-protocol.md",
+    "context": "plans/TOTOAI-RESUME-20260915/retrospective-reconstruction-context.json",
+    "context_sha256": "8548a148e002e11a54c1fe16f8b54e7db081f6362790dc600352ca95f74bece1",
+    "planning_only": true,
+    "new_runs_performed": false,
+    "market_rows_verified_by_context_worker": 120,
+    "draws": [
+      4999,
+      5000,
+      5001,
+      5002,
+      5003,
+      5004,
+      5005,
+      5006
+    ],
+    "domain": "POST_EVENT_MARKET_SCENARIO_UNVERIFIED_ASOF",
+    "requested_bank": 4980,
+    "stake": 30,
+    "target_coupon_count": 166,
+    "native_first_arms": [
+      "quality-v2",
+      "quality-v3",
+      "robust-market-only"
+    ],
+    "sports_arms_not_faked": [
+      "sports-shadow",
+      "Sports v3"
+    ],
+    "fit_eligible_unknown_asof_market": false,
+    "development_draws": [
+      4999,
+      5000,
+      5001,
+      5002,
+      5003
+    ],
+    "no_further_tuning_confirmation_draws": [
+      5004,
+      5005,
+      5006
+    ],
+    "confirmation_is_pristine_unseen": false,
+    "future_prospective_required_for_promotion": true,
+    "steps": [
+      {
+        "id": "R1a",
+        "status": "COMPLETE",
+        "assignment": "Bounded scenario adapter/native binding + negative tests + independent review",
+        "depends_on": [],
+        "evidence": "R1-scenario-implementation.json; R1-R2-publication-review.json; localhashboundcomparison"
+      },
+      {
+        "id": "R1b",
+        "status": "COMPLETE",
+        "assignment": "First4999 full166 three-arm pilot then5000–5006 with frozen configuration",
+        "depends_on": [
+          "R1a"
+        ],
+        "evidence": "R1-scenario-implementation.json; R1-R2-publication-review.json; localhashboundcomparison"
+      },
+      {
+        "id": "R2",
+        "status": "PARTIAL_IMPLEMENTED_REVIEWED",
+        "assignment": "Separate exact target/time/history reconstruction; taxonomy design acceptance before binding implementation",
+        "depends_on": [],
+        "evidence": "sports-history-reviewfix.json;21feature rows/13direct8provisional;0fit"
+      },
+      {
+        "id": "R3",
+        "status": "BLOCKED_INPUT",
+        "assignment": "Reviewed eligible reconstructed corpus/domain→chronologicalfit→frozen predictions",
+        "depends_on": [
+          "R2"
+        ]
+      },
+      {
+        "id": "R4",
+        "status": "PARTIAL_THREE_ARMS_COMPLETE",
+        "assignment": "Same-bank five-arm comparison with honest missing arms; sports needs realV2/V3",
+        "depends_on": [
+          "R1b",
+          "R3"
+        ],
+        "evidence": "24marketpackages scored; genuineSportsV2/V3fiveway incomplete"
+      },
+      {
+        "id": "R5",
+        "status": "BLOCKED_BY_INDEPENDENT_ACCEPTANCE",
+        "assignment": "Manifest-controlled prospective sidecar; primary untouched",
+        "depends_on": [
+          "R4"
+        ]
+      }
+    ]
+  },
+  "completed_reconstruction_milestone": {
+    "at": "2026-09-15T20:51:21.114311+03:00",
+    "scenario_draws": 8,
+    "native_packages": 24,
+    "sports_feature_rows": 21,
+    "direct": 13,
+    "provisional": 8,
+    "fit": false,
+    "generic_review": "PASS_threefixes",
+    "next_plan": "plans/TOTOAI-RESUME-20260915/model-improvements-next.md"
   }
 }

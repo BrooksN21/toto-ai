@@ -1,3 +1,31 @@
+# Resume milestone — 2026-09-15T20:51:21.114311+03:00
+
+Task TOTOAI-RESUME-20260915. Completed research slice; prior checkpoints are history.
+- DONE R1:8/8drawings4999–5006,24native market packages,4980/30/166each; generation747s total, hash-bound before scoring. Unknown-asof finished quotes =>SCENARIO ONLY, not faithfulpredrawbacktest or profitability evidence. No13+ on8draws; qv3maxhits lower on4/tied4; robust5identical couponsets, causeunknown—not provenfallback. True4999archivedmax11 remains separate from finished-scenario max10.
+- DONE R2 CODE: independent re-review PASS for completion-before-cutoff and targetmetadata/fixturemapping binding; R1set-vs-order reportfixPASS.62focusedtestsPASS,RuffPASS in re-review; noSportsV3fit/deployment. Two-late-source5004pilot0validprior; cachemerge restores21prior/26of28features with provisionalmapping. Across120targets:21feature rows=13direct+8provisional,0fiteligible. Cachehelper/fullcorpus not independently reviewed by the generic-fix review.
+- USER FACT:5007 manualquality-v3/4980 is USER_REPORTED, not brokerconfirmed; payoutUNKNOWN/null, no future strategy rule. Existing loaded5007postmortem16Sep12MSK retries15/18/21 per parent-confirmed evidence, no reinstall/re-audit here.
+- OPS5008(parent saved20:45checkpoint): closes16Sep18:30MSK;14/15timingaccepted, event9officialtime/TZconflict, planNULL.20:25/20:45deferred75; nextnative21:15/23:15. Pending readonlytwo-sourcecheck belongs to parent/Pauli; no claimconflictresolved orPLAYready.
+- NEXT EXACT:R2a bounded eligibleearliertrainingroster + exactmapping/requestgaps per plans/TOTOAI-RESUME-20260915/model-improvements-next.md; then independentclassification/domainreview, limitedhistoryfill, realfitpilot, genuinefivewaycomparison and separately approved researchsidecar. Do not restartA/B/R1 or train on these knownconfirmationlabels and call it unseen.
+- BLOCKERS:unknownhistoricalmarketasof, incompleteidentity/class/completion/features, realV3fitabsent. Primarynewdrawingflow protected; no resourcecompetition/releasebypass. Currentjob publishes reviewedcode/docs/evidence metadata only; rawHTML/DB/credentials/coupons remainlocal.
+
+# Reconstruction plan v2 — 2026-09-15T20:12:51.617820+03:00
+
+Task TOTOAI-RESUME-20260915. PLANNING ONLY; implementation not started by this worker.
+- DONE: fresh context8draws/120market+result rows/hash matches consumed; A library/B early pilot already complete. Missing predraw capture != impossible reconstruction. Updated existingplan/checklist; protocol: plans/TOTOAI-RESUME-20260915/retrospective-reconstruction-protocol.md.
+- NEXT EXACT: R1a inactive closed-market scenario adapter, RAW→sanitizedinput→nativeEVSurface hash binding, small negative suite + independent review; R1b first4999 3-arm166/4980 pilot then5000–5006. Unknown marketasof remains SCENARIO, not causal backtest/train evidence. No fake sports variants.
+- PARALLEL: R2 target/time/history reconstruction for5000–5006; existing taxonomy binding remains proposal requiring acceptance. R3 fit/R4 fullfivearms/R5 sidecar conditional on reviewed evidence; SportsV3 stillunfitted, no claimimprovement.8draws tiny design-informed diagnostic; frozenconfirmation5004–5006 not pristine unseen.
+- BLOCKERS: quoteavailability unknown; sports mapping/timing/scope/features incomplete; no eligible realfit yet. These do not block R1. Generation/test/runtime actions were NOT performed in this planning job.
+- OPERATIONS PRESERVED:5007expired; owner reports manualquality-v3/4980 (USER_REPORTED, no broker verification), payoutUNKNOWN; confirmedSep16 12MSKpostmortem retries15/18/21 remains parent's checkpoint. No reinstallation/re-audit. No new jobs/DB/consent/operator/code/Git changes.
+
+# 5007 owner-reported wager — 2026-09-15T20:06:03.053634+03:00
+
+Task TOTOAI-RESUME-20260915. New user statement; prior unknown-selection checkpoints remain valid history.
+- DONE: owner reports an actual MANUAL wager on **quality-v3,4 980 ₽**, drawing5007/plan84b0f69e06487848. Evidence class USER_REPORTED_NOT_INDEPENDENTLY_VERIFIED; no broker receipt, verified wager bytes or placement timestamp. This is not merely intent, but it is not independently confirmed.
+- PAYOUT: UNKNOWN; actual return/net/ROI are null, not zero. No profitability claim and no permanent model-selection rule. Assistant placed no wager; all issued packages remain expired.
+- SOURCE: reports/rehearsal/evening-5007-20260915T170000Z/post-draw/user-reported-wager-5007.json. Existing local user-report provenance convention reused; selected archive reference does not prove submitted bookmaker bytes. This record is for analyst attribution; new automatic ingestion is not claimed.
+- NEXT: existing confirmed postmortem16September12:00MSK(retries15/18/21), no reinstall/re-audit; compare all4models after final outcomes and attribute user-reported participation to quality-v3, awaiting payout evidence for actualROI. C/fit/proposal blockers unchanged.
+- THIS JOB: only new report plus this concise checkpoint; archivedPLAY/consents/jobregistry/oldhistories unchanged. No staging/commit/push/PR; separate submission remains later.
+
 # 5007 expiry / confirmed postmortem checkpoint — 2026-09-15T19:58:52.815073+03:00
 
 Task TOTOAI-RESUME-20260915. This current checkpoint supersedes earlier verification status; older entries remain historical.

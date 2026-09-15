@@ -1,0 +1,28 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "prepared_at": "2026-09-15T20:53:01.582880+03:00",
+  "base_head": "6d8897f099fa1664142a339f12fccf0918853b5e",
+  "work_summary": "Inactiveclosedmarket8draw24scenarios + sportscompletion/targetbinding fixes + reviewedmetadata; genuineSportsV3fit/deployment not done",
+  "review": "plans/TOTOAI-RESUME-20260915/R1-R2-publication-review.json",
+  "verification": {
+    "pytest": "104passed1deselected1.84s",
+    "scope": [
+      "test_closed_market_scenario_replay",
+      "test_sports_history_reconstruction",
+      "test_raw_package_replay",
+      "test_research_quality_core",
+      "test_schedule_evidence_v2"
+    ],
+    "heavy_surface": "unchanged; independentpriorPASS64.73s, notrerun",
+    "ruff": "4source/testsPASS",
+    "diff_check": "PASS",
+    "ledger": "16append-onlyentries,reviewhashesmatch",
+    "secret_check": "boundedcandidatefilespatterns/JSONparsePASS; noenv/DB/raw/coupons staged"
+  },
+  "local_preservation": "5exactrawHTMLpaths ignored; originalbytes kept; adjacentmetadatareceipts versioned; no source/activeplans hidden",
+  "pr": "https://github.com/BrooksN21/toto-ai/pull/23",
+  "publish_pr": false,
+  "merge": false,
+  "next": "R2a exactoldereligiblehistory/mapping/requestgaps; nofit. Parent5008next21:15/23:15 unresolvedevent9;5007postmortem16Sep12MSK.",
+  "runtime": "20:45:04.915deferred75,14/15planNULL;20:49officialcheck still no provenTZresolution; no schedulerjobs/sourceevidence mutations byfinalizer"
+}
