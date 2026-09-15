@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "event_order": 3,
+    "target_event_id": 180606,
+    "championship": "Англия. Чемпионшип",
+    "home_team": "Куинз Парк Рейнджерс",
+    "away_team": "Мидлсбро",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "recovery-4997-event-04-20260904",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Чемпионшип",
+      "Championship"
+    ],
+    "home_entity": "Queens Park Rangers",
+    "home_aliases": [
+      "Куинз Парк Рейнджерс",
+      "Queens Park Rangers"
+    ],
+    "away_entity": "Middlesbrough",
+    "away_aliases": [
+      "Мидлсбро",
+      "Middlesbrough"
+    ],
+    "starts_at": "2026-09-05T14:00:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "codex-local-evidence-review",
+    "reviewed_at": "2026-09-04T20:07:05.766096Z"
+  },
+  "sources": [
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/middlesbrough-queens-park-rangers/bsL#id:16391651",
+      "snapshot": "recovery-4997-e259f591df9a7c075071e93601e488debc8fddbcf4d1a46ff90077f3a8a426af.json",
+      "snapshot_sha256": "e259f591df9a7c075071e93601e488debc8fddbcf4d1a46ff90077f3a8a426af",
+      "home_team": "Queens Park Rangers",
+      "away_team": "Middlesbrough",
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T18:35:42.659730Z"
+    },
+    {
+      "source_name": "TNT Sports",
+      "role": "independent",
+      "source_url": "https://www.tntsports.co.uk/football/championship/2026-2027/queens-park-rangers-middlesbrough_mtc21887479/live.shtml",
+      "snapshot": "recovery-4997-0d0b531f69e032bdebfe1811bea6b0ce692f23f7b7d43ea7b8273d5062c08862.html",
+      "snapshot_sha256": "0d0b531f69e032bdebfe1811bea6b0ce692f23f7b7d43ea7b8273d5062c08862",
+      "home_team": "Queens Park Rangers",
+      "away_team": "Middlesbrough",
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T20:04:50.314089Z"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "observed_at": "2026-09-15T13:52:15.891208+00:00",
+  "plan_id": "84b0f69e06487848",
+  "plan_sha256": "ffd255a94912b0293499ade55c27af478bc7fbc64e13824d28408a7148097241",
+  "drawing": 5007,
+  "drawing_id": 12127,
+  "bank": 4980,
+  "stake": 30,
+  "closing_msk": "2026-09-15T20:00:00+03:00",
+  "expiry_msk": "2026-09-15T19:50:00+03:00",
+  "resolved": 15,
+  "unresolved": 0,
+  "prepare": {
+    "pid": 14267,
+    "exit_code": 0,
+    "elapsed_seconds": 165.126,
+    "status": "completed"
+  },
+  "preflight": {
+    "artifact_class": "REAL_PREFLIGHT_ONLY_NO_PACKAGE",
+    "automatic_wagering": false,
+    "drawing_id": 12127,
+    "drawing_number": 5007,
+    "finished_at": "2026-09-15T13:47:01.948075Z",
+    "package_generation": false,
+    "plan_id": "84b0f69e06487848",
+    "reason": "target, data access, configuration, and override catalog validated",
+    "result_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/daytime-preflight/checkpoints/20260915T134656892353Z-7c7edc65/result.json",
+    "schema_version": 1,
+    "started_at": "2026-09-15T13:46:56.892353Z",
+    "status": "PASS",
+    "training": false
+  },
+  "primary_schedule_msk": [
+    "18:00",
+    "18:30",
+    "19:00",
+    "19:10",
+    "19:20",
+    "19:30",
+    "19:42",
+    "19:50"
+  ],
+  "parallel_schedule_msk": "19:30",
+  "candidate_models": [
+    "quality-v2",
+    "sports-shadow",
+    "quality-v3",
+    "robust"
+  ],
+  "sports_seed_coverage": 11,
+  "sports_v3_trained_active": false,
+  "watcher": {
+    "label": "com.totoai.status-watcher.v1.84b0f69e06487848",
+    "source": "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/status-watch/com.totoai.status-watcher.v1.84b0f69e06487848.plist",
+    "target": "/Users/turshevr/Library/LaunchAgents/com.totoai.status-watcher.v1.84b0f69e06487848.plist",
+    "installed_sha256": "ea1560ff4b0690283de8651fdca07c33da2a037e825072dd65f38692d7c9bcac",
+    "source_equals_installed": true,
+    "loaded": true,
+    "kickstarted": true,
+    "first_scheduled_msk": "2026-09-15T18:00:00+03:00",
+    "poll_seconds": 30,
+    "automatic_wagering": false
+  },
+  "loaded_jobs": [
+    "-\t0\tcom.totoai.parallel-sidecar.v1.84b0f69e06487848",
+    "-\t0\tcom.totoai.production-scheduler.v9.84b0f69e06487848",
+    "16288\t0\tcom.totoai.status-watcher.v1.84b0f69e06487848"
+  ],
+  "primary_consent": {
+    "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/experimental-manual-release-authorization.json",
+    "record_sha256": "b9ab59c33dc5318721a511deb35effca58c7cae92adda045673c00a420617319",
+    "authorized_at": "2026-09-15T13:48:28.956299Z",
+    "expires_at": "2026-09-15T16:50:00Z",
+    "native_validation": "PASS"
+  },
+  "parallel_consent": {
+    "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/parallel-challenger/parallel-release-authorization.json",
+    "file_sha256": "ca86217e7a77e51891de5e92a5ad7cec8ce77aefe1894a1c22f02be4883e954b",
+    "record_sha256": "b78edea2995f6ca778824fef3a2013cf75ead856247e80cd25be164cfd1ed21d",
+    "authorized_at": "2026-09-15T13:51:31.698793Z",
+    "expires_at": "2026-09-15T16:50:00Z",
+    "native_validation": "PASS",
+    "job_reader_resolved_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/parallel-challenger/parallel-release-authorization.json",
+    "reader_matches_canonical": true
+  },
+  "blocker": null,
+  "next_action": "Observe18:00MSK native primary and planboundwatcher; finalprimarytarget19:30, parallel19:30, lastfinalretry19:42, expiry19:50, close20:00. Do not run live package now.",
+  "owned_calculation_processes_running": [],
+  "monitor_process": "Pythonwatcher16288 (fresh loadedjobs authoritative)",
+  "sessions_completed": [
+    86129,
+    43544
+  ],
+  "operator_package_ready": false,
+  "automatic_wagering": false,
+  "status": "RUNTIME_READY_WITH_VALID_PLAN_BOUND_CONSENT",
+  "unused_orphan_parallel_consent": {
+    "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/parallel-challenger/output/parallel-release-authorization.json",
+    "file_sha256": "99923dcc4ed0c68283bdd4e18423c84ec0ba566af31e24ca05ef479320c08b16",
+    "record_sha256": "9dbc79964fb69be24754dde76e5e6d46f3222e955266b13ca0d13f73eccef94e",
+    "retained": true,
+    "used_by_scheduled_reader": false
+  },
+  "consent_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/consent5007-final-receipt.json",
+  "pending_risks": [
+    "Two candidate/source-provenance defects remain code-unfixed; today evidence was repaired only through genuine native reviews and frozen in plan.",
+    "No comparable predraw inputs for5001–5006;5000replayblocked missingfinal/baseline/sports andearlypoolcap780; do not infer modelgains.",
+    "Sportsv3trainedactive not proven; sports-shadowseed11/15; scheduledactualfinal andmodelperformance not yetverified."
+  ]
+}

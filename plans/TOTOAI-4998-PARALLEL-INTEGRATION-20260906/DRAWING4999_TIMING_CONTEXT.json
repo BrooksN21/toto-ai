@@ -1,0 +1,325 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "phase": "CONTEXT_COMPLETE_NO_MUTATIONS",
+  "created_at": "2026-09-06T17:49:20.957463+00:00",
+  "scope": "Read-only source/command context; no DB/ledger/plan/code/memory mutation",
+  "source_progress": "COMPLETE: 3 row-specific findings and native command templates saved; source review/import/activation intentionally not performed.",
+  "fresh_totobrief": {
+    "endpoint": "https://totobrief.com/api/v1/community/drawing-info/12106",
+    "requested_at": "2026-09-06T17:49:20.957946+00:00",
+    "attempts": 1,
+    "timeout_seconds": 6,
+    "status": "SUCCESS",
+    "received_at": "2026-09-06T17:49:21.396431+00:00",
+    "identity": {
+      "id": 12106,
+      "number": 4999,
+      "name": "baltbet-main",
+      "status": "active",
+      "ended_at": "2026-09-07T17:30:00.000000Z"
+    },
+    "target_events": [
+      {
+        "id": 180701,
+        "order": 8,
+        "name": "Флориана — Валлетта",
+        "name_en": null,
+        "championship": "Мальта. Суперкубок",
+        "start_at": null,
+        "gender": null,
+        "squad": null,
+        "age_group": null
+      },
+      {
+        "id": 180704,
+        "order": 11,
+        "name": "Аль Халидж Сайхат — Аль Рияд",
+        "name_en": null,
+        "championship": "Саудовская Аравия. Чемпионат",
+        "start_at": null,
+        "gender": null,
+        "squad": null,
+        "age_group": null
+      },
+      {
+        "id": 180706,
+        "order": 13,
+        "name": "Вождовац — Бачка Топола",
+        "name_en": null,
+        "championship": "Сербия. 1-я лига",
+        "start_at": null,
+        "gender": null,
+        "squad": null,
+        "age_group": null
+      }
+    ]
+  },
+  "completed_at": "2026-09-06T17:54:32.385849+00:00",
+  "drawing_id": 12106,
+  "drawing_number": 4999,
+  "deadline": {
+    "raw_ended_at": "2026-09-07T17:30:00.000000Z",
+    "utc": "2026-09-07T14:30:00+00:00",
+    "msk": "2026-09-07T17:30:00+03:00",
+    "authority": "One fresh TotoBrief response interpreted by existing toto_ai.totobrief_time.parse_totobrief_timestamp: BaltBet ended_at uses Moscow wall clock despite Z suffix. Not a direct BaltBet website verification."
+  },
+  "local_source_report": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12106-20260907T143000Z-b2596e1df489092a/source-collector/schedule-source-candidates.json",
+  "local_source_captured_at": "2026-09-06T17:39:29.137085Z",
+  "current_review_queue": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12106-20260907T143000Z-b2596e1df489092a/reviewed-schedule-queue-c001b61428b4.json",
+  "evidence_contract": {
+    "accepted_claim_sets": [
+      [
+        "official",
+        "independent"
+      ],
+      [
+        "independent",
+        "independent"
+      ]
+    ],
+    "minimum_https_sources": 2,
+    "exact_team_and_start_agreement": true,
+    "snapshot_sha256_required": true,
+    "freshness_required": true,
+    "reviewer_required": true,
+    "note": "Official absence alone does not forbid the existing two-independent-source route. This handoff is NOT a prepared review, ledger import or scope_verified authority."
+  },
+  "rows": [
+    {
+      "position": 9,
+      "event_order": 8,
+      "target_event_id": 180701,
+      "teams": [
+        "Floriana FC",
+        "Valletta FC"
+      ],
+      "competition": "BOV Super Cup 2026/27",
+      "identity_evidence": "Official MFA names Premier League champions vs FA Trophy holders; its ticket listing separately labels Youth U21 and Women fixtures. Senior first-team competition context, not a fabricated provider-team scope approval. TotoBrief gender/squad/age fields absent.",
+      "official_timing": {
+        "source_local": "2026-09-07T19:00:00+02:00",
+        "source_timezone": "Europe/Malta",
+        "utc": "2026-09-07T17:00:00+00:00",
+        "msk": "2026-09-07T20:00:00+03:00",
+        "timezone_basis": "Venue/country civil timezone, not an explicit offset printed by the page; conversion uses IANA zoneinfo."
+      },
+      "sources": [
+        {
+          "role": "official federation",
+          "url": "https://www.mfa.com.mt/news/competitions/tickets-out-now-for-40th-bov-super-cup-final/",
+          "published_date": "2026-08-18",
+          "claim": "Floriana vs Valletta, Monday 7 September, 19:00 at National Stadium Ta Qali"
+        },
+        {
+          "role": "official match centre",
+          "url": "https://matchcentre.mfa.com.mt/match/53208465",
+          "claim": "07-09-2026 19:00; lineup availability 16:00 is NOT kickoff"
+        },
+        {
+          "role": "club confirmation, independence requires review",
+          "url": "https://vallettafc.mt/buy-tickets/",
+          "claim": "7 September 2026, 7pm, Floriana vs Valletta"
+        },
+        {
+          "role": "competition/squad disambiguation",
+          "url": "https://tickets.mfa.com.mt/?club-id=hmr",
+          "claim": "Senior BOV Super Cup listed separately from Youth U21 and Women fixtures"
+        }
+      ],
+      "saved_candidate": {
+        "provider": "sofascore",
+        "fixture_id": "17001288",
+        "utc": "2026-09-07T16:00:00Z",
+        "msk": "2026-09-07T19:00:00+03:00",
+        "path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12106-20260907T143000Z-b2596e1df489092a/source-collector/snapshots/event-09-q1-sofascore-3bff0b7492de6b3c.json",
+        "sha256": "3bff0b7492de6b3c5f87fb760a114363bdc669dbbd5084cbdf8e95953479aaa9"
+      },
+      "status": "OFFICIAL_TIME_FOUND_SAVED_CANDIDATE_CONFLICT",
+      "remaining": "Resolve explicit one-hour Sofascore conflict; preserve old snapshot. Save/hash fresh source evidence in a separately authorized evidence job and obtain valid two-source review. No ledger-ready review produced here."
+    },
+    {
+      "position": 12,
+      "event_order": 11,
+      "target_event_id": 180704,
+      "teams": [
+        "Al Khaleej (Saihat)",
+        "Al Riyadh"
+      ],
+      "competition": "Roshn Saudi League 2026/27",
+      "identity_evidence": "Official SPL Al Khaleej first-team club page and target league fixture context; no women/U21/reserve marker in target sources. TotoBrief has no explicit gender/squad/age fields; do not mint demographic authority from names.",
+      "candidate_timing": {
+        "source_local": "2026-09-07T18:30:00+03:00",
+        "source_timezone": "Asia/Riyadh",
+        "utc": "2026-09-07T15:30:00+00:00",
+        "msk": "2026-09-07T18:30:00+03:00",
+        "timezone_basis": "Venue/country civil timezone, not an explicit offset printed by the page; conversion uses IANA zoneinfo."
+      },
+      "sources": [
+        {
+          "role": "official club identity, NOT current kickoff proof",
+          "url": "https://www.spl.com.sa/en/teams/al-khaleej/index"
+        },
+        {
+          "role": "independent saved candidate",
+          "url": "https://www.sofascore.com/football/match/al-riyadh-al-khaleej/DUqbsNlrb#id:16629480",
+          "claim": "2026-09-07 15:30 UTC"
+        },
+        {
+          "role": "independent current public corroboration",
+          "url": "https://www.fotmob.com/en-GB/matches/al-khaleej-vs-al-riyadh/86y6czbp",
+          "claim": "Monday 7 September 2026, 15:30 UTC, Prince Mohammed Bin Fahd Stadium, Dammam"
+        },
+        {
+          "role": "secondary ticket marketplace, not official authority",
+          "url": "https://grintahub.sa/events/al-khaleej-vs-al-riyadh-roshn-saudi-league-20262027-matchweek-6",
+          "claim": "7 September 2026 18:30 Saudi"
+        }
+      ],
+      "saved_candidates": [
+        {
+          "provider": "goal-api-v1",
+          "fixture_id": "cmt7202j1tlgrt107p88kofrd",
+          "utc": "2026-09-07T15:30:00Z",
+          "event_payload_sha256": "41ec22707a3321c37eea931968fc6f4bc5b398c687ba4369176889249549e2fa",
+          "binding_note": "Fuzzy match; not reviewed authority"
+        },
+        {
+          "provider": "sofascore",
+          "fixture_id": "16629480",
+          "utc": "2026-09-07T15:30:00Z",
+          "path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12106-20260907T143000Z-b2596e1df489092a/source-collector/snapshots/event-12-q2-sofascore-52ca7b875588fda5.json",
+          "sha256": "52ca7b875588fda5b8f1494c0ead6bd2937fb54ad6fcf9c26fd8f32b84a5f433"
+        }
+      ],
+      "rejected_reference": "https://www.spl.com.sa/en/match/84371 is 2025/26, not evidence for this 2026/27 fixture.",
+      "status": "CONSISTENT_INDEPENDENT_TIME_OFFICIAL_KICKOFF_NOT_LOCATED",
+      "remaining": "Two-independent-source contract may suffice after snapshot/hash/identity/freshness review; no official kickoff claim or new review authority invented."
+    },
+    {
+      "position": 14,
+      "event_order": 13,
+      "target_event_id": 180706,
+      "teams": [
+        "FK Vozdovac",
+        "FK TSC (Backa Topola)"
+      ],
+      "competition": "Mozzart Bet Prva Liga Srbije 2026/27",
+      "identity_evidence": "Official FSS current senior league schedule lists Vozdovac vs TSC; TSC club location is Backa Topola. No B/U19/U21/reserve marker. Formal provider-team/gender/squad approval is not created here.",
+      "official_timing": {
+        "source_local": "2026-09-07T18:00:00+02:00",
+        "source_timezone": "Europe/Belgrade",
+        "utc": "2026-09-07T16:00:00+00:00",
+        "msk": "2026-09-07T19:00:00+03:00",
+        "timezone_basis": "Venue/country civil timezone, not an explicit offset printed by the page; conversion uses IANA zoneinfo."
+      },
+      "sources": [
+        {
+          "role": "official federation competition schedule",
+          "url": "https://fss.rs/takmicenje/mozzart-bet-prva-liga-srbije-26-27/",
+          "claim": "07.09.2026 18:00 Beograd, VOZDOVAC vs TSC"
+        },
+        {
+          "role": "secondary corroboration located, needs snapshot/independence review",
+          "url": "https://utakmice.rs/tim/fk-vozdovac",
+          "claim": "Prva Liga fixture 7 September 18:00"
+        }
+      ],
+      "saved_candidate_status": "GOAL/Sofascore/TheSportsDB not found",
+      "status": "OFFICIAL_TIME_AND_CLUB_IDENTITY_FOUND_REVIEW_NOT_IMPORTED",
+      "remaining": "Freeze/hash official plus qualifying independent source, bind TSC/Backa Topola to exact target row, obtain actual review; never invent API fixture ID."
+    }
+  ],
+  "source_observation_window_utc": {
+    "started": "2026-09-06T17:48:13Z",
+    "ended": "2026-09-06T17:53:22.497851+00:00"
+  },
+  "operational_state_from_existing_artifacts": {
+    "scheduler_plan_created": false,
+    "watcher_plan_bound": false,
+    "state_basis": "Saved NEXT_DRAWING_AND_POSTMORTEM_STATUS plus target registry, not a new launchd scan.",
+    "preparation": "15 mapped / 12 external; 3 timing_unknown; not playable",
+    "existing_passive_retry_plan": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12106-20260907T143000Z-b2596e1df489092a/retry-plan.json",
+    "retry_plan_created_at": "2026-09-06T15:49:48.928716Z",
+    "retry_hard_stop_utc": "2026-09-07T13:30:00Z",
+    "retry_hard_stop_msk": "2026-09-07T16:30:00+03:00",
+    "activate_evening": true,
+    "warning": "Existing retry intent is not proof a scheduler/watcher is installed. Do not create a duplicate retry/scheduler; operational owner must reconcile exact current registry before mutation."
+  },
+  "boundaries": {
+    "commands_executed": false,
+    "db_changed": false,
+    "ledger_changed": false,
+    "scheduler_changed": false,
+    "memory_changed": false,
+    "consent_requested_or_created": false,
+    "packages_generated": false,
+    "publications": false,
+    "new_public_totobrief_requests": 1,
+    "totobrief_retries": 0,
+    "no_other_draw_or_postmortem_audit": true
+  },
+  "native_commands": [
+    {
+      "step": 1,
+      "purpose": "Validate each genuine prepared review without ledger mutation",
+      "command": "/Users/turshevr/toto-ai/.venv/bin/python -m toto_ai.cli schedule-evidence-review --review '<PREPARED_REVIEW_UNDER_LEDGER_DIR>' --review-sha256 '<EXACT_REVIEW_FILE_SHA256>' --ledger /Users/turshevr/toto-ai/data/schedule-evidence/ledger.json",
+      "source": "src/toto_ai/cli.py:4768-4798; src/toto_ai/external_odds/schedule_evidence_admin.py:121-215",
+      "prerequisites": "Authorized evidence job must preserve two original source snapshots, SHA256, true captured_at and subsequent real reviewer/reviewed_at, exact target fingerprint/event order/teams/start. Prepared review must be under the ledger directory. This context report is not that file. No snapshot/review authority is fabricated."
+    },
+    {
+      "step": 2,
+      "purpose": "Import only after successful dry-run and explicit evidence-operation scope; once per prepared review",
+      "command": "/Users/turshevr/toto-ai/.venv/bin/python -m toto_ai.cli schedule-evidence-review --review '<PREPARED_REVIEW_UNDER_LEDGER_DIR>' --review-sha256 '<EXACT_REVIEW_FILE_SHA256>' --ledger /Users/turshevr/toto-ai/data/schedule-evidence/ledger.json --apply",
+      "writes": "Evidence ledger; NOT executed here"
+    },
+    {
+      "step": 3,
+      "purpose": "Verify ledger/review/snapshot integrity",
+      "command": "/Users/turshevr/toto-ai/.venv/bin/python -m toto_ai.cli schedule-evidence-verify --ledger /Users/turshevr/toto-ai/data/schedule-evidence/ledger.json",
+      "source": "src/toto_ai/cli.py:4800-4825"
+    },
+    {
+      "step": 4,
+      "purpose": "Preferred existing guarded preparation route, without scheduler activation",
+      "command": "/Users/turshevr/toto-ai/.venv/bin/python -m toto_ai.cli morning-dispatch --bank 4980 --stake 30 --env-file /Users/turshevr/toto-ai/.env --project-root /Users/turshevr/toto-ai --state-root /Users/turshevr/toto-ai/data/scheduler/morning-dispatch --scheduler-root /Users/turshevr/toto-ai/reports/rehearsal --db /Users/turshevr/toto-ai/data/toto.db --aliases /Users/turshevr/toto-ai/data/external-odds/team-aliases.json --schedule-evidence-ledger /Users/turshevr/toto-ai/data/schedule-evidence/ledger.json --expected-drawing-id 12106 --expected-drawing-number 4999 --expected-fingerprint b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d --expected-deadline 2026-09-07T14:30:00Z --python-executable /Users/turshevr/toto-ai/.venv/bin/python",
+      "source": "src/toto_ai/cli.py:3998-4179",
+      "writes": "Preparation may perform network/DB/cache/state writes. Future operational owner only. Reconcile existing passive retry before running, do not execute concurrently or copy hidden retry-child flag. Existing retry has GOAL/parallel research options; preserve or explicitly review these with owner, rather than silently changing its config. Bank/stake copied as preparation settings, not new consent."
+    },
+    {
+      "step": 5,
+      "purpose": "Same guarded route with scheduler activation after readiness/identity checks",
+      "command": "/Users/turshevr/toto-ai/.venv/bin/python -m toto_ai.cli morning-dispatch --bank 4980 --stake 30 --env-file /Users/turshevr/toto-ai/.env --project-root /Users/turshevr/toto-ai --state-root /Users/turshevr/toto-ai/data/scheduler/morning-dispatch --scheduler-root /Users/turshevr/toto-ai/reports/rehearsal --db /Users/turshevr/toto-ai/data/toto.db --aliases /Users/turshevr/toto-ai/data/external-odds/team-aliases.json --schedule-evidence-ledger /Users/turshevr/toto-ai/data/schedule-evidence/ledger.json --expected-drawing-id 12106 --expected-drawing-number 4999 --expected-fingerprint b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d --expected-deadline 2026-09-07T14:30:00Z --python-executable /Users/turshevr/toto-ai/.venv/bin/python --activate",
+      "source": "src/toto_ai/runner/morning_dispatch.py:545-610",
+      "prerequisites": "Only after evidence and real preparation are valid; existing retry already has activate_evening intent, so avoid duplicate/manual parallel plan. No parallel-release-auto: no authorization may be minted by this job."
+    },
+    {
+      "step": "alternative preview",
+      "purpose": "Native scheduler-plan no-write preview only; NOT an additional plan to create alongside morning-dispatch",
+      "command": "/Users/turshevr/toto-ai/.venv/bin/python -m toto_ai.cli scheduler-plan --drawing 4999 --drawing-id 12106 --ended-at 2026-09-07T14:30:00Z --operational-cutoff 2026-09-07T14:30:00Z --bank 4980 --stake 30 --output-dir '<NEW_4999_PLAN_ROOT>' --project-root /Users/turshevr/toto-ai --schedule-evidence-ledger /Users/turshevr/toto-ai/data/schedule-evidence/ledger.json --env-file /Users/turshevr/toto-ai/.env --python-executable /Users/turshevr/toto-ai/.venv/bin/python --dry-run",
+      "source": "src/toto_ai/cli.py:3371-3460",
+      "note": "Without --dry-run this command creates plan/wrapper/plist but does not load it. Inspect native generated slot times; do not copy 4998 slot schedule to4999."
+    },
+    {
+      "step": 6,
+      "purpose": "Real exact-target preflight on actual generated plan, not a dry-run",
+      "command": "/Users/turshevr/toto-ai/.venv/bin/python -m toto_ai.cli scheduler-preflight-only --plan '<ACTUAL_4999_SCHEDULER_PLAN_PATH>'",
+      "source": "src/toto_ai/cli.py:4934-4956",
+      "note": "Runs source-backed preflight; no training/packages. May load intended API credential internally and write operational state; future authorized job only. Saved API-Sports suspension/quota capability is a separate blocker; no account workaround."
+    },
+    {
+      "step": 7,
+      "purpose": "Read-only plan-bound status",
+      "command": "/Users/turshevr/toto-ai/.venv/bin/python -m toto_ai.cli scheduler-status --plan '<ACTUAL_4999_SCHEDULER_PLAN_PATH>'",
+      "source": "src/toto_ai/cli.py:4828-4841"
+    },
+    {
+      "step": 8,
+      "purpose": "Supported plan-bound watcher foreground command; creates its own status outputs, not scheduler authority",
+      "command": "/Users/turshevr/toto-ai/.venv/bin/python -m toto_ai.cli scheduler-status-watch --plan '<ACTUAL_4999_SCHEDULER_PLAN_PATH>' --latest '<ACTUAL_4999_PLAN_ROOT>/status-watch/latest.json' --history '<ACTUAL_4999_PLAN_ROOT>/status-watch/history.jsonl' --interval-seconds 30",
+      "source": "src/toto_ai/cli.py:4843-4865; skills/operator-delivery.md",
+      "note": "Persistent LaunchAgent setup is not done by this CLI. No watcher creation/activation command was found in the bounded project script/CLI inspection; scheduler activation helper accepts only exact generated scheduler plists and MUST NOT be reused for watcher labels. Future owner must prepare/verify a new4999 plan-bound watcher plist (not edit/reuse4998 label/paths), then explicitly install/start it under the approved operations scope. Existing4998 plist is a structural example only. Local files/stdout cannot wake an idle Codex chat."
+    }
+  ],
+  "watcher_template_reference": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist",
+  "watcher_persistent_activation_gap": "No actual4999 plan/path/id/plist exists in saved target registry, so an exact installable label/path cannot honestly be filled in yet. Do not claim activation. macOS launchctl bootstrap/kickstart is a later explicit native-OS operation on the verified new plist, not a discovered project watcher installer.",
+  "next_exact_checkpoint": "Operational owner: inspect this three-row evidence result, resolve Malta1h conflict and complete real two-source reviews; then reconcile existing retry and run guarded preparation/real preflight. Context collector stops here."
+}

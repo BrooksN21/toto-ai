@@ -1,0 +1,108 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "stage": "A",
+  "at": "2026-09-15T17:37:49+03:00",
+  "status": "VERIFIED_FOR_AUTHORIZED_SOURCE_PUBLICATION",
+  "scope": "Nine inert Sports v3 library modules and nine tests only; no activation, training, generation or live entrypoint wiring",
+  "native_review_available": true,
+  "native_review_verdict": "PASS",
+  "native_review_scope": "Inert library adoption only; not model qualification, Stage F, publication or operational readiness",
+  "native_review_sources": [
+    {
+      "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-RESUME-20260915/A-integration-review.md",
+      "sha256": "26b9afa5b761e987e5924884bfb3050302888bb414c4d64975ff654b6cd405dd"
+    },
+    {
+      "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-RESUME-20260915/A-integration-review.json",
+      "sha256": "18b4e565f0681dad3e6d5068882283d246dc60c4906f57ee9655629ffe045f4d"
+    }
+  ],
+  "verified_source_test_hashes": {
+    "src/toto_ai/sports_stats/v3_probability.py": "b9e91b89ec08e2d87d6a1d676857f2e48c6c7500558558dac8d8295ba7f43b26",
+    "src/toto_ai/sports_stats/v3_draw_calibration.py": "487b3155128debef428b4f2d884d59266f89c43302ab884ae43910c0aa646fd4",
+    "src/toto_ai/sports_stats/v3_probability_features.py": "9723dc218a56a0fca8545b8f9b1f08e2d9470ad7300c4c2f32018639cc00e4d5",
+    "src/toto_ai/sports_stats/v3_feature_disposition.py": "fc3e9df4f4a1730cc9547ae26b1af06fdbf734e54bd9380be36cd8b04b3dbf96",
+    "src/toto_ai/sports_stats/v3_f4.py": "d556803b7ef9df09986c785cd5ffcb3266d09c80df240d46cb2b0464ebb1e3f4",
+    "src/toto_ai/sports_stats/v3_f4_gate.py": "334f4bf5407d946ef1665efe23b4a622c38be5bb5891d8e827951769320c72fd",
+    "src/toto_ai/sports_stats/v3_f4_metrics.py": "291c10f762b301c4f876c7c6afc8724c684b91954c1c3d78692fde37c07cdd4e",
+    "src/toto_ai/sports_stats/v3_generation.py": "a4ca4fcbff013412859d08d0c8228e27988d262ed8d97336e1a0c811cd9c8f47",
+    "src/toto_ai/sports_stats/v3_research_safety.py": "4419d6ed8c61be0e7ed83fbce3c3c7a910b9531de926eadd1dd30541b9630b60",
+    "tests/test_sports_v3_probability.py": "b2c7aa0441917730d98515ac327441e7b961597c94617a705d5ba1409f0dfb6e",
+    "tests/test_sports_v3_probability_features.py": "ef776562b0a14504dd8d40d1415f4bbc64f2dcf553d2229619ddb3a47b30c065",
+    "tests/test_sports_v3_f4.py": "4ca726a897c304de6c3c55d0b058248a967c356255dde2e5f2498ca987bb492b",
+    "tests/test_sports_v3_f4_metrics.py": "55b2c980dfe8da5153e538a278068da9d256e1be606ca6db9b8e8fb22ed8a162",
+    "tests/test_sports_v3_generation.py": "8e566478e9ee09819e2dfa96d3c886dd6b96a14eff7dde6c28a84f583ea463ed",
+    "tests/test_sports_v3_research_safety.py": "9865a1830023363e5dc1f0c99b3c218c03b86a8e73951692ce88429ac19ad811",
+    "tests/test_sports_v3_f4_fit_binding.py": "a4652c0d99cb59351a45644103959bc8aa35734cf3190c8fbea1985cb58a431f",
+    "tests/test_sports_v3_feature_disposition.py": "47270bcd49354e34b01595aee1bcc9ca34d8f4dc86fc84c2b1307e1083ff7dec",
+    "tests/test_sports_v3_library_isolation.py": "a16ce7e2b62168f3a16ed0125b6264dbd3c09c76ca07c7389f68258b144dda69"
+  },
+  "protected_files_hash_match": 6,
+  "existing_dependencies_hash_match": 8,
+  "verification": {
+    "pytest": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-ra",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_sports_v3_probability.py",
+        "tests/test_sports_v3_probability_features.py",
+        "tests/test_sports_v3_f4.py",
+        "tests/test_sports_v3_f4_metrics.py",
+        "tests/test_sports_v3_generation.py",
+        "tests/test_sports_v3_research_safety.py",
+        "tests/test_sports_v3_f4_fit_binding.py",
+        "tests/test_sports_v3_feature_disposition.py",
+        "tests/test_sports_v3_library_isolation.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.404,
+      "stdout": "..........................................................s............. [ 72%]\n............................                                             [100%]\n=========================== short test summary info ============================\nSKIPPED [1] tests/test_sports_v3_generation.py:239: NOT_RUN_FOR_SCOPE: Stage F worker integration, not Stage A\n99 passed, 1 skipped in 8.21s\n",
+      "stderr": ""
+    },
+    "ruff": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "--no-cache",
+        "src/toto_ai/sports_stats/v3_probability.py",
+        "src/toto_ai/sports_stats/v3_draw_calibration.py",
+        "src/toto_ai/sports_stats/v3_probability_features.py",
+        "src/toto_ai/sports_stats/v3_feature_disposition.py",
+        "src/toto_ai/sports_stats/v3_f4.py",
+        "src/toto_ai/sports_stats/v3_f4_gate.py",
+        "src/toto_ai/sports_stats/v3_f4_metrics.py",
+        "src/toto_ai/sports_stats/v3_generation.py",
+        "src/toto_ai/sports_stats/v3_research_safety.py",
+        "tests/test_sports_v3_probability.py",
+        "tests/test_sports_v3_probability_features.py",
+        "tests/test_sports_v3_f4.py",
+        "tests/test_sports_v3_f4_metrics.py",
+        "tests/test_sports_v3_generation.py",
+        "tests/test_sports_v3_research_safety.py",
+        "tests/test_sports_v3_f4_fit_binding.py",
+        "tests/test_sports_v3_feature_disposition.py",
+        "tests/test_sports_v3_library_isolation.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.043,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    }
+  },
+  "excluded": "All unfinished B/C implementation; Stage F worker test explicitly skipped",
+  "runtime_verified": false,
+  "runtime_commands_invoked": false,
+  "activation": false,
+  "real_training": false,
+  "automatic_wagering": false,
+  "publication_authorization": "Owner current-project commit/push authorization; existing PR23 remains draft; no merge",
+  "publication_outcome_receipt": "plans/TOTOAI-RESUME-20260915/cleanup-remainder-local-receipt.json"
+}

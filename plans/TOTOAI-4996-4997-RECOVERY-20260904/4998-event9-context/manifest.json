@@ -1,0 +1,75 @@
+{
+  "created_at": "2026-09-06T09:26:32.277815+00:00",
+  "files": [
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/EVIDENCE_HANDOFF.md",
+      "sha256": "52faf8418b06f512f2dff05ed4edec27f86ec9d0184bb088a5389df39398f3a4",
+      "bytes": 4262
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/access-errors.json",
+      "sha256": "267cef510abf9df7d9a578c6a914d0c8185a785794712060fb472b55c2d325ab",
+      "bytes": 617
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/evidence-handoff.json",
+      "sha256": "cdb253afea2db91aaf1473f49409add0d92f7116b5cf7da1dc6fa26cde33fe2e",
+      "bytes": 7868
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/existing-sofa-search-REJECTED.json",
+      "sha256": "e9bbc751caf9137b4a4e7c39aa834881d317d240abd310d5a305e4551341a07b",
+      "bytes": 13414
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/input-event9-context.json",
+      "sha256": "64ae024da4bdde91392352aa260cac4f6ba55904c478a2c22701218877eb214f",
+      "bytes": 5147
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/official-row-extracted.json",
+      "sha256": "22b524a4df77209fdf662860aec65d104783fe17000861566727339fa8e1d9d3",
+      "bytes": 382
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/skbeveren-voordeeltarief.capture.json",
+      "sha256": "a5318e4b16cea56c542bbf6a95d1ab6e9f3f1f29ce9cbb5bd463076e959b1521",
+      "bytes": 657
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/skbeveren-voordeeltarief.html",
+      "sha256": "8b31688338c3c952774cf0e14360063c20d3c3d6230b5a9e728ac833ae0c7363",
+      "bytes": 87977
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/sofascore-event-extracted.json",
+      "sha256": "9c8ec41880f6c5c626e804f4edaffbb993ad03039fd354e91af7a074b83cad80",
+      "bytes": 10906
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/sofascore-exact-match.capture.json",
+      "sha256": "da04ccfa2a576f9a9d7ebf9216678db65bb0edfdf26e96342f2923d27fd7878c",
+      "bytes": 742
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/sofascore-exact-match.html",
+      "sha256": "6e961a8dfde9fe5a7ac9a372be5593a7a83c67ebf892492db5779c598eb410fb",
+      "bytes": 189965
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/viasport-fixture-1558625.capture.json",
+      "sha256": "d83620cfd8ae41776466cb4132a18d4e9aee103d62211d12b3e0440ccfeac430",
+      "bytes": 661
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/viasport-fixture-1558625.html",
+      "sha256": "23aaea93237a2d05b065bcbed294af20a3580feb0fe58c1e2aa9742d17a957b8",
+      "bytes": 150186
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/viasport-sportsevent-extracted.json",
+      "sha256": "89278fa6c042eed84e004a6313e4072e3fa7907dc00e24bd326a4e4b522728ad",
+      "bytes": 2361
+    }
+  ]
+}

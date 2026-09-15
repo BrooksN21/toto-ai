@@ -1,0 +1,24 @@
+[
+  {
+    "name": "fss-serbia-retrieval02",
+    "url": "https://fss.rs/takmicenje/mozzart-bet-prva-liga-srbije-26-27/",
+    "started_at": "2026-09-06T18:01:40.543347+00:00",
+    "http_status": 200,
+    "final_url": "https://fss.rs/takmicenje/mozzart-bet-prva-liga-srbije-26-27/",
+    "captured_at": "2026-09-06T18:01:41.873322+00:00",
+    "snapshot": "data/schedule-evidence/snapshots/4999-fss-serbia-retrieval02-3e0f0c9101ee55aa.raw",
+    "sha256": "3e0f0c9101ee55aad0ed3d5990f2eac06de683e2be5fe178851d65b0abd97e13",
+    "bytes": 537904
+  },
+  {
+    "name": "sofa-saudi-event",
+    "url": "https://www.sofascore.com/api/v1/event/16629480",
+    "started_at": "2026-09-06T18:01:40.543575+00:00",
+    "http_status": 200,
+    "final_url": "https://www.sofascore.com/api/v1/event/16629480",
+    "captured_at": "2026-09-06T18:01:40.951671+00:00",
+    "snapshot": "data/schedule-evidence/snapshots/4999-sofa-saudi-event-85db57a6b1d8928b.raw",
+    "sha256": "85db57a6b1d8928bd3e85b6db04bd4c7e2e7f4fa4004e530fdcad0b39c6c1c12",
+    "bytes": 9015
+  }
+]

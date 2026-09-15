@@ -1,0 +1,215 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "completed_at": "2026-09-15T20:45:04.132005+03:00",
+  "verdict": "PASS_THREE_FIXES_WITH_DATA_LIMITATIONS",
+  "reviewed_file_sha256": {
+    "src/toto_ai/research/closed_market_scenario_replay.py": "3c6e338976d8dacfde7dbf5c2ec55a0d5056447cb9d1ec7a8905fb6ab9ebeef8",
+    "src/toto_ai/research/sports_history_reconstruction.py": "f6be8613b598d8b7cb1bac2228dedecc117026dd593fe669d6169988549a2206",
+    "tests/test_closed_market_scenario_replay.py": "afed218431aa2d2119844090e2918553612b0668ec3dfd1f55c8d8813bc51c5e",
+    "tests/test_sports_history_reconstruction.py": "f7df1486beca7614e0d5067ac6a54666d43c2b44a19a20ca28f43848d79cc9ae"
+  },
+  "findings": {
+    "M1": {
+      "status": "PASS",
+      "file": "src/toto_ai/research/closed_market_scenario_replay.py",
+      "lines": [
+        616,
+        626
+      ],
+      "evidence": "Set identity separated from order identity; regression reversed-control passed. Existing sealed generation remains on original53e85.. code; new report records generation_code and scoring_code separately. All24 report entries and same-set/order booleans verified against frozen coupons; no generation rerun."
+    },
+    "S1": {
+      "status": "PASS_STRICT_COMPLETION_POLICY",
+      "file": "src/toto_ai/research/sports_history_reconstruction.py",
+      "lines": [
+        32,
+        77
+      ],
+      "evidence": "Explicit finish>=cutoff rejected before score parse; contradictory/malformed finish rejected. Genuine observed-terminal-before-cutoff supplies completion upper bound without inventing finish. Late capture with supported priorfinish retained. Unknown completion excludes even older kickoffs; conservative current policy, not proof those historical matches occurred later.",
+      "data_limit": "All18past rows in current realpilot have no supported completion proof under this policy. Neither late fetch alone nor unknown asof is a universal ban on future explicitly graded research fitting; a separate reviewed reconstruction policy/evidence is needed, not relabeling existing proof."
+    },
+    "S2": {
+      "status": "PASS",
+      "file": "src/toto_ai/research/sports_history_reconstruction.py",
+      "lines": [
+        311,
+        388
+      ],
+      "evidence": "Required in-root hashed metadata+fixture mapping; exact local event/draw/order/close and target mapping checked; wronghash/draw/order/cutoff/path/omittedmapping/conflict regression tests pass. Actual replacementmanifest and metadata/mapping/source hashes verified. Mapping grade not upgraded to independent class authority."
+    }
+  },
+  "checks": {
+    "pytest_command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m pytest -q -p no:cacheprovider tests/test_closed_market_scenario_replay.py tests/test_sports_history_reconstruction.py -k 'not test_surface_cannot_be_swapped_between_inputs'",
+    "pytest": "62 passed,1 deselected in0.56s",
+    "deselected_reason": "RealEVSurface unchanged by three fixes; independently PASS64.73s in prior review, not rerun",
+    "ruff": "PASS4newfiles --no-cache",
+    "source_hashes_pinned": true,
+    "no_db_scoring_or_generation_rerun": true,
+    "no_process_kill": true,
+    "reviewer_active_sessions": []
+  },
+  "market_batch": {
+    "completed_draws": 8,
+    "expected_draws": 8,
+    "generated_packages": 24,
+    "scored_packages": 24,
+    "coupons_each": 166,
+    "bank_each": 4980,
+    "stake": 30,
+    "sum_generation_wall_seconds": 747.0977929180008,
+    "last_completion_msk": "2026-09-15T20:35:25.379743+03:00",
+    "all_frozen_manifest_input_package_hash_bindings_verified": true,
+    "comparison_generation_scoring_code_bindings_verified": true,
+    "domain": "POST_EVENT_MARKET_SCENARIO_UNVERIFIED_ASOF",
+    "max_hits": [
+      {
+        "drawing": 4999,
+        "max_hits": {
+          "quality-v2": 10,
+          "quality-v3": 10,
+          "robust-market-only": 10
+        }
+      },
+      {
+        "drawing": 5000,
+        "max_hits": {
+          "quality-v2": 12,
+          "quality-v3": 12,
+          "robust-market-only": 12
+        }
+      },
+      {
+        "drawing": 5001,
+        "max_hits": {
+          "quality-v2": 10,
+          "quality-v3": 9,
+          "robust-market-only": 10
+        }
+      },
+      {
+        "drawing": 5002,
+        "max_hits": {
+          "quality-v2": 10,
+          "quality-v3": 10,
+          "robust-market-only": 10
+        }
+      },
+      {
+        "drawing": 5003,
+        "max_hits": {
+          "quality-v2": 11,
+          "quality-v3": 11,
+          "robust-market-only": 11
+        }
+      },
+      {
+        "drawing": 5004,
+        "max_hits": {
+          "quality-v2": 10,
+          "quality-v3": 9,
+          "robust-market-only": 10
+        }
+      },
+      {
+        "drawing": 5005,
+        "max_hits": {
+          "quality-v2": 11,
+          "quality-v3": 10,
+          "robust-market-only": 11
+        }
+      },
+      {
+        "drawing": 5006,
+        "max_hits": {
+          "quality-v2": 11,
+          "quality-v3": 10,
+          "robust-market-only": 11
+        }
+      }
+    ],
+    "historical_real_archive_4999_best_hits": 11,
+    "scenario_4999_best_hits": 10,
+    "not_same_input_cohort": true,
+    "sports_rows": "sports-shadow NOT_RUN_MISSING_SPORTS; Sports-v3 NOT_RUN_NO_FIT; no invented fifth model"
+  },
+  "sports_pilot_after_fix": {
+    "counts": {
+      "received": 20,
+      "excluded": 20,
+      "retained_unique": 0,
+      "numeric_features": 8,
+      "feature_slots": 28,
+      "historical_availability_proven": 0,
+      "class_proven": 0,
+      "completion_before_cutoff_evidenced": 0
+    },
+    "fit_eligible": false,
+    "operator_compatible": false,
+    "old_pilot_receipt_is_superseded": true,
+    "superseding_artifact": "reports/rehearsal/TOTOAI-RESUME-20260915/sports-history-reconstruction/superseded-artifacts-reviewfix.json",
+    "current_blocker": "Completion proof absent for18previous rows; target copies2excluded. Current counts0prior/8numeric of28slots, allhistoricalasof/classproof0. No trained model/F4PASS."
+  },
+  "cache_receipt_note": {
+    "observed_at": "2026-09-15T20:46:33.822424+03:00",
+    "receipt_path": "plans/TOTOAI-RESUME-20260915/sports-history-reviewfix.json",
+    "receipt_sha256": "2af593f9920f69c970f76831bf1acf1ee37c380f4fa65b43e48b6ad68ef58454",
+    "all_named_receipt_hashes_match": true,
+    "generic_source_and_test_hashes_identical_to_reviewed": true,
+    "no_additional_test_rerun_needed": true,
+    "current_first_two_source_pilot": {
+      "received": 20,
+      "excluded": 20,
+      "retained_unique": 0,
+      "numeric_features": 8,
+      "feature_slots": 28,
+      "historical_availability_proven": 0,
+      "class_proven": 0,
+      "completion_before_cutoff_evidenced": 0
+    },
+    "cache_merge_author_result": {
+      "drawing": 5004,
+      "event_order": 8,
+      "name": "Осасуна — Эспаньол",
+      "two_late_sources_supported_history": 0,
+      "merged_cached_supported_history": 21,
+      "native_numeric_features_after_merge": 26,
+      "raw_history_files_used": 3,
+      "retained_completion_kinds": {
+        "TERMINAL_OBSERVED_BEFORE_CUTOFF": 21
+      },
+      "excluded": {
+        "TARGET": 2,
+        "COMPLETION_BEFORE_CUTOFF_UNPROVEN": 18
+      },
+      "binding_grade": "COMPOUND_PROVIDER_FIXTURE_CANDIDATE_TARGET_MAPPING_UNREVIEWED",
+      "history_before_fix": 23,
+      "features_before_fix": 26,
+      "observations": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T145957325848Z/9aa46877eae7f3cf.json",
+          "observed_at": "2026-09-06T15:00:34.284532Z",
+          "completed_by": "2026-09-06T15:00:34.284532Z"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T145957325848Z/9aa46877eae7f3cf.json",
+          "observed_at": "2026-09-06T15:00:34.284532Z",
+          "completed_by": "2026-09-06T15:00:34.284532Z"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T145957325848Z/9aa46877eae7f3cf.json",
+          "observed_at": "2026-09-06T15:00:34.284532Z",
+          "completed_by": "2026-09-06T15:00:34.284532Z"
+        }
+      ]
+    },
+    "summary_hash": "8adc338499f42953453d2b0683b5fc660641c1769841261bc48d23269b593cf4",
+    "summary_counts": {
+      "numerical_target_rows": 21,
+      "direct_id_bound_rows": 13,
+      "provisional_compound_rows": 8,
+      "fit_eligible_rows": 0
+    },
+    "scope_limit": "Generic completion and metadata-binding fixes PASS on identical finalcode. Cache assembly helper itself and full288-history corpus NOT re-audited in this three-finding job.21/26 recovered example is provisionally mapped, not a verified five-model dataset. Zero refers ONLY to first two late sources, not all reusable history."
+  },
+  "publication_scope": "Only reviewedgenericR1/R2code+tests+durablemetadata; no raw/coupons/DB. Cacheassemblyhelper/fullcorpus not code-reviewed here."
+}

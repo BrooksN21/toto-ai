@@ -1,0 +1,113 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "checkpoint_at": "2026-09-15T19:58:52.815073+03:00",
+  "kind": "HISTORICAL_RELEASE_CHECKPOINT_METADATA_ONLY_NOT_OPERATOR_RECORD",
+  "drawing": 5007,
+  "plan_id": "84b0f69e06487848",
+  "bank": 4980,
+  "stake": 30,
+  "coupon_count": 166,
+  "primary": {
+    "strategy": "quality-v2",
+    "decision_at_release": "PLAY",
+    "completed_at": "2026-09-15T16:32:03.397460Z",
+    "delivered_TXT_and_computed_best_coupon": "parent-reported"
+  },
+  "parallel": {
+    "completed_at": "2026-09-15T16:40:09.883881Z",
+    "strategy_count": 4,
+    "selected_strategy": "quality-v3",
+    "decision_at_release": "PLAY",
+    "published_at": "2026-09-15T16:40:10.082243Z",
+    "native_companion_validation_PASS_at_msk": "2026-09-15T19:42:21+03:00",
+    "validation_evidence_basis": "parent handoff; not rerun here",
+    "highest_p13_package_position": 46,
+    "highest_p13_criterion": "maximum_probability_at_least_13",
+    "highest_p13_reference_model": "bk",
+    "delivered_alternative_TXT_and_computed_best_coupon": "parent-reported",
+    "published_at_msk": "2026-09-15T19:40:10+03:00"
+  },
+  "expires_at": "2026-09-15T16:50:00Z",
+  "expiry_msk": "2026-09-15T19:50:00+03:00",
+  "not_current_actionability_claim": true,
+  "comparison_reference_model": "bk",
+  "package_probability_at_least_13_percent_parent_reported": {
+    "quality-v2": 1.213772,
+    "sports-shadow": 1.210241,
+    "quality-v3": 1.881364,
+    "robust": 1.771609
+  },
+  "probability_meaning": "Comparable modeled package P13+, not single-coupon probability, observed frequency, guarantee or profitability",
+  "profitability_proven": false,
+  "actual_owner_selected_strategy": null,
+  "actual_wager_placement_confirmed": false,
+  "future_strategy_rule_created": false,
+  "automatic_wagering": false,
+  "operator_coupon_content_included": false,
+  "source_records": [
+    {
+      "path": "reports/rehearsal/evening-5007-20260915T170000Z/operator-result.json",
+      "sha256_at_observation": "f4dff99e9cef6972bc89afbaba9435d06b4eed5573c09b16bba3614daa5e19de"
+    },
+    {
+      "path": "reports/rehearsal/evening-5007-20260915T170000Z/parallel-challenger/output/run-final-01-20260915T163011215242Z-7f179b6f/parallel-operator-result.json",
+      "sha256_at_observation": "7ced0cc5d3e322e66ab848769bdd13918a06a92b4905bceead532c2a5d351e16"
+    },
+    {
+      "path": "reports/rehearsal/evening-5007-20260915T170000Z/parallel-challenger/output/sidecar-status.json",
+      "sha256_at_observation": "2028a45f39e57e8da4be213960834d682462e52c079219d60c703cf2f3119e5a"
+    }
+  ],
+  "postmortem": {
+    "next_action": "Scheduled attempt after all outcomes final; complete four-model archive comparison; confirm actual owner choice/placement and payouts before actualROI",
+    "state": "LOADED_WAITING_FIRST_RUN_AND_COMPLETE_RESULTS",
+    "scheduled_job_verified": true,
+    "job_installation_status": "LOADED_CONFIRMED_BY_PARENT_READONLY_CONTROL",
+    "label": "com.toto-ai.post-draw-12127",
+    "runs_observed": 0,
+    "installed_at_msk": "2026-09-15T19:32:03+03:00",
+    "schedule_msk": [
+      "2026-09-16T12:00:00+03:00",
+      "2026-09-16T15:00:00+03:00",
+      "2026-09-16T18:00:00+03:00",
+      "2026-09-16T21:00:00+03:00"
+    ],
+    "full_parallel_comparison_model_count": 4,
+    "short_system_notification_model_count": 2,
+    "registry_root": "reports/rehearsal/evening-5007-20260915T170000Z/post-draw",
+    "evidence_basis": "parent fresh read-only attestation; no job commands executed in metadata finalization",
+    "successful_future_run_claimed": false
+  },
+  "C": "12/15;scope_unknown;reliability0;fitfalse;classification binding proposed only",
+  "runtime_changes_in_this_job": false,
+  "checkpoint_history": [
+    {
+      "checkpoint_at": "2026-09-15T19:46:59.919439+03:00",
+      "postmortem": {
+        "next_action": "After all outcomes are final, verify result/cancellation semantics; compare all4exact archived models; obtain actual user choice/placement and payouts before actualROI attribution",
+        "state": "WAIT_FOR_MATCH_COMPLETION",
+        "scheduled_job_verified": false,
+        "job_installation_status": "NOT_VERIFIED_IN_THIS_METADATA_JOB"
+      },
+      "note": "Earlier installation-unverified observation, superseded by parent fresh readonly confirmation; not a claim it was never installed."
+    }
+  ],
+  "expiry_observation": {
+    "at_msk": "2026-09-15T19:50:04+03:00",
+    "primary_decision": "NO_BET",
+    "primary_actionable": false,
+    "active_packages_count": 0,
+    "reason": "normal scheduled expiry",
+    "evidence_basis": "parent fresh read-only control, not rerun by metadata finalizer"
+  },
+  "archive_integrity_followup": {
+    "single_final_run": true,
+    "run_id": "final-01-20260915T163011215242Z-7f179b6f",
+    "primary_and_final_input_unchanged_after_reserve": true,
+    "bindings": "PASS",
+    "selected_package_file_sha256": "695cad5055e4461f7a8cd63700a885f6f006eef6ba75e4eda1bb206b352a7d7a",
+    "reserve_noop_exactly_at_1942_proven": false,
+    "reason": "Log entry lacks timestamp; exact19:42 attribution not established",
+    "evidence_basis": "parent fresh read-only attestation"
+  }
+}

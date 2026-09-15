@@ -1,0 +1,35 @@
+{
+  "at": "2026-09-06T18:10:37.981906+00:00",
+  "phase": "LOADED_STARTED_AND_STATUS_WRITTEN",
+  "plan_id": "b742aac1fea2d42d",
+  "plan_sha256": "92ddec53c4554b7edc8c04de0e8a52f25400ed2450e61447eac2a01fc6e4f20d",
+  "label": "com.totoai.status-watcher.v1.b742aac1fea2d42d",
+  "source": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/status-watch/com.totoai.status-watcher.v1.b742aac1fea2d42d.plist",
+  "target": "/Users/turshevr/Library/LaunchAgents/com.totoai.status-watcher.v1.b742aac1fea2d42d.plist",
+  "plist_sha256": "2ed23e9ed52fde81ae40f4518d73a042af4a54c5e5fcd5a1fb689064de476810",
+  "calendar": {
+    "Day": 7,
+    "Hour": 15,
+    "Minute": 30,
+    "Month": 9,
+    "Year": 2026
+  },
+  "timezone": "Europe/Moscow, hostUTC+03:00 confirmed",
+  "duplicate_label": false,
+  "duplicate_pid": false,
+  "start_action": "Explicit authorized kickstart for read-only observation now; future first checkpoint calendar15:30MSK07.09 remains unchanged; primary/parallel NOT started",
+  "verified_at": "2026-09-06T18:13:29.049272+00:00",
+  "launchd": [
+    "state = running",
+    "program = /Users/turshevr/toto-ai/.venv/bin/python",
+    "runs = 1",
+    "pid = 48486",
+    "last exit code = (never exited)",
+    "state = active",
+    "state = active"
+  ],
+  "latest": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/status-watch/latest.json",
+  "latest_sha256": "71ed24c51f1e58e4cb4afe2955e9c17895ebe89a0d5e8d894daf58ea3b9b88dd",
+  "latest_plan_id": "b742aac1fea2d42d",
+  "primary_or_parallel_started": false
+}

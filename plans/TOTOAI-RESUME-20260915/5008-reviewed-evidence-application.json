@@ -1,0 +1,211 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "updated_at": "2026-09-15T17:36:48.326894Z",
+  "results": [
+    {
+      "event_number": 2,
+      "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5008-event-02-20260915T173034Z.json",
+      "review_sha256": "266ee9a1b84f45726f71ff9c016fe19c7ea78ef9277358977e586804aa4af1ae",
+      "result": {
+        "drawing_number": 5008,
+        "dry_run": false,
+        "event_order": 1,
+        "ledger_mutated": true,
+        "ledger_semantic_hash": "e789414d1b2e4454ba611ced5913e815c2a80fc84d089871d1e52686d54400a3",
+        "ledger_sha256": "3a5017edb5bebc6ca1088d884a8683a259b4e48caf7252d574e42d321545e2e5",
+        "observation_id": "manual-reviewed-5008-02-55d0aeaa-cb44fe2d",
+        "status": "applied"
+      },
+      "source_goal_event_id": "cmt71qvnfsqlot1072g7efnln",
+      "source_sofascore_event_id": 16416341,
+      "goal_team_ids": [
+        "cmr7m55un5eg7rx069xmc3fml",
+        "cmr7foowh2kf5rx06io24hby5"
+      ],
+      "sofascore_team_ids": [
+        2849,
+        2825
+      ],
+      "gender_age_class": "men-senior",
+      "class_basis": "Native target/source-label classifier agrees; exact club and first-team competition identities reviewed; no women/youth/reserve marker. Sources lack an independent explicit gender field; not claimed as such.",
+      "starts_at": "2026-09-16T19:30:00Z",
+      "original_snapshot_paths": [
+        "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-collector/goal-api-v1/snapshots/f8bd76b4c759dcde3fb8b758c778dec897d08ca62a1553ed25b17075ba39fb53-55d0aeaa62a5c19d.json",
+        "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-collector/snapshots/event-02-q1-sofascore-cb44fe2d73ea2f26.json"
+      ],
+      "original_sha256": [
+        "55d0aeaa62a5c19d9f3180c99da64e0329cc9d4b66685b379c8c39072d8a4e3b",
+        "cb44fe2d73ea2f26db006636bf200a92cc8ddad8b3243f2895efe1560a6d0d0e"
+      ],
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    },
+    {
+      "event_number": 6,
+      "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5008-event-06-20260915T173036Z.json",
+      "review_sha256": "e5e53e60b3b3cb70c0f51cb61a792f8256b771c9c98ae739f2e1991500000917",
+      "result": {
+        "drawing_number": 5008,
+        "dry_run": false,
+        "event_order": 5,
+        "ledger_mutated": true,
+        "ledger_semantic_hash": "044e38ae633610f775caf15eb7757eb9590b899a23700c11b20074e414f2f004",
+        "ledger_sha256": "d532fae3f7b7f6597bdfb34607f6c2f948c69f01d93c6486b18a66428b5b6db1",
+        "observation_id": "manual-reviewed-5008-06-55d0aeaa-366d0155",
+        "status": "applied"
+      },
+      "source_goal_event_id": "cmtrytbac30dsnt0894jje2i1",
+      "source_sofascore_event_id": 16950628,
+      "goal_team_ids": [
+        "cmr7huvou3t70rx060qqsehz2",
+        "cmr7hvawd3yvgrx06qjdxxr4v"
+      ],
+      "sofascore_team_ids": [
+        11,
+        40
+      ],
+      "gender_age_class": "men-senior",
+      "class_basis": "Native target/source-label classifier agrees; exact club and first-team competition identities reviewed; no women/youth/reserve marker. Sources lack an independent explicit gender field; not claimed as such.",
+      "starts_at": "2026-09-16T19:00:00Z",
+      "original_snapshot_paths": [
+        "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-collector/goal-api-v1/snapshots/f8bd76b4c759dcde3fb8b758c778dec897d08ca62a1553ed25b17075ba39fb53-55d0aeaa62a5c19d.json",
+        "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-collector/snapshots/event-06-q1-sofascore-366d01550f7dab30.json"
+      ],
+      "original_sha256": [
+        "55d0aeaa62a5c19d9f3180c99da64e0329cc9d4b66685b379c8c39072d8a4e3b",
+        "366d01550f7dab302a9e366c836346accf2c61ee2220ee560c1df545188905c2"
+      ],
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    },
+    {
+      "event_number": 7,
+      "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5008-event-07-20260915T173037Z.json",
+      "review_sha256": "7f7933d97957b84b0fac9bd6ab72d0807fc3856030052285111e2a9db8133be0",
+      "result": {
+        "drawing_number": 5008,
+        "dry_run": false,
+        "event_order": 6,
+        "ledger_mutated": true,
+        "ledger_semantic_hash": "bbcf4cd84d504149033cfea1183f7286c1f24d7864de29fab3c7c7140d65759f",
+        "ledger_sha256": "2d14872bd6fc7ce268e525dd6c4f3a3de0f40b4d4eced3588be3e2a0d4c070e0",
+        "observation_id": "manual-reviewed-5008-07-55d0aeaa-42fd45d5",
+        "status": "applied"
+      },
+      "source_goal_event_id": "cmt71qwi1sqvqt10780x1psyt",
+      "source_sofascore_event_id": 16494322,
+      "goal_team_ids": [
+        "cmr7hvntc43hlrx06fe2dy41j",
+        "cmr7hvo1l43oprx06oxchlpjg"
+      ],
+      "sofascore_team_ids": [
+        110,
+        101
+      ],
+      "gender_age_class": "men-senior",
+      "class_basis": "Native target/source-label classifier agrees; exact club and first-team competition identities reviewed; no women/youth/reserve marker. Sources lack an independent explicit gender field; not claimed as such.",
+      "starts_at": "2026-09-16T18:45:00Z",
+      "original_snapshot_paths": [
+        "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-collector/goal-api-v1/snapshots/f8bd76b4c759dcde3fb8b758c778dec897d08ca62a1553ed25b17075ba39fb53-55d0aeaa62a5c19d.json",
+        "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-collector/snapshots/event-07-q1-sofascore-42fd45d537e33124.json"
+      ],
+      "original_sha256": [
+        "55d0aeaa62a5c19d9f3180c99da64e0329cc9d4b66685b379c8c39072d8a4e3b",
+        "42fd45d537e3312497c0466f41f80109f4b5a761510c59e83f9f26a94c2adb28"
+      ],
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    },
+    {
+      "event_number": 13,
+      "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5008-event-13-20260915T173039Z.json",
+      "review_sha256": "4819211f22f0c34ebed3e40084c756dff14d66d2c2a789cc1aec92ca5aa7082e",
+      "result": {
+        "drawing_number": 5008,
+        "dry_run": false,
+        "event_order": 12,
+        "ledger_mutated": true,
+        "ledger_semantic_hash": "7bb06c426d349d7cde82f8400081630314f3b08e04799c7bb7d6cac114e05d21",
+        "ledger_sha256": "dfa35598ee05a7044027f59042cf88d1a03dd2bbb265961395ec3c6567ed8a3f",
+        "observation_id": "manual-reviewed-5008-13-55d0aeaa-f9856e17",
+        "status": "applied"
+      },
+      "source_goal_event_id": "cmty3iqkpvvnplc075v4oe06m",
+      "source_sofascore_event_id": 17081844,
+      "goal_team_ids": [
+        "cmr7m5x8z5omvrx06sthb62j7",
+        "cmr7m5bmx5gn7rx0610j3tihj"
+      ],
+      "sofascore_team_ids": [
+        202076,
+        2878
+      ],
+      "gender_age_class": "men-senior",
+      "class_basis": "Native target/source-label classifier agrees; exact club and first-team competition identities reviewed; no women/youth/reserve marker. Sources lack an independent explicit gender field; not claimed as such.",
+      "starts_at": "2026-09-16T18:30:00Z",
+      "original_snapshot_paths": [
+        "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-collector/goal-api-v1/snapshots/f8bd76b4c759dcde3fb8b758c778dec897d08ca62a1553ed25b17075ba39fb53-55d0aeaa62a5c19d.json",
+        "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-collector/snapshots/event-13-q2-sofascore-f9856e17bdf13447.json"
+      ],
+      "original_sha256": [
+        "55d0aeaa62a5c19d9f3180c99da64e0329cc9d4b66685b379c8c39072d8a4e3b",
+        "f9856e17bdf134474a2b42908eb475f610e629607262cc11910c5bd886025f7d"
+      ],
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    },
+    {
+      "event_number": 8,
+      "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5008-event-08-20260915T173646Z.json",
+      "review_sha256": "a2e557c9d993fd5c2666382b503e4c0e1929b76d1465935097d9d1166fa5c09f",
+      "starts_at": "2026-09-16T18:45:00Z",
+      "result": {
+        "drawing_number": 5008,
+        "dry_run": false,
+        "event_order": 7,
+        "ledger_mutated": true,
+        "ledger_semantic_hash": "5b936858fea06594aee9fc7b7e361d3b39480adcd066181c013bc600204c4da4",
+        "ledger_sha256": "e44d332ea784432261cd0c432b1fe9563fd877ca78290b65259fbbc9fb4b63e1",
+        "observation_id": "manual-reviewed-5008-08-13e3fb7b-00a39f8e",
+        "status": "applied"
+      },
+      "original_snapshot_paths": [
+        "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/5008-source-evidence/guisborough-13e3fb7b992333df.html",
+        "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-collector/snapshots/event-08-q1-sofascore-00a39f8e1a099196.json"
+      ],
+      "original_sha256": [
+        "13e3fb7b992333df4872390e2a1ddf9290e50f32d4fdf9dfccfd2c1e8e04435e",
+        "00a39f8e1a099196104a3a638c2c0fd3f703379e39a4da3f787225c6dabe284d"
+      ],
+      "identity_timezone_basis": "Official SportsEvent startDate=2026-09-16T19:45+01:00; Sofascore startTimestamp agrees18:45UTC. FirstTeam page explicitly distinct fromLadies/Reserves/Juniors.",
+      "class_basis": "First-team club page and senior competition, no target substitution to women/youth/reserve."
+    },
+    {
+      "event_number": 10,
+      "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5008-event-10-20260915T173648Z.json",
+      "review_sha256": "5b2e164cd55ea594143fc3422d7d918798035c19600641462b9082f1f928c4d4",
+      "starts_at": "2026-09-16T18:30:00Z",
+      "result": {
+        "drawing_number": 5008,
+        "dry_run": false,
+        "event_order": 9,
+        "ledger_mutated": true,
+        "ledger_semantic_hash": "fefc1ed69fa3d3096071cdcd7b0c12204d7902ce5fe604d3d40e09c7b4268e86",
+        "ledger_sha256": "8040fdb2d5e024042c74a37b41a43e780f2e832f29bb31dd35c9caf620c42a54",
+        "observation_id": "manual-reviewed-5008-10-4766620f-cc7e1bfe",
+        "status": "applied"
+      },
+      "original_snapshot_paths": [
+        "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/5008-source-evidence/paulton-4766620fe9c1914d.html",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/5008-source-evidence/paulton-soccerpunter-cc7e1bfe2a685b0c.html"
+      ],
+      "original_sha256": [
+        "4766620fe9c1914d51ced6a5104fcec9c219bd59f69c85edf25f7b7583ecc87e",
+        "cc7e1bfe2a685b0c28ee68a243736a8782190f6f915e5d6ac3b72a038633c801"
+      ],
+      "identity_timezone_basis": "Official firstteam53123 fixture1-19944637 dateTime=2026-09-16T19:30:00+01:00; SoccerPunter date2026-09-16UTC and18:30GMT. SouthernLeague ambiguousZ serialization not used to manufacture UTC evidence.",
+      "class_basis": "First-team club page and senior competition, no target substitution to women/youth/reserve."
+    }
+  ],
+  "pending_events": [
+    9
+  ],
+  "original_candidate_records_modified": false,
+  "consent_modified": false
+}

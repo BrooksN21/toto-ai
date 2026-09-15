@@ -1,3 +1,121 @@
+# Resume milestone — 2026-09-15T20:51:21.114311+03:00
+
+Task TOTOAI-RESUME-20260915. Completed research slice; prior checkpoints are history.
+- DONE R1:8/8drawings4999–5006,24native market packages,4980/30/166each; generation747s total, hash-bound before scoring. Unknown-asof finished quotes =>SCENARIO ONLY, not faithfulpredrawbacktest or profitability evidence. No13+ on8draws; qv3maxhits lower on4/tied4; robust5identical couponsets, causeunknown—not provenfallback. True4999archivedmax11 remains separate from finished-scenario max10.
+- DONE R2 CODE: independent re-review PASS for completion-before-cutoff and targetmetadata/fixturemapping binding; R1set-vs-order reportfixPASS.62focusedtestsPASS,RuffPASS in re-review; noSportsV3fit/deployment. Two-late-source5004pilot0validprior; cachemerge restores21prior/26of28features with provisionalmapping. Across120targets:21feature rows=13direct+8provisional,0fiteligible. Cachehelper/fullcorpus not independently reviewed by the generic-fix review.
+- USER FACT:5007 manualquality-v3/4980 is USER_REPORTED, not brokerconfirmed; payoutUNKNOWN/null, no future strategy rule. Existing loaded5007postmortem16Sep12MSK retries15/18/21 per parent-confirmed evidence, no reinstall/re-audit here.
+- OPS5008(parent saved20:45checkpoint): closes16Sep18:30MSK;14/15timingaccepted, event9officialtime/TZconflict, planNULL.20:25/20:45deferred75; nextnative21:15/23:15. Pending readonlytwo-sourcecheck belongs to parent/Pauli; no claimconflictresolved orPLAYready.
+- NEXT EXACT:R2a bounded eligibleearliertrainingroster + exactmapping/requestgaps per plans/TOTOAI-RESUME-20260915/model-improvements-next.md; then independentclassification/domainreview, limitedhistoryfill, realfitpilot, genuinefivewaycomparison and separately approved researchsidecar. Do not restartA/B/R1 or train on these knownconfirmationlabels and call it unseen.
+- BLOCKERS:unknownhistoricalmarketasof, incompleteidentity/class/completion/features, realV3fitabsent. Primarynewdrawingflow protected; no resourcecompetition/releasebypass. Currentjob publishes reviewedcode/docs/evidence metadata only; rawHTML/DB/credentials/coupons remainlocal.
+
+# 5007 expiry / confirmed postmortem checkpoint — 2026-09-15T19:58:52.815073+03:00
+
+Task TOTOAI-RESUME-20260915. This current checkpoint supersedes earlier verification status; older entries remain historical.
+- DONE: normal expiry19:50:04MSK made primaryNO_BET/actionablefalse. BOTH RELEASES EXPIRED; active packages0. EarlierPLAY describes release history only, not current wager eligibility or guarantees.
+- ARCHIVE: parent fresh read-only control confirms onefinal01; primary/finalinput unchanged after reserve; archive bindingsPASS; selected fileSHA695cad5055e4461f7a8cd63700a885f6f006eef6ba75e4eda1bb206b352a7d7a retained. Log lacks timestamp: noop exactly19:42 is NOT proven.
+- TIMING: parallel publication19:40:10MSK;19:42:21 is nativevalidation time, not publication. Actual owner choice/stake/placement remains UNCONFIRMED; no future strategy preference created.
+- POSTMORTEM CONFIRMED LOADED (parent readonly): labelcom.toto-ai.post-draw-12127,installed15September19:32:03MSK,runs0 at observation.16September12:00MSK, retries15:00/18:00/21:00. Full parallel comparison covers4models; short system notification covers2. Earlier installationNOT_VERIFIED entry is superseded, not erased.
+- NEXT: await verified final match outcomes and scheduled16September12:00attempt; compare all4exact archived models; obtain actual userchoice/placement/payout before actualROI. Loaded is not a promise of future success or an unattended chat response.
+- RESEARCH UNCHANGED: A inert/B bounded complete; C12/15,classunknown/reliability0,Dfit/Factivationfalse; classification binding proposal awaits explicit approval. No new implementation.
+- EVIDENCE: plans/TOTOAI-RESUME-20260915/final5007-release-checkpoint.md/json; native registry planroot/post-draw. Values above are parent fresh read-only evidence, not a repeated audit by this finalizer. No jobs/code/plans/DB/consent/raw/operator changes; no coupon uploads.
+
+# 5007 final release / model checkpoint — 2026-09-15T19:46:59.919439+03:00
+
+Task TOTOAI-RESUME-20260915. Latest checkpoint; prior entries are historical.
+- DONE OPS: primary quality-v2PLAY released19:32:03MSK166/4980;4/4parallel completed19:40:09,quality-v3companionPLAY166/4980; parent nativevalidationPASS19:42:21. TXT+computedbest delivered for both perparent; alternate best position46(BKcriterion), not first row by default.
+- EXPIRY: both expire19:50MSK15September; never actionable after expiry, regardless stale flags. This memory is historical release metadata, not operator delivery. ACTUAL OWNER CHOICE/WAGER UNCONFIRMED; no future strategy-selection rule.
+- COMPARISON: comparable modeled packageBK P13+percent v2=1.213772,sports-shadow=1.210241,v3=1.881364,robust=1.771609. Experimental estimates, not demonstrated profit or observed win rate. No coupon strings uploaded.
+- RESEARCH: A inert/B bounded complete; C12/15,classunknown/reliability0; Dfit/Factivation not ready. C-SCOPE-ENTITY-BINDING-V1 remains proposed/notapproved/notimplemented; durable handoff C-scope-classification-handoff.md. No code changed in this metadata job.
+- NEXT OPS: parent expiry19:50 then postmortem after all fixtures reach verified terminal outcomes; compare all4exact archived packages, confirm actual owner choice/placement and payouts before ROI. Postmortem launcher installation NOT VERIFIED; do not claim scheduled.
+- DURABLE EVIDENCE: plans/TOTOAI-RESUME-20260915/final5007-release-checkpoint.md/json (no operator content). Native record status/hash read locally;19:42validation and prior delivery are parent-reported, not rerun here.
+- IN PROGRESS: commit/push metadata in draftPR23,no merge; final SHA/upstream/clean in ignored cleanup-remainder-local-receipt.json.final5007_metadata_publication.publication. No jobs/DB/consent/operator/research-runtime mutations. Binding plan/checklist preserved.
+
+# Scope-contract handoff / operations checkpoint — 2026-09-15T19:17:34.774136+03:00
+
+Task TOTOAI-RESUME-20260915; latest checkpoint, older entries historical.
+- DONE: inactive C adapter published `cefb408`, upstream0/0 and clean at18:42. New bounded class/scope review completed19:13:40: inline GOAL class fields absent; code does not require a legal regulation for each match. A inert library and bounded B replay complete; no five-model improvement claim.
+- PROPOSAL ONLY: C-SCOPE-ENTITY-BINDING-V1 = exact team-ID + reviewed taxonomy + validity/evidence domain binding. NOT approved/implemented/activated. Durable full handoff: plans/TOTOAI-RESUME-20260915/C-scope-classification-handoff.md; source links/hashes and negative tests preserved there. No DECISIONS acceptance.
+- C/D/F BLOCKERS: corpus12/15; classunknown and scope_verifiedfalse/reliability0; incomplete numeric features/history/folds/label availability. Fitfalse; no legal-name inference, raw relabeling, availability backdating or gate relaxation.
+- OPS5007 (parent handoff, not fresh worker live inspection):19:00prepare107.7s and19:10prepare101.8s completed166/4980 with expected warmupNO_BET. Parent reports final experimental path validated against actualconfig+4tests and consentVALID to19:50. Those operational4tests are not this worker's4scope unit checks. No finalPLAY claim.
+- IN PROGRESS: metadata-only publication in draftPR23, no merge; no code/jobs/DB/consent/model changes. Raw/PDF/source extracts remain local. Final exact SHA/upstream/clean in ignored cleanup-remainder-local-receipt.json.scope_metadata_publication.publication.
+- NEXT: parent19:20scheduled checkpoint then19:30final target; expiry19:50/close20:00. Research next requires explicit approval of the single proposed contract, then isolated implementation+review; do not restart regulation hunting or start fitting prematurely.
+- Binding full plan and statuses: plans/TOTOAI-RESUME-20260915/plan.md + machinechecklist.json. Current validation for metadata:4existing scope guardsPASS/Ruff4PASS, not tests of an unimplemented feature.
+
+# C adapter publication checkpoint — 2026-09-15T18:38:51.407430+03:00
+
+Task TOTOAI-RESUME-20260915. Latest checkpoint; older records below are historical.
+- DONE A: accepted inert Sports v3 library published. DONE B bounded scope: native-helper market-only replay/parity published; not general live equivalence or five-model quality proof.
+- C PARTIAL: independent review PASS for inactive dataset/envelope adapter only. Safe root-relative paths; exact original/derived provenance; chronology and fixture bindings;24 histories/12 events4999. Original archives unchanged. All7AET/PEN cases retain regulation90 features; O1 aggregate annotation cannot alter numeric features. Fresh137focused tests PASS; Ruff2PASS (details in C-final-publication.json).
+- BLOCKED D/F: only12/15events; target/history classes unknown; scope_verified=false/reliability0; historical complete folds/label availability/common-scope evidence absent. Dataset/F4/fit not ready, no training/activation or predictive/ROI improvement claim.
+- OPS5007 (parent receipts, not new runtime inspection): ea5283d runtime hash fix already pushed.18:00tls_preflight completed18:00:41.362MSK;18:30api_preflight completed18:31:09.377MSK,PASS. Watcher controlled observer-only activation oldPID16288→34611, fresh observation18:32:37.693MSK; no generator restart. Operator result not yet ready at that observation.
+- IN PROGRESS: publish this ready C/code+metadata+memory slice in existing draftPR23; exact push SHA/clean state in ignored cleanup-remainder-local-receipt.json.C_final_publication.publication. No merge.
+- NEXT CHECKPOINT: parent owns19:00MSK t_minus_60; final target19:30, T-10 expiry19:50, close20:00. This finalizer makes no DB/jobs/consent/operator changes. Research next: fill missing4999events9/12/14 and legitimate class/cutoff/history evidence, then qualify complete folds before fit.
+- Binding plan/checklist: plans/TOTOAI-RESUME-20260915/plan.md and machinechecklist.json. Evidence: C-envelope-independent-review.json, C-envelope-independent-references.json, checkpoint5007-1830.json, watcher5007-hashfix-activation.json. Old C REVISE/format-missing records are retained as superseded history, not current blockers.
+
+# Submission/model checkpoint — 2026-09-15T18:22:08+03:00
+
+Task TOTOAI-RESUME-20260915. Latest checkpoint; earlier entries below are historical.
+- DONE: earlier reviewed A/B and C readiness metadata published through `ca1e006`, draft PR23. Runtime parallel-report/delivery hash fix independently reviewed PASS; source hashes match; fresh84tests PASS(2.87s), Ruff5 PASS and8negative probes PASS. Ready for isolated commit/push; final SHA in ignored receipt after verification.
+- RUNTIME SCOPE: explicit LF/comma/file-byte domains; legacy semantics bounded, no alternate-hash fallback, native spaced exports accepted after byte checks, duplicates rejected. No existing evidence/archives restamped; no model/category/bank/selection changes.
+- C: separate review REVISE at18:17: native O1 rejects absolute reference paths12/12; author correction in progress. Reviewed36byte/identity/time bindings yielded12native features, but scope unknown/reliability0. All C source/tests/reports excluded from runtime publication, not hidden or ignored. F4datasetfalse; Dtraining not started.
+- REMAINS/BLOCKER: C correction/re-review and dataset scope/history/fold prerequisites. These do not block this accepted runtime fix. No full-clean claim while C writer works.
+- NEXT: parent controls5007native checkpoints and, after publication, observer-only activation/freshness verification; existing watcher imports do not hot-reload. This finalizer must not restart scheduler/watcher/calculations or alter consent/DB/operator files. Publish target18:25MSK, report actual remaining.
+- Evidence: `parallel-hash-contract-review.md`, `parallel-hash-contract-publication.md/json`, knowledge/parallel_report_hash_contract.md; current C review remains a separate local job. Full plan/checklist preserved.
+
+# Archival cleanup checkpoint — 2026-09-15T14:30:53.847958+00:00
+
+DONE: reviewed historical454-file remainder;398finished historical/source-evidence artifacts selected for archival publication;55exact raw/private runtime exceptions including2new diagnostic receipts, no deletion/move/re-signing. Sourcecopies are not newSportsV3integration; A/Bremainexcludedpendingownreview.38ignore/C7pytestPASS, RuffPASS,106archivalPython syntaxPASS(notexecuted). REMAINS:3explicitineligiblehistoricalhandoffs, A/Breview/publication, operational5007firstcheckpoint18:00MSK. BLOCKER: no full-cleanclaim while ongoingwork and protectedhandoffsremain. NEXT: parent follows active modelplan and actual5007runtime; no jobs/DB/consentchangedbycleanup. Sourceofdispositions plans/TOTOAI-RESUME-20260915/cleanup-remainder-manifest.json and archive-publication.md; exactremoteoutcome in localcleanup-remainder-local-receipt.json.
+
+# Resume publication and bounded cleanup — 2026-09-15T14:16:40.177673+00:00
+
+DONE: b1f09d3 plus52eece6/8a0ce8c pushed and verified in draftPR23 (https://github.com/BrooksN21/toto-ai/pull/23);48source/C7testsPASS. Cleanupclassifies4123generatedtestfiles+373rawsnapshots+2privatepayoutfiles;31ignore/C7testsPASS0.87s/RuffPASS. Finished modelplan/checklist are ready for this documentation commit; planning does not imply training completed. IN PROGRESS: separateStageAinertlibrary implementation, NOTpartofthissubmission. REMAINS: independentStageAreview, laterhistorysourceclassification/evaluation, actual5007operations. BLOCKER: missingpre-drawsports/marketinputs still prevent five-armhistoricalproof; olduntrackedsource/evidencekeptvisible, no clean-allclaim. NEXT: parent follows plans/TOTOAI-RESUME-20260915/plan.md and machinechecklist.json, protects18:00MSK5007checkpoint. Publication details/limits: cleanup-publication.md; exactcommit/pushoutcome in localcleanup-summary.json. Nojobs/DB/consent/hash-boundfilemutations.
+
+# Submission snapshot — 2026-09-15T14:05:19.462304+00:00
+
+Task TOTOAI-RESUME-20260915. DONE: reviewed existing C7 plus three retrospective helpers/tests;48focused pytestPASS2.50s/Ruff7PASS. History8drawings/120results saved locally; archived4999fourmodelsmax11, ROIunknown. IN PROGRESS: exact reviewed source/documentation commit and authorized origin publication; no runtime/model changes. REMAINS: verify remote/PR; historical data and unfinished artifacts remain local, no clean-all claim. BLOCKER: sandbox DNS cannot resolve github.com; normal approval path required if publication needs network escalation. NEXT: commit safe slice then one ordinary push attempt. Summary: plans/TOTOAI-RESUME-20260915/publication-summary.md. Other operational/checklist entries below retained;5007supervision stays with operations.
+
+# C7 publication blocked on exact push approval — 2026-09-07T08:56:06.103521+00:00
+
+DONE: accepted isolated skills committed locally as `52eece6`; source checkpoint
+committed as `8a0ce8c`. Six focused pytest tests, Ruff and both Ruby/Psych YAML
+checks pass. Postmortem4998 aggregate bookkeeping is included, private evidence
+and operational consent records are not.
+BLOCKER: auto-review rejected the push before execution, requiring exact
+payload/destination authorization. Origin was then independently verified as
+BrooksN21/toto-ai on github.com; no bypass or alternative upload attempted.
+IN PROGRESS: none; finalizer stopped at the authorization boundary. REMAINS:
+push, PR creation and merge after approval of both commits. Local checkout is
+`codex/c7-local-skills-20260907`, HEAD `8a0ce8c`; not a clean-main claim.
+NEXT: parent obtains explicit approval for these two commits to this repository,
+then resumes only publication. C6/model work and unfinished budget work were
+not implemented or published. Operational blocks below remain intact.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_PUBLICATION_RECEIPT_20260907.json.
+
+# CURRENT — C7 accepted; four-package 4998 postmortem complete — 2026-09-07T08:51:59.971014+00:00
+
+Task: TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Finished scope only:
+- C7: two TotoAI-only discovery wrappers, `totoai-algorithm-review` and
+  `totoai-backtesting`, are integrated and independently accepted. Canonical
+  `skills/algorithm-review.md` and `skills/backtesting.md` remain unchanged.
+- Fresh finalization checks: 6 focused pytest PASS, Ruff PASS, both YAML
+  headers parsed with Ruby/Psych. First-party validator remains unavailable
+  without PyYAML; live UI/selector behavior was not tested. No global install.
+- 4998: archived four-package settlement complete. Maximum actual hits:
+  quality-v2 10, sports-shadow 12, quality-v3 10, robust 12; no package hit 13+.
+  Aggregate results do not prove model superiority or profitability. Detailed
+  receipts, private financial evidence and operational records stay local.
+- Operational 4999 authorization was handled separately by its owner. This
+  publication does not alter or revalidate jobs, DB, consent, plans or packages.
+
+DONE: accepted skills and completed settlement bookkeeping. IN PROGRESS:
+accepted C7 source committed as `52eece6e7583a5cbcfab7b3715e6da01222e25bc`; GitHub publication is next. REMAINS: C6 simplification and the general model
+improvement plan are not completed and await the owner's separate signal;
+7,470-RUB budget work is unfinished, not an operator-ready feature. BLOCKER:
+none for C7 publication; no Sports-v3 fit/activation or bank-gain claim.
+NEXT: verify publication receipt and return control to the operations owner.
+Local receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_PUBLICATION_RECEIPT_20260907.json.
+Earlier checkpoints below are historical; unfinished checklists are preserved.
+
 #CURRENT — ready-source merge finalization;4999preflightPASS — 2026-09-06T18:56:43.844681+00:00
 
 DONE: exact independentPR22scopedACCEPT closes all namedproofgaps forsourceHEAD71afde0/basea59;121fileHEADhashes+10newreviewhashes andoriginalanchors verified; no source changes sinceacceptance. Finalizer42pytestPASS2.39s/Ruff5. Scopeincludes proposedplanonly withwholedefinedscope approvalclarification, notimplementation. No completedcode-simplification/bankpercentageclaim.

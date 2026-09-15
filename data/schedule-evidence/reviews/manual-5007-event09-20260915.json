@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12127,
+    "drawing_number": 5007,
+    "event_order": 8,
+    "target_event_id": 181016,
+    "championship": "Англия. Национальная лига",
+    "home_team": "Алдершот Таун",
+    "away_team": "Йовил Таун",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "manual-5007-event09-20260915-sofa-tsdb",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Национальная лига",
+      "National League",
+      "English National League"
+    ],
+    "home_entity": "Aldershot Town",
+    "home_aliases": [
+      "Алдершот Таун",
+      "Aldershot Town"
+    ],
+    "away_entity": "Yeovil Town",
+    "away_aliases": [
+      "Йовил Таун",
+      "Yeovil Town"
+    ],
+    "starts_at": "2026-09-15T18:45:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+    "reviewed_at": "2026-09-15T13:36:28.952692Z"
+  },
+  "sources": [
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/yeovil-town-aldershot-town/AbsGc#id:16494313",
+      "snapshot": "5007-event09-sofascore-517a56ec6a60ac456d7464c4ffd1d52d572f6751aba54cebdd1e095714b43e2e.json",
+      "snapshot_sha256": "517a56ec6a60ac456d7464c4ffd1d52d572f6751aba54cebdd1e095714b43e2e",
+      "home_team": "Aldershot Town",
+      "away_team": "Yeovil Town",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:34:07.674109Z"
+    },
+    {
+      "source_name": "TheSportsDB",
+      "role": "independent",
+      "source_url": "https://www.thesportsdb.com/event/2528245",
+      "snapshot": "5007-event09-thesportsdb-8e9d77a0800cdfddd7825e54b572157e87ba22651360dd349712296b510d538f.json",
+      "snapshot_sha256": "8e9d77a0800cdfddd7825e54b572157e87ba22651360dd349712296b510d538f",
+      "home_team": "Aldershot Town",
+      "away_team": "Yeovil Town",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:23:26.948721Z"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": 2,
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "completed_at": "2026-09-06T15:56:04.799932+00:00",
+  "role": "IMPLEMENTATION_REVIEW_FIX_ONLY",
+  "status": "IMPLEMENTED_SCOPED_VERIFIED_PENDING_INDEPENDENT_REREVIEW",
+  "work_summary": "DO-1 no-follow directory-FD atomic receipt/latest/history; DO-2 traversal/containment rejection; DO-3 current primary archive/final input/control/report/selection chain; DO-4 actual native ranking schema with plan/input/probability/package bindings. No inferred ranking and primary remains available if optional artifacts invalid.",
+  "files": [
+    {
+      "path": "src/toto_ai/operations/scheduler_status.py",
+      "before_original_sha256": "5c3bfb00238b00772febe36f055d28414e44c1ec08295f09dfc83668474f2956",
+      "before_candidate01_sha256": "a80bc0c217eb238a85cf95733754aac6d2dc132f9d208328d27025e14171898a",
+      "after_sha256": "22216e4925061394aa00e9fa2adf9120698fb81a9d3444046070a5500d6b7930"
+    },
+    {
+      "path": "src/toto_ai/operations/scheduler_delivery.py",
+      "before_original_sha256": null,
+      "before_candidate01_sha256": "72be5e7ff454dbdde7a5fdc4e806f75bf1bd5d954df56a8ba3dc18e838fe5829",
+      "after_sha256": "44222cbda709ee2c5c58c3bedb27ccc18a247c9b93395e85f51aca0cfd4a0357"
+    },
+    {
+      "path": "tests/test_scheduler_delivery.py",
+      "before_original_sha256": null,
+      "before_candidate01_sha256": "9a068bdea39f81b429ae39c4bdeb0654f52bda8ed1200e6feec299c77a82c2ee",
+      "after_sha256": "dc2eb3ef15acafd26c91f1e80caf7651f970bd65779e0a24214162a367fb3744"
+    },
+    {
+      "path": "skills/operator-delivery.md",
+      "before_original_sha256": null,
+      "before_candidate01_sha256": "dd162263d9770b9acdab477320144882317525423ad23bcd743ad6cc0116cce7",
+      "after_sha256": "baff396b6e89dea186bcf36596b9b595ff40d6f445262293d588b0286ca874cf"
+    }
+  ],
+  "manifest_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_CANDIDATE02.json",
+  "patch_sha256": "f244c0873f5c43dce193af093fc7ddf3656f78753580ea6ba7f4c5b903cd2579",
+  "verification": {
+    "before": "Immutable independent copy: 8 failed / 7 passed in 0.72s reproduces original defects",
+    "focused": "73 passed in 2.69s (59 delivery + 10 scheduler status + 4 live status)",
+    "source_owned_independent_equivalents": "15 passed in 0.92s, included in 73; not additional coverage count",
+    "ruff": "3 Python files PASS",
+    "unchanged_independent_after": "10 passed / 5 failed in 0.85s; no xfail/skip, logs retained",
+    "test_contract_differences": [
+      "Three old independent tests mkdir(exist_ok=False) collide with newly complete shared native fixture before assertions. Source-owned versions use exist_ok=True; rejection assertions unchanged.",
+      "Native-schema positive uses 1/2/3/4 dummy hashes and creates no archive/final input/plan chain. Still correctly rejected. Source-owned positive supplies real synthetic native bindings and no drawing fields; all five changed-binding negatives reject.",
+      "Old atomic test spies Path.replace; secure implementation uses os.replace with same pinned src/dst directory FD. Source-owned spy asserts FD equality plus unchanged receipt-before-latest order."
+    ],
+    "initial_guard_harness_issue": "First focused attempt: 67 passed / 6 guard errors (fchmod integer fd unsupported by guard). Guard corrected to tracked descriptor paths; complete rerun 73 passed.",
+    "guard": "No successful network/DB access. urllib3 import-time socket.bind blocked. Writes confined to verification root, including tracked dir_fd operations. Tests exclusively synthetic, no real forecast/replay/fit."
+  },
+  "evidence_paths": {
+    "independent-red.log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/independent-red.log",
+    "focused-01.log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/focused-01.log",
+    "focused-02.log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/focused-02.log",
+    "independent-02.log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/independent-02.log",
+    "owned-independent.log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/owned-independent.log",
+    "ruff.log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/ruff.log",
+    "test_independent_delivery.py": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/test_independent_delivery.py",
+    "bootstrap/sitecustomize.py": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/bootstrap/sitecustomize.py"
+  },
+  "preserved_context": {
+    "entity_bridge": [
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_ENTITY_BRIDGE_REVIEW.json",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_ENTITY_BRIDGE_REVIEW.md"
+    ],
+    "owner_wager": "USER_REPORTED: owner says he saw and placed quality-v3 for4998. No receipt, amount, exact wager bytes or timestamp verified; owner placed, not assistant. One-off choice, not selector policy/profit proof.",
+    "runtime_ownership": "Euler owns EV/comparison/sidecar optimization; not modified here."
+  },
+  "memory_handoff": "No shared ACTIVE_PLAN/CURRENT_STATE changes during concurrent ownership. Finalizer should record observer candidate02 pending independent rereview; historical delivery and entity evidence retained.",
+  "publication": "Not staged, committed, pushed or published. No runtime/LaunchAgent/archive4998/DB/consent edits.",
+  "remaining": "Independent rereview of frozen02, including amended native-fixture/dirfd-spy contracts; separate adoption/rollout/publication only after approval."
+}

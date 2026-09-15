@@ -1,0 +1,15 @@
+{
+  "pytest_exit": 0,
+  "ruff_exit": 0,
+  "pytest_command": [
+    ".venv/bin/python",
+    "-B",
+    "-c",
+    "import sitecustomize,pytest; assert sitecustomize.GUARD; r=pytest.main(['tests/test_scheduler_delivery.py', 'tests/test_scheduler_status.py', 'tests/test_scheduler_live_status.py', '-q', '-p', 'no:cacheprovider', '--basetemp=/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/focused-02-tmp']); print('BLOCKED',sitecustomize.blocked); raise SystemExit(r)"
+  ],
+  "test_scope": [
+    "tests/test_scheduler_delivery.py",
+    "tests/test_scheduler_status.py",
+    "tests/test_scheduler_live_status.py"
+  ]
+}

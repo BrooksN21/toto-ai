@@ -1,0 +1,178 @@
+--- a/src/toto_ai/sports_stats/goal_probe_collection.py
++++ b/src/toto_ai/sports_stats/goal_probe_collection.py
+@@ -310,7 +310,9 @@
+         "automatic_wagering": False,
+         "package_influence": "NONE",
+     }
+-    _publish_retry_record(claim_path, _pretty(claim), exclusive=True)
++    _publish_retry_record(
++        claim_path, _pretty(claim), durable_root=output, exclusive=True
++    )
+     outcome = {
+         "schema_version": 1,
+         "claim_sha256": _sha256_file(claim_path),
+@@ -354,15 +356,19 @@
+                 next_retry_at=finished + cooldown,
+             )
+         outcome.update(status="FAILED", **goal_probe_failure_status(failure))
+-        _publish_retry_record(generation / "outcome.json", _pretty(outcome))
++        _publish_retry_record(
++            generation / "outcome.json", _pretty(outcome), durable_root=output
++        )
+         raise failure from error
+     outcome.update(status="READY", retryable=False, next_retry_at=None)
+-    _publish_retry_record(generation / "outcome.json", _pretty(outcome))
++    _publish_retry_record(
++        generation / "outcome.json", _pretty(outcome), durable_root=output
++    )
+     return result
+ 
+ 
+ def _publish_retry_record(
+-    path: Path, content: bytes, *, exclusive: bool = False
++    path: Path, content: bytes, *, durable_root: Path, exclusive: bool = False
+ ) -> None:
+     """Publish complete retry metadata without exposing partial committed JSON.
+ 
+@@ -370,12 +376,15 @@
+     claim is linked; an interrupted outcome leaves the complete claim recoverable.
+     The enclosing flock remains held throughout publication and collection.
+     """
++    if not path.parent.is_relative_to(durable_root):
++        raise ValueError("retry publication escapes durability root")
+     path.parent.mkdir(parents=True, exist_ok=True)
+     if path.exists():
+         if exclusive:
+             raise FileExistsError(f"GOAL probe retry claim already exists: {path}")
+         if path.read_bytes() != content:
+             raise ValueError(f"GOAL probe artifact conflict: {path}")
++        _sync_retry_directories(path.parent, durable_root)
+         return
+     pending = path.with_name(f".{path.name}.{uuid4().hex}.pending")
+     with pending.open("xb") as stream:
+@@ -384,6 +393,21 @@
+         os.fsync(stream.fileno())
+     # Same-directory hard-link publication is atomic and cannot replace evidence.
+     os.link(pending, path)
++    _sync_retry_directories(path.parent, durable_root)
++
++
++def _sync_retry_directories(directory: Path, durable_root: Path) -> None:
++    # Bottom-up syncing persists the final link and every newly-created ancestor
++    # through the already-existing cache root, before collection or acknowledgement.
++    while True:
++        fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY)
++        try:
++            os.fsync(fd)
++        finally:
++            os.close(fd)
++        if directory == durable_root:
++            return
++        directory = directory.parent
+ 
+ 
+ def _capture_goal_probe_input(
+--- a/tests/test_goal_probe_collection.py
++++ b/tests/test_goal_probe_collection.py
+@@ -872,3 +872,90 @@
+     assert len(calls) == 1 and not result.reused
+     status = goal_probe_collection.goal_probe_failure_status(ValueError("integrity"))
+     assert status["retryable"] is False
++def test_retry_directory_sync_order_before_collection(monkeypatch, tmp_path):
++    output = _cache_fixture(tmp_path)
++    _cache_refresh_stub(monkeypatch, tmp_path)
++    original_collect = goal_probe_collection._capture_goal_probe_input
++    original_open = goal_probe_collection.os.open
++    original_close = goal_probe_collection.os.close
++    original_sync = goal_probe_collection.os.fsync
++    original_link = goal_probe_collection.os.link
++    descriptors = {}
++    calls = []
++
++    def open_directory(path, flags, *args, **kwargs):
++        fd = original_open(path, flags, *args, **kwargs)
++        descriptors[fd] = Path(path)
++        return fd
++
++    def close_directory(fd):
++        descriptors.pop(fd, None)
++        return original_close(fd)
++
++    def sync(fd):
++        calls.append(("dir", descriptors[fd]) if fd in descriptors else ("file", None))
++        return original_sync(fd)
++
++    def link(src, dst):
++        calls.append(("link", Path(dst)))
++        return original_link(src, dst)
++
++    def collect(**kwargs):
++        calls.append(("collector", None))
++        return original_collect(**kwargs)
++
++    monkeypatch.setattr(goal_probe_collection.os, "open", open_directory)
++    monkeypatch.setattr(goal_probe_collection.os, "close", close_directory)
++    monkeypatch.setattr(goal_probe_collection.os, "fsync", sync)
++    monkeypatch.setattr(goal_probe_collection.os, "link", link)
++    monkeypatch.setattr(goal_probe_collection, "_capture_goal_probe_input", collect)
++    _ensure_cached(tmp_path, output, 15, request_budget=3)
++    marker = calls.index(("collector", None))
++    claim = next(path for kind, path in calls if kind == "link")
++    expected_dirs = []
++    directory = claim.parent
++    while True:
++        expected_dirs.append(("dir", directory))
++        if directory == output:
++            break
++        directory = directory.parent
++    assert calls[:marker] == [("file", None), ("link", claim), *expected_dirs]
++    assert calls[marker + 1 :] == [
++        ("file", None),
++        ("link", claim.parent / "outcome.json"),
++        *expected_dirs,
++    ]
++
++
++@pytest.mark.parametrize("failure_phase", ["attempt.json", "outcome.json"])
++def test_directory_sync_error_does_not_acknowledge(
++    monkeypatch, tmp_path, failure_phase
++):
++    import stat
++
++    output = _cache_fixture(tmp_path)
++    collections = _cache_refresh_stub(monkeypatch, tmp_path)
++    original_sync = goal_probe_collection.os.fsync
++    original_link = goal_probe_collection.os.link
++    phase = None
++
++    def link(src, dst):
++        nonlocal phase
++        phase = Path(dst).name
++        return original_link(src, dst)
++
++    def sync(fd):
++        if phase == failure_phase and stat.S_ISDIR(
++            goal_probe_collection.os.fstat(fd).st_mode
++        ):
++            raise OSError("injected directory fsync failure")
++        return original_sync(fd)
++
++    monkeypatch.setattr(goal_probe_collection.os, "link", link)
++    monkeypatch.setattr(goal_probe_collection.os, "fsync", sync)
++    with pytest.raises(OSError, match="injected directory fsync failure"):
++        _ensure_cached(tmp_path, output, 15, request_budget=3)
++    assert len(collections) == (0 if failure_phase == "attempt.json" else 1)
++    claims = list(output.glob("failed-cache-retry/*/attempts/*/attempt.json"))
++    assert len(claims) == 1
++    assert json.loads(claims[0].read_text())["request_budget"] == 3
+--- a/knowledge/goal_probe_failed_cache_boundary.md
++++ b/knowledge/goal_probe_failed_cache_boundary.md
+@@ -47,3 +47,8 @@
+ never replaces existing evidence. Incomplete unpublished staging is not a claim
+ and cannot precede provider requests; interrupted outcomes retain the full claim
+ reservation and use existing lease recovery. Other record formats are unchanged.
++
++Durability amendment: after file fsync and exclusive hard-link publication, sync
++the final-name directory then each ancestor bottom-up through the existing cache
++output root. Directory-sync errors propagate before collector entry or outcome
++acknowledgement. This verifies filesystem calls/order, not real power-loss behavior.

@@ -1,0 +1,92 @@
+{
+  "command": [
+    "/Users/turshevr/toto-ai/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp=/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/pytest-extra",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/tests/test_independent_core03.py::test_independent_actual_inference_core_optional_policy"
+  ],
+  "exit": 0,
+  "output": "....                                                                     [100%]\n4 passed in 0.31s\n",
+  "final_candidate_guards": [
+    {
+      "path": "src/toto_ai/sports_stats/v3_probability.py",
+      "sha256": "b9e91b89ec08e2d87d6a1d676857f2e48c6c7500558558dac8d8295ba7f43b26",
+      "match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_draw_calibration.py",
+      "sha256": "487b3155128debef428b4f2d884d59266f89c43302ab884ae43910c0aa646fd4",
+      "match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_probability_features.py",
+      "sha256": "9723dc218a56a0fca8545b8f9b1f08e2d9470ad7300c4c2f32018639cc00e4d5",
+      "match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_parallel.py",
+      "sha256": "0cb314eae27f81873f51dd48aacf390f800c11a0a134c6c3ca3829b6fcf7273c",
+      "match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_generation.py",
+      "sha256": "3c3d743cc653b872c22c1d8e995dea9cdedd701fc5ab147c0f6e4326cd389cd9",
+      "match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_feature_disposition.py",
+      "sha256": "fc3e9df4f4a1730cc9547ae26b1af06fdbf734e54bd9380be36cd8b04b3dbf96",
+      "match": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_comparison.py",
+      "sha256": "ed5243333e9cf3aad8ef02320e03d53e00d7537b786fa52af171c0a64f1627e9",
+      "match": true
+    },
+    {
+      "path": "tests/test_sports_v3_probability.py",
+      "sha256": "b2c7aa0441917730d98515ac327441e7b961597c94617a705d5ba1409f0dfb6e",
+      "match": true
+    },
+    {
+      "path": "tests/test_sports_v3_probability_features.py",
+      "sha256": "ef776562b0a14504dd8d40d1415f4bbc64f2dcf553d2229619ddb3a47b30c065",
+      "match": true
+    },
+    {
+      "path": "tests/test_sports_v3_parallel.py",
+      "sha256": "1474177afbc5890fe7347a92f46491173637eea97dd78e151ae59eb65c8ecf86",
+      "match": true
+    },
+    {
+      "path": "tests/test_sports_v3_generation.py",
+      "sha256": "f661202274b0ba3047e65f17ea4d5919f0e47b32c5afc698813fd036af735358",
+      "match": true
+    },
+    {
+      "path": "tests/test_sports_v3_feature_disposition.py",
+      "sha256": "47270bcd49354e34b01595aee1bcc9ca34d8f4dc86fc84c2b1307e1083ff7dec",
+      "match": true
+    },
+    {
+      "path": "tests/test_sports_v3_comparison_connection.py",
+      "sha256": "f39aa0eaf590df1931f878a4b19fa4153d27c8240960ef9dd55cfced931c9159",
+      "match": true
+    },
+    {
+      "path": "knowledge/sports-v3-probability-research-20260906.md",
+      "sha256": "b793c1743e94ac8494beef3b85a9c9cbab7295b410331fefdd16e2958419b035",
+      "match": true
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_PROBABILITY_FAMILY_DIAGNOSTIC.py",
+      "sha256": "dd7cdefec02f4888051619abdf77063444c1a34947e467f8816a1f8b7caabc7a",
+      "match": true
+    }
+  ]
+}

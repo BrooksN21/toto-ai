@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "event_order": 10,
+    "target_event_id": 180613,
+    "championship": "Испания. Ла Лига 2",
+    "home_team": "Спортинг Хихон",
+    "away_team": "Жирона",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "recovery-4997-event-11-20260904",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Испания. Ла Лига 2",
+      "LaLiga 2"
+    ],
+    "home_entity": "Sporting Gijón",
+    "home_aliases": [
+      "Спортинг Хихон",
+      "Sporting Gijón",
+      "Real Sporting"
+    ],
+    "away_entity": "Girona FC",
+    "away_aliases": [
+      "Жирона",
+      "Girona FC"
+    ],
+    "starts_at": "2026-09-05T14:15:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "codex-local-evidence-review",
+    "reviewed_at": "2026-09-04T20:07:06.090586Z"
+  },
+  "sources": [
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/girona-fc-sporting-gijon/chbsoKj#id:16418281",
+      "snapshot": "recovery-4997-ba2f98d05dc736076db4ee5381689eb69f2d477b4da80d2c4f51e5ff816a6047.json",
+      "snapshot_sha256": "ba2f98d05dc736076db4ee5381689eb69f2d477b4da80d2c4f51e5ff816a6047",
+      "home_team": "Sporting Gijón",
+      "away_team": "Girona FC",
+      "starts_at": "2026-09-05T14:15:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T18:37:14.668699Z"
+    },
+    {
+      "source_name": "LaLiga",
+      "role": "official",
+      "source_url": "https://iaas-public-front-pro.laliga.com/laliga-hypermotion/resultados",
+      "snapshot": "recovery-4997-10e13090fe8e20d03c6c3aeb07d824f5763f0626a9e009421fd1fe3f5f04a20a.html",
+      "snapshot_sha256": "10e13090fe8e20d03c6c3aeb07d824f5763f0626a9e009421fd1fe3f5f04a20a",
+      "home_team": "Real Sporting",
+      "away_team": "Girona FC",
+      "starts_at": "2026-09-05T14:15:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T20:03:59.609582Z"
+    }
+  ]
+}

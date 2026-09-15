@@ -1,0 +1,565 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "at": "2026-09-06T18:45:20.473235+00:00",
+  "phase": "VERIFIED_NATIVE_PREFLIGHT_PASS_OWNED_PROCESSES_GONE",
+  "drawing_id": 12106,
+  "drawing_number": 4999,
+  "fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+  "close_msk": "2026-09-07T17:30:00+03:00",
+  "locks": [
+    {
+      "path": "/Users/turshevr/toto-ai/data/operations/global-maintenance.lock",
+      "exists": true,
+      "inode": 175866349,
+      "device": 16777234,
+      "metadata": "{\n  \"pid\": 64407,\n  \"released_at\": \"2026-09-06T02:07:54.578033+00:00\",\n  \"schema_version\": 1,\n  \"status\": \"released\"\n}\n",
+      "fresh_nonblocking": "ACQUIRED_RELEASED"
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/.dispatch.lock",
+      "exists": true,
+      "inode": 175258501,
+      "device": 16777234,
+      "metadata": "",
+      "fresh_nonblocking": "ACQUIRED_RELEASED"
+    }
+  ],
+  "narrow_dispatch_pids": [],
+  "retry": "Native dispatcher deactivated existing retry as drawing_ready; exact label not loaded (launchctl113). No future slot marked executed or manual calendar reset.",
+  "ledger_before_sha256": "03a650359c57f7278a7c5c176f102dc0fb6a749f5c7949a10d6a534c30c1a3c6",
+  "scope": "timing registration/preparation/watcher/preflight only; no consent/packages/code/publication",
+  "next": "No additional execution. Handoff to parent/finalizer; next installednativecheckpoint07.09 15:30MSK. No4999experimentalconsent exists; request remains separate.",
+  "captured_sources": [
+    {
+      "name": "mfa-supercup",
+      "url": "https://www.mfa.com.mt/news/competitions/tickets-out-now-for-40th-bov-super-cup-final/",
+      "started_at": "2026-09-06T17:59:38.863984+00:00",
+      "http_status": 200,
+      "final_url": "https://www.mfa.com.mt/news/competitions/tickets-out-now-for-40th-bov-super-cup-final/",
+      "captured_at": "2026-09-06T17:59:44.366737+00:00",
+      "snapshot": "data/schedule-evidence/snapshots/4999-mfa-supercup-097aaf1bb623a426.html",
+      "sha256": "097aaf1bb623a4261656e6239919ee79fc9864a3c260420ac66b21f11436eb26",
+      "bytes": 921911
+    },
+    {
+      "name": "valletta-tickets",
+      "url": "https://vallettafc.mt/buy-tickets/",
+      "started_at": "2026-09-06T17:59:38.866124+00:00",
+      "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:997)>",
+      "failed_at": "2026-09-06T17:59:40.043077+00:00"
+    },
+    {
+      "name": "fotmob-saudi",
+      "url": "https://www.fotmob.com/en-GB/matches/al-khaleej-vs-al-riyadh/86y6czbp",
+      "started_at": "2026-09-06T17:59:38.866297+00:00",
+      "http_status": 200,
+      "final_url": "https://www.fotmob.com/en-GB/matches/al-khaleej-vs-al-riyadh/86y6czbp",
+      "captured_at": "2026-09-06T17:59:41.913574+00:00",
+      "snapshot": "data/schedule-evidence/snapshots/4999-fotmob-saudi-7b85b83b5dbd1bd0.html",
+      "sha256": "7b85b83b5dbd1bd090acb331d58586c898b01fda5826cebf16baea82da4f1c5a",
+      "bytes": 583110
+    },
+    {
+      "name": "fss-serbia",
+      "url": "https://fss.rs/takmicenje/mozzart-bet-prva-liga-srbije-26-27/",
+      "started_at": "2026-09-06T17:59:38.866362+00:00",
+      "error": "TimeoutError: The read operation timed out",
+      "failed_at": "2026-09-06T17:59:47.312135+00:00"
+    },
+    {
+      "name": "utakmice-vozdovac",
+      "url": "https://utakmice.rs/tim/fk-vozdovac",
+      "started_at": "2026-09-06T17:59:38.866652+00:00",
+      "http_status": 200,
+      "final_url": "https://utakmice.rs/tim/fk-vozdovac",
+      "captured_at": "2026-09-06T17:59:40.730064+00:00",
+      "snapshot": "data/schedule-evidence/snapshots/4999-utakmice-vozdovac-2805a51cd6aaad79.html",
+      "sha256": "2805a51cd6aaad79c8114161e22210b62ef936d18020581450c9a421dca9df86",
+      "bytes": 110131
+    },
+    {
+      "name": "fss-serbia-retrieval02",
+      "url": "https://fss.rs/takmicenje/mozzart-bet-prva-liga-srbije-26-27/",
+      "started_at": "2026-09-06T18:01:40.543347+00:00",
+      "http_status": 200,
+      "final_url": "https://fss.rs/takmicenje/mozzart-bet-prva-liga-srbije-26-27/",
+      "captured_at": "2026-09-06T18:01:41.873322+00:00",
+      "snapshot": "data/schedule-evidence/snapshots/4999-fss-serbia-retrieval02-3e0f0c9101ee55aa.raw",
+      "sha256": "3e0f0c9101ee55aad0ed3d5990f2eac06de683e2be5fe178851d65b0abd97e13",
+      "bytes": 537904
+    },
+    {
+      "name": "sofa-saudi-event",
+      "url": "https://www.sofascore.com/api/v1/event/16629480",
+      "started_at": "2026-09-06T18:01:40.543575+00:00",
+      "http_status": 200,
+      "final_url": "https://www.sofascore.com/api/v1/event/16629480",
+      "captured_at": "2026-09-06T18:01:40.951671+00:00",
+      "snapshot": "data/schedule-evidence/snapshots/4999-sofa-saudi-event-85db57a6b1d8928b.raw",
+      "sha256": "85db57a6b1d8928bd3e85b6db04bd4c7e2e7f4fa4004e530fdcad0b39c6c1c12",
+      "bytes": 9015
+    }
+  ],
+  "review_results": {
+    "12": "APPLIED_AND_RESOLVED:2026-09-07T15:30Z /18:30MSK; actual Sofa16629480+FotMob independent sources",
+    "14": "APPLIED_AND_RESOLVED:2026-09-07T16:00Z /19:00MSK; actual FSS+Utakmice sources; FSS retry succeeded18:01:41.873322Z",
+    "9": "APPLIED: MFA + Academia independent raw SportsEvent19:00+02:00 =>17:00UTC/20:00MSK; original Sofa16:00UTC retained/non-selected. Native dispatch ready15/15."
+  },
+  "plan_id": "b742aac1fea2d42d",
+  "watcher_installed": true,
+  "preflight_executed": true,
+  "registration": {
+    "at": "2026-09-06T18:02:37.195652Z",
+    "fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+    "ledger_backup": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-ledger-before-03a650359c57f727.json",
+    "ledger_before_sha256": "03a650359c57f7278a7c5c176f102dc0fb6a749f5c7949a10d6a534c30c1a3c6",
+    "reviews": [
+      {
+        "event_order": 11,
+        "review": "data/schedule-evidence/reviews/4999-event12-codex-review-20260906.json",
+        "sha256": "e37a3ddc5ba68df19d7abe126d8882a887b06c6f4556ae57958bb6b0a451b4ed",
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "toto_ai.cli",
+          "schedule-evidence-review",
+          "--review",
+          "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/4999-event12-codex-review-20260906.json",
+          "--review-sha256",
+          "e37a3ddc5ba68df19d7abe126d8882a887b06c6f4556ae57958bb6b0a451b4ed",
+          "--ledger",
+          "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json"
+        ],
+        "returncode": 0,
+        "stdout": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-event12-review-dryrun.json"
+      },
+      {
+        "event_order": 13,
+        "review": "data/schedule-evidence/reviews/4999-event14-codex-review-20260906.json",
+        "sha256": "8b13c267c6b7c699f8054c3c4b2c9a8f2c74a21d187baa639c7e7dbaf7128034",
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "toto_ai.cli",
+          "schedule-evidence-review",
+          "--review",
+          "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/4999-event14-codex-review-20260906.json",
+          "--review-sha256",
+          "8b13c267c6b7c699f8054c3c4b2c9a8f2c74a21d187baa639c7e7dbaf7128034",
+          "--ledger",
+          "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json"
+        ],
+        "returncode": 0,
+        "stdout": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-event14-review-dryrun.json"
+      }
+    ],
+    "applied_at": "2026-09-06T18:03:12.804578+00:00",
+    "apply_results": [
+      {
+        "event_order": 11,
+        "returncode": 0,
+        "result": {
+          "drawing_number": 4999,
+          "dry_run": false,
+          "event_order": 11,
+          "ledger_mutated": true,
+          "ledger_semantic_hash": "5074e41b6e99dfa65b8ce9d6c70e1670f6359d72a4f115e6f6ebff09fd312c6b",
+          "ledger_sha256": "b675822f0da4d49bd164aa7b0e380c3cd9f0b57167706e96eb5326fb081bfad7",
+          "observation_id": "codex-reviewed-4999-event12-20260906",
+          "status": "applied"
+        }
+      },
+      {
+        "event_order": 13,
+        "returncode": 0,
+        "result": {
+          "drawing_number": 4999,
+          "dry_run": false,
+          "event_order": 13,
+          "ledger_mutated": true,
+          "ledger_semantic_hash": "294b4bf3f4e92fdc447122062db1b147cddd5a8834f4bb5b9e8b7b6412b97de1",
+          "ledger_sha256": "dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8",
+          "observation_id": "codex-reviewed-4999-event14-20260906",
+          "status": "applied"
+        }
+      }
+    ],
+    "verify_result": {
+      "ledger_semantic_hash": "294b4bf3f4e92fdc447122062db1b147cddd5a8834f4bb5b9e8b7b6412b97de1",
+      "ledger_sha256": "dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8",
+      "legacy_review_without_snapshot_count": 154,
+      "mutated": false,
+      "observation_count": 251,
+      "prepared_review_count": 36,
+      "review_count": 251,
+      "status": "verified",
+      "verified_snapshot_count": 192
+    },
+    "all_original_observations_preserved": true,
+    "original_count": 249,
+    "current_count": 251
+  },
+  "consumer_validation": {
+    "at": "2026-09-06T18:04:32.899885+00:00",
+    "scope": "Read-only native schedule resolver on exact queue identity fields; no BK probabilities constructed, NOT full scheduler preflight",
+    "queue_sha256": "5eb6a0e54a6e102913309c091ec15a0e9605cd0e85bfc7fd852731bcfb4eedf5",
+    "fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+    "ledger_sha256": "dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8",
+    "results": [
+      {
+        "event_order": 8,
+        "target_event_id": 180701,
+        "state": "SOURCE_MISSING",
+        "reason": "no exact reviewed schedule evidence",
+        "starts_at": null,
+        "observation_id": null
+      },
+      {
+        "event_order": 11,
+        "target_event_id": 180704,
+        "state": "RESOLVED",
+        "reason": "exact reusable reviewed identity and kickoff evidence",
+        "starts_at": "2026-09-07T15:30:00+00:00",
+        "observation_id": "codex-reviewed-4999-event12-20260906"
+      },
+      {
+        "event_order": 13,
+        "target_event_id": 180706,
+        "state": "RESOLVED",
+        "reason": "exact reusable reviewed identity and kickoff evidence",
+        "starts_at": "2026-09-07T16:00:00+00:00",
+        "observation_id": "codex-reviewed-4999-event14-20260906"
+      }
+    ]
+  },
+  "remaining_timing_positions": [],
+  "registered_positions": [
+    9,
+    12,
+    14
+  ],
+  "all_previous_249_observations_preserved": true,
+  "ledger_after_sha256": "245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9",
+  "manual_dispatch_executed": true,
+  "consent_created": false,
+  "packages_generated": false,
+  "owned_pid": null,
+  "owned_session": null,
+  "blocker": null,
+  "malta_registration": {
+    "at": "2026-09-06T18:08:06.609675Z",
+    "fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+    "review_path": "data/schedule-evidence/reviews/4999-event9-codex-review-20260906.json",
+    "review_sha256": "6afe3f58360a74dcf69f505ed2b4298d7723f16e749c8f833ac3c1ae015d5696",
+    "ledger_before_sha256": "dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8",
+    "ledger_backup": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-ledger-before-malta-dd69c20073b5a9e8.json",
+    "selected_pair": "MFA official + Academia independent original match page, exact scheduled senior Super Cup identity/17:00UTC consensus",
+    "conflict_disposition": {
+      "not_selected": "Sofascore17001288",
+      "original_sha256": "3bff0b7492de6b3c5f87fb760a114363bdc669dbbd5084cbdf8e95953479aaa9",
+      "original_utc": "2026-09-07T16:00:00Z",
+      "selected_utc": "2026-09-07T17:00:00Z",
+      "reason": "Case-specific reviewed official plus distinct independent agreeing pair; Sofa is unreviewed discovery candidate, not an existing approved ledger observation. Discrepancy preserved, not relabelled equal. No universal priority rule/config/code change or human-owner impersonation."
+    },
+    "classification_basis": "MFA senior league holders vs FA Trophy champions; independent senior Super Cup2026/2027Final. Reviewed classification, not invented source gender field.",
+    "results": [
+      {
+        "phase": "dry-run",
+        "exit_code": 0,
+        "stdout": "{\"drawing_number\": 4999, \"dry_run\": true, \"event_order\": 8, \"ledger_mutated\": false, \"ledger_semantic_hash\": \"294b4bf3f4e92fdc447122062db1b147cddd5a8834f4bb5b9e8b7b6412b97de1\", \"ledger_sha256\": \"dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8\", \"observation_id\": \"codex-reviewed-4999-event9-20260906\", \"status\": \"validated_dry_run\"}\n"
+      },
+      {
+        "phase": "apply",
+        "exit_code": 0,
+        "stdout": "{\"drawing_number\": 4999, \"dry_run\": false, \"event_order\": 8, \"ledger_mutated\": true, \"ledger_semantic_hash\": \"4c9eadd434c3af839e3bcbc71fa6b3465209980c5dd25acdd5596633da30caa5\", \"ledger_sha256\": \"245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9\", \"observation_id\": \"codex-reviewed-4999-event9-20260906\", \"status\": \"applied\"}\n"
+      },
+      {
+        "phase": "verify",
+        "exit_code": 0,
+        "stdout": "{\"ledger_semantic_hash\": \"4c9eadd434c3af839e3bcbc71fa6b3465209980c5dd25acdd5596633da30caa5\", \"ledger_sha256\": \"245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9\", \"legacy_review_without_snapshot_count\": 154, \"mutated\": false, \"observation_count\": 252, \"prepared_review_count\": 37, \"review_count\": 252, \"status\": \"verified\", \"verified_snapshot_count\": 194}\n"
+      }
+    ],
+    "ledger_after_sha256": "245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9",
+    "all_prior_251_preserved": true
+  },
+  "dispatch_precheck": {
+    "at": "2026-09-06T18:08:46.453161+00:00",
+    "guards": [
+      {
+        "path": "/Users/turshevr/toto-ai/data/operations/global-maintenance.lock",
+        "fresh_nonblocking": "ACQUIRED_RELEASED"
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/.dispatch.lock",
+        "fresh_nonblocking": "ACQUIRED_RELEASED"
+      }
+    ],
+    "narrow_dispatch_pids": [],
+    "registry_plan_id": null,
+    "retry_state": [
+      "state = not running",
+      "runs = 3",
+      "last exit code = 75: EX_TEMPFAIL",
+      "state = active",
+      "state = active"
+    ],
+    "retry_plan_sha256": "397bd6a3fe9f93710a5486d7912dde8ae22dddc8da2d9faf9063348be624ba2a",
+    "retry_runtime_sha256": "cd1db66efef64df4deda40c2f691a359cc3a4bec6077badb477547e287e9afc7"
+  },
+  "dispatch_command": [
+    "/Users/turshevr/toto-ai/.venv/bin/python",
+    "-u",
+    "-m",
+    "toto_ai.cli",
+    "morning-dispatch",
+    "--bank",
+    "4980",
+    "--stake",
+    "30",
+    "--env-file",
+    "/Users/turshevr/toto-ai/.env",
+    "--project-root",
+    "/Users/turshevr/toto-ai",
+    "--state-root",
+    "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch",
+    "--scheduler-root",
+    "/Users/turshevr/toto-ai/reports/rehearsal",
+    "--db",
+    "/Users/turshevr/toto-ai/data/toto.db",
+    "--aliases",
+    "/Users/turshevr/toto-ai/data/external-odds/team-aliases.json",
+    "--schedule-evidence-ledger",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json",
+    "--expected-drawing-id",
+    "12106",
+    "--expected-drawing-number",
+    "4999",
+    "--expected-fingerprint",
+    "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+    "--expected-deadline",
+    "2026-09-07T14:30:00Z",
+    "--python-executable",
+    "/Users/turshevr/toto-ai/.venv/bin/python",
+    "--activate",
+    "--goal-shadow-auto",
+    "--parallel-challenger-auto"
+  ],
+  "dispatch_started_at": "20260906T180913Z",
+  "dispatch_stdout": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-morning-dispatch-20260906T180913Z.stdout",
+  "dispatch_stderr": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-morning-dispatch-20260906T180913Z.stderr",
+  "dispatch_elapsed_seconds": 21.031,
+  "dispatch_exit_code": 0,
+  "dispatch_interrupt_reason": null,
+  "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json",
+  "watcher_receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-watcher-setup-receipt.json",
+  "preflight_command": [
+    "/Users/turshevr/toto-ai/.venv/bin/python",
+    "-u",
+    "-m",
+    "toto_ai.cli",
+    "scheduler-preflight-only",
+    "--plan",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json"
+  ],
+  "preflight_started_at": "20260906T181136Z",
+  "preflight_stdout": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/preflight4999-authorized-diagnostics-20260906T184355Z/native.stdout",
+  "preflight_stderr": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/preflight4999-authorized-diagnostics-20260906T184355Z/native.stderr",
+  "preflight_elapsed_seconds": 5.888,
+  "preflight_exit_code": 0,
+  "preflight_interrupt_reason": null,
+  "protected_plan_bindings_unchanged": true,
+  "protected_sha256": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json": "92ddec53c4554b7edc8c04de0e8a52f25400ed2450e61447eac2a01fc6e4f20d",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/run-scheduler.sh": "06b99b9d4772255c124389d3e3a33033cb15f1e7010dcec0b52fe41e6fd9732f",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/totoai-scheduler.plist": "5ae8eb3679f76c13950530c2c78779170987db5ab69818e5ab04d1d9aa04137e",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/parallel-challenger/run-parallel-sidecar.sh": "6be3bfcf1e51df21d4eac49a0698a355a7306010fbd1f39d8690bb9b10a70410",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/parallel-challenger/totoai-parallel-sidecar.plist": "cec7c6573a8744062e035016aaf7b36e25e1fea38264ac97d40e1e4533b282d9",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/bindings/schedule-evidence-245558df79313f7b/ledger.json": "245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9"
+  },
+  "dispatch_result": {
+    "activation_status": "activated",
+    "attention_path": null,
+    "launch_agent_label": "com.totoai.production-scheduler.v9.b742aac1fea2d42d",
+    "launch_agent_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/totoai-scheduler.plist",
+    "parallel_challenger": {
+      "automatic_wagering": false,
+      "candidate_strategies": [
+        "quality-v2",
+        "sports-shadow",
+        "quality-v3",
+        "robust"
+      ],
+      "drawing_number": 4999,
+      "launch_agent_label": "com.totoai.parallel-sidecar.v1.b742aac1fea2d42d",
+      "parallel_release_authorized": false,
+      "plan_id": "b742aac1fea2d42d",
+      "primary_scheduler_affected": false,
+      "reused": false,
+      "scheduled_at": "2026-09-07T14:00:00+00:00",
+      "sports_artifact": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/parallel-challenger/sports-seed/sports_probability_shadow_4999_ad2a308fa443ca3d.json",
+      "sports_coverage_count": 13,
+      "status": "PARALLEL_SIDECAR_ACTIVATED"
+    },
+    "plan_id": "b742aac1fea2d42d",
+    "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json",
+    "reason": "ready",
+    "record_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/drawing-12106-20260907T143000Z-b2596e1df489092a.json",
+    "retry_plan_path": null,
+    "retry_scheduler": {
+      "active": false,
+      "label": "com.totoai.preflight-retry.12106.b2596e1df489092a",
+      "reason": "drawing_ready"
+    },
+    "review_queue_path": null,
+    "source_collector": null,
+    "sports_shadow": {
+      "automatic_wagering": false,
+      "captured_at": "2026-09-06T18:09:33.449079+00:00",
+      "coverage_summary": "/Users/turshevr/toto-ai/reports/sports-analytics/4999/goal-auto/captures/20260906T180920590127Z/coverage-summary.json",
+      "drawing_fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+      "drawing_id": 12106,
+      "drawing_number": 4999,
+      "event_count": 15,
+      "history_source_count": 26,
+      "package_influence": "NONE",
+      "persisted_event_count": 15,
+      "persistence_status": "persisted",
+      "primary_scheduler_affected": false,
+      "provider": "goal-api-v1",
+      "quota_daily_remaining": 556,
+      "request_count": 53,
+      "reused": false,
+      "run_id": "7210e8b144b76463cce52187b0e0381771ac3fdd43d13125ed3a7a39c76ef2c4",
+      "snapshot_sha256": "7210e8b144b76463cce52187b0e0381771ac3fdd43d13125ed3a7a39c76ef2c4",
+      "sports_eligible_count": 13,
+      "status": "PAPER_ONLY_COVERAGE_PROBE_READY"
+    },
+    "status": "scheduled",
+    "training_package": {
+      "detail": "current pool supports only 1020 RUB / 34 coupons; the quality-v2 training package is deferred until a later pool snapshot",
+      "reason": "pool_supported_capacity_infeasible",
+      "status": "deferred"
+    }
+  },
+  "launchd": {
+    "com.totoai.production-scheduler.v9.b742aac1fea2d42d": {
+      "returncode": 0,
+      "state_lines": [
+        "state = not running",
+        "runs = 0",
+        "last exit code = (never exited)"
+      ]
+    },
+    "com.totoai.parallel-sidecar.v1.b742aac1fea2d42d": {
+      "returncode": 0,
+      "state_lines": [
+        "state = not running",
+        "runs = 0",
+        "last exit code = (never exited)"
+      ]
+    },
+    "com.totoai.status-watcher.v1.b742aac1fea2d42d": {
+      "returncode": 0,
+      "state_lines": [
+        "state = running",
+        "runs = 1",
+        "pid = 48486",
+        "last exit code = (never exited)",
+        "state = active",
+        "state = active"
+      ]
+    },
+    "com.totoai.preflight-retry.12106.b2596e1df489092a": {
+      "returncode": 113,
+      "state_lines": []
+    }
+  },
+  "plan_sha256": "92ddec53c4554b7edc8c04de0e8a52f25400ed2450e61447eac2a01fc6e4f20d",
+  "primary_slots_msk": [
+    "2026-09-07T15:30:00+03:00",
+    "2026-09-07T16:00:00+03:00",
+    "2026-09-07T16:30:00+03:00",
+    "2026-09-07T16:40:00+03:00",
+    "2026-09-07T16:50:00+03:00",
+    "2026-09-07T17:00:00+03:00",
+    "2026-09-07T17:12:00+03:00",
+    "2026-09-07T17:20:00+03:00"
+  ],
+  "parallel_at_msk": "2026-09-07T17:00:00+03:00",
+  "expires_at_msk": "2026-09-07T17:20:00+03:00",
+  "preparation_readiness": "15/15 native ready; not full package e2e",
+  "preflight_status": "PASS",
+  "preflight_result_artifact_created": true,
+  "preflight_error_evidence": null,
+  "operator_result_exists": false,
+  "manual_wager_request": {
+    "action_required": true,
+    "authorization_sha256": null,
+    "automatic_wagering": false,
+    "drawing_id": 12106,
+    "drawing_number": 4999,
+    "expires_at_msk": "2026-09-07T17:20:00+03:00",
+    "plan_id": "b742aac1fea2d42d",
+    "profitability_proven": false,
+    "prompt": "Планируется ли ручная ставка на тираж 4999? Если да, подтвердите experimental manual release для plan_id b742aac1fea2d42d, банк 4980 ₽, ставка 30 ₽ до 2026-09-07T17:20:00+03:00. Автоматические ставки запрещены.",
+    "request_sha256": "663739fc9c7a9e7f606d3ab1772d4998e6b917247a61ebe7318086162b363a05",
+    "requested_bank": 4980,
+    "stake": 30,
+    "state": "owner_response_required"
+  },
+  "watcher_pid": 48486,
+  "watcher_running": true,
+  "preflight_waiting_stage": "COMPLETED_NATIVE_RESULT",
+  "owned_child_gone_verification": {
+    "at": "2026-09-06T18:14:43.468575+00:00",
+    "owned_pid": {
+      "returncode": 1,
+      "output": ""
+    },
+    "owned_group": {
+      "returncode": 1,
+      "output": ""
+    }
+  },
+  "authorized_retry": {
+    "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+    "at": "2026-09-06T18:43:55.355815+00:00",
+    "phase": "AUTHORIZED_RETRY_PRECHECK_COMPLETE",
+    "plan_id": "b742aac1fea2d42d",
+    "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json",
+    "plan_sha256": "92ddec53c4554b7edc8c04de0e8a52f25400ed2450e61447eac2a01fc6e4f20d",
+    "native_prepare_subprocess_timeout_seconds": 300,
+    "native_end_to_end_timeout_seconds": null,
+    "supervisor_wall_bound_seconds": 360,
+    "quiet30s_termination": false,
+    "diagnostic_interval_seconds": 15,
+    "diagnostic_dir": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/preflight4999-authorized-diagnostics-20260906T184355Z",
+    "diagnostic_bootstrap_sha256": "0d70304734a887776361d4b1e281380d0603253b8cbc0d205dad55ff82e9e4de",
+    "diagnostic_semantics": "faulthandler stack-only startup, no app/network/arguments/default timeout overrides; no frame locals or environment dump",
+    "precheck": {
+      "retry_label_loaded": false,
+      "retry_2150_active": false,
+      "primary_parallel_running": false,
+      "watcher_running_pid": 48486,
+      "maintenance_dispatch_locks": "ACQUIRED_RELEASED one at a time",
+      "duplicate_preflight": false,
+      "existing_plan_hash_matches": true
+    },
+    "scope": "One explicitly authorized preflight-only repeat, native internal retry policy retained; no package/consent/publication/app-code change"
+  },
+  "authorized_retry_receipt": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PREFLIGHT4999_RETRY_AUTHORIZED_HANDOFF.json",
+  "authorized_retry_pid": null,
+  "authorized_retry_status": "VERIFIED_PASS",
+  "authorized_retry_elapsed_seconds": 5.888,
+  "historical_preflight_30s_interrupted": {
+    "preflight_status": "INTERRUPTED_NO_PASS",
+    "preflight_exit_code": 130,
+    "preflight_elapsed_seconds": 30.155,
+    "preflight_stdout": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-real-preflight-20260906T181136Z.stdout",
+    "preflight_stderr": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-real-preflight-20260906T181136Z.stderr",
+    "preflight_interrupt_reason": "CHILD_SILENCE_30S",
+    "preflight_waiting_stage": "UNKNOWN: no callstack or phase progress captured; empty isolated preflight work directory only"
+  },
+  "preflight_result_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/daytime-preflight/checkpoints/20260906T184437914711Z-cbff4429/result.json",
+  "preflight_result_sha256": "be087782be358844dc6e25d3c1a5cf1eed96d6f1bedfbccca9e1eb1ffc2af5b0"
+}

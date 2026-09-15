@@ -1,0 +1,121 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "status": "IMPLEMENTED_SCOPED_VERIFIED_PENDING_INDEPENDENT_REVIEW",
+  "write_paths": [
+    "src/toto_ai/operations/scheduler_status.py",
+    "src/toto_ai/operations/scheduler_delivery.py",
+    "tests/test_scheduler_delivery.py",
+    "skills/operator-delivery.md"
+  ],
+  "initial_sha256": {
+    "src/toto_ai/operations/scheduler_status.py": "5c3bfb00238b00772febe36f055d28414e44c1ec08295f09dfc83668474f2956",
+    "src/toto_ai/sports_stats/final_hybrid_sidecar.py": "e76b627ae82af047e777b0d9d5b615ebf4fa1a6eee5a44f0d040b67c48dd8434",
+    "src/toto_ai/sports_stats/final_hybrid_comparison.py": "c92acdde77bb3443531e8ebac081aae29424ad014633ffeaeb3ecf17f6127782"
+  },
+  "memory_handoff": "ACTIVE_PLAN/CURRENT_STATE updates deferred to separate finalizer to avoid concurrent memory writes; Euler EV runtime work pending separately.",
+  "completed_at": "2026-09-06T18:35:56.176278+03:00",
+  "work_summary": "Add strictly canonical/hash-bound READY_PRIMARY and READY_PARALLEL observations, time-aware actionability, current-run binding, atomic compact watcher receipt and local host-delivery checklist. No release/delivery authority issued; no EV/runtime modifications.",
+  "changed_paths": [
+    "src/toto_ai/operations/scheduler_status.py",
+    "src/toto_ai/operations/scheduler_delivery.py",
+    "tests/test_scheduler_delivery.py",
+    "skills/operator-delivery.md"
+  ],
+  "patch_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_CANDIDATE.patch",
+  "patch_sha256": "bb6c7de16e7201a6bf5a4f45997403ca0437c0bfdaed67254930da6892f9876f",
+  "manifest": [
+    {
+      "path": "src/toto_ai/operations/scheduler_status.py",
+      "before_sha256": "5c3bfb00238b00772febe36f055d28414e44c1ec08295f09dfc83668474f2956",
+      "after_sha256": "a80bc0c217eb238a85cf95733754aac6d2dc132f9d208328d27025e14171898a"
+    },
+    {
+      "path": "src/toto_ai/operations/scheduler_delivery.py",
+      "before_sha256": null,
+      "after_sha256": "72be5e7ff454dbdde7a5fdc4e806f75bf1bd5d954df56a8ba3dc18e838fe5829"
+    },
+    {
+      "path": "tests/test_scheduler_delivery.py",
+      "before_sha256": null,
+      "after_sha256": "9a068bdea39f81b429ae39c4bdeb0654f52bda8ed1200e6feec299c77a82c2ee"
+    },
+    {
+      "path": "skills/operator-delivery.md",
+      "before_sha256": null,
+      "after_sha256": "dd162263d9770b9acdab477320144882317525423ad23bcd743ad6cc0116cce7"
+    }
+  ],
+  "verification": {
+    "pytest": "41 passed in1.21s;27 new delivery cases plus14 existing scheduler status/live-status regressions",
+    "pytest_log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY/pytest.log",
+    "ruff": "3 Python paths PASS",
+    "ruff_log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY/ruff.log",
+    "commands": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY/checks.json",
+    "guard": "Guard active: network/SQLite/secret reads and outside-temp writes denied. One socket.bind attempt was blocked; pytest still41PASS. No network permission/bypass added. Caller of that denied bind was not investigated in this bounded job."
+  },
+  "tdd_evidence": [
+    "Initial5 regression failures:expiry/future timestamp/missing readiness",
+    "Expanded canonical-path/binding/watcher14 failures before implementation",
+    "First scoped green14",
+    "Additional5 robustness failures, fixed;38 scoped green",
+    "Additional old-run/new-primary failure, fixed;final41 scoped green"
+  ],
+  "delivery_contract": {
+    "name": "TOTOAI_LOCAL_DELIVERY_READY_V1",
+    "canonical_receipt": "<configured latest.json parent>/delivery-ready.json; normal plan path status-watch/delivery-ready.json",
+    "events": [
+      "READY_PRIMARY",
+      "READY_PARALLEL"
+    ],
+    "parent_action": "Poll exact compact receipt/current status before waiting for worker completion; compare current time to expiry and reread authoritative records/hashes before real host delivery.",
+    "notification_transport": "LOCAL_FILES_AND_STDOUT_ONLY",
+    "delivery_confirmed": false,
+    "highest_primary": "Can remain explicitly unbound/pending; never invent ranking or delay available primary solely for optional sidecar.",
+    "watcher_existing_processes": "Not restarted/reloaded; install or interval change requires separate approved rollout."
+  },
+  "boundary": {
+    "main_source_changes_only": true,
+    "scheduler_or_sidecar_or_comparison_or_EV_written": false,
+    "historical_4998_outputs_written": false,
+    "DB_API_consent_LaunchAgent_changes": false,
+    "new_process_or_heartbeat_installed": false,
+    "stage_commit_push_PR": false,
+    "runtime_optimization": "Euler-owned; still pending independently, not claimed fixed here",
+    "independent_review": "Pending separate job",
+    "concurrent_euler_change": "final_hybrid_comparison.py hash changed externally during this disjoint job; this implementation never wrote it. Immutable delivery candidate contains only its four declared paths."
+  },
+  "shared_memory_handoff": {
+    "reason": "Avoid races with Euler/finalizer; ACTIVE_PLAN/CURRENT_STATE/THREAD_COORDINATION intentionally not edited in this job.",
+    "ACTIVE_PLAN_checkpoint": "2026-09-06T18:35:56.176278+03:00: delivery observer implementation complete,41focusedpytest/Ruff3PASS; canonical READY_PRIMARY/READY_PARALLEL+clock-bound expiry+atomic delivery-ready.json. Pending independent review/approved rollout/publication. Euler EV/runtime optimization separate/pending. 4998 expired; no new delivery/activation/profit claim.",
+    "CURRENT_STATE_checkpoint": "Observer source/test/local checklist changed locally only; no commit/push, no live watcher reload, no native package/authority mutation. See DELIVERY_OBSERVER_IMPLEMENTATION_RECEIPT.json.",
+    "owner_report_checkpoint": "USER-REPORTED: owner says he saw and placed quality-v3 for4998; no betting receipt supplied, amount/exact wager bytes/time not independently verified. Owner placed it, not assistant. One-off choice, not persistent selector policy; no outcome/profit evidence."
+  },
+  "other_owned_source_observation": {
+    "src/toto_ai/sports_stats/final_hybrid_sidecar.py": {
+      "initial_sha256": "e76b627ae82af047e777b0d9d5b615ebf4fa1a6eee5a44f0d040b67c48dd8434",
+      "current_sha256": "e76b627ae82af047e777b0d9d5b615ebf4fa1a6eee5a44f0d040b67c48dd8434",
+      "written_by_this_job": false
+    },
+    "src/toto_ai/sports_stats/final_hybrid_comparison.py": {
+      "initial_sha256": "c92acdde77bb3443531e8ebac081aae29424ad014633ffeaeb3ecf17f6127782",
+      "current_sha256": "b844374129cac230d01940aa8f2471b0cbd3d6ab6ea9a1853adbf7217df6435b",
+      "written_by_this_job": false
+    }
+  },
+  "user_reported_wager_evidence": {
+    "recorded_at": "2026-09-06T18:36:42.312064+03:00",
+    "evidence_class": "USER_REPORTED_NOT_INDEPENDENTLY_VERIFIED",
+    "drawing": 4998,
+    "owner_statement": "Владелец сообщил, что успел увидеть и поставить quality-v3 для4998.",
+    "actor": "owner",
+    "assistant_placed_wager": false,
+    "betting_receipt_provided": false,
+    "verified_amount": null,
+    "verified_wager_bytes": null,
+    "verified_placement_time": null,
+    "scope": "Разовый выбор владельца, НЕ постоянное правило выбора стратегии. Отдельно от машинного формирования/публикации/доставки и от результата или прибыли.",
+    "profitability_or_payout_evidence": false,
+    "parent_reported_comparison_context": "По сообщению parent о verified PARALLEL_FINAL_DELIVERY_RECEIPT: quality-v3 выше по P13/P14, robust немного выше по P15. Это модельное сравнение, не доказательство суммы/байтов ставки или прибыли.",
+    "referenced_parent_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_FINAL_DELIVERY_RECEIPT.json"
+  }
+}

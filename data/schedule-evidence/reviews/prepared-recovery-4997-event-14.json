@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "event_order": 13,
+    "target_event_id": 180616,
+    "championship": "Россия. 1-я лига",
+    "home_team": "Шинник",
+    "away_team": "Ротор",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "recovery-4997-event-14-20260904",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Россия. 1-я лига",
+      "First League"
+    ],
+    "home_entity": "Shinnik Yaroslavl",
+    "home_aliases": [
+      "Шинник",
+      "Shinnik Yaroslavl"
+    ],
+    "away_entity": "Rotor Volgograd",
+    "away_aliases": [
+      "Ротор",
+      "Rotor Volgograd"
+    ],
+    "starts_at": "2026-09-05T14:00:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "codex-local-evidence-review",
+    "reviewed_at": "2026-09-04T20:07:06.250106Z"
+  },
+  "sources": [
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/shinnik-yaroslavl-rotor-volgograd/tWsFW#id:16491073",
+      "snapshot": "recovery-4997-2f907cc37e35b086a996dad8048bcda095caed289f7d73c22364c3dd2d611a69.json",
+      "snapshot_sha256": "2f907cc37e35b086a996dad8048bcda095caed289f7d73c22364c3dd2d611a69",
+      "home_team": "Shinnik Yaroslavl",
+      "away_team": "Rotor Volgograd",
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T18:37:39.552871Z"
+    },
+    {
+      "source_name": "FC Shinnik",
+      "role": "official",
+      "source_url": "https://shinnik.com/",
+      "snapshot": "recovery-4997-725d31128eaefa683ac3844034c400899c6537e7c87e2129079b7fbe565e4cb4.html",
+      "snapshot_sha256": "725d31128eaefa683ac3844034c400899c6537e7c87e2129079b7fbe565e4cb4",
+      "home_team": "Шинник",
+      "away_team": "Ротор",
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T20:04:04.541569Z"
+    }
+  ]
+}

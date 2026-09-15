@@ -1,0 +1,33 @@
+{
+  "at": "2026-09-06T18:04:32.899885+00:00",
+  "scope": "Read-only native schedule resolver on exact queue identity fields; no BK probabilities constructed, NOT full scheduler preflight",
+  "queue_sha256": "5eb6a0e54a6e102913309c091ec15a0e9605cd0e85bfc7fd852731bcfb4eedf5",
+  "fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+  "ledger_sha256": "dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8",
+  "results": [
+    {
+      "event_order": 8,
+      "target_event_id": 180701,
+      "state": "SOURCE_MISSING",
+      "reason": "no exact reviewed schedule evidence",
+      "starts_at": null,
+      "observation_id": null
+    },
+    {
+      "event_order": 11,
+      "target_event_id": 180704,
+      "state": "RESOLVED",
+      "reason": "exact reusable reviewed identity and kickoff evidence",
+      "starts_at": "2026-09-07T15:30:00+00:00",
+      "observation_id": "codex-reviewed-4999-event12-20260906"
+    },
+    {
+      "event_order": 13,
+      "target_event_id": 180706,
+      "state": "RESOLVED",
+      "reason": "exact reusable reviewed identity and kickoff evidence",
+      "starts_at": "2026-09-07T16:00:00+00:00",
+      "observation_id": "codex-reviewed-4999-event14-20260906"
+    }
+  ]
+}

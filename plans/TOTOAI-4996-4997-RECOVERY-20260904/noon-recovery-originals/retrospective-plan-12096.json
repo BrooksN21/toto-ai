@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "artifact_class": "PLAN_BOUND_POST_DRAW_EQUAL_INPUT_RETROSPECTIVE",
+  "project_root": "/Users/turshevr/toto-ai",
+  "drawing_id": 12096,
+  "drawing_number": 4996,
+  "plan_id": "0d8c2cdfb10ef9c5",
+  "primary_post_draw_plan_sha256": "4de1f654009000b9f5de9dde8c36cd739cf8bb9d0484244315e83d918b6796bc",
+  "execution_launchagent_label": "com.toto-ai.post-draw-12096",
+  "retrospective_launchagent_label": "com.totoai.post-draw-retrospective.v1.0d8c2cdfb10ef9c5",
+  "primary_run_slots": [
+    "2026-09-05T12:00:00+03:00",
+    "2026-09-05T15:00:00+03:00",
+    "2026-09-05T18:00:00+03:00",
+    "2026-09-05T21:00:00+03:00",
+    "2026-09-06T00:00:00+03:00",
+    "2026-09-06T03:00:00+03:00"
+  ],
+  "run_slots": [
+    "2026-09-05T12:05:00+03:00",
+    "2026-09-05T15:05:00+03:00",
+    "2026-09-05T18:05:00+03:00",
+    "2026-09-05T21:05:00+03:00",
+    "2026-09-06T00:05:00+03:00",
+    "2026-09-06T03:05:00+03:00"
+  ],
+  "precondition": "hash-valid canonical post-draw state complete and terminal 15/15 results or reviewed VOID",
+  "database": "/Users/turshevr/toto-ai/data/toto.db",
+  "primary_post_draw_state": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4996-20260904T163000Z/post-draw/post-draw-state.json",
+  "replay_output_dir": "/Users/turshevr/toto-ai/reports/research/4996-equal-input-replay",
+  "status_file": "/Users/turshevr/toto-ai/reports/research/4996-postmortem-automation/retrospective-status.json",
+  "comparison_summary": "/Users/turshevr/toto-ai/reports/research/4996-postmortem-automation/comparison-summary.md",
+  "stdout_log": "/Users/turshevr/toto-ai/reports/research/4996-postmortem-automation/logs/replay.stdout.log",
+  "stderr_log": "/Users/turshevr/toto-ai/reports/research/4996-postmortem-automation/logs/replay.stderr.log",
+  "python_executable": "/Users/turshevr/toto-ai/.venv/bin/python",
+  "sports_artifact_semantic_sha256": "59c7574b3c7d678e3f689b80d3f47590314c822aad7ab7f14f648bd6c7b57ca2",
+  "sports_selection": {
+    "policy": "latest eligible frozen Sports-v2 artifact strictly before the exact final-input capture",
+    "as_of": "2026-09-04T16:00:11.946582+00:00",
+    "final_input_captured_at": "2026-09-04T16:00:12.663983+00:00",
+    "coverage_count": 12,
+    "fallback_count": 3
+  },
+  "issued_operator_package": {
+    "strategy": "quality-v2",
+    "release_protocol_version": "quality-v2-category-hit-hybrid-v2",
+    "coupon_count": 166,
+    "stake": 30,
+    "cost": 4980,
+    "package_sha256": "42e6e55a1c6b7d642ad749257849e94e4216e57c6cacfa08d26fca74e9c44b37",
+    "published_at": "2026-09-04T16:02:46.261768+00:00",
+    "expired_at_t_minus_10": "2026-09-04T16:20:00+00:00"
+  },
+  "pre_cutoff_sidecar": {
+    "status": "INCOMPLETE_OWNER_TERMINATED",
+    "terminated_at": "2026-09-04T19:11:00+03:00",
+    "terminal_sidecar_status_present": false,
+    "parallel_operator_result_present": false,
+    "note": "Only the copied quality-v2 control and final Sports-v2 probability snapshot existed; no terminal comparison was published."
+  },
+  "payout_policy": {
+    "authoritative_payout_evidence_bound": false,
+    "return_and_roi": "UNKNOWN_UNTIL_AUTHORITATIVE_PAYOUTS"
+  },
+  "automatic_wagering": false,
+  "operator_compatible": false,
+  "scheduler_state_mutation": false,
+  "bindings": {
+    "scheduler_plan": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4996-20260904T163000Z/scheduler-plan.json",
+      "file_sha256": "c798ade8a64b989518ea54c7c839708f4b1713dbadcb22f9a06f6022db59e045"
+    },
+    "post_draw_plan": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4996-20260904T163000Z/post-draw/post-draw-12096.json",
+      "file_sha256": "b8b1df16791dbcab6d30bac7c1020c546ef921974826ca85f4ce68d59b8e4bd1"
+    },
+    "final_input": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4996-20260904T163000Z/attempts/final-01-20260904T160012030915Z-7fb29508/final-input.json",
+      "file_sha256": "e67dbda3178d0cf2765c232987639fb86fd3f6e0fc85938173ffa7e3c6f77994"
+    },
+    "baseline_package": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4996-20260904T163000Z/attempts/final-01-20260904T160012030915Z-7fb29508/package.csv",
+      "file_sha256": "906ca0c3e71e584771f41f7f7e239f7cb6d6873a3ee2411c695a6a6b047bdbf8"
+    },
+    "sports_artifact": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4996-20260904T163000Z/parallel-challenger/sports-seed/sports_probability_shadow_4996_59c7574b3c7d678e.json",
+      "file_sha256": "d43b137ba3ef0da6b855701f119c5db067fc3625af02e23cef47b8c5ee041f3c"
+    },
+    "operator_delivery": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4996-20260904T163000Z/operator-delivery.json",
+      "file_sha256": "6378b501d29af5762f6aacf734b44ec790dd43411a9ffddf7783d4a206646d72"
+    },
+    "paper_package_result": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4996-20260904T163000Z/paper-package-result.json",
+      "file_sha256": "0073dd3eaf67ce33200442328ae5123a768abeeb9db8ef5a06918a7c2c5a65b1"
+    },
+    "runner_python": {
+      "path": "/Users/turshevr/toto-ai/reports/research/4996-postmortem-automation/run-retrospective-12096.py",
+      "file_sha256": "4502a892ca86986149025a34f55de1f41385493ac512f95fcb51ce70304c8f1c"
+    },
+    "runner_shell": {
+      "path": "/Users/turshevr/toto-ai/reports/research/4996-postmortem-automation/run-retrospective-12096.sh",
+      "file_sha256": "6273074889c1bac10f21def357fb6fe568b73b8094aad5ee46f76327f48e51c5"
+    }
+  },
+  "plan_sha256": "7dbc403a1b530c17d02cd9d2d26ec0cab4fb98b880b72864504603920b7c1138"
+}

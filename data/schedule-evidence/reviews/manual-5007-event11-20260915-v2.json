@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12127,
+    "drawing_number": 5007,
+    "event_order": 10,
+    "target_event_id": 181018,
+    "championship": "Англия. Национальная лига",
+    "home_team": "Уэлдстон",
+    "away_team": "Галифакс Таун",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "manual-5007-event11-20260915",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Национальная лига",
+      "National League"
+    ],
+    "home_entity": "Wealdstone",
+    "home_aliases": [
+      "Уэлдстон",
+      "Wealdstone"
+    ],
+    "away_entity": "Halifax Town",
+    "away_aliases": [
+      "Галифакс Таун",
+      "Halifax Town",
+      "FC Halifax Town"
+    ],
+    "starts_at": "2026-09-15T18:45:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+    "reviewed_at": "2026-09-15T13:41:18.684777Z"
+  },
+  "sources": [
+    {
+      "source_name": "TVGuide",
+      "role": "independent",
+      "source_url": "https://www.tvguide.co.uk/sport/football/fixtures/wealdstone-vs-halifax-town-20260915-4c76cf32b2",
+      "snapshot": "5007-event11-tvguide-a9e906e8a8232a3e80f62cce8ef3439c41ebb930c77d9cf1fef7c27a049ed897.raw",
+      "snapshot_sha256": "a9e906e8a8232a3e80f62cce8ef3439c41ebb930c77d9cf1fef7c27a049ed897",
+      "home_team": "Wealdstone",
+      "away_team": "Halifax Town",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:39:29.780354Z"
+    },
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/wealdstone-fc-halifax-town/MbsNe#id:16494320",
+      "snapshot": "5007-event11-sofascore-1795386d709a38e1171b02789c4d83e087f66ab6859f4329524970d33931d930.raw",
+      "snapshot_sha256": "1795386d709a38e1171b02789c4d83e087f66ab6859f4329524970d33931d930",
+      "home_team": "Wealdstone",
+      "away_team": "FC Halifax Town",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:34:07.674109Z"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "observation": {
+    "away_aliases": [
+      "Старт",
+      "Start"
+    ],
+    "away_entity": "Старт",
+    "competition_aliases": [
+      "Норвегия. Чемпионат",
+      "Eliteserien"
+    ],
+    "conditional": false,
+    "gender_age_class": "men-senior",
+    "home_aliases": [
+      "Олесунн",
+      "Aalesund",
+      "Aalesunds FK"
+    ],
+    "home_entity": "Олесунн",
+    "observation_id": "manual-4996-event-11",
+    "reviewed_at": "2026-09-03T17:11:21.823378Z",
+    "reviewer": "codex-public-schedule-review",
+    "sport": "football",
+    "starts_at": "2026-09-04T17:00:00Z",
+    "status": "scheduled"
+  },
+  "schema_version": 1,
+  "sources": [
+    {
+      "away_team": "Start",
+      "captured_at": "2026-09-03T16:58:20.836445Z",
+      "home_team": "Aalesund",
+      "role": "official",
+      "snapshot": "manual-4996/event-11-aafk.html",
+      "snapshot_sha256": "80a267919cce046da2e9361e907004b4c524a70497ccf045cbef773f155b651b",
+      "source_name": "Aalesunds FK",
+      "source_url": "https://www.aafk.no/terminliste",
+      "starts_at": "2026-09-04T17:00:00Z",
+      "status": "scheduled"
+    },
+    {
+      "away_team": "Start",
+      "captured_at": "2026-09-03T17:04:43.612990Z",
+      "home_team": "Aalesund",
+      "role": "independent",
+      "snapshot": "manual-4996/event-11-ticketco.html",
+      "snapshot_sha256": "6c837dd2bb2f689b53d9db30dbeea43611377e6dcd56bd4df40c899611b43e62",
+      "source_name": "TicketCo",
+      "source_url": "https://aafk.ticketco.events/no/nb/e/eliteserien_aalesund__start",
+      "starts_at": "2026-09-04T17:00:00Z",
+      "status": "scheduled"
+    }
+  ],
+  "target": {
+    "away_team": "Старт",
+    "championship": "Норвегия. Чемпионат",
+    "drawing_id": 12096,
+    "drawing_number": 4996,
+    "event_order": 10,
+    "home_team": "Олесунн",
+    "sport": "football",
+    "target_event_id": 180553
+  }
+}

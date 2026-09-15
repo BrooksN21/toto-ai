@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "event_order": 1,
+    "target_event_id": 180604,
+    "championship": "Англия. Премьер-Лига",
+    "home_team": "Фулхэм",
+    "away_team": "Кристал Пэлас",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "recovery-4997-event-02-20260904",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Премьер-Лига",
+      "Premier League"
+    ],
+    "home_entity": "Fulham",
+    "home_aliases": [
+      "Фулхэм",
+      "Fulham"
+    ],
+    "away_entity": "Crystal Palace",
+    "away_aliases": [
+      "Кристал Пэлас",
+      "Crystal Palace"
+    ],
+    "starts_at": "2026-09-05T14:00:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "codex-local-evidence-review",
+    "reviewed_at": "2026-09-04T20:07:05.685386Z"
+  },
+  "sources": [
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/fulham-crystal-palace/hsT#id:16363269",
+      "snapshot": "recovery-4997-723681dbdb9ed22f70f9b79f3eb5821942ae1b92be7da683a9b1d7928d715d35.json",
+      "snapshot_sha256": "723681dbdb9ed22f70f9b79f3eb5821942ae1b92be7da683a9b1d7928d715d35",
+      "home_team": "Fulham",
+      "away_team": "Crystal Palace",
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T18:35:01.718093Z"
+    },
+    {
+      "source_name": "Premier League",
+      "role": "official",
+      "source_url": "https://www.premierleague.com/en/news/4675097",
+      "snapshot": "recovery-4997-606e4e90c029bab669883894222697106908d450579e0a71781d15613692f143.html",
+      "snapshot_sha256": "606e4e90c029bab669883894222697106908d450579e0a71781d15613692f143",
+      "home_team": "Fulham",
+      "away_team": "Crystal Palace",
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T20:03:09.085153Z"
+    }
+  ]
+}

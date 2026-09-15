@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "event_order": 4,
+    "target_event_id": 180607,
+    "championship": "Англия. Чемпионшип",
+    "home_team": "Шеффилд Юнайтед",
+    "away_team": "Норвич",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "recovery-4997-event-05-20260904",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Чемпионшип",
+      "Championship"
+    ],
+    "home_entity": "Sheffield United",
+    "home_aliases": [
+      "Шеффилд Юнайтед",
+      "Sheffield United"
+    ],
+    "away_entity": "Norwich City",
+    "away_aliases": [
+      "Норвич",
+      "Norwich City"
+    ],
+    "starts_at": "2026-09-05T14:00:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "codex-local-evidence-review",
+    "reviewed_at": "2026-09-04T20:07:05.890321Z"
+  },
+  "sources": [
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/norwich-city-sheffield-united/psnf#id:16391652",
+      "snapshot": "recovery-4997-54602c5dbb795ab7a2e89d3dfdc67825a1cd04fc8f6ed396db51d124b4f9d7b8.json",
+      "snapshot_sha256": "54602c5dbb795ab7a2e89d3dfdc67825a1cd04fc8f6ed396db51d124b4f9d7b8",
+      "home_team": "Sheffield United",
+      "away_team": "Norwich City",
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T18:35:52.629671Z"
+    },
+    {
+      "source_name": "Portfolio Sports",
+      "role": "independent",
+      "source_url": "https://www.portfoliosports.com/football/championship/2026-09-05/sheffield-united-v-norwich-city/",
+      "snapshot": "recovery-4997-fa7ef97a8fda25b2b3febb2e319c5311c684791c4d60b5bc8591f929f8473c18.html",
+      "snapshot_sha256": "fa7ef97a8fda25b2b3febb2e319c5311c684791c4d60b5bc8591f929f8473c18",
+      "home_team": "Sheffield United",
+      "away_team": "Norwich City",
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T20:03:44.811850Z"
+    }
+  ]
+}

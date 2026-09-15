@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12106,
+    "drawing_number": 4999,
+    "event_order": 11,
+    "target_event_id": 180704,
+    "championship": "Саудовская Аравия. Чемпионат",
+    "home_team": "Аль Халидж Сайхат",
+    "away_team": "Аль Рияд",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "codex-reviewed-4999-event12-20260906",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Саудовская Аравия. Чемпионат",
+      "Saudi Pro League",
+      "Saudi Arabian League"
+    ],
+    "home_entity": "Al-Khaleej",
+    "home_aliases": [
+      "Аль Халидж Сайхат",
+      "Аль-Халидж",
+      "Al-Khaleej",
+      "Al Khaleej"
+    ],
+    "away_entity": "Al-Riyadh",
+    "away_aliases": [
+      "Аль Рияд",
+      "Аль-Рияд",
+      "Al-Riyadh",
+      "Al Riyadh"
+    ],
+    "starts_at": "2026-09-07T15:30:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex operations worker (TOTOAI-4998-PARALLEL-INTEGRATION-20260906)",
+    "reviewed_at": "2026-09-06T18:02:37.195652Z"
+  },
+  "sources": [
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/api/v1/event/16629480",
+      "snapshot": "4999-sofa-saudi-event-85db57a6b1d8928b.raw",
+      "snapshot_sha256": "85db57a6b1d8928bd3e85b6db04bd4c7e2e7f4fa4004e530fdcad0b39c6c1c12",
+      "home_team": "Al-Khaleej",
+      "away_team": "Al-Riyadh",
+      "starts_at": "2026-09-07T15:30:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-06T18:01:40.951671Z"
+    },
+    {
+      "source_name": "FotMob",
+      "role": "independent",
+      "source_url": "https://www.fotmob.com/en-GB/matches/al-khaleej-vs-al-riyadh/86y6czbp",
+      "snapshot": "4999-fotmob-saudi-7b85b83b5dbd1bd0.html",
+      "snapshot_sha256": "7b85b83b5dbd1bd090acb331d58586c898b01fda5826cebf16baea82da4f1c5a",
+      "home_team": "Al Khaleej",
+      "away_team": "Al Riyadh",
+      "starts_at": "2026-09-07T15:30:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-06T17:59:41.913574Z"
+    }
+  ]
+}

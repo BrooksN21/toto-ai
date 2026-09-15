@@ -1,0 +1,74 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "completed_at": "2026-09-15T17:25:43.929625+00:00",
+  "status": "IMPLEMENTED_BOUNDED_PILOT_PENDING_INDEPENDENT_REVIEW",
+  "source_files": [
+    "/Users/turshevr/toto-ai/src/toto_ai/research/sports_history_reconstruction.py",
+    "/Users/turshevr/toto-ai/tests/test_sports_history_reconstruction.py"
+  ],
+  "hashes": {
+    "/Users/turshevr/toto-ai/src/toto_ai/research/sports_history_reconstruction.py": "b58fabadcde188c50bfa9576110fb473da951ba40e27ad3014415940a857d7e8",
+    "/Users/turshevr/toto-ai/tests/test_sports_history_reconstruction.py": "6f6af9d1c05976773e52673db3a389ae5b45fd4d8d5dc9db14912c94968d7340",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/sports-history-reconstruction-context.md": "7f0cd09b2302d0f8b387df6138a64529c42b11ac176fb4c981231594ac23f8ec",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/sports-history-reconstruction/5004-pilot-run-manifest.json": "175b3d8e17913aa31687336dc1000132e6e13b055b1ab71b43339a4f231a0858",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/sports-history-reconstruction/5004-pilot-verified-run.json": "7354997aee6349d8c3aa734d905a42e3f291cb2090749ca610f79ee9fb3672f7",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/sports-history-reconstruction/resumable-collector-plan.json": "adf42f26bd9959312f0896d19ae86470337c2093927d9018ec10efb61045bb85"
+  },
+  "verification": {
+    "initial_red": "ModuleNotFoundError before adapter existed; later missing run_manifest ImportError before runner existed",
+    "final_pytest": "20 passed in0.41s",
+    "ruff": "PASS both changed files",
+    "actual_native_manifest_run": "PASS20records->18prior->24/28features",
+    "external_api_calls": 0,
+    "training_runs": 0,
+    "full_test_suite_run": false
+  },
+  "counts": {
+    "received": 20,
+    "excluded": 2,
+    "retained_unique": 18,
+    "numeric_features": 24,
+    "feature_slots": 28,
+    "historical_availability_proven": 0,
+    "class_proven": 0
+  },
+  "historical_rows_by_side": {
+    "home": 9,
+    "away": 9
+  },
+  "prior_rows_with_post_cutoff_updated_version": 0,
+  "missing_features": [
+    "home_venue_goals_for_per_game",
+    "home_venue_goals_against_per_game",
+    "away_venue_goals_for_per_game",
+    "away_venue_goals_against_per_game"
+  ],
+  "cutoff": "2026-09-12T12:50:00+00:00",
+  "cutoff_domain": "RECONSTRUCTED_T_MINUS_10_NOT_ARCHIVED_DECISION",
+  "domain": "HISTORICAL_RECONSTRUCTION_SENSITIVITY_UNVERIFIED_ASOF",
+  "fit_eligible": false,
+  "independent_review": "NOT_PERFORMED",
+  "limitations": [
+    "HISTORICAL_AVAILABILITY_UNKNOWN",
+    "TEAM_CLASS_UNPROVEN",
+    "INCOMPLETE_OPPONENT_HISTORY",
+    "LAST10_WINDOW_NOT_FULL_SEASON",
+    "NOT_A_REVIEWED_F4_DATASET"
+  ],
+  "native_F4": "NOT_RUN_NOT_AN_APPROVED_DATASET",
+  "prior_interruption": {
+    "initiator": "PARENT_CHECKPOINT_NOT_HUMAN_OWNER",
+    "scoped_check": "pgrep anchored python-stdin pattern returned no matches; planned four partial files absent at20:18MSK; one-call receipt retained",
+    "global_process_audit": false
+  },
+  "untouched": [
+    "production SportsV3 modules",
+    "DB",
+    "scheduler/5008jobs",
+    "consents",
+    "ACTIVE_PLAN",
+    "B market files",
+    "Git"
+  ],
+  "next_exact": "independent scoped review, then cache-first exact-fixture join ledger across120targets; no further calls before exact missing request list"
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12127,
+    "drawing_number": 5007,
+    "event_order": 11,
+    "target_event_id": 181019,
+    "championship": "Англия. Южная футбольная лига. Премьер дивизион. Юг",
+    "home_team": "Беркхамстед",
+    "away_team": "Аксбридж",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "manual-5007-event12-20260915",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Южная футбольная лига. Премьер дивизион. Юг",
+      "Southern League, Premier Division South"
+    ],
+    "home_entity": "Berkhamsted Town",
+    "home_aliases": [
+      "Беркхамстед",
+      "Berkhamsted Town"
+    ],
+    "away_entity": "Uxbridge",
+    "away_aliases": [
+      "Аксбридж",
+      "Uxbridge"
+    ],
+    "starts_at": "2026-09-15T18:45:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+    "reviewed_at": "2026-09-15T13:41:19.005044Z"
+  },
+  "sources": [
+    {
+      "source_name": "BerkhamstedFC",
+      "role": "official",
+      "source_url": "https://www.pitchero.com/clubs/berkhamstedfootballclub/teams/109087/match-centre/1-19943780",
+      "snapshot": "5007-event12-berkhamstedfc-09972127e03c89c7c263e98a69d88e54204e4bf8be049f755c820a272097ac8e.raw",
+      "snapshot_sha256": "09972127e03c89c7c263e98a69d88e54204e4bf8be049f755c820a272097ac8e",
+      "home_team": "Berkhamsted Town",
+      "away_team": "Uxbridge",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:38:17.209691Z"
+    },
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/berkhamsted-town-uxbridge/CesGe#id:16587580",
+      "snapshot": "5007-event12-sofascore-042d9618d8f24021b86b7dfda3698d57cae6877db110fb23221e9c3e30cdb9da.raw",
+      "snapshot_sha256": "042d9618d8f24021b86b7dfda3698d57cae6877db110fb23221e9c3e30cdb9da",
+      "home_team": "Berkhamsted Town",
+      "away_team": "Uxbridge",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:34:07.674109Z"
+    }
+  ]
+}

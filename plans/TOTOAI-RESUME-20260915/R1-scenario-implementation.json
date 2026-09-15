@@ -1,0 +1,261 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "at": "2026-09-15T20:44:25.843909+03:00",
+  "stage": "R1_COMPLETE_SCENARIO_SCORED_PENDING_FINAL_REVIEW_PUBLICATION",
+  "files": [
+    "src/toto_ai/research/closed_market_scenario_replay.py",
+    "tests/test_closed_market_scenario_replay.py"
+  ],
+  "checks": {
+    "final_focused_pytest": "52 passed, 1 deselected in 1.34s; exit 0",
+    "command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m pytest -q tests/test_closed_market_scenario_replay.py tests/test_raw_package_replay.py tests/test_research_quality_core.py -k \"not surface_cannot\" --tb=short",
+    "excluded_test": "Heavy real EVSurface test previously passed in original 19-test suite (63.10s); independent reviewer separately confirmed real-surface PASS.",
+    "ruff": "PASS: src/toto_ai/research/closed_market_scenario_replay.py tests/test_closed_market_scenario_replay.py; exit 0",
+    "source_integrity": "8 RAW files and 8 metadata files unchanged; package bindings verified before scoring",
+    "receipt_update_reran_checks": false
+  },
+  "pilot": {
+    "drawing": 4999,
+    "pid": null,
+    "session_id": 62571,
+    "wall_limit_seconds": 600,
+    "manifest": "reports/rehearsal/TOTOAI-RESUME-20260915/closed-market-scenario-v1/manifest.json",
+    "first_actual_result": null,
+    "status": "COMPLETE_SCENARIO",
+    "wall_seconds": 86.87900329199874,
+    "package_hashes": {
+      "quality-v2": "29770af4e13991b0fd59f76186d323e6ab82456668ec75a85e76db2fba4b1d57",
+      "quality-v3": "9c89e641972584cd90c6e9516dd96746bb5859cb70b6317b40b4752ac112451b",
+      "robust-market-only": "e9cf625b4c479b9177a73ca231b635b63d15048ba121119e7e7d3837576b8a87"
+    },
+    "frozen_sha256": "fdb57bd141b7f72847f79e56db9e9511c4da605299ac24c3efd22c84235a0e44"
+  },
+  "source_code_frozen": false,
+  "live_mutations": false,
+  "git_mutations": false,
+  "independent_review": "Generation PASS; M1 corrected with passing regression, awaiting independent recheck.",
+  "remaining": [
+    "Independent M1 recheck and separate finalizer publication; canonical-memory owner updates ACTIVE_PLAN."
+  ],
+  "memory_owner_notice": "R1 code/tests and results complete. ACTIVE_PLAN untouched. No further commands after this receipt-only update.",
+  "stable_for_independent_review": true,
+  "batch_session_id": 95602,
+  "batch_command": "for drawing in5000..5006 sequential: python -m toto_ai.research.closed_market_scenario_replay generate --manifest reports/rehearsal/TOTOAI-RESUME-20260915/closed-market-scenario-v1/manifest.json --drawing DRAW --max-seconds600",
+  "drawings": [
+    {
+      "drawing": 4999,
+      "status": "COMPLETE_SCENARIO_SCORED",
+      "best_hits": {
+        "quality-v2": 10,
+        "quality-v3": 10,
+        "robust-market-only": 10
+      },
+      "packages": 3
+    },
+    {
+      "drawing": 5000,
+      "status": "COMPLETE_SCENARIO_SCORED",
+      "best_hits": {
+        "quality-v2": 12,
+        "quality-v3": 12,
+        "robust-market-only": 12
+      },
+      "packages": 3
+    },
+    {
+      "drawing": 5001,
+      "status": "COMPLETE_SCENARIO_SCORED",
+      "best_hits": {
+        "quality-v2": 10,
+        "quality-v3": 9,
+        "robust-market-only": 10
+      },
+      "packages": 3
+    },
+    {
+      "drawing": 5002,
+      "status": "COMPLETE_SCENARIO_SCORED",
+      "best_hits": {
+        "quality-v2": 10,
+        "quality-v3": 10,
+        "robust-market-only": 10
+      },
+      "packages": 3
+    },
+    {
+      "drawing": 5003,
+      "status": "COMPLETE_SCENARIO_SCORED",
+      "best_hits": {
+        "quality-v2": 11,
+        "quality-v3": 11,
+        "robust-market-only": 11
+      },
+      "packages": 3
+    },
+    {
+      "drawing": 5004,
+      "status": "COMPLETE_SCENARIO_SCORED",
+      "best_hits": {
+        "quality-v2": 10,
+        "quality-v3": 9,
+        "robust-market-only": 10
+      },
+      "packages": 3
+    },
+    {
+      "drawing": 5005,
+      "status": "COMPLETE_SCENARIO_SCORED",
+      "best_hits": {
+        "quality-v2": 11,
+        "quality-v3": 10,
+        "robust-market-only": 11
+      },
+      "packages": 3
+    },
+    {
+      "drawing": 5006,
+      "status": "COMPLETE_SCENARIO_SCORED",
+      "best_hits": {
+        "quality-v2": 11,
+        "quality-v3": 10,
+        "robust-market-only": 11
+      },
+      "packages": 3
+    }
+  ],
+  "completed_draw_count": 8,
+  "no_labels_read_for_scoring_yet": false,
+  "interruption": "Parent interrupted functions.wait for cell31 polling batch session95602. No kill/terminate sent by this worker; poll completion unknown, actual progress read directly.",
+  "previous_checkpoint": {
+    "at": "2026-09-15T17:34:33.274827+00:00",
+    "stage": "R1_LAST_DRAW_RUNNING",
+    "checks": {
+      "initial_red": "ImportError before implementation",
+      "new_fast_suite": "23 passed,1 deselected0.47s; real surface passed earlier19test suite",
+      "prior_real_EVSurface_test": "passed in original19test suite63.10s",
+      "combined_existing_raw_and_core": "45 passed,1 deselected;1.48s",
+      "ruff": "PASS"
+    },
+    "drawings": [
+      {
+        "drawing": 4999,
+        "status": "COMPLETE_SCENARIO",
+        "arms": 3,
+        "wall_seconds": 86.87900329199874
+      },
+      {
+        "drawing": 5000,
+        "status": "COMPLETE_SCENARIO",
+        "arms": 3,
+        "wall_seconds": 85.91449762500088
+      },
+      {
+        "drawing": 5001,
+        "status": "COMPLETE_SCENARIO",
+        "arms": 3,
+        "wall_seconds": 87.34631645899935
+      },
+      {
+        "drawing": 5002,
+        "status": "COMPLETE_SCENARIO",
+        "arms": 3,
+        "wall_seconds": 94.11169545899975
+      },
+      {
+        "drawing": 5003,
+        "status": "COMPLETE_SCENARIO",
+        "arms": 3,
+        "wall_seconds": 88.20459233300062
+      },
+      {
+        "drawing": 5004,
+        "status": "COMPLETE_SCENARIO",
+        "arms": 3,
+        "wall_seconds": 120.92052941700058
+      },
+      {
+        "drawing": 5005,
+        "status": "COMPLETE_SCENARIO",
+        "arms": 3,
+        "wall_seconds": 97.63129554199986
+      },
+      {
+        "drawing": 5006,
+        "status": "RUNNING",
+        "pid": 50505,
+        "phase": "surface",
+        "elapsed_seconds": 30.004781916000866
+      }
+    ],
+    "completed_draw_count": 7,
+    "files_sha256": {
+      "src/toto_ai/research/closed_market_scenario_replay.py": "53e85c95b494fe5f3a1d12ba0d57ee1887dac1290e85f5b3071a07466d3d9794",
+      "tests/test_closed_market_scenario_replay.py": "99ba1710bfa614f6f2c1016bc66b9a2ae359e811e16a9ca7d4e2677b289ecf19"
+    },
+    "interruption": "Parent interrupted functions.wait for cell31 polling batch session95602. No kill/terminate sent by this worker; poll completion unknown, actual progress read directly.",
+    "no_labels_read_for_scoring_yet": true
+  },
+  "package_count": 24,
+  "variant_count": 3,
+  "variants": [
+    "quality-v2",
+    "quality-v3",
+    "robust-market-only"
+  ],
+  "bank_per_package": 4980,
+  "stake": 30,
+  "coupons_per_package": 166,
+  "generation_total_seconds": 747.0977929180008,
+  "generation_total_seconds_rounded": 747,
+  "scoring_status": "COMPLETE_READ_ONLY_AFTER_ALL_24_PACKAGES_FROZEN",
+  "quote_available_at": null,
+  "evidence_domain": "POST_EVENT_MARKET_SCENARIO_UNVERIFIED_ASOF",
+  "operator_compatible": false,
+  "automatic_wagering": false,
+  "fit_eligible": false,
+  "release_eligible": false,
+  "ROI": null,
+  "labels_loaded_only_after_all_packages_frozen": true,
+  "robust_same_set_as_control_drawings": [
+    4999,
+    5001,
+    5003,
+    5004,
+    5006
+  ],
+  "robust_same_set_as_control_count": 5,
+  "robust_same_set_denominator": 8,
+  "robust_fallback_reason": "UNKNOWN_NOT_EXPOSED_BY_NATIVE_RESULT; set equality alone does not prove a fallback",
+  "hit13plus_package_count": 0,
+  "review": {
+    "generation": "Independent PASS within isolated unknown-asof scenario scope",
+    "M1": "FIXED: coupon-set identity separate from order identity; regression test passed; original files/order/hashes untouched; no regeneration",
+    "M1_independent_recheck": "PENDING",
+    "generation_manifest": "Original retained; comparison records generation_code and scoring_code separately",
+    "sports_findings": "Assigned to separate worker; not changed here"
+  },
+  "historical_4999_distinction": {
+    "true_predraw_archived_max_hits": 11,
+    "new_closed_snapshot_scenario_max_hits": 10,
+    "interpretation": "Different inputs and evidence domains; scenario does not replace the actual archived predraw result.",
+    "archived_result_modified": false,
+    "history_refetched": false
+  },
+  "source_code_status": "Generation used original manifest-bound code; reporting-only M1 revision occurred after generation. No generation or live algorithm change.",
+  "files_sha256_status": "Prior checkpoint hashes preserved only in previous_checkpoint; not current post-M1 hashes. Finalizer must hash current source before publication.",
+  "current_command": null,
+  "owned_running_generation": false,
+  "batch_session_status": "COMPLETED_EXIT_0",
+  "scoring_session_id": 54818,
+  "scoring_session_status": "COMPLETED_EXIT_0",
+  "verification_session_id": 11959,
+  "verification_session_status": "COMPLETED_EXIT_0",
+  "artifacts": {
+    "manifest.json": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/closed-market-scenario-v1/manifest.json",
+    "comparison.json": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/closed-market-scenario-v1/comparison.json",
+    "comparison.md": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/closed-market-scenario-v1/comparison.md",
+    "comparison.csv": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/closed-market-scenario-v1/comparison.csv",
+    "summary.json": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/closed-market-scenario-v1/summary.json"
+  },
+  "work_summary": "Completed isolated 8-drawing, 3-variant scenario replay: 24 frozen packages of166 coupons at4980/30; read-only scoring after freeze; fixed M1 set-versus-order comparison without regeneration. 747s generation, no13+, robust duplicates control in5/8. Quotes as-of unknown; no prospective/ROI/Sports-fit claim. Original4999predraw max11 preserved separately from scenario10. No live/Git/memory mutations."
+}

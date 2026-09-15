@@ -1,0 +1,133 @@
+{
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "scope": "event9 only; existing context reused, other14 not recollected",
+  "candidates_file": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12102-20260906T153000Z-b3f20304ff03e14a/source-collector/schedule-source-candidates.json",
+  "candidates_file_sha256": "e36f3a429a30fbc530824060ff36662cfbb74da2eb31b9bef1c4bbe21e4d3636",
+  "candidate_records_event9": [
+    {
+      "event_order": 8,
+      "target_event_id": 180641,
+      "target_home_team": "СК Беверен",
+      "target_away_team": "Ауд-Хеверле Левен",
+      "source_name": "GOAL API",
+      "source_provider": "goal-api-v1",
+      "source_role": "independent",
+      "captured_at": "2026-09-06T09:16:36.558318Z",
+      "status": "not_found",
+      "candidate_ids": []
+    },
+    {
+      "event_order": 8,
+      "target_event_id": 180641,
+      "target_home_team": "СК Беверен",
+      "target_away_team": "Ауд-Хеверле Левен",
+      "source_name": "Sofascore",
+      "source_role": "independent",
+      "captured_at": "2026-09-06T09:16:36.558318Z",
+      "status": "not_found",
+      "candidate_ids": [],
+      "search_urls": [
+        "https://www.sofascore.com/api/v1/search/all?q=%D0%A1%D0%9A+%D0%91%D0%B5%D0%B2%D0%B5%D1%80%D0%B5%D0%BD+%D0%90%D1%83%D0%B4-%D0%A5%D0%B5%D0%B2%D0%B5%D1%80%D0%BB%D0%B5+%D0%9B%D0%B5%D0%B2%D0%B5%D0%BD",
+        "https://www.sofascore.com/api/v1/search/all?q=sk+beveren+aud+heverle+leven"
+      ],
+      "snapshot_path": null,
+      "snapshot_sha256": null
+    },
+    {
+      "event_order": 8,
+      "target_event_id": 180641,
+      "target_home_team": "СК Беверен",
+      "target_away_team": "Ауд-Хеверле Левен",
+      "source_name": "TheSportsDB",
+      "source_provider": "thesportsdb-v1",
+      "source_role": "independent",
+      "captured_at": "2026-09-06T09:16:36.558318Z",
+      "status": "not_found",
+      "candidate_ids": [],
+      "snapshot_path": "thesportsdb-v1/snapshots/f4b0655497602856d13e5cba847ce05e425f38344ff0ad4ffef55793b33a99a3-013ac339fb42ba6d.json",
+      "snapshot_sha256": "013ac339fb42ba6df2c170df5f3b5f072cddd39dee7ee0ba823e43593af7285f"
+    }
+  ],
+  "independent_consensus_file": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12102-20260906T153000Z-b3f20304ff03e14a/source-independent-consensus/independent-schedule-consensus.json",
+  "independent_consensus_sha256": "94dd59642050d2cc4369837b4e5c43a4ee53398ad4f86b8a3b71b82c3d90e7f3",
+  "independent_consensus_event9": [
+    {
+      "captured_at": "2026-09-06T09:17:39.179335Z",
+      "drawing_id": 12102,
+      "drawing_number": 4998,
+      "event_order": 8,
+      "goal_candidate_ids": [],
+      "ledger_promoted": false,
+      "status": "goal_not_found",
+      "target_away_team": "Ауд-Хеверле Левен",
+      "target_event_id": 180641,
+      "target_home_team": "СК Беверен"
+    }
+  ],
+  "queue_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12102-20260906T153000Z-b3f20304ff03e14a/reviewed-schedule-queue-81e2869d7c6e.json",
+  "queue_sha256_bytes": "b249ba1eebff03add014313bd783708afa4efb802b62b4ea9577390b7b0937ad",
+  "queue_record_event9": {
+    "away_team": "Ауд-Хеверле Левен",
+    "championship": "Бельгия. Чемпионат",
+    "drawing_id": 12102,
+    "drawing_number": 4998,
+    "event_order": 8,
+    "home_team": "СК Беверен",
+    "requirements": {
+      "accepted_claim_sets": [
+        [
+          "official",
+          "independent"
+        ],
+        [
+          "independent",
+          "independent"
+        ]
+      ],
+      "exact_team_and_start_agreement": true,
+      "fake_api_fixture_ids_forbidden": true,
+      "freshness_required": true,
+      "minimum_https_sources": 2,
+      "reviewer_required": true,
+      "snapshot_sha256_required": true
+    },
+    "source_fixture_id": null,
+    "status": "awaiting_review",
+    "target_event_id": 180641,
+    "target_fingerprint": "b3f20304ff03e14a5b252512c5e5b2f6b58e1b94e3d7b2b39f62c0589473cbb7",
+    "template": {
+      "claims": [
+        {
+          "away_name": "Ауд-Хеверле Левен",
+          "captured_at": null,
+          "home_name": "СК Беверен",
+          "role": "official",
+          "snapshot_path": null,
+          "snapshot_sha256": null,
+          "source_url": null,
+          "starts_at": null,
+          "status": "scheduled"
+        },
+        {
+          "away_name": "Ауд-Хеверле Левен",
+          "captured_at": null,
+          "home_name": "СК Беверен",
+          "role": "independent",
+          "snapshot_path": null,
+          "snapshot_sha256": null,
+          "source_url": null,
+          "starts_at": null,
+          "status": "scheduled"
+        }
+      ],
+      "drawing_id": 12102,
+      "drawing_number": 4998,
+      "event_order": 8,
+      "evidence_id": null,
+      "reviewed_at": null,
+      "reviewer": null,
+      "target_event_id": 180641,
+      "target_fingerprint": "b3f20304ff03e14a5b252512c5e5b2f6b58e1b94e3d7b2b39f62c0589473cbb7"
+    }
+  }
+}

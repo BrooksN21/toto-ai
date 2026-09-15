@@ -1,0 +1,55 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "verdict": "ACCEPT_FSYNC_DELTA_ONLY",
+  "completed_at": "2026-09-06T13:18:00.490095+00:00",
+  "full_candidate_sha256": "e914a0976e6434198ee4f2164c2877debf1caa33b20c959ed5d282b65aa05597",
+  "delta_sha256": "11b2d765d90a87120d2111d63773dd478d768ed3bc809e1c52818c7ba12c7af4",
+  "delta_chain_and_mirror_hashes_verified": true,
+  "pytest": {
+    "command": [
+      "/Users/turshevr/toto-ai/.venv/bin/python",
+      "-B",
+      "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-durable-independent-a2wjxysv/run.py"
+    ],
+    "exit_code": 0,
+    "stdout": "....\n4 passed in 0.35s\n",
+    "stderr": ""
+  },
+  "ruff": {
+    "command": [
+      "/Users/turshevr/toto-ai/.venv/bin/ruff",
+      "check",
+      "--no-cache",
+      "--config",
+      "/Users/turshevr/toto-ai/pyproject.toml",
+      "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-durable-independent-a2wjxysv/overlay/sports_stats/goal_probe_collection.py",
+      "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-durable-independent-a2wjxysv/test_delta.py",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_cache_durable_independent_review.py"
+    ],
+    "exit_code": 0,
+    "stdout": "All checks passed!\n"
+  },
+  "runtime": {
+    "exit_code": 0,
+    "blocked": []
+  },
+  "harness": {
+    "bootstrap": "import importlib.abc, importlib.util, os, sys\nfrom pathlib import Path\nMAIN = Path('/Users/turshevr/toto-ai')\nTEMP = Path(__file__).resolve().parent.parent\nblocked = []\nallowed_python_subprocesses = []\nclass MainOnly(importlib.abc.MetaPathFinder):\n    def find_spec(self, fullname, path=None, target=None):\n        if fullname == 'toto_ai.sports_stats.goal_probe_collection':\n            return importlib.util.spec_from_file_location(fullname, TEMP / 'overlay/sports_stats/goal_probe_collection.py')\n        if fullname == 'toto_ai':\n            return importlib.util.spec_from_file_location(fullname, MAIN / 'src/toto_ai/__init__.py', submodule_search_locations=[str(MAIN / 'src/toto_ai')])\ndef audit(event, args):\n    if event.startswith(('socket.connect','socket.getaddrinfo','socket.gethostby','socket.sendto','os.system','os.posix_spawn','os.exec')) or event == 'sqlite3.connect':\n        blocked.append({'event':event,'test':os.environ.get('PYTEST_CURRENT_TEST')})\n        raise AssertionError('O1 finalization denies network/database/process escape: '+event)\n    if event == 'subprocess.Popen':\n        executable, argv, cwd, env = args\n        if executable != sys.executable or not isinstance(argv,(list,tuple)) or len(argv)!=4 or list(argv[1:3])!=['-B','-c'] or cwd not in (None,str(MAIN)) or env is not None:\n            blocked.append({'event':event,'test':os.environ.get('PYTEST_CURRENT_TEST')})\n            raise AssertionError('Only exact inherited-guard local Python cold-import tests allowed')\n        allowed_python_subprocesses.append(os.environ.get('PYTEST_CURRENT_TEST'))\n    paths = []\n    if event == 'open' and isinstance(args[0],(str,bytes,os.PathLike)):\n        p,mode,flags=args\n        writing=(isinstance(mode,str) and any(c in mode for c in 'wax+')) or (isinstance(flags,int) and flags & (os.O_WRONLY|os.O_RDWR|os.O_CREAT|os.O_TRUNC|os.O_APPEND))\n        if writing:paths=[p]\n        elif Path(os.fsdecode(p)).name.startswith('.env') and not Path(os.fsdecode(p)).resolve().is_relative_to(TEMP):\n            raise AssertionError('Real secret-file reads forbidden')\n    elif event in ('os.mkdir','os.remove','os.rmdir','os.chmod','os.utime'):paths=[args[0]]\n    elif event in ('os.rename','os.link','os.symlink'):paths=[args[0],args[1]]\n    for p in paths:\n        if isinstance(p,(str,bytes,os.PathLike)) and not Path(os.fsdecode(p)).resolve().is_relative_to(TEMP):\n            blocked.append({'event':event,'test':os.environ.get('PYTEST_CURRENT_TEST')})\n            raise AssertionError('Write outside temporary verification root forbidden')\nsys.meta_path.insert(0,MainOnly())\nsys.addaudithook(audit)\nO1_MAIN_GUARD_INSTALLED=True\n",
+    "runner": "import json,sys\nimport sitecustomize,pytest\nfrom pathlib import Path\nassert sitecustomize.O1_MAIN_GUARD_INSTALLED\ncode=pytest.main(['-q', '-s', '-p', 'no:cacheprovider', '-p', 'no:logging', '-o', 'pythonpath=', '--tb=short', '--import-mode=importlib', '-c', '/Users/turshevr/toto-ai/pyproject.toml', '--rootdir', '/Users/turshevr/toto-ai', '--confcutdir', '/Users/turshevr/toto-ai', '--basetemp', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-durable-independent-a2wjxysv/pytest', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-durable-independent-a2wjxysv/test_delta.py::test_retry_directory_sync_order_before_collection', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-durable-independent-a2wjxysv/test_delta.py::test_directory_sync_error_does_not_acknowledge', '/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_cache_durable_independent_review.py'])\nPath('/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-durable-independent-a2wjxysv/runtime.json').write_text(json.dumps({\"exit_code\":code,\"blocked\":sitecustomize.blocked}))\nsys.exit(code)\n",
+    "environment": {
+      "PATH": "/Users/turshevr/toto-ai/.venv/bin:/usr/bin:/bin",
+      "HOME": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-durable-independent-a2wjxysv",
+      "TMPDIR": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-durable-independent-a2wjxysv",
+      "PYTHONPATH": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-durable-independent-a2wjxysv/bootstrap:/Users/turshevr/toto-ai/src",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+    }
+  },
+  "scope": "Only directory-fsync delta; no independent reacceptance of own atomic/functionality part",
+  "main_applied": false,
+  "cli_composition": "Still requires separate narrow2hunk composition atop main G1; do not copy isolated CLI",
+  "limitations": [
+    "Synthetic filesystem ordering/error injection, not power-loss certification",
+    "No live collector/DB/jobs/activation"
+  ]
+}

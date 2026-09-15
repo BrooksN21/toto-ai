@@ -1,0 +1,116 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "phase": "IMPLEMENTED_VERIFIED_PENDING_INDEPENDENT_REVIEW",
+  "started_at": "2026-09-06T15:06:55+03:00",
+  "written_at": "2026-09-06T15:53:49.079034+03:00",
+  "source_changes": [
+    {
+      "path": "src/toto_ai/sports_stats/goal_probe_research.py",
+      "before_sha256": "590d2eea7df0e3febfff2e66c6675064eae44622eb0c6ea57670227d9fd1fdbb",
+      "after_sha256": "73f2c05dd2f2a4f417f12fcffbd431cbdece1c08ab7ad629575786fb5143c93e"
+    },
+    {
+      "path": "tests/test_goal_probe_research.py",
+      "before_sha256": "8d7b34f14e61d46d8b53cc0a58a3e40e015372746a6e5015bc74cc5591a0fea8",
+      "after_sha256": "c0cf0f854b8614757dc16fa13a954191b2294acbc27b12e05d2a980cb3fed292"
+    }
+  ],
+  "added_paths": [
+    "tests/test_goal_history_regulation_score.py",
+    "tests/fixtures/goal_regulation_score_captured_contracts.json"
+  ],
+  "red": "2 exact captured regressions failed in0.39s before source changes (--maxfail=2)",
+  "process_guard": {
+    "initial_error": "sysmon request failed with error: sysmond service not found; pgrep: Cannot get process list",
+    "authorized_retry": "same narrow pgrep with require_escalated exited1/no output: no matching running consumer"
+  },
+  "protected_before_sha256": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/scheduler-plan.json": "946fc198cc232224d84bf79c9443079789f6c8a9897ba5a4fed8869c130614f9",
+    "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/drawing-12102-20260906T153000Z-b3f20304ff03e14a.json": "238393dbfd046f6f0458e66362481bbeb1de03fcbe7e86b7275dfe9802141f0c",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/run-scheduler.sh": "38958adce9e5672328be98fe8209d3bd64021098be4ba70d74018c3a71a6c5db",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/run-parallel-sidecar.sh": "12727d8a0cb15fb019856cf4b0dc1b25fa66efec76b2f19b53cda7e35e24bd6a",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/totoai-scheduler.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/totoai-parallel-sidecar.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist": "ad47a95d8a90e36656025e168af2ec1647260c6af1d3f83dba41f685588511ff",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json": "67ca1b2e8091005a1ebf5b8f508059f9e6ec4e7610b4d8df2c3fa54963b1a06c",
+    "/Users/turshevr/toto-ai/src/toto_ai/runner/scheduler.py": "07e23f28ebff084bc4e3fe13a3b185d201050ac983c64ce1be5ea0dc014848c4",
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/final_hybrid_sidecar.py": "5a3113275282527cd248bab8a4267282ae88a90a9ca23053c0e5aad1873d787e",
+    "/Users/turshevr/toto-ai/src/toto_ai/cli.py": "5b11f3c9cc2ac9feaddc6f935150fcbc55eeffba3aefae48640f0b8f4e29f88c",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.production-scheduler.v9.c1d243f5b6ca48f3.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist": "ad47a95d8a90e36656025e168af2ec1647260c6af1d3f83dba41f685588511ff",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/experimental-manual-release-authorization.json": "788b4bd358171a98909e7bd426228ed4e68fc8268db45c7a1984500a369900b1",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-release-authorization.json": "470d9f82523b52dd98354d309990e9b4510481efd4f458f20f3f538158ec499e",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/goal-shadow-queue.json": "b5595e7e950e9399dd15a83bc9309dd77c57bd0b34a3930de7b7f4c9d6d8dd5a",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/current.json": "70665be1426fbf5d86b6e48357798c50a2b7b84d9c0df2e593b3e7faf8406eb8",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/sports-seed/sports_probability_shadow_4998_08da2cb616e108b8.json": "9c2489b5cf65289227f6df794182fe71aa37f3b4ffb840c6111e8a1de1426fbd"
+  },
+  "source_patch_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-source.patch",
+  "activation": false,
+  "publication": false,
+  "formatting_note": "Whole-file Ruff formatting was restored to exact hash-attested original formatting outside intended hunks; AST-equivalence confirmed; new standalone test remains formatted.",
+  "verification": {
+    "red": "2 expected captured-score failures before fix,0.39s (--maxfail=2)",
+    "green_initial": "81 passed in1.47s",
+    "green_final": "81 passed in1.05s after formatter-only delta removal",
+    "new_test_cases": 70,
+    "existing_goal_v2_cases": 11,
+    "ruff_final": "3files All checks passed",
+    "commands": [
+      ".venv/bin/python -B -m pytest -q tests/test_goal_history_regulation_score.py tests/test_goal_probe_research.py tests/test_sports_v2.py -p no:cacheprovider --disable-warnings",
+      ".venv/bin/ruff check src/toto_ai/sports_stats/goal_probe_research.py tests/test_goal_history_regulation_score.py tests/test_goal_probe_research.py"
+    ]
+  },
+  "completed_at": "2026-09-06T15:56:42.305943+03:00",
+  "exact_write_paths": [
+    "src/toto_ai/sports_stats/goal_probe_research.py",
+    "tests/test_goal_probe_research.py",
+    "tests/test_goal_history_regulation_score.py",
+    "tests/fixtures/goal_regulation_score_captured_contracts.json",
+    "knowledge/goal_history_regulation_score.md"
+  ],
+  "after_sha256": {
+    "src/toto_ai/sports_stats/goal_probe_research.py": "73f2c05dd2f2a4f417f12fcffbd431cbdece1c08ab7ad629575786fb5143c93e",
+    "tests/test_goal_probe_research.py": "c0cf0f854b8614757dc16fa13a954191b2294acbc27b12e05d2a980cb3fed292",
+    "tests/test_goal_history_regulation_score.py": "e02ef14e70b01711d1322df4b99a9212ed3a1bf36a1ff0c21b3f266f2c841579",
+    "tests/fixtures/goal_regulation_score_captured_contracts.json": "eb4ac9b13d60df79091961c317c7b40fe6c45921bc0926a728cb411aced27d18",
+    "knowledge/goal_history_regulation_score.md": "4920647dac30eecc840e162a11e463177ddecd2558cec90408523b5c81d4fecb"
+  },
+  "candidate_patch": {
+    "path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation.patch",
+    "sha256": "dc150fdc3ccd10fdbc9280b97ff99974248f233add7dda1a668947a75e011275"
+  },
+  "corrected_seed": {
+    "artifact_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-v2-regulation90-pending-review/sports_probability_shadow_4998_ac04ea9b30359094.json",
+    "artifact_file_sha256": "2d5003c79378fb0b5f425ddf8cfdc0902327e727c0c0f3bb43843b43f2139e78",
+    "artifact_sha256": "ac04ea9b303590945dbdc3c12a451840d300350b641593f5cf07b74054d5f32e",
+    "model_status": "EXPERIMENTAL_UNTRAINED_V2",
+    "config": {
+      "model_version": "sports-analytics-v2-poisson-venue-shrunk-v1",
+      "minimum_venue_matches": 2,
+      "prior_matches": 3.0,
+      "maximum_blend_weight": 0.2,
+      "disagreement_limit": 0.45,
+      "poisson_max_goals": 10
+    },
+    "sports_coverage_count": 14,
+    "fallback_count": 1,
+    "raw_history_observations": 280,
+    "accepted_history_observations": 280,
+    "excluded_counts": {},
+    "same_as_of": "2026-09-06T11:52:57.058903+00:00",
+    "snapshot_content_sha256": "e4b3d710486bd08bdf691842b04ea6d02da819af9e407c6ba93ebe2d9da6112c"
+  },
+  "score_proof": {
+    "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-v2-regulation90-pending-review/REGULATION90_PROOF.json",
+    "sha256": "77e870d3cc17be804c52b0787fc028117faf7a89d2aabf594d6b198faffff0ac",
+    "extended_observations_verified": 13,
+    "previously_wrong_observations_corrected": 12,
+    "team_aggregate_checks": 28,
+    "protected_paths_mismatched": [],
+    "source_capture": "same immutable raw; hash manifests verified unchanged"
+  },
+  "deadline_note": "Requested10min window missed. No claim of continuous work across15:06–15:53; timestamps reflect discrete commands.",
+  "remaining": "Independent review of exact five-path candidate, then separately authorized operational rebind/publication. No activation/push in this job.",
+  "owned_processes": []
+}

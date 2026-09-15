@@ -1,0 +1,11 @@
+# Scoped retrospective review-fix checkpoint — 2026-09-05T14:01:19.483210+03:00
+- Source+4996-only runner/plan integration completed; strict existing-report audit twice.
+- P1 reuse FIXED; P1 fresh wrong-result path MITIGATED by fail-closed no regeneration.
+- Remaining: exact-result-bound fresh producer/CLI integration NOT implemented.
+- 46focusedtests/Ruff(source/tests/smoke) clean; fullsuite notrun.
+- Current4996report bindings VERIFIED; actual X222XX2111112X2; modelhits11/11/13/13.
+- Original archive/result/receipt preserved. No replay/model/DB write;4997receipts unchanged.
+- No running owned process; no publication. Next14:30MSK main4997,cutoff16:20.
+- Full disposition:retrospective-review-fix-report.md; proof:retrospective-review-deployment-proof.json.
+- OtherOPEN:retry-calendar integration; coherent baseline; rejected-backfill DB writes.
+- Models F3/P1 coverage auditor awaits baseline/minimum_prior_matches contract; no threshold invented.

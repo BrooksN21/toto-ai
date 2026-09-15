@@ -11,6 +11,11 @@ import pytest
 from tests.test_runner_final_input import _payload
 from tests.test_scheduler_status import _plan, _write
 from toto_ai.operations.scheduler_status import scheduler_status, watch_scheduler_status
+from toto_ai.package.hash_contract import (
+    ORDERED_COMMA_V1,
+    ORDERED_LF_V1,
+    ordered_lf_sha256,
+)
 from toto_ai.runner.final_input import persist_final_input
 
 UTC = timezone.utc
@@ -228,7 +233,12 @@ def parallel(plan, *, publish_status=True):
         "bank": plan.requested_bank,
         "stake": plan.stake,
         "final_input_snapshot_sha256": snapshot["snapshot_sha256"],
-        "baseline": {"package_sha256": release["selected_package_sha256"]},
+        "baseline": {
+            "package_sha256": ordered_lf_sha256(("1" * 15,)),
+            "package_sha256_semantics": ORDERED_LF_V1,
+            "canonical_package_sha256": release["selected_package_sha256"],
+            "canonical_package_sha256_semantics": ORDERED_COMMA_V1,
+        },
         "highest_p13_single_coupons": {
             "quality-v3": release["highest_p13_single_coupon"]
         },

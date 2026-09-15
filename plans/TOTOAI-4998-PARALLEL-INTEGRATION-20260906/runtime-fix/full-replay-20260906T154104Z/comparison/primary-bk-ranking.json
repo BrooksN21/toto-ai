@@ -1,0 +1,24 @@
+{
+  "artifact_class": "PRIMARY_CONTROL_RANKING_ANALYSIS_ONLY",
+  "automatic_wagering": false,
+  "final_input_snapshot_sha256": "baea70824b1435bd771b5d9591ed6fb80319a89cacd25c77d9672e7503438282",
+  "highest_p13_single_coupon": {
+    "coupon": "212111111111121",
+    "criterion": "maximum_probability_at_least_13",
+    "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+    "package_position": 10,
+    "probability_at_least_13": 0.0004777047248171512,
+    "probability_at_least_14": 4.599799150689667e-05,
+    "probability_at_least_15": 2.078659198118008e-06,
+    "reference_model": "bk"
+  },
+  "operator_compatible": false,
+  "operator_control_verified": false,
+  "operator_package_sha256": null,
+  "package_sha256": "568f9a356765ada90990f6a2ee28505911d40f60da22e882f9e8f79801ad4cd9",
+  "plan_file_sha256": "946fc198cc232224d84bf79c9443079789f6c8a9897ba5a4fed8869c130614f9",
+  "plan_id": "c1d243f5b6ca48f3",
+  "probability_input_sha256": "44658935ef333d3a1b67d434a3b25e911b720838ee9e8ce80ecf4218cc17d04d",
+  "record_sha256": "225f39be5fede9eaa9a05bd1a3c5f86a57c7cc845b1691ceede058a174d42c4b",
+  "schema_version": 1
+}

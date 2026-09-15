@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12127,
+    "drawing_number": 5007,
+    "event_order": 4,
+    "target_event_id": 181012,
+    "championship": "Англия. Истмийская лига. Премьер-дивизион",
+    "home_team": "Льюис",
+    "away_team": "Каршалтон Атлетик",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "manual-5007-event05-20260915",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Истмийская лига. Премьер-дивизион",
+      "Isthmian League, Premier Division"
+    ],
+    "home_entity": "Lewes",
+    "home_aliases": [
+      "Льюис",
+      "Lewes"
+    ],
+    "away_entity": "Carshalton Athletic",
+    "away_aliases": [
+      "Каршалтон Атлетик",
+      "Carshalton Athletic"
+    ],
+    "starts_at": "2026-09-15T18:45:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+    "reviewed_at": "2026-09-15T13:41:18.146495Z"
+  },
+  "sources": [
+    {
+      "source_name": "LewesFC",
+      "role": "official",
+      "source_url": "https://lewesfc.com/2026/09/13/mens-match-report-chatham-town-a/",
+      "snapshot": "5007-event05-lewesfc-42f22b09c4827583b2ff4606482d6bed33ac5ec1335c04aae717d8f6e783417f.raw",
+      "snapshot_sha256": "42f22b09c4827583b2ff4606482d6bed33ac5ec1335c04aae717d8f6e783417f",
+      "home_team": "Lewes",
+      "away_team": "Carshalton Athletic",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:38:16.824785Z"
+    },
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/carshalton-athletic-lewes/qcsEd#id:16596269",
+      "snapshot": "5007-event05-sofascore-d1987491b51dd68663bd73d7c0cef30fb0a86066b6f26d557a8188993acd16c1.raw",
+      "snapshot_sha256": "d1987491b51dd68663bd73d7c0cef30fb0a86066b6f26d557a8188993acd16c1",
+      "home_team": "Lewes",
+      "away_team": "Carshalton Athletic",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:34:07.674109Z"
+    }
+  ]
+}

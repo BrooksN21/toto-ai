@@ -1,0 +1,13 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "at": "2026-09-06T20:29:52.038399+03:00",
+  "phase": "RUNTIME02_FROZEN_PENDING_INDEPENDENT_REREVIEW",
+  "work_summary": "PR-1 current native primary/bytes validity at reuse and immediate publication boundaries; terminal optional failure preserves primary/research",
+  "verification": "101PASS3.15s/Ruff13PASS; two original independent failures fixed",
+  "patch_sha256": "152c92c8e068e971b5c926dc70234c2b57c3815c3396ac0ba195b56d5d46bbab",
+  "manifest_sha256": "1fbdbd82c0872f7f0b319c23570cc195b03ad70126d12ba0fb9f7171cd60321b",
+  "handoff": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME02_IMPLEMENTATION_HANDOFF.md",
+  "next": "Independent rereview; no more implementation/replay/publication in this job",
+  "owned_processes": [],
+  "no_live_runtime_db_auth_changes": true
+}

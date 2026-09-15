@@ -1,0 +1,292 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "derived_at": "2026-09-15T15:26:57.564166+00:00",
+  "counts": {
+    "sources": 24,
+    "native_O1_statuses": {
+      "COMPLETE": 12
+    },
+    "source_statuses": {
+      "AVAILABLE": 24
+    },
+    "native_O1_errors": {},
+    "features_native_validation_PASS": 12,
+    "nonmissing_feature_counts": {
+      "38": 1,
+      "42": 11
+    },
+    "scope_verified": 0,
+    "positive_reliability": 0
+  },
+  "source_review_sha256": "4ea2649e12a2b5a68416495e0c503a6a9f42f4478983ec3088e8cc4bc6daefbd",
+  "source_review_unchanged": true,
+  "chains": [
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-0-home.provenance.json",
+      "chain_sha256": "484191b8e42c9eded640e294bdac92510503d275ebe6c5310d320e5cf0181d42",
+      "source_sha256": "a32bcd74df4b8d2477e3880838dfeefe0ca31eb4330aac67af6c82b4193527f5",
+      "derived_sha256": "a476e4b0d133717a8fcb9ef082190c059a2bc6b9a7b047ead3a784c1e0ba8363"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-0-away.provenance.json",
+      "chain_sha256": "d212ef3acf422403cb96034bf003e7b5dd001f5e90772a4edc0d03ddded0c1dd",
+      "source_sha256": "9ea86410c5ed4da67c17c3bcc0e3461ec240bb80dbf2622f536451e02533c598",
+      "derived_sha256": "f74df8b2d3ee85071684e34c1692eb6dfd779c0b067e2117af519cf58043ec82"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-1-home.provenance.json",
+      "chain_sha256": "839cffc194a5d64298abbd905d226d7c1041c80194fc5af9c9c3d50f0fbbd7e6",
+      "source_sha256": "001fa50eac40b6934a515e3afabf724e7a545eaf751745414a3cabf85ddf69a9",
+      "derived_sha256": "1f07f5b00c8bb3b8bbc3c95c3fb14c9cd5543f45825913e432e24ec6337c94a1"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-1-away.provenance.json",
+      "chain_sha256": "0272a7b1b2e9fa4e38c813958f78f89473687c9700a5636650bfa5f15bc5fb9e",
+      "source_sha256": "b3f91aa749432f525255d69605a3cde2df665c7f4110812651b215a2d6ba3d05",
+      "derived_sha256": "39ab789732a7183a13a7de3c96db2672ae5f3a2f920922bd732d7cc3599d51ed"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-2-home.provenance.json",
+      "chain_sha256": "e1f7be328cb9d943f1d36fee0b97a0adcc1c9ef413dc720347675885a43aa1a0",
+      "source_sha256": "d7aac6852feaf53fb9757872d98ebe09c843f04cce52ec0bc890bf91bd680a61",
+      "derived_sha256": "2e65aa18e814545a73308aded5181cb19428c141f89c9dae050e77ef4cfbf9e1"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-2-away.provenance.json",
+      "chain_sha256": "e53f2bc8f4774a4c921d30222c5cd0c2843ef67fc4ef9f12a6b0288be173891d",
+      "source_sha256": "f93fd3f1c67ca8ee31ab8a23a192a8144b1f70771ac933c354178a6f2711717f",
+      "derived_sha256": "ec8cb2a4297f094a2a5de495273e8e89a28c03998837acabb4aa397ef81f018e"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-3-home.provenance.json",
+      "chain_sha256": "82e95076f1f3ca965b5fd51586d7ffbe3cbcbe2f8ed5c3dd25094d9679f143d0",
+      "source_sha256": "ff8ff7d7a045a858e56eced2c9cfcd4c1352d99ba9f0abb62a0507da06a5e967",
+      "derived_sha256": "475ae3a15846fb41c2294fbd666e998e3e8ab482127b171940bd5ed767661f81"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-3-away.provenance.json",
+      "chain_sha256": "3f261baac25cb297a841f37fc14ae02b3dd313b9a425874b87e10379ced132f9",
+      "source_sha256": "aa0af7921453dfa858f69513fc7048c7e9d691652e287c34c4033bad157cec40",
+      "derived_sha256": "6faf05b77b86f05cd34adc13ce7fe7af0b095960d53796ad72335506c16506e3"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-4-home.provenance.json",
+      "chain_sha256": "f8ffad78b6b7b146053831f9e0e4c954f5e8e6b0450e308d5f6c7439869f733d",
+      "source_sha256": "45c299979a8d1aa5d8e6f4632ba10342c0009508217da1e2bdc79dee95d4e2bd",
+      "derived_sha256": "f781446447c336f6da9db883059d5677c29ce2d92a9b3c217028a47e3604ca96"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-4-away.provenance.json",
+      "chain_sha256": "f1fd769c1a9dcbe99ff0b156877aa26832c96d7ccbf337c36b35f9f110ac50bb",
+      "source_sha256": "d9f6c63578481992ae9cfc7ea2599dffb1cc0f4ca60159e3af34630f0716cd10",
+      "derived_sha256": "d46a4636f05c83860efe7220f75d6c6be1e8049657cc080ae96e1b6dae682507"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-5-home.provenance.json",
+      "chain_sha256": "e9036ab3542cdfcf13d9293f42db5fd9caa245978fafb88894c2d9a076c45ce3",
+      "source_sha256": "eebf2fc084db0a1efba13c6302234343475e3c03256f4fd9d4c2b66eb74e2973",
+      "derived_sha256": "e56c8583b19918f36fc8f095b5dd6890d0371ad73d1a3499c623bdbd21068c27"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-5-away.provenance.json",
+      "chain_sha256": "27bc8f94f3934b08111d088f467d7c0a1cfdee38e57673cbd41edb39dc9a19f0",
+      "source_sha256": "c50afc03d7690a11044562990ad1d8e636df69e76a63bd1e5b15acb419e3b752",
+      "derived_sha256": "9cd8fe66bf14b79deb653385aa7a9da16df18a8fc001b1a935bcd28b2ce7baa9"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-6-home.provenance.json",
+      "chain_sha256": "ea9a070d1700d7dfeca922d1dea7b27dfdea3eb01118b1dcdfd4c583f87f54d6",
+      "source_sha256": "1d95f02a9eba67c1d484de2c1ddd9a57f6873c065dc504987c832df816e6753d",
+      "derived_sha256": "c3a1f48ac2aae22a7ab00ba20f03aa8c56f909cb7a23feef75de48fef89ab166"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-6-away.provenance.json",
+      "chain_sha256": "aa6dd47567c096408411be280df6522e469f8af695dd816bbd6225a5c42475a1",
+      "source_sha256": "3e68ce6936b09a381dbd2b6665dd7d0326f69bfbc897e15eee3396ddcfbe765d",
+      "derived_sha256": "01449669f2f11f4cc1d835dec17a3be0a8f482d7b34f920bf5f0d6ec53440059"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-7-home.provenance.json",
+      "chain_sha256": "0d43f1eff700cba1ca771c470276ff7d1960bddd16727f277b1103005a09e861",
+      "source_sha256": "6ef6235c3b6aa73f24d20d6b4e966a734712a18c0739ba29c43b0ef9edb5e408",
+      "derived_sha256": "518103bfe3499049230b9f255c0e32d5e0598c8359dcfb7b3428a2811ad61ca3"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-7-away.provenance.json",
+      "chain_sha256": "a3062a052765b93a7baae55a2fc99c6c01d194f360b685bd6d61a8e17c938467",
+      "source_sha256": "3d3408bb8e9ebcd8e6ad8dc0c917a507d28c98c71183a81ddecf169f2f5eb10a",
+      "derived_sha256": "194ac9b5c445a7939e336cf854e88191b60e31598e5b1ab15d4d7e82afafe7b1"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-9-home.provenance.json",
+      "chain_sha256": "3b2c27e047591e4243c798e4461c1c61d02fac3593ea2d74fac9bd4a613828ae",
+      "source_sha256": "75f3e2c0181c017a64a3e48d102216ea4bd95d4907c33d69a19432cc0fa26987",
+      "derived_sha256": "69bf5123fa0a7f01e98e72bb0aba817fc05d7636c322aac887fe812a1cf97fde"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-9-away.provenance.json",
+      "chain_sha256": "9f1a27ee24c392461320578487f10130c2141ea97f21afcee4e8aa7808287538",
+      "source_sha256": "c9e11e078be1100c0c0f4cbdc1c3b53f7ad16979f8314c2164c72d54d0d9a915",
+      "derived_sha256": "441cc08f00cd9350359cfa2c7c54bfe03be0d394e410f8e35a89bf770108a7bc"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-10-home.provenance.json",
+      "chain_sha256": "f9353f6efad8cde17890b0a57c9e36084bb330f3059aa0569e9d64d331032987",
+      "source_sha256": "de7753f488ddc906ecf6c3dc16278e130c58b1f8fa04cf479ef5aaac5b9f39e8",
+      "derived_sha256": "830ba2d8eac4290acda67ddc923b2abe1ad23099e683bc37b9de0b418b80c3b2"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-10-away.provenance.json",
+      "chain_sha256": "23c2d74cb1764cc8a2d4b7b4e6c124fe9dbc0f3d6a5847b59d4798750d1a66c6",
+      "source_sha256": "0cbd6df88986fa6bb6af8347c9888a31f0fa6ad62171669c0417aad93821e9dc",
+      "derived_sha256": "8467cd22270a525e339d3033730b63139b631d9b5cc0da5bb368f0c6a6fe2b28"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-12-home.provenance.json",
+      "chain_sha256": "2fa0e466fe84ffae8a1f0969927a845148481965228fad73b29ef9e88e215dca",
+      "source_sha256": "9117866807981c1a4bfa7224309229dfbc90a4172e1ae8ad03066d5c774e21c3",
+      "derived_sha256": "de2e6f08990de449999af8ed5c24bd982ca3e2d19840c28f6edb15a09c7e95d9"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-12-away.provenance.json",
+      "chain_sha256": "b71272a8d5c1d78b0c74fe6498ef5b124509590f70aceef7547db69a2e778bc0",
+      "source_sha256": "6ce697a8b410c7192764c1e5fa4b05326a6ec7c02cdcea90254e4423d333f868",
+      "derived_sha256": "85b216036349c76f41b0373b77e2da742daa6b7f34cfcd11a6c1e562787cac8c"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-14-home.provenance.json",
+      "chain_sha256": "393cf54496c75731d522271a47214882211c2d8138712fcc3615606284a51d08",
+      "source_sha256": "663d8d590ebe34d701d739c82e4e557a90a5e8de84ce64b853d7ead1a61d9e09",
+      "derived_sha256": "321182d3ffd2cd51f7cfe8628c7d726ed1e9841abb69e6bd8443887201a90ab0"
+    },
+    {
+      "chain_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-14-away.provenance.json",
+      "chain_sha256": "36ac5e6c7b5ec5671b9aad43fcc3c15c21f5a807fa032e2397c4a051e6f2659e",
+      "source_sha256": "87e42e56923fad4c0e776f721b317ec206355580eff3dd0be041e1a0cf9cfe47",
+      "derived_sha256": "801ec689bc78c883274366662da78f86e0650e0ddbaedb8d37d05e594fff89ee"
+    }
+  ],
+  "features_artifact": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/features-no-labels-contract-probe.json",
+  "features_sha256": "e0c0cf5c73ec07d786259ca6d0520c1bc23eddef43881d256d7de0cbd8daf2c9",
+  "native_fold_validation": {
+    "status": "REJECTED",
+    "reason": "15 unique ordered events",
+    "actual_events": 12,
+    "required_events": 15
+  },
+  "native_F4": {
+    "status": "BLOCKED_MISSING_TRAINING_EVIDENCE",
+    "missing": [
+      "independently reviewed common entity-scope feature bridge"
+    ],
+    "fit_executed": false,
+    "activation_allowed": false,
+    "automatic_wagering": false,
+    "sha256": "0341d120e1c26ebb64ac0ced1d292aa8045bbb931d5aab2bb80a07cf5b319c23"
+  },
+  "semantic_score_differences_not_changed": [
+    {
+      "event_order": 2,
+      "side": "away",
+      "history_id": "cmrmqt9x339crt007wpe19b7b",
+      "status": "AFTER_PEN",
+      "O1_aggregate": [
+        0,
+        2
+      ],
+      "V3_regulation": [
+        0,
+        0
+      ]
+    },
+    {
+      "event_order": 3,
+      "side": "home",
+      "history_id": "cms9lwqelg0ttkw06ipagnf16",
+      "status": "AFTER_PEN",
+      "O1_aggregate": [
+        1,
+        0
+      ],
+      "V3_regulation": [
+        0,
+        0
+      ]
+    },
+    {
+      "event_order": 5,
+      "side": "home",
+      "history_id": "cmt1fi4l678clpd07c8nck8cp",
+      "status": "AFTER_PEN",
+      "O1_aggregate": [
+        1,
+        3
+      ],
+      "V3_regulation": [
+        1,
+        1
+      ]
+    },
+    {
+      "event_order": 5,
+      "side": "home",
+      "history_id": "cmsp4lj18txwspn068rn63wue",
+      "status": "AFTER_PEN",
+      "O1_aggregate": [
+        3,
+        1
+      ],
+      "V3_regulation": [
+        1,
+        1
+      ]
+    },
+    {
+      "event_order": 5,
+      "side": "away",
+      "history_id": "cms5bkzu7wdrukw063vakucss",
+      "status": "AFTER_PEN",
+      "O1_aggregate": [
+        3,
+        1
+      ],
+      "V3_regulation": [
+        1,
+        1
+      ]
+    },
+    {
+      "event_order": 6,
+      "side": "home",
+      "history_id": "cmsxwg9iff4mlqg07ur7cahuu",
+      "status": "AFTER_ET",
+      "O1_aggregate": [
+        5,
+        2
+      ],
+      "V3_regulation": [
+        3,
+        2
+      ]
+    },
+    {
+      "event_order": 7,
+      "side": "away",
+      "history_id": "cmrwqxnggysz7nu074jftb63s",
+      "status": "AFTER_PEN",
+      "O1_aggregate": [
+        3,
+        1
+      ],
+      "V3_regulation": [
+        1,
+        1
+      ]
+    }
+  ],
+  "new_review_authority_issued": false,
+  "reference_probe_scope": "STRUCTURAL_VALIDATION_OF_LOSSLESS_DERIVATION_NOT_REVIEW_APPROVAL",
+  "labels_loaded": false,
+  "API_requests": 0,
+  "fit_executed": false
+}

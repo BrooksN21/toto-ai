@@ -1,0 +1,39 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "at": "2026-09-07T08:43:36.437165+00:00",
+  "phase": "COMPLETE_ALL_FOUR_MANUAL_POSTMORTEM",
+  "last_command": "Read frozen native settlement, compute existing Decimal cumulative_payout_comparison, write final handoff",
+  "last_exit_status": 0,
+  "native_fetches": 1,
+  "pid": null,
+  "process_state": "none_running",
+  "blocker": null,
+  "prior_export_error_resolved": true,
+  "report_md": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM4998_20260907.md",
+  "report_json": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM4998_20260907.json",
+  "models": {
+    "quality-v2": {
+      "best_hits": 10,
+      "hit13_plus_count": 0,
+      "counterfactual_return_rub": "2890.05"
+    },
+    "quality-v3": {
+      "best_hits": 10,
+      "hit13_plus_count": 0,
+      "counterfactual_return_rub": "5044.21"
+    },
+    "robust": {
+      "best_hits": 12,
+      "hit13_plus_count": 0,
+      "counterfactual_return_rub": "11537.81"
+    },
+    "sports-shadow": {
+      "best_hits": 12,
+      "hit13_plus_count": 0,
+      "counterfactual_return_rub": "11699.77"
+    }
+  },
+  "next_action": "Hand off finished4998 now; only then separate4999consent",
+  "no_replay_or_generation": true,
+  "scheduled_1200_unchanged": true
+}

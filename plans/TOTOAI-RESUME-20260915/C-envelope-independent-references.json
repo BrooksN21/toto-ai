@@ -1,0 +1,795 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "reviewed_at": "2026-09-15T18:35:45.255032+03:00",
+  "reviewer": "Independent Codex review worker, not C author",
+  "authority_basis": "Explicit scoped owner request; native reviewing-caller trust boundary; not human sign-off",
+  "scope": "INACTIVE_RESEARCH_BYTE_IDENTITY_CHRONOLOGY_LOSSLESS_DERIVATION_ONLY",
+  "prior_independent_review_sha256": "4ea2649e12a2b5a68416495e0c503a6a9f42f4478983ec3088e8cc4bc6daefbd",
+  "source_files": [
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/research/sports_v3_dataset_bridge.py",
+      "sha256": "cee852cc43f7c2ec7f286773c4ac1a1ea753b1e69a0cf7d45d362ec3879ae7ac"
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_sports_v3_dataset_bridge.py",
+      "sha256": "e3252ad7e1f637a5eb63ab234e18c6d78726f0a5ef15b6977b579218411eb076"
+    }
+  ],
+  "events": [
+    {
+      "event_order": 0,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-0.json",
+          "sha256": "6f8ebd1cf8c276800467426f48407cfd8f2e8e720c114667beab9801fbd38723",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 0,
+          "target_event_id": "180693",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-0-home.json",
+          "sha256": "a476e4b0d133717a8fcb9ef082190c059a2bc6b9a7b047ead3a784c1e0ba8363",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 0,
+          "target_event_id": "180693",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-0-away.json",
+          "sha256": "f74df8b2d3ee85071684e34c1692eb6dfd779c0b067e2117af519cf58043ec82",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 0,
+          "target_event_id": "180693",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-0-home.provenance.json",
+          "provenance_sha256": "484191b8e42c9eded640e294bdac92510503d275ebe6c5310d320e5cf0181d42",
+          "original_sha256": "a32bcd74df4b8d2477e3880838dfeefe0ca31eb4330aac67af6c82b4193527f5",
+          "derived_sha256": "a476e4b0d133717a8fcb9ef082190c059a2bc6b9a7b047ead3a784c1e0ba8363"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-0-away.provenance.json",
+          "provenance_sha256": "d212ef3acf422403cb96034bf003e7b5dd001f5e90772a4edc0d03ddded0c1dd",
+          "original_sha256": "9ea86410c5ed4da67c17c3bcc0e3461ec240bb80dbf2622f536451e02533c598",
+          "derived_sha256": "f74df8b2d3ee85071684e34c1692eb6dfd779c0b067e2117af519cf58043ec82"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 1,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-1.json",
+          "sha256": "7bb1926da330ad787b8ad8222e570f997e347d59e22a4f8589f736ec82c57edc",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 1,
+          "target_event_id": "180694",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-1-home.json",
+          "sha256": "1f07f5b00c8bb3b8bbc3c95c3fb14c9cd5543f45825913e432e24ec6337c94a1",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 1,
+          "target_event_id": "180694",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-1-away.json",
+          "sha256": "39ab789732a7183a13a7de3c96db2672ae5f3a2f920922bd732d7cc3599d51ed",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 1,
+          "target_event_id": "180694",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-1-home.provenance.json",
+          "provenance_sha256": "839cffc194a5d64298abbd905d226d7c1041c80194fc5af9c9c3d50f0fbbd7e6",
+          "original_sha256": "001fa50eac40b6934a515e3afabf724e7a545eaf751745414a3cabf85ddf69a9",
+          "derived_sha256": "1f07f5b00c8bb3b8bbc3c95c3fb14c9cd5543f45825913e432e24ec6337c94a1"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-1-away.provenance.json",
+          "provenance_sha256": "0272a7b1b2e9fa4e38c813958f78f89473687c9700a5636650bfa5f15bc5fb9e",
+          "original_sha256": "b3f91aa749432f525255d69605a3cde2df665c7f4110812651b215a2d6ba3d05",
+          "derived_sha256": "39ab789732a7183a13a7de3c96db2672ae5f3a2f920922bd732d7cc3599d51ed"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 2,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-2.json",
+          "sha256": "1d32ccce8f8da60315cbaf3551121f72fbe9a2588aa0b02b9074dbc19bb17f25",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 2,
+          "target_event_id": "180695",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-2-home.json",
+          "sha256": "2e65aa18e814545a73308aded5181cb19428c141f89c9dae050e77ef4cfbf9e1",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 2,
+          "target_event_id": "180695",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-2-away.json",
+          "sha256": "ec8cb2a4297f094a2a5de495273e8e89a28c03998837acabb4aa397ef81f018e",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 2,
+          "target_event_id": "180695",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-2-home.provenance.json",
+          "provenance_sha256": "e1f7be328cb9d943f1d36fee0b97a0adcc1c9ef413dc720347675885a43aa1a0",
+          "original_sha256": "d7aac6852feaf53fb9757872d98ebe09c843f04cce52ec0bc890bf91bd680a61",
+          "derived_sha256": "2e65aa18e814545a73308aded5181cb19428c141f89c9dae050e77ef4cfbf9e1"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-2-away.provenance.json",
+          "provenance_sha256": "e53f2bc8f4774a4c921d30222c5cd0c2843ef67fc4ef9f12a6b0288be173891d",
+          "original_sha256": "f93fd3f1c67ca8ee31ab8a23a192a8144b1f70771ac933c354178a6f2711717f",
+          "derived_sha256": "ec8cb2a4297f094a2a5de495273e8e89a28c03998837acabb4aa397ef81f018e"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 3,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-3.json",
+          "sha256": "752f6ec5f09ff430148323fa24545d2c16d13d27c30b30ed14d4f541e1340e5b",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 3,
+          "target_event_id": "180696",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-3-home.json",
+          "sha256": "475ae3a15846fb41c2294fbd666e998e3e8ab482127b171940bd5ed767661f81",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 3,
+          "target_event_id": "180696",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-3-away.json",
+          "sha256": "6faf05b77b86f05cd34adc13ce7fe7af0b095960d53796ad72335506c16506e3",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 3,
+          "target_event_id": "180696",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-3-home.provenance.json",
+          "provenance_sha256": "82e95076f1f3ca965b5fd51586d7ffbe3cbcbe2f8ed5c3dd25094d9679f143d0",
+          "original_sha256": "ff8ff7d7a045a858e56eced2c9cfcd4c1352d99ba9f0abb62a0507da06a5e967",
+          "derived_sha256": "475ae3a15846fb41c2294fbd666e998e3e8ab482127b171940bd5ed767661f81"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-3-away.provenance.json",
+          "provenance_sha256": "3f261baac25cb297a841f37fc14ae02b3dd313b9a425874b87e10379ced132f9",
+          "original_sha256": "aa0af7921453dfa858f69513fc7048c7e9d691652e287c34c4033bad157cec40",
+          "derived_sha256": "6faf05b77b86f05cd34adc13ce7fe7af0b095960d53796ad72335506c16506e3"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 4,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-4.json",
+          "sha256": "48a6efbcf1bbd355f8591040d355b40b01db1a18e41247488566daf58dc149c3",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 4,
+          "target_event_id": "180697",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-4-home.json",
+          "sha256": "f781446447c336f6da9db883059d5677c29ce2d92a9b3c217028a47e3604ca96",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 4,
+          "target_event_id": "180697",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-4-away.json",
+          "sha256": "d46a4636f05c83860efe7220f75d6c6be1e8049657cc080ae96e1b6dae682507",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 4,
+          "target_event_id": "180697",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-4-home.provenance.json",
+          "provenance_sha256": "f8ffad78b6b7b146053831f9e0e4c954f5e8e6b0450e308d5f6c7439869f733d",
+          "original_sha256": "45c299979a8d1aa5d8e6f4632ba10342c0009508217da1e2bdc79dee95d4e2bd",
+          "derived_sha256": "f781446447c336f6da9db883059d5677c29ce2d92a9b3c217028a47e3604ca96"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-4-away.provenance.json",
+          "provenance_sha256": "f1fd769c1a9dcbe99ff0b156877aa26832c96d7ccbf337c36b35f9f110ac50bb",
+          "original_sha256": "d9f6c63578481992ae9cfc7ea2599dffb1cc0f4ca60159e3af34630f0716cd10",
+          "derived_sha256": "d46a4636f05c83860efe7220f75d6c6be1e8049657cc080ae96e1b6dae682507"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 5,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-5.json",
+          "sha256": "d0e7f40d7b77a1f3ed97e6c7a478d89c78a4cb52627c67bf825dc3dafa642925",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 5,
+          "target_event_id": "180698",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-5-home.json",
+          "sha256": "e56c8583b19918f36fc8f095b5dd6890d0371ad73d1a3499c623bdbd21068c27",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 5,
+          "target_event_id": "180698",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-5-away.json",
+          "sha256": "9cd8fe66bf14b79deb653385aa7a9da16df18a8fc001b1a935bcd28b2ce7baa9",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 5,
+          "target_event_id": "180698",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-5-home.provenance.json",
+          "provenance_sha256": "e9036ab3542cdfcf13d9293f42db5fd9caa245978fafb88894c2d9a076c45ce3",
+          "original_sha256": "eebf2fc084db0a1efba13c6302234343475e3c03256f4fd9d4c2b66eb74e2973",
+          "derived_sha256": "e56c8583b19918f36fc8f095b5dd6890d0371ad73d1a3499c623bdbd21068c27"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-5-away.provenance.json",
+          "provenance_sha256": "27bc8f94f3934b08111d088f467d7c0a1cfdee38e57673cbd41edb39dc9a19f0",
+          "original_sha256": "c50afc03d7690a11044562990ad1d8e636df69e76a63bd1e5b15acb419e3b752",
+          "derived_sha256": "9cd8fe66bf14b79deb653385aa7a9da16df18a8fc001b1a935bcd28b2ce7baa9"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 6,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-6.json",
+          "sha256": "134869048de64dcc111e77250f35cfaae5a9975b18881c53d61885e9be0dbe7a",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 6,
+          "target_event_id": "180699",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-6-home.json",
+          "sha256": "c3a1f48ac2aae22a7ab00ba20f03aa8c56f909cb7a23feef75de48fef89ab166",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 6,
+          "target_event_id": "180699",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-6-away.json",
+          "sha256": "01449669f2f11f4cc1d835dec17a3be0a8f482d7b34f920bf5f0d6ec53440059",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 6,
+          "target_event_id": "180699",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-6-home.provenance.json",
+          "provenance_sha256": "ea9a070d1700d7dfeca922d1dea7b27dfdea3eb01118b1dcdfd4c583f87f54d6",
+          "original_sha256": "1d95f02a9eba67c1d484de2c1ddd9a57f6873c065dc504987c832df816e6753d",
+          "derived_sha256": "c3a1f48ac2aae22a7ab00ba20f03aa8c56f909cb7a23feef75de48fef89ab166"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-6-away.provenance.json",
+          "provenance_sha256": "aa6dd47567c096408411be280df6522e469f8af695dd816bbd6225a5c42475a1",
+          "original_sha256": "3e68ce6936b09a381dbd2b6665dd7d0326f69bfbc897e15eee3396ddcfbe765d",
+          "derived_sha256": "01449669f2f11f4cc1d835dec17a3be0a8f482d7b34f920bf5f0d6ec53440059"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 7,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-7.json",
+          "sha256": "9ac1c4deb87c93c2154cab6d0b1921d417d0686a685f544497cea606da6d9bbe",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 7,
+          "target_event_id": "180700",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-7-home.json",
+          "sha256": "518103bfe3499049230b9f255c0e32d5e0598c8359dcfb7b3428a2811ad61ca3",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 7,
+          "target_event_id": "180700",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-7-away.json",
+          "sha256": "194ac9b5c445a7939e336cf854e88191b60e31598e5b1ab15d4d7e82afafe7b1",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 7,
+          "target_event_id": "180700",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-7-home.provenance.json",
+          "provenance_sha256": "0d43f1eff700cba1ca771c470276ff7d1960bddd16727f277b1103005a09e861",
+          "original_sha256": "6ef6235c3b6aa73f24d20d6b4e966a734712a18c0739ba29c43b0ef9edb5e408",
+          "derived_sha256": "518103bfe3499049230b9f255c0e32d5e0598c8359dcfb7b3428a2811ad61ca3"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-7-away.provenance.json",
+          "provenance_sha256": "a3062a052765b93a7baae55a2fc99c6c01d194f360b685bd6d61a8e17c938467",
+          "original_sha256": "3d3408bb8e9ebcd8e6ad8dc0c917a507d28c98c71183a81ddecf169f2f5eb10a",
+          "derived_sha256": "194ac9b5c445a7939e336cf854e88191b60e31598e5b1ab15d4d7e82afafe7b1"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 9,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-9.json",
+          "sha256": "32fff44b2fc320f34bf56c741dabcacee8e96797d7e3c08d7aa1cbfc9a4eb748",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 9,
+          "target_event_id": "180702",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-9-home.json",
+          "sha256": "69bf5123fa0a7f01e98e72bb0aba817fc05d7636c322aac887fe812a1cf97fde",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 9,
+          "target_event_id": "180702",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-9-away.json",
+          "sha256": "441cc08f00cd9350359cfa2c7c54bfe03be0d394e410f8e35a89bf770108a7bc",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 9,
+          "target_event_id": "180702",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-9-home.provenance.json",
+          "provenance_sha256": "3b2c27e047591e4243c798e4461c1c61d02fac3593ea2d74fac9bd4a613828ae",
+          "original_sha256": "75f3e2c0181c017a64a3e48d102216ea4bd95d4907c33d69a19432cc0fa26987",
+          "derived_sha256": "69bf5123fa0a7f01e98e72bb0aba817fc05d7636c322aac887fe812a1cf97fde"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-9-away.provenance.json",
+          "provenance_sha256": "9f1a27ee24c392461320578487f10130c2141ea97f21afcee4e8aa7808287538",
+          "original_sha256": "c9e11e078be1100c0c0f4cbdc1c3b53f7ad16979f8314c2164c72d54d0d9a915",
+          "derived_sha256": "441cc08f00cd9350359cfa2c7c54bfe03be0d394e410f8e35a89bf770108a7bc"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 10,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-10.json",
+          "sha256": "888c5da039268955075bdbad481f6c2da292d2d869208001929f638d900b3b93",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 10,
+          "target_event_id": "180703",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-10-home.json",
+          "sha256": "830ba2d8eac4290acda67ddc923b2abe1ad23099e683bc37b9de0b418b80c3b2",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 10,
+          "target_event_id": "180703",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-10-away.json",
+          "sha256": "8467cd22270a525e339d3033730b63139b631d9b5cc0da5bb368f0c6a6fe2b28",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 10,
+          "target_event_id": "180703",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-10-home.provenance.json",
+          "provenance_sha256": "f9353f6efad8cde17890b0a57c9e36084bb330f3059aa0569e9d64d331032987",
+          "original_sha256": "de7753f488ddc906ecf6c3dc16278e130c58b1f8fa04cf479ef5aaac5b9f39e8",
+          "derived_sha256": "830ba2d8eac4290acda67ddc923b2abe1ad23099e683bc37b9de0b418b80c3b2"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-10-away.provenance.json",
+          "provenance_sha256": "23c2d74cb1764cc8a2d4b7b4e6c124fe9dbc0f3d6a5847b59d4798750d1a66c6",
+          "original_sha256": "0cbd6df88986fa6bb6af8347c9888a31f0fa6ad62171669c0417aad93821e9dc",
+          "derived_sha256": "8467cd22270a525e339d3033730b63139b631d9b5cc0da5bb368f0c6a6fe2b28"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 12,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-12.json",
+          "sha256": "6627242f0b642f3fb89c0699d6a9aff6273ad87dd92d13368d0b0d13da40a819",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 12,
+          "target_event_id": "180705",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-12-home.json",
+          "sha256": "de2e6f08990de449999af8ed5c24bd982ca3e2d19840c28f6edb15a09c7e95d9",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 12,
+          "target_event_id": "180705",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-12-away.json",
+          "sha256": "85b216036349c76f41b0373b77e2da742daa6b7f34cfcd11a6c1e562787cac8c",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 12,
+          "target_event_id": "180705",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-12-home.provenance.json",
+          "provenance_sha256": "2fa0e466fe84ffae8a1f0969927a845148481965228fad73b29ef9e88e215dca",
+          "original_sha256": "9117866807981c1a4bfa7224309229dfbc90a4172e1ae8ad03066d5c774e21c3",
+          "derived_sha256": "de2e6f08990de449999af8ed5c24bd982ca3e2d19840c28f6edb15a09c7e95d9"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-12-away.provenance.json",
+          "provenance_sha256": "b71272a8d5c1d78b0c74fe6498ef5b124509590f70aceef7547db69a2e778bc0",
+          "original_sha256": "6ce697a8b410c7192764c1e5fa4b05326a6ec7c02cdcea90254e4423d333f868",
+          "derived_sha256": "85b216036349c76f41b0373b77e2da742daa6b7f34cfcd11a6c1e562787cac8c"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    },
+    {
+      "event_order": 14,
+      "references": [
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-14.json",
+          "sha256": "3785cc4300b8e85038b1020d3c11ab24689b2d80561bd3c7073af436dcf0da6f",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 14,
+          "target_event_id": "180707",
+          "side": null
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-14-home.json",
+          "sha256": "321182d3ffd2cd51f7cfe8628c7d726ed1e9841abb69e6bd8443887201a90ab0",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 14,
+          "target_event_id": "180707",
+          "side": "home"
+        },
+        {
+          "path": "reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-14-away.json",
+          "sha256": "801ec689bc78c883274366662da78f86e0650e0ddbaedb8d37d05e594fff89ee",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 14,
+          "target_event_id": "180707",
+          "side": "away"
+        }
+      ],
+      "provenance": [
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-14-home.provenance.json",
+          "provenance_sha256": "393cf54496c75731d522271a47214882211c2d8138712fcc3615606284a51d08",
+          "original_sha256": "663d8d590ebe34d701d739c82e4e557a90a5e8de84ce64b853d7ead1a61d9e09",
+          "derived_sha256": "321182d3ffd2cd51f7cfe8628c7d726ed1e9841abb69e6bd8443887201a90ab0"
+        },
+        {
+          "provenance_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-envelope-derived/envelope-14-away.provenance.json",
+          "provenance_sha256": "36ac5e6c7b5ec5671b9aad43fcc3c15c21f5a807fa032e2397c4a051e6f2659e",
+          "original_sha256": "87e42e56923fad4c0e776f721b317ec206355580eff3dd0be041e1a0cf9cfe47",
+          "derived_sha256": "801ec689bc78c883274366662da78f86e0650e0ddbaedb8d37d05e594fff89ee"
+        }
+      ],
+      "O1": "COMPLETE",
+      "scope_verified": false,
+      "reliability": 0,
+      "O1_annotation_changes_do_not_change_numeric_features": true
+    }
+  ],
+  "AET_PEN_cases": [
+    {
+      "event_order": 2,
+      "side": "away",
+      "history_id": "cmrmqt9x339crt007wpe19b7b",
+      "regulation": [
+        0,
+        0
+      ],
+      "O1_aggregate": [
+        0,
+        2
+      ]
+    },
+    {
+      "event_order": 3,
+      "side": "home",
+      "history_id": "cms9lwqelg0ttkw06ipagnf16",
+      "regulation": [
+        0,
+        0
+      ],
+      "O1_aggregate": [
+        1,
+        0
+      ]
+    },
+    {
+      "event_order": 5,
+      "side": "home",
+      "history_id": "cmt1fi4l678clpd07c8nck8cp",
+      "regulation": [
+        1,
+        1
+      ],
+      "O1_aggregate": [
+        1,
+        3
+      ]
+    },
+    {
+      "event_order": 5,
+      "side": "home",
+      "history_id": "cmsp4lj18txwspn068rn63wue",
+      "regulation": [
+        1,
+        1
+      ],
+      "O1_aggregate": [
+        3,
+        1
+      ]
+    },
+    {
+      "event_order": 5,
+      "side": "away",
+      "history_id": "cms5bkzu7wdrukw063vakucss",
+      "regulation": [
+        1,
+        1
+      ],
+      "O1_aggregate": [
+        3,
+        1
+      ]
+    },
+    {
+      "event_order": 6,
+      "side": "home",
+      "history_id": "cmsxwg9iff4mlqg07ur7cahuu",
+      "regulation": [
+        3,
+        2
+      ],
+      "O1_aggregate": [
+        5,
+        2
+      ]
+    },
+    {
+      "event_order": 7,
+      "side": "away",
+      "history_id": "cmrwqxnggysz7nu074jftb63s",
+      "regulation": [
+        1,
+        1
+      ],
+      "O1_aggregate": [
+        3,
+        1
+      ]
+    }
+  ],
+  "original_byte_hashes_verified_unchanged": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-0.json": "6f8ebd1cf8c276800467426f48407cfd8f2e8e720c114667beab9801fbd38723",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/a32bcd74df4b8d24.json": "a32bcd74df4b8d2477e3880838dfeefe0ca31eb4330aac67af6c82b4193527f5",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/9ea86410c5ed4da6.json": "9ea86410c5ed4da67c17c3bcc0e3461ec240bb80dbf2622f536451e02533c598",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-1.json": "7bb1926da330ad787b8ad8222e570f997e347d59e22a4f8589f736ec82c57edc",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/001fa50eac40b693.json": "001fa50eac40b6934a515e3afabf724e7a545eaf751745414a3cabf85ddf69a9",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/b3f91aa749432f52.json": "b3f91aa749432f525255d69605a3cde2df665c7f4110812651b215a2d6ba3d05",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-2.json": "1d32ccce8f8da60315cbaf3551121f72fbe9a2588aa0b02b9074dbc19bb17f25",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/d7aac6852feaf53f.json": "d7aac6852feaf53fb9757872d98ebe09c843f04cce52ec0bc890bf91bd680a61",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/f93fd3f1c67ca8ee.json": "f93fd3f1c67ca8ee31ab8a23a192a8144b1f70771ac933c354178a6f2711717f",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-3.json": "752f6ec5f09ff430148323fa24545d2c16d13d27c30b30ed14d4f541e1340e5b",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/ff8ff7d7a045a858.json": "ff8ff7d7a045a858e56eced2c9cfcd4c1352d99ba9f0abb62a0507da06a5e967",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/aa0af7921453dfa8.json": "aa0af7921453dfa858f69513fc7048c7e9d691652e287c34c4033bad157cec40",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-4.json": "48a6efbcf1bbd355f8591040d355b40b01db1a18e41247488566daf58dc149c3",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/45c299979a8d1aa5.json": "45c299979a8d1aa5d8e6f4632ba10342c0009508217da1e2bdc79dee95d4e2bd",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/d9f6c63578481992.json": "d9f6c63578481992ae9cfc7ea2599dffb1cc0f4ca60159e3af34630f0716cd10",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-5.json": "d0e7f40d7b77a1f3ed97e6c7a478d89c78a4cb52627c67bf825dc3dafa642925",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/eebf2fc084db0a1e.json": "eebf2fc084db0a1efba13c6302234343475e3c03256f4fd9d4c2b66eb74e2973",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/c50afc03d7690a11.json": "c50afc03d7690a11044562990ad1d8e636df69e76a63bd1e5b15acb419e3b752",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-6.json": "134869048de64dcc111e77250f35cfaae5a9975b18881c53d61885e9be0dbe7a",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/1d95f02a9eba67c1.json": "1d95f02a9eba67c1d484de2c1ddd9a57f6873c065dc504987c832df816e6753d",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/3e68ce6936b09a38.json": "3e68ce6936b09a381dbd2b6665dd7d0326f69bfbc897e15eee3396ddcfbe765d",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-7.json": "9ac1c4deb87c93c2154cab6d0b1921d417d0686a685f544497cea606da6d9bbe",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/6ef6235c3b6aa73f.json": "6ef6235c3b6aa73f24d20d6b4e966a734712a18c0739ba29c43b0ef9edb5e408",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/3d3408bb8e9ebcd8.json": "3d3408bb8e9ebcd8e6ad8dc0c917a507d28c98c71183a81ddecf169f2f5eb10a",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-9.json": "32fff44b2fc320f34bf56c741dabcacee8e96797d7e3c08d7aa1cbfc9a4eb748",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/75f3e2c0181c017a.json": "75f3e2c0181c017a64a3e48d102216ea4bd95d4907c33d69a19432cc0fa26987",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/c9e11e078be1100c.json": "c9e11e078be1100c0c0f4cbdc1c3b53f7ad16979f8314c2164c72d54d0d9a915",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-10.json": "888c5da039268955075bdbad481f6c2da292d2d869208001929f638d900b3b93",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/de7753f488ddc906.json": "de7753f488ddc906ecf6c3dc16278e130c58b1f8fa04cf479ef5aaac5b9f39e8",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/0cbd6df88986fa6b.json": "0cbd6df88986fa6bb6af8347c9888a31f0fa6ad62171669c0417aad93821e9dc",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-12.json": "6627242f0b642f3fb89c0699d6a9aff6273ad87dd92d13368d0b0d13da40a819",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/9117866807981c1a.json": "9117866807981c1a4bfa7224309229dfbc90a4172e1ae8ad03066d5c774e21c3",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/6ce697a8b410c719.json": "6ce697a8b410c7192764c1e5fa4b05326a6ec7c02cdcea90254e4423d333f868",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-14.json": "3785cc4300b8e85038b1020d3c11ab24689b2d80561bd3c7073af436dcf0da6f",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/663d8d590ebe34d7.json": "663d8d590ebe34d701d739c82e4e557a90a5e8de84ce64b853d7ead1a61d9e09",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/87e42e56923fad4c.json": "87e42e56923fad4c0e776f721b317ec206355580eff3dd0be041e1a0cf9cfe47"
+  },
+  "scope_authorized": false,
+  "training_authorized": false,
+  "evaluation_authorized": false,
+  "operator_compatible": false,
+  "automatic_wagering": false,
+  "new_independent_provider_evidence": false,
+  "new_capture": false,
+  "retrospective_only": true
+}

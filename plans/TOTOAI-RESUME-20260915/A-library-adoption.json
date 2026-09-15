@@ -1,0 +1,420 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "stage": "A",
+  "role": "delegated IMPLEMENTATION/SOLVER",
+  "cwd": "/Users/turshevr/toto-ai",
+  "status": "IMPLEMENTED_TESTED_PENDING_INDEPENDENT_REVIEW",
+  "source_root": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai",
+  "source_review": {
+    "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_INDEPENDENT_REVIEW06.json",
+    "sha256": "4c97de5f04f4fa7d0b90f002ba80916f2d111cd801d20d0fceb27e022daa9973",
+    "verdict": "ACCEPT",
+    "scope": "F4-1b only: exact snapshot06 final-deadline correction; not whole-model or production acceptance"
+  },
+  "verified_artifacts": [
+    {
+      "path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_MANIFEST_06.json",
+      "sha256": "11cf89d7df4e4c211f74736a9b8d852348b72df4c637de18bf779db7e8ee57b0"
+    },
+    {
+      "path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_SNAPSHOT_05.patch",
+      "sha256": "f1a9d6079465fc68a72a19327dfcaa64a4de0f9435f783f4d64ae3798d63efe6"
+    },
+    {
+      "path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_SNAPSHOT_06.patch",
+      "sha256": "0dea0e4c98870f590dce209b953905bbe3f6f4a2db11930c87b5163f06692058"
+    },
+    {
+      "path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_DELTA_05_TO_06.patch",
+      "sha256": "1ee698aa9b27f995bbd360894b93b7313101d8a0b596bd24d68ec74a59aef2a7"
+    }
+  ],
+  "sources": [
+    {
+      "path": "src/toto_ai/sports_stats/v3_probability.py",
+      "source_sha256": "b9e91b89ec08e2d87d6a1d676857f2e48c6c7500558558dac8d8295ba7f43b26",
+      "before_sha256": null,
+      "adopted_sha256": "b9e91b89ec08e2d87d6a1d676857f2e48c6c7500558558dac8d8295ba7f43b26",
+      "final_sha256": "b9e91b89ec08e2d87d6a1d676857f2e48c6c7500558558dac8d8295ba7f43b26",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_draw_calibration.py",
+      "source_sha256": "487b3155128debef428b4f2d884d59266f89c43302ab884ae43910c0aa646fd4",
+      "before_sha256": null,
+      "adopted_sha256": "487b3155128debef428b4f2d884d59266f89c43302ab884ae43910c0aa646fd4",
+      "final_sha256": "487b3155128debef428b4f2d884d59266f89c43302ab884ae43910c0aa646fd4",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_probability_features.py",
+      "source_sha256": "9723dc218a56a0fca8545b8f9b1f08e2d9470ad7300c4c2f32018639cc00e4d5",
+      "before_sha256": null,
+      "adopted_sha256": "9723dc218a56a0fca8545b8f9b1f08e2d9470ad7300c4c2f32018639cc00e4d5",
+      "final_sha256": "9723dc218a56a0fca8545b8f9b1f08e2d9470ad7300c4c2f32018639cc00e4d5",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_feature_disposition.py",
+      "source_sha256": "fc3e9df4f4a1730cc9547ae26b1af06fdbf734e54bd9380be36cd8b04b3dbf96",
+      "before_sha256": null,
+      "adopted_sha256": "fc3e9df4f4a1730cc9547ae26b1af06fdbf734e54bd9380be36cd8b04b3dbf96",
+      "final_sha256": "fc3e9df4f4a1730cc9547ae26b1af06fdbf734e54bd9380be36cd8b04b3dbf96",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_f4.py",
+      "source_sha256": "d556803b7ef9df09986c785cd5ffcb3266d09c80df240d46cb2b0464ebb1e3f4",
+      "before_sha256": null,
+      "adopted_sha256": "d556803b7ef9df09986c785cd5ffcb3266d09c80df240d46cb2b0464ebb1e3f4",
+      "final_sha256": "d556803b7ef9df09986c785cd5ffcb3266d09c80df240d46cb2b0464ebb1e3f4",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_f4_gate.py",
+      "source_sha256": "334f4bf5407d946ef1665efe23b4a622c38be5bb5891d8e827951769320c72fd",
+      "before_sha256": null,
+      "adopted_sha256": "334f4bf5407d946ef1665efe23b4a622c38be5bb5891d8e827951769320c72fd",
+      "final_sha256": "334f4bf5407d946ef1665efe23b4a622c38be5bb5891d8e827951769320c72fd",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_f4_metrics.py",
+      "source_sha256": "291c10f762b301c4f876c7c6afc8724c684b91954c1c3d78692fde37c07cdd4e",
+      "before_sha256": null,
+      "adopted_sha256": "291c10f762b301c4f876c7c6afc8724c684b91954c1c3d78692fde37c07cdd4e",
+      "final_sha256": "291c10f762b301c4f876c7c6afc8724c684b91954c1c3d78692fde37c07cdd4e",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_generation.py",
+      "source_sha256": "a4ca4fcbff013412859d08d0c8228e27988d262ed8d97336e1a0c811cd9c8f47",
+      "before_sha256": null,
+      "adopted_sha256": "a4ca4fcbff013412859d08d0c8228e27988d262ed8d97336e1a0c811cd9c8f47",
+      "final_sha256": "a4ca4fcbff013412859d08d0c8228e27988d262ed8d97336e1a0c811cd9c8f47",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_research_safety.py",
+      "source_sha256": "4419d6ed8c61be0e7ed83fbce3c3c7a910b9531de926eadd1dd30541b9630b60",
+      "before_sha256": null,
+      "adopted_sha256": "4419d6ed8c61be0e7ed83fbce3c3c7a910b9531de926eadd1dd30541b9630b60",
+      "final_sha256": "4419d6ed8c61be0e7ed83fbce3c3c7a910b9531de926eadd1dd30541b9630b60",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "tests/test_sports_v3_probability.py",
+      "source_sha256": "b2c7aa0441917730d98515ac327441e7b961597c94617a705d5ba1409f0dfb6e",
+      "before_sha256": null,
+      "adopted_sha256": "b2c7aa0441917730d98515ac327441e7b961597c94617a705d5ba1409f0dfb6e",
+      "final_sha256": "b2c7aa0441917730d98515ac327441e7b961597c94617a705d5ba1409f0dfb6e",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "tests/test_sports_v3_probability_features.py",
+      "source_sha256": "ef776562b0a14504dd8d40d1415f4bbc64f2dcf553d2229619ddb3a47b30c065",
+      "before_sha256": null,
+      "adopted_sha256": "ef776562b0a14504dd8d40d1415f4bbc64f2dcf553d2229619ddb3a47b30c065",
+      "final_sha256": "ef776562b0a14504dd8d40d1415f4bbc64f2dcf553d2229619ddb3a47b30c065",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "tests/test_sports_v3_f4.py",
+      "source_sha256": "4ca726a897c304de6c3c55d0b058248a967c356255dde2e5f2498ca987bb492b",
+      "before_sha256": null,
+      "adopted_sha256": "4ca726a897c304de6c3c55d0b058248a967c356255dde2e5f2498ca987bb492b",
+      "final_sha256": "4ca726a897c304de6c3c55d0b058248a967c356255dde2e5f2498ca987bb492b",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "tests/test_sports_v3_f4_metrics.py",
+      "source_sha256": "55b2c980dfe8da5153e538a278068da9d256e1be606ca6db9b8e8fb22ed8a162",
+      "before_sha256": null,
+      "adopted_sha256": "55b2c980dfe8da5153e538a278068da9d256e1be606ca6db9b8e8fb22ed8a162",
+      "final_sha256": "55b2c980dfe8da5153e538a278068da9d256e1be606ca6db9b8e8fb22ed8a162",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "tests/test_sports_v3_generation.py",
+      "source_sha256": "77b3976452a25810828f3c9c39df5024663b94e54dc66f1f724ddb03263cfb20",
+      "before_sha256": null,
+      "adopted_sha256": "77b3976452a25810828f3c9c39df5024663b94e54dc66f1f724ddb03263cfb20",
+      "final_sha256": "8e566478e9ee09819e2dfa96d3c886dd6b96a14eff7dde6c28a84f583ea463ed",
+      "exact_reviewed_bytes": false
+    },
+    {
+      "path": "tests/test_sports_v3_research_safety.py",
+      "source_sha256": "9865a1830023363e5dc1f0c99b3c218c03b86a8e73951692ce88429ac19ad811",
+      "before_sha256": null,
+      "adopted_sha256": "9865a1830023363e5dc1f0c99b3c218c03b86a8e73951692ce88429ac19ad811",
+      "final_sha256": "9865a1830023363e5dc1f0c99b3c218c03b86a8e73951692ce88429ac19ad811",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "tests/test_sports_v3_f4_fit_binding.py",
+      "source_sha256": "a4652c0d99cb59351a45644103959bc8aa35734cf3190c8fbea1985cb58a431f",
+      "before_sha256": null,
+      "adopted_sha256": "a4652c0d99cb59351a45644103959bc8aa35734cf3190c8fbea1985cb58a431f",
+      "final_sha256": "a4652c0d99cb59351a45644103959bc8aa35734cf3190c8fbea1985cb58a431f",
+      "exact_reviewed_bytes": true
+    },
+    {
+      "path": "tests/test_sports_v3_feature_disposition.py",
+      "source_sha256": "47270bcd49354e34b01595aee1bcc9ca34d8f4dc86fc84c2b1307e1083ff7dec",
+      "before_sha256": null,
+      "adopted_sha256": "47270bcd49354e34b01595aee1bcc9ca34d8f4dc86fc84c2b1307e1083ff7dec",
+      "final_sha256": "47270bcd49354e34b01595aee1bcc9ca34d8f4dc86fc84c2b1307e1083ff7dec",
+      "exact_reviewed_bytes": true
+    }
+  ],
+  "parent_dependencies": {
+    "src/toto_ai/sports_stats/v3_features.py": {
+      "parent_sha256": "90e6172afb5a0c982dd98be5015abac5f4f54a588eb8943798b75dc99bd96970",
+      "child_sha256": "90e6172afb5a0c982dd98be5015abac5f4f54a588eb8943798b75dc99bd96970",
+      "parent_after_sha256": "90e6172afb5a0c982dd98be5015abac5f4f54a588eb8943798b75dc99bd96970"
+    },
+    "src/toto_ai/sports_stats/goal_probe_research.py": {
+      "parent_sha256": "73f2c05dd2f2a4f417f12fcffbd431cbdece1c08ab7ad629575786fb5143c93e",
+      "child_sha256": "590d2eea7df0e3febfff2e66c6675064eae44622eb0c6ea57670227d9fd1fdbb",
+      "parent_after_sha256": "73f2c05dd2f2a4f417f12fcffbd431cbdece1c08ab7ad629575786fb5143c93e"
+    },
+    "src/toto_ai/sports_stats/v3_family_evidence.py": {
+      "parent_sha256": "046c8543007429b7f26d0de4056b8f7fce7faa7a35b3f8f207e831cdb295d22b",
+      "child_sha256": "046c8543007429b7f26d0de4056b8f7fce7faa7a35b3f8f207e831cdb295d22b",
+      "parent_after_sha256": "046c8543007429b7f26d0de4056b8f7fce7faa7a35b3f8f207e831cdb295d22b"
+    },
+    "src/toto_ai/ev/models.py": {
+      "parent_sha256": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5",
+      "child_sha256": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5",
+      "parent_after_sha256": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5"
+    },
+    "src/toto_ai/ev/package_quality.py": {
+      "parent_sha256": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93",
+      "child_sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb",
+      "parent_after_sha256": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93"
+    },
+    "src/toto_ai/optimizer/coupon_probabilities.py": {
+      "parent_sha256": "5410d5c587c45ec43d41c229807fd2dcb60ac54d574531bd958235f0463ee56b",
+      "child_sha256": "5410d5c587c45ec43d41c229807fd2dcb60ac54d574531bd958235f0463ee56b",
+      "parent_after_sha256": "5410d5c587c45ec43d41c229807fd2dcb60ac54d574531bd958235f0463ee56b"
+    },
+    "src/toto_ai/optimizer/strategy_comparison.py": {
+      "parent_sha256": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473",
+      "child_sha256": "9b67c3912760d8166824ee6b91c33df501de90ca1d80920187be14b585d81b75",
+      "parent_after_sha256": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473"
+    },
+    "src/toto_ai/package/audit.py": {
+      "parent_sha256": "f36da1153d6f44e0cae00ab5f42781c415bce377d9531c4efdf68e7df8c8fc00",
+      "child_sha256": "f36da1153d6f44e0cae00ab5f42781c415bce377d9531c4efdf68e7df8c8fc00",
+      "parent_after_sha256": "f36da1153d6f44e0cae00ab5f42781c415bce377d9531c4efdf68e7df8c8fc00"
+    }
+  },
+  "protected_source_before": {
+    "src/toto_ai/cli.py": "fc7f04615930e8f2083b411ecb04a42e0f9504027f13cf817b6a789978e5b5dc",
+    "src/toto_ai/__init__.py": "5b191cc228c9112b821fd4ead0cf7de40588ecc82812a6d48c51c48d239aa1a8",
+    "src/toto_ai/sports_stats/__init__.py": "d254f69250488f262d9fc3f7035ff8da58157ea76c669316a18da7897b6f2698",
+    "src/toto_ai/runner/scheduler.py": "07e23f28ebff084bc4e3fe13a3b185d201050ac983c64ce1be5ea0dc014848c4",
+    "src/toto_ai/sports_stats/final_hybrid_comparison.py": "51118611bb4956618df2e888a31b9eda01691c3d82dbe24dea6383fdf452a643",
+    "pyproject.toml": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6"
+  },
+  "reserved_changed_paths": [
+    "src/toto_ai/sports_stats/v3_probability.py",
+    "src/toto_ai/sports_stats/v3_draw_calibration.py",
+    "src/toto_ai/sports_stats/v3_probability_features.py",
+    "src/toto_ai/sports_stats/v3_feature_disposition.py",
+    "src/toto_ai/sports_stats/v3_f4.py",
+    "src/toto_ai/sports_stats/v3_f4_gate.py",
+    "src/toto_ai/sports_stats/v3_f4_metrics.py",
+    "src/toto_ai/sports_stats/v3_generation.py",
+    "src/toto_ai/sports_stats/v3_research_safety.py",
+    "tests/test_sports_v3_probability.py",
+    "tests/test_sports_v3_probability_features.py",
+    "tests/test_sports_v3_f4.py",
+    "tests/test_sports_v3_f4_metrics.py",
+    "tests/test_sports_v3_generation.py",
+    "tests/test_sports_v3_research_safety.py",
+    "tests/test_sports_v3_f4_fit_binding.py",
+    "tests/test_sports_v3_feature_disposition.py",
+    "tests/test_sports_v3_library_isolation.py",
+    "plans/TOTOAI-RESUME-20260915/A-library-adoption.md",
+    "plans/TOTOAI-RESUME-20260915/A-library-adoption.json"
+  ],
+  "test_scope_difference": "Nine source modules and seven reviewed test files byte-identical. Only generation test fixture calls are replaced by real pure-library infer_v3; original assertions preserved. Worker-integration body retained with explicit NOT_RUN_FOR_SCOPE skip. New isolation contract test added.",
+  "activation": false,
+  "real_training": false,
+  "runtime_changed": false,
+  "git_operations": false,
+  "remaining": [
+    "Independent review of inert library adoption/test-only fixture delta",
+    "Separate publication worker commits accepted scope only",
+    "Stages B–F are not implemented in this assignment"
+  ],
+  "checklist_write": "Handoff only: concurrent publication owns shared metadata.",
+  "checkpoint_at": "2026-09-15T17:18:18+03:00",
+  "source_files_copied": true,
+  "tests_running": false,
+  "running_processes": [],
+  "blocker": null,
+  "verification": {
+    "red_isolation": {
+      "exit_code": 1,
+      "summary": "10 failed, 1 passed in 0.78s",
+      "expected_failures": "Nine new source files absent; library import fails missing v3_probability. Production import remains isolated (PASS).",
+      "test_path": "tests/test_sports_v3_library_isolation.py",
+      "test_sha256": "fda927f83093c155932d1d454212dfe091fcbd3214daa16e8311881c90470e7f"
+    },
+    "ruff": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "src/toto_ai/sports_stats/v3_probability.py",
+        "src/toto_ai/sports_stats/v3_draw_calibration.py",
+        "src/toto_ai/sports_stats/v3_probability_features.py",
+        "src/toto_ai/sports_stats/v3_feature_disposition.py",
+        "src/toto_ai/sports_stats/v3_f4.py",
+        "src/toto_ai/sports_stats/v3_f4_gate.py",
+        "src/toto_ai/sports_stats/v3_f4_metrics.py",
+        "src/toto_ai/sports_stats/v3_generation.py",
+        "src/toto_ai/sports_stats/v3_research_safety.py",
+        "tests/test_sports_v3_probability.py",
+        "tests/test_sports_v3_probability_features.py",
+        "tests/test_sports_v3_f4.py",
+        "tests/test_sports_v3_f4_metrics.py",
+        "tests/test_sports_v3_generation.py",
+        "tests/test_sports_v3_research_safety.py",
+        "tests/test_sports_v3_f4_fit_binding.py",
+        "tests/test_sports_v3_feature_disposition.py",
+        "tests/test_sports_v3_library_isolation.py"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 0.046,
+      "stdout": "E501 Line too long (92 > 88)\n  --> tests/test_sports_v3_library_isolation.py:43:89\n   |\n41 |     if event == \"open\":\n42 |         path, mode, flags = args\n43 |         blocked |= isinstance(path, (str, bytes)) and Path(os.fsdecode(path)).name == \".env\"\n   |                                                                                         ^^^^\n44 |         blocked |= isinstance(mode, str) and any(c in mode for c in \"wax+\")\n45 |         blocked |= isinstance(flags, int) and bool(\n   |\n\nE501 Line too long (97 > 88)\n  --> tests/test_sports_v3_library_isolation.py:57:89\n   |\n55 |     for name in names:\n56 |         module = importlib.import_module(name)\n57 |         assert Path(module.__file__).resolve() == root / \"src\" / (name.replace(\".\", \"/\") + \".py\")\n   |                                                                                         ^^^^^^^^^\n58 |     forbidden = {\n59 |         \"toto_ai.cli\", \"toto_ai.runner.scheduler\",\n   |\n\nE501 Line too long (89 > 88)\n  --> tests/test_sports_v3_library_isolation.py:70:89\n   |\n68 |     ):\n69 |         importlib.import_module(name)\n70 |     assert not set(names).intersection(sys.modules), set(names).intersection(sys.modules)\n   |                                                                                         ^\n71 | # urllib3 may probe IPv6 by opening a local socket during import. PermissionError\n72 | # denies that known capability probe; actual connect/bind/DNS/DB/write/spawn fails.\n   |\n\nFound 3 errors.\n",
+      "stderr": ""
+    },
+    "focused_pytest": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-ra",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_sports_v3_probability.py",
+        "tests/test_sports_v3_probability_features.py",
+        "tests/test_sports_v3_f4.py",
+        "tests/test_sports_v3_f4_metrics.py",
+        "tests/test_sports_v3_generation.py",
+        "tests/test_sports_v3_research_safety.py",
+        "tests/test_sports_v3_f4_fit_binding.py",
+        "tests/test_sports_v3_feature_disposition.py",
+        "tests/test_sports_v3_library_isolation.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.527,
+      "stdout": "..........................................................s............. [ 72%]\n............................                                             [100%]\n=========================== short test summary info ============================\nSKIPPED [1] tests/test_sports_v3_generation.py:239: NOT_RUN_FOR_SCOPE: Stage F worker integration, not Stage A\n99 passed, 1 skipped in 8.29s\n",
+      "stderr": ""
+    },
+    "final_focused_pytest": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-ra",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_sports_v3_probability.py",
+        "tests/test_sports_v3_probability_features.py",
+        "tests/test_sports_v3_f4.py",
+        "tests/test_sports_v3_f4_metrics.py",
+        "tests/test_sports_v3_generation.py",
+        "tests/test_sports_v3_research_safety.py",
+        "tests/test_sports_v3_f4_fit_binding.py",
+        "tests/test_sports_v3_feature_disposition.py",
+        "tests/test_sports_v3_library_isolation.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.964,
+      "stdout": "..........................................................s............. [ 72%]\n............................                                             [100%]\n=========================== short test summary info ============================\nSKIPPED [1] tests/test_sports_v3_generation.py:239: NOT_RUN_FOR_SCOPE: Stage F worker integration, not Stage A\n99 passed, 1 skipped in 7.79s\n",
+      "stderr": ""
+    },
+    "final_ruff": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "--no-cache",
+        "src/toto_ai/sports_stats/v3_probability.py",
+        "src/toto_ai/sports_stats/v3_draw_calibration.py",
+        "src/toto_ai/sports_stats/v3_probability_features.py",
+        "src/toto_ai/sports_stats/v3_feature_disposition.py",
+        "src/toto_ai/sports_stats/v3_f4.py",
+        "src/toto_ai/sports_stats/v3_f4_gate.py",
+        "src/toto_ai/sports_stats/v3_f4_metrics.py",
+        "src/toto_ai/sports_stats/v3_generation.py",
+        "src/toto_ai/sports_stats/v3_research_safety.py",
+        "tests/test_sports_v3_probability.py",
+        "tests/test_sports_v3_probability_features.py",
+        "tests/test_sports_v3_f4.py",
+        "tests/test_sports_v3_f4_metrics.py",
+        "tests/test_sports_v3_generation.py",
+        "tests/test_sports_v3_research_safety.py",
+        "tests/test_sports_v3_f4_fit_binding.py",
+        "tests/test_sports_v3_feature_disposition.py",
+        "tests/test_sports_v3_library_isolation.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.041,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    "isolation_contracts": "11/11 PASS within final focused run; original ten RED cases now GREEN with real reviewed modules.",
+    "initial_ruff_correction": "Three E501 lines in new isolation-test subprocess script; test-only wrapping fixed, final Ruff PASS."
+  },
+  "actual_changed_paths": [
+    "src/toto_ai/sports_stats/v3_probability.py",
+    "src/toto_ai/sports_stats/v3_draw_calibration.py",
+    "src/toto_ai/sports_stats/v3_probability_features.py",
+    "src/toto_ai/sports_stats/v3_feature_disposition.py",
+    "src/toto_ai/sports_stats/v3_f4.py",
+    "src/toto_ai/sports_stats/v3_f4_gate.py",
+    "src/toto_ai/sports_stats/v3_f4_metrics.py",
+    "src/toto_ai/sports_stats/v3_generation.py",
+    "src/toto_ai/sports_stats/v3_research_safety.py",
+    "tests/test_sports_v3_probability.py",
+    "tests/test_sports_v3_probability_features.py",
+    "tests/test_sports_v3_f4.py",
+    "tests/test_sports_v3_f4_metrics.py",
+    "tests/test_sports_v3_generation.py",
+    "tests/test_sports_v3_research_safety.py",
+    "tests/test_sports_v3_f4_fit_binding.py",
+    "tests/test_sports_v3_feature_disposition.py",
+    "tests/test_sports_v3_library_isolation.py",
+    "plans/TOTOAI-RESUME-20260915/A-library-adoption.md",
+    "plans/TOTOAI-RESUME-20260915/A-library-adoption.json"
+  ],
+  "next_exact_checkpoint": "Parent requests independent Stage A review; publication worker may consume exact actual_changed_paths after that review.",
+  "new_isolation_test_sha256": "a16ce7e2b62168f3a16ed0125b6264dbd3c09c76ca07c7389f68258b144dda69",
+  "protected_source_after": {
+    "src/toto_ai/cli.py": "fc7f04615930e8f2083b411ecb04a42e0f9504027f13cf817b6a789978e5b5dc",
+    "src/toto_ai/__init__.py": "5b191cc228c9112b821fd4ead0cf7de40588ecc82812a6d48c51c48d239aa1a8",
+    "src/toto_ai/sports_stats/__init__.py": "d254f69250488f262d9fc3f7035ff8da58157ea76c669316a18da7897b6f2698",
+    "src/toto_ai/runner/scheduler.py": "07e23f28ebff084bc4e3fe13a3b185d201050ac983c64ce1be5ea0dc014848c4",
+    "src/toto_ai/sports_stats/final_hybrid_comparison.py": "51118611bb4956618df2e888a31b9eda01691c3d82dbe24dea6383fdf452a643",
+    "pyproject.toml": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6"
+  },
+  "generator_original_assertions_preserved": 16,
+  "test_only_diff": "--- review06/test_sports_v3_generation.py\n\n+++ main/test_sports_v3_generation.py\n\n@@ -16,13 +16,109 @@\n\n     FrozenStrategyInput,\n )\n from toto_ai.sports_stats import v3_generation as generation\n-from toto_ai.sports_stats import v3_parallel as parallel\n+from toto_ai.sports_stats import v3_probability as v3\n \n _spec = importlib.util.spec_from_file_location(\n-    \"v3_parallel_fixtures\", Path(__file__).with_name(\"test_sports_v3_parallel.py\")\n+    \"v3_core_fixtures\", Path(__file__).with_name(\"test_sports_v3_probability.py\")\n )\n fixtures = importlib.util.module_from_spec(_spec)\n _spec.loader.exec_module(fixtures)\n+\n+\n+def request():\n+    \"\"\"Pure synthetic library input; no parallel worker is imported in Stage A.\"\"\"\n+    rows = [\n+        v3.seal(\n+            {\n+                **fixtures.feature(10, i),\n+                \"drawing_id\": 100,\n+                \"scheduler_plan_sha256\": \"e\" * 64,\n+            }\n+        )\n+        for i in range(15)\n+    ]\n+    bundle = v3.seal(\n+        {\n+            \"kind\": \"SPORTS_V3_FEATURE_BUNDLE\",\n+            \"feature_version\": \"sports-v3-probability-feature-bundle-v1\",\n+            \"drawing_id\": 100,\n+            \"drawing_number\": 10,\n+            \"drawing_fingerprint\": \"f\" * 64,\n+            \"scheduler_plan_sha256\": \"e\" * 64,\n+            \"rows\": rows,\n+            \"operator_compatible\": False,\n+            \"activation_allowed\": False,\n+        }\n+    )\n+    model = fixtures.fit()\n+    return {\n+        \"model\": model,\n+        \"features\": bundle,\n+        \"expected_model_sha256\": model[\"sha256\"],\n+        \"expected_training_sha256\": model[\"training_sha256\"],\n+        \"expected_training_manifest_sha256\": model[\"training_manifest_sha256\"],\n+    }\n+\n+\n+def context():\n+    return {\n+        \"drawing_id\": 100,\n+        \"drawing_number\": 10,\n+        \"drawing_fingerprint\": \"f\" * 64,\n+        \"scheduler_plan_sha256\": \"e\" * 64,\n+        \"final_input_sha256\": \"d\" * 64,\n+        \"captured_at\": fixtures.feature(10)[\"bk_captured_at\"],\n+        \"event_ids\": [f\"10-{i}\" for i in range(15)],\n+        \"bk_probabilities\": [[0.2, 0.3, 0.5]] * 15,\n+        \"bk_margins\": [None] * 15,\n+    }\n+\n+\n+def infer_final_bk(req, ctx):\n+    \"\"\"Build the generator's input with real library inference, not fake scores.\n+\n+    Worker-specific input validation belongs to Stage F. Generation still checks\n+    the complete frozen input, model, event and financial bindings itself.\n+    \"\"\"\n+    model, bundle = req[\"model\"], req[\"features\"]\n+    events = [\n+        v3.infer_v3(\n+            model,\n+            row,\n+            bk_probabilities=ctx[\"bk_probabilities\"][i],\n+            bk_input_sha256=ctx[\"final_input_sha256\"],\n+            bk_margin=ctx[\"bk_margins\"][i],\n+        )\n+        for i, row in enumerate(bundle[\"rows\"])\n+    ]\n+    return v3.seal(\n+        {\n+            \"model_version\": v3.MODEL_VERSION,\n+            \"model_sha256\": model[\"sha256\"],\n+            \"feature_bundle_sha256\": bundle[\"sha256\"],\n+            \"final_input_sha256\": ctx[\"final_input_sha256\"],\n+            \"probability_input_sha256\": v3.digest(ctx[\"bk_probabilities\"]),\n+            \"final_context\": {\n+                **{\n+                    key: ctx[key]\n+                    for key in (\n+                        \"drawing_id\",\n+                        \"drawing_number\",\n+                        \"drawing_fingerprint\",\n+                        \"scheduler_plan_sha256\",\n+                        \"captured_at\",\n+                        \"event_ids\",\n+                    )\n+                },\n+                \"frozen_input_sha256\": v3.digest(ctx[\"frozen_input\"])\n+                if \"frozen_input\" in ctx\n+                else None,\n+            },\n+            \"events\": events,\n+            \"operator_compatible\": False,\n+            \"activation_allowed\": False,\n+        }\n+    )\n \n \n def frozen():\n@@ -46,12 +142,12 @@\n\n \n \n def test_actual_generator_consumes_v3_not_rescored_control():\n-    request, context = fixtures.request(), fixtures.context()\n-    context[\"frozen_input\"] = asdict(frozen())\n-    inference = parallel.infer_final_bk(request, context)\n+    req, ctx = request(), context()\n+    ctx[\"frozen_input\"] = asdict(frozen())\n+    inference = infer_final_bk(req, ctx)\n     control = (\"1\" * 15, \"X\" * 15, \"2\" * 15)\n     result = generation.generate_v3_candidate(\n-        request=request,\n+        request=req,\n         inference=inference,\n         frozen_payload=asdict(frozen()),\n         control_coupons=control,\n@@ -66,13 +162,13 @@\n\n     assert (\n         result[\"highest_p13\"][\"probability_at_least_13\"] == best.probability_at_least_13\n     )\n-    assert result[\"model_sha256\"] == request[\"model\"][\"sha256\"]\n+    assert result[\"model_sha256\"] == req[\"model\"][\"sha256\"]\n     assert result[\"final_input_sha256\"] == \"d\" * 64\n     assert result[\"operator_compatible\"] is False\n     assert result[\"generator\"] == \"existing_probability_only\"\n     assert result[\"receipt_hash_policy\"] == \"SEMANTIC_ONLY_RUNTIME_EXCLUDED\"\n     repeated = generation.generate_v3_candidate(\n-        request=request,\n+        request=req,\n         inference=inference,\n         frozen_payload=asdict(frozen()),\n         control_coupons=control,\n@@ -101,11 +197,11 @@\n\n \n \n def test_no_generation_without_probability_gate():\n-    request = fixtures.request()\n-    inference = parallel.infer_final_bk(request, fixtures.context())\n+    req = request()\n+    inference = infer_final_bk(req, context())\n     with pytest.raises(ValueError, match=\"gate\"):\n         generation.generate_v3_candidate(\n-            request=request,\n+            request=req,\n             inference=inference,\n             frozen_payload=asdict(frozen()),\n             control_coupons=(\"1\" * 15,),\n@@ -115,10 +211,10 @@\n\n \n @pytest.mark.parametrize(\"fault\", [\"bk\", \"order\", \"capture\", \"bank\", \"stake\"])\n def test_generation_rejects_mismatched_consumed_final_input(fault):\n-    request, context = fixtures.request(), fixtures.context()\n+    req, ctx = request(), context()\n     original = asdict(frozen())\n-    context[\"frozen_input\"] = original\n-    inference = parallel.infer_final_bk(request, context)\n+    ctx[\"frozen_input\"] = original\n+    inference = infer_final_bk(req, ctx)\n     from copy import deepcopy\n \n     changed = deepcopy(original)\n@@ -132,7 +228,7 @@\n\n         changed[fault] *= 2\n     with pytest.raises(ValueError):\n         generation.generate_v3_candidate(\n-            request=request,\n+            request=req,\n             inference=inference,\n             frozen_payload=changed,\n             control_coupons=(\"1\" * 15, \"X\" * 15, \"2\" * 15),\n@@ -140,15 +236,18 @@\n\n         )\n \n \n+@pytest.mark.skip(reason=\"NOT_RUN_FOR_SCOPE: Stage F worker integration, not Stage A\")\n def test_native_worker_generates_new_v3_candidate_under_explicit_synthetic_gate():\n-    request, context = fixtures.request(), fixtures.context()\n-    request.update(\n+    from toto_ai.sports_stats import v3_parallel as parallel\n+\n+    req, ctx = request(), context()\n+    req.update(\n         generate_candidate=True, generation_gate={\"status\": \"SYNTHETIC_TEST_ONLY\"}\n     )\n-    context[\"frozen_input\"] = asdict(frozen())\n+    ctx[\"frozen_input\"] = asdict(frozen())\n     packages = {name: (\"1\" * 15, \"X\" * 15, \"2\" * 15) for name in parallel.STRATEGIES}\n     result = parallel.run_v3_parallel_research(\n-        request, context=context, packages=packages, deadline=time.monotonic() + 60\n+        req, context=ctx, packages=packages, deadline=time.monotonic() + 60\n     )\n     assert result[\"status\"] == \"COMPLETE_EXPERIMENTAL_NO_SELECTION\"\n     candidate = result[\"generated_candidate\"]",
+  "not_run_for_scope": [
+    {
+      "test": "tests/test_sports_v3_generation.py::test_native_worker_generates_new_v3_candidate_under_explicit_synthetic_gate",
+      "reason": "Stage F deferred worker integration; assertions/body retained but worker not adopted."
+    }
+  ]
+}

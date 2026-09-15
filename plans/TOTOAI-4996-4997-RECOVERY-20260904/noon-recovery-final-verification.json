@@ -1,0 +1,26 @@
+{
+  "reports/rehearsal/evening-4997-20260905T133000Z/experimental-manual-release-authorization.json": {
+    "file_hash_unchanged": true,
+    "canonical_hash_valid": true
+  },
+  "reports/rehearsal/evening-4997-20260905T133000Z/parallel-challenger/parallel-release-authorization.json": {
+    "file_hash_unchanged": true,
+    "canonical_hash_valid": true
+  },
+  "retrospective_frozen_bindings": {
+    "scheduler_plan": true,
+    "post_draw_plan": true,
+    "final_input": true,
+    "baseline_package": true,
+    "sports_artifact": true,
+    "operator_delivery": true,
+    "paper_package_result": true,
+    "runner_python": true,
+    "runner_shell": true,
+    "integrity_validator_python": true
+  },
+  "primary_state_bytes_unchanged": true,
+  "recovery_status": "complete",
+  "replay_report_sha256": "c3563f0b5a32a876613297861c95cd48cb605515eb900c8efba55d56f4b9f283",
+  "owned_processes": "none;PID32988 exited0,session27789 closed"
+}

@@ -1,0 +1,172 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "job": "read-only 5008 native20:45 observation",
+  "saved_at_msk": "2026-09-15T20:46:55.547500+03:00",
+  "checked_at_msk": "2026-09-15T20:45:35+03:00",
+  "drawing_number": 5008,
+  "drawing_id": 12130,
+  "label": "com.totoai.preflight-retry.12130.e20097489fab3d34",
+  "scheduled_at_msk": "2026-09-15T20:45:00+03:00",
+  "completed_at_msk_native_record": "2026-09-15T20:45:04.914852+03:00",
+  "actual_start_time": null,
+  "actual_start_note": "Separate start timestamp not recorded in inspected evidence; scheduled time is not asserted as actual start.",
+  "returncode": 75,
+  "status": "deferred",
+  "reason": "ACTION REQUIRED: timing unknown 1/15",
+  "phase": "native fallback collection + consensus completed; preparation deferred",
+  "timing_resolved": 14,
+  "timing_total": 15,
+  "plan_id": null,
+  "plan_path": null,
+  "launchctl_observation": {
+    "state": "not running",
+    "active_count": 0,
+    "runs": 2,
+    "last_exit_code": 75,
+    "pid": null
+  },
+  "collector": {
+    "consensus": {
+      "existing_count": 0,
+      "ledger_mutated": false,
+      "ledger_semantic_hash": "fefc1ed69fa3d3096071cdcd7b0c12204d7902ce5fe604d3d40e09c7b4268e86",
+      "promoted_count": 0,
+      "report_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-consensus/schedule-consensus-promotion.json",
+      "status": "NO_PROMOTIONS",
+      "unresolved_count": 1
+    },
+    "independent": {
+      "candidate_count": 1,
+      "cutoff_reason": "cutoff source report has no qualifying kickoff evidence",
+      "cutoff_status": "unavailable",
+      "ledger_mutated": false,
+      "providers": {
+        "goal-api-v1": {
+          "alias_conflicts_skipped": {
+            "count": 11,
+            "normalized_alias_keys": [
+              "вест хэм",
+              "кардифф сити",
+              "лидс",
+              "линкольн сити",
+              "норвич",
+              "рапид бухарест",
+              "рапид вена",
+              "сток сити",
+              "тпс",
+              "эребру",
+              "эстер"
+            ],
+            "truncated": false
+          },
+          "attempted": 41,
+          "budget_exhausted": false,
+          "candidate_count": 0,
+          "ledger_mutated": false,
+          "matched_count": 0,
+          "pagination_complete": true,
+          "quarantined_fixture_count": 0,
+          "quarantined_fixtures": [],
+          "quota": {
+            "daily_limit": 1000,
+            "daily_remaining": 634
+          },
+          "request_count": 41,
+          "skipped": 0,
+          "status": "collected",
+          "timing_conflict_count": 0
+        },
+        "sofascore": {
+          "candidate_count": 1,
+          "ledger_mutated": false,
+          "status": "collected"
+        },
+        "thesportsdb-v1": {
+          "alias_conflicts_skipped": {
+            "count": 11,
+            "normalized_alias_keys": [
+              "вест хэм",
+              "кардифф сити",
+              "лидс",
+              "линкольн сити",
+              "норвич",
+              "рапид бухарест",
+              "рапид вена",
+              "сток сити",
+              "тпс",
+              "эребру",
+              "эстер"
+            ],
+            "truncated": false
+          },
+          "attempted": 0,
+          "budget_exhausted": false,
+          "cache_hit_count": 2,
+          "candidate_count": 0,
+          "ledger_mutated": false,
+          "quota": {
+            "daily_limit": null,
+            "daily_remaining": null,
+            "minute_limit": 30,
+            "minute_remaining": 30
+          },
+          "request_count": 0,
+          "skipped": 0,
+          "status": "collected"
+        }
+      },
+      "report_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-collector/schedule-source-candidates.json",
+      "status": "CANDIDATES_ONLY_NOT_LEDGER_ELIGIBLE",
+      "unresolved_count": 0
+    },
+    "independent_consensus": {
+      "existing_count": 0,
+      "ledger_mutated": false,
+      "ledger_semantic_hash": "fefc1ed69fa3d3096071cdcd7b0c12204d7902ce5fe604d3d40e09c7b4268e86",
+      "promoted_count": 0,
+      "report_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/source-independent-consensus/independent-schedule-consensus.json",
+      "status": "NO_PROMOTIONS",
+      "unresolved_count": 1
+    }
+  },
+  "event9": {
+    "target_event_id": 181061,
+    "home": "Уилланд Роверс / Willand Rovers",
+    "away": "Уэстбери Юнайтед / Westbury United",
+    "competition": "Англия. Южная футбольная лига. 1-й дивизион / Division One South",
+    "match_date": "2026-09-16",
+    "official_league_url": "https://www.southern-football-league.co.uk/overview/divonesouth",
+    "official_league_fixture_link_observed": "https://www.southern-football-league.co.uk/match/6a5a1a66ce9ef452b61f4246",
+    "official_club_url": "https://westburyunited.co.uk/",
+    "official_club_fixture_list_url": "https://www.westburyunited.co.uk/teams/westbury-united/fixtures-results",
+    "league_displayed_time": "19:30",
+    "club_displayed_time": "19:45",
+    "league_msk_if_display_is_British_local": "2026-09-16T21:30:00+03:00",
+    "club_msk_if_display_is_British_local": "2026-09-16T21:45:00+03:00",
+    "timezone_conversion": "Europe/London BST UTC+1 on Sep16 -> Europe/Moscow UTC+3",
+    "additional_timezone_blocker": "League raw dateTime=2026-09-16T19:30:00.000Z while visible19:30. If literalZ,22:30MSK; no proven source timezone contract permits replacing it. Display-based21:30 is not accepted UTC evidence.",
+    "sofascore_starts_at_utc": "2026-09-16T18:45:18Z",
+    "sofascore_starts_at_msk": "2026-09-16T21:45:18+03:00",
+    "club_fixture_published_at": null,
+    "club_fixture_updated_at": null,
+    "league_fixture_published_at": null,
+    "league_fixture_updated_at": null,
+    "publication_note": "No meaningful fixture-specific publication/update timestamp found in the inspected saved official snapshots. Club article published_time is empty. Capture/crawl time is not publication/update time.",
+    "league_snapshot_fetched_at_msk": "2026-09-15T20:33:03.478565+03:00",
+    "club_snapshot_fetched_at_msk": "2026-09-15T20:33:05.171840+03:00",
+    "independent_news_url": "https://southwestsportsnews.com/football/fixtures/8349-southern-league-fixtures-september-15-16-2026",
+    "independent_news_display_time": "19:30",
+    "independent_news_page_published_display": "2026-09-15 05:45",
+    "independent_news_page_updated_display": "2026-09-15 07:25",
+    "independent_news_timestamp_timezone": null,
+    "evidence_recency_resolves_conflict": false,
+    "next_bounded_action_proposal": "Inspect exact official league fixture6a5a1a66ce9ef452b61f4246 for explicit offset and fixture-specific dated correction; compare to official Westbury first-team fixture. Require documented precedence/correction to resolve known15min conflict, plus timezone contract. If absent, request official confirmation; do not select majority or round18seconds. Then separate authorized implementation may native-review immutable snapshots and prepare newplan with locks.",
+    "mutations_this_job": "None to DB/catalog/consent/jobs/plan/code; only this observation report saved."
+  },
+  "next_native_checkpoint_msk": "2026-09-15T21:15:00+03:00",
+  "evidence_paths": [
+    "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/retry-runtime.json",
+    "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/launchd/stdout.log",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/5008-reviewed-evidence-application.json"
+  ]
+}

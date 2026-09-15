@@ -1,0 +1,12 @@
+{
+  "label": "com.totoai.status-watcher.v1.84b0f69e06487848",
+  "source": "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/status-watch/com.totoai.status-watcher.v1.84b0f69e06487848.plist",
+  "target": "/Users/turshevr/Library/LaunchAgents/com.totoai.status-watcher.v1.84b0f69e06487848.plist",
+  "installed_sha256": "ea1560ff4b0690283de8651fdca07c33da2a037e825072dd65f38692d7c9bcac",
+  "source_equals_installed": true,
+  "loaded": true,
+  "kickstarted": true,
+  "first_scheduled_msk": "2026-09-15T18:00:00+03:00",
+  "poll_seconds": 30,
+  "automatic_wagering": false
+}

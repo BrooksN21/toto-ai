@@ -1,0 +1,142 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "role": "independent frozen-core review only",
+  "verdict": "REQUEST_CHANGES",
+  "completed_at": "2026-09-06T17:50:34.738889+03:00",
+  "patch_path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_PROBABILITY_CORE_SNAPSHOT_01.patch",
+  "patch_sha256": "07cfc27001e5b1d830388777c25ecf5ce49907924694e2798f97b1157c45d88c",
+  "manifest_path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_PROBABILITY_CORE_SNAPSHOT_01.json",
+  "manifest_file_sha256": "70e085c0c8abb084d25bf624882b300bb0c1aad01b27602544ec7a40e40e68b9",
+  "manifest_status": "FROZEN_INTERMEDIATE_REVIEW_NOT_FULL_COMPLETION",
+  "frozen_files": [
+    {
+      "path": "src/toto_ai/sports_stats/v3_probability.py",
+      "after_sha256": "7ac76c95225e8a6ba4f078c2b740a612dfcbec4ce248b023a6b7e280da115e97"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_draw_calibration.py",
+      "after_sha256": "487b3155128debef428b4f2d884d59266f89c43302ab884ae43910c0aa646fd4"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_probability_features.py",
+      "after_sha256": "6fd6e1770882fd995e765e0eddad9f8ac0c61b2fe469fc821204e1f375bad0a3"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_parallel.py",
+      "after_sha256": "fc1c87d59d8c141553f09d066a06f82b65095391279faf3c46f1a6dbd4b31199"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_generation.py",
+      "after_sha256": "f07ec7f52945521b6227357ab9a3bbac6878f1cbe2dd4190dbb176c532f809e2"
+    },
+    {
+      "path": "tests/test_sports_v3_probability.py",
+      "after_sha256": "e17a48ba4acc1cd4792b04ce75b4c8a62e66bd59da5ea5a8bf97cf1665559821"
+    },
+    {
+      "path": "tests/test_sports_v3_probability_features.py",
+      "after_sha256": "b157a469d906fb2c8594d462da1fa4b8eec0ba39cb87ef65a31932c6b8148abf"
+    },
+    {
+      "path": "tests/test_sports_v3_parallel.py",
+      "after_sha256": "d34d1b7a3505a9cd5a4fcf7d96a34805489212f5d764a749770a3b433f0dbd02"
+    },
+    {
+      "path": "tests/test_sports_v3_generation.py",
+      "after_sha256": "6436a0f1a0d5b5ce42c5f05d70b6df55e30bb5cfb4088852d5df815d14e68306"
+    }
+  ],
+  "frozen_files_unchanged": true,
+  "temp_workspace": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1",
+  "findings": [
+    {
+      "priority": "P1",
+      "title": "Bind generated candidate to the exact BK/final input used for inference",
+      "file": "src/toto_ai/sports_stats/v3_generation.py",
+      "lines": [
+        72,
+        97
+      ],
+      "report_binding_lines": [
+        139,
+        141
+      ],
+      "proof": "test_defect_generation_final_bk_identity_unbound",
+      "observed": {
+        "inference_BK": [
+          0.2,
+          0.3,
+          0.5
+        ],
+        "generator_BK": [
+          0.8,
+          0.1,
+          0.1
+        ],
+        "reported_final_input_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "generated_count": 3,
+        "accepted": true
+      }
+    },
+    {
+      "priority": "P1",
+      "title": "Validate serialized training chronology and provenance consistency before inference",
+      "file": "src/toto_ai/sports_stats/v3_probability.py",
+      "lines": [
+        383,
+        453
+      ],
+      "caller_lines": [
+        488,
+        495
+      ],
+      "proof": "test_defect_serialized_training_chronology_not_validated",
+      "observed": {
+        "available_at": "2099-01-01T00:00:00+00:00",
+        "prediction_as_of": "2025-01-11T00:00:00+00:00",
+        "loader_accepted": true,
+        "inference_status": "PREDICTED_EXPERIMENTAL"
+      }
+    }
+  ],
+  "known_blocking_review": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_ZERO_ELIGIBILITY_REVIEW.md",
+  "known_scope_finding_duplicated": false,
+  "checks": {
+    "initial": "14passed/1failed in0.54s; failed independent probe supplied nonexistent event_name constructor field, not a product finding",
+    "correction": "Only reviewer probe corrected to change BK vector; immutable candidate unchanged.12passed in0.75s (corrected reproduction+proof writer+10parallel cases). One proof writer repeated;25unique pytest cases succeeded overall.",
+    "ruff": "9frozen files PASS with explicit temp/src + main/src source roots; initial4I001 caused mixed first-party discovery in relocated snapshot, no source formatting or rule disables.",
+    "proofs": [
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/independent-proof.json",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/independent-proof-rerun.json"
+    ],
+    "logs": [
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/pytest.log",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/pytest-rerun.log",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/ruff.log",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/ruff-explicit-source-roots.log"
+    ]
+  },
+  "positive_scope": [
+    "Train API rejects future labels before A3/A4 fit; transforms fit only eligible earlier rows; calibration consumes those earlier rows",
+    "Nonzero synthetic learned fit and serialize roundtrip; finite normalized positive probabilities, L1cap<=0.2; exact current-BK fallback; no V2 double blend in infer_v3",
+    "Native probability constructor demonstrably consumes V3 probabilities, not only rescoring; current-frozen-input binding remains broken as finding1",
+    "Optional worker disabled by None; timeout fallback and authority flags preserve control; existing strategies retained"
+  ],
+  "not_reviewed_or_completed": [
+    "Known per-family eligibility correction pending",
+    "Historical ablation/F4 gate harness and empirical real-data validation",
+    "Comparison connection/generated-candidate worker wiring absent from this snapshot per manifest",
+    "Full V3 readiness, prospective improvement or activation"
+  ],
+  "side_effects": {
+    "production_source_written": false,
+    "real_data_fit_replay_forecast": false,
+    "network_or_api": false,
+    "database": false,
+    "jobs_scheduler_authority_changed": false,
+    "publish": false,
+    "nested_agents": false,
+    "test_guard": "Network/SQLite/secret reads denied; writes restricted to reviewer temp; native local Python workers only"
+  },
+  "next_checkpoint": "Author corrects two kernel findings plus separately known scope mapping; route a new exact immutable delta/manifest for focused rereview. No waiting or further review work selected."
+}

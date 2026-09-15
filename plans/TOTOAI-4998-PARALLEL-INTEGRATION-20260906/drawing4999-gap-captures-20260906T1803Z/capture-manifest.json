@@ -1,0 +1,36 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "purpose": "Context capture only, not reviewed claims",
+  "tls_verification": true,
+  "automatic_retries": 0,
+  "captures": [
+    {
+      "name": "serbia-prvaliga-tsc",
+      "requested_url": "https://www.prvaliga.rs/en/tim/tsc/",
+      "requested_at": "2026-09-06T18:04:25.732610+00:00",
+      "attempt": 1,
+      "http_status": 200,
+      "final_url": "https://www.prvaliga.rs/en/tim/tsc/",
+      "content_type": "text/html; charset=UTF-8",
+      "server_date": "Sun, 06 Sep 2026 18:04:28 GMT",
+      "captured_at": "2026-09-06T18:04:28.556644+00:00",
+      "bytes": 72690,
+      "sha256": "30d4bf19bb1aefe7a30db2a7f0c10d2022c1c9ff5b415086644dd8e5897d3c4f",
+      "snapshot_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/drawing4999-gap-captures-20260906T1803Z/serbia-prvaliga-tsc-30d4bf19bb1aefe7.html"
+    },
+    {
+      "name": "malta-independent-candidate",
+      "requested_url": "https://www.academiadasapostasmz.com/stats/match/malta/super-cup/floriana/valletta/kznmOByPDZxJd",
+      "requested_at": "2026-09-06T18:04:28.560760+00:00",
+      "attempt": 1,
+      "http_status": 200,
+      "final_url": "https://www.academiadasapostasmz.com/stats/match/malta/super-cup/floriana/valletta/kznmOByPDZxJd",
+      "content_type": "text/html; charset=UTF-8",
+      "server_date": "Sun, 06 Sep 2026 18:04:30 GMT",
+      "captured_at": "2026-09-06T18:04:31.994345+00:00",
+      "bytes": 496303,
+      "sha256": "dc31fae61f500b547e18a10737d4f876731f65bc301937e438a7125f33e76d84",
+      "snapshot_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/drawing4999-gap-captures-20260906T1803Z/malta-independent-candidate-dc31fae61f500b54.html"
+    }
+  ]
+}

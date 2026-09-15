@@ -1,0 +1,44 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "prepared_at": "2026-09-15T20:53:01.582880+03:00",
+  "base_head": "6d8897f099fa1664142a339f12fccf0918853b5e",
+  "work_summary": "Inactiveclosedmarket8draw24scenarios + sportscompletion/targetbinding fixes + reviewedmetadata; genuineSportsV3fit/deployment not done",
+  "review": "plans/TOTOAI-RESUME-20260915/R1-R2-publication-review.json",
+  "verification": {
+    "pytest": "104passed1deselected1.84s",
+    "scope": [
+      "test_closed_market_scenario_replay",
+      "test_sports_history_reconstruction",
+      "test_raw_package_replay",
+      "test_research_quality_core",
+      "test_schedule_evidence_v2"
+    ],
+    "heavy_surface": "unchanged; independentpriorPASS64.73s, notrerun",
+    "ruff": "4source/testsPASS",
+    "diff_check": {
+      "tracked_pre_stage": "PASS",
+      "sealed_review_trailing_whitespace_warnings": 24,
+      "affected_files": [
+        "data/schedule-evidence/reviews/auto-independent-consensus-v3-0d0806feb5c1951210d8.md",
+        "data/schedule-evidence/reviews/auto-independent-consensus-v3-151667867fa0318d2c38.md",
+        "data/schedule-evidence/reviews/auto-independent-consensus-v3-5926ee3f7b3913bfcd69.md",
+        "data/schedule-evidence/reviews/auto-independent-consensus-v3-9c2bd9bf001477bc437a.md",
+        "data/schedule-evidence/reviews/auto-independent-consensus-v3-b0553873f5a3a898e7ff.md",
+        "data/schedule-evidence/reviews/auto-independent-consensus-v3-cc425c9421cb47139d82.md",
+        "data/schedule-evidence/reviews/auto-independent-consensus-v3-e0d117cd95e2343206c7.md",
+        "data/schedule-evidence/reviews/auto-independent-consensus-v3-f1affc1493aca55abbce.md"
+      ],
+      "disposition": "PRESERVED_HASH_BOUND_SOURCE_BYTES; narrowly documented style exception, not source formatting. Original review SHA256 checked against appended ledger. Git commit normal hooks/config unchanged."
+    },
+    "ledger": "16append-onlyentries,reviewhashesmatch",
+    "secret_check": "boundedcandidatefilespatterns/JSONparsePASS; noenv/DB/raw/coupons staged"
+  },
+  "local_preservation": "5exactrawHTMLpaths ignored; originalbytes kept; adjacentmetadatareceipts versioned; no source/activeplans hidden",
+  "pr": "https://github.com/BrooksN21/toto-ai/pull/23",
+  "publish_pr": false,
+  "merge": false,
+  "next": "R2a exactoldereligiblehistory/mapping/requestgaps; nofit. Parent5008next21:15/23:15 unresolvedevent9;5007postmortem16Sep12MSK.",
+  "runtime": "20:45:04.915deferred75,14/15planNULL;20:49officialcheck still no provenTZresolution; no schedulerjobs/sourceevidence mutations byfinalizer",
+  "workflow": "gena-submission-ci-flow absent from3exactproject-local paths; explicitlocalGitHubsubmission used, no external/internalworkflow or delegation",
+  "implementation_commit": "8169c554385682c3e3f4ae65e8af1540ac7ef10a"
+}

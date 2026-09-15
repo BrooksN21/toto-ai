@@ -1,0 +1,67 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "job": "reviewed watcher hash-contract activation",
+  "observed_at_msk": "2026-09-15T18:27:32.008981+03:00",
+  "plan_id": "84b0f69e06487848",
+  "watcher_label": "com.totoai.status-watcher.v1.84b0f69e06487848",
+  "old_pid": 16288,
+  "new_pid": 34611,
+  "watcher_loaded": true,
+  "watcher_last_exit_lines": [
+    "\"LastExitStatus\" = 15;"
+  ],
+  "watcher_observed_at_msk": "2026-09-15T18:27:06.690969+03:00",
+  "watcher_age_seconds": 25.3,
+  "watcher_blocker": null,
+  "watcher_last_attempt": {
+    "completed_at": "2026-09-15T15:00:41.362201Z",
+    "decision": null,
+    "error": null,
+    "outcome": null,
+    "phase": "tls_preflight",
+    "reason": "target, data access, configuration, and override catalog validated",
+    "result": "complete",
+    "run_id": "tls_preflight-01-20260915T150005119574Z-44223616",
+    "state": "complete",
+    "time": "2026-09-15T15:00:41.362201Z"
+  },
+  "next_checkpoint": {
+    "at_msk": "2026-09-15T18:30:00+03:00",
+    "phase": "t_minus_90"
+  },
+  "validation": {
+    "primary_consent": "PASS",
+    "parallel_consent": "PASS",
+    "source_binding": "PASS",
+    "local_inputs": "PASS"
+  },
+  "files_unchanged": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/scheduler-plan.json": true,
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/scheduler-state.json": true,
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/experimental-manual-release-authorization.json": true,
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/parallel-challenger/parallel-release-authorization.json": true,
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/bindings/schedule-evidence-e1c44fbcd7205400/ledger.json": true,
+    "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12127-20260915T170000Z-bf59ff77d5bb3667/source-collector/conservative-cutoff.json": true,
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/totoai-scheduler.plist": true,
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/parallel-challenger/totoai-parallel-sidecar.plist": true
+  },
+  "last_tls_preflight": {
+    "attempts": [
+      "tls_preflight-01-20260915T150005119574Z-44223616"
+    ],
+    "failure_details": [],
+    "status": "complete"
+  },
+  "consents_not_expired": true,
+  "fresh_import_hash_contract_path": "/Users/turshevr/toto-ai/src/toto_ai/package/hash_contract.py",
+  "new_process_from_verified_project_python": true,
+  "restart_command": "launchctl kickstart -k gui/501/com.totoai.status-watcher.v1.84b0f69e06487848",
+  "sandbox_attempt": "Operation not permitted",
+  "authorized_escalated_attempt_exit": 0,
+  "generators_restarted": false,
+  "manual_calculation_started": false,
+  "db_or_consents_modified": false,
+  "code_modified": false,
+  "automatic_wagering": false,
+  "status": "PASS"
+}

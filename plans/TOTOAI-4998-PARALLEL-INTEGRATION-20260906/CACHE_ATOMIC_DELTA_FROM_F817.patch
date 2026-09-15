@@ -1,0 +1,116 @@
+--- a/src/toto_ai/sports_stats/goal_probe_collection.py
++++ b/src/toto_ai/sports_stats/goal_probe_collection.py
+@@ -5,11 +5,13 @@
+ import fcntl
+ import hashlib
+ import json
++import os
+ from collections.abc import Callable, Mapping
+ from dataclasses import dataclass
+ from datetime import datetime, timedelta, timezone
+ from pathlib import Path
+ from typing import Any
++from uuid import uuid4
+ 
+ from toto_ai.api.detail_cache import load_drawing_detail_cache
+ from toto_ai.external_odds.eligibility import target_fingerprint
+@@ -308,8 +310,7 @@
+         "automatic_wagering": False,
+         "package_influence": "NONE",
+     }
+-    with claim_path.open("xb") as stream:
+-        stream.write(_pretty(claim))
++    _publish_retry_record(claim_path, _pretty(claim), exclusive=True)
+     outcome = {
+         "schema_version": 1,
+         "claim_sha256": _sha256_file(claim_path),
+@@ -353,11 +354,36 @@
+                 next_retry_at=finished + cooldown,
+             )
+         outcome.update(status="FAILED", **goal_probe_failure_status(failure))
+-        _write_exact(generation / "outcome.json", _pretty(outcome))
++        _publish_retry_record(generation / "outcome.json", _pretty(outcome))
+         raise failure from error
+     outcome.update(status="READY", retryable=False, next_retry_at=None)
+-    _write_exact(generation / "outcome.json", _pretty(outcome))
++    _publish_retry_record(generation / "outcome.json", _pretty(outcome))
+     return result
++
++
++def _publish_retry_record(
++    path: Path, content: bytes, *, exclusive: bool = False
++) -> None:
++    """Publish complete retry metadata without exposing partial committed JSON.
++
++    Staging files are append-only evidence. No provider request starts before the
++    claim is linked; an interrupted outcome leaves the complete claim recoverable.
++    The enclosing flock remains held throughout publication and collection.
++    """
++    path.parent.mkdir(parents=True, exist_ok=True)
++    if path.exists():
++        if exclusive:
++            raise FileExistsError(f"GOAL probe retry claim already exists: {path}")
++        if path.read_bytes() != content:
++            raise ValueError(f"GOAL probe artifact conflict: {path}")
++        return
++    pending = path.with_name(f".{path.name}.{uuid4().hex}.pending")
++    with pending.open("xb") as stream:
++        stream.write(content)
++        stream.flush()
++        os.fsync(stream.fileno())
++    # Same-directory hard-link publication is atomic and cannot replace evidence.
++    os.link(pending, path)
+ 
+ 
+ def _capture_goal_probe_input(
+--- a/tests/test_goal_probe_collection.py
++++ b/tests/test_goal_probe_collection.py
+@@ -839,3 +839,36 @@
+     assert second.sports_eligible_count == 10
+     assert second.history_source_count == 20
+     assert len(session.calls) == calls_after_first
++
++
++@pytest.mark.parametrize("interrupted_file", ["attempt.json", "outcome.json"])
++def test_interrupted_metadata_publication_can_recover(
++    monkeypatch, tmp_path, interrupted_file,
++):
++    output = _cache_fixture(tmp_path)
++    _cache_refresh_stub(monkeypatch, tmp_path, mode="exception")
++    real_open = Path.open
++    interrupted = False
++
++    def crash_open(path, mode="r", *args, **kwargs):
++        nonlocal interrupted
++        stream = real_open(path, mode, *args, **kwargs)
++        target = path.name == interrupted_file or path.name.startswith(
++            "." + interrupted_file + "."
++        )
++        if not interrupted and target and mode in {"xb", "wb"}:
++            interrupted = True
++            stream.close()
++            raise KeyboardInterrupt("crash after create before write")
++        return stream
++
++    with monkeypatch.context() as crash:
++        crash.setattr(Path, "open", crash_open)
++        with pytest.raises(KeyboardInterrupt):
++            _ensure_cached(tmp_path, output, 15, request_budget=3)
++    assert interrupted
++    calls = _cache_refresh_stub(monkeypatch, tmp_path)
++    result = _ensure_cached(tmp_path, output, 45, request_budget=3)
++    assert len(calls) == 1 and not result.reused
++    status = goal_probe_collection.goal_probe_failure_status(ValueError("integrity"))
++    assert status["retryable"] is False
+--- a/knowledge/goal_probe_failed_cache_boundary.md
++++ b/knowledge/goal_probe_failed_cache_boundary.md
+@@ -41,3 +41,9 @@
+ Tests use synthetic fixtures only: exact independent recovery/safety probes,
+ latest cooldown, immutable evidence, crash lease, active-lock exclusion, rolling
+ request allowance, quota reservations, terminal status and CLI wiring.
++
++Claim and outcome publication is crash-safe: complete fsynced bytes are linked
++atomically from same-directory append-only .pending staging files. Link creation
++never replaces existing evidence. Incomplete unpublished staging is not a claim
++and cannot precede provider requests; interrupted outcomes retain the full claim
++reservation and use existing lease recovery. Other record formats are unchanged.

@@ -1,0 +1,24 @@
+{
+  "paths": [
+    "src/toto_ai/operations/scheduler_status.py",
+    "src/toto_ai/operations/scheduler_delivery.py",
+    "tests/test_scheduler_delivery.py",
+    "skills/operator-delivery.md",
+    "memory-bank/ACTIVE_PLAN.md",
+    "memory-bank/CURRENT_STATE.md",
+    "memory-bank/THREAD_COORDINATION.json",
+    "knowledge/operator_observer_release.md",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_RECEIPT_20260906.json"
+  ],
+  "staged_diff_sha256": "235302251e0eac816870d238689202aa15b57b30f8ad7ac3fbfea7804d226533",
+  "runtime02_staged": false,
+  "observer03_matches_accept": true,
+  "verification": "76PASS2.81s/Ruff3PASS",
+  "fresh_runtime02_review": [
+    {
+      "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME_REVIEW02_STATUS.json",
+      "verdict": null,
+      "phase": "RUNTIME02_PR1_HASH_VERIFICATION"
+    }
+  ]
+}

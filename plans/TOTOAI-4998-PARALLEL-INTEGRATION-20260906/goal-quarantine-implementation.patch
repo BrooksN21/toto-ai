@@ -1,0 +1,796 @@
+--- a/src/toto_ai/external_odds/goal_api.py
++++ b/src/toto_ai/external_odds/goal_api.py
+@@ -168,6 +168,36 @@
+             source_endpoint=self.source_endpoint,
+             request_fingerprint=self.request_fingerprint,
+         )
++
++
++@dataclass(frozen=True)
++class GoalAPIScheduleConflict:
++    """Quarantined ID; full raw observations remain in immutable page snapshots."""
++
++    provider_event_id: str
++    differing_fields: tuple[str, ...]
++    observations: tuple[GoalAPIScheduleEvent, ...]
++    evidence: tuple[GoalAPIRequestEvidence, ...]
++
++    def public_summary(self) -> dict[str, object]:
++        return {
++            "provider_event_id": self.provider_event_id,
++            "differing_fields": list(self.differing_fields),
++            "eligible": False,
++            "observations": [
++                {
++                    "event_payload_sha256": event.payload_hash,
++                    "snapshot_path": str(source.snapshot_path),
++                    "snapshot_sha256": source.snapshot_sha256,
++                    "response_hash": source.response_hash,
++                    "request_fingerprint": source.request_fingerprint,
++                    "endpoint": source.endpoint,
++                    "params": list(source.params),
++                    "fetched_at": _timestamp(source.fetched_at),
++                }
++                for event, source in zip(self.observations, self.evidence, strict=True)
++            ],
++        }
+ 
+ 
+ def load_goal_api_config(
+@@ -292,9 +322,41 @@
+         self,
+         dates: tuple[date, ...],
+     ) -> tuple[GoalAPIScheduleEvent, ...]:
++        return self._fetch_schedule(dates, quarantine=False)
++
++    def fetch_schedule_for_collection(
++        self, dates: tuple[date, ...]
++    ) -> tuple[GoalAPIScheduleEvent, ...]:
++        """Opt-in candidate collection; never trust any version of a conflicting ID.
++
++        Pagination/transport/budget errors still raise: no partial candidate return.
++        Only completed pagination may yield independent, non-ledger candidates.
++        """
++        return self._fetch_schedule(dates, quarantine=True)
++
++    @property
++    def schedule_conflicts(self) -> tuple[GoalAPIScheduleConflict, ...]:
++        conflicts = getattr(self, "_schedule_conflicts", {})
++        return tuple(conflicts[key] for key in sorted(conflicts))
++
++    @property
++    def schedule_pagination_complete(self) -> bool:
++        return getattr(self, "_schedule_pagination_complete", False)
++
++    def _fetch_schedule(
++        self, dates: tuple[date, ...], *, quarantine: bool
++    ) -> tuple[GoalAPIScheduleEvent, ...]:
++        self._schedule_conflicts: dict[str, GoalAPIScheduleConflict] = {}
++        self._schedule_pagination_complete = False
+         requested = _bounded_dates(dates)
+         events: dict[str, GoalAPIScheduleEvent] = {}
+         semantic_hashes: dict[str, str] = {}
++        observations: dict[
++            str,
++            list[
++                tuple[Mapping[str, Any], GoalAPIScheduleEvent, GoalAPIRequestEvidence]
++            ],
++        ] = {}
+         for requested_date in requested:
+             offset = 0
+             while True:
+@@ -311,14 +373,42 @@
+                         request_fingerprint=self._evidence[-1].request_fingerprint,
+                     )
+                     semantic_hash = _schedule_semantic_hash(raw)
+-                    previous = events.get(event.provider_event_id)
+-                    if (
+-                        previous is not None
+-                        and semantic_hashes[event.provider_event_id] != semantic_hash
+-                    ):
++                    identity = event.provider_event_id
++                    previous = events.get(identity)
++                    conflict = (
++                        identity in semantic_hashes
++                        and semantic_hashes[identity] != semantic_hash
++                    )
++                    if conflict and not quarantine:
+                         raise GoalAPIError(
+                             "GOAL API duplicate event identity conflicts"
+                         )
++                    if quarantine:
++                        observed = observations.setdefault(identity, [])
++                        observed.append((raw, event, self._evidence[-1]))
++                        if conflict or identity in self._schedule_conflicts:
++                            baseline_raw = observed[0][0]
++                            fields = {
++                                key
++                                for other, _, _ in observed
++                                for key in set(baseline_raw) | set(other)
++                                if key != "updatedAt"
++                                and (
++                                    key not in baseline_raw
++                                    or key not in other
++                                    or baseline_raw[key] != other[key]
++                                )
++                            }
++                            self._schedule_conflicts[identity] = (
++                                GoalAPIScheduleConflict(
++                                    provider_event_id=identity,
++                                    differing_fields=tuple(sorted(fields)),
++                                    observations=tuple(item[1] for item in observed),
++                                    evidence=tuple(item[2] for item in observed),
++                                )
++                            )
++                            events.pop(identity, None)
++                            continue
+                     if previous is None or _schedule_observation_key(
+                         event
+                     ) > _schedule_observation_key(previous):
+@@ -335,6 +425,7 @@
+                 if candidate <= offset:
+                     raise GoalAPIError("GOAL API pagination did not advance")
+                 offset = candidate
++        self._schedule_pagination_complete = True
+         allowed = frozenset(requested)
+         return tuple(
+             event
+--- a/src/toto_ai/external_odds/schedule_source_collector.py
++++ b/src/toto_ai/external_odds/schedule_source_collector.py
+@@ -367,7 +367,7 @@
+     try:
+         events = tuple(
+             event
+-            for event in client.fetch_schedule(dates)
++            for event in client.fetch_schedule_for_collection(dates)
+             if event.starts_at <= window_end
+         )
+     except Exception as error:
+@@ -389,6 +389,10 @@
+         ]
+         return failed, {
+             "status": "source_failed",
++            "pagination_complete": False,
++            "quarantined_fixtures": [
++                c.public_summary() for c in client.schedule_conflicts
++            ],
+             "candidate_count": 0,
+             "request_count": client.requests_made,
+             "attempted": client.requests_made,
+@@ -404,6 +408,37 @@
+     diagnostics = _goal_api_diagnostics(client)
+     records: list[dict[str, object]] = []
+     for row in queue["records"]:
++        # Every potentially matching observation of a quarantined ID vetoes binding.
++        # Do not let a second ID with convenient names replace an affected target.
++        quarantined_ids = [
++            conflict.provider_event_id
++            for conflict in client.schedule_conflicts
++            if str(row.get("source_fixture_id")) == conflict.provider_event_id
++            or any(
++                _match_goal_api_candidates(
++                    row, (event,), aliases=aliases, deadline=deadline
++                )[0]
++                is not None
++                for event in conflict.observations
++            )
++        ]
++        if quarantined_ids:
++            records.append(
++                _base_record(row)
++                | {
++                    "status": "conflict",
++                    "source_name": "GOAL API",
++                    "source_provider": GOAL_API_PROVIDER,
++                    "source_role": "independent",
++                    "captured_at": _timestamp(observed),
++                    "quarantined_fixture_ids": quarantined_ids,
++                    "provider_attempts": diagnostics,
++                    **snapshot_fields,
++                    "ledger_eligible": False,
++                    "missing_requirements": ["official_source", "review"],
++                }
++            )
++            continue
+         selected, orientation, candidate_ids, match_status = _match_goal_api_candidates(
+             row,
+             events,
+@@ -488,7 +523,10 @@
+     timing_conflict_count = sum(item["status"] == "timing_conflict" for item in records)
+     quota = client.quota_state
+     return records, {
+-        "status": "collected",
++        "status": "partial_conflicts" if client.schedule_conflicts else "collected",
++        "pagination_complete": client.schedule_pagination_complete,
++        "quarantined_fixture_count": len(client.schedule_conflicts),
++        "quarantined_fixtures": [c.public_summary() for c in client.schedule_conflicts],
+         "candidate_count": candidate_count,
+         "matched_count": candidate_count + timing_conflict_count,
+         "timing_conflict_count": timing_conflict_count,
+--- /dev/null
++++ b/tests/test_goal_api_fixture_quarantine.py
+@@ -0,0 +1,261 @@
++"""Opt-in fixture quarantine; strict callers and real observations stay intact."""
++
++from __future__ import annotations
++
++import hashlib
++import json
++from datetime import date, datetime, timedelta, timezone
++from pathlib import Path
++
++import pytest
++import requests
++
++from tests.test_goal_api_provider import FakeResponse, FakeSession, _fixture, _now
++from tests.test_goal_api_schedule_collection import _queue
++from toto_ai.external_odds.goal_api import GoalAPIClient, GoalAPIError
++from toto_ai.external_odds.schedule_source_collector import _collect_goal_api_candidates
++
++
++@pytest.fixture(autouse=True)
++def no_network(monkeypatch):
++    def deny(*args, **kwargs):
++        raise AssertionError("network forbidden")
++
++    monkeypatch.setattr(requests.sessions.Session, "request", deny)
++
++
++def client_for(tmp_path, rows, *, budget=120, dates=False, times=None):
++    session = FakeSession(
++        [
++            FakeResponse(
++                {
++                    "success": True,
++                    "data": page,
++                    "pagination": {
++                        "hasMore": not dates and i < len(rows) - 1,
++                        "nextOffset": i + 1,
++                    },
++                }
++            )
++            for i, page in enumerate(rows)
++        ]
++    )
++    ticks = iter(times) if times is not None else None
++    return GoalAPIClient(
++        "synthetic-key",
++        session=session,
++        snapshot_dir=tmp_path,
++        request_budget=budget,
++        now=(lambda: next(ticks)) if ticks is not None else _now,
++    )
++
++
++@pytest.mark.parametrize(
++    "field,value",
++    [
++        ("apiId", 999),
++        ("homeTeamId", 999),
++        ("awayTeamId", 999),
++        ("leagueId", 99),
++        ("kickoffUtc", "2026-08-26T20:00:00Z"),
++        ("matchStatus", "FINISHED"),
++        ("homeTeamScore", "1"),
++        ("awayTeamHalftimeScore", "0"),
++        ("homeTeamName", "Other team"),
++        ("unknownField", {"changed": True}),
++    ],
++)
++@pytest.mark.parametrize("reverse", [False, True])
++def test_quarantine_is_permanent_symmetric_and_retains_all_observations(
++    tmp_path,
++    field,
++    value,
++    reverse,
++):
++    first = _fixture()
++    second = first | {field: value, "updatedAt": "later"}
++    pair = [first, second][::-1] if reverse else [first, second]
++    other = _fixture(event_id=7002) | {"homeTeamName": "Unrelated"}
++    client = client_for(tmp_path / "q", [[pair[0]], [pair[1]], [first, other]])
++    events = client.fetch_schedule_for_collection((date(2026, 8, 26),))
++    assert [e.provider_event_id for e in events] == ["7002"]
++    assert client.requests_made == 3 and client.schedule_pagination_complete
++    (conflict,) = client.schedule_conflicts
++    assert conflict.provider_event_id == "7001"
++    assert (
++        field in conflict.differing_fields
++        and "updatedAt" not in conflict.differing_fields
++    )
++    assert len(conflict.observations) == 3
++    assert all(e.snapshot_path.is_file() for e in conflict.evidence)
++    assert len(conflict.public_summary()["observations"]) == 3
++    strict = client_for(tmp_path / "strict", [[first], [second]])
++    with pytest.raises(GoalAPIError, match="duplicate event identity conflicts"):
++        strict.fetch_schedule((date(2026, 8, 26),))
++
++
++def test_conflict_does_not_prevent_next_date_and_latest_capture_is_conservative(
++    tmp_path,
++):
++    first = _fixture() | {"kickoffUtc": "2026-08-25T19:00:00Z"}
++    conflict = first | {"homeTeamScore": "1"}
++    other = _fixture(event_id=7002)
++    client = client_for(tmp_path, [[first, conflict], [other]], dates=True)
++    events = client.fetch_schedule_for_collection(
++        (date(2026, 8, 25), date(2026, 8, 26))
++    )
++    assert [e.provider_event_id for e in events] == ["7002"]
++    assert client.requests_made == 2
++    late = datetime(2026, 8, 26, 19, tzinfo=timezone.utc)
++    client = client_for(
++        tmp_path / "late",
++        [[other], [other | {"updatedAt": "x"}]],
++        times=[late - timedelta(seconds=1), late],
++    )
++    (event,) = client.fetch_schedule_for_collection((date(2026, 8, 26),))
++    assert not event.eligible and event.captured_at == late
++    assert not client.schedule_conflicts
++
++
++def test_budget_failure_never_claims_complete_or_returns_partial_candidates(tmp_path):
++    first = _fixture()
++    client = client_for(
++        tmp_path, [[first, first | {"homeTeamScore": "1"}], []], budget=1
++    )
++    with pytest.raises(GoalAPIError, match="request budget exhausted"):
++        client.fetch_schedule_for_collection((date(2026, 8, 26),))
++    assert not client.schedule_pagination_complete
++    assert len(client.schedule_conflicts) == 1
++    assert client.requests_made == 1 and client.budget_exhausted
++
++
++def test_collector_keeps_unrelated_target_but_blocks_any_conflicting_observation(
++    tmp_path,
++):
++    class Session:
++        def get(self, url, *, params, headers, timeout):
++            rows = []
++            if url.endswith("2026-08-26"):
++                first = _fixture()
++                changed = first | {"homeTeamName": "Changed", "homeTeamScore": "1"}
++                other = _fixture(event_id=7002) | {
++                    "homeTeamName": "Alpha",
++                    "awayTeamName": "Beta",
++                }
++                replacement = _fixture(event_id=7003)
++                rows = [first, changed, other, replacement]
++            return FakeResponse(
++                {"success": True, "data": rows, "pagination": {"hasMore": False}}
++            )
++
++    queue = json.loads(_queue(tmp_path).read_text())
++    queue["records"].append(
++        queue["records"][0]
++        | {
++            "event_order": 1,
++            "target_event_id": 190002,
++            "home_team": "Alpha",
++            "away_team": "Beta",
++        }
++    )
++    output = tmp_path / "out"
++    client = GoalAPIClient(
++        "synthetic-key",
++        session=Session(),
++        snapshot_dir=output / "goal-api-v1",
++        now=_now,
++    )
++    records, status = _collect_goal_api_candidates(
++        queue,
++        output=output,
++        observed=_now(),
++        deadline=datetime(2026, 8, 26, 18, 45, tzinfo=timezone.utc),
++        ledger=None,
++        config=None,
++        client=client,
++        team_aliases={"Викинг": "Viking", "Динамо Загреб": "Dinamo Zagreb"},
++    )
++    assert records[0]["status"] == "conflict"
++    assert records[0]["quarantined_fixture_ids"] == ["7001"]
++    assert records[1]["status"] == "independent_candidate"
++    assert records[1]["source_event_id"] == "7002"
++    assert not any(r["ledger_eligible"] for r in records)
++    assert status["status"] == "partial_conflicts"
++    assert status["pagination_complete"] is True
++    assert status["quarantined_fixture_count"] == 1
++    assert status["candidate_count"] == 1
++
++
++@pytest.mark.parametrize("reverse", [False, True])
++def test_halftime_missing_to_known_is_quarantined_not_filled(tmp_path, reverse):
++    first = _fixture() | {"homeTeamHalftimeScore": None, "awayTeamHalftimeScore": None}
++    second = first | {"homeTeamHalftimeScore": "1", "awayTeamHalftimeScore": "0"}
++    rows = [first, second][::-1] if reverse else [first, second]
++    client = client_for(tmp_path, [[rows[0]], [rows[1]]])
++    assert client.fetch_schedule_for_collection((date(2026, 8, 26),)) == ()
++    (conflict,) = client.schedule_conflicts
++    assert conflict.differing_fields == (
++        "awayTeamHalftimeScore",
++        "homeTeamHalftimeScore",
++    )
++
++
++def test_collector_request_budget_failure_is_explicit_and_non_promoting(tmp_path):
++    first = _fixture()
++    output = tmp_path / "out"
++    client = client_for(
++        output / "goal-api-v1", [[first, first | {"homeTeamScore": "1"}], []], budget=1
++    )
++    queue = json.loads(_queue(tmp_path).read_text())
++    records, status = _collect_goal_api_candidates(
++        queue,
++        output=output,
++        observed=_now(),
++        deadline=datetime(2026, 8, 26, 18, 45, tzinfo=timezone.utc),
++        ledger=None,
++        config=None,
++        client=client,
++        team_aliases=None,
++    )
++    assert records[0]["status"] == status["status"] == "source_failed"
++    assert status["candidate_count"] == 0 and not status["pagination_complete"]
++    assert status["budget_exhausted"]
++    assert len(status["quarantined_fixtures"]) == 1
++
++
++@pytest.mark.parametrize(
++    "event_id", ["cmt63ihwdf62st107zcaaswfn", "cmt63ihwff62ut1075qx5dhf0"]
++)
++def test_exact_saved_halftime_conflict_witnesses(tmp_path, event_id):
++    fixture = json.loads(
++        (
++            Path(__file__).parent / "fixtures/goal_schedule_quarantine_conflicts.json"
++        ).read_text()
++    )
++    rows = [r for r in fixture["observations"] if r["raw_event"]["id"] == event_id]
++    assert len(rows) == 2
++    for row in rows:
++        digest = hashlib.sha256(
++            json.dumps(
++                row["raw_event"],
++                ensure_ascii=True,
++                sort_keys=True,
++                separators=(",", ":"),
++            ).encode()
++        ).hexdigest()
++        assert digest == row["raw_event_sha256"]
++    client = client_for(
++        tmp_path,
++        [[r["raw_event"]] for r in rows],
++        times=[
++            datetime.fromisoformat(r["fetched_at"].replace("Z", "+00:00")) for r in rows
++        ],
++    )
++    assert client.fetch_schedule_for_collection((date(2026, 9, 5),)) == ()
++    (conflict,) = client.schedule_conflicts
++    assert conflict.provider_event_id == event_id
++    assert conflict.differing_fields == (
++        "awayTeamHalftimeScore",
++        "homeTeamHalftimeScore",
++    )
++    assert all(not e.eligible for e in conflict.observations)
+--- /dev/null
++++ b/tests/fixtures/goal_schedule_quarantine_conflicts.json
+@@ -0,0 +1,274 @@
++{
++  "schema_version": 1,
++  "scope": "Exact four raw observations extracted from saved4998 GOAL page offsets500/600; no invented raw fields. Test transport pagination is synthetic; full seven-page replay is separately receipted.",
++  "event_ids": [
++    "cmt63ihwdf62st107zcaaswfn",
++    "cmt63ihwff62ut1075qx5dhf0"
++  ],
++  "observations": [
++    {
++      "source_snapshot_sha256": "5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d",
++      "source_snapshot_filename": "91823097b1a739e2ad39c2dceeee4ad756d86fcb077a4368580c1296ebdda082-5830724e760f4efe.json",
++      "source_row_index": 98,
++      "source_offset": "500",
++      "fetched_at": "2026-09-06T09:34:20.835560Z",
++      "raw_event_sha256": "1d7c0b9f7866ff8ca17e3ba62166c64d3f3dbb72357f2bb1ac1e730ee56e70d8",
++      "raw_event": {
++        "apiId": "782981",
++        "awayTeam": {
++          "badge": "https://media.goal-api.com/badges/32305_szeged-csanad-ii.jpg",
++          "id": "cmri8zsvpekshlb070xr994we",
++          "name": "Szeged-Csanád II"
++        },
++        "awayTeamExtraScore": null,
++        "awayTeamFtScore": "0",
++        "awayTeamHalftimeScore": null,
++        "awayTeamId": "cmri8zsvpekshlb070xr994we",
++        "awayTeamName": "Szeged II",
++        "awayTeamPenaltyScore": null,
++        "awayTeamScore": "0",
++        "awayTeamSystem": null,
++        "countryId": "56",
++        "countryLogo": "https://media.goal-api.com/badges/logo_country/56_hungary.png",
++        "countryName": "Hungary",
++        "createdAt": "2026-08-23T17:43:16.634Z",
++        "fkStageKey": "8957",
++        "homeTeam": {
++          "badge": "https://media.goal-api.com/badges/4592_iii.-keruleti.jpg",
++          "id": "cmri8zsuweks0lb07i0gdr5z7",
++          "name": "III. Kerületi"
++        },
++        "homeTeamExtraScore": null,
++        "homeTeamFtScore": "1",
++        "homeTeamHalftimeScore": null,
++        "homeTeamId": "cmri8zsuweks0lb07i0gdr5z7",
++        "homeTeamName": "III. Keruleti TVE",
++        "homeTeamPenaltyScore": null,
++        "homeTeamScore": "1",
++        "homeTeamSystem": null,
++        "id": "cmt63ihwdf62st107zcaaswfn",
++        "kickoffUtc": "2026-09-05T14:00:00.000Z",
++        "league": {
++          "id": "cmr77dwbn00iarx06ndw6p2u2",
++          "logo": "https://media.goal-api.com/badges/logo_leagues/190_nb-iii.png",
++          "name": "NB III",
++          "popularity": 5
++        },
++        "leagueId": "cmr77dwbn00iarx06ndw6p2u2",
++        "leagueLogo": "https://media.goal-api.com/badges/logo_leagues/190_nb-iii.png",
++        "leagueName": "NB III - Southeast",
++        "leagueYear": "2026/2027",
++        "matchDate": "2026-09-05",
++        "matchLive": "0",
++        "matchReferee": null,
++        "matchRound": "7",
++        "matchStadium": "Hevizi uti Stadion",
++        "matchStatus": "FINISHED",
++        "matchTime": "14:00",
++        "stageName": "Southeast",
++        "teamAwayBadge": "https://media.goal-api.com/badges/32305_szeged-csanad-ii.jpg",
++        "teamHomeBadge": "https://media.goal-api.com/badges/4592_iii.-keruleti.jpg",
++        "updatedAt": "2026-09-06T08:00:35.900Z",
++        "videosCheckedAt": null
++      }
++    },
++    {
++      "source_snapshot_sha256": "5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d",
++      "source_snapshot_filename": "91823097b1a739e2ad39c2dceeee4ad756d86fcb077a4368580c1296ebdda082-5830724e760f4efe.json",
++      "source_row_index": 99,
++      "source_offset": "500",
++      "fetched_at": "2026-09-06T09:34:20.835560Z",
++      "raw_event_sha256": "fddce4ce3e40519babd2fec82d9e904bff989aa09a8bfcd23080d6158174fd73",
++      "raw_event": {
++        "apiId": "784841",
++        "awayTeam": {
++          "badge": "https://media.goal-api.com/badges/6587_fc-petralka.jpg",
++          "id": "cmri2lov6crh2lb079idze34g",
++          "name": "FC Petržalka"
++        },
++        "awayTeamExtraScore": null,
++        "awayTeamFtScore": "1",
++        "awayTeamHalftimeScore": null,
++        "awayTeamId": "cmri2lov6crh2lb079idze34g",
++        "awayTeamName": "Petrzalka",
++        "awayTeamPenaltyScore": null,
++        "awayTeamScore": "1",
++        "awayTeamSystem": null,
++        "countryId": "101",
++        "countryLogo": "https://media.goal-api.com/badges/logo_country/101_slovakia.png",
++        "countryName": "Slovakia",
++        "createdAt": "2026-08-23T17:43:16.634Z",
++        "fkStageKey": "1587",
++        "homeTeam": {
++          "badge": "https://media.goal-api.com/badges/6516_humenne.jpg",
++          "id": "cmri2lp05crjdlb07wsgfbwlc",
++          "name": "Humenné"
++        },
++        "homeTeamExtraScore": null,
++        "homeTeamFtScore": "0",
++        "homeTeamHalftimeScore": null,
++        "homeTeamId": "cmri2lp05crjdlb07wsgfbwlc",
++        "homeTeamName": "FK Humenne",
++        "homeTeamPenaltyScore": null,
++        "homeTeamScore": "0",
++        "homeTeamSystem": null,
++        "id": "cmt63ihwff62ut1075qx5dhf0",
++        "kickoffUtc": "2026-09-05T14:00:00.000Z",
++        "league": {
++          "id": "cmr77dw5m00fzrx06o9ws0wqz",
++          "logo": "https://media.goal-api.com/badges/logo_leagues/420_2-liga.png",
++          "name": "2. liga",
++          "popularity": 5
++        },
++        "leagueId": "cmr77dw5m00fzrx06o9ws0wqz",
++        "leagueLogo": "https://media.goal-api.com/badges/logo_leagues/420_2-liga.png",
++        "leagueName": "2. liga",
++        "leagueYear": "2026/2027",
++        "matchDate": "2026-09-05",
++        "matchLive": "0",
++        "matchReferee": null,
++        "matchRound": "7",
++        "matchStadium": "Humenne Football Stadium",
++        "matchStatus": "FINISHED",
++        "matchTime": "14:00",
++        "stageName": "Current",
++        "teamAwayBadge": "https://media.goal-api.com/badges/6587_fc-petralka.jpg",
++        "teamHomeBadge": "https://media.goal-api.com/badges/6516_humenne.jpg",
++        "updatedAt": "2026-09-06T08:00:35.917Z",
++        "videosCheckedAt": null
++      }
++    },
++    {
++      "source_snapshot_sha256": "172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7",
++      "source_snapshot_filename": "44b16e86d05ed752e699c24a2901e5099ea838c553b70cac8861e03159b68c7f-172c063616b50348.json",
++      "source_row_index": 0,
++      "source_offset": "600",
++      "fetched_at": "2026-09-06T09:34:21.049466Z",
++      "raw_event_sha256": "e0629e326c827cf402b20330046f762214819ce34d9b572fd2a40054ea07dfbe",
++      "raw_event": {
++        "apiId": "782981",
++        "awayTeam": {
++          "badge": "https://media.goal-api.com/badges/32305_szeged-csanad-ii.jpg",
++          "id": "cmri8zsvpekshlb070xr994we",
++          "name": "Szeged-Csanád II"
++        },
++        "awayTeamExtraScore": null,
++        "awayTeamFtScore": "0",
++        "awayTeamHalftimeScore": "0",
++        "awayTeamId": "cmri8zsvpekshlb070xr994we",
++        "awayTeamName": "Szeged II",
++        "awayTeamPenaltyScore": null,
++        "awayTeamScore": "0",
++        "awayTeamSystem": null,
++        "countryId": "56",
++        "countryLogo": "https://media.goal-api.com/badges/logo_country/56_hungary.png",
++        "countryName": "Hungary",
++        "createdAt": "2026-08-23T17:43:16.634Z",
++        "fkStageKey": "8957",
++        "homeTeam": {
++          "badge": "https://media.goal-api.com/badges/4592_iii.-keruleti.jpg",
++          "id": "cmri8zsuweks0lb07i0gdr5z7",
++          "name": "III. Kerületi"
++        },
++        "homeTeamExtraScore": null,
++        "homeTeamFtScore": "1",
++        "homeTeamHalftimeScore": "1",
++        "homeTeamId": "cmri8zsuweks0lb07i0gdr5z7",
++        "homeTeamName": "III. Keruleti TVE",
++        "homeTeamPenaltyScore": null,
++        "homeTeamScore": "1",
++        "homeTeamSystem": null,
++        "id": "cmt63ihwdf62st107zcaaswfn",
++        "kickoffUtc": "2026-09-05T14:00:00.000Z",
++        "league": {
++          "id": "cmr77dwbn00iarx06ndw6p2u2",
++          "logo": "https://media.goal-api.com/badges/logo_leagues/190_nb-iii.png",
++          "name": "NB III",
++          "popularity": 5
++        },
++        "leagueId": "cmr77dwbn00iarx06ndw6p2u2",
++        "leagueLogo": "https://media.goal-api.com/badges/logo_leagues/190_nb-iii.png",
++        "leagueName": "NB III - Southeast",
++        "leagueYear": "2026/2027",
++        "matchDate": "2026-09-05",
++        "matchLive": "0",
++        "matchReferee": null,
++        "matchRound": "7",
++        "matchStadium": "Hevizi uti Stadion",
++        "matchStatus": "FINISHED",
++        "matchTime": "14:00",
++        "stageName": "Southeast",
++        "teamAwayBadge": "https://media.goal-api.com/badges/32305_szeged-csanad-ii.jpg",
++        "teamHomeBadge": "https://media.goal-api.com/badges/4592_iii.-keruleti.jpg",
++        "updatedAt": "2026-09-06T09:04:41.478Z",
++        "videosCheckedAt": null
++      }
++    },
++    {
++      "source_snapshot_sha256": "172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7",
++      "source_snapshot_filename": "44b16e86d05ed752e699c24a2901e5099ea838c553b70cac8861e03159b68c7f-172c063616b50348.json",
++      "source_row_index": 1,
++      "source_offset": "600",
++      "fetched_at": "2026-09-06T09:34:21.049466Z",
++      "raw_event_sha256": "a073613bfcd24942c6e09df168625f3294042bbcd309ab85149fc90cc763031e",
++      "raw_event": {
++        "apiId": "784841",
++        "awayTeam": {
++          "badge": "https://media.goal-api.com/badges/6587_fc-petralka.jpg",
++          "id": "cmri2lov6crh2lb079idze34g",
++          "name": "FC Petržalka"
++        },
++        "awayTeamExtraScore": null,
++        "awayTeamFtScore": "1",
++        "awayTeamHalftimeScore": "0",
++        "awayTeamId": "cmri2lov6crh2lb079idze34g",
++        "awayTeamName": "Petrzalka",
++        "awayTeamPenaltyScore": null,
++        "awayTeamScore": "1",
++        "awayTeamSystem": null,
++        "countryId": "101",
++        "countryLogo": "https://media.goal-api.com/badges/logo_country/101_slovakia.png",
++        "countryName": "Slovakia",
++        "createdAt": "2026-08-23T17:43:16.634Z",
++        "fkStageKey": "1587",
++        "homeTeam": {
++          "badge": "https://media.goal-api.com/badges/6516_humenne.jpg",
++          "id": "cmri2lp05crjdlb07wsgfbwlc",
++          "name": "Humenné"
++        },
++        "homeTeamExtraScore": null,
++        "homeTeamFtScore": "0",
++        "homeTeamHalftimeScore": "0",
++        "homeTeamId": "cmri2lp05crjdlb07wsgfbwlc",
++        "homeTeamName": "FK Humenne",
++        "homeTeamPenaltyScore": null,
++        "homeTeamScore": "0",
++        "homeTeamSystem": null,
++        "id": "cmt63ihwff62ut1075qx5dhf0",
++        "kickoffUtc": "2026-09-05T14:00:00.000Z",
++        "league": {
++          "id": "cmr77dw5m00fzrx06o9ws0wqz",
++          "logo": "https://media.goal-api.com/badges/logo_leagues/420_2-liga.png",
++          "name": "2. liga",
++          "popularity": 5
++        },
++        "leagueId": "cmr77dw5m00fzrx06o9ws0wqz",
++        "leagueLogo": "https://media.goal-api.com/badges/logo_leagues/420_2-liga.png",
++        "leagueName": "2. liga",
++        "leagueYear": "2026/2027",
++        "matchDate": "2026-09-05",
++        "matchLive": "0",
++        "matchReferee": null,
++        "matchRound": "7",
++        "matchStadium": "Humenne Football Stadium",
++        "matchStatus": "FINISHED",
++        "matchTime": "14:00",
++        "stageName": "Current",
++        "teamAwayBadge": "https://media.goal-api.com/badges/6587_fc-petralka.jpg",
++        "teamHomeBadge": "https://media.goal-api.com/badges/6516_humenne.jpg",
++        "updatedAt": "2026-09-06T09:04:41.518Z",
++        "videosCheckedAt": null
++      }
++    }
++  ]
++}
+--- /dev/null
++++ b/knowledge/goal_schedule_fixture_quarantine.md
+@@ -0,0 +1,43 @@
++# GOAL schedule collection: opt-in per-fixture quarantine
++
++The default `GoalAPIClient.fetch_schedule` remains strict: any duplicate fixture
++with differing protected semantic content raises. The accepted `updatedAt`-only
++semantic equivalence rule is unchanged. Team-results parsing/filtering is unchanged.
++
++`fetch_schedule_for_collection` is explicitly selected by the schedule candidate
++collector. On a protected difference it quarantines that provider fixture ID for
++the entire requested window. No version wins, later matching observations cannot
++resurrect it, and pagination continues across pages/dates within existing request
++budgets. Other individually valid, non-conflicting fixtures remain available only
++after complete pagination. Latest observation selection for equivalent fixtures
++remains conservative at kickoff; timestamps are not rewritten.
++
++`GoalAPIScheduleConflict` retains every parsed observation and its immutable page
++request evidence. Public diagnostics record all differing protected field names,
++raw-event hashes, page/response hashes, actual fetch times, endpoint and request
++fingerprints. Both full raws remain in the referenced original page snapshots;
++no raw score value is ignored or reconstructed. Quarantine is never eligibility.
++
++Candidate matching vetoes a target when any eligible quarantined observation
++matches it (including reversed/name changes), or its explicit source fixture ID
++is quarantined. Another convenient ID cannot replace that target. Independent
++unrelated targets still use the existing matcher, timing, status and review gates.
++Candidates remain ledger_eligible=false with official-source/review requirements.
++
++Successful pagination with exclusions reports `partial_conflicts`,
++`pagination_complete=true`, counts and full quarantine provenance. This is not
++complete provider coverage. Budget, transport, schema or parsing failure still
++raises and returns no partial candidate set; collector reports source_failed and
++pagination_complete=false, retaining already observed conflict diagnostics.
++This change does not selectively forgive malformed events or history conflicts.
++
++Regression evidence uses exact raw observations from saved4998 GOAL offsets500/600:
++two completed fixtures changed halftime nulls to populated scores. The portable
++fixture retains original page/raw hashes and timestamps; its unit-test transport
++is explicitly synthetic. Full seven-page offline replay separately proves
++quarantine of both IDs and continuation to the genuinely missing offset700.
++No missing pages, terminal pagination flags or current4998 mappings are invented.
++
++This does not refresh the cached zero-coverage goal-auto marker, fetch histories,
++change a pinned seed, authorize release or install jobs. Those are separate work.
++No sports probability or profitability improvement is claimed.

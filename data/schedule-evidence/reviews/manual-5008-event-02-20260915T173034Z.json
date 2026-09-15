@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12130,
+    "drawing_number": 5008,
+    "event_order": 1,
+    "target_event_id": 181054,
+    "sport": "football",
+    "championship": "Испания. Ла Лига",
+    "home_team": "Леванте",
+    "away_team": "Атлетик Бильбао"
+  },
+  "observation": {
+    "observation_id": "manual-reviewed-5008-02-55d0aeaa-cb44fe2d",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Испания. Ла Лига",
+      "La Liga",
+      "LaLiga"
+    ],
+    "home_entity": "Levante UD",
+    "home_aliases": [
+      "Леванте",
+      "Levante",
+      "Levante UD"
+    ],
+    "away_entity": "Athletic Club",
+    "away_aliases": [
+      "Атлетик Бильбао",
+      "Ath Bilbao",
+      "Athletic Club"
+    ],
+    "starts_at": "2026-09-16T19:30:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+    "reviewed_at": "2026-09-15T17:30:34.900446Z"
+  },
+  "sources": [
+    {
+      "source_name": "GOAL API",
+      "role": "independent",
+      "source_url": "https://goal-api.com",
+      "snapshot": "manual-5008-02-goal-api-55d0aeaa62a5c19d.json",
+      "snapshot_sha256": "55d0aeaa62a5c19d9f3180c99da64e0329cc9d4b66685b379c8c39072d8a4e3b",
+      "home_team": "Levante",
+      "away_team": "Athletic Club",
+      "starts_at": "2026-09-16T19:30:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    },
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/levante-ud-athletic-club/AgbsZgb#id:16416341",
+      "snapshot": "manual-5008-02-sofascore-cb44fe2d73ea2f26.json",
+      "snapshot_sha256": "cb44fe2d73ea2f26db006636bf200a92cc8ddad8b3243f2895efe1560a6d0d0e",
+      "home_team": "Levante UD",
+      "away_team": "Athletic Club",
+      "starts_at": "2026-09-16T19:30:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    }
+  ]
+}

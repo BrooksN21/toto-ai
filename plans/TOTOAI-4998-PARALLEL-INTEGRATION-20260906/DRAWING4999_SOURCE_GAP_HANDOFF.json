@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "drawing_id": 12106,
+  "drawing_number": 4999,
+  "target_fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+  "completed_at": "2026-09-06T18:06:22.064289+00:00",
+  "phase": "SOURCE_GAPS_CAPTURED_PENDING_OPERATIONAL_REVIEW",
+  "purpose": "Context capture only: no approved claims, no ledger import, no review signature",
+  "capture_manifest": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/drawing4999-gap-captures-20260906T1803Z/capture-manifest.json",
+  "network_accounting": {
+    "web_search_batches": 2,
+    "public_queries": 4,
+    "direct_https_requests": 2,
+    "redirect_followups": 0,
+    "request_retries": 0,
+    "tls_verification": true,
+    "direct_request_max_total_seconds": 12,
+    "direct_request_socket_timeout_seconds": 8,
+    "no_repeated_failed_url": true,
+    "no_totobrief_or_sports_api_calls": true
+  },
+  "rows": [
+    {
+      "position": 9,
+      "event_order": 8,
+      "target_event_id": 180701,
+      "teams": [
+        "Floriana",
+        "Valletta"
+      ],
+      "competition": "Malta senior BOV Super Cup 2026/27 final; candidate source says Super Cup2026/2027Final, official MFA supplies senior fixture context",
+      "new_source": {
+        "name": "malta-independent-candidate",
+        "requested_url": "https://www.academiadasapostasmz.com/stats/match/malta/super-cup/floriana/valletta/kznmOByPDZxJd",
+        "requested_at": "2026-09-06T18:04:28.560760+00:00",
+        "attempt": 1,
+        "http_status": 200,
+        "final_url": "https://www.academiadasapostasmz.com/stats/match/malta/super-cup/floriana/valletta/kznmOByPDZxJd",
+        "content_type": "text/html; charset=UTF-8",
+        "server_date": "Sun, 06 Sep 2026 18:04:30 GMT",
+        "captured_at": "2026-09-06T18:04:31.994345+00:00",
+        "bytes": 496303,
+        "sha256": "dc31fae61f500b547e18a10737d4f876731f65bc301937e438a7125f33e76d84",
+        "snapshot_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/drawing4999-gap-captures-20260906T1803Z/malta-independent-candidate-dc31fae61f500b54.html"
+      },
+      "publisher": "Academia das Apostas Moçambique; distinct from MFA and Sofascore, not a club/league authority",
+      "proof": {
+        "format": "Original HTML contains application/ld+json SportsEvent and matching visible game header",
+        "json_fields": {
+          "@type": "SportsEvent",
+          "name": "Floriana Valletta, Malta, Super Cup",
+          "homeTeam": {
+            "@type": "SportsTeam",
+            "name": "Floriana"
+          },
+          "awayTeam": {
+            "@type": "SportsTeam",
+            "name": "Valletta"
+          },
+          "startDate": "2026-09-07T19:00:00+02:00"
+        },
+        "utc": "2026-09-07T17:00:00+00:00",
+        "msk": "2026-09-07T20:00:00+03:00",
+        "timezone_basis": "Explicit +02:00 in SportsEvent.startDate; no timezone guessing or dependence on local browser setting"
+      },
+      "existing_official_pair": {
+        "url": "https://www.mfa.com.mt/news/competitions/tickets-out-now-for-40th-bov-super-cup-final/",
+        "snapshot_path": "/Users/turshevr/toto-ai/data/schedule-evidence/snapshots/4999-mfa-supercup-097aaf1bb623a426.html",
+        "sha256": "097aaf1bb623a4261656e6239919ee79fc9864a3c260420ac66b21f11436eb26",
+        "captured_at": "2026-09-06T17:59:44.366737+00:00",
+        "hash_rechecked_matches": true,
+        "claim": "7September19:00Malta =17:00UTC =20:00MSK"
+      },
+      "conflict_retained": {
+        "provider": "Sofascore",
+        "fixture_id": "17001288",
+        "saved_utc": "2026-09-07T16:00:00Z",
+        "saved_sha256": "3bff0b7492de6b3c5f87fb760a114363bdc669dbbd5084cbdf8e95953479aaa9",
+        "delta_from_two_sources_seconds": 3600,
+        "disposition": "New capture independently corroborates MFA time. Old contradictory bytes preserved; collector does not invalidate old claim, declare official priority, or approve an override."
+      },
+      "remaining": "Operational reviewer must validate two-source independence/freshness, exact target/senior identity and explicitly handle contradictory Sofascore evidence. No review or scope_verified was minted."
+    },
+    {
+      "position": 14,
+      "event_order": 13,
+      "target_event_id": 180706,
+      "teams": [
+        "FK Vozdovac",
+        "FK TSC / Backa Topola"
+      ],
+      "competition": "Mozzart Bet Prva liga Srbije, season2026/27",
+      "new_source": {
+        "name": "serbia-prvaliga-tsc",
+        "requested_url": "https://www.prvaliga.rs/en/tim/tsc/",
+        "requested_at": "2026-09-06T18:04:25.732610+00:00",
+        "attempt": 1,
+        "http_status": 200,
+        "final_url": "https://www.prvaliga.rs/en/tim/tsc/",
+        "content_type": "text/html; charset=UTF-8",
+        "server_date": "Sun, 06 Sep 2026 18:04:28 GMT",
+        "captured_at": "2026-09-06T18:04:28.556644+00:00",
+        "bytes": 72690,
+        "sha256": "30d4bf19bb1aefe7a30db2a7f0c10d2022c1c9ff5b415086644dd8e5897d3c4f",
+        "snapshot_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/drawing4999-gap-captures-20260906T1803Z/serbia-prvaliga-tsc-30d4bf19bb1aefe7.html"
+      },
+      "publisher": "Prva Liga official competition site; a distinct original league source, not FSS response bytes",
+      "proof": {
+        "html_text_anchor": "Current round match 07.09.2026 18:00 VOŽDOVAC - TSC",
+        "identity_anchor": "Club: TSC; Town: Bačka Topola",
+        "source_local": "2026-09-07T18:00:00+02:00",
+        "utc": "2026-09-07T16:00:00+00:00",
+        "msk": "2026-09-07T19:00:00+03:00",
+        "timezone_basis": "League domestic schedule in Belgrade civil time, Europe/Belgrade UTC+2 on7September; page does not explicitly serialize UTC offset. This supports the earlier FSS/Ut akmice local-time reading, not an invented machine UTC field."
+      },
+      "existing_independent_pair": {
+        "url": "https://utakmice.rs/tim/fk-vozdovac",
+        "snapshot_path": "/Users/turshevr/toto-ai/data/schedule-evidence/snapshots/4999-utakmice-vozdovac-2805a51cd6aaad79.html",
+        "sha256": "2805a51cd6aaad79c8114161e22210b62ef936d18020581450c9a421dca9df86",
+        "captured_at": "2026-09-06T17:59:40.730064+00:00",
+        "hash_rechecked_matches": true,
+        "claim": "FK Vozdovac–TSC BackaTopola7September18:00Belgrade"
+      },
+      "fss_disposition": "Original failed URL not retried. Search located official FSS delegation corroboration https://fss.rs/delegiranje/mozzart-bet-prva-liga-srbije-26-27-delegiranje/?script=lat but no direct FSS bytes captured here; do not represent a search result as an FSS raw snapshot. Successful official league source provides the permitted alternative.",
+      "remaining": "Operational reviewer must accept exact target/senior identity, local timezone and genuine two-publisher evidence. No fabricated provider fixture ID or demographic review authority."
+    }
+  ],
+  "preserved_failures": {
+    "valletta_club": "Expired TLS certificate; not retried and never bypassed, no HTTP downgrade",
+    "fss_original_schedule": "Prior8s timeout; not retried; no user/account/proxy workaround"
+  },
+  "changes": {
+    "created_only": [
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/drawing4999-gap-captures-20260906T1803Z",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DRAWING4999_SOURCE_GAP_HANDOFF.json",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DRAWING4999_SOURCE_GAP_HANDOFF.md"
+    ],
+    "raw_snapshots_mode": "0444 after exclusive create; SHA256 verified locally",
+    "db_ledger_scheduler_plan_memory_consent_code_changes": false,
+    "publication": false,
+    "reviewer_or_reviewed_at_created": false
+  },
+  "next": "Operational author may inspect these exact captured bytes and existing official/independent pairs, then separately perform native review/dry-run under its scope. This task ends without import, activation or further crawling."
+}

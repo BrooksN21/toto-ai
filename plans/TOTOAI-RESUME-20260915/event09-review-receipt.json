@@ -1,0 +1,24 @@
+{
+  "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5007-event09-20260915.json",
+  "review_sha256": "e80e085d9ba03e10093a9363a94070f6178fe379dedffac9dbebefe79af57d5d",
+  "dry_run": {
+    "status": "validated_dry_run",
+    "dry_run": true,
+    "ledger_mutated": false,
+    "observation_id": "manual-5007-event09-20260915-sofa-tsdb",
+    "drawing_number": 5007,
+    "event_order": 8,
+    "ledger_sha256": "3725a166786129aabe4ad5afcdd87dcc5f885845b1964a2132987a2f62fee982",
+    "ledger_semantic_hash": "b9cf119471a22e746d01543fbce198ffa0d6d79234b94754766409560f0949f9"
+  },
+  "apply": {
+    "status": "applied",
+    "dry_run": false,
+    "ledger_mutated": true,
+    "observation_id": "manual-5007-event09-20260915-sofa-tsdb",
+    "drawing_number": 5007,
+    "event_order": 8,
+    "ledger_sha256": "4fc7ca5a94428d046b8ebabc6b8e0d8dc3722877b059c15d84c9291869b17f6f",
+    "ledger_semantic_hash": "afe646670dc68efd18d9bf13852d93713681f02fb696ee7998979f5b991996be"
+  }
+}

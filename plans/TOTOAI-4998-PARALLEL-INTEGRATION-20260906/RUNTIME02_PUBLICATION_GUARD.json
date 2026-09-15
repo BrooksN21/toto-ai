@@ -1,0 +1,27 @@
+{
+  "paths": [
+    "src/toto_ai/sports_stats/final_hybrid_comparison.py",
+    "src/toto_ai/optimizer/strategy_comparison.py",
+    "src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+    "src/toto_ai/ev/ternary.py",
+    "src/toto_ai/ev/package.py",
+    "src/toto_ai/ev/package_quality.py",
+    "tests/test_final_hybrid_g1_integration.py",
+    "src/toto_ai/ev/runtime.py",
+    "tests/test_ev_runtime_budget.py",
+    "tests/test_final_hybrid_runtime_contracts.py",
+    "knowledge/parallel_runtime.md",
+    "tests/test_final_hybrid_sidecar.py",
+    "tests/test_final_hybrid_primary_validity.py",
+    "memory-bank/ACTIVE_PLAN.md",
+    "memory-bank/CURRENT_STATE.md",
+    "memory-bank/THREAD_COORDINATION.json",
+    "knowledge/parallel_runtime_release.md",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_RECEIPT_20260906.json"
+  ],
+  "staged_diff_sha256": "95021b63a78d7cbcabbc30df69fec1eca73d48753d55607e8f2bfdd606ff3218",
+  "candidate13_staged_hashes_match_accept": true,
+  "verification": "101PASS3.27s/Ruff13PASS",
+  "excluded": "ledger/F4/raw inputs/coupons/local evidence",
+  "base": "dfa9bb9af9657323ae5cd7df5caecc29411f4f66"
+}

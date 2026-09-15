@@ -1,0 +1,334 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "status": "COMPLETE_SCOPED_OFFLINE_VALIDATION",
+  "completed_at": "2026-09-15T13:39:33.614717+00:00",
+  "scope": [
+    4999,
+    5006
+  ],
+  "drawing4999": {
+    "actual": "X2112X222X1XX22",
+    "plan_id": "b742aac1fea2d42d",
+    "as_of": "2026-09-07T14:00:02.537925+00:00",
+    "sidecar_completed_at": "2026-09-07T14:08:51.981288Z",
+    "expired_at": "2026-09-07T14:20:00Z",
+    "bank": 4980,
+    "stake": 30,
+    "rows": [
+      {
+        "model": "quality-v2",
+        "count": 166,
+        "unique_count": 166,
+        "stake": 30,
+        "cost": 4980,
+        "best_hits": 11,
+        "category_histogram_9_15": {
+          "9": 6,
+          "10": 2,
+          "11": 1,
+          "12": 0,
+          "13": 0,
+          "14": 0,
+          "15": 0
+        },
+        "below_9": 157,
+        "best_actual_coupons": [
+          {
+            "package_position": 71,
+            "coupon": "X2112X121X11122"
+          }
+        ],
+        "original_computed_highest_p13": {
+          "coupon": "1211221211X1122",
+          "criterion": "maximum_probability_at_least_13",
+          "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+          "package_position": 74,
+          "probability_at_least_13": 0.0002672181677555062,
+          "probability_at_least_14": 2.3793351979871353e-05,
+          "probability_at_least_15": 9.939647153082966e-07,
+          "reference_model": "bk",
+          "actual_hits": 7
+        },
+        "payout": "UNKNOWN",
+        "net": "UNKNOWN",
+        "roi": "UNKNOWN",
+        "package_sha256": "6184c3b9d00df4c77aa64fb1a2e9813f5a12fc7b31a3f3d02ac463ddb23467dc",
+        "file_sha256": "643d2981279c5f5b4d067656f12bc539c6e2ff4de56019af682fabcac8fe6756",
+        "original_ranking_recomputed_verified": true
+      },
+      {
+        "model": "quality-v3",
+        "count": 166,
+        "unique_count": 166,
+        "stake": 30,
+        "cost": 4980,
+        "best_hits": 11,
+        "category_histogram_9_15": {
+          "9": 18,
+          "10": 5,
+          "11": 1,
+          "12": 0,
+          "13": 0,
+          "14": 0,
+          "15": 0
+        },
+        "below_9": 142,
+        "best_actual_coupons": [
+          {
+            "package_position": 42,
+            "coupon": "X21121221111X22"
+          }
+        ],
+        "original_computed_highest_p13": {
+          "coupon": "1211221211X1122",
+          "criterion": "maximum_probability_at_least_13",
+          "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+          "package_position": 9,
+          "probability_at_least_13": 0.0002672181677555062,
+          "probability_at_least_14": 2.3793351979871353e-05,
+          "probability_at_least_15": 9.939647153082966e-07,
+          "reference_model": "bk",
+          "actual_hits": 7
+        },
+        "payout": "UNKNOWN",
+        "net": "UNKNOWN",
+        "roi": "UNKNOWN",
+        "package_sha256": "3cb663815704fddb94c7a9a20d8c82f60d8ef35c96b20be463e9b3574c18560b",
+        "file_sha256": "bb3ced8e46b55460854da0adfe187ae5e71f20ed54792426be26d3b01b0f98ff",
+        "original_ranking_recomputed_verified": true
+      },
+      {
+        "model": "robust",
+        "count": 166,
+        "unique_count": 166,
+        "stake": 30,
+        "cost": 4980,
+        "best_hits": 11,
+        "category_histogram_9_15": {
+          "9": 6,
+          "10": 2,
+          "11": 1,
+          "12": 0,
+          "13": 0,
+          "14": 0,
+          "15": 0
+        },
+        "below_9": 157,
+        "best_actual_coupons": [
+          {
+            "package_position": 71,
+            "coupon": "X2112X121X11122"
+          }
+        ],
+        "original_computed_highest_p13": {
+          "coupon": "1211221211X1122",
+          "criterion": "maximum_probability_at_least_13",
+          "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+          "package_position": 74,
+          "probability_at_least_13": 0.0002672181677555062,
+          "probability_at_least_14": 2.3793351979871353e-05,
+          "probability_at_least_15": 9.939647153082966e-07,
+          "reference_model": "bk",
+          "actual_hits": 7
+        },
+        "payout": "UNKNOWN",
+        "net": "UNKNOWN",
+        "roi": "UNKNOWN",
+        "package_sha256": "6184c3b9d00df4c77aa64fb1a2e9813f5a12fc7b31a3f3d02ac463ddb23467dc",
+        "file_sha256": "278a1ffde65de227ba14c6b175d646526deecc7ac608e3fafa05726ef3adde36",
+        "original_ranking_recomputed_verified": true
+      },
+      {
+        "model": "sports-shadow",
+        "count": 166,
+        "unique_count": 166,
+        "stake": 30,
+        "cost": 4980,
+        "best_hits": 11,
+        "category_histogram_9_15": {
+          "9": 20,
+          "10": 10,
+          "11": 1,
+          "12": 0,
+          "13": 0,
+          "14": 0,
+          "15": 0
+        },
+        "below_9": 135,
+        "best_actual_coupons": [
+          {
+            "package_position": 71,
+            "coupon": "X2112X121X11222"
+          }
+        ],
+        "original_computed_highest_p13": {
+          "coupon": "121111121111122",
+          "criterion": "maximum_probability_at_least_13",
+          "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+          "package_position": 1,
+          "probability_at_least_13": 0.00027088855124817753,
+          "probability_at_least_14": 2.4233942755700583e-05,
+          "probability_at_least_15": 1.0179344324925014e-06,
+          "reference_model": "sports",
+          "actual_hits": 7
+        },
+        "payout": "UNKNOWN",
+        "net": "UNKNOWN",
+        "roi": "UNKNOWN",
+        "package_sha256": "6b7ec97ee5d821088125124845e6935f26dbe9ddafc6a160239f2369c2a5a2a3",
+        "file_sha256": "7c647755e4b56d69194a9fa03bd820922ee9d12b8e5e6d2a370e01dd20279963",
+        "original_ranking_recomputed_verified": true
+      }
+    ],
+    "final_input_hash": "6a2e4d4eab3e078bff971cd5afa939502e0029c343229a1e77ec1f472d7edf24",
+    "probability_input_sha256": "dde8e773e13c105fddd9eaff8531eb9bfb4cf74d36946fc83990c8a692cd4faf",
+    "native_final_input_validation": "PASS",
+    "native_sidecar_comparison_package_binding": "PASS",
+    "primary_csv_archive_and_research_control_equal": true,
+    "all_original_best_p13_rankings_recomputed_verified": true,
+    "native_settlement_report": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-validation-4999/final-hybrid-settlement.json",
+    "payout_status": "UNKNOWN; source payments null; no4999payout receipt in supplied or bound post-draw artifacts",
+    "prospective_model_evidence_limit": "Frozen output and input chronology verified. No independent retraining or new prospective forecast generated; one drawing is not causal/profitability evidence."
+  },
+  "availability_5000_5006": [
+    {
+      "drawing_number": 5000,
+      "predraw_active_raw_count": 9,
+      "latest_predraw_raw": {
+        "snapshot_sha256": "6c1ff75883dfd3565d33002c063fc56fe8ccb968d5ae526cfa9cd885dc73f8ef",
+        "payload_sha256": "8220eb8b4a91c252406113a247ae5ac12e202404841540b410fc56c3b41f2fb7",
+        "captured_at": "2026-09-07T16:32:08.195493+00:00",
+        "payload_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_12107/6c1ff75883dfd3565d33002c063fc56fe8ccb968d5ae526cfa9cd885dc73f8ef.json",
+        "metadata_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_12107/6c1ff75883dfd3565d33002c063fc56fe8ccb968d5ae526cfa9cd885dc73f8ef.meta.json",
+        "hash_verified": true,
+        "event_count": 15,
+        "empty_results": true,
+        "quote_event_count": 15
+      },
+      "frozen_package_count": 0,
+      "sports_snapshot_count": 0,
+      "status": "PREDRAW_MARKET_ONLY_FOUR_MODEL_REPLAY_INPUTS_INCOMPLETE",
+      "reason": "No frozen generated packages and no pre-draw sports snapshot; only early market input exists, not a complete same-input4model replay fixture",
+      "replay_run": false
+    },
+    {
+      "drawing_number": 5001,
+      "predraw_active_raw_count": 0,
+      "latest_predraw_raw": null,
+      "frozen_package_count": 0,
+      "sports_snapshot_count": 0,
+      "status": "NOT_EVALUABLE_PROSPECTIVELY",
+      "reason": "No pre-draw event/probability snapshot or frozen package in inspected native registries; only after-result imports exist",
+      "replay_run": false
+    },
+    {
+      "drawing_number": 5002,
+      "predraw_active_raw_count": 0,
+      "latest_predraw_raw": null,
+      "frozen_package_count": 0,
+      "sports_snapshot_count": 0,
+      "status": "NOT_EVALUABLE_PROSPECTIVELY",
+      "reason": "No pre-draw event/probability snapshot or frozen package in inspected native registries; only after-result imports exist",
+      "replay_run": false
+    },
+    {
+      "drawing_number": 5003,
+      "predraw_active_raw_count": 0,
+      "latest_predraw_raw": null,
+      "frozen_package_count": 0,
+      "sports_snapshot_count": 0,
+      "status": "NOT_EVALUABLE_PROSPECTIVELY",
+      "reason": "No pre-draw event/probability snapshot or frozen package in inspected native registries; only after-result imports exist",
+      "replay_run": false
+    },
+    {
+      "drawing_number": 5004,
+      "predraw_active_raw_count": 0,
+      "latest_predraw_raw": null,
+      "frozen_package_count": 0,
+      "sports_snapshot_count": 0,
+      "status": "NOT_EVALUABLE_PROSPECTIVELY",
+      "reason": "No pre-draw event/probability snapshot or frozen package in inspected native registries; only after-result imports exist",
+      "replay_run": false
+    },
+    {
+      "drawing_number": 5005,
+      "predraw_active_raw_count": 0,
+      "latest_predraw_raw": null,
+      "frozen_package_count": 0,
+      "sports_snapshot_count": 0,
+      "status": "NOT_EVALUABLE_PROSPECTIVELY",
+      "reason": "No pre-draw event/probability snapshot or frozen package in inspected native registries; only after-result imports exist",
+      "replay_run": false
+    },
+    {
+      "drawing_number": 5006,
+      "predraw_active_raw_count": 0,
+      "latest_predraw_raw": null,
+      "frozen_package_count": 0,
+      "sports_snapshot_count": 0,
+      "status": "NOT_EVALUABLE_PROSPECTIVELY",
+      "reason": "No pre-draw event/probability snapshot or frozen package in inspected native registries; only after-result imports exist",
+      "replay_run": false
+    }
+  ],
+  "versions": {
+    "quality-v2": "Existing primary quality-v2, exact166coupon primary archive reused by sidecar",
+    "quality-v3": "quality-v3-bounded-uncertainty-v1",
+    "robust": {
+      "applied": false,
+      "authorization_route": "EXPLICIT_OPT_IN_EXISTING_ROBUST_FAMILY",
+      "parent_package_sha256": "6184c3b9d00df4c77aa64fb1a2e9813f5a12fc7b31a3f3d02ac463ddb23467dc",
+      "policy_version": "robust-family-g1-v1",
+      "selected_package_sha256": "6184c3b9d00df4c77aa64fb1a2e9813f5a12fc7b31a3f3d02ac463ddb23467dc",
+      "strategy_family": "robust",
+      "variant": "g1-exact-maximin-refinement-v2"
+    },
+    "sports-shadow": "Existing final-input-rebased sports hybrid (13covered+2fallback); no trainedSportsv3manifest referenced",
+    "Sports_v3": {
+      "active": false,
+      "status": "NOT_DEMONSTRATED_ACTIVE_OR_TRAINED",
+      "evidence": {
+        "activation_allowed": false,
+        "assessment_executed": false,
+        "changes_probabilities": false,
+        "gates_opened": [],
+        "reason": "NO_INDEPENDENTLY_REVIEWED_EVENT_LOCAL_INPUT_ADAPTER",
+        "role": "DESCRIPTIVE_EVIDENCE_ONLY_NOT_A_PROBABILITY_MODEL",
+        "status": "UNAVAILABLE",
+        "strict_eligibility_reassessed": false
+      }
+    },
+    "g1": {
+      "automatic_wagering": false,
+      "operator_compatible": false,
+      "research_only": true,
+      "status": "DISABLED"
+    }
+  },
+  "findings": [
+    "All four maximum11; all13+counts0 on4999.",
+    "sports-shadow31coupons9+, quality-v3=24, quality-v2=9, robust=9; notROI without coefficients.",
+    "robust is exactly same orderedcoupon set asquality-v2; not independent improvement this draw.",
+    "quality-v3 better modeled13+ was rejectedprecutoff becausebkP15lower; ex-postsamebest11doesnotprove gate optimality.",
+    "No complete four-model replay inputs for5000-5006; finalquotes explicitly excluded."
+  ],
+  "restrictions": {
+    "db_readonly": true,
+    "network_calls": 0,
+    "training": false,
+    "generators_run": false,
+    "scheduler_mutation": false,
+    "memory_active_plan_mutation": false,
+    "git_or_push": false,
+    "automatic_wagering": false,
+    "operator_compatible": false
+  },
+  "next_bounded_step": "5000 has nine genuine early active RAWs but no sports snapshot/frozen packages. A separately approved market-only replay could compare quality-v2/quality-v3/robust using the exact latest rawhash8220eb8b4a91c252406113a247ae5ac12e202404841540b410fc56c3b41f2fb7 and bounded equalbudget4980/30, with outputs frozen before scoring. It must be labelled retrospectively generated, not four-model/prospective performance. No replay command executed because required full4model fixture is missing.",
+  "report_paths": {
+    "markdown": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-validation.md",
+    "json": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-validation.json",
+    "csv": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-validation-4999/table.csv"
+  },
+  "execution_time_note": "Initial five-minute scope; only lightweight hash/scoring/ranking operations, no generator/replay/training. First4999table delivered before availability audit completion."
+}

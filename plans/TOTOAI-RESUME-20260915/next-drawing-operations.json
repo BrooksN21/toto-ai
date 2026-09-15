@@ -1,0 +1,193 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "observed_at_msk": "2026-09-15T20:43:09.868257+03:00",
+  "job": "next-drawing native preparation",
+  "discovery_checked_at_msk": "2026-09-15T20:12:24.690722+03:00",
+  "drawing_number": 5008,
+  "drawing_id": 12130,
+  "close_msk": "2026-09-16T18:30:00+03:00",
+  "bank": 4980,
+  "stake": 30,
+  "budget_coupon_capacity": 166,
+  "generated_coupon_count": null,
+  "plan_id": null,
+  "plan_path": null,
+  "plan_files_observed": [],
+  "dispatch_status": "deferred",
+  "dispatch_reason": "ACTION REQUIRED: timing unknown 1/15",
+  "state_observed_at": "2026-09-15T17:39:11.324642Z",
+  "state_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/drawing-12130-20260916T153000Z-e20097489fab3d34.json",
+  "drawing_fingerprint": "e20097489fab3d34146044716f9dc6d9ccf0555a74bc64b6ee4efb1b30ee9f7d",
+  "mapped_count": 15,
+  "unresolved_count": 1,
+  "unresolved_events": [
+    {
+      "event_number": 9,
+      "home": "Уилланд Роверс",
+      "away": "Уэстбери Юнайтед",
+      "status": "timing_unknown",
+      "reason": "baseline-only event start time is unavailable"
+    }
+  ],
+  "process_inspection": "",
+  "process_inspection_exit": 1,
+  "exec_session_id": 29668,
+  "wrapper_pid": null,
+  "dispatcher_pid": null,
+  "expected_finish": "completed",
+  "expected_finish_note": "No remaining owned command; next step is a distinct native retry.",
+  "last_verified_stage": "Six genuine reviewed-evidence applications accepted; current native state confirms14/15 timing, only event9 unresolved.",
+  "future_new_draw_checkpoints_confirmed": [
+    "preflight retry only; primary/parallel/watcher not yet prepared"
+  ],
+  "future_checkpoints_note": "Retry is readiness collection, NOT final scheduler or a betting package. Native retry retains exactdrawing/fingerprint/deadline and parallel flags; consent absent.",
+  "consent": "NONE_FOR_5008; do not carry5007 permission",
+  "native_command": "/bin/sh /Users/turshevr/toto-ai/reports/rehearsal/morning-dispatcher-v10-parallel-safe/run-morning-preanalysis.sh",
+  "next_action": "Resolve event9 official19:30/19:45 conflict with dated fixture-specific correction or authoritative timezone-explicit evidence. Preserve Sofascore18seconds. Do not force reviewed acceptance. Observe existing20:45 readiness retry separately; no duplicate dispatcher. After valid nativeplan exists, ask owner for new5008 plan-bound consent.",
+  "scope": "Only supported native preparation plus this operations receipt; no model development, code edits, Git, publication, ACTIVE_PLAN mutation, heartbeat, or wagers.",
+  "execution_status": "COMPLETED_WITH_UNRESOLVED_TIMING",
+  "exit_code": 0,
+  "process_running": false,
+  "completion_note": "Session29668 completed exit0 in checkpoint receipt; native preparation remains deferred. No process killed by this worker; PID was not recorded.",
+  "resolved_timing_count": 14,
+  "retry_plan_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/retry-plan.json",
+  "retry_plan_sha256": "a971f871944c0a4d4846cdba0fa5f2817c810ba0ca0c1ee657bad1beb16cc319",
+  "retry_label": "com.totoai.preflight-retry.12130.e20097489fab3d34",
+  "retry_installed_verified_by_native": true,
+  "retry_loaded_verified_by_native": true,
+  "retry_checkpoints_msk": [
+    "2026-09-15T20:25:00+03:00",
+    "2026-09-15T20:45:00+03:00",
+    "2026-09-15T21:15:00+03:00",
+    "2026-09-15T23:15:00+03:00",
+    "2026-09-16T08:00:00+03:00",
+    "2026-09-16T10:30:00+03:00",
+    "2026-09-16T12:00:00+03:00",
+    "2026-09-16T13:00:00+03:00",
+    "2026-09-16T14:00:00+03:00",
+    "2026-09-16T15:00:00+03:00",
+    "2026-09-16T16:00:00+03:00",
+    "2026-09-16T17:00:00+03:00"
+  ],
+  "retry_hard_stop": "2026-09-16T14:30:00Z",
+  "prior_operational_checkpoints": [
+    {
+      "observed_at_msk": "2026-09-15T20:19:39.694164+03:00",
+      "state_observed_at": "2026-09-15T17:17:11.059491Z",
+      "dispatch_status": "deferred",
+      "dispatch_reason": "ACTION REQUIRED: timing unknown 7/15",
+      "resolved_timing_count": 8,
+      "unresolved_count": 7,
+      "unresolved_events": [
+        {
+          "event_number": 2,
+          "home": "Леванте",
+          "away": "Атлетик Бильбао",
+          "status": "timing_unknown",
+          "reason": "baseline-only event start time is unavailable"
+        },
+        {
+          "event_number": 6,
+          "home": "Ковентри Сити",
+          "away": "Астон Вилла",
+          "status": "timing_unknown",
+          "reason": "baseline-only event start time is unavailable"
+        },
+        {
+          "event_number": 7,
+          "home": "Олтрингем",
+          "away": "Хартлпул",
+          "status": "timing_unknown",
+          "reason": "baseline-only event start time is unavailable"
+        },
+        {
+          "event_number": 8,
+          "home": "Гисборо Таун",
+          "away": "Морпет",
+          "status": "timing_unknown",
+          "reason": "baseline-only event start time is unavailable"
+        },
+        {
+          "event_number": 9,
+          "home": "Уилланд Роверс",
+          "away": "Уэстбери Юнайтед",
+          "status": "timing_unknown",
+          "reason": "baseline-only event start time is unavailable"
+        },
+        {
+          "event_number": 10,
+          "home": "Полтон Роверс",
+          "away": "Портленд Юнайтед",
+          "status": "timing_unknown",
+          "reason": "baseline-only event start time is unavailable"
+        },
+        {
+          "event_number": 13,
+          "home": "Рекреативо",
+          "away": "Касереньо",
+          "status": "timing_unknown",
+          "reason": "baseline-only event start time is unavailable"
+        }
+      ],
+      "exec_session_id": 24337,
+      "wrapper_pid": 47035,
+      "dispatcher_pid": 47037,
+      "completion_note": "Existing session24337 returned exit0; that means supported wrapper completed, not that evening readiness passed."
+    }
+  ],
+  "initial_source_collector_summary": {
+    "goal_api_candidates": 12,
+    "goal_api_request_count": 41,
+    "sofascore_candidates": 26,
+    "thesportsdb_candidates": 2,
+    "independent_candidate_count": 28,
+    "independent_consensus_promoted_count": 8,
+    "uefa_sofascore_promoted_count": 2,
+    "note": "Promotion counts overlap; not additive. Final native readiness is8/15 timing resolved."
+  },
+  "native_phase": "preparation reconciliation completed; readiness deferred",
+  "state_identity": {
+    "cutoff_evidence_sha256": "e73f16a84b8d9e12d2970ee34232e3ac9f0e8a5b7a2904cf8ff83a8f2848b9b1",
+    "deadline": "2026-09-16T15:30:00Z",
+    "detail_sha256": "0915b8ac51ac9aa0854a291070517954107f1f0313ba33f1eb2879239d9d5eeb",
+    "drawing_fingerprint": "e20097489fab3d34146044716f9dc6d9ccf0555a74bc64b6ee4efb1b30ee9f7d",
+    "drawing_id": 12130,
+    "drawing_number": 5008,
+    "operational_cutoff": "2026-09-16T15:30:00Z",
+    "reviewed_catalog_hash": "fefc1ed69fa3d3096071cdcd7b0c12204d7902ce5fe604d3d40e09c7b4268e86"
+  },
+  "accepted_events": [
+    2,
+    6,
+    7,
+    13,
+    8,
+    10
+  ],
+  "accepted_evidence_report": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/5008-reviewed-evidence-application.json",
+  "retry_runtime_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12130-20260916T153000Z-e20097489fab3d34/retry-runtime.json",
+  "retry_execution": {
+    "2026-09-15T17:25:00Z": {
+      "completed_at": "2026-09-15T17:25:04.152025Z",
+      "returncode": 75
+    }
+  },
+  "next_checkpoint_msk": "2026-09-15T20:45:00+03:00",
+  "current_blocker": "Event9 Willand Rovers—Westbury United has conflicting official kickoff information; no valid timing review/plan yet.",
+  "current_future_checkpoints": "Existing preparation retries only; no new evening primary/parallel/watcher plan has been created.",
+  "report_scope": "Operations report only; ACTIVE_PLAN/code/DB/jobs/consents unchanged by this checkpoint save.",
+  "event9_source_conflict": {
+    "match_date": "2026-09-16",
+    "official_club_display_time_UK": "19:45",
+    "official_league_display_time_UK": "19:30",
+    "sofascore_starts_at_UTC": "2026-09-16T18:45:18Z",
+    "official_club": "https://www.westburyunited.co.uk/teams/westbury-united/fixtures-results",
+    "official_league": "https://www.southern-football-league.co.uk/overview/divonesouth",
+    "home_club": "https://www.willandrovers.co.uk/",
+    "home_club_finding": "Official home club directs readers to Southern League fixtures; no fixture-specific correction discovered in bounded search. Referral is not a second independent timestamp.",
+    "independent_news": "https://southwestsportsnews.com/football/fixtures/8349-southern-league-fixtures-september-15-16-2026",
+    "independent_news_display_time": "19:30",
+    "review_applied": false,
+    "handling": "Known contradictory source retained. No seconds rounded, inferred timezone contract imposed, majority-vote time accepted, or artificial binding created."
+  }
+}

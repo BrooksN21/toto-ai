@@ -1,0 +1,414 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "observed_at_msk": "2026-09-05T14:09:04.328535+03:00",
+  "status": "TWO_ORIGINAL_TASKS_ACCESSIBLE_IDLE_COMPLETED",
+  "local_metadata_source": "/Users/turshevr/.codex/state_5.sqlite",
+  "query_scope": "threads.cwd IN exact ab34/a7aa checkout paths; client IDs as exact thread-id comparison only",
+  "read_only": true,
+  "records": [
+    {
+      "id": "01a06e1d-e0b9-7310-ba37-53a418668354",
+      "rollout_path": "/Users/turshevr/.codex/sessions/2026/09/04/rollout-2026-09-04T23-30-47-01a06e1d-e0b9-7310-ba37-53a418668354.jsonl",
+      "created_at": 1788553846,
+      "updated_at": 1788554703,
+      "source": "vscode",
+      "cwd": "/Users/turshevr/.codex/worktrees/ab34/toto-ai",
+      "title": "",
+      "archived": 0,
+      "archived_at": null,
+      "git_sha": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2",
+      "git_branch": null,
+      "agent_nickname": null,
+      "agent_role": null,
+      "name": "TotoAI — ревью и упрощение проекта",
+      "thread_source": "agent_created_thread",
+      "created_at_ms": 1788553846969,
+      "updated_at_ms": 1788554703297,
+      "history_mode": "paginated",
+      "project_id": null,
+      "title_verbatim": "TotoAI — ревью и упрощение проекта",
+      "host_id": "local",
+      "app_status": "idle",
+      "latest_turn_status": "completed",
+      "created_at_msk": "2026-09-04T23:30:46+03:00",
+      "updated_at_msk": "2026-09-04T23:45:03+03:00",
+      "latest_turn_started_msk": "2026-09-04T23:30:47+03:00",
+      "latest_turn_completed_msk": "2026-09-04T23:45:03+03:00"
+    },
+    {
+      "id": "01a06e1d-f37f-7763-ac2a-86200d3318e3",
+      "rollout_path": "/Users/turshevr/.codex/sessions/2026/09/04/rollout-2026-09-04T23-30-51-01a06e1d-f37f-7763-ac2a-86200d3318e3.jsonl",
+      "created_at": 1788553851,
+      "updated_at": 1788554290,
+      "source": "vscode",
+      "cwd": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai",
+      "title": "",
+      "archived": 0,
+      "archived_at": null,
+      "git_sha": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2",
+      "git_branch": null,
+      "agent_nickname": null,
+      "agent_role": null,
+      "name": "TotoAI — спортивные модели и качество…",
+      "thread_source": "agent_created_thread",
+      "created_at_ms": 1788553851775,
+      "updated_at_ms": 1788554290371,
+      "history_mode": "paginated",
+      "project_id": null,
+      "title_verbatim": "TotoAI — спортивные модели и качество…",
+      "host_id": "local",
+      "app_status": "idle",
+      "latest_turn_status": "completed",
+      "created_at_msk": "2026-09-04T23:30:51+03:00",
+      "updated_at_msk": "2026-09-04T23:38:10+03:00",
+      "latest_turn_started_msk": "2026-09-04T23:30:52+03:00",
+      "latest_turn_completed_msk": "2026-09-04T23:38:07+03:00"
+    }
+  ],
+  "app_status_verified": true,
+  "mutations": "Only main plan findings and handoff files; no app DB/config/runtime/authorization/worktree/task mutation",
+  "session_index_matches": [
+    {
+      "id": "01a06e1d-e0b9-7310-ba37-53a418668354",
+      "thread_name": "TotoAI — ревью и упрощение проекта",
+      "updated_at": "2026-09-04T20:30:47.426572Z"
+    },
+    {
+      "id": "01a06e1d-f37f-7763-ac2a-86200d3318e3",
+      "thread_name": "TotoAI — спортивные модели и качество…",
+      "updated_at": "2026-09-04T20:30:52.23252Z"
+    }
+  ],
+  "app_evidence": {
+    "readOnlyAppToolsSucceeded": true,
+    "taskMetadata": [
+      {
+        "thread": {
+          "id": "01a06e1d-e0b9-7310-ba37-53a418668354",
+          "kind": "codex",
+          "hostId": "local",
+          "title": "TotoAI — ревью и упрощение проекта",
+          "preview": "",
+          "status": {
+            "type": "idle"
+          },
+          "cwd": "/Users/turshevr/.codex/worktrees/ab34/toto-ai",
+          "createdAt": 1788553846,
+          "updatedAt": 1788554703
+        },
+        "latestTurn": {
+          "id": "01a06e1d-e1eb-7660-b0c0-c6cc0c5f0a73",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1788553847,
+          "completedAt": 1788554703
+        }
+      },
+      {
+        "thread": {
+          "id": "01a06e1d-f37f-7763-ac2a-86200d3318e3",
+          "kind": "codex",
+          "hostId": "local",
+          "title": "TotoAI — спортивные модели и качество…",
+          "preview": "",
+          "status": {
+            "type": "idle"
+          },
+          "cwd": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai",
+          "createdAt": 1788553851,
+          "updatedAt": 1788554290
+        },
+        "latestTurn": {
+          "id": "01a06e1d-f4ae-7e93-9f26-38fbb63adaf7",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1788553852,
+          "completedAt": 1788554287
+        }
+      }
+    ],
+    "polls": [
+      {
+        "thread": {
+          "id": "01a06e1d-e0b9-7310-ba37-53a418668354",
+          "hostId": "local",
+          "status": {
+            "type": "idle"
+          }
+        },
+        "cursor": "9223d22e-dbee-4332-87ed-9501fe62d18a:1",
+        "revision": 1,
+        "latestTurn": {
+          "id": "01a06e1d-e1eb-7660-b0c0-c6cc0c5f0a73",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1788553847,
+          "completedAt": 1788554703,
+          "durationMs": 855966
+        },
+        "latestToolMarker": {
+          "id": "exec-f145146a-8300-4e6a-954b-ade4d104775b",
+          "turnId": "01a06e1d-e1eb-7660-b0c0-c6cc0c5f0a73",
+          "type": "commandExecution",
+          "name": "commandExecution",
+          "status": "completed"
+        },
+        "finalSummary": "Ревью завершено: change set не готов к коммиту или push. Отчёт: TOTOAI pre-push review Главные блокеры: Retrospective принимает существующий отчёт без проверки exact input/hash/equal-budget contract. Результат replay не связан с primary.result_snapshot_sha256. Retry-план меняется атомарно, но retry-child не обновляет загруженный LaunchAgent calendar. Dirty tree не воспроизводим из tracked-файлов: есть обязательные untracked module/test/fixture и зависимость committed storage от dirty domain.py. Отдельный прежний P2: history-backfill открывает и потенциально мигрирует БД до полной проверки snapshot. Production, jobs, receipts и БД не изменялись. Тесты не перезапускались: имеющиеся результаты относятся к dirty tree. Отправка сводки в operational-owner task была отклонена системной политикой межзадачной передачи; обход не предпринимался. Следующее решение требуется до запуска retrospective 5 сентября в 12:05 MSK."
+      },
+      {
+        "thread": {
+          "id": "01a06e1d-f37f-7763-ac2a-86200d3318e3",
+          "hostId": "local",
+          "status": {
+            "type": "idle"
+          }
+        },
+        "cursor": "cef31e76-dda7-4081-a2cd-13bdf8247c1f:1",
+        "revision": 1,
+        "latestTurn": {
+          "id": "01a06e1d-f4ae-7e93-9f26-38fbb63adaf7",
+          "status": "completed",
+          "error": null,
+          "startedAt": 1788553852,
+          "completedAt": 1788554287,
+          "durationMs": 435069
+        },
+        "latestToolMarker": {
+          "id": "exec-2598df04-7675-4405-81f1-0527ba8a147e",
+          "turnId": "01a06e1d-f4ae-7e93-9f26-38fbb63adaf7",
+          "type": "mcpToolCall",
+          "name": "send_message_to_thread",
+          "status": "failed"
+        },
+        "finalSummary": "Готово: Определён следующий MODEL-шаг: F3/P1 — read-only Sports v3 coverage auditor для 4990–4995. Зафиксированы code/data hashes, входы, acceptance criteria и границы F4–F7. Модель, replay, БД и production pipeline не запускались и не изменялись. Блокер: worktree не содержит незакоммиченный production baseline (history_backfill.py, manifest и связанные изменения). Нужен reviewed self-contained handoff и заранее заданный minimum_prior_matches. Отчёт: MODEL_READINESS_REPORT.mdSHA-256: 6999e0e506aa37bb90fc6bfb330ede64e57776dc506f8b13c649d50a2ffe73b7 Автоматическая отправка отчёта в operational-owner task была отклонена политикой запрета передачи repository-derived данных другому агенту; обход не предпринимался."
+      }
+    ],
+    "scope": "Only original two threads, one recent turn each, no resume/control operation."
+  },
+  "client_ids_are_not_actual_thread_ids": true,
+  "direct_client_id_mapping_verified": false,
+  "supported_next_operations": {
+    "inspect": "read_thread(threadId=<actual id>,hostId=local)",
+    "show_original": "navigate_to_codex_page(threadId=<actual id>)",
+    "resume_same_task": "send_message_to_thread(threadId=<actual id>,hostId=local,prompt=<bounded owner-authorized continuation>); omit model/thinking to retain settings",
+    "monitor": "wait_threads(targets=[actual ids with hostId=local and afterCursor],timeoutMs=120000); latest cursors in app_evidence.polls",
+    "permission_boundary": "Read/status access VERIFIED. Sending a new turn NOT attempted or permission-tested by context worker. If a control operation is rejected, stop; no database edits, policy edits, CLI workaround, replacement creation or fork. No heartbeat."
+  },
+  "local_metadata_read_scope": {
+    "sqlite": "/Users/turshevr/.codex/state_5.sqlite: read-only threads exact two cwd paths, then exact original IDs; query_only and 3-5 second progress limits",
+    "index": "/Users/turshevr/.codex/session_index.jsonl: exact two actual-ID matching records only",
+    "rollout_logs": "Paths identified from index; no rollout files opened",
+    "global_state": "Existence/size checked only; contents not opened",
+    "app_queries": "read_thread one recent turn and wait_threads timeoutMs=0 for exactly these two tasks; no control mutation"
+  },
+  "policy_version_observations": {
+    "observed_at_msk": "2026-09-05T14:10:13.023128+03:00",
+    "files": [
+      {
+        "scope": "main",
+        "path": "/Users/turshevr/toto-ai/AGENTS.md",
+        "exists": true,
+        "file_sha256": "7cb5bebe2218bfe31f438f507bef60991fb687dad665a4e37f6f1487d1712591",
+        "mtime_msk": "2026-09-05T13:38:27.708319+03:00",
+        "bytes": 12310,
+        "excerpts": [
+          {
+            "line": 27,
+            "text": "  two-task split on 2026-09-05: operations, review and models all remain here."
+          },
+          {
+            "line": 94,
+            "text": "authorize external-model execution. No runtime approval can override this"
+          },
+          {
+            "line": 98,
+            "text": "TotoAI work may use only the model already hosting the current Codex task plus"
+          },
+          {
+            "line": 100,
+            "text": "Do not start model-backed subagents. Static instruction files distributed under"
+          },
+          {
+            "line": 104,
+            "text": "### Single-task execution — owner decision 2026-09-05"
+          },
+          {
+            "line": 106,
+            "text": "The owner revoked the two-task split. Do not create additional TotoAI tasks or"
+          },
+          {
+            "line": 107,
+            "text": "restart pending setup requests. All three workstreams remain in task"
+          },
+          {
+            "line": 109,
+            "text": "ACTIVE_PLAN checkpoint. The former native-task exception is withdrawn."
+          },
+          {
+            "line": 141,
+            "text": "  The external-model prohibition above has no runtime approval exception."
+          }
+        ]
+      },
+      {
+        "scope": "main",
+        "path": "/Users/turshevr/toto-ai/memory-bank/TOOLING_POLICY.md",
+        "exists": true,
+        "file_sha256": "2495aa1539d5ca3e9bd639d51ed61ba4aa87f8e398ad97566ba58f318e2b9486",
+        "mtime_msk": "2026-09-05T13:38:27.843734+03:00",
+        "bytes": 6032,
+        "excerpts": [
+          {
+            "line": 46,
+            "text": "data, and secrets must never be transmitted to an external LLM or agent."
+          },
+          {
+            "line": 48,
+            "text": "exceptions. No runtime approval can override this prohibition. A future change"
+          },
+          {
+            "line": 51,
+            "text": "Only the model already hosting the current Codex task may perform model"
+          },
+          {
+            "line": 52,
+            "text": "inference for TotoAI. Model-backed subagents are prohibited. On 2026-09-05 the"
+          },
+          {
+            "line": 53,
+            "text": "owner cancelled the two-task split and withdrew its temporary native-task"
+          }
+        ]
+      },
+      {
+        "scope": "review",
+        "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/AGENTS.md",
+        "exists": true,
+        "file_sha256": "a0c5e78239a24048554f2ee9829dc36eb9ef509acbeddba5237cd13ec0e02951",
+        "mtime_msk": "2026-09-04T23:30:45.174068+03:00",
+        "bytes": 8794,
+        "excerpts": [
+          {
+            "line": 76,
+            "text": "authorize external-model execution. No runtime approval can override this"
+          },
+          {
+            "line": 80,
+            "text": "TotoAI work may use only the model already hosting the current Codex task plus"
+          },
+          {
+            "line": 82,
+            "text": "Do not start model-backed subagents. Static instruction files distributed under"
+          },
+          {
+            "line": 114,
+            "text": "  The external-model prohibition above has no runtime approval exception."
+          }
+        ]
+      },
+      {
+        "scope": "review",
+        "path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/memory-bank/TOOLING_POLICY.md",
+        "exists": true,
+        "file_sha256": "0cf4564e3b60d7eb3b651afadd78cfca0683ae163e41b57e7a6c5e6336eadd51",
+        "mtime_msk": "2026-09-04T23:30:45.447004+03:00",
+        "bytes": 5193,
+        "excerpts": [
+          {
+            "line": 46,
+            "text": "data, and secrets must never be transmitted to an external LLM or agent."
+          },
+          {
+            "line": 48,
+            "text": "exceptions. No runtime approval can override this prohibition. A future change"
+          },
+          {
+            "line": 51,
+            "text": "Only the model already hosting the current Codex task may perform model"
+          },
+          {
+            "line": 52,
+            "text": "inference for TotoAI. Model-backed subagents are prohibited. Static global"
+          }
+        ]
+      },
+      {
+        "scope": "models",
+        "path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/AGENTS.md",
+        "exists": true,
+        "file_sha256": "a0c5e78239a24048554f2ee9829dc36eb9ef509acbeddba5237cd13ec0e02951",
+        "mtime_msk": "2026-09-04T23:30:50.679741+03:00",
+        "bytes": 8794,
+        "excerpts": [
+          {
+            "line": 76,
+            "text": "authorize external-model execution. No runtime approval can override this"
+          },
+          {
+            "line": 80,
+            "text": "TotoAI work may use only the model already hosting the current Codex task plus"
+          },
+          {
+            "line": 82,
+            "text": "Do not start model-backed subagents. Static instruction files distributed under"
+          },
+          {
+            "line": 114,
+            "text": "  The external-model prohibition above has no runtime approval exception."
+          }
+        ]
+      },
+      {
+        "scope": "models",
+        "path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/memory-bank/TOOLING_POLICY.md",
+        "exists": true,
+        "file_sha256": "0cf4564e3b60d7eb3b651afadd78cfca0683ae163e41b57e7a6c5e6336eadd51",
+        "mtime_msk": "2026-09-04T23:30:50.876995+03:00",
+        "bytes": 5193,
+        "excerpts": [
+          {
+            "line": 46,
+            "text": "data, and secrets must never be transmitted to an external LLM or agent."
+          },
+          {
+            "line": 48,
+            "text": "exceptions. No runtime approval can override this prohibition. A future change"
+          },
+          {
+            "line": 51,
+            "text": "Only the model already hosting the current Codex task may perform model"
+          },
+          {
+            "line": 52,
+            "text": "inference for TotoAI. Model-backed subagents are prohibited. Static global"
+          }
+        ]
+      }
+    ],
+    "policy_files_edited": false,
+    "scope": "Exact main and original-checkout AGENTS/TOOLING files only. Hashes identify observed bytes, not trusted-policy activation or commit."
+  },
+  "registry_persistence": {
+    "saved_at": "2026-09-05T14:11:08.456456+03:00",
+    "path": "/Users/turshevr/toto-ai/memory-bank/THREAD_COORDINATION.json",
+    "active_checkpoint_path": "/Users/turshevr/toto-ai/memory-bank/ACTIVE_PLAN.md",
+    "actual_mapping_persisted": true,
+    "old_setup_history_preserved": true,
+    "operator_4997_and_baseline_gates_unchanged": true,
+    "followup_sent": false
+  },
+  "policy_conflict_summary": {
+    "observed_at": "2026-09-05T14:10:13.023128+03:00",
+    "evidence_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/original-task-id-findings.json",
+    "policy_files_edited": false,
+    "main_policy_version": "2026-09-05 13:38 MSK; still says single-task/cancelled native split",
+    "original_worktree_policy_version": "2026-09-04 23:30 MSK; old HEAD policies in both worktrees, same hashes",
+    "conflicts": [
+      "Main AGENTS lines25-29 and104-109 still say split cancelled/all workstreams in parent, while latest owner explicitly requests continuation of original existing chats.",
+      "All observed policy copies prohibit nested/model-backed agents and external-model/repository-derived transmission; original owner-directed native follow-up has not been acceptance-tested. Prior denied delivery remains historical; no workaround is authorized.",
+      "Old worktree memory/checkpoints predate noon fixes and main wrapper support; successful task lookup does not update policies, baseline, write boundaries or restore missing code/data."
+    ],
+    "required_boundary": "Main remains sole production operations owner. Native same-task continuation only if accepted by app; stop on rejection. No policy editing, new/forked tasks, nested agents, production writes by original worktree tasks or experiments before scope/baseline acceptance."
+  }
+}

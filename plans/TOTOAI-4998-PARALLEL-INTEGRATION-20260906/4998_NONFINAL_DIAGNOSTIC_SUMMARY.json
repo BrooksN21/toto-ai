@@ -1,0 +1,309 @@
+{
+  "classification": "NONFINAL_PRE_DRAW_RESEARCH_DIAGNOSTIC_NOT_FOR_WAGERING",
+  "plan_id": "c1d243f5b6ca48f3",
+  "drawing": 4998,
+  "bank": 4980,
+  "effective_budget": 4980,
+  "stake": 30,
+  "as_of": "2026-09-06T13:39:46.980872Z",
+  "input_snapshot_sha256": "fc6c3a11d4851217fa1a47ec94ce9629c807c4dfdf6b7176bb7477d0d924e064",
+  "seed_artifact_sha256": "ac04ea9b303590945dbdc3c12a451840d300350b641593f5cf07b74054d5f32e",
+  "report_sha256": "79c503fee6fa3ab7bf42756f93210b3c8b403ad6eecf1eb5e657867bbd5d23bf",
+  "report_file_sha256": "7d10198c02da0d8a0be67877425227ac5035ee988ef2d7ea31b7458302c68767",
+  "sports_coverage_count": 14,
+  "fallback_count": 1,
+  "N": 166,
+  "U": 489,
+  "M": 4,
+  "quality_v3_candidate_count": 14129,
+  "comparison_native_seconds": 139.342274,
+  "controller_elapsed_seconds": 150.1468398750003,
+  "phase_durations": [
+    {
+      "phase": "run_ev_crowd_current",
+      "seconds": 58.598919,
+      "start": "2026-09-06T13:42:32.920405+00:00",
+      "finish": "2026-09-06T13:43:31.519324+00:00"
+    },
+    {
+      "phase": "run_ev_crowd_current",
+      "seconds": 55.044996,
+      "start": "2026-09-06T13:43:31.568901+00:00",
+      "finish": "2026-09-06T13:44:26.613897+00:00"
+    },
+    {
+      "phase": "select_uncertainty_package",
+      "seconds": 18.586657,
+      "start": "2026-09-06T13:44:26.614595+00:00",
+      "finish": "2026-09-06T13:44:45.201252+00:00"
+    },
+    {
+      "phase": "select_robust_package",
+      "seconds": 4.503253,
+      "start": "2026-09-06T13:44:45.201828+00:00",
+      "finish": "2026-09-06T13:44:49.705081+00:00"
+    },
+    {
+      "phase": "run_parallel_g1",
+      "seconds": 0.016829,
+      "start": "2026-09-06T13:44:49.705594+00:00",
+      "finish": "2026-09-06T13:44:49.722423+00:00"
+    },
+    {
+      "phase": "package_quality_metrics",
+      "seconds": 0.139245,
+      "start": "2026-09-06T13:44:49.733404+00:00",
+      "finish": "2026-09-06T13:44:49.872649+00:00"
+    },
+    {
+      "phase": "package_quality_metrics",
+      "seconds": 0.133054,
+      "start": "2026-09-06T13:44:49.888781+00:00",
+      "finish": "2026-09-06T13:44:50.021835+00:00"
+    },
+    {
+      "phase": "package_quality_metrics",
+      "seconds": 0.14019,
+      "start": "2026-09-06T13:44:50.039037+00:00",
+      "finish": "2026-09-06T13:44:50.179227+00:00"
+    },
+    {
+      "phase": "package_quality_metrics",
+      "seconds": 0.13729,
+      "start": "2026-09-06T13:44:50.194279+00:00",
+      "finish": "2026-09-06T13:44:50.331569+00:00"
+    },
+    {
+      "phase": "comparison",
+      "seconds": 139.342274,
+      "start": "2026-09-06T13:42:32.834540+00:00",
+      "finish": "2026-09-06T13:44:52.176814+00:00"
+    }
+  ],
+  "model_package_metrics": {
+    "quality-v2": {
+      "coupon_count": 166,
+      "cost": 4980,
+      "package_sha256": "8e18b761075bb32851674619196256f7c05d47788ce8f7cbb8c63e83c344315c",
+      "eligible": true,
+      "rejection_reasons": [],
+      "models": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.01780610193100435,
+          "probability_at_least_14": 0.0019806186660215855,
+          "probability_at_least_15": 9.451395873568036e-05
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.017613188487082782,
+          "probability_at_least_14": 0.001951762223853955,
+          "probability_at_least_15": 9.28451302382751e-05
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.015490153908887487,
+          "probability_at_least_14": 0.001656886747670135,
+          "probability_at_least_15": 7.663401558923852e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.013460817586557492,
+          "probability_at_least_14": 0.001384367639686127,
+          "probability_at_least_15": 6.202108536925791e-05
+        }
+      ]
+    },
+    "sports-shadow": {
+      "coupon_count": 166,
+      "cost": 4980,
+      "package_sha256": "8bf9f2fe4868afd8e35ba5b0d00afde8e02009f059d2096b38695f555bcf57a6",
+      "eligible": true,
+      "rejection_reasons": [],
+      "models": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.018058768163848493,
+          "probability_at_least_14": 0.0020198544806974924,
+          "probability_at_least_15": 9.730609225704482e-05
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.018005229727934776,
+          "probability_at_least_14": 0.0020132916437940115,
+          "probability_at_least_15": 9.694827512653589e-05
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.015669385748087985,
+          "probability_at_least_14": 0.0016858072766358226,
+          "probability_at_least_15": 7.869885372647586e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.013579423326456041,
+          "probability_at_least_14": 0.0014048891802255525,
+          "probability_at_least_15": 6.35121230951074e-05
+        }
+      ]
+    },
+    "quality-v3": {
+      "coupon_count": 166,
+      "cost": 4980,
+      "package_sha256": "198f28ed083ff304e037fde901892bfc900bc4f79bc4046939ebe2c226a9ed6a",
+      "eligible": true,
+      "rejection_reasons": [],
+      "models": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.02587797715324815,
+          "probability_at_least_14": 0.0028439934338448584,
+          "probability_at_least_15": 0.00012148909867727192
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.02556236891345058,
+          "probability_at_least_14": 0.0028030658016094763,
+          "probability_at_least_15": 0.00011956045049024722
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.02212212214088704,
+          "probability_at_least_14": 0.002345372706217784,
+          "probability_at_least_15": 9.780998655885975e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.018842868297553557,
+          "probability_at_least_14": 0.0019270013003980903,
+          "probability_at_least_15": 7.841086986649755e-05
+        }
+      ]
+    },
+    "robust": {
+      "coupon_count": 166,
+      "cost": 4980,
+      "package_sha256": "a35eb2480ca24deefa7a40948bc75c56adb3121f69e9d0638ffb6dcf73cfd245",
+      "eligible": true,
+      "rejection_reasons": [],
+      "models": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.025022234421731016,
+          "probability_at_least_14": 0.002849631949476459,
+          "probability_at_least_15": 0.00012498729350388075
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.024756129400357353,
+          "probability_at_least_14": 0.0028122726828973175,
+          "probability_at_least_15": 0.0001231238587150517
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.021366732313276755,
+          "probability_at_least_14": 0.002343378009301348,
+          "probability_at_least_15": 0.00010020560780531704
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.018181043894965894,
+          "probability_at_least_14": 0.0019198806173331589,
+          "probability_at_least_15": 7.998780238475866e-05
+        }
+      ]
+    }
+  },
+  "g1": {
+    "status": "SKIPPED_EVALUATION_BUDGET",
+    "applied": false,
+    "round_pairs": 53618,
+    "max_swap_evaluations": 50000,
+    "max_accepted_swaps": 1,
+    "engine_seconds_limit": 50,
+    "worker_timeout_limit": 60,
+    "reserve_seconds": 30,
+    "engine_executed": false,
+    "admission_wall_seconds": 0.016829,
+    "lineage": {
+      "policy_version": "robust-family-g1-v1",
+      "strategy_family": "robust",
+      "variant": "g1-exact-maximin-refinement-v2",
+      "applied": false,
+      "parent_package_sha256": "a35eb2480ca24deefa7a40948bc75c56adb3121f69e9d0638ffb6dcf73cfd245",
+      "authorization_route": "EXPLICIT_OPT_IN_EXISTING_ROBUST_FAMILY",
+      "selected_package_sha256": "a35eb2480ca24deefa7a40948bc75c56adb3121f69e9d0638ffb6dcf73cfd245"
+    }
+  },
+  "research_selector_result": {
+    "strategy": "quality-v3",
+    "reason": "eligible_challenger_dominates_control_gate",
+    "package_sha256": "198f28ed083ff304e037fde901892bfc900bc4f79bc4046939ebe2c226a9ed6a",
+    "not_an_operator_promotion": true
+  },
+  "highest_p13_single_coupons_metadata": {
+    "quality-v2": {
+      "probability_at_least_13": 0.0005598350046578132,
+      "probability_at_least_14": 5.52672387845911e-05,
+      "probability_at_least_15": 2.5632855293260217e-06,
+      "package_position": 1,
+      "criterion": "maximum_probability_at_least_13",
+      "reference_model": "bk",
+      "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+      "package_sha256": "8e18b761075bb32851674619196256f7c05d47788ce8f7cbb8c63e83c344315c",
+      "input_snapshot_sha256": "fc6c3a11d4851217fa1a47ec94ce9629c807c4dfdf6b7176bb7477d0d924e064"
+    },
+    "sports-shadow": {
+      "probability_at_least_13": 0.0005923164277003059,
+      "probability_at_least_14": 5.9044267591406863e-05,
+      "probability_at_least_15": 2.766746979713514e-06,
+      "package_position": 60,
+      "criterion": "maximum_probability_at_least_13",
+      "reference_model": "sports",
+      "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+      "package_sha256": "8bf9f2fe4868afd8e35ba5b0d00afde8e02009f059d2096b38695f555bcf57a6",
+      "input_snapshot_sha256": "fc6c3a11d4851217fa1a47ec94ce9629c807c4dfdf6b7176bb7477d0d924e064"
+    },
+    "quality-v3": {
+      "probability_at_least_13": 0.0004033387189300132,
+      "probability_at_least_14": 3.765713903017562e-05,
+      "probability_at_least_15": 1.6459954934743523e-06,
+      "package_position": 11,
+      "criterion": "maximum_probability_at_least_13",
+      "reference_model": "bk",
+      "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+      "package_sha256": "198f28ed083ff304e037fde901892bfc900bc4f79bc4046939ebe2c226a9ed6a",
+      "input_snapshot_sha256": "fc6c3a11d4851217fa1a47ec94ce9629c807c4dfdf6b7176bb7477d0d924e064"
+    },
+    "robust": {
+      "probability_at_least_13": 0.0005022904223794495,
+      "probability_at_least_14": 4.8676824093925024e-05,
+      "probability_at_least_15": 2.2135801463965436e-06,
+      "package_position": 9,
+      "criterion": "maximum_probability_at_least_13",
+      "reference_model": "bk",
+      "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+      "package_sha256": "a35eb2480ca24deefa7a40948bc75c56adb3121f69e9d0638ffb6dcf73cfd245",
+      "input_snapshot_sha256": "fc6c3a11d4851217fa1a47ec94ce9629c807c4dfdf6b7176bb7477d0d924e064"
+    }
+  },
+  "o1": {
+    "status": "UNAVAILABLE",
+    "reason": "NO_INDEPENDENTLY_REVIEWED_EVENT_LOCAL_INPUT_ADAPTER",
+    "assessment_executed": false,
+    "role": "DESCRIPTIVE_EVIDENCE_ONLY_NOT_A_PROBABILITY_MODEL",
+    "changes_probabilities": false,
+    "strict_eligibility_reassessed": false,
+    "gates_opened": [],
+    "activation_allowed": false
+  },
+  "model_versions": {
+    "quality_v2": "quality-v2-category-hit-hybrid-v2",
+    "sports_v2": "sports-analytics-v2-poisson-venue-shrunk-v1",
+    "quality_v3": "quality-v3-bounded-uncertainty-v1",
+    "robust_g1_lineage": "robust-family-g1-v1"
+  },
+  "automatic_wagering": false,
+  "operator_compatible": false,
+  "profitability_proven": false
+}

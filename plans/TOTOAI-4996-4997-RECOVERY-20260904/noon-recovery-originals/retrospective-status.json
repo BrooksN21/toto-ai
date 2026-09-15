@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "drawing_id": 12096,
+  "drawing_number": 4996,
+  "plan_id": "0d8c2cdfb10ef9c5",
+  "retrospective_plan_sha256": "7dbc403a1b530c17d02cd9d2d26ec0cab4fb98b880b72864504603920b7c1138",
+  "observed_at": "2026-09-05T12:19:52.540696+03:00",
+  "automatic_wagering": false,
+  "operator_compatible": false,
+  "issued_operator_strategy": "quality-v2",
+  "pre_cutoff_sidecar_status": "INCOMPLETE_OWNER_TERMINATED",
+  "pre_cutoff_models": {
+    "quality-v2": "ARCHIVED_CONTROL",
+    "sports-shadow": "UNFINISHED_NO_TERMINAL_PACKAGE",
+    "quality-v3": "MISSING_NO_TERMINAL_PACKAGE",
+    "robust": "MISSING_NO_TERMINAL_PACKAGE"
+  },
+  "comparison_kind": "POST_DRAW_REPLAY_NOT_PRE_CUTOFF_SIDECAR",
+  "next_attempt": "2026-09-05T15:05:00+03:00",
+  "status": "failed",
+  "phase": "FAIL_CLOSED",
+  "blocker": "ValueError: post-draw state package SHA-256 mismatch",
+  "status_sha256": "55f53d2fa3743aafc3dfd6744613ce1ddfd57e6e2515d7d33d11a7513d328ee8"
+}

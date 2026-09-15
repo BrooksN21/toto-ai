@@ -1,0 +1,325 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "phase": "RAW_CAPTURE_VALID_REGULATION90_FIX_AND_CORRECTED_V2_PENDING_INDEPENDENT_REVIEW",
+  "started_at": "2026-09-06T11:51:18.383812+00:00",
+  "output_dir": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z",
+  "request_budget": 120,
+  "per_request_timeout_seconds": 10,
+  "overall_timeout_seconds": 480,
+  "target_binding": "PASS 15/15 queue identity",
+  "command": [
+    "/Users/turshevr/toto-ai/.venv/bin/python",
+    "-m",
+    "toto_ai.cli",
+    "collect-goal-shadow-input",
+    "--drawing-id",
+    "12102",
+    "--queue",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/goal-shadow-queue.json",
+    "--raw-cache-dir",
+    "/Users/turshevr/toto-ai/data/raw",
+    "--output-dir",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z",
+    "--env-file",
+    "/Users/turshevr/toto-ai/.env",
+    "--request-budget",
+    "120"
+  ],
+  "protected_before_sha256": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/scheduler-plan.json": "946fc198cc232224d84bf79c9443079789f6c8a9897ba5a4fed8869c130614f9",
+    "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/drawing-12102-20260906T153000Z-b3f20304ff03e14a.json": "238393dbfd046f6f0458e66362481bbeb1de03fcbe7e86b7275dfe9802141f0c",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/run-scheduler.sh": "38958adce9e5672328be98fe8209d3bd64021098be4ba70d74018c3a71a6c5db",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/run-parallel-sidecar.sh": "12727d8a0cb15fb019856cf4b0dc1b25fa66efec76b2f19b53cda7e35e24bd6a",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/totoai-scheduler.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/totoai-parallel-sidecar.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist": "ad47a95d8a90e36656025e168af2ec1647260c6af1d3f83dba41f685588511ff",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json": "67ca1b2e8091005a1ebf5b8f508059f9e6ec4e7610b4d8df2c3fa54963b1a06c",
+    "/Users/turshevr/toto-ai/src/toto_ai/runner/scheduler.py": "07e23f28ebff084bc4e3fe13a3b185d201050ac983c64ce1be5ea0dc014848c4",
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/final_hybrid_sidecar.py": "5a3113275282527cd248bab8a4267282ae88a90a9ca23053c0e5aad1873d787e",
+    "/Users/turshevr/toto-ai/src/toto_ai/cli.py": "5b11f3c9cc2ac9feaddc6f935150fcbc55eeffba3aefae48640f0b8f4e29f88c",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.production-scheduler.v9.c1d243f5b6ca48f3.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist": "ad47a95d8a90e36656025e168af2ec1647260c6af1d3f83dba41f685588511ff",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/experimental-manual-release-authorization.json": "788b4bd358171a98909e7bd426228ed4e68fc8268db45c7a1984500a369900b1",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-release-authorization.json": "470d9f82523b52dd98354d309990e9b4510481efd4f458f20f3f538158ec499e",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/goal-shadow-queue.json": "b5595e7e950e9399dd15a83bc9309dd77c57bd0b34a3930de7b7f4c9d6d8dd5a",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/current.json": "70665be1426fbf5d86b6e48357798c50a2b7b84d9c0df2e593b3e7faf8406eb8",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/sports-seed/sports_probability_shadow_4998_08da2cb616e108b8.json": "9c2489b5cf65289227f6df794182fe71aa37f3b4ffb840c6111e8a1de1426fbd"
+  },
+  "publication": "not authorized; local only",
+  "activation": false,
+  "progress": {
+    "elapsed_seconds": 45.1,
+    "saved_raw_snapshots": 67
+  },
+  "exit_code": 0,
+  "log_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/collection-cli.log",
+  "finished_at": "2026-09-06T11:52:03.515478+00:00",
+  "protected_after_sha256": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/scheduler-plan.json": "946fc198cc232224d84bf79c9443079789f6c8a9897ba5a4fed8869c130614f9",
+    "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/drawing-12102-20260906T153000Z-b3f20304ff03e14a.json": "238393dbfd046f6f0458e66362481bbeb1de03fcbe7e86b7275dfe9802141f0c",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/run-scheduler.sh": "38958adce9e5672328be98fe8209d3bd64021098be4ba70d74018c3a71a6c5db",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/run-parallel-sidecar.sh": "12727d8a0cb15fb019856cf4b0dc1b25fa66efec76b2f19b53cda7e35e24bd6a",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/totoai-scheduler.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/totoai-parallel-sidecar.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist": "ad47a95d8a90e36656025e168af2ec1647260c6af1d3f83dba41f685588511ff",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json": "67ca1b2e8091005a1ebf5b8f508059f9e6ec4e7610b4d8df2c3fa54963b1a06c",
+    "/Users/turshevr/toto-ai/src/toto_ai/runner/scheduler.py": "07e23f28ebff084bc4e3fe13a3b185d201050ac983c64ce1be5ea0dc014848c4",
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/final_hybrid_sidecar.py": "5a3113275282527cd248bab8a4267282ae88a90a9ca23053c0e5aad1873d787e",
+    "/Users/turshevr/toto-ai/src/toto_ai/cli.py": "5b11f3c9cc2ac9feaddc6f935150fcbc55eeffba3aefae48640f0b8f4e29f88c",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.production-scheduler.v9.c1d243f5b6ca48f3.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist": "ad47a95d8a90e36656025e168af2ec1647260c6af1d3f83dba41f685588511ff",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/experimental-manual-release-authorization.json": "788b4bd358171a98909e7bd426228ed4e68fc8268db45c7a1984500a369900b1",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-release-authorization.json": "470d9f82523b52dd98354d309990e9b4510481efd4f458f20f3f538158ec499e",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/goal-shadow-queue.json": "b5595e7e950e9399dd15a83bc9309dd77c57bd0b34a3930de7b7f4c9d6d8dd5a",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/current.json": "70665be1426fbf5d86b6e48357798c50a2b7b84d9c0df2e593b3e7faf8406eb8",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/sports-seed/sports_probability_shadow_4998_08da2cb616e108b8.json": "9c2489b5cf65289227f6df794182fe71aa37f3b4ffb840c6111e8a1de1426fbd"
+  },
+  "protected_unchanged": true,
+  "cli_result": {
+    "automatic_wagering": false,
+    "captured_at": "2026-09-06T11:52:03.246756+00:00",
+    "coverage_summary": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/coverage-summary.json",
+    "drawing_id": 12102,
+    "event_count": 15,
+    "history_source_count": 28,
+    "package_influence": "NONE",
+    "quota_daily_remaining": 879,
+    "request_count": 68,
+    "schedule_report": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/schedule/schedule-source-candidates.json",
+    "sports_eligible_count": 14,
+    "status": "PAPER_ONLY_COVERAGE_PROBE"
+  },
+  "blocked_actions": [],
+  "seed_verification_finished_at": "2026-09-06T11:53:44.579556+00:00",
+  "verification_notes": [
+    {
+      "initial_local_verifier_error": "AssertionError after native seed build/roundtrip; hand-written raw-payload hash used ensure_ascii=False, while existing GOAL raw contract uses ensure_ascii=True",
+      "resolution": "Rechecked raw provenance with existing GOAL native hash/request-fingerprint functions; no source/raw/seed changes, no collection or seed generation repeated",
+      "utf8_vs_native_ascii_payloads": 54
+    }
+  ],
+  "seed": {
+    "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-seed/sports_probability_shadow_4998_e6452f2b0d08ed20.json",
+    "file_sha256": "135e0d3d2e33894d7793116c69805bc9acb8dca2df7214d5f6fe50b1e1ff0330",
+    "artifact_sha256": "e6452f2b0d08ed2042af06ffad7a3504d4471ef1992f0acaf78e21064db6eec5",
+    "status": "NOT_ACTIVATED",
+    "model_status": "EXPERIMENTAL_UNTRAINED",
+    "model_definition": "untrained Jeffreys-smoothed venue-only WDL projection using home-team home records and away-team away records; missing venue evidence falls back to BK without aggregate substitution; the candidate blend is venue-evidence-count weighted",
+    "as_of": "2026-09-06T11:52:57.058903+00:00",
+    "sports_coverage_count": 14,
+    "fallback_count": 1,
+    "validation_failures": [],
+    "fallback_events": [
+      {
+        "event_number": 9,
+        "home_team": "СК Беверен",
+        "away_team": "Ауд-Хеверле Левен",
+        "reason": "sports_history_missing"
+      }
+    ],
+    "history_sources": 28,
+    "raw_history_observations": 280,
+    "accepted_history_observations": 280,
+    "history_excluded_counts": {},
+    "history_status_counts": {
+      "FINISHED": 267,
+      "AFTER_PEN": 11,
+      "AFTER_ET": 2
+    },
+    "history_venue_counts": [
+      {
+        "event_number": 1,
+        "home": 5,
+        "away": 4
+      },
+      {
+        "event_number": 2,
+        "home": 5,
+        "away": 5
+      },
+      {
+        "event_number": 3,
+        "home": 6,
+        "away": 5
+      },
+      {
+        "event_number": 4,
+        "home": 6,
+        "away": 6
+      },
+      {
+        "event_number": 5,
+        "home": 5,
+        "away": 6
+      },
+      {
+        "event_number": 6,
+        "home": 7,
+        "away": 3
+      },
+      {
+        "event_number": 7,
+        "home": 5,
+        "away": 6
+      },
+      {
+        "event_number": 8,
+        "home": 5,
+        "away": 6
+      },
+      {
+        "event_number": 9,
+        "home": 0,
+        "away": 0
+      },
+      {
+        "event_number": 10,
+        "home": 5,
+        "away": 3
+      },
+      {
+        "event_number": 11,
+        "home": 4,
+        "away": 5
+      },
+      {
+        "event_number": 12,
+        "home": 3,
+        "away": 8
+      },
+      {
+        "event_number": 13,
+        "home": 5,
+        "away": 4
+      },
+      {
+        "event_number": 14,
+        "home": 5,
+        "away": 4
+      },
+      {
+        "event_number": 15,
+        "home": 4,
+        "away": 7
+      }
+    ],
+    "snapshot_content_sha256": "3e172a0997ee40aebcc6d0297e873485a218f6d3fa8dcdf6695aab51b5d17ed2",
+    "analytics_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-seed/history-coverage-analytics.json",
+    "analytics_sha256": "ce5b174a2cd0cd68798dac25ea113f88e780401275f830dd2b6e0646d7f00442",
+    "source_artifacts_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-seed/source-artifacts.json",
+    "source_artifacts_sha256": "c46551dc0b4f0cece549db6bf6371d9494c119dba48ec01b2cc39b3ccf56e822",
+    "raw_manifest_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-seed/raw-snapshot-manifest.json",
+    "raw_manifest_sha256": "55b950499e97c572a332afb152c21702f61f934b9f32b2625d5114de3205b5c3",
+    "native_build_and_roundtrip": "PASS in initial guarded seed command before supplementary raw-hash assertion",
+    "history_validation": "Native strict terminal+team+target exclusion+starts_at<min(as_of,target kickoff); no DB/network allowed during seed build"
+  },
+  "schedule": {
+    "status": "partial_conflicts",
+    "pagination_complete": true,
+    "quarantined_fixture_count": 2,
+    "request_count": 40,
+    "budget_exhausted": false
+  },
+  "capture_bounds": {
+    "first": "2026-09-06T11:51:20.485829Z",
+    "last": "2026-09-06T11:52:03.246756Z",
+    "raw_snapshot_count": 67,
+    "schedule_snapshots": 39,
+    "history_snapshots": 28
+  },
+  "artifact_hashes": {
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/coverage-summary.json": "720f64b32277779b6a0496912d7382b2d9307580ae49a2ab6631c90d145f9a88",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/schedule/schedule-source-candidates.json": "42792b8fd4e084226bdd034adbdf5725bfbf3cede2ec9ef4d5d5b62445980641"
+  },
+  "protected_final_sha256": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/scheduler-plan.json": "946fc198cc232224d84bf79c9443079789f6c8a9897ba5a4fed8869c130614f9",
+    "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/drawing-12102-20260906T153000Z-b3f20304ff03e14a.json": "238393dbfd046f6f0458e66362481bbeb1de03fcbe7e86b7275dfe9802141f0c",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/run-scheduler.sh": "38958adce9e5672328be98fe8209d3bd64021098be4ba70d74018c3a71a6c5db",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/run-parallel-sidecar.sh": "12727d8a0cb15fb019856cf4b0dc1b25fa66efec76b2f19b53cda7e35e24bd6a",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/totoai-scheduler.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/totoai-parallel-sidecar.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist": "ad47a95d8a90e36656025e168af2ec1647260c6af1d3f83dba41f685588511ff",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json": "67ca1b2e8091005a1ebf5b8f508059f9e6ec4e7610b4d8df2c3fa54963b1a06c",
+    "/Users/turshevr/toto-ai/src/toto_ai/runner/scheduler.py": "07e23f28ebff084bc4e3fe13a3b185d201050ac983c64ce1be5ea0dc014848c4",
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/final_hybrid_sidecar.py": "5a3113275282527cd248bab8a4267282ae88a90a9ca23053c0e5aad1873d787e",
+    "/Users/turshevr/toto-ai/src/toto_ai/cli.py": "5b11f3c9cc2ac9feaddc6f935150fcbc55eeffba3aefae48640f0b8f4e29f88c",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.production-scheduler.v9.c1d243f5b6ca48f3.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist": "ad47a95d8a90e36656025e168af2ec1647260c6af1d3f83dba41f685588511ff",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/experimental-manual-release-authorization.json": "788b4bd358171a98909e7bd426228ed4e68fc8268db45c7a1984500a369900b1",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-release-authorization.json": "470d9f82523b52dd98354d309990e9b4510481efd4f458f20f3f538158ec499e",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/goal-shadow-queue.json": "b5595e7e950e9399dd15a83bc9309dd77c57bd0b34a3930de7b7f4c9d6d8dd5a",
+    "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/current.json": "70665be1426fbf5d86b6e48357798c50a2b7b84d9c0df2e593b3e7faf8406eb8",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/sports-seed/sports_probability_shadow_4998_08da2cb616e108b8.json": "9c2489b5cf65289227f6df794182fe71aa37f3b4ffb840c6111e8a1de1426fbd"
+  },
+  "protected_mismatches": [],
+  "operational_binding": "Not changed: old pinned seed/current marker remain; no in-place rebinding or activation performed",
+  "ongoing_processes": "None owned; collection exited0",
+  "coverage_fallback_events": [
+    {
+      "event_number": 9,
+      "reason": "target_fixture_missing"
+    }
+  ],
+  "request_accounting_note": "68 attempted requests reported by native client:40 schedule attempts+28 history.67 persisted successful raw responses:39 schedule+28 history. One attempt has no raw snapshot; native CLI does not expose its diagnostic in final summary; do not count it as a saved response.",
+  "completion_at": "2026-09-06T14:54:39.689048+03:00",
+  "remaining": "Do not bind either research artifact. Separately authorized reviewed90-minute history-score correction/authority required; final scheduler-input compatibility also remains for future binding.",
+  "checkpoint_paths": [
+    "memory-bank/ACTIVE_PLAN.md",
+    "memory-bank/THREAD_COORDINATION.json"
+  ],
+  "historical_capture_completion_phase": "FRESH_CAPTURE_AND_RESEARCH_SEED_VERIFIED_NOT_ACTIVATED",
+  "version_correction": {
+    "at": "2026-09-06T15:05:34.911394+03:00",
+    "previous_label": "Sports-v2 label on initial V1 carrier was incorrect; historical bytes retained",
+    "proof": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-v2-research-DO-NOT-ACTIVATE/VERSION_AND_SCORE_HANDOFF.json",
+    "proof_sha256": "f653fb8955bd905ebe547085b5dfe6b43b978cd228f2b8122e7965c103f9201d",
+    "v2_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-v2-research-DO-NOT-ACTIVATE/sports_probability_shadow_4998_2e1a2b244c28630d.json",
+    "v2_file_sha256": "f407031ecd041dfbde327af195f25b739c9b6bc141de5316ca68f8cb7ae9b2ae",
+    "native_rebase": "PASS15 rows against the genuine frozen seed BK anchor; no scheduler final input generated or claimed verified",
+    "config": {
+      "model_version": "sports-analytics-v2-poisson-venue-shrunk-v1",
+      "minimum_venue_matches": 2,
+      "prior_matches": 3.0,
+      "maximum_blend_weight": 0.2,
+      "disagreement_limit": 0.45,
+      "poisson_max_goals": 10
+    },
+    "promotion_allowed": false,
+    "blocker": "Generic Score versus explicit FtScore differs for12/13 AFTER_ET/AFTER_PEN history observations, target events1,2,4,5,6,13. Existing importer has no verified90-minute normalization. No data/policy fix applied.",
+    "deadline": "Requested15:00 missed; actual native projection/proof completed 2026-09-06T15:04:52.778492+03:00"
+  },
+  "history": [
+    {
+      "phase": "V2_VERSION_CORRECTED_RESEARCH_ONLY_BLOCKED_90_MINUTE_SCORE_AUTHORITY",
+      "version_correction": {
+        "at": "2026-09-06T15:05:34.911394+03:00",
+        "previous_label": "Sports-v2 label on initial V1 carrier was incorrect; historical bytes retained",
+        "proof": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-v2-research-DO-NOT-ACTIVATE/VERSION_AND_SCORE_HANDOFF.json",
+        "proof_sha256": "f653fb8955bd905ebe547085b5dfe6b43b978cd228f2b8122e7965c103f9201d",
+        "v2_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-v2-research-DO-NOT-ACTIVATE/sports_probability_shadow_4998_2e1a2b244c28630d.json",
+        "v2_file_sha256": "f407031ecd041dfbde327af195f25b739c9b6bc141de5316ca68f8cb7ae9b2ae",
+        "native_rebase": "PASS15 rows against the genuine frozen seed BK anchor; no scheduler final input generated or claimed verified",
+        "config": {
+          "model_version": "sports-analytics-v2-poisson-venue-shrunk-v1",
+          "minimum_venue_matches": 2,
+          "prior_matches": 3.0,
+          "maximum_blend_weight": 0.2,
+          "disagreement_limit": 0.45,
+          "poisson_max_goals": 10
+        },
+        "promotion_allowed": false,
+        "blocker": "Generic Score versus explicit FtScore differs for12/13 AFTER_ET/AFTER_PEN history observations, target events1,2,4,5,6,13. Existing importer has no verified90-minute normalization. No data/policy fix applied.",
+        "deadline": "Requested15:00 missed; actual native projection/proof completed 2026-09-06T15:04:52.778492+03:00"
+      }
+    }
+  ],
+  "regulation90_followup": {
+    "receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-receipt.json",
+    "handoff": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-handoff.md",
+    "corrected_seed_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-quarantine-refresh-20260906T115118375156Z/sports-v2-regulation90-pending-review/sports_probability_shadow_4998_ac04ea9b30359094.json",
+    "promotion_allowed": false
+  }
+}

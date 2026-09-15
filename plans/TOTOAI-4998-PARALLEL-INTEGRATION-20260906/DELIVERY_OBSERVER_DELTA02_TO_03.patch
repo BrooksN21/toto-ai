@@ -1,0 +1,159 @@
+--- a/src/toto_ai/operations/scheduler_status.py
++++ b/src/toto_ai/operations/scheduler_status.py
+@@ -599,13 +599,14 @@
+         raise
+ 
+ 
+-def _writable_entry(fd: int, name: str) -> None:
++def _writable_entry(fd: int, name: str) -> os.stat_result | None:
+     try:
+         entry = os.stat(name, dir_fd=fd, follow_symlinks=False)
+     except FileNotFoundError:
+         return
+     if not stat.S_ISREG(entry.st_mode) or entry.st_nlink != 1:
+         raise ValueError("watcher destination must be regular, never a symlink")
++    return entry
+ 
+ 
+ def _atomic_text(path: Path, value: str) -> None:
+@@ -639,12 +640,28 @@
+ def _append_text(path: Path, value: str) -> None:
+     fd = _directory_fd(path.parent)
+     try:
+-        _writable_entry(fd, path.name)
+-        writer = os.open(
+-            path.name, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW,
+-            0o600, dir_fd=fd,
+-        )
++        expected = _writable_entry(fd, path.name)
++        flags = os.O_WRONLY | os.O_APPEND | os.O_NOFOLLOW | os.O_NONBLOCK
++        if expected is None:
++            flags |= os.O_CREAT | os.O_EXCL
++        writer = os.open(path.name, flags, 0o600, dir_fd=fd)
+         with os.fdopen(writer, "a", encoding="utf-8") as handle:
++            # O_NOFOLLOW does not reject hardlinks. Validate the opened inode,
++            # not just the pathname checked before open, before writing any byte.
++            opened = os.fstat(handle.fileno())
++            current = _writable_entry(fd, path.name)
++            identity = (opened.st_dev, opened.st_ino)
++            if (
++                not stat.S_ISREG(opened.st_mode)
++                or opened.st_nlink != 1
++                or current is None
++                or (current.st_dev, current.st_ino) != identity
++                or (
++                    expected is not None
++                    and (expected.st_dev, expected.st_ino) != identity
++                )
++            ):
++                raise ValueError("history append destination changed before write")
+             handle.write(value)
+             handle.flush()
+             os.fsync(handle.fileno())
+--- a/tests/test_scheduler_delivery.py
++++ b/tests/test_scheduler_delivery.py
+@@ -850,3 +850,84 @@
+     _atomic_text(folder / "delivery-ready.json", "SYNTHETIC_RECEIPT")
+     assert protected.read_bytes() == before
+     assert (pinned / "delivery-ready.json").read_text() == "SYNTHETIC_RECEIPT"
++
++
++# DO-1b: exact independent hardlink-race regression, assertions unchanged.
++def test_history_append_hardlink_swap_cannot_modify_authority(tmp_path, monkeypatch):
++    plan = _plan(tmp_path)
++    primary(plan)
++    authority = plan.output_dir / "operator-result.json"
++    before = authority.read_bytes()
++    folder = plan.output_dir / "status-watch"
++    folder.mkdir()
++    latest, history = folder / "latest.json", folder / "history.jsonl"
++    history.write_text("")
++    real_open = os.open
++    swapped = []
++
++    def opening(path, flags, *args, **kwargs):
++        if path == history.name and flags & os.O_APPEND:
++            history.unlink()
++            os.link(authority, history)
++            swapped.append(True)
++        return real_open(path, flags, *args, **kwargs)
++
++    monkeypatch.setattr(os, "open", opening)
++    try:
++        watch_scheduler_status(
++            plan,
++            latest_path=latest,
++            history_path=history,
++            max_iterations=1,
++            status_provider=lambda _: scheduler_status(plan, observed_at=NOW),
++        )
++    except (OSError, ValueError):
++        pass
++    assert swapped == [True]
++    assert authority.read_bytes() == before, (
++        "history append modified canonical authority"
++    )
++
++
++@pytest.mark.parametrize("kind", ["single_link_replacement", "missing_hardlink"])
++def test_history_append_requires_intended_inode_or_exclusive_create(
++    tmp_path, monkeypatch, kind
++):
++    from toto_ai.operations.scheduler_status import _append_text
++
++    history = tmp_path / "history.jsonl"
++    authority = tmp_path / "authority.json"
++    authority.write_text("SYNTHETIC_PROTECTED")
++    before = authority.read_bytes()
++    replacement = tmp_path / "replacement.json"
++    replacement.write_text("SYNTHETIC_OTHER_SINGLE_LINK")
++    other_before = replacement.read_bytes()
++    if kind == "single_link_replacement":
++        history.write_text("ORIGINAL_HISTORY")
++    real_open = os.open
++    opened = []
++    swapped = []
++
++    def opening(path, flags, *args, **kwargs):
++        if path == history.name and flags & os.O_APPEND:
++            if kind == "single_link_replacement":
++                os.replace(replacement, history)
++            else:
++                os.link(authority, history)
++            swapped.append(True)
++            descriptor = real_open(path, flags, *args, **kwargs)
++            opened.append(descriptor)
++            return descriptor
++        return real_open(path, flags, *args, **kwargs)
++
++    monkeypatch.setattr(os, "open", opening)
++    with pytest.raises((ValueError, FileExistsError)):
++        _append_text(history, "MUST_NOT_BE_APPENDED")
++    assert swapped == [True]
++    assert authority.read_bytes() == before
++    assert history.read_bytes() == (
++        other_before if kind == "single_link_replacement" else before
++    )
++    for descriptor in opened:
++        with pytest.raises(OSError):
++            os.fstat(descriptor)
+--- a/skills/operator-delivery.md
++++ b/skills/operator-delivery.md
+@@ -89,3 +89,17 @@
+ spy instead of a `Path.replace` implementation-specific spy. A proof with dummy hashes
+ and no input chain must be rejected, even if an old positive fixture expected acceptance.
+ Candidate02 still requires independent rereview and separate rollout/publication.
++
++
++## Review correction03 — history append race (DO-1b only)
++
++A pathname stat before open is insufficient: `O_NOFOLLOW` does not reject hardlinks.
++Before appending, validate the **opened descriptor** with `fstat`: regular file,
++exactly one link, same device/inode as the intended existing entry and the current
++entry in the pinned directory. A missing history is created exclusively, so a raced
++entry cannot be adopted. Nonblocking open avoids waiting on a substituted special
++file. Failed validation closes the descriptor before writing; it neither truncates,
++removes nor repairs the substituted entry or protected authority. Directory pinning
++and the receipt/latest atomic writer remain unchanged. DO-2/3/4 are not reopened.
++This correction remains a frozen candidate pending separate independent review;
++it does not operate or reload the live watcher and does not confirm chat delivery.

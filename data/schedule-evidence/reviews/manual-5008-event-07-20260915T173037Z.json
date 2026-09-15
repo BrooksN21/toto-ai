@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12130,
+    "drawing_number": 5008,
+    "event_order": 6,
+    "target_event_id": 181059,
+    "sport": "football",
+    "championship": "Англия. Национальная лига",
+    "home_team": "Олтрингем",
+    "away_team": "Хартлпул"
+  },
+  "observation": {
+    "observation_id": "manual-reviewed-5008-07-55d0aeaa-42fd45d5",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Национальная лига",
+      "National League"
+    ],
+    "home_entity": "Altrincham FC",
+    "home_aliases": [
+      "Олтрингем",
+      "Altrincham",
+      "Altrincham FC"
+    ],
+    "away_entity": "Hartlepool United",
+    "away_aliases": [
+      "Хартлпул",
+      "Hartlepool",
+      "Hartlepool United",
+      "Хартлпул Юнайтед"
+    ],
+    "starts_at": "2026-09-16T18:45:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+    "reviewed_at": "2026-09-15T17:30:37.843143Z"
+  },
+  "sources": [
+    {
+      "source_name": "GOAL API",
+      "role": "independent",
+      "source_url": "https://goal-api.com",
+      "snapshot": "manual-5008-07-goal-api-55d0aeaa62a5c19d.json",
+      "snapshot_sha256": "55d0aeaa62a5c19d9f3180c99da64e0329cc9d4b66685b379c8c39072d8a4e3b",
+      "home_team": "Altrincham",
+      "away_team": "Hartlepool United",
+      "starts_at": "2026-09-16T18:45:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    },
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/altrincham-fc-hartlepool-united/bcskc#id:16494322",
+      "snapshot": "manual-5008-07-sofascore-42fd45d537e33124.json",
+      "snapshot_sha256": "42fd45d537e3312497c0466f41f80109f4b5a761510c59e83f9f26a94c2adb28",
+      "home_team": "Altrincham FC",
+      "away_team": "Hartlepool United",
+      "starts_at": "2026-09-16T18:45:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    }
+  ]
+}

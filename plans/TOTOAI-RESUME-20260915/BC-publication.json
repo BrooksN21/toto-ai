@@ -1,0 +1,32 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "at": "2026-09-15T17:58:35+03:00",
+  "status": "REVIEWED_TESTED_READY_FOR_AUTHORIZED_PUBLICATION",
+  "review": "BC-integration-review.json",
+  "checks": "B27PASS,ignore37PASS,Ruff6PASS",
+  "private_exclusions": [
+    {
+      "path": "memory-bank/OPERATIONS_HANDOFF.md",
+      "sha256": "f5e092673274f82834e4c52646885034dc9cb52003ff40893a3be0281b09b831",
+      "reason": "Explicitly superseded inactive recovery instructions"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-experimental-release-authorization-receipt-20260906.md",
+      "sha256": "f1aebbef992facda2586d87ece8d009dd2ef800d86a02cf40deafc68f99618e2",
+      "reason": "Private archived owner-consent handoff; retain locally"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CONSENT4999_20260907_HANDOFF.md",
+      "sha256": "ebbefb3be3d1396c231c1b78647dfb533a9aa55172b5d449ca0212473a03a1b8",
+      "reason": "Private archived owner-consent handoff; retain locally"
+    }
+  ],
+  "private_bytes_unchanged": true,
+  "raw_uploaded": false,
+  "source_hidden": false,
+  "active_plan_hidden": false,
+  "C_dataset_ready": false,
+  "training_executed": false,
+  "publication_destination": "Existing draft PR23; no merge",
+  "final_receipt": "cleanup-remainder-local-receipt.json (ignored runtime receipt; populated after confirmed push)"
+}

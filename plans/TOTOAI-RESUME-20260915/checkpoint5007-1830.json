@@ -1,0 +1,42 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "observed_at_msk": "2026-09-15T18:32:38.190893+03:00",
+  "plan_id": "84b0f69e06487848",
+  "drawing": 5007,
+  "scheduled_checkpoint_msk": "2026-09-15T18:30:00+03:00",
+  "phase": "api_preflight",
+  "attempt_id": "api_preflight-01-20260915T153000650390Z-264cec40",
+  "status": "complete",
+  "start_msk": "2026-09-15T18:30:00.650390+03:00",
+  "complete_msk": "2026-09-15T18:31:09.377768+03:00",
+  "elapsed_seconds": 68.727378,
+  "reason": "target, data access, configuration, and override catalog validated",
+  "failure_details": [],
+  "observed_running_pid": 35187,
+  "jobs": {
+    "primary": {
+      "label": "com.totoai.production-scheduler.v9.84b0f69e06487848",
+      "loaded": true,
+      "pid": null,
+      "last_exit_status": 0
+    },
+    "watcher": {
+      "label": "com.totoai.status-watcher.v1.84b0f69e06487848",
+      "loaded": true,
+      "pid": 34611,
+      "last_exit_status": 15
+    }
+  },
+  "watcher_observed_at_msk": "2026-09-15T18:32:37.692937+03:00",
+  "watcher_age_seconds": 0.47,
+  "watcher_blocker": null,
+  "next_checkpoint": {
+    "at_msk": "2026-09-15T19:00:00+03:00",
+    "phase": "t_minus_60"
+  },
+  "operator_result_ready": false,
+  "manual_run": false,
+  "restart": false,
+  "db_consent_code_git_mutation": false,
+  "automatic_wagering": false
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "event_order": 8,
+    "target_event_id": 180611,
+    "championship": "Испания. Ла Лига",
+    "home_team": "Атлетик Бильбао",
+    "away_team": "Атлетико Мадрид",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "recovery-4997-event-09-20260904",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Испания. Ла Лига",
+      "LaLiga"
+    ],
+    "home_entity": "Athletic Club",
+    "home_aliases": [
+      "Атлетик Бильбао",
+      "Athletic Club"
+    ],
+    "away_entity": "Atlético Madrid",
+    "away_aliases": [
+      "Атлетико Мадрид",
+      "Atlético Madrid"
+    ],
+    "starts_at": "2026-09-05T14:15:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "codex-local-evidence-review",
+    "reviewed_at": "2026-09-04T20:07:05.963475Z"
+  },
+  "sources": [
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/atletico-madrid-athletic-club/AgbsLgb#id:16416317",
+      "snapshot": "recovery-4997-0b4cec0474195035326917fc62b02abc9275af6efb8566e74b9d836e06bb23b5.json",
+      "snapshot_sha256": "0b4cec0474195035326917fc62b02abc9275af6efb8566e74b9d836e06bb23b5",
+      "home_team": "Athletic Club",
+      "away_team": "Atlético Madrid",
+      "starts_at": "2026-09-05T14:15:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T18:36:48.517740Z"
+    },
+    {
+      "source_name": "Sportschau",
+      "role": "independent",
+      "source_url": "https://www.sportschau.de/live-und-ergebnisse/fussball/spanien-primera-division/ma12187876/rayo-vallecano_racing-santander/spiel-spiele-und-ergebnisse",
+      "snapshot": "recovery-4997-e1fa98bfb46a93f7917472e60f34cc79bade97482a0e3132e35cb8498c7fb721.html",
+      "snapshot_sha256": "e1fa98bfb46a93f7917472e60f34cc79bade97482a0e3132e35cb8498c7fb721",
+      "home_team": "Athletic Club",
+      "away_team": "Atlético Madrid",
+      "starts_at": "2026-09-05T14:15:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T20:03:52.518440Z"
+    }
+  ]
+}

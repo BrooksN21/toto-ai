@@ -1,0 +1,20 @@
+{
+  "src/toto_ai/operations/retrospective_integrity.py": "45dc47d4f74b8b3252bfdabf0f29e135258e37525584d7cb0944dd022607e8e4",
+  "tests/test_retrospective_integrity.py": "324f2d6d7655d72120d7f4fea287f8559c7241498226744bfb40ddbca43fa7e8",
+  "reports/research/4996-postmortem-automation/run-retrospective-12096.py": "674ce13d70f93d0d16b02d5915cb3d0ad46bf08d7908671f39d20747b579379d",
+  "reports/research/4996-postmortem-automation/retrospective-plan-12096.json": "a06ad42094f0dbf8b3a172417b04e7215185d9822a6a27b69cf16d4022fa13fe",
+  "reports/rehearsal/evening-4996-20260904T163000Z/post-draw/post-draw-state.json": "13779dbdb3d149450c70b710a6aeadd5a0e68f68a6b01081f3841882c67445ae",
+  "frozen_bindings": {
+    "scheduler_plan": true,
+    "post_draw_plan": true,
+    "final_input": true,
+    "baseline_package": true,
+    "sports_artifact": true,
+    "operator_delivery": true,
+    "paper_package_result": true,
+    "runner_python": true,
+    "runner_shell": true,
+    "integrity_validator_python": true
+  },
+  "execution_plan_sha256": "ee842c15e1fbb520cc70549b347927b65653d7b9ba33ad2d0de088a9b626c296"
+}

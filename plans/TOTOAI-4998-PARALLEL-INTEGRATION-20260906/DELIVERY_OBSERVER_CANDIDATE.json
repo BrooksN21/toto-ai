@@ -1,0 +1,29 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "status": "IMPLEMENTED_SCOPED_VERIFIED_PENDING_INDEPENDENT_REVIEW",
+  "patch_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_CANDIDATE.patch",
+  "patch_sha256": "bb6c7de16e7201a6bf5a4f45997403ca0437c0bfdaed67254930da6892f9876f",
+  "files": [
+    {
+      "path": "src/toto_ai/operations/scheduler_status.py",
+      "before_sha256": "5c3bfb00238b00772febe36f055d28414e44c1ec08295f09dfc83668474f2956",
+      "after_sha256": "a80bc0c217eb238a85cf95733754aac6d2dc132f9d208328d27025e14171898a"
+    },
+    {
+      "path": "src/toto_ai/operations/scheduler_delivery.py",
+      "before_sha256": null,
+      "after_sha256": "72be5e7ff454dbdde7a5fdc4e806f75bf1bd5d954df56a8ba3dc18e838fe5829"
+    },
+    {
+      "path": "tests/test_scheduler_delivery.py",
+      "before_sha256": null,
+      "after_sha256": "9a068bdea39f81b429ae39c4bdeb0654f52bda8ed1200e6feec299c77a82c2ee"
+    },
+    {
+      "path": "skills/operator-delivery.md",
+      "before_sha256": null,
+      "after_sha256": "dd162263d9770b9acdab477320144882317525423ad23bcd743ad6cc0116cce7"
+    }
+  ],
+  "verification_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_IMPLEMENTATION_RECEIPT.json"
+}

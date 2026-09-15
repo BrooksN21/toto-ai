@@ -6939,6 +6939,5301 @@
           "source_url": "https://spfl.co.uk/clubs/st-johnstone/fixtures"
         }
       ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-fe881aadfbf91de5bdf7",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Real Sociedad",
+      "home_aliases": [
+        "Реал Сосьедад",
+        "Real Sociedad"
+      ],
+      "away_entity": "Celta Vigo",
+      "away_aliases": [
+        "Сельта",
+        "Celta Vigo"
+      ],
+      "starts_at": "2026-09-03T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-fe881aadfbf91de5bdf7.md",
+      "review_document_sha256": "faa0cf3d7a087d2fef73f693cfdd91faaf28b60b0e54e81eefb83a2f48dc52f9",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/real-sociedad-celta-vigo/wgbszgb#id:16416340"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-298fc8b53de978a4ab0e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 1",
+        "Ligue 1"
+      ],
+      "home_entity": "Toulouse",
+      "home_aliases": [
+        "Тулуза",
+        "Toulouse"
+      ],
+      "away_entity": "Lille",
+      "away_aliases": [
+        "Лилль",
+        "Lille"
+      ],
+      "starts_at": "2026-09-03T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-298fc8b53de978a4ab0e.md",
+      "review_document_sha256": "45baa5aa0089de7c8a9dc25d68bd13e61ef5d7f6c9a8452e57e9b00eb6f359d8",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/toulouse-lille/THsGI#id:16310945"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-94487a63f7717b2f2bcc",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Бразилия. Кубок",
+        "Copa do Brasil - Quarter-finals",
+        "Copa Betano do Brasil"
+      ],
+      "home_entity": "Gremio",
+      "home_aliases": [
+        "Грэмио РС",
+        "Gremio",
+        "Grêmio"
+      ],
+      "away_entity": "Internacional",
+      "away_aliases": [
+        "Интернациональ РС",
+        "Internacional"
+      ],
+      "starts_at": "2026-09-03T23:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-94487a63f7717b2f2bcc.md",
+      "review_document_sha256": "2b674b2d7cc41456027fb7d1670586bcf68f5bdae44923e2a0b12c2fccf897f9",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/gremio-internacional/qOsBtc#id:16795431"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-ed8c066f38924f208856",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Дания. Суперлига",
+        "Superliga",
+        "Danish Superliga"
+      ],
+      "home_entity": "FC Copenhagen",
+      "home_aliases": [
+        "ФК Копенгаген",
+        "FC Copenhagen",
+        "FC København"
+      ],
+      "away_entity": "Nordsjaelland",
+      "away_aliases": [
+        "Нордсьелланд",
+        "Nordsjaelland",
+        "FC Nordsjælland"
+      ],
+      "starts_at": "2026-09-03T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-ed8c066f38924f208856.md",
+      "review_document_sha256": "c933ef02944d69a8219ca92df2abd21ad227bffd705772a6d7d38a544d4f508b",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-nordsjaelland-fc-kobenhavn/JAsRA#id:16278686"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-3d70f0ec2174ad6e2423",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Италия. Кубок Серии C",
+        "Coppa Italia Serie C - 1/16-finals",
+        "Coppa Italia Serie C, Knockout stage"
+      ],
+      "home_entity": "Novara",
+      "home_aliases": [
+        "Новара",
+        "Novara"
+      ],
+      "away_entity": "Livorno",
+      "away_aliases": [
+        "Ливорно",
+        "Livorno",
+        "US Livorno 1915"
+      ],
+      "starts_at": "2026-09-03T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-3d70f0ec2174ad6e2423.md",
+      "review_document_sha256": "bc55dfcdaa86578fda3fbe3265a4baeb97b479e66e1a5a3f0062f64933987eab",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/novara-us-livorno-1915/Bebsrfb#id:16866635"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-a57cbfcb81292f92ad8e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Израиль. Премьер Лига",
+        "Ligat Ha'al",
+        "Premier League"
+      ],
+      "home_entity": "Hapoel Tel Aviv",
+      "home_aliases": [
+        "Хапоэль Тель-Авив",
+        "Hapoel Tel Aviv"
+      ],
+      "away_entity": "Beitar Jerusalem",
+      "away_aliases": [
+        "Бейтар Иерусалим",
+        "Beitar Jerusalem"
+      ],
+      "starts_at": "2026-09-03T17:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-a57cbfcb81292f92ad8e.md",
+      "review_document_sha256": "1433b4834641154586a0721df078148853278d56ba916f2a7fe6e10514c7d3fd",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/hapoel-tel-aviv-beitar-jerusalem/eecsWhc#id:16364301"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-51a3ff528278602cfbf5",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Латвия. Кубок",
+        "Cup - Semi-finals",
+        "Latvijas Kauss"
+      ],
+      "home_entity": "RFS",
+      "home_aliases": [
+        "Ригас Футбола Скола",
+        "RFS"
+      ],
+      "away_entity": "Riga FC",
+      "away_aliases": [
+        "Рига ФК",
+        "Riga FC"
+      ],
+      "starts_at": "2026-09-03T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-51a3ff528278602cfbf5.md",
+      "review_document_sha256": "f1353b938fca8ad484bbfa4ebb26921319a5b4ef8e022145f4c3e8abd16d8b32",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/riga-fc-rfs/tzCstXob#id:16869782"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-9ace3b260bae7dcb1e3a",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Польша. Чемпионат",
+        "Ekstraklasa"
+      ],
+      "home_entity": "Rakow",
+      "home_aliases": [
+        "Ракув",
+        "Rakow",
+        "Raków Częstochowa"
+      ],
+      "away_entity": "Gornik Zabrze",
+      "away_aliases": [
+        "Гурник Забрже",
+        "Gornik Zabrze",
+        "Górnik Zabrze"
+      ],
+      "starts_at": "2026-09-03T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-9ace3b260bae7dcb1e3a.md",
+      "review_document_sha256": "4e00cc0b6778751666175e800a98008c2d5c5875497ee7aab79f312bd814fe06",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/rakow-czestochowa-gornik-zabrze/kmbstfo#id:16316984"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-018e24f52f2a6e096031",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Турция. 1-я Лига",
+        "1. Lig"
+      ],
+      "home_entity": "Bodrumspor",
+      "home_aliases": [
+        "Бодрумспор",
+        "Bodrumspor",
+        "Bodrum FK"
+      ],
+      "away_entity": "Erokspor",
+      "away_aliases": [
+        "Эрокспор",
+        "Erokspor",
+        "Esenler Erokspor"
+      ],
+      "starts_at": "2026-09-03T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-018e24f52f2a6e096031.md",
+      "review_document_sha256": "24a4b8fc7b008eb1af18261994f8e35ca8f6f1cdf78532185e8635d872c3615f",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/esenler-erokspor-bodrum-fk/PXFbsFZec#id:16490450"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-fce18c8d7bc6525144c7",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Швейцария. Чемпионат",
+        "Super League",
+        "Swiss Super League"
+      ],
+      "home_entity": "Basel",
+      "home_aliases": [
+        "Базель",
+        "Basel"
+      ],
+      "away_entity": "Sion",
+      "away_aliases": [
+        "Сьон",
+        "Sion",
+        "FC Sion"
+      ],
+      "starts_at": "2026-09-03T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-fce18c8d7bc6525144c7.md",
+      "review_document_sha256": "5de16298134f5a6d54f44fa52f8c2e5df41226ba39a44fb9c331bafb2c232645",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/basel-fc-sion/cZsbab#id:16357077"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-67c88d1f09b0354b8ca2",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Шотландия. Премьер-Лига",
+        "Premiership",
+        "Scottish Premiership"
+      ],
+      "home_entity": "Hibernian",
+      "home_aliases": [
+        "Хиберниан",
+        "Hibernian"
+      ],
+      "away_entity": "Hearts",
+      "away_aliases": [
+        "Хартс",
+        "Hearts",
+        "Heart of Midlothian"
+      ],
+      "starts_at": "2026-09-03T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-67c88d1f09b0354b8ca2.md",
+      "review_document_sha256": "d019eb5e17d35d80fe208b47f53ad86eda7bb4d3f94d77ee1caca8ff7bd71ffb",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/hibernian-heart-of-midlothian/dXseX#id:16362004"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-32fa3cd1c9246c7e8dae",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Эквадор. Серия A",
+        "Liga Pro",
+        "LigaPro Serie A, Primera Etapa"
+      ],
+      "home_entity": "Libertad",
+      "home_aliases": [
+        "Либертад Лоха",
+        "Libertad",
+        "Libertad FC"
+      ],
+      "away_entity": "Emelec",
+      "away_aliases": [
+        "Эмелек",
+        "Emelec"
+      ],
+      "starts_at": "2026-09-04T00:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-02T14:13:46.197215Z",
+      "review_document": "reviews/auto-independent-consensus-v3-32fa3cd1c9246c7e8dae.md",
+      "review_document_sha256": "5a86a009e0413b47aaad3ba4e43c2fc77c0fdc56c36b9ecacd3b57168ca33cc1",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/libertad-emelec/ffcsCHhd#id:15502669"
+        }
+      ]
+    },
+    {
+      "away_aliases": [
+        "Dobrudzha Dobrich",
+        "Добруджа"
+      ],
+      "away_entity": "Dobrudzha Dobrich",
+      "competition_aliases": [
+        "Болгария. 2-я лига",
+        "Bulgarian Second League"
+      ],
+      "conditional": false,
+      "gender_age_class": "men-senior",
+      "home_aliases": [
+        "Lokomotiv Gorna Oryahovitsa",
+        "Локомотив Горна-Оряховица"
+      ],
+      "home_entity": "Lokomotiv Gorna Oryahovitsa",
+      "observation_id": "manual-reviewed-4995-03-e81de789519faec0",
+      "reviewed_at": "2026-09-02T15:17:33Z",
+      "reviewer": "codex-reviewed-public-evidence",
+      "sport": "football",
+      "starts_at": "2026-09-03T16:00:00Z",
+      "status": "scheduled",
+      "review_document": "reviews/manual-4995-event-03.json",
+      "review_document_sha256": "f1fb2ba27cf2eece08b62f2bd1a1a814f6cb1f167a46d932ca21b63252f9cfe4",
+      "claims": [
+        {
+          "source_name": "Bulgarian-Football.com",
+          "role": "independent",
+          "source_url": "https://bulgarian-football.com/vtora-liga.html"
+        },
+        {
+          "source_name": "ProSoccer.bg",
+          "role": "independent",
+          "source_url": "https://prosoccer.bg/football/lokomotiv-gorna-oryahovitsa-vs-dobrudzha-dobrich-03-09-2026-hehd0"
+        }
+      ]
+    },
+    {
+      "away_aliases": [
+        "Pafos FC",
+        "ФК Пафос"
+      ],
+      "away_entity": "Pafos FC",
+      "competition_aliases": [
+        "Кипр. Суперкубок",
+        "Cyprus Super Cup"
+      ],
+      "conditional": false,
+      "gender_age_class": "men-senior",
+      "home_aliases": [
+        "Omonia Nicosia",
+        "Омония Никосия"
+      ],
+      "home_entity": "Omonia Nicosia",
+      "observation_id": "manual-reviewed-4995-08-c2ff7fe70d8bf6d6",
+      "reviewed_at": "2026-09-02T15:17:33Z",
+      "reviewer": "codex-reviewed-public-evidence",
+      "sport": "football",
+      "starts_at": "2026-09-03T16:30:00Z",
+      "status": "scheduled",
+      "review_document": "reviews/manual-4995-event-08.json",
+      "review_document_sha256": "3f56351e68f531bfd03780e480038a79ca130464c491865668ada5c9e2a8dc39",
+      "claims": [
+        {
+          "source_name": "Omonia FC",
+          "role": "official",
+          "source_url": "https://www.omonoiafc.com.cy/%CE%B5%CE%B9%CF%83%CE%B9%CF%84%CE%B7%CF%81%CE%B9%CE%B1-%CE%BF%CE%BC%CE%BF%CE%BD%CE%BF%CE%B9%CE%B1-%CF%80%CE%B1%CF%86%CE%BF%CF%83-super-cup-03-09-2000/"
+        },
+        {
+          "source_name": "Cyprus Football Association",
+          "role": "official",
+          "source_url": "https://www.cfa.com.cy/Gr/events/1263"
+        }
+      ]
+    },
+    {
+      "away_aliases": [
+        "Al-Kholood",
+        "Al Kholood",
+        "Аль Хулуд"
+      ],
+      "away_entity": "Al-Kholood",
+      "competition_aliases": [
+        "Саудовская Аравия. Чемпионат",
+        "Saudi Pro League"
+      ],
+      "conditional": false,
+      "gender_age_class": "men-senior",
+      "home_aliases": [
+        "Al-Fayha",
+        "Аль Фейха"
+      ],
+      "home_entity": "Al-Fayha",
+      "observation_id": "manual-reviewed-4995-11-0462a27cfefcdfb5",
+      "reviewed_at": "2026-09-02T15:17:33Z",
+      "reviewer": "codex-reviewed-public-evidence",
+      "sport": "football",
+      "starts_at": "2026-09-03T15:55:00Z",
+      "status": "scheduled",
+      "review_document": "reviews/manual-4995-event-11.json",
+      "review_document_sha256": "2c29eb4142fac993c0b12b017746dac2412652fc0c28be2b9e9ff92e9fecc726",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/al-kholood-al-fayha/UlrbsZIhc"
+        },
+        {
+          "source_name": "FotMob",
+          "role": "independent",
+          "source_url": "https://www.fotmob.com/matches/al-fayha-vs-al-kholood/sb781h75"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-4dbe873a4fd11b2b134c",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Германия. 3-я Бундеслига",
+        "3. Liga"
+      ],
+      "home_entity": "Ingolstadt",
+      "home_aliases": [
+        "Ингольштадт 04",
+        "Ingolstadt",
+        "FC Ingolstadt 04"
+      ],
+      "away_entity": "Alemannia Aachen",
+      "away_aliases": [
+        "Алемания Аахен",
+        "Alemannia Aachen"
+      ],
+      "starts_at": "2026-09-04T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v3-4dbe873a4fd11b2b134c.md",
+      "review_document_sha256": "01ed13db8b9bfe2e9fcea2a5bb3479ce0a1fc99a762473694d475be9f79929bd",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-ingolstadt-04-alemannia-aachen/WabsFrc#id:16596615"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-a3d35b1f1bb7266ae541",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2"
+      ],
+      "home_entity": "Laval",
+      "home_aliases": [
+        "Лаваль",
+        "Laval",
+        "Stade Lavallois"
+      ],
+      "away_entity": "Red Star",
+      "away_aliases": [
+        "Ред Стар",
+        "Red Star",
+        "Red Star FC"
+      ],
+      "starts_at": "2026-09-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v3-a3d35b1f1bb7266ae541.md",
+      "review_document_sha256": "ad88a3c312d9049314f2b96e2477df2d62cbf4bdf5a901b2c9dbe08258828c2c",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/red-star-fc-stade-lavallois/yIszhw#id:16386184"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-28658df06d5e8e0a5a5e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2"
+      ],
+      "home_entity": "Grenoble",
+      "home_aliases": [
+        "Гренобль",
+        "Grenoble",
+        "Grenoble Foot 38"
+      ],
+      "away_entity": "Annecy",
+      "away_aliases": [
+        "Анси",
+        "Annecy",
+        "Annecy FC"
+      ],
+      "starts_at": "2026-09-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v3-28658df06d5e8e0a5a5e.md",
+      "review_document_sha256": "148f60aab78fdfbfdecd9717de3b75049ec926b16361a3d955ea17547b3d445d",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/annecy-fc-grenoble-foot-38/wIsUrJb#id:16386170"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-eeefa625b23e61471401",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2"
+      ],
+      "home_entity": "Pau FC",
+      "home_aliases": [
+        "По",
+        "Pau FC"
+      ],
+      "away_entity": "Sochaux",
+      "away_aliases": [
+        "Сошо",
+        "Sochaux"
+      ],
+      "starts_at": "2026-09-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v3-eeefa625b23e61471401.md",
+      "review_document_sha256": "9d855892e6534bdedaa7b8fa2ce7f1c0d07b620bff768df45cbc8910be1e8622",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/pau-fc-sochaux/hIsKI#id:16386185"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-ce7caeec647b85751d51",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Германия. 2-я Бундеслига",
+        "2. Bundesliga"
+      ],
+      "home_entity": "Arminia Bielefeld",
+      "home_aliases": [
+        "Арминия",
+        "Arminia Bielefeld",
+        "أرمينيا بيليفيلد",
+        "आर्मीनिया बिएलेफेल्ड"
+      ],
+      "away_entity": "St. Pauli",
+      "away_aliases": [
+        "Санкт-Паули",
+        "St. Pauli",
+        "FC St. Pauli",
+        "إف سي سانت باولي",
+        "ऍफ़सी सैंट पॉली"
+      ],
+      "starts_at": "2026-09-04T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-ce7caeec647b85751d51.md",
+      "review_document_sha256": "b561fcd6f4350cfb498ecb53dd5c3d4ad578a71f5b0e894e9c6970680e2042fd",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71z8zcteb2t1078c0eimvu"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/arminia-bielefeld-fc-st-pauli/BabsPab#id:16434357"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-5f97d19cc10bd1843a14",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Германия. 3-я Бундеслига",
+        "3. Liga"
+      ],
+      "home_entity": "Ingolstadt",
+      "home_aliases": [
+        "Ингольштадт 04",
+        "Ingolstadt",
+        "FC Ingolstadt 04",
+        "إينجولستادت",
+        "इन्गोल्स्ताद्त"
+      ],
+      "away_entity": "Alemannia Aachen",
+      "away_aliases": [
+        "Алемания Аахен",
+        "Alemannia Aachen",
+        "تي إس في المانيا آهن"
+      ],
+      "starts_at": "2026-09-04T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-5f97d19cc10bd1843a14.md",
+      "review_document_sha256": "33d3602f3a4aeccbc77150e6326c3e7d71bb7f3e302f09638c0af64f6163dfed",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71z9mwtegwt107frk9dkfk"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-ingolstadt-04-alemannia-aachen/WabsFrc#id:16596615"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-748c2faaf28b2a127a36",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2"
+      ],
+      "home_entity": "Laval",
+      "home_aliases": [
+        "Лаваль",
+        "Laval",
+        "Stade Lavallois",
+        "ستاد لافالوا",
+        "Стад Лаваллуа"
+      ],
+      "away_entity": "Red Star",
+      "away_aliases": [
+        "Ред Стар",
+        "Red Star",
+        "Red Star FC",
+        "إف سي النّجم الأحمر ٩٣",
+        "रेड स्टार ऍफ़सी"
+      ],
+      "starts_at": "2026-09-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-748c2faaf28b2a127a36.md",
+      "review_document_sha256": "82d000545810edd46e9d4b01c2f6584d58c6b1d028abcf67ecb21f03b59fcad4",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71za6oteklt107e3v9unik"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/red-star-fc-stade-lavallois/yIszhw#id:16386184"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-18d129576b3309bae839",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2"
+      ],
+      "home_entity": "Grenoble",
+      "home_aliases": [
+        "Гренобль",
+        "Grenoble",
+        "Grenoble Foot 38",
+        "غرينوبل فوت 38",
+        "Гренобль Фут"
+      ],
+      "away_entity": "Annecy",
+      "away_aliases": [
+        "Анси",
+        "Annecy",
+        "Annecy FC",
+        "أنيسي",
+        "Анси ФК"
+      ],
+      "starts_at": "2026-09-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-18d129576b3309bae839.md",
+      "review_document_sha256": "c5c33910fd89d4fb4a7d48056e2331e04872444824e7a1bbbca83f5ff2ab34a3",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71za6ltekjt10799jxn37y"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/annecy-fc-grenoble-foot-38/wIsUrJb#id:16386170"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-e8cedfd17ce3285ecb7f",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2"
+      ],
+      "home_entity": "Pau FC",
+      "home_aliases": [
+        "По",
+        "Pau FC",
+        "باو إف سي",
+        "पाओ ऍफ़सी",
+        "Пау ФК"
+      ],
+      "away_entity": "Sochaux",
+      "away_aliases": [
+        "Сошо",
+        "Sochaux",
+        "سوشو",
+        "সোচক্স",
+        "सोचौक्स"
+      ],
+      "starts_at": "2026-09-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-e8cedfd17ce3285ecb7f.md",
+      "review_document_sha256": "a76ed989fdb2858500e3d769c021f933cd0019b581bdfaae7982a720f819838d",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71za7htekrt107x2fumt2x"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/pau-fc-sochaux/hIsKI#id:16386185"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-b1da298b31a4f6bf902d",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 2",
+        "Ligue 2"
+      ],
+      "home_entity": "Boulogne",
+      "home_aliases": [
+        "Булонь-сюр-Мер",
+        "Boulogne",
+        "US Boulogne Côte-d'Opale",
+        "نادي بولون",
+        "Булонь"
+      ],
+      "away_entity": "Dijon",
+      "away_aliases": [
+        "Дижон",
+        "Dijon",
+        "ديجون",
+        "ডিজন",
+        "डिजॉन"
+      ],
+      "starts_at": "2026-09-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-b1da298b31a4f6bf902d.md",
+      "review_document_sha256": "20331d5c438c373a5c7aae5253a4f547f35ce5f3e78abe5e6c75818f40c697c0",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71za25tejvt107kv6qvly7"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/us-boulogne-cote-dopale-dijon/LIslJ#id:16386264"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-8f1d9edb6582052a35e8",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Нидерланды. 1-й дивизион",
+        "Eerste Divisie"
+      ],
+      "home_entity": "FC Emmen",
+      "home_aliases": [
+        "Эммен",
+        "FC Emmen",
+        "إف سي إمين",
+        "ऍफ़सी  एम्मेन"
+      ],
+      "away_entity": "FC Volendam",
+      "away_aliases": [
+        "Волендам",
+        "FC Volendam",
+        "إف سي فوليندام",
+        "ऍफ़सी वोलेंदम",
+        "ФК Волендам"
+      ],
+      "starts_at": "2026-09-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-8f1d9edb6582052a35e8.md",
+      "review_document_sha256": "84a3c51b0db0c5725a7f2e331c6af6b6d2cc7db327283c66a6d2a95fd57c0ecc",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71za9atel9t1071bq7p69z"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-volendam-fc-emmen/pjbstjb#id:16317380"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-b2a837330f6b8ef5c6de",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Нидерланды. 1-й дивизион",
+        "Eerste Divisie"
+      ],
+      "home_entity": "Helmond",
+      "home_aliases": [
+        "Хельмонд",
+        "Helmond",
+        "Helmond Sport",
+        "هيلموند سبورت",
+        "Хельмонд Спорт"
+      ],
+      "away_entity": "Venlo",
+      "away_aliases": [
+        "Венло",
+        "Venlo",
+        "VVV-Venlo",
+        "في في في فينلو",
+        "ВВВ-Венло"
+      ],
+      "starts_at": "2026-09-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-b2a837330f6b8ef5c6de.md",
+      "review_document_sha256": "fa920fbbb01aa552a17ebbb8b503c949eea58601cb85fd1246f09d10a0f86d97",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71zaahtelgt107v7j5p8bs"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/vvv-venlo-helmond-sport/zjbsFjb#id:16317379"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-b772ffce90a5801bfcd1",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Нидерланды. 1-й дивизион",
+        "Eerste Divisie"
+      ],
+      "home_entity": "Waalwijk",
+      "home_aliases": [
+        "Валвейк",
+        "Waalwijk",
+        "RKC Waalwijk",
+        "آر كي سي فالفيك",
+        "RKC वाल्विक"
+      ],
+      "away_entity": "NAC Breda",
+      "away_aliases": [
+        "Бреда",
+        "NAC Breda",
+        "ن أي سي بريدا"
+      ],
+      "starts_at": "2026-09-04T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-b772ffce90a5801bfcd1.md",
+      "review_document_sha256": "39b47da0dd44f451d997e8f253166055c5b0b75f022b642f843e7410c708b0c3",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71zabutelst107ze48690w"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/rkc-waalwijk-nac-breda/Xibsgjb#id:16317381"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-334a51fe881ed988b521",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Польша. Чемпионат",
+        "Ekstraklasa"
+      ],
+      "home_entity": "Piast Gliwice",
+      "home_aliases": [
+        "Пиаст Гливице",
+        "Piast Gliwice",
+        "بيست غليفيتسه",
+        "Пяст Гливице"
+      ],
+      "away_entity": "GKS Katowice",
+      "away_aliases": [
+        "Катовице",
+        "GKS Katowice",
+        "جي كي إس كاتوايس",
+        "जीकेएस काटोवाइस",
+        "ГКС Катовице"
+      ],
+      "starts_at": "2026-09-04T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-334a51fe881ed988b521.md",
+      "review_document_sha256": "239327231f4d39988cffb5d9400bddb3a787e9b1ad44bfae00200ebf61fc9e31",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71zar1tep8t107tcy6ake6"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/piast-gliwice-gks-katowice/mmbstid#id:16317004"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-a79ef67544dac95c8094",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "ЮАР. Чемпионат",
+        "Play-offs 1/2",
+        "Premiership"
+      ],
+      "home_entity": "Marumo Gallants",
+      "home_aliases": [
+        "Марумо Галлантс",
+        "Marumo Gallants",
+        "Marumo Gallants FC",
+        "مارومو غالانتس إف سي",
+        "Марумо Галлантс ФК"
+      ],
+      "away_entity": "Polokwane",
+      "away_aliases": [
+        "Полокване Сити",
+        "Polokwane",
+        "Polokwane City",
+        "پولوكڢاني سيتي"
+      ],
+      "starts_at": "2026-09-04T17:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-a79ef67544dac95c8094.md",
+      "review_document_sha256": "3e3b13632ef614a53ac5bb99ca785ae41ce33c22f59b5d5a92731918205f1f5b",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71z9lrtegkt1079i9yh8hw"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/marumo-gallants-fc-polokwane-city/caksClfc#id:16671401"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-88e4083f90acf8c77b25",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "ЮАР. Чемпионат",
+        "Play-offs 1/2",
+        "Premiership"
+      ],
+      "home_entity": "Richards Bay",
+      "home_aliases": [
+        "Ричардс Бэй",
+        "Richards Bay",
+        "Richards Bay FC",
+        "ريتشاردز باي إف سي",
+        "Ричардс Бей ФК"
+      ],
+      "away_entity": "AmaZulu",
+      "away_aliases": [
+        "АмаЗулу",
+        "AmaZulu",
+        "AmaZulu FC",
+        "امازولا",
+        "Амазулу"
+      ],
+      "starts_at": "2026-09-04T17:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-03T16:18:29.659830Z",
+      "review_document": "reviews/auto-independent-consensus-v2-88e4083f90acf8c77b25.md",
+      "review_document_sha256": "62283489b9ff16725f76b2e77d96e1d570d79f9eee04ce4ad31e8a1a0e3fa6b6",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71z9mctegst107l6s45e0u"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/richards-bay-fc-amazulu-fc/fddsElfc#id:16671412"
+        }
+      ]
+    },
+    {
+      "away_aliases": [
+        "Сармиенто Хунин",
+        "Sarmiento Junin",
+        "Sarmiento"
+      ],
+      "away_entity": "Сармиенто Хунин",
+      "competition_aliases": [
+        "Аргентина. Чемпионат",
+        "Torneo Clausura Mercado Libre de la LPF"
+      ],
+      "conditional": false,
+      "gender_age_class": "men-senior",
+      "home_aliases": [
+        "Эстудиантес Рио Куарто",
+        "Estudiantes Rio Cuarto",
+        "Estudiantes (Río Cuarto)",
+        "Estudiantes (RC)"
+      ],
+      "home_entity": "Эстудиантес Рио Куарто",
+      "observation_id": "manual-4996-event-07",
+      "reviewed_at": "2026-09-03T17:11:21.823378Z",
+      "reviewer": "codex-public-schedule-review",
+      "sport": "football",
+      "starts_at": "2026-09-04T19:45:00Z",
+      "status": "scheduled",
+      "review_document": "reviews/manual-4996-event-07.json",
+      "review_document_sha256": "c2e51a8bc8a99da8f4e73c2fd45a5c6b4fc8df92816c9b5a9923f5a05571c507",
+      "claims": [
+        {
+          "source_name": "AFA",
+          "role": "official",
+          "source_url": "https://www.afa.com.ar/es/posts/agenda-de-la-fecha-8-a-la-11-del-torneo-clausura-mercado-libre-de-la-lpf"
+        },
+        {
+          "source_name": "Diario Junín",
+          "role": "independent",
+          "source_url": "https://www.diariojunin.com/noticias/102317_sarmiento-ya-tiene-arbitro-confirmado-para-su-visita-a-rio-cuarto.html/amp"
+        }
+      ]
+    },
+    {
+      "away_aliases": [
+        "Старт",
+        "Start"
+      ],
+      "away_entity": "Старт",
+      "competition_aliases": [
+        "Норвегия. Чемпионат",
+        "Eliteserien"
+      ],
+      "conditional": false,
+      "gender_age_class": "men-senior",
+      "home_aliases": [
+        "Олесунн",
+        "Aalesund",
+        "Aalesunds FK"
+      ],
+      "home_entity": "Олесунн",
+      "observation_id": "manual-4996-event-11",
+      "reviewed_at": "2026-09-03T17:11:21.823378Z",
+      "reviewer": "codex-public-schedule-review",
+      "sport": "football",
+      "starts_at": "2026-09-04T17:00:00Z",
+      "status": "scheduled",
+      "review_document": "reviews/manual-4996-event-11.json",
+      "review_document_sha256": "832cc24aa9b4a58acb404712f79c006e24cef26628522c627eed4638fd714ba0",
+      "claims": [
+        {
+          "source_name": "Aalesunds FK",
+          "role": "official",
+          "source_url": "https://www.aafk.no/terminliste"
+        },
+        {
+          "source_name": "TicketCo",
+          "role": "independent",
+          "source_url": "https://aafk.ticketco.events/no/nb/e/eliteserien_aalesund__start"
+        }
+      ]
+    },
+    {
+      "away_aliases": [
+        "Юнайтед Нордик",
+        "United Nordic",
+        "Nordic United",
+        "Nordic United FC"
+      ],
+      "away_entity": "Юнайтед Нордик",
+      "competition_aliases": [
+        "Швеция. Суперэттан",
+        "Superettan 2026"
+      ],
+      "conditional": false,
+      "gender_age_class": "men-senior",
+      "home_aliases": [
+        "Эстер",
+        "Öster",
+        "Östers IF"
+      ],
+      "home_entity": "Эстер",
+      "observation_id": "manual-4996-event-13",
+      "reviewed_at": "2026-09-03T17:11:21.823378Z",
+      "reviewer": "codex-public-schedule-review",
+      "sport": "football",
+      "starts_at": "2026-09-04T17:00:00Z",
+      "status": "scheduled",
+      "review_document": "reviews/manual-4996-event-13.json",
+      "review_document_sha256": "36d4a5064d7055df79724dc49944ed19f8fd14ad030fbc9203fddfa578733c3f",
+      "claims": [
+        {
+          "source_name": "Östers IF",
+          "role": "official",
+          "source_url": "https://www.ostersif.se/nyhet/publikinformation-osters-if-nordic-united"
+        },
+        {
+          "source_name": "Östergatan",
+          "role": "independent",
+          "source_url": "https://ostergatansrestaurang.se/matcher/2026-09-04-1900-osters-if-vs-nordic-united-fc-6536123"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-f040d52307f659d15424",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Премьер-Лига",
+        "Premier League",
+        "English Premier League"
+      ],
+      "home_entity": "Nottingham Forest",
+      "home_aliases": [
+        "Ноттингем Форест",
+        "Nottingham Forest"
+      ],
+      "away_entity": "Tottenham Hotspur",
+      "away_aliases": [
+        "Тоттенхэм",
+        "Tottenham Hotspur"
+      ],
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T18:34:39.074027Z",
+      "review_document": "reviews/auto-independent-consensus-v3-f040d52307f659d15424.md",
+      "review_document_sha256": "0bdba54b9546d89c6e12d862663e30d8278ecbeff52bc5245a91a3dbba3d35bf",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/tottenham-hotspur-nottingham-forest/osI#id:16363638"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2494029"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-4ea2a9f90bd1c3786cff",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship",
+        "English League Championship"
+      ],
+      "home_entity": "Portsmouth",
+      "home_aliases": [
+        "Портсмут",
+        "Portsmouth"
+      ],
+      "away_entity": "Cardiff City",
+      "away_aliases": [
+        "Кардифф Сити",
+        "Cardiff City"
+      ],
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T18:38:03.224400Z",
+      "review_document": "reviews/auto-independent-consensus-v3-4ea2a9f90bd1c3786cff.md",
+      "review_document_sha256": "89ed6ec4fbe1e979563576da51daa6eb93d0aab6a06cc49d1c791fff7cf3afad",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/cardiff-city-portsmouth/cslb#id:16391649"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2501307"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-78179cec6deaaa1b6aff",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship",
+        "English League Championship"
+      ],
+      "home_entity": "Swansea City",
+      "home_aliases": [
+        "Суонси Сити",
+        "Swansea City"
+      ],
+      "away_entity": "Wrexham",
+      "away_aliases": [
+        "Рексхэм",
+        "Wrexham"
+      ],
+      "starts_at": "2026-09-05T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T18:38:03.334822Z",
+      "review_document": "reviews/auto-independent-consensus-v3-78179cec6deaaa1b6aff.md",
+      "review_document_sha256": "996503855d62f5432f7c118653a599ed73ad3342ad305d9b91a141cb34b1fad9",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/swansea-city-wrexham/obszb#id:16391654"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2501306"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-5eb3b1c5fc7b95b66939",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Германия. Бундеслига",
+        "Bundesliga",
+        "German Bundesliga"
+      ],
+      "home_entity": "TSG Hoffenheim",
+      "home_aliases": [
+        "Хоффенхайм",
+        "TSG Hoffenheim",
+        "Hoffenheim"
+      ],
+      "away_entity": "Borussia Dortmund",
+      "away_aliases": [
+        "Боруссия Дортмунд",
+        "Borussia Dortmund"
+      ],
+      "starts_at": "2026-09-05T13:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T18:38:03.420628Z",
+      "review_document": "reviews/auto-independent-consensus-v3-5eb3b1c5fc7b95b66939.md",
+      "review_document_sha256": "2e600d7de4db66fae280eadf896bdbbe65bbc024b55ebd042a231caff10401f8",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/borussia-dortmund-tsg-hoffenheim/ubbsydb#id:16434019"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2508344"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-2506a723b41444665e67",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Германия. Бундеслига",
+        "Bundesliga",
+        "German Bundesliga"
+      ],
+      "home_entity": "SC Paderborn 07",
+      "home_aliases": [
+        "Падерборн",
+        "SC Paderborn 07",
+        "Paderborn"
+      ],
+      "away_entity": "SC Freiburg",
+      "away_aliases": [
+        "Фрайбург",
+        "SC Freiburg",
+        "Freiburg"
+      ],
+      "starts_at": "2026-09-05T13:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T18:38:03.514722Z",
+      "review_document": "reviews/auto-independent-consensus-v3-2506a723b41444665e67.md",
+      "review_document_sha256": "62043f81f2578ccdc6c6476fe29ffa2f7273e35392b77f7a8060952fea3a0c16",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sc-paderborn-07-sc-freiburg/Nabslbb#id:16434024"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2508350"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-df2342bf08066dfbb250",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. 1-я лига",
+        "First League",
+        "Russian Football National League"
+      ],
+      "home_entity": "FC Sochi",
+      "home_aliases": [
+        "Сочи",
+        "FC Sochi",
+        "Sochi"
+      ],
+      "away_entity": "FC Nizhny Novgorod",
+      "away_aliases": [
+        "Нижний Новгород",
+        "FC Nizhny Novgorod",
+        "Nizhny Novgorod"
+      ],
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T18:38:03.605915Z",
+      "review_document": "reviews/auto-independent-consensus-v3-df2342bf08066dfbb250.md",
+      "review_document_sha256": "6cb0beec0e7075bdc88d242008e2d1ae6e2c1298bedf0f27eb934f41fb1fd5b4",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/pari-nizhny-novgorod-fc-sochi/JWseIFb#id:16491067"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2514842"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-bc822cb42cec7a349716",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Франция. Лига 1",
+        "Ligue 1",
+        "French Ligue 1"
+      ],
+      "home_entity": "Le Havre",
+      "home_aliases": [
+        "Гавр",
+        "Le Havre"
+      ],
+      "away_entity": "Stade Brestois",
+      "away_aliases": [
+        "Брест",
+        "Stade Brestois",
+        "Brest"
+      ],
+      "starts_at": "2026-09-05T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T18:38:03.706232Z",
+      "review_document": "reviews/auto-independent-consensus-v3-bc822cb42cec7a349716.md",
+      "review_document_sha256": "38a4861cd51aa2c959cd752d9b170cd81ee9a5463465766cb01c3798329e9a29",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/stade-brestois-le-havre/mIspJ#id:16310938"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2489487"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-ecc4afc3b7dc50e66cc7",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Премьер-Лига",
+        "Premier League"
+      ],
+      "home_entity": "Fulham",
+      "home_aliases": [
+        "Фулхэм",
+        "Fulham"
+      ],
+      "away_entity": "Crystal Palace",
+      "away_aliases": [
+        "Кристал Пэлас",
+        "Crystal Palace"
+      ],
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T20:05:36.416599Z",
+      "review_document": "reviews/auto-independent-consensus-v3-ecc4afc3b7dc50e66cc7.md",
+      "review_document_sha256": "6e5febfe3278b8222237a7dcb594db56aa5fdd58323c335b2ef14c056f6c4b25",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fulham-crystal-palace/hsT#id:16363269"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-c50ff7036821cae89e3f",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Sheffield Utd",
+      "home_aliases": [
+        "Шеффилд Юнайтед",
+        "Sheffield Utd",
+        "Sheffield United"
+      ],
+      "away_entity": "Norwich",
+      "away_aliases": [
+        "Норвич",
+        "Norwich",
+        "Norwich City"
+      ],
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T20:05:36.416599Z",
+      "review_document": "reviews/auto-independent-consensus-v3-c50ff7036821cae89e3f.md",
+      "review_document_sha256": "ddd87b34e1e99c5d165b4912ab4e263c1f3f11217f5af3f7dc4ae41aad74ddd5",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/norwich-city-sheffield-united/psnf#id:16391652"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-7926482098c36ff22074",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Rayo Vallecano",
+      "home_aliases": [
+        "Райо Вальекано",
+        "Rayo Vallecano"
+      ],
+      "away_entity": "Racing Santander",
+      "away_aliases": [
+        "Расинг Сантандер",
+        "Racing Santander",
+        "Real Racing Club"
+      ],
+      "starts_at": "2026-09-05T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T20:05:36.416599Z",
+      "review_document": "reviews/auto-independent-consensus-v3-7926482098c36ff22074.md",
+      "review_document_sha256": "4f62c811852e58dd521341fad15f3f9b9c1551f3b47ce24e455b6f0721d9374b",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/real-racing-club-rayo-vallecano/tgbsKgb#id:16416321"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-147612759c35ee7fe8ce",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига 2",
+        "Segunda División",
+        "LaLiga 2"
+      ],
+      "home_entity": "Valladolid",
+      "home_aliases": [
+        "Вальядолид",
+        "Valladolid",
+        "Real Valladolid"
+      ],
+      "away_entity": "Andorra",
+      "away_aliases": [
+        "Андорра ФК",
+        "Andorra",
+        "FC Andorra"
+      ],
+      "starts_at": "2026-09-05T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-04T20:05:36.416599Z",
+      "review_document": "reviews/auto-independent-consensus-v3-147612759c35ee7fe8ce.md",
+      "review_document_sha256": "f462b25903b526efba85384b5f417d3143232cf602dd94afb1617123994a576e",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-andorra-real-valladolid/GgbswXEc#id:16418282"
+        }
+      ]
+    },
+    {
+      "observation_id": "recovery-4997-event-02-20260904",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Премьер-Лига",
+        "Premier League"
+      ],
+      "home_entity": "Fulham",
+      "home_aliases": [
+        "Фулхэм",
+        "Fulham"
+      ],
+      "away_entity": "Crystal Palace",
+      "away_aliases": [
+        "Кристал Пэлас",
+        "Crystal Palace"
+      ],
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-local-evidence-review",
+      "reviewed_at": "2026-09-04T20:07:05.685386Z",
+      "review_document": "reviews/prepared-recovery-4997-event-02.json",
+      "review_document_sha256": "e2722701123f1b05d96c21c6bcb05d1770335d41c74b2366d7a1afa71bbed558",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fulham-crystal-palace/hsT#id:16363269"
+        },
+        {
+          "source_name": "Premier League",
+          "role": "official",
+          "source_url": "https://www.premierleague.com/en/news/4675097"
+        }
+      ]
+    },
+    {
+      "observation_id": "recovery-4997-event-04-20260904",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Queens Park Rangers",
+      "home_aliases": [
+        "Куинз Парк Рейнджерс",
+        "Queens Park Rangers"
+      ],
+      "away_entity": "Middlesbrough",
+      "away_aliases": [
+        "Мидлсбро",
+        "Middlesbrough"
+      ],
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-local-evidence-review",
+      "reviewed_at": "2026-09-04T20:07:05.766096Z",
+      "review_document": "reviews/prepared-recovery-4997-event-04.json",
+      "review_document_sha256": "f4e7e0f9e1704ac372207ad739f777d66d6bca90c432d576b799286b540141be",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/middlesbrough-queens-park-rangers/bsL#id:16391651"
+        },
+        {
+          "source_name": "TNT Sports",
+          "role": "independent",
+          "source_url": "https://www.tntsports.co.uk/football/championship/2026-2027/queens-park-rangers-middlesbrough_mtc21887479/live.shtml"
+        }
+      ]
+    },
+    {
+      "observation_id": "recovery-4997-event-05-20260904",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Sheffield United",
+      "home_aliases": [
+        "Шеффилд Юнайтед",
+        "Sheffield United"
+      ],
+      "away_entity": "Norwich City",
+      "away_aliases": [
+        "Норвич",
+        "Norwich City"
+      ],
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-local-evidence-review",
+      "reviewed_at": "2026-09-04T20:07:05.890321Z",
+      "review_document": "reviews/prepared-recovery-4997-event-05.json",
+      "review_document_sha256": "b4be89b45d3208b7bcee67732fc3821b91213ab2040780eb572c39f0ee740f69",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/norwich-city-sheffield-united/psnf#id:16391652"
+        },
+        {
+          "source_name": "Portfolio Sports",
+          "role": "independent",
+          "source_url": "https://www.portfoliosports.com/football/championship/2026-09-05/sheffield-united-v-norwich-city/"
+        }
+      ]
+    },
+    {
+      "observation_id": "recovery-4997-event-09-20260904",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "LaLiga"
+      ],
+      "home_entity": "Athletic Club",
+      "home_aliases": [
+        "Атлетик Бильбао",
+        "Athletic Club"
+      ],
+      "away_entity": "Atlético Madrid",
+      "away_aliases": [
+        "Атлетико Мадрид",
+        "Atlético Madrid"
+      ],
+      "starts_at": "2026-09-05T14:15:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-local-evidence-review",
+      "reviewed_at": "2026-09-04T20:07:05.963475Z",
+      "review_document": "reviews/prepared-recovery-4997-event-09.json",
+      "review_document_sha256": "12510ef260636cb7d0e09c07775d6106c0552ef21eeb72931c42176e4f26ca50",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/atletico-madrid-athletic-club/AgbsLgb#id:16416317"
+        },
+        {
+          "source_name": "Sportschau",
+          "role": "independent",
+          "source_url": "https://www.sportschau.de/live-und-ergebnisse/fussball/spanien-primera-division/ma12187876/rayo-vallecano_racing-santander/spiel-spiele-und-ergebnisse"
+        }
+      ]
+    },
+    {
+      "observation_id": "recovery-4997-event-10-20260904",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "LaLiga"
+      ],
+      "home_entity": "Rayo Vallecano",
+      "home_aliases": [
+        "Райо Вальекано",
+        "Rayo Vallecano"
+      ],
+      "away_entity": "Real Racing Club",
+      "away_aliases": [
+        "Расинг Сантандер",
+        "Real Racing Club",
+        "Racing Santander"
+      ],
+      "starts_at": "2026-09-05T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-local-evidence-review",
+      "reviewed_at": "2026-09-04T20:07:06.036136Z",
+      "review_document": "reviews/prepared-recovery-4997-event-10.json",
+      "review_document_sha256": "3bbd1b1d82d38fc051ea80706fd75c4005d0d48006ba1e94bda6b47c1a239061",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/real-racing-club-rayo-vallecano/tgbsKgb#id:16416321"
+        },
+        {
+          "source_name": "Sportschau",
+          "role": "independent",
+          "source_url": "https://www.sportschau.de/live-und-ergebnisse/fussball/spanien-primera-division/ma12187876/rayo-vallecano_racing-santander/spiel-spiele-und-ergebnisse"
+        }
+      ]
+    },
+    {
+      "observation_id": "recovery-4997-event-11-20260904",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига 2",
+        "LaLiga 2"
+      ],
+      "home_entity": "Sporting Gijón",
+      "home_aliases": [
+        "Спортинг Хихон",
+        "Sporting Gijón",
+        "Real Sporting"
+      ],
+      "away_entity": "Girona FC",
+      "away_aliases": [
+        "Жирона",
+        "Girona FC"
+      ],
+      "starts_at": "2026-09-05T14:15:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-local-evidence-review",
+      "reviewed_at": "2026-09-04T20:07:06.090586Z",
+      "review_document": "reviews/prepared-recovery-4997-event-11.json",
+      "review_document_sha256": "a79d5270efe45a11828f2b6e04918579c547b110efbe25195e50357580924043",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/girona-fc-sporting-gijon/chbsoKj#id:16418281"
+        },
+        {
+          "source_name": "LaLiga",
+          "role": "official",
+          "source_url": "https://iaas-public-front-pro.laliga.com/laliga-hypermotion/resultados"
+        }
+      ]
+    },
+    {
+      "observation_id": "recovery-4997-event-12-20260904",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига 2",
+        "LaLiga 2"
+      ],
+      "home_entity": "Real Valladolid",
+      "home_aliases": [
+        "Вальядолид",
+        "Real Valladolid",
+        "Real Valladolid CF"
+      ],
+      "away_entity": "FC Andorra",
+      "away_aliases": [
+        "Андорра ФК",
+        "FC Andorra"
+      ],
+      "starts_at": "2026-09-05T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-local-evidence-review",
+      "reviewed_at": "2026-09-04T20:07:06.196173Z",
+      "review_document": "reviews/prepared-recovery-4997-event-12.json",
+      "review_document_sha256": "435316dbe163202cd0ae68c56e53056e614b833af994158de63cba511f308274",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-andorra-real-valladolid/GgbswXEc#id:16418282"
+        },
+        {
+          "source_name": "LaLiga",
+          "role": "official",
+          "source_url": "https://iaas-public-front-pro.laliga.com/laliga-hypermotion/resultados"
+        }
+      ]
+    },
+    {
+      "observation_id": "recovery-4997-event-14-20260904",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. 1-я лига",
+        "First League"
+      ],
+      "home_entity": "Shinnik Yaroslavl",
+      "home_aliases": [
+        "Шинник",
+        "Shinnik Yaroslavl"
+      ],
+      "away_entity": "Rotor Volgograd",
+      "away_aliases": [
+        "Ротор",
+        "Rotor Volgograd"
+      ],
+      "starts_at": "2026-09-05T14:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "codex-local-evidence-review",
+      "reviewed_at": "2026-09-04T20:07:06.250106Z",
+      "review_document": "reviews/prepared-recovery-4997-event-14.json",
+      "review_document_sha256": "07dab88eff000754386119e14930280f76035383a965f794befa07ce6dd04fb0",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/shinnik-yaroslavl-rotor-volgograd/tWsFW#id:16491073"
+        },
+        {
+          "source_name": "FC Shinnik",
+          "role": "official",
+          "source_url": "https://shinnik.com/"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-48821385ad9a44108ee4",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "LaLiga",
+        "Spanish La Liga"
+      ],
+      "home_entity": "Espanyol",
+      "home_aliases": [
+        "Эспаньол",
+        "Espanyol"
+      ],
+      "away_entity": "Sevilla",
+      "away_aliases": [
+        "Севилья",
+        "Sevilla"
+      ],
+      "starts_at": "2026-09-06T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T08:50:58.811679Z",
+      "review_document": "reviews/auto-independent-consensus-v3-48821385ad9a44108ee4.md",
+      "review_document_sha256": "e0082ed26487ac1acbe41a26d271ccad7a8720a2328d9121034f7cc38d0c876e",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sevilla-espanyol/ogbsIgb#id:16416323"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2506203"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-a8d334d32eee9c38735c",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Италия. Серия A",
+        "Serie A",
+        "Italian Serie A"
+      ],
+      "home_entity": "Bologna",
+      "home_aliases": [
+        "Болонья",
+        "Bologna"
+      ],
+      "away_entity": "Sassuolo",
+      "away_aliases": [
+        "Сассуоло",
+        "Sassuolo"
+      ],
+      "starts_at": "2026-09-06T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T08:50:58.811679Z",
+      "review_document": "reviews/auto-independent-consensus-v3-a8d334d32eee9c38735c.md",
+      "review_document_sha256": "c896614472d06bfd1ea9f0bc78a1dabda5c71f59a154203646853cf4afc2106d",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sassuolo-bologna/KdbsTfb#id:16284978"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2482163"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-0cfc6ba9a72fb3fe5313",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Италия. Серия A",
+        "Serie A",
+        "Italian Serie A"
+      ],
+      "home_entity": "Juventus",
+      "home_aliases": [
+        "Ювентус",
+        "Juventus"
+      ],
+      "away_entity": "AC Milan",
+      "away_aliases": [
+        "Милан",
+        "AC Milan"
+      ],
+      "starts_at": "2026-09-06T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T08:50:58.811679Z",
+      "review_document": "reviews/auto-independent-consensus-v3-0cfc6ba9a72fb3fe5313.md",
+      "review_document_sha256": "a6a2f108fc5780baf3b426bbca04f31acedffdc6115c5e0515b735645dd52b31",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/ac-milan-juventus/MdbsRdb#id:16285004"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2482161"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-dc2d749afd587ee706bd",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Турция. Супер Лига",
+        "Trendyol Süper Lig",
+        "Turkish Super Lig"
+      ],
+      "home_entity": "Kocaelispor",
+      "home_aliases": [
+        "Коджаелиспор",
+        "Kocaelispor"
+      ],
+      "away_entity": "Samsunspor",
+      "away_aliases": [
+        "Самсунспор",
+        "Samsunspor"
+      ],
+      "starts_at": "2026-09-06T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T08:50:58.811679Z",
+      "review_document": "reviews/auto-independent-consensus-v3-dc2d749afd587ee706bd.md",
+      "review_document_sha256": "3829692f743bdf8b66ce3260726684b6aee1b0457ab889c98c36f1e7f0bc9be5",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/kocaelispor-samsunspor/dlbsplb#id:16483664"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2527759"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-cd9d49d104164ab2d16e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. Премьер Лига",
+        "Premier League"
+      ],
+      "home_entity": "Dynamo Moscow",
+      "home_aliases": [
+        "Динамо Москва",
+        "Dynamo Moscow"
+      ],
+      "away_entity": "Spartak Moscow",
+      "away_aliases": [
+        "Спартак Москва",
+        "Spartak Moscow",
+        "FC Spartak Moscow"
+      ],
+      "starts_at": "2026-09-06T15:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v3-cd9d49d104164ab2d16e.md",
+      "review_document_sha256": "a1e3f71a35858234b7d148382c97c8f2216657e4f8e41b1f0b4ed17ee1255997",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-spartak-moscow-dynamo-moscow/pWsyW#id:16390289"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-481bb86b830a9d976ddf",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. Премьер Лига",
+        "Premier League"
+      ],
+      "home_entity": "Baltika",
+      "home_aliases": [
+        "Балтика",
+        "Baltika",
+        "Baltika Kaliningrad"
+      ],
+      "away_entity": "Lokomotiv Moscow",
+      "away_aliases": [
+        "Локомотив Москва",
+        "Lokomotiv Moscow"
+      ],
+      "starts_at": "2026-09-06T17:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v3-481bb86b830a9d976ddf.md",
+      "review_document_sha256": "16c5e3534d3ff4045ea9cf93a1c6a74e598cc664c79dc95cf9579f5cc2a49a73",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/baltika-kaliningrad-lokomotiv-moscow/vWsrad#id:16390297"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-29ce3ec6c04a36ba3d0e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Malaga",
+      "home_aliases": [
+        "Малага",
+        "Malaga",
+        "Málaga CF"
+      ],
+      "away_entity": "Levante",
+      "away_aliases": [
+        "Леванте",
+        "Levante",
+        "Levante UD"
+      ],
+      "starts_at": "2026-09-06T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v3-29ce3ec6c04a36ba3d0e.md",
+      "review_document_sha256": "2a3cd7aa8cd3c6e4d07220f1324757481832081d6dacaf9039c7dc5393a26fa4",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/levante-ud-malaga-cf/FgbsZgb#id:16416320"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-7e74343a02729b806fa2",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Alaves",
+      "home_aliases": [
+        "Алавес",
+        "Alaves",
+        "Deportivo Alavés"
+      ],
+      "away_entity": "Osasuna",
+      "away_aliases": [
+        "Осасуна",
+        "Osasuna"
+      ],
+      "starts_at": "2026-09-06T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v3-7e74343a02729b806fa2.md",
+      "review_document_sha256": "09a3428548e7d9e4bd15210096ea3b485a4e9c068aa2d6c55a90fb9c7d141fb4",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/deportivo-alaves-osasuna/vgbsKhb#id:16416318"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-cf590f8c12afc790100b",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Бельгия. Чемпионат",
+        "First Division A",
+        "Pro League"
+      ],
+      "home_entity": "Anderlecht",
+      "home_aliases": [
+        "Андерлехт",
+        "Anderlecht",
+        "RSC Anderlecht"
+      ],
+      "away_entity": "Genk",
+      "away_aliases": [
+        "Генк",
+        "Genk",
+        "KRC Genk"
+      ],
+      "starts_at": "2026-09-06T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v3-cf590f8c12afc790100b.md",
+      "review_document_sha256": "c81f4f131f1c98f1984f7536e05ecdd3f35341952f2d2ae33131c947a2a9ad48",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/rsc-anderlecht-krc-genk/Phbsaib#id:16361912"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-f7bafa178c6b0c134a05",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Болгария. Чемпионат",
+        "First League",
+        "Parva Liga"
+      ],
+      "home_entity": "Lok. Plovdiv",
+      "home_aliases": [
+        "Локомотив Пловдив",
+        "Lok. Plovdiv",
+        "Lokomotiv Plovdiv"
+      ],
+      "away_entity": "Cherno More",
+      "away_aliases": [
+        "Черно Море",
+        "Cherno More",
+        "Cherno More Varna"
+      ],
+      "starts_at": "2026-09-06T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v3-f7bafa178c6b0c134a05.md",
+      "review_document_sha256": "bc0fcb079a6fccf5ba500ed44d704a76fe3032c053a1ecfac4625b4e91cf8353",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/cherno-more-varna-lokomotiv-plovdiv/xpbsFpb#id:16295820"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-0a0614e7e99ca39f9d98",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. Премьер Лига",
+        "Premier League"
+      ],
+      "home_entity": "Dynamo Moscow",
+      "home_aliases": [
+        "Динамо Москва",
+        "Dynamo Moscow",
+        "دينامو موسكو"
+      ],
+      "away_entity": "Spartak Moscow",
+      "away_aliases": [
+        "Спартак Москва",
+        "Spartak Moscow",
+        "FC Spartak Moscow",
+        "إف سي سبارتاك موسكو"
+      ],
+      "starts_at": "2026-09-06T15:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v2-0a0614e7e99ca39f9d98.md",
+      "review_document_sha256": "877f44e47ec8fd7ab928b3212aad8e97ffec5367822ea2eb8a1c3d7ba8d1192e",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt63ik37f6pzt107nmlrdaig"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-spartak-moscow-dynamo-moscow/pWsyW#id:16390289"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-461b3b4711b54897104d",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. Премьер Лига",
+        "Premier League"
+      ],
+      "home_entity": "Baltika",
+      "home_aliases": [
+        "Балтика",
+        "Baltika",
+        "Baltika Kaliningrad",
+        "بالتيكا كالينينغراد",
+        "Балтика Калининград"
+      ],
+      "away_entity": "Lokomotiv Moscow",
+      "away_aliases": [
+        "Локомотив Москва",
+        "Lokomotiv Moscow",
+        "FK لوكوموتيف موسكو",
+        "ऍफ़के लोकोमोटिव मॉस्को"
+      ],
+      "starts_at": "2026-09-06T17:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v2-461b3b4711b54897104d.md",
+      "review_document_sha256": "af3788ae1b16e2af5532b59772759aef732b6993bfb70bb93b00246f8948a120",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt63inv6f7rpt107yzqkvn8v"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/baltika-kaliningrad-lokomotiv-moscow/vWsrad#id:16390297"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-3c5745ce170a2e3790d5",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Malaga",
+      "home_aliases": [
+        "Малага",
+        "Malaga",
+        "Málaga CF",
+        "نادي ملقا"
+      ],
+      "away_entity": "Levante",
+      "away_aliases": [
+        "Леванте",
+        "Levante",
+        "Levante UD",
+        "ليفانتي",
+        "लेवांटे यूडी"
+      ],
+      "starts_at": "2026-09-06T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v2-3c5745ce170a2e3790d5.md",
+      "review_document_sha256": "729310bf783e952fb83f89e4340725aa869aca5e405d6cb464386453ae14b330",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt63inrwf7q8t107w5bpqjj8"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/levante-ud-malaga-cf/FgbsZgb#id:16416320"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-b7d7b238f6c24e1b4fc4",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Alaves",
+      "home_aliases": [
+        "Алавес",
+        "Alaves",
+        "Deportivo Alavés",
+        "ديبورتيفو ألافيس"
+      ],
+      "away_entity": "Osasuna",
+      "away_aliases": [
+        "Осасуна",
+        "Osasuna",
+        "أوساسونا",
+        "ওসাসুনা",
+        "ओसासुना"
+      ],
+      "starts_at": "2026-09-06T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v2-b7d7b238f6c24e1b4fc4.md",
+      "review_document_sha256": "4b3e4ab20c7141cf544f64f8e9336287f8afb7b08f8f50b3e2e086041de9df2b",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt63inrpf7q6t107wh9n01ls"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/deportivo-alaves-osasuna/vgbsKhb#id:16416318"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-3cdc62ce214b82f75b08",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Бельгия. Чемпионат",
+        "First Division A",
+        "Pro League"
+      ],
+      "home_entity": "Anderlecht",
+      "home_aliases": [
+        "Андерлехт",
+        "Anderlecht",
+        "RSC Anderlecht",
+        "أندرلخت",
+        "आरएससी एंडरलेक्ट"
+      ],
+      "away_entity": "Genk",
+      "away_aliases": [
+        "Генк",
+        "Genk",
+        "KRC Genk",
+        "كيه آر سي جينك",
+        "केआरसी गेंक"
+      ],
+      "starts_at": "2026-09-06T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v2-3cdc62ce214b82f75b08.md",
+      "review_document_sha256": "44c89e008e979016d0ffe41e1362c0db990bbec1f6ea27a34d05724e3ce9acc8",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt63intbf7qqt107adx5ih5t"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/rsc-anderlecht-krc-genk/Phbsaib#id:16361912"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-17ed8356d8df38bf3a88",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Бельгия. 2-й дивизион",
+        "Challenger Pro League"
+      ],
+      "home_entity": "Francs Borains",
+      "home_aliases": [
+        "Франс Борайнс",
+        "Francs Borains",
+        "Royal Francs Borains",
+        "رويال فرانكس بورين",
+        "Роял Франкс Борайнс"
+      ],
+      "away_entity": "Sporting Lokeren",
+      "away_aliases": [
+        "Локерен-Темсе",
+        "Sporting Lokeren",
+        "KSC Lokeren",
+        "كيه إس سي لوكيرين",
+        "KSC Lokeren Temse"
+      ],
+      "starts_at": "2026-09-06T17:15:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v2-17ed8356d8df38bf3a88.md",
+      "review_document_sha256": "ae0e8a0560ccf71c89b38c84ab1d676ed6bc3fd894fdc1f9771902a41cef7390",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt63insef7qet107c7f8pmue"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/ksc-lokeren-royal-francs-borains/YuGcsJEYc#id:16384059"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-8127baa498ede6bdaac7",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Болгария. Чемпионат",
+        "First League",
+        "Parva Liga"
+      ],
+      "home_entity": "Lok. Plovdiv",
+      "home_aliases": [
+        "Локомотив Пловдив",
+        "Lok. Plovdiv",
+        "Lokomotiv Plovdiv",
+        "لوكوموتيف بلوفديف",
+        "লোকোমোটিভ প্লোভডিভ",
+        "लोकोमोटिव प्लोवदीव"
+      ],
+      "away_entity": "Cherno More",
+      "away_aliases": [
+        "Черно Море",
+        "Cherno More",
+        "Cherno More Varna",
+        "تشيرنو مور فارنا",
+        "Черно Море Варна"
+      ],
+      "starts_at": "2026-09-06T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v2-8127baa498ede6bdaac7.md",
+      "review_document_sha256": "40079fe85b9048e5c17cf6753313560f5144a31ec45fc04fcd34327701f7fc13",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt63ikxrf6y7t107cph9tumz"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/cherno-more-varna-lokomotiv-plovdiv/xpbsFpb#id:16295820"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-01a35d3d7abe274eabd9",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Греция. Чемпионат",
+        "Super League 1",
+        "Stoiximan Super League"
+      ],
+      "home_entity": "OFI Crete",
+      "home_aliases": [
+        "ОФИ",
+        "OFI Crete",
+        "أوفي كريت",
+        "ओऍफ़आई क्रेटे",
+        "ОФИ Крит"
+      ],
+      "away_entity": "Kifisia",
+      "away_aliases": [
+        "Кифисия",
+        "Kifisia",
+        "AE Kifisia",
+        "أ.إي كيفيسيا",
+        "АЕ Кифисия"
+      ],
+      "starts_at": "2026-09-06T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v2-01a35d3d7abe274eabd9.md",
+      "review_document_sha256": "6a27aa9ff01224f98fa4f08bdc13f4fea974415bb9e9d1fa4e2faa0d630fa107",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt63ior6f7zdt107roe9cuis"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/ae-kifisia-ofi-crete/QobszeY#id:16559911"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-53204fb190a2c815e3fe",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Греция. Чемпионат",
+        "Super League 1",
+        "Stoiximan Super League"
+      ],
+      "home_entity": "Panathinaikos",
+      "home_aliases": [
+        "Панатинаикос",
+        "Panathinaikos",
+        "Panathinaikos FC",
+        "باناثينايكوس",
+        "পানাথিনাইকোস",
+        "पानाथिनाइकोस",
+        "Панатинаикос Афины"
+      ],
+      "away_entity": "PAOK",
+      "away_aliases": [
+        "ПАОК",
+        "PAOK",
+        "باوك",
+        "পিএওকে",
+        "पाओक"
+      ],
+      "starts_at": "2026-09-06T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v2-53204fb190a2c815e3fe.md",
+      "review_document_sha256": "8c07c5612525c6668e3179cf20e9b68043499fa0222f886dc86a6ec2f12b6e01",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt63ior7f7zet10775qsrj2o"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/paok-panathinaikos-fc/Yobsbpb#id:16559907"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-33e61f45f078a3533b98",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Румыния. Чемпионат",
+        "Liga I",
+        "Superliga"
+      ],
+      "home_entity": "Otelul",
+      "home_aliases": [
+        "Оцелул",
+        "Otelul",
+        "SC Oțelul Galați",
+        "إف سي أوتيلل جالاتي",
+        "Оцелул Галати"
+      ],
+      "away_entity": "FC Rapid Bucuresti",
+      "away_aliases": [
+        "Рапид Бухарест",
+        "FC Rapid Bucuresti",
+        "FC Rapid București",
+        "إف سي رابد بوكرشت",
+        "Рапид"
+      ],
+      "starts_at": "2026-09-06T17:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-06T09:17:39.179335Z",
+      "review_document": "reviews/auto-independent-consensus-v2-33e61f45f078a3533b98.md",
+      "review_document_sha256": "8198c7f9298675cdee798b7d37e24d1dd6f6f93f43ce0d3fe632d7f28a824d6d",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt63inszf7qmt107gsobqt8f"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-rapid-bucuresti-sc-otelul-galati/Qpbsditc#id:16403873"
+        }
+      ]
+    },
+    {
+      "observation_id": "reviewed-4998-event09-sofascore16361913-viasport1558625-20260906",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Бельгия. Чемпионат",
+        "Pro League",
+        "Jupiler Pro League"
+      ],
+      "home_entity": "SK Beveren",
+      "home_aliases": [
+        "SK Beveren",
+        "СК Беверен"
+      ],
+      "away_entity": "Oud-Heverlee Leuven",
+      "away_aliases": [
+        "Oud-Heverlee Leuven",
+        "OH Leuven",
+        "Ауд-Хеверле Левен"
+      ],
+      "starts_at": "2026-09-06T17:15:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex Gena; delegated worker 01a0760b-b663-7e21-8c46-69d9d0cc83f7",
+      "reviewed_at": "2026-09-06T09:31:13.336372Z",
+      "review_document": "reviews/4998-event09-sofascore-viasport-20260906.json",
+      "review_document_sha256": "053767355ed4eb3e2488e31e0fe876734c8637ac1da9675e9487125268983946",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/nl/football/match/sk-beveren-oud-heverlee-leuven/tibsjXb"
+        },
+        {
+          "source_name": "ViaSport",
+          "role": "independent",
+          "source_url": "https://viasport.no/fotball/kamp/1558625"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-ec5850604ece99ef4b94",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Getafe",
+      "home_aliases": [
+        "Хетафе",
+        "Getafe"
+      ],
+      "away_entity": "Celta Vigo",
+      "away_aliases": [
+        "Сельта",
+        "Celta Vigo"
+      ],
+      "starts_at": "2026-09-07T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-ec5850604ece99ef4b94.md",
+      "review_document_sha256": "a5a6ca30dcc271ea2e47b8bbbf5071be2240b32d343b2ae9eafd33c6f43d1b3f",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/getafe-celta-vigo/wgbsjhb#id:16416348"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-c8a2d307c3d22b8342e3",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Elche",
+      "home_aliases": [
+        "Эльче",
+        "Elche"
+      ],
+      "away_entity": "Real Sociedad",
+      "away_aliases": [
+        "Реал Сосьедад",
+        "Real Sociedad"
+      ],
+      "starts_at": "2026-09-07T19:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-c8a2d307c3d22b8342e3.md",
+      "review_document_sha256": "468e1ef084bdc453e4f016c7f2c6cf1652013d425de1a94946ceecdae522e824",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/elche-real-sociedad/zgbsWgb#id:16416319"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-12c5f56cb93fbb2f0f38",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига 2",
+        "Segunda División",
+        "LaLiga 2"
+      ],
+      "home_entity": "Sabadell",
+      "home_aliases": [
+        "Сабадель",
+        "Sabadell",
+        "CE Sabadell"
+      ],
+      "away_entity": "Cordoba",
+      "away_aliases": [
+        "Кордоба",
+        "Cordoba",
+        "Córdoba"
+      ],
+      "starts_at": "2026-09-07T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-12c5f56cb93fbb2f0f38.md",
+      "review_document_sha256": "4c4a6f764f5184709987f8a054588a5a487c3163a8234c6cfa2721286d4c4af2",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/ce-sabadell-cordoba/ahbsKLj#id:16418278"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-07eb6fa34683d2ddbcca",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Италия. Серия A",
+        "Serie A"
+      ],
+      "home_entity": "Cagliari",
+      "home_aliases": [
+        "Кальяри",
+        "Cagliari"
+      ],
+      "away_entity": "Lecce",
+      "away_aliases": [
+        "Лечче",
+        "Lecce"
+      ],
+      "starts_at": "2026-09-07T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-07eb6fa34683d2ddbcca.md",
+      "review_document_sha256": "419d2cf8f32b7eb93c9639f7ff6d9f27ecfe9a1ef316f95fbe9b670f6070ed3c",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/cagliari-lecce/Odbsueb#id:16284997"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-44bf54ebae3533d88686",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Италия. Серия A",
+        "Serie A"
+      ],
+      "home_entity": "Udinese",
+      "home_aliases": [
+        "Удинезе",
+        "Udinese"
+      ],
+      "away_entity": "Lazio",
+      "away_aliases": [
+        "Лацио",
+        "Lazio"
+      ],
+      "starts_at": "2026-09-07T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-44bf54ebae3533d88686.md",
+      "review_document_sha256": "b540c9cd9f8cff0a9df245a7de39a84e663138158c7b4306711699f10a90ef06",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/lazio-udinese/VdbsZdb#id:16285006"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-82ed9e9d40f84c5839cb",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. Премьер Лига",
+        "Premier League"
+      ],
+      "home_entity": "Rubin Kazan",
+      "home_aliases": [
+        "Рубин",
+        "Rubin Kazan"
+      ],
+      "away_entity": "Akhmat Grozny",
+      "away_aliases": [
+        "Ахмат",
+        "Akhmat Grozny"
+      ],
+      "starts_at": "2026-09-07T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-82ed9e9d40f84c5839cb.md",
+      "review_document_sha256": "10dee86742d114e2a24cd300f00f77f2639b7832b53144a5cf880010aba88cea",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/akhmat-grozny-rubin-kazan/IWsGcc#id:16390296"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-e207b146fb4bfe8ab572",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Израиль. Премьер Лига",
+        "Ligat Ha'al",
+        "Premier League"
+      ],
+      "home_entity": "H. Beer Sheva",
+      "home_aliases": [
+        "Хапоэль Беэр-Шева",
+        "H. Beer Sheva",
+        "Hapoel Be'er Sheva"
+      ],
+      "away_entity": "Maccabi Tel Aviv",
+      "away_aliases": [
+        "Маккаби Тель-Авив",
+        "Maccabi Tel Aviv"
+      ],
+      "starts_at": "2026-09-07T17:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-e207b146fb4bfe8ab572.md",
+      "review_document_sha256": "0a78109ae4080a7866f8af6713729e7a6a80e8697b70694f270434f887fb010f",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/hapoel-beer-sheva-maccabi-tel-aviv/Ydcscec#id:16364235"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-5116bf1452572554d68f",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Литва. Чемпионат",
+        "A Lyga",
+        "TOPLYGA"
+      ],
+      "home_entity": "Hegelmann",
+      "home_aliases": [
+        "Хегельманн Литауэн",
+        "Hegelmann",
+        "FC Hegelmann"
+      ],
+      "away_entity": "FK Panevezys",
+      "away_aliases": [
+        "Паневежис",
+        "FK Panevezys",
+        "FK Panevėžys"
+      ],
+      "starts_at": "2026-09-07T15:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-5116bf1452572554d68f.md",
+      "review_document_sha256": "295663a6d92f0de050197ab53be51f43293abf3bf0eb04721f080711205049c5",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fk-panevezys-fc-hegelmann/JEtbsnfCb#id:16273121"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-c4476ac916f2816f61d7",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Португалия. Чемпионат",
+        "Primeira Liga",
+        "Liga Portugal Betclic"
+      ],
+      "home_entity": "Estoril",
+      "home_aliases": [
+        "Эшторил",
+        "Estoril",
+        "Estoril Praia"
+      ],
+      "away_entity": "Arouca",
+      "away_aliases": [
+        "Арока",
+        "Arouca",
+        "FC Arouca"
+      ],
+      "starts_at": "2026-09-07T19:15:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-c4476ac916f2816f61d7.md",
+      "review_document_sha256": "07b24bac5c5db86f1afbefabdea21073676caca84c10c208ef46fa71f506ba48",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-arouca-estoril-praia/aPbsCpk#id:16450882"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-0557da818a9af1619d5c",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Румыния. Чемпионат",
+        "Liga I",
+        "Superliga"
+      ],
+      "home_entity": "FC Voluntari",
+      "home_aliases": [
+        "Волунтари",
+        "FC Voluntari"
+      ],
+      "away_entity": "FC Arges",
+      "away_aliases": [
+        "ФК Арджеш",
+        "FC Arges",
+        "FC Argeș Pitești"
+      ],
+      "starts_at": "2026-09-07T14:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-0557da818a9af1619d5c.md",
+      "review_document_sha256": "0b14b68b22093b5350e19f7533a0e88d9c457fb601305f8420b58d0bf2fcb1ad",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fc-arges-pitesti-fc-voluntari/fKrswzW#id:16403875"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-675f3837a0983e80263e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Сербия. Чемпионат",
+        "Super Liga",
+        "Mozzart Bet Superliga"
+      ],
+      "home_entity": "OFK Beograd Mozzart Bet",
+      "home_aliases": [
+        "ОФК Белград",
+        "OFK Beograd Mozzart Bet"
+      ],
+      "away_entity": "IMT Novi Beograd",
+      "away_aliases": [
+        "ИМТ Нови Белграде",
+        "IMT Novi Beograd",
+        "FK IMT Beograd"
+      ],
+      "starts_at": "2026-09-07T18:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-675f3837a0983e80263e.md",
+      "review_document_sha256": "14a690e058abff15948b4e2c5beb222c8c531b7b54bb1c0daa3e284e93b6932c",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fk-imt-beograd-ofk-beograd/ddcsBnyc#id:16326443"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-402e123067777a8c2682",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Швеция. Суперэттан",
+        "Superettan"
+      ],
+      "home_entity": "Orebro",
+      "home_aliases": [
+        "Эребру",
+        "Orebro",
+        "Örebro SK"
+      ],
+      "away_entity": "Ostersund",
+      "away_aliases": [
+        "Эстерсунд",
+        "Ostersund",
+        "Östersunds FK"
+      ],
+      "starts_at": "2026-09-07T17:05:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-06T15:51:04.946467Z",
+      "review_document": "reviews/auto-independent-consensus-v3-402e123067777a8c2682.md",
+      "review_document_sha256": "6d7177a5519412e27632ecb0bbea1ca348a16bdeed10043891727ab3a3f46246",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/ostersunds-fk-orebro-sk/tKsLL#id:15272358"
+        }
+      ]
+    },
+    {
+      "observation_id": "codex-reviewed-4999-event12-20260906",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Саудовская Аравия. Чемпионат",
+        "Saudi Pro League",
+        "Saudi Arabian League"
+      ],
+      "home_entity": "Al-Khaleej",
+      "home_aliases": [
+        "Аль Халидж Сайхат",
+        "Аль-Халидж",
+        "Al-Khaleej",
+        "Al Khaleej"
+      ],
+      "away_entity": "Al-Riyadh",
+      "away_aliases": [
+        "Аль Рияд",
+        "Аль-Рияд",
+        "Al-Riyadh",
+        "Al Riyadh"
+      ],
+      "starts_at": "2026-09-07T15:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex operations worker (TOTOAI-4998-PARALLEL-INTEGRATION-20260906)",
+      "reviewed_at": "2026-09-06T18:02:37.195652Z",
+      "review_document": "reviews/4999-event12-codex-review-20260906.json",
+      "review_document_sha256": "e37a3ddc5ba68df19d7abe126d8882a887b06c6f4556ae57958bb6b0a451b4ed",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16629480"
+        },
+        {
+          "source_name": "FotMob",
+          "role": "independent",
+          "source_url": "https://www.fotmob.com/en-GB/matches/al-khaleej-vs-al-riyadh/86y6czbp"
+        }
+      ]
+    },
+    {
+      "observation_id": "codex-reviewed-4999-event14-20260906",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Сербия. 1-я лига",
+        "Prva liga Srbije",
+        "Mozzart Bet Прва лига Србије 26/27"
+      ],
+      "home_entity": "FK Vozdovac",
+      "home_aliases": [
+        "Вождовац",
+        "ВОЖДОВАЦ",
+        "FK Vozdovac",
+        "FK Voždovac"
+      ],
+      "away_entity": "FK TSC Backa Topola",
+      "away_aliases": [
+        "Бачка Топола",
+        "Бачка Топола ТСЦ",
+        "ТСЦ",
+        "TSC",
+        "TSC Backa Topola",
+        "FK TSC Backa Topola"
+      ],
+      "starts_at": "2026-09-07T16:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex operations worker (TOTOAI-4998-PARALLEL-INTEGRATION-20260906)",
+      "reviewed_at": "2026-09-06T18:02:37.195652Z",
+      "review_document": "reviews/4999-event14-codex-review-20260906.json",
+      "review_document_sha256": "8b13c267c6b7c699f8054c3c4b2c9a8f2c74a21d187baa639c7e7dbaf7128034",
+      "claims": [
+        {
+          "source_name": "Football Association of Serbia",
+          "role": "official",
+          "source_url": "https://fss.rs/takmicenje/mozzart-bet-prva-liga-srbije-26-27/"
+        },
+        {
+          "source_name": "Utakmice.rs",
+          "role": "independent",
+          "source_url": "https://utakmice.rs/tim/fk-vozdovac"
+        }
+      ]
+    },
+    {
+      "observation_id": "codex-reviewed-4999-event9-20260906",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Мальта. Суперкубок",
+        "Maltese Super Cup",
+        "BOV Super Cup",
+        "Super Cup"
+      ],
+      "home_entity": "Floriana FC",
+      "home_aliases": [
+        "Флориана",
+        "Флориана ФК",
+        "Floriana",
+        "Floriana FC"
+      ],
+      "away_entity": "Valletta FC",
+      "away_aliases": [
+        "Валлетта",
+        "Valletta",
+        "Valletta FC"
+      ],
+      "starts_at": "2026-09-07T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex operations worker (TOTOAI-4998-PARALLEL-INTEGRATION-20260906)",
+      "reviewed_at": "2026-09-06T18:08:06.609675Z",
+      "review_document": "reviews/4999-event9-codex-review-20260906.json",
+      "review_document_sha256": "6afe3f58360a74dcf69f505ed2b4298d7723f16e749c8f833ac3c1ae015d5696",
+      "claims": [
+        {
+          "source_name": "Malta Football Association",
+          "role": "official",
+          "source_url": "https://www.mfa.com.mt/news/competitions/tickets-out-now-for-40th-bov-super-cup-final/"
+        },
+        {
+          "source_name": "Academia das Apostas Moçambique",
+          "role": "independent",
+          "source_url": "https://www.academiadasapostasmz.com/stats/match/malta/super-cup/floriana/valletta/kznmOByPDZxJd"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-0370793125b108aac60e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига Чемпионов УЕФА",
+        "UEFA Champions League - League Phase",
+        "UEFA Champions League"
+      ],
+      "home_entity": "Lille",
+      "home_aliases": [
+        "Лилль",
+        "Lille",
+        "ليل",
+        "লিল",
+        "लिली"
+      ],
+      "away_entity": "Betis",
+      "away_aliases": [
+        "Бетис",
+        "Betis",
+        "Real Betis",
+        "ريال بيتيس",
+        "Реал Бетис"
+      ],
+      "starts_at": "2026-09-08T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-07T14:51:46.127757Z",
+      "review_document": "reviews/auto-independent-consensus-v2-0370793125b108aac60e.md",
+      "review_document_sha256": "b4dd0405c9254df95d25ba29452025f2ed07d156bcd2421e5eab777fb731d4ef",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmtgja0w303fsnt06t0fz7b66"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/real-betis-lille/THsqgb#id:16938991"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-ae57ee8bb7747e27f438",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Wrexham",
+      "home_aliases": [
+        "Рексхэм",
+        "Wrexham",
+        "ريكسهام",
+        "АФК Рексем"
+      ],
+      "away_entity": "Burnley",
+      "away_aliases": [
+        "Бернли",
+        "Burnley",
+        "بيرنلي",
+        "বার্নলি",
+        "बर्नली"
+      ],
+      "starts_at": "2026-09-08T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-07T14:51:46.127757Z",
+      "review_document": "reviews/auto-independent-consensus-v2-ae57ee8bb7747e27f438.md",
+      "review_document_sha256": "7912880aa61c312929cd29af5a00821c879656ccd8a177787a95dc69ea0609fe",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71pqyzshsct107616kwmgn"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/wrexham-burnley/gsob#id:16391669"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-ae3fd58a8cb0df005c1b",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Watford",
+      "home_aliases": [
+        "Уотфорд",
+        "Watford",
+        "واتفورد",
+        "ওয়াটফোর্ড"
+      ],
+      "away_entity": "Preston",
+      "away_aliases": [
+        "Престон",
+        "Preston",
+        "Preston North End",
+        "برستون نورث اند",
+        "प्रेस्टन नार्थ एंड",
+        "Престон Норт Энд"
+      ],
+      "starts_at": "2026-09-08T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-07T14:51:46.127757Z",
+      "review_document": "reviews/auto-independent-consensus-v2-ae3fd58a8cb0df005c1b.md",
+      "review_document_sha256": "f1869cd03e9dc5d6b334b0e915844ee6c91a6f020269ecc715012bb6c6f27d86",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71pqygshs6t1071i35efg0"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/watford-preston-north-end/wz#id:16391664"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-18c84b279d60538df172",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Cardiff",
+      "home_aliases": [
+        "Кардифф Сити",
+        "Cardiff",
+        "Cardiff City",
+        "كاردف ستي",
+        "कार्डिफ सिटी"
+      ],
+      "away_entity": "Stoke",
+      "away_aliases": [
+        "Сток Сити",
+        "Stoke",
+        "Stoke City",
+        "ستوك سيتي",
+        "स्टोक सिटी"
+      ],
+      "starts_at": "2026-09-08T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-07T14:51:46.127757Z",
+      "review_document": "reviews/auto-independent-consensus-v2-18c84b279d60538df172.md",
+      "review_document_sha256": "5b1fa974c3cd10bee38549adf467b9e13e6e341eb46ab2113443d765876a054e",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71pqxbshrwt107f0n1l99z"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/cardiff-city-stoke-city/Eslb#id:16391661"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-4101dfba51113fe38c21",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Чемпионшип",
+        "Championship"
+      ],
+      "home_entity": "Blackburn",
+      "home_aliases": [
+        "Блэкберн Роверс",
+        "Blackburn",
+        "Blackburn Rovers",
+        "بلكبورن روفرز",
+        "ब्लैकबर्न रोवर्स"
+      ],
+      "away_entity": "Sheffield Utd",
+      "away_aliases": [
+        "Шеффилд Юнайтед",
+        "Sheffield Utd",
+        "Sheffield United",
+        "شيفيلد يونايتد",
+        "शेफील्ड यूनाइटेड"
+      ],
+      "starts_at": "2026-09-08T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-07T14:51:46.127757Z",
+      "review_document": "reviews/auto-independent-consensus-v2-4101dfba51113fe38c21.md",
+      "review_document_sha256": "03b61b1f8ee136dea382374ef46b49fcfdced86a99dda56c3f7efeb1dd558685",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71pqwxshrqt107mx8sausb"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/blackburn-rovers-sheffield-united/psW#id:16391657"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-f5fefc4d6b45bf471eb9",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Кубок Лиги",
+        "League Cup - 1/16-finals",
+        "EFL Cup"
+      ],
+      "home_entity": "Leyton Orient",
+      "home_aliases": [
+        "Лейтон Ориент",
+        "Leyton Orient",
+        "ليتون أوريانت"
+      ],
+      "away_entity": "Bradford City",
+      "away_aliases": [
+        "Брэдфорд",
+        "Bradford City",
+        "برادفورد سيتي",
+        "Брэдфорд Сити"
+      ],
+      "starts_at": "2026-09-08T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-07T14:51:46.127757Z",
+      "review_document": "reviews/auto-independent-consensus-v2-f5fefc4d6b45bf471eb9.md",
+      "review_document_sha256": "f9ccd05371c73402a3776da7d035ee6ea7138768658d96f9af3f61cbc7f8a8a5",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmtgja0uf03evnt067tjdqa08"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/leyton-orient-bradford-city/xsIb#id:16950623"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-82bdff8cb73bdc01d39e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Национальная лига. Север",
+        "National League N / S - National League North",
+        "National League North"
+      ],
+      "home_entity": "Spennymoor",
+      "home_aliases": [
+        "Спеннимур",
+        "Spennymoor",
+        "Spennymoor Town",
+        "سبينينغمور تاون",
+        "Спеннимур Таун"
+      ],
+      "away_entity": "Spalding United",
+      "away_aliases": [
+        "Спалдинг Юнайтед",
+        "Spalding United",
+        "سبلدينج يونايتد",
+        "Сполдинг Юнайтед"
+      ],
+      "starts_at": "2026-09-08T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-07T14:51:46.127757Z",
+      "review_document": "reviews/auto-independent-consensus-v2-82bdff8cb73bdc01d39e.md",
+      "review_document_sha256": "172ee6cbba8609e574916778f632a3869676a9810086d21af16dd0ece7f28663",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71pqfushn0t107wjs5iwtv"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/spalding-united-spennymoor-town/wdsff#id:16508253"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-daf7b9bb6d7b6db7159d",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. Кубок. Путь регионов",
+        "Cup - Quarter-finals",
+        "Russian Cup, Qualification"
+      ],
+      "home_entity": "Tekstilshtik",
+      "home_aliases": [
+        "Текстильщик",
+        "Tekstilshtik",
+        "Tekstilshchik Ivanovo",
+        "تيكستيلششيك إيفانوفو",
+        "Текстильщик Иваново"
+      ],
+      "away_entity": "Arsenal Tula",
+      "away_aliases": [
+        "Арсенал Тула",
+        "Arsenal Tula",
+        "أرسنال تولا"
+      ],
+      "starts_at": "2026-09-08T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-07T14:51:46.127757Z",
+      "review_document": "reviews/auto-independent-consensus-v2-daf7b9bb6d7b6db7159d.md",
+      "review_document_sha256": "40cf978bec5adbf0b778d9da94df7bb31c75fdaf96876163667a43e834c15c82",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmt71przlsi0kt107w8d1c936"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/arsenal-tula-tekstilshchik-ivanovo/Dadsbgo#id:16947221"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-9160659750f21dd97bd4",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Финляндия. Чемпионат",
+        "Veikkausliiga - Relegation Group",
+        "Veikkausliiga, Relegation Round"
+      ],
+      "home_entity": "TPS",
+      "home_aliases": [
+        "ТПС",
+        "TPS",
+        "Turun Palloseura",
+        "ترون بالصورة",
+        "तुरुन पाल्लोंसेऊरा",
+        "ТПС Турку"
+      ],
+      "away_entity": "SJK",
+      "away_aliases": [
+        "СИК",
+        "SJK",
+        "سيينوجوين جيه كيه",
+        "Сейняоен Фк"
+      ],
+      "starts_at": "2026-09-08T15:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-07T14:51:46.127757Z",
+      "review_document": "reviews/auto-independent-consensus-v2-9160659750f21dd97bd4.md",
+      "review_document_sha256": "c5988c7de91d003fdeec4b2eae86e5f1cc584d8b617ca79927e8be35b125f35d",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmtlap0dzhunjlh06atuhy5ek"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sjk-turun-palloseura/eVsVXi#id:16985891"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v2-0c1fa16368a4ee637d88",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Финляндия. Чемпионат",
+        "Veikkausliiga - Championship Group",
+        "Veikkausliiga, Championship Round"
+      ],
+      "home_entity": "VPS",
+      "home_aliases": [
+        "ВПС",
+        "VPS",
+        "نادي فآسا بالوسورا",
+        "Ваасан Паллосеура"
+      ],
+      "away_entity": "AC Oulu",
+      "away_aliases": [
+        "Оулу",
+        "AC Oulu",
+        "أي سي أولو",
+        "एसी ओउलू"
+      ],
+      "starts_at": "2026-09-08T15:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-exact-consensus-v1",
+      "reviewed_at": "2026-09-07T14:51:46.127757Z",
+      "review_document": "reviews/auto-independent-consensus-v2-0c1fa16368a4ee637d88.md",
+      "review_document_sha256": "c0d001571e0317e1509dc7aadcb1ee6bbcca6112081c20ed09a920093f505e05",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com/#fixture-cmtlap0e1hunllh061vdfy7j3"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/ac-oulu-vps/WUsocc#id:16985905"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-a67ee59220e7d753688e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Rayo Vallecano",
+      "home_aliases": [
+        "Райо Вальекано",
+        "Rayo Vallecano"
+      ],
+      "away_entity": "Espanyol",
+      "away_aliases": [
+        "Эспаньол",
+        "Espanyol"
+      ],
+      "starts_at": "2026-09-15T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T13:27:14.614060Z",
+      "review_document": "reviews/auto-independent-consensus-v3-a67ee59220e7d753688e.md",
+      "review_document_sha256": "b4a1e3de0aa6836313f69fb2387e01a2165a69dcd65f003f873307b1b7a12486",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/rayo-vallecano-espanyol/ogbstgb#id:16416345"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-1c90711acf8cff377f03",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Кубок Лиги",
+        "League Cup - 1/16-finals",
+        "EFL Cup"
+      ],
+      "home_entity": "Peterborough",
+      "home_aliases": [
+        "Питерборо Юнайтед",
+        "Peterborough",
+        "Peterborough United"
+      ],
+      "away_entity": "Barnsley",
+      "away_aliases": [
+        "Барнсли",
+        "Barnsley"
+      ],
+      "starts_at": "2026-09-15T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T13:27:14.614060Z",
+      "review_document": "reviews/auto-independent-consensus-v3-1c90711acf8cff377f03.md",
+      "review_document_sha256": "fb7fa81eb6dd1fb159cbd535bdb9abf18a131a16b08ae507b50fdb639b176ef8",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/peterborough-united-barnsley/yseb#id:16950622"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-912d33def197dd87428e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Кубок Лиги",
+        "League Cup - 1/16-finals",
+        "EFL Cup"
+      ],
+      "home_entity": "West Ham",
+      "home_aliases": [
+        "Вест Хэм",
+        "West Ham",
+        "West Ham United"
+      ],
+      "away_entity": "Fulham",
+      "away_aliases": [
+        "Фулхэм",
+        "Fulham"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T13:27:14.614060Z",
+      "review_document": "reviews/auto-independent-consensus-v3-912d33def197dd87428e.md",
+      "review_document_sha256": "0bcef5ec6d37012000dc7682bea651d874d6e244f773332879553f119a47ad9e",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/fulham-west-ham-united/MsT#id:16950635"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-12d0b2e1f3885515f111",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Истмийская лига. Премьер-дивизион",
+        "Non League Premier - Isthmian League Premier Division",
+        "Isthmian League, Premier Division"
+      ],
+      "home_entity": "Enfield Town",
+      "home_aliases": [
+        "Энфилд Таун",
+        "Enfield Town"
+      ],
+      "away_entity": "Dartford",
+      "away_aliases": [
+        "Дартфорд",
+        "Dartford"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T13:27:14.614060Z",
+      "review_document": "reviews/auto-independent-consensus-v3-12d0b2e1f3885515f111.md",
+      "review_document_sha256": "5ff7524601674cd422aad157dd1cbdbe9446ca3cd2f5cc9a16f28b9f7d40f0f6",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/enfield-town-dartford/weslht#id:16596267"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-bfd029e37172bff15ef2",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Национальная лига",
+        "National League"
+      ],
+      "home_entity": "Solihull Moors",
+      "home_aliases": [
+        "Солихалл Мурс",
+        "Solihull Moors"
+      ],
+      "away_entity": "Barrow",
+      "away_aliases": [
+        "Бэрроу",
+        "Barrow",
+        "Barrow AFC"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T13:27:14.614060Z",
+      "review_document": "reviews/auto-independent-consensus-v3-bfd029e37172bff15ef2.md",
+      "review_document_sha256": "b13f8495ba1b5fb969d452af9418239d16606553736c89b1d572da727cbbf0f0",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/solihull-moors-barrow-afc/XbsRid#id:16494317"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-6f43e24747e01ddd9aad",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Национальная лига",
+        "National League"
+      ],
+      "home_entity": "Boston Utd",
+      "home_aliases": [
+        "Бостон Юнайтед",
+        "Boston Utd",
+        "Boston United"
+      ],
+      "away_entity": "Woking",
+      "away_aliases": [
+        "Уокинг",
+        "Woking"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T13:27:14.614060Z",
+      "review_document": "reviews/auto-independent-consensus-v3-6f43e24747e01ddd9aad.md",
+      "review_document_sha256": "6b4115701b434168c8ac73815859160f08db3e3ec655e47eb298a0c8d237d90f",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/woking-boston-united/zcsDc#id:16494314"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-ac12ce3d9783504f82b2",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Северная Ирландия. Премьер-лига",
+        "Premiership"
+      ],
+      "home_entity": "Ballymena",
+      "home_aliases": [
+        "Баллимена",
+        "Ballymena",
+        "Ballymena United"
+      ],
+      "away_entity": "Carrick Rangers",
+      "away_aliases": [
+        "Каррик Рейнджерс",
+        "Carrick Rangers"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T13:27:14.614060Z",
+      "review_document": "reviews/auto-independent-consensus-v3-ac12ce3d9783504f82b2.md",
+      "review_document_sha256": "26ca3366114552a1f37164bf82190c2b36db00b73b624d9bdcc280f07959ca99",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/carrick-rangers-ballymena-united/ufcsIKo#id:16396748"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-6a9a16c4152094bf8d30",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Северная Ирландия. Премьер-лига",
+        "Premiership"
+      ],
+      "home_entity": "Glentoran",
+      "home_aliases": [
+        "Гленторан",
+        "Glentoran"
+      ],
+      "away_entity": "Coleraine",
+      "away_aliases": [
+        "Колрейн",
+        "Coleraine",
+        "Coleraine FC"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T13:27:14.614060Z",
+      "review_document": "reviews/auto-independent-consensus-v3-6a9a16c4152094bf8d30.md",
+      "review_document_sha256": "19a6bfcb063195ac12211527f5869e8d02b42083e845c0acb584e5e4b61bd4db",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/coleraine-fc-glentoran-fc/Edcsvfc#id:16396750"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-1524811cf15a4a5a545c",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Швеция. Суперэттан",
+        "Superettan"
+      ],
+      "home_entity": "Brage",
+      "home_aliases": [
+        "Браге",
+        "Brage",
+        "IK Brage"
+      ],
+      "away_entity": "Sandviken",
+      "away_aliases": [
+        "Сандвикенс",
+        "Sandviken",
+        "Sandvikens IF"
+      ],
+      "starts_at": "2026-09-15T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T13:27:14.614060Z",
+      "review_document": "reviews/auto-independent-consensus-v3-1524811cf15a4a5a545c.md",
+      "review_document_sha256": "6f30674447eed65c7dbc1503da013d73bb714776c160494ac73e135b32cc997b",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sandvikens-if-ik-brage/CKsUL#id:15272371"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-5007-event09-20260915-sofa-tsdb",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Национальная лига",
+        "National League",
+        "English National League"
+      ],
+      "home_entity": "Aldershot Town",
+      "home_aliases": [
+        "Алдершот Таун",
+        "Aldershot Town"
+      ],
+      "away_entity": "Yeovil Town",
+      "away_aliases": [
+        "Йовил Таун",
+        "Yeovil Town"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+      "reviewed_at": "2026-09-15T13:36:28.952692Z",
+      "review_document": "reviews/manual-5007-event09-20260915.json",
+      "review_document_sha256": "e80e085d9ba03e10093a9363a94070f6178fe379dedffac9dbebefe79af57d5d",
+      "claims": [
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/yeovil-town-aldershot-town/AbsGc#id:16494313"
+        },
+        {
+          "source_name": "TheSportsDB",
+          "role": "independent",
+          "source_url": "https://www.thesportsdb.com/event/2528245"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-5007-event04-20260915",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Истмийская лига. Премьер-дивизион",
+        "Isthmian League, Premier Division"
+      ],
+      "home_entity": "Cray Wanderers",
+      "home_aliases": [
+        "Крей Уондерерз",
+        "Cray Wanderers"
+      ],
+      "away_entity": "St Albans City",
+      "away_aliases": [
+        "Сейнт Албанс Сити",
+        "St Albans City"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+      "reviewed_at": "2026-09-15T13:41:17.906573Z",
+      "review_document": "reviews/manual-5007-event04-20260915-v2.json",
+      "review_document_sha256": "f359f91085624ed78fa0cedf6597e27e1a2b8c2f4423dcfed5b6cea10979b772",
+      "claims": [
+        {
+          "source_name": "IsthmianLeague",
+          "role": "official",
+          "source_url": "https://www.isthmian.co.uk/match/6a59069cce9ef452b61f3ca2"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/cray-wanderers-st-albans-city/Kcsgat#id:16596265"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-5007-event05-20260915",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Истмийская лига. Премьер-дивизион",
+        "Isthmian League, Premier Division"
+      ],
+      "home_entity": "Lewes",
+      "home_aliases": [
+        "Льюис",
+        "Lewes"
+      ],
+      "away_entity": "Carshalton Athletic",
+      "away_aliases": [
+        "Каршалтон Атлетик",
+        "Carshalton Athletic"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+      "reviewed_at": "2026-09-15T13:41:18.146495Z",
+      "review_document": "reviews/manual-5007-event05-20260915-v2.json",
+      "review_document_sha256": "bb023d68e73738d900949670cb052fc00e64fe431359f7f263b8bed2776afd16",
+      "claims": [
+        {
+          "source_name": "LewesFC",
+          "role": "official",
+          "source_url": "https://lewesfc.com/2026/09/13/mens-match-report-chatham-town-a/"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/carshalton-athletic-lewes/qcsEd#id:16596269"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-5007-event06-20260915",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Истмийская лига. Премьер-дивизион",
+        "Isthmian League Premier Division"
+      ],
+      "home_entity": "Whitehawk",
+      "home_aliases": [
+        "Уайтхок",
+        "Whitehawk"
+      ],
+      "away_entity": "Three Bridges",
+      "away_aliases": [
+        "Три Бриджес",
+        "Three Bridges"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+      "reviewed_at": "2026-09-15T13:41:18.402560Z",
+      "review_document": "reviews/manual-5007-event06-20260915-v2.json",
+      "review_document_sha256": "9040af68ba1c64aa435a29aafce9fab52b7ab7e66b04942bd6da7b4e5cade329",
+      "claims": [
+        {
+          "source_name": "IsthmianLeague",
+          "role": "official",
+          "source_url": "https://www.isthmian.co.uk/match/6a59069cce9ef452b61f3ca9"
+        },
+        {
+          "source_name": "FotMob",
+          "role": "independent",
+          "source_url": "https://www.fotmob.com/matches/whitehawk-vs-three-bridges/2ghq59x4"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-5007-event11-20260915",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Национальная лига",
+        "National League"
+      ],
+      "home_entity": "Wealdstone",
+      "home_aliases": [
+        "Уэлдстон",
+        "Wealdstone"
+      ],
+      "away_entity": "Halifax Town",
+      "away_aliases": [
+        "Галифакс Таун",
+        "Halifax Town",
+        "FC Halifax Town"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+      "reviewed_at": "2026-09-15T13:41:18.684777Z",
+      "review_document": "reviews/manual-5007-event11-20260915-v2.json",
+      "review_document_sha256": "02cec2ffe83b717a5bf0cc0c5bef850b52d2f613f4e581816946d95c7fd9300c",
+      "claims": [
+        {
+          "source_name": "TVGuide",
+          "role": "independent",
+          "source_url": "https://www.tvguide.co.uk/sport/football/fixtures/wealdstone-vs-halifax-town-20260915-4c76cf32b2"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/wealdstone-fc-halifax-town/MbsNe#id:16494320"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-5007-event12-20260915",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Южная футбольная лига. Премьер дивизион. Юг",
+        "Southern League, Premier Division South"
+      ],
+      "home_entity": "Berkhamsted Town",
+      "home_aliases": [
+        "Беркхамстед",
+        "Berkhamsted Town"
+      ],
+      "away_entity": "Uxbridge",
+      "away_aliases": [
+        "Аксбридж",
+        "Uxbridge"
+      ],
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+      "reviewed_at": "2026-09-15T13:41:19.005044Z",
+      "review_document": "reviews/manual-5007-event12-20260915-v2.json",
+      "review_document_sha256": "ab3fd86700cd9b97e09800162507ec90d223817d5ab6878cbc70a39adb6d9490",
+      "claims": [
+        {
+          "source_name": "BerkhamstedFC",
+          "role": "official",
+          "source_url": "https://www.pitchero.com/clubs/berkhamstedfootballclub/teams/109087/match-centre/1-19943780"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/berkhamsted-town-uxbridge/CesGe#id:16587580"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2050058",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Europa League",
+        "Лига Европы УЕФА"
+      ],
+      "home_entity": "AC Milan",
+      "home_aliases": [
+        "Милан",
+        "Milan",
+        "AC Milan",
+        "ميلان",
+        "মিলান",
+        "मिलान"
+      ],
+      "away_entity": "SL Benfica",
+      "away_aliases": [
+        "Бенфика",
+        "Benfica",
+        "SL Benfica",
+        "بنفيكا",
+        "বেনফিকা",
+        "बेनफिका"
+      ],
+      "starts_at": "2026-09-16T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-09-15T17:15:56.877040Z",
+      "review_document": "reviews/auto-uefa-match-2050058.md",
+      "review_document_sha256": "90fdc1b1f147291f237830f2f90bffe9a87cfd4ae9f217278b884b1259bfb8b4",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2050058/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16943965"
+        }
+      ]
+    },
+    {
+      "observation_id": "uefa-match-2050060",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "UEFA Europa League",
+        "Лига Европы УЕФА"
+      ],
+      "home_entity": "RSC Anderlecht",
+      "home_aliases": [
+        "Андерлехт",
+        "Anderlecht",
+        "RSC Anderlecht",
+        "أندرلخت",
+        "आरएससी एंडरलेक्ट"
+      ],
+      "away_entity": "Olympique Lyonnais",
+      "away_aliases": [
+        "Лион",
+        "Lyon",
+        "Olympique Lyonnais",
+        "أولمبيك ليون"
+      ],
+      "starts_at": "2026-09-16T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-exact-consensus-v1",
+      "reviewed_at": "2026-09-15T17:15:56.877040Z",
+      "review_document": "reviews/auto-uefa-match-2050060.md",
+      "review_document_sha256": "bd15787d714ebe31852b19dfd179beb61825047a9ce57dcbff466d0e3184c937",
+      "claims": [
+        {
+          "source_name": "UEFA match feed",
+          "role": "official",
+          "source_url": "https://match.uefa.com/v5/matches/2050060/"
+        },
+        {
+          "source_name": "Sofascore event",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/api/v1/event/16945000"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-b0553873f5a3a898e7ff",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Dep. A Coruna",
+      "home_aliases": [
+        "Депортиво Ла-Корунья",
+        "Dep. A Coruna",
+        "Deportivo de A Coruña"
+      ],
+      "away_entity": "Sevilla",
+      "away_aliases": [
+        "Севилья",
+        "Sevilla"
+      ],
+      "starts_at": "2026-09-16T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T17:16:02.294119Z",
+      "review_document": "reviews/auto-independent-consensus-v3-b0553873f5a3a898e7ff.md",
+      "review_document_sha256": "6eeb60ad9805b1b7a5f58a472c5652d9795d2dac5b5bb0171e349858b2c9454f",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sevilla-deportivo-de-la-coruna/HgbsIgb#id:16416343"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-cc425c9421cb47139d82",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига Европы УЕФА",
+        "UEFA Europa League - League Phase",
+        "UEFA Europa League"
+      ],
+      "home_entity": "AC Milan",
+      "home_aliases": [
+        "Милан",
+        "AC Milan"
+      ],
+      "away_entity": "Benfica",
+      "away_aliases": [
+        "Бенфика",
+        "Benfica"
+      ],
+      "starts_at": "2026-09-16T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T17:16:02.294119Z",
+      "review_document": "reviews/auto-independent-consensus-v3-cc425c9421cb47139d82.md",
+      "review_document_sha256": "091788fe2988929d271749c697758e8218acf374be5ddba219e28557cbefdea6",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/benfica-ac-milan/Rdbsgkb#id:16943965"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-151667867fa0318d2c38",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Европа. Лига Европы УЕФА",
+        "UEFA Europa League - League Phase",
+        "UEFA Europa League"
+      ],
+      "home_entity": "Anderlecht",
+      "home_aliases": [
+        "Андерлехт",
+        "Anderlecht",
+        "RSC Anderlecht"
+      ],
+      "away_entity": "Lyon",
+      "away_aliases": [
+        "Лион",
+        "Lyon",
+        "Olympique Lyonnais"
+      ],
+      "starts_at": "2026-09-16T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T17:16:02.294119Z",
+      "review_document": "reviews/auto-independent-consensus-v3-151667867fa0318d2c38.md",
+      "review_document_sha256": "8e606552c0dc0977881f367e80970ec6b8474f04bb09404cc89b96197bba9028",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/rsc-anderlecht-olympique-lyonnais/ZHsaib#id:16945000"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-5926ee3f7b3913bfcd69",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Россия. Премьер Лига",
+        "Premier League"
+      ],
+      "home_entity": "Rodina Moscow",
+      "home_aliases": [
+        "Родина",
+        "Rodina Moscow"
+      ],
+      "away_entity": "Rubin Kazan",
+      "away_aliases": [
+        "Рубин",
+        "Rubin Kazan"
+      ],
+      "starts_at": "2026-09-16T15:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T17:16:02.294119Z",
+      "review_document": "reviews/auto-independent-consensus-v3-5926ee3f7b3913bfcd69.md",
+      "review_document_sha256": "c398475aa0573920eacaa18e09119f9589b3e2b494c947943d625bc5d4f2f79b",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/rodina-moscow-rubin-kazan/IWsZdEc#id:16395115"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-e0d117cd95e2343206c7",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Германия. 3-я Бундеслига",
+        "3. Liga"
+      ],
+      "home_entity": "Preussen Munster",
+      "home_aliases": [
+        "Мюнстер",
+        "Preussen Munster",
+        "Preußen Münster"
+      ],
+      "away_entity": "Saarbrucken",
+      "away_aliases": [
+        "Саарбрюкен",
+        "Saarbrucken",
+        "1. FC Saarbrücken"
+      ],
+      "starts_at": "2026-09-16T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T17:16:02.294119Z",
+      "review_document": "reviews/auto-independent-consensus-v3-e0d117cd95e2343206c7.md",
+      "review_document_sha256": "a6353725d47baff28d4d0d9487488aef463f5eb9b98cc7192c5e743695821a4c",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/preussen-munster-1-fc-saarbrucken/ebbsPbb#id:16596621"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-9c2bd9bf001477bc437a",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Германия. 3-я Бундеслига",
+        "3. Liga"
+      ],
+      "home_entity": "Fortuna Koln",
+      "home_aliases": [
+        "Фортуна Кельн",
+        "Fortuna Koln",
+        "SC Fortuna Köln"
+      ],
+      "away_entity": "Wehen",
+      "away_aliases": [
+        "Веен",
+        "Wehen",
+        "SV Wehen Wiesbaden"
+      ],
+      "starts_at": "2026-09-16T17:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T17:16:02.294119Z",
+      "review_document": "reviews/auto-independent-consensus-v3-9c2bd9bf001477bc437a.md",
+      "review_document_sha256": "dcb63ad3f04e818969f884ee155b4751255350c65dbe6584cd55a11c468d7430",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/sc-fortuna-koln-sv-wehen-wiesbaden/XbbsIdb#id:16596628"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-0d0806feb5c1951210d8",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Италия. Серия C - Группа B",
+        "Serie C - Girone B",
+        "Serie C, Group B"
+      ],
+      "home_entity": "Grosseto",
+      "home_aliases": [
+        "Гроссето",
+        "Grosseto"
+      ],
+      "away_entity": "Campobasso",
+      "away_aliases": [
+        "Кампобассо",
+        "Campobasso",
+        "Campobasso FC"
+      ],
+      "starts_at": "2026-09-16T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T17:16:02.294119Z",
+      "review_document": "reviews/auto-independent-consensus-v3-0d0806feb5c1951210d8.md",
+      "review_document_sha256": "c68856e768f0f162b766111ecd1d796cf239bc1ab196d3f815ff584c2fb6c4d2",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/campobasso-fc-grosseto/Kfbsbwhd#id:16675033"
+        }
+      ]
+    },
+    {
+      "observation_id": "independent-consensus-v3-f1affc1493aca55abbce",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Италия. Серия C - Группа B",
+        "Serie C - Girone B",
+        "Serie C, Group B"
+      ],
+      "home_entity": "Pineto",
+      "home_aliases": [
+        "Пинето Кальчо",
+        "Pineto"
+      ],
+      "away_entity": "Forli",
+      "away_aliases": [
+        "Форли",
+        "Forli",
+        "Forlì"
+      ],
+      "starts_at": "2026-09-16T16:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "automated-independent-provider-consensus-v1",
+      "reviewed_at": "2026-09-15T17:16:02.294119Z",
+      "review_document": "reviews/auto-independent-consensus-v3-f1affc1493aca55abbce.md",
+      "review_document_sha256": "41ec5f5d5afcf0f8e9f4c89016bc9797921a1271f7317146a705fb8accd3b0f2",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/pineto-forli/IfbsdAQb#id:16675063"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-reviewed-5008-02-55d0aeaa-cb44fe2d",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Ла Лига",
+        "La Liga",
+        "LaLiga"
+      ],
+      "home_entity": "Levante UD",
+      "home_aliases": [
+        "Леванте",
+        "Levante",
+        "Levante UD"
+      ],
+      "away_entity": "Athletic Club",
+      "away_aliases": [
+        "Атлетик Бильбао",
+        "Ath Bilbao",
+        "Athletic Club"
+      ],
+      "starts_at": "2026-09-16T19:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+      "reviewed_at": "2026-09-15T17:30:34.900446Z",
+      "review_document": "reviews/manual-5008-event-02-20260915T173034Z.json",
+      "review_document_sha256": "266ee9a1b84f45726f71ff9c016fe19c7ea78ef9277358977e586804aa4af1ae",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/levante-ud-athletic-club/AgbsZgb#id:16416341"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-reviewed-5008-06-55d0aeaa-366d0155",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Кубок Лиги",
+        "League Cup - 1/16-finals",
+        "League Cup",
+        "EFL Cup"
+      ],
+      "home_entity": "Coventry City",
+      "home_aliases": [
+        "Ковентри Сити",
+        "Coventry",
+        "Coventry City"
+      ],
+      "away_entity": "Aston Villa",
+      "away_aliases": [
+        "Астон Вилла",
+        "Aston Villa"
+      ],
+      "starts_at": "2026-09-16T19:00:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+      "reviewed_at": "2026-09-15T17:30:36.217181Z",
+      "review_document": "reviews/manual-5008-event-06-20260915T173036Z.json",
+      "review_document_sha256": "e5e53e60b3b3cb70c0f51cb61a792f8256b771c9c98ae739f2e1991500000917",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/aston-villa-coventry-city/lsP#id:16950628"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-reviewed-5008-07-55d0aeaa-42fd45d5",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Национальная лига",
+        "National League"
+      ],
+      "home_entity": "Altrincham FC",
+      "home_aliases": [
+        "Олтрингем",
+        "Altrincham",
+        "Altrincham FC"
+      ],
+      "away_entity": "Hartlepool United",
+      "away_aliases": [
+        "Хартлпул",
+        "Hartlepool",
+        "Hartlepool United",
+        "Хартлпул Юнайтед"
+      ],
+      "starts_at": "2026-09-16T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+      "reviewed_at": "2026-09-15T17:30:37.843143Z",
+      "review_document": "reviews/manual-5008-event-07-20260915T173037Z.json",
+      "review_document_sha256": "7f7933d97957b84b0fac9bd6ab72d0807fc3856030052285111e2a9db8133be0",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/altrincham-fc-hartlepool-united/bcskc#id:16494322"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-reviewed-5008-13-55d0aeaa-f9856e17",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Испания. Кубок Федерации",
+        "Copa Federacion - 1/8-finals",
+        "Copa Federacion",
+        "Copa Federación"
+      ],
+      "home_entity": "Recreativo de Huelva",
+      "home_aliases": [
+        "Рекреативо",
+        "Recreativo Huelva",
+        "Recreativo de Huelva",
+        "Рекреативо Уэльва"
+      ],
+      "away_entity": "CP Cacereño",
+      "away_aliases": [
+        "Касереньо",
+        "Cacereno",
+        "Cacereño",
+        "CP Cacereño",
+        "ФК Касeрено"
+      ],
+      "starts_at": "2026-09-16T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+      "reviewed_at": "2026-09-15T17:30:39.182922Z",
+      "review_document": "reviews/manual-5008-event-13-20260915T173039Z.json",
+      "review_document_sha256": "4819211f22f0c34ebed3e40084c756dff14d66d2c2a789cc1aec92ca5aa7082e",
+      "claims": [
+        {
+          "source_name": "GOAL API",
+          "role": "independent",
+          "source_url": "https://goal-api.com"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/recreativo-de-huelva-cp-cacereno/DhbsBQFb#id:17081844"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-reviewed-5008-08-13e3fb7b-00a39f8e",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Северная Премьер-Лига. 1-й дивизион",
+        "The Pitching In Northern Premier League Division One East"
+      ],
+      "home_entity": "Guisborough Town",
+      "home_aliases": [
+        "Гисборо Таун",
+        "Guisborough Town"
+      ],
+      "away_entity": "Morpeth Town",
+      "away_aliases": [
+        "Морпет",
+        "Morpeth Town"
+      ],
+      "starts_at": "2026-09-16T18:45:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+      "reviewed_at": "2026-09-15T17:36:46.949494Z",
+      "review_document": "reviews/manual-5008-event-08-20260915T173646Z.json",
+      "review_document_sha256": "a2e557c9d993fd5c2666382b503e4c0e1929b76d1465935097d9d1166fa5c09f",
+      "claims": [
+        {
+          "source_name": "Guisborough Town FC",
+          "role": "official",
+          "source_url": "https://www.guisboroughtown.co.uk/teams/guisborough-town/"
+        },
+        {
+          "source_name": "Sofascore",
+          "role": "independent",
+          "source_url": "https://www.sofascore.com/football/match/morpeth-town-guisborough-town/xPtsKBRb#id:16545900"
+        }
+      ]
+    },
+    {
+      "observation_id": "manual-reviewed-5008-10-4766620f-cc7e1bfe",
+      "sport": "football",
+      "gender_age_class": "men-senior",
+      "competition_aliases": [
+        "Англия. Южная футбольная лига. 1-й дивизион",
+        "Division One South"
+      ],
+      "home_entity": "Paulton Rovers",
+      "home_aliases": [
+        "Полтон Роверс",
+        "Paulton Rovers"
+      ],
+      "away_entity": "Portland United",
+      "away_aliases": [
+        "Портленд Юнайтед",
+        "Portland United"
+      ],
+      "starts_at": "2026-09-16T18:30:00Z",
+      "status": "scheduled",
+      "conditional": false,
+      "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+      "reviewed_at": "2026-09-15T17:36:48.326894Z",
+      "review_document": "reviews/manual-5008-event-10-20260915T173648Z.json",
+      "review_document_sha256": "5b2e164cd55ea594143fc3422d7d918798035c19600641462b9082f1f928c4d4",
+      "claims": [
+        {
+          "source_name": "Paulton Rovers FC",
+          "role": "official",
+          "source_url": "https://www.paultonrovers.co.uk/teams/53123/fixtures-results"
+        },
+        {
+          "source_name": "SoccerPunter",
+          "role": "independent",
+          "source_url": "https://www.soccerpunter.com/h2h/Paulton-Rovers-vs-Portland-United/2004/128538/"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12127,
+    "drawing_number": 5007,
+    "event_order": 5,
+    "target_event_id": 181013,
+    "championship": "Англия. Истмийская лига. Премьер-дивизион",
+    "home_team": "Уайтхок",
+    "away_team": "Три Бриджес",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "manual-5007-event06-20260915",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Истмийская лига. Премьер-дивизион",
+      "Isthmian League Premier Division"
+    ],
+    "home_entity": "Whitehawk",
+    "home_aliases": [
+      "Уайтхок",
+      "Whitehawk"
+    ],
+    "away_entity": "Three Bridges",
+    "away_aliases": [
+      "Три Бриджес",
+      "Three Bridges"
+    ],
+    "starts_at": "2026-09-15T18:45:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+    "reviewed_at": "2026-09-15T13:41:18.402560Z"
+  },
+  "sources": [
+    {
+      "source_name": "IsthmianLeague",
+      "role": "official",
+      "source_url": "https://www.isthmian.co.uk/match/6a59069cce9ef452b61f3ca9",
+      "snapshot": "5007-event06-isthmianleague-f33b0a4c2ed4e98a0b724398c3ce0231c0e1283efa04369f8f9f9cf4a2cd63c4.raw",
+      "snapshot_sha256": "f33b0a4c2ed4e98a0b724398c3ce0231c0e1283efa04369f8f9f9cf4a2cd63c4",
+      "home_team": "Whitehawk",
+      "away_team": "Three Bridges",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:40:42.748109Z"
+    },
+    {
+      "source_name": "FotMob",
+      "role": "independent",
+      "source_url": "https://www.fotmob.com/matches/whitehawk-vs-three-bridges/2ghq59x4",
+      "snapshot": "5007-event06-fotmob-7c722a8d198b70d25d4aad997ed9160a3ffbb3848939cd584846cc03fd0a7313.raw",
+      "snapshot_sha256": "7c722a8d198b70d25d4aad997ed9160a3ffbb3848939cd584846cc03fd0a7313",
+      "home_team": "Whitehawk",
+      "away_team": "Three Bridges",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:38:17.359868Z"
+    }
+  ]
+}

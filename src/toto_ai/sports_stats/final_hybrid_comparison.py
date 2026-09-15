@@ -51,6 +51,11 @@ from toto_ai.optimizer.uncertainty_package import (
     select_uncertainty_package,
 )
 from toto_ai.package.audit import evaluate_package_safety
+from toto_ai.package.hash_contract import (
+    ORDERED_COMMA_V1,
+    ORDERED_LF_V1,
+    ordered_comma_sha256,
+)
 from toto_ai.runner.final_input import load_final_input
 from toto_ai.runner.scheduler import load_scheduler_plan
 from toto_ai.sports_stats.parallel_g1 import (
@@ -1037,6 +1042,9 @@ def _result_payload(result: StrategyResult, quality: Any) -> dict[str, Any]:
         "cost": result.cost,
         "unused_bank": result.unused_bank,
         "package_sha256": result.package_sha256,
+        "package_sha256_semantics": ORDERED_LF_V1,
+        "canonical_package_sha256": ordered_comma_sha256(result.coupons),
+        "canonical_package_sha256_semantics": ORDERED_COMMA_V1,
         "runtime_seconds": result.runtime_seconds,
         "p13": result.probability_at_least_13,
         "p14": result.probability_at_least_14,

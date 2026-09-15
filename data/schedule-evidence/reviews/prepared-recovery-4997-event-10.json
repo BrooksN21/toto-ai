@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "event_order": 9,
+    "target_event_id": 180612,
+    "championship": "Испания. Ла Лига",
+    "home_team": "Райо Вальекано",
+    "away_team": "Расинг Сантандер",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "recovery-4997-event-10-20260904",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Испания. Ла Лига",
+      "LaLiga"
+    ],
+    "home_entity": "Rayo Vallecano",
+    "home_aliases": [
+      "Райо Вальекано",
+      "Rayo Vallecano"
+    ],
+    "away_entity": "Real Racing Club",
+    "away_aliases": [
+      "Расинг Сантандер",
+      "Real Racing Club",
+      "Racing Santander"
+    ],
+    "starts_at": "2026-09-05T16:30:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "codex-local-evidence-review",
+    "reviewed_at": "2026-09-04T20:07:06.036136Z"
+  },
+  "sources": [
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/real-racing-club-rayo-vallecano/tgbsKgb#id:16416321",
+      "snapshot": "recovery-4997-f4b85baefaf0b9a969f9baa8a008dae417eac0eb142078300324ddaaaade2dd4.json",
+      "snapshot_sha256": "f4b85baefaf0b9a969f9baa8a008dae417eac0eb142078300324ddaaaade2dd4",
+      "home_team": "Rayo Vallecano",
+      "away_team": "Real Racing Club",
+      "starts_at": "2026-09-05T16:30:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T18:36:56.403803Z"
+    },
+    {
+      "source_name": "Sportschau",
+      "role": "independent",
+      "source_url": "https://www.sportschau.de/live-und-ergebnisse/fussball/spanien-primera-division/ma12187876/rayo-vallecano_racing-santander/spiel-spiele-und-ergebnisse",
+      "snapshot": "recovery-4997-e1fa98bfb46a93f7917472e60f34cc79bade97482a0e3132e35cb8498c7fb721.html",
+      "snapshot_sha256": "e1fa98bfb46a93f7917472e60f34cc79bade97482a0e3132e35cb8498c7fb721",
+      "home_team": "Rayo Vallecano",
+      "away_team": "Racing Santander",
+      "starts_at": "2026-09-05T16:30:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-04T20:03:52.518440Z"
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "checked_at_msk": "2026-09-05T14:08:44.716716+03:00",
+  "plan_loader": "PASS",
+  "fresh_readonly_status": {
+    "schema_version": 1,
+    "observed_at_msk": "2026-09-05T14:08:45.370274+03:00",
+    "drawing_number": 4997,
+    "drawing_id": 12100,
+    "plan_id": "45b72ac58a45958b",
+    "output_dir": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4997-20260905T133000Z",
+    "last_phase": "scheduled",
+    "last_attempt": null,
+    "primary_quality_v2": {
+      "status": "pending",
+      "reason": null
+    },
+    "challengers": {
+      "quality-v2": {
+        "status": "pending",
+        "reasons": []
+      },
+      "sports-shadow": {
+        "status": "pending",
+        "reasons": []
+      },
+      "quality-v3": {
+        "status": "pending",
+        "reasons": []
+      },
+      "robust": {
+        "status": "pending",
+        "reasons": []
+      }
+    },
+    "selected_strategy": null,
+    "highest_p13_single_coupon": null,
+    "operator_result": null,
+    "operator_result_ready": false,
+    "manual_wager_request": {
+      "state": "experimental_manual_authorized",
+      "action_required": false,
+      "prompt": null,
+      "drawing_number": 4997,
+      "drawing_id": 12100,
+      "plan_id": "45b72ac58a45958b",
+      "requested_bank": 4980,
+      "stake": 30,
+      "expires_at_msk": "2026-09-05T16:20:00+03:00",
+      "authorization_sha256": "f315191e2e6b24f4c8db2de83190e8a7f47fed59dbe5691181a9f651e46e81d9",
+      "profitability_proven": false,
+      "automatic_wagering": false,
+      "request_sha256": "6cb54555f86debf08aa4b5e2dda72f410cff8be6fbcf08458ce5850ac242e5cf"
+    },
+    "terminal": false,
+    "blocker": null,
+    "next_checkpoint": {
+      "phase": "t_minus_120",
+      "at_msk": "2026-09-05T14:30:00+03:00"
+    },
+    "expires_at_msk": "2026-09-05T16:20:00+03:00",
+    "automatic_wagering": false,
+    "mutated": false
+  },
+  "sports_seed": {
+    "drawing": 4997,
+    "drawing_id": 12100,
+    "coverage": 11,
+    "fallback": 4,
+    "artifact_sha256": "1a773c4b20b2aa67213e3f9458433cb095a10b6ab3128c5778e66fcd9e01b797"
+  },
+  "receipts": {
+    "reports/rehearsal/evening-4997-20260905T133000Z/experimental-manual-release-authorization.json": {
+      "bytes_unchanged": true,
+      "self_hash_valid": true,
+      "drawing_id": 12100,
+      "plan_id": "45b72ac58a45958b",
+      "automatic_wagering": false
+    },
+    "reports/rehearsal/evening-4997-20260905T133000Z/parallel-challenger/parallel-release-authorization.json": {
+      "bytes_unchanged": true,
+      "self_hash_valid": true,
+      "drawing_id": 12100,
+      "plan_id": "45b72ac58a45958b",
+      "automatic_wagering": false
+    }
+  },
+  "bound_nonsecret_path_existence": {
+    "aliases": true,
+    "cutoff_evidence": true,
+    "db": true,
+    "output_dir": true,
+    "project_root": true,
+    "schedule_evidence_ledger": true
+  },
+  "launchctl_observation": {
+    "observed_approx_msk": "2026-09-05T14:07:30+03:00",
+    "uid": 501,
+    "all_loaded": true,
+    "all_not_running": true,
+    "all_runs": 0,
+    "all_last_exit": "never exited",
+    "all_installed_plists_equal_candidates": true,
+    "main_slots_msk": [
+      "14:30",
+      "15:00",
+      "15:30",
+      "15:40",
+      "15:50",
+      "16:00",
+      "16:12",
+      "16:20"
+    ],
+    "watcher_slot_msk": "14:30",
+    "sidecar_slot_msk": "16:00",
+    "working_directory": "/Users/turshevr/toto-ai"
+  },
+  "scripts": {
+    "main_exists_executable_syntax_valid": true,
+    "sidecar_exists_executable_syntax_valid": true,
+    "venv_python_executable": true,
+    "env_regular_owned_mode_0600": true,
+    "env_contents_read": false
+  },
+  "watcher_limits": [
+    "latest.json is JSON, not a Russian narrative report",
+    "stdout/history emit JSON only on state change",
+    "watcher stops at primary PLAY/NO_BET and can miss later sidecar completion",
+    "no idle-chat wakeup facility",
+    "latest.json at review is historical Sept4 23:15; jobs have not fired yet"
+  ],
+  "readiness": "SCHEDULED_LOCAL_PREREQUISITES_PASS_NOT_END_TO_END_PROVEN",
+  "no_manual_jobs_or_mutations": true,
+  "unchecked_live_prerequisites": [
+    "network/provider availability and quota",
+    "credentials actual usability",
+    "execution deadline/runtime under current live input"
+  ]
+}

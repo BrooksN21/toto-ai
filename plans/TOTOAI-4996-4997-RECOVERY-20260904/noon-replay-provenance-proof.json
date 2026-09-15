@@ -1,0 +1,25 @@
+{
+  "frozen_inputs_verified": true,
+  "precutoff_results_empty": true,
+  "final_input_captured_at": "2026-09-04T16:00:12.663983Z",
+  "sports_as_of": "2026-09-04T16:00:11.946582+00:00",
+  "input_bindings": {
+    "final_input_sha256": "fddd407deff8816eb09c3997d79f3bb4f9ffb57360f5d1cd4e1ad338f0205968",
+    "probability_input_sha256": "d647aa67eff0d1583fe792b5bbf72f99a88dffc00301855c0fbb4b9bd140e7fb",
+    "scheduler_plan_sha256": "c798ade8a64b989518ea54c7c839708f4b1713dbadcb22f9a06f6022db59e045",
+    "sports_artifact_sha256": "59c7574b3c7d678e3f689b80d3f47590314c822aad7ab7f14f648bd6c7b57ca2",
+    "sports_probability_input_sha256": "41ec6fe4d67e17aa9d9380de2daa7d3495f40e9eb5240e75ec5921848e5a1e54"
+  },
+  "generator_code_sha256_now": {
+    "hybrid_replay.py": "0db4041e32cb642a467a37f6928f98c947ce853e687125d32c8108fb9c2377a5",
+    "strategy_comparison.py": "9b67c3912760d8166824ee6b91c33df501de90ca1d80920187be14b585d81b75",
+    "uncertainty_package.py": "33b55ec8b3f7ca59e8d8c5ef1327d623bc1e0934ba05963f7a4df81a6e5d3b31",
+    "robust_package.py": "9c7913e1b3c41d19c9a5e29f5dbaaddc358697941e3c5be46c976a913b1c315f",
+    "prospective_quality.py": "b650536285bc0c17d144d85117b178f25ee84cf51b41849f5c6b85aa4a92cc15",
+    "strategy_execution.py": "0c0bbdc1acd78d6369e2fc3c558949dee887977cabc44bab37480ae0c18e149b"
+  },
+  "full_yesterday_runtime_code_hash_attestation_available": false,
+  "claim": "This recovery did not edit generators/config. Targeted current diffs for listed files empty. This is not full historical runtime/dependency equivalence proof.",
+  "outcome_boundary": "hybrid_replay.py lines294+: actual outcomes loaded after all selections at lines115..278; scoring only",
+  "parallel_equivalence": "No terminal pre-cutoff parallel packages/selector. Replay uses research provenance, defaultQualityV3Config, dedicated historicalseeds/robust candidate union; no operator activation selector. Cannot infer yesterday release eligibility."
+}

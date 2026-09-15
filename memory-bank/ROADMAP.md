@@ -1,3 +1,16 @@
+# Completed research milestone — 2026-09-15T20:53:01.582880+03:00
+
+TOTOAI-RESUME-20260915: R1 completed8draws/24native scenario packages + independentfixreview. R2genericadapterfixes accepted; full sportsdata/fit/fiveway/sidecar incomplete. NextR2a eligibleolderroster+mapping/requestgaps per plans/TOTOAI-RESUME-20260915/model-improvements-next.md. Unknown-asofscenarios are not causalbacktests or profitability evidence; no productionactivation.
+
+## 2026-09-07T08:51:59.971014+00:00 — C7 completed within isolated project scope
+
+- [x] Two project-local skill discovery wrappers integrated and independently
+  accepted; canonical procedures remain single-source.
+- [x] Focused finalization: 6 pytest, Ruff and Ruby/Psych YAML checks pass.
+- [ ] Live UI/selector behavior remains unverified; no global configuration changed.
+- [ ] C6 project simplification and the general model-improvement plan remain
+  separate unfinished work, paused pending the owner's signal.
+
 ## 2026-09-06T17:18:28.655769+03:00 — G1 profile publication complete
 
 Source `01b5df2` verified on draftPR22, no merge;24tests/Ruff3PASS.

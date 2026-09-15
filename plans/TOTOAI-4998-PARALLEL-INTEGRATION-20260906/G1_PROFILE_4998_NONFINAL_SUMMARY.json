@@ -1,0 +1,385 @@
+{
+  "classification": "NONFINAL_PRE_DRAW_NONOPERATOR_RESEARCH_DIAGNOSTIC",
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "plan_id": "c1d243f5b6ca48f3",
+  "drawing": 4998,
+  "drawing_id": 12102,
+  "bank": 4980,
+  "stake": 30,
+  "effective_budget": 4980,
+  "input_path": "/Users/turshevr/toto-ai/reports/research/4998/G1-PROFILE-NONFINAL-RESEARCH-DIAGNOSTIC-20260906T140633428501Z/input/NONFINAL-plan-bound-input.json",
+  "input_file_sha256": "55dd85d18e592ae4aefaa0acfc2b4ab8bb4fcd9d99b73df95e8a87124702b330",
+  "snapshot_sha256": "fc6c3a11d4851217fa1a47ec94ce9629c807c4dfdf6b7176bb7477d0d924e064",
+  "sports_seed_file_sha256": "2d5003c79378fb0b5f425ddf8cfdc0902327e727c0c0f3bb43843b43f2139e78",
+  "sports_artifact_sha256": "ac04ea9b303590945dbdc3c12a451840d300350b641593f5cf07b74054d5f32e",
+  "report_path": "/Users/turshevr/toto-ai/reports/research/4998/G1-PROFILE-NONFINAL-RESEARCH-DIAGNOSTIC-20260906T140633428501Z/comparison-return.json",
+  "report_file_sha256": "d2439731ec9eb04594e630d50c10385ceb664b28ef86bae5fbc0daad158f1c12",
+  "report_sha256": "51f2dd9dcfe61fbffb1a518a5c625af6e34cfd7f99c0e4d238801924b90c82fe",
+  "report_and_engine_hashes_verified": true,
+  "same_input_seed_and_three_unmodified_family_outputs_verified": true,
+  "prior_robust_parent_verified": true,
+  "admission": {
+    "initial": 166,
+    "universe": 489,
+    "models": 4,
+    "round_pairs": 53618
+  },
+  "quality_v3_candidate_count": 14129,
+  "g1": {
+    "launched": true,
+    "status": "REFINED",
+    "applied": true,
+    "engine_reason": "VERIFIED_EXACT_MAXIMIN_IMPROVEMENT",
+    "fallback_reason": null,
+    "evaluated_pairs": 53618,
+    "accepted_swaps": 1,
+    "rejected_constraint_pairs": 28033,
+    "constraint_violations": 0,
+    "engine_elapsed_seconds": 40.92803420800192,
+    "worker_call_wall_seconds": 42.48783383399859,
+    "observability": {
+      "engine_cpu_seconds": 40.951297000000004,
+      "engine_wall_seconds": 40.96284866699716,
+      "extra_exact_validation_calls": 12,
+      "logging_limits": {
+        "interval_seconds": 10,
+        "max_bytes": 2048,
+        "max_events": 8
+      },
+      "peak_rss_bytes": 339853312,
+      "progress_bytes": 435,
+      "progress_events": 7,
+      "verification_cpu_seconds": 1.1819749999999942,
+      "verification_wall_seconds": 1.197862041000917
+    },
+    "runtime_contract": {
+      "family_refinement": true,
+      "diagnostics": true,
+      "max_swap_evaluations": 65536,
+      "max_accepted_swaps": 1,
+      "engine_seconds": 50.0,
+      "hard_timeout_seconds": 60.0,
+      "reserve_seconds": 30.0
+    },
+    "input_hashes": {
+      "binding_sha256": "e5217738a65cc4fa6feef5e989eeaadeffa49ca98dd9cc7276e440bd4b310efa",
+      "budget_sha256": "9cf8c58168bf5b09c9d2cfefa44eaec66482d551d6c12fbb9e0198ed2b6bd9a9",
+      "candidate_universe_sha256": "b677fa5e29086803310dbe5feea41da251e0a71b7b2151f631f35fde4ce4ea3f",
+      "config_sha256": "1af58881ec8838945df62ac7beef4d0fb5b482738af8d3e7d398bf6e0d1ecbd1",
+      "exposure_constraints_sha256": "f33a1ae774b1a2bc1f2985acbd39dfebc36a696289f54485ce45fa3dfc4fe0c8",
+      "initial_package_sha256": "c2901e689377e22e8af5228f871e1aa7dfd106be0b22c330adc2dc3b84a3ed59",
+      "input_sha256": "fc6c3a11d4851217fa1a47ec94ce9629c807c4dfdf6b7176bb7477d0d924e064",
+      "probability_models_sha256": "9d1005981e42351d267da6e57bea4565a5be5709cf75c68a30e97c22a03b808f",
+      "selected_package_sha256": "ecc4a0dc818b11e96c6152a88e1a0162e4f2a7221753dfa0a905ff908a62326d"
+    },
+    "request_sha256": "89012f77df68ce365110f80687d69dbdf5d2ff76d2b13eaccc11eaf974360694",
+    "lineage": {
+      "policy_version": "robust-family-g1-v1",
+      "strategy_family": "robust",
+      "variant": "g1-exact-maximin-refinement-v2",
+      "applied": true,
+      "parent_package_sha256": "a35eb2480ca24deefa7a40948bc75c56adb3121f69e9d0638ffb6dcf73cfd245",
+      "authorization_route": "EXPLICIT_OPT_IN_EXISTING_ROBUST_FAMILY",
+      "selected_package_sha256": "02626d925ac357da682b0d5447d57a6b3988fba081e19135437bb2cd1778e255"
+    },
+    "same_model_all_category_delta": {
+      "bk": {
+        "P13": {
+          "before": 0.025022234421731206,
+          "after": 0.025144605912798344,
+          "delta": 0.00012237149106713793,
+          "nondegradation": true
+        },
+        "P14": {
+          "before": 0.002849631949476465,
+          "after": 0.0028641608942335836,
+          "delta": 1.4528944757118654e-05,
+          "nondegradation": true
+        },
+        "P15": {
+          "before": 0.00012498729350388083,
+          "after": 0.0001254142172791035,
+          "delta": 4.269237752226702e-07,
+          "nondegradation": true
+        }
+      },
+      "flatten_10": {
+        "P13": {
+          "before": 0.021366732313276866,
+          "after": 0.02146623982194119,
+          "delta": 9.950750866432462e-05,
+          "nondegradation": true
+        },
+        "P14": {
+          "before": 0.002343378009301353,
+          "after": 0.00235461589943077,
+          "delta": 1.1237890129417102e-05,
+          "nondegradation": true
+        },
+        "P15": {
+          "before": 0.000100205607805317,
+          "after": 0.00010051590566676796,
+          "delta": 3.1029786145096033e-07,
+          "nondegradation": true
+        }
+      },
+      "flatten_20": {
+        "P13": {
+          "before": 0.01818104389496594,
+          "after": 0.01826124243814201,
+          "delta": 8.019854317607017e-05,
+          "nondegradation": true
+        },
+        "P14": {
+          "before": 0.001919880617333163,
+          "after": 0.0019284803568673063,
+          "delta": 8.599739534143318e-06,
+          "nondegradation": true
+        },
+        "P15": {
+          "before": 7.998780238475866e-05,
+          "after": 8.020904104560943e-05,
+          "delta": 2.2123866085077657e-07,
+          "nondegradation": true
+        }
+      },
+      "sports": {
+        "P13": {
+          "before": 0.024756129400357298,
+          "after": 0.024861463706272277,
+          "delta": 0.00010533430591497944,
+          "nondegradation": true
+        },
+        "P14": {
+          "before": 0.002812272682897319,
+          "after": 0.002824411752672491,
+          "delta": 1.2139069775171738e-05,
+          "nondegradation": true
+        },
+        "P15": {
+          "before": 0.00012312385871505164,
+          "after": 0.00012343813445127904,
+          "delta": 3.1427573622740015e-07,
+          "nondegradation": true
+        }
+      }
+    },
+    "all_12_non_degradation_checks": true
+  },
+  "native_comparison_seconds": 181.04537049999635,
+  "controller_elapsed_seconds": 195.35865049999848,
+  "research_selector": {
+    "policy_version": "parallel-challenger-nondegradation-v1",
+    "selected_strategy_id": "quality-v3",
+    "selected_package_sha256": "198f28ed083ff304e037fde901892bfc900bc4f79bc4046939ebe2c226a9ed6a",
+    "promoted": true,
+    "selection_reason": "eligible_challenger_dominates_control_gate",
+    "rejections": {},
+    "candidates": [
+      {
+        "strategy_id": "quality-v2",
+        "package_sha256": "8e18b761075bb32851674619196256f7c05d47788ce8f7cbb8c63e83c344315c",
+        "coupon_count": 166,
+        "cost": 4980,
+        "maximum_outcome_share": 0.7650602409638554,
+        "eligible": true,
+        "rejection_reasons": [],
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.01780610193100435,
+            "probability_at_least_14": 0.0019806186660215855,
+            "probability_at_least_15": 9.451395873568036e-05
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.017613188487082782,
+            "probability_at_least_14": 0.001951762223853955,
+            "probability_at_least_15": 9.28451302382751e-05
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.015490153908887487,
+            "probability_at_least_14": 0.001656886747670135,
+            "probability_at_least_15": 7.663401558923852e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.013460817586557492,
+            "probability_at_least_14": 0.001384367639686127,
+            "probability_at_least_15": 6.202108536925791e-05
+          }
+        ]
+      },
+      {
+        "strategy_id": "sports-shadow",
+        "package_sha256": "8bf9f2fe4868afd8e35ba5b0d00afde8e02009f059d2096b38695f555bcf57a6",
+        "coupon_count": 166,
+        "cost": 4980,
+        "maximum_outcome_share": 0.7590361445783133,
+        "eligible": true,
+        "rejection_reasons": [],
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.018058768163848493,
+            "probability_at_least_14": 0.0020198544806974924,
+            "probability_at_least_15": 9.730609225704482e-05
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.018005229727934776,
+            "probability_at_least_14": 0.0020132916437940115,
+            "probability_at_least_15": 9.694827512653589e-05
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.015669385748087985,
+            "probability_at_least_14": 0.0016858072766358226,
+            "probability_at_least_15": 7.869885372647586e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.013579423326456041,
+            "probability_at_least_14": 0.0014048891802255525,
+            "probability_at_least_15": 6.35121230951074e-05
+          }
+        ]
+      },
+      {
+        "strategy_id": "quality-v3",
+        "package_sha256": "198f28ed083ff304e037fde901892bfc900bc4f79bc4046939ebe2c226a9ed6a",
+        "coupon_count": 166,
+        "cost": 4980,
+        "maximum_outcome_share": 0.7650602409638554,
+        "eligible": true,
+        "rejection_reasons": [],
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.02587797715324815,
+            "probability_at_least_14": 0.0028439934338448584,
+            "probability_at_least_15": 0.00012148909867727192
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.02556236891345058,
+            "probability_at_least_14": 0.0028030658016094763,
+            "probability_at_least_15": 0.00011956045049024722
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.02212212214088704,
+            "probability_at_least_14": 0.002345372706217784,
+            "probability_at_least_15": 9.780998655885975e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.018842868297553557,
+            "probability_at_least_14": 0.0019270013003980903,
+            "probability_at_least_15": 7.841086986649755e-05
+          }
+        ]
+      },
+      {
+        "strategy_id": "robust",
+        "package_sha256": "02626d925ac357da682b0d5447d57a6b3988fba081e19135437bb2cd1778e255",
+        "coupon_count": 166,
+        "cost": 4980,
+        "maximum_outcome_share": 0.7650602409638554,
+        "eligible": true,
+        "rejection_reasons": [],
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.025144605912798344,
+            "probability_at_least_14": 0.0028641608942335836,
+            "probability_at_least_15": 0.0001254142172791035
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.024861463706272277,
+            "probability_at_least_14": 0.002824411752672491,
+            "probability_at_least_15": 0.00012343813445127904
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.02146623982194119,
+            "probability_at_least_14": 0.00235461589943077,
+            "probability_at_least_15": 0.00010051590566676796
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.01826124243814201,
+            "probability_at_least_14": 0.0019284803568673063,
+            "probability_at_least_15": 8.020904104560943e-05
+          }
+        ]
+      }
+    ],
+    "automatic_wagering": false,
+    "profitability_proven": false
+  },
+  "highest_p13_metadata": {
+    "quality-v2": {
+      "probability_at_least_13": 0.0005598350046578132,
+      "probability_at_least_14": 5.52672387845911e-05,
+      "probability_at_least_15": 2.5632855293260217e-06,
+      "package_position": 1,
+      "criterion": "maximum_probability_at_least_13",
+      "reference_model": "bk",
+      "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK"
+    },
+    "sports-shadow": {
+      "probability_at_least_13": 0.0005923164277003059,
+      "probability_at_least_14": 5.9044267591406863e-05,
+      "probability_at_least_15": 2.766746979713514e-06,
+      "package_position": 60,
+      "criterion": "maximum_probability_at_least_13",
+      "reference_model": "sports",
+      "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK"
+    },
+    "quality-v3": {
+      "probability_at_least_13": 0.0004033387189300132,
+      "probability_at_least_14": 3.765713903017562e-05,
+      "probability_at_least_15": 1.6459954934743523e-06,
+      "package_position": 11,
+      "criterion": "maximum_probability_at_least_13",
+      "reference_model": "bk",
+      "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK"
+    },
+    "robust": {
+      "probability_at_least_13": 0.0005022904223794495,
+      "probability_at_least_14": 4.8676824093925024e-05,
+      "probability_at_least_15": 2.2135801463965436e-06,
+      "package_position": 9,
+      "criterion": "maximum_probability_at_least_13",
+      "reference_model": "bk",
+      "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK"
+    }
+  },
+  "o1": {
+    "status": "UNAVAILABLE",
+    "reason": "NO_INDEPENDENTLY_REVIEWED_EVENT_LOCAL_INPUT_ADAPTER",
+    "assessment_executed": false,
+    "role": "DESCRIPTIVE_EVIDENCE_ONLY_NOT_A_PROBABILITY_MODEL",
+    "changes_probabilities": false,
+    "strict_eligibility_reassessed": false,
+    "gates_opened": [],
+    "activation_allowed": false
+  },
+  "sports_coverage": 14,
+  "sports_fallback": 1,
+  "audit": {
+    "blocked": []
+  },
+  "primary_after": [
+    "state = not running",
+    "runs = 2",
+    "last exit code = 0"
+  ],
+  "automatic_wagering": false,
+  "operator_compatible": false,
+  "profitability_proven": false,
+  "owned_processes": []
+}

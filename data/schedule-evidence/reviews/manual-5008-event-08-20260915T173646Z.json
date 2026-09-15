@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12130,
+    "drawing_number": 5008,
+    "event_order": 7,
+    "target_event_id": 181060,
+    "sport": "football",
+    "championship": "Англия. Северная Премьер-Лига. 1-й дивизион",
+    "home_team": "Гисборо Таун",
+    "away_team": "Морпет"
+  },
+  "observation": {
+    "observation_id": "manual-reviewed-5008-08-13e3fb7b-00a39f8e",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Северная Премьер-Лига. 1-й дивизион",
+      "The Pitching In Northern Premier League Division One East"
+    ],
+    "home_entity": "Guisborough Town",
+    "home_aliases": [
+      "Гисборо Таун",
+      "Guisborough Town"
+    ],
+    "away_entity": "Morpeth Town",
+    "away_aliases": [
+      "Морпет",
+      "Morpeth Town"
+    ],
+    "starts_at": "2026-09-16T18:45:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+    "reviewed_at": "2026-09-15T17:36:46.949494Z"
+  },
+  "sources": [
+    {
+      "source_name": "Guisborough Town FC",
+      "role": "official",
+      "source_url": "https://www.guisboroughtown.co.uk/teams/guisborough-town/",
+      "snapshot": "manual-5008-08-guisborough-town-fc-13e3fb7b992333df.html",
+      "snapshot_sha256": "13e3fb7b992333df4872390e2a1ddf9290e50f32d4fdf9dfccfd2c1e8e04435e",
+      "home_team": "Guisborough Town",
+      "away_team": "Morpeth Town",
+      "starts_at": "2026-09-16T18:45:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:33:02.555051Z"
+    },
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/morpeth-town-guisborough-town/xPtsKBRb#id:16545900",
+      "snapshot": "manual-5008-08-sofascore-00a39f8e1a099196.json",
+      "snapshot_sha256": "00a39f8e1a099196104a3a638c2c0fd3f703379e39a4da3f787225c6dabe284d",
+      "home_team": "Guisborough Town",
+      "away_team": "Morpeth Town",
+      "starts_at": "2026-09-16T18:45:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:14:39.513659Z"
+    }
+  ]
+}

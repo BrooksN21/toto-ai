@@ -1,0 +1,48 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "scope": "READ_ONLY findings only; no source patch",
+  "finding1": {
+    "file": "src/toto_ai/external_odds/independent_schedule_consensus.py",
+    "lines": "raw_candidates / candidates tuple near103–119, strict fields near260–276",
+    "expected": {
+      "identity_binding": "exact_same_target_event_v1",
+      "match_mode": "matched",
+      "target_identity": "exact queued event/team fields"
+    },
+    "actual_goal_events": {
+      "positions": [
+        4,
+        9,
+        11
+      ],
+      "identity_binding": null,
+      "match_mode": [
+        "fuzzy_candidate_margin_0.211",
+        "fuzzy_candidate_margin_0.209",
+        "fuzzy_candidate_margin_0.183"
+      ],
+      "target_event_id": [
+        181011,
+        181016,
+        181018
+      ]
+    },
+    "effect": "One fuzzy candidate raises inside tuple construction and discards entire event group including valid Sofa+TheSportsDB pair for#9.",
+    "patch_requirement": "Validate candidates individually. Preserve rejected-candidate diagnostics; allow only independently validated exact candidates into pair selection. Do not suppress real exact-source kickoff/team conflicts. Regression: exact Sofa+TSDB pair plus fuzzyGOAL row; pair selectable without promoting fuzzy row."
+  },
+  "finding2": {
+    "file": "src/toto_ai/external_odds/schedule_source_collector.py",
+    "effect": "TheSportsDB candidate event2528245 is bound to raw snapshot for reversed future event2528568 instead of its containing raw response.",
+    "candidate_expected": {
+      "idEvent": "2528245",
+      "home": "Aldershot Town",
+      "away": "Yeovil Town",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "request_fingerprint": "2a38b11c35a2e47b5260235c3f419421b9f39c7c6d3fef65b9273c45582c6e83"
+    },
+    "wrong_snapshot_request_fingerprint": "c8f23600edd9702ecffbfef98a4ce70c2c8c699fe95ea6248d923830f016150b",
+    "wrong_snapshot_event": "2528568 /YeovilTown—AldershotTown /2027-02-23",
+    "correct_existing_snapshot": "goal-independent collector thesportsdb-v1/snapshots/2a38b11c35a2e47b5260235c3f419421b9f39c7c6d3fef65b9273c45582c6e83-8e9d77a0800cdfdd.json",
+    "patch_requirement": "Bind each selected normalized event to its actual containing response snapshot/hash/fetched_at, not the last query response. Validate event payload membership/provenance. Regression: forward+reverse searches both succeed, matching forward event and last reverse response; exact selected snapshot must contain selected id/date/orientation."
+  }
+}

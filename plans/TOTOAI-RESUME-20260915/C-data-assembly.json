@@ -1,0 +1,164 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "stage": "C",
+  "status": "VALIDATED_CACHE_FEATURES_AUTHORITY_BLOCKED",
+  "checkpoint_at": "2026-09-15T14:51:17.646801+00:00",
+  "requests_this_job": 0,
+  "api_sports_requests": 0,
+  "historical_rows": 120,
+  "labels_separate": 120,
+  "historical_mapped": 13,
+  "current_5007_mapped": 12,
+  "f4_eligible": 0,
+  "data_root": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly",
+  "blocker": "No native identity/history capture for5000–5006; independent scope/fold/V2/BK inputs absent. Existing5007capture available, no new API needed to preserve it.",
+  "next": "Independent source/scope review of frozen raw+targets, bind V2/BK/folds; current seven-fold limit needs Stage D protocol, not changing these raw rows.",
+  "training_started": false,
+  "writes_production": false,
+  "raw_rows_inspected": 500,
+  "draw_coverage": {
+    "4999": {
+      "target_rows": 15,
+      "native_identity_mapped": 13,
+      "raw_sources_available": 26,
+      "f4_fit_eligible": 0,
+      "data_integrity_valid": 13,
+      "native_features_built": 13
+    },
+    "5000": {
+      "target_rows": 15,
+      "native_identity_mapped": 0,
+      "raw_sources_available": 0,
+      "f4_fit_eligible": 0,
+      "data_integrity_valid": 0,
+      "native_features_built": 0
+    },
+    "5001": {
+      "target_rows": 15,
+      "native_identity_mapped": 0,
+      "raw_sources_available": 0,
+      "f4_fit_eligible": 0,
+      "data_integrity_valid": 0,
+      "native_features_built": 0
+    },
+    "5002": {
+      "target_rows": 15,
+      "native_identity_mapped": 0,
+      "raw_sources_available": 0,
+      "f4_fit_eligible": 0,
+      "data_integrity_valid": 0,
+      "native_features_built": 0
+    },
+    "5003": {
+      "target_rows": 15,
+      "native_identity_mapped": 0,
+      "raw_sources_available": 0,
+      "f4_fit_eligible": 0,
+      "data_integrity_valid": 0,
+      "native_features_built": 0
+    },
+    "5004": {
+      "target_rows": 15,
+      "native_identity_mapped": 0,
+      "raw_sources_available": 0,
+      "f4_fit_eligible": 0,
+      "data_integrity_valid": 0,
+      "native_features_built": 0
+    },
+    "5005": {
+      "target_rows": 15,
+      "native_identity_mapped": 0,
+      "raw_sources_available": 0,
+      "f4_fit_eligible": 0,
+      "data_integrity_valid": 0,
+      "native_features_built": 0
+    },
+    "5006": {
+      "target_rows": 15,
+      "native_identity_mapped": 0,
+      "raw_sources_available": 0,
+      "f4_fit_eligible": 0,
+      "data_integrity_valid": 0,
+      "native_features_built": 0
+    }
+  },
+  "current_5007_capture": {
+    "exists": true,
+    "captured_at": "2026-09-15T13:45:07.807158Z",
+    "mapped_targets": 12,
+    "raw_snapshots": 24,
+    "raw_rows": 240,
+    "db_hash_matches": 0,
+    "new_requests": 0,
+    "data_integrity_valid": 12,
+    "preserved_raw": true
+  },
+  "cache_inventory": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-cache-inventory.json",
+  "actual_validator_counts": {
+    "sources_pass": 50,
+    "history_rows_pass": 500,
+    "feature_rows_built": 25,
+    "predictor_builder_authority_rejections": 25
+  },
+  "artifacts": {
+    "sources": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/source-validation.json",
+      "sha256": "7a48234e2ad9d9c95e3b5e4879381ce719018eabf1660d509d0cd0ee4d074486"
+    },
+    "features": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/features-no-labels.json",
+      "sha256": "699bd6e2edefea43d401f19f42658f626ca26a3d80193da7d91677df38163bf6"
+    },
+    "ledger": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/readiness-ledger.json",
+      "sha256": "6fecb6cdc2406c448cad4d5048936d8702b0cb5aca445e4d16f06bf7d011c98f"
+    },
+    "inputs": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/input-validation.json",
+      "sha256": "b54c35baeb678120b1cf1f3d16a9dd29d0dc52b4f8d0e8f68066910510aeb269"
+    },
+    "f4_gate": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/f4-no-authority-receipt.json",
+      "sha256": "de300634fbb07eb0b1aa68de4b27efe862386acd0f861b6cf32331730515f16e"
+    },
+    "native_fit_contract": {
+      "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/native-fit-contract.json",
+      "sha256": "814017502e8e793de5847e13f99d60ed311d21e572fd10dc87990d41625456ac"
+    }
+  },
+  "f4_eligible_basis": "Native build_v3_predictors rejected independent ReviewedReference absent; run_f4 returned fit_executed=false. Source integrity separately validated.",
+  "minimal_blocker": "Schedule evidence exists; missing event-local reviewed raw/target bridge and historical row scope. See exact V2 validator result.",
+  "feature_field_counts": {
+    "4999": {
+      "37/53": 1,
+      "41/53": 12
+    },
+    "5007": {
+      "37/53": 2,
+      "41/53": 10
+    }
+  },
+  "source_version_after_target_asof_rows": 0,
+  "raw_hash_note": "Prior checkpoint compared source-file SHA256 with DB payload SHA256 (different objects), not data corruption. Native SourceEvidence.payload_sha256 now matches all50 corresponding DB payload hashes.",
+  "remaining_unchecked": [
+    "Independent event-local reference bridge from reviewed schedule evidence to exact target/history hashes",
+    "Full-scope history evidence or separately reviewed adapter policy (500 history rows lack gender/age_group/squad_type)",
+    "Full15-event sealed F4 folds and label availability chronology; seven missing historical drawings",
+    "5007 final same-input V2 not yet available"
+  ],
+  "dataset_coverage_gate": {
+    "historical_requested_events": 120,
+    "data_integrity_valid_historical_events": 13,
+    "missing_historical_events": 107,
+    "raw_integrity_rejections": 0,
+    "supported_existing_fold_range": "1–7",
+    "requested_drawings": 8,
+    "f4_coverage_verdict": "NOT_EVALUATED_NO_VALIDATED_FOLDS",
+    "note": "Missing folds and metadata do not invalidate50 validated raw sources."
+  },
+  "reference_v2_checkpoint": {
+    "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/reference-v2-checkpoint.json",
+    "sha256": "78f351d621eda0e8ef02d6d43c1f62fdaad6dd3a0ccf39441270974b1fc8e40e"
+  },
+  "f4_dataset_ready": false
+}

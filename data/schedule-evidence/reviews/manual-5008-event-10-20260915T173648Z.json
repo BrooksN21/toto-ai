@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12130,
+    "drawing_number": 5008,
+    "event_order": 9,
+    "target_event_id": 181062,
+    "sport": "football",
+    "championship": "Англия. Южная футбольная лига. 1-й дивизион",
+    "home_team": "Полтон Роверс",
+    "away_team": "Портленд Юнайтед"
+  },
+  "observation": {
+    "observation_id": "manual-reviewed-5008-10-4766620f-cc7e1bfe",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Южная футбольная лига. 1-й дивизион",
+      "Division One South"
+    ],
+    "home_entity": "Paulton Rovers",
+    "home_aliases": [
+      "Полтон Роверс",
+      "Paulton Rovers"
+    ],
+    "away_entity": "Portland United",
+    "away_aliases": [
+      "Портленд Юнайтед",
+      "Portland United"
+    ],
+    "starts_at": "2026-09-16T18:30:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex operations TOTOAI-RESUME-20260915; owner-authorized source review",
+    "reviewed_at": "2026-09-15T17:36:48.326894Z"
+  },
+  "sources": [
+    {
+      "source_name": "Paulton Rovers FC",
+      "role": "official",
+      "source_url": "https://www.paultonrovers.co.uk/teams/53123/fixtures-results",
+      "snapshot": "manual-5008-10-paulton-rovers-fc-4766620fe9c1914d.html",
+      "snapshot_sha256": "4766620fe9c1914d51ced6a5104fcec9c219bd59f69c85edf25f7b7583ecc87e",
+      "home_team": "Paulton Rovers",
+      "away_team": "Portland United",
+      "starts_at": "2026-09-16T18:30:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:33:04.572411Z"
+    },
+    {
+      "source_name": "SoccerPunter",
+      "role": "independent",
+      "source_url": "https://www.soccerpunter.com/h2h/Paulton-Rovers-vs-Portland-United/2004/128538/",
+      "snapshot": "manual-5008-10-soccerpunter-cc7e1bfe2a685b0c.html",
+      "snapshot_sha256": "cc7e1bfe2a685b0c28ee68a243736a8782190f6f915e5d6ac3b72a038633c801",
+      "home_team": "Paulton Rovers",
+      "away_team": "Portland United",
+      "starts_at": "2026-09-16T18:30:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-15T17:35:41.133991Z"
+    }
+  ]
+}

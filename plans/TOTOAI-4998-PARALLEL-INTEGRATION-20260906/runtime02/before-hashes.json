@@ -1,0 +1,13 @@
+{
+  "src/toto_ai/sports_stats/final_hybrid_comparison.py": "d403ba2afb63305c7153036267511c4762033661f66346c2357d79fd6bd7c234",
+  "src/toto_ai/optimizer/strategy_comparison.py": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473",
+  "src/toto_ai/sports_stats/final_hybrid_sidecar.py": "b428cd68cbf9129fc1ca601bda38d9ad8fba8dfa64e1658643b1533861fee96c",
+  "src/toto_ai/ev/ternary.py": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae",
+  "src/toto_ai/ev/package.py": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947",
+  "src/toto_ai/ev/package_quality.py": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93",
+  "tests/test_final_hybrid_g1_integration.py": "bfba60730b8467b52fda6296d33c3545b0fb2a278c7430fea7be9aed932c8249",
+  "src/toto_ai/ev/runtime.py": "cc1325edd5165959765c9299cb3e91dcd8776ecff2419eed2f6ae11ca0f8bdb8",
+  "tests/test_ev_runtime_budget.py": "14dfc9d4c4403a48a436a1a62c49804ff58a8d812128e73178e290b78e7cef63",
+  "tests/test_final_hybrid_runtime_contracts.py": "c2d1272642fe71c7a204e5f1890c77b39f7e5f9e98dda550e1525e25028e5fad",
+  "knowledge/parallel_runtime.md": "100cf0b82711b14f481f24fe5134ad77eb45d15cf76edfce2871b552aa3a796f"
+}

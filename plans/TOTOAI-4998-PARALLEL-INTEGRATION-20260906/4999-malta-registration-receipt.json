@@ -1,0 +1,36 @@
+{
+  "at": "2026-09-06T18:08:06.609675Z",
+  "fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+  "review_path": "data/schedule-evidence/reviews/4999-event9-codex-review-20260906.json",
+  "review_sha256": "6afe3f58360a74dcf69f505ed2b4298d7723f16e749c8f833ac3c1ae015d5696",
+  "ledger_before_sha256": "dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8",
+  "ledger_backup": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-ledger-before-malta-dd69c20073b5a9e8.json",
+  "selected_pair": "MFA official + Academia independent original match page, exact scheduled senior Super Cup identity/17:00UTC consensus",
+  "conflict_disposition": {
+    "not_selected": "Sofascore17001288",
+    "original_sha256": "3bff0b7492de6b3c5f87fb760a114363bdc669dbbd5084cbdf8e95953479aaa9",
+    "original_utc": "2026-09-07T16:00:00Z",
+    "selected_utc": "2026-09-07T17:00:00Z",
+    "reason": "Case-specific reviewed official plus distinct independent agreeing pair; Sofa is unreviewed discovery candidate, not an existing approved ledger observation. Discrepancy preserved, not relabelled equal. No universal priority rule/config/code change or human-owner impersonation."
+  },
+  "classification_basis": "MFA senior league holders vs FA Trophy champions; independent senior Super Cup2026/2027Final. Reviewed classification, not invented source gender field.",
+  "results": [
+    {
+      "phase": "dry-run",
+      "exit_code": 0,
+      "stdout": "{\"drawing_number\": 4999, \"dry_run\": true, \"event_order\": 8, \"ledger_mutated\": false, \"ledger_semantic_hash\": \"294b4bf3f4e92fdc447122062db1b147cddd5a8834f4bb5b9e8b7b6412b97de1\", \"ledger_sha256\": \"dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8\", \"observation_id\": \"codex-reviewed-4999-event9-20260906\", \"status\": \"validated_dry_run\"}\n"
+    },
+    {
+      "phase": "apply",
+      "exit_code": 0,
+      "stdout": "{\"drawing_number\": 4999, \"dry_run\": false, \"event_order\": 8, \"ledger_mutated\": true, \"ledger_semantic_hash\": \"4c9eadd434c3af839e3bcbc71fa6b3465209980c5dd25acdd5596633da30caa5\", \"ledger_sha256\": \"245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9\", \"observation_id\": \"codex-reviewed-4999-event9-20260906\", \"status\": \"applied\"}\n"
+    },
+    {
+      "phase": "verify",
+      "exit_code": 0,
+      "stdout": "{\"ledger_semantic_hash\": \"4c9eadd434c3af839e3bcbc71fa6b3465209980c5dd25acdd5596633da30caa5\", \"ledger_sha256\": \"245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9\", \"legacy_review_without_snapshot_count\": 154, \"mutated\": false, \"observation_count\": 252, \"prepared_review_count\": 37, \"review_count\": 252, \"status\": \"verified\", \"verified_snapshot_count\": 194}\n"
+    }
+  ],
+  "ledger_after_sha256": "245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9",
+  "all_prior_251_preserved": true
+}

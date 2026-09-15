@@ -1,0 +1,25 @@
+{
+  "pytest_command": [
+    ".venv/bin/python",
+    "-B",
+    "-c",
+    "import sitecustomize,pytest; assert sitecustomize.GUARD; rc=pytest.main(['tests/test_scheduler_status.py', 'tests/test_scheduler_live_status.py', '-q', '-p', 'no:cacheprovider', '--basetemp=/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_VERIFY/tmp-postmortem-correction']); print(\"BLOCKED\",sitecustomize.blocked); raise SystemExit(rc)"
+  ],
+  "pytest_exit": 0,
+  "ruff_command": [
+    ".venv/bin/ruff",
+    "check",
+    "--no-cache",
+    "src/toto_ai/operations/scheduler_status.py",
+    "src/toto_ai/operations/scheduler_delivery.py",
+    "tests/test_scheduler_status.py",
+    "tests/test_scheduler_live_status.py"
+  ],
+  "ruff_exit": 0,
+  "bounds_seconds": [
+    25,
+    15
+  ],
+  "scope": "Metadata-only correction; no runtime02 test/review wait or publication",
+  "guard": "Existing no network/SQLite/outside-fixture writes guard"
+}

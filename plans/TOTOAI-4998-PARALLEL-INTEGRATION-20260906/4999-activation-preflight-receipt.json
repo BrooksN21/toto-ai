@@ -1,0 +1,162 @@
+{
+  "at": "2026-09-06T18:13:29.049665+00:00",
+  "phase": "PLAN_AND_WATCHER_ACTIVE_REAL_PREFLIGHT_INTERRUPTED",
+  "plan_id": "b742aac1fea2d42d",
+  "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json",
+  "plan_sha256": "92ddec53c4554b7edc8c04de0e8a52f25400ed2450e61447eac2a01fc6e4f20d",
+  "dispatch_result": {
+    "activation_status": "activated",
+    "attention_path": null,
+    "launch_agent_label": "com.totoai.production-scheduler.v9.b742aac1fea2d42d",
+    "launch_agent_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/totoai-scheduler.plist",
+    "parallel_challenger": {
+      "automatic_wagering": false,
+      "candidate_strategies": [
+        "quality-v2",
+        "sports-shadow",
+        "quality-v3",
+        "robust"
+      ],
+      "drawing_number": 4999,
+      "launch_agent_label": "com.totoai.parallel-sidecar.v1.b742aac1fea2d42d",
+      "parallel_release_authorized": false,
+      "plan_id": "b742aac1fea2d42d",
+      "primary_scheduler_affected": false,
+      "reused": false,
+      "scheduled_at": "2026-09-07T14:00:00+00:00",
+      "sports_artifact": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/parallel-challenger/sports-seed/sports_probability_shadow_4999_ad2a308fa443ca3d.json",
+      "sports_coverage_count": 13,
+      "status": "PARALLEL_SIDECAR_ACTIVATED"
+    },
+    "plan_id": "b742aac1fea2d42d",
+    "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json",
+    "reason": "ready",
+    "record_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/drawing-12106-20260907T143000Z-b2596e1df489092a.json",
+    "retry_plan_path": null,
+    "retry_scheduler": {
+      "active": false,
+      "label": "com.totoai.preflight-retry.12106.b2596e1df489092a",
+      "reason": "drawing_ready"
+    },
+    "review_queue_path": null,
+    "source_collector": null,
+    "sports_shadow": {
+      "automatic_wagering": false,
+      "captured_at": "2026-09-06T18:09:33.449079+00:00",
+      "coverage_summary": "/Users/turshevr/toto-ai/reports/sports-analytics/4999/goal-auto/captures/20260906T180920590127Z/coverage-summary.json",
+      "drawing_fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+      "drawing_id": 12106,
+      "drawing_number": 4999,
+      "event_count": 15,
+      "history_source_count": 26,
+      "package_influence": "NONE",
+      "persisted_event_count": 15,
+      "persistence_status": "persisted",
+      "primary_scheduler_affected": false,
+      "provider": "goal-api-v1",
+      "quota_daily_remaining": 556,
+      "request_count": 53,
+      "reused": false,
+      "run_id": "7210e8b144b76463cce52187b0e0381771ac3fdd43d13125ed3a7a39c76ef2c4",
+      "snapshot_sha256": "7210e8b144b76463cce52187b0e0381771ac3fdd43d13125ed3a7a39c76ef2c4",
+      "sports_eligible_count": 13,
+      "status": "PAPER_ONLY_COVERAGE_PROBE_READY"
+    },
+    "status": "scheduled",
+    "training_package": {
+      "detail": "current pool supports only 1020 RUB / 34 coupons; the quality-v2 training package is deferred until a later pool snapshot",
+      "reason": "pool_supported_capacity_infeasible",
+      "status": "deferred"
+    }
+  },
+  "launchd": {
+    "com.totoai.production-scheduler.v9.b742aac1fea2d42d": {
+      "returncode": 0,
+      "state_lines": [
+        "state = not running",
+        "program = /Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/run-scheduler.sh",
+        "runs = 0",
+        "last exit code = (never exited)"
+      ]
+    },
+    "com.totoai.parallel-sidecar.v1.b742aac1fea2d42d": {
+      "returncode": 0,
+      "state_lines": [
+        "state = not running",
+        "program = /Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/parallel-challenger/run-parallel-sidecar.sh",
+        "runs = 0",
+        "last exit code = (never exited)"
+      ]
+    },
+    "com.totoai.status-watcher.v1.b742aac1fea2d42d": {
+      "returncode": 0,
+      "state_lines": [
+        "state = running",
+        "program = /Users/turshevr/toto-ai/.venv/bin/python",
+        "runs = 1",
+        "pid = 48486",
+        "last exit code = (never exited)",
+        "state = active",
+        "state = active"
+      ]
+    },
+    "com.totoai.preflight-retry.12106.b2596e1df489092a": {
+      "returncode": 113,
+      "state_lines": []
+    }
+  },
+  "primary_slots_msk": [
+    "2026-09-07T15:30:00+03:00",
+    "2026-09-07T16:00:00+03:00",
+    "2026-09-07T16:30:00+03:00",
+    "2026-09-07T16:40:00+03:00",
+    "2026-09-07T16:50:00+03:00",
+    "2026-09-07T17:00:00+03:00",
+    "2026-09-07T17:12:00+03:00",
+    "2026-09-07T17:20:00+03:00"
+  ],
+  "parallel_at_msk": "2026-09-07T17:00:00+03:00",
+  "expires_at_msk": "2026-09-07T17:20:00+03:00",
+  "close_msk": "2026-09-07T17:30:00+03:00",
+  "preflight_command": [
+    "/Users/turshevr/toto-ai/.venv/bin/python",
+    "-u",
+    "-m",
+    "toto_ai.cli",
+    "scheduler-preflight-only",
+    "--plan",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json"
+  ],
+  "preflight_stdout": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-real-preflight-20260906T181136Z.stdout",
+  "preflight_stderr": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-real-preflight-20260906T181136Z.stderr",
+  "preflight_elapsed_seconds": 30.155,
+  "preflight_exit_code": 130,
+  "preflight_interrupt_reason": "CHILD_SILENCE_30S",
+  "preflight_status": "INTERRUPTED_NO_PASS",
+  "protected_plan_bindings_unchanged": true,
+  "protected_sha256": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json": "92ddec53c4554b7edc8c04de0e8a52f25400ed2450e61447eac2a01fc6e4f20d",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/run-scheduler.sh": "06b99b9d4772255c124389d3e3a33033cb15f1e7010dcec0b52fe41e6fd9732f",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/totoai-scheduler.plist": "5ae8eb3679f76c13950530c2c78779170987db5ab69818e5ab04d1d9aa04137e",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/parallel-challenger/run-parallel-sidecar.sh": "6be3bfcf1e51df21d4eac49a0698a355a7306010fbd1f39d8690bb9b10a70410",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/parallel-challenger/totoai-parallel-sidecar.plist": "cec7c6573a8744062e035016aaf7b36e25e1fea38264ac97d40e1e4533b282d9",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/bindings/schedule-evidence-245558df79313f7b/ledger.json": "245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9"
+  },
+  "manual_wager_request": {
+    "action_required": true,
+    "authorization_sha256": null,
+    "automatic_wagering": false,
+    "drawing_id": 12106,
+    "drawing_number": 4999,
+    "expires_at_msk": "2026-09-07T17:20:00+03:00",
+    "plan_id": "b742aac1fea2d42d",
+    "profitability_proven": false,
+    "prompt": "Планируется ли ручная ставка на тираж 4999? Если да, подтвердите experimental manual release для plan_id b742aac1fea2d42d, банк 4980 ₽, ставка 30 ₽ до 2026-09-07T17:20:00+03:00. Автоматические ставки запрещены.",
+    "request_sha256": "663739fc9c7a9e7f606d3ab1772d4998e6b917247a61ebe7318086162b363a05",
+    "requested_bank": 4980,
+    "stake": 30,
+    "state": "owner_response_required"
+  },
+  "blocker": "Real preflight has no completed result: stopped on30s child silence. Installed scheduler/parallel/watch­er preserved. No blind retry.",
+  "next": "Parent decides a separately bounded observable preflight continuation; do not infer API-Sports failure or PASS from silence. Next scheduled native checkpoint07.09 15:30MSK. No consent created."
+}

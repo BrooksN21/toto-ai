@@ -1,0 +1,57 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "stage": "C_RESEARCH_BRIDGE",
+  "checkpoint_at": "2026-09-15T15:09:46.479547+00:00",
+  "status": "IMPLEMENTED_FOCUSED_TESTED_PENDING_REVIEW",
+  "changed_source_files": [
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/research/sports_v3_dataset_bridge.py",
+      "sha256": "73c0dee86f7f89b521ccdc2bee2a1845730bc29c0bc9f14a79c2d7813fa6fb5a"
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_sports_v3_dataset_bridge.py",
+      "sha256": "a92caa7fda7e6c6c044ebfb88737a1a7ec44b82caee2dcdd3b827e619f0a57b8"
+    }
+  ],
+  "verification": {
+    "red_initial": "ModuleNotFoundError before implementation",
+    "red_archive_status": "1failed17passed before supporting archived not_started",
+    "red_future_update": "1failed18passed before source-version guard",
+    "pytest": "110 passed (19 bridge +91 native contracts),0.6s approx; see actual console",
+    "ruff": "PASS2files",
+    "actual_history_revalidated_after_final_edit": 24
+  },
+  "native_execution": {
+    "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/execution.json",
+    "sha256": "9744864475c8544296391ac725eac6ad77c67844f52fbfe41185f84ac35a01f8",
+    "counts": {
+      "4999:BRIDGE_INTEGRITY_PASS": 12,
+      "4999:REJECTED": 1,
+      "5007:REJECTED": 12
+    }
+  },
+  "results": {
+    "4999_hashlinked_events": 12,
+    "4999_event12_blocker": "Reviewed document did not supply both GOAL and independent provider byte links in supported archived format; manual official evidence adapter needs explicit format review. No invented confirmation.",
+    "4999_native_predictor_rejections": {
+      "independently reviewed reference required": 12
+    },
+    "5007_rejections": {
+      "as_of input binding": 12
+    },
+    "historical_scope_missing_policy": "No filling gender/age_group/squad_type from current team; preserve missing; source-version after asof rejected",
+    "native_f4_dataset_ready": false,
+    "fit_executed": false,
+    "api_requests": 0
+  },
+  "blockers_remaining": [
+    "Independent review of pending_reference_bindings_NOT_REVIEW_AUTHORITY (12event graphs; each projection+2histories)",
+    "Historical row-level scope evidence remains absent; existing reliability/eligibility not relaxed",
+    "4999 two unmapped targets +event12 manual-evidence byte format unsupported",
+    "5007 early snapshot precedes histories; await proper matching frozen input, do not restamp",
+    "Full15event folds/label availability and other historical drawings required"
+  ],
+  "production_mutations": false,
+  "git_operations": false,
+  "worker_processes_active": false
+}

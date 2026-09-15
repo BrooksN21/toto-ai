@@ -1,0 +1,113 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "reviewer_role": "Independent submission reviewer; not B implementation author",
+  "at": "2026-09-15T17:58:35+03:00",
+  "verdict": "PASS",
+  "scope": "Inactive RAW research adapter and numeric-only helper; authorized source publication only, not live integration",
+  "findings": [],
+  "verified_publisher_hashes": {
+    "/Users/turshevr/toto-ai/src/toto_ai/research/__init__.py": "9d37179033e406e2d018c0807e38635dffa64e29531b3b3eba48dd418dabd7cc",
+    "/Users/turshevr/toto-ai/src/toto_ai/research/raw_package_replay.py": "4e74d5cfef907aab77c321276c498e5e2c130e4207228db3d4818f4c8753718e",
+    "/Users/turshevr/toto-ai/src/toto_ai/research/native_quality_core.py": "240cd6aa54178b03be8a393353c966100ac0d0c61dd3916135f7fe393bae1918",
+    "/Users/turshevr/toto-ai/tests/test_raw_package_replay.py": "73928c9088aa89ad6d021b19a210faa49e21fb47a3ee159ee5b531105253a9b6",
+    "/Users/turshevr/toto-ai/tests/test_research_quality_core.py": "2b448ef6769c46557908a170ec184a5c622e8d0352be8584641522aa2fdc84a9"
+  },
+  "native_dependency_hashes": {
+    "/Users/turshevr/toto-ai/src/toto_ai/ev/package.py": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947",
+    "/Users/turshevr/toto-ai/src/toto_ai/ev/package_quality.py": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93",
+    "/Users/turshevr/toto-ai/src/toto_ai/ev/models.py": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5",
+    "/Users/turshevr/toto-ai/src/toto_ai/ev/ternary.py": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae",
+    "/Users/turshevr/toto-ai/src/toto_ai/optimizer/category_hit.py": "1eb7c228033ac49f9eb0262182c9563481c228f3fe611b90a0d4ea95d8bb29f3",
+    "/Users/turshevr/toto-ai/src/toto_ai/optimizer/uncertainty_package.py": "33b55ec8b3f7ca59e8d8c5ef1327d623bc1e0934ba05963f7a4df81a6e5d3b31",
+    "/Users/turshevr/toto-ai/src/toto_ai/optimizer/robust_package.py": "9c7913e1b3c41d19c9a5e29f5dbaaddc358697941e3c5be46c976a913b1c315f"
+  },
+  "checks": {
+    "B_pytest": {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_raw_package_replay.py",
+        "tests/test_research_quality_core.py"
+      ],
+      "exit_code": 0,
+      "seconds": 1.325,
+      "stdout": "...........................                                              [100%]\n27 passed in 1.14s\n",
+      "stderr": ""
+    },
+    "ignore_pytest": {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_publication_ignore_rules.py"
+      ],
+      "exit_code": 0,
+      "seconds": 1.336,
+      "stdout": ".....................................                                    [100%]\n37 passed in 1.20s\n",
+      "stderr": ""
+    },
+    "ruff": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "--no-cache",
+        "src/toto_ai/research/__init__.py",
+        "src/toto_ai/research/raw_package_replay.py",
+        "src/toto_ai/research/native_quality_core.py",
+        "tests/test_raw_package_replay.py",
+        "tests/test_research_quality_core.py",
+        "tests/test_publication_ignore_rules.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.036,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    }
+  },
+  "static_review": {
+    "raw_hash_identity_chronology_checks": true,
+    "outcomes_payments_rejected_projection_whitelist": true,
+    "no_production_provenance_gate_modified": true,
+    "no_fake_historical_ledger": true,
+    "no_EV_top_N_substitution": true,
+    "numeric_native_selection_steps_compared": true,
+    "operational_import_references_outside_research": [],
+    "six_protected_entrypoint_hashes_unchanged": true,
+    "operator_compatible": false,
+    "automatic_wagering": false
+  },
+  "saved_replay_evidence": {
+    "parity_4999_exact_ordered_coupons": 166,
+    "new_replay_executed_by_reviewer": false,
+    "B_hashes_matched": 25,
+    "C_metadata_refs_hashes_matched": 7,
+    "5000_effective_bank": 780,
+    "coupons_per_arm": 26,
+    "best_actual_hits": {
+      "quality-v2": 10,
+      "quality-v3": 9,
+      "robust-market-only": 10
+    },
+    "sports": "SKIPPED_NO_SPORTS",
+    "profitability_proven": false
+  },
+  "limits": [
+    "Case-specific parity, not universal equivalence. NumericCandidate remains NOT_NATIVE_EQUIVALENT by default.",
+    "Low-level numeric entry accepts a caller-supplied EVSurface; event count alone does not bind that surface to RAW/config. A high-level bound builder requires separate review before broader reuse/live exposure.",
+    "Research helper deliberately has no operator admission. Existing production validation is unchanged; numeric output is not an operator package.",
+    "139.53s replay not rerun; original execution, posthoc serialization repair and evidence limits remain reported, not independently reenacted.",
+    "C metadata verification is hash/consistency review, not repeated native data validation or training. Earlier B1/C checkpoints remain dated historical evidence.",
+    "No scheduler/job/DB/5007 runtime verification or commands; parent owns runtime monitoring."
+  ]
+}

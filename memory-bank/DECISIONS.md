@@ -1,3 +1,7 @@
+# Inactive reconstruction boundary — 2026-09-15T20:53:01.582880+03:00
+
+TOTOAI-RESUME-20260915 implemented/independentlyreviewed: POST_EVENT_MARKET_SCENARIO_UNVERIFIED_ASOF is a separate researchdomain; originalcaptures/marketinputs/frozenpackages preserved, directlabels excluded before nativegeneration. No causalfit/releaseeligibility implied. Sportscompletion evidence and targetmetadata/fixturemapping are mandatory in the scoped numericaladapter; unknownclasses/availability remainunknown. Generalclassificationregistry and newfitdomain remain PROPOSALS, not approved/implemented. Couponset identity differs from order/byteidentity; category/bank/probability definitions unchanged.
+
 # Decisions
 
 ## 2026-09-04 — bounded compaction recovery and local observation

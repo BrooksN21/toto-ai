@@ -1,0 +1,164 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "phase": "IMPLEMENTED_SCOPED_VERIFIED_PENDING_INDEPENDENT_REVIEW",
+  "started_at": "2026-09-06T11:36:35.795601+00:00",
+  "before": {
+    "src/toto_ai/external_odds/goal_api.py": {
+      "sha256": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb"
+    },
+    "src/toto_ai/external_odds/schedule_source_collector.py": {
+      "sha256": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328"
+    }
+  },
+  "commands": [
+    {
+      "phase": "RED",
+      "exit_code": 1,
+      "stdout": "F\n=================================== FAILURES ===================================\n_ test_quarantine_is_permanent_symmetric_and_retains_all_observations[False-homeTeamId-999] _\ntests/test_goal_api_fixture_quarantine.py:51: in test_quarantine_is_permanent_symmetric_and_retains_all_observations\n    events = client.fetch_schedule_for_collection((date(2026, 8, 26),))\nE   AttributeError: 'GoalAPIClient' object has no attribute 'fetch_schedule_for_collection'\n=========================== short test summary info ============================\nFAILED tests/test_goal_api_fixture_quarantine.py::test_quarantine_is_permanent_symmetric_and_retains_all_observations[False-homeTeamId-999]\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n1 failed in 0.24s\n",
+      "stderr": ""
+    },
+    {
+      "phase": "GREEN",
+      "files": [
+        "tests/test_goal_api_fixture_quarantine.py",
+        "tests/test_goal_api_provider.py",
+        "tests/test_goal_api_pagination_identity.py",
+        "tests/test_goal_api_schedule_collection.py",
+        "tests/test_schedule_source_collector.py"
+      ],
+      "exit_code": 1,
+      "stdout": ".........................................................................\n73 passed in 0.52s\n",
+      "stderr": "Traceback (most recent call last):\n  File \"/private/tmp/goal-quarantine-green-bwqd636g/run.py\", line 5, in <module>\n    assert not sitecustomize.blocked\nAssertionError\n"
+    },
+    {
+      "phase": "GREEN_COMPLETE_GUARD_DIAGNOSTICS",
+      "files": [
+        "tests/test_goal_api_fixture_quarantine.py",
+        "tests/test_goal_api_provider.py",
+        "tests/test_goal_api_pagination_identity.py",
+        "tests/test_goal_api_schedule_collection.py",
+        "tests/test_schedule_source_collector.py"
+      ],
+      "exit_code": 0,
+      "stdout": "..............................................................................\n78 passed in 0.46s\nBLOCKED_AUDIT [{\"event\": \"socket.getaddrinfo\", \"test\": \"tests/test_schedule_source_collector.py::test_collector_saves_raw_snapshot_and_independent_candidate (call)\"}]\n",
+      "stderr": ""
+    },
+    {
+      "phase": "EXACT_SAVED7_QUARANTINE_REPLAY",
+      "exit_code": 0,
+      "stdout": "{\"native_fetch_schedule_stop\": {\"type\": \"MissingFrozenPage\", \"message\": \"No saved page for /fixtures/date/2026-09-05 {'limit': '100', 'offset': '700'}\"}, \"native_fetch_returned_count\": null, \"consumed_saved_pages\": 7, \"page_count\": 7, \"raw_row_count\": 700, \"parsed_row_count\": 700, \"unique_provider_ids\": 698, \"eligible_observations\": 0, \"kickoff_dates\": {\"2026-09-05\": 700}, \"parse_errors\": [], \"protected_conflicts\": [{\"event_id\": \"cmt63ihwdf62st107zcaaswfn\", \"differing_fields\": [\"awayTeamHalftimeScore\", \"homeTeamHalftimeScore\", \"updatedAt\"], \"before_page_sha256\": \"5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d\", \"after_page_sha256\": \"172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7\", \"before_raw_sha256\": \"1d7c0b9f7866ff8ca17e3ba62166c64d3f3dbb72357f2bb1ac1e730ee56e70d8\", \"after_raw_sha256\": \"e0629e326c827cf402b20330046f762214819ce34d9b572fd2a40054ea07dfbe\", \"semantic_equal\": false, \"protected_field_values\": {}, \"other_field_values_redacted\": true}, {\"event_id\": \"cmt63ihwff62ut1075qx5dhf0\", \"differing_fields\": [\"awayTeamHalftimeScore\", \"homeTeamHalftimeScore\", \"updatedAt\"], \"before_page_sha256\": \"5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d\", \"after_page_sha256\": \"172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7\", \"before_raw_sha256\": \"fddce4ce3e40519babd2fec82d9e904bff989aa09a8bfcd23080d6158174fd73\", \"after_raw_sha256\": \"a073613bfcd24942c6e09df168625f3294042bbcd309ab85149fc90cc763031e\", \"semantic_equal\": false, \"protected_field_values\": {}, \"other_field_values_redacted\": true}], \"guard_blocked_actions\": [], \"parser_path\": \"/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py\", \"parser_sha256\": \"026e393656eb24728f9c25a1563f4e0615c0811d468644d59a7962645e938db9\", \"no_fake_final_page_or_timestamps\": true, \"quarantined_fixtures\": [{\"provider_event_id\": \"cmt63ihwdf62st107zcaaswfn\", \"differing_fields\": [\"awayTeamHalftimeScore\", \"homeTeamHalftimeScore\"], \"eligible\": false, \"observations\": [{\"event_payload_sha256\": \"1d7c0b9f7866ff8ca17e3ba62166c64d3f3dbb72357f2bb1ac1e730ee56e70d8\", \"snapshot_path\": \"/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/91823097b1a739e2ad39c2dceeee4ad756d86fcb077a4368580c1296ebdda082-5830724e760f4efe.json\", \"snapshot_sha256\": \"5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d\", \"response_hash\": \"cb30d83f0b452cbe7e0144105c67252f3bb651304c3faf3f80a24640f8f9ca69\", \"request_fingerprint\": \"91823097b1a739e2ad39c2dceeee4ad756d86fcb077a4368580c1296ebdda082\", \"endpoint\": \"/fixtures/date/2026-09-05\", \"params\": [[\"limit\", \"100\"], [\"offset\", \"500\"]], \"fetched_at\": \"2026-09-06T09:34:20.835560Z\"}, {\"event_payload_sha256\": \"e0629e326c827cf402b20330046f762214819ce34d9b572fd2a40054ea07dfbe\", \"snapshot_path\": \"/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/44b16e86d05ed752e699c24a2901e5099ea838c553b70cac8861e03159b68c7f-172c063616b50348.json\", \"snapshot_sha256\": \"172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7\", \"response_hash\": \"3831d58c5665ac5899bd0a6ebb82fd6548e7212bb3e5c3320d7c7d1bc4096d29\", \"request_fingerprint\": \"44b16e86d05ed752e699c24a2901e5099ea838c553b70cac8861e03159b68c7f\", \"endpoint\": \"/fixtures/date/2026-09-05\", \"params\": [[\"limit\", \"100\"], [\"offset\", \"600\"]], \"fetched_at\": \"2026-09-06T09:34:21.049466Z\"}]}, {\"provider_event_id\": \"cmt63ihwff62ut1075qx5dhf0\", \"differing_fields\": [\"awayTeamHalftimeScore\", \"homeTeamHalftimeScore\"], \"eligible\": false, \"observations\": [{\"event_payload_sha256\": \"fddce4ce3e40519babd2fec82d9e904bff989aa09a8bfcd23080d6158174fd73\", \"snapshot_path\": \"/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/91823097b1a739e2ad39c2dceeee4ad756d86fcb077a4368580c1296ebdda082-5830724e760f4efe.json\", \"snapshot_sha256\": \"5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d\", \"response_hash\": \"cb30d83f0b452cbe7e0144105c67252f3bb651304c3faf3f80a24640f8f9ca69\", \"request_fingerprint\": \"91823097b1a739e2ad39c2dceeee4ad756d86fcb077a4368580c1296ebdda082\", \"endpoint\": \"/fixtures/date/2026-09-05\", \"params\": [[\"limit\", \"100\"], [\"offset\", \"500\"]], \"fetched_at\": \"2026-09-06T09:34:20.835560Z\"}, {\"event_payload_sha256\": \"a073613bfcd24942c6e09df168625f3294042bbcd309ab85149fc90cc763031e\", \"snapshot_path\": \"/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/44b16e86d05ed752e699c24a2901e5099ea838c553b70cac8861e03159b68c7f-172c063616b50348.json\", \"snapshot_sha256\": \"172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7\", \"response_hash\": \"3831d58c5665ac5899bd0a6ebb82fd6548e7212bb3e5c3320d7c7d1bc4096d29\", \"request_fingerprint\": \"44b16e86d05ed752e699c24a2901e5099ea838c553b70cac8861e03159b68c7f\", \"endpoint\": \"/fixtures/date/2026-09-05\", \"params\": [[\"limit\", \"100\"], [\"offset\", \"600\"]], \"fetched_at\": \"2026-09-06T09:34:21.049466Z\"}]}], \"pagination_complete\": false}\n",
+      "stderr": "",
+      "timeout_seconds": 25
+    },
+    {
+      "phase": "FINAL_SCOPED_TESTS",
+      "files": [
+        "tests/test_goal_api_fixture_quarantine.py",
+        "tests/test_goal_api_provider.py",
+        "tests/test_goal_api_pagination_identity.py",
+        "tests/test_goal_api_schedule_collection.py",
+        "tests/test_schedule_source_collector.py",
+        "tests/test_goal_probe_collection.py",
+        "tests/test_goal_probe_research.py"
+      ],
+      "exit_code": 1,
+      "stdout": "........................................................................................F\n=================================== FAILURES ===================================\n_______ test_validated_goal_snapshot_persists_exact_identity_and_hashes ________\ntests/test_goal_probe_research.py:104: in test_validated_goal_snapshot_persists_exact_identity_and_hashes\n    factory = get_session_factory(init_db(paths.root / \"data\" / \"toto.db\"))\nsrc/toto_ai/db/session.py:20: in init_db\n    Base.metadata.create_all(engine)\n.venv/lib/python3.10/site-packages/sqlalchemy/sql/schema.py:5930: in create_all\n    bind._run_ddl_visitor(\n.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py:3269: in _run_ddl_visitor\n    with self.begin() as conn:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/contextlib.py:135: in __enter__\n    return next(self.gen)\n.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py:3259: in begin\n    with self.connect() as conn:\n.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py:3295: in connect\n    return self._connection_cls(self)\n.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py:144: in __init__\n    self._dbapi_connection = engine.raw_connection()\n.venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py:3319: in raw_connection\n    return self.pool.connect()\n.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py:448: in connect\n    return _ConnectionFairy._checkout(self)\n.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py:1272: in _checkout\n    fairy = _ConnectionRecord.checkout(pool)\n.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py:712: in checkout\n    rec = pool._do_get()\n.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py:178: in _do_get\n    with util.safe_reraise():\n.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py:122: in __exit__\n    raise exc_value.with_traceback(exc_tb)\n.venv/lib/python3.10/site-packages/sqlalchemy/pool/impl.py:176: in _do_get\n    return self._create_connection()\n.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py:389: in _create_connection\n    return _ConnectionRecord(self)\n.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py:674: in __init__\n    self.__connect()\n.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py:900: in __connect\n    with util.safe_reraise():\n.venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py:122: in __exit__\n    raise exc_value.with_traceback(exc_tb)\n.venv/lib/python3.10/site-packages/sqlalchemy/pool/base.py:896: in __connect\n    self.dbapi_connection = connection = pool._invoke_creator(self)\n.venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py:667: in connect\n    return dialect.connect(*cargs_tup, **cparams)\n.venv/lib/python3.10/site-packages/sqlalchemy/engine/default.py:630: in connect\n    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501\n/private/tmp/goal-quarantine-final-akahfhj1/bootstrap/sitecustomize.py:14: in audit\n    raise AssertionError('O1 finalization denies network/database/process escape: '+event)\nE   AssertionError: O1 finalization denies network/database/process escape: sqlite3.connect\n=========================== short test summary info ============================\nFAILED tests/test_goal_probe_research.py::test_validated_goal_snapshot_persists_exact_identity_and_hashes\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n1 failed, 88 passed in 1.25s\nBLOCKED_AUDIT [{\"event\": \"socket.getaddrinfo\", \"test\": \"tests/test_schedule_source_collector.py::test_collector_saves_raw_snapshot_and_independent_candidate (call)\"}, {\"event\": \"sqlite3.connect\", \"test\": \"tests/test_goal_probe_research.py::test_validated_goal_snapshot_persists_exact_identity_and_hashes (call)\"}]\n",
+      "stderr": "",
+      "timeout_seconds": 25
+    },
+    {
+      "phase": "FINAL_IN_SCOPE_NO_DB_TESTS",
+      "files": [
+        "tests/test_goal_api_fixture_quarantine.py",
+        "tests/test_goal_api_provider.py",
+        "tests/test_goal_api_pagination_identity.py",
+        "tests/test_goal_api_schedule_collection.py",
+        "tests/test_schedule_source_collector.py",
+        "tests/test_goal_probe_collection.py"
+      ],
+      "exit_code": 0,
+      "stdout": "....................................................................................\n84 passed in 0.90s\nBLOCKED_AUDIT [{\"event\": \"socket.getaddrinfo\", \"test\": \"tests/test_schedule_source_collector.py::test_collector_saves_raw_snapshot_and_independent_candidate (call)\"}]\n",
+      "stderr": "",
+      "timeout_seconds": 25
+    },
+    {
+      "phase": "FINAL_RUFF",
+      "files": [
+        "src/toto_ai/external_odds/goal_api.py",
+        "src/toto_ai/external_odds/schedule_source_collector.py",
+        "tests/test_goal_api_fixture_quarantine.py",
+        "tests/test_goal_api_provider.py",
+        "tests/test_goal_api_pagination_identity.py",
+        "tests/test_goal_api_schedule_collection.py",
+        "tests/test_schedule_source_collector.py",
+        "tests/test_goal_probe_collection.py"
+      ],
+      "exit_code": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": "",
+      "timeout_seconds": 15
+    }
+  ],
+  "protected_goal_probe_collection_sha256": "1c1d5378700d1f4563a051142cf21eac66ebb5c1fa39c8c521c774192202eb62",
+  "raw_replay_harness_source": "import json,hashlib,sys\nfrom collections import Counter\nfrom datetime import date,datetime\nfrom pathlib import Path\nimport sitecustomize as guard\nassert guard.O1_MAIN_GUARD_INSTALLED\nfrom toto_ai.external_odds import goal_api as api\nM=Path('/Users/turshevr/toto-ai');T=Path(__file__).resolve().parent\nassert Path(api.__file__).resolve()==M/'src/toto_ai/external_odds/goal_api.py'\nroot=M/'reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots'\nsha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()\npages=[]\nfor p in root.glob('*.json'):\n d=json.loads(p.read_text());params=tuple(tuple(x) for x in d['params']);assert d['provider']=='goal-api-v1' and d['schema_version']==1\n assert api._sha256_json(d['payload'])==d['response_hash']\n assert api._request_fingerprint(api.DEFAULT_BASE_URL,d['endpoint'],params)==d['request_fingerprint']\n assert p.name==d['request_fingerprint']+'-'+sha(p)[:16]+'.json'\n evidence=api.GoalAPIRequestEvidence(endpoint=d['endpoint'],params=params,request_fingerprint=d['request_fingerprint'],response_hash=d['response_hash'],fetched_at=datetime.fromisoformat(d['fetched_at'].replace('Z','+00:00')),snapshot_path=p,snapshot_sha256=sha(p))\n pages.append((d,evidence))\nassert len(pages)==7\npages.sort(key=lambda x:x[1].fetched_at)\nbykey={(d['endpoint'],e.params):(d,e) for d,e in pages}\nclass MissingFrozenPage(Exception):pass\nclass Frozen(api.GoalAPIClient):\n def __init__(self):self._evidence=[];self.trace=[]\n def _get_page(self,endpoint,params):\n  key=(endpoint,tuple((k,str(v)) for k,v in sorted(params.items())))\n  self.trace.append({'endpoint':endpoint,'params':list(key[1]),'available':key in bykey})\n  if key not in bykey:raise MissingFrozenPage('No saved page for '+endpoint+' '+str(dict(key[1])))\n  d,e=bykey[key];body=d['payload'];assert body['success'] is True and isinstance(body['data'],list) and isinstance(body.get('pagination') or {},dict)\n  self._evidence.append(e);return body['data'],body.get('pagination') or {}\nclient=Frozen();stop=None;returned=None\ntry:returned=client.fetch_schedule_for_collection((date(2026,9,5),))\nexcept (MissingFrozenPage,api.GoalAPIError,ValueError) as err:stop={'type':type(err).__name__,'message':str(err)}\n# Complete diagnostics of the same immutable page prefix using the same native parser/semantic hash.\nseen={};duplicates=[];conflicts=[];all_events=[];parse_errors=[]\nfor d,e in pages:\n for index,raw in enumerate(d['payload']['data']):\n  try:event=api._parse_event(raw,fetched_at=e.fetched_at,endpoint=e.endpoint,request_fingerprint=e.request_fingerprint)\n  except Exception as err:parse_errors.append({'page_sha256':e.snapshot_sha256,'row_index':index,'type':type(err).__name__,'message':str(err)});continue\n  all_events.append(event);prev=seen.get(event.provider_event_id)\n  if prev is not None:\n   old,old_e=prev;fields=sorted(k for k in set(old)|set(raw) if (k not in old or k not in raw or old.get(k)!=raw.get(k)))\n   row={'event_id':event.provider_event_id,'differing_fields':fields,'before_page_sha256':old_e.snapshot_sha256,'after_page_sha256':e.snapshot_sha256,'before_raw_sha256':api._sha256_json(old),'after_raw_sha256':api._sha256_json(raw),'semantic_equal':api._schedule_semantic_hash(old)==api._schedule_semantic_hash(raw)}\n   duplicates.append(row)\n   if not row['semantic_equal']:\n    row=row|{'protected_field_values':{k:{'before':old.get(k),'after':raw.get(k)} for k in fields if k in {'id','apiId','homeTeamId','awayTeamId','kickoffUtc','matchStatus','homeTeamScore','awayTeamScore'}},'other_field_values_redacted':True};conflicts.append(row)\n  seen[event.provider_event_id]=(raw,e)\nresult={'native_fetch_schedule_stop':stop,'native_fetch_returned_count':None if returned is None else len(returned),'exact_native_request_trace':client.trace,'consumed_saved_pages':len(client._evidence),'page_count':len(pages),'raw_row_count':sum(len(d['payload']['data']) for d,e in pages),'parsed_row_count':len(all_events),'unique_provider_ids':len(seen),'eligible_observations':sum(e.eligible for e in all_events),'kickoff_dates':dict(Counter(e.starts_at.date().isoformat() for e in all_events)),'parse_errors':parse_errors,'duplicate_observations':duplicates,'protected_conflicts':conflicts,'source_pages':[{'path':str(e.snapshot_path),'file_sha256':e.snapshot_sha256,'endpoint':e.endpoint,'params':e.params,'fetched_at':d['fetched_at'],'request_fingerprint':e.request_fingerprint,'response_hash':e.response_hash,'row_count':len(d['payload']['data']),'pagination':d['payload']['pagination']} for d,e in pages],'guard_blocked_actions':guard.blocked,'parser_path':api.__file__,'parser_sha256':sha(Path(api.__file__)),'no_fake_final_page_or_timestamps':True}\nresult['quarantined_fixtures']=[c.public_summary() for c in client.schedule_conflicts]\nresult['pagination_complete']=client.schedule_pagination_complete\nassert len(client.schedule_conflicts)==2\nassert stop['type']=='MissingFrozenPage' and '700' in stop['message']\nassert not client.schedule_pagination_complete\n(T/'result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))\nprint(json.dumps({k:v for k,v in result.items() if k not in ['source_pages','duplicate_observations','exact_native_request_trace']},ensure_ascii=False),flush=True)\n",
+  "raw_replay_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-offline-replay.json",
+  "goal_probe_collection_after_sha256": "1c1d5378700d1f4563a051142cf21eac66ebb5c1fa39c8c521c774192202eb62",
+  "goal_probe_collection_unchanged": true,
+  "finished_at": "2026-09-06T11:41:50.544893+00:00",
+  "work_summary": "Opt-in fixture-level quarantine preserves strict default parser/history behavior and original raw provenance; collector keeps unrelated unambiguous candidates only after full pagination and vetoes affected targets.",
+  "changes": [
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+      "before_sha256": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb",
+      "after_sha256": "026e393656eb24728f9c25a1563f4e0615c0811d468644d59a7962645e938db9"
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_source_collector.py",
+      "before_sha256": "5e01024b17c1bf15b99bc93d9ea9600e85ce08606887ce277c0c03babfceb328",
+      "after_sha256": "51901ca513206dc154a8c211e702f7a4b4a4283a9c3068907ff3ccd752fafe0c"
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_goal_api_fixture_quarantine.py",
+      "before_sha256": null,
+      "after_sha256": "01b0f4fc84c6ee7f850e958ec47ecc6eb48c588da5d07eb37bfd70099b621f48"
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/fixtures/goal_schedule_quarantine_conflicts.json",
+      "before_sha256": null,
+      "after_sha256": "a2a6fec36b0d5ff3a3be4d47b15bc1b944e3eb34041b6f28915d4d5942c853ca"
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/knowledge/goal_schedule_fixture_quarantine.md",
+      "before_sha256": null,
+      "after_sha256": "467d9cfa5dab502da7af440e5cbb42597f2eefed19e64ee76d443dabb5939031"
+    }
+  ],
+  "patch_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-implementation.patch",
+  "patch_sha256": "b463ced484c99b6ff12400329b876d3cdd1f0bb2a3e95d032dc7f621afad3b54",
+  "raw_replay_sha256": "9a208cf6ae9f6f488f975bfeb6f13436b79c8f4255e90c12992feb554cb9ced2",
+  "unchanged_existing_goal_client_methods_except_fetch_schedule": true,
+  "tests": {
+    "passed": 84,
+    "seconds": 0.9,
+    "scope": "6 explicit no-DB files; no full-suite claim",
+    "new_quarantine_cases": 28
+  },
+  "ruff": {
+    "exit_code": 0,
+    "python_files": 8
+  },
+  "verification_limits": [
+    "First73-pass harness post-check failed because an existing test intentionally hit blockedDNS; recorded, no network occurred.",
+    "Expanded7-file run:88pass then existing test_validated_goal_snapshot_persists_exact_identity_and_hashes hit denied sqlite3.connect. No DB run authorized; research DB integration tests not claimed passing.",
+    "Final6-file run84pass; one existing test DNS attempt denied by audit.",
+    "Real saved capture incomplete after7pages; no current4998 mapping/history or live collection success claimed."
+  ],
+  "owned_pid": null,
+  "owned_session": null,
+  "main_memory_updated": false,
+  "published": false,
+  "staged_committed_pushed": false,
+  "jobs_authority_seed_modified": false,
+  "next_exact_checkpoint": "Independent review of exact5-file patch; separate cache fix/real capture/binding work, not this worker.",
+  "case_count_note": "28 new cases:20 symmetric field cases plus8 continuation/budget/collector/halftime/exact-raw cases. Reporting correction only;84-pass run unchanged."
+}

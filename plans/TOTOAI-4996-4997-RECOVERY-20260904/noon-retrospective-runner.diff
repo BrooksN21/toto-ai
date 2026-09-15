@@ -1,0 +1,56 @@
+--- prior-runner
++++ recovered-runner
+@@ -22,6 +22,7 @@
+ from typing import Any
+ from zoneinfo import ZoneInfo
+ 
++from toto_ai.operations.retrospective_integrity import validate_retrospective_primary
+ 
+ MOSCOW = ZoneInfo("Europe/Moscow")
+ TERMINAL_RESULTS = {"1", "X", "2"}
+@@ -190,17 +191,21 @@
+ 
+ 
+ def validate_primary_state(
+-    path: Path, drawing_id: int, drawing_number: int, package_sha256: str
++    plan: dict[str, Any], bindings: dict[str, Path]
+ ) -> dict[str, Any] | None:
+-    if not path.exists():
+-        return None
+-    state = read_json(path, "post-draw state")
+-    verify_self_hash(state, "state_sha256", "post-draw state")
+-    if state.get("drawing_id") != drawing_id or state.get("drawing_number") != drawing_number:
+-        raise ValueError("post-draw state identity mismatch")
+-    if state.get("status") == "complete" and state.get("package_sha256") != package_sha256:
+-        raise ValueError("post-draw state package SHA-256 mismatch")
+-    return state
++    issued = plan["issued_operator_package"]
++    return validate_retrospective_primary(
++        state_path=Path(plan["primary_post_draw_state"]),
++        post_draw_plan_path=bindings["post_draw_plan"],
++        expected_plan_sha256=plan["primary_post_draw_plan_sha256"],
++        drawing_id=plan["drawing_id"],
++        drawing_number=plan["drawing_number"],
++        baseline_package=bindings["baseline_package"],
++        baseline_file_sha256=plan["bindings"]["baseline_package"]["file_sha256"],
++        stake=issued["stake"],
++        coupon_count=issued["coupon_count"],
++        cost=issued["cost"],
++    )
+ 
+ 
+ def validate_replay_report(path: Path, plan: dict[str, Any]) -> dict[str, Any]:
+@@ -297,12 +302,7 @@
+             plan["drawing_id"],
+             plan["drawing_number"],
+         )
+-        primary = validate_primary_state(
+-            Path(plan["primary_post_draw_state"]),
+-            plan["drawing_id"],
+-            plan["drawing_number"],
+-            plan["issued_operator_package"]["package_sha256"],
+-        )
++        primary = validate_primary_state(plan, bindings)
+         base_status["database"] = db
+         base_status["primary_post_draw"] = (
+             {"status": "not_started"} if primary is None else {

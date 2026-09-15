@@ -1,0 +1,31 @@
+{
+  "pytest": {
+    "command": [
+      ".venv/bin/python",
+      "-B",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "tests/test_sports_v3_dataset_bridge.py",
+      "tests/test_sports_v3_family_evidence.py",
+      "tests/test_sports_v3_probability_features.py"
+    ],
+    "returncode": 0,
+    "stdout": "........................................................................ [ 57%]\n......................................................                   [100%]\n126 passed in 0.70s\n",
+    "stderr": ""
+  },
+  "ruff": {
+    "command": [
+      ".venv/bin/ruff",
+      "check",
+      "--no-cache",
+      "src/toto_ai/research/sports_v3_dataset_bridge.py",
+      "tests/test_sports_v3_dataset_bridge.py"
+    ],
+    "returncode": 0,
+    "stdout": "All checks passed!\n",
+    "stderr": ""
+  }
+}

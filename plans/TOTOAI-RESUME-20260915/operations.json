@@ -1,0 +1,207 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "role": "delegated single operations execution worker; no nested delegation",
+  "observed_at": "2026-09-15T13:52:15.891208+00:00",
+  "scope": "5007 preparation only; intermediate handoff requested by parent",
+  "drawing_number": 5007,
+  "drawing_id": 12127,
+  "deadline_msk": "2026-09-15T20:00:00+03:00",
+  "expected_t10_msk": "2026-09-15T19:50:00+03:00",
+  "deadline_basis": "existing native source capture, no duplicate fetch",
+  "bank": 4980,
+  "stake": 30,
+  "plan_id": "84b0f69e06487848",
+  "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/scheduler-plan.json",
+  "status": "scheduled",
+  "mapped_count": 15,
+  "timing_resolved_count": 15,
+  "unresolved": [],
+  "dispatcher": {
+    "original_pid": 7678,
+    "currently_running": false,
+    "launchctl_observed_at": "2026-09-15T13:32:07Z",
+    "label": "com.totoai.morning-dispatcher.v1",
+    "last_exit_status": 0
+  },
+  "retry": {
+    "label": "com.totoai.preflight-retry.12127.bf59ff77d5bb3667",
+    "loaded": true,
+    "running": false,
+    "attempts": [
+      {
+        "scheduled_at": "2026-09-15T13:34:00Z",
+        "status": "planned"
+      },
+      {
+        "scheduled_at": "2026-09-15T13:54:00Z",
+        "status": "planned"
+      },
+      {
+        "scheduled_at": "2026-09-15T14:00:00Z",
+        "status": "planned"
+      },
+      {
+        "scheduled_at": "2026-09-15T14:24:00Z",
+        "status": "planned"
+      },
+      {
+        "scheduled_at": "2026-09-15T15:00:00Z",
+        "status": "planned"
+      }
+    ],
+    "last_exit_status": 75,
+    "last_attempt_msk": "2026-09-15T16:34:00+03:00",
+    "next_run_msk": "2026-09-15T16:54:00+03:00"
+  },
+  "fallbacks": {
+    "goal-api-v1": {
+      "alias_conflicts_skipped": {
+        "count": 10,
+        "normalized_alias_keys": [
+          "кардифф сити",
+          "лидс",
+          "линкольн сити",
+          "норвич",
+          "рапид бухарест",
+          "рапид вена",
+          "сток сити",
+          "тпс",
+          "эребру",
+          "эстер"
+        ],
+        "truncated": false
+      },
+      "attempted": 31,
+      "budget_exhausted": false,
+      "candidate_count": 12,
+      "ledger_mutated": false,
+      "matched_count": 12,
+      "pagination_complete": true,
+      "quarantined_fixture_count": 0,
+      "quarantined_fixtures": [],
+      "quota": {
+        "daily_limit": 1000,
+        "daily_remaining": 969
+      },
+      "request_count": 31,
+      "skipped": 0,
+      "status": "collected",
+      "timing_conflict_count": 0
+    },
+    "sofascore": {
+      "candidate_count": 26,
+      "ledger_mutated": false,
+      "status": "collected"
+    },
+    "thesportsdb-v1": {
+      "alias_conflicts_skipped": {
+        "count": 10,
+        "normalized_alias_keys": [
+          "кардифф сити",
+          "лидс",
+          "линкольн сити",
+          "норвич",
+          "рапид бухарест",
+          "рапид вена",
+          "сток сити",
+          "тпс",
+          "эребру",
+          "эстер"
+        ],
+        "truncated": false
+      },
+      "attempted": 30,
+      "budget_exhausted": false,
+      "cache_hit_count": 0,
+      "candidate_count": 6,
+      "ledger_mutated": false,
+      "quota": {
+        "daily_limit": null,
+        "daily_remaining": null,
+        "minute_limit": 30,
+        "minute_remaining": 11
+      },
+      "request_count": 30,
+      "skipped": 0,
+      "status": "collected"
+    }
+  },
+  "main_parallel_watcher_installed": true,
+  "consent": "primary+canonicalparallel nativeVALID; expiry19:50MSK",
+  "worker_mutations": [
+    "plans/TOTOAI-RESUME-20260915/operations.md",
+    "plans/TOTOAI-RESUME-20260915/operations.json",
+    "memory-bank/ACTIVE_PLAN.md checkpoint only",
+    "data/schedule-evidence/ledger.json event09 append only",
+    "data/schedule-evidence/reviews/manual-5007-event09-20260915.json",
+    "data/schedule-evidence/snapshots/5007-event09-*",
+    "plans/TOTOAI-RESUME-20260915/event09-review-receipt.json",
+    "data/schedule-evidence/reviews/manual-5007-event04/05/06/11/12-20260915-v2.json",
+    "data/schedule-evidence/snapshots/5007-event04/05/06/11/12-*",
+    "data/schedule-evidence/ledger.json five additional reviewed observations",
+    "single native morning-dispatch currently running PID14267"
+  ],
+  "native_background_changes": "Existing dispatcher collected fallbacks and promoted9 events before worker mutation; not worker-created fixes",
+  "code_changed": false,
+  "db_changed_by_worker": false,
+  "ledger_changed_by_worker": true,
+  "jobs_changed_by_worker": "native activate requested; pending result",
+  "new_dispatcher_started": false,
+  "publishing": false,
+  "next_action": "Observe18:00MSK native primary and planboundwatcher; finalprimarytarget19:30, parallel19:30, lastfinalretry19:42, expiry19:50, close20:00. Do not run live package now.",
+  "phase": "CURRENT_SCOPE_COMPLETE_RUNTIME_AND_BOTH_CONSENTS_VALID",
+  "reviewed_event09_applied": {
+    "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5007-event09-20260915.json",
+    "review_sha256": "e80e085d9ba03e10093a9363a94070f6178fe379dedffac9dbebefe79af57d5d",
+    "dry_run": {
+      "status": "validated_dry_run",
+      "dry_run": true,
+      "ledger_mutated": false,
+      "observation_id": "manual-5007-event09-20260915-sofa-tsdb",
+      "drawing_number": 5007,
+      "event_order": 8,
+      "ledger_sha256": "3725a166786129aabe4ad5afcdd87dcc5f885845b1964a2132987a2f62fee982",
+      "ledger_semantic_hash": "b9cf119471a22e746d01543fbce198ffa0d6d79234b94754766409560f0949f9"
+    },
+    "apply": {
+      "status": "applied",
+      "dry_run": false,
+      "ledger_mutated": true,
+      "observation_id": "manual-5007-event09-20260915-sofa-tsdb",
+      "drawing_number": 5007,
+      "event_order": 8,
+      "ledger_sha256": "4fc7ca5a94428d046b8ebabc6b8e0d8dc3722877b059c15d84c9291869b17f6f",
+      "ledger_semantic_hash": "afe646670dc68efd18d9bf13852d93713681f02fb696ee7998979f5b991996be"
+    }
+  },
+  "timing_resolved_count_ledger": 15,
+  "native_last_preparation_resolved_count": 9,
+  "pending_positions_one_based": [],
+  "count_basis": "9native + 6applied native manual reviews; wait native prepare for full readiness",
+  "history_status_from_peer": "4999–5006 restored8draws/120results/90events/8snapshots; dry-run0mutations; history.md/json; not repeated by operations",
+  "native_preparation_process": {
+    "pid": 14267,
+    "exit_code": 0,
+    "elapsed_seconds": 165.126,
+    "status": "completed"
+  },
+  "remaining_review_receipts": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/remaining-review-receipts.json",
+  "model_validation_from_peer": {
+    "path": "plans/TOTOAI-RESUME-20260915/model-validation.md/json",
+    "frozen4999": "all4hashesverified166unique;max11,no12+;ROIunknown",
+    "5001_5006": "no predraw inputs",
+    "5000": "partial BK raw for separate safe replay",
+    "sportsv3": "trainedactiveunconfirmed"
+  },
+  "activation_status": "activated",
+  "native_preparation_resolved_count": 15,
+  "native_state_observed_at": "2026-09-15T13:43:00.072358Z",
+  "runtime_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/runtime5007-attestation.json",
+  "current_blocker": null,
+  "consent_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/consent5007-final-receipt.json",
+  "pending_risks": [
+    "Two candidate/source-provenance defects remain code-unfixed; today evidence was repaired only through genuine native reviews and frozen in plan.",
+    "No comparable predraw inputs for5001–5006;5000replayblocked missingfinal/baseline/sports andearlypoolcap780; do not infer modelgains.",
+    "Sportsv3trainedactive not proven; sports-shadowseed11/15; scheduledactualfinal andmodelperformance not yetverified."
+  ]
+}

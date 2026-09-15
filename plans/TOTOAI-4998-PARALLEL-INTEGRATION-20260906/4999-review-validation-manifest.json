@@ -1,0 +1,46 @@
+{
+  "at": "2026-09-06T18:02:37.195652Z",
+  "fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+  "ledger_backup": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-ledger-before-03a650359c57f727.json",
+  "ledger_before_sha256": "03a650359c57f7278a7c5c176f102dc0fb6a749f5c7949a10d6a534c30c1a3c6",
+  "reviews": [
+    {
+      "event_order": 11,
+      "review": "data/schedule-evidence/reviews/4999-event12-codex-review-20260906.json",
+      "sha256": "e37a3ddc5ba68df19d7abe126d8882a887b06c6f4556ae57958bb6b0a451b4ed",
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "toto_ai.cli",
+        "schedule-evidence-review",
+        "--review",
+        "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/4999-event12-codex-review-20260906.json",
+        "--review-sha256",
+        "e37a3ddc5ba68df19d7abe126d8882a887b06c6f4556ae57958bb6b0a451b4ed",
+        "--ledger",
+        "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json"
+      ],
+      "returncode": 0,
+      "stdout": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-event12-review-dryrun.json"
+    },
+    {
+      "event_order": 13,
+      "review": "data/schedule-evidence/reviews/4999-event14-codex-review-20260906.json",
+      "sha256": "8b13c267c6b7c699f8054c3c4b2c9a8f2c74a21d187baa639c7e7dbaf7128034",
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "toto_ai.cli",
+        "schedule-evidence-review",
+        "--review",
+        "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/4999-event14-codex-review-20260906.json",
+        "--review-sha256",
+        "8b13c267c6b7c699f8054c3c4b2c9a8f2c74a21d187baa639c7e7dbaf7128034",
+        "--ledger",
+        "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json"
+      ],
+      "returncode": 0,
+      "stdout": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-event14-review-dryrun.json"
+    }
+  ]
+}

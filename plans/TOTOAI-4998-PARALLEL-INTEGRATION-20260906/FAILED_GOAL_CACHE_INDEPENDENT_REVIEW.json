@@ -1,0 +1,472 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "verdict": "REQUEST_CHANGES",
+  "patch_sha256": "3780eefccbabbb39b37c7de5bc69651fcc8c8decd43f5bef7bd068f26c4409fa",
+  "manifest_sha256": "7fae0770702abc42541a07f72035fb62d1988c0c8f4e22aafcf6b2d23ef7af71",
+  "manifest": {
+    "schema_version": 1,
+    "expected_head": "1a42f35561416393d5e9068fde330ca54e7466e7",
+    "patch_file": "FAILED_GOAL_CACHE_FIX.patch",
+    "patch_sha256": "3780eefccbabbb39b37c7de5bc69651fcc8c8decd43f5bef7bd068f26c4409fa",
+    "changes": [
+      {
+        "path": "src/toto_ai/sports_stats/goal_probe_collection.py",
+        "before_sha256": "1c1d5378700d1f4563a051142cf21eac66ebb5c1fa39c8c521c774192202eb62",
+        "after_sha256": "ef1b433804ea4fc9bf7e372159e59e3043d404d0da15766dbee151d9524ec6d7"
+      },
+      {
+        "path": "tests/test_goal_probe_collection.py",
+        "before_sha256": "f70be1a4a1d22024b291583048e9a50d239901145137c388e00370a40e5ea504",
+        "after_sha256": "5a9d8d3b637929aa08f977578b3eda38c877d6436bbabb190ac36fdb875a0094"
+      },
+      {
+        "path": "knowledge/goal_probe_failed_cache_boundary.md",
+        "before_sha256": null,
+        "after_sha256": "c6c55b7584f020cfe7e596a06b3334be0de07f3af0851cecd1ac59881cd3daa4"
+      }
+    ],
+    "dependencies": [
+      {
+        "path": "src/toto_ai/__init__.py",
+        "before_sha256": "5b191cc228c9112b821fd4ead0cf7de40588ecc82812a6d48c51c48d239aa1a8"
+      },
+      {
+        "path": "src/toto_ai/analytics/__init__.py",
+        "before_sha256": "db98ceb1a73f94eb0ff2904beabe99b6c7b2836fa1703dc1b91cd5f23ceef828"
+      },
+      {
+        "path": "src/toto_ai/analytics/api_inspector.py",
+        "before_sha256": "80f6060f1aabd08940b79f62c3a92bd3f4e80cfa384223cf4b4210ac974dbbcc"
+      },
+      {
+        "path": "src/toto_ai/analytics/data_health.py",
+        "before_sha256": "0b17ba9c9962d896f437ac6bfd90be13e7dea92fad86106fb34f0b766b8f9f8b"
+      },
+      {
+        "path": "src/toto_ai/api/__init__.py",
+        "before_sha256": "42cd35f0390813eff79efded2cfd05769bbc936c8588417f166716fda1abd54c"
+      },
+      {
+        "path": "src/toto_ai/api/client.py",
+        "before_sha256": "47d849eb47df71a5136e3a04c153c7f0cb404eac2c4e927174260ccc567c975a"
+      },
+      {
+        "path": "src/toto_ai/api/detail_cache.py",
+        "before_sha256": "266e2a97d9e42c0808af90c40a73b1c2d5537628d1fa4aa01411be80b1fecdc9"
+      },
+      {
+        "path": "src/toto_ai/api/rate_limit.py",
+        "before_sha256": "0d7210c24c706256dbd6b285c0243cfe2d6f97b0fb0ef39116c7d559b5a95366"
+      },
+      {
+        "path": "src/toto_ai/api/safe_paths.py",
+        "before_sha256": "109743f84b527139caf9e3e8e26a657fc8fe279ea5c64e19824051bbcbf451fe"
+      },
+      {
+        "path": "src/toto_ai/db/__init__.py",
+        "before_sha256": "f9e851864d26ac532cdf9d00148e1dccfea8a569574361f464c0eea87c867347"
+      },
+      {
+        "path": "src/toto_ai/db/models.py",
+        "before_sha256": "ec41d08df9595d6bc9ef361e4093fbea8b6ecfc2645d8c0b2f8392296f2572f2"
+      },
+      {
+        "path": "src/toto_ai/db/session.py",
+        "before_sha256": "6af8659a4be53b686944dcabaf13b00331be3a609a6748ea0629699ec51389a1"
+      },
+      {
+        "path": "src/toto_ai/ev/__init__.py",
+        "before_sha256": "e5f4a53393fec933aa12e999b3dd4bb8193912e169d73e1faac8bcb76017b3e7"
+      },
+      {
+        "path": "src/toto_ai/ev/drawing.py",
+        "before_sha256": "6b3e8306d82217ee31f4f4a6dc596228a9e2936b46d39de35e5efbc063f25b86"
+      },
+      {
+        "path": "src/toto_ai/ev/models.py",
+        "before_sha256": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5"
+      },
+      {
+        "path": "src/toto_ai/ev/package.py",
+        "before_sha256": "7f360752587e370e2b2e46592adfa650e0cebafc840aeff82cf503504a6357a9"
+      },
+      {
+        "path": "src/toto_ai/ev/package_quality.py",
+        "before_sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb"
+      },
+      {
+        "path": "src/toto_ai/ev/prize.py",
+        "before_sha256": "074216114b710945b9fd08cfa3923f2ca83e2201b4c047d6b51529b426f386da"
+      },
+      {
+        "path": "src/toto_ai/ev/ternary.py",
+        "before_sha256": "eee2a0c97e04eba467abdbf7d7622a0447b2e61a08e9793c4e0416e60e17477d"
+      },
+      {
+        "path": "src/toto_ai/external_odds/__init__.py",
+        "before_sha256": "45f854d807c7f3339f3cfd1bec24395370cc29104558c36ff30616857f3d8453"
+      },
+      {
+        "path": "src/toto_ai/external_odds/countries.py",
+        "before_sha256": "1ad2458ecc4b658ec9738a560e30c608cd2c241affc225e78c8df903decca8f7"
+      },
+      {
+        "path": "src/toto_ai/external_odds/domain.py",
+        "before_sha256": "c09141bb061c76c5e2628f3edfc289ccc1bb5a64d999087c11c6f5e174fa3797"
+      },
+      {
+        "path": "src/toto_ai/external_odds/eligibility.py",
+        "before_sha256": "f0dbd942fd1641a04382af8d6cc0a3b20830b5075d527183af22f48f247a130d"
+      },
+      {
+        "path": "src/toto_ai/external_odds/goal_api.py",
+        "before_sha256": "026e393656eb24728f9c25a1563f4e0615c0811d468644d59a7962645e938db9"
+      },
+      {
+        "path": "src/toto_ai/external_odds/matching.py",
+        "before_sha256": "8156642a2eb0cee8be4d255ecfee22ff767ecf9ae1907ea8d577d0d12dbdfd50"
+      },
+      {
+        "path": "src/toto_ai/external_odds/schedule_evidence.py",
+        "before_sha256": "913020a1aa32a2dac5c05a2735783927da11b57678be8b99094fd8dcdff9c4ec"
+      },
+      {
+        "path": "src/toto_ai/external_odds/schedule_source_collector.py",
+        "before_sha256": "51901ca513206dc154a8c211e702f7a4b4a4283a9c3068907ff3ccd752fafe0c"
+      },
+      {
+        "path": "src/toto_ai/external_odds/targets.py",
+        "before_sha256": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497"
+      },
+      {
+        "path": "src/toto_ai/external_odds/team_registry.py",
+        "before_sha256": "9a05035e29b4693d419c5a7a3b583796f9c8bc03b801aff0ceb2bbf8167eccc4"
+      },
+      {
+        "path": "src/toto_ai/external_odds/thesportsdb.py",
+        "before_sha256": "ef26f20a1edfaf983b67cfbd19eb0a2939d85ae683ef1272b7277704660c1301"
+      },
+      {
+        "path": "src/toto_ai/optimizer/__init__.py",
+        "before_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "path": "src/toto_ai/optimizer/brief.py",
+        "before_sha256": "b17d112b405c8c522dcf5b024c77474648db9593257306042fa9f72bd317b554"
+      },
+      {
+        "path": "src/toto_ai/optimizer/category_hit.py",
+        "before_sha256": "1eb7c228033ac49f9eb0262182c9563481c228f3fe611b90a0d4ea95d8bb29f3"
+      },
+      {
+        "path": "src/toto_ai/optimizer/cover.py",
+        "before_sha256": "9415b4b1d6f1141944e6d7b4a2579af45c2ff2ce3b162383ab06d1d4625a03cc"
+      },
+      {
+        "path": "src/toto_ai/package/__init__.py",
+        "before_sha256": "167b055e9f0871ca14612f287beb895aed26a397874ba6458da13cf87af2686d"
+      },
+      {
+        "path": "src/toto_ai/package/audit.py",
+        "before_sha256": "f36da1153d6f44e0cae00ab5f42781c415bce377d9531c4efdf68e7df8c8fc00"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/__init__.py",
+        "before_sha256": "d254f69250488f262d9fc3f7035ff8da58157ea76c669316a18da7897b6f2698"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/domain.py",
+        "before_sha256": "cdebd1a59f67240b3a3973fa5ba8d22b9ee48224515976e5808f9c1dc9bc07b8"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/features.py",
+        "before_sha256": "db786d81f27620afe23137a488f025e690a13029f30804591070fbdecc098821"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/goal_probe_research.py",
+        "before_sha256": "590d2eea7df0e3febfff2e66c6675064eae44622eb0c6ea57670227d9fd1fdbb"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/preliminary_comparison.py",
+        "before_sha256": "98e32a6dbeb2955383ff988b83278fb90cf201bde34a591b5f374896745468a8"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/probabilities.py",
+        "before_sha256": "c93258430ab96035cfa0097c16fe56b99d59f35451c4a0b39ad92dcf10cc69f9"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/storage.py",
+        "before_sha256": "3342b6ab721180c5e3a96bc932f5e8c062a7ce0ccf53369e1a09df78a3a85478"
+      },
+      {
+        "path": "src/toto_ai/totobrief_time.py",
+        "before_sha256": "f1d665535bc60cc265bca351bbebab8e81d675136a0a2e1a2a3189a292ab7d9f"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/history_backfill.py",
+        "before_sha256": "026ad030ee54b48b07741c69e0e40ddca89a7375c44877f28042ca072f7da742"
+      },
+      {
+        "path": "tests/test_goal_probe_research.py",
+        "before_sha256": "8d7b34f14e61d46d8b53cc0a58a3e40e015372746a6e5015bc74cc5591a0fea8"
+      },
+      {
+        "path": "scripts/project-git",
+        "before_sha256": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269"
+      },
+      {
+        "path": "pyproject.toml",
+        "before_sha256": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6"
+      },
+      {
+        "path": "AGENTS.md",
+        "before_sha256": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224"
+      }
+    ]
+  },
+  "guard_before_and_after": "PASS3targets49dependencies",
+  "temporary_overlay": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8",
+  "pytest": {
+    "command": [
+      "/Users/turshevr/toto-ai/.venv/bin/python",
+      "-B",
+      "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/run-final.py"
+    ],
+    "timeout_seconds": 25,
+    "exit_code": 1,
+    "stdout": "FF......\n=================================== FAILURES ===================================\n____ test_recovered_provider_can_retry_after_later_cooldown[source_failed] _____\nplans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py:36: in test_recovered_provider_can_retry_after_later_cooldown\n    recovered = ensure(tmp_path, output, 3600)\nplans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py:16: in ensure\n    return candidate.ensure_goal_probe_input(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/candidate.py:87: in ensure_goal_probe_input\n    raise ValueError(\"GOAL probe retry exhausted: source failed\")\nE   ValueError: GOAL probe retry exhausted: source failed\n______ test_recovered_provider_can_retry_after_later_cooldown[exception] _______\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/candidate.py:111: in ensure_goal_probe_input\n    with (retry_root / \"attempt.json\").open(\"xb\") as stream:\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/pathlib.py:1117: in open\n    return self._accessor.open(self, mode, buffering, encoding, errors,\nE   FileExistsError: [Errno 17] File exists: '/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/pytest-final/test_recovered_provider_can_re1/reports/goal-auto/failed-cache-retry/1a484d085ec782f1ad610ae9979cdefed1d7f370b4264d92e262c934b86a132f/attempt.json'\n\nThe above exception was the direct cause of the following exception:\nplans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py:36: in test_recovered_provider_can_retry_after_later_cooldown\n    recovered = ensure(tmp_path, output, 3600)\nplans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py:16: in ensure\n    return candidate.ensure_goal_probe_input(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/candidate.py:114: in ensure_goal_probe_input\n    raise ValueError(\nE   ValueError: GOAL probe retry already claimed; no usable replacement cache\n=========================== short test summary info ============================\nFAILED plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_recovered_provider_can_retry_after_later_cooldown[source_failed]\nFAILED plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_recovered_provider_can_retry_after_later_cooldown[exception]\n2 failed, 6 passed in 0.37s\n",
+    "stderr": ""
+  },
+  "ruff": {
+    "command": [
+      "/Users/turshevr/toto-ai/.venv/bin/ruff",
+      "check",
+      "--no-cache",
+      "--config",
+      "/Users/turshevr/toto-ai/pyproject.toml",
+      "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/candidate.py",
+      "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/cache_review_fixture.py",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py"
+    ],
+    "exit_code": 0,
+    "stdout": "All checks passed!\n",
+    "stderr": ""
+  },
+  "runtime": {
+    "pytest_exit": 1,
+    "imports": {
+      "toto_ai.api.safe_paths": "/Users/turshevr/toto-ai/src/toto_ai/api/safe_paths.py",
+      "toto_ai.api.rate_limit": "/Users/turshevr/toto-ai/src/toto_ai/api/rate_limit.py",
+      "toto_ai.api.client": "/Users/turshevr/toto-ai/src/toto_ai/api/client.py",
+      "toto_ai.api": "/Users/turshevr/toto-ai/src/toto_ai/api/__init__.py",
+      "toto_ai": "/Users/turshevr/toto-ai/src/toto_ai/__init__.py",
+      "toto_ai.api.detail_cache": "/Users/turshevr/toto-ai/src/toto_ai/api/detail_cache.py",
+      "toto_ai.external_odds.domain": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/domain.py",
+      "toto_ai.totobrief_time": "/Users/turshevr/toto-ai/src/toto_ai/totobrief_time.py",
+      "toto_ai.external_odds.targets": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/targets.py",
+      "toto_ai.external_odds": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/__init__.py",
+      "toto_ai.external_odds.goal_api": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+      "toto_ai.sports_stats": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/__init__.py",
+      "toto_ai.external_odds.eligibility": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/eligibility.py",
+      "toto_ai.external_odds.matching": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/matching.py",
+      "toto_ai.db.models": "/Users/turshevr/toto-ai/src/toto_ai/db/models.py",
+      "toto_ai.db.session": "/Users/turshevr/toto-ai/src/toto_ai/db/session.py",
+      "toto_ai.db": "/Users/turshevr/toto-ai/src/toto_ai/db/__init__.py",
+      "toto_ai.external_odds.countries": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/countries.py",
+      "toto_ai.external_odds.team_registry": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/team_registry.py",
+      "toto_ai.external_odds.schedule_evidence": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_evidence.py",
+      "toto_ai.external_odds.thesportsdb": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/thesportsdb.py",
+      "toto_ai.external_odds.schedule_source_collector": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_source_collector.py",
+      "toto_ai.sports_stats.goal_probe_collection": "/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/candidate.py",
+      "toto_ai.package": "/Users/turshevr/toto-ai/src/toto_ai/package/__init__.py",
+      "toto_ai.package.audit": "/Users/turshevr/toto-ai/src/toto_ai/package/audit.py",
+      "toto_ai.ev.models": "/Users/turshevr/toto-ai/src/toto_ai/ev/models.py",
+      "toto_ai.ev.prize": "/Users/turshevr/toto-ai/src/toto_ai/ev/prize.py",
+      "toto_ai.ev": "/Users/turshevr/toto-ai/src/toto_ai/ev/__init__.py",
+      "toto_ai.analytics": "/Users/turshevr/toto-ai/src/toto_ai/analytics/__init__.py",
+      "toto_ai.analytics.api_inspector": "/Users/turshevr/toto-ai/src/toto_ai/analytics/api_inspector.py",
+      "toto_ai.ev.ternary": "/Users/turshevr/toto-ai/src/toto_ai/ev/ternary.py",
+      "toto_ai.ev.package_quality": "/Users/turshevr/toto-ai/src/toto_ai/ev/package_quality.py",
+      "toto_ai.optimizer": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/__init__.py",
+      "toto_ai.analytics.data_health": "/Users/turshevr/toto-ai/src/toto_ai/analytics/data_health.py",
+      "toto_ai.optimizer.cover": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/cover.py",
+      "toto_ai.optimizer.brief": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/brief.py",
+      "toto_ai.optimizer.category_hit": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/category_hit.py",
+      "toto_ai.ev.package": "/Users/turshevr/toto-ai/src/toto_ai/ev/package.py",
+      "toto_ai.ev.drawing": "/Users/turshevr/toto-ai/src/toto_ai/ev/drawing.py",
+      "toto_ai.sports_stats.domain": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/domain.py",
+      "toto_ai.sports_stats.features": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/features.py",
+      "toto_ai.sports_stats.probabilities": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/probabilities.py",
+      "toto_ai.sports_stats.preliminary_comparison": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/preliminary_comparison.py",
+      "toto_ai.sports_stats.goal_probe_research": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/goal_probe_research.py"
+    },
+    "blocked_actions": []
+  },
+  "harness": {
+    "bootstrap": "import importlib.abc, importlib.util, os, sys\nfrom pathlib import Path\nMAIN = Path('/Users/turshevr/toto-ai')\nTEMP = Path(__file__).resolve().parent.parent\nblocked = []\nallowed_python_subprocesses = []\nclass MainOnly(importlib.abc.MetaPathFinder):\n    def find_spec(self, fullname, path=None, target=None):\n        if fullname == 'toto_ai.sports_stats.goal_probe_collection':\n            return importlib.util.spec_from_file_location(fullname, TEMP / 'candidate.py')\n        if fullname == 'toto_ai':\n            return importlib.util.spec_from_file_location(fullname, MAIN / 'src/toto_ai/__init__.py', submodule_search_locations=[str(MAIN / 'src/toto_ai')])\ndef audit(event, args):\n    if event.startswith(('socket.connect','socket.getaddrinfo','socket.gethostby','socket.sendto','os.system','os.posix_spawn','os.exec')) or event == 'sqlite3.connect':\n        blocked.append({'event':event,'test':os.environ.get('PYTEST_CURRENT_TEST')})\n        raise AssertionError('O1 finalization denies network/database/process escape: '+event)\n    if event == 'subprocess.Popen':\n        executable, argv, cwd, env = args\n        if executable != sys.executable or not isinstance(argv,(list,tuple)) or len(argv)!=4 or list(argv[1:3])!=['-B','-c'] or cwd not in (None,str(MAIN)) or env is not None:\n            blocked.append({'event':event,'test':os.environ.get('PYTEST_CURRENT_TEST')})\n            raise AssertionError('Only exact inherited-guard local Python cold-import tests allowed')\n        allowed_python_subprocesses.append(os.environ.get('PYTEST_CURRENT_TEST'))\n    paths = []\n    if event == 'open' and isinstance(args[0],(str,bytes,os.PathLike)):\n        p,mode,flags=args\n        writing=(isinstance(mode,str) and any(c in mode for c in 'wax+')) or (isinstance(flags,int) and flags & (os.O_WRONLY|os.O_RDWR|os.O_CREAT|os.O_TRUNC|os.O_APPEND))\n        if writing:paths=[p]\n        elif Path(os.fsdecode(p)).name.startswith('.env') and not Path(os.fsdecode(p)).resolve().is_relative_to(TEMP):\n            raise AssertionError('Real secret-file reads forbidden')\n    elif event in ('os.mkdir','os.remove','os.rmdir','os.chmod','os.utime'):paths=[args[0]]\n    elif event in ('os.rename','os.link','os.symlink'):paths=[args[0],args[1]]\n    for p in paths:\n        if isinstance(p,(str,bytes,os.PathLike)) and not Path(os.fsdecode(p)).resolve().is_relative_to(TEMP):\n            blocked.append({'event':event,'test':os.environ.get('PYTEST_CURRENT_TEST')})\n            raise AssertionError('Write outside temporary verification root forbidden')\nsys.meta_path.insert(0,MainOnly())\nsys.addaudithook(audit)\nO1_MAIN_GUARD_INSTALLED=True\n",
+    "runner": "import json, sys\nfrom pathlib import Path\nimport sitecustomize, pytest\nassert sitecustomize.O1_MAIN_GUARD_INSTALLED\nMAIN=sitecustomize.MAIN\nTEMP=sitecustomize.TEMP\nsys.path.insert(0,str(MAIN))\ncode=pytest.main(['-q','-s','-p','no:cacheprovider','-p','no:logging','-o','pythonpath=','--tb=short','--import-mode=importlib','-c',str(MAIN/'pyproject.toml'),'--rootdir',str(MAIN),'--confcutdir',str(MAIN),'--basetemp',str(TEMP/'pytest-final'),str(MAIN/'plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py')])\nimports={name:str(Path(module.__file__).resolve()) for name,module in sys.modules.items() if name.startswith('toto_ai') and getattr(module,'__file__',None)}\nfor name,path in imports.items():\n    assert Path(path)==TEMP/'candidate.py' if name=='toto_ai.sports_stats.goal_probe_collection' else Path(path).is_relative_to(MAIN/'src/toto_ai'), (name,path)\n(TEMP/'runtime.json').write_text(json.dumps({'pytest_exit':code,'imports':imports,'blocked_actions':sitecustomize.blocked},indent=2))\nsys.exit(code)\n",
+    "environment": {
+      "PATH": "/Users/turshevr/toto-ai/.venv/bin:/usr/bin:/bin",
+      "HOME": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8",
+      "TMPDIR": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8",
+      "PYTHONPATH": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap:/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8:/Users/turshevr/toto-ai/src",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+    }
+  },
+  "candidate_applied": false,
+  "main_source_changed": false,
+  "network_or_database_used": false,
+  "test_sha256": "2c353df5a56a0b6832747ca89b6c9f473a17ac89d5bd6e8cb2fab62c26de90ff",
+  "initial_run": {
+    "pytest": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/run.py"
+      ],
+      "timeout_seconds": 25,
+      "exit_code": 1,
+      "stdout": "EEEEEEEE\n==================================== ERRORS ====================================\n_ ERROR at setup of test_recovered_provider_can_retry_after_later_cooldown[source_failed] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n_ ERROR at setup of test_recovered_provider_can_retry_after_later_cooldown[exception] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n_ ERROR at setup of test_valid_cache_is_reused_without_relabeling_time[collected-0] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n_ ERROR at setup of test_valid_cache_is_reused_without_relabeling_time[collected-10] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n_ ERROR at setup of test_valid_cache_is_reused_without_relabeling_time[collected-15] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n_ ERROR at setup of test_valid_cache_is_reused_without_relabeling_time[partial_conflicts-10] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n____ ERROR at setup of test_cooldown_exact_boundary_immutability_and_budget ____\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n________ ERROR at setup of test_hash_corruption_is_not_retry_permission ________\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n=========================== short test summary info ============================\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_recovered_provider_can_retry_after_later_cooldown[source_failed]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_recovered_provider_can_retry_after_later_cooldown[exception]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[collected-0]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[collected-10]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[collected-15]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[partial_conflicts-10]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_cooldown_exact_boundary_immutability_and_budget\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_hash_corruption_is_not_retry_permission\n8 errors in 0.52s\n",
+      "stderr": ""
+    },
+    "ruff": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/ruff",
+        "check",
+        "--no-cache",
+        "--config",
+        "/Users/turshevr/toto-ai/pyproject.toml",
+        "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/candidate.py",
+        "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/cache_review_fixture.py",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py"
+      ],
+      "exit_code": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    "test_sha256": "cce120e65248f13f5b37010ecce32468cc4c600c6fe6573105cb1658454bf6bc"
+  },
+  "reviewed_at": "2026-09-06T11:47:55.496975+00:00",
+  "findings": [
+    {
+      "priority": "P1",
+      "path": "src/toto_ai/sports_stats/goal_probe_collection.py",
+      "lines": [
+        86,
+        87,
+        111,
+        116
+      ],
+      "summary": "Transient failed or interrupted retry permanently prevents unattended recovery for the same original marker; later cooldown and recovered provider do not permit another request.",
+      "reproduced": "2 independent desired-recovery tests fail after first attempt t+900s and recovered provider t+3600s; second provider stub is never reached."
+    },
+    {
+      "priority": "P2",
+      "path": "src/toto_ai/cli.py",
+      "lines": [
+        4444,
+        4453
+      ],
+      "summary": "Existing blanket retryable=true remains inconsistent with newly permanent claim/exhaustion failure. This is an integration contract failure, not a claim that original CLI was edited."
+    }
+  ],
+  "summary": "2 failed recovery regressions,6 passed safeguards; Ruff3 PASS. Candidate exact bytes compatible but does not meet systematic unattended preparation requirement.",
+  "formatting_rerun_harness_error": {
+    "pytest": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/run.py"
+      ],
+      "timeout_seconds": 25,
+      "exit_code": 1,
+      "stdout": "EEEEEEEE\n==================================== ERRORS ====================================\n_ ERROR at setup of test_recovered_provider_can_retry_after_later_cooldown[source_failed] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n_ ERROR at setup of test_recovered_provider_can_retry_after_later_cooldown[exception] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n_ ERROR at setup of test_valid_cache_is_reused_without_relabeling_time[collected-0] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n_ ERROR at setup of test_valid_cache_is_reused_without_relabeling_time[collected-10] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n_ ERROR at setup of test_valid_cache_is_reused_without_relabeling_time[collected-15] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n_ ERROR at setup of test_valid_cache_is_reused_without_relabeling_time[partial_conflicts-10] _\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n____ ERROR at setup of test_cooldown_exact_boundary_immutability_and_budget ____\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n________ ERROR at setup of test_hash_corruption_is_not_retry_permission ________\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:717: in rmtree\n    _rmtree_safe_fd(fd, path, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:654: in _rmtree_safe_fd\n    _rmtree_safe_fd(dirfd, fullname, onerror)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:672: in _rmtree_safe_fd\n    os.unlink(entry.name, dir_fd=topfd)\n/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/bootstrap/sitecustomize.py:35: in audit\n    raise AssertionError('Write outside temporary verification root forbidden')\nE   AssertionError: Write outside temporary verification root forbidden\n=========================== short test summary info ============================\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_recovered_provider_can_retry_after_later_cooldown[source_failed]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_recovered_provider_can_retry_after_later_cooldown[exception]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[collected-0]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[collected-10]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[collected-15]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[partial_conflicts-10]\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_cooldown_exact_boundary_immutability_and_budget\nERROR plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_hash_corruption_is_not_retry_permission\n8 errors in 0.52s\n",
+      "stderr": ""
+    },
+    "runtime": {
+      "pytest_exit": 1,
+      "imports": {
+        "toto_ai.api.safe_paths": "/Users/turshevr/toto-ai/src/toto_ai/api/safe_paths.py",
+        "toto_ai.api.rate_limit": "/Users/turshevr/toto-ai/src/toto_ai/api/rate_limit.py",
+        "toto_ai.api.client": "/Users/turshevr/toto-ai/src/toto_ai/api/client.py",
+        "toto_ai.api": "/Users/turshevr/toto-ai/src/toto_ai/api/__init__.py",
+        "toto_ai": "/Users/turshevr/toto-ai/src/toto_ai/__init__.py",
+        "toto_ai.api.detail_cache": "/Users/turshevr/toto-ai/src/toto_ai/api/detail_cache.py",
+        "toto_ai.external_odds.domain": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/domain.py",
+        "toto_ai.totobrief_time": "/Users/turshevr/toto-ai/src/toto_ai/totobrief_time.py",
+        "toto_ai.external_odds.targets": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/targets.py",
+        "toto_ai.external_odds": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/__init__.py",
+        "toto_ai.external_odds.goal_api": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+        "toto_ai.sports_stats": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/__init__.py",
+        "toto_ai.external_odds.eligibility": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/eligibility.py",
+        "toto_ai.external_odds.matching": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/matching.py",
+        "toto_ai.db.models": "/Users/turshevr/toto-ai/src/toto_ai/db/models.py",
+        "toto_ai.db.session": "/Users/turshevr/toto-ai/src/toto_ai/db/session.py",
+        "toto_ai.db": "/Users/turshevr/toto-ai/src/toto_ai/db/__init__.py",
+        "toto_ai.external_odds.countries": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/countries.py",
+        "toto_ai.external_odds.team_registry": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/team_registry.py",
+        "toto_ai.external_odds.schedule_evidence": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_evidence.py",
+        "toto_ai.external_odds.thesportsdb": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/thesportsdb.py",
+        "toto_ai.external_odds.schedule_source_collector": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_source_collector.py",
+        "toto_ai.sports_stats.goal_probe_collection": "/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-review-k_gme4r8/candidate.py",
+        "toto_ai.package": "/Users/turshevr/toto-ai/src/toto_ai/package/__init__.py",
+        "toto_ai.package.audit": "/Users/turshevr/toto-ai/src/toto_ai/package/audit.py",
+        "toto_ai.ev.models": "/Users/turshevr/toto-ai/src/toto_ai/ev/models.py",
+        "toto_ai.ev.prize": "/Users/turshevr/toto-ai/src/toto_ai/ev/prize.py",
+        "toto_ai.ev": "/Users/turshevr/toto-ai/src/toto_ai/ev/__init__.py",
+        "toto_ai.analytics": "/Users/turshevr/toto-ai/src/toto_ai/analytics/__init__.py",
+        "toto_ai.analytics.api_inspector": "/Users/turshevr/toto-ai/src/toto_ai/analytics/api_inspector.py",
+        "toto_ai.ev.ternary": "/Users/turshevr/toto-ai/src/toto_ai/ev/ternary.py",
+        "toto_ai.ev.package_quality": "/Users/turshevr/toto-ai/src/toto_ai/ev/package_quality.py",
+        "toto_ai.optimizer": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/__init__.py",
+        "toto_ai.analytics.data_health": "/Users/turshevr/toto-ai/src/toto_ai/analytics/data_health.py",
+        "toto_ai.optimizer.cover": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/cover.py",
+        "toto_ai.optimizer.brief": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/brief.py",
+        "toto_ai.optimizer.category_hit": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/category_hit.py",
+        "toto_ai.ev.package": "/Users/turshevr/toto-ai/src/toto_ai/ev/package.py",
+        "toto_ai.ev.drawing": "/Users/turshevr/toto-ai/src/toto_ai/ev/drawing.py",
+        "toto_ai.sports_stats.domain": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/domain.py",
+        "toto_ai.sports_stats.features": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/features.py",
+        "toto_ai.sports_stats.probabilities": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/probabilities.py",
+        "toto_ai.sports_stats.preliminary_comparison": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/preliminary_comparison.py",
+        "toto_ai.sports_stats.goal_probe_research": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/goal_probe_research.py"
+      },
+      "blocked_actions": [
+        {
+          "event": "os.remove",
+          "test": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_recovered_provider_can_retry_after_later_cooldown[source_failed] (setup)"
+        },
+        {
+          "event": "os.remove",
+          "test": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_recovered_provider_can_retry_after_later_cooldown[exception] (setup)"
+        },
+        {
+          "event": "os.remove",
+          "test": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[collected-0] (setup)"
+        },
+        {
+          "event": "os.remove",
+          "test": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[collected-10] (setup)"
+        },
+        {
+          "event": "os.remove",
+          "test": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[collected-15] (setup)"
+        },
+        {
+          "event": "os.remove",
+          "test": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_valid_cache_is_reused_without_relabeling_time[partial_conflicts-10] (setup)"
+        },
+        {
+          "event": "os.remove",
+          "test": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_cooldown_exact_boundary_immutability_and_budget (setup)"
+        },
+        {
+          "event": "os.remove",
+          "test": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py::test_hash_corruption_is_not_retry_permission (setup)"
+        }
+      ]
+    },
+    "reason": "Reused pytest basetemp triggers dir_fd-relative cleanup rejected by conservative audit hook; no candidate test body executed. Next run uses a new basetemp, unchanged audit rules."
+  }
+}

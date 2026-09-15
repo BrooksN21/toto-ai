@@ -1,0 +1,485 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "started_at": "2026-09-06T11:31:14.516025+00:00",
+  "phase": "COMPLETE_REPRODUCED_PROTECTED_CONFLICT",
+  "parser_path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+  "parser_sha256": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb",
+  "context_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-coverage-context.md",
+  "no_network_db_jobs_authority_seed_or_code_mutation": true,
+  "command": {
+    "argv": [
+      "/Users/turshevr/toto-ai/.venv/bin/python",
+      "-B",
+      "/private/tmp/goal7-offline-slr8zwsd/runner.py"
+    ],
+    "timeout_seconds": 25,
+    "exit_code": 0,
+    "stdout": "{\"native_fetch_schedule_stop\": {\"type\": \"GoalAPIError\", \"message\": \"GOAL API duplicate event identity conflicts\"}, \"native_fetch_returned_count\": null, \"consumed_saved_pages\": 7, \"page_count\": 7, \"raw_row_count\": 700, \"parsed_row_count\": 700, \"unique_provider_ids\": 698, \"eligible_observations\": 0, \"kickoff_dates\": {\"2026-09-05\": 700}, \"parse_errors\": [], \"protected_conflicts\": [{\"event_id\": \"cmt63ihwdf62st107zcaaswfn\", \"differing_fields\": [\"awayTeamHalftimeScore\", \"homeTeamHalftimeScore\", \"updatedAt\"], \"before_page_sha256\": \"5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d\", \"after_page_sha256\": \"172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7\", \"before_raw_sha256\": \"1d7c0b9f7866ff8ca17e3ba62166c64d3f3dbb72357f2bb1ac1e730ee56e70d8\", \"after_raw_sha256\": \"e0629e326c827cf402b20330046f762214819ce34d9b572fd2a40054ea07dfbe\", \"semantic_equal\": false, \"protected_field_values\": {}, \"other_field_values_redacted\": true}, {\"event_id\": \"cmt63ihwff62ut1075qx5dhf0\", \"differing_fields\": [\"awayTeamHalftimeScore\", \"homeTeamHalftimeScore\", \"updatedAt\"], \"before_page_sha256\": \"5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d\", \"after_page_sha256\": \"172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7\", \"before_raw_sha256\": \"fddce4ce3e40519babd2fec82d9e904bff989aa09a8bfcd23080d6158174fd73\", \"after_raw_sha256\": \"a073613bfcd24942c6e09df168625f3294042bbcd309ab85149fc90cc763031e\", \"semantic_equal\": false, \"protected_field_values\": {}, \"other_field_values_redacted\": true}], \"guard_blocked_actions\": [], \"parser_path\": \"/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py\", \"parser_sha256\": \"73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb\", \"no_fake_final_page_or_timestamps\": true}\n",
+    "stderr": ""
+  },
+  "temporary_harness_source": "import json,hashlib,sys\nfrom collections import Counter\nfrom datetime import date,datetime\nfrom pathlib import Path\nimport sitecustomize as guard\nassert guard.O1_MAIN_GUARD_INSTALLED\nfrom toto_ai.external_odds import goal_api as api\nM=Path('/Users/turshevr/toto-ai');T=Path(__file__).resolve().parent\nassert Path(api.__file__).resolve()==M/'src/toto_ai/external_odds/goal_api.py'\nroot=M/'reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots'\nsha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()\npages=[]\nfor p in root.glob('*.json'):\n d=json.loads(p.read_text());params=tuple(tuple(x) for x in d['params']);assert d['provider']=='goal-api-v1' and d['schema_version']==1\n assert api._sha256_json(d['payload'])==d['response_hash']\n assert api._request_fingerprint(api.DEFAULT_BASE_URL,d['endpoint'],params)==d['request_fingerprint']\n assert p.name==d['request_fingerprint']+'-'+sha(p)[:16]+'.json'\n evidence=api.GoalAPIRequestEvidence(endpoint=d['endpoint'],params=params,request_fingerprint=d['request_fingerprint'],response_hash=d['response_hash'],fetched_at=datetime.fromisoformat(d['fetched_at'].replace('Z','+00:00')),snapshot_path=p,snapshot_sha256=sha(p))\n pages.append((d,evidence))\nassert len(pages)==7\npages.sort(key=lambda x:x[1].fetched_at)\nbykey={(d['endpoint'],e.params):(d,e) for d,e in pages}\nclass MissingFrozenPage(Exception):pass\nclass Frozen(api.GoalAPIClient):\n def __init__(self):self._evidence=[];self.trace=[]\n def _get_page(self,endpoint,params):\n  key=(endpoint,tuple((k,str(v)) for k,v in sorted(params.items())))\n  self.trace.append({'endpoint':endpoint,'params':list(key[1]),'available':key in bykey})\n  if key not in bykey:raise MissingFrozenPage('No saved page for '+endpoint+' '+str(dict(key[1])))\n  d,e=bykey[key];body=d['payload'];assert body['success'] is True and isinstance(body['data'],list) and isinstance(body.get('pagination') or {},dict)\n  self._evidence.append(e);return body['data'],body.get('pagination') or {}\nclient=Frozen();stop=None;returned=None\ntry:returned=client.fetch_schedule((date(2026,9,5),))\nexcept (MissingFrozenPage,api.GoalAPIError,ValueError) as err:stop={'type':type(err).__name__,'message':str(err)}\n# Complete diagnostics of the same immutable page prefix using the same native parser/semantic hash.\nseen={};duplicates=[];conflicts=[];all_events=[];parse_errors=[]\nfor d,e in pages:\n for index,raw in enumerate(d['payload']['data']):\n  try:event=api._parse_event(raw,fetched_at=e.fetched_at,endpoint=e.endpoint,request_fingerprint=e.request_fingerprint)\n  except Exception as err:parse_errors.append({'page_sha256':e.snapshot_sha256,'row_index':index,'type':type(err).__name__,'message':str(err)});continue\n  all_events.append(event);prev=seen.get(event.provider_event_id)\n  if prev is not None:\n   old,old_e=prev;fields=sorted(k for k in set(old)|set(raw) if (k not in old or k not in raw or old.get(k)!=raw.get(k)))\n   row={'event_id':event.provider_event_id,'differing_fields':fields,'before_page_sha256':old_e.snapshot_sha256,'after_page_sha256':e.snapshot_sha256,'before_raw_sha256':api._sha256_json(old),'after_raw_sha256':api._sha256_json(raw),'semantic_equal':api._schedule_semantic_hash(old)==api._schedule_semantic_hash(raw)}\n   duplicates.append(row)\n   if not row['semantic_equal']:\n    row=row|{'protected_field_values':{k:{'before':old.get(k),'after':raw.get(k)} for k in fields if k in {'id','apiId','homeTeamId','awayTeamId','kickoffUtc','matchStatus','homeTeamScore','awayTeamScore'}},'other_field_values_redacted':True};conflicts.append(row)\n  seen[event.provider_event_id]=(raw,e)\nresult={'native_fetch_schedule_stop':stop,'native_fetch_returned_count':None if returned is None else len(returned),'exact_native_request_trace':client.trace,'consumed_saved_pages':len(client._evidence),'page_count':len(pages),'raw_row_count':sum(len(d['payload']['data']) for d,e in pages),'parsed_row_count':len(all_events),'unique_provider_ids':len(seen),'eligible_observations':sum(e.eligible for e in all_events),'kickoff_dates':dict(Counter(e.starts_at.date().isoformat() for e in all_events)),'parse_errors':parse_errors,'duplicate_observations':duplicates,'protected_conflicts':conflicts,'source_pages':[{'path':str(e.snapshot_path),'file_sha256':e.snapshot_sha256,'endpoint':e.endpoint,'params':e.params,'fetched_at':d['fetched_at'],'request_fingerprint':e.request_fingerprint,'response_hash':e.response_hash,'row_count':len(d['payload']['data']),'pagination':d['payload']['pagination']} for d,e in pages],'guard_blocked_actions':guard.blocked,'parser_path':api.__file__,'parser_sha256':sha(Path(api.__file__)),'no_fake_final_page_or_timestamps':True}\n(T/'result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))\nprint(json.dumps({k:v for k,v in result.items() if k not in ['source_pages','duplicate_observations','exact_native_request_trace']},ensure_ascii=False),flush=True)\n",
+  "bootstrap_source_sha256": "41c6fa80bbf902d9737203667c99c7c4f03c90e307bdd4eb89e86f08554ee318",
+  "replay": {
+    "native_fetch_schedule_stop": {
+      "type": "GoalAPIError",
+      "message": "GOAL API duplicate event identity conflicts"
+    },
+    "native_fetch_returned_count": null,
+    "exact_native_request_trace": [
+      {
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "0"
+          ]
+        ],
+        "available": true
+      },
+      {
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "100"
+          ]
+        ],
+        "available": true
+      },
+      {
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "200"
+          ]
+        ],
+        "available": true
+      },
+      {
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "300"
+          ]
+        ],
+        "available": true
+      },
+      {
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "400"
+          ]
+        ],
+        "available": true
+      },
+      {
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "500"
+          ]
+        ],
+        "available": true
+      },
+      {
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "600"
+          ]
+        ],
+        "available": true
+      }
+    ],
+    "consumed_saved_pages": 7,
+    "page_count": 7,
+    "raw_row_count": 700,
+    "parsed_row_count": 700,
+    "unique_provider_ids": 698,
+    "eligible_observations": 0,
+    "kickoff_dates": {
+      "2026-09-05": 700
+    },
+    "parse_errors": [],
+    "duplicate_observations": [
+      {
+        "event_id": "cmt63ihwdf62st107zcaaswfn",
+        "differing_fields": [
+          "awayTeamHalftimeScore",
+          "homeTeamHalftimeScore",
+          "updatedAt"
+        ],
+        "before_page_sha256": "5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d",
+        "after_page_sha256": "172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7",
+        "before_raw_sha256": "1d7c0b9f7866ff8ca17e3ba62166c64d3f3dbb72357f2bb1ac1e730ee56e70d8",
+        "after_raw_sha256": "e0629e326c827cf402b20330046f762214819ce34d9b572fd2a40054ea07dfbe",
+        "semantic_equal": false
+      },
+      {
+        "event_id": "cmt63ihwff62ut1075qx5dhf0",
+        "differing_fields": [
+          "awayTeamHalftimeScore",
+          "homeTeamHalftimeScore",
+          "updatedAt"
+        ],
+        "before_page_sha256": "5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d",
+        "after_page_sha256": "172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7",
+        "before_raw_sha256": "fddce4ce3e40519babd2fec82d9e904bff989aa09a8bfcd23080d6158174fd73",
+        "after_raw_sha256": "a073613bfcd24942c6e09df168625f3294042bbcd309ab85149fc90cc763031e",
+        "semantic_equal": false
+      }
+    ],
+    "protected_conflicts": [
+      {
+        "event_id": "cmt63ihwdf62st107zcaaswfn",
+        "differing_fields": [
+          "awayTeamHalftimeScore",
+          "homeTeamHalftimeScore",
+          "updatedAt"
+        ],
+        "before_page_sha256": "5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d",
+        "after_page_sha256": "172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7",
+        "before_raw_sha256": "1d7c0b9f7866ff8ca17e3ba62166c64d3f3dbb72357f2bb1ac1e730ee56e70d8",
+        "after_raw_sha256": "e0629e326c827cf402b20330046f762214819ce34d9b572fd2a40054ea07dfbe",
+        "semantic_equal": false,
+        "protected_field_values": {},
+        "other_field_values_redacted": true
+      },
+      {
+        "event_id": "cmt63ihwff62ut1075qx5dhf0",
+        "differing_fields": [
+          "awayTeamHalftimeScore",
+          "homeTeamHalftimeScore",
+          "updatedAt"
+        ],
+        "before_page_sha256": "5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d",
+        "after_page_sha256": "172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7",
+        "before_raw_sha256": "fddce4ce3e40519babd2fec82d9e904bff989aa09a8bfcd23080d6158174fd73",
+        "after_raw_sha256": "a073613bfcd24942c6e09df168625f3294042bbcd309ab85149fc90cc763031e",
+        "semantic_equal": false,
+        "protected_field_values": {},
+        "other_field_values_redacted": true
+      }
+    ],
+    "source_pages": [
+      {
+        "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/24acbf30f21d53f77955acf62e83ca62589f73be9549d60b13e94f92e2210006-a97810d2beb28842.json",
+        "file_sha256": "a97810d2beb288422532afec0426f761ae29ea15defea4910c923aa38a0039fd",
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "0"
+          ]
+        ],
+        "fetched_at": "2026-09-06T09:34:19.646056Z",
+        "request_fingerprint": "24acbf30f21d53f77955acf62e83ca62589f73be9549d60b13e94f92e2210006",
+        "response_hash": "b50c180f26c4fb5fba3a32cecd93f094d367f52d2a618690166824ed695fce01",
+        "row_count": 100,
+        "pagination": {
+          "hasMore": true,
+          "limit": 100,
+          "offset": 0,
+          "total": 1513
+        }
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/2981188d2c13089b8a4cb90b3a2e94d031c35749bad058d36bb8a8076169f8d3-69f45df767f8c184.json",
+        "file_sha256": "69f45df767f8c184bc5884b7d035678aa97541ed55ea244f76ec57d15764eb51",
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "100"
+          ]
+        ],
+        "fetched_at": "2026-09-06T09:34:20.110955Z",
+        "request_fingerprint": "2981188d2c13089b8a4cb90b3a2e94d031c35749bad058d36bb8a8076169f8d3",
+        "response_hash": "a9ad5d7cc5b01f46b4868acf0b01f91a227ec6c1223f48da9b3e408a604d75c4",
+        "row_count": 100,
+        "pagination": {
+          "hasMore": true,
+          "limit": 100,
+          "offset": 100,
+          "total": 1513
+        }
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/e4f1731f134599dd331284c8cd25c3fb81c26235c685db2597afaad2986902bd-6c097649b4649f4f.json",
+        "file_sha256": "6c097649b4649f4f91568e7070e7ef823a0e477911d283f0e7ecc1c0e66ed08f",
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "200"
+          ]
+        ],
+        "fetched_at": "2026-09-06T09:34:20.300652Z",
+        "request_fingerprint": "e4f1731f134599dd331284c8cd25c3fb81c26235c685db2597afaad2986902bd",
+        "response_hash": "6467f49dac8019ecd9e02e8372685fc6a777302d74fc0086c92357251463b052",
+        "row_count": 100,
+        "pagination": {
+          "hasMore": true,
+          "limit": 100,
+          "offset": 200,
+          "total": 1513
+        }
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/3ca39775cbeda4ceace87678547c8abb0e2638b48a30f419bd1055f546b83fe0-d39f67ef9da47b1f.json",
+        "file_sha256": "d39f67ef9da47b1fe9139b06eaee0ca42e67499610c919cacb1562c1276d6948",
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "300"
+          ]
+        ],
+        "fetched_at": "2026-09-06T09:34:20.491167Z",
+        "request_fingerprint": "3ca39775cbeda4ceace87678547c8abb0e2638b48a30f419bd1055f546b83fe0",
+        "response_hash": "09c79490ec313b29d7c568b66070674c2c946294a74957a17ca51eae0f979ca8",
+        "row_count": 100,
+        "pagination": {
+          "hasMore": true,
+          "limit": 100,
+          "offset": 300,
+          "total": 1513
+        }
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/32c6ad78f92fd7b36325e60c72eeea0a996fc6e4658ef21749740a1e399c28b1-3f84245455f4261d.json",
+        "file_sha256": "3f84245455f4261d1040a83043e2cb421214e396de4c6fd579ec8589857999cb",
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "400"
+          ]
+        ],
+        "fetched_at": "2026-09-06T09:34:20.711835Z",
+        "request_fingerprint": "32c6ad78f92fd7b36325e60c72eeea0a996fc6e4658ef21749740a1e399c28b1",
+        "response_hash": "ecf70eb06bf7f92f8f33038d8dd5b0a225e54a95d4cf20dd1828d3bc3da087c7",
+        "row_count": 100,
+        "pagination": {
+          "hasMore": true,
+          "limit": 100,
+          "offset": 400,
+          "total": 1513
+        }
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/91823097b1a739e2ad39c2dceeee4ad756d86fcb077a4368580c1296ebdda082-5830724e760f4efe.json",
+        "file_sha256": "5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d",
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "500"
+          ]
+        ],
+        "fetched_at": "2026-09-06T09:34:20.835560Z",
+        "request_fingerprint": "91823097b1a739e2ad39c2dceeee4ad756d86fcb077a4368580c1296ebdda082",
+        "response_hash": "cb30d83f0b452cbe7e0144105c67252f3bb651304c3faf3f80a24640f8f9ca69",
+        "row_count": 100,
+        "pagination": {
+          "hasMore": true,
+          "limit": 100,
+          "offset": 500,
+          "total": 1512
+        }
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/44b16e86d05ed752e699c24a2901e5099ea838c553b70cac8861e03159b68c7f-172c063616b50348.json",
+        "file_sha256": "172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7",
+        "endpoint": "/fixtures/date/2026-09-05",
+        "params": [
+          [
+            "limit",
+            "100"
+          ],
+          [
+            "offset",
+            "600"
+          ]
+        ],
+        "fetched_at": "2026-09-06T09:34:21.049466Z",
+        "request_fingerprint": "44b16e86d05ed752e699c24a2901e5099ea838c553b70cac8861e03159b68c7f",
+        "response_hash": "3831d58c5665ac5899bd0a6ebb82fd6548e7212bb3e5c3320d7c7d1bc4096d29",
+        "row_count": 100,
+        "pagination": {
+          "hasMore": true,
+          "limit": 100,
+          "offset": 600,
+          "total": 1513
+        }
+      }
+    ],
+    "guard_blocked_actions": [],
+    "parser_path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+    "parser_sha256": "73d6d9e6185c35fab07565ce0566c15f869ad19f907547ab70f89bed5b28ccbb",
+    "no_fake_final_page_or_timestamps": true
+  },
+  "finished_at": "2026-09-06T11:32:35.167959+00:00",
+  "parser_unchanged": true,
+  "capture_pages_unchanged": true,
+  "temporary_harness_removed": true,
+  "owned_pid": null,
+  "owned_session": null,
+  "conflict_witnesses_redacted_to_relevant_public_fields": [
+    {
+      "page_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/91823097b1a739e2ad39c2dceeee4ad756d86fcb077a4368580c1296ebdda082-5830724e760f4efe.json",
+      "page_sha256": "5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d",
+      "offset": "500",
+      "row_index_zero_based": 98,
+      "fetched_at": "2026-09-06T09:34:20.835560Z",
+      "id": "cmt63ihwdf62st107zcaaswfn",
+      "apiId": "782981",
+      "kickoffUtc": "2026-09-05T14:00:00.000Z",
+      "matchStatus": "FINISHED",
+      "homeTeamHalftimeScore": null,
+      "awayTeamHalftimeScore": null,
+      "homeTeamScore": "1",
+      "awayTeamScore": "0",
+      "updatedAt": "2026-09-06T08:00:35.900Z"
+    },
+    {
+      "page_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/91823097b1a739e2ad39c2dceeee4ad756d86fcb077a4368580c1296ebdda082-5830724e760f4efe.json",
+      "page_sha256": "5830724e760f4efe76d80bfbb6fad946814a8410c6b5a53c1be59b5fd14f036d",
+      "offset": "500",
+      "row_index_zero_based": 99,
+      "fetched_at": "2026-09-06T09:34:20.835560Z",
+      "id": "cmt63ihwff62ut1075qx5dhf0",
+      "apiId": "784841",
+      "kickoffUtc": "2026-09-05T14:00:00.000Z",
+      "matchStatus": "FINISHED",
+      "homeTeamHalftimeScore": null,
+      "awayTeamHalftimeScore": null,
+      "homeTeamScore": "0",
+      "awayTeamScore": "1",
+      "updatedAt": "2026-09-06T08:00:35.917Z"
+    },
+    {
+      "page_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/44b16e86d05ed752e699c24a2901e5099ea838c553b70cac8861e03159b68c7f-172c063616b50348.json",
+      "page_sha256": "172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7",
+      "offset": "600",
+      "row_index_zero_based": 0,
+      "fetched_at": "2026-09-06T09:34:21.049466Z",
+      "id": "cmt63ihwdf62st107zcaaswfn",
+      "apiId": "782981",
+      "kickoffUtc": "2026-09-05T14:00:00.000Z",
+      "matchStatus": "FINISHED",
+      "homeTeamHalftimeScore": "1",
+      "awayTeamHalftimeScore": "0",
+      "homeTeamScore": "1",
+      "awayTeamScore": "0",
+      "updatedAt": "2026-09-06T09:04:41.478Z"
+    },
+    {
+      "page_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/schedule/goal-api-v1/snapshots/44b16e86d05ed752e699c24a2901e5099ea838c553b70cac8861e03159b68c7f-172c063616b50348.json",
+      "page_sha256": "172c063616b503489b5bd2199d2d922b7d8581ab734a155b6c25f4797cbecae7",
+      "offset": "600",
+      "row_index_zero_based": 1,
+      "fetched_at": "2026-09-06T09:34:21.049466Z",
+      "id": "cmt63ihwff62ut1075qx5dhf0",
+      "apiId": "784841",
+      "kickoffUtc": "2026-09-05T14:00:00.000Z",
+      "matchStatus": "FINISHED",
+      "homeTeamHalftimeScore": "0",
+      "awayTeamHalftimeScore": "0",
+      "homeTeamScore": "0",
+      "awayTeamScore": "1",
+      "updatedAt": "2026-09-06T09:04:41.518Z"
+    }
+  ],
+  "updated_at_only_fix_resolves_saved_conflict": false,
+  "conflict_class": "Missing-to-present halftime scores plus updatedAt; protected semantic content changes, not proof of different team identity.",
+  "mapping": {
+    "native_schedule_returned": false,
+    "verified_4998_mappings_recovered": 0,
+    "eligible_observations_in_saved_pages": 0,
+    "all_saved_kickoff_dates": [
+      "2026-09-05"
+    ],
+    "not_proof_of_provider_4998_absence": true,
+    "complete_pagination": false,
+    "last_saved_offset": 600,
+    "last_has_more": true,
+    "next_required_offset_if_conflict_resolved": 700,
+    "declared_total_last_page": 1513
+  },
+  "history": {
+    "bound_coverage_path": "/Users/turshevr/toto-ai/reports/sports-analytics/4998/goal-auto/captures/20260906T093419081148Z/coverage-summary.json",
+    "file_sha256": "979ffc7bd308ccd76df368a82d6a6833000b714d2cdb0da6ebe64975da7cf38d",
+    "history_source_count": 0,
+    "sports_eligible_count": 0,
+    "new_history_collected": 0
+  },
+  "blocker": "Current accepted parser intentionally rejects changed halftime-score fields on two duplicate finished fixtures; saved input is also only incomplete date2026-09-05 prefix.",
+  "smallest_next_action": "Independent scope decision on exact null-to-populated halftime-score duplicate semantics or fail-closed isolation of terminal fixtures, preserving immutable observations and protected target/status/score gates. No broadened ignore-list or last-row-wins policy inferred. Subsequent new real-time immutable capture would still be needed for dates/history not saved.",
+  "refresh_handoff": {
+    "conditional_ready": false,
+    "reason": "Offlineparse not valid; no safe ready-to-refresh/rebind claim.",
+    "known_collect_command_template": ".venv/bin/python -m toto_ai.cli collect-goal-shadow-input --drawing-id 12102 --queue <validated-current4998-queue> --raw-cache-dir data/raw --output-dir <NEW-immutable-project-capture-dir> --env-file .env --request-budget 120",
+    "command_not_executed": true,
+    "binding_blocker": "parallel-sidecar-prepare discovers an existing wrapper and reuses its bound sports path; it is not a supported seed-refresh operation. Existing generated wrapper is immutable; do not overwrite pinned seed/wrapper or re-authorize/recreate jobs as a workaround.",
+    "no_plan_or_consent_changes": true
+  }
+}
