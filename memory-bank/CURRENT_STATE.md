@@ -1,3 +1,14 @@
+# Scope-contract handoff / operations checkpoint — 2026-09-15T19:17:34.774136+03:00
+
+Task TOTOAI-RESUME-20260915; latest checkpoint, older entries historical.
+- DONE: inactive C adapter published `cefb408`, upstream0/0 and clean at18:42. New bounded class/scope review completed19:13:40: inline GOAL class fields absent; code does not require a legal regulation for each match. A inert library and bounded B replay complete; no five-model improvement claim.
+- PROPOSAL ONLY: C-SCOPE-ENTITY-BINDING-V1 = exact team-ID + reviewed taxonomy + validity/evidence domain binding. NOT approved/implemented/activated. Durable full handoff: plans/TOTOAI-RESUME-20260915/C-scope-classification-handoff.md; source links/hashes and negative tests preserved there. No DECISIONS acceptance.
+- C/D/F BLOCKERS: corpus12/15; classunknown and scope_verifiedfalse/reliability0; incomplete numeric features/history/folds/label availability. Fitfalse; no legal-name inference, raw relabeling, availability backdating or gate relaxation.
+- OPS5007 (parent handoff, not fresh worker live inspection):19:00prepare107.7s and19:10prepare101.8s completed166/4980 with expected warmupNO_BET. Parent reports final experimental path validated against actualconfig+4tests and consentVALID to19:50. Those operational4tests are not this worker's4scope unit checks. No finalPLAY claim.
+- IN PROGRESS: metadata-only publication in draftPR23, no merge; no code/jobs/DB/consent/model changes. Raw/PDF/source extracts remain local. Final exact SHA/upstream/clean in ignored cleanup-remainder-local-receipt.json.scope_metadata_publication.publication.
+- NEXT: parent19:20scheduled checkpoint then19:30final target; expiry19:50/close20:00. Research next requires explicit approval of the single proposed contract, then isolated implementation+review; do not restart regulation hunting or start fitting prematurely.
+- Binding full plan and statuses: plans/TOTOAI-RESUME-20260915/plan.md + machinechecklist.json. Current validation for metadata:4existing scope guardsPASS/Ruff4PASS, not tests of an unimplemented feature.
+
 # C adapter publication checkpoint — 2026-09-15T18:38:51.407430+03:00
 
 Task TOTOAI-RESUME-20260915. Latest checkpoint; older records below are historical.

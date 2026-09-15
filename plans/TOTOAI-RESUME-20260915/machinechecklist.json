@@ -3,7 +3,7 @@
   "version": "20260915-plan-v1",
   "created_at": "2026-09-15T14:07:31.908300+00:00",
   "kind": "EXECUTION_CHECKLIST",
-  "current_step": "A inert library complete; B bounded research complete; C inactive adapter accepted but corpus partial; D fit and F activation blocked",
+  "current_step": "A inert and boundedB complete; C adapter published, class-contract review complete and ONE proposal awaits explicit approval; C corpus12/15 and D/Fblocked",
   "context": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-context.md",
   "active_plan_modified": true,
   "protected": {
@@ -174,7 +174,7 @@
         "accepted independent source/scope receipt or explicit missing status for every required field",
         "no changes to original chronology rejected rows, denominator, DB or operational ledger"
       ],
-      "blocker": "Format/path bridge independently accepted;12/15events, target/history classes unknown, reliability0; missing5000–5006 eligible history/capture/fold evidence; F4datasetfalse/fitfalse.",
+      "blocker": "12/15events; class metadata absent inline; reusable independently reviewed entity/date taxonomy binding proposed but not implemented/approved; missing features/eligible histories/folds remain. No per-game legal regulation requirement.",
       "outputs": [
         "corpus4999-5006/availability.json",
         "corpus4999-5006/features.json",
@@ -186,7 +186,8 @@
         "C-data-assembly.json",
         "C-envelope-implementation.json",
         "C-envelope-independent-review.json",
-        "C-envelope-independent-references.json"
+        "C-envelope-independent-references.json",
+        "plans/TOTOAI-RESUME-20260915/C-scope-classification-handoff.md"
       ],
       "completion_scope": "Inactive lossless format adapter only; corpus incomplete, no training authorization"
     },
@@ -346,10 +347,9 @@
     }
   ],
   "now_without_missing_data": [
-    "A inert library+focused tests",
-    "B RAW adapter+unit tests+single admitted5000pilot",
-    "D versioned fold protocol+synthetic leakage/resource tests, no real-fit claim",
-    "E complete missingness table and robust fallback/duplicate provenance reporting"
+    "Review and approve/reject the ONE documented classification binding proposal",
+    "Continue parent-owned5007scheduled operations; no new experiment on critical path",
+    "Maintain explicit missingness table without fabricating taxonomy/availability/market captures"
   ],
   "ordering": "FirstA scoped library only; thenB adapter/pilot; C verified source availability in independently scoped work; D after eligible evidence, E after frozen outputs, F after separate prospective acceptance. Do not wait onC to implementA/B.",
   "change_claims": {
@@ -364,23 +364,20 @@
     "saved executable scoped plan and machine checklist"
   ],
   "not_executed": [
-    "code changes",
-    "tests",
-    "training",
-    "replay",
-    "data fetch",
-    "DB/Git/scheduler operations",
-    "subagents"
+    "C-SCOPE-ENTITY-BINDING-V1 implementation",
+    "real qualified SportsV3 fitting",
+    "five-arm full retrospective evaluation on4999–5006",
+    "SportsV3 activation"
   ],
-  "next_checkpoint": "Parent5007 19:00MSK; C remaining evidence before D/F; no speculative fit",
+  "next_checkpoint": "Parent19:20MSK then19:30final target; research waits explicit contract approval, no new implementation in metadata publication",
   "execution_checkpoint": {
-    "at": "2026-09-15T18:38:51.407430+03:00",
+    "at": "2026-09-15T19:17:34.774136+03:00",
     "A": "COMPLETE_INERT_PUBLISHED",
     "B": "COMPLETE_BOUNDED_RESEARCH_PUBLISHED_NOT_NATIVE_LIVE_EQUIVALENCE",
-    "C": "ADAPTER_REVIEW_PASS_DATASET_PARTIAL_BLOCKED",
-    "D": "TRAINING_NOT_STARTED",
+    "C": "ADAPTER_PUBLISHED_PARTIAL_DATA;CLASS_CONTRACT_PROPOSAL_AWAITS_APPROVAL",
+    "D": "REAL_TRAINING_NOT_STARTED",
     "F": "NOT_ACTIVATED",
-    "ops5007": "Parent receipts18:00tlsPASS,18:30apiPASS,watcherPID34611fresh18:32:37MSK; next19:00",
+    "ops5007": "Parent-reported19:00/19:10complete166/4980warmupNO_BET;actual-config final-path4testsPASS;consentVALIDto19:50;not freshly checked here",
     "C_review": "C-envelope-independent-review.json"
   },
   "runtime_hash_contract_checkpoint": {
@@ -394,5 +391,24 @@
     "commit": "ea5283dc3e07e95700ac82ffc56e04b480957325",
     "observer_receipt": "watcher5007-hashfix-activation.json",
     "C_excluded_from_runtime_commit": true
-  }
+  },
+  "classification_binding_proposal": {
+    "id": "C-SCOPE-ENTITY-BINDING-V1",
+    "status": "PROPOSED_NOT_IMPLEMENTED_NOT_APPROVED",
+    "handoff": "plans/TOTOAI-RESUME-20260915/C-scope-classification-handoff.md",
+    "implementation_authorized": false,
+    "activation_authorized": false,
+    "next_exact_action": "Explicit approval of isolated team-ID+reviewed taxonomy+validity binding contract, then focused implementation/review; do not search regulations indefinitely",
+    "source_review": "reports/rehearsal/TOTOAI-RESUME-20260915/C-scope-contract-review/review.json",
+    "source_review_sha256": "d3bd3a37d63ad4260f6794434bb1cc5de412676c43c7d1312237e51cf92d1a0e"
+  },
+  "planning_only_not_executed_at_creation": [
+    "code changes",
+    "tests",
+    "training",
+    "replay",
+    "data fetch",
+    "DB/Git/scheduler operations",
+    "subagents"
+  ]
 }
