@@ -1,0 +1,272 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "job": "C-data feasibility only",
+  "completed_at": "2026-09-15T14:15:46.416489+00:00",
+  "status": "CONCRETE_GOAL_HISTORY_AVAILABLE_PARTIAL_RECONSTRUCTION_ONLY",
+  "sample": {
+    "drawing_number": 4999,
+    "drawing_id": 12106,
+    "event_order_db_zero_based": 1,
+    "operator_position_one_based": 2,
+    "event": "Elche — Real Sociedad",
+    "fixture_id": "cmt7202whtllnt107g9xjoh4q",
+    "historical_as_of": "2026-09-07T14:00:02.186014+00:00",
+    "drawing_close_utc": "2026-09-07T14:30:00+00:00",
+    "target_kickoff_utc": "2026-09-07T19:30:00+00:00",
+    "target_identity_basis": "existing stored provider fixture and home/away ids; response teamId and nested team ids agree; no new independent cross-provider approval",
+    "old_run_id": "7210e8b144b76463cce52187b0e0381771ac3fdd43d13125ed3a7a39c76ef2c4"
+  },
+  "requests": {
+    "goal_team_history": 2,
+    "api_sports": 0,
+    "sofascore": 0,
+    "thesportsdb_api": 0,
+    "thesportsdb_public_docs": 1,
+    "llm": 0
+  },
+  "teams": [
+    {
+      "team_id": "cmr7m55u95eg2rx06mp83a95a",
+      "team_name": "Elche",
+      "public_endpoint": "https://api.goal-api.com/v1/teams/cmr7m55u95eg2rx06mp83a95a/results?limit=10",
+      "http_status": 200,
+      "observed_at": "2026-09-15T14:13:25.988664+00:00",
+      "quota_remaining": 882,
+      "raw_snapshot_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-feasibility/goal-public-raw/snapshots/9057a515478cbb2235e346b244417da9a82a898ce28e73d09841224d166af6fd-c203e8cdddfafb0a.json",
+      "raw_snapshot_sha256": "c203e8cdddfafb0a7ac708c2b178e792378a5f7b1014c410f646dc40bc793fd0",
+      "hash_verified": true,
+      "response_rows": 10,
+      "historical_rows": 8,
+      "excluded": [
+        {
+          "fixture_id": "cmt71qlrvsohvt107ul6ueupp",
+          "reason": "AT_OR_AFTER_ASOF",
+          "scores_omitted": true
+        },
+        {
+          "fixture_id": "cmt7202whtllnt107g9xjoh4q",
+          "reason": "TARGET_FIXTURE_EXCLUDED",
+          "scores_omitted": true
+        }
+      ],
+      "history_ids_already_present_in_pre_draw_DB_window": 8,
+      "old_captured_at": "2026-09-06T18:09:33.449079+00:00",
+      "old_source_payload_sha256": "be9e67917baf4904abeea91c707877cd4785a7f1d6ff4d4d07183d7bd279577d",
+      "raw_old_source_reverified": false,
+      "updated_after_cutoff_rows": 2,
+      "field_complete_for_basic_score_features": true,
+      "illustrative_filtered_feature_values_NOT_MODEL_INPUT": {
+        "n": 8,
+        "goals_for": 12,
+        "goals_against": 14,
+        "ppg": 1.25,
+        "home_n": 6,
+        "away_n": 2,
+        "days_from_last_kickoff_to_target": 10.104166666666666
+      },
+      "sample_asof_rows": [
+        {
+          "fixture_id": "cmsvp41119a5zpg078zv153bv",
+          "team_id": "cmr7m55u95eg2rx06mp83a95a",
+          "side": "away",
+          "home_team_id": "cmr7m55rl5eejrx062tzrza9u",
+          "away_team_id": "cmr7m55u95eg2rx06mp83a95a",
+          "home_name": "Racing Santander",
+          "away_name": "Elche",
+          "kickoff_utc": "2026-08-28T17:00:00.000Z",
+          "status": "FINISHED",
+          "regulation_home_goals": 3,
+          "regulation_away_goals": 2,
+          "score_field_basis": "homeTeamFtScore/awayTeamFtScore; no extra/penalty substitution",
+          "league_id": "cmr77dvnt006nrx063v3w622e",
+          "season": "2026/2027",
+          "source_created_at": "2026-08-16T11:02:24.270Z",
+          "source_updated_at": "2026-09-12T12:10:17.841Z",
+          "information_available_at": null,
+          "availability_grade": "HISTORICAL_RECONSTRUCTION_NOT_PROVEN_ASOF_VALUE",
+          "fetched_at": "2026-09-15T14:13:25.988664+00:00",
+          "raw_snapshot_sha256": "c203e8cdddfafb0a7ac708c2b178e792378a5f7b1014c410f646dc40bc793fd0"
+        },
+        {
+          "fixture_id": "cmsp4mt6pu57dpn0662nfx41d",
+          "team_id": "cmr7m55u95eg2rx06mp83a95a",
+          "side": "home",
+          "home_team_id": "cmr7m55u95eg2rx06mp83a95a",
+          "away_team_id": "cmr7m55u15efyrx06ndeg0510",
+          "home_name": "Elche",
+          "away_name": "Barcelona",
+          "kickoff_utc": "2026-08-23T19:30:00.000Z",
+          "status": "FINISHED",
+          "regulation_home_goals": 0,
+          "regulation_away_goals": 5,
+          "score_field_basis": "homeTeamFtScore/awayTeamFtScore; no extra/penalty substitution",
+          "league_id": "cmr77dvnt006nrx063v3w622e",
+          "season": "2026/2027",
+          "source_created_at": "2026-08-11T20:42:31.850Z",
+          "source_updated_at": "2026-09-12T07:22:27.146Z",
+          "information_available_at": null,
+          "availability_grade": "HISTORICAL_RECONSTRUCTION_NOT_PROVEN_ASOF_VALUE",
+          "fetched_at": "2026-09-15T14:13:25.988664+00:00",
+          "raw_snapshot_sha256": "c203e8cdddfafb0a7ac708c2b178e792378a5f7b1014c410f646dc40bc793fd0"
+        },
+        {
+          "fixture_id": "cmsmgy15dkcuwpn06mzzg4b0w",
+          "team_id": "cmr7m55u95eg2rx06mp83a95a",
+          "side": "away",
+          "home_team_id": "cmr7m55r25ee5rx06izw186sh",
+          "away_team_id": "cmr7m55u95eg2rx06mp83a95a",
+          "home_name": "Dep. A Coruna",
+          "away_name": "Elche",
+          "kickoff_utc": "2026-08-17T19:00:00.000Z",
+          "status": "FINISHED",
+          "regulation_home_goals": 1,
+          "regulation_away_goals": 1,
+          "score_field_basis": "homeTeamFtScore/awayTeamFtScore; no extra/penalty substitution",
+          "league_id": "cmr77dvnt006nrx063v3w622e",
+          "season": "2026/2027",
+          "source_created_at": "2026-08-10T00:03:52.918Z",
+          "source_updated_at": "2026-08-28T00:04:25.884Z",
+          "information_available_at": null,
+          "availability_grade": "HISTORICAL_RECONSTRUCTION_NOT_PROVEN_ASOF_VALUE",
+          "fetched_at": "2026-09-15T14:13:25.988664+00:00",
+          "raw_snapshot_sha256": "c203e8cdddfafb0a7ac708c2b178e792378a5f7b1014c410f646dc40bc793fd0"
+        }
+      ]
+    },
+    {
+      "team_id": "cmr7m55u35efzrx06wfbx1eip",
+      "team_name": "Real Sociedad",
+      "public_endpoint": "https://api.goal-api.com/v1/teams/cmr7m55u35efzrx06wfbx1eip/results?limit=10",
+      "http_status": 200,
+      "observed_at": "2026-09-15T14:13:26.401451+00:00",
+      "quota_remaining": 881,
+      "raw_snapshot_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-feasibility/goal-public-raw/snapshots/6f3824f75ed0e448681d875af71bf4d4e1af3a99393e78637d8ed1f3b97d628d-2405bc053831773a.json",
+      "raw_snapshot_sha256": "2405bc053831773acab26314b058666ebd9bcca28534dea20c060908cb2829f9",
+      "hash_verified": true,
+      "response_rows": 10,
+      "historical_rows": 8,
+      "excluded": [
+        {
+          "fixture_id": "cmt71qls9sohzt1070mmyyg2u",
+          "reason": "AT_OR_AFTER_ASOF",
+          "scores_omitted": true
+        },
+        {
+          "fixture_id": "cmt7202whtllnt107g9xjoh4q",
+          "reason": "TARGET_FIXTURE_EXCLUDED",
+          "scores_omitted": true
+        }
+      ],
+      "history_ids_already_present_in_pre_draw_DB_window": 8,
+      "old_captured_at": "2026-09-06T18:09:33.449079+00:00",
+      "old_source_payload_sha256": "e7ec2875f8b2671eb3e9b434e5de735fd1e5dc8ed203cc75fe721179587822dc",
+      "raw_old_source_reverified": false,
+      "updated_after_cutoff_rows": 4,
+      "field_complete_for_basic_score_features": true,
+      "illustrative_filtered_feature_values_NOT_MODEL_INPUT": {
+        "n": 8,
+        "goals_for": 10,
+        "goals_against": 15,
+        "ppg": 0.875,
+        "home_n": 2,
+        "away_n": 6,
+        "days_from_last_kickoff_to_target": 4.020833333333333
+      },
+      "sample_asof_rows": [
+        {
+          "fixture_id": "cmt1fijd279v2pd07jzzt5rcp",
+          "team_id": "cmr7m55u35efzrx06wfbx1eip",
+          "side": "home",
+          "home_team_id": "cmr7m55u35efzrx06wfbx1eip",
+          "away_team_id": "cmr7m55ur5eg9rx06xsiwmt0q",
+          "home_name": "Real Sociedad",
+          "away_name": "Celta Vigo",
+          "kickoff_utc": "2026-09-03T19:00:00.000Z",
+          "status": "FINISHED",
+          "regulation_home_goals": 0,
+          "regulation_away_goals": 0,
+          "score_field_basis": "homeTeamFtScore/awayTeamFtScore; no extra/penalty substitution",
+          "league_id": "cmr77dvnt006nrx063v3w622e",
+          "season": "2026/2027",
+          "source_created_at": "2026-08-20T11:20:23.132Z",
+          "source_updated_at": "2026-09-12T12:15:04.458Z",
+          "information_available_at": null,
+          "availability_grade": "HISTORICAL_RECONSTRUCTION_NOT_PROVEN_ASOF_VALUE",
+          "fetched_at": "2026-09-15T14:13:26.401451+00:00",
+          "raw_snapshot_sha256": "2405bc053831773acab26314b058666ebd9bcca28534dea20c060908cb2829f9"
+        },
+        {
+          "fixture_id": "cmsvp4w1u9ep9pg07iru8ng83",
+          "team_id": "cmr7m55u35efzrx06wfbx1eip",
+          "side": "home",
+          "home_team_id": "cmr7m55u35efzrx06wfbx1eip",
+          "away_team_id": "cmr7m55ux5egdrx06tvjp1at1",
+          "home_name": "Real Sociedad",
+          "away_name": "Espanyol",
+          "kickoff_utc": "2026-08-29T17:00:00.000Z",
+          "status": "FINISHED",
+          "regulation_home_goals": 2,
+          "regulation_away_goals": 1,
+          "score_field_basis": "homeTeamFtScore/awayTeamFtScore; no extra/penalty substitution",
+          "league_id": "cmr77dvnt006nrx063v3w622e",
+          "season": "2026/2027",
+          "source_created_at": "2026-08-16T11:03:05.423Z",
+          "source_updated_at": "2026-09-12T12:12:01.865Z",
+          "information_available_at": null,
+          "availability_grade": "HISTORICAL_RECONSTRUCTION_NOT_PROVEN_ASOF_VALUE",
+          "fetched_at": "2026-09-15T14:13:26.401451+00:00",
+          "raw_snapshot_sha256": "2405bc053831773acab26314b058666ebd9bcca28534dea20c060908cb2829f9"
+        },
+        {
+          "fixture_id": "cmsvp46j59aympg07337ou5a8",
+          "team_id": "cmr7m55u35efzrx06wfbx1eip",
+          "side": "away",
+          "home_team_id": "cmr7fp1wf2n8srx06b3wila7x",
+          "away_team_id": "cmr7m55u35efzrx06wfbx1eip",
+          "home_name": "Real Madrid",
+          "away_name": "Real Sociedad",
+          "kickoff_utc": "2026-08-26T19:00:00.000Z",
+          "status": "FINISHED",
+          "regulation_home_goals": 4,
+          "regulation_away_goals": 1,
+          "score_field_basis": "homeTeamFtScore/awayTeamFtScore; no extra/penalty substitution",
+          "league_id": "cmr77dvnt006nrx063v3w622e",
+          "season": "2026/2027",
+          "source_created_at": "2026-08-16T11:02:31.377Z",
+          "source_updated_at": "2026-09-12T12:09:46.866Z",
+          "information_available_at": null,
+          "availability_grade": "HISTORICAL_RECONSTRUCTION_NOT_PROVEN_ASOF_VALUE",
+          "fetched_at": "2026-09-15T14:13:26.401451+00:00",
+          "raw_snapshot_sha256": "2405bc053831773acab26314b058666ebd9bcca28534dea20c060908cb2829f9"
+        }
+      ]
+    }
+  ],
+  "f4_compatibility": {
+    "current_gate_pass": false,
+    "reason": "fresh captured_at afterasof; field-level historical availability unknown; no complete independent scope/fold receipt; last10window truncated by later games",
+    "can_build_basic_causal_feature_candidates": true,
+    "cannot_claim_full53_features_or_8draw_coverage": true,
+    "missing": [
+      "independent opponent rolling histories",
+      "season-table-asof proof/full historical season coverage",
+      "historical BKmargin and5001–5006market inputs",
+      "exact finish/publication timestamps or archived old scorebytes for strict availability",
+      "backward pagination/date bound support not verified",
+      "full-source provider coverage for remaining targets untested"
+    ]
+  },
+  "old_fixture_history": {
+    "pre_draw_DB_windows": "10+10 fixture IDs and aggregated features captured2026-09-06; all16 retained current old fixture IDs appear in those windows",
+    "raw_hash_reverification": "Native fresh snapshots verified. Two exact old fingerprints absent in defaultcache path checked; no broad search. Old raw bytes/score comparison not verified."
+  },
+  "minimal_adapter": "read-only versioned historical-reconstruction input layer separates capture_time and validated information_available_at, filters strict beforeasof/target, exactIDs/regulation90/terminal, rejects target/future rows, preserves excluded counts/currentwindow truncation and unknownavailability; cannot feed current F4 as FROZEN_HISTORICAL_INPUT without reviewed corpus/time contract",
+  "scope_remaining": "Apply only to this one fixture/two teams. No proof that120events/all53features can be restored. Existing matching frozen raw histories should be preferred to fresh reconstruction where independently verified.",
+  "writes": [
+    "plans/TOTOAI-RESUME-20260915/C-data-feasibility.md",
+    "plans/TOTOAI-RESUME-20260915/C-data-feasibility.json",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-feasibility"
+  ],
+  "production_changes": false,
+  "training_or_inference_executed": false
+}

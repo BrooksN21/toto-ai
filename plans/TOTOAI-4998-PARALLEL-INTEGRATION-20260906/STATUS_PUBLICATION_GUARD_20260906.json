@@ -1,0 +1,15 @@
+{
+  "at": "2026-09-06T18:55:59.675724+03:00",
+  "selected_paths": [
+    "memory-bank/ACTIVE_PLAN.md",
+    "memory-bank/CURRENT_STATE.md",
+    "memory-bank/THREAD_COORDINATION.json",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_STATUS_SUMMARY_20260906.md",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/STATUS_FINALIZATION_CHECKPOINT_20260906.json"
+  ],
+  "staged_diff_sha256": "2575e09b618229cbbaea1c0d74eb21a1abe3863673c3bf3408d275d27ffedbab",
+  "added_secret_or_raw_coupon_pattern_hits": 0,
+  "pending_code_staged": false,
+  "verification": "52pytestPASS1.68s;Ruff10PASS",
+  "expected_pr_head": "b859562cf4dbea42e5041ff90c0be779bdd909ab"
+}

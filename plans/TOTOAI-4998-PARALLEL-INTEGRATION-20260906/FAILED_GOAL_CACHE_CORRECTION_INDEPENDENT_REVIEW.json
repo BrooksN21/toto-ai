@@ -1,0 +1,516 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "manifest": {
+    "schema_version": 1,
+    "expected_head": "1a42f35561416393d5e9068fde330ca54e7466e7",
+    "patch_file": "FAILED_GOAL_CACHE_CORRECTED.patch",
+    "patch_sha256": "f817f2d6a986c4c06c824500e0cb78441928a94a5db839197a1435eb1062368f",
+    "changes": [
+      {
+        "path": "src/toto_ai/sports_stats/goal_probe_collection.py",
+        "before_sha256": "1c1d5378700d1f4563a051142cf21eac66ebb5c1fa39c8c521c774192202eb62",
+        "after_sha256": "5f32c1ca01574e2200cbaea9f9a89d91b8b3993434cab40c6d427934edc1b5e7"
+      },
+      {
+        "path": "tests/test_goal_probe_collection.py",
+        "before_sha256": "f70be1a4a1d22024b291583048e9a50d239901145137c388e00370a40e5ea504",
+        "after_sha256": "214a2c57a86bf60a5c18b74246ea6c56b0c7d79ea2cfcf2f013008db75c3003d"
+      },
+      {
+        "path": "knowledge/goal_probe_failed_cache_boundary.md",
+        "before_sha256": null,
+        "after_sha256": "359ed405f18475521dbe6b39521c4c5d92b224a1b61f491e4e743a0b46d0e7ea"
+      },
+      {
+        "path": "src/toto_ai/cli.py",
+        "before_sha256": "5b11f3c9cc2ac9feaddc6f935150fcbc55eeffba3aefae48640f0b8f4e29f88c",
+        "after_sha256": "bf3188aa7cfa60767404d5fd030673a6d9b529dc6e67d8af8880af9a82fc54f1"
+      }
+    ],
+    "dependencies": [
+      {
+        "path": "src/toto_ai/__init__.py",
+        "before_sha256": "5b191cc228c9112b821fd4ead0cf7de40588ecc82812a6d48c51c48d239aa1a8"
+      },
+      {
+        "path": "src/toto_ai/analytics/__init__.py",
+        "before_sha256": "db98ceb1a73f94eb0ff2904beabe99b6c7b2836fa1703dc1b91cd5f23ceef828"
+      },
+      {
+        "path": "src/toto_ai/analytics/api_inspector.py",
+        "before_sha256": "80f6060f1aabd08940b79f62c3a92bd3f4e80cfa384223cf4b4210ac974dbbcc"
+      },
+      {
+        "path": "src/toto_ai/analytics/data_health.py",
+        "before_sha256": "0b17ba9c9962d896f437ac6bfd90be13e7dea92fad86106fb34f0b766b8f9f8b"
+      },
+      {
+        "path": "src/toto_ai/api/__init__.py",
+        "before_sha256": "42cd35f0390813eff79efded2cfd05769bbc936c8588417f166716fda1abd54c"
+      },
+      {
+        "path": "src/toto_ai/api/client.py",
+        "before_sha256": "47d849eb47df71a5136e3a04c153c7f0cb404eac2c4e927174260ccc567c975a"
+      },
+      {
+        "path": "src/toto_ai/api/detail_cache.py",
+        "before_sha256": "266e2a97d9e42c0808af90c40a73b1c2d5537628d1fa4aa01411be80b1fecdc9"
+      },
+      {
+        "path": "src/toto_ai/api/rate_limit.py",
+        "before_sha256": "0d7210c24c706256dbd6b285c0243cfe2d6f97b0fb0ef39116c7d559b5a95366"
+      },
+      {
+        "path": "src/toto_ai/api/safe_paths.py",
+        "before_sha256": "109743f84b527139caf9e3e8e26a657fc8fe279ea5c64e19824051bbcbf451fe"
+      },
+      {
+        "path": "src/toto_ai/db/__init__.py",
+        "before_sha256": "f9e851864d26ac532cdf9d00148e1dccfea8a569574361f464c0eea87c867347"
+      },
+      {
+        "path": "src/toto_ai/db/models.py",
+        "before_sha256": "ec41d08df9595d6bc9ef361e4093fbea8b6ecfc2645d8c0b2f8392296f2572f2"
+      },
+      {
+        "path": "src/toto_ai/db/session.py",
+        "before_sha256": "6af8659a4be53b686944dcabaf13b00331be3a609a6748ea0629699ec51389a1"
+      },
+      {
+        "path": "src/toto_ai/ev/__init__.py",
+        "before_sha256": "e5f4a53393fec933aa12e999b3dd4bb8193912e169d73e1faac8bcb76017b3e7"
+      },
+      {
+        "path": "src/toto_ai/ev/drawing.py",
+        "before_sha256": "6b3e8306d82217ee31f4f4a6dc596228a9e2936b46d39de35e5efbc063f25b86"
+      },
+      {
+        "path": "src/toto_ai/ev/models.py",
+        "before_sha256": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5"
+      },
+      {
+        "path": "src/toto_ai/ev/package.py",
+        "before_sha256": "7f360752587e370e2b2e46592adfa650e0cebafc840aeff82cf503504a6357a9"
+      },
+      {
+        "path": "src/toto_ai/ev/package_quality.py",
+        "before_sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb"
+      },
+      {
+        "path": "src/toto_ai/ev/prize.py",
+        "before_sha256": "074216114b710945b9fd08cfa3923f2ca83e2201b4c047d6b51529b426f386da"
+      },
+      {
+        "path": "src/toto_ai/ev/ternary.py",
+        "before_sha256": "eee2a0c97e04eba467abdbf7d7622a0447b2e61a08e9793c4e0416e60e17477d"
+      },
+      {
+        "path": "src/toto_ai/external_odds/__init__.py",
+        "before_sha256": "45f854d807c7f3339f3cfd1bec24395370cc29104558c36ff30616857f3d8453"
+      },
+      {
+        "path": "src/toto_ai/external_odds/countries.py",
+        "before_sha256": "1ad2458ecc4b658ec9738a560e30c608cd2c241affc225e78c8df903decca8f7"
+      },
+      {
+        "path": "src/toto_ai/external_odds/domain.py",
+        "before_sha256": "c09141bb061c76c5e2628f3edfc289ccc1bb5a64d999087c11c6f5e174fa3797"
+      },
+      {
+        "path": "src/toto_ai/external_odds/eligibility.py",
+        "before_sha256": "f0dbd942fd1641a04382af8d6cc0a3b20830b5075d527183af22f48f247a130d"
+      },
+      {
+        "path": "src/toto_ai/external_odds/goal_api.py",
+        "before_sha256": "026e393656eb24728f9c25a1563f4e0615c0811d468644d59a7962645e938db9"
+      },
+      {
+        "path": "src/toto_ai/external_odds/matching.py",
+        "before_sha256": "8156642a2eb0cee8be4d255ecfee22ff767ecf9ae1907ea8d577d0d12dbdfd50"
+      },
+      {
+        "path": "src/toto_ai/external_odds/schedule_evidence.py",
+        "before_sha256": "913020a1aa32a2dac5c05a2735783927da11b57678be8b99094fd8dcdff9c4ec"
+      },
+      {
+        "path": "src/toto_ai/external_odds/schedule_source_collector.py",
+        "before_sha256": "51901ca513206dc154a8c211e702f7a4b4a4283a9c3068907ff3ccd752fafe0c"
+      },
+      {
+        "path": "src/toto_ai/external_odds/targets.py",
+        "before_sha256": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497"
+      },
+      {
+        "path": "src/toto_ai/external_odds/team_registry.py",
+        "before_sha256": "9a05035e29b4693d419c5a7a3b583796f9c8bc03b801aff0ceb2bbf8167eccc4"
+      },
+      {
+        "path": "src/toto_ai/external_odds/thesportsdb.py",
+        "before_sha256": "ef26f20a1edfaf983b67cfbd19eb0a2939d85ae683ef1272b7277704660c1301"
+      },
+      {
+        "path": "src/toto_ai/optimizer/__init__.py",
+        "before_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "path": "src/toto_ai/optimizer/brief.py",
+        "before_sha256": "b17d112b405c8c522dcf5b024c77474648db9593257306042fa9f72bd317b554"
+      },
+      {
+        "path": "src/toto_ai/optimizer/category_hit.py",
+        "before_sha256": "1eb7c228033ac49f9eb0262182c9563481c228f3fe611b90a0d4ea95d8bb29f3"
+      },
+      {
+        "path": "src/toto_ai/optimizer/cover.py",
+        "before_sha256": "9415b4b1d6f1141944e6d7b4a2579af45c2ff2ce3b162383ab06d1d4625a03cc"
+      },
+      {
+        "path": "src/toto_ai/package/__init__.py",
+        "before_sha256": "167b055e9f0871ca14612f287beb895aed26a397874ba6458da13cf87af2686d"
+      },
+      {
+        "path": "src/toto_ai/package/audit.py",
+        "before_sha256": "f36da1153d6f44e0cae00ab5f42781c415bce377d9531c4efdf68e7df8c8fc00"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/__init__.py",
+        "before_sha256": "d254f69250488f262d9fc3f7035ff8da58157ea76c669316a18da7897b6f2698"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/domain.py",
+        "before_sha256": "cdebd1a59f67240b3a3973fa5ba8d22b9ee48224515976e5808f9c1dc9bc07b8"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/features.py",
+        "before_sha256": "db786d81f27620afe23137a488f025e690a13029f30804591070fbdecc098821"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/goal_probe_research.py",
+        "before_sha256": "590d2eea7df0e3febfff2e66c6675064eae44622eb0c6ea57670227d9fd1fdbb"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/preliminary_comparison.py",
+        "before_sha256": "98e32a6dbeb2955383ff988b83278fb90cf201bde34a591b5f374896745468a8"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/probabilities.py",
+        "before_sha256": "c93258430ab96035cfa0097c16fe56b99d59f35451c4a0b39ad92dcf10cc69f9"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/storage.py",
+        "before_sha256": "3342b6ab721180c5e3a96bc932f5e8c062a7ce0ccf53369e1a09df78a3a85478"
+      },
+      {
+        "path": "src/toto_ai/totobrief_time.py",
+        "before_sha256": "f1d665535bc60cc265bca351bbebab8e81d675136a0a2e1a2a3189a292ab7d9f"
+      },
+      {
+        "path": "src/toto_ai/sports_stats/history_backfill.py",
+        "before_sha256": "026ad030ee54b48b07741c69e0e40ddca89a7375c44877f28042ca072f7da742"
+      },
+      {
+        "path": "tests/test_goal_probe_research.py",
+        "before_sha256": "8d7b34f14e61d46d8b53cc0a58a3e40e015372746a6e5015bc74cc5591a0fea8"
+      },
+      {
+        "path": "scripts/project-git",
+        "before_sha256": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269"
+      },
+      {
+        "path": "pyproject.toml",
+        "before_sha256": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6"
+      },
+      {
+        "path": "AGENTS.md",
+        "before_sha256": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224"
+      }
+    ]
+  },
+  "manifest_sha256": "3875ba7fbabfb6ef2036c9217d139d6341ada54258e81205f51757ee41b42d05",
+  "patch_sha256": "f817f2d6a986c4c06c824500e0cb78441928a94a5db839197a1435eb1062368f",
+  "strict_guard": "Initially PASS4/49; now BLOCKED by intervening dependency change; no apply attempted",
+  "mismatches": [
+    {
+      "path": "src/toto_ai/sports_stats/goal_probe_research.py",
+      "expected": "590d2eea7df0e3febfff2e66c6675064eae44622eb0c6ea57670227d9fd1fdbb",
+      "actual": "73f2c05dd2f2a4f417f12fcffbd431cbdece1c08ab7ad629575786fb5143c93e"
+    },
+    {
+      "path": "tests/test_goal_probe_research.py",
+      "expected": "8d7b34f14e61d46d8b53cc0a58a3e40e015372746a6e5015bc74cc5591a0fea8",
+      "actual": "c0cf0f854b8614757dc16fa13a954191b2294acbc27b12e05d2a980cb3fed292"
+    }
+  ],
+  "changes_during_tests": [],
+  "temporary_overlay": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo",
+  "pytest": {
+    "command": [
+      "/Users/turshevr/toto-ai/.venv/bin/python",
+      "-B",
+      "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/run-final.py"
+    ],
+    "timeout_seconds": 25,
+    "exit_code": 1,
+    "stdout": "........FF........\n=================================== FAILURES ===================================\n_______ test_interrupted_metadata_publication_can_recover[attempt.json] ________\nplans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py:35: in test_interrupted_metadata_publication_can_recover\n    result = fixture._ensure_cached(tmp_path, output, 45, request_budget=3)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/cache_review_fixture.py:460: in _ensure_cached\n    return ensure_goal_probe_input(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:99: in ensure_goal_probe_input\n    return _retry_failed_goal_probe_input(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:160: in _retry_failed_goal_probe_input\n    return _retry_locked(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:207: in _retry_locked\n    claim = _json_object(claim_path)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:824: in _json_object\n    value = json.loads(path.read_text(encoding=\"utf-8\"))\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/__init__.py:346: in loads\n    return _default_decoder.decode(s)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py:337: in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py:355: in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\nE   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n_______ test_interrupted_metadata_publication_can_recover[outcome.json] ________\nplans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py:35: in test_interrupted_metadata_publication_can_recover\n    result = fixture._ensure_cached(tmp_path, output, 45, request_budget=3)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/cache_review_fixture.py:460: in _ensure_cached\n    return ensure_goal_probe_input(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:99: in ensure_goal_probe_input\n    return _retry_failed_goal_probe_input(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:160: in _retry_failed_goal_probe_input\n    return _retry_locked(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:248: in _retry_locked\n    outcome = _json_object(outcome_path)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:824: in _json_object\n    value = json.loads(path.read_text(encoding=\"utf-8\"))\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/__init__.py:346: in loads\n    return _default_decoder.decode(s)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py:337: in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py:355: in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\nE   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n=========================== short test summary info ============================\nFAILED plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py::test_interrupted_metadata_publication_can_recover[attempt.json]\nFAILED plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py::test_interrupted_metadata_publication_can_recover[outcome.json]\n2 failed, 16 passed in 0.62s\n",
+    "stderr": ""
+  },
+  "ruff": {
+    "command": [
+      "/Users/turshevr/toto-ai/.venv/bin/ruff",
+      "check",
+      "--no-cache",
+      "--config",
+      "/Users/turshevr/toto-ai/pyproject.toml",
+      "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py",
+      "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/cli.py",
+      "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/test_corrected_targeted.py",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py"
+    ],
+    "exit_code": 0,
+    "stdout": "All checks passed!\n",
+    "stderr": ""
+  },
+  "runtime": {
+    "pytest_exit": 1,
+    "imports": {
+      "toto_ai.api.safe_paths": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/api/safe_paths.py",
+        "sha256": "109743f84b527139caf9e3e8e26a657fc8fe279ea5c64e19824051bbcbf451fe"
+      },
+      "toto_ai.api.rate_limit": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/api/rate_limit.py",
+        "sha256": "0d7210c24c706256dbd6b285c0243cfe2d6f97b0fb0ef39116c7d559b5a95366"
+      },
+      "toto_ai.api.client": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/api/client.py",
+        "sha256": "47d849eb47df71a5136e3a04c153c7f0cb404eac2c4e927174260ccc567c975a"
+      },
+      "toto_ai.api": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/api/__init__.py",
+        "sha256": "42cd35f0390813eff79efded2cfd05769bbc936c8588417f166716fda1abd54c"
+      },
+      "toto_ai": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/__init__.py",
+        "sha256": "5b191cc228c9112b821fd4ead0cf7de40588ecc82812a6d48c51c48d239aa1a8"
+      },
+      "toto_ai.api.detail_cache": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/api/detail_cache.py",
+        "sha256": "266e2a97d9e42c0808af90c40a73b1c2d5537628d1fa4aa01411be80b1fecdc9"
+      },
+      "toto_ai.external_odds.domain": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/domain.py",
+        "sha256": "c09141bb061c76c5e2628f3edfc289ccc1bb5a64d999087c11c6f5e174fa3797"
+      },
+      "toto_ai.totobrief_time": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/totobrief_time.py",
+        "sha256": "f1d665535bc60cc265bca351bbebab8e81d675136a0a2e1a2a3189a292ab7d9f"
+      },
+      "toto_ai.external_odds.targets": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/targets.py",
+        "sha256": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497"
+      },
+      "toto_ai.external_odds": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/__init__.py",
+        "sha256": "45f854d807c7f3339f3cfd1bec24395370cc29104558c36ff30616857f3d8453"
+      },
+      "toto_ai.external_odds.goal_api": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/goal_api.py",
+        "sha256": "026e393656eb24728f9c25a1563f4e0615c0811d468644d59a7962645e938db9"
+      },
+      "toto_ai.sports_stats": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/__init__.py",
+        "sha256": "d254f69250488f262d9fc3f7035ff8da58157ea76c669316a18da7897b6f2698"
+      },
+      "toto_ai.external_odds.eligibility": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/eligibility.py",
+        "sha256": "f0dbd942fd1641a04382af8d6cc0a3b20830b5075d527183af22f48f247a130d"
+      },
+      "toto_ai.external_odds.matching": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/matching.py",
+        "sha256": "8156642a2eb0cee8be4d255ecfee22ff767ecf9ae1907ea8d577d0d12dbdfd50"
+      },
+      "toto_ai.db.models": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/db/models.py",
+        "sha256": "ec41d08df9595d6bc9ef361e4093fbea8b6ecfc2645d8c0b2f8392296f2572f2"
+      },
+      "toto_ai.db.session": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/db/session.py",
+        "sha256": "6af8659a4be53b686944dcabaf13b00331be3a609a6748ea0629699ec51389a1"
+      },
+      "toto_ai.db": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/db/__init__.py",
+        "sha256": "f9e851864d26ac532cdf9d00148e1dccfea8a569574361f464c0eea87c867347"
+      },
+      "toto_ai.external_odds.countries": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/countries.py",
+        "sha256": "1ad2458ecc4b658ec9738a560e30c608cd2c241affc225e78c8df903decca8f7"
+      },
+      "toto_ai.external_odds.team_registry": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/team_registry.py",
+        "sha256": "9a05035e29b4693d419c5a7a3b583796f9c8bc03b801aff0ceb2bbf8167eccc4"
+      },
+      "toto_ai.external_odds.schedule_evidence": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_evidence.py",
+        "sha256": "913020a1aa32a2dac5c05a2735783927da11b57678be8b99094fd8dcdff9c4ec"
+      },
+      "toto_ai.external_odds.thesportsdb": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/thesportsdb.py",
+        "sha256": "ef26f20a1edfaf983b67cfbd19eb0a2939d85ae683ef1272b7277704660c1301"
+      },
+      "toto_ai.external_odds.schedule_source_collector": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_source_collector.py",
+        "sha256": "51901ca513206dc154a8c211e702f7a4b4a4283a9c3068907ff3ccd752fafe0c"
+      },
+      "toto_ai.sports_stats.goal_probe_collection": {
+        "path": "/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py",
+        "sha256": "5f32c1ca01574e2200cbaea9f9a89d91b8b3993434cab40c6d427934edc1b5e7"
+      },
+      "toto_ai.package": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/package/__init__.py",
+        "sha256": "167b055e9f0871ca14612f287beb895aed26a397874ba6458da13cf87af2686d"
+      },
+      "toto_ai.package.audit": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/package/audit.py",
+        "sha256": "f36da1153d6f44e0cae00ab5f42781c415bce377d9531c4efdf68e7df8c8fc00"
+      },
+      "toto_ai.ev.models": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/ev/models.py",
+        "sha256": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5"
+      },
+      "toto_ai.ev.prize": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/ev/prize.py",
+        "sha256": "074216114b710945b9fd08cfa3923f2ca83e2201b4c047d6b51529b426f386da"
+      },
+      "toto_ai.ev": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/ev/__init__.py",
+        "sha256": "e5f4a53393fec933aa12e999b3dd4bb8193912e169d73e1faac8bcb76017b3e7"
+      },
+      "toto_ai.analytics": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/analytics/__init__.py",
+        "sha256": "db98ceb1a73f94eb0ff2904beabe99b6c7b2836fa1703dc1b91cd5f23ceef828"
+      },
+      "toto_ai.analytics.api_inspector": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/analytics/api_inspector.py",
+        "sha256": "80f6060f1aabd08940b79f62c3a92bd3f4e80cfa384223cf4b4210ac974dbbcc"
+      },
+      "toto_ai.ev.ternary": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/ev/ternary.py",
+        "sha256": "eee2a0c97e04eba467abdbf7d7622a0447b2e61a08e9793c4e0416e60e17477d"
+      },
+      "toto_ai.ev.package_quality": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/ev/package_quality.py",
+        "sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb"
+      },
+      "toto_ai.optimizer": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/__init__.py",
+        "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      "toto_ai.analytics.data_health": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/analytics/data_health.py",
+        "sha256": "0b17ba9c9962d896f437ac6bfd90be13e7dea92fad86106fb34f0b766b8f9f8b"
+      },
+      "toto_ai.optimizer.cover": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/cover.py",
+        "sha256": "9415b4b1d6f1141944e6d7b4a2579af45c2ff2ce3b162383ab06d1d4625a03cc"
+      },
+      "toto_ai.optimizer.brief": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/brief.py",
+        "sha256": "b17d112b405c8c522dcf5b024c77474648db9593257306042fa9f72bd317b554"
+      },
+      "toto_ai.optimizer.category_hit": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/optimizer/category_hit.py",
+        "sha256": "1eb7c228033ac49f9eb0262182c9563481c228f3fe611b90a0d4ea95d8bb29f3"
+      },
+      "toto_ai.ev.package": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/ev/package.py",
+        "sha256": "7f360752587e370e2b2e46592adfa650e0cebafc840aeff82cf503504a6357a9"
+      },
+      "toto_ai.ev.drawing": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/ev/drawing.py",
+        "sha256": "6b3e8306d82217ee31f4f4a6dc596228a9e2936b46d39de35e5efbc063f25b86"
+      },
+      "toto_ai.sports_stats.domain": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/domain.py",
+        "sha256": "cdebd1a59f67240b3a3973fa5ba8d22b9ee48224515976e5808f9c1dc9bc07b8"
+      },
+      "toto_ai.sports_stats.features": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/features.py",
+        "sha256": "db786d81f27620afe23137a488f025e690a13029f30804591070fbdecc098821"
+      },
+      "toto_ai.sports_stats.probabilities": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/probabilities.py",
+        "sha256": "c93258430ab96035cfa0097c16fe56b99d59f35451c4a0b39ad92dcf10cc69f9"
+      },
+      "toto_ai.sports_stats.preliminary_comparison": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/preliminary_comparison.py",
+        "sha256": "98e32a6dbeb2955383ff988b83278fb90cf201bde34a591b5f374896745468a8"
+      },
+      "toto_ai.sports_stats.goal_probe_research": {
+        "path": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/goal_probe_research.py",
+        "sha256": "73f2c05dd2f2a4f417f12fcffbd431cbdece1c08ab7ad629575786fb5143c93e"
+      }
+    },
+    "blocked_actions": []
+  },
+  "harness": {
+    "bootstrap": "import importlib.abc, importlib.util, os, sys\nfrom pathlib import Path\nMAIN = Path('/Users/turshevr/toto-ai')\nTEMP = Path(__file__).resolve().parent.parent\nblocked = []\nallowed_python_subprocesses = []\nclass MainOnly(importlib.abc.MetaPathFinder):\n    def find_spec(self, fullname, path=None, target=None):\n        if fullname == 'toto_ai.sports_stats.goal_probe_collection':\n            return importlib.util.spec_from_file_location(fullname, TEMP / 'overlay/sports_stats/goal_probe_collection.py')\n        if fullname == 'toto_ai':\n            return importlib.util.spec_from_file_location(fullname, MAIN / 'src/toto_ai/__init__.py', submodule_search_locations=[str(MAIN / 'src/toto_ai')])\ndef audit(event, args):\n    if event.startswith(('socket.connect','socket.getaddrinfo','socket.gethostby','socket.sendto','os.system','os.posix_spawn','os.exec')) or event == 'sqlite3.connect':\n        blocked.append({'event':event,'test':os.environ.get('PYTEST_CURRENT_TEST')})\n        raise AssertionError('O1 finalization denies network/database/process escape: '+event)\n    if event == 'subprocess.Popen':\n        executable, argv, cwd, env = args\n        if executable != sys.executable or not isinstance(argv,(list,tuple)) or len(argv)!=4 or list(argv[1:3])!=['-B','-c'] or cwd not in (None,str(MAIN)) or env is not None:\n            blocked.append({'event':event,'test':os.environ.get('PYTEST_CURRENT_TEST')})\n            raise AssertionError('Only exact inherited-guard local Python cold-import tests allowed')\n        allowed_python_subprocesses.append(os.environ.get('PYTEST_CURRENT_TEST'))\n    paths = []\n    if event == 'open' and isinstance(args[0],(str,bytes,os.PathLike)):\n        p,mode,flags=args\n        writing=(isinstance(mode,str) and any(c in mode for c in 'wax+')) or (isinstance(flags,int) and flags & (os.O_WRONLY|os.O_RDWR|os.O_CREAT|os.O_TRUNC|os.O_APPEND))\n        if writing:paths=[p]\n        elif Path(os.fsdecode(p)).name.startswith('.env') and not Path(os.fsdecode(p)).resolve().is_relative_to(TEMP):\n            raise AssertionError('Real secret-file reads forbidden')\n    elif event in ('os.mkdir','os.remove','os.rmdir','os.chmod','os.utime'):paths=[args[0]]\n    elif event in ('os.rename','os.link','os.symlink'):paths=[args[0],args[1]]\n    for p in paths:\n        if isinstance(p,(str,bytes,os.PathLike)) and not Path(os.fsdecode(p)).resolve().is_relative_to(TEMP):\n            blocked.append({'event':event,'test':os.environ.get('PYTEST_CURRENT_TEST')})\n            raise AssertionError('Write outside temporary verification root forbidden')\nsys.meta_path.insert(0,MainOnly())\nsys.addaudithook(audit)\nO1_MAIN_GUARD_INSTALLED=True\n",
+    "runner": "import hashlib,json,sys\nfrom pathlib import Path\nimport sitecustomize,pytest\nassert sitecustomize.O1_MAIN_GUARD_INSTALLED\nTEMP=sitecustomize.TEMP\nMAIN=sitecustomize.MAIN\nsys.path.insert(0,str(MAIN))\ncode=pytest.main(['-q', '-s', '-p', 'no:cacheprovider', '-p', 'no:logging', '-o', 'pythonpath=', '--tb=short', '--import-mode=importlib', '-c', '/Users/turshevr/toto-ai/pyproject.toml', '--rootdir', '/Users/turshevr/toto-ai', '--confcutdir', '/Users/turshevr/toto-ai', '--basetemp', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/pytest-final', '/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py', '/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/test_corrected_targeted.py::test_crashed_attempt_lease_blocks_then_recovers', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/test_corrected_targeted.py::test_retry_window_spends_crashed_full_reservation_then_recovers', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/test_corrected_targeted.py::test_quota_reservations_survive_unknown_interrupted_requests', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/test_corrected_targeted.py::test_failed_retry_budget_exhaustion_is_truthfully_terminal', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/test_corrected_targeted.py::test_active_lock_excludes_even_expired_lease', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/test_corrected_targeted.py::test_failure_status_and_cli_wiring_are_truthful', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/test_corrected_targeted.py::test_concurrent_callers_have_one_collector', '/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/test_corrected_targeted.py::test_deadline_failure_stays_terminal_after_cooldown'])\nimports={name:{'path':str(Path(module.__file__).resolve()),'sha256':hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest()} for name,module in sys.modules.items() if name.startswith('toto_ai') and getattr(module,'__file__',None)}\nfor name,data in imports.items():\n    path=Path(data['path'])\n    assert path==TEMP/'overlay/sports_stats/goal_probe_collection.py' if name=='toto_ai.sports_stats.goal_probe_collection' else path.is_relative_to(MAIN/'src/toto_ai'), (name,path)\n(TEMP/'runtime.json').write_text(json.dumps({'pytest_exit':code,'imports':imports,'blocked_actions':sitecustomize.blocked},indent=2))\nsys.exit(code)\n",
+    "environment": {
+      "PATH": "/Users/turshevr/toto-ai/.venv/bin:/usr/bin:/bin",
+      "HOME": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo",
+      "TMPDIR": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo",
+      "PYTHONPATH": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/bootstrap:/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo:/Users/turshevr/toto-ai/src",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+    }
+  },
+  "prior_probe_sha256": "2c353df5a56a0b6832747ca89b6c9f473a17ac89d5bd6e8cb2fab62c26de90ff",
+  "new_probe_sha256": "f32dcc4fd9f7dc5611a5f2ab350af0c40ed80fd89f9352355c0b7d87417f2837",
+  "applied": false,
+  "initial_run": {
+    "pytest": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/python",
+        "-B",
+        "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/run.py"
+      ],
+      "timeout_seconds": 25,
+      "exit_code": 1,
+      "stdout": "........FF........\n=================================== FAILURES ===================================\n_______ test_interrupted_metadata_publication_can_recover[attempt.json] ________\nplans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py:35: in test_interrupted_metadata_publication_can_recover\n    result = fixture._ensure_cached(tmp_path, output, 45, request_budget=3)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/cache_review_fixture.py:460: in _ensure_cached\n    return ensure_goal_probe_input(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:99: in ensure_goal_probe_input\n    return _retry_failed_goal_probe_input(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:160: in _retry_failed_goal_probe_input\n    return _retry_locked(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:207: in _retry_locked\n    claim = _json_object(claim_path)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:824: in _json_object\n    value = json.loads(path.read_text(encoding=\"utf-8\"))\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/__init__.py:346: in loads\n    return _default_decoder.decode(s)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py:337: in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py:355: in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\nE   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n_______ test_interrupted_metadata_publication_can_recover[outcome.json] ________\nplans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py:35: in test_interrupted_metadata_publication_can_recover\n    result = fixture._ensure_cached(tmp_path, output, 45, request_budget=3)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/cache_review_fixture.py:460: in _ensure_cached\n    return ensure_goal_probe_input(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:99: in ensure_goal_probe_input\n    return _retry_failed_goal_probe_input(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:160: in _retry_failed_goal_probe_input\n    return _retry_locked(\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:248: in _retry_locked\n    outcome = _json_object(outcome_path)\n/private/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py:824: in _json_object\n    value = json.loads(path.read_text(encoding=\"utf-8\"))\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/__init__.py:346: in loads\n    return _default_decoder.decode(s)\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py:337: in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/json/decoder.py:355: in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\nE   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n=========================== short test summary info ============================\nFAILED plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py::test_interrupted_metadata_publication_can_recover[attempt.json]\nFAILED plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py::test_interrupted_metadata_publication_can_recover[outcome.json]\n2 failed, 16 passed in 0.72s\n",
+      "stderr": ""
+    },
+    "ruff": {
+      "command": [
+        "/Users/turshevr/toto-ai/.venv/bin/ruff",
+        "check",
+        "--no-cache",
+        "--config",
+        "/Users/turshevr/toto-ai/pyproject.toml",
+        "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/sports_stats/goal_probe_collection.py",
+        "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/overlay/cli.py",
+        "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/toto-cache-corrected-review-0_78o7zo/test_corrected_targeted.py",
+        "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py"
+      ],
+      "exit_code": 1,
+      "stdout": "E501 Line too long (93 > 88)\n  --> plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py:37:89\n   |\n35 |     result = fixture._ensure_cached(tmp_path, output, 45, request_budget=3)\n36 |     assert len(calls) == 1 and not result.reused\n37 |     assert candidate.goal_probe_failure_status(ValueError(\"integrity\"))[\"retryable\"] is False\n   |                                                                                         ^^^^^\n   |\n\nFound 1 error.\n",
+      "stderr": ""
+    },
+    "new_probe_sha256": "d850e2f9a689b52169b66073e2c91307711835dc60c97141af45b8ca8d6d5cd6"
+  },
+  "reviewed_at": "2026-09-06T12:55:39.100548+00:00",
+  "verdict": "REQUEST_CHANGES",
+  "findings": [
+    {
+      "priority": "P1",
+      "path": "src/toto_ai/sports_stats/goal_probe_collection.py",
+      "lines": [
+        207,
+        248,
+        310,
+        356,
+        875
+      ],
+      "summary": "Crash between creating and writing attempt.json or outcome.json leaves a partial committed-name JSON; all later invocations fail decoding before lease recovery, permanently non-retryable. Exact publication-window fault injection reproduces both."
+    }
+  ]
+}

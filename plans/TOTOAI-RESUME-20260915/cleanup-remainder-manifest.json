@@ -1,0 +1,2752 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "at": "2026-09-15T14:30:02.436400+00:00",
+  "role": "submission/archive cleanup only",
+  "classification_counts": {
+    "PUBLISH_HISTORICAL_ARTIFACT": 398,
+    "INELIGIBLE_VISIBLE": 3,
+    "LOCAL_RUNTIME": 55
+  },
+  "items": [
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-02def5841c47ef778fc4.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "3006175421c1ed42f7ca26053f954cf1488e576c7463c110799c172159ce0b79"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-1cedb749bf1c1c582b27.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "b9108263e892caceb32047fac593c7a95b19a9a475d98616ffc58d954e930068"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-35aad0a7882a176a5edb.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "5fc29f08d4d59abde1d5932b12ce30a0cffca4822c94640223e5a3b16a167c28"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-42cfc64430fcfa71cdc1.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "43a7de0daf2498cc00598e1a84ef500b5ff0c7ee6fdd679851d431b1287bfafd"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-49054ac129216a525943.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "722597865034cbf1ae8aef54598e81fc47c582a577fe174269ecf1cb51f55710"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-49ccda05d30d38477123.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "b8f7d399dfb35b735ec107ad58005b3066258a947877225ad4266763da440d62"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-507bedacb0ad623fe041.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "bf2d2f30931b5c067359616357e97b5603f2d666b3853ea2d351a18a74c8ba17"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-aafe7bb9cd912c6bdfe6.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "2180ae6c586a67312978326cb9c6610609509482d69671e71a8e9416375fb810"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-ab74d4d9ceb33379b4b0.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "81d8729182937e0afff6f03760d6cf43da3968df24b76ba3fe917e9f460e5eaa"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-bd0bf8ac49ffddd85ff9.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "40efe59e9aae8bf8677fe6fad2260fff1fb9fc5b8f4e7054e897f6c7fbd28bc1"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-bddd830a1ba487849571.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "400f8ed5ad703b7e30cd8a063b1efa8e15e6b754ea55cc495aa8bd2234041cd2"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-e21eee20d501e2b2bad4.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "9e805fba050317edd1e3b1d90829a8577a29044cd421ae80d53b1a7bd1d8e093"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v2-e86bffc48d95d3becb12.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "eef632916abc518f3b1c721d9fe0b9466678481e95e110197322773116e48dba"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-077629b60ec87f1771da.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "96e12e6c9b8a7969e74e5ff90a2b80004a2c43fc6f5362ce39d19ba3fd4b4650"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-095a1f28847a0873bafc.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "b11e3750244f55b5e718f61aa1636a329914c14398bb461f668c396a1d404482"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-0cc6487df7f432f3462c.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "6ae8762cf792fd99ae22ddc6ef3cea512c86d3b36f674ea5a45e06364f0a3015"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-2c1c77d89cc85b9ce731.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "4b3efa9c1193b466e4a2651681fb59483a3d6d05a0fb55de570e4282200271e2"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-32f8ebbece9b720a4772.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "7fb67517d75a9f924207d1a2b48c39672392fa68e6621eb00ff4501b0fe852b5"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-a0260172b8b9b481ed57.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "aeba48c7dcfeb756a21538b7d61049491c064e5a1512afe9cf594607f5c6e829"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-b7579ffe9ae5509bec6b.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "75bed4afd4bf0dd6bb8f5b7f29679160f0dd4d3c0d3eada5953825117f446488"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-c82bd962cbe361fae4e5.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "57d9fdf15dfc51ae45c78e51582ce0415382aec33a3b5f957fb07a89d28a83ab"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-c8eaa27efc9e927f39c0.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "8842febb96d2740b9b99f5be2796e47a09eb245267da05c7f200f511b77871bc"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-d6e3f5f130f50da00ff6.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "7e9094df6431cd16ad2a0d55fc32cc2d5501ea656a09fab8307868735491ab4f"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-eba3bb6c8b0a0e5ca39e.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "9384f71892b56570676541147d58791418d4d909375f8a5de042c8f9aeaba035"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/auto-independent-consensus-v3-f5628d27a9e34db2b85e.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "cfa08730a84915d33cba3ec14b3a220c1709a35948c144703d262bb8a3b9840f"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-01.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "efc73348a2d6f8f044d0a8a8315c5678da8db22b8204d91c8aff3d5a2ce693c5"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-02.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "7162286fbc5a10714315e76372284a5e6150ecd0599fa52b484877f472c951b7"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-03.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "567c547b988c8cb41ddc15272b70b7478bde3750131995e2b78184a4b2551f54"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-04.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "c2b4c1fde86bd79dcfe89abd316cf0c133fc8c08bc21a20609de05c06b85f272"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-05.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "83d6637cefb811e3cbefaec8b3f7a9ceadf0eee7d4df5ec9a79529e1db7ced46"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-06.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "5033f4acb4534bf8a46a90092ffe159672be8d39c4ffa4bae03a80146f6a7182"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-07.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "3f13e9cb1986d71e8faa8e6995e7762ed9b3fbdcf3f5437e030cb2ef2c9c5276"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-09.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "d3585cb3dda838018a8155348ebeae2d436d08c9635d056386c4a94f727358ee"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-10.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "c34bc74f2c42ed57b4a1b44d27b5027d6da9a4232880946e672e6415f8c1b869"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-11.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "df0c3c4d13c41e10e8f3cffe9595d8ed532ce0ecb362e2868ebda7ff0f761001"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-12.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "56f0c9261e967edcec26f3ff27951d2bcc44c57faac80a0faef6bb36b0201cf6"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-13.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "7db24dd6aba10e07f8df232440b849d8c2ffad848fb4c2b598b6db6c7981ba2f"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-14.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "cef7c910726906af935b2cf98552db57ff794534d15f511b584b169acc8de070"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-event-15.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "89c3a0c189410a6e498b0fa80e9084a650ccbec5505967d4d7f606d17c189760"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-4993-manifest.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "0f278c51ccc1b54e0fa6274e0e0a7ca79f51c56e93033f593bfd5754db15ea47"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/manual-5007-event04-20260915.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "54b4d9c03e2475dee3f98164f285905e8f38720b5eb2cbd49d8b543977b31c32"
+    },
+    {
+      "path": "data/schedule-evidence/reviews/reviewed-4992-event180353-mlsz-club.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "historical unpromoted schedule evidence; publication does not add to ledger or approve current use",
+      "sha256": "fb0eab8c0272ab7d8d20a941058dec982ede98fbe8f1aa66f7c25575287279c0"
+    },
+    {
+      "path": "memory-bank/OPERATIONS_HANDOFF.md",
+      "class": "INELIGIBLE_VISIBLE",
+      "reason": "historical 2026-09-02 startup instructions conflict with current compact role protocol; needs separate owner-scoped memory normalization, not blind publication",
+      "sha256": "f5e092673274f82834e4c52646885034dc9cb52003ff40893a3be0281b09b831"
+    },
+    {
+      "path": "plans/TOTOAI-4992-4993/context.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "2c8e7f876e9f80580e4d478b76882aa9dee2a730f086e9ded4a0bef474c84359"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4996-payout-evidence/comparison-before-actual-receipt.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private financial evidence, retain locally",
+      "sha256": "ed59d2bc0fcbe272dd80aa217b342fece79ca092aa58c5f5b0a6f00bac82a375"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4996-payout-evidence/owner-screenshot.png",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private financial evidence, retain locally",
+      "sha256": "f06d881c38086baaf01fd161b576ae833c28ec1116912345e366bcb4bca6ddfe"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4996-payout-evidence/package-equivalence-proof.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private financial evidence, retain locally",
+      "sha256": "88b87c881e472645cc8df58df612224dfe80f879a3a2d2ad0525e11691854ff7"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4996-payout-evidence/payout-evidence.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private financial evidence, retain locally",
+      "sha256": "2e3fedd9767f32925da14e4e799e743f9c7e885d918d67c252306779d965313c"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4997-loaded-scheduler.txt",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "44b851a5236e58040d7eaa89b5f9364f0ef7d4b534b8dfc5bfb5123acbe37bf0"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4997-operations-readiness-checkpoint-20260905.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3a7778e3f68b7564ab26f62d164e7eccdde9aaf9931fc5a6e6cea4a7b1b36513"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4997-parent-delivery-receipt-20260905.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "80796e07c29c9a3409a81fa236f9bc9e939b384ca84b04144a57308e317e7665"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4997-readonly-readiness-20260905T1409.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "a46529774f96ff0ea51d9870e49c68ace5b29e046bd654c15fcc6c5a6a481392"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/EVIDENCE_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "52faf8418b06f512f2dff05ed4edec27f86ec9d0184bb088a5389df39398f3a4"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/access-errors.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "267cef510abf9df7d9a578c6a914d0c8185a785794712060fb472b55c2d325ab"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/evidence-handoff.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "cdb253afea2db91aaf1473f49409add0d92f7116b5cf7da1dc6fa26cde33fe2e"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/existing-sofa-search-REJECTED.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "e9bbc751caf9137b4a4e7c39aa834881d317d240abd310d5a305e4551341a07b"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/input-event9-context.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "64ae024da4bdde91392352aa260cac4f6ba55904c478a2c22701218877eb214f"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/manifest.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "e763a8a2ff8e2540e349a21e23889603d98207eb4e4327d272b3491afc40e183"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/official-row-extracted.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "22b524a4df77209fdf662860aec65d104783fe17000861566727339fa8e1d9d3"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/skbeveren-voordeeltarief.capture.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "a5318e4b16cea56c542bbf6a95d1ab6e9f3f1f29ce9cbb5bd463076e959b1521"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/skbeveren-voordeeltarief.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "8b31688338c3c952774cf0e14360063c20d3c3d6230b5a9e728ac833ae0c7363"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/sofascore-event-extracted.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "9c8ec41880f6c5c626e804f4edaffbb993ad03039fd354e91af7a074b83cad80"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/sofascore-exact-match.capture.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "da04ccfa2a576f9a9d7ebf9216678db65bb0edfdf26e96342f2923d27fd7878c"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/sofascore-exact-match.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "6e961a8dfde9fe5a7ac9a372be5593a7a83c67ebf892492db5779c598eb410fb"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/viasport-fixture-1558625.capture.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "d83620cfd8ae41776466cb4132a18d4e9aee103d62211d12b3e0440ccfeac430"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/viasport-fixture-1558625.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "23aaea93237a2d05b065bcbed294af20a3580feb0fe58c1e2aa9742d17a957b8"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/viasport-sportsevent-extracted.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "89278fa6c042eed84e004a6313e4072e3fa7907dc00e24bd326a4e4b522728ad"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-registration-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "50bee4305cd1bf5d9e1f0c83284a1f47082e258731a36aa5a8dbca88e33132e4"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-registration-receipt.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "a39f27646464b0e3045a03625fb325d4b0bb2132233c04fd85f8126c4bff672e"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-existing-plan-success-observed-20260906.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "59d65f6d9daa727765289e2b617f24843d00036dfe930bd19ebf4f673cdc59a6"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-experimental-release-authorization-receipt-20260906.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "e4667e1d49e5f99189e92719aaa99d92d4cef9a807b03bd53077733901070d25"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-experimental-release-authorization-receipt-20260906.md",
+      "class": "INELIGIBLE_VISIBLE",
+      "reason": "owner-consent handoff: private authorization content, not a source-code artifact; immutable bytes preserved",
+      "sha256": "f1aebbef992facda2586d87ece8d009dd2ef800d86a02cf40deafc68f99618e2"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-owner-exact-consent-20260906.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "152e7b736a8f529dffccf27c78303d7ab0a3ec9af42007d816eac5d30c7c5e36"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-watcher-setup-receipt-20260906.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "fd6a368c34694a7c984338e1ff007a53b0074d26d339dac308e44b96b0f75b40"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-watcher-setup-receipt-20260906.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ebe121dae9f76379bead0ede9339ad006e0c96b9a44ba681b480b2386c8034f5"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/IMPLEMENTATION_REPORT.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "9e8fff7c24f05c782aa503c1ab6592cff94845336719fdb873e71a9fc20124ac"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/ORCHESTRATION_CONTRACT.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "fe388e527df89934df604744b96f18591e69dd1126529401e7e687830c01df81"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/active-command.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "ad1ff9f660fa8caa0956d1a9fbef9d04b3784ccad7813be87e219dc11b7b5e64"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/context-current.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "baee23c6454090626cea10df1ed9b351bbdb897103b6ad06d4254f4404bdbf87"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/context-handoff-original-codex-tasks.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "d1582af7c1a58a98d2edc10b63bbe05b3a78eadaa64aaf34e1b4f1e4e7067d79"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/context-handoff-recovered-worktrees.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b29e38c385044d039a932e44e73b838f2bd6affc94f47dfb89ab7e9ff70167d2"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/diagnose_retry.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "042309b451f6b0280d20dd1f04715ba908141f6bc2a3b0963a82348331d79c23"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/implementation-owner.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "85f6db84c53f93edca24dbb4141aa64ff4798a34dfc259d2c5f06deafdc0d381"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/laliga-primary-source.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "e1fa98bfb46a93f7917472e60f34cc79bade97482a0e3132e35cb8498c7fb721"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/laliga2-source.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "10e13090fe8e20d03c6c3aeb07d824f5763f0626a9e009421fd1fe3f5f04a20a"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/loaded-sidecar-watcher.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ea0410a7d880609396aee286d9029c6c3ee43f777bed582f4d269111f15eb166"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/native-task-permission-only.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "dcdba88b0fa485d58aa8665b1fe293678378470757a2994a600dffe8b4abab05"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/native-task-permission-working-delta.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "2d6a72d03cfba8bf1a07b4f414b1f6405b92de3b7f6b28b826721007b43fd1ae"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/native-task-policy-checkpoint.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "4b83c012123069300e2304b1fed49a4b80b19e3f38d15f1eeeb739de965c8f94"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/native-task-policy-finalization.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "31a3ce162a6bfad9ef5a1c3142724cea3bd1311ecb7e1267836ea9951ef11bc6"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/native-task-policy-finalization.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "731c48e8312e97a20b048c28cd4eb23071b7a4b52823384562959a83ccf0bef0"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/native_permission_policy_checks.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "0e3293f03d17e06605aefbf79098dc50d5fb17a4f07f7001c0dffbfa30209190"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/noon-recovery-checkpoint.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "157c4beb9515111b3b4649fcd4c73e9a3052d3d897ffc2b4684160924ef5b48a"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/noon-recovery-final-verification.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "e009f7e283b1e69a030070cde0fa475291640ce66155afc12f8fa515fbcacf7b"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/noon-recovery-integrity-proof.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "54bfa44bb415ea602cb81d841c9f7824672787305c415dd8661f5edb50ed7806"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/noon-recovery-originals/retrospective-plan-12096.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "623a2afa4b43b391c328043068286ccce12c70aaf7e226dac9627bed8dda62d5"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/noon-recovery-originals/retrospective-status.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "c71fde9ef890ff9eff67cb656a3f38a700d1abcc045394cd7f57d1db5010ebc3"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/noon-recovery-originals/run-retrospective-12096.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "4502a892ca86986149025a34f55de1f41385493ac512f95fcb51ce70304c8f1c"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/noon-recovery-report.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "45d5d727fdbaa6a8465db0628dff1fb4beae9d05991d28df262d442bdc9835c3"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/noon-replay-provenance-proof.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3b116c9e5b26e3c96fc77d74a1ac72f1f34824d91dc0911ded73b7a82a0c3bc3"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/noon-retrospective-runner.diff",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "b6c219b5f4bca7af2e6149bfb1f2176ef102f27562cee56cf41ee7f9aad310cb"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/original-task-empty-turn-diagnostic.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "c6f2e55b2c147170f5558fa0b6ed9a1707a5592679e145f5b1be2d876cf116a1"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/original-task-empty-turn-diagnostic.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "0018b37f6e3c120f8e8acec96782fd9803119548a4dd766f80650450bcc1cf62"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/original-task-id-findings.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "fc3d9431e566ae2578be2ac2ac10b4f5afcedb064ff3e44c158c4cb1867f6c0d"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/owner-authorization-source.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "2abbc16361c35e6a8df693dfed9c1092135671931f8bac4c78ea59f2fcc5c0c0"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/plan.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "5173cb909fef7e872d76e0c94d04fa9798abc682ff32d7977a147a1a2339ab5e"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/premierleague-source.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "606e4e90c029bab669883894222697106908d450579e0a71781d15613692f143"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/prepare_verified_reviews.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "2741bd63ca9600fab57633d0bcc3f2351688cadce97fc6549e02046149ae868c"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/preserved-worktree-report-paths.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b1cb2cddd6110b14b740925a436638b0fba2922f40fb1fbac17d09d10ca00a2b"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/qpr-source.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "0d0b531f69e032bdebfe1811bea6b0ce692f23f7b7d43ea7b8273d5062c08862"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/recovered-reports/MODEL_READINESS_REPORT.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "6999e0e506aa37bb90fc6bfb330ede64e57776dc506f8b13c649d50a2ffe73b7"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/recovered-reports/TOTOAI-4996-4997-RECOVERY-20260904-PRE_PUSH_REVIEW.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "8c2ddceb082d7c2b3ff44db02c7a4304831db45f15244a4f967d8341562ae8ac"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/recovered-reports/provenance.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ff02b2868781f57c9e813ab3b21f828398a0c2d9691db8dafd808c697a74b2c2"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/research.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "7f53aa052e16923a5dc91f6dd8ea52ef67599a693de74e0105589034746e5d0f"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/retrospective-plan-before-recovery.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "8332eb305b7e30756f4544a78221608efdc7f9596f4bd30fde0c16345629d9a0"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/retrospective-review-binding-evidence.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "400005b26f60be65dbd33f13cd89253bf902a0ead87abf7fcc8b35ce35b6c784"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/retrospective-review-deployment-proof.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "2fe0436e54a2b8622ce572c411357e425f8589def2ae24e971d92c40549239c4"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/retrospective-review-fix-checkpoint.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "47495b0ae54b74f44417e8525214d5c0e436fedc7cf8c163a0d429b843a4cc04"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/retrospective-review-fix-report.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "bc5b215c8040f508175f236b0bd7ab81b476ae94200db52e956870454bff8e11"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/retrospective_smoke_checks.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "12b4836a540b47e8e86928dfaee865c5369e717879e1524da160468ac1fb44bf"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/retry-evidence-before-review.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "da4df624ca7005a89e2b6216eb625b411bba2590a826e2daed0a815b7e534c0b"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/retry-evidence-current.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "04f7824a836f7f3949aa0a41c500f43b8eaa0992ac3e09559cf43b008dcc4ca7"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/review-binding-originals/manifest.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "028c94ef5a6b646f9772c605de7b9ebdab6f8c28a5047c4185127c62c66d4fa6"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/review-binding-originals/retrospective-plan-12096.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "a06ad42094f0dbf8b3a172417b04e7215185d9822a6a27b69cf16d4022fa13fe"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/review-binding-originals/run-retrospective-12096.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "674ce13d70f93d0d16b02d5915cb3d0ad46bf08d7908671f39d20747b579379d"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/run_production_prepare.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "bc87a1e22c39d55f2d9c553ba5b284605413746a0c3c9a76b55a691ed48b3632"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/scheduler-status-4997.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "81bebd712c4a8863a645c8acba7052592f089fa307976603828b802db1887a22"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/sheffield-source.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "fa7ef97a8fda25b2b3febb2e319c5311c684791c4d60b5bc8591f929f8473c18"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/shinnik-source.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "725d31128eaefa683ac3844034c400899c6537e7c87e2129079b7fbe565e4cb4"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/source-review-summary.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "7b1ca202570854cafc49423a87c693710b89ece7444b502f6f840cf5590df916"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/status-20260905-noon-context.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "8e21d75a821c01a8e9008cc4703aa697c2612f24b398184381025978428c266e"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/verification-command.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "e8903de3eba9c531e374dda5456466786872026014fa6b175bd40feadb9ed9e1"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/worktree-readonly-status-20260905.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3b2979b52cb4de27b6150347c0d61bc998797259f2d195f867baa74bad85869e"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/worktree-wrapper-checkpoint.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "25c71f07f20305a1148db3317abac20d2d3c7d0c64b879df24024d49fa025cf0"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/worktree-wrapper-final-proof.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3a8b236c0442c45059579d84fbb68718ee96fa514df9a485bcde4e12637731c4"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/worktree-wrapper-recovery-report.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "41d44e1e09e1999477c637ea70c9276a75972f9bdb1b892810bf3f8094091d1b"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/1730_RELEASE_GATE_CONTEXT.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "debd5c8ff6aacf8af92997161a32cf9a212dd56c172ab9c42b73f12c016911b4"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998-fresh-goal-collection-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "46b9abbf00f35797f5c455653a179773bdf0c281745bf778dbd79438e4cc23ea"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998-fresh-goal-collection-receipt.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "5898dcb2f1571191f29147e158bf634b434717f648495c5e267a03649db0d614"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998-sidecar-wrapper-before-12727d8a0cb15fb0.sh",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "12727d8a0cb15fb019856cf4b0dc1b25fa66efec76b2f19b53cda7e35e24bd6a"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998_CACHE_WRAPPER_OPERATIONAL_INTEGRATION_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "7b268c65cd53593ee012d8a3cb684fd4b4f05cc1e554ac51a7d1ffa36e76df4f"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998_CACHE_WRAPPER_OPERATIONAL_INTEGRATION_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "10584f0301d845261168724ce5a93e5ba712e6051efa9ffaa830de64010f2fc6"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998_NONFINAL_DIAGNOSTIC_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "254bdede70d9ef9a058817ba6308acc2935266f8b82e243be6dbd710ce3991ee"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998_NONFINAL_DIAGNOSTIC_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "29c1663ce52c81165512a0d100f1b4ac7da3c3bfb9e97103ac400b959fbb10ac"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4998_NONFINAL_DIAGNOSTIC_SUMMARY.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "83adbb2c534c6ac9d9b6dc8716e4dd5bfc7e2a1058a477e85c626d5788a2b2ad"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-activation-preflight-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "c6867f65abd47cbe1391b123da330bb5c4376b77f2c2fe6a03d600435a8f9c5f"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-event12-review-apply.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "429ab4dd3109687c69b7ae9500d8907248759494b593fee6ada74f61fa14e220"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-event12-review-dryrun.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "8c8b71c1bd77108df2c3ab3a646490ab328bcdcee6af34ab8d36a8e13ec109b4"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-event14-review-apply.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "cf4a697bb14b26cf3cb47bb86f5d084f4a7f08f82faf004310b26493502503c0"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-event14-review-dryrun.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "00d78e4660aa9f4377d429ac13033cbd9ea0265c4b46fd6aedb678c1e036db40"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-ledger-before-03a650359c57f727.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "03a650359c57f7278a7c5c176f102dc0fb6a749f5c7949a10d6a534c30c1a3c6"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-ledger-before-malta-dd69c20073b5a9e8.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-ledger-verify.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3f4b7909dd729cb3e9aa638b4d36ebeaf4c6cc2783218958dca04df4f727ff06"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-live-source-captures-01.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "103b7c031e67a8bbc6efa0db2c722844c2b404e60fda8dc191f6432d7894cceb"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-live-source-captures-02.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "efb0d357cd2f4fb7320fb8712535987fd07fadb9e5083672abfe1b688fdfe679"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-malta-apply.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "78dacb5360316b3d02de79cef8cfeaf3b844a52745c38af5bbbd23eba116c5e9"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-malta-dry-run.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "9931e9574beae9cd55640db84219c39385377346f7deffd7349d26556c5bc025"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-malta-registration-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b7a4707a17bb5cab573e25606edc29adf8accece245de7eac1d4686d98dea1d9"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-malta-verify.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "c573f2e44cb904ad96ffc823a5dd9280d86a23fa533fed9511469d7b3d8c3e1b"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-review-registration-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "f8330ee67a2c9ddf0ffc6852acd9bb929f8010abd2dc540cc0002b4d9ff0f604"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-review-validation-manifest.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "d3d3ccd8f36757357290cde70c1064ea5014481c1c8e4d60a220ba6ffd26bb9c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-reviewed-consumer-validation.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "96c7a46fe1ca68d3441f936dbe8ad265b63c13fe9432fc94ce758c127db36b83"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-watcher-setup-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "db67a2dd363ad56ed9888c07650ccf11619dda132a52e377b8b748b45e86860f"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/ALTERNATIVE7470_NATIVE_FEASIBILITY_20260907.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "d016b88ea44e0ab463182e284f9cdb8cf0e6614b30fb149c660dd4f24e2aa9d4"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/ALTERNATIVE7470_NATIVE_FEASIBILITY_20260907.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "50ad677fbaa957cf389e8e4c4f96156d44e35680d7c264a4920f7f636d53d212"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_MAIN_INTEGRATION_REVIEW_20260907.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "8afcde2f8006e2b855a0bfc8aaaa44837d8b786b7365026ac9501c04c6da21de"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_MAIN_INTEGRATION_REVIEW_20260907.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "24030068faad3df4d066ce7d52d130816069837281b298cedee04f2fda89d36d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_PUBLICATION_RECEIPT_20260907.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b3f8f9859c9f8b7adbbe1e29a9b8b851c854ac68a4bcb141f8c16186e8f812c5"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_SANITIZED_MEMORY_PUBLICATION.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "fd174de9374839f5cae3ef4284054e1c83b4c8701e3b2f35f01db02ef11c3b65"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_BUILD_VERIFY.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "df5f25116fe506579c4666b2583b51500f270f850dc7abebd92401e34f9d5587"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_CANDIDATE.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "75bd7b86efcd20329375ad40b45055a2a75d7ca0fc107d5fb1f888af47abde1c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_CANDIDATE/knowledge/goal_probe_failed_cache_boundary.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "cc37805ed471921516e8846b8d98d8239b201e986bde70cb797b89bc8fd05687"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_CANDIDATE/src/toto_ai/cli.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "bf3188aa7cfa60767404d5fd030673a6d9b529dc6e67d8af8880af9a82fc54f1"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_CANDIDATE/src/toto_ai/sports_stats/goal_probe_collection.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "a340762a34bf8c2f8e2257feb01b29d5e3553b3dc5bf0d44fd6b784b22aa7814"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_CANDIDATE/tests/test_goal_probe_collection.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "a56288231cd906b28c00665e7071c5b2c3dd8f474d0c96efb568b24415adb8e3"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_CANDIDATE_MANIFEST.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "261317be54879aec997cb7d755354afb6ecc3e2e4500db85020ab866866cbcae"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_DELTA_FROM_F817.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "0a4cc7d84aface3b98bfa07d3660f8e8b420ac4ad9d9e60feb62b32bfaec3968"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_IMPLEMENTATION_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "5797240f4a240bcf9a846de70aae4e92ef4ce2dc8c4f7ddc727ecfef04d6f39d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_IMPLEMENTATION_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "8dda957e20dc9c83f0a264266ef75608ee72442988decd3b33a563418f39040f"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_INDEPENDENT_REVIEW.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "24fd6a9ce5731d3eb3871a98af78d39920642718de91da7e15b62540f98a456e"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_ATOMIC_INDEPENDENT_REVIEW.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "c4bc22ab32f0bb83ff8e86931b38fe4c627d43ad58c5c8fc7ec11d70132be475"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_BUILD_VERIFY.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "fb75e3a01525a7dbefffbe57811298550765d68b6380c8a0711b36f001c82f70"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_CANDIDATE.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "e914a0976e6434198ee4f2164c2877debf1caa33b20c959ed5d282b65aa05597"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_CANDIDATE/knowledge/goal_probe_failed_cache_boundary.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "dcb8fbdcf10d066e4db622c4dd53359ec86dc8fb8194af05e2675568902dfdd0"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_CANDIDATE/src/toto_ai/cli.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "bf3188aa7cfa60767404d5fd030673a6d9b529dc6e67d8af8880af9a82fc54f1"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_CANDIDATE/src/toto_ai/sports_stats/goal_probe_collection.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "703d7e8cee03130d6b2ed26391ba5e0b370252cb31b32e340328b8a439f7ae80"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_CANDIDATE/tests/test_goal_probe_collection.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "3bc0e70bd1bfb1471e3fe26fce1bee18f24e5cf0e84570d544368b0f83e6575a"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_CANDIDATE_MANIFEST.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "cfe66c650cb36821a681ee53cd439755f143f4df6eb4db8bc4da6a1b1c026181"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_DELTA_FROM_75BD.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "11b2d765d90a87120d2111d63773dd478d768ed3bc809e1c52818c7ba12c7af4"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_IMPLEMENTATION_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3f7300e4e52f3f23ffa33a71d5141124fb3c7471d9d3f7f7a58f282640fd4fa8"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_IMPLEMENTATION_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3b092bc88b452f2a337fb3a0998574b9653deb2286b0913aa7596972588013ab"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_INDEPENDENT_REVIEW.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "37ca10946853950afa38639562304e6f3b45a42cb1289d7b959117462f815dd8"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CACHE_DURABLE_INDEPENDENT_REVIEW.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "759cd481d279262ef297b287ff9003a333e451dc2f25c8af8f49e77354ae2aa6"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CONSENT4999_20260907_HANDOFF.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "63bab7883d1fc2a7b0c20f74ea9380715d708817e33c5e3dc49c59ae1217e207"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CONSENT4999_20260907_HANDOFF.md",
+      "class": "INELIGIBLE_VISIBLE",
+      "reason": "owner-consent handoff: private authorization content, not a source-code artifact; immutable bytes preserved",
+      "sha256": "ebbefb3be3d1396c231c1b78647dfb533a9aa55172b5d449ca0212473a03a1b8"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CONSENT4999_20260907_PRECHECK.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "eb314cf56ae8fc72e8b7b4733b130fed8a17f24f49a1f0b8cb9732c0e1512bb9"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CONSENT4999_7470_OWNER_INTENT_20260907.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "cb3d83b6f11b3a39ced6cc4b67cccf3c248cd7c97ff2ed55260fbadf55386733"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_CANDIDATE.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "444c24f3febeec344cd75b5777bdf92d610a2346f216cc893d9c0239b4df8ebe"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_CANDIDATE.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "bb6c7de16e7201a6bf5a4f45997403ca0437c0bfdaed67254930da6892f9876f"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_CANDIDATE02.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "43aa7b494fd5fd86441eb511eae44128975e56f338ba90895827538f44914a80"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_CANDIDATE02.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "f244c0873f5c43dce193af093fc7ddf3656f78753580ea6ba7f4c5b903cd2579"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_CANDIDATE03.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b6b7f7d5c23673ca26f3242a7e6d9aefa59075924ddb09509b3585d3ed19eb00"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_CANDIDATE03.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "041bcc6eeaacb22e55c9400619b63e62efa35606c1265ee38257b81e83f9051c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_DELTA01_TO_02.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "15ad627bc37ba9e895aae0123ce564f01ecb27e1e1f2a7c816ce844bb0617788"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_DELTA02_TO_03.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "bcf32fa34683af2a4731bed1869dfe2f726c3fd645a452f3bd525bc417a95981"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_IMPLEMENTATION_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "89e0dae7ed5b1f0d78f17b97eb7944a3707e47f75f0b3899ff8f9f6688444d0a"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_REVIEW_FIX02_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b97dabdfa9f5430fb5f2a869f25c2bed93c8db616f4905fce16ab47bade7fd1c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_REVIEW_FIX02_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "a47764a47bed75ed16e668cfff15e93072f12d00997d1e271e9ce8baf7bf976f"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_REVIEW_FIX03_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "5f4fb9969f46d60dea308c3055ac1aceb391b26747ba394acb9d2906ed434c58"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_REVIEW_FIX03_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "e82bc464eb0adf75626eadce01d488f07f2c00a4f8260cdf23b46a1b77fbe6e7"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY/bootstrap/sitecustomize.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "2d57a9f7f007ed87421b0ab94222bcafd946c6fa91a562f4996ce1f231a53792"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY/checks.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "75d96dcafbc376693e063655eeb52330d05ed595a517383e3a7c08cf5003a710"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/before/skills/operator-delivery.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "dd162263d9770b9acdab477320144882317525423ad23bcd743ad6cc0116cce7"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/before/src/toto_ai/operations/scheduler_delivery.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "72be5e7ff454dbdde7a5fdc4e806f75bf1bd5d954df56a8ba3dc18e838fe5829"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/before/src/toto_ai/operations/scheduler_status.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "a80bc0c217eb238a85cf95733754aac6d2dc132f9d208328d27025e14171898a"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/before/tests/test_scheduler_delivery.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "9a068bdea39f81b429ae39c4bdeb0654f52bda8ed1200e6feec299c77a82c2ee"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/bootstrap/sitecustomize.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "98db5c781ae7c5716ce40d4c43f5c8d6207e1afe66d84afa81e29e77ac2104f2"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/checks.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "7e67aceace6325f809cc5170666519e245541293fdf3926b336d0f10e47716e3"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/test_independent_delivery.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "da536419c426c42a36df20c1a94f2b34f4f9e0af850224a868d31ad66cfed745"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/before/skills/operator-delivery.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "baff396b6e89dea186bcf36596b9b595ff40d6f445262293d588b0286ca874cf"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/before/src/toto_ai/operations/scheduler_delivery.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "44222cbda709ee2c5c58c3bedb27ccc18a247c9b93395e85f51aca0cfd4a0357"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/before/src/toto_ai/operations/scheduler_status.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "22216e4925061394aa00e9fa2adf9120698fb81a9d3444046070a5500d6b7930"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/before/tests/test_scheduler_delivery.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "dc2eb3ef15acafd26c91f1e80caf7651f970bd65779e0a24214162a367fb3744"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/bootstrap/sitecustomize.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "42f028fb4866637b72a500d74923a6b8e4a49041c67f3be28477d088a5489026"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/checks.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b798f7f0d3619e9c774b25317d4517e148005c3c8e5e5c3c2df4b0c4e2d80c2a"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/red-command.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "40ef0fb427b0b3a797c733686db00cd25f1498bdbace8d4fc0f99ca62437d2c3"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/test_independent_delivery.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "4a4bb4b0a66f48f1864168ef875e752c61c98cd00eae0477e19e0c18f12b7cce"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DRAWING4999_SOURCE_GAP_HANDOFF.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "74042d0a824add196d6b0b1394ab4b19f2bf1429683f94d54ee1bfab71b8ff03"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DRAWING4999_SOURCE_GAP_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "9a950d7c7a8a3889617f409dc60bfab0e90705861e1870e0e6a75144ffcf0f1d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DRAWING4999_TIMING_CONTEXT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "70da4864ab4f1b31a4d3bebe783d5d21257fced155899ddfbd5de5bd6ec14f03"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DRAWING4999_TIMING_CONTEXT.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "89b92521ee5f4b66e91b36894bbd1adf278c4f42cdc762ce963ac92bc184a480"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/F4_REVIEW06_STATUS_PUBLICATION_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ed2fb80a90ac43b5c21a42fa0c5ee4994cc8695f8a0f5ce3f8cba53455c25749"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FAILED_GOAL_CACHE_CORRECTION_INDEPENDENT_REVIEW.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "21fdf1f8eb5f4aa672e1c68b4b2c7153d33d652421513fb7e9257093c043c80b"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FAILED_GOAL_CACHE_CORRECTION_INDEPENDENT_REVIEW.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "df5b3d4828fd6f0bc8d8ebbcac9c85e3ff3064b969f17cc6f3958032a69eebed"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FAILED_GOAL_CACHE_INDEPENDENT_REVIEW.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "cb2d889a801d20f493fe8d3aaa94df823be824d0dff0cc2add06d7abb6a1f3a7"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FAILED_GOAL_CACHE_INDEPENDENT_REVIEW.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b4b7ad0d0b9f6473ddc4d1b165f323bdfe545d13fdedbe50807432a43a5cc6b6"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_READY_MERGE_PUBLICATION_RECEIPT_20260906.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "13f09536a689a5d0f59e4aeb45ffc4fe355b74387885e6675a99526fe347bbd6"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_EVALUATION_PROFILE_MAIN_STATUS.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "9fab3688b11403552ac4b453e4f1349632d7c73f2e9352d75e357505e8b37096"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_MAIN_IMPORT_ONLY.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "4791fff536022e32177246110105f544380e140f2dc75bc6a102d265ef66e760"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_MAIN_IMPORT_ONLY_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "e07ddba6ae7357334f1cc16f228b8475909b03b9974649b8691ae3e140d47eaf"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_MAIN_IMPORT_ONLY_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "4b365c70329c30c1994440b52fb9ff74972238fd78a92321ece822541bd108b2"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_MAIN_INTEGRATION_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "264eba0beff3ba78b4c1e7299bae74f3ccf758368fd6cf4f32b17a6573019705"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_MAIN_INTEGRATION_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "a4850327976fbac8b9377a086bb31fb34f6fe20fe8f8beb6cd0e2afdeaa96439"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_4998_NONFINAL_DIAGNOSTIC_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "55bd737726e8561bf2f8a6f12f5957664ebb5c35af49a66f0eb196a8ce9bce71"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_4998_NONFINAL_SUMMARY.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "8a7ef2f9506316c3eefd430588447685be32c8f83952d52853e07c4a3f5ec5e0"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_ADOPTION_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "71b5adc0269480f5981e9c8da774aeb7dcf32091b0ee8d1fe6d8d1c89be8d265"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_CHECKPOINT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "0c5061e9cf60059840359aab78fe129a23218fb25833df7ab5c5216fd3d4b965"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_VERIFICATION/bootstrap/sitecustomize.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "5293b82e9baa868a581e69fee38e2aac515b644972516106e3836dd01337043e"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/LIVE_OPERATION_4999_STATUS.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "c8755fa220fcba257202ebd990dae767cb76d77ead82fefbcdbe7100e87eef1e"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MAIN_OPERATION_STATUS.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "8632c736ebb2f23b538947d70c882154bbd74cc2f821510f2340b2b2353cff4d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MERGE_READINESS_PR22_FILES_20260906.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "bfbad4c09b113b960ea16b9c7e3c6046f60fce734fc13581e61ea8927d03fb55"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MERGE_READINESS_PR22_SNAPSHOT_20260906.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b04e17d021a6cd175fb41184a7d6547e66ab1d39d41f25ea7b5c82f297e68a49"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/NEXT_DRAWING_AND_POSTMORTEM_STATUS.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "bee939f6479a0f209ac40647d76c3f22666e1a376b4d42d639874f30676365fb"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/NEXT_DRAWING_AND_POSTMORTEM_STATUS.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "9850e990bf14e26eba110484ae245df244a9473102b7899ca3e341ffeb9fede3"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_GUARD.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "60b2461d800be31ff849f4fd551ccf78d44f7656b2287dd7164973c01d67ff25"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_VERIFY/bootstrap/sitecustomize.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "e911495b2b9422f40b825c388d7c90647d1237b430c595940b79d3c71df30a19"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_VERIFY/postmortem-correction-verification.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "1b9cdec8271af94ded26bd6f2e4d1e355f995c2a00fde8953443f8940f82cfba"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_VERIFY/verification.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "eceb521b38a384dbf85f42e2b7788c1e9a1097c750677150780468ffd38a8437"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_REMOTE_VERIFICATION.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "0033dfbeae7be6f8fc9f6a527ebe5509527e89e380f4c753e6c50daf48dc5cfd"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "64bf4f61bdc4b6d03bdbf521c4523b23c7ecea65b22d2d4642f44c44324d5e5b"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_1800_STATUS.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "81e7469077e4293f5662ef9de257c635615d7e6e489310285710b2c147996bc7"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_FINAL_DELIVERY_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "450f6e0513c135e134f5a074b576e3a76ad31f19af456c60f813ae960fe5511a"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_FINAL_EXPIRY_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "e1b724de2ceb175e818695203624686f336ed97b0de643cb26b0ee7a9803d44b"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_FINAL_RUNTIME_DIAGNOSTIC_20260906.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "8b52e137c7392a162b56275279be6aec6fb37cebfd30f49fd3722420fc997c30"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME02_IMPLEMENTATION.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "152c92c8e068e971b5c926dc70234c2b57c3815c3396ac0ba195b56d5d46bbab"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME02_IMPLEMENTATION_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "88bb47aebe41589ce200faa3a41680f38f0bb22e411d74d5aae64018278e1367"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME02_IMPLEMENTATION_MANIFEST.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "1fbdbd82c0872f7f0b319c23570cc195b03ad70126d12ba0fb9f7171cd60321b"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME02_REVIEW_FIX.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "1dfeb4fe709a8ed619619b3166dbd6930105598a24efe621f79dfe9a43468087"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME02_STATUS.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "cc55c885add947941931c396c0f93f86d3d6003680847014fe0e2b2da3874121"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME_FIX_STATUS.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3254056e78af0df9961a908a1bead35465de23bd3fb2aa2abc9e984a19e3eecc"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME_IMPLEMENTATION.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "ce96d1f2f2888eb77359cb659a7ed59846b66c3b9d407cfb56300baf60cc97de"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME_IMPLEMENTATION_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "e66e466bb3cbe9559e6a76f787995b474d99d1a81678102a66ac2edf04d6f3ab"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME_IMPLEMENTATION_MANIFEST.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "788dcf893147e1a924df04ecdbf1d48408eae954e4d9792a011dc1654dd8a7ce"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM4998_20260907.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "1b6766676fed51b50b5c47c98365f6eaa8085a6da10a812e9fda2f5d4b9fa8d7"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM4998_20260907.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ba0d40be5079d86717ce9f3f9fa0620034e76244d8438d4d038fb7f9b62c62f4"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM4998_20260907_STATUS.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "7c66bb3f53aef6aa4d41120548170728034175072d6bf6bddba99678a4562e43"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PREFLIGHT4999_RETRY_AUTHORIZED_HANDOFF.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "98ad90227b2d9dd4ffb2a75ffd4f4cdb72b7052861cd8ca8f08d95b6ed66a0a6"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PRIMARY_4998_BEST_P13_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "dbc7e6a61a7c6d0b7b0e163228fefdc0095621f992f14211f20e0ce017311b73"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PRIMARY_HIGHEST_P13_RECEIPT.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "4c1e80171d7611de6ada23dc345c244ac3691e7f0b7b1ec91ec18a2212dd0a3c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_LEFTOVER_LOCAL_SCOPE.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "54f5d99902987395b0ef90193bd9007a86c4a835fdf1a7c1d4f3478d23f7be41"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_GUARD.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ce7e362febfa0db775d905df214605339cf6cd4c20c80d53807f990cf19d5847"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_VERIFY/bootstrap/sitecustomize.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "4213c68fb5f04caf9018820d2551985e07ff7ce44110e1fc82f57c7ada81397a"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_VERIFY/verification.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "7555e1dba0bd10e722d3c4b1355aee470ca7fb231c199ac7bcd32a8abaea9748"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_REMOTE_VERIFICATION.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "5989876c7ff6bf1ab0b4db4215c38133a88449a1e78a230dd5371e6c7fb8e362"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUN_4998_NONFINAL_DIAGNOSTIC.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "b056537cc35aeefc7b3897075a179994e496812d170de19002deba1e9d67cbf6"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUN_G1_PROFILE_4998_NONFINAL_DIAGNOSTIC.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "68de5a8021e0e2a7e5cf4b01641307902fd0d7ea2cf87cba024f093e0c6cc8ee"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_COMPLETION_CONTEXT.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "365ed3b065bc58a5a7ba58fc9989f4c52011acf2a1bfab55301b4b0d9f69e40d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_CORE03_INDEPENDENT_REVIEW.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "64a38992746e4de79375c8385d65661c478c468da5d20e37bc8606c80613ff57"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_CORE03_INDEPENDENT_REVIEW.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ae5f46be33b2f4f1ffb73eb7801db842f3948a75e1e5509e8e551679a72f9ea8"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_CORE03_REVIEW_WORKSPACE.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "26c8fbcf34282c6b8997b981c5d8f28f1a65b901b58b70013388039a78f74b73"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_CORE_INDEPENDENT_REVIEW.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "2628af1ff01aee45b2b170e471ee0423dc22c6a408131b61d46b860abf4346d7"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_CORE_INDEPENDENT_REVIEW.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "512efc377ecdae153965308ee502da369bd6c073ec0c62a50070bb41ecd959bd"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_CORE_REVIEW_PROGRESS_02.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "4c8fe1034e4a04f6fc0b1bd3d6abf17bd8ceec912b1aad5c69cb4acaadf16cce"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_CORE_REVIEW_WORKSPACE.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3ffa6aa2c360542ae646855319e5e45bdedf36f90432519a1c386b8c4ab26196"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_ENTITY_BRIDGE_REVIEW.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "fbc9aac312dd0d9a7e2891da9918762bbc24fa0e2240e436e2ba5397970a7572"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_ENTITY_BRIDGE_REVIEW.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "17dc695449ebeb3ea5e5100d5f7e4b36071a1e2c6d7f0dbd2e8a5a645c2cd2b6"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_ENTITY_EVIDENCE_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "1dc5f2ff115f06af66f79cd86fb816f67f3b3c680af4a05f839cf1e6fe1fc209"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_LABEL_EVIDENCE_HANDOFF.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "990c3c1553554926d614582732965a87d06f5126466e0f333658a8a4e3fe86ac"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/STATUS_PUBLICATION_GUARD_20260906.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "f7fa046f96b49bf6c26e6b0d7c404c9fab37c783791e38c20bc10f9c31ad5a09"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/STATUS_PUBLICATION_REMOTE_VERIFICATION_20260906.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "2edc2db2691204e42483f23959ca88aa4c0d03cf681bdf6082552690397ee2d2"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/context.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "29c9fb0420274fc94f24186bc546e247f4e3201bde9c61f83cc92b0c78c9ab6d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/drawing4999-gap-captures-20260906T1803Z/capture-manifest.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "37d2e79b184eda0889e9c7716998d3cba05f60b8996e9aed7d336c1a363e9cf8"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/drawing4999-gap-captures-20260906T1803Z/malta-independent-candidate-dc31fae61f500b54.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "dc31fae61f500b547e18a10737d4f876731f65bc301937e438a7125f33e76d84"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/drawing4999-gap-captures-20260906T1803Z/serbia-prvaliga-tsc-30d4bf19bb1aefe7.html",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "30d4bf19bb1aefe7a30db2a7f0c10d2022c1c9ff5b415086644dd8e5897d3c4f"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-implementation-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b0885fb51060e02a6090bfc2c9c0cdfc4b0d74968915f1bbc6da8cb97bfe4dad"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-implementation-receipt.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ed1629d59d4d3993053551f60d66651dd3877c1cb195d68eb8d09903d2549d88"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-implementation.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "b463ced484c99b6ff12400329b876d3cdd1f0bb2a3e95d032dc7f621afad3b54"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-independent-review-evidence.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ed51e520e8c4e876622ce76f432fc18d537bf9b8f64954cb0acc55cdcc84e062"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-independent-review.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "7b0c2fd0560062ea1b6dd09259118b435f920635f4a64722d8a89ae18f844b71"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-offline-replay.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "9a208cf6ae9f6f488f975bfeb6f13436b79c8f4255e90c12992feb554cb9ced2"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/goal-quarantine-review-handoff.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "4c0969c557bf908cd0196b1b48a0ebc2af4e1b4491699e173172c59b8ab1bdd2"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-handoff.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "1f835b9e27ca27feaf9cdf13c81b78f89bb1bb408f2a796f88077f0e2c214397"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "7eb8dde6009d3da274b445f4378f1eccae6398ff541f5734e35e9456d066930c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "dc150fdc3ccd10fdbc9280b97ff99974248f233add7dda1a668947a75e011275"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-source.patch",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "bb65e731af614fbd668e2dfd834aea43311d23d4f3d4899bcfe9eeef06804183"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/postmortem4998-evidence/payout-table.png",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private financial evidence, retain locally",
+      "sha256": "ab905cc65e682ae0004e2e955f80b0f9fd7727a4fb2c7e5aafc410a0d0fbb5aa"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/postmortem4998-evidence/receipt.png",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private financial evidence, retain locally",
+      "sha256": "9dbcd8342574670c66d79dc04c6a65c94edbcf02be768b320bb9f76f1d1933c6"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/preflight4999-authorized-diagnostics-20260906T184355Z/sitecustomize.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "0d70304734a887776361d4b1e281380d0603253b8cbc0d205dad55ff82e9e4de"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/after.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "full generated coupon array",
+      "sha256": "1d11e19fdc4d95cbb56cbdab7c5daf64a090cb13661a0f771b687a2a6dd2f9b9"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/before-hashes.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "05060a69aae909d9d1c0dcd67bbfe9af37a8f10ab31c24fd6d47b1a995ec95c0"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/before.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "full generated coupon array",
+      "sha256": "18f5bfbbd97922198f80a4f732c3b7ac7af213619b03d9a99c26f02d6adb5110"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/knowledge/parallel_runtime.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "100cf0b82711b14f481f24fe5134ad77eb45d15cf76edfce2871b552aa3a796f"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/ev/package.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/ev/package_quality.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/ev/runtime.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "cc1325edd5165959765c9299cb3e91dcd8776ecff2419eed2f6ae11ca0f8bdb8"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/ev/ternary.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/optimizer/strategy_comparison.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/sports_stats/final_hybrid_comparison.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "d403ba2afb63305c7153036267511c4762033661f66346c2357d79fd6bd7c234"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "b428cd68cbf9129fc1ca601bda38d9ad8fba8dfa64e1658643b1533861fee96c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/tests/test_ev_runtime_budget.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "14dfc9d4c4403a48a436a1a62c49804ff58a8d812128e73178e290b78e7cef63"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/tests/test_final_hybrid_g1_integration.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "bfba60730b8467b52fda6296d33c3545b0fb2a278c7430fea7be9aed932c8249"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/tests/test_final_hybrid_runtime_contracts.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "c2d1272642fe71c7a204e5f1890c77b39f7e5f9e98dda550e1525e25028e5fad"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/ev-equivalence.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "cfe3c624bac7f6801554fd9bacfef08d23f8d49d8dacb897f19788831242e2a2"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/final_hybrid_comparison.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "c92acdde77bb3443531e8ebac081aae29424ad014633ffeaeb3ecf17f6127782"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/final_hybrid_sidecar.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "e76b627ae82af047e777b0d9d5b615ebf4fa1a6eee5a44f0d040b67c48dd8434"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/baseline-final-research-coupons.txt",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "2e4d759ef10cfd5e424ce2add85146f0a1c2cec3433eee2d810f817d14c769ab"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/comparison.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3bff33ec7c8172ff2e0f1839c4df7f670057d56533bee836735c266248fd3b8e"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/primary-bk-ranking.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3dbdd489f05b0f3bdc4d6eb00103a947fb0a5ee2a3448d6e2603a9d17f5b4d33"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/quality-v3-final-research-coupons.txt",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "7cfcbc51f1f68b673d99922a20dd98ed26c84447238070a553c44ba24c79cfcc"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/robust-final-research-coupons.txt",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "1dc6dee733e1a036e96416c147fc3ab4b9ca25ff982b99f4ee9e221303bfcb1f"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/runtime-progress.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "188bf2708f313f0729c84703b538b20c848d16da70f18313298ad238b683db61"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/runtime-progress.jsonl",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "aab926068895f5b1fe08034c04e245d5d52ffe5f576a3ff57bcfe9afc2b02a27"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/sports-final-probability-snapshot.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "1cb31673913aa2f38ed42ccf597ffd174b95a9eae0eab464f353650b7ecc3f24"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/sports-final-research-coupons.txt",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "abd0434e9c6f15343063962c273cf77fc88f545e8033f4d0736665ed2bd9f52a"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/uncertainty-v1-final-research-coupons.txt",
+      "class": "LOCAL_RUNTIME",
+      "reason": "raw capture/binary/output, not source or plan",
+      "sha256": "6c0b7139c9298461a7ef533edb9b6546362bb92f16b81e2111c0982760b8bb6d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/owner.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "20cd09edfc44570671b981a52775112b22024a1a8e3bf7070a5de4d90cc76688"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ddb85480820c5cdd1e3c556fffe60351d7e07b6639b4b49cb4fd12a489ae8692"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-measured-source-hashes.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "8374b74d387ca00b615e9e04d2d9e1709a90715aaa23e1b9a1d02420c95cfeeb"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full_replay.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "5bfd8b651a29c6fd144acc3660ac8f820555b1e18bf0f734b9acb3d754a6f52d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/guard/sitecustomize.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "0c4a658b1fbe629b3dbab86abf151b37ac06917792f6fd27f878e5cfe2a7d686"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/package.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "7f360752587e370e2b2e46592adfa650e0cebafc840aeff82cf503504a6357a9"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/package_quality.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/profile_ev.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "510dda5971c93157368c88d7c07d43cca13b3effe5ecd1ac767c31a913984ab5"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/strategy_comparison.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "9b67c3912760d8166824ee6b91c33df501de90ca1d80920187be14b585d81b75"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/ternary.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "eee2a0c97e04eba467abdbf7d7622a0447b2e61a08e9793c4e0416e60e17477d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/test_final_hybrid_g1_integration.before.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "880463b07461334f6d88b0061f316bc0d8c20088e7e1853dc9fb9b335a20daf7"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/base/src/toto_ai/ev/package.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "7f360752587e370e2b2e46592adfa650e0cebafc840aeff82cf503504a6357a9"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/base/src/toto_ai/ev/package_quality.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/base/src/toto_ai/ev/ternary.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "eee2a0c97e04eba467abdbf7d7622a0447b2e61a08e9793c4e0416e60e17477d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/base/src/toto_ai/optimizer/strategy_comparison.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "9b67c3912760d8166824ee6b91c33df501de90ca1d80920187be14b585d81b75"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/base/src/toto_ai/sports_stats/final_hybrid_comparison.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "c92acdde77bb3443531e8ebac081aae29424ad014633ffeaeb3ecf17f6127782"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/base/src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "e76b627ae82af047e777b0d9d5b615ebf4fa1a6eee5a44f0d040b67c48dd8434"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/base/tests/test_final_hybrid_g1_integration.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "880463b07461334f6d88b0061f316bc0d8c20088e7e1853dc9fb9b335a20daf7"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/base/tests/test_final_hybrid_sidecar.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "96799cd77118e796aec73c33215a66980d61c2c890287bd7b2de93f30d55d08f"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/before-hashes.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "2b65ff591efe7b1d3d3e5b34b1e872b8adade13256a71951ba92c873e2f11964"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/before/package_quality.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/knowledge/parallel_runtime.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3d1733334a2eab8ec5a02eea993f39df11350ed17fb78a3dd6a33d992f17108e"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/package.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/package_quality.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/runtime.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "cc1325edd5165959765c9299cb3e91dcd8776ecff2419eed2f6ae11ca0f8bdb8"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/ternary.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/optimizer/strategy_comparison.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/sports_stats/final_hybrid_comparison.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "51118611bb4956618df2e888a31b9eda01691c3d82dbe24dea6383fdf452a643"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "56c3d293c41b637464d2af9372634e2e1bc87100b9b60674b0448a29d4023e00"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_ev_runtime_budget.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "14dfc9d4c4403a48a436a1a62c49804ff58a8d812128e73178e290b78e7cef63"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_g1_integration.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "bfba60730b8467b52fda6296d33c3545b0fb2a278c7430fea7be9aed932c8249"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_primary_validity.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "9c187575171bdc003b888f1cad321340885858577be1b014531095b4937dc789"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_runtime_contracts.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "8ce03a2bc0240a48692618d6ed1fedb8efdfd7aafa1acf4ac74de3be035ecc84"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_sidecar.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "153f12d69d4077d9fc8d5232fef8980eab0d8ab5d8c536b8631e49e39692136d"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/commands.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "542f0fdf301f4ae78eab5486e165159a6c8d24842edc41a3705634c35b11736c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/test_independent_runtime.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "958436abc4c5d03f90de4d4b6292743311e2025487a3115c71a2eaf8c5b39784"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-coverage-context.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "df4f26f49f51f2df9aa3c7ca378df99067a5aa4b450a9fe157412411a235cc79"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-goal-replay-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "11f643ddab3abc3187d525625a4c8087c7bf5be0067d3d309314abcc8f4c138a"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-goal-replay-receipt.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "21f124398cb632f5503ff7a7dd497bed38496f23007a98ad5acce9ea8e456885"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/bootstrap/sitecustomize.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "1ee0d1513276b29469fb09df84d8fd33c3b7fefa1c8fb13b4780b4d742526b4c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/independent-proof-rerun.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "125dbfb4af331bc89e212f88c375275425d8e3bfffc47d477d3a0e3f6506b87c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/independent-proof.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "cd2fc69393eb3e9bdada6c786307f60028f49ef5463522e5509d41e08f01c2a3"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/src/toto_ai/sports_stats/v3_draw_calibration.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "487b3155128debef428b4f2d884d59266f89c43302ab884ae43910c0aa646fd4"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/src/toto_ai/sports_stats/v3_generation.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "f07ec7f52945521b6227357ab9a3bbac6878f1cbe2dd4190dbb176c532f809e2"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/src/toto_ai/sports_stats/v3_parallel.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "fc1c87d59d8c141553f09d066a06f82b65095391279faf3c46f1a6dbd4b31199"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/src/toto_ai/sports_stats/v3_probability.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "7ac76c95225e8a6ba4f078c2b740a612dfcbec4ce248b023a6b7e280da115e97"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/src/toto_ai/sports_stats/v3_probability_features.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "6fd6e1770882fd995e765e0eddad9f8ac0c61b2fe469fc821204e1f375bad0a3"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/test_independent_core.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "54792bbbd0572b28ce98ad27276a5a161153be6c95a95f84434cf6fd85e418ae"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/tests/test_sports_v3_generation.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "6436a0f1a0d5b5ce42c5f05d70b6df55e30bb5cfb4088852d5df815d14e68306"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/tests/test_sports_v3_parallel.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "d34d1b7a3505a9cd5a4fcf7d96a34805489212f5d764a749770a3b433f0dbd02"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/tests/test_sports_v3_probability.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "e17a48ba4acc1cd4792b04ce75b4c8a62e66bd59da5ea5a8bf97cf1665559821"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core-review-de4hiiw1/tests/test_sports_v3_probability_features.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "b157a469d906fb2c8594d462da1fa4b8eec0ba39cb87ef65a31932c6b8148abf"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/bootstrap/sitecustomize.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "2eaf4630ca22ce1b66ada097000a6f0b00225f699574a294c4336ca0c5a6fbfa"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/checks.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "819337d3f478ed0bf95d9937dddaa781aadbf853ab6ff973e17ae57caa0df0ce"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/extra-checks.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "f8c64d060daaefe0a5afa30279fd839e086d75504e759eeba3ccba254b4aa6db"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/knowledge/sports-v3-probability-research-20260906.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "b793c1743e94ac8494beef3b85a9c9cbab7295b410331fefdd16e2958419b035"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_PROBABILITY_FAMILY_DIAGNOSTIC.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "dd7cdefec02f4888051619abdf77063444c1a34947e467f8816a1f8b7caabc7a"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/src/toto_ai/sports_stats/final_hybrid_comparison.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "ed5243333e9cf3aad8ef02320e03d53e00d7537b786fa52af171c0a64f1627e9"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/src/toto_ai/sports_stats/v3_draw_calibration.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "487b3155128debef428b4f2d884d59266f89c43302ab884ae43910c0aa646fd4"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/src/toto_ai/sports_stats/v3_feature_disposition.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "fc3e9df4f4a1730cc9547ae26b1af06fdbf734e54bd9380be36cd8b04b3dbf96"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/src/toto_ai/sports_stats/v3_generation.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "3c3d743cc653b872c22c1d8e995dea9cdedd701fc5ab147c0f6e4326cd389cd9"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/src/toto_ai/sports_stats/v3_parallel.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "0cb314eae27f81873f51dd48aacf390f800c11a0a134c6c3ca3829b6fcf7273c"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/src/toto_ai/sports_stats/v3_probability.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "b9e91b89ec08e2d87d6a1d676857f2e48c6c7500558558dac8d8295ba7f43b26"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/src/toto_ai/sports_stats/v3_probability_features.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "9723dc218a56a0fca8545b8f9b1f08e2d9470ad7300c4c2f32018639cc00e4d5"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/tests/test_independent_core03.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "3382d9c39e4cae0089cd65bbd6add185f5f7fa3fd6e081cb2c6aa38396438c88"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/tests/test_sports_v3_comparison_connection.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "f39aa0eaf590df1931f878a4b19fa4153d27c8240960ef9dd55cfced931c9159"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/tests/test_sports_v3_family_evidence.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "20de9a204195385780369ab1da8f9f127663340445b2075136fe8db60a15ff39"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/tests/test_sports_v3_feature_disposition.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "47270bcd49354e34b01595aee1bcc9ca34d8f4dc86fc84c2b1307e1083ff7dec"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/tests/test_sports_v3_generation.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "f661202274b0ba3047e65f17ea4d5919f0e47b32c5afc698813fd036af735358"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/tests/test_sports_v3_parallel.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "1474177afbc5890fe7347a92f46491173637eea97dd78e151ae59eb65c8ecf86"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/tests/test_sports_v3_probability.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "b2c7aa0441917730d98515ac327441e7b961597c94617a705d5ba1409f0dfb6e"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/tests/test_sports_v3_probability_features.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "ef776562b0a14504dd8d40d1415f4bbc64f2dcf553d2229619ddb3a47b30c065"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_cache_durable_independent_review.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "61f2dadf812dcd64c1c47095e4ae8ea1d1f876ca052519f2ead034a16ae6b7f6"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_atomic_publication.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "c36498ae9370b77e50d8a2ec8f11bb4bd217265dcee2c9aa8e9e6a91703617cb"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_correction_review.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "f32dcc4fd9f7dc5611a5f2ab350af0c40ed80fd89f9352355c0b7d87417f2837"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/test_failed_goal_cache_independent_review.py",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "archival source/reproducer retained as evidence only; not production integration or review approval",
+      "sha256": "2c353df5a56a0b6832747ca89b6c9f473a17ac89d5bd6e8cb2fab62c26de90ff"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/C-data-feasibility.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "cac456b43ead8c8296bf4b7fe15acea571804156f64fd25148714db33971c864"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/C-data-feasibility.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "cdcf28d3828cfda3a13adfa9ab649efbf58b71cbb7daf308c7303959e3e6a401"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/candidate-binding-findings.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "967977a90a75e5346688b27fd87f089275ae323c8529a4f2ac072e91024a2b66"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/cleanup-classification.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "6ab0af8b6ef828d147ed3adb685ecd894e9504818dbe04a9e1c618cc02c43fe2"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/cleanup-reviewed-ledger-paths.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "0a5ce6e10b57c352ffa2d473129e97e5c421c993a24b54b3b0b2f31132d04763"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/cleanup-summary.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "97338debc0bf41996b23aa9c9ba0cd4f6ef4b940005bd2a471442e5de0833222"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/consent5007-final-receipt.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "014d1a1c11b424249c03d3cd97f78203dd38e53eb4cca303d423a67085f83473"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/context.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "f22ea814e75c065fa3b7a8cc70f420061be6e7830be4a660a71406a5a31534d5"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/event09-review-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "11ce281b7efde1cdc4b0f57fc9a1e6374badfbd42cae2256745a0c040188e515"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/history-source/fetch-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "05155f93bcfb3702eaad3a26bc4b71aa7233e525f6c7e790cec04e15896ac742"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/history-source/import-preview.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "e51e83febd7a56db89291b3b10a5b1aaff36d6447cd01f2ad995e764af92c29a"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/history-source/import-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "ad4b2f813a08a0fdf54e98c17061d550769280a22993bb79d644b57dc9525afc"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/history-source/import-safety-proof.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "f83146e7f3a390a185985cab7ac636c8c779797bca372bff6aac4750d1b8623f"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/history-source/import-verification.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "5928e0d8158c1f95e0800c0830b2c8e6eacccb2676ad58db7ead777f1c2775be"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/history.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "d86a047a180b982e050c2a397fe76936a074077a3f5fb6a42ca6dd58848230ae"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/model-validation-4999/details.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "d46f9db2dd23e575a3e36662a8d74682a26c881bdde14bc5de8da21d08263b3a"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/model-validation-4999/final-hybrid-settlement.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "efbfbcfbef5711d6f4cb4f0bd5fb76c0880ec33599e597d39c75902f55696653"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/model-validation-4999/final-hybrid-settlement.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "6d6c36afcac8d88ee376597cad00b1959f26f67af2f1012733105d3f53322162"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/model-validation-4999/table.csv",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "515c9f297cbfa396b59514e5617c72abf0d32ce11b3721750047b1655269df7e"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/model-validation.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "4a8e1c03c9b34f4d476468a9ddb9f10a39abfcef773f248aaa494d3235d2f632"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/operations.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "485afad966b0541203064833e63194b857656f7e88cb66cfab6581c96eec9a2f"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/operations.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "e85e33ca46b5dcf448ea7830496e3d55cde62b92d4f5d296baad915b0fda173e"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/owner-consent5007.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "private authorization or raw capture record",
+      "sha256": "1f721ea04796c20a2179542e15d2e10a1af2a94172c6eb74860d0d1d36c3fb09"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/preflight5007-process.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "9bcb8990fe9a43b2ff085cc0e6178090f7dce1455aef8fbb0540b525ea8d836c"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/prepare5007-process.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "29d03e9591caace536758fad6d1f6a62392f83828d0de82acece688a00e818a1"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/publication-receipt.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "generated local inventory/process snapshot or evidence backup",
+      "sha256": "f6804df43aa8c65070a790f5e22c265966d220dabc9873165242986c1c0e56f9"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/remaining-review-receipts.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "bac5e120f73e900c428b5f44283b069cd73f8cb84d497f804b1b7095f349e531"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/replay5000/replay-status.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3abbb46bb464dc44ac915f93f912f522b0ffa02074995df735752c8937246b39"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/replay5000/replay-status.md",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "5eea3b8e4c745d5bd0f835ea0b70a195d69712f3a936a64d21a9cd2cca46e482"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/runtime5007-attestation.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "60e42e0addfb6e0af801e4f489c181f79baaa7e61f14e1407fef86ad3df58353"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/submission-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "6d9b1aec78691a252cec88c70fec6a02af3b9a3022bc367c16e318e95f79876c"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/watcher5007-install-receipt.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "3ae2a82f8a3150a122c15b7a27805faf00aa0ea1f91c433900a2631f31fec74e"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-HISTORY-PERSISTENCE-20260904/backfill-4990-4995-manifest.json",
+      "class": "PUBLISH_HISTORICAL_ARTIFACT",
+      "reason": "finished historical report/context/metadata; use current ACTIVE_PLAN for live state",
+      "sha256": "07463e8831c8e1cbcd146b9243555c2efce72a160b4c527c3243573ade270e49"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/cleanup-remainder-private-scan.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "local publication diagnostic receipt, no source hidden",
+      "sha256": "c553aaaeb77d8a95b4940449ba72b35926f8b2825bcaff1e2a9b5ed09b988431"
+    },
+    {
+      "path": "plans/TOTOAI-RESUME-20260915/cleanup-remainder-local-receipt.json",
+      "class": "LOCAL_RUNTIME",
+      "reason": "local publication diagnostic receipt, no source hidden",
+      "sha256": null
+    }
+  ],
+  "archive_disclaimer": "Archive material is historical, may include rejected/intermediate implementations and obsolete instructions. It is not production code, current policy, deployment permission, or evidence of present readiness. Current AGENTS and ACTIVE_PLAN control. No archived scripts executed.",
+  "A_B_excluded": true,
+  "operations_mutated": false,
+  "files_deleted_moved_or_resigned": false
+}

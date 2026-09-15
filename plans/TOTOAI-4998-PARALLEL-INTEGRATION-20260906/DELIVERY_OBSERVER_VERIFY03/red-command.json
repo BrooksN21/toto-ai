@@ -1,0 +1,6 @@
+[
+  ".venv/bin/python",
+  "-B",
+  "-c",
+  "import sitecustomize,pytest; assert sitecustomize.GUARD; rc=pytest.main(['/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/test_independent_delivery.py', '-q', '-p', 'no:cacheprovider', '--basetemp=/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/red-tmp']); print('BLOCKED',sitecustomize.blocked); raise SystemExit(rc)"
+]

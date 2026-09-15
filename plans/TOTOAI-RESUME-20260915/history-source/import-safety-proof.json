@@ -1,0 +1,37 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "scope_numbers": [
+    4999,
+    5000,
+    5001,
+    5002,
+    5003,
+    5004,
+    5005,
+    5006
+  ],
+  "scope_ids": [
+    12106,
+    12107,
+    12110,
+    12113,
+    12116,
+    12119,
+    12121,
+    12124
+  ],
+  "current_drawing_id_excluded": 12127,
+  "entrypoint": "toto_ai.collector.lifecycle.import_archived_detail",
+  "cli_init_db_not_used": "init_db runs schema-wide migrations and updates; direct native importer on existing schema avoids these side effects",
+  "raw_first": true,
+  "idempotent_merge_evidence": "lifecycle.py:327-554: drawing via archive.drawing_id; event and quote by drawing_id/order; raw and result snapshots ON CONFLICT DO NOTHING; missing fields never erase known data; terminal conflicts rollback",
+  "transaction_evidence": "session.begin(); commit on success; rollback on any BaseException; no network inside transaction",
+  "native_transaction_line_range": "src/toto_ai/collector/lifecycle.py:345-543",
+  "busy_timeout_ms": 5000,
+  "journal_mode_preserved": "delete",
+  "db_replacement": false,
+  "dispatcher_or_jobs_mutation": false,
+  "result_status_policy": "All120 source events are explicitly resolved 1/X/2 with score; no cancellation/postponement inferred from null",
+  "all_native_previews_success": true,
+  "source_files_verified": true
+}

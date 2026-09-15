@@ -1,0 +1,14 @@
+{
+  "before_wall": 84.43789812499745,
+  "after_wall": 76.69596812499367,
+  "before_cpu": 83.472764,
+  "after_cpu": 76.56891999999999,
+  "result_differences": {
+    "runtime_seconds": [
+      84.27611333299865,
+      76.5347008749959
+    ]
+  },
+  "same_input": true,
+  "same_config": true
+}

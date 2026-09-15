@@ -1,0 +1,150 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "frozen_at": "2026-09-06T20:29:52.038399+03:00",
+  "status": "RUNTIME02_FROZEN_FOR_INDEPENDENT_REREVIEW_NOT_ACCEPTED_NOT_PUBLISHED",
+  "review_finding": "PR-1 only",
+  "base_commit": "a59d301c80e1e3ddab24a103f3690f8560d3a89e",
+  "runtime01_patch_sha256": "ce96d1f2f2888eb77359cb659a7ed59846b66c3b9d407cfb56300baf60cc97de",
+  "patch_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME02_IMPLEMENTATION.patch",
+  "patch_sha256": "152c92c8e068e971b5c926dc70234c2b57c3815c3396ac0ba195b56d5d46bbab",
+  "review_fix_patch_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME02_REVIEW_FIX.patch",
+  "review_fix_patch_sha256": "1dfeb4fe709a8ed619619b3166dbd6930105598a24efe621f79dfe9a43468087",
+  "files": [
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_comparison.py",
+      "base_sha256": "c92acdde77bb3443531e8ebac081aae29424ad014633ffeaeb3ecf17f6127782",
+      "runtime01_sha256": "d403ba2afb63305c7153036267511c4762033661f66346c2357d79fd6bd7c234",
+      "after_sha256": "51118611bb4956618df2e888a31b9eda01691c3d82dbe24dea6383fdf452a643",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/sports_stats/final_hybrid_comparison.py"
+    },
+    {
+      "path": "src/toto_ai/optimizer/strategy_comparison.py",
+      "base_sha256": "9b67c3912760d8166824ee6b91c33df501de90ca1d80920187be14b585d81b75",
+      "runtime01_sha256": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473",
+      "after_sha256": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/optimizer/strategy_comparison.py"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+      "base_sha256": "e76b627ae82af047e777b0d9d5b615ebf4fa1a6eee5a44f0d040b67c48dd8434",
+      "runtime01_sha256": "b428cd68cbf9129fc1ca601bda38d9ad8fba8dfa64e1658643b1533861fee96c",
+      "after_sha256": "56c3d293c41b637464d2af9372634e2e1bc87100b9b60674b0448a29d4023e00",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/sports_stats/final_hybrid_sidecar.py"
+    },
+    {
+      "path": "src/toto_ai/ev/ternary.py",
+      "base_sha256": "eee2a0c97e04eba467abdbf7d7622a0447b2e61a08e9793c4e0416e60e17477d",
+      "runtime01_sha256": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae",
+      "after_sha256": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/ternary.py"
+    },
+    {
+      "path": "src/toto_ai/ev/package.py",
+      "base_sha256": "7f360752587e370e2b2e46592adfa650e0cebafc840aeff82cf503504a6357a9",
+      "runtime01_sha256": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947",
+      "after_sha256": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/package.py"
+    },
+    {
+      "path": "src/toto_ai/ev/package_quality.py",
+      "base_sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb",
+      "runtime01_sha256": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93",
+      "after_sha256": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/package_quality.py"
+    },
+    {
+      "path": "tests/test_final_hybrid_g1_integration.py",
+      "base_sha256": "880463b07461334f6d88b0061f316bc0d8c20088e7e1853dc9fb9b335a20daf7",
+      "runtime01_sha256": "bfba60730b8467b52fda6296d33c3545b0fb2a278c7430fea7be9aed932c8249",
+      "after_sha256": "bfba60730b8467b52fda6296d33c3545b0fb2a278c7430fea7be9aed932c8249",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_g1_integration.py"
+    },
+    {
+      "path": "src/toto_ai/ev/runtime.py",
+      "base_sha256": null,
+      "runtime01_sha256": "cc1325edd5165959765c9299cb3e91dcd8776ecff2419eed2f6ae11ca0f8bdb8",
+      "after_sha256": "cc1325edd5165959765c9299cb3e91dcd8776ecff2419eed2f6ae11ca0f8bdb8",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/src/toto_ai/ev/runtime.py"
+    },
+    {
+      "path": "tests/test_ev_runtime_budget.py",
+      "base_sha256": null,
+      "runtime01_sha256": "14dfc9d4c4403a48a436a1a62c49804ff58a8d812128e73178e290b78e7cef63",
+      "after_sha256": "14dfc9d4c4403a48a436a1a62c49804ff58a8d812128e73178e290b78e7cef63",
+      "changed_in_runtime02": false,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_ev_runtime_budget.py"
+    },
+    {
+      "path": "tests/test_final_hybrid_runtime_contracts.py",
+      "base_sha256": null,
+      "runtime01_sha256": "c2d1272642fe71c7a204e5f1890c77b39f7e5f9e98dda550e1525e25028e5fad",
+      "after_sha256": "8ce03a2bc0240a48692618d6ed1fedb8efdfd7aafa1acf4ac74de3be035ecc84",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_runtime_contracts.py"
+    },
+    {
+      "path": "knowledge/parallel_runtime.md",
+      "base_sha256": null,
+      "runtime01_sha256": "100cf0b82711b14f481f24fe5134ad77eb45d15cf76edfce2871b552aa3a796f",
+      "after_sha256": "3d1733334a2eab8ec5a02eea993f39df11350ed17fb78a3dd6a33d992f17108e",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/knowledge/parallel_runtime.md"
+    },
+    {
+      "path": "tests/test_final_hybrid_sidecar.py",
+      "base_sha256": "96799cd77118e796aec73c33215a66980d61c2c890287bd7b2de93f30d55d08f",
+      "runtime01_sha256": "96799cd77118e796aec73c33215a66980d61c2c890287bd7b2de93f30d55d08f",
+      "after_sha256": "153f12d69d4077d9fc8d5232fef8980eab0d8ab5d8c536b8631e49e39692136d",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_sidecar.py"
+    },
+    {
+      "path": "tests/test_final_hybrid_primary_validity.py",
+      "base_sha256": null,
+      "runtime01_sha256": null,
+      "after_sha256": "9c187575171bdc003b888f1cad321340885858577be1b014531095b4937dc789",
+      "changed_in_runtime02": true,
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/candidate/tests/test_final_hybrid_primary_validity.py"
+    }
+  ],
+  "dependencies": {
+    "src/toto_ai/runner/scheduler.py": "07e23f28ebff084bc4e3fe13a3b185d201050ac983c64ce1be5ea0dc014848c4",
+    "src/toto_ai/runner/final_input.py": "3330deb14d17e9628bf5eb6202d6b89d9d2acf5b22717e534421f9a90f6c235a",
+    "src/toto_ai/ev/models.py": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5",
+    "src/toto_ai/optimizer/parallel_challenger.py": "5b3cdea811c9d2a3acab09e54917c58bac63ae0c5f53ad3b4c5e8ee611bd6d5b",
+    "src/toto_ai/sports_stats/parallel_g1.py": "9ca4ef440a779ef9f8f445fc625b8d20fb164ba15af2c762e5795e45d71304e5",
+    "src/toto_ai/optimizer/robust_package.py": "9c7913e1b3c41d19c9a5e29f5dbaaddc358697941e3c5be46c976a913b1c315f",
+    "src/toto_ai/optimizer/uncertainty_package.py": "33b55ec8b3f7ca59e8d8c5ef1327d623bc1e0934ba05963f7a4df81a6e5d3b31",
+    "src/toto_ai/optimizer/strategy_execution.py": "0c0bbdc1acd78d6369e2fc3c558949dee887977cabc44bab37480ae0c18e149b"
+  },
+  "verification": {
+    "red": "Exact independent tests immutable local copy:2FAIL1.39s before code changes",
+    "green": "101PASS3.15s =58 original scoped +22 independent +21 new PR1",
+    "ruff": "PASS13 Python files (12 candidate + unchanged independent probe)",
+    "commands_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/commands.json",
+    "original_independent_probe_sha256": "958436abc4c5d03f90de4d4b6292743311e2025487a3115c71a2eaf8c5b39784",
+    "native_validator": "Real native filesystem/expiry/marker/authority contract; in-memory archive DAO only, no DB engine opened",
+    "legacy_fixture_change": "Old synthetic reuse fixture has real upload bytes/future deadline and explicit native-validation stub; independent real-provenance tests remain byte-identical. New tests separately run actual native validator."
+  },
+  "limits": [
+    "No long replay/profiling/new performance claims",
+    "No live API/DB/jobs/consent/archive modifications",
+    "Existing native validator may query its archive DB in future production use; test DAO stub avoids all actual DB use",
+    "Runtime01 historical84.44/76.70/198.859 timings unchanged, no runtime02 measurement of LaunchAgent",
+    "No observer source changes; no stage/commit/push"
+  ],
+  "artifacts_sha256": {
+    "red-independent.log": "336a2124e95b2067555270f1e0c5fa8754e1283786ecdc78c259874ce6256499",
+    "final-tests.log": "1895990c743722ca931c0d21ade4875131ed3b23bece761bdc33c4ed68715935",
+    "final-ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "commands.json": "542f0fdf301f4ae78eab5486e165159a6c8d24842edc41a3705634c35b11736c"
+  }
+}

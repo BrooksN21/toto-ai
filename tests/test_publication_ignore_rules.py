@@ -38,6 +38,10 @@ def is_ignored(path):
         f"{CURRENT_PLAN}/source-captures/example.html",
         f"{CURRENT_PLAN}/history-source/drawing_12106.json",
         f"{CURRENT_PLAN}/prepare5007.stdout.log",
+        f"{CURRENT_PLAN}/owner-consent5007.json",
+        f"{CURRENT_PLAN}/cleanup-summary.json",
+        f"{CURRENT_PLAN}/cleanup-remainder-private-scan.json",
+        f"{OLD_PLAN}/4999-ledger-before-03a650359c57f727.json",
     ],
 )
 def test_generated_data_are_ignored(path):
@@ -55,6 +59,9 @@ def test_generated_data_are_ignored(path):
         f"{CURRENT_PLAN}/machinechecklist.json",
         f"{CURRENT_PLAN}/history-source/import-verification.json",
         f"{CURRENT_PLAN}/A-library-adoption.json",
+        f"{CURRENT_PLAN}/C-data-feasibility.md",
+        f"{CURRENT_PLAN}/cleanup-remainder-manifest.json",
+        f"{OLD_PLAN}/runtime02/candidate/src/toto_ai/ev/package.py",
         "src/toto_ai/sports_stats/v3_probability.py",
         "tests/test_sports_v3_library_isolation.py",
         "memory-bank/ACTIVE_PLAN.md",

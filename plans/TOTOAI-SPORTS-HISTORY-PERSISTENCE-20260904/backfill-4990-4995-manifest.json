@@ -1,0 +1,2281 @@
+{
+  "artifact_class": "SPORTS_HISTORY_RAW_CAPTURE_BACKFILL_MANIFEST",
+  "manifest_sha256": "dd6151f61f4d3ab89a28eeea778fa0d02f7e96deb956ecb6c9742c076758ca77",
+  "schema_version": 1,
+  "snapshots": [
+    {
+      "as_of": "2026-08-28T15:37:40.472172Z",
+      "deadline": "2026-08-29T13:30:00Z",
+      "drawing_fingerprint": "620a385ba047c909c09a3a9bb0f090d7183206cf9a047f8457489d3bdd588d94",
+      "drawing_id": 12077,
+      "drawing_number": 4990,
+      "events": [
+        {
+          "away_team": "Ньюкасл",
+          "event_order": 0,
+          "home_team": "Тоттенхэм",
+          "provider_away_team_id": "cmr7fpx0g2ybhrx06qvp1kldr",
+          "provider_fixture_id": "cmsvp4w9g9eqypg07pj0k5uk2",
+          "provider_home_team_id": "cmr7fp1wl2n8vrx06vpqq7nfg",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/f2fd0a1d358b63a00b5ab08d8c5f1b6906b00f2ecc3722c4a6999fad8b2ea31f-d41e258638c24147.json",
+              "sha256": "d41e258638c24147ed9e3d29c9adc51a9e5375db2d22c5444dfe82cba64e84a2",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/91aa7ad67fe3eee65fcda5336f21bc0819572bcaa66f3b61019aca03ea36cb8d-6198066e7c61fa65.json",
+              "sha256": "6198066e7c61fa6541123f52c4d2907f5bc45fbbb8c25a48f27f435a9e529685",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180258",
+          "target_starts_at": "2026-08-29T16:30:00Z"
+        },
+        {
+          "away_team": "Куинз Парк Рейнджерс",
+          "event_order": 1,
+          "home_team": "Блэкберн Роверс",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180259",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Шеффилд Юнайтед",
+          "event_order": 2,
+          "home_team": "Кардифф Сити",
+          "provider_away_team_id": "cmr7huvog3t6qrx06ka0l592y",
+          "provider_fixture_id": "cmsvp4ltc9d9spg07xf47j7jw",
+          "provider_home_team_id": "cmr7hvath3yt3rx06l7wj5h90",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/f121837a85a42f2e3041996feb867ef1ac513339aac6c0745d7ccfbb936027bb-62ea17e31648a0ff.json",
+              "sha256": "62ea17e31648a0ff0120eb4521ccb646c2052d24ec787b3a57602c673ce9fa29",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/e090f163a7fc895bfe3e4c374d6d231c6f6a452d06ad6e05f2cb5aab19376db7-2a4c1da4aec6059e.json",
+              "sha256": "2a4c1da4aec6059efd401357417c8fd236acf71fb95f37b1ce85f075a38ad781",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180260",
+          "target_starts_at": "2026-08-29T14:00:00Z"
+        },
+        {
+          "away_team": "Бернли",
+          "event_order": 3,
+          "home_team": "Норвич",
+          "provider_away_team_id": "cmr7hvaw83yvbrx06jcvozl9w",
+          "provider_fixture_id": "cmsvp4ltx9da0pg07c38aj9ya",
+          "provider_home_team_id": "cmr7huvot3t6zrx065al0k8o1",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/6a06eda781436cc5e7199559f6dab920631a107e427018373da2a32b3cbcc986-cecaaa73723fbc08.json",
+              "sha256": "cecaaa73723fbc08e8f2ea11d071b7590ac5dd5450c5ed5ee608c8418457291e",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/4e9f350f458172c5ccb673374732672ca3dc7bcc1d97993e11881705af3f05e2-e69d0e6a85698bd5.json",
+              "sha256": "e69d0e6a85698bd5a3b2d296ef53e0ca912d803fc010aecdc36a787974c94421",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180261",
+          "target_starts_at": "2026-08-29T14:00:00Z"
+        },
+        {
+          "away_team": "Линкольн Сити",
+          "event_order": 4,
+          "home_team": "Болтон",
+          "provider_away_team_id": "cmr7hvaul3ytyrx06d9bn6ymz",
+          "provider_fixture_id": "cmsvp4lsq9d9opg07g1bw082d",
+          "provider_home_team_id": "cmr7hvaue3yttrx069g6w8jzc",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/eb745ff6f1e28098518303574dbb50e322b479858b94d0d60006bbae1042d846-398f332c0b96526b.json",
+              "sha256": "398f332c0b96526bfcc81d785caa55da81b4aa347e5f3357b049e263a38216c4",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/2f7908d7b806a19959f06e859fd063ce25ad54e86801f3ef040721aacc3eb216-e09b0666bdada7a6.json",
+              "sha256": "e09b0666bdada7a609b9ace563ade1b7e40c64faab75702100a2f93ba622b918",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180262",
+          "target_starts_at": "2026-08-29T14:00:00Z"
+        },
+        {
+          "away_team": "Айнтрахт Франкфурт",
+          "event_order": 5,
+          "home_team": "Унион Берлин",
+          "provider_away_team_id": "cmr79jabj03zjrx06nu74ehg2",
+          "provider_fixture_id": "cmsvp4ghw9cczpg07qrzdxcy5",
+          "provider_home_team_id": "cmr79jabk03zkrx06rddkkrlt",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/afe68a14fbf1d782338e03725ee33b6d69e7c7d0771d823a31951adb10430ffc-37e395a1434f93f8.json",
+              "sha256": "37e395a1434f93f8c201bfc2e0f8c5e886482cd80c412e25d8b98bc334daee92",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/fae66bb89719a0bfce33d9001453bf59166e5b93ac534aeb61a7630ba4a8abd1-a45e59d80dd9c511.json",
+              "sha256": "a45e59d80dd9c511ee568765eaab1799312bd3b54235d0ce9bf568e75a60fb6d",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180263",
+          "target_starts_at": "2026-08-29T13:30:00Z"
+        },
+        {
+          "away_team": "Хоффенхайм",
+          "event_order": 6,
+          "home_team": "Кельн",
+          "provider_away_team_id": "cmr79jabo03zorx06atqgohi7",
+          "provider_fixture_id": "cmsvp4gum9cfdpg07ty9ivgbo",
+          "provider_home_team_id": "cmr79jabf03zgrx06blcl9jom",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/72e6d5f52ed732f8577217e9b1009f63be78a4fefe4d6955782925c73dfd20bc-a15f6657087da796.json",
+              "sha256": "a15f6657087da7968b2b9f1bc4e8dea50c17d5df13260466b654fa0b88e6520a",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/e842069ad9c518d7bfa9654a8f503c767fb437fb0295bda3128c29e2515b14a2-5c8eb42d37962d7a.json",
+              "sha256": "5c8eb42d37962d7a47770bd8d358bdcfc70e207e1e826718e12b26081db538ae",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180264",
+          "target_starts_at": "2026-08-29T13:30:00Z"
+        },
+        {
+          "away_team": "Бетис",
+          "event_order": 7,
+          "home_team": "Леванте",
+          "provider_away_team_id": "cmr7m55uo5eg8rx06hlsjolr6",
+          "provider_fixture_id": "cmsvp4rk89e2cpg07sncwmnwp",
+          "provider_home_team_id": "cmr7m55un5eg7rx069xmc3fml",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/ff471317a9d7a91cf92900332193841d2d66adb2d5396605459705e246769a73-f0fd1c23a952ef75.json",
+              "sha256": "f0fd1c23a952ef7557694951cd6f52b062b3da856fdacb142c763f279806dfed",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/1ba90b05cffe94adf1ad78eb5258177c1aba8c78800b30236f201752309340b4-a2d7d219544d969f.json",
+              "sha256": "a2d7d219544d969fea75a51c1c260805a335b9ab4930f01fb5a1a746a07b422f",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180265",
+          "target_starts_at": "2026-08-29T15:00:00Z"
+        },
+        {
+          "away_team": "Удинезе",
+          "event_order": 8,
+          "home_team": "Монца",
+          "provider_away_team_id": "cmr7m6br95t2qrx068uc0kscj",
+          "provider_fixture_id": "cmsvp4w849eqkpg075qvkp8ad",
+          "provider_home_team_id": "cmr7m6bw45t4drx061pcwz8f7",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/7d208316af68c4439a50a895d53e765441273118e28fbebb1c74ea68009c504b-5be852ad5551e948.json",
+              "sha256": "5be852ad5551e948e72717b572326d16e9299aa8384b20ac1b1338a6fc341be4",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/7e1e43c59c4fb1489b029f29774be9088ffde9752819d8dad0e087604292b22f-4a0150ce723ba05b.json",
+              "sha256": "4a0150ce723ba05b715345fa7fb8760261edf49d4eaf127738725a136fe0b9f5",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180266",
+          "target_starts_at": "2026-08-29T16:30:00Z"
+        },
+        {
+          "away_team": "Торино",
+          "event_order": 9,
+          "home_team": "Сассуоло",
+          "provider_away_team_id": "cmr7m6bra5t2rrx06d2ou01f2",
+          "provider_fixture_id": "cmsvp4w869eqmpg07fvphzkvz",
+          "provider_home_team_id": "cmr7m6brf5t2vrx06qg58pp46",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/1ad58689aea5468868bec897359ef86c66fed30c2ae540d680ecc7ff1b9cb297-10bfcacc45a0c4cc.json",
+              "sha256": "10bfcacc45a0c4cc62eb1db2949fa64c79d5da6126dbe864a9991184565c8c1e",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/c425facef6d97b0922e1ce4beabc4e2fdd3451cd4a3838358ddc8211c8634f04-9c8db1f08bfdf34e.json",
+              "sha256": "9c8db1f08bfdf34ecbb1045f08537ef8b1e51ca3426a85936db81d1ea31a6b22",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180267",
+          "target_starts_at": "2026-08-29T16:30:00Z"
+        },
+        {
+          "away_team": "Динамо Москва",
+          "event_order": 10,
+          "home_team": "Локомотив Москва",
+          "provider_away_team_id": "cmr7uolsy8mghrx06jog9s5dt",
+          "provider_fixture_id": "cmsvp4w7t9eqipg077wdtl19s",
+          "provider_home_team_id": "cmr7uolsb8mg7rx06aps282s2",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/00d0900f501b38b73cae45ff278b1a89540a3dccc22587950d3a92bd154b8559-d8d4142a7b895dff.json",
+              "sha256": "d8d4142a7b895dff865c72192c13f669c65e54d3ae76cee78e2c7ffca03f1c29",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/513b32b0d32ffac70c3ab3e60c875f9fc91aeb8c83d459b1fced0ed53b4c6955-f7958c08e2f64dd0.json",
+              "sha256": "f7958c08e2f64dd0440c1dc5c7a29419a165bb595a3059e8526a38cdca669a8d",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180268",
+          "target_starts_at": "2026-08-29T17:00:00Z"
+        },
+        {
+          "away_team": "Урал",
+          "event_order": 11,
+          "home_team": "Арсенал Тула",
+          "provider_away_team_id": "cmr7uolsl8mgarx06encl94gb",
+          "provider_fixture_id": "cmsvp4i3w9cmlpg076htlkxss",
+          "provider_home_team_id": "cmr7uopah8npjrx06b93ancdt",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/ae997bb7ffade5960e6a1d5c427d01a3e44cc7d966ce3d7f1149547ee3f50ef1-39e42587a98bcf52.json",
+              "sha256": "39e42587a98bcf52e108c472484ac672701b0075f577079f334509a949487713",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/dfced4f6f1247e792d612f0b5740a33ce5890b5d6a7844f806ce4eac308fa296-562b89419441f465.json",
+              "sha256": "562b89419441f465ccd0b1e0583f8e32a2bbffa69b30b66964b89891eb63a14a",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180269",
+          "target_starts_at": "2026-08-29T14:00:00Z"
+        },
+        {
+          "away_team": "Велес",
+          "event_order": 12,
+          "home_team": "Текстильщик",
+          "provider_away_team_id": "cmr7uop978nofrx062v299lmq",
+          "provider_fixture_id": "cmsvp4i5w9cn3pg07yq7h03t7",
+          "provider_home_team_id": "cmr7uop9y8np0rx06ebw8gush",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/bae75746fdfc222b6c6e0fc228a7fbcc59d5b544b82a9fc8c1ab7768c73b60e6-c00c58a847f35cc4.json",
+              "sha256": "c00c58a847f35cc41f9dd61bcc832f16450c68b70ecb23cb5cc357299aa50e96",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/0ffddd5af2b9a8a964741d25badfacbe0fc051f4c7cfc1ba6205204014091c19-17fd1eca56ebb2d0.json",
+              "sha256": "17fd1eca56ebb2d0282de3fd0bef5bc715b08c7c965381be69a7a2e431420216",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180270",
+          "target_starts_at": "2026-08-29T14:00:00Z"
+        },
+        {
+          "away_team": "Ланс",
+          "event_order": 13,
+          "home_team": "Страсбур",
+          "provider_away_team_id": "cmr7oa1g86g0srx06rgl26fqf",
+          "provider_fixture_id": "cmsvp4tz09ebrpg07ocjy262h",
+          "provider_home_team_id": "cmr7oa1g36g0orx06y70lfzob",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/be45e64404dcb90349298903ab0c3b3dde00bfe540881240b98214c6bff67ce6-cf09777539e162eb.json",
+              "sha256": "cf09777539e162eb3587ad3431d082123b9cd6afa728f29a39477dcbe9326420",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/011b131b25062b3313fed6e53dfe95e9b1267705b67e699d0383558ac852386a-6408a438a74dacac.json",
+              "sha256": "6408a438a74dacaccd9495cd934606c0129e735cf2b1948cc57ba2ba9cbb3e24",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180271",
+          "target_starts_at": "2026-08-29T15:15:00Z"
+        },
+        {
+          "away_team": "Тулуза",
+          "event_order": 14,
+          "home_team": "Брест",
+          "provider_away_team_id": "cmr7oa1gq6g18rx06nhqgyww7",
+          "provider_fixture_id": "cmsvp4xye9f19pg07ruq7am59",
+          "provider_home_team_id": "cmr7oa1gc6g0vrx06koloherl",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/d01c5adee6f1e1c8fa477951e5842c12180a55ee748bf1e180cbaf0c5f164c8c-8ba1f1aa76f0b652.json",
+              "sha256": "8ba1f1aa76f0b652feae921881d56ab6a063a70f083aba5e424591c79fe2dbbb",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/goal-api-v1/snapshots/b96900a104bfb4b4b99edf06112d92ddb2b68921b3d755dfb48af37545afd2a6-2749fb40055f534d.json",
+              "sha256": "2749fb40055f534d61ffe5deee667be26ff997843fdb55a9ea51e7cc1114e5cc",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180272",
+          "target_starts_at": "2026-08-29T18:45:00Z"
+        }
+      ],
+      "provider": "goal-api-v1",
+      "requested_history_size": 10,
+      "schedule_binding": {
+        "path": "reports/sports-analytics/4990/goal-auto/captures/20260828T153706080287Z/schedule/schedule-source-candidates.json",
+        "sha256": "846d2a0f9f5b7dc81f9ecba81a40fe519b13cb16953fe0970690c3e81748f7a5"
+      },
+      "target_detail": {
+        "artifact_type": "frozen_final_input",
+        "path": "reports/rehearsal/evening-4990-20260829T163000Z/training-package/input/final-input.json",
+        "sha256": "3b3421619963e653830167cce1f885230fcd0bf6927566db2152ebe08be00b52"
+      }
+    },
+    {
+      "as_of": "2026-08-29T14:27:40.325631Z",
+      "deadline": "2026-08-30T13:00:00Z",
+      "drawing_fingerprint": "f76a745cceb658172f7aaa121192163bca4b6807fbf021789f3638b78c4e0e5e",
+      "drawing_id": 12081,
+      "drawing_number": 4991,
+      "events": [
+        {
+          "away_team": "Брентфорд",
+          "event_order": 0,
+          "home_team": "Лидс",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180318",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Фулхэм",
+          "event_order": 1,
+          "home_team": "Сандерленд",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180319",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Шальке 04",
+          "event_order": 2,
+          "home_team": "Аугсбург",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180320",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Валенсия",
+          "event_order": 3,
+          "home_team": "Депортиво Ла-Корунья",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180321",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Атлетик Бильбао",
+          "event_order": 4,
+          "home_team": "Сельта",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180322",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Вальядолид",
+          "event_order": 5,
+          "home_team": "Кадис",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180323",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Комо",
+          "event_order": 6,
+          "home_team": "Наполи",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180324",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Динамо Махачкала",
+          "event_order": 7,
+          "home_team": "Рубин",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180325",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Ницца",
+          "event_order": 8,
+          "home_team": "ФК Париж",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180326",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Марсель",
+          "event_order": 9,
+          "home_team": "Монако",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180327",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Сент-Труйден",
+          "event_order": 10,
+          "home_team": "Антверпен",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180328",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Зюлте-Варегем",
+          "event_order": 11,
+          "home_team": "Вестерло",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180329",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Эштрела Амадора",
+          "event_order": 12,
+          "home_team": "Насьонал",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180330",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Морейренсе",
+          "event_order": 13,
+          "home_team": "Каса Пиа",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180331",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Аланьяспор",
+          "event_order": 14,
+          "home_team": "Эюпспор",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180332",
+          "target_starts_at": null
+        }
+      ],
+      "provider": "goal-api-v1",
+      "requested_history_size": 10,
+      "schedule_binding": {
+        "path": "reports/sports-analytics/4991/goal-auto/captures/20260829T142740325631Z/schedule/schedule-source-candidates.json",
+        "sha256": "618dad25bb94e0c9a3da0b6d2465b0026fd62ce269e5d6c06c8e4755fb24478f"
+      },
+      "target_detail": {
+        "artifact_type": "frozen_final_input",
+        "path": "reports/rehearsal/evening-4991-20260830T130000Z/training-package/input/final-input.json",
+        "sha256": "1e5e7f87fa57890a52c25b73dbf67b157e3b4270c0321e374aaaf8b1e4358ab9"
+      }
+    },
+    {
+      "as_of": "2026-08-31T13:00:18.142034Z",
+      "deadline": "2026-08-31T13:30:00Z",
+      "drawing_fingerprint": "37795ee776fe09a71df0d8cf61feb4d26091adf7adb3a6dd805894208544e540",
+      "drawing_id": 12083,
+      "drawing_number": 4992,
+      "events": [
+        {
+          "away_team": "Хетафе",
+          "event_order": 0,
+          "home_team": "Осасуна",
+          "provider_away_team_id": "cmr7m55uu5egbrx06gqjyy1mg",
+          "provider_fixture_id": "cmt1fhud8772gpd07cv1h7kwz",
+          "provider_home_team_id": "cmr7m55ty5efxrx06jrlg7ghy",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/47ecc773f264494ef04b9ad43d6e51a0da1753169c99e874c40dec7cb44ddcb6-7207c1b90dcdf141.json",
+              "sha256": "7207c1b90dcdf14183be38632b87600f56ebfd3f80460a0b8251365042349965",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/e35f848957ddb1b11290d9b8705b3984f64752a586bd7d3f9932ea01df192c9c-c9808d9307f9b3dd.json",
+              "sha256": "c9808d9307f9b3dd3566a548137bab3e9269e2b84bb0082f91b5aaf24978d32e",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180348",
+          "target_starts_at": "2026-08-31T17:30:00Z"
+        },
+        {
+          "away_team": "Болонья",
+          "event_order": 1,
+          "home_team": "Аталанта",
+          "provider_away_team_id": "cmr7m6brn5t32rx06bh9mmll4",
+          "provider_fixture_id": "cmt1fhu69770wpd071seync9q",
+          "provider_home_team_id": "cmr7m6br15t2mrx06k2tlvofz",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/05360790e272541ed0e0295be10dd2b9d000d75ce47a214e28c8c23e67931fd9-5f38f68a54b6057b.json",
+              "sha256": "5f38f68a54b6057bd3bec230bde71d82bdaaf80b05f8f08df524b44d2ad27828",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/ed9e725ef2ccaa65e6b3120b0c19bae67cf136641638d0fe2bd28222a37e4cd9-ddb161befdacb979.json",
+              "sha256": "ddb161befdacb979d0903b06577cf18c62b8124ce48f46ffd2d280a5d04168d4",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180349",
+          "target_starts_at": "2026-08-31T18:45:00Z"
+        },
+        {
+          "away_team": "Ротор",
+          "event_order": 2,
+          "home_team": "Спартак Кострома",
+          "provider_away_team_id": "cmr7uolss8mgerx06cvvo4lfy",
+          "provider_fixture_id": "cmt1fhs1a76t7pd07c0yvseip",
+          "provider_home_team_id": "cmr7uopbu8nqqrx06a058hnek",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/7eb5a94097242bd95eab01b9ed63478c9b2e4ffb818e7c59b88b9ca23f8b7bdc-2a812dce42f43b6c.json",
+              "sha256": "2a812dce42f43b6cae8dceec53f72db592240be59b17bbe49e5c38d127749b7e",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/687c70161394becd20b639df29717f89444fc92ee40174b8e6f6a9378271c17f-bc88a3ee4b146608.json",
+              "sha256": "bc88a3ee4b14660804944d8f8e50946431502c0973f042fdf65488e9e485f6a8",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180350",
+          "target_starts_at": "2026-08-31T16:30:00Z"
+        },
+        {
+          "away_team": "Динамо Тирана",
+          "event_order": 3,
+          "home_team": "Скендербеу",
+          "provider_away_team_id": "cmri0gzqnbwtylb07xp4ycfd6",
+          "provider_fixture_id": "cmt1fhtqd7701pd07118kzhp2",
+          "provider_home_team_id": "cmrikz6t6fdkss107yvpoz2ok",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/e3ae59d1535370bc6ff39fdd8e1e4d92269e29167a02367f81ac1b346828bc04-e14e30760f452512.json",
+              "sha256": "e14e30760f4525126ace412475eef3bc311cad259127044f269a6f1e1f8ef134",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/fa55fb27ea77fc961225c89e131db851c4ec02d930f2b9d57875870b6f494596-bf303fc22884298c.json",
+              "sha256": "bf303fc22884298ced48c2cc884ce0e42b85502a789a0b0a58d31b26db8b63b9",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180351",
+          "target_starts_at": "2026-08-31T19:00:00Z"
+        },
+        {
+          "away_team": "Локомотив София",
+          "event_order": 4,
+          "home_team": "Дунав Русе",
+          "provider_away_team_id": "cmri6ui55e0thlb0775n9of5r",
+          "provider_fixture_id": "cmt1fhrw376sjpd07hhren4g2",
+          "provider_home_team_id": "cmri6ui4fe0t0lb07dsupw796",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/130dec995b2554e0f3f230e8d3bce653b9ba42006c91c6e37de8957bccb9b894-5ea20b1878e7e100.json",
+              "sha256": "5ea20b1878e7e1001425d197b33db75b50b66975f9e606eee19ccada19139f74",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/db010b5a48ac1a98b1a8784d24c4f1f92d49d4dd4ba5ac919278c2e977a1883b-18c228bbbcaa2ad7.json",
+              "sha256": "18c228bbbcaa2ad7b136d0e24fd716fb97ef4ab8f39318ca1ffa21020dd2c9d3",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180352",
+          "target_starts_at": "2026-08-31T16:00:00Z"
+        },
+        {
+          "away_team": "Казинцбарцика",
+          "event_order": 5,
+          "home_team": "Сегед",
+          "provider_away_team_id": "cmri8zkx2ehwllb0744avrxpo",
+          "provider_fixture_id": "cmsvp4vzz9eoppg07sjawnf6r",
+          "provider_home_team_id": "cmri8zss0ekqzlb0709s8xoht",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/165957f1dcbcbe09397e4e30e7fc6a232a50f41e77b84b1bcf4e2d9e586a7745-8f7c4e0585a7ab2f.json",
+              "sha256": "8f7c4e0585a7ab2f7bd2a23fb1b0cb3412960c8c3e173d368c58ae6f35d23fb0",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/1bf291259fd8db2398b1da60806776996ac9ade65d71a70c828029c980b445e7-59ca484662ed7d12.json",
+              "sha256": "59ca484662ed7d120e372ac174f04604d58f21ab68462fe64587a98e170a8083",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180353",
+          "target_starts_at": "2026-08-31T17:30:00Z"
+        },
+        {
+          "away_team": "Хегельманн Литауэн",
+          "event_order": 6,
+          "home_team": "Джюгас Тельшяй",
+          "provider_away_team_id": "cmri0gzqpbwu0lb07uq2s6uz5",
+          "provider_fixture_id": "cmt1fhrqf76s7pd07jizph8ni",
+          "provider_home_team_id": "cmrikxznnexn9s107rjehapqg",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/b8f026109b4c3adb5008c1822a7b792be06707048712aee793b5342bac61fc0d-fdb20508ce126276.json",
+              "sha256": "fdb20508ce1262763d8b54a810bbd6bdcf8645d2da2bc59c41d31340b57bcbab",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/8f0f4b563cde2c91b734c7d2cd5384848b9fb82a1e9ba3bc96dc53c9ae145aa9-9aef47afaecc6eec.json",
+              "sha256": "9aef47afaecc6eec0e6f1f7d1ecb6f3a816909c8d829a3a5ce26e389373907d7",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180354",
+          "target_starts_at": "2026-08-31T15:45:00Z"
+        },
+        {
+          "away_team": "Университатя Крайова",
+          "event_order": 7,
+          "home_team": "Рапид Бухарест",
+          "provider_away_team_id": "cmri0gkbebr6llb077fe460uo",
+          "provider_fixture_id": "cmsvp4w0x9eozpg07dhymrpox",
+          "provider_home_team_id": "cmri6v6pke9ozlb07tqu048g7",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/11550a4790bda9021da565cde2c4b3a32ed79510218935f71e5f3a2ab29019f3-031ee18e5389d30a.json",
+              "sha256": "031ee18e5389d30a86f379ace548b5e2a094954b49923cec73efe26987cdf5fe",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/b43a4646f123c9e5333c5b8a73ea0f5066badaf349d72982a30e61cd98819c08-7e282f19f3d62b44.json",
+              "sha256": "7e282f19f3d62b4448c61ee4d890c13503b342367e05726d827710cb6ccc8847",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180355",
+          "target_starts_at": "2026-08-31T17:30:00Z"
+        },
+        {
+          "away_team": "Барри Таун",
+          "event_order": 8,
+          "home_team": "Бритон Ферри",
+          "provider_away_team_id": "cmril1r61g5x6s107rb0eq9ep",
+          "provider_fixture_id": "cmt1fhnip76ahpd07pxf0he2f",
+          "provider_home_team_id": "cmril1uwcg7rus107zo4vjg2c",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/7534fad0072543a0e6f9b9b9f9b10e15a19d159351b845c04f7177314a1caeee-4e1d4ac6bd9656cc.json",
+              "sha256": "4e1d4ac6bd9656ccf16fc7359df4e9467031a635a864fff4d1c3705927e6c17c",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/664d89b6a37e378a46d2a982f1871cad8a3e66f014e333e76571ca928414e18c-1c86a04a4469077a.json",
+              "sha256": "1c86a04a4469077a38d1c11ccf7c2f74a6d4bdade76e78f4249517217e269527",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180356",
+          "target_starts_at": "2026-08-31T13:30:00Z"
+        },
+        {
+          "away_team": "Лахти",
+          "event_order": 9,
+          "home_team": "ВПС",
+          "provider_away_team_id": "cmril1siug6ous1077i5qcvwp",
+          "provider_fixture_id": "cmt1fhrrb76sbpd07v4vze7xq",
+          "provider_home_team_id": "cmril1silg6oos107pvd22k8a",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/920b4aeb68b23edb2c19df437ca5259b21a7326f71685c809a1790f88a7b9c91-257bcf185dbea2f3.json",
+              "sha256": "257bcf185dbea2f3bdf1cd33efd2f35e4d247b8bf43ec9682df6fb6bae7e8b92",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/49564215597155098bacb2cd1c2bcff60788bc0bf971e3372973fbaa0b07311d-b64399aba26953d2.json",
+              "sha256": "b64399aba26953d298827473e780140d5bb857044538e9c655b1e20d2a7023e5",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180357",
+          "target_starts_at": "2026-08-31T16:00:00Z"
+        },
+        {
+          "away_team": "КуПС",
+          "event_order": 10,
+          "home_team": "Интер Турку",
+          "provider_away_team_id": "cmri0gkctbr76lb07cyn1exu7",
+          "provider_fixture_id": "cmt1fhrpf76s1pd07l8i6qx2s",
+          "provider_home_team_id": "cmri0gzr8bwuhlb07r200eq0g",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/9660c743f1194116ada6758af6353d50503bc303b8dc6376e355189b201c6aa8-bbc6e1b8941f0ad6.json",
+              "sha256": "bbc6e1b8941f0ad6524ba68872909d493860ea102fbfa73adb9ed281c880b5cf",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/f838e1d94e9bd74e5ede45595efdbe46f48180282315da266c86bade11a3c67e-8fa985f6f95ccbfb.json",
+              "sha256": "8fa985f6f95ccbfb199aa12c9d1917ef4ffe2d89205c6d27e7945d819e49dcbb",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180358",
+          "target_starts_at": "2026-08-31T16:00:00Z"
+        },
+        {
+          "away_team": "Яро",
+          "event_order": 11,
+          "home_team": "Мариехамн",
+          "provider_away_team_id": "cmril1sjdg6p7s107560ttcq7",
+          "provider_fixture_id": "cmt1fhrpv76s5pd07wcghsrhf",
+          "provider_home_team_id": "cmril1sjag6p5s1079nhy3ne7",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/b50ba606ee00da0034aff55ac86ff02c0624b9afd2931124d22bd849d97964b5-1293cc85a0ab7288.json",
+              "sha256": "1293cc85a0ab7288972a4a1b4f42f464628764e46b586909505bf9a115f71162",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/4c338271ff5d9c00b4efcc2ceac64dcc455e9b643bf51d2c71e8570fe2a3fa17-4b77d548918ea66e.json",
+              "sha256": "4b77d548918ea66eddeb44590f46369ce0c9f1e9be61627d2375afd961ba4838",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180359",
+          "target_starts_at": "2026-08-31T16:00:00Z"
+        },
+        {
+          "away_team": "СИК",
+          "event_order": 12,
+          "home_team": "Оулу",
+          "provider_away_team_id": "cmril1siig6oms107qecytybz",
+          "provider_fixture_id": "cmt1fhrl476rjpd07umqsl4a5",
+          "provider_home_team_id": "cmril1sjfg6p9s107t5ujy8n5",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/ca92ff68cd9d6862490f76723b04d82a2aad3b6e28e0871afbbe7221f837fac1-a947629999cc325d.json",
+              "sha256": "a947629999cc325d1f32a7bda6d4bddbecfdb394e92f400da12de33854f6c0dc",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/118934344e3885d1423d29a1b592e9994968cf396b3027132e0a629e449f5074-951f47d1a7eb486e.json",
+              "sha256": "951f47d1a7eb486ef0d85ee8f7e481cd957b633aa46ae86c0a4bf43cde1b0aa7",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180360",
+          "target_starts_at": "2026-08-31T16:00:00Z"
+        },
+        {
+          "away_team": "Арау",
+          "event_order": 13,
+          "home_team": "Виль",
+          "provider_away_team_id": "cmrhybeyjb00rlb07izwcz507",
+          "provider_fixture_id": "cmt1fhtxt770kpd072hlodrp7",
+          "provider_home_team_id": "cmri0epn8b3j5lb073rmvbe6v",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/7335ea7479d4e977b8ee384ff65cc800821430ddd36903c1e2ac5fb392dfe24c-a1537e0eb33be690.json",
+              "sha256": "a1537e0eb33be690694e7777957ba63502be81fc20a730932381daeddb1f2b13",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/48fcd70e4ef26d5569a093c26e08a65c1a87d9eb16265332fe5bbf0986af5abe-7de2f3edab7966a4.json",
+              "sha256": "7de2f3edab7966a4b1887e1654690ca5b49abd657a4196ae2013e4408976fd4e",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180361",
+          "target_starts_at": "2026-08-31T18:15:00Z"
+        },
+        {
+          "away_team": "Норрбю",
+          "event_order": 14,
+          "home_team": "Сундсваль",
+          "provider_away_team_id": "cmr7hu3cm3il3rx064sferok5",
+          "provider_fixture_id": "cmt1fhuar771spd07i27m4nmv",
+          "provider_home_team_id": "cmr7hu3cx3il9rx06n5c9wedz",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/92a10b90289d7555de0beb2525a39adb381c33b783e50abbe1b270515ff48ef3-c8214d26a328e703.json",
+              "sha256": "c8214d26a328e703b41374b51457fabd7c37e6d72d9beb1033fad84460fb9913",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/goal-api-v1/snapshots/9cf6d8529b799f4edec467639a64aa9d799a3740db6fd320d7d76f642ee37f0e-ea7a9cc5499fc028.json",
+              "sha256": "ea7a9cc5499fc028be5889443eab02d9cda56e4a9158e1727eff0e5ad786f1c2",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180362",
+          "target_starts_at": "2026-08-31T17:00:00Z"
+        }
+      ],
+      "provider": "goal-api-v1",
+      "requested_history_size": 10,
+      "schedule_binding": {
+        "path": "reports/sports-analytics/4992/goal-auto/captures/20260830T145756343714Z/schedule/schedule-source-candidates.json",
+        "sha256": "8ba35a53cfe6fa60977196fcf31070600adc0131d020f51c346c0104c2045ae8"
+      },
+      "target_detail": {
+        "artifact_type": "frozen_final_input",
+        "path": "reports/rehearsal/evening-4992-20260831T133000Z/attempts/final-01-20260831T130017731084Z-bebf2946/final-input.json",
+        "sha256": "0e6bbba33ee32e3c0c462cc324d361da9b192a865c9cae5c1075defbd63a1e8d"
+      }
+    },
+    {
+      "as_of": "2026-09-01T13:30:13.640481Z",
+      "deadline": "2026-09-01T14:00:00Z",
+      "drawing_fingerprint": "4b2c3c2f7da7920019eda7103b4c1cab1b63999c92c8cfaf797353f300eb5be4",
+      "drawing_id": 12086,
+      "drawing_number": 4993,
+      "events": [
+        {
+          "away_team": "Бристоль Сити",
+          "event_order": 0,
+          "home_team": "Престон",
+          "provider_away_team_id": "cmr7huvos3t6yrx06dykyw3hq",
+          "provider_fixture_id": "cmt1fhzo777sdpd074jv1u406",
+          "provider_home_team_id": "cmr7huvo73t6krx06seqnouaq",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/39dc7cea4d534fe6ac232f003db4f236ae142df94589041f712ab407c73cfd51-20ea5f0fd13100da.json",
+              "sha256": "20ea5f0fd13100dabbba9e88c96b5666e4c74832f88142678887cba53b6e1008",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/c330992ae88e79bb93efb2fb5b951e87e4dceefcafc004000a8be2fb350478ff-331c5f4070cfba98.json",
+              "sha256": "331c5f4070cfba98e8befcb5bb8e0d598586a9a06a33257d45d417fb461dd758",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180393",
+          "target_starts_at": "2026-09-01T18:45:00Z"
+        },
+        {
+          "away_team": "Дерби Каунти",
+          "event_order": 1,
+          "home_team": "Портсмут",
+          "provider_away_team_id": "cmr7huvok3t6trx06jnbq6bi2",
+          "provider_fixture_id": "cmt1fhznv77s9pd072m10rko8",
+          "provider_home_team_id": "cmr7huvo23t6jrx0607cgios8",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/504f89ae9852eae0deb5a03b3f173cc0801d8664a7ac3712d14de8acc6add6fd-8bccb21d2acfaa16.json",
+              "sha256": "8bccb21d2acfaa16851ad831b9afae41142b089d7e8cc9d04b93a9de8e0164bd",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/91c17829729286a2ef0da7b2d90acd0e6e7b5341ed5c757b90c50aacc14357bb-b46a28889f327836.json",
+              "sha256": "b46a28889f3278360206a5ac48e291d8380a025dcb9a473e059d3c7f87626158",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180394",
+          "target_starts_at": "2026-09-01T18:45:00Z"
+        },
+        {
+          "away_team": "Блэкберн Роверс",
+          "event_order": 2,
+          "home_team": "Линкольн Сити",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180395",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Саутгемптон",
+          "event_order": 3,
+          "home_team": "Бирмингем Сити",
+          "provider_away_team_id": "cmr7huvod3t6orx06wm2e3hxa",
+          "provider_fixture_id": "cmt1fhzms77s3pd07w0sl4d76",
+          "provider_home_team_id": "cmr7huvoh3t6rrx06yfscuqyr",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/9841d952e1ea288789b1afbb47bb42526fc785d4f64fbe7ccbba970b4f684670-cfb8020e924efe3f.json",
+              "sha256": "cfb8020e924efe3f83d13b566f2ecc4e4b3b4d307f417e6279d824ef49b6ab2e",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/22182cb09d4f943361dd6f0df92e98506fbc5d6feffc1bba7c093bd1df0328f9-2d248b6a305cee3a.json",
+              "sha256": "2d248b6a305cee3ab049c99f8cebe8b614030b870ae6af4e50e431113cbf475a",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180396",
+          "target_starts_at": "2026-09-01T19:00:00Z"
+        },
+        {
+          "away_team": "Норвич",
+          "event_order": 4,
+          "home_team": "Сток Сити",
+          "provider_away_team_id": "cmr7huvot3t6zrx065al0k8o1",
+          "provider_fixture_id": "cmt1fi1hl7817pd07dbgeuy63",
+          "provider_home_team_id": "cmr7huvox3t72rx06g3wylqfm",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/4e9f350f458172c5ccb673374732672ca3dc7bcc1d97993e11881705af3f05e2-aef8a53c6685da9f.json",
+              "sha256": "aef8a53c6685da9fa2814db93472f302762b08b0e5f548c2b997237e2b4ff52c",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/16fb0784d4d071fd19c190323b6b8a2cc2b32f7b390cf5468b5f0f9b64f443ea-3c079056acce8661.json",
+              "sha256": "3c079056acce86616f3524d1ad371d35975dead902555173edd757ded3588a31",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180397",
+          "target_starts_at": "2026-09-01T19:00:00Z"
+        },
+        {
+          "away_team": "Шеффилд Уэнсдэй",
+          "event_order": 5,
+          "home_team": "Уиком Уондерерс",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180398",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Стивенидж",
+          "event_order": 6,
+          "home_team": "Питерборо Юнайтед",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180399",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Лейтон Ориент",
+          "event_order": 7,
+          "home_team": "Бромли",
+          "provider_away_team_id": "cmr7hvauz3yuarx06fz82g0jl",
+          "provider_fixture_id": "cmt1fi01f77ukpd07vkgf21vy",
+          "provider_home_team_id": "cmr7hvatp3yt8rx06mascz8k3",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/6a0a5b58e3bfcfa53a5ac4b14816dad0d889cb7c26cd40e75eda6fed5c4e8694-7ccecfe379b24c1c.json",
+              "sha256": "7ccecfe379b24c1c300474c2faa52ef39252716726523e30cac91ce9d1df6732",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/d047220ee330f4b73ecdfbb3b857a044f372deda591bd2855b93850b6edad65e-e0e15243e136f0d2.json",
+              "sha256": "e0e15243e136f0d2035dfdc01789d8e84096d27df58ec1e5439ff5a88dc08a4d",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180400",
+          "target_starts_at": "2026-09-01T18:45:00Z"
+        },
+        {
+          "away_team": "Олдэм Атлетик",
+          "event_order": 8,
+          "home_team": "Флитвуд",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180401",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Порт Вейл",
+          "event_order": 9,
+          "home_team": "Суиндон Таун",
+          "provider_away_team_id": "cmr7hvavm3yutrx068jut60zr",
+          "provider_fixture_id": "cmt1fhzpd77stpd07xr3g7aj8",
+          "provider_home_team_id": "cmr7hvavp3yuvrx0685m522qy",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/911f4b3d34f617bd50a288fb969f34932eb9cf9dc69bf57886a629214b6cdd21-0d8c86443849c3cd.json",
+              "sha256": "0d8c86443849c3cd6add8b253b5b20381eb68096aaa995144578404ff6dac7e1",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/61e8b5b3bd4805e4d4a470d69b76c5fab7a8fd7a79e4628c04d12628f4bdd415-e490cb199f22af9d.json",
+              "sha256": "e490cb199f22af9dbc77be7efedfe0242433f5849e714bf0c5fe1f702896851e",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180402",
+          "target_starts_at": "2026-09-01T18:45:00Z"
+        },
+        {
+          "away_team": "Кремонезе",
+          "event_order": 10,
+          "home_team": "Парма",
+          "provider_away_team_id": "cmr7m6brg5t2wrx06so6f198h",
+          "provider_fixture_id": "cmt1fhy0o77jwpd07fs0fz8hu",
+          "provider_home_team_id": "cmr7m6brh5t2xrx061j6yk7qx",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/f37d66ca435c07cc701a5fa8a5d88d9b871c328304709c51637ebcd6a734d847-7dfb995a06ee878e.json",
+              "sha256": "7dfb995a06ee878eeb7461826cd4814f21a9c0a0f5eafac6759b13233b0eb42e",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/07430c90e1b73a53ab4023527d55386dc45db17303b275a65dca22b3b1af7b83-939881f2ce814066.json",
+              "sha256": "939881f2ce8140667c0d86c84d6562f611d0476f192541652609db96386e26fe",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180403",
+          "target_starts_at": "2026-09-01T16:00:00Z"
+        },
+        {
+          "away_team": "ЦСКА Москва",
+          "event_order": 11,
+          "home_team": "Ростов",
+          "provider_away_team_id": "cmr7uolsu8mggrx06zkk540w9",
+          "provider_fixture_id": "cmt1fhy8077l2pd07onc20ol7",
+          "provider_home_team_id": "cmr7uolsy8mgirx06lps95sxi",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/04abdf6316041a23307485e390421efcdb51fa8f4e38227baa2961a36ddab3f0-eea6ba7201db9320.json",
+              "sha256": "eea6ba7201db93205200a7731ded2e2a4e9091ca710d6b696745e136c488f1d3",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/5082e73a29ea8cae08496c15d031227db6d355eaf56efe1fa5b696be71c3458c-7278b2c05b395154.json",
+              "sha256": "7278b2c05b395154efe764c7f5ac4fb8f142bc3fecf3164420c4c69ff887a02f",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180404",
+          "target_starts_at": "2026-09-01T17:45:00Z"
+        },
+        {
+          "away_team": "Каламата",
+          "event_order": 12,
+          "home_team": "НФК Волос",
+          "provider_away_team_id": "cmrib5seufmvtlb07afphob3j",
+          "provider_fixture_id": "cmta1m488q79kt107es3i5840",
+          "provider_home_team_id": "cmrib5shyfmxklb07n3jigfuk",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/e917c6111f3938f8c0822c2c04faa780721f02cd3b5dacca03e063f2f3458d0b-7b758888737270d8.json",
+              "sha256": "7b758888737270d87967007d8d6c3d93c582056ba8026d3efb5e281ec0e360b3",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/234bb5b2922b2d7365ef6458012407cc7aa4a99913f1d37fce7e3c313fa15953-30962d903adaab5e.json",
+              "sha256": "30962d903adaab5edd9f8f8300b01b7db97699fe226c622a4ac4b7ee1762f771",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180405",
+          "target_starts_at": "2026-09-01T15:00:00Z"
+        },
+        {
+          "away_team": "ЕНППИ",
+          "event_order": 13,
+          "home_team": "Газль Эль-Махалла",
+          "provider_away_team_id": "cmri90p9sewshlb07wc6auu3b",
+          "provider_fixture_id": "cmt1fhxru77ispd07cv817fb2",
+          "provider_home_team_id": "cmri90pa6ewsqlb0758gikx6u",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/60486521d8a3114f00a41bc0f81d3817751aa07890d7de2b35ea3d928d06b70b-5ff60372bc95ce27.json",
+              "sha256": "5ff60372bc95ce2710bcf375bc193a4c76d66844fb6652bf8cbf3f6035a4565f",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/0fdb2039a9f115b068b943df45f3f4da525a30da83c34eb69615aa1994edd81e-5070f6baa6047b41.json",
+              "sha256": "5070f6baa6047b41065eeee5f1ff3eca7773ffee76f58c1f7668eb018318c194",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180406",
+          "target_starts_at": "2026-09-01T14:00:00Z"
+        },
+        {
+          "away_team": "ФК ЗЕД",
+          "event_order": 14,
+          "home_team": "Тала Аль Гаиш",
+          "provider_away_team_id": "cmri90pc4ewtolb076zb2a3n9",
+          "provider_fixture_id": "cmt1fhwdn77c0pd07oqtz6s9c",
+          "provider_home_team_id": "cmr7djfra1kverx06nxr42d8z",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/3d7badd3e53dc2665fee2e1dc575bb13cdbdbf727c9556a52e779e00b2ebffe8-b5e4f2db9a86f7ca.json",
+              "sha256": "b5e4f2db9a86f7ca32cb89471f0020b3de691958f003ae3aaa3ac1cd5ed74213",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/goal-api-v1/snapshots/775342b381a06e69ef7b6b592d569c2a725778dead50d5d675971d08fff019c5-712f00eec3dde77b.json",
+              "sha256": "712f00eec3dde77b172bb5ba3b7d344283b5bd727005e8046abd307cfc5b3301",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180407",
+          "target_starts_at": "2026-09-01T14:00:00Z"
+        }
+      ],
+      "provider": "goal-api-v1",
+      "requested_history_size": 10,
+      "schedule_binding": {
+        "path": "reports/sports-analytics/4993/goal-auto/captures/20260831T143819975390Z/schedule/schedule-source-candidates.json",
+        "sha256": "db554ad5ca0d6eefca1cbf728ac4c5d1bb996045528edce45169fca99b84d938"
+      },
+      "target_detail": {
+        "artifact_type": "frozen_final_input",
+        "path": "reports/rehearsal/evening-4993-20260901T140000Z/attempts/final-01-20260901T133011314613Z-c5494668/final-input.json",
+        "sha256": "81c892362d9bee025200b2b4d9b3145c24b4d26adf7d9ddaa2ac7ac06468274d"
+      }
+    },
+    {
+      "as_of": "2026-09-02T13:30:06.081128Z",
+      "deadline": "2026-09-02T14:00:00Z",
+      "drawing_fingerprint": "dd617ca4894b31bd17a17f1304c40754cc317472d91d04e4f9824b3f99abe34f",
+      "drawing_id": 12089,
+      "drawing_number": 4994,
+      "events": [
+        {
+          "away_team": "Рексхэм",
+          "event_order": 0,
+          "home_team": "Миллуолл",
+          "provider_away_team_id": "cmr7huvo03t6hrx062mqyere6",
+          "provider_fixture_id": "cmt1fid5x795fpd07g0jt1w5y",
+          "provider_home_team_id": "cmr7huvoy3t73rx06x9mjgow4",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/0d22bb4cc7526f5d76947ec12435ad52ed725b0ad907ed13982cc2b03331c2c4-93cfe24ea742cf0f.json",
+              "sha256": "93cfe24ea742cf0f07d73bab168a13adea1f3b1d3e3ff18a5239694e30097d68",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/1e443a0e0725e110896f658313f5076c440a68b6dce0648950bd10f643864972-95c10db072ea45c6.json",
+              "sha256": "95c10db072ea45c62265e91be003988ffc698839a5ecf05c76c10d90fffd5b0e",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180438",
+          "target_starts_at": "2026-09-02T18:45:00Z"
+        },
+        {
+          "away_team": "Мидлсбро",
+          "event_order": 1,
+          "home_team": "Бернли",
+          "provider_away_team_id": "cmr7huvoa3t6mrx06hzky3nwa",
+          "provider_fixture_id": "cmt1fifry79e1pd07emkae96w",
+          "provider_home_team_id": "cmr7hvaw83yvbrx06jcvozl9w",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/e8ce34140c43397d273d82f33a9aaadee9247ad5bb33dfce1378829d2514feac-c211b68ea82296d0.json",
+              "sha256": "c211b68ea82296d0f76ba91272a240ae496e7eac23d7598e67772d1ccdeab8f3",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/6a06eda781436cc5e7199559f6dab920631a107e427018373da2a32b3cbcc986-cf49c912f57aa9d7.json",
+              "sha256": "cf49c912f57aa9d7f21f62e583e614518528c495137b79bf9dd0d0db75608e35",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180439",
+          "target_starts_at": "2026-09-02T19:00:00Z"
+        },
+        {
+          "away_team": "Блэкпул",
+          "event_order": 2,
+          "home_team": "Барнсли",
+          "provider_away_team_id": "cmr7hvawi3yvkrx0619ypiy8s",
+          "provider_fixture_id": "cmt1ficud794rpd07gdi8u029",
+          "provider_home_team_id": "cmr7hvawf3yvirx06hvnu63rm",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/af479884ac01529746889d45eaff5c1dbb86fb21024205c8742e1b7588aec20f-5c3762b8e6b86d7f.json",
+              "sha256": "5c3762b8e6b86d7fe18b64e80ba8ed228de343512467103c90ce91115b633bf7",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/5bddc2fee5a598577cb56d8fcc27ad0ed6bbfbb8e87f48931e7fb9a7147f84fb-94e2b90abe0c4e8a.json",
+              "sha256": "94e2b90abe0c4e8a842191df83a3503a62156d51c4bffdfa5267ed2c0be26802",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180440",
+          "target_starts_at": "2026-09-02T18:45:00Z"
+        },
+        {
+          "away_team": "Стокпорт",
+          "event_order": 3,
+          "home_team": "Лутон Таун",
+          "provider_away_team_id": "cmr7hvatm3yt6rx063pl1w41r",
+          "provider_fixture_id": "cmt1fid4v7957pd07kiu4tahr",
+          "provider_home_team_id": "cmr7hvatl3yt5rx06hkglv2ah",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/9e519b70789cff874e4748cb40e71386582c62de8024cc32b423413346506a22-cabe2a4c65ab9154.json",
+              "sha256": "cabe2a4c65ab9154a83d8c67ed06d51bc3af523a45bdf23fbfd599cbc876086b",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/37e7405ad9aa4fdba3bd8b2264a2e542ca9ab32d7c9726554ada83371fc5da2c-4e51c1d773663663.json",
+              "sha256": "4e51c1d773663663c460c16643c3cfe6b7d6ac04e05200dda0b66a08d6ec50ea",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180441",
+          "target_starts_at": "2026-09-02T18:45:00Z"
+        },
+        {
+          "away_team": "Милтон Кинс Донс",
+          "event_order": 4,
+          "home_team": "Уиган Атлетик",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180442",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Мансфилд Таун",
+          "event_order": 5,
+          "home_team": "Рединг",
+          "provider_away_team_id": "cmr7hvavf3yuqrx06af0d6za9",
+          "provider_fixture_id": "cmt1fifni79dvpd07n5bl0j0x",
+          "provider_home_team_id": "cmr7hvatn3yt7rx06e10wdwzk",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/5145609ef1dadc8842f03cbc7579dd7e22211685b729d48896c17a955564860d-14dbd34ed0b88957.json",
+              "sha256": "14dbd34ed0b88957b4822ee7294acb2c1924731aaab0a263e10d315ff1e70b47",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/337091564c0c864d99b322e3fb7919f38ab3c53db4727b5dbe9ec26637278c59-516dae7926b79c63.json",
+              "sha256": "516dae7926b79c63df02725f8c62ae1e3ac458d83dcd705ef137054bbdfac143",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180443",
+          "target_starts_at": "2026-09-02T19:00:00Z"
+        },
+        {
+          "away_team": "Сараево",
+          "event_order": 6,
+          "home_team": "Широки Бриег",
+          "provider_away_team_id": "cmri0gzorbwsjlb07annr6crx",
+          "provider_fixture_id": "cmt1fi77l78mrpd07pz1370ft",
+          "provider_home_team_id": "cmrikzi9ofhris1071g73wb8g",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/4593960938901b55f9875fb99837319b7b55a8cade7aa2374fccccc77a14f950-dc9cba6370d6f49b.json",
+              "sha256": "dc9cba6370d6f49becd62e1569e8ec7c1e3acc2df03cd7a6374b85039101cac1",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/dc86d2d800d8163b39ac47b5d27f1746f11efbecae6d278aeed2dcd732d9c4d6-48319e4bf9ce62cf.json",
+              "sha256": "48319e4bf9ce62cf55223b172def514d67588aee47f9534c736101050a08a6a7",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180444",
+          "target_starts_at": "2026-09-02T18:30:00Z"
+        },
+        {
+          "away_team": "Мидтьюлланд",
+          "event_order": 7,
+          "home_team": "АГФ Орхус",
+          "provider_away_team_id": "cmri0fmvtbft6lb07jj5ws9oo",
+          "provider_fixture_id": "cmt1fi9j878wzpd075iv12t1u",
+          "provider_home_team_id": "cmri0fmw6bftelb07n99r73p6",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/c4c7f02f6fa4610f0f825d12cf95528b1d93cbddbf5c8a1d0dda629ac814b427-304fbac5ec1b796d.json",
+              "sha256": "304fbac5ec1b796df2286542f5bd342d15110d3f97ec4664e9f016f7baeb2204",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/93923fb14c9ae951d26c846e17c9b22019dcefc8b359275e3e69f45a39098750-692c287373fd9af9.json",
+              "sha256": "692c287373fd9af9fc1c6b62a068d4290c803c35c489d7430284804b5d7e54b6",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180445",
+          "target_starts_at": "2026-09-02T18:00:00Z"
+        },
+        {
+          "away_team": "Аль Мокалун Аль-Араб",
+          "event_order": 8,
+          "home_team": "Эль Гуна",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180446",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Аль-Иттихад Аль-Искандери",
+          "event_order": 9,
+          "home_team": "Абу Каир Семад",
+          "provider_away_team_id": "cmri90p9pewselb078n5npl85",
+          "provider_fixture_id": "cmt1fi9ft78wqpd07nrhpjp6z",
+          "provider_home_team_id": "cmri90pevewvrlb07v57ax2d7",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/1d0dbfe05dc3ea74d49b768eba906673814cf75bcf1b6a5fcbcb4ef526792a90-cb4e948c8e038322.json",
+              "sha256": "cb4e948c8e0383226c5da1b524f811171c29857ddae4857f728f99fc95a4e42e",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/16e9c2d19699497c3642b3e7f27ee4a694f83c4f8a5e2cbfcc48f20186794082-7de396350753aaa1.json",
+              "sha256": "7de396350753aaa10db900257d64aa61f48d9a73f106e19b0323b175663ad7e5",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180447",
+          "target_starts_at": "2026-09-02T17:00:00Z"
+        },
+        {
+          "away_team": "Мардин ББ",
+          "event_order": 10,
+          "home_team": "Сивасспор",
+          "provider_away_team_id": "cmri0f44jb8vilb07acxetxmt",
+          "provider_fixture_id": "cmt1fi9e278wkpd07gqyt0bqu",
+          "provider_home_team_id": "cmri0eyi5b6rplb0729rh81ya",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/02e8b73345f84d18e6907b15588013b0f6e48789be3956eada662c0aea5087e6-0a930d9420f531ca.json",
+              "sha256": "0a930d9420f531caea41c61e6d645705bba622b4ab4bfe4ce8e3bcc8dd32330e",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/383f0fe89d9d3ac0298f0c18cf76c50dfb06d539744cde7d9bcd2aa7cbaec80e-279eeb30d872cd68.json",
+              "sha256": "279eeb30d872cd688f2ea7a825e8ca6c758e27bfab2d015a8767ed666c050963",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180448",
+          "target_starts_at": "2026-09-02T17:00:00Z"
+        },
+        {
+          "away_team": "Градец Кралове",
+          "event_order": 11,
+          "home_team": "Зброевка Брно",
+          "provider_away_team_id": "cmr7fq61131nvrx06s2o3c4u2",
+          "provider_fixture_id": "cmt1fi6xx78llpd07gg2dhwic",
+          "provider_home_team_id": "cmri4q3w1dg9xlb0720omia1y",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/a2cc50c3a2a24db71e6f0932c2dea0b13edfa74f6bd90ab3e68e752698ea8756-7d515671e3b55c1a.json",
+              "sha256": "7d515671e3b55c1a3e50e0fc3df11f05e0da3ee5deaeb14407fffaa72c8d15e3",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/8773ab44b0b1e46d1e21bd2f9853f59b035355e67af6e4ce87a903af08500752-9b7a39c1c2e61540.json",
+              "sha256": "9b7a39c1c2e6154085569f1d05aa7b2aa0e245ad699ce3d784ff7a76c7ecb78e",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180449",
+          "target_starts_at": "2026-09-02T16:00:00Z"
+        },
+        {
+          "away_team": "Яблонец",
+          "event_order": 12,
+          "home_team": "Богемианс 1905",
+          "provider_away_team_id": "cmri0gzq4bwtilb07b84l62h9",
+          "provider_fixture_id": "cmsl1gmg0shx7oe07dhr3kmkd",
+          "provider_home_team_id": "cmri4pzevddczlb07ju7r3z5e",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/ff017658f688bf06b228bd6eee56f00b98173b06ed93bd767af4ad3ed93dfdfe-8d0420d2e4f01b61.json",
+              "sha256": "8d0420d2e4f01b6171a862fe31f22f5aceda46d3ba2bb7d661b42476f0cdb3ac",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/ab7e15241c35b104ceebdecc40693cb75c450e88c1381cdd3c1b1df91e5eff14-73c0ecca2f7f83d3.json",
+              "sha256": "73c0ecca2f7f83d332de10639437c4325a46ae843543844cf54ab88d0604948f",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180450",
+          "target_starts_at": "2026-09-02T18:00:00Z"
+        },
+        {
+          "away_team": "Сент-Джонстон",
+          "event_order": 13,
+          "home_team": "ФК Данди",
+          "provider_away_team_id": "cmrib4lnef769lb0758pw1rbk",
+          "provider_fixture_id": "cmt1ficpg794bpd07u1z1g0gx",
+          "provider_home_team_id": "cmrib4lm4f758lb07tnptfps8",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/40d32bf7f5340059ed95cb31fd125b732688185984d63ee2cabd30db7cc4d179-106f0a34be64cc81.json",
+              "sha256": "106f0a34be64cc816bee891f1bee5f9c16f969633117093aa99f65ea699925cb",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/d0111ba9c067d9d5bdd125abb0134d47dc0f6df7ecdad0ec367fa59e897ace78-8d5f7d168cdabfbb.json",
+              "sha256": "8d5f7d168cdabfbb87f4ddc8d3686fe1cd4fea823d2ff68fd0a7023fc26e30ca",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180451",
+          "target_starts_at": "2026-09-02T18:45:00Z"
+        },
+        {
+          "away_team": "Сент-Миррен",
+          "event_order": 14,
+          "home_team": "Килмарнок",
+          "provider_away_team_id": "cmrib4lm5f759lb07udlbqgj3",
+          "provider_fixture_id": "cmt1ficqd794jpd07foi3l6gs",
+          "provider_home_team_id": "cmrib4lmaf75dlb07qei66gxm",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/8a6c3d883b84ab298e3e298db7a171bb0123a261cbc8bd8435e1483cecb0fc17-5206a450ad8ad922.json",
+              "sha256": "5206a450ad8ad922bb6d1b802faf972d61cc65981b47f88946db48a6534d0d87",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/goal-api-v1/snapshots/0f82379783d7d3e67fd56d7093d2deb5e2556b68410653b77f681454b203c16b-96daa7d64d15881e.json",
+              "sha256": "96daa7d64d15881e4719ff47bf8c793cff0ff5abfad311fe20fc0012020f3a57",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180452",
+          "target_starts_at": "2026-09-02T18:45:00Z"
+        }
+      ],
+      "provider": "goal-api-v1",
+      "requested_history_size": 10,
+      "schedule_binding": {
+        "path": "reports/sports-analytics/4994/goal-auto/captures/20260901T143425945878Z/schedule/schedule-source-candidates.json",
+        "sha256": "f5114584165cfdaeb62e3c48f94f1e1c4bb3a0c8cd051a45508694b01e5b9670"
+      },
+      "target_detail": {
+        "artifact_type": "frozen_final_input",
+        "path": "reports/rehearsal/evening-4994-20260902T140000Z/attempts/final-01-20260902T133005745430Z-a69ef84f/final-input.json",
+        "sha256": "3a721619aaf69daab6e2e6f5b8e078f79bd7216aedc24b284449b619345ff119"
+      }
+    },
+    {
+      "as_of": "2026-09-03T14:55:12.104098Z",
+      "deadline": "2026-09-03T15:55:00Z",
+      "drawing_fingerprint": "982068d63577a845c3a366bd7f18b73f3ecb3a51a6db78d11f233329d8365e73",
+      "drawing_id": 12092,
+      "drawing_number": 4995,
+      "events": [
+        {
+          "away_team": "Сельта",
+          "event_order": 0,
+          "home_team": "Реал Сосьедад",
+          "provider_away_team_id": "cmr7m55ur5eg9rx06xsiwmt0q",
+          "provider_fixture_id": "cmt1fijd279v2pd07jzzt5rcp",
+          "provider_home_team_id": "cmr7m55u35efzrx06wfbx1eip",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/87ae73481b1d0d9ea675eb73bae0a826e93ce508c9e8669c2922e13d72adf5ed-590adfe099ecb41d.json",
+              "sha256": "590adfe099ecb41d098804133bedcdf0c32a5dc431f9d226efc53d53bc555cba",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/6f3824f75ed0e448681d875af71bf4d4e1af3a99393e78637d8ed1f3b97d628d-53a59f08a584c8b8.json",
+              "sha256": "53a59f08a584c8b86fafeb382124ff8e60883772d866d791eb66d5f391ff9ad3",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180483",
+          "target_starts_at": "2026-09-03T19:00:00Z"
+        },
+        {
+          "away_team": "Лилль",
+          "event_order": 1,
+          "home_team": "Тулуза",
+          "provider_away_team_id": "cmr7oa1go6g16rx06ws7j9hiq",
+          "provider_fixture_id": "cmt1fijg779vepd079vi9p0tl",
+          "provider_home_team_id": "cmr7oa1gq6g18rx06nhqgyww7",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/bd5dd3a72580a41e957f8879af2b5ef6cc7fae8906337a2fa4f01077b4881f9f-a119b076e045bb23.json",
+              "sha256": "a119b076e045bb231f59d8e46f3956b6763afff194ae7d4e6560f1708bbf4290",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/d01c5adee6f1e1c8fa477951e5842c12180a55ee748bf1e180cbaf0c5f164c8c-6a1dfe175d18c387.json",
+              "sha256": "6a1dfe175d18c387ecc20ed9bd659a0c09556a2f52b82d56f5532484cee2f3d5",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180484",
+          "target_starts_at": "2026-09-03T18:45:00Z"
+        },
+        {
+          "away_team": "Добруджа",
+          "event_order": 2,
+          "home_team": "Локомотив Горна-Оряховица",
+          "provider_away_team_id": "cmri6ui64e0u9lb07e2c865dq",
+          "provider_fixture_id": "cmt1fiiob79rrpd07ufjgqevi",
+          "provider_home_team_id": "cmri6ui4ae0swlb07g4h56nx9",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/d230bbdef67072e9c41ce6853c57dea7029cad61ccc5e675425a4f22a1de0a6c-26064909a35befb7.json",
+              "sha256": "26064909a35befb77ec659df3e86eaeecef1d4483b60dacf206803a7c32574e2",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/650eb2297af6c1337a5ab91441f1db6e408e00b7f1e4b0ef70903ab1adc551eb-edbd958febdc8f9b.json",
+              "sha256": "edbd958febdc8f9b84f6f1f327873ae5ea91a97540a5500d66cb1635774598de",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180485",
+          "target_starts_at": "2026-09-03T16:00:00Z"
+        },
+        {
+          "away_team": "Интернациональ РС",
+          "event_order": 3,
+          "home_team": "Грэмио РС",
+          "provider_away_team_id": "cmr7wu5bp9mvrrx06rr57afeo",
+          "provider_fixture_id": "cmt71z79qtdt2t107nr3i6cam",
+          "provider_home_team_id": "cmr7benh00ye6rx06yu274ezj",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/e09ad70479f48bb14e2c019f8ff3c687f095c45315034b4da183d343ff90cb3c-3c37df2a8c54af20.json",
+              "sha256": "3c37df2a8c54af20eca1b400ef3a4c578a246107c75545a92132a9aba4581204",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/dd523457296fdaae0f592c8a3a68c2d2db2aba662e1f5a548fe7204505f26573-b8e397cf9c45dc43.json",
+              "sha256": "b8e397cf9c45dc43eda774a68dc334c5a735f5018337d67b4390203c91757513",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180486",
+          "target_starts_at": "2026-09-03T23:00:00Z"
+        },
+        {
+          "away_team": "Нордсьелланд",
+          "event_order": 4,
+          "home_team": "ФК Копенгаген",
+          "provider_away_team_id": "cmri0fmvzbft9lb075oywx1lt",
+          "provider_fixture_id": "cmt1fiig679qzpd07xdrbw46j",
+          "provider_home_team_id": "cmri0fmvsbft5lb07izaozfgj",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/cf2b1ee004e727309524ded488810adae18eb90bb4c0291486397f6dae346337-d78ef44493b4b887.json",
+              "sha256": "d78ef44493b4b887cd34954c7680d35357e7e86362446d5cf69a25ee28a81b2c",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/38bd9cc7296c5609add6a70c60ebee7e99505ebf1cddda0c2bfb1995b17b44e3-208b73043fae60a6.json",
+              "sha256": "208b73043fae60a681e664b3c6234a51c9915c0111ef826fa9f382b04bb864da",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180487",
+          "target_starts_at": "2026-09-03T18:00:00Z"
+        },
+        {
+          "away_team": "Ливорно",
+          "event_order": 5,
+          "home_team": "Новара",
+          "provider_away_team_id": "cmr7o9clz66wtrx06wlnzjg80",
+          "provider_fixture_id": "cmt1fi7f978n9pd0799dbqq3h",
+          "provider_home_team_id": "cmr7o9cly66wsrx060in9qb0f",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/0ce46dd7c6f2aad00f5be67fb62ae403e0c83385149847b0f1f40691cea05109-15692559078e84c9.json",
+              "sha256": "15692559078e84c9839fd2a8fdde1106c91c27e751bb8a25ee7844bc34a46a39",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/11dbf4eb8fe7ac9d19405ece15ec9f29820ab2c7a986037b9c25b83be211abd1-caf39b07b0cbc99d.json",
+              "sha256": "caf39b07b0cbc99de75eba470c85fac1d77263a68d0d82665e2c888fef5fa3a8",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180488",
+          "target_starts_at": "2026-09-03T18:00:00Z"
+        },
+        {
+          "away_team": "Бейтар Иерусалим",
+          "event_order": 6,
+          "home_team": "Хапоэль Тель-Авив",
+          "provider_away_team_id": "cmri0gzppbwt7lb0714nsowou",
+          "provider_fixture_id": "cmsp4mdgiu2v4pn06dt69pin9",
+          "provider_home_team_id": "cmri0gzprbwt9lb07z57wk308",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/ac5d834b5b3c839cf109b9474d62ac6fef203a62deda52cf7636f53a86eb85f5-4c2dffd08be94328.json",
+              "sha256": "4c2dffd08be94328db07c755dd8402df876674dc8b6277869473337f638d30f9",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/4f1f6da5d4ffed0535024a74af8f12a43bb0ed1284de55b523c563ae42d72148-011cd60bd82364ff.json",
+              "sha256": "011cd60bd82364ff6a34735051521392bbb77d26c63e57ba12f70eab3e6e0e80",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180489",
+          "target_starts_at": "2026-09-03T17:30:00Z"
+        },
+        {
+          "away_team": "ФК Пафос",
+          "event_order": 7,
+          "home_team": "Омония Никосия",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180490",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Рига ФК",
+          "event_order": 8,
+          "home_team": "Ригас Футбола Скола",
+          "provider_away_team_id": null,
+          "provider_fixture_id": null,
+          "provider_home_team_id": null,
+          "sources": {
+            "away": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            },
+            "home": {
+              "reason": "target_fixture_missing",
+              "status": "unavailable"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180491",
+          "target_starts_at": null
+        },
+        {
+          "away_team": "Гурник Забрже",
+          "event_order": 9,
+          "home_team": "Ракув",
+          "provider_away_team_id": "cmri0gkcqbr75lb07knzgw5yj",
+          "provider_fixture_id": "cmsp4mbpiu2hzpn06s3xrv2ii",
+          "provider_home_team_id": "cmri0gzopbwshlb072fuq65ip",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/fa24006b7fef7636fbecf3942e74b7e157f4e054f8244e132da56bd648893a97-f505018c4cc6e0f8.json",
+              "sha256": "f505018c4cc6e0f8f76dff027c1bfce15b5633938ecbe56b0bef38dbfe4b04f6",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/1d8ba9dbcb037c799567f20c521affad22a83f93bca4850f9b365314f381079d-24c3388fa726cae0.json",
+              "sha256": "24c3388fa726cae0f4d7ad4c02c903a3211e699e94060ac37f2030c9a0794739",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180492",
+          "target_starts_at": "2026-09-03T16:00:00Z"
+        },
+        {
+          "away_team": "Аль Хулуд",
+          "event_order": 10,
+          "home_team": "Аль Фейха",
+          "provider_away_team_id": "cmr7wtoat9gfmrx06aimkye9s",
+          "provider_fixture_id": "cmt1fiin179rlpd07qt4w5xjq",
+          "provider_home_team_id": "cmr7wtntc9gbxrx064di1bsof",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/6d70acb74154f96eb26245789487b21a32ebae11f1b06b5456b626ad51296acb-c31381002115cc4d.json",
+              "sha256": "c31381002115cc4d54c98b7c8c9d651e8e22a0201254bc3e59ac5c580301806f",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/ed147933ae259c897851a6daf80a9e48dabe37bbd5e7bd1eac4f5ff1b0dec575-4522098d2894e63a.json",
+              "sha256": "4522098d2894e63ada29d0f1df3b6dc34e548dc674b902133b0b6707cae8134f",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180493",
+          "target_starts_at": "2026-09-03T15:55:00Z"
+        },
+        {
+          "away_team": "Эрокспор",
+          "event_order": 11,
+          "home_team": "Бодрумспор",
+          "provider_away_team_id": "cmri0eyhdb6r8lb07k6saxxhy",
+          "provider_fixture_id": "cmt1fiicv79qhpd07jpd6p5us",
+          "provider_home_team_id": "cmri0eyfnb6qclb07aurdznkg",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/c801203d32bb37f49a4b2ebc45f61434c47264c8e2dbdf5985cfb77cb2b3ddff-d53ea4ce3c0117d1.json",
+              "sha256": "d53ea4ce3c0117d1219adf064b16284f88d4438b138cdfd1d4a3748d38bad40f",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/17e417d1b3e98d4cab741d8f2ab430f868572822241bcd6304010db1377055ef-52104167e1d396b1.json",
+              "sha256": "52104167e1d396b1d71d35abfb58cc5c1b76b7915365b00a327d98d47a50f9bf",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180494",
+          "target_starts_at": "2026-09-03T17:00:00Z"
+        },
+        {
+          "away_team": "Сьон",
+          "event_order": 12,
+          "home_team": "Базель",
+          "provider_away_team_id": "cmrhybeygb00plb07f4n1iv5z",
+          "provider_fixture_id": "cmt1fijbc79uqpd07w6weeioo",
+          "provider_home_team_id": "cmrhybeycb00nlb07f6m91jqg",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/ae299487056d6009b5e038c22b93153758e148bc36764233858f17f94d780195-7ea16f7856c80620.json",
+              "sha256": "7ea16f7856c80620a3e8069a2dd5569494e46fffadf16f816f769d2ca018ae93",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/b54f44313f994e3bc0dd22fc054c5c805f0e1e65985bee8aa01c636226a7cd75-c4b0fbf959a89f22.json",
+              "sha256": "c4b0fbf959a89f22fc61a66b965f74613f1978d5a4c1ce7f865275982ffafedf",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180495",
+          "target_starts_at": "2026-09-03T18:30:00Z"
+        },
+        {
+          "away_team": "Хартс",
+          "event_order": 13,
+          "home_team": "Хиберниан",
+          "provider_away_team_id": "cmri0gkbjbr6olb07h45rlrpu",
+          "provider_fixture_id": "cmt1fijgr79vgpd07q9v0bdiq",
+          "provider_home_team_id": "cmrib4lm2f756lb07db58upvs",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/18b0ec922c017c56090f3ede5c1b1a33cb3b3992ee276431533e47f8f86187db-b1752e29afb2e343.json",
+              "sha256": "b1752e29afb2e34363450af83c5a8cf9668fac20f6abb40f247fd43fc77820f2",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/fe0b11538bc70ca59a838d7b5acf5b09ee5314abc2dc49eacc73d0ea9757b3d3-6561311979ab6460.json",
+              "sha256": "6561311979ab646070724275889d68d0b1beb00a11559735727a66cde425cd78",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180496",
+          "target_starts_at": "2026-09-03T18:45:00Z"
+        },
+        {
+          "away_team": "Эмелек",
+          "event_order": 14,
+          "home_team": "Либертад Лоха",
+          "provider_away_team_id": "cmri8zcsdeeublb07xs8xqqqq",
+          "provider_fixture_id": "cmt71z7awtdtkt107n3mgjsx3",
+          "provider_home_team_id": "cmri8zcsqeeuhlb0706uuq6xp",
+          "sources": {
+            "away": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/bd8d82bce6ebcbb1e31cd9dfc3e6cb7277d3577f915e05ab92396b0ba0874bee-bba035165af2f438.json",
+              "sha256": "bba035165af2f43835877b9c8bf3cad231664e62a33ace47fbb04c1f5ea5cde1",
+              "status": "available"
+            },
+            "home": {
+              "artifact_type": "raw_goal_team_results_response",
+              "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/goal-api-v1/snapshots/1cb85b70d68a6e70f7199211fb1acfcd8f89b9d36fba1f4bcb2febc61958c3dc-c0d82dec94d01dd3.json",
+              "sha256": "c0d82dec94d01dd3afbb722732260fdd466a68084c47c6a9168c1ffc449c62b1",
+              "status": "available"
+            }
+          },
+          "sport": "football",
+          "target_event_id": "180497",
+          "target_starts_at": "2026-09-04T00:00:00Z"
+        }
+      ],
+      "provider": "goal-api-v1",
+      "requested_history_size": 10,
+      "schedule_binding": {
+        "path": "reports/sports-analytics/4995/goal-auto/captures/20260902T152306423003Z/schedule/schedule-source-candidates.json",
+        "sha256": "f7d8d99a990a91c1b044ae52542b88c45e3e1d36d4d4e77ad8002d68908b18ed"
+      },
+      "target_detail": {
+        "artifact_type": "frozen_final_input",
+        "path": "reports/rehearsal/evening-4995-20260903T155500Z/attempts/freshness_preflight-01-20260903T145504987711Z-d8fb031e/final-input.json",
+        "sha256": "4728899b757f5e75affdc0e2ed5b4bf26fbe1b9db88cc37dd34fe31cc801c1ff"
+      }
+    }
+  ]
+}

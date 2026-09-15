@@ -1,0 +1,74 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "observed_at": "2026-09-06T18:07:34.450989+03:00",
+  "launchctl_exit": 0,
+  "launchctl_stderr": "",
+  "mutation": false,
+  "parallel-challenger/totoai-parallel-sidecar.plist": {
+    "exists": true,
+    "bytes": 1175
+  },
+  "parallel-challenger/run-parallel-sidecar.sh": {
+    "exists": true,
+    "bytes": 599
+  },
+  "parallel-challenger/parallel-sidecar-status.json": {
+    "exists": false
+  },
+  "parallel-challenger/parallel-operator-result.json": {
+    "exists": false
+  },
+  "parallel-operator-result.json": {
+    "exists": false
+  },
+  "parallel-challenger/parallel-sidecar.stdout.log": {
+    "bytes": 0,
+    "mtime": "2026-09-06T18:00:05.113636+03:00",
+    "tail": ""
+  },
+  "parallel-challenger/parallel-sidecar.stderr.log": {
+    "bytes": 0,
+    "mtime": "2026-09-06T18:00:05.113812+03:00",
+    "tail": ""
+  },
+  "owned_pid_ps": "24009     1 R    07:58   4:56.57  70.9 /Library/Frameworks/Python.framework/Versions/3.10/Resources/Python.app/Contents/MacOS/Python\n",
+  "direct_child_pids": [],
+  "output_nodes": [
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306"
+  ],
+  "updated_at": "2026-09-06T18:08:03.903900+03:00",
+  "active_output_contents": [
+    "operator-bk-package.txt",
+    "research-comparison"
+  ],
+  "native_output_path_references": [
+    {
+      "line": 400,
+      "text": "status_path = root / \"sidecar-status.json\""
+    },
+    {
+      "line": 531,
+      "text": "status_path = sidecar_root / \"output\" / \"sidecar-status.json\""
+    },
+    {
+      "line": 915,
+      "text": "output / \"parallel-operator-result.json\","
+    }
+  ],
+  "final_checkpoint_at": "2026-09-06T18:08:32.630511+03:00",
+  "classification": "RUNNING_NOT_TERMINAL",
+  "launchd_state": "running",
+  "pid": 24009,
+  "launchd_runs": 1,
+  "last_exit_code": "never exited",
+  "live_process_observation": "R;elapsed07:58;CPUtime4:56.57;CPU70.9%;no direct children at18:08:03",
+  "exact_internal_phase": "Not observable from empty stdout/stderr and absent terminal status; no stack/profiler attached",
+  "observed_error": null,
+  "no_error_is_not_success": true,
+  "retry_status": "No retry-named top-level artifact observed; cannot infer hidden retry history. Active canonical launchd run owns PID24009.",
+  "next_native_action": "Keep current owned sidecar running; consume existing plan-bound watcher/status and terminal output. No launch/restart/retry while PID24009 active. Parent can take next bounded read-only checkpoint18:10MSK, or on terminal output; if failed/stopped inspect exact terminal reason before considering existing native retry.",
+  "expires_msk": "18:20",
+  "automatic_action_taken": false,
+  "completed_elsewhere_evidence": false,
+  "primary_best_coupon_work": "Not duplicated; separately owned by Euler"
+}

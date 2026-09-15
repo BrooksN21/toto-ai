@@ -1,0 +1,182 @@
+{
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "scope": "CONTEXT_ONLY",
+  "saved_at": "2026-09-06T09:26:32.277815+00:00",
+  "result": "EXACT_PUBLIC_FIXTURE_CONFIRMED_REVIEW_BINDING_PENDING",
+  "drawing_id": 12102,
+  "drawing_number": 4998,
+  "event_order_zero_based": 8,
+  "event_number_one_based": 9,
+  "target_event_id": 180641,
+  "target_fingerprint": "b3f20304ff03e14a5b252512c5e5b2f6b58e1b94e3d7b2b39f62c0589473cbb7",
+  "target_labels": {
+    "home": "СК Беверен",
+    "away": "Ауд-Хеверле Левен"
+  },
+  "confirmed_public_fixture": {
+    "home_name": "SK Beveren",
+    "away_name": "Oud-Heverlee Leuven",
+    "away_short_name": "OH Leuven",
+    "gender": "M",
+    "squad": "senior professional first teams; identified by Pro League 26/27 round5 and club/pro/M filters, not youth/reserve/women",
+    "squad_basis_is_contextual": true,
+    "competition": "Pro League",
+    "season": {
+      "name": "Pro League 26/27",
+      "year": "26/27",
+      "editor": false,
+      "id": 96616
+    },
+    "round": 5,
+    "venue": "Freethielstadion",
+    "starts_at_utc": "2026-09-06T17:15:00+00:00",
+    "starts_at_msk": "2026-09-06T20:15:00+03:00",
+    "starts_at_brussels": "2026-09-06T19:15:00+02:00",
+    "status": "scheduled",
+    "status_basis": [
+      "Sofascore status type=notstarted code=0",
+      "ViaSport JSON-LD EventScheduled"
+    ],
+    "sofascore_event_id": 16361913,
+    "sofascore_home_team_id": 4859,
+    "sofascore_away_team_id": 2918
+  },
+  "source_captures": [
+    {
+      "source_url": "https://www.skbeveren.be/voordeeltarief/",
+      "request_started_at": "2026-09-06T09:23:56.490351+00:00",
+      "role": "official",
+      "capture_method": "Python urllib HTTPS GET, default TLS, no credentials, no retries",
+      "http_status": 200,
+      "final_url": "https://www.skbeveren.be/voordeeltarief/",
+      "content_type": "text/html; charset=UTF-8",
+      "snapshot_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/skbeveren-voordeeltarief.html",
+      "snapshot_sha256": "8b31688338c3c952774cf0e14360063c20d3c3d6230b5a9e728ac833ae0c7363",
+      "bytes": 87977,
+      "captured_at": "2026-09-06T09:23:57.421687+00:00",
+      "captured_at_msk": "2026-09-06T12:23:57.421687+03:00"
+    },
+    {
+      "source_url": "https://viasport.no/fotball/kamp/1558625",
+      "request_started_at": "2026-09-06T09:24:09.760133+00:00",
+      "role": "independent",
+      "capture_method": "Python urllib HTTPS GET, default TLS, no credentials, no retries",
+      "http_status": 200,
+      "final_url": "https://viasport.no/fotball/kamp/1558625",
+      "content_type": "text/html; charset=utf-8",
+      "snapshot_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/viasport-fixture-1558625.html",
+      "snapshot_sha256": "23aaea93237a2d05b065bcbed294af20a3580feb0fe58c1e2aa9742d17a957b8",
+      "bytes": 150186,
+      "captured_at": "2026-09-06T09:24:10.378379+00:00",
+      "captured_at_msk": "2026-09-06T12:24:10.378379+03:00"
+    },
+    {
+      "source_url": "https://www.sofascore.com/nl/football/match/sk-beveren-oud-heverlee-leuven/tibsjXb",
+      "request_started_at": "2026-09-06T09:24:37.686961+00:00",
+      "role": "independent",
+      "capture_method": "Python urllib HTTPS GET, default TLS, no credentials, no retries",
+      "http_status": 200,
+      "final_url": "https://www.sofascore.com/nl/football/match/sk-beveren-oud-heverlee-leuven/tibsjXb",
+      "content_type": "text/html; charset=utf-8",
+      "snapshot_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/sofascore-exact-match.html",
+      "snapshot_sha256": "6e961a8dfde9fe5a7ac9a372be5593a7a83c67ebf892492db5779c598eb410fb",
+      "bytes": 189965,
+      "captured_at": "2026-09-06T09:24:39.555507+00:00",
+      "captured_at_msk": "2026-09-06T12:24:39.555507+03:00"
+    }
+  ],
+  "independence": {
+    "preferred_pair": [
+      "official SK Beveren",
+      "Sofascore"
+    ],
+    "explicit_utc_pair": [
+      "Sofascore",
+      "ViaSport"
+    ],
+    "basis": "Distinct HTTPS publishers; club publishes its own fixture/ticket list. SofaScore embedded event and ViaSport JSON-LD independently captured. ViaSport page embeds api-sports.io assets; no claim of audited ultimate feed independence."
+  },
+  "identity_review": {
+    "public_home_spelling": "SK Beveren",
+    "SC_Beveren_official_alias_verified": false,
+    "away_equivalence": "Oud-Heverlee Leuven -> OH Leuven directly witnessed in the same Sofa event name and shortName fields",
+    "russian_labels_are_target_labels_not_source_quotes": true,
+    "sofascore_source_ru_home": "Васланд-Беверен",
+    "sofascore_source_ru_away": "Оуд Хеверли",
+    "reviewer": null,
+    "reviewed_at": null,
+    "required_next_step": "Authorized reviewer verifies binding of exact source event to target180641 and existing target fingerprint; do not substitute literal SC, invent translations or bypass exact-name acceptance. No ledger-ready claim payload is asserted."
+  },
+  "rejected_existing_sofa": {
+    "original_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/preflight/drawing-12102-20260906T153000Z-b3f20304ff03e14a/source-collector/snapshots/event-09-q1-sofascore-e9bbc751caf9137b.json",
+    "saved_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-event9-context/existing-sofa-search-REJECTED.json",
+    "sha256": "e9bbc751caf9137b4a4e7c39aa834881d317d240abd310d5a305e4551341a07b",
+    "reason": "Old KSK Beveren team455097 and 2008-2010 events, not SK Beveren4859 on 2026-09-06. Raw search is unusable for current timing.",
+    "source_url_unambiguously_bound": false,
+    "events": [
+      {
+        "id": 1121696,
+        "home_name": "KSK Beveren",
+        "away_name": "Oud-Heverlee Leuven",
+        "home_id": 455097,
+        "away_id": 2918,
+        "starts_at_utc": "2010-04-10T18:00:00+00:00",
+        "status": "finished"
+      },
+      {
+        "id": 1121523,
+        "home_name": "Oud-Heverlee Leuven",
+        "away_name": "KSK Beveren",
+        "home_id": 2918,
+        "away_id": 455097,
+        "starts_at_utc": "2009-11-22T14:00:00+00:00",
+        "status": "finished"
+      },
+      {
+        "id": 968097,
+        "home_name": "Oud-Heverlee Leuven",
+        "away_name": "KSK Beveren",
+        "home_id": 2918,
+        "away_id": 455097,
+        "starts_at_utc": "2009-02-18T19:00:00+00:00",
+        "status": "finished"
+      },
+      {
+        "id": 805855,
+        "home_name": "Oud-Heverlee Leuven",
+        "away_name": "KSK Beveren",
+        "home_id": 2918,
+        "away_id": 455097,
+        "starts_at_utc": "2009-01-11T14:00:00+00:00",
+        "status": "postponed"
+      },
+      {
+        "id": 804146,
+        "home_name": "KSK Beveren",
+        "away_name": "Oud-Heverlee Leuven",
+        "home_id": 455097,
+        "away_id": 2918,
+        "starts_at_utc": "2008-08-27T18:00:00+00:00",
+        "status": "finished"
+      }
+    ]
+  },
+  "limitations": [
+    "Official club row has no explicit timezone; Europe/Brussels is documented inference corroborated by both explicit UTC captures.",
+    "Literal SC Beveren is not the official name shown; official source says SK Beveren. No arbitrary SC/SK or Russian alias was installed.",
+    "Source capture does not constitute reviewer approval or override identity/freshness gates.",
+    "Manual-wager intent changes no source requirement. No dispatch, package generation or operational cutoff determination performed."
+  ],
+  "mutations": {
+    "only_requested_handoff_directory_written": true,
+    "ledger": false,
+    "db": false,
+    "source_code": false,
+    "main_source_candidates": false,
+    "policies": false,
+    "automations": false,
+    "dispatcher_run": false,
+    "packages": false,
+    "git_operations": false
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "completed_at": "2026-09-15T13:43:17.387600+00:00",
+  "drawing_number": 5000,
+  "drawing_id": 12107,
+  "status": "BLOCKED_NATIVE_CLI_REQUIRES_MISSING_ARTIFACTS",
+  "requested_bank": 4980,
+  "stake": 30,
+  "target_drawings_n": 1,
+  "executed_replay_drawings_n": 0,
+  "prospective_evidence": false,
+  "new_packages_generated": false,
+  "current_code_retrospective_only": true,
+  "predraw_input": {
+    "snapshot_sha256": "6c1ff75883dfd3565d33002c063fc56fe8ccb968d5ae526cfa9cd885dc73f8ef",
+    "payload_sha256": "8220eb8b4a91c252406113a247ae5ac12e202404841540b410fc56c3b41f2fb7",
+    "captured_at": "2026-09-07T16:32:08.195493+00:00",
+    "payload_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_12107/6c1ff75883dfd3565d33002c063fc56fe8ccb968d5ae526cfa9cd885dc73f8ef.json",
+    "metadata_path": "/Users/turshevr/toto-ai/data/raw/archive/drawing_12107/6c1ff75883dfd3565d33002c063fc56fe8ccb968d5ae526cfa9cd885dc73f8ef.meta.json",
+    "hash_verified": true,
+    "event_count": 15,
+    "empty_results": true,
+    "quote_event_count": 15
+  },
+  "source_pool_sum": 78748,
+  "source_deadline_msk": "2026-09-08T18:00:00+03:00",
+  "source_deadline_utc": "2026-09-08T15:00:00Z",
+  "expected_T10_msk": "2026-09-08T17:50:00+03:00",
+  "operational_plan_id": null,
+  "already_verified_raw_count": 9,
+  "cli_checks": [
+    {
+      "command": "replay-quality-v2-v3",
+      "source": "src/toto_ai/cli.py:7042-7110",
+      "required_missing": [
+        "scheduler-plan.json",
+        "final-input.json",
+        "archived baseline package"
+      ],
+      "note": "Native execute_quality_replay consumes an archived quality-v2 baseline; it does not generate that baseline directly from rawJSON."
+    },
+    {
+      "command": "replay-quality-sports-v2-robust",
+      "source": "src/toto_ai/cli.py:7112-7190; src/toto_ai/optimizer/hybrid_replay.py:57-142",
+      "required_missing": [
+        "scheduler-plan.json",
+        "final-input.json",
+        "archived baseline package",
+        "sports artifact"
+      ],
+      "note": "sports-artifact is mandatory, no skip-sports mode; native implementation requires exact historical quality-v2 reproduction."
+    },
+    {
+      "command": "compare-package-strategies",
+      "source": "src/toto_ai/cli.py:6070-6128",
+      "required_missing": [
+        "scheduler-plan.json",
+        "final-input.json"
+      ],
+      "note": "Different EV/BK/Cover comparison; not requested qv2/qv3/robust raw-entrypoint."
+    },
+    {
+      "command": "run-drawing offline replay",
+      "source": "src/toto_ai/cli.py:2559-2610",
+      "required_missing": [
+        "strict target-cache envelope",
+        "historically bound schedule-cache",
+        "final-window replay fixture"
+      ],
+      "note": "Full runner requires final-window as-of plus provider schedule; not raw market-only three-family replay. Backdating/changing source captured_at or inventing schedule is not allowed."
+    }
+  ],
+  "dispatch_evidence": {
+    "path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/drawing-12107-20260908T150000Z-93785ccf917d4882.json",
+    "status": "deferred",
+    "plan_id": null,
+    "plan_path": null
+  },
+  "models": [
+    {
+      "model": "quality-v2",
+      "status": "NOT_COMPARABLE_NOT_RUN",
+      "best_hits": null,
+      "category_counts_9_15": null,
+      "coupon_count": null
+    },
+    {
+      "model": "quality-v3",
+      "status": "NOT_COMPARABLE_NOT_RUN",
+      "best_hits": null,
+      "category_counts_9_15": null,
+      "coupon_count": null
+    },
+    {
+      "model": "robust",
+      "status": "NOT_COMPARABLE_NOT_RUN",
+      "best_hits": null,
+      "category_counts_9_15": null,
+      "coupon_count": null
+    },
+    {
+      "model": "sports-shadow",
+      "status": "SKIPPED_NO_PREDRAW_SPORTS",
+      "best_hits": null,
+      "category_counts_9_15": null,
+      "coupon_count": null
+    }
+  ],
+  "blocker": "A genuine early pre-draw rawmarket snapshot exists, but none of the inspected native offlineCLI paths accepts it directly to generate all requested market-only families without historical scheduler/final-input/archived-control artifacts.5000wasdeferred with plan_id/pathnull; generating fake historical artifacts would violate provenance. Scope prohibits adding the missing research adapter.",
+  "minimal_next_step": "Separate implementation task: add one research-only market-RAW replay adapter/CLI. Verify RawArchive hashes/id/capture-before-cutoff; derive frozen market inputs without production scheduler/consent; predeclare4980/30 and preserve native effective-bank/pool/deadline invariants; fixed common seed; generate qv2/qv3/robust into isolatedoutput before loading outcomes; sports-shadow explicitlyskip; onlythen score. No fabricated pre-draw plan or archive and no retrospectiveoutput represented as prospective. This implementation was not started.",
+  "nothing_running": true,
+  "processes_started": 0,
+  "network_calls": 0,
+  "db_mutations": 0,
+  "code_changes": false,
+  "scheduler_changes": false,
+  "memory_changes": false,
+  "training": false,
+  "git_push": false,
+  "lift_claim": false,
+  "native_effective_budget_for_saved_pool": 780,
+  "native_coupon_capacity_for_saved_pool": 26,
+  "additional_native_budget_constraint": "Saved earlypool78748 under nativebudgetpolicy does not permit full requested4980. Must preserve this constraint; no finalpoolsubstitution or silentoverride."
+}

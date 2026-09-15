@@ -1,0 +1,1140 @@
+{
+  "status": "COMPLETE_RESEARCH_ONLY",
+  "wall_seconds": 198.85896354099532,
+  "parent_cpu_seconds": 165.923407,
+  "report": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/comparison/comparison.json",
+  "same_final_input": true,
+  "ev_equivalence": {
+    "baseline": {
+      "same_package": true,
+      "same_p13_p14_p15": true
+    },
+    "sports": {
+      "same_package": true,
+      "same_p13_p14_p15": true
+    }
+  },
+  "quality_v3_candidate_count": 14120,
+  "robust_candidate_count": 465,
+  "selection": {
+    "policy_version": "parallel-challenger-nondegradation-v1",
+    "selected_strategy_id": "quality-v3",
+    "selected_package_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+    "promoted": true,
+    "selection_reason": "eligible_challenger_dominates_control_gate",
+    "rejections": {
+      "sports-shadow": [
+        "bk_p13_below_control",
+        "bk_p14_below_control",
+        "bk_p15_below_control",
+        "concentration_above_control",
+        "worst_model_p13_not_improved"
+      ]
+    },
+    "candidates": [
+      {
+        "strategy_id": "quality-v2",
+        "package_sha256": "568f9a356765ada90990f6a2ee28505911d40f60da22e882f9e8f79801ad4cd9",
+        "coupon_count": 166,
+        "cost": 4980,
+        "maximum_outcome_share": 0.7650602409638554,
+        "eligible": true,
+        "rejection_reasons": [],
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.017643598165080737,
+            "probability_at_least_14": 0.0019638090135809367,
+            "probability_at_least_15": 9.340527001467878e-05
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.01752545540025367,
+            "probability_at_least_14": 0.0019468212429925415,
+            "probability_at_least_15": 9.244259425006732e-05
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.015342552670931287,
+            "probability_at_least_14": 0.001643661979407622,
+            "probability_at_least_15": 7.585577086356525e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.013325887751527661,
+            "probability_at_least_14": 0.0013737382724807407,
+            "probability_at_least_15": 6.146950449435683e-05
+          }
+        ]
+      },
+      {
+        "strategy_id": "sports-shadow",
+        "package_sha256": "abc63ea84b77d61a21822723bc5de3914374c637f2868d368be137625266b11c",
+        "coupon_count": 166,
+        "cost": 4980,
+        "maximum_outcome_share": 0.7710843373493976,
+        "eligible": true,
+        "rejection_reasons": [],
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.017528234652225323,
+            "probability_at_least_14": 0.0019383340896830573,
+            "probability_at_least_15": 9.201488921199174e-05
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.017588593504858054,
+            "probability_at_least_14": 0.0019480227986186489,
+            "probability_at_least_15": 9.258162001214514e-05
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.015249853599349229,
+            "probability_at_least_14": 0.0016242483791999351,
+            "probability_at_least_15": 7.48550060279208e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.013252458690085685,
+            "probability_at_least_14": 0.0013591375273416097,
+            "probability_at_least_15": 6.0762406944631406e-05
+          }
+        ]
+      },
+      {
+        "strategy_id": "quality-v3",
+        "package_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+        "coupon_count": 166,
+        "cost": 4980,
+        "maximum_outcome_share": 0.7650602409638554,
+        "eligible": true,
+        "rejection_reasons": [],
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.02486823360849403,
+            "probability_at_least_14": 0.002643005595486519,
+            "probability_at_least_15": 0.00011089899814426064
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.02467230352657965,
+            "probability_at_least_14": 0.0026151187172145348,
+            "probability_at_least_15": 0.0001095141015296762
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.021358967799681373,
+            "probability_at_least_14": 0.0021946594867885173,
+            "probability_at_least_15": 9.000898643135291e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.018282330394932253,
+            "probability_at_least_14": 0.0018160993472820526,
+            "probability_at_least_15": 7.276961666568772e-05
+          }
+        ]
+      },
+      {
+        "strategy_id": "robust",
+        "package_sha256": "e837dba53fe40cdafb91d13d4a13a52d06fedba0c95b7a690bbf4fffc5e6f1b5",
+        "coupon_count": 166,
+        "cost": 4980,
+        "maximum_outcome_share": 0.7650602409638554,
+        "eligible": true,
+        "rejection_reasons": [],
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.023734241542167373,
+            "probability_at_least_14": 0.002631729554233115,
+            "probability_at_least_15": 0.00011356845362506566
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.023575671346811777,
+            "probability_at_least_14": 0.0026077825801230667,
+            "probability_at_least_15": 0.00011234834105367734
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.020337137653361984,
+            "probability_at_least_14": 0.0021769616445623304,
+            "probability_at_least_15": 9.174230775819759e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.01737012759525048,
+            "probability_at_least_14": 0.001794470821229758,
+            "probability_at_least_15": 7.380397738495076e-05
+          }
+        ]
+      }
+    ],
+    "automatic_wagering": false,
+    "profitability_proven": false
+  },
+  "g1": {
+    "candidate": {
+      "cost": 4980,
+      "coupon_count": 166,
+      "eligible": true,
+      "maximum_outcome_share": 0.7650602409638554,
+      "models": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.023734241542167373,
+          "probability_at_least_14": 0.002631729554233115,
+          "probability_at_least_15": 0.00011356845362506566
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.020337137653361984,
+          "probability_at_least_14": 0.0021769616445623304,
+          "probability_at_least_15": 9.174230775819759e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.01737012759525048,
+          "probability_at_least_14": 0.001794470821229758,
+          "probability_at_least_15": 7.380397738495076e-05
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.023575671346811777,
+          "probability_at_least_14": 0.0026077825801230667,
+          "probability_at_least_15": 0.00011234834105367734
+        }
+      ],
+      "package_sha256": "e837dba53fe40cdafb91d13d4a13a52d06fedba0c95b7a690bbf4fffc5e6f1b5",
+      "rejection_reasons": [],
+      "strategy_id": "robust-g1-v1"
+    },
+    "engine": {
+      "accepted_swap_count": 1,
+      "activation_allowed": false,
+      "automatic_wagering": false,
+      "budget_summary": {
+        "cost": 4980,
+        "coupon_capacity": 166,
+        "coupon_count": 166,
+        "effective_budget": 4980,
+        "requested_bank": 4980,
+        "stake": 30,
+        "unused_effective_budget": 0
+      },
+      "constraint_violation_count": 0,
+      "diagnostics_after": {
+        "ball_multiplicity_excess_13": 10492,
+        "ball_multiplicity_excess_14": 165,
+        "covered_state_count_13": 64374,
+        "covered_state_count_14": 4981,
+        "covered_state_count_15": 166,
+        "event_outcome_exposures": [
+          [
+            55,
+            35,
+            76
+          ],
+          [
+            127,
+            28,
+            11
+          ],
+          [
+            92,
+            34,
+            40
+          ],
+          [
+            103,
+            37,
+            26
+          ],
+          [
+            112,
+            26,
+            28
+          ],
+          [
+            127,
+            17,
+            22
+          ],
+          [
+            127,
+            22,
+            17
+          ],
+          [
+            121,
+            16,
+            29
+          ],
+          [
+            92,
+            27,
+            47
+          ],
+          [
+            124,
+            10,
+            32
+          ],
+          [
+            61,
+            39,
+            66
+          ],
+          [
+            124,
+            27,
+            15
+          ],
+          [
+            127,
+            19,
+            20
+          ],
+          [
+            48,
+            31,
+            87
+          ],
+          [
+            127,
+            28,
+            11
+          ]
+        ],
+        "maximum_exposure_fraction": 0.7650602409638554,
+        "minimum_hamming_distance": 1,
+        "pairwise_hamming_histogram": [
+          [
+            1,
+            12
+          ],
+          [
+            2,
+            68
+          ],
+          [
+            3,
+            423
+          ],
+          [
+            4,
+            1059
+          ],
+          [
+            5,
+            1757
+          ],
+          [
+            6,
+            2275
+          ],
+          [
+            7,
+            2156
+          ],
+          [
+            8,
+            1856
+          ],
+          [
+            9,
+            1447
+          ],
+          [
+            10,
+            1126
+          ],
+          [
+            11,
+            746
+          ],
+          [
+            12,
+            471
+          ],
+          [
+            13,
+            227
+          ],
+          [
+            14,
+            64
+          ],
+          [
+            15,
+            8
+          ]
+        ],
+        "per_event_max_exposure_fraction": [
+          0.4578313253012048,
+          0.7650602409638554,
+          0.5542168674698795,
+          0.6204819277108434,
+          0.6746987951807228,
+          0.7650602409638554,
+          0.7650602409638554,
+          0.7289156626506024,
+          0.5542168674698795,
+          0.7469879518072289,
+          0.39759036144578314,
+          0.7469879518072289,
+          0.7650602409638554,
+          0.5240963855421686,
+          0.7650602409638554
+        ],
+        "unique_coupon_count": 166
+      },
+      "diagnostics_before": {
+        "ball_multiplicity_excess_13": 10403,
+        "ball_multiplicity_excess_14": 165,
+        "covered_state_count_13": 64463,
+        "covered_state_count_14": 4981,
+        "covered_state_count_15": 166,
+        "event_outcome_exposures": [
+          [
+            55,
+            35,
+            76
+          ],
+          [
+            127,
+            28,
+            11
+          ],
+          [
+            91,
+            34,
+            41
+          ],
+          [
+            103,
+            37,
+            26
+          ],
+          [
+            111,
+            27,
+            28
+          ],
+          [
+            127,
+            17,
+            22
+          ],
+          [
+            127,
+            21,
+            18
+          ],
+          [
+            120,
+            16,
+            30
+          ],
+          [
+            91,
+            27,
+            48
+          ],
+          [
+            124,
+            11,
+            31
+          ],
+          [
+            60,
+            39,
+            67
+          ],
+          [
+            124,
+            27,
+            15
+          ],
+          [
+            127,
+            19,
+            20
+          ],
+          [
+            49,
+            31,
+            86
+          ],
+          [
+            127,
+            28,
+            11
+          ]
+        ],
+        "maximum_exposure_fraction": 0.7650602409638554,
+        "minimum_hamming_distance": 1,
+        "pairwise_hamming_histogram": [
+          [
+            1,
+            12
+          ],
+          [
+            2,
+            68
+          ],
+          [
+            3,
+            420
+          ],
+          [
+            4,
+            1044
+          ],
+          [
+            5,
+            1728
+          ],
+          [
+            6,
+            2261
+          ],
+          [
+            7,
+            2142
+          ],
+          [
+            8,
+            1877
+          ],
+          [
+            9,
+            1462
+          ],
+          [
+            10,
+            1144
+          ],
+          [
+            11,
+            761
+          ],
+          [
+            12,
+            474
+          ],
+          [
+            13,
+            229
+          ],
+          [
+            14,
+            65
+          ],
+          [
+            15,
+            8
+          ]
+        ],
+        "per_event_max_exposure_fraction": [
+          0.4578313253012048,
+          0.7650602409638554,
+          0.5481927710843374,
+          0.6204819277108434,
+          0.6686746987951807,
+          0.7650602409638554,
+          0.7650602409638554,
+          0.7228915662650602,
+          0.5481927710843374,
+          0.7469879518072289,
+          0.4036144578313253,
+          0.7469879518072289,
+          0.7650602409638554,
+          0.5180722891566265,
+          0.7650602409638554
+        ],
+        "unique_coupon_count": 166
+      },
+      "elapsed_seconds": 30.77090066600067,
+      "evaluated_swap_count": 49634,
+      "evaluation_authorized": false,
+      "final_metrics": [
+        [
+          "bk",
+          [
+            0.023734241542167373,
+            0.002631729554233115,
+            0.00011356845362506566
+          ]
+        ],
+        [
+          "flatten_10",
+          [
+            0.020337137653361984,
+            0.0021769616445623304,
+            9.174230775819759e-05
+          ]
+        ],
+        [
+          "flatten_20",
+          [
+            0.01737012759525048,
+            0.001794470821229758,
+            7.380397738495076e-05
+          ]
+        ],
+        [
+          "sports",
+          [
+            0.023575671346811777,
+            0.0026077825801230667,
+            0.00011234834105367734
+          ]
+        ]
+      ],
+      "initial_metrics": [
+        [
+          "bk",
+          [
+            0.023604071059533167,
+            0.002612052573597936,
+            0.00011271764511152217
+          ]
+        ],
+        [
+          "flatten_10",
+          [
+            0.02023483497642958,
+            0.0021616802971394368,
+            9.109253173941071e-05
+          ]
+        ],
+        [
+          "flatten_20",
+          [
+            0.017291436878152544,
+            0.0017827873937170595,
+            7.331565515348582e-05
+          ]
+        ],
+        [
+          "sports",
+          [
+            0.023445889827752475,
+            0.002588486395247249,
+            0.00011151953293476219
+          ]
+        ]
+      ],
+      "input_hashes": {
+        "binding_sha256": "72b8a7712f7c494c7d8288673f75f65deb569f75b25b3a563552393579d34ef6",
+        "budget_sha256": "9cf8c58168bf5b09c9d2cfefa44eaec66482d551d6c12fbb9e0198ed2b6bd9a9",
+        "candidate_universe_sha256": "ef49edb2b50cf529ee6605bc8dda8834dda0ef4b04904ca262e5cd123eafd93a",
+        "config_sha256": "1af58881ec8838945df62ac7beef4d0fb5b482738af8d3e7d398bf6e0d1ecbd1",
+        "exposure_constraints_sha256": "96cb1f172ad1ad5a786e187f1db935833aa73d33825f1eee55863868606b36df",
+        "initial_package_sha256": "705a107d348e86ec3a304490baf6ad227a9a695f519b6af97e75c3ee2d2a6898",
+        "input_sha256": "baea70824b1435bd771b5d9591ed6fb80319a89cacd25c77d9672e7503438282",
+        "probability_models_sha256": "f0d7285f988572fc2b2563e0cd2a9d233f546c7b8714af136ac6bcb9ab32ea04",
+        "selected_package_sha256": "30d3873276ed5a694da586a18e99c11e96b0725ef584f0195ad7c81e6361a56b"
+      },
+      "operator_compatible": false,
+      "provisional_swap_count": 1,
+      "reason": "VERIFIED_EXACT_MAXIMIN_IMPROVEMENT",
+      "rejected_constraint_swaps": 23376,
+      "selected_coupons": [
+        "211111111121111",
+        "211X11112121121",
+        "11X1111121X1111",
+        "X12211111121121",
+        "2122111121111X1",
+        "211111X21111121",
+        "2111211111X112X",
+        "111X111111X1121",
+        "2121211111X1111",
+        "11111111X211121",
+        "1111211111211X1",
+        "111111X21121121",
+        "2XX111111111121",
+        "2111211X1121121",
+        "X111111121211X1",
+        "1112111111211X1",
+        "X12X11111111111",
+        "212111111111221",
+        "11112111X111121",
+        "X111221121XX121",
+        "21X211112121121",
+        "212X11X121X1121",
+        "111211121121122",
+        "2111111121111X1",
+        "1121111111111X1",
+        "111111212111121",
+        "11XX11111111121",
+        "21111111112XX21",
+        "1121211111X1121",
+        "21111111121X12X",
+        "XXXX11121211121",
+        "X12111112121111",
+        "2122111111X1111",
+        "21X211112121111",
+        "X11X111111X11X1",
+        "11X111211221221",
+        "X111X111X121121",
+        "X111X1111111X2X",
+        "21X1X1111121121",
+        "11212X1X21X1121",
+        "2111X11121211X1",
+        "211121111221111",
+        "1X1111111111111",
+        "2111111X2211121",
+        "X12111111221121",
+        "211X111111X112X",
+        "212X111111211X1",
+        "111X11121111111",
+        "21112111X1X11X1",
+        "X1X11111X1111X1",
+        "X1X1X1111211111",
+        "211111111111XX1",
+        "X1212111122X111",
+        "2XX111112X12121",
+        "21X11111111112X",
+        "21111111222112X",
+        "X12111121111121",
+        "111111212121121",
+        "11121111212X211",
+        "2X112X12112112X",
+        "2211111XX12111X",
+        "11111111112X222",
+        "1121111121X1121",
+        "21111X1111211X1",
+        "211111111122111",
+        "11X21111X111121",
+        "1X1111111221121",
+        "1111111111XX1X1",
+        "211111X11121221",
+        "2X2X12111121111",
+        "21X1111212X1121",
+        "2XX1111111X1121",
+        "2121X11121X1121",
+        "X12X11112111111",
+        "11221111X111111",
+        "X1X1X11121211X1",
+        "2111111X121X12X",
+        "X111X111X121111",
+        "2X111122121X121",
+        "211X11111111111",
+        "111X111211X1121",
+        "111211111121111",
+        "11111111122111X",
+        "11X12111X111121",
+        "X122111121X11X1",
+        "211111111221X2X",
+        "11X1111211X1211",
+        "211111X111XX121",
+        "11XX1111X121X21",
+        "11X11X1X112112X",
+        "X1X12111X1X1111",
+        "2111X1X1X121111",
+        "212X111211X1121",
+        "211X1X11111XX21",
+        "111211X11121X1X",
+        "XX211X111121221",
+        "211XX1112111121",
+        "111X1X111122211",
+        "112111112112112",
+        "2111X11122X1121",
+        "X12X1111X111121",
+        "X1XX111121211X1",
+        "211121122121121",
+        "X2121XX2111X121",
+        "X12121122121221",
+        "21XX111121X1111",
+        "21121221112X111",
+        "1X1X111X11XX112",
+        "21111X121111121",
+        "1X1X2111X211X21",
+        "11111111X1X11X1",
+        "211211121XX11X1",
+        "X21121X1X21112X",
+        "2X112111212X111",
+        "1X222112111221X",
+        "X11X1111X111121",
+        "21211X21212X1XX",
+        "21111111212X12X",
+        "2112X1X111X1121",
+        "1112X11X1121X2X",
+        "2X11122211XX12X",
+        "X111111X1111121",
+        "1122211X1X11122",
+        "11X1X111X1X11X1",
+        "XX1111X122X11X1",
+        "211X11X11211121",
+        "1111X11121111X1",
+        "2X2X1111X122X1X",
+        "21X112221X22122",
+        "X11121112111111",
+        "21211X122X1X111",
+        "X121X1112111111",
+        "11X2111XX1XX221",
+        "X21XX1X1111XX22",
+        "12X12X1X2212122",
+        "211112X112111X1",
+        "XX111111112XX21",
+        "2121X11111211X1",
+        "1X111X11121X12X",
+        "111XX1111211X21",
+        "11X112X1221X1XX",
+        "21X1X1112X221XX",
+        "21111111X1X1121",
+        "112X2212X1X11X1",
+        "2111111212X1121",
+        "222XX1111121111",
+        "111111111XX1121",
+        "211111121121X21",
+        "211212112122111",
+        "21X1X21X1121121",
+        "1111XXX1111X111",
+        "1XX1X2X21111121",
+        "221X12X21221211",
+        "XX1X1X2122X1XX2",
+        "X11X12XX2X1X211",
+        "2221122111X1XX1",
+        "2XX122211111X11",
+        "2X11XXX21221X1X",
+        "222XXXX21121211",
+        "1X121221X12X211",
+        "1X2222X22X1222X",
+        "1X121221X12221X",
+        "22XX122X22212XX",
+        "1X2122212212212",
+        "XX22122XX112X22",
+        "22XX2221XX1222X"
+      ],
+      "semantic_hash": "1129ef47d01c338951591101d3171c0641d26861e45e066abb361ebbea8ebd70",
+      "status": "REFINED"
+    },
+    "family_candidate_verified": true,
+    "highest_p13_single_coupon": {
+      "coupon": "211111111121111",
+      "criterion": "maximum_probability_at_least_13",
+      "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+      "package_position": 1,
+      "probability_at_least_13": 0.0004563298249688383,
+      "probability_at_least_14": 4.360040138140876e-05,
+      "probability_at_least_15": 1.954131227723842e-06,
+      "reference_model": "bk"
+    },
+    "observability": {
+      "engine_cpu_seconds": 30.794928000000002,
+      "engine_wall_seconds": 30.806597624999995,
+      "extra_exact_validation_calls": 12,
+      "logging_limits": {
+        "interval_seconds": 10,
+        "max_bytes": 2048,
+        "max_events": 8
+      },
+      "peak_rss_bytes": 391462912,
+      "progress_bytes": 370,
+      "progress_events": 6,
+      "verification_cpu_seconds": 1.2222859999999969,
+      "verification_wall_seconds": 1.223998583998764
+    },
+    "request_sha256": "e2ba020ee6c6757306ec1174f58b0339184019883277a5328da2e7a1a90da991",
+    "research_selection": {
+      "automatic_wagering": false,
+      "candidates": [
+        {
+          "cost": 4980,
+          "coupon_count": 166,
+          "eligible": true,
+          "maximum_outcome_share": 0.7650602409638554,
+          "models": [
+            {
+              "model": "bk",
+              "probability_at_least_13": 0.017643598165080737,
+              "probability_at_least_14": 0.0019638090135809367,
+              "probability_at_least_15": 9.340527001467878e-05
+            },
+            {
+              "model": "flatten_10",
+              "probability_at_least_13": 0.015342552670931287,
+              "probability_at_least_14": 0.001643661979407622,
+              "probability_at_least_15": 7.585577086356525e-05
+            },
+            {
+              "model": "flatten_20",
+              "probability_at_least_13": 0.013325887751527661,
+              "probability_at_least_14": 0.0013737382724807407,
+              "probability_at_least_15": 6.146950449435683e-05
+            },
+            {
+              "model": "sports",
+              "probability_at_least_13": 0.01752545540025367,
+              "probability_at_least_14": 0.0019468212429925415,
+              "probability_at_least_15": 9.244259425006732e-05
+            }
+          ],
+          "package_sha256": "568f9a356765ada90990f6a2ee28505911d40f60da22e882f9e8f79801ad4cd9",
+          "rejection_reasons": [],
+          "strategy_id": "quality-v2"
+        },
+        {
+          "cost": 4980,
+          "coupon_count": 166,
+          "eligible": true,
+          "maximum_outcome_share": 0.7650602409638554,
+          "models": [
+            {
+              "model": "bk",
+              "probability_at_least_13": 0.023734241542167373,
+              "probability_at_least_14": 0.002631729554233115,
+              "probability_at_least_15": 0.00011356845362506566
+            },
+            {
+              "model": "flatten_10",
+              "probability_at_least_13": 0.020337137653361984,
+              "probability_at_least_14": 0.0021769616445623304,
+              "probability_at_least_15": 9.174230775819759e-05
+            },
+            {
+              "model": "flatten_20",
+              "probability_at_least_13": 0.01737012759525048,
+              "probability_at_least_14": 0.001794470821229758,
+              "probability_at_least_15": 7.380397738495076e-05
+            },
+            {
+              "model": "sports",
+              "probability_at_least_13": 0.023575671346811777,
+              "probability_at_least_14": 0.0026077825801230667,
+              "probability_at_least_15": 0.00011234834105367734
+            }
+          ],
+          "package_sha256": "e837dba53fe40cdafb91d13d4a13a52d06fedba0c95b7a690bbf4fffc5e6f1b5",
+          "rejection_reasons": [],
+          "strategy_id": "robust-g1-v1"
+        }
+      ],
+      "policy_version": "parallel-challenger-nondegradation-v1",
+      "profitability_proven": false,
+      "promoted": true,
+      "rejections": {},
+      "selected_package_sha256": "e837dba53fe40cdafb91d13d4a13a52d06fedba0c95b7a690bbf4fffc5e6f1b5",
+      "selected_strategy_id": "robust-g1-v1",
+      "selection_reason": "eligible_challenger_dominates_control_gate"
+    },
+    "status": "REFINED",
+    "selected_coupons": [
+      "211111111121111",
+      "211X11112121121",
+      "11X1111121X1111",
+      "X12211111121121",
+      "2122111121111X1",
+      "211111X21111121",
+      "2111211111X112X",
+      "111X111111X1121",
+      "2121211111X1111",
+      "11111111X211121",
+      "1111211111211X1",
+      "111111X21121121",
+      "2XX111111111121",
+      "2111211X1121121",
+      "X111111121211X1",
+      "1112111111211X1",
+      "X12X11111111111",
+      "212111111111221",
+      "11112111X111121",
+      "X111221121XX121",
+      "21X211112121121",
+      "212X11X121X1121",
+      "111211121121122",
+      "2111111121111X1",
+      "1121111111111X1",
+      "111111212111121",
+      "11XX11111111121",
+      "21111111112XX21",
+      "1121211111X1121",
+      "21111111121X12X",
+      "XXXX11121211121",
+      "X12111112121111",
+      "2122111111X1111",
+      "21X211112121111",
+      "X11X111111X11X1",
+      "11X111211221221",
+      "X111X111X121121",
+      "X111X1111111X2X",
+      "21X1X1111121121",
+      "11212X1X21X1121",
+      "2111X11121211X1",
+      "211121111221111",
+      "1X1111111111111",
+      "2111111X2211121",
+      "X12111111221121",
+      "211X111111X112X",
+      "212X111111211X1",
+      "111X11121111111",
+      "21112111X1X11X1",
+      "X1X11111X1111X1",
+      "X1X1X1111211111",
+      "211111111111XX1",
+      "X1212111122X111",
+      "2XX111112X12121",
+      "21X11111111112X",
+      "21111111222112X",
+      "X12111121111121",
+      "111111212121121",
+      "11121111212X211",
+      "2X112X12112112X",
+      "2211111XX12111X",
+      "11111111112X222",
+      "1121111121X1121",
+      "21111X1111211X1",
+      "211111111122111",
+      "11X21111X111121",
+      "1X1111111221121",
+      "1111111111XX1X1",
+      "211111X11121221",
+      "2X2X12111121111",
+      "21X1111212X1121",
+      "2XX1111111X1121",
+      "2121X11121X1121",
+      "X12X11112111111",
+      "11221111X111111",
+      "X1X1X11121211X1",
+      "2111111X121X12X",
+      "X111X111X121111",
+      "2X111122121X121",
+      "211X11111111111",
+      "111X111211X1121",
+      "111211111121111",
+      "11111111122111X",
+      "11X12111X111121",
+      "X122111121X11X1",
+      "211111111221X2X",
+      "11X1111211X1211",
+      "211111X111XX121",
+      "11XX1111X121X21",
+      "11X11X1X112112X",
+      "X1X12111X1X1111",
+      "2111X1X1X121111",
+      "212X111211X1121",
+      "211X1X11111XX21",
+      "111211X11121X1X",
+      "XX211X111121221",
+      "211XX1112111121",
+      "111X1X111122211",
+      "112111112112112",
+      "2111X11122X1121",
+      "X12X1111X111121",
+      "X1XX111121211X1",
+      "211121122121121",
+      "X2121XX2111X121",
+      "X12121122121221",
+      "21XX111121X1111",
+      "21121221112X111",
+      "1X1X111X11XX112",
+      "21111X121111121",
+      "1X1X2111X211X21",
+      "11111111X1X11X1",
+      "211211121XX11X1",
+      "X21121X1X21112X",
+      "2X112111212X111",
+      "1X222112111221X",
+      "X11X1111X111121",
+      "21211X21212X1XX",
+      "21111111212X12X",
+      "2112X1X111X1121",
+      "1112X11X1121X2X",
+      "2X11122211XX12X",
+      "X111111X1111121",
+      "1122211X1X11122",
+      "11X1X111X1X11X1",
+      "XX1111X122X11X1",
+      "211X11X11211121",
+      "1111X11121111X1",
+      "2X2X1111X122X1X",
+      "21X112221X22122",
+      "X11121112111111",
+      "21211X122X1X111",
+      "X121X1112111111",
+      "11X2111XX1XX221",
+      "X21XX1X1111XX22",
+      "12X12X1X2212122",
+      "211112X112111X1",
+      "XX111111112XX21",
+      "2121X11111211X1",
+      "1X111X11121X12X",
+      "111XX1111211X21",
+      "11X112X1221X1XX",
+      "21X1X1112X221XX",
+      "21111111X1X1121",
+      "112X2212X1X11X1",
+      "2111111212X1121",
+      "222XX1111121111",
+      "111111111XX1121",
+      "211111121121X21",
+      "211212112122111",
+      "21X1X21X1121121",
+      "1111XXX1111X111",
+      "1XX1X2X21111121",
+      "221X12X21221211",
+      "XX1X1X2122X1XX2",
+      "X11X12XX2X1X211",
+      "2221122111X1XX1",
+      "2XX122211111X11",
+      "2X11XXX21221X1X",
+      "222XXXX21121211",
+      "1X121221X12X211",
+      "1X2222X22X1222X",
+      "1X121221X12221X",
+      "22XX122X22212XX",
+      "1X2122212212212",
+      "XX22122XX112X22",
+      "22XX2221XX1222X"
+    ],
+    "operator_compatible": false,
+    "automatic_wagering": false,
+    "activation_allowed": false,
+    "research_only": true,
+    "lineage": {
+      "policy_version": "parallel-g1-research-v1",
+      "strategy_id": "robust-g1-v1",
+      "parent_strategy_id": "robust",
+      "operator_selection_included": false,
+      "authority_status": "RESEARCH_ONLY_PENDING_EXPLICIT_AUTHORIZATION"
+    },
+    "admission": {
+      "initial": 166,
+      "universe": 465,
+      "models": 4,
+      "round_pairs": 49634
+    },
+    "binding": {
+      "input_sha256": "baea70824b1435bd771b5d9591ed6fb80319a89cacd25c77d9672e7503438282",
+      "initial_package_sha256": "705a107d348e86ec3a304490baf6ad227a9a695f519b6af97e75c3ee2d2a6898",
+      "candidate_universe_sha256": "ef49edb2b50cf529ee6605bc8dda8834dda0ef4b04904ca262e5cd123eafd93a",
+      "probability_models_sha256": "f0d7285f988572fc2b2563e0cd2a9d233f546c7b8714af136ac6bcb9ab32ea04",
+      "exposure_constraints_sha256": "96cb1f172ad1ad5a786e187f1db935833aa73d33825f1eee55863868606b36df",
+      "bank": 4980,
+      "stake": 30,
+      "coupon_capacity": 166,
+      "effective_budget": 4980
+    },
+    "plan_sha256": "946fc198cc232224d84bf79c9443079789f6c8a9897ba5a4fed8869c130614f9",
+    "wall_seconds": 32.38031070899888,
+    "effective_worker_timeout_seconds": 60.0,
+    "runtime_contract": {
+      "family_refinement": true,
+      "diagnostics": true,
+      "max_swap_evaluations": 65536,
+      "max_accepted_swaps": 1,
+      "engine_seconds": 50.0,
+      "hard_timeout_seconds": 60.0,
+      "reserve_seconds": 30.0
+    }
+  },
+  "control_recomputed": true,
+  "operator_compatible": false,
+  "automatic_wagering": false
+}

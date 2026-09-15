@@ -1,0 +1,17 @@
+{
+  "generation_unbound_current_bk": {
+    "inference_BK": [
+      0.2,
+      0.3,
+      0.5
+    ],
+    "generator_BK": [
+      0.8,
+      0.1,
+      0.1
+    ],
+    "reported_final_input_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "generated_count": 3,
+    "accepted": true
+  }
+}

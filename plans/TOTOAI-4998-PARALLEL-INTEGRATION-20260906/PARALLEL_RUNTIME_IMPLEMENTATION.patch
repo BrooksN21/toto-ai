@@ -1,0 +1,1725 @@
+--- a/src/toto_ai/sports_stats/final_hybrid_comparison.py
++++ b/src/toto_ai/sports_stats/final_hybrid_comparison.py
+@@ -15,6 +15,7 @@
+ from collections.abc import Mapping
+ from dataclasses import asdict, dataclass, replace
+ from datetime import datetime, timezone
++from functools import wraps
+ from pathlib import Path
+ from types import MappingProxyType
+ from typing import Any
+@@ -26,6 +27,7 @@
+     package_quality_metrics,
+     selection_probability_input_sha256,
+ )
++from toto_ai.ev.runtime import RuntimeBudget, checkpoint, phase, runtime_scope
+ from toto_ai.external_odds.eligibility import target_fingerprint
+ from toto_ai.external_odds.targets import parse_target_drawing
+ from toto_ai.optimizer.coupon_probabilities import best_coupon_by_p13
+@@ -73,6 +75,53 @@
+     sports_probability_snapshot: Path
+ 
+ 
++def _runtime_comparison(function):
++    @wraps(function)
++    def run(**kwargs):
++        output = Path(kwargs["output_dir"]).absolute()
++        if output.is_symlink():
++            raise ValueError("output directory must be a regular directory")
++        output.mkdir(parents=True, exist_ok=True)
++
++        def progress(payload):
++            payload = {
++                **payload,
++                "observed_at": _timestamp(datetime.now(timezone.utc)),
++                "operator_compatible": False,
++                "automatic_wagering": False,
++            }
++            _write_replace(output / "runtime-progress.json", _pretty(payload))
++            with (output / "runtime-progress.jsonl").open("ab") as stream:
++                stream.write(_canonical(payload) + b"\n")
++            print(json.dumps(payload, sort_keys=True), flush=True)
++
++        budget = RuntimeBudget(deadline=kwargs.get("deadline"), progress=progress)
++        with runtime_scope(budget):
++            budget.check("started", force=True)
++            try:
++                result = function(**kwargs)
++                budget.check("completed", force=True)
++                return result
++            except Exception as exc:
++                _write_replace(
++                    output / "runtime-failure.json",
++                    _pretty(
++                        {
++                            "phase": budget.phase,
++                            "reason": str(exc),
++                            "error_type": type(exc).__name__,
++                            "operator_compatible": False,
++                            "automatic_wagering": False,
++                            "completed_research_retained": True,
++                        }
++                    ),
++                )
++                raise
++
++    return run
++
++
++@_runtime_comparison
+ def execute_final_hybrid_comparison(
+     *,
+     final_input_path: str | Path,
+@@ -83,6 +132,7 @@
+     g1_config: ParallelG1Config | None = None,
+     expected_primary_coupons: tuple[str, ...] | None = None,
+     primary_package_sha256: str | None = None,
++    primary_control_record: Mapping[str, Any] | None = None,
+ ) -> tuple[dict[str, Any], FinalHybridComparisonPaths]:
+     """Generate equal-config BK and sports packages from one final input."""
+ 
+@@ -118,10 +168,20 @@
+         scheduler_plan_path=plan_path,
+         selection_config=config,
+     )
+-    baseline = run_ev_crowd_current(
+-        frozen,
+-        config=config,
+-        provenance=baseline_provenance,
++    phase("control_ev")
++    baseline = (
++        run_ev_crowd_current(frozen, config=config, provenance=baseline_provenance)
++        if primary_control_record is None
++        else _reuse_verified_control(
++            plan=plan,
++            snapshot=snapshot,
++            frozen=frozen,
++            config=config,
++            provenance=baseline_provenance,
++            operator=primary_control_record,
++            expected_coupons=expected_primary_coupons,
++            upload_sha256=primary_package_sha256,
++        )
+     )
+ 
+     # Persist the primary control and calculated ranking before any side work.
+@@ -162,7 +222,9 @@
+         output / "primary-bk-ranking.json", _pretty(primary_ranking_document)
+     )
+ 
++    phase("sports_preparation")
+     sports_probabilities = _rebase_sports_probabilities(frozen, sports.events)
++    checkpoint("sports_rebased")
+     sports_frozen = replace(
+         frozen,
+         events=tuple(
+@@ -195,6 +257,7 @@
+         scheduler_plan_path=plan_path,
+         selection_config=config,
+     )
++    phase("sports_ev")
+     sports_result = (
+         baseline
+         if sports.sports_coverage_count == 0
+@@ -204,6 +267,13 @@
+             provenance=sports_provenance,
+         )
+     )
++    _write_replace(
++        output / "sports-final-research-coupons.txt",
++        _research_package_bytes(
++            "FINAL_GOAL_SPORTS_SHADOW", plan.stake, sports_result.coupons
++        ),
++    )
++    phase("quality_v3")
+     quality_v3_config = QualityV3Config()
+     uncertainty_models = build_uncertainty_models(
+         frozen.bk_probability_matrix,
+@@ -232,6 +302,15 @@
+         fallback_coupons=baseline.coupons,
+         deadline=deadline,
+     )
++    _write_replace(
++        output / "quality-v3-final-research-coupons.txt",
++        _research_package_bytes(
++            "QUALITY_V3_BOUNDED_UNCERTAINTY_CHALLENGER",
++            plan.stake,
++            quality_v3.selected_coupons,
++        ),
++    )
++    phase("robust")
+     candidate_union = tuple(
+         dict.fromkeys(
+             (
+@@ -264,6 +343,21 @@
+         exposure_constraints=exposure_constraints,
+         fallback_coupons=baseline.coupons,
+         deadline=deadline,
++    )
++    _write_replace(
++        output / "robust-final-research-coupons.txt",
++        _research_package_bytes(
++            "FINAL_PARALLEL_MODEL_MAXIMIN_RECOMBINATION",
++            plan.stake,
++            robust.selected_coupons,
++        ),
++    )
++    phase("g1")
++    checkpoint(
++        "g1_admission",
++        initial=len(robust.selected_coupons),
++        universe=len(candidate_union),
++        models=len(combined_models),
+     )
+     try:
+         g1_research = (
+@@ -326,30 +420,35 @@
+         if refined is not None:
+             robust_coupons = refined
+             refinement_lineage["applied"] = True
++    phase("cross_evaluation")
+     baseline_quality_bk = package_quality_metrics(
+         baseline.coupons,
+         frozen.bk_probability_matrix,
+         seed_material=f"final-hybrid-bk-{snapshot.snapshot_sha256}",
+         monte_carlo_samples=config.package_probability_samples,
+     )
++    checkpoint("baseline_sports_quality")
+     baseline_quality_sports = package_quality_metrics(
+         baseline.coupons,
+         sports_probabilities,
+         seed_material=f"final-hybrid-bk-sports-{probability_hash}",
+         monte_carlo_samples=config.package_probability_samples,
+     )
++    checkpoint("sports_bk_quality")
+     sports_quality_bk = package_quality_metrics(
+         sports_result.coupons,
+         frozen.bk_probability_matrix,
+         seed_material=f"final-hybrid-sports-bk-{snapshot.snapshot_sha256}",
+         monte_carlo_samples=config.package_probability_samples,
+     )
++    checkpoint("sports_quality")
+     sports_quality_sports = package_quality_metrics(
+         sports_result.coupons,
+         sports_probabilities,
+         seed_material=f"final-hybrid-sports-{probability_hash}",
+         monte_carlo_samples=config.package_probability_samples,
+     )
++    phase("selector_verification")
+     candidates = (
+         _parallel_candidate(
+             strategy_id="quality-v2",
+@@ -434,6 +533,18 @@
+             "activation_allowed": False,
+         },
+         "baseline": _result_payload(baseline, baseline_quality_bk),
++        "control_execution": {
++            "mode": "RECOMPUTED"
++            if primary_control_record is None
++            else "VERIFIED_PRIMARY_REUSE",
++            "operator_record_sha256": None
++            if primary_control_record is None
++            else primary_control_record.get("record_sha256"),
++            "archive_manifest_sha256": None
++            if primary_control_record is None
++            else primary_control_record.get("archive_manifest_sha256"),
++            "input_and_config_revalidated": True,
++        },
+         "sports": _result_payload(sports_result, sports_quality_sports),
+         "robust": {
+             "refinement_lineage": refinement_lineage,
+@@ -444,12 +555,8 @@
+             "candidate_count": robust.candidate_count,
+             "category": robust.category,
+             "sample_count_per_model": robust.sample_count_per_model,
+-            "worst_sampled_category_coverage": (
+-                robust.worst_sampled_category_coverage
+-            ),
+-            "mean_sampled_category_coverage": (
+-                robust.mean_sampled_category_coverage
+-            ),
++            "worst_sampled_category_coverage": (robust.worst_sampled_category_coverage),
++            "mean_sampled_category_coverage": (robust.mean_sampled_category_coverage),
+             "timed_out": robust.timed_out,
+             "models": [asdict(item) for item in robust.model_metrics],
+         },
+@@ -530,6 +637,7 @@
+         "scheduler_state_mutated": False,
+         "profitability_proven": False,
+     }
++    phase("research_persistence")
+     report["report_sha256"] = hashlib.sha256(_canonical(report)).hexdigest()
+ 
+     baseline_package = output / "baseline-final-research-coupons.txt"
+@@ -584,12 +692,134 @@
+     )
+ 
+ 
++def _reuse_verified_control(
++    *,
++    plan,
++    snapshot,
++    frozen,
++    config,
++    provenance,
++    operator,
++    expected_coupons,
++    upload_sha256,
++):
++    """Reuse only a native-validated, same-plan final primary, not a loose TXT.
++
++    The sidecar first performs the existing full actionable operator export
++    (including authority/DB archive validation). This pure reader rechecks its
++    record, current file identity, archive, source bytes, final input and exact
++    probability/config provenance. It grants no release authority of its own.
++    """
++    import time
++
++    from toto_ai.ev.package_quality import validate_selection_provenance
++    from toto_ai.optimizer.strategy_comparison import _strategy_result
++    from toto_ai.runner.scheduler import (
++        _operator_result_sha256,
++        _validate_experimental_manual_release,
++        _validate_package_csv,
++    )
++
++    started = time.perf_counter()
++    current = json.loads(
++        _regular_file(
++            plan.output_dir / "operator-result.json", "primary operator"
++        ).read_bytes()
++    )
++    if (
++        current != operator
++        or operator.get("record_sha256") != _operator_result_sha256(operator)
++        or operator.get("plan_id") != plan.plan_id
++        or operator.get("drawing") != frozen.drawing_number
++        or operator.get("drawing_id") != frozen.drawing_id
++        or operator.get("decision") != "PLAY"
++        or operator.get("operator_status") != "FINAL_FRESH"
++        or operator.get("provenance") != "FINAL_FRESH"
++        or operator.get("actionable") is not True
++        or operator.get("automatic_wagering") is not False
++        or operator.get("requested_bank") != config.bank
++        or operator.get("stake") != config.stake
++        or operator.get("effective_bank") != config.selection_budget
++        or not expected_coupons
++        or operator.get("package_sha256") != upload_sha256
++    ):
++        raise ValueError("verified primary reuse operator binding mismatch")
++    if operator.get("release_mode") == "EXPERIMENTAL_MANUAL":
++        auth = _validate_experimental_manual_release(plan)
++        if auth["record_sha256"] != operator.get("release_authorization_sha256"):
++            raise ValueError("verified primary reuse authorization mismatch")
++    elif operator.get("release_mode") != "STANDARD":
++        raise ValueError("verified primary reuse release mode mismatch")
++    valid, reasons, _, _ = validate_selection_provenance(
++        provenance, frozen.bk_probability_matrix, config=config, required=True
++    )
++    if not valid:
++        raise ValueError(f"verified primary reuse provenance mismatch: {reasons}")
++    run = snapshot.path.parent
++    if (
++        run != plan.output_dir / "attempts" / snapshot.attempt_id
++        or operator.get("run_id") != snapshot.attempt_id
++        or operator.get("source_package_path") != str(run / "package.csv")
++        or operator.get("archive_manifest_path") != str(run / "package-archive.json")
++    ):
++        raise ValueError("verified primary reuse run path mismatch")
++    source = _regular_file(run / "package.csv", "primary source").read_bytes()
++    source_hash = hashlib.sha256(source).hexdigest()
++    if source_hash != operator.get("source_package_sha256"):
++        raise ValueError("verified primary reuse source hash mismatch")
++    archive = json.loads(
++        _regular_file(run / "package-archive.json", "primary archive").read_bytes()
++    )
++    unsigned = dict(archive)
++    digest = unsigned.pop("archive_manifest_sha256", None)
++    if (
++        digest != operator.get("archive_manifest_sha256")
++        or digest != hashlib.sha256(_canonical(unsigned)).hexdigest()
++        or archive.get("final_input_sha256") != snapshot.snapshot_sha256
++        or archive.get("probability_input_sha256") != snapshot.probability_input_sha256
++        or archive.get("source_bytes_sha256") != source_hash
++        or archive.get("source_path") != str(run / "package.csv")
++        or archive.get("drawing_id") != frozen.drawing_id
++        or archive.get("drawing_number") != frozen.drawing_number
++        or archive.get("stake") != frozen.stake
++        or archive.get("cost") != config.selection_budget
++        or archive.get("coupon_count") != config.max_coupons
++        or archive.get("provenance") != "pre_bet_runner"
++    ):
++        raise ValueError("verified primary reuse final/archive binding mismatch")
++    validated = _validate_package_csv(
++        source,
++        stake=frozen.stake,
++        minimum_gross_ev=config.min_gross_ev,
++        expected_count=config.max_coupons,
++        expected_cost=config.selection_budget,
++    )
++    if validated.coupons != expected_coupons or _package_sha256(
++        validated.coupons
++    ) != archive.get("canonical_package_sha256"):
++        raise ValueError("verified primary reuse coupon binding mismatch")
++    checkpoint(
++        "verified_primary_reuse", coupons=len(validated.coupons), ev_calls_avoided=1
++    )
++    result = _strategy_result(
++        strategy_id="EV_CROWD_CURRENT",
++        source_engine="verified_scheduler_primary",
++        category=13,
++        frozen=frozen,
++        coupons=validated.coupons,
++        config={"category": 13, "ev_config": asdict(config)},
++        runtime_seconds=time.perf_counter() - started,
++    )
++    return replace(result, runtime_seconds=time.perf_counter() - started)
++
++
+ def _exact_model_metrics(
+     coupons: tuple[str, ...],
+     models: Mapping[str, tuple[tuple[float, float, float], ...]],
+ ) -> list[dict[str, float | str]]:
+     rows = []
+     for name, probabilities in models.items():
++        checkpoint("exact_model_metrics", model=name, coupons=len(coupons))
+         p13, p14, p15 = exact_category_probabilities(coupons, probabilities)
+         rows.append(
+             {
+@@ -637,10 +867,9 @@
+             ordered,
+             strict=True,
+         ):
+-            if (
+-                sports_event.event_order != target.event_order
+-                or str(sports_event.event_id) != str(target.event_id)
+-            ):
++            if sports_event.event_order != target.event_order or str(
++                sports_event.event_id
++            ) != str(target.event_id):
+                 raise ValueError("sports artifact event identity mismatch")
+     elif (
+         sports.drawing_id != frozen.drawing_id
+@@ -677,9 +906,7 @@
+             config=safety_config,
+         )
+         if safety.decision != "PLAY":
+-            reasons.extend(
+-                f"package_safety:{code}" for code in safety.reason_codes
+-            )
++            reasons.extend(f"package_safety:{code}" for code in safety.reason_codes)
+     model_metrics = tuple(
+         _exact_category_metrics(coupons, name=name, probabilities=rows)
+         for name, rows in models.items()
+@@ -717,10 +944,7 @@
+ def _maximum_outcome_share(coupons: tuple[str, ...]) -> float:
+     if not coupons:
+         return 1.0
+-    return max(
+-        max(row["shares"].values())
+-        for row in outcome_exposure(coupons)
+-    )
++    return max(max(row["shares"].values()) for row in outcome_exposure(coupons))
+ 
+ 
+ def _package_sha256(coupons: tuple[str, ...]) -> str:
+--- a/src/toto_ai/optimizer/strategy_comparison.py
++++ b/src/toto_ai/optimizer/strategy_comparison.py
+@@ -18,6 +18,7 @@
+     PackageSelectionProvenance,
+     exact_category_probabilities,
+ )
++from toto_ai.ev.runtime import checkpoint
+ from toto_ai.ev.ternary import compute_ev_components, materialize_ev_surface
+ from toto_ai.optimizer.brief import analyze_event, build_baseline_brief
+ from toto_ai.optimizer.category_hit import cover_14_bk_fill_seed
+@@ -180,8 +181,7 @@
+         if len(set(self.coupons)) != len(self.coupons):
+             raise ValueError("strategy coupons must be unique")
+         if any(
+-            len(coupon) != 15 or set(coupon) - set(OUTCOMES)
+-            for coupon in self.coupons
++            len(coupon) != 15 or set(coupon) - set(OUTCOMES) for coupon in self.coupons
+         ):
+             raise ValueError("strategy coupons must contain exactly 15 outcomes")
+         if self.cost != len(self.coupons) * self.stake:
+@@ -437,6 +437,9 @@
+     ),
+ ) -> StrategyResult:
+     """Run the existing EV/crowd selector over the same frozen input."""
++    checkpoint(
++        "ev_start", coupon_capacity=frozen.max_coupons, events=len(frozen.events)
++    )
+     started = time.perf_counter()
+     _validated_category(category)
+     if config.bank != frozen.bank or config.stake != frozen.stake:
+@@ -453,6 +456,7 @@
+         fetched_at=frozen.source_captured_at,
+     )
+     components = component_builder(ev_input)
++    checkpoint("ev_components_complete")
+     surface = surface_materializer(
+         components,
+         frozen.possible_winnings,
+@@ -465,6 +469,7 @@
+         provenance=provenance,
+     )
+     ranked = package.paper_coupons if package.paper_coupons else package.coupons
++    checkpoint("ev_selection_complete")
+     coupons = tuple(coupon.coupon for coupon in ranked)
+     fallback_reason = package.decision_reason
+     return _strategy_result(
+@@ -494,6 +499,7 @@
+     coverage_rate: float | None = None,
+     guarantee_pass: bool | None = None,
+ ) -> StrategyResult:
++    checkpoint("exact_result_metrics", coupons=len(coupons))
+     probabilities = exact_category_probabilities(
+         coupons,
+         frozen.bk_probability_matrix,
+@@ -569,9 +575,7 @@
+     try:
+         parsed = datetime.fromisoformat(normalized)
+     except ValueError as error:
+-        raise ValueError(
+-            f"{name} must be a timezone-aware ISO-8601 string"
+-        ) from error
++        raise ValueError(f"{name} must be a timezone-aware ISO-8601 string") from error
+     if parsed.tzinfo is None or parsed.utcoffset() is None:
+         raise ValueError(f"{name} must be timezone-aware")
+     return parsed
+--- a/src/toto_ai/sports_stats/final_hybrid_sidecar.py
++++ b/src/toto_ai/sports_stats/final_hybrid_sidecar.py
+@@ -19,6 +19,7 @@
+ from typing import Any
+ from zoneinfo import ZoneInfo
+ 
++from toto_ai.ev.runtime import RuntimeDeadlineExceeded
+ from toto_ai.optimizer.parallel_challenger import POLICY_VERSION
+ from toto_ai.runner.final_input import load_final_input
+ from toto_ai.runner.scheduler import export_operator_package, load_scheduler_plan
+@@ -399,9 +400,7 @@
+         )
+     status_path = root / "sidecar-status.json"
+     started_at = _utc(clock())
+-    latest_start = plan.publish_deadline - timedelta(
+-        seconds=minimum_runtime_seconds
+-    )
++    latest_start = plan.publish_deadline - timedelta(seconds=minimum_runtime_seconds)
+     stop_waiting = min(started_at + timedelta(seconds=wait_seconds), latest_start)
+ 
+     while True:
+@@ -647,16 +646,33 @@
+         observed_at=observed_at,
+     )
+     operator_coupons = _parse_operator_package(operator_export, plan.stake)
+-    report, paths = execute_final_hybrid_comparison(
+-        final_input_path=final_input,
+-        scheduler_plan_path=plan_path,
+-        sports_artifact_path=sports_path,
+-        output_dir=output / "research-comparison",
+-        deadline=_comparison_deadline(plan.publish_deadline, observed_at),
+-        g1_config=ParallelG1Config(family_refinement=True) if g1_refinement else None,
+-        expected_primary_coupons=operator_coupons,
+-        primary_package_sha256=_sha256(operator_export),
+-    )
++    try:
++        report, paths = execute_final_hybrid_comparison(
++            final_input_path=final_input,
++            scheduler_plan_path=plan_path,
++            sports_artifact_path=sports_path,
++            output_dir=output / "research-comparison",
++            deadline=_comparison_deadline(plan.publish_deadline, _utc(clock())),
++            g1_config=ParallelG1Config(family_refinement=True)
++            if g1_refinement
++            else None,
++            expected_primary_coupons=operator_coupons,
++            primary_package_sha256=_sha256(operator_export),
++            primary_control_record=operator,
++        )
++    except RuntimeDeadlineExceeded as exc:
++        return _terminal(
++            status_path,
++            plan=plan,
++            plan_path=plan_path,
++            status="SKIPPED_RUNTIME_DEADLINE",
++            started_at=started_at,
++            observed_at=_utc(clock()),
++            reason=(
++                f"{exc}; completed research retained at "
++                f"{output / 'research-comparison'}; primary unchanged"
++            ),
++        )
+     baseline_coupons = _parse_research_package(paths.baseline_package)
+     quality_v3_package = getattr(
+         paths,
+@@ -666,17 +682,55 @@
+     if operator_coupons != baseline_coupons:
+         raise ValueError("recomputed BK control differs from operator package")
+     completed_at = _utc(clock())
++    if completed_at >= plan.publish_deadline:
++        return _terminal(
++            status_path,
++            plan=plan,
++            plan_path=plan_path,
++            status="EXPIRED_RESEARCH_ONLY",
++            started_at=started_at,
++            observed_at=completed_at,
++            reason=(
++                "comparison completed after T-10; research retained at "
++                f"{output}; primary unchanged"
++            ),
++        )
+     parallel_release = None
+     if parallel_authorization_path is not None:
+-        parallel_release = _publish_parallel_selection(
+-            plan=plan,
+-            report=report,
+-            paths=paths,
+-            operator_export=operator_export,
+-            output=output,
+-            authorization_path=parallel_authorization_path,
+-            observed_at=completed_at,
+-        )
++        if _load_operator_result(plan.output_dir / "operator-result.json") != operator:
++            return _terminal(
++                status_path,
++                plan=plan,
++                plan_path=plan_path,
++                status="SKIPPED_PRIMARY_CHANGED",
++                started_at=started_at,
++                observed_at=_utc(clock()),
++                reason=(
++                    "primary changed during comparison; research retained; "
++                    "primary unchanged by sidecar"
++                ),
++            )
++        try:
++            parallel_release = _publish_parallel_selection(
++                plan=plan,
++                report=report,
++                paths=paths,
++                operator_export=operator_export,
++                output=output,
++                authorization_path=parallel_authorization_path,
++                observed_at=completed_at,
++                now=clock,
++            )
++        except RuntimeDeadlineExceeded as exc:
++            return _terminal(
++                status_path,
++                plan=plan,
++                plan_path=plan_path,
++                status="EXPIRED_RESEARCH_ONLY",
++                started_at=started_at,
++                observed_at=_utc(clock()),
++                reason=f"{exc}; primary unchanged",
++            )
+     payload = {
+         "schema_version": 1,
+         "status": "READY_BEFORE_T10",
+@@ -699,9 +753,7 @@
+         "quality_v3_research_package": str(quality_v3_package),
+         "quality_v3_research_package_sha256": _sha256(quality_v3_package),
+         "uncertainty_research_package": str(paths.uncertainty_package),
+-        "uncertainty_research_package_sha256": _sha256(
+-            paths.uncertainty_package
+-        ),
++        "uncertainty_research_package_sha256": _sha256(paths.uncertainty_package),
+         "baseline_matches_operator": True,
+         "sports_coverage_count": report["sports_coverage_count"],
+         "sports_fallback_count": report["sports_fallback_count"],
+@@ -742,13 +794,24 @@
+     run_id = final_input.parent.name
+     output = output_root / f"run-{run_id}"
+     output.mkdir(parents=True, exist_ok=True)
+-    report, paths = execute_final_hybrid_comparison(
+-        final_input_path=final_input,
+-        scheduler_plan_path=plan_path,
+-        sports_artifact_path=sports_path,
+-        output_dir=output / "research-comparison",
+-        deadline=_comparison_deadline(plan.publish_deadline, observed_at),
+-    )
++    try:
++        report, paths = execute_final_hybrid_comparison(
++            final_input_path=final_input,
++            scheduler_plan_path=plan_path,
++            sports_artifact_path=sports_path,
++            output_dir=output / "research-comparison",
++            deadline=_comparison_deadline(plan.publish_deadline, observed_at),
++        )
++    except RuntimeDeadlineExceeded as exc:
++        return _terminal(
++            status_path,
++            plan=plan,
++            plan_path=plan_path,
++            status="SKIPPED_RUNTIME_DEADLINE",
++            started_at=started_at,
++            observed_at=datetime.now(timezone.utc),
++            reason=f"{exc}; completed research retained at {output}; primary unchanged",
++        )
+     completed_at = datetime.now(timezone.utc)
+     quality_v3_package = getattr(
+         paths,
+@@ -779,9 +842,7 @@
+         "quality_v3_research_package": str(quality_v3_package),
+         "quality_v3_research_package_sha256": _sha256(quality_v3_package),
+         "uncertainty_research_package": str(paths.uncertainty_package),
+-        "uncertainty_research_package_sha256": _sha256(
+-            paths.uncertainty_package
+-        ),
++        "uncertainty_research_package_sha256": _sha256(paths.uncertainty_package),
+         "sports_coverage_count": report["sports_coverage_count"],
+         "sports_fallback_count": report["sports_fallback_count"],
+         "automatic_wagering": False,
+@@ -808,7 +869,16 @@
+     output: Path,
+     authorization_path: Path,
+     observed_at: datetime,
++    now: Callable[[], datetime] | None = None,
+ ) -> dict[str, Any]:
++    clock = now or (lambda: datetime.now(timezone.utc))
++
++    def check_publication_time():
++        if _utc(clock()) >= plan.publish_deadline:
++            raise RuntimeDeadlineExceeded(
++                "parallel publication deadline exceeded at T-10"
++            )
++
+     authorization = _validate_parallel_authorization(plan, authorization_path)
+     completed_at = _utc(observed_at)
+     if completed_at >= plan.publish_deadline:
+@@ -855,9 +925,7 @@
+         coupons = _parse_operator_package(package_paths[selected_id], plan.stake)
+     else:
+         coupons = _parse_research_package(package_paths[selected_id])
+-    canonical_hash = hashlib.sha256(
+-        ",".join(coupons).encode("utf-8")
+-    ).hexdigest()
++    canonical_hash = hashlib.sha256(",".join(coupons).encode("utf-8")).hexdigest()
+     expected_count = selected_candidate.get("coupon_count")
+     expected_cost = selected_candidate.get("cost")
+     if (
+@@ -880,7 +948,19 @@
+     )
+ 
+     package_path = output / "selected-parallel-operator-package.txt"
++    companion_path = output / "parallel-operator-result.json"
++    if package_path.exists() or companion_path.exists():
++        raise ValueError(
++            "parallel publication already exists; immutable result preserved"
++        )
++    check_publication_time()
+     _write_replace(package_path, _operator_package_bytes(plan.stake, coupons))
++    try:
++        check_publication_time()
++    except RuntimeDeadlineExceeded:
++        package_path.unlink()
++        raise
++    completed_at = _utc(clock())
+     payload: dict[str, Any] = {
+         "schema_version": 1,
+         "status": "READY_PARALLEL_PLAY_BEFORE_T10",
+@@ -911,10 +991,14 @@
+         "automatic_wagering": False,
+     }
+     payload["record_sha256"] = hashlib.sha256(_canonical(payload)).hexdigest()
+-    _write_replace(
+-        output / "parallel-operator-result.json",
+-        _canonical(payload) + b"\n",
+-    )
++    try:
++        check_publication_time()
++        _write_replace(companion_path, _canonical(payload) + b"\n")
++        check_publication_time()
++    except RuntimeDeadlineExceeded:
++        companion_path.unlink(missing_ok=True)
++        package_path.unlink(missing_ok=True)
++        raise
+     return payload
+ 
+ 
+@@ -1393,10 +1477,7 @@
+             g1_refinement = True
+             index += 1
+             continue
+-        if (
+-            index + 1 >= len(option_tokens)
+-            or option_tokens[index + 1].startswith("--")
+-        ):
++        if index + 1 >= len(option_tokens) or option_tokens[index + 1].startswith("--"):
+             raise ValueError("parallel sidecar wrapper options are invalid")
+         value = option_tokens[index + 1]
+         if name in options:
+--- a/src/toto_ai/ev/ternary.py
++++ b/src/toto_ai/ev/ternary.py
+@@ -11,6 +11,7 @@
+ 
+ from toto_ai.ev.models import EVComponents, EVInput, EVSurface, ProbabilityMatrix
+ from toto_ai.ev.prize import category_funds
++from toto_ai.ev.runtime import checkpoint
+ 
+ OUTCOMES = ("1", "X", "2")
+ MAX_EVENTS = 15
+@@ -88,11 +89,15 @@
+     left_array = _validated_flat_array(left, "left", size)
+     right_array = _validated_flat_array(right, "right", size)
+ 
++    checkpoint("fft_left", states=size)
+     left_fft = np.fft.fftn(left_array.reshape(shape))
++    checkpoint("fft_kernel", states=size)
+     right_fft = np.fft.fftn(right_array.reshape(shape))
+     left_fft *= right_fft
+     del right_fft
++    checkpoint("fft_inverse", states=size)
+     inverse = np.fft.ifftn(left_fft)
++    checkpoint("fft_complete", states=size)
+     result = inverse.real.reshape(-1).copy()
+     del inverse, left_fft
+ 
+@@ -101,10 +106,7 @@
+         * np.abs(right_array).sum(dtype=np.float64),
+     )
+     negative_tolerance = (
+-        64.0
+-        * np.finfo(np.float64).eps
+-        * event_count
+-        * convolution_scale
++        64.0 * np.finfo(np.float64).eps * event_count * convolution_scale
+     )
+     if float(result.min(initial=0.0)) < -negative_tolerance:
+         raise FloatingPointError("FFT convolution produced a material negative value")
+@@ -117,6 +119,7 @@
+     progress_callback: ProgressCallback | None = None,
+ ) -> EVComponents:
+     """Compute reusable official 9..15 regular-prize and jackpot unit EV."""
++    checkpoint("ev_components_start")
+     components, _ = _compute_official_components(
+         ev_input,
+         progress_callback=progress_callback,
+@@ -270,6 +273,7 @@
+     started_at = time.perf_counter()
+ 
+     for category in categories:
++        checkpoint("ev_category", category=category, category_total=len(categories))
+         kernel = hamming_ball_kernel(event_count, category)
+         crowd_tail = _crowd_qualifying_probabilities(crowd_matrix, category)
+         denominator = pool_sum * crowd_tail
+@@ -328,6 +332,12 @@
+     state_count = 3**event_count
+     tails = np.empty(state_count, dtype=np.float64)
+     for start in range(0, state_count, chunk_size):
++        checkpoint(
++            "crowd_tail",
++            category=minimum_hits,
++            processed_states=start,
++            states=state_count,
++        )
+         stop = min(start + chunk_size, state_count)
+         actual_indices = np.arange(start, stop, dtype=np.int64)
+         tails[start:stop] = _poisson_binomial_tails_for_validated_indices(
+--- a/src/toto_ai/ev/package.py
++++ b/src/toto_ai/ev/package.py
+@@ -33,6 +33,7 @@
+     selection_context_sha256,
+     validate_selection_provenance,
+ )
++from toto_ai.ev.runtime import checkpoint
+ from toto_ai.ev.ternary import (
+     MAX_EVENTS,
+     OUTCOMES,
+@@ -61,7 +62,9 @@
+     scan sends only actual tolerance-tie candidate blocks for in-place sorting.
+     """
+     gross_ev, event_count = _validated_surface(surface)
++    checkpoint("ev_rank_start", candidates=gross_ev.size)
+     order = np.argsort(gross_ev, kind="quicksort")
++    checkpoint("ev_rank_sorted", candidates=gross_ev.size)
+     _reverse_in_place(order)
+     _reorder_tolerance_ties(order, gross_ev)
+ 
+@@ -89,6 +92,9 @@
+     edge_start = 0
+     edge_count = order.size - 1
+     while edge_start < edge_count:
++        checkpoint(
++            "ev_rank_ties", processed_candidates=edge_start, candidates=order.size
++        )
+         edge_stop = min(edge_start + _TIE_SCAN_CHUNK_SIZE, edge_count)
+         ordered_values = gross_ev[order[edge_start : edge_stop + 1]]
+         close_edges = _adjacent_values_close(ordered_values)
+@@ -444,6 +450,9 @@
+     pre_quality_objective = None
+     post_quality_objective = None
+     while universe_count:
++        checkpoint(
++            "ev_safety_repair", candidates=universe_count, coupon_capacity=required
++        )
+         universe_indices = eligible_indices[:universe_count]
+         universe_ranks = eligible_positions[:universe_count] + 1
+         universe_digits = _coupon_digits(universe_indices, event_count)
+@@ -617,9 +626,7 @@
+     ]
+     maximum_count = min(int(eligible_indices.size), _SAFETY_MAX_CANDIDATES)
+     ev_prefix = eligible_indices[:maximum_count]
+-    ev_prefix = ev_prefix[
+-        ~np.isin(ev_prefix, filtered_seed, assume_unique=True)
+-    ]
++    ev_prefix = ev_prefix[~np.isin(ev_prefix, filtered_seed, assume_unique=True)]
+     candidates = np.concatenate((filtered_seed, ev_prefix))[:maximum_count]
+     return candidates, filtered_seed
+ 
+@@ -641,6 +648,7 @@
+     coupon_exposures = _coupon_exposures(universe_digits)
+     maximum_iterations = required * lower_bounds.shape[0]
+     for _ in range(maximum_iterations):
++        checkpoint("ev_repair_iteration", candidates=universe_indices.size)
+         violation = _constraint_violation(counts, lower_bounds, upper_bounds)
+         headroom_violation = _upper_violation(counts, soft_upper_bounds)
+         if violation == 0 and headroom_violation == 0:
+@@ -755,10 +763,16 @@
+             stream=OPTIMIZATION_MC_STREAM,
+         )
+     repairs = 0
++    evaluated_swaps = 0
+     initial_quality: tuple[float, ...] | None = None
+     final_quality: tuple[float, ...] | None = None
+     tolerances = _quality_objective_tolerances(config)
+-    for _ in range(config.package_quality_repair_iterations):
++    for iteration in range(config.package_quality_repair_iterations):
++        checkpoint(
++            "ev_quality_repair",
++            iteration=iteration,
++            iterations=config.package_quality_repair_iterations,
++        )
+         selected_positions = np.flatnonzero(selected)
+         selected_digits = universe_digits[selected_positions]
+         pairwise = np.count_nonzero(
+@@ -845,6 +859,11 @@
+         best_pair: tuple[int, int] | None = None
+         best_quality: tuple[float, ...] | None = None
+         for outgoing_column in outgoing_order:
++            checkpoint(
++                "ev_quality_outgoing",
++                outgoing_column=int(outgoing_column),
++                candidates=int(candidate_positions.size),
++            )
+             outgoing_position = int(selected_positions[outgoing_column])
+             retained = np.delete(selected_digits, outgoing_column, axis=0)
+             retained_sample_minimum = (
+@@ -869,6 +888,8 @@
+                 axis=2,
+             )
+             for row, incoming_position in enumerate(candidate_positions):
++                if row % 64 == 0:
++                    checkpoint("ev_quality_pairs", evaluated_candidate_rows=row)
+                 candidate_counts = counts.copy()
+                 _apply_count_swap(
+                     candidate_counts,
+@@ -937,6 +958,9 @@
+                         int(universe_indices[incoming_position]),
+                         MAX_EVENTS,
+                     )
++                    evaluated_swaps += 1
++                    if evaluated_swaps % 64 == 0:
++                        checkpoint("ev_exact_swap", evaluated_swaps=evaluated_swaps)
+                     candidate_p13, candidate_p14, candidate_exact_p15 = (
+                         exact_coverage.probabilities_after_swap(
+                             outgoing_coupon,
+@@ -1244,6 +1268,11 @@
+         group_selected_ev = selected_ev[outgoing_columns]
+         group_selected_ranks = selected_ranks[outgoing_columns]
+         for start in range(0, incoming_group.size, _SAFETY_PAIR_CHUNK_SIZE):
++            checkpoint(
++                "ev_repair_pairs",
++                processed_candidates=start,
++                candidates=incoming_group.size,
++            )
+             incoming_positions = incoming_group[start : start + _SAFETY_PAIR_CHUNK_SIZE]
+             incoming_digits = universe_digits[incoming_positions]
+             hard = current_violation + _pair_deltas(
+@@ -1345,6 +1374,7 @@
+     soft_upper_bounds: np.ndarray,
+ ) -> None:
+     while True:
++        checkpoint("ev_feasible_improvement", candidates=universe_indices.size)
+         selected_positions = np.flatnonzero(selected)
+         selected_digits = universe_digits[selected_positions]
+         selected_ev = gross_ev[universe_indices[selected_positions]]
+@@ -1359,6 +1389,11 @@
+         best_key: tuple[float, int, int] | None = None
+         best_pair: tuple[int, int] | None = None
+         for start in range(0, universe_indices.size, _SAFETY_PAIR_CHUNK_SIZE):
++            checkpoint(
++                "ev_feasible_pairs",
++                processed_candidates=start,
++                candidates=universe_indices.size,
++            )
+             stop = min(start + _SAFETY_PAIR_CHUNK_SIZE, universe_indices.size)
+             incoming_positions = np.arange(start, stop, dtype=np.int64)
+             eligible = (~selected[incoming_positions]) & (
+--- a/src/toto_ai/ev/package_quality.py
++++ b/src/toto_ai/ev/package_quality.py
+@@ -115,9 +115,7 @@
+ def selection_context_sha256(context: EVConfig | dict[str, object]) -> str:
+     """Hash one canonical selection context without accepting partial data."""
+     payload = (
+-        bound_selection_context(context)
+-        if isinstance(context, EVConfig)
+-        else context
++        bound_selection_context(context) if isinstance(context, EVConfig) else context
+     )
+     if not isinstance(payload, dict):
+         raise TypeError("selection context must be an EVConfig or dict")
+@@ -417,8 +415,7 @@
+         or not isinstance(document.get("deadlines"), dict)
+         or document.get("plan_id") != expected_plan_id
+         or not isinstance(quality, dict)
+-        or quality.get("release_protocol_version")
+-        != QUALITY_RELEASE_PROTOCOL_VERSION
++        or quality.get("release_protocol_version") != QUALITY_RELEASE_PROTOCOL_VERSION
+     ):
+         reasons.append("scheduler_plan_invalid")
+         return
+@@ -795,6 +792,7 @@
+         self._masses = [0.0, 0.0, 0.0]
+         self._state_probability_cache: dict[tuple[int, ...], float] = {}
+         self._ball_cache: dict[str, tuple[frozenset[tuple[int, ...]], ...]] = {}
++        self._swap_mass_cache: dict[str, tuple] = {}
+         for coupon in coupons:
+             self._add(coupon)
+ 
+@@ -808,23 +806,39 @@
+         incoming: str,
+     ) -> tuple[float, float, float]:
+         result = []
+-        outgoing_balls = self._balls(outgoing)
+-        incoming_balls = self._balls(incoming)
++        outgoing_balls, unique, _ = self._swap_states(outgoing)
++        incoming_balls, _, uncovered = self._swap_states(incoming)
+         for radius in range(3):
+-            outgoing_only = outgoing_balls[radius] - incoming_balls[radius]
+-            incoming_only = incoming_balls[radius] - outgoing_balls[radius]
++            outgoing_only = unique[radius] - incoming_balls[radius]
++            incoming_only = uncovered[radius] - outgoing_balls[radius]
+             removed = math.fsum(
+-                self._state_probability(state)
+-                for state in outgoing_only
+-                if self._counts[radius].get(state) == 1
++                self._state_probability(state) for state in outgoing_only
+             )
+-            added = math.fsum(
+-                self._state_probability(state)
+-                for state in incoming_only
+-                if self._counts[radius].get(state, 0) == 0
+-            )
++            added = math.fsum(self._state_probability(state) for state in incoming_only)
+             result.append(self._masses[radius] - removed + added)
+         return tuple(result)  # type: ignore[return-value]
++
++    def _swap_states(self, coupon: str) -> tuple:
++        """Reuse unchanged coverage membership across proposals, never masses.
++
++        Filtering before set difference is algebraically identical. Each sum
++        still uses the exact original state masses and math.fsum; no subtraction
++        of rounded cached totals and no approximation of intersecting balls.
++        """
++        cached = self._swap_mass_cache.get(coupon)
++        if cached is None:
++            balls = self._balls(coupon)
++            unique = tuple(
++                frozenset(s for s in states if self._counts[r].get(s) == 1)
++                for r, states in enumerate(balls)
++            )
++            uncovered = tuple(
++                frozenset(s for s in states if self._counts[r].get(s, 0) == 0)
++                for r, states in enumerate(balls)
++            )
++            cached = balls, unique, uncovered
++            self._swap_mass_cache[coupon] = cached
++        return cached
+ 
+     def probabilities_after_removal(
+         self,
+@@ -874,6 +888,7 @@
+         return cached
+ 
+     def _add(self, coupon: str) -> None:
++        self._swap_mass_cache.clear()
+         for radius, states in enumerate(self._balls(coupon)):
+             counts = self._counts[radius]
+             for state in states:
+@@ -883,6 +898,7 @@
+                 counts[state] = count + 1
+ 
+     def _remove(self, coupon: str) -> None:
++        self._swap_mass_cache.clear()
+         for radius, states in enumerate(self._balls(coupon)):
+             counts = self._counts[radius]
+             for state in states:
+--- a/tests/test_final_hybrid_g1_integration.py
++++ b/tests/test_final_hybrid_g1_integration.py
+@@ -183,6 +183,33 @@
+     assert report["o1_family_readiness"]["status"] == "UNAVAILABLE"
+     assert report["o1_family_readiness"]["changes_probabilities"] is False
+     assert paths.baseline_package.read_text().splitlines()[4:] == list(COUPONS)
++
++
++def test_expired_comparison_never_starts_ev(comparison_input, monkeypatch):
++    comparison_input["deadline"] = time.perf_counter() - 1
++    monkeypatch.setattr(
++        comparison, "run_ev_crowd_current", lambda *a, **k: pytest.fail("EV started")
++    )
++    with pytest.raises(TimeoutError, match="deadline"):
++        comparison.execute_final_hybrid_comparison(**comparison_input)
++
++
++def test_completed_control_preserved_when_sports_expires(comparison_input, monkeypatch):
++    original = comparison._rebase_sports_probabilities
++
++    def expire(*args):
++        from toto_ai.ev.runtime import current_runtime
++
++        current_runtime().deadline = time.perf_counter() - 1
++        return original(*args)
++
++    monkeypatch.setattr(comparison, "_rebase_sports_probabilities", expire)
++    with pytest.raises(TimeoutError):
++        comparison.execute_final_hybrid_comparison(**comparison_input)
++    output = comparison_input["output_dir"]
++    assert (output / "primary-bk-ranking.json").is_file()
++    assert (output / "baseline-final-research-coupons.txt").is_file()
++    assert not (output / "comparison.json").exists()
+ 
+ 
+ def test_unexpected_optional_side_failure_keeps_four_candidate_report(
+--- /dev/null
++++ b/src/toto_ai/ev/runtime.py
+@@ -0,0 +1,103 @@
++"""Opt-in context-local cooperative deadlines; no default policy/candidate cuts."""
++
++from __future__ import annotations
++
++import math
++import time
++from collections.abc import Callable, Iterator
++from contextlib import contextmanager
++from contextvars import ContextVar
++from dataclasses import dataclass, field
++
++
++class RuntimeDeadlineExceeded(TimeoutError):
++    pass
++
++
++@dataclass
++class RuntimeBudget:
++    deadline: float | None = None
++    progress: Callable[[dict], None] | None = None
++    started: float = field(default_factory=time.perf_counter)
++    cpu_started: float = field(default_factory=time.process_time)
++    phase: str = "validation"
++    phase_started: float = field(default_factory=time.perf_counter)
++    phase_cpu_started: float = field(default_factory=time.process_time)
++    last_emitted: float = -math.inf
++    counters: dict = field(default_factory=dict)
++
++    def __post_init__(self) -> None:
++        if self.deadline is not None and not math.isfinite(self.deadline):
++            raise ValueError("runtime deadline must be finite")
++
++    def check(self, stage: str, *, force: bool = False, **counts) -> None:
++        now, cpu = time.perf_counter(), time.process_time()
++        expired = self.deadline is not None and now >= self.deadline
++        self.counters.update(counts)
++        if self.progress is not None and (
++            force or expired or now - self.last_emitted >= 5
++        ):
++            self.progress(
++                {
++                    "phase": self.phase,
++                    "stage": stage,
++                    "wall_seconds": now - self.started,
++                    "cpu_seconds": cpu - self.cpu_started,
++                    "phase_wall_seconds": now - self.phase_started,
++                    "phase_cpu_seconds": cpu - self.phase_cpu_started,
++                    "remaining_seconds": (
++                        None if self.deadline is None else max(0.0, self.deadline - now)
++                    ),
++                    "status": "DEADLINE_EXCEEDED" if expired else "RUNNING",
++                    "counts": dict(self.counters),
++                }
++            )
++            self.last_emitted = now
++        if expired:
++            raise RuntimeDeadlineExceeded(
++                f"comparison deadline exceeded: {self.phase}/{stage}"
++            )
++
++    def enter(self, name: str) -> None:
++        self.check("completed", force=True)
++        self.phase = name
++        self.phase_started, self.phase_cpu_started = (
++            time.perf_counter(),
++            time.process_time(),
++        )
++        self.counters = {}
++        self.check("started", force=True)
++
++
++_RUNTIME: ContextVar[RuntimeBudget | None] = ContextVar("ev_runtime", default=None)
++
++
++def current_runtime() -> RuntimeBudget | None:
++    return _RUNTIME.get()
++
++
++def checkpoint(stage: str, **counts) -> None:
++    budget = _RUNTIME.get()
++    if budget is not None:
++        budget.check(stage, **counts)
++
++
++def phase(name: str) -> None:
++    budget = _RUNTIME.get()
++    if budget is not None:
++        budget.enter(name)
++
++
++@contextmanager
++def runtime_scope(budget: RuntimeBudget) -> Iterator[RuntimeBudget]:
++    parent = _RUNTIME.get()
++    if parent is not None and parent.deadline is not None:
++        budget.deadline = min(
++            parent.deadline,
++            budget.deadline if budget.deadline is not None else math.inf,
++        )
++    token = _RUNTIME.set(budget)
++    try:
++        yield budget
++    finally:
++        _RUNTIME.reset(token)
+--- /dev/null
++++ b/tests/test_ev_runtime_budget.py
+@@ -0,0 +1,89 @@
++from __future__ import annotations
++
++import math
++import time
++
++import numpy as np
++import pytest
++
++from toto_ai.ev import ternary
++from toto_ai.ev.models import EVInput
++from toto_ai.ev.package_quality import ExactCategoryCoverage
++
++
++def test_expired_ev_budget_stops_before_component_work():
++    from toto_ai.ev.runtime import RuntimeBudget, runtime_scope
++
++    ev_input = EVInput(
++        drawing_id=1,
++        drawing_number=1,
++        true_probabilities=((0.5, 0.3, 0.2),) * 9,
++        crowd_probabilities=((0.4, 0.3, 0.3),) * 9,
++        pool_sum=1000,
++        jackpot=0,
++        possible_winnings=500,
++        probability_sources=("test",) * 9,
++        fetched_at=None,
++    )
++    with runtime_scope(RuntimeBudget(deadline=time.perf_counter() - 1)):
++        with pytest.raises(TimeoutError, match="deadline"):
++            ternary.compute_ev_components(ev_input)
++
++
++def test_budget_expires_inside_crowd_chunks_and_resets(monkeypatch):
++    from toto_ai.ev.runtime import RuntimeBudget, runtime_scope
++
++    calls = []
++
++    def stop_after_first(*args):
++        calls.append(1)
++        budget.deadline = time.perf_counter() - 1
++        return np.ones(len(args[-1]))
++
++    monkeypatch.setattr(
++        ternary, "_poisson_binomial_tails_for_validated_indices", stop_after_first
++    )
++    budget = RuntimeBudget(deadline=time.perf_counter() + 100)
++    with runtime_scope(budget), pytest.raises(TimeoutError):
++        ternary._crowd_qualifying_probabilities(((0.4, 0.3, 0.3),) * 3, 2, 5)
++    assert len(calls) == 1
++    ternary._crowd_qualifying_probabilities(((0.4, 0.3, 0.3),) * 3, 2, 5)
++    assert len(calls) > 1
++
++
++def _old_swap(coverage, outgoing, incoming):
++    result = []
++    for radius, (out, inc) in enumerate(
++        zip(coverage._balls(outgoing), coverage._balls(incoming), strict=True)
++    ):
++        removed = math.fsum(
++            coverage._state_probability(s)
++            for s in out - inc
++            if coverage._counts[radius].get(s) == 1
++        )
++        added = math.fsum(
++            coverage._state_probability(s)
++            for s in inc - out
++            if coverage._counts[radius].get(s, 0) == 0
++        )
++        result.append(coverage._masses[radius] - removed + added)
++    return tuple(result)
++
++
++def test_swap_cache_is_exact_and_invalidated():
++    coverage = ExactCategoryCoverage(
++        ("1" * 15, "1" * 14 + "X", "2" * 15), ((0.5, 0.3, 0.2),) * 15
++    )
++    pairs = [("1" * 15, "1X" * 7 + "1"), ("2" * 15, "X" * 15)]
++    for _ in range(2):
++        for outgoing, incoming in pairs:
++            assert coverage.probabilities_after_swap(outgoing, incoming) == _old_swap(
++                coverage, outgoing, incoming
++            )
++    assert coverage._swap_mass_cache
++    coverage.apply_swap(*pairs[0])
++    assert not coverage._swap_mass_cache
++    for outgoing, incoming in pairs:
++        assert coverage.probabilities_after_swap(outgoing, incoming) == _old_swap(
++            coverage, outgoing, incoming
++        )
+--- /dev/null
++++ b/tests/test_final_hybrid_runtime_contracts.py
+@@ -0,0 +1,369 @@
++from __future__ import annotations
++
++import hashlib
++import json
++from dataclasses import replace
++from datetime import datetime, timedelta, timezone
++from types import SimpleNamespace
++
++import pytest
++
++from toto_ai.ev.models import EVConfig
++from toto_ai.ev.runtime import RuntimeDeadlineExceeded
++from toto_ai.optimizer.strategy_comparison import (
++    FrozenStrategyEvent,
++    FrozenStrategyInput,
++)
++from toto_ai.runner import scheduler
++from toto_ai.sports_stats import final_hybrid_comparison as comparison
++from toto_ai.sports_stats import final_hybrid_sidecar as sidecar
++
++
++@pytest.fixture
++def primary(tmp_path, monkeypatch):
++    coupons = ("1" * 15, "X" * 15, "2" * 15)
++    run = tmp_path / "attempts" / "synthetic-final"
++    run.mkdir(parents=True)
++    source = (
++        ",".join(scheduler.PACKAGE_CSV_HEADER)
++        + "\n"
++        + "".join(f"{i},{c},2.0,1.0\n" for i, c in enumerate(coupons, 1))
++    ).encode()
++    (run / "package.csv").write_bytes(source)
++    frozen = FrozenStrategyInput(
++        drawing_id=1,
++        drawing_number=1,
++        drawing_fingerprint="a" * 64,
++        source_captured_at="2026-01-01T00:00:00Z",
++        as_of="2026-01-01T00:00:00Z",
++        ended_at="2026-01-01T01:00:00Z",
++        bank=90,
++        stake=30,
++        pool_sum=1000,
++        jackpot=0,
++        possible_winnings=1000,
++        events=tuple(
++            FrozenStrategyEvent(
++                event_order=i,
++                name=str(i),
++                bk_probabilities=(0.5, 0.3, 0.2),
++                crowd_probabilities=(0.4, 0.3, 0.3),
++            )
++            for i in range(15)
++        ),
++    )
++    plan = SimpleNamespace(
++        output_dir=tmp_path,
++        plan_id="synthetic",
++        publish_deadline=datetime(2026, 1, 1, 1, tzinfo=timezone.utc),
++    )
++    snapshot = SimpleNamespace(
++        path=run / "final-input.json",
++        attempt_id=run.name,
++        snapshot_sha256="s" * 64,
++        probability_input_sha256="p" * 64,
++    )
++    archive = dict(
++        final_input_sha256=snapshot.snapshot_sha256,
++        probability_input_sha256=snapshot.probability_input_sha256,
++        source_bytes_sha256=hashlib.sha256(source).hexdigest(),
++        source_path=str(run / "package.csv"),
++        drawing_id=1,
++        drawing_number=1,
++        stake=30,
++        cost=90,
++        coupon_count=3,
++        provenance="pre_bet_runner",
++        canonical_package_sha256=comparison._package_sha256(coupons),
++    )
++    archive["archive_manifest_sha256"] = hashlib.sha256(
++        comparison._canonical(archive)
++    ).hexdigest()
++    (run / "package-archive.json").write_text(json.dumps(archive))
++    operator = dict(
++        plan_id=plan.plan_id,
++        drawing=1,
++        drawing_id=1,
++        decision="PLAY",
++        operator_status="FINAL_FRESH",
++        provenance="FINAL_FRESH",
++        actionable=True,
++        automatic_wagering=False,
++        requested_bank=90,
++        stake=30,
++        effective_bank=90,
++        package_sha256="u" * 64,
++        run_id=run.name,
++        release_mode="STANDARD",
++        source_package_path=str(run / "package.csv"),
++        source_package_sha256=hashlib.sha256(source).hexdigest(),
++        archive_manifest_path=str(run / "package-archive.json"),
++        archive_manifest_sha256=archive["archive_manifest_sha256"],
++    )
++    operator["record_sha256"] = scheduler._operator_result_sha256(operator)
++    (tmp_path / "operator-result.json").write_text(json.dumps(operator))
++    monkeypatch.setattr(
++        "toto_ai.ev.package_quality.validate_selection_provenance",
++        lambda *a, **k: (True, (), "p" * 64, "seed"),
++    )
++    return dict(
++        plan=plan,
++        snapshot=snapshot,
++        frozen=frozen,
++        config=EVConfig(bank=90, stake=30),
++        provenance=object(),
++        operator=operator,
++        expected_coupons=coupons,
++        upload_sha256="u" * 64,
++    )
++
++
++def test_reuse_has_identical_exact_metrics_without_ev(primary, monkeypatch):
++    monkeypatch.setattr(
++        comparison, "run_ev_crowd_current", lambda *a, **k: pytest.fail("EV repeated")
++    )
++    result = comparison._reuse_verified_control(**primary)
++    assert result.coupons == primary["expected_coupons"]
++    assert (
++        result.probability_at_least_13
++        == comparison.exact_category_probabilities(
++            result.coupons, primary["frozen"].bk_probability_matrix
++        )[0]
++    )
++
++
++@pytest.mark.parametrize(
++    "field",
++    [
++        "record",
++        "source",
++        "archive",
++        "snapshot",
++        "probabilities",
++        "coupons",
++        "upload",
++        "bank",
++        "stake",
++        "current",
++        "provenance",
++    ],
++)
++def test_reuse_rejects_changed_binding(primary, field, monkeypatch):
++    run = primary["snapshot"].path.parent
++    if field == "record":
++        primary["operator"]["record_sha256"] = "bad"
++    elif field == "source":
++        (run / "package.csv").write_bytes(b"tampered")
++    elif field == "archive":
++        (run / "package-archive.json").write_text("{}")
++    elif field == "snapshot":
++        primary["snapshot"].snapshot_sha256 = "other"
++    elif field == "probabilities":
++        primary["snapshot"].probability_input_sha256 = "other"
++    elif field == "coupons":
++        primary["expected_coupons"] = tuple(reversed(primary["expected_coupons"]))
++    elif field == "upload":
++        primary["upload_sha256"] = "bad"
++    elif field == "bank":
++        primary["config"] = replace(primary["config"], bank=120)
++    elif field == "stake":
++        primary["config"] = replace(primary["config"], stake=10)
++    elif field == "current":
++        (primary["plan"].output_dir / "operator-result.json").write_text("{}")
++    else:
++        monkeypatch.setattr(
++            "toto_ai.ev.package_quality.validate_selection_provenance",
++            lambda *a, **k: (False, ("changed_config",), None, None),
++        )
++    with pytest.raises(ValueError, match="reuse"):
++        comparison._reuse_verified_control(**primary)
++
++
++@pytest.mark.parametrize("expire_phase", ["ranking", "package_write", "record_write"])
++def test_publication_rechecks_live_clock_and_removes_only_own_late_output(
++    tmp_path, monkeypatch, expire_phase
++):
++    now = datetime(2026, 1, 1, tzinfo=timezone.utc)
++    clock = [now]
++    plan = SimpleNamespace(
++        publish_deadline=now + timedelta(seconds=2),
++        plan_id="test",
++        drawing=1,
++        drawing_id=1,
++        stake=30,
++        requested_bank=90,
++    )
++    protected = tmp_path / "primary.txt"
++    protected.write_bytes(b"PRIMARY_UNCHANGED")
++    coupons = ("1" * 15, "X" * 15, "2" * 15)
++    monkeypatch.setattr(
++        sidecar,
++        "_validate_parallel_authorization",
++        lambda *a: {"record_sha256": "auth"},
++    )
++    monkeypatch.setattr(sidecar, "_parse_research_package", lambda *a: coupons)
++    monkeypatch.setattr(sidecar, "_selected_refinement_lineage", lambda **k: None)
++
++    def ranking(**kwargs):
++        if expire_phase == "ranking":
++            clock[0] = plan.publish_deadline
++        return {"package_position": 1}
++
++    monkeypatch.setattr(sidecar, "_selected_coupon_ranking", ranking)
++    real_write = sidecar._write_replace
++
++    def write(path, data):
++        real_write(path, data)
++        if (expire_phase == "package_write" and path.suffix == ".txt") or (
++            expire_phase == "record_write"
++            and path.name == "parallel-operator-result.json"
++        ):
++            clock[0] = plan.publish_deadline
++
++    monkeypatch.setattr(sidecar, "_write_replace", write)
++    paths = SimpleNamespace(
++        sports_package=protected,
++        quality_v3_package=protected,
++        uncertainty_package=protected,
++        robust_package=protected,
++    )
++    report = {
++        "experimental_selection": {
++            "policy_version": sidecar.POLICY_VERSION,
++            "selected_strategy_id": "quality-v3",
++            "selected_package_sha256": comparison._package_sha256(coupons),
++            "candidates": [
++                {
++                    "strategy_id": "quality-v3",
++                    "eligible": True,
++                    "coupon_count": 3,
++                    "cost": 90,
++                }
++            ],
++        }
++    }
++    with pytest.raises(RuntimeDeadlineExceeded):
++        sidecar._publish_parallel_selection(
++            plan=plan,
++            report=report,
++            paths=paths,
++            operator_export=protected,
++            output=tmp_path,
++            authorization_path=tmp_path / "auth.json",
++            observed_at=now,
++            now=lambda: clock[0],
++        )
++    assert protected.read_bytes() == b"PRIMARY_UNCHANGED"
++    assert not (tmp_path / "parallel-operator-result.json").exists()
++    assert not (tmp_path / "selected-parallel-operator-package.txt").exists()
++
++
++def test_no_bet_deadline_retains_completed_research_and_terminal(tmp_path, monkeypatch):
++    now = datetime.now(timezone.utc)
++    plan = SimpleNamespace(
++        plan_id="synthetic",
++        drawing=1,
++        drawing_id=1,
++        publish_deadline=now + timedelta(seconds=30),
++    )
++    planpath = tmp_path / "plan.json"
++    planpath.write_text("{}")
++    final_input = tmp_path / "source" / "final-input.json"
++    output = tmp_path / "output"
++    status = output / "sidecar-status.json"
++
++    def expire(**kwargs):
++        path = kwargs["output_dir"]
++        path.mkdir(parents=True)
++        (path / "baseline-final-research-coupons.txt").write_text("RESEARCH ONLY")
++        raise RuntimeDeadlineExceeded("test EV deadline")
++
++    monkeypatch.setattr(sidecar, "execute_final_hybrid_comparison", expire)
++    result = sidecar._execute_no_bet_research(
++        plan=plan,
++        plan_path=planpath,
++        sports_path=tmp_path / "sports.json",
++        output_root=output,
++        final_input=final_input,
++        status_path=status,
++        started_at=now,
++        observed_at=now,
++        operator_reason="NO BET",
++    )
++    assert result.status == "SKIPPED_RUNTIME_DEADLINE"
++    assert (
++        output / "run-source/research-comparison/baseline-final-research-coupons.txt"
++    ).read_text() == "RESEARCH ONLY"
++    assert json.loads(status.read_text())["automatic_wagering"] is False
++
++
++def test_progress_is_scoped_and_has_phase_cpu_counts():
++    from toto_ai.ev.runtime import RuntimeBudget, checkpoint, phase, runtime_scope
++
++    events = []
++    with runtime_scope(RuntimeBudget(progress=events.append)):
++        phase("control_ev")
++        checkpoint("pairs", evaluated_pairs=12)
++        phase("sports_ev")
++    assert any(
++        e["phase"] == "control_ev" and e["counts"].get("evaluated_pairs") == 12
++        for e in events
++    )
++    assert all(
++        e["wall_seconds"] >= 0 and e["cpu_seconds"] >= 0 and e["phase_cpu_seconds"] >= 0
++        for e in events
++    )
++    count = len(events)
++    checkpoint("outside")
++    assert len(events) == count
++
++
++def test_changed_primary_after_compute_blocks_companion(tmp_path, monkeypatch):
++    now = datetime.now(timezone.utc)
++    source = tmp_path / "package.csv"
++    source.write_bytes(b"PRIMARY")
++    (tmp_path / "final-input.json").write_text("{}")
++    planpath = tmp_path / "plan.json"
++    planpath.write_text("{}")
++    plan = SimpleNamespace(
++        output_dir=tmp_path,
++        publish_deadline=now + timedelta(minutes=2),
++        stake=30,
++        plan_id="synthetic",
++        drawing=1,
++        drawing_id=1,
++    )
++    operator = {"run_id": "run", "source_package_path": str(source)}
++
++    def export(*args, **kwargs):
++        kwargs["destination"].write_bytes(b"EXPORTED_TEST")
++
++    monkeypatch.setattr(sidecar, "export_operator_package", export)
++    monkeypatch.setattr(sidecar, "_parse_operator_package", lambda *a: ("1" * 15,))
++    monkeypatch.setattr(sidecar, "_parse_research_package", lambda *a: ("1" * 15,))
++    paths = SimpleNamespace(baseline_package=source, uncertainty_package=source)
++    monkeypatch.setattr(
++        sidecar, "execute_final_hybrid_comparison", lambda **k: ({}, paths)
++    )
++    monkeypatch.setattr(
++        sidecar, "_load_operator_result", lambda *a: {"decision": "NO BET"}
++    )
++    monkeypatch.setattr(
++        sidecar,
++        "_publish_parallel_selection",
++        lambda **k: pytest.fail("published after primary changed"),
++    )
++    result = sidecar._execute(
++        plan=plan,
++        plan_path=planpath,
++        sports_path=source,
++        output_root=tmp_path / "out",
++        operator=operator,
++        status_path=tmp_path / "status.json",
++        started_at=now,
++        observed_at=now,
++        parallel_authorization_path=tmp_path / "auth.json",
++        clock=lambda: now,
++    )
++    assert result.status == "SKIPPED_PRIMARY_CHANGED"
++    assert source.read_bytes() == b"PRIMARY"
+--- /dev/null
++++ b/knowledge/parallel_runtime.md
+@@ -0,0 +1,57 @@
++# Parallel final runtime: exact reuse and cooperative bounds
++
++Task: TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Local implementation candidate;
++independent review/publication are separate. No 4998 archive, authority, plan or
++LaunchAgent is rewritten by this change.
++
++## What the evidence establishes
++
++The archived final sidecar spent 352.23s in control EV and 452.08s in sports EV.
++G1 consumed 52.68s wall, not the preceding thirteen minutes. An offline cProfile
++of the exact final input (166 coupons / 4980 / 30) reproduced the same control
++coupon bytes and exact P13/P14/P15 in 84.44s, not 352s. Of that, 59.69s built the
++full EV surface (7 convolutions, 47.74s), and 20.96s was quality repair.
++The historical Background LaunchAgent/host slowdown is NOT causally isolated.
++
++## Exact acceleration
++
++`ExactCategoryCoverage` caches coverage-membership sets for swap proposals until
++the next coverage mutation. It does not cache rounded totals or alter fsum,
++candidate order/count, score, category, bank, RNG or tolerances. `_add` and
++`_remove` invalidate the cache. Same-input full EV profiling retained all
++40,960 swap evaluations; 84.44 -> 76.70s and repair 20.96 -> 14.93s. All result
++fields except runtime were equal. These are instrumented foreground timings,
++not a promise that the full production delay is fixed.
++
++The final sidecar can reuse the scheduler primary ONLY after the existing full
++native actionable export validation. The comparison revalidates the current
++operator record/hash, source CSV/hash, canonical ordered coupons, native final
++archive/hash, run/plan/drawing/input identity, probability and exact selection
++configuration provenance, bank/stake/effective budget, and experimental consent
++when applicable. Invalid or changed bindings fail closed; a loose TXT or a
++claimed best coupon cannot enable reuse. Standalone research without that
++record retains recomputation. Reuse changes no primary bytes or release gates.
++
++## Bounded execution and evidence
++
++An opt-in context-local runtime scope carries the absolute monotonic deadline
++through EV, crowd chunks, FFT boundaries, full ranking, and repair loops.
++Default EV callers have no added time limit. Native kernels remain cooperative:
++a single in-flight NumPy call is checked on return, not forcibly interrupted.
++Existing quality-v3/robust/G1 deadlines and complete candidate spaces remain.
++
++`research-comparison/runtime-progress.json` and `.jsonl` contain actual phase,
++checkpoint, wall/CPU, counters and remaining time; output is flushed. CPU is
++the current process CPU, not inferred child CPU or proof of useful progress.
++Completed research packages/ranking are retained before the next expensive
++phase; a deadline failure never promotes an incomplete comparison.
++
++Publication uses a fresh clock after validation and around its own writes.
++If a write crosses expiry, only that newly created companion/package is
++removed. Existing companions are immutable; the primary is never removed or
++rewritten by the sidecar. Failed/expired optional work leaves the primary as
++the unchanged fallback, subject to its own native expiry.
++
++No watcher/notification transport, scheduler_status, priority/calendar or
++operator authorization changes belong to this slice. Runtime checkpoints are
++local evidence, not a claim of delivery into an idle chat.

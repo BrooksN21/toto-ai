@@ -1,0 +1,911 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "status": "COMPLETE_MANUAL_POSTMORTEM",
+  "completed_at": "2026-09-07T08:42:47.234396+00:00",
+  "drawing": 4998,
+  "drawing_id": 12102,
+  "plan_id": "c1d243f5b6ca48f3",
+  "stake": 30,
+  "bank": 4980,
+  "actual": "12X1XXXX1111121",
+  "complete_terminal_events": 15,
+  "void_positions": [],
+  "events": [
+    {
+      "event_id": 180633,
+      "order": 0,
+      "result": "1",
+      "result_status": "resolved",
+      "score": "2 : 1",
+      "position": 1,
+      "name": "Динамо Москва — Спартак Москва"
+    },
+    {
+      "event_id": 180634,
+      "order": 1,
+      "result": "2",
+      "result_status": "resolved",
+      "score": "0 : 1",
+      "position": 2,
+      "name": "Балтика — Локомотив Москва"
+    },
+    {
+      "event_id": 180635,
+      "order": 2,
+      "result": "X",
+      "result_status": "resolved",
+      "score": "0 : 0",
+      "position": 3,
+      "name": "Малага — Леванте"
+    },
+    {
+      "event_id": 180636,
+      "order": 3,
+      "result": "1",
+      "result_status": "resolved",
+      "score": "5 : 2",
+      "position": 4,
+      "name": "Алавес — Осасуна"
+    },
+    {
+      "event_id": 180637,
+      "order": 4,
+      "result": "X",
+      "result_status": "resolved",
+      "score": "1 : 1",
+      "position": 5,
+      "name": "Эспаньол — Севилья"
+    },
+    {
+      "event_id": 180638,
+      "order": 5,
+      "result": "X",
+      "result_status": "resolved",
+      "score": "2 : 2",
+      "position": 6,
+      "name": "Болонья — Сассуоло"
+    },
+    {
+      "event_id": 180639,
+      "order": 6,
+      "result": "X",
+      "result_status": "resolved",
+      "score": "1 : 1",
+      "position": 7,
+      "name": "Ювентус — Милан"
+    },
+    {
+      "event_id": 180640,
+      "order": 7,
+      "result": "X",
+      "result_status": "resolved",
+      "score": "0 : 0",
+      "position": 8,
+      "name": "Андерлехт — Генк"
+    },
+    {
+      "event_id": 180641,
+      "order": 8,
+      "result": "1",
+      "result_status": "resolved",
+      "score": "3 : 0",
+      "position": 9,
+      "name": "СК Беверен — Ауд-Хеверле Левен"
+    },
+    {
+      "event_id": 180642,
+      "order": 9,
+      "result": "1",
+      "result_status": "resolved",
+      "score": "3 : 0",
+      "position": 10,
+      "name": "Франс Борайнс — Локерен-Темсе"
+    },
+    {
+      "event_id": 180643,
+      "order": 10,
+      "result": "1",
+      "result_status": "resolved",
+      "score": "1 : 0",
+      "position": 11,
+      "name": "Локомотив Пловдив — Черно Море"
+    },
+    {
+      "event_id": 180644,
+      "order": 11,
+      "result": "1",
+      "result_status": "resolved",
+      "score": "2 : 0",
+      "position": 12,
+      "name": "ОФИ — Кифисия"
+    },
+    {
+      "event_id": 180645,
+      "order": 12,
+      "result": "1",
+      "result_status": "resolved",
+      "score": "3 : 1",
+      "position": 13,
+      "name": "Панатинаикос — ПАОК"
+    },
+    {
+      "event_id": 180646,
+      "order": 13,
+      "result": "2",
+      "result_status": "resolved",
+      "score": "0 : 1",
+      "position": 14,
+      "name": "Оцелул — Рапид Бухарест"
+    },
+    {
+      "event_id": 180647,
+      "order": 14,
+      "result": "1",
+      "result_status": "resolved",
+      "score": "1 : 0",
+      "position": 15,
+      "name": "Коджаелиспор — Самсунспор"
+    }
+  ],
+  "result_evidence": {
+    "snapshot_sha256": "2ad6fe61dc73e95f5b182809b70410cc591c41794b99c0416cf800b01854459e",
+    "payload_sha256": "059426637cf4f04a80ce6b8df4e6698fadaa60cb2a0f94b9538adb63d58fdf15",
+    "raw_snapshot_sha256": "0fdb183b95e6d2ec815771595d5b158244c31e4b3e21ee114d3c5d90ada1bbab",
+    "retrieved_at": "2026-09-07T08:35:25.368016+00:00"
+  },
+  "models": {
+    "quality-v2": {
+      "actual_outcome_exposure": [
+        {
+          "count": 65,
+          "position": 1,
+          "share": 0.39156626506024095
+        },
+        {
+          "count": 16,
+          "position": 2,
+          "share": 0.0963855421686747
+        },
+        {
+          "count": 46,
+          "position": 3,
+          "share": 0.27710843373493976
+        },
+        {
+          "count": 57,
+          "position": 4,
+          "share": 0.3433734939759036
+        },
+        {
+          "count": 22,
+          "position": 5,
+          "share": 0.13253012048192772
+        },
+        {
+          "count": 21,
+          "position": 6,
+          "share": 0.12650602409638553
+        },
+        {
+          "count": 20,
+          "position": 7,
+          "share": 0.12048192771084337
+        },
+        {
+          "count": 20,
+          "position": 8,
+          "share": 0.12048192771084337
+        },
+        {
+          "count": 63,
+          "position": 9,
+          "share": 0.3795180722891566
+        },
+        {
+          "count": 126,
+          "position": 10,
+          "share": 0.7590361445783133
+        },
+        {
+          "count": 57,
+          "position": 11,
+          "share": 0.3433734939759036
+        },
+        {
+          "count": 112,
+          "position": 12,
+          "share": 0.6746987951807228
+        },
+        {
+          "count": 119,
+          "position": 13,
+          "share": 0.7168674698795181
+        },
+        {
+          "count": 58,
+          "position": 14,
+          "share": 0.3493975903614458
+        },
+        {
+          "count": 126,
+          "position": 15,
+          "share": 0.7590361445783133
+        }
+      ],
+      "best_coupon_count": 2,
+      "best_hits": 10,
+      "category_counts": {
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "cost": 4980,
+      "coupon_count": 166,
+      "fixed_miss_positions": [],
+      "hit_distribution": {
+        "0": 0,
+        "1": 1,
+        "10": 2,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "2": 6,
+        "3": 7,
+        "4": 23,
+        "5": 43,
+        "6": 42,
+        "7": 26,
+        "8": 11,
+        "9": 5
+      },
+      "modeled_category_probabilities": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.017643598165080737,
+          "probability_at_least_14": 0.0019638090135809367,
+          "probability_at_least_15": 9.340527001467878e-05
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.01752545540025367,
+          "probability_at_least_14": 0.0019468212429925415,
+          "probability_at_least_15": 9.244259425006732e-05
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.015342552670931287,
+          "probability_at_least_14": 0.001643661979407622,
+          "probability_at_least_15": 7.585577086356525e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.013325887751527661,
+          "probability_at_least_14": 0.0013737382724807407,
+          "probability_at_least_15": 6.146950449435683e-05
+        }
+      ],
+      "package_sha256": "568f9a356765ada90990f6a2ee28505911d40f60da22e882f9e8f79801ad4cd9",
+      "zero_exposure_miss_positions": [],
+      "hit13_plus_count": 0,
+      "best_realized_positions": [
+        92,
+        139
+      ],
+      "highest_pre_draw_p13_coupon": {
+        "coupon": "212111111111121",
+        "criterion": "maximum_probability_at_least_13",
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "package_position": 10,
+        "probability_at_least_13": 0.0004777047248171512,
+        "probability_at_least_14": 4.599799150689667e-05,
+        "probability_at_least_15": 2.078659198118008e-06,
+        "reference_model": "bk",
+        "realized_hits": 8
+      },
+      "counterfactual_payout": {
+        "cost_rub": "4980",
+        "unrounded_estimated_return_rub": "2890.04760",
+        "estimated_return_rub": "2890.05",
+        "estimated_net_rub": "-2089.95",
+        "estimated_roi_percent": "-41.96686746987951807228915663",
+        "per_coupon_rounding_scenario_rub": "2890.05",
+        "actual_return_rub": null,
+        "actual_net_rub": null,
+        "actual_roi_percent": null
+      },
+      "observed_model_roi_verified": false
+    },
+    "quality-v3": {
+      "actual_outcome_exposure": [
+        {
+          "count": 44,
+          "position": 1,
+          "share": 0.26506024096385544
+        },
+        {
+          "count": 9,
+          "position": 2,
+          "share": 0.05421686746987952
+        },
+        {
+          "count": 30,
+          "position": 3,
+          "share": 0.18072289156626506
+        },
+        {
+          "count": 115,
+          "position": 4,
+          "share": 0.6927710843373494
+        },
+        {
+          "count": 21,
+          "position": 5,
+          "share": 0.12650602409638553
+        },
+        {
+          "count": 22,
+          "position": 6,
+          "share": 0.13253012048192772
+        },
+        {
+          "count": 25,
+          "position": 7,
+          "share": 0.15060240963855423
+        },
+        {
+          "count": 19,
+          "position": 8,
+          "share": 0.1144578313253012
+        },
+        {
+          "count": 109,
+          "position": 9,
+          "share": 0.6566265060240963
+        },
+        {
+          "count": 113,
+          "position": 10,
+          "share": 0.6807228915662651
+        },
+        {
+          "count": 63,
+          "position": 11,
+          "share": 0.3795180722891566
+        },
+        {
+          "count": 119,
+          "position": 12,
+          "share": 0.7168674698795181
+        },
+        {
+          "count": 127,
+          "position": 13,
+          "share": 0.7650602409638554
+        },
+        {
+          "count": 103,
+          "position": 14,
+          "share": 0.6204819277108434
+        },
+        {
+          "count": 126,
+          "position": 15,
+          "share": 0.7590361445783133
+        }
+      ],
+      "best_coupon_count": 2,
+      "best_hits": 10,
+      "category_counts": {
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "cost": 4980,
+      "coupon_count": 166,
+      "fixed_miss_positions": [],
+      "hit_distribution": {
+        "0": 0,
+        "1": 0,
+        "10": 2,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "2": 1,
+        "3": 4,
+        "4": 14,
+        "5": 36,
+        "6": 35,
+        "7": 40,
+        "8": 21,
+        "9": 13
+      },
+      "modeled_category_probabilities": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.02486823360849403,
+          "probability_at_least_14": 0.002643005595486519,
+          "probability_at_least_15": 0.00011089899814426064
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.02467230352657965,
+          "probability_at_least_14": 0.0026151187172145348,
+          "probability_at_least_15": 0.0001095141015296762
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.021358967799681373,
+          "probability_at_least_14": 0.0021946594867885173,
+          "probability_at_least_15": 9.000898643135291e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.018282330394932253,
+          "probability_at_least_14": 0.0018160993472820526,
+          "probability_at_least_15": 7.276961666568772e-05
+        }
+      ],
+      "package_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+      "zero_exposure_miss_positions": [],
+      "hit13_plus_count": 0,
+      "best_realized_positions": [
+        77,
+        149
+      ],
+      "highest_pre_draw_p13_coupon": {
+        "coupon": "111121111111121",
+        "criterion": "maximum_probability_at_least_13",
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "package_position": 96,
+        "probability_at_least_13": 0.00037718683772794214,
+        "probability_at_least_14": 3.495016396283223e-05,
+        "probability_at_least_15": 1.516706360059257e-06,
+        "reference_model": "bk",
+        "realized_hits": 9
+      },
+      "counterfactual_payout": {
+        "cost_rub": "4980",
+        "unrounded_estimated_return_rub": "5044.20600",
+        "estimated_return_rub": "5044.21",
+        "estimated_net_rub": "64.21",
+        "estimated_roi_percent": "1.289357429718875502008032100",
+        "per_coupon_rounding_scenario_rub": "5044.21",
+        "actual_return_rub": null,
+        "actual_net_rub": null,
+        "actual_roi_percent": null
+      },
+      "observed_model_roi_verified": false
+    },
+    "robust": {
+      "actual_outcome_exposure": [
+        {
+          "count": 55,
+          "position": 1,
+          "share": 0.3313253012048193
+        },
+        {
+          "count": 11,
+          "position": 2,
+          "share": 0.06626506024096386
+        },
+        {
+          "count": 34,
+          "position": 3,
+          "share": 0.20481927710843373
+        },
+        {
+          "count": 103,
+          "position": 4,
+          "share": 0.6204819277108434
+        },
+        {
+          "count": 27,
+          "position": 5,
+          "share": 0.16265060240963855
+        },
+        {
+          "count": 17,
+          "position": 6,
+          "share": 0.10240963855421686
+        },
+        {
+          "count": 21,
+          "position": 7,
+          "share": 0.12650602409638553
+        },
+        {
+          "count": 16,
+          "position": 8,
+          "share": 0.0963855421686747
+        },
+        {
+          "count": 91,
+          "position": 9,
+          "share": 0.5481927710843374
+        },
+        {
+          "count": 124,
+          "position": 10,
+          "share": 0.7469879518072289
+        },
+        {
+          "count": 60,
+          "position": 11,
+          "share": 0.3614457831325301
+        },
+        {
+          "count": 124,
+          "position": 12,
+          "share": 0.7469879518072289
+        },
+        {
+          "count": 127,
+          "position": 13,
+          "share": 0.7650602409638554
+        },
+        {
+          "count": 86,
+          "position": 14,
+          "share": 0.5180722891566265
+        },
+        {
+          "count": 127,
+          "position": 15,
+          "share": 0.7650602409638554
+        }
+      ],
+      "best_coupon_count": 1,
+      "best_hits": 12,
+      "category_counts": {
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "cost": 4980,
+      "coupon_count": 166,
+      "fixed_miss_positions": [],
+      "hit_distribution": {
+        "0": 0,
+        "1": 1,
+        "10": 3,
+        "11": 0,
+        "12": 1,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "2": 2,
+        "3": 4,
+        "4": 17,
+        "5": 34,
+        "6": 39,
+        "7": 39,
+        "8": 15,
+        "9": 11
+      },
+      "modeled_category_probabilities": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.023604071059533684,
+          "probability_at_least_14": 0.002612052573597924,
+          "probability_at_least_15": 0.00011271764511152218
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.023445889827752,
+          "probability_at_least_14": 0.00258848639524726,
+          "probability_at_least_15": 0.00011151953293476217
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.020234834976429573,
+          "probability_at_least_14": 0.0021616802971394424,
+          "probability_at_least_15": 9.10925317394107e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.017291436878152416,
+          "probability_at_least_14": 0.0017827873937170623,
+          "probability_at_least_15": 7.331565515348581e-05
+        }
+      ],
+      "package_sha256": "c30447b387202b5a7c6a9946b68cf96eb777f8a7d1e9aea2d56640d0f4b6770c",
+      "zero_exposure_miss_positions": [],
+      "hit13_plus_count": 0,
+      "best_realized_positions": [
+        152
+      ],
+      "highest_pre_draw_p13_coupon": {
+        "coupon": "211111111121111",
+        "criterion": "maximum_probability_at_least_13",
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "package_position": 1,
+        "probability_at_least_13": 0.0004563298249688383,
+        "probability_at_least_14": 4.360040138140876e-05,
+        "probability_at_least_15": 1.954131227723842e-06,
+        "reference_model": "bk",
+        "realized_hits": 6
+      },
+      "counterfactual_payout": {
+        "cost_rub": "4980",
+        "unrounded_estimated_return_rub": "11537.81100",
+        "estimated_return_rub": "11537.81",
+        "estimated_net_rub": "6557.81",
+        "estimated_roi_percent": "131.6829317269076305220883534",
+        "per_coupon_rounding_scenario_rub": "11537.82",
+        "actual_return_rub": null,
+        "actual_net_rub": null,
+        "actual_roi_percent": null
+      },
+      "observed_model_roi_verified": false
+    },
+    "sports-shadow": {
+      "actual_outcome_exposure": [
+        {
+          "count": 65,
+          "position": 1,
+          "share": 0.39156626506024095
+        },
+        {
+          "count": 17,
+          "position": 2,
+          "share": 0.10240963855421686
+        },
+        {
+          "count": 46,
+          "position": 3,
+          "share": 0.27710843373493976
+        },
+        {
+          "count": 112,
+          "position": 4,
+          "share": 0.6746987951807228
+        },
+        {
+          "count": 48,
+          "position": 5,
+          "share": 0.2891566265060241
+        },
+        {
+          "count": 23,
+          "position": 6,
+          "share": 0.13855421686746988
+        },
+        {
+          "count": 19,
+          "position": 7,
+          "share": 0.1144578313253012
+        },
+        {
+          "count": 17,
+          "position": 8,
+          "share": 0.10240963855421686
+        },
+        {
+          "count": 60,
+          "position": 9,
+          "share": 0.3614457831325301
+        },
+        {
+          "count": 127,
+          "position": 10,
+          "share": 0.7650602409638554
+        },
+        {
+          "count": 58,
+          "position": 11,
+          "share": 0.3493975903614458
+        },
+        {
+          "count": 115,
+          "position": 12,
+          "share": 0.6927710843373494
+        },
+        {
+          "count": 122,
+          "position": 13,
+          "share": 0.7349397590361446
+        },
+        {
+          "count": 56,
+          "position": 14,
+          "share": 0.3373493975903614
+        },
+        {
+          "count": 123,
+          "position": 15,
+          "share": 0.7409638554216867
+        }
+      ],
+      "best_coupon_count": 1,
+      "best_hits": 12,
+      "category_counts": {
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "cost": 4980,
+      "coupon_count": 166,
+      "fixed_miss_positions": [],
+      "hit_distribution": {
+        "0": 0,
+        "1": 0,
+        "10": 2,
+        "11": 1,
+        "12": 1,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "2": 5,
+        "3": 11,
+        "4": 15,
+        "5": 24,
+        "6": 42,
+        "7": 37,
+        "8": 21,
+        "9": 7
+      },
+      "modeled_category_probabilities": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.017528234652225323,
+          "probability_at_least_14": 0.0019383340896830573,
+          "probability_at_least_15": 9.201488921199174e-05
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.017588593504858054,
+          "probability_at_least_14": 0.0019480227986186489,
+          "probability_at_least_15": 9.258162001214514e-05
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.015249853599349229,
+          "probability_at_least_14": 0.0016242483791999351,
+          "probability_at_least_15": 7.48550060279208e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.013252458690085685,
+          "probability_at_least_14": 0.0013591375273416097,
+          "probability_at_least_15": 6.0762406944631406e-05
+        }
+      ],
+      "package_sha256": "abc63ea84b77d61a21822723bc5de3914374c637f2868d368be137625266b11c",
+      "zero_exposure_miss_positions": [],
+      "hit13_plus_count": 0,
+      "best_realized_positions": [
+        111
+      ],
+      "highest_pre_draw_p13_coupon": {
+        "coupon": "212111111111121",
+        "criterion": "maximum_probability_at_least_13",
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "package_position": 10,
+        "probability_at_least_13": 0.0004715879950586929,
+        "probability_at_least_14": 4.531603285510273e-05,
+        "probability_at_least_15": 2.0433457784107337e-06,
+        "reference_model": "sports",
+        "realized_hits": 8
+      },
+      "counterfactual_payout": {
+        "cost_rub": "4980",
+        "unrounded_estimated_return_rub": "11699.77440",
+        "estimated_return_rub": "11699.77",
+        "estimated_net_rub": "6719.77",
+        "estimated_roi_percent": "134.9351405622489959839357430",
+        "per_coupon_rounding_scenario_rub": "11699.78",
+        "actual_return_rub": null,
+        "actual_net_rub": null,
+        "actual_roi_percent": null
+      },
+      "observed_model_roi_verified": false
+    }
+  },
+  "payout_evidence": {
+    "images": [
+      {
+        "kind": "payout-table",
+        "original_path": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/codex-clipboard-c2141d62-b53a-4e20-8023-b8502fe70361.png",
+        "preserved_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/postmortem4998-evidence/payout-table.png",
+        "sha256": "ab905cc65e682ae0004e2e955f80b0f9fd7727a4fb2c7e5aafc410a0d0fbb5aa",
+        "visually_verified": true
+      },
+      {
+        "kind": "receipt",
+        "original_path": "/var/folders/dq/pcs1d94946n8dsqfp1g1k3080000gn/T/codex-clipboard-8c0e8004-b7cb-44d6-baa7-73807b6cbebd.png",
+        "preserved_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/postmortem4998-evidence/receipt.png",
+        "sha256": "9dbcd8342574670c66d79dc04c6a65c94edbcf02be768b320bb9f76f1d1933c6",
+        "visually_verified": true
+      }
+    ],
+    "displayed_at_msk": "2026-09-07T11:16:00+03:00",
+    "coefficients": {
+      "15": "0.00000",
+      "14": "0.00000",
+      "13": "1432.85009",
+      "12": "141.64678",
+      "11": "41.30142",
+      "10": "16.75265",
+      "9": "8.97566"
+    },
+    "winning_variants": {
+      "15": 0,
+      "14": 0,
+      "13": 9,
+      "12": 98,
+      "11": 680,
+      "10": 3332,
+      "9": 12254
+    },
+    "status": "VISUALLY_VERIFIED_TRANSCRIPTION_PENDING_OWNER_CONFIRMATION_FOR_OBSERVED_LEDGER",
+    "formula": "stake * sum(coefficient[h] for 9<=h<=hits), sum package then ROUND_HALF_UP to cents",
+    "function": "toto_ai.operations.retrospective_payouts.cumulative_payout_comparison",
+    "counterfactual_only": true,
+    "assumption": "Displayed coefficients held fixed; no winner-pool recalculation for alternative package."
+  },
+  "receipt": {
+    "number": "903261479",
+    "drawing": 4998,
+    "placed_at_displayed_msk": "2026-09-06T18:20:00+03:00",
+    "stake_rub": "4980.00",
+    "return_rub": "5044.21",
+    "arithmetic_difference_rub": "64.21",
+    "arithmetic_percentage": "1.289357429718875502008032100",
+    "owner_reported_model": "quality-v3",
+    "model_or_coupon_bytes_in_image": false,
+    "model_assignment_verified": false,
+    "exact_quality_v3_estimate_match": true,
+    "observed_model_roi_recorded": false
+  },
+  "bindings": {
+    "native_frozen_scheduler_identity_verified": true,
+    "native_final_input_verified": true,
+    "final_input_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/final-input.json",
+    "final_input_snapshot_sha256": "baea70824b1435bd771b5d9591ed6fb80319a89cacd25c77d9672e7503438282",
+    "final_input_file_sha256": "f8cdcad96e242adc2db4522b32376435756415f6d64fff495b26b97d236e9600",
+    "final_input_captured_at": "2026-09-06T15:00:06.225795Z",
+    "four_package_seals_and_hashes_verified": true,
+    "native_settlement_report_sha256": "73e0e83a5c1df0b17c82f0d2cbdda116cf31808923124248f8316a5d03eb52df",
+    "native_source_hashes": {
+      "comparison_report_sha256": "d5fc5ec01dcc7aba0a4b9879faf0de0cad98bcdc73812c177605175619744f6b",
+      "package_file_sha256": {
+        "quality-v2": "2e4d759ef10cfd5e424ce2add85146f0a1c2cec3433eee2d810f817d14c769ab",
+        "quality-v3": "7cfcbc51f1f68b673d99922a20dd98ed26c84447238070a553c44ba24c79cfcc",
+        "robust": "12c05278b8da550f2a45fad6275702ec20bea5d630686a94e66720e7c6c224d9",
+        "sports-shadow": "abd0434e9c6f15343063962c273cf77fc88f545e8033f4d0736665ed2bd9f52a"
+      },
+      "sidecar_status_sha256": "a220eeee10fe24f469bcee04de9393c61aedfafe5241621ec228a5259a9de5ec"
+    },
+    "operator_companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/parallel-operator-result.json",
+    "operator_record_sha256": "540a8cbfcbba2228046010f2aa06fd2998a5e26c8b94fe405a1509469a3f6b7f",
+    "operator_package_file_sha256": "1b6a7fc58350a683bcb0256d3099ea36b9cd9666487cdc7fee3b0e7cff6a1702",
+    "operator_package_semantic_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+    "operator_selected_model": "quality-v3",
+    "operator_expired_at": "2026-09-06T15:20:00Z",
+    "currently_actionable": false
+  },
+  "execution": {
+    "native_completed_at": "2026-09-07T08:35:25.675164+00:00",
+    "source_get_count": 1,
+    "manual_state": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/post-draw/manual-20260907/manual-state.json",
+    "idempotence": "Native completed-state read with NoNetwork sentinel/read-only DB: identical normalizedJSON; no new retrieval/settlement.",
+    "driver_export_error": "Native succeeded; auxiliary export initially used hash as integer PK, corrected query to snapshot_sha256. No API retry. Auxiliary event-name join corrected to source event_id, not local DB surrogate ID.",
+    "scheduled_1200": "loaded idle runs0 at11:32; plan/state/jobs unchanged. Manual does not claim scheduled execution.",
+    "source_code_changed": false,
+    "git_actions": false,
+    "drawing4999_mutated": false,
+    "automatic_wagering": false
+  },
+  "interpretation": [
+    "No13+ in allfour. Sports-shadow/robust best12; qv2/qv3 best10.",
+    "Nozero-exposure/fixedsinglemisses. Poor joint coverage despite all actual individual outcomes present.",
+    "Five draws at3,5,6,7,8. Qv3 actualoutcome exposures: position2away9/166; draws5..8=21/22/25/19 of166; these are allocation shares, NOT probabilities.",
+    "Sports-shadow had best realized fixed-coefficient return; qv3 had highest frozen BKP13 estimate2.4868%. One drawing does not establish sustained model superiority.",
+    "Receipt amount matches qv3 arithmetic exactly, but without coupon proof it remains conditional model attribution."
+  ],
+  "next": "Parent deliver manual report now; native4998postdraw12:00 remains scheduled. No forecast improvement implementation."
+}

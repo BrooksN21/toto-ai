@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "recorded_at": "2026-09-07T09:02:03Z",
+  "status": "BLOCKED_CONTEXT_EXECUTION_NO_TECHNICAL_VERDICT",
+  "owner_intent": {
+    "drawing": 4999,
+    "bank": 7470,
+    "stake": 30,
+    "coupon_count": 249,
+    "relationship_to_live_4980": "ALTERNATIVE_NOT_ADDITIVE"
+  },
+  "live_plan_unchanged": {
+    "plan_id": "b742aac1fea2d42d",
+    "bank": 4980,
+    "mutated": false
+  },
+  "reviewer_provided_pointers_not_independently_certified": [
+    "A genuine 7470 alternative requires a separate native plan and output directory.",
+    "A separate native plan produces a new plan_id.",
+    "build_scheduler_plan is the candidate native entry point.",
+    "Exact owner confirmation is required after materializing the new plan_id."
+  ],
+  "comparison_contract": {
+    "same_probability_matrix_required": true,
+    "different_native_seeds_allowed_if_disclosed": true,
+    "bank_only_gain_claim_allowed": false
+  },
+  "statically_verified": [],
+  "not_verified": [
+    "Exact supported CLI/API command sequence.",
+    "Whether current native entry points can materialize every required 7470 binding without code changes.",
+    "Exact non-competing execution/publication sequence with main publication first."
+  ],
+  "blocker": "Both authorized existing context tasks completed without creating the requested feasibility artifacts or returning a technical verdict.",
+  "minimum_next_action": "Perform one bounded direct static inspection limited to BUDGET7470_PLAN_REVIEW_20260907.md and the named native plan/final-input/publisher entry points; produce a command-level verdict before any mutation.",
+  "forbidden_until_verdict": [
+    "create_plan",
+    "create_consent",
+    "create_or_modify_jobs",
+    "generate_packages",
+    "research_to_operator_conversion",
+    "weaken_native_gates"
+  ],
+  "mutations": {
+    "db": false,
+    "memory": false,
+    "code": false,
+    "vcs": false,
+    "scheduler": false,
+    "plan": false,
+    "consent": false,
+    "jobs": false,
+    "packages": false
+  }
+}

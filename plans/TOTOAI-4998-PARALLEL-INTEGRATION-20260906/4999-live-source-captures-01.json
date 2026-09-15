@@ -1,0 +1,49 @@
+[
+  {
+    "name": "mfa-supercup",
+    "url": "https://www.mfa.com.mt/news/competitions/tickets-out-now-for-40th-bov-super-cup-final/",
+    "started_at": "2026-09-06T17:59:38.863984+00:00",
+    "http_status": 200,
+    "final_url": "https://www.mfa.com.mt/news/competitions/tickets-out-now-for-40th-bov-super-cup-final/",
+    "captured_at": "2026-09-06T17:59:44.366737+00:00",
+    "snapshot": "data/schedule-evidence/snapshots/4999-mfa-supercup-097aaf1bb623a426.html",
+    "sha256": "097aaf1bb623a4261656e6239919ee79fc9864a3c260420ac66b21f11436eb26",
+    "bytes": 921911
+  },
+  {
+    "name": "valletta-tickets",
+    "url": "https://vallettafc.mt/buy-tickets/",
+    "started_at": "2026-09-06T17:59:38.866124+00:00",
+    "error": "URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:997)>",
+    "failed_at": "2026-09-06T17:59:40.043077+00:00"
+  },
+  {
+    "name": "fotmob-saudi",
+    "url": "https://www.fotmob.com/en-GB/matches/al-khaleej-vs-al-riyadh/86y6czbp",
+    "started_at": "2026-09-06T17:59:38.866297+00:00",
+    "http_status": 200,
+    "final_url": "https://www.fotmob.com/en-GB/matches/al-khaleej-vs-al-riyadh/86y6czbp",
+    "captured_at": "2026-09-06T17:59:41.913574+00:00",
+    "snapshot": "data/schedule-evidence/snapshots/4999-fotmob-saudi-7b85b83b5dbd1bd0.html",
+    "sha256": "7b85b83b5dbd1bd090acb331d58586c898b01fda5826cebf16baea82da4f1c5a",
+    "bytes": 583110
+  },
+  {
+    "name": "fss-serbia",
+    "url": "https://fss.rs/takmicenje/mozzart-bet-prva-liga-srbije-26-27/",
+    "started_at": "2026-09-06T17:59:38.866362+00:00",
+    "error": "TimeoutError: The read operation timed out",
+    "failed_at": "2026-09-06T17:59:47.312135+00:00"
+  },
+  {
+    "name": "utakmice-vozdovac",
+    "url": "https://utakmice.rs/tim/fk-vozdovac",
+    "started_at": "2026-09-06T17:59:38.866652+00:00",
+    "http_status": 200,
+    "final_url": "https://utakmice.rs/tim/fk-vozdovac",
+    "captured_at": "2026-09-06T17:59:40.730064+00:00",
+    "snapshot": "data/schedule-evidence/snapshots/4999-utakmice-vozdovac-2805a51cd6aaad79.html",
+    "sha256": "2805a51cd6aaad79c8114161e22210b62ef936d18020581450c9a421dca9df86",
+    "bytes": 110131
+  }
+]

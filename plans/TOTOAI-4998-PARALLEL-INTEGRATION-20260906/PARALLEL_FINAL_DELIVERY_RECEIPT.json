@@ -1,0 +1,207 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "verified_at_msk": "2026-09-06T18:19:52.107536+03:00",
+  "status": "VERIFIED_COMPANION_PLAY_BEFORE_1820",
+  "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/selected-parallel-operator-package.txt",
+  "sha256": "1b6a7fc58350a683bcb0256d3099ea36b9cd9666487cdc7fee3b0e7cff6a1702",
+  "companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/parallel-operator-result.json",
+  "companion_file_sha256": "758bde0b6278652ae4415276e985fac69f50030b9eb04828244710b9bf731f15",
+  "companion_record_sha256": "540a8cbfcbba2228046010f2aa06fd2998a5e26c8b94fe405a1509469a3f6b7f",
+  "plan_id": "c1d243f5b6ca48f3",
+  "drawing": 4998,
+  "count": 166,
+  "cost": 4980,
+  "stake": 30,
+  "expires_at_msk": "2026-09-06T18:20:00+03:00",
+  "published_at": "2026-09-06T15:19:04.553592Z",
+  "selected_strategy": "quality-v3",
+  "selection_reason": "eligible_challenger_dominates_control_gate",
+  "same_final_input_sha256": "baea70824b1435bd771b5d9591ed6fb80319a89cacd25c77d9672e7503438282",
+  "probability_input_sha256": "44658935ef333d3a1b67d434a3b25e911b720838ee9e8ce80ecf4218cc17d04d",
+  "primary_operator_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+  "authorization_record_sha256": "0fffa2b65b2e92d39cf4e618040b4927aac5fc36c077033ccf540f305a56cf01",
+  "best": {
+    "coupon": "111121111111121",
+    "criterion": "maximum_probability_at_least_13",
+    "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+    "package_position": 96,
+    "probability_at_least_13": 0.00037718683772794214,
+    "probability_at_least_14": 3.495016396283223e-05,
+    "probability_at_least_15": 1.516706360059257e-06,
+    "reference_model": "bk"
+  },
+  "all_models_comparison": {
+    "automatic_wagering": false,
+    "candidates": [
+      {
+        "cost": 4980,
+        "coupon_count": 166,
+        "eligible": true,
+        "maximum_outcome_share": 0.7650602409638554,
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.017643598165080737,
+            "probability_at_least_14": 0.0019638090135809367,
+            "probability_at_least_15": 9.340527001467878e-05
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.01752545540025367,
+            "probability_at_least_14": 0.0019468212429925415,
+            "probability_at_least_15": 9.244259425006732e-05
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.015342552670931287,
+            "probability_at_least_14": 0.001643661979407622,
+            "probability_at_least_15": 7.585577086356525e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.013325887751527661,
+            "probability_at_least_14": 0.0013737382724807407,
+            "probability_at_least_15": 6.146950449435683e-05
+          }
+        ],
+        "package_sha256": "568f9a356765ada90990f6a2ee28505911d40f60da22e882f9e8f79801ad4cd9",
+        "rejection_reasons": [],
+        "strategy_id": "quality-v2"
+      },
+      {
+        "cost": 4980,
+        "coupon_count": 166,
+        "eligible": true,
+        "maximum_outcome_share": 0.7710843373493976,
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.017528234652225323,
+            "probability_at_least_14": 0.0019383340896830573,
+            "probability_at_least_15": 9.201488921199174e-05
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.017588593504858054,
+            "probability_at_least_14": 0.0019480227986186489,
+            "probability_at_least_15": 9.258162001214514e-05
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.015249853599349229,
+            "probability_at_least_14": 0.0016242483791999351,
+            "probability_at_least_15": 7.48550060279208e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.013252458690085685,
+            "probability_at_least_14": 0.0013591375273416097,
+            "probability_at_least_15": 6.0762406944631406e-05
+          }
+        ],
+        "package_sha256": "abc63ea84b77d61a21822723bc5de3914374c637f2868d368be137625266b11c",
+        "rejection_reasons": [],
+        "strategy_id": "sports-shadow"
+      },
+      {
+        "cost": 4980,
+        "coupon_count": 166,
+        "eligible": true,
+        "maximum_outcome_share": 0.7650602409638554,
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.02486823360849403,
+            "probability_at_least_14": 0.002643005595486519,
+            "probability_at_least_15": 0.00011089899814426064
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.02467230352657965,
+            "probability_at_least_14": 0.0026151187172145348,
+            "probability_at_least_15": 0.0001095141015296762
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.021358967799681373,
+            "probability_at_least_14": 0.0021946594867885173,
+            "probability_at_least_15": 9.000898643135291e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.018282330394932253,
+            "probability_at_least_14": 0.0018160993472820526,
+            "probability_at_least_15": 7.276961666568772e-05
+          }
+        ],
+        "package_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+        "rejection_reasons": [],
+        "strategy_id": "quality-v3"
+      },
+      {
+        "cost": 4980,
+        "coupon_count": 166,
+        "eligible": true,
+        "maximum_outcome_share": 0.7650602409638554,
+        "models": [
+          {
+            "model": "bk",
+            "probability_at_least_13": 0.023604071059533684,
+            "probability_at_least_14": 0.002612052573597924,
+            "probability_at_least_15": 0.00011271764511152218
+          },
+          {
+            "model": "sports",
+            "probability_at_least_13": 0.023445889827752,
+            "probability_at_least_14": 0.00258848639524726,
+            "probability_at_least_15": 0.00011151953293476217
+          },
+          {
+            "model": "flatten_10",
+            "probability_at_least_13": 0.020234834976429573,
+            "probability_at_least_14": 0.0021616802971394424,
+            "probability_at_least_15": 9.10925317394107e-05
+          },
+          {
+            "model": "flatten_20",
+            "probability_at_least_13": 0.017291436878152416,
+            "probability_at_least_14": 0.0017827873937170623,
+            "probability_at_least_15": 7.331565515348581e-05
+          }
+        ],
+        "package_sha256": "c30447b387202b5a7c6a9946b68cf96eb777f8a7d1e9aea2d56640d0f4b6770c",
+        "rejection_reasons": [],
+        "strategy_id": "robust"
+      }
+    ],
+    "policy_version": "parallel-challenger-nondegradation-v1",
+    "profitability_proven": false,
+    "promoted": true,
+    "rejections": {
+      "sports-shadow": [
+        "bk_p13_below_control",
+        "bk_p14_below_control",
+        "bk_p15_below_control",
+        "concentration_above_control",
+        "worst_model_p13_not_improved"
+      ]
+    },
+    "selected_package_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+    "selected_strategy_id": "quality-v3",
+    "selection_reason": "eligible_challenger_dominates_control_gate"
+  },
+  "g1_status": "BUDGET_EXHAUSTED",
+  "g1_runtime": 52.68400804200064,
+  "g1_engine": {
+    "accepted_swap_count": 0,
+    "elapsed_seconds": 50.00082037499669,
+    "evaluated_swap_count": 8337,
+    "reason": "TIME_BUDGET",
+    "status": "BUDGET_EXHAUSTED"
+  },
+  "report_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/comparison.json",
+  "report_sha256": "ca03cfc12b21c8a9defff5a7287b0992c70f58f2de8e8eb1faf22890466b1d2e",
+  "report_file_sha256": "d5fc5ec01dcc7aba0a4b9879faf0de0cad98bcdc73812c177605175619744f6b",
+  "automatic_wagering": false,
+  "runtime_mutated": false
+}

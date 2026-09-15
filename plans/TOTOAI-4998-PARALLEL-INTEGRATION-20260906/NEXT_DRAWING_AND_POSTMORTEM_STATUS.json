@@ -1,0 +1,345 @@
+{
+  "phase": "COMPLETE_CONTEXT_ONLY",
+  "launchd": [
+    {
+      "project_plist": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/totoai-scheduler.plist",
+      "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+      "start_calendar_interval": [
+        {
+          "Day": 6,
+          "Hour": 16,
+          "Minute": 30,
+          "Month": 9,
+          "Year": 2026
+        },
+        {
+          "Day": 6,
+          "Hour": 17,
+          "Minute": 0,
+          "Month": 9,
+          "Year": 2026
+        },
+        {
+          "Day": 6,
+          "Hour": 17,
+          "Minute": 30,
+          "Month": 9,
+          "Year": 2026
+        },
+        {
+          "Day": 6,
+          "Hour": 17,
+          "Minute": 40,
+          "Month": 9,
+          "Year": 2026
+        },
+        {
+          "Day": 6,
+          "Hour": 17,
+          "Minute": 50,
+          "Month": 9,
+          "Year": 2026
+        },
+        {
+          "Day": 6,
+          "Hour": 18,
+          "Minute": 0,
+          "Month": 9,
+          "Year": 2026
+        },
+        {
+          "Day": 6,
+          "Hour": 18,
+          "Minute": 12,
+          "Month": 9,
+          "Year": 2026
+        },
+        {
+          "Day": 6,
+          "Hour": 18,
+          "Minute": 20,
+          "Month": 9,
+          "Year": 2026
+        }
+      ],
+      "exit_code": 0,
+      "state_lines": [
+        "state = not running",
+        "program = /Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/run-scheduler.sh",
+        "runs = 8",
+        "last exit code = 0",
+        "state = active",
+        "state = active"
+      ],
+      "error": ""
+    },
+    {
+      "project_plist": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist",
+      "label": "com.totoai.status-watcher.v1.c1d243f5b6ca48f3",
+      "start_calendar_interval": {
+        "Day": 6,
+        "Hour": 16,
+        "Minute": 30,
+        "Month": 9,
+        "Year": 2026
+      },
+      "exit_code": 0,
+      "state_lines": [
+        "state = not running",
+        "program = /Users/turshevr/toto-ai/.venv/bin/python",
+        "runs = 1",
+        "last exit code = 0",
+        "state = active",
+        "state = active"
+      ],
+      "error": ""
+    },
+    {
+      "project_plist": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/post-draw/com.toto-ai.post-draw-12102.plist",
+      "label": "com.toto-ai.post-draw-12102",
+      "start_calendar_interval": [
+        {
+          "Year": 2026,
+          "Month": 9,
+          "Day": 7,
+          "Hour": 12,
+          "Minute": 0
+        },
+        {
+          "Year": 2026,
+          "Month": 9,
+          "Day": 7,
+          "Hour": 15,
+          "Minute": 0
+        },
+        {
+          "Year": 2026,
+          "Month": 9,
+          "Day": 7,
+          "Hour": 18,
+          "Minute": 0
+        },
+        {
+          "Year": 2026,
+          "Month": 9,
+          "Day": 7,
+          "Hour": 21,
+          "Minute": 0
+        },
+        {
+          "Year": 2026,
+          "Month": 9,
+          "Day": 8,
+          "Hour": 0,
+          "Minute": 0
+        },
+        {
+          "Year": 2026,
+          "Month": 9,
+          "Day": 8,
+          "Hour": 3,
+          "Minute": 0
+        }
+      ],
+      "exit_code": 0,
+      "state_lines": [
+        "state = not running",
+        "program = /Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/post-draw/post-draw-12102.sh",
+        "runs = 0",
+        "last exit code = (never exited)"
+      ],
+      "error": ""
+    }
+  ],
+  "public_source": {
+    "requested_at": "2026-09-06T17:28:30.903930+00:00",
+    "endpoint": "https://totobrief.com/api/v1/community/baltbet-main/drawings?page=1",
+    "attempts": 1,
+    "status": "SOURCE_NOT_VERIFIED",
+    "error_type": "ConnectTimeout",
+    "error": "HTTPSConnectionPool(host='totobrief.com', port=443): Max retries exceeded with url: /api/v1/community/baltbet-main/drawings?page=1 (Caused by ConnectTimeoutError(<HTTPSConnection(host='totobrief.com', port=443) at 0x101c6b250>, 'Connection to totobrief.com timed out. (connect timeout=6)'))"
+  },
+  "schema_version": 1,
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "observed_at": "2026-09-06T17:29:23.425616+00:00",
+  "observed_at_msk": "2026-09-06T20:29:23.425616+03:00",
+  "next_drawing": {
+    "drawing_number": 4999,
+    "drawing_id": 12106,
+    "registry_path": "/Users/turshevr/toto-ai/data/scheduler/morning-dispatch/drawing-12106-20260907T143000Z-b2596e1df489092a.json",
+    "registry_sha256": "8067c45438d4c120fb42e4b7cc4c22c0b946494d1444311996aa7e5190c13aef",
+    "registry_observed_at": "2026-09-06T17:24:21.668183Z",
+    "deadline_msk": "2026-09-07T17:30:00+03:00",
+    "deadline_authority": "Saved local dispatcher identity; not independently refreshed due source timeout",
+    "plan_id": null,
+    "plan_path": null,
+    "activation_status": "not_requested",
+    "launch_agent_label": null,
+    "launch_agent_path": null,
+    "watcher": "No per-drawing plan/label available in this registry; not queried by guessed label",
+    "preparation_status": "ready",
+    "mapped_count": 15,
+    "external_coverage_count": 12,
+    "playability": {
+      "playable": false,
+      "reason": "drawing_not_playable",
+      "span_days": 1,
+      "status": "unknown"
+    },
+    "dispatch_status": "deferred",
+    "blocker": "ACTION REQUIRED: timing unknown 3/15",
+    "unresolved_event_orders_zero_based": [
+      8,
+      11,
+      13
+    ],
+    "unresolved_event_positions_one_based": [
+      9,
+      12,
+      14
+    ],
+    "missing_evidence": "reviewed_schedule / baseline-only event start times",
+    "provider_diagnostics_scope": "Saved registry only: API-Sports account suspended/date-plan access errors; no sports API called in this job",
+    "source_availability_boundary": "Local record confirms4999 identity, not current live open/playable status. No claim BaltBet has no open drawing.",
+    "owner_consent_needed": "Ask whether owner plans a manual wager; obtain new exact4999/plan/bank/stake-bound pre-cutoff experimental consent after a valid plan exists.4998 consent does not carry over. No consent created or requested by a tool."
+  },
+  "postmortem_4998": {
+    "drawing_number": 4998,
+    "drawing_id": 12102,
+    "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/post-draw/post-draw-12102.json",
+    "plan_sha256": "86b1b008db6643b708c2a0dcb3ff656eca0ea4a3680a58c37b28d0d4d2184ba2",
+    "first_run_at_msk": "2026-09-07T12:00:00+03:00",
+    "due_slots": [
+      "2026-09-07T12:00:00+03:00",
+      "2026-09-07T15:00:00+03:00",
+      "2026-09-07T18:00:00+03:00",
+      "2026-09-07T21:00:00+03:00",
+      "2026-09-08T00:00:00+03:00",
+      "2026-09-08T03:00:00+03:00"
+    ],
+    "expires_at_msk": "2026-09-08T03:00:00+03:00",
+    "max_attempts": 6,
+    "automatic_postmortem": true,
+    "activation_receipt": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/post-draw/activation-status.json",
+    "planned_package_binding": {
+      "cost": 4980,
+      "coupon_count": 166,
+      "kind": "package",
+      "package_sha256": "568f9a356765ada90990f6a2ee28505911d40f60da22e882f9e8f79801ad4cd9",
+      "paper_result_path": null,
+      "paper_result_sha256": null,
+      "source_bytes_sha256": "97b2d1988378b1bfe5a03ea6b16c6894f85be61f87973d0a4754ebd8a17e2bfa",
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/paper-package/checkpoints/e8ede193d63dada8d309ce3b/source-package.csv",
+      "stake": 30
+    },
+    "postmortem_file": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/post-draw/postmortem.md",
+    "postmortem_exists": false,
+    "state_file": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/post-draw/post-draw-state.json",
+    "state_exists": false,
+    "review_request_file": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/post-draw/review-request.json",
+    "review_request_exists": false,
+    "scope_caveat": "Native saved plan binds one source-package under paper-package/checkpoints. This is not verification of the owner-reported quality-v3 wager, receipt, actual stake or all4 strategy postmortems. Separate exact package-bound analysis may be needed.",
+    "current_state": "Installed/loaded target label found, not running, runs0, never exited; first scheduled slot not due yet."
+  },
+  "blockers": [
+    "4999 deferred: timing unknown3/15; no plan/activation",
+    "Live public summary not verified: one6s ConnectTimeout, no retry",
+    "4998 postmortem has not run; single saved package binding is not owner-wager/all4-strategy validation"
+  ],
+  "next_checkpoint": {
+    "operational": "2026-09-07T12:00:00+03:00 — inspect scheduled4998 postmortem result/state; no run requested here",
+    "preparation": "Separate authorized4999 timing-evidence/preparation action before its recorded2026-09-07T17:30MSK deadline; then exact plan-bound owner-consent question"
+  },
+  "boundaries": {
+    "code_edits": false,
+    "observer03_untouched": true,
+    "job_starts_or_mutations": false,
+    "db_access": false,
+    "consent_writes": false,
+    "git_or_publication": false,
+    "api_calls": "One public secretless TotoBrief summary request, timed out. No retry, sports collector, DB/cache persistence or protected credential access.",
+    "discovery": "Current memory anchors; scoped project morning-dispatch registry; only labels from exact project plists/activation record. Global morning dispatcher and arbitrary launchd labels not queried."
+  },
+  "clarifications": [
+    {
+      "observed_at": "2026-09-06T17:34:25.801476+00:00",
+      "verdict": "VERIFIED_AUTOMATIC_FOUR_STRATEGY_HOOK_PRESENT",
+      "code_refs": [
+        "src/toto_ai/cli.py:1067",
+        "src/toto_ai/operations/finished_draw.py:1488",
+        "src/toto_ai/operations/finished_draw.py:1617-1727",
+        "src/toto_ai/sports_stats/final_hybrid_settlement.py:20-107"
+      ],
+      "route": "post-draw-run --plan -> run_post_draw_plan -> successful sync/primary settlement -> automatic optional sidecar settlement (all4 STRATEGY_FILES)",
+      "sidecar_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+      "sidecar_seal": true,
+      "report_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/comparison.json",
+      "report_file_hash_match": true,
+      "report_seal": true,
+      "package_checks": {
+        "quality-v2": {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/baseline-final-research-coupons.txt",
+          "file_sha256": "2e4d759ef10cfd5e424ce2add85146f0a1c2cec3433eee2d810f817d14c769ab",
+          "package_sha256": "568f9a356765ada90990f6a2ee28505911d40f60da22e882f9e8f79801ad4cd9",
+          "coupon_count": 166,
+          "declared_count": 166,
+          "hash_match": true,
+          "cost_match": true
+        },
+        "sports-shadow": {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/sports-final-research-coupons.txt",
+          "file_sha256": "abd0434e9c6f15343063962c273cf77fc88f545e8033f4d0736665ed2bd9f52a",
+          "package_sha256": "abc63ea84b77d61a21822723bc5de3914374c637f2868d368be137625266b11c",
+          "coupon_count": 166,
+          "declared_count": 166,
+          "hash_match": true,
+          "cost_match": true
+        },
+        "quality-v3": {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/quality-v3-final-research-coupons.txt",
+          "file_sha256": "7cfcbc51f1f68b673d99922a20dd98ed26c84447238070a553c44ba24c79cfcc",
+          "package_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+          "coupon_count": 166,
+          "declared_count": 166,
+          "hash_match": true,
+          "cost_match": true
+        },
+        "robust": {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/robust-final-research-coupons.txt",
+          "file_sha256": "12c05278b8da550f2a45fad6275702ec20bea5d630686a94e66720e7c6c224d9",
+          "package_sha256": "c30447b387202b5a7c6a9946b68cf96eb777f8a7d1e9aea2d56640d0f4b6770c",
+          "coupon_count": 166,
+          "declared_count": 166,
+          "hash_match": true,
+          "cost_match": true
+        }
+      },
+      "companion": {
+        "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/parallel-operator-result.json",
+        "seal": true,
+        "nested_equals": true,
+        "operator_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/selected-parallel-operator-package.txt",
+        "file_sha256": "1b6a7fc58350a683bcb0256d3099ea36b9cd9666487cdc7fee3b0e7cff6a1702",
+        "file_hash_match": true,
+        "computed_semantic_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+        "declared_semantic_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+        "research_quality_v3_semantic_match": true
+      },
+      "final_input": {
+        "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/final-input.json",
+        "snapshot_sha256": "baea70824b1435bd771b5d9591ed6fb80319a89cacd25c77d9672e7503438282",
+        "seal": true,
+        "report_snapshot_match": true,
+        "plan_match": true,
+        "run_match": true,
+        "canonicalization": "Native final_input.py:246-249 uses ensure_ascii=True, unlike sidecar/report. Verified using this exact contract.",
+        "initial_probe_note": "Generic ensure_ascii=False probe did not match; this was a verifier serialization mismatch, not changed source bytes."
+      },
+      "automatic_validation_boundary": "Native settlement checks sidecar/report seals, identity, four research package semantic hashes/count/stake/cost. It does not read operator companion/upload or reload final-input; these links are checked separately here only.",
+      "optional_failure_semantics": "Failure/skipped writes post-draw/parallel-comparison-status.json, does not block primary complete. Later completed-plan runs return before optional branch: no automatic optional retry.",
+      "next_checkpoint": "07.09 12:00MSK inspect primary state plus parallel-comparison-status.json and parallel-comparison/final-hybrid-settlement.json/.md. No new plan/activation required for existing hook. Investigate any failed binding in separate scoped job; do not rerun primary or invent owner wager evidence.",
+      "no_mutations": "Only additive context receipt. No source/jobs/API/DB/results/scoring/publishing.",
+      "previous_scope_caveat_superseded": "One package_binding does not mean only one package overall: primary settlement plus automatic4-model research comparison."
+    }
+  ]
+}

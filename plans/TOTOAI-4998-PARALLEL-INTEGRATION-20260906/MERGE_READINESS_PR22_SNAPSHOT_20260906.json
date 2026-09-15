@@ -1,0 +1,964 @@
+{
+  "baseRefName": "main",
+  "baseRefOid": "a59e3e54a1698efe60a862bbab681996c06ff8f7",
+  "commits": [
+    {
+      "authoredDate": "2026-09-04T14:21:59Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-04T14:21:59Z",
+      "messageBody": "",
+      "messageHeadline": "Persist GOAL sports history snapshots",
+      "oid": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2"
+    },
+    {
+      "authoredDate": "2026-09-05T11:23:51Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-05T11:23:51Z",
+      "messageBody": "",
+      "messageHeadline": "Authorize continuation of two existing native Codex tasks",
+      "oid": "49bd9ed9f16f63b848119f720f1e5013c3e4c0a6"
+    },
+    {
+      "authoredDate": "2026-09-06T11:27:46Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T11:27:46Z",
+      "messageBody": "",
+      "messageHeadline": "Integrate reviewed backfill, GOAL, O1 and G1 stack",
+      "oid": "9df62a36834cd88f55640371d2d6e8a50e104ec4"
+    },
+    {
+      "authoredDate": "2026-09-06T11:28:37Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T11:28:37Z",
+      "messageBody": "",
+      "messageHeadline": "Record verified stack commit before publication",
+      "oid": "dcaa08eedc31a6d5820e99808a898318ee079c7e"
+    },
+    {
+      "authoredDate": "2026-09-06T11:31:13Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T11:31:13Z",
+      "messageBody": "",
+      "messageHeadline": "Finalize draft publication evidence and preserved dirty scope",
+      "oid": "1a42f35561416393d5e9068fde330ca54e7466e7"
+    },
+    {
+      "authoredDate": "2026-09-06T13:22:12Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T13:22:12Z",
+      "messageBody": "…gration",
+      "messageHeadline": "Publish reviewed GOAL quarantine, regulation-time history and G1 inte…",
+      "oid": "aac678ce4143d3835523afcab34cd1ecad491c70"
+    },
+    {
+      "authoredDate": "2026-09-06T13:23:46Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T13:23:46Z",
+      "messageBody": "",
+      "messageHeadline": "Record reviewed source publication to draft PR22",
+      "oid": "834f3efc3976ac569746e15658d82f497a1a8a3b"
+    },
+    {
+      "authoredDate": "2026-09-06T13:24:45Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T13:24:45Z",
+      "messageBody": "",
+      "messageHeadline": "Correct publication lint scope count to fifteen files",
+      "oid": "2bfd0102639078a00c0e583b68b7d959d8361299"
+    },
+    {
+      "authoredDate": "2026-09-06T13:45:40Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T13:45:40Z",
+      "messageBody": "… handoff",
+      "messageHeadline": "Publish durable cache recovery, wrapper compatibility and operational…",
+      "oid": "b28647cb008c5bd1ed9281e69533fc4d23e6cb72"
+    },
+    {
+      "authoredDate": "2026-09-06T13:47:19Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T13:47:19Z",
+      "messageBody": "",
+      "messageHeadline": "Record verified PR22 publication and bounded operational handoff",
+      "oid": "c43fa702435ad9a4cff33027f2fa5cdc80d50b6f"
+    },
+    {
+      "authoredDate": "2026-09-06T14:16:59Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T14:16:59Z",
+      "messageBody": "",
+      "messageHeadline": "Publish accepted G1 evaluation profile and nonfinal research evidence",
+      "oid": "01b5df262f64f4eadafa3cf5b5e3bd93f95d791b"
+    },
+    {
+      "authoredDate": "2026-09-06T14:18:40Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T14:18:40Z",
+      "messageBody": "",
+      "messageHeadline": "Record verified G1 profile publication and current task boundaries",
+      "oid": "b859562cf4dbea42e5041ff90c0be779bdd909ab"
+    },
+    {
+      "authoredDate": "2026-09-06T15:57:40Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T15:57:40Z",
+      "messageBody": "",
+      "messageHeadline": "Record expired 4998 outcome and pending runtime/F4 review status",
+      "oid": "ac59d358bae52245be79e8c0f49be96e2b86273d"
+    },
+    {
+      "authoredDate": "2026-09-06T15:59:14Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T15:59:14Z",
+      "messageBody": "",
+      "messageHeadline": "Close status publication and record unaccepted observer02 checkpoint",
+      "oid": "a59d301c80e1e3ddab24a103f3690f8560d3a89e"
+    },
+    {
+      "authoredDate": "2026-09-06T17:36:26Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T17:36:26Z",
+      "messageBody": "…aries",
+      "messageHeadline": "Publish independently accepted observer03 and current readiness bound…",
+      "oid": "f9de8a634d80aeb80942bec90b93953cd9566931"
+    },
+    {
+      "authoredDate": "2026-09-06T17:37:31Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T17:37:31Z",
+      "messageBody": "",
+      "messageHeadline": "Record verified observer03 publication and unresolved next-draw bindings",
+      "oid": "a84bb44236b11384848700f7b0bcc98aae317aa2"
+    },
+    {
+      "authoredDate": "2026-09-06T17:39:51Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T17:39:51Z",
+      "messageBody": "",
+      "messageHeadline": "Correct verified automatic four-model postmortem status",
+      "oid": "08c7eaf3408bdd55e86cf9ad09dcf65791d1df27"
+    },
+    {
+      "authoredDate": "2026-09-06T17:40:54Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T17:40:54Z",
+      "messageBody": "",
+      "messageHeadline": "Record runtime02 independent acceptance without publishing runtime code",
+      "oid": "dfa9bb9af9657323ae5cd7df5caecc29411f4f66"
+    },
+    {
+      "authoredDate": "2026-09-06T17:50:08Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T17:50:08Z",
+      "messageBody": "… safeguards",
+      "messageHeadline": "Publish independently accepted runtime02 primary validity and runtime…",
+      "oid": "a651a05ed7c6fc507b0174951d87bbdf033ff234"
+    },
+    {
+      "authoredDate": "2026-09-06T17:51:25Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T17:51:25Z",
+      "messageBody": "…aries",
+      "messageHeadline": "Close verified runtime02 publication and preserve leftover work bound…",
+      "oid": "854e0ea0a105e83d6db93d1a4c2e344e5d5c9d5e"
+    },
+    {
+      "authoredDate": "2026-09-06T18:18:31Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T18:18:31Z",
+      "messageBody": "",
+      "messageHeadline": "docs: record 4999 activation and unverified preflight",
+      "oid": "efe44145337c520c331f9df41993e31c38b1e359"
+    },
+    {
+      "authoredDate": "2026-09-06T18:19:49Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T18:20:14Z",
+      "messageBody": "",
+      "messageHeadline": "docs: close 4999 operational status publication",
+      "oid": "19f2cfbaf2f3d82400689c2d4f52dcce963e36a6"
+    },
+    {
+      "authoredDate": "2026-09-06T18:31:20Z",
+      "authors": [
+        {
+          "email": "turshevr@yandex-team.ru",
+          "id": "",
+          "login": "",
+          "name": "turshevr"
+        }
+      ],
+      "committedDate": "2026-09-06T18:31:20Z",
+      "messageBody": "",
+      "messageHeadline": "docs: close isolated F4 review06 status",
+      "oid": "71afde0050f37cf9a208831d64da403b0605fef2"
+    }
+  ],
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "additions": 78,
+      "deletions": 4,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "knowledge/backfill_retry_integration_boundary.md",
+      "additions": 36,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/goal_history_regulation_score.md",
+      "additions": 23,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/goal_pagination_identity_boundary.md",
+      "additions": 32,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/goal_probe_failed_cache_boundary.md",
+      "additions": 54,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/goal_schedule_fixture_quarantine.md",
+      "additions": 43,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/history_backfill_validation_boundary.md",
+      "additions": 32,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/operator_observer_release.md",
+      "additions": 9,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/parallel_g1_evaluation_profile.md",
+      "additions": 37,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/parallel_runtime.md",
+      "additions": 77,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/parallel_runtime_release.md",
+      "additions": 11,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/preflight_retry_calendar_boundary.md",
+      "additions": 37,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/project_git_worktrees.md",
+      "additions": 42,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "knowledge/sports_v3_o1_local_adoption_boundary.md",
+      "additions": 53,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "memory-bank/ACTIVE_PLAN.md",
+      "additions": 948,
+      "deletions": 315,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "memory-bank/CURRENT_STATE.md",
+      "additions": 442,
+      "deletions": 0,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "memory-bank/DECISIONS.md",
+      "additions": 101,
+      "deletions": 0,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "memory-bank/ROADMAP.md",
+      "additions": 111,
+      "deletions": 0,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "memory-bank/THREAD_COORDINATION.json",
+      "additions": 1890,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "memory-bank/TOOLING_POLICY.md",
+      "additions": 45,
+      "deletions": 0,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "memory-bank/archive/ACTIVE_PLAN-before-recovery-20260904.md",
+      "additions": 416,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_ADOPTION_RECEIPT_20260906.json",
+      "additions": 494,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_ADOPTION_RECEIPT_20260906.md",
+      "additions": 36,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.json",
+      "additions": 339,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_INDEPENDENT_REVIEW_20260906.md",
+      "additions": 89,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.json",
+      "additions": 161,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/GOAL_PAGINATION_LOCAL_FINALIZATION_RECEIPT_20260906.md",
+      "additions": 31,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.json",
+      "additions": 488,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/LOCAL_ADOPTION_FINALIZATION_RECEIPT_20260906.md",
+      "additions": 47,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4996-4997-RECOVERY-20260904/native-task-owner-authorization-20260905.json",
+      "additions": 37,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CURRENT_STACK_PUBLICATION_20260906.json",
+      "additions": 217,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/EXISTING_STACK_SUBMISSION_RECEIPT_20260906.json",
+      "additions": 1541,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/EXISTING_STACK_SUBMISSION_RECEIPT_20260906.md",
+      "additions": 13,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_CONTEXT_RESUME_HANDOFF_20260906.md",
+      "additions": 30,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_INTEGRATED_PUBLICATION_RECEIPT_20260906.json",
+      "additions": 216,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/FINAL_STATUS_SUMMARY_20260906.md",
+      "additions": 49,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_ADOPTION_AND_REPLAY_HANDOFF.md",
+      "additions": 80,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_PUBLICATION_RECEIPT_20260906.json",
+      "additions": 123,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_RECEIPT_20260906.json",
+      "additions": 136,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLICATION_RECEIPT_20260906.json",
+      "additions": 82,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLIC_STATUS.json",
+      "additions": 116,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OPERATIONS4999_PUBLIC_STATUS.md",
+      "additions": 25,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM_BINDING_STATUS_CORRECTION_RECEIPT_20260906.json",
+      "additions": 72,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_RECEIPT_20260906.json",
+      "additions": 175,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/STATUS_FINALIZATION_CHECKPOINT_20260906.json",
+      "additions": 142,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-HISTORY-PERSISTENCE-20260904/context.md",
+      "additions": 209,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/G1_MAIN_INTEGRATION_RECEIPT_20260906.json",
+      "additions": 598,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/G1_MAIN_INTEGRATION_RECEIPT_20260906.md",
+      "additions": 16,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP.patch",
+      "additions": 10,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP_RECEIPT_20260906.json",
+      "additions": 305,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_IMPORT_ORDER_CLEANUP_RECEIPT_20260906.md",
+      "additions": 29,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_LOCAL_ADOPTION_RECEIPT_20260906.json",
+      "additions": 139,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_LOCAL_ADOPTION_RECEIPT_20260906.md",
+      "additions": 39,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_STACK_ADOPTION_RECEIPT_20260906.json",
+      "additions": 742,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_STACK_ADOPTION_RECEIPT_20260906.md",
+      "additions": 50,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.import-only.patch",
+      "additions": 20,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/O1_MAIN_VERIFICATION_PROBES.py",
+      "additions": 277,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/P1_FIXTURE_CASES.json",
+      "additions": 452,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "scripts/project-git",
+      "additions": 83,
+      "deletions": 1,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "skills/operator-delivery.md",
+      "additions": 105,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "src/toto_ai/cli.py",
+      "additions": 232,
+      "deletions": 96,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/ev/package.py",
+      "additions": 39,
+      "deletions": 4,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/ev/package_quality.py",
+      "additions": 33,
+      "deletions": 17,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/ev/runtime.py",
+      "additions": 103,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "src/toto_ai/ev/ternary.py",
+      "additions": 14,
+      "deletions": 4,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/external_odds/goal_api.py",
+      "additions": 127,
+      "deletions": 3,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/external_odds/schedule_evidence_admin.py",
+      "additions": 10,
+      "deletions": 1,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/external_odds/schedule_source_collector.py",
+      "additions": 40,
+      "deletions": 2,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/external_odds/targets.py",
+      "additions": 15,
+      "deletions": 1,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/operations/scheduler_delivery.py",
+      "additions": 456,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "src/toto_ai/operations/scheduler_status.py",
+      "additions": 244,
+      "deletions": 32,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/optimizer/exact_maximin_refinement.py",
+      "additions": 507,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "src/toto_ai/optimizer/strategy_comparison.py",
+      "additions": 9,
+      "deletions": 5,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/package/__init__.py",
+      "additions": 23,
+      "deletions": 16,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/runner/morning_dispatch.py",
+      "additions": 27,
+      "deletions": 3,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/runner/preflight_retry_scheduler.py",
+      "additions": 60,
+      "deletions": 10,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/__init__.py",
+      "additions": 29,
+      "deletions": 31,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/domain.py",
+      "additions": 31,
+      "deletions": 0,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_comparison.py",
+      "additions": 456,
+      "deletions": 44,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+      "additions": 306,
+      "deletions": 50,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/goal_probe_collection.py",
+      "additions": 382,
+      "deletions": 11,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/goal_probe_research.py",
+      "additions": 31,
+      "deletions": 6,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/history_backfill.py",
+      "additions": 1377,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/parallel_g1.py",
+      "additions": 466,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/storage.py",
+      "additions": 4,
+      "deletions": 28,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_coverage_audit.py",
+      "additions": 1024,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/v3_family_evidence.py",
+      "additions": 726,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/fixtures/goal_pagination_duplicate.json",
+      "additions": 143,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/fixtures/goal_regulation_score_captured_contracts.json",
+      "additions": 279,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/fixtures/goal_schedule_quarantine_conflicts.json",
+      "additions": 274,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/fixtures/parallel_g1_acceptance_oracles.py",
+      "additions": 136,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/fixtures/scheduler_status/drawing_4996_attempt_delivery.json",
+      "additions": 72,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/test_ev_runtime_budget.py",
+      "additions": 89,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/test_exact_maximin_refinement.py",
+      "additions": 767,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/test_external_odds_targets.py",
+      "additions": 41,
+      "deletions": 0,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "tests/test_final_hybrid_g1_integration.py",
+      "additions": 423,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/test_final_hybrid_primary_validity.py",
+      "additions": 355,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/test_final_hybrid_runtime_contracts.py",
+      "additions": 385,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "tests/test_final_hybrid_sidecar.py",
+      "additions": 5,
+      "deletions": 0,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "tests/test_g1_wrapper_reuse.py",
+      "additions": 155,
+      "deletions": 0,
+      "changeType": "ADDED"
+    }
+  ],
+  "headRefName": "codex/reviewed-stack-20260906",
+  "headRefOid": "71afde0050f37cf9a208831d64da403b0605fef2",
+  "isDraft": true,
+  "mergeStateStatus": "CLEAN",
+  "mergeable": "MERGEABLE",
+  "number": 22,
+  "reviewDecision": "",
+  "reviews": [],
+  "state": "OPEN",
+  "statusCheckRollup": [],
+  "url": "https://github.com/BrooksN21/toto-ai/pull/22"
+}

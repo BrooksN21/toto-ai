@@ -1,0 +1,76 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "role": "independent rereview only",
+  "observed_at": "2026-09-06T18:16:07.387826+03:00",
+  "verdict": "PROVISIONAL_ACCEPT_SCOPED_CORRECTIONS_ONLY",
+  "scope": "Snapshot03 corrections to two prior P1s and core/optional scope; not whole V3 acceptance",
+  "full_patch_sha256": "daa7c62dc30d307052df05008625922f9684fd4d72cb78be62d45770140318b8",
+  "delta02_to03_sha256": "fa0aa7b821c1ba7db0055c150118fdc6efd664ca2b52ea227ed42e631c5da2b1",
+  "immutable_reconstruction": {
+    "temp": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9",
+    "manifest": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_PROBABILITY_CORE_SNAPSHOT_03.json",
+    "full_patch": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_PROBABILITY_CORE_SNAPSHOT_03.patch",
+    "delta": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_PROBABILITY_DELTA_02_TO_03.patch",
+    "full_sha256": "daa7c62dc30d307052df05008625922f9684fd4d72cb78be62d45770140318b8",
+    "delta_sha256": "fa0aa7b821c1ba7db0055c150118fdc6efd664ca2b52ea227ed42e631c5da2b1",
+    "full15_and_delta12_match": true
+  },
+  "full_files_guarded": 15,
+  "delta_files_exactly_equal_full": 12,
+  "tests": {
+    "unique_passed": 30,
+    "first_run": "26 passed in 1.50s",
+    "additional_disjoint_run": "4 passed in 0.31s",
+    "new_independent_cases": 9,
+    "existing_scoped_regressions": 21,
+    "real_data_fit": false,
+    "coupon_generation_executed": false,
+    "logs": [
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/pytest.log",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/pytest-extra.log"
+    ],
+    "commands_receipts": [
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/checks.json",
+      "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/extra-checks.json"
+    ]
+  },
+  "ruff": {
+    "passed": true,
+    "candidate_python_files": 14,
+    "explicit_source_roots": true,
+    "ignored_rules": [],
+    "log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9/ruff.log"
+  },
+  "closed_findings": [
+    {
+      "id": "P1_FROZEN_BK_BINDING",
+      "proof": "Changed BK after inference rejected at generator frozen payload binding; five existing BK/order/capture/bank/stake mutations also rejected",
+      "source": "src/toto_ai/sports_stats/v3_generation.py:83-112"
+    },
+    {
+      "id": "P1_SERIALIZED_FUTURE_LABEL",
+      "proof": "A3 and A4 future-label artifacts rejected after both manifest and outer hashes recomputed; inference exact BK fallback. Caller receipt mismatch also rejected.",
+      "source": "src/toto_ai/sports_stats/v3_probability.py:470-530; v3_parallel.py:50-61"
+    }
+  ],
+  "scope_fix": "Optional absence permits complete-core A2/A3 and partial A4/A5 synthetic inference; removing common scope proof yields exact BK fallback. Cross-league rolling allowed, identity conflict rejected. Numeric availability does not grant training/evaluation/activation authority.",
+  "new_P0_P1_in_reviewed_scope": [],
+  "remaining_blockers": [
+    "No independently reviewed common entity-scope bridge bound to the supplied historical training chain; not a claim of absence from the whole project.",
+    "F4 chronology/ablation/calibration/bootstrap gate implementation and independently recomputed acceptance absent.",
+    "Production provenance/config, independent safety/exposure checks, deeper worker validation and semantic timing receipt hashing remain incomplete as declared in handoff.",
+    "Expected model/training hashes must originate from a separately reviewed receipt; hashes are consistency guards, not signed authority."
+  ],
+  "author_only_empirical_claim": {
+    "source_valid_both_history_rows": 52,
+    "complete_37_core": 48,
+    "venue_partial": 4,
+    "independently_rerun": false
+  },
+  "full_v3_complete": false,
+  "prediction_improvement_demonstrated": false,
+  "adopted_to_main": false,
+  "activated": false,
+  "published": false,
+  "side_effects": "Only review temp/bootstrap/synthetic probes/logs and requested review report/receipt written; no API/DB/real fit/live process/source/authority/VCS changes."
+}

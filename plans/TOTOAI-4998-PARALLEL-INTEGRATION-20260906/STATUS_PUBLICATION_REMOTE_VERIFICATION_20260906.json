@@ -1,0 +1,12 @@
+{
+  "at": "2026-09-06T18:58:08.867582+03:00",
+  "pr": {
+    "baseRefName": "main",
+    "headRefName": "codex/reviewed-stack-20260906",
+    "headRefOid": "ac59d358bae52245be79e8c0f49be96e2b86273d",
+    "isDraft": true,
+    "state": "OPEN",
+    "url": "https://github.com/BrooksN21/toto-ai/pull/22"
+  },
+  "verified_head_equals_local": true
+}

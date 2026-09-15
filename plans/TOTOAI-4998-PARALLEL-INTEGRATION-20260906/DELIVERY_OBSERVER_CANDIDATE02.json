@@ -1,0 +1,49 @@
+{
+  "schema_version": 2,
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "created_at": "2026-09-06T15:56:04.799932+00:00",
+  "status": "IMPLEMENTED_SCOPED_VERIFIED_PENDING_INDEPENDENT_REREVIEW",
+  "patch_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_CANDIDATE02.patch",
+  "patch_sha256": "f244c0873f5c43dce193af093fc7ddf3656f78753580ea6ba7f4c5b903cd2579",
+  "delta_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_DELTA01_TO_02.patch",
+  "delta_sha256": "15ad627bc37ba9e895aae0123ce564f01ecb27e1e1f2a7c816ce844bb0617788",
+  "supersedes_candidate_sha256": "bb6c7de16e7201a6bf5a4f45997403ca0437c0bfdaed67254930da6892f9876f",
+  "files": [
+    {
+      "path": "src/toto_ai/operations/scheduler_status.py",
+      "before_original_sha256": "5c3bfb00238b00772febe36f055d28414e44c1ec08295f09dfc83668474f2956",
+      "before_candidate01_sha256": "a80bc0c217eb238a85cf95733754aac6d2dc132f9d208328d27025e14171898a",
+      "after_sha256": "22216e4925061394aa00e9fa2adf9120698fb81a9d3444046070a5500d6b7930"
+    },
+    {
+      "path": "src/toto_ai/operations/scheduler_delivery.py",
+      "before_original_sha256": null,
+      "before_candidate01_sha256": "72be5e7ff454dbdde7a5fdc4e806f75bf1bd5d954df56a8ba3dc18e838fe5829",
+      "after_sha256": "44222cbda709ee2c5c58c3bedb27ccc18a247c9b93395e85f51aca0cfd4a0357"
+    },
+    {
+      "path": "tests/test_scheduler_delivery.py",
+      "before_original_sha256": null,
+      "before_candidate01_sha256": "9a068bdea39f81b429ae39c4bdeb0654f52bda8ed1200e6feec299c77a82c2ee",
+      "after_sha256": "dc2eb3ef15acafd26c91f1e80caf7651f970bd65779e0a24214162a367fb3744"
+    },
+    {
+      "path": "skills/operator-delivery.md",
+      "before_original_sha256": null,
+      "before_candidate01_sha256": "dd162263d9770b9acdab477320144882317525423ad23bcd743ad6cc0116cce7",
+      "after_sha256": "baff396b6e89dea186bcf36596b9b595ff40d6f445262293d588b0286ca874cf"
+    }
+  ],
+  "dependency_hashes": {
+    "src/toto_ai/runner/final_input.py": "3330deb14d17e9628bf5eb6202d6b89d9d2acf5b22717e534421f9a90f6c235a",
+    "src/toto_ai/runner/scheduler.py": "07e23f28ebff084bc4e3fe13a3b185d201050ac983c64ce1be5ea0dc014848c4",
+    "src/toto_ai/runner/scheduler_state.py": "e63b6635008b7c8c3fe5108ff28d376de405007fd1ee290622c7768a02bd3b21",
+    "src/toto_ai/external_odds/targets.py": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497",
+    "src/toto_ai/package/audit.py": "f36da1153d6f44e0cae00ab5f42781c415bce377d9531c4efdf68e7df8c8fc00",
+    "tests/test_scheduler_status.py": "9661ce17d6aacbf3e12fbad32c8c7e6fc86ab7999432aeb29b023e54664ef39f",
+    "tests/test_scheduler_live_status.py": "33f8665c2885fd0f3bd71dc3302c8f4def1983d902db96a7ac7e24d77c63f4ab",
+    "tests/test_runner_final_input.py": "3b3810e990d3102ca8f62494df8ccee4798f3376e6adeaf4cd2527cc9f6df970"
+  },
+  "scope": "Only four owned source/test/skill files; no operations or publication",
+  "reconstruction": "Full original-baseline patch and candidate01 delta forward roundtrips exact; original baseline reverse hash verified"
+}

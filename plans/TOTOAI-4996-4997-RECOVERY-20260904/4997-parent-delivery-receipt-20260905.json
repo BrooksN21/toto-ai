@@ -1,0 +1,88 @@
+{
+  "observed_at_msk": "2026-09-05T16:15:04.168979+03:00",
+  "drawing": 4997,
+  "plan_id": "45b72ac58a45958b",
+  "permission_commit": "49bd9ed9f16f63b848119f720f1e5013c3e4c0a6",
+  "remote_push": false,
+  "primary_delivered_in_chat_at_msk": "2026-09-05T16:03:00+03:00",
+  "selected_delivered_in_chat_at_msk": "2026-09-05T16:13:00+03:00",
+  "delivery_times_precision": "minute",
+  "user_placement_confirmed": false,
+  "automatic_wagering": false,
+  "primary_package_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4997-20260905T133000Z/attempts/final-01-20260905T130005023779Z-c8ef9631/baltbet-upload.txt",
+  "primary_package_sha256": "a50540c26150d1005a45c0281dda71be6c8b4d1f7af2a9383e5e982d82603e66",
+  "selected_package_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4997-20260905T133000Z/parallel-challenger/output/run-final-01-20260905T130005023779Z-c8ef9631/selected-parallel-operator-package.txt",
+  "selected_package_file_sha256": "e57b6d85a1dcce940c8dab24b07ebe38fd9b42c9558a441e6879272676e627ef",
+  "selected_strategy": "robust",
+  "selected_record_sha256": "52d3461d6f3b76b983db4eeaef90c1fc81b91e9e49f204a74487619869f8f039",
+  "expires_at": "2026-09-05T13:20:00Z",
+  "highest_p13_single_coupon": {
+    "coupon": "1112211221211X2",
+    "criterion": "maximum_probability_at_least_13",
+    "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+    "package_position": 107,
+    "probability_at_least_13": 0.00027456832060168435,
+    "probability_at_least_14": 2.456244948102676e-05,
+    "probability_at_least_15": 1.0313208322820966e-06,
+    "reference_model": "bk"
+  },
+  "comparison_report_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4997-20260905T133000Z/parallel-challenger/output/run-final-01-20260905T130005023779Z-c8ef9631/research-comparison/comparison.json",
+  "comparison_report_file_sha256": "f4db16551c7049ca6f940d71547eb96696d51b8ad43b534e258cdab1eaa0491a",
+  "shared_probability_model": "bk",
+  "package_probabilities": [
+    {
+      "strategy": "quality-v2",
+      "bk": {
+        "model": "bk",
+        "probability_at_least_13": 0.013472852037501629,
+        "probability_at_least_14": 0.0014323947208754258,
+        "probability_at_least_15": 6.647913204936746e-05
+      }
+    },
+    {
+      "strategy": "sports-shadow",
+      "bk": {
+        "model": "bk",
+        "probability_at_least_13": 0.013513458019682466,
+        "probability_at_least_14": 0.0014339363918327015,
+        "probability_at_least_15": 6.650774034770701e-05
+      }
+    },
+    {
+      "strategy": "quality-v3",
+      "bk": {
+        "model": "bk",
+        "probability_at_least_13": 0.017002960487605412,
+        "probability_at_least_14": 0.0016409685515479972,
+        "probability_at_least_15": 6.634927448256271e-05
+      }
+    },
+    {
+      "strategy": "robust",
+      "bk": {
+        "model": "bk",
+        "probability_at_least_13": 0.01656382987987356,
+        "probability_at_least_14": 0.0016883655602984774,
+        "probability_at_least_15": 7.059653498273311e-05
+      }
+    }
+  ],
+  "rejections": {
+    "quality-v3": [
+      "bk_p15_below_control"
+    ]
+  },
+  "verified": [
+    "166unique single coupons each30rubles,4980total",
+    "TXT byte hash and canonical coupon hash independently matched",
+    "operator/authorization/archive semantic hashes checked in correct namespaces",
+    "parallel result exact match to persisted run-local companion",
+    "drawing/plan/final-input/bank/stake/shared reference model",
+    "highest coupon exact one-based position verified"
+  ],
+  "followups": [
+    "Publish highest-P13 single ranking with primary operator, independent of slow sidecar; existing calculation took0.004s",
+    "Profile exact sidecar re-computation and comparison safely after live window; no reduced search by default",
+    "Native app omitted child final message; child failed to persist checkpoint until prompted16:08:45 — require durable checkpoint before completion"
+  ]
+}

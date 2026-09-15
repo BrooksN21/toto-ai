@@ -1,0 +1,128 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "role": "read-only runtime and notification diagnosis",
+  "saved_at": "2026-09-06T18:22:38.870270+03:00",
+  "classification": "COMPLETED_SUCCESSFULLY_NOW_EXPIRED",
+  "launchd": {
+    "label": "com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3",
+    "pid": 24009,
+    "state": "not running",
+    "runs": 1,
+    "last_exit_code": 0,
+    "ProcessType_from_plist": "Background"
+  },
+  "sample": {
+    "initial_sandbox_error": "zsh:1: operation not permitted: /bin/ps",
+    "subsequent_access": "explicit require_escalated read-only approval",
+    "ps_exit": 1,
+    "sample_exit": 255,
+    "sample_error": "sample cannot examine process 24009 because it no longer appears to be running",
+    "stack_obtained": false,
+    "repeated_after_process_exit": false
+  },
+  "timing_seconds": {
+    "started_to_completed": 1136.491525,
+    "waiting_for_primary": 106.887349,
+    "primary_observed_to_completed": 1029.604176,
+    "baseline_ev": 352.22671795800125,
+    "sports_ev": 452.0824224579992,
+    "two_serial_ev_calls": 804.3091404160004,
+    "g1_engine": 50.00082037499669,
+    "g1_worker_wall": 52.68400804200064,
+    "other_after_primary_not_separately_instrumented": 172.61102754199896
+  },
+  "NONFINAL": {
+    "comparison_seconds": 181.04537049999635,
+    "controller_seconds": 195.35865049999848,
+    "baseline_ev_seconds": 58.521135374998266,
+    "sports_ev_seconds": 54.780584749998525,
+    "g1_wall_seconds": 42.48783383399859,
+    "baseline_slowdown_factor": 6.018795016551944,
+    "sports_slowdown_factor": 8.252603080473897,
+    "final_input_snapshot_sha256": "baea70824b1435bd771b5d9591ed6fb80319a89cacd25c77d9672e7503438282",
+    "nonfinal_input_snapshot_sha256": "fc6c3a11d4851217fa1a47ec94ce9629c807c4dfdf6b7176bb7477d0d924e064",
+    "same_input": false,
+    "quality_candidate_count_final": 14120,
+    "quality_candidate_count_nonfinal": 14129,
+    "union_count_final": 465,
+    "union_count_nonfinal": 489,
+    "no_cached_ev_shortcut": "Saved diagnostic runner wrapped and invoked original functions, did not substitute cached EV results."
+  },
+  "confirmed_cause_boundary": [
+    "Most final elapsed calculation time is two serial CPU-heavy EV/crowd construction/selection calls; not 17 minutes of G1 or an API wait.",
+    "Comparison reruns the BK control before constructing Sports-v2, then quality-v3/robust/G1 and verification. Recompute exact-control equality is intentional in current caller.",
+    "EV calls themselves are 6.02x and8.25x slower than NONFINAL. Inputs differ; similar candidate counts do not explain exact cost. No live stack or per-component CPU profile survived.",
+    "Background LaunchAgent priority is an observed difference from the direct diagnostic runner, but its causal share versus input-dependent selector cost/host contention cannot be established read-only after exit.",
+    "minimum-runtime-seconds240 is admission headroom, not a240-second maximum; wait-seconds900 limits waiting for primary, not calculation. EV calls have no propagated deadline argument.",
+    "Current caller emits no EV phase progress; CLI emits result only after return, and sidecar terminal records are saved at completion. Blank logs/pending did not imply idle or failed."
+  ],
+  "code_references": [
+    "src/toto_ai/sports_stats/final_hybrid_comparison.py:121-125 (control EV),198-206 (Sports EV),220-291 (subsequent selection/G1)",
+    "src/toto_ai/optimizer/strategy_comparison.py:425-477 (EV components/surface/selection; measured runtime excludes subsequent exact result assembly)",
+    "src/toto_ai/sports_stats/final_hybrid_sidecar.py:400-405 (canonical status/admission),650-678 (comparison then release),913-917 (run-local companion)",
+    "src/toto_ai/operations/scheduler_status.py:30-36,296-305 (reads canonical status+nested release),77-115 (file/stdout polling only)",
+    "src/toto_ai/cli.py:7245-7264 (final echo after sidecar returns)"
+  ],
+  "companion_contract": {
+    "canonical_status": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+    "nested_parallel_release": true,
+    "separate_run_local_companion": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/parallel-operator-result.json",
+    "separate_run_local_companion_exists": true,
+    "wrong_expected_paths_absent": [
+      "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-operator-result.json",
+      "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-operator-result.json",
+      "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/parallel-operator-result.json"
+    ],
+    "nested_equals_run_local": true,
+    "published_at": "2026-09-06T15:19:04.553592Z",
+    "selected_strategy": "quality-v3",
+    "seconds_available_before_expiry": 55.446408,
+    "current_actionability": false,
+    "expiry": "2026-09-06T18:20:00+03:00"
+  },
+  "notifications": {
+    "watcher_interval_seconds": 30,
+    "evidence": [
+      {
+        "at": "2026-09-06T18:19:32.147109+03:00",
+        "selected": "quality-v3",
+        "terminal": false,
+        "operator_actionable": true,
+        "blocker": null
+      },
+      {
+        "at": "2026-09-06T18:20:02.217367+03:00",
+        "selected": "quality-v3",
+        "terminal": false,
+        "operator_actionable": true,
+        "blocker": null
+      },
+      {
+        "at": "2026-09-06T18:20:32.279296+03:00",
+        "selected": "quality-v3",
+        "terminal": true,
+        "operator_actionable": false,
+        "blocker": "operator package expired at T-10; audit archive retained"
+      }
+    ],
+    "first_observed_selection": "2026-09-06T18:19:32.147109+03:00",
+    "first_observation_latency_seconds": 27.593517,
+    "remaining_at_first_observation_seconds": 27.852891,
+    "transport": "Watcher persists latest/history and prints stdout; no notification/chat delivery call in that loop or launch arguments. It cannot wake an idle Codex task.",
+    "delivery_boundary": "Saved evidence proves local detection before expiry, not delivery. Owner reports the56-second window was missed. No separate delivery transport audit or message-service query performed.",
+    "stale_actionable_flag": "18:20:02 watcher still mirrored prior primary actionable flag;18:20:32 reports expiry. Deadline, not stale saved bool, determines actionability."
+  },
+  "evidence_paths": [
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/comparison.json",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/sidecar-result.json",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-sidecar.stdout.log",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-sidecar.stderr.log",
+    "/Users/turshevr/toto-ai/reports/research/4998/G1-PROFILE-NONFINAL-RESEARCH-DIAGNOSTIC-20260906T140633428501Z/stdout.log",
+    "/Users/turshevr/toto-ai/reports/research/4998/G1-PROFILE-NONFINAL-RESEARCH-DIAGNOSTIC-20260906T140633428501Z/run-native-research.py",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/history.jsonl"
+  ],
+  "source_inspection_limit": "Current relevant source inspected; no claim that a post-exit read reconstructs the complete18:00 loaded module image. No source/VCS history audit.",
+  "changes": "Only this small diagnostic receipt; no code/runtime/scheduler/DB/API/package/authority mutation, no restart, no tests/replay, no publication.",
+  "review03": "Previously saved result preserved; not resumed."
+}

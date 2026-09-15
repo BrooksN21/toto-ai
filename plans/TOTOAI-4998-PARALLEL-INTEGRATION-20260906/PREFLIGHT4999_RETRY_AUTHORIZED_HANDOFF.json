@@ -1,0 +1,131 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "at": "2026-09-06T18:45:20.473235+00:00",
+  "phase": "VERIFIED_NATIVE_PREFLIGHT_PASS_OWNED_PROCESSES_GONE",
+  "plan_id": "b742aac1fea2d42d",
+  "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json",
+  "plan_sha256": "92ddec53c4554b7edc8c04de0e8a52f25400ed2450e61447eac2a01fc6e4f20d",
+  "native_prepare_subprocess_timeout_seconds": 300,
+  "native_end_to_end_timeout_seconds": null,
+  "supervisor_wall_bound_seconds": 360,
+  "quiet30s_termination": false,
+  "diagnostic_interval_seconds": 15,
+  "diagnostic_dir": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/preflight4999-authorized-diagnostics-20260906T184355Z",
+  "diagnostic_bootstrap_sha256": "0d70304734a887776361d4b1e281380d0603253b8cbc0d205dad55ff82e9e4de",
+  "diagnostic_semantics": "faulthandler stack-only startup, no app/network/arguments/default timeout overrides; no frame locals or environment dump",
+  "precheck": {
+    "retry_label_loaded": false,
+    "retry_2150_active": false,
+    "primary_parallel_running": false,
+    "watcher_running_pid": 48486,
+    "maintenance_dispatch_locks": "ACQUIRED_RELEASED one at a time",
+    "duplicate_preflight": false,
+    "existing_plan_hash_matches": true
+  },
+  "scope": "One explicitly authorized preflight-only repeat, native internal retry policy retained; no package/consent/publication/app-code change",
+  "pid": 53702,
+  "owned_pid": null,
+  "command": [
+    "/Users/turshevr/toto-ai/.venv/bin/python",
+    "-u",
+    "-m",
+    "toto_ai.cli",
+    "scheduler-preflight-only",
+    "--plan",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json"
+  ],
+  "stdout": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/preflight4999-authorized-diagnostics-20260906T184355Z/native.stdout",
+  "stderr": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/preflight4999-authorized-diagnostics-20260906T184355Z/native.stderr",
+  "elapsed_seconds": 5.888,
+  "progress_samples": [],
+  "known_child_pids": [],
+  "protected_before": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/scheduler-plan.json": "92ddec53c4554b7edc8c04de0e8a52f25400ed2450e61447eac2a01fc6e4f20d",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/run-scheduler.sh": "06b99b9d4772255c124389d3e3a33033cb15f1e7010dcec0b52fe41e6fd9732f",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/totoai-scheduler.plist": "5ae8eb3679f76c13950530c2c78779170987db5ab69818e5ab04d1d9aa04137e",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/parallel-challenger/run-parallel-sidecar.sh": "6be3bfcf1e51df21d4eac49a0698a355a7306010fbd1f39d8690bb9b10a70410",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/parallel-challenger/totoai-parallel-sidecar.plist": "cec7c6573a8744062e035016aaf7b36e25e1fea38264ac97d40e1e4533b282d9",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/bindings/schedule-evidence-245558df79313f7b/ledger.json": "245558df79313f7b6422301dafd3410c868de99f307407a189cf468264fab6e9"
+  },
+  "exit_code": 0,
+  "interrupt_reason": null,
+  "protected_unchanged": true,
+  "stdout_sha256": "cac53889b1f2228c68f2a3d98401c5a0d20873f05b72c1bd57686b6c88e9f4e4",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "native_result": {
+    "artifact_class": "REAL_PREFLIGHT_ONLY_NO_PACKAGE",
+    "automatic_wagering": false,
+    "drawing_id": 12106,
+    "drawing_number": 4999,
+    "finished_at": "2026-09-06T18:44:43.231879Z",
+    "package_generation": false,
+    "plan_id": "b742aac1fea2d42d",
+    "reason": "target, data access, configuration, and override catalog validated",
+    "result_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/daytime-preflight/checkpoints/20260906T184437914711Z-cbff4429/result.json",
+    "schema_version": 1,
+    "started_at": "2026-09-06T18:44:37.914711Z",
+    "status": "PASS",
+    "training": false
+  },
+  "result_sha256": "be087782be358844dc6e25d3c1a5cf1eed96d6f1bedfbccca9e1eb1ffc2af5b0",
+  "current_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4999-20260907T143000Z/daytime-preflight/current.json",
+  "current_sha256": "be087782be358844dc6e25d3c1a5cf1eed96d6f1bedfbccca9e1eb1ffc2af5b0",
+  "cleanup": {
+    "pids_checked": [
+      53702,
+      53705
+    ],
+    "ps_returncode": 1,
+    "process_group_returncode": 1,
+    "all_gone": true,
+    "global_environment_modified": false,
+    "diagnostic_bootstrap_retained_as_evidence": true
+  },
+  "diagnostics": {
+    "first_dump_after_seconds": 15,
+    "completed_before_first_dump": true,
+    "progress_samples_count": 0,
+    "stack_file_sizes": {
+      "python-stack-53702.log": 0,
+      "python-stack-53705.log": 0
+    },
+    "prior_interruption_cause": "UNKNOWN; this PASS does not diagnose original30s silence"
+  },
+  "launchd_after": {
+    "com.totoai.production-scheduler.v9.b742aac1fea2d42d": {
+      "returncode": 0,
+      "state_lines": [
+        "state = not running",
+        "runs = 0",
+        "last exit code = (never exited)"
+      ]
+    },
+    "com.totoai.parallel-sidecar.v1.b742aac1fea2d42d": {
+      "returncode": 0,
+      "state_lines": [
+        "state = not running",
+        "runs = 0",
+        "last exit code = (never exited)"
+      ]
+    },
+    "com.totoai.status-watcher.v1.b742aac1fea2d42d": {
+      "returncode": 0,
+      "state_lines": [
+        "state = running",
+        "runs = 1",
+        "pid = 48486",
+        "last exit code = (never exited)",
+        "state = active",
+        "state = active"
+      ]
+    },
+    "com.totoai.preflight-retry.12106.b2596e1df489092a": {
+      "returncode": 113,
+      "state_lines": []
+    }
+  },
+  "consent_created": false,
+  "operator_result_exists": false,
+  "blocker": null,
+  "remaining_boundary": "Preflight-only PASS is not package generation, SportsV3fit, fullLaunchAgentperformance or manual release authority. Next scheduledprimary07.09 15:30MSK; ownerresponse still required for experimentalrelease."
+}

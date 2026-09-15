@@ -1,0 +1,25 @@
+{
+  "positions": [
+    2,
+    4,
+    5,
+    9,
+    10,
+    11,
+    12,
+    14
+  ],
+  "network_calls_during_review": 0,
+  "reviewed_at": "2026-09-04T20:07:07.138630+00:00",
+  "review_files": [
+    "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/prepared-recovery-4997-event-02.json",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/prepared-recovery-4997-event-04.json",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/prepared-recovery-4997-event-05.json",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/prepared-recovery-4997-event-09.json",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/prepared-recovery-4997-event-10.json",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/prepared-recovery-4997-event-11.json",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/prepared-recovery-4997-event-12.json",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/prepared-recovery-4997-event-14.json"
+  ],
+  "note": "Event 10 input competition label is retained verbatim; sources identify Rayo-Racing as LaLiga EA SPORTS. This review confirms exact teams and kickoff only, without changing target categories."
+}

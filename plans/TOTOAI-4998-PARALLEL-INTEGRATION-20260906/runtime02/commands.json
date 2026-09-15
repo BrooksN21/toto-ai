@@ -1,0 +1,43 @@
+{
+  "pytest": [
+    ".venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "tests/test_ev_runtime_budget.py",
+    "tests/test_final_hybrid_runtime_contracts.py",
+    "tests/test_final_hybrid_primary_validity.py",
+    "tests/test_final_hybrid_g1_integration.py",
+    "tests/test_final_hybrid_sidecar.py",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/test_independent_runtime.py",
+    "tests/test_ev_package.py::test_package_and_top_diagnostics_share_one_complete_ranking",
+    "tests/test_ev_package.py::test_tolerance_tie_runs_use_first_value_instead_of_transitive_chaining",
+    "tests/test_strategy_comparison.py::test_ev_adapter_uses_the_same_frozen_matrices_and_config",
+    "tests/test_ev_package_quality.py::test_incremental_exact_category_coverage_matches_full_union_after_swap",
+    "tests/test_ev_package_quality.py::test_vectorized_repair_swap_is_objective_equivalent_to_exhaustive_reference",
+    "tests/test_ev_ternary.py::test_ternary_convolution_matches_direct_oriented_cyclic_convolution"
+  ],
+  "pytest_timeout_seconds": 25,
+  "ruff": [
+    ".venv/bin/ruff",
+    "check",
+    "--no-cache",
+    "src/toto_ai/sports_stats/final_hybrid_comparison.py",
+    "src/toto_ai/optimizer/strategy_comparison.py",
+    "src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+    "src/toto_ai/ev/ternary.py",
+    "src/toto_ai/ev/package.py",
+    "src/toto_ai/ev/package_quality.py",
+    "tests/test_final_hybrid_g1_integration.py",
+    "src/toto_ai/ev/runtime.py",
+    "tests/test_ev_runtime_budget.py",
+    "tests/test_final_hybrid_runtime_contracts.py",
+    "tests/test_final_hybrid_sidecar.py",
+    "tests/test_final_hybrid_primary_validity.py",
+    "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime02/test_independent_runtime.py"
+  ],
+  "ruff_timeout_seconds": 15
+}

@@ -1,0 +1,905 @@
+{
+  "observed_at": "2026-09-04T20:07:18.600439+00:00",
+  "cached_fetched_at": "2026-09-04T20:04:42.286210+00:00",
+  "network_calls": 0,
+  "identity_match": true,
+  "retry_stored_activate_evening": true,
+  "retry_desired_activate_evening": false,
+  "evidence": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "deadline": "2026-09-05 13:30:00+00:00",
+    "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+    "detail_sha256": "59031a5e63d96ea582a380c7d6cd4790ebda5df5cf86dc79cddee485f8346dc7",
+    "preparation_status": "ready",
+    "mapped_count": 15,
+    "eligibility_status": "playable",
+    "span_days": 1,
+    "unresolved_events": [],
+    "not_ready_reason": null,
+    "external_coverage_count": 15,
+    "baseline_only_event_orders": [],
+    "reviewed_catalog_hash": null,
+    "operational_cutoff": "2026-09-05 13:30:00+00:00",
+    "cutoff_evidence": null,
+    "cutoff_evidence_sha256": null
+  },
+  "prepared": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+    "provider": "api-sports",
+    "status": "ready",
+    "mapped_count": 15,
+    "unresolved_event_orders": [],
+    "eligibility": {
+      "status": "playable",
+      "earliest_start": "2026-09-05 13:30:00+00:00",
+      "latest_start": "2026-09-05 19:00:00+00:00",
+      "span_days": 1,
+      "missing_event_orders": [],
+      "totobrief_count": 0,
+      "provider_count": 15
+    },
+    "events": [
+      {
+        "event_order": 0,
+        "target_event_id": 180603,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 1,
+        "target_event_id": 180604,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 2,
+        "target_event_id": 180605,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 3,
+        "target_event_id": 180606,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 4,
+        "target_event_id": 180607,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 5,
+        "target_event_id": 180608,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 6,
+        "target_event_id": 180609,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 7,
+        "target_event_id": 180610,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 8,
+        "target_event_id": 180611,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 9,
+        "target_event_id": 180612,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 10,
+        "target_event_id": 180613,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 11,
+        "target_event_id": 180614,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 12,
+        "target_event_id": 180615,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 13,
+        "target_event_id": 180616,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 14,
+        "target_event_id": 180617,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "exact reusable reviewed schedule evidence",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      }
+    ],
+    "pins": [
+      {
+        "id": 436,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180603",
+        "event_order": 0,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1447,
+        "canonical_away_team_id": 1448,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/tottenham-hotspur-nottingham-forest/osI#id:16363638"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2494029"
+            }
+          ],
+          "evidence_hash": "f95cd0ce2299a13dca41b4f7aef04550e3877a03c7b99afd7864c5c1d142a071",
+          "evidence_id": "independent-consensus-v3-f040d52307f659d15424",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:34:39.074027+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "2c9fb8cf018bfb96416ac2bb84fa11f1879436a729e13b64fe57724a8520c1a1",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-f040d52307f659d15424",
+        "source_identity_hash": "a6eabf8c7b9c33bbae6c2c655c3528cd7fbf03d7aded2edfbbc48c6c02bf45c2",
+        "schedule_only": true
+      },
+      {
+        "id": 437,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180604",
+        "event_order": 1,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 851,
+        "canonical_away_team_id": 796,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "GOAL API",
+              "source_url": "https://goal-api.com"
+            },
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/fulham-crystal-palace/hsT#id:16363269"
+            }
+          ],
+          "evidence_hash": "577eeef069556f32d1c5b213f22f406f2b025ec1c09c6d1cbf25d6e16d332baa",
+          "evidence_id": "independent-consensus-v3-ecc4afc3b7dc50e66cc7",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T20:05:36.416599+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "c3461806ad3e43b789f519b76ca9666ad22c4d76c930988e754b2fb78d987f22",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-ecc4afc3b7dc50e66cc7",
+        "source_identity_hash": "dd970867dcfe6a5cbe3e0bbf07457b317a5dce4deb0c26d04d0039727c5f2ef2",
+        "schedule_only": true
+      },
+      {
+        "id": 438,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180605",
+        "event_order": 2,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1257,
+        "canonical_away_team_id": 1449,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/cardiff-city-portsmouth/cslb#id:16391649"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2501307"
+            }
+          ],
+          "evidence_hash": "124ba633056c6e50efccc87606feab5048e85a62795aa6189bec9d76f248a9b2",
+          "evidence_id": "independent-consensus-v3-4ea2a9f90bd1c3786cff",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.224400+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "dc3d6aa4723f76cea821fea59c46e77ae0f7a440920fa2b940e1a94cb2b917a6",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-4ea2a9f90bd1c3786cff",
+        "source_identity_hash": "db2691aaecb1020f417b096132b56bb656d87150ae3c4fbdd6fbd901008a588f",
+        "schedule_only": true
+      },
+      {
+        "id": 439,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180606",
+        "event_order": 3,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 620,
+        "canonical_away_team_id": 1282,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/middlesbrough-queens-park-rangers/bsL#id:16391651"
+            },
+            {
+              "role": "independent",
+              "source_name": "TNT Sports",
+              "source_url": "https://www.tntsports.co.uk/football/championship/2026-2027/queens-park-rangers-middlesbrough_mtc21887479/live.shtml"
+            }
+          ],
+          "evidence_hash": "eb2b7d14075bd2fc71a71c113d1c016dbf10566d2d168c75e7896422abed33b6",
+          "evidence_id": "recovery-4997-event-04-20260904",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T20:07:05.766096+00:00",
+          "reviewer": "codex-local-evidence-review"
+        },
+        "pin_hash": "7729ed07f2ebf45761d614c891099a1766e7e73928a1c5defb8d48001978018b",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "recovery-4997-event-04-20260904",
+        "source_identity_hash": "582394bc0d71882e26f2e6816ee517b91afbe5ddd78275acdc6db5e0d05ab054",
+        "schedule_only": true
+      },
+      {
+        "id": 440,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180607",
+        "event_order": 4,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 801,
+        "canonical_away_team_id": 1080,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "GOAL API",
+              "source_url": "https://goal-api.com"
+            },
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/norwich-city-sheffield-united/psnf#id:16391652"
+            }
+          ],
+          "evidence_hash": "1b8400ae19d4d82bde394b202561d32c5a5733e9d4ea01498142ce3e6d55e1c9",
+          "evidence_id": "independent-consensus-v3-c50ff7036821cae89e3f",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T20:05:36.416599+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "fe6fce057a36036947a9e2dcc53bca7039a8e0195340ca61aa49dfbb7d035194",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-c50ff7036821cae89e3f",
+        "source_identity_hash": "60b90f53a36494ca4d16fc416ebdc0bc0eaa67d3e506a3bcbadd2cdbacd4eeda",
+        "schedule_only": true
+      },
+      {
+        "id": 441,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180608",
+        "event_order": 5,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1450,
+        "canonical_away_team_id": 1058,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T19:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/swansea-city-wrexham/obszb#id:16391654"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2501306"
+            }
+          ],
+          "evidence_hash": "30cf6c4b10bccd2bf2b5aa159976ad84188c9ac44a0ced39a95d88690bfdcc2c",
+          "evidence_id": "independent-consensus-v3-78179cec6deaaa1b6aff",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.334822+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "ae116532e32d0fa4da3708fcad38be5de0ffad0ee2f142e8958fb7037197bae4",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-78179cec6deaaa1b6aff",
+        "source_identity_hash": "85f90e7b4d813acbf0efdbd8040baec1fe1d647e4df3d0801fb08ce08b7b42a2",
+        "schedule_only": true
+      },
+      {
+        "id": 442,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180609",
+        "event_order": 6,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1451,
+        "canonical_away_team_id": 1452,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T13:30:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/borussia-dortmund-tsg-hoffenheim/ubbsydb#id:16434019"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2508344"
+            }
+          ],
+          "evidence_hash": "f180188a4ea79e6a757fe3f91dd44546775f0c6d6b948c18b00e19560a4f3a14",
+          "evidence_id": "independent-consensus-v3-5eb3b1c5fc7b95b66939",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.420628+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "27e15338993b9130b20425207820b3c8fa65f5e84db2711e8e2815544f832361",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-5eb3b1c5fc7b95b66939",
+        "source_identity_hash": "d475db721be9af863af38066ef27a611e32f60032c5b04c1385a69e177df069b",
+        "schedule_only": true
+      },
+      {
+        "id": 443,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180610",
+        "event_order": 7,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1453,
+        "canonical_away_team_id": 1454,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T13:30:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/sc-paderborn-07-sc-freiburg/Nabslbb#id:16434024"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2508350"
+            }
+          ],
+          "evidence_hash": "ec6a5b6fa793851e6933414f4f0654510c2c16164dcfd4916f1886f5f18870b9",
+          "evidence_id": "independent-consensus-v3-2506a723b41444665e67",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.514722+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "91a6fa1355486fe79b48cb0a7719a21db30e3692be8ebf679cac89fba9f60afb",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-2506a723b41444665e67",
+        "source_identity_hash": "ed7196b8a153b795b61df945127a014ca0ea08e73137f45343cd0fabbfaca4f3",
+        "schedule_only": true
+      },
+      {
+        "id": 444,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180611",
+        "event_order": 8,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1129,
+        "canonical_away_team_id": 1440,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:15:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/atletico-madrid-athletic-club/AgbsLgb#id:16416317"
+            },
+            {
+              "role": "independent",
+              "source_name": "Sportschau",
+              "source_url": "https://www.sportschau.de/live-und-ergebnisse/fussball/spanien-primera-division/ma12187876/rayo-vallecano_racing-santander/spiel-spiele-und-ergebnisse"
+            }
+          ],
+          "evidence_hash": "239b65b48eafa067aa933846c9f4c0c0bf9f1bc2b7fd54018468e63b8617fd29",
+          "evidence_id": "recovery-4997-event-09-20260904",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T20:07:05.963475+00:00",
+          "reviewer": "codex-local-evidence-review"
+        },
+        "pin_hash": "92b86e04bd50744ca366fe7517385807569294985c66f45918d9db91f0d5680e",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "recovery-4997-event-09-20260904",
+        "source_identity_hash": "32bd537c8cf6fe8a97eeed5a617dd59208b75233b295d823daa07a6820b286ca",
+        "schedule_only": true
+      },
+      {
+        "id": 445,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180612",
+        "event_order": 9,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1441,
+        "canonical_away_team_id": 825,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T16:30:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "GOAL API",
+              "source_url": "https://goal-api.com"
+            },
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/real-racing-club-rayo-vallecano/tgbsKgb#id:16416321"
+            }
+          ],
+          "evidence_hash": "24a9555cae8b9804bfd33cc4d5950ad18e936d960d36e5e260ffac2b184be402",
+          "evidence_id": "independent-consensus-v3-7926482098c36ff22074",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T20:05:36.416599+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "22a0b650575f6a70218f2bf157928f539ff9e0c2075e80af1a2dd0978385d418",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-7926482098c36ff22074",
+        "source_identity_hash": "cccd024bf92640ba1e0570f429625ed8fbd355112de99cf543c1cef20d0c6fe3",
+        "schedule_only": true
+      },
+      {
+        "id": 446,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180613",
+        "event_order": 10,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 826,
+        "canonical_away_team_id": 1442,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:15:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/girona-fc-sporting-gijon/chbsoKj#id:16418281"
+            },
+            {
+              "role": "official",
+              "source_name": "LaLiga",
+              "source_url": "https://iaas-public-front-pro.laliga.com/laliga-hypermotion/resultados"
+            }
+          ],
+          "evidence_hash": "ee90fa40ca2201869916af1d88d510d50b122bcaabef912f10e93e89d4450ee7",
+          "evidence_id": "recovery-4997-event-11-20260904",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T20:07:06.090586+00:00",
+          "reviewer": "codex-local-evidence-review"
+        },
+        "pin_hash": "34b7b8b2bc64c7ccba681428ed646e22d8e6cab568116cf2062c88fc7ad3b840",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "recovery-4997-event-11-20260904",
+        "source_identity_hash": "6a8bb2add910053f376a1fe1ee3f272bce6fca871df0d44d8a6f6b3aa807d1eb",
+        "schedule_only": true
+      },
+      {
+        "id": 447,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180614",
+        "event_order": 11,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1131,
+        "canonical_away_team_id": 856,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T16:30:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "GOAL API",
+              "source_url": "https://goal-api.com"
+            },
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/fc-andorra-real-valladolid/GgbswXEc#id:16418282"
+            }
+          ],
+          "evidence_hash": "5902ce806288bc7b0a2c1d840bbc4679c0190c0bc89583800c29e10269d8569e",
+          "evidence_id": "independent-consensus-v3-147612759c35ee7fe8ce",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T20:05:36.416599+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "3906384916cb1374c8ecc71655e125825d09ff93aedce8c6ceecce8c05034610",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-147612759c35ee7fe8ce",
+        "source_identity_hash": "079f610e848f46a1b7c0988b25d099f705470ab835bebce51bf328ff079a5cb7",
+        "schedule_only": true
+      },
+      {
+        "id": 448,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180615",
+        "event_order": 12,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1455,
+        "canonical_away_team_id": 1456,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/pari-nizhny-novgorod-fc-sochi/JWseIFb#id:16491067"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2514842"
+            }
+          ],
+          "evidence_hash": "607b9840fbac2a75ef8ae2ffe74cdcc4a31053a6ed6c0d23ec84ba240bb53bd7",
+          "evidence_id": "independent-consensus-v3-df2342bf08066dfbb250",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.605915+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "f04043035012a0833fc3ceb2db13bbdf49b6c83af821c6a3aed72f4535ed9cf8",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-df2342bf08066dfbb250",
+        "source_identity_hash": "f3367cd91607d88aa3b323aeb6151141d3c62f521260017a7ce290fb30da271a",
+        "schedule_only": true
+      },
+      {
+        "id": 449,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180616",
+        "event_order": 13,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1445,
+        "canonical_away_team_id": 1178,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/shinnik-yaroslavl-rotor-volgograd/tWsFW#id:16491073"
+            },
+            {
+              "role": "official",
+              "source_name": "FC Shinnik",
+              "source_url": "https://shinnik.com/"
+            }
+          ],
+          "evidence_hash": "2fc27d4bcd2a7c694e1170c99fbd9823e10b271965219cd4d0a0ffadf8ff0a41",
+          "evidence_id": "recovery-4997-event-14-20260904",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T20:07:06.250106+00:00",
+          "reviewer": "codex-local-evidence-review"
+        },
+        "pin_hash": "766ada0627b9213a7b0b175b423ab384691e0bbd4035c31d454c3159cfd80134",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "recovery-4997-event-14-20260904",
+        "source_identity_hash": "4187f6a1327e820d78e970c97f4e93ca6f372ee20e75ac1856a77dff7a97b3f3",
+        "schedule_only": true
+      },
+      {
+        "id": 450,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180617",
+        "event_order": 14,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1457,
+        "canonical_away_team_id": 1458,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T18:45:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/stade-brestois-le-havre/mIspJ#id:16310938"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2489487"
+            }
+          ],
+          "evidence_hash": "13ecabc5aa48e1f2b13e663cde8d87e59bba5b7d96ffa699780788de28d4c95a",
+          "evidence_id": "independent-consensus-v3-bc822cb42cec7a349716",
+          "ledger_hash": "77d6c83566fda9241dc60243d54470d0e24d05b271a7108bdbcacce9f2bb7093",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.706232+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "77d5c63c56e919ef4bfcb018e8a8d8db42e156b739b2f87b8af566025a7c2dbe",
+        "status": "valid",
+        "created_at": "2026-09-04T20:07:19.928899+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-6a1e5b0a33a8d0eb71082a186bb30c3767a1e3259abed9cec0e9e2a6a1448bda",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-bc822cb42cec7a349716",
+        "source_identity_hash": "8643d91feea132ae4e63e9933245f7d3cca697b8ca43b0cdbef280ed469d5d34",
+        "schedule_only": true
+      }
+    ],
+    "schedule_diagnostics": []
+  }
+}

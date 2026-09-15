@@ -1,0 +1,127 @@
+[
+  {
+    "position": 4,
+    "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5007-event04-20260915-v2.json",
+    "sha256": "f359f91085624ed78fa0cedf6597e27e1a2b8c2f4423dcfed5b6cea10979b772",
+    "dry_run": {
+      "status": "validated_dry_run",
+      "dry_run": true,
+      "ledger_mutated": false,
+      "observation_id": "manual-5007-event04-20260915",
+      "drawing_number": 5007,
+      "event_order": 3,
+      "ledger_sha256": "4fc7ca5a94428d046b8ebabc6b8e0d8dc3722877b059c15d84c9291869b17f6f",
+      "ledger_semantic_hash": "afe646670dc68efd18d9bf13852d93713681f02fb696ee7998979f5b991996be"
+    },
+    "apply": {
+      "status": "applied",
+      "dry_run": false,
+      "ledger_mutated": true,
+      "observation_id": "manual-5007-event04-20260915",
+      "drawing_number": 5007,
+      "event_order": 3,
+      "ledger_sha256": "5cba4634683405a5af6feea67a84b3892dddb41850049e87e8add0ece2ce304d",
+      "ledger_semantic_hash": "f4542fa08358ab4eb6e1a584ad935f409bf8f73b56abb84974a82c96cf98180c"
+    }
+  },
+  {
+    "position": 5,
+    "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5007-event05-20260915-v2.json",
+    "sha256": "bb023d68e73738d900949670cb052fc00e64fe431359f7f263b8bed2776afd16",
+    "dry_run": {
+      "status": "validated_dry_run",
+      "dry_run": true,
+      "ledger_mutated": false,
+      "observation_id": "manual-5007-event05-20260915",
+      "drawing_number": 5007,
+      "event_order": 4,
+      "ledger_sha256": "5cba4634683405a5af6feea67a84b3892dddb41850049e87e8add0ece2ce304d",
+      "ledger_semantic_hash": "f4542fa08358ab4eb6e1a584ad935f409bf8f73b56abb84974a82c96cf98180c"
+    },
+    "apply": {
+      "status": "applied",
+      "dry_run": false,
+      "ledger_mutated": true,
+      "observation_id": "manual-5007-event05-20260915",
+      "drawing_number": 5007,
+      "event_order": 4,
+      "ledger_sha256": "e1ce04d5ff15c864b0448e5c6bf3363e74d1af583bd5534ecb2b25b686c75ead",
+      "ledger_semantic_hash": "03ba4f51de533afcd74ed163463e814b944ab0eb46dac885db25eb754a4a6523"
+    }
+  },
+  {
+    "position": 6,
+    "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5007-event06-20260915-v2.json",
+    "sha256": "9040af68ba1c64aa435a29aafce9fab52b7ab7e66b04942bd6da7b4e5cade329",
+    "dry_run": {
+      "status": "validated_dry_run",
+      "dry_run": true,
+      "ledger_mutated": false,
+      "observation_id": "manual-5007-event06-20260915",
+      "drawing_number": 5007,
+      "event_order": 5,
+      "ledger_sha256": "e1ce04d5ff15c864b0448e5c6bf3363e74d1af583bd5534ecb2b25b686c75ead",
+      "ledger_semantic_hash": "03ba4f51de533afcd74ed163463e814b944ab0eb46dac885db25eb754a4a6523"
+    },
+    "apply": {
+      "status": "applied",
+      "dry_run": false,
+      "ledger_mutated": true,
+      "observation_id": "manual-5007-event06-20260915",
+      "drawing_number": 5007,
+      "event_order": 5,
+      "ledger_sha256": "3679bdba085ab9d160b9d19f4e763153762f9fd22501abb2fc27e232854345cd",
+      "ledger_semantic_hash": "8ffa51f653a7910a2a88bee1d39c971d3ec8dd6b351a2447738646e310dbfb97"
+    }
+  },
+  {
+    "position": 11,
+    "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5007-event11-20260915-v2.json",
+    "sha256": "02cec2ffe83b717a5bf0cc0c5bef850b52d2f613f4e581816946d95c7fd9300c",
+    "dry_run": {
+      "status": "validated_dry_run",
+      "dry_run": true,
+      "ledger_mutated": false,
+      "observation_id": "manual-5007-event11-20260915",
+      "drawing_number": 5007,
+      "event_order": 10,
+      "ledger_sha256": "3679bdba085ab9d160b9d19f4e763153762f9fd22501abb2fc27e232854345cd",
+      "ledger_semantic_hash": "8ffa51f653a7910a2a88bee1d39c971d3ec8dd6b351a2447738646e310dbfb97"
+    },
+    "apply": {
+      "status": "applied",
+      "dry_run": false,
+      "ledger_mutated": true,
+      "observation_id": "manual-5007-event11-20260915",
+      "drawing_number": 5007,
+      "event_order": 10,
+      "ledger_sha256": "e595b27fbc5dc5967bde1871ce64f6d63a8078bd84a4a9160cd952e61fe9987f",
+      "ledger_semantic_hash": "531e4cff3d7254eabeb127c12a400fd5d6fa9520c8ae9700dff827dce04a36ce"
+    }
+  },
+  {
+    "position": 12,
+    "review_path": "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/manual-5007-event12-20260915-v2.json",
+    "sha256": "ab3fd86700cd9b97e09800162507ec90d223817d5ab6878cbc70a39adb6d9490",
+    "dry_run": {
+      "status": "validated_dry_run",
+      "dry_run": true,
+      "ledger_mutated": false,
+      "observation_id": "manual-5007-event12-20260915",
+      "drawing_number": 5007,
+      "event_order": 11,
+      "ledger_sha256": "e595b27fbc5dc5967bde1871ce64f6d63a8078bd84a4a9160cd952e61fe9987f",
+      "ledger_semantic_hash": "531e4cff3d7254eabeb127c12a400fd5d6fa9520c8ae9700dff827dce04a36ce"
+    },
+    "apply": {
+      "status": "applied",
+      "dry_run": false,
+      "ledger_mutated": true,
+      "observation_id": "manual-5007-event12-20260915",
+      "drawing_number": 5007,
+      "event_order": 11,
+      "ledger_sha256": "e1c44fbcd7205400249bcd7fb043b66092afbdac384d86275906fe3eb9a279c6",
+      "ledger_semantic_hash": "fe68b2682d78c2b6343c4a9d67deccebccebf5ed7847382e689f3271dfaf2914"
+    }
+  }
+]

@@ -1,0 +1,170 @@
+{
+  "rows": [
+    {
+      "model": "quality-v2",
+      "count": 166,
+      "unique_count": 166,
+      "stake": 30,
+      "cost": 4980,
+      "best_hits": 11,
+      "category_histogram_9_15": {
+        "9": 6,
+        "10": 2,
+        "11": 1,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "below_9": 157,
+      "best_actual_coupons": [
+        {
+          "package_position": 71,
+          "coupon": "X2112X121X11122"
+        }
+      ],
+      "original_computed_highest_p13": {
+        "coupon": "1211221211X1122",
+        "criterion": "maximum_probability_at_least_13",
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "package_position": 74,
+        "probability_at_least_13": 0.0002672181677555062,
+        "probability_at_least_14": 2.3793351979871353e-05,
+        "probability_at_least_15": 9.939647153082966e-07,
+        "reference_model": "bk",
+        "actual_hits": 7
+      },
+      "payout": "UNKNOWN",
+      "net": "UNKNOWN",
+      "roi": "UNKNOWN",
+      "package_sha256": "6184c3b9d00df4c77aa64fb1a2e9813f5a12fc7b31a3f3d02ac463ddb23467dc",
+      "file_sha256": "643d2981279c5f5b4d067656f12bc539c6e2ff4de56019af682fabcac8fe6756"
+    },
+    {
+      "model": "quality-v3",
+      "count": 166,
+      "unique_count": 166,
+      "stake": 30,
+      "cost": 4980,
+      "best_hits": 11,
+      "category_histogram_9_15": {
+        "9": 18,
+        "10": 5,
+        "11": 1,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "below_9": 142,
+      "best_actual_coupons": [
+        {
+          "package_position": 42,
+          "coupon": "X21121221111X22"
+        }
+      ],
+      "original_computed_highest_p13": {
+        "coupon": "1211221211X1122",
+        "criterion": "maximum_probability_at_least_13",
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "package_position": 9,
+        "probability_at_least_13": 0.0002672181677555062,
+        "probability_at_least_14": 2.3793351979871353e-05,
+        "probability_at_least_15": 9.939647153082966e-07,
+        "reference_model": "bk",
+        "actual_hits": 7
+      },
+      "payout": "UNKNOWN",
+      "net": "UNKNOWN",
+      "roi": "UNKNOWN",
+      "package_sha256": "3cb663815704fddb94c7a9a20d8c82f60d8ef35c96b20be463e9b3574c18560b",
+      "file_sha256": "bb3ced8e46b55460854da0adfe187ae5e71f20ed54792426be26d3b01b0f98ff"
+    },
+    {
+      "model": "robust",
+      "count": 166,
+      "unique_count": 166,
+      "stake": 30,
+      "cost": 4980,
+      "best_hits": 11,
+      "category_histogram_9_15": {
+        "9": 6,
+        "10": 2,
+        "11": 1,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "below_9": 157,
+      "best_actual_coupons": [
+        {
+          "package_position": 71,
+          "coupon": "X2112X121X11122"
+        }
+      ],
+      "original_computed_highest_p13": {
+        "coupon": "1211221211X1122",
+        "criterion": "maximum_probability_at_least_13",
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "package_position": 74,
+        "probability_at_least_13": 0.0002672181677555062,
+        "probability_at_least_14": 2.3793351979871353e-05,
+        "probability_at_least_15": 9.939647153082966e-07,
+        "reference_model": "bk",
+        "actual_hits": 7
+      },
+      "payout": "UNKNOWN",
+      "net": "UNKNOWN",
+      "roi": "UNKNOWN",
+      "package_sha256": "6184c3b9d00df4c77aa64fb1a2e9813f5a12fc7b31a3f3d02ac463ddb23467dc",
+      "file_sha256": "278a1ffde65de227ba14c6b175d646526deecc7ac608e3fafa05726ef3adde36"
+    },
+    {
+      "model": "sports-shadow",
+      "count": 166,
+      "unique_count": 166,
+      "stake": 30,
+      "cost": 4980,
+      "best_hits": 11,
+      "category_histogram_9_15": {
+        "9": 20,
+        "10": 10,
+        "11": 1,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "below_9": 135,
+      "best_actual_coupons": [
+        {
+          "package_position": 71,
+          "coupon": "X2112X121X11222"
+        }
+      ],
+      "original_computed_highest_p13": {
+        "coupon": "121111121111122",
+        "criterion": "maximum_probability_at_least_13",
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "package_position": 1,
+        "probability_at_least_13": 0.00027088855124817753,
+        "probability_at_least_14": 2.4233942755700583e-05,
+        "probability_at_least_15": 1.0179344324925014e-06,
+        "reference_model": "sports",
+        "actual_hits": 7
+      },
+      "payout": "UNKNOWN",
+      "net": "UNKNOWN",
+      "roi": "UNKNOWN",
+      "package_sha256": "6b7ec97ee5d821088125124845e6935f26dbe9ddafc6a160239f2369c2a5a2a3",
+      "file_sha256": "7c647755e4b56d69194a9fa03bd820922ee9d12b8e5e6d2a370e01dd20279963"
+    }
+  ],
+  "native_paths": {
+    "json": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-validation-4999/final-hybrid-settlement.json",
+    "markdown": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-validation-4999/final-hybrid-settlement.md"
+  },
+  "payout_evidence": "TotoBrief payments null; no inferred payout/ROI",
+  "status": "COMPLETE_FROZEN_4999_TABLE"
+}

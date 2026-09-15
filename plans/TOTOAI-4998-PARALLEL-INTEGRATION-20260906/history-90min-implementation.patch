@@ -1,0 +1,531 @@
+--- a/src/toto_ai/sports_stats/goal_probe_research.py
++++ b/src/toto_ai/sports_stats/goal_probe_research.py
+@@ -1070,18 +1070,43 @@
+             away_team_id = _nonempty_text(
+                 raw_row.get("awayTeamId"), "history away team id"
+             )
+-            home_goals = _nonnegative_int(
+-                raw_row.get("homeTeamScore"), "history home score"
+-            )
+-            away_goals = _nonnegative_int(
+-                raw_row.get("awayTeamScore"), "history away score"
+-            )
+         except ValueError:
+             excluded["invalid_terminal_row"] += 1
+             continue
+         if fixture_id in seen_ids:
+             raise ValueError("history snapshot contains duplicate fixture ids")
+         seen_ids.add(fixture_id)
++        # GOAL generic Score can include extra-time/penalty contributions.
++        # For extended matches only the explicit regulation-time pair is
++        # authoritative; never reconstruct it from aggregate/extra/penalty data.
++        regulation_required = raw_status in ("AFTER_ET", "AFTER_PEN")
++        home_score_field = (
++            "homeTeamFtScore" if regulation_required else "homeTeamScore"
++        )
++        away_score_field = (
++            "awayTeamFtScore" if regulation_required else "awayTeamScore"
++        )
++        if regulation_required and (
++            raw_row.get(home_score_field) is None
++            or raw_row.get(away_score_field) is None
++        ):
++            excluded["regulation_score_missing"] += 1
++            continue
++        try:
++            home_goals = _nonnegative_int(
++                raw_row.get(home_score_field), home_score_field
++            )
++            away_goals = _nonnegative_int(
++                raw_row.get(away_score_field), away_score_field
++            )
++        except ValueError:
++            reason = (
++                "invalid_regulation_score"
++                if regulation_required
++                else "invalid_terminal_row"
++            )
++            excluded[reason] += 1
++            continue
+         if fixture_id == target_fixture_id:
+             excluded["target_fixture"] += 1
+             continue
+--- a/tests/test_goal_probe_research.py
++++ b/tests/test_goal_probe_research.py
+@@ -327,6 +327,8 @@
+                         ),
+                         "homeTeamScore": "2" if side == "home" else "1",
+                         "awayTeamScore": "0",
++                        "homeTeamFtScore": "2" if side == "home" else "1",
++                        "awayTeamFtScore": "0",
+                     }
+                 ]
+             snapshot = {
+--- /dev/null
++++ b/tests/test_goal_history_regulation_score.py
+@@ -0,0 +1,157 @@
++from __future__ import annotations
++
++import json
++from copy import deepcopy
++from datetime import datetime, timedelta, timezone
++from pathlib import Path
++
++import pytest
++
++from toto_ai.sports_stats.features import build_team_window
++from toto_ai.sports_stats.goal_probe_research import _load_history_snapshot
++
++AS_OF = datetime(2026, 9, 6, 12, tzinfo=timezone.utc)
++CASES = json.loads(
++    (
++        Path(__file__).parent / "fixtures/goal_regulation_score_captured_contracts.json"
++    ).read_text()
++)["cases"]
++
++
++def load(tmp_path, rows, team_id=None):
++    team_id = team_id or rows[0]["homeTeamId"]
++    path = tmp_path / "history.json"
++    path.write_text(
++        json.dumps(
++            {
++                "schema_version": 1,
++                "provider": "goal-api-v1",
++                "http_status": 200,
++                "endpoint": f"/teams/{team_id}/results",
++                "params": {"limit": 10},
++                "fetched_at": (AS_OF - timedelta(minutes=1)).isoformat(),
++                "payload": {"success": True, "teamId": team_id, "data": rows},
++            }
++        )
++    )
++    before = path.read_bytes()
++    result = _load_history_snapshot(
++        root=tmp_path,
++        probe_root=tmp_path,
++        source_row={
++            "snapshot_path": str(path),
++            "history_count": len(rows),
++            "venue_count": len(rows),
++        },
++        team_id=team_id,
++        target_fixture_id="target",
++        target_starts_at=AS_OF + timedelta(hours=2),
++        as_of=AS_OF,
++        deadline=AS_OF + timedelta(hours=3),
++    )
++    assert path.read_bytes() == before
++    return result
++
++
++def row(status="AFTER_PEN"):
++    return {
++        "id": "history",
++        "matchStatus": status,
++        "kickoffUtc": (AS_OF - timedelta(days=1)).isoformat(),
++        "homeTeamId": "home",
++        "awayTeamId": "away",
++        "homeTeamScore": "5",
++        "awayTeamScore": "3",
++        "homeTeamFtScore": "1",
++        "awayTeamFtScore": "1",
++    }
++
++
++@pytest.mark.parametrize("case", CASES)
++def test_exact_captured_regulation_contract(tmp_path, case):
++    raw = case["row"]
++    result = load(tmp_path, [raw], case["team_id"])
++    (fixture,) = result.fixtures
++    expected = int(raw["homeTeamFtScore"]), int(raw["awayTeamFtScore"])
++    assert (fixture.home_goals, fixture.away_goals) == expected
++    window = build_team_window(
++        team_id=raw["homeTeamId"],
++        fixtures=result.fixtures,
++        requested_count=10,
++        target_starts_at=AS_OF + timedelta(hours=2),
++        target_fixture_id="target",
++        as_of=AS_OF,
++    )
++    assert (window.goals_for, window.goals_against) == expected
++    assert window.draws == int(expected[0] == expected[1])
++    assert window.wins == int(expected[0] > expected[1])
++
++
++@pytest.mark.parametrize("status", ["AFTER_ET", "AFTER_PEN"])
++@pytest.mark.parametrize(
++    "value", [None, "", True, False, -1, "-1", 1.5, "1.5", "1-1", [], {"score": 1}]
++)
++@pytest.mark.parametrize("field", ["homeTeamFtScore", "awayTeamFtScore"])
++def test_invalid_regulation_never_uses_aggregate(tmp_path, status, value, field):
++    raw = row(status)
++    raw[field] = value
++    result = load(tmp_path, [raw])
++    assert result.fixtures == ()
++    reason = "regulation_score_missing" if value is None else "invalid_regulation_score"
++    assert result.diagnostics.excluded_counts == {reason: 1}
++
++
++@pytest.mark.parametrize("status", ["AFTER_ET", "AFTER_PEN"])
++def test_missing_regulation_key_skips(tmp_path, status):
++    raw = row(status)
++    del raw["homeTeamFtScore"]
++    result = load(tmp_path, [raw])
++    assert not result.fixtures
++    assert result.diagnostics.excluded_counts == {"regulation_score_missing": 1}
++
++
++@pytest.mark.parametrize("value", [0, "0", 2, "2"])
++def test_numeric_strings_accepted_aggregate_ignored(tmp_path, value):
++    raw = row()
++    raw.update(homeTeamFtScore=value, homeTeamScore=None, awayTeamScore=True)
++    result = load(tmp_path, [raw])
++    assert result.fixtures[0].home_goals == int(value)
++    assert result.fixtures[0].away_goals == 1
++
++
++def test_finished_valid_scores_preserved(tmp_path):
++    result = load(tmp_path, [row("FINISHED")])
++    assert (result.fixtures[0].home_goals, result.fixtures[0].away_goals) == (5, 3)
++
++
++def test_finished_invalid_score_still_skips(tmp_path):
++    raw = row("FINISHED")
++    raw["homeTeamScore"] = True
++    result = load(tmp_path, [raw])
++    assert not result.fixtures
++    assert result.diagnostics.excluded_counts == {"invalid_terminal_row": 1}
++
++
++def test_duplicate_regulation_conflict_fails_closed(tmp_path):
++    first = row()
++    second = deepcopy(first)
++    second["homeTeamFtScore"] = "2"
++    with pytest.raises(ValueError, match="duplicate fixture ids"):
++        load(tmp_path, [first, second])
++
++
++@pytest.mark.parametrize(
++    "change,reason",
++    [
++        ({"id": "target"}, "target_fixture"),
++        ({"kickoffUtc": AS_OF.isoformat()}, "at_or_after_as_of"),
++        ({"homeTeamId": "other", "awayTeamId": "another"}, "unrelated_team"),
++        ({"matchStatus": "LIVE"}, "non_terminal_status"),
++    ],
++)
++def test_existing_chronology_team_status_filters(tmp_path, change, reason):
++    raw = row()
++    raw.update(change)
++    result = load(tmp_path, [raw], "home")
++    assert not result.fixtures
++    assert result.diagnostics.excluded_counts == {reason: 1}
+--- /dev/null
++++ b/tests/fixtures/goal_regulation_score_captured_contracts.json
+@@ -0,0 +1,279 @@
++{
++  "schema_version": 1,
++  "description": "Minimal exact local contracts:13 AET/PEN observations including12 generic-vs-FT mismatches; no secret fields",
++  "cases": [
++    {
++      "target_event_number": 1,
++      "side": "away",
++      "source_sha256": "7f5d5672247dd388a48c44675d9577e8588d12edd1ae830a758cf8a54375a977",
++      "team_id": "cmr7uolso8mgcrx06cn6sa9ix",
++      "row": {
++        "id": "cmsp4lj18txwspn068rn63wue",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-08-19T15:30:00.000Z",
++        "homeTeamId": "cmr7uolso8mgbrx06e5bwsovt",
++        "awayTeamId": "cmr7uolso8mgcrx06cn6sa9ix",
++        "homeTeamScore": "3",
++        "awayTeamScore": "1",
++        "homeTeamFtScore": "1",
++        "awayTeamFtScore": "1",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "0",
++        "homeTeamPenaltyScore": "5",
++        "awayTeamPenaltyScore": "3"
++      }
++    },
++    {
++      "target_event_number": 1,
++      "side": "away",
++      "source_sha256": "7f5d5672247dd388a48c44675d9577e8588d12edd1ae830a758cf8a54375a977",
++      "team_id": "cmr7uolso8mgcrx06cn6sa9ix",
++      "row": {
++        "id": "cmrqbeqfh3tmbte08ltpedjzd",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-07-18T16:30:00.000Z",
++        "homeTeamId": "cmr7uolst8mgfrx06mqhdh3qs",
++        "awayTeamId": "cmr7uolso8mgcrx06cn6sa9ix",
++        "homeTeamScore": "2",
++        "awayTeamScore": "1",
++        "homeTeamFtScore": "1",
++        "awayTeamFtScore": "1",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "0",
++        "homeTeamPenaltyScore": "4",
++        "awayTeamPenaltyScore": "2"
++      }
++    },
++    {
++      "target_event_number": 2,
++      "side": "home",
++      "source_sha256": "b474912c24978af940f47982fc73d67d94346b8df876596241bd2aa6aad733e5",
++      "team_id": "cmr7uolsf8mg8rx06mricgkwz",
++      "row": {
++        "id": "cmt1fi97a78vcpd07hy023f5k",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-09-02T17:45:00.000Z",
++        "homeTeamId": "cmr7uolsf8mg8rx06mricgkwz",
++        "awayTeamId": "cmr7uolt48mgkrx06mtepmfuh",
++        "homeTeamScore": "0",
++        "awayTeamScore": "2",
++        "homeTeamFtScore": "0",
++        "awayTeamFtScore": "0",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "0",
++        "homeTeamPenaltyScore": "3",
++        "awayTeamPenaltyScore": "5"
++      }
++    },
++    {
++      "target_event_number": 2,
++      "side": "home",
++      "source_sha256": "b474912c24978af940f47982fc73d67d94346b8df876596241bd2aa6aad733e5",
++      "team_id": "cmr7uolsf8mg8rx06mricgkwz",
++      "row": {
++        "id": "cmsp4lmnqtyf7pn06cm4sqp87",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-08-20T17:45:00.000Z",
++        "homeTeamId": "cmr7uolsf8mg8rx06mricgkwz",
++        "awayTeamId": "cmr7uolt08mgjrx06xj1x745j",
++        "homeTeamScore": "3",
++        "awayTeamScore": "1",
++        "homeTeamFtScore": "1",
++        "awayTeamFtScore": "1",
++        "homeTeamExtraScore": null,
++        "awayTeamExtraScore": null,
++        "homeTeamPenaltyScore": "5",
++        "awayTeamPenaltyScore": "4"
++      }
++    },
++    {
++      "target_event_number": 2,
++      "side": "away",
++      "source_sha256": "2901d33b9ac8419154200b1a00287b3593cf89b99cbdfcf2209fdda04bc20ed8",
++      "team_id": "cmr7uolsb8mg7rx06aps282s2",
++      "row": {
++        "id": "cmt1fhw7t77b2pd078qq5esta",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-09-01T13:15:00.000Z",
++        "homeTeamId": "cmr7uolsj8mg9rx06lps3j1ye",
++        "awayTeamId": "cmr7uolsb8mg7rx06aps282s2",
++        "homeTeamScore": "1",
++        "awayTeamScore": "0",
++        "homeTeamFtScore": "0",
++        "awayTeamFtScore": "0",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "0",
++        "homeTeamPenaltyScore": "5",
++        "awayTeamPenaltyScore": "4"
++      }
++    },
++    {
++      "target_event_number": 2,
++      "side": "away",
++      "source_sha256": "2901d33b9ac8419154200b1a00287b3593cf89b99cbdfcf2209fdda04bc20ed8",
++      "team_id": "cmr7uolsb8mg7rx06aps282s2",
++      "row": {
++        "id": "cms3w62brj41tkw064ectwtn2",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-08-04T17:45:00.000Z",
++        "homeTeamId": "cmr7uolsb8mg7rx06aps282s2",
++        "awayTeamId": "cmr7uolsu8mggrx06zkk540w9",
++        "homeTeamScore": "1",
++        "awayTeamScore": "3",
++        "homeTeamFtScore": "1",
++        "awayTeamFtScore": "1",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "0",
++        "homeTeamPenaltyScore": "4",
++        "awayTeamPenaltyScore": "5"
++      }
++    },
++    {
++      "target_event_number": 4,
++      "side": "home",
++      "source_sha256": "3779e8e7f9110e2cdda02d5e36ca9ac9cdcf4f28fbd75b792d969402650bcdfb",
++      "team_id": "cmr7m55ue5eg4rx06vdyle9qd",
++      "row": {
++        "id": "cms86gni6nwoekw06ka63uvsg",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-08-07T17:30:00.000Z",
++        "homeTeamId": "cmr7m55rl5eejrx062tzrza9u",
++        "awayTeamId": "cmr7m55ue5eg4rx06vdyle9qd",
++        "homeTeamScore": "1",
++        "awayTeamScore": "3",
++        "homeTeamFtScore": "1",
++        "awayTeamFtScore": "1",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "0",
++        "homeTeamPenaltyScore": "6",
++        "awayTeamPenaltyScore": "7"
++      }
++    },
++    {
++      "target_event_number": 5,
++      "side": "away",
++      "source_sha256": "4e4334d28c99826813cd8a376927495bf81156f13793ac11de19a73421fa4d70",
++      "team_id": "cmr7htgw33dbdrx067ep7wdxc",
++      "row": {
++        "id": "cmrmqt9x339crt007wpe19b7b",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-07-23T19:00:00.000Z",
++        "homeTeamId": "cmr7m55qz5ee3rx06kja40gwd",
++        "awayTeamId": "cmr7htgw33dbdrx067ep7wdxc",
++        "homeTeamScore": "0",
++        "awayTeamScore": "2",
++        "homeTeamFtScore": "0",
++        "awayTeamFtScore": "0",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "0",
++        "homeTeamPenaltyScore": "4",
++        "awayTeamPenaltyScore": "5"
++      }
++    },
++    {
++      "target_event_number": 6,
++      "side": "away",
++      "source_sha256": "d3998bb3ef37529dae5817cf7214c2e098b7ebfa644cac9477843949906dc94a",
++      "team_id": "cmr7m6brf5t2vrx06qg58pp46",
++      "row": {
++        "id": "cmt1fi4k078c8pd07byc7ia3i",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-09-02T13:00:00.000Z",
++        "homeTeamId": "cmr7m6brf5t2vrx06qg58pp46",
++        "awayTeamId": "cmr7m6bwl5t4hrx06k2m8r0t7",
++        "homeTeamScore": "3",
++        "awayTeamScore": "1",
++        "homeTeamFtScore": "1",
++        "awayTeamFtScore": "1",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "0",
++        "homeTeamPenaltyScore": "4",
++        "awayTeamPenaltyScore": "3"
++      }
++    },
++    {
++      "target_event_number": 6,
++      "side": "away",
++      "source_sha256": "d3998bb3ef37529dae5817cf7214c2e098b7ebfa644cac9477843949906dc94a",
++      "team_id": "cmr7m6brf5t2vrx06qg58pp46",
++      "row": {
++        "id": "cms3j8u6zi70okw06o6lg29kh",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-07-25T15:00:00.000Z",
++        "homeTeamId": "cmr7m6brf5t2vrx06qg58pp46",
++        "awayTeamId": "cmr7m6brh5t2xrx061j6yk7qx",
++        "homeTeamScore": "0",
++        "awayTeamScore": "1",
++        "homeTeamFtScore": "0",
++        "awayTeamFtScore": "0",
++        "homeTeamExtraScore": null,
++        "awayTeamExtraScore": null,
++        "homeTeamPenaltyScore": null,
++        "awayTeamPenaltyScore": null
++      }
++    },
++    {
++      "target_event_number": 11,
++      "side": "home",
++      "source_sha256": "2bc601cdfb804a96cafd2869c2f47d371c99ad42eedd38d4e35f4d37f2b419c0",
++      "team_id": "cmri6ui4oe0t5lb07j6isvalw",
++      "row": {
++        "id": "cmrjg0n62fz8xt507nvkww9dn",
++        "matchStatus": "AFTER_PEN",
++        "kickoffUtc": "2026-05-29T16:00:00.000Z",
++        "homeTeamId": "cmri0gzohbwsblb07sf5h2m2m",
++        "awayTeamId": "cmri6ui4oe0t5lb07j6isvalw",
++        "homeTeamScore": "0",
++        "awayTeamScore": "0",
++        "homeTeamFtScore": "0",
++        "awayTeamFtScore": "0",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "0",
++        "homeTeamPenaltyScore": "3",
++        "awayTeamPenaltyScore": "1"
++      }
++    },
++    {
++      "target_event_number": 13,
++      "side": "home",
++      "source_sha256": "4f0feffce4a41ac4728858914a28ad928e959532b1c6c5a9238215eb9ece2f71",
++      "team_id": "cmri0gzonbwsflb07dlxlvjpg",
++      "row": {
++        "id": "cmsvp3tsw992cpg07t458yjby",
++        "matchStatus": "AFTER_ET",
++        "kickoffUtc": "2026-08-27T17:00:00.000Z",
++        "homeTeamId": "cmr7fq61131nvrx06s2o3c4u2",
++        "awayTeamId": "cmri0gzonbwsflb07dlxlvjpg",
++        "homeTeamScore": "1",
++        "awayTeamScore": "2",
++        "homeTeamFtScore": "1",
++        "awayTeamFtScore": "1",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "1",
++        "homeTeamPenaltyScore": null,
++        "awayTeamPenaltyScore": null
++      }
++    },
++    {
++      "target_event_number": 13,
++      "side": "home",
++      "source_sha256": "4f0feffce4a41ac4728858914a28ad928e959532b1c6c5a9238215eb9ece2f71",
++      "team_id": "cmri0gzonbwsflb07dlxlvjpg",
++      "row": {
++        "id": "cmsdw8yvtxmkgkw061p5hl2ff",
++        "matchStatus": "AFTER_ET",
++        "kickoffUtc": "2026-08-11T17:30:00.000Z",
++        "homeTeamId": "cmri0gzr0bwualb072i3ilbz5",
++        "awayTeamId": "cmri0gzonbwsflb07dlxlvjpg",
++        "homeTeamScore": "1",
++        "awayTeamScore": "2",
++        "homeTeamFtScore": "1",
++        "awayTeamFtScore": "1",
++        "homeTeamExtraScore": "0",
++        "awayTeamExtraScore": "1",
++        "homeTeamPenaltyScore": null,
++        "awayTeamPenaltyScore": null
++      }
++    }
++  ]
++}
+--- /dev/null
++++ b/knowledge/goal_history_regulation_score.md
+@@ -0,0 +1,23 @@
++# GOAL history regulation-score normalization
++
++The shared GOAL research history importer (`goal_probe_research._load_history_snapshot`)
++feeds both V1 evidence and the explicit native Sports Analytics V2 projection.
++AFTER_ET/AFTER_PEN history uses only the complete `homeTeamFtScore`/`awayTeamFtScore`
++pair for football W/D/L and goals. Generic `*Score`, `*ExtraScore`, and `*PenaltyScore`
++are not alternatives or reconstruction inputs. Missing/null FT skips the observation
++with `regulation_score_missing`; malformed/ambiguous/bool/negative FT skips it with
++`invalid_regulation_score`. Existing canonical nonnegative integers/numeric strings
++are accepted. FINISHED retains its existing valid generic-score contract.
++
++Raw evidence bytes and payload provenance are unchanged. Duplicate fixture identity
++remains fail-closed (including conflicting FT observations); team, target exclusion,
++terminal status and strict chronology checks remain. All-skipped usable history takes
++the existing per-event BK fallback; no invented scores or probabilities.
++
++2026-09-06 implementation:70 new focused cases include13 exact local captured AET/PEN
++observations (12 generic-vs-FT mismatches); with existing GOAL/V2 regressions81PASS,
++Ruff3PASS. Corrected frozen research seed14/15+1fallback;280 observations retained,
++13 use explicit FT;28 team goals/WDL aggregates verified against independent FT sums.
++This candidate still requires independent review; it is not activated/trained/profit
++validated. No live plan/jobs/pinned seed changes. Exact evidence and hashes:
++`plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/history-90min-implementation-receipt.json`.

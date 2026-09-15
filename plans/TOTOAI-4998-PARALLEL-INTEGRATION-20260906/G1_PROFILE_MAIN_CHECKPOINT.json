@@ -1,0 +1,15 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "at_msk": "2026-09-06T17:10:48.272876+03:00",
+  "status": "ADOPTED_VERIFIED_SAME_INPUT_RESEARCH_COMPLETE",
+  "owned_processes": [],
+  "g1_status": "REFINED",
+  "all_12_non_degradation_checks": true,
+  "selected_strategy": "quality-v3",
+  "next_checkpoint": "17:30MSK primary; no rerun or code changes by this completed job",
+  "receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_ADOPTION_RECEIPT.json",
+  "nonoperator_research_only": true,
+  "handoff_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_ADOPTION_AND_REPLAY_HANDOFF.md",
+  "active_plan_updated": true,
+  "completed_at_msk": "2026-09-06T17:12:04.405881+03:00"
+}

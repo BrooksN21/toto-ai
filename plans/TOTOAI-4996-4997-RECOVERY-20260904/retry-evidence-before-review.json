@@ -1,0 +1,988 @@
+{
+  "observed_at": "2026-09-04T19:58:29.470648+00:00",
+  "cached_fetched_at": "2026-09-04T19:49:37.203987+00:00",
+  "network_calls": 0,
+  "identity_match": true,
+  "retry_stored_activate_evening": false,
+  "retry_desired_activate_evening": true,
+  "evidence": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "deadline": "2026-09-05 13:30:00+00:00",
+    "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+    "detail_sha256": "d69e2abcf9b15d76c851e1302c9aa372601fdd7574dbaa0bfc7baf126469d0ad",
+    "preparation_status": "ready",
+    "mapped_count": 15,
+    "eligibility_status": "unknown",
+    "span_days": 1,
+    "unresolved_events": [
+      {
+        "event_order": 1,
+        "target_event_id": 180604,
+        "home_team": "Фулхэм",
+        "away_team": "Кристал Пэлас",
+        "resolution_status": "timing_unknown",
+        "reason": "baseline-only event start time is unavailable",
+        "championship": "Англия. Премьер-Лига",
+        "candidate_evidence": [],
+        "provider_diagnostics": []
+      },
+      {
+        "event_order": 3,
+        "target_event_id": 180606,
+        "home_team": "Куинз Парк Рейнджерс",
+        "away_team": "Мидлсбро",
+        "resolution_status": "timing_unknown",
+        "reason": "baseline-only event start time is unavailable",
+        "championship": "Англия. Чемпионшип",
+        "candidate_evidence": [],
+        "provider_diagnostics": []
+      },
+      {
+        "event_order": 4,
+        "target_event_id": 180607,
+        "home_team": "Шеффилд Юнайтед",
+        "away_team": "Норвич",
+        "resolution_status": "timing_unknown",
+        "reason": "baseline-only event start time is unavailable",
+        "championship": "Англия. Чемпионшип",
+        "candidate_evidence": [],
+        "provider_diagnostics": []
+      },
+      {
+        "event_order": 8,
+        "target_event_id": 180611,
+        "home_team": "Атлетик Бильбао",
+        "away_team": "Атлетико Мадрид",
+        "resolution_status": "timing_unknown",
+        "reason": "baseline-only event start time is unavailable",
+        "championship": "Испания. Ла Лига",
+        "candidate_evidence": [],
+        "provider_diagnostics": []
+      },
+      {
+        "event_order": 9,
+        "target_event_id": 180612,
+        "home_team": "Райо Вальекано",
+        "away_team": "Расинг Сантандер",
+        "resolution_status": "timing_unknown",
+        "reason": "baseline-only event start time is unavailable",
+        "championship": "Испания. Ла Лига",
+        "candidate_evidence": [],
+        "provider_diagnostics": []
+      },
+      {
+        "event_order": 10,
+        "target_event_id": 180613,
+        "home_team": "Спортинг Хихон",
+        "away_team": "Жирона",
+        "resolution_status": "timing_unknown",
+        "reason": "baseline-only event start time is unavailable",
+        "championship": "Испания. Ла Лига 2",
+        "candidate_evidence": [],
+        "provider_diagnostics": []
+      },
+      {
+        "event_order": 11,
+        "target_event_id": 180614,
+        "home_team": "Вальядолид",
+        "away_team": "Андорра ФК",
+        "resolution_status": "timing_unknown",
+        "reason": "baseline-only event start time is unavailable",
+        "championship": "Испания. Ла Лига 2",
+        "candidate_evidence": [],
+        "provider_diagnostics": []
+      },
+      {
+        "event_order": 13,
+        "target_event_id": 180616,
+        "home_team": "Шинник",
+        "away_team": "Ротор",
+        "resolution_status": "timing_unknown",
+        "reason": "baseline-only event start time is unavailable",
+        "championship": "Россия. 1-я лига",
+        "candidate_evidence": [],
+        "provider_diagnostics": []
+      }
+    ],
+    "not_ready_reason": null,
+    "external_coverage_count": 7,
+    "baseline_only_event_orders": [
+      1,
+      3,
+      4,
+      8,
+      9,
+      10,
+      11,
+      13
+    ],
+    "reviewed_catalog_hash": null,
+    "operational_cutoff": "2026-09-05 13:30:00+00:00",
+    "cutoff_evidence": null,
+    "cutoff_evidence_sha256": null
+  },
+  "prepared": {
+    "drawing_id": 12100,
+    "drawing_number": 4997,
+    "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+    "provider": "api-sports",
+    "status": "ready",
+    "mapped_count": 15,
+    "unresolved_event_orders": [],
+    "eligibility": {
+      "status": "unknown",
+      "earliest_start": "2026-09-05 13:30:00+00:00",
+      "latest_start": "2026-09-05 19:00:00+00:00",
+      "span_days": 1,
+      "missing_event_orders": [
+        1,
+        3,
+        4,
+        8,
+        9,
+        10,
+        11,
+        13
+      ],
+      "totobrief_count": 0,
+      "provider_count": 7
+    },
+    "events": [
+      {
+        "event_order": 0,
+        "target_event_id": 180603,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 1,
+        "target_event_id": 180604,
+        "status": "baseline_only",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 2,
+        "target_event_id": 180605,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 3,
+        "target_event_id": 180606,
+        "status": "baseline_only",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 4,
+        "target_event_id": 180607,
+        "status": "baseline_only",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 5,
+        "target_event_id": 180608,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 6,
+        "target_event_id": 180609,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 7,
+        "target_event_id": 180610,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 8,
+        "target_event_id": 180611,
+        "status": "baseline_only",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 9,
+        "target_event_id": 180612,
+        "status": "baseline_only",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 10,
+        "target_event_id": 180613,
+        "status": "baseline_only",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 11,
+        "target_event_id": 180614,
+        "status": "baseline_only",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 12,
+        "target_event_id": 180615,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 13,
+        "target_event_id": 180616,
+        "status": "baseline_only",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      },
+      {
+        "event_order": 14,
+        "target_event_id": 180617,
+        "status": "matched",
+        "provider_fixture_id": null,
+        "reason": "existing exact drawing pin",
+        "confidence": 1.0,
+        "margin": 1.0,
+        "candidate_evidence": []
+      }
+    ],
+    "pins": [
+      {
+        "id": 436,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180603",
+        "event_order": 0,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1447,
+        "canonical_away_team_id": 1448,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/tottenham-hotspur-nottingham-forest/osI#id:16363638"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2494029"
+            }
+          ],
+          "evidence_hash": "f95cd0ce2299a13dca41b4f7aef04550e3877a03c7b99afd7864c5c1d142a071",
+          "evidence_id": "independent-consensus-v3-f040d52307f659d15424",
+          "ledger_hash": "cfa33d710fd7f813c03a3fd6b5f28cf5825e584aaac97279d49099bdf26b27a1",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:34:39.074027+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "237e1ec18274ed204c0e38e9b297f15d80129872e062b68f25ed6a34730aa1f9",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-f040d52307f659d15424",
+        "source_identity_hash": "c9a96024152c6a6aecaceea67d827a00aef9dc470f38abf6df4c3d84bf12a3c5",
+        "schedule_only": true
+      },
+      {
+        "id": 437,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180604",
+        "event_order": 1,
+        "provider": "totobrief-baseline",
+        "canonical_home_team_id": 851,
+        "canonical_away_team_id": 796,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": null,
+        "collection_id": null,
+        "provenance": {
+          "baseline_probability_input_sha256": "35fd58a19db70fa5dbe2be552dde479e3f62f9fa75dbb87ec6bfa6ffad24c1e1",
+          "bk_probabilities": [
+            0.42,
+            0.28,
+            0.3
+          ],
+          "pool_probabilities": [
+            0.52,
+            0.26,
+            0.22
+          ],
+          "reason_code": "baseline_only_external_unavailable",
+          "resolution_reason": "no candidates passed sport/date/country/league context",
+          "resolution_status": "missing",
+          "totobrief_event_id": 180604,
+          "totobrief_event_order": 1
+        },
+        "pin_hash": "3ba235cd4b9122a572e788c42fe67c5b0565d19b428e4664011fd3246eebe70d",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "totobrief-baseline",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": null,
+        "source_identity_hash": "ad3ce11b61f41054caee4305521bc37c2fd20d2d02ccbcb002e20fbe14c5aa01",
+        "schedule_only": true
+      },
+      {
+        "id": 438,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180605",
+        "event_order": 2,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1257,
+        "canonical_away_team_id": 1449,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/cardiff-city-portsmouth/cslb#id:16391649"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2501307"
+            }
+          ],
+          "evidence_hash": "124ba633056c6e50efccc87606feab5048e85a62795aa6189bec9d76f248a9b2",
+          "evidence_id": "independent-consensus-v3-4ea2a9f90bd1c3786cff",
+          "ledger_hash": "cfa33d710fd7f813c03a3fd6b5f28cf5825e584aaac97279d49099bdf26b27a1",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.224400+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "e7aef9c3ec0fc8564079f8a1ef161e946be900e707580a2edfa682bdce267d2a",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-4ea2a9f90bd1c3786cff",
+        "source_identity_hash": "967506e4073b377a08e7f278232e0e7b9b132d2a435ad70c772d49207321f1c4",
+        "schedule_only": true
+      },
+      {
+        "id": 439,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180606",
+        "event_order": 3,
+        "provider": "totobrief-baseline",
+        "canonical_home_team_id": 620,
+        "canonical_away_team_id": 1282,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": null,
+        "collection_id": null,
+        "provenance": {
+          "baseline_probability_input_sha256": "35fd58a19db70fa5dbe2be552dde479e3f62f9fa75dbb87ec6bfa6ffad24c1e1",
+          "bk_probabilities": [
+            0.3,
+            0.27,
+            0.43
+          ],
+          "pool_probabilities": [
+            0.54,
+            0.2,
+            0.26
+          ],
+          "reason_code": "baseline_only_external_unavailable",
+          "resolution_reason": "no candidates passed sport/date/country/league context",
+          "resolution_status": "missing",
+          "totobrief_event_id": 180606,
+          "totobrief_event_order": 3
+        },
+        "pin_hash": "b6fef5d039641b387459d7543e0022d18cfca5bac24055449caf10887c6aeb65",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "totobrief-baseline",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": null,
+        "source_identity_hash": "baa02868c3395328265eadba3b3329e80570df0559e8f49e2625cf1e49a205cb",
+        "schedule_only": true
+      },
+      {
+        "id": 440,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180607",
+        "event_order": 4,
+        "provider": "totobrief-baseline",
+        "canonical_home_team_id": 801,
+        "canonical_away_team_id": 1080,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": null,
+        "collection_id": null,
+        "provenance": {
+          "baseline_probability_input_sha256": "35fd58a19db70fa5dbe2be552dde479e3f62f9fa75dbb87ec6bfa6ffad24c1e1",
+          "bk_probabilities": [
+            0.36,
+            0.28,
+            0.36
+          ],
+          "pool_probabilities": [
+            0.52,
+            0.24,
+            0.24
+          ],
+          "reason_code": "baseline_only_external_unavailable",
+          "resolution_reason": "no candidates passed sport/date/country/league context",
+          "resolution_status": "missing",
+          "totobrief_event_id": 180607,
+          "totobrief_event_order": 4
+        },
+        "pin_hash": "6a58e1076b50d1a8be3f6d43f8f83b3c3646695a7da92d145a327396db94afc9",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "totobrief-baseline",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": null,
+        "source_identity_hash": "4b3690c5abe0ca5cd130cda2e6ae39f63477016d0d7c99455e8cac4487e87e0b",
+        "schedule_only": true
+      },
+      {
+        "id": 441,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180608",
+        "event_order": 5,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1450,
+        "canonical_away_team_id": 1058,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T19:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/swansea-city-wrexham/obszb#id:16391654"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2501306"
+            }
+          ],
+          "evidence_hash": "30cf6c4b10bccd2bf2b5aa159976ad84188c9ac44a0ced39a95d88690bfdcc2c",
+          "evidence_id": "independent-consensus-v3-78179cec6deaaa1b6aff",
+          "ledger_hash": "cfa33d710fd7f813c03a3fd6b5f28cf5825e584aaac97279d49099bdf26b27a1",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.334822+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "84b57d515fa8e62a8ecf9494f8fdef6dc7b423c1f2b48d181220ab90b75c2709",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-78179cec6deaaa1b6aff",
+        "source_identity_hash": "105cb2a1f0a0a98d3709bdca5c84fa8813d1e6dd3cb9dba36a1dc7a57fedb40d",
+        "schedule_only": true
+      },
+      {
+        "id": 442,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180609",
+        "event_order": 6,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1451,
+        "canonical_away_team_id": 1452,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T13:30:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/borussia-dortmund-tsg-hoffenheim/ubbsydb#id:16434019"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2508344"
+            }
+          ],
+          "evidence_hash": "f180188a4ea79e6a757fe3f91dd44546775f0c6d6b948c18b00e19560a4f3a14",
+          "evidence_id": "independent-consensus-v3-5eb3b1c5fc7b95b66939",
+          "ledger_hash": "cfa33d710fd7f813c03a3fd6b5f28cf5825e584aaac97279d49099bdf26b27a1",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.420628+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "a11cddffbc88787643a79b360ec300a9c1adffb610aecd2c8c86c23afbe931c5",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-5eb3b1c5fc7b95b66939",
+        "source_identity_hash": "875417998b2ae431bc3199f6d81d5b3e5628661c1edf32a9a5754421b3fdada3",
+        "schedule_only": true
+      },
+      {
+        "id": 443,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180610",
+        "event_order": 7,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1453,
+        "canonical_away_team_id": 1454,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T13:30:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/sc-paderborn-07-sc-freiburg/Nabslbb#id:16434024"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2508350"
+            }
+          ],
+          "evidence_hash": "ec6a5b6fa793851e6933414f4f0654510c2c16164dcfd4916f1886f5f18870b9",
+          "evidence_id": "independent-consensus-v3-2506a723b41444665e67",
+          "ledger_hash": "cfa33d710fd7f813c03a3fd6b5f28cf5825e584aaac97279d49099bdf26b27a1",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.514722+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "f412e6ea969135709f69a9a2d3363c4554396a95d47e3b852cb3c93c7c067068",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-2506a723b41444665e67",
+        "source_identity_hash": "2b471deb518fd8b97b22cc79dd03ef9f93a5a78c909a6e2471f5c651361543da",
+        "schedule_only": true
+      },
+      {
+        "id": 444,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180611",
+        "event_order": 8,
+        "provider": "totobrief-baseline",
+        "canonical_home_team_id": 1129,
+        "canonical_away_team_id": 1440,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": null,
+        "collection_id": null,
+        "provenance": {
+          "baseline_probability_input_sha256": "35fd58a19db70fa5dbe2be552dde479e3f62f9fa75dbb87ec6bfa6ffad24c1e1",
+          "bk_probabilities": [
+            0.3,
+            0.28,
+            0.42
+          ],
+          "pool_probabilities": [
+            0.25,
+            0.33,
+            0.42
+          ],
+          "reason_code": "baseline_only_external_unavailable",
+          "resolution_reason": "no candidates passed sport/date/country/league context",
+          "resolution_status": "missing",
+          "totobrief_event_id": 180611,
+          "totobrief_event_order": 8
+        },
+        "pin_hash": "d73dceadef1d7d843cc3fdd1f67b31af5fc09d6aad63042cc7e9a46834c411a8",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "totobrief-baseline",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": null,
+        "source_identity_hash": "d044993585724b439c183c6d6a9e15374b2d24c4eaf63f18aba7e5b54bce00ed",
+        "schedule_only": true
+      },
+      {
+        "id": 445,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180612",
+        "event_order": 9,
+        "provider": "totobrief-baseline",
+        "canonical_home_team_id": 1441,
+        "canonical_away_team_id": 825,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": null,
+        "collection_id": null,
+        "provenance": {
+          "baseline_probability_input_sha256": "35fd58a19db70fa5dbe2be552dde479e3f62f9fa75dbb87ec6bfa6ffad24c1e1",
+          "bk_probabilities": [
+            0.43,
+            0.27,
+            0.3
+          ],
+          "pool_probabilities": [
+            0.44,
+            0.18,
+            0.38
+          ],
+          "reason_code": "baseline_only_external_unavailable",
+          "resolution_reason": "no candidates passed sport/date/country/league context",
+          "resolution_status": "missing",
+          "totobrief_event_id": 180612,
+          "totobrief_event_order": 9
+        },
+        "pin_hash": "580c413e40b275143fb1a6da0ac3940e50793f5f4ac776e225bb4a05e5c4a793",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "totobrief-baseline",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": null,
+        "source_identity_hash": "39c03528f63a400ad4ce677e75f3db08f4d6470a9bd697ce42fce81f97a0da58",
+        "schedule_only": true
+      },
+      {
+        "id": 446,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180613",
+        "event_order": 10,
+        "provider": "totobrief-baseline",
+        "canonical_home_team_id": 826,
+        "canonical_away_team_id": 1442,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": null,
+        "collection_id": null,
+        "provenance": {
+          "baseline_probability_input_sha256": "35fd58a19db70fa5dbe2be552dde479e3f62f9fa75dbb87ec6bfa6ffad24c1e1",
+          "bk_probabilities": [
+            0.32,
+            0.28,
+            0.4
+          ],
+          "pool_probabilities": [
+            0.48514851485148514,
+            0.24752475247524752,
+            0.26732673267326734
+          ],
+          "reason_code": "baseline_only_external_unavailable",
+          "resolution_reason": "no candidates passed sport/date/country/league context",
+          "resolution_status": "missing",
+          "totobrief_event_id": 180613,
+          "totobrief_event_order": 10
+        },
+        "pin_hash": "6d5b4da56fb34d4afff7cece6f6d32eec61efc20a4ed640820c6c7eeb3ad558b",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "totobrief-baseline",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": null,
+        "source_identity_hash": "e8f3f4660ffd2183e1edda3d2454e89687a5169533886d5ecdb1e0c177b95471",
+        "schedule_only": true
+      },
+      {
+        "id": 447,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180614",
+        "event_order": 11,
+        "provider": "totobrief-baseline",
+        "canonical_home_team_id": 1131,
+        "canonical_away_team_id": 856,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": null,
+        "collection_id": null,
+        "provenance": {
+          "baseline_probability_input_sha256": "35fd58a19db70fa5dbe2be552dde479e3f62f9fa75dbb87ec6bfa6ffad24c1e1",
+          "bk_probabilities": [
+            0.38,
+            0.29,
+            0.33
+          ],
+          "pool_probabilities": [
+            0.54,
+            0.24,
+            0.22
+          ],
+          "reason_code": "baseline_only_external_unavailable",
+          "resolution_reason": "no candidates passed sport/date/country/league context",
+          "resolution_status": "missing",
+          "totobrief_event_id": 180614,
+          "totobrief_event_order": 11
+        },
+        "pin_hash": "d6ca81ee46f6bb73b744e422b7acb472a53a63191b6662447298f9d41531006d",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "totobrief-baseline",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": null,
+        "source_identity_hash": "44a9408c5267b5f95a324b5438faf20a6911f084963f37061c3230b7285844a1",
+        "schedule_only": true
+      },
+      {
+        "id": 448,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180615",
+        "event_order": 12,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1455,
+        "canonical_away_team_id": 1456,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T14:00:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/pari-nizhny-novgorod-fc-sochi/JWseIFb#id:16491067"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2514842"
+            }
+          ],
+          "evidence_hash": "607b9840fbac2a75ef8ae2ffe74cdcc4a31053a6ed6c0d23ec84ba240bb53bd7",
+          "evidence_id": "independent-consensus-v3-df2342bf08066dfbb250",
+          "ledger_hash": "cfa33d710fd7f813c03a3fd6b5f28cf5825e584aaac97279d49099bdf26b27a1",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.605915+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "ac88efce7927c8212ac1d3fcbceeb2c2f2434f3d2d3d93289410a1f7b9cd0414",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-df2342bf08066dfbb250",
+        "source_identity_hash": "ebcf35a12823fdbdb0e4f4679e1aa6cd3895d59b2a04eeb176b7ec95eb37c4b8",
+        "schedule_only": true
+      },
+      {
+        "id": 449,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180616",
+        "event_order": 13,
+        "provider": "totobrief-baseline",
+        "canonical_home_team_id": 1445,
+        "canonical_away_team_id": 1178,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": null,
+        "collection_id": null,
+        "provenance": {
+          "baseline_probability_input_sha256": "35fd58a19db70fa5dbe2be552dde479e3f62f9fa75dbb87ec6bfa6ffad24c1e1",
+          "bk_probabilities": [
+            0.32,
+            0.33,
+            0.35
+          ],
+          "pool_probabilities": [
+            0.37,
+            0.38,
+            0.25
+          ],
+          "reason_code": "baseline_only_external_unavailable",
+          "resolution_reason": "no candidates passed sport/date/country/league context",
+          "resolution_status": "missing",
+          "totobrief_event_id": 180616,
+          "totobrief_event_order": 13
+        },
+        "pin_hash": "19e16f74fa52dc809b72af1675310b3c15281836d6bc0178023e75c9aff7c456",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "totobrief-baseline",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": null,
+        "source_identity_hash": "0d503e40cc22f07d9dbca9f66de3386e9f0efd2f1c7101ad0c29a19d970ef92d",
+        "schedule_only": true
+      },
+      {
+        "id": 450,
+        "drawing_id": 12100,
+        "drawing_fingerprint": "fe49b1ba85febf3aa2a2929c8bb73dba6f81ef1f96361b29f92002a0f0ac5cb7",
+        "target_event_id": "180617",
+        "event_order": 14,
+        "provider": "schedule-evidence",
+        "canonical_home_team_id": 1457,
+        "canonical_away_team_id": 1458,
+        "provider_home_team_id": null,
+        "provider_away_team_id": null,
+        "provider_fixture_id": null,
+        "starts_at": "2026-09-05T18:45:00+00:00",
+        "collection_id": null,
+        "provenance": {
+          "claims": [
+            {
+              "role": "independent",
+              "source_name": "Sofascore",
+              "source_url": "https://www.sofascore.com/football/match/stade-brestois-le-havre/mIspJ#id:16310938"
+            },
+            {
+              "role": "independent",
+              "source_name": "TheSportsDB",
+              "source_url": "https://www.thesportsdb.com/event/2489487"
+            }
+          ],
+          "evidence_hash": "13ecabc5aa48e1f2b13e663cde8d87e59bba5b7d96ffa699780788de28d4c95a",
+          "evidence_id": "independent-consensus-v3-bc822cb42cec7a349716",
+          "ledger_hash": "cfa33d710fd7f813c03a3fd6b5f28cf5825e584aaac97279d49099bdf26b27a1",
+          "orientation": "same",
+          "resolver": "schedule-evidence-v1",
+          "reviewed_at": "2026-09-04T18:38:03.706232+00:00",
+          "reviewer": "automated-independent-provider-consensus-v1"
+        },
+        "pin_hash": "5b6b9f01aad570101b22da8a128592a6072aee7d22dd01d2683e4cb9d36dfefb",
+        "status": "valid",
+        "created_at": "2026-09-04T19:09:32.469103+00:00",
+        "invalidated_at": null,
+        "invalidation_reason": null,
+        "pin_set_id": "pinset-1aa8274a2bc8c59d39a6883a76901e6ea962c9e78fdc63dca86b65aa2468d932",
+        "source_provider": "schedule-evidence",
+        "source_fixture_id": null,
+        "reviewed_evidence_id": "independent-consensus-v3-bc822cb42cec7a349716",
+        "source_identity_hash": "252131e84c7d07dedea2ccf79708165c5ededc95f3f6ae29461b95d863986d37",
+        "schedule_only": true
+      }
+    ],
+    "schedule_diagnostics": []
+  }
+}

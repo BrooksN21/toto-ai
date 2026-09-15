@@ -1,0 +1,77 @@
+--- a/memory-bank/ACTIVE_PLAN.md
++++ b/memory-bank/ACTIVE_PLAN.md
+@@ -1,3 +1,28 @@
++# CURRENT — C7 accepted; four-package 4998 postmortem complete — 2026-09-07T08:51:59.971014+00:00
++
++Task: TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Finished scope only:
++- C7: two TotoAI-only discovery wrappers, `totoai-algorithm-review` and
++  `totoai-backtesting`, are integrated and independently accepted. Canonical
++  `skills/algorithm-review.md` and `skills/backtesting.md` remain unchanged.
++- Fresh finalization checks: 6 focused pytest PASS, Ruff PASS, both YAML
++  headers parsed with Ruby/Psych. First-party validator remains unavailable
++  without PyYAML; live UI/selector behavior was not tested. No global install.
++- 4998: archived four-package settlement complete. Maximum actual hits:
++  quality-v2 10, sports-shadow 12, quality-v3 10, robust 12; no package hit 13+.
++  Aggregate results do not prove model superiority or profitability. Detailed
++  receipts, private financial evidence and operational records stay local.
++- Operational 4999 authorization was handled separately by its owner. This
++  publication does not alter or revalidate jobs, DB, consent, plans or packages.
++
++DONE: accepted skills and completed settlement bookkeeping. IN PROGRESS:
++scoped GitHub finalization. REMAINS: C6 simplification and the general model
++improvement plan are not completed and await the owner's separate signal;
++7,470-RUB budget work is unfinished, not an operator-ready feature. BLOCKER:
++none for C7 publication; no Sports-v3 fit/activation or bank-gain claim.
++NEXT: verify publication receipt and return control to the operations owner.
++Local receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_PUBLICATION_RECEIPT_20260907.json.
++Earlier checkpoints below are historical; unfinished checklists are preserved.
++
+ #CURRENT — ready-source merge finalization;4999preflightPASS — 2026-09-06T18:56:43.844681+00:00
+ 
+ DONE: exact independentPR22scopedACCEPT closes all namedproofgaps forsourceHEAD71afde0/basea59;121fileHEADhashes+10newreviewhashes andoriginalanchors verified; no source changes sinceacceptance. Finalizer42pytestPASS2.39s/Ruff5. Scopeincludes proposedplanonly withwholedefinedscope approvalclarification, notimplementation. No completedcode-simplification/bankpercentageclaim.
+--- a/memory-bank/CURRENT_STATE.md
++++ b/memory-bank/CURRENT_STATE.md
+@@ -1,3 +1,28 @@
++# CURRENT — C7 accepted; four-package 4998 postmortem complete — 2026-09-07T08:51:59.971014+00:00
++
++Task: TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Finished scope only:
++- C7: two TotoAI-only discovery wrappers, `totoai-algorithm-review` and
++  `totoai-backtesting`, are integrated and independently accepted. Canonical
++  `skills/algorithm-review.md` and `skills/backtesting.md` remain unchanged.
++- Fresh finalization checks: 6 focused pytest PASS, Ruff PASS, both YAML
++  headers parsed with Ruby/Psych. First-party validator remains unavailable
++  without PyYAML; live UI/selector behavior was not tested. No global install.
++- 4998: archived four-package settlement complete. Maximum actual hits:
++  quality-v2 10, sports-shadow 12, quality-v3 10, robust 12; no package hit 13+.
++  Aggregate results do not prove model superiority or profitability. Detailed
++  receipts, private financial evidence and operational records stay local.
++- Operational 4999 authorization was handled separately by its owner. This
++  publication does not alter or revalidate jobs, DB, consent, plans or packages.
++
++DONE: accepted skills and completed settlement bookkeeping. IN PROGRESS:
++scoped GitHub finalization. REMAINS: C6 simplification and the general model
++improvement plan are not completed and await the owner's separate signal;
++7,470-RUB budget work is unfinished, not an operator-ready feature. BLOCKER:
++none for C7 publication; no Sports-v3 fit/activation or bank-gain claim.
++NEXT: verify publication receipt and return control to the operations owner.
++Local receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_PUBLICATION_RECEIPT_20260907.json.
++Earlier checkpoints below are historical; unfinished checklists are preserved.
++
+ #CURRENT — ready-source merge finalization;4999preflightPASS — 2026-09-06T18:56:43.844681+00:00
+ 
+ DONE: exact independentPR22scopedACCEPT closes all namedproofgaps forsourceHEAD71afde0/basea59;121fileHEADhashes+10newreviewhashes andoriginalanchors verified; no source changes sinceacceptance. Finalizer42pytestPASS2.39s/Ruff5. Scopeincludes proposedplanonly withwholedefinedscope approvalclarification, notimplementation. No completedcode-simplification/bankpercentageclaim.
+--- a/memory-bank/ROADMAP.md
++++ b/memory-bank/ROADMAP.md
+@@ -1,3 +1,12 @@
++## 2026-09-07T08:51:59.971014+00:00 — C7 completed within isolated project scope
++
++- [x] Two project-local skill discovery wrappers integrated and independently
++  accepted; canonical procedures remain single-source.
++- [x] Focused finalization: 6 pytest, Ruff and Ruby/Psych YAML checks pass.
++- [ ] Live UI/selector behavior remains unverified; no global configuration changed.
++- [ ] C6 project simplification and the general model-improvement plan remain
++  separate unfinished work, paused pending the owner's signal.
++
+ ## 2026-09-06T17:18:28.655769+03:00 — G1 profile publication complete
+ 
+ Source `01b5df2` verified on draftPR22, no merge;24tests/Ruff3PASS.

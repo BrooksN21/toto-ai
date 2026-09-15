@@ -1,0 +1,11 @@
+{
+  "numeric_current_bk_transform_fallback": "PASS",
+  "future_label_A3": "REJECTED",
+  "future_label_A4": "REJECTED",
+  "serialization_future_label": {
+    "available_at": "2099-01-01T00:00:00+00:00",
+    "prediction_as_of": "2025-01-11T00:00:00+00:00",
+    "loader_accepted": true,
+    "inference_status": "PREDICTED_EXPERIMENTAL"
+  }
+}

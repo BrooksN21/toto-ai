@@ -1,0 +1,14 @@
+{
+  "automatic_wagering": false,
+  "counts": {},
+  "cpu_seconds": 165.92224,
+  "observed_at": "2026-09-06T15:44:23.684950Z",
+  "operator_compatible": false,
+  "phase": "research_persistence",
+  "phase_cpu_seconds": 0.003932999999989306,
+  "phase_wall_seconds": 0.008280832997115795,
+  "remaining_seconds": 161.14508383400243,
+  "stage": "completed",
+  "status": "RUNNING",
+  "wall_seconds": 198.85416166600044
+}

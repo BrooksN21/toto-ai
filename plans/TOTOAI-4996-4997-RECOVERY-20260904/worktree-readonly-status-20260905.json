@@ -1,0 +1,41 @@
+{
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "wrapper_sha256": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269",
+  "worktrees": [
+    {
+      "checkout": "/Users/turshevr/.codex/worktrees/ab34/toto-ai",
+      "inspected_at": "2026-09-05T13:48:04.062103+03:00",
+      "attestation_exit_code": 0,
+      "attestation": [
+        "/Users/turshevr/.codex/worktrees/ab34/toto-ai",
+        "/Users/turshevr/toto-ai/.git/worktrees/toto-ai",
+        "/Users/turshevr/toto-ai/.git"
+      ],
+      "status_exit_code": 0,
+      "status_entries": [
+        "?? plans/TOTOAI-4996-4997-RECOVERY-20260904-PRE_PUSH_REVIEW.md"
+      ],
+      "read_only": true,
+      "file_contents_read": false,
+      "wrapper_installed_in_child": false
+    },
+    {
+      "checkout": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai",
+      "inspected_at": "2026-09-05T13:48:04.201128+03:00",
+      "attestation_exit_code": 0,
+      "attestation": [
+        "/Users/turshevr/.codex/worktrees/a7aa/toto-ai",
+        "/Users/turshevr/toto-ai/.git/worktrees/toto-ai1",
+        "/Users/turshevr/toto-ai/.git"
+      ],
+      "status_exit_code": 0,
+      "status_entries": [
+        "?? plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/"
+      ],
+      "read_only": true,
+      "file_contents_read": false,
+      "wrapper_installed_in_child": false
+    }
+  ],
+  "scope": "Existing registered worktree attestation and status names only; no create/remove/copy/experiment/tasks."
+}

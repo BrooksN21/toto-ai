@@ -1,0 +1,8 @@
+{
+  "src/toto_ai/sports_stats/final_hybrid_comparison.py": "c92acdde77bb3443531e8ebac081aae29424ad014633ffeaeb3ecf17f6127782",
+  "src/toto_ai/optimizer/strategy_comparison.py": "9b67c3912760d8166824ee6b91c33df501de90ca1d80920187be14b585d81b75",
+  "src/toto_ai/sports_stats/final_hybrid_sidecar.py": "e76b627ae82af047e777b0d9d5b615ebf4fa1a6eee5a44f0d040b67c48dd8434",
+  "src/toto_ai/ev/ternary.py": "eee2a0c97e04eba467abdbf7d7622a0447b2e61a08e9793c4e0416e60e17477d",
+  "src/toto_ai/ev/package.py": "7f360752587e370e2b2e46592adfa650e0cebafc840aeff82cf503504a6357a9",
+  "src/toto_ai/ev/package_quality.py": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb"
+}

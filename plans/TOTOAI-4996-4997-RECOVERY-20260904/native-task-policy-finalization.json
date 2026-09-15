@@ -1,0 +1,65 @@
+{
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "completed_at_msk": "2026-09-05T14:24:47.824354+03:00",
+  "commit": "49bd9ed9f16f63b848119f720f1e5013c3e4c0a6",
+  "parent_commit": "a17e0771e5ad1d3dc4990ce917b6135c8f7168f2",
+  "commit_time_msk": "2026-09-05T14:23:51+03:00",
+  "commit_subject": "Authorize continuation of two existing native Codex tasks",
+  "scope": [
+    "/Users/turshevr/toto-ai/AGENTS.md",
+    "/Users/turshevr/toto-ai/memory-bank/TOOLING_POLICY.md",
+    "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/native-task-owner-authorization-20260905.json"
+  ],
+  "insertions": 107,
+  "deletions": 0,
+  "verification": {
+    "focused_pytest": "7 passed in 0.02s",
+    "scoped_ruff": "All checks passed",
+    "cached_patch_check": true,
+    "cached_diff_check": true,
+    "exact_index_hashes_matched_manifest": true,
+    "working_policy_bytes_preserved": true,
+    "postcommit_exact_three_paths_verified": true,
+    "staged_index_empty_after_commit": true,
+    "fullsuite_not_run": true
+  },
+  "preservation": {
+    "unrelated_staged_before": false,
+    "unrelated_changes_not_staged_or_committed": true,
+    "remaining_tracked_dirty_paths": [
+      "/Users/turshevr/toto-ai/AGENTS.md",
+      "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json",
+      "/Users/turshevr/toto-ai/memory-bank/ACTIVE_PLAN.md",
+      "/Users/turshevr/toto-ai/memory-bank/CURRENT_STATE.md",
+      "/Users/turshevr/toto-ai/memory-bank/DECISIONS.md",
+      "/Users/turshevr/toto-ai/memory-bank/ROADMAP.md",
+      "/Users/turshevr/toto-ai/memory-bank/TOOLING_POLICY.md",
+      "/Users/turshevr/toto-ai/scripts/project-git",
+      "/Users/turshevr/toto-ai/src/toto_ai/cli.py",
+      "/Users/turshevr/toto-ai/src/toto_ai/external_odds/schedule_evidence_admin.py",
+      "/Users/turshevr/toto-ai/src/toto_ai/external_odds/targets.py",
+      "/Users/turshevr/toto-ai/src/toto_ai/operations/scheduler_status.py",
+      "/Users/turshevr/toto-ai/src/toto_ai/runner/morning_dispatch.py",
+      "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/domain.py",
+      "/Users/turshevr/toto-ai/tests/test_external_odds_targets.py",
+      "/Users/turshevr/toto-ai/tests/test_morning_dispatch.py",
+      "/Users/turshevr/toto-ai/tests/test_schedule_evidence_admin_cli.py",
+      "/Users/turshevr/toto-ai/tests/test_scheduler_status.py",
+      "/Users/turshevr/toto-ai/tests/test_sports_stats_cli.py"
+    ],
+    "untracked_inventory_not_performed": true,
+    "policy_paths_still_modified_reason": "Unrelated earlier working-tree policy changes intentionally excluded from minimal commit.",
+    "authorization_manifest_state": "policy_commit_pending=true is the immutable pre-finalization snapshot at 14:20:14; this result is the later actual commit receipt."
+  },
+  "scope_limits": {
+    "workflow_skill": "gena-submission-ci-flow already confirmed unavailable; no search/install/invocation",
+    "remote_authorization": false,
+    "push": false,
+    "pr": false,
+    "tasks_created": false,
+    "child_resume": false,
+    "production_runtime_mutated": false,
+    "outside_worktree_writes": false
+  },
+  "next_action": "Parent may attempt only native same-task continuation within the committed permission; acceptance is not guaranteed. Prioritize existing 4997 14:30 MSK checkpoint; cutoff16:20."
+}

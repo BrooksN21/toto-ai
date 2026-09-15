@@ -1,0 +1,43 @@
+{
+  "observed_at_msk": "2026-09-06T18:22:31.862896+03:00",
+  "plan_id": "c1d243f5b6ca48f3",
+  "drawing_number": 4998,
+  "operational_cutoff_msk": "2026-09-06T18:20:00+03:00",
+  "primary_native_record": {
+    "decision": "NO BET",
+    "actionable": false,
+    "operator_status": "NO_BET",
+    "reason": "operator package expired at T-10; audit archive retained",
+    "completed_at": "2026-09-06T15:20:05.862467Z",
+    "coupon_path": null,
+    "package_sha256": null
+  },
+  "parallel_published_at_msk": "2026-09-06T18:19:04.553592+03:00",
+  "parallel_pre_cutoff_validation_at_msk": "2026-09-06T18:19:52.107536+03:00",
+  "parallel_selected_strategy": "quality-v3",
+  "parallel_selected_file_sha256": "1b6a7fc58350a683bcb0256d3099ea36b9cd9666487cdc7fee3b0e7cff6a1702",
+  "current_primary_actionable": false,
+  "current_parallel_actionable": false,
+  "status": "EXPIRED_NOT_FOR_WAGERING",
+  "original_primary_upload_exists": false,
+  "primary_upload_note": "Native cutoff reports audit archive retained; original upload is not recreated. Prior delivered hash remains historical evidence only.",
+  "prior_expiry_receipt_error": "FileNotFoundError when rehashing original primary upload after native cutoff; this receipt handles absence without modifying runtime.",
+  "last_launchd_observation_msk": "2026-09-06T18:20:34+03:00",
+  "last_launchd_observation": {
+    "primary": "idle; runs=8; exit=0",
+    "parallel": "idle; runs=1; exit=0"
+  },
+  "parallel_final_g1": {
+    "status": "BUDGET_EXHAUSTED",
+    "reason": "TIME_BUDGET",
+    "engine_seconds": 50.00082037499669,
+    "evaluated_swaps": 8337,
+    "accepted_swaps": 0,
+    "fallback_preserved": true
+  },
+  "passive_diagnosis_owner": "Leibniz; not duplicated",
+  "observer_stopped": true,
+  "runtime_source_authority_jobs_modified": false,
+  "wager_placed": false,
+  "delivery_receipt_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_FINAL_DELIVERY_RECEIPT.json"
+}

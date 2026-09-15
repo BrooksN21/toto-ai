@@ -1,0 +1,1785 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "plan_id": "c1d243f5b6ca48f3",
+  "drawing_id": 12102,
+  "drawing_number": 4998,
+  "scope": "READ_ONLY_1750_FINAL_PRIMARY_FIRST_OBSERVER",
+  "watcher_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/latest.json",
+  "last_phase": "final",
+  "last_attempt": {
+    "completed_at": "2026-09-06T15:01:51.970409Z",
+    "decision": "PLAY",
+    "error": null,
+    "outcome": "bet-ready",
+    "phase": "final",
+    "reason": "final package verified and published no later than T-10",
+    "result": "complete",
+    "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+    "state": "complete",
+    "time": "2026-09-06T15:01:51.970409Z"
+  },
+  "next_checkpoint": {
+    "at_msk": "2026-09-06T18:12:00+03:00",
+    "phase": "t_minus_18"
+  },
+  "blocker": null,
+  "primary_quality_v2": {
+    "reason": "final package verified and published no later than T-10",
+    "status": "FINAL_FRESH"
+  },
+  "operator_result_ready": true,
+  "terminal": false,
+  "operator_result": {
+    "actionable": true,
+    "completed_at": "2026-09-06T15:01:51.970409Z",
+    "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+    "decision": "PLAY",
+    "operator_status": "FINAL_FRESH",
+    "package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+    "reason": "final package verified and published no later than T-10",
+    "selected_cost": 4980,
+    "selected_count": 166
+  },
+  "no_forecast_retry_source_job_authority_mutation": true,
+  "owned_processes": [],
+  "release_gate_context": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/1730_RELEASE_GATE_CONTEXT.md",
+  "bound_until_msk": "2026-09-06T18:20:00+03:00",
+  "primary_launchd": {
+    "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+    "returncode": 0,
+    "state": "not running",
+    "runs": "6",
+    "last exit code": "0"
+  },
+  "primary_launchd_observed_at_msk": "2026-09-06T18:02:05.283531+03:00",
+  "scheduler_state_summary": {
+    "revision": 13,
+    "phases": {
+      "api_preflight": {
+        "status": "complete",
+        "latest_attempt": "api_preflight-01-20260906T140008358949Z-77c1dfd6",
+        "latest_failure": null
+      },
+      "final": {
+        "status": "complete",
+        "latest_attempt": "final-01-20260906T150005922935Z-6e7a4306",
+        "latest_failure": null
+      },
+      "freshness_preflight": {
+        "status": "complete",
+        "latest_attempt": "freshness_preflight-01-20260906T143003831993Z-79cb1142",
+        "latest_failure": null
+      },
+      "publish": {
+        "status": "complete",
+        "latest_attempt": "final-01-20260906T150005922935Z-6e7a4306",
+        "latest_failure": null
+      },
+      "refresh": {
+        "status": "complete",
+        "latest_attempt": "refresh-01-20260906T145005932189Z-9078fc8e",
+        "latest_failure": null
+      },
+      "tls_preflight": {
+        "status": "complete",
+        "latest_attempt": "tls_preflight-01-20260906T133009631607Z-2dd4adb0",
+        "latest_failure": null
+      },
+      "warmup": {
+        "status": "retryable_failed",
+        "latest_attempt": "warmup-01-20260906T144722512783Z-2a7ebf94",
+        "latest_failure": {
+          "attempt_count": 1,
+          "category": "connect",
+          "exception_chain": [
+            "SchedulerTransientError"
+          ],
+          "original_transport_message": "insufficient warmup phase runtime budget: remaining=99.2s required=330s",
+          "status_code": null
+        }
+      }
+    },
+    "terminal": "bet_ready",
+    "latest_transition": {
+      "attempt_id": "final-01-20260906T150005922935Z-6e7a4306",
+      "current_state_sha256": "5ef12d0286cf7e33da6bdc6e4dbe948e6cf577f2a0061b08136f7920f8092669",
+      "failure_detail": null,
+      "observed_at": "2026-09-06T15:01:51.970409Z",
+      "phase": "publish",
+      "previous_state_sha256": "01206c6bb0c2b3d51996e60b337e5e8771ccbcce4b0801525ff29b1a18fb0d08",
+      "reason": "final package verified and published no later than T-10",
+      "status": "complete"
+    }
+  },
+  "active_phases": [],
+  "observed_refresh_process_detail": {
+    "phase": "refresh",
+    "attempt_id": "refresh-01-20260906T145005932189Z-9078fc8e",
+    "state_started_at": "2026-09-06T14:50:05.932189Z",
+    "primary_pid": 22473,
+    "child_pid": 22521,
+    "child_start_msk": "2026-09-06T17:50:13+03:00",
+    "child_elapsed_at_observation": "00:20",
+    "child_cpu_time_at_observation": "0:19.66",
+    "child_cpu_percent_at_observation": 99.1,
+    "child_stat": "R",
+    "child_command_identity": {
+      "module": "toto_ai.cli",
+      "subcommand": "run-drawing",
+      "--bank": "4980",
+      "--stake": "30",
+      "--mode": "playable"
+    },
+    "other_arguments_env_omitted": true,
+    "note": "Active refresh bypassed expired warmup window through native scheduler; CPU sample is not completion proof. Older watcher warmup blocker is historical, not current refresh error.",
+    "observation_window_start_msk": "2026-09-06T17:50:32.553488+03:00",
+    "record_corrected_at_msk": "2026-09-06T17:51:34.776709+03:00",
+    "sampling_timestamp_note": "ps sample was taken immediately after canonical read; exact subcommand capture timestamp was not instrumented. Do not treat window start as CPU sample timestamp."
+  },
+  "warmup_failure_detail": {
+    "phase": "warmup",
+    "started_at": "2026-09-06T14:47:22.512783Z",
+    "completed_at": "2026-09-06T14:48:15.800751Z",
+    "status": "retryable_failed",
+    "message": "insufficient warmup phase runtime budget: remaining=99.2s required=330s",
+    "observer_clock_gap_cause": "unknown",
+    "late_start_cause": "not established",
+    "native_duration_seconds": 53.287968,
+    "cpu_duration": "not observed; do not infer from wall gap"
+  },
+  "operator_direct": {
+    "decision": "PLAY",
+    "operator_status": "FINAL_FRESH",
+    "actionable": true,
+    "provenance": "FINAL_FRESH",
+    "plan_id": "c1d243f5b6ca48f3",
+    "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+    "completed_at": "2026-09-06T15:01:51.970409Z",
+    "expires_at": "2026-09-06T15:20:00Z",
+    "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+    "package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+    "selected_count": 166,
+    "selected_cost": 4980,
+    "record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9"
+  },
+  "highest_p13_single_coupon": null,
+  "observed_at_msk": "2026-09-06T18:02:05.283531+03:00",
+  "watcher_observed_at_msk": "2026-09-06T18:01:58.604136+03:00",
+  "watcher_file_sha256": "9671f7ff239193c0dbc935d1f6c255a37cc3b97df36c8f5de9c4116a42722f97",
+  "semantic_sha256": "9ed3ff094121cbd5a290e5e2512e0f42bb184914b4ba0aac250fa2de88d4a30f",
+  "meaningful_observations": [
+    {
+      "observed_at_msk": "2026-09-06T17:14:15.938576+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:13:47.006412+03:00",
+      "last_phase": "api_preflight",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:00:48.380394Z",
+        "decision": null,
+        "error": null,
+        "outcome": null,
+        "phase": "api_preflight",
+        "reason": "target, data access, configuration, and override catalog validated",
+        "result": "complete",
+        "run_id": "api_preflight-01-20260906T140008358949Z-77c1dfd6",
+        "state": "complete",
+        "time": "2026-09-06T14:00:48.380394Z"
+      },
+      "blocker": null,
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "not running",
+        "runs": "2",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T17:14:15.938576+03:00",
+      "operator_result_ready": false
+    },
+    {
+      "observed_at_msk": "2026-09-06T17:30:03.952663+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:29:49.613415+03:00",
+      "last_phase": "api_preflight",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:00:48.380394Z",
+        "decision": null,
+        "error": null,
+        "outcome": null,
+        "phase": "api_preflight",
+        "reason": "target, data access, configuration, and override catalog validated",
+        "result": "complete",
+        "run_id": "api_preflight-01-20260906T140008358949Z-77c1dfd6",
+        "state": "complete",
+        "time": "2026-09-06T14:00:48.380394Z"
+      },
+      "blocker": null,
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "running",
+        "runs": "3",
+        "pid": "20038",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T17:30:03.952663+03:00",
+      "operator_result_ready": false
+    },
+    {
+      "observed_at_msk": "2026-09-06T17:30:44.567536+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:30:19.707111+03:00",
+      "last_phase": "api_preflight",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:00:48.380394Z",
+        "decision": null,
+        "error": null,
+        "outcome": null,
+        "phase": "api_preflight",
+        "reason": "target, data access, configuration, and override catalog validated",
+        "result": "complete",
+        "run_id": "api_preflight-01-20260906T140008358949Z-77c1dfd6",
+        "state": "complete",
+        "time": "2026-09-06T14:00:48.380394Z"
+      },
+      "blocker": null,
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "running",
+        "runs": "3",
+        "pid": "20038",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T17:30:44.567536+03:00",
+      "operator_result_ready": false
+    },
+    {
+      "observed_at_msk": "2026-09-06T17:32:20.007356+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:32:19.964851+03:00",
+      "last_phase": "freshness_preflight",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:31:56.715089Z",
+        "decision": null,
+        "error": null,
+        "outcome": null,
+        "phase": "freshness_preflight",
+        "reason": "quality_v2_real_money_release_gate_closed",
+        "result": "complete",
+        "run_id": "freshness_preflight-01-20260906T143003831993Z-79cb1142",
+        "state": "complete",
+        "time": "2026-09-06T14:31:56.715089Z"
+      },
+      "blocker": null,
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "not running",
+        "runs": "3",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T17:32:20.007356+03:00",
+      "operator_result_ready": true
+    },
+    {
+      "observed_at_msk": "2026-09-06T17:36:54.076232+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:36:50.813810+03:00",
+      "last_phase": "freshness_preflight",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:31:56.715089Z",
+        "decision": null,
+        "error": null,
+        "outcome": null,
+        "phase": "freshness_preflight",
+        "reason": "quality_v2_real_money_release_gate_closed",
+        "result": "complete",
+        "run_id": "freshness_preflight-01-20260906T143003831993Z-79cb1142",
+        "state": "complete",
+        "time": "2026-09-06T14:31:56.715089Z"
+      },
+      "blocker": null,
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "not running",
+        "runs": "3",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T17:36:54.076232+03:00",
+      "operator_result_ready": true
+    },
+    {
+      "observed_at_msk": "2026-09-06T17:47:43.367982+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:47:25.790609+03:00",
+      "last_phase": "freshness_preflight",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:31:56.715089Z",
+        "decision": null,
+        "error": null,
+        "outcome": null,
+        "phase": "freshness_preflight",
+        "reason": "quality_v2_real_money_release_gate_closed",
+        "result": "complete",
+        "run_id": "freshness_preflight-01-20260906T143003831993Z-79cb1142",
+        "state": "complete",
+        "time": "2026-09-06T14:31:56.715089Z"
+      },
+      "blocker": null,
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "running",
+        "runs": "4",
+        "pid": "21596",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T17:47:43.367982+03:00",
+      "operator_result_ready": true
+    },
+    {
+      "observed_at_msk": "2026-09-06T17:50:32.553488+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:50:26.405869+03:00",
+      "last_phase": "warmup",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:48:15.800751Z",
+        "decision": null,
+        "error": "insufficient warmup phase runtime budget: remaining=99.2s required=330s",
+        "outcome": null,
+        "phase": "warmup",
+        "reason": "insufficient warmup phase runtime budget: remaining=99.2s required=330s",
+        "result": "retryable_failed",
+        "run_id": "warmup-01-20260906T144722512783Z-2a7ebf94",
+        "state": "failed",
+        "time": "2026-09-06T14:48:15.800751Z"
+      },
+      "blocker": "insufficient warmup phase runtime budget: remaining=99.2s required=330s",
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "running",
+        "runs": "5",
+        "pid": "22473",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T17:50:32.553488+03:00",
+      "operator_result_ready": true
+    },
+    {
+      "observed_at_msk": "2026-09-06T17:51:35.213093+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:51:26.612702+03:00",
+      "last_phase": "warmup",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:48:15.800751Z",
+        "decision": null,
+        "error": "insufficient warmup phase runtime budget: remaining=99.2s required=330s",
+        "outcome": null,
+        "phase": "warmup",
+        "reason": "insufficient warmup phase runtime budget: remaining=99.2s required=330s",
+        "result": "retryable_failed",
+        "run_id": "warmup-01-20260906T144722512783Z-2a7ebf94",
+        "state": "failed",
+        "time": "2026-09-06T14:48:15.800751Z"
+      },
+      "blocker": "insufficient warmup phase runtime budget: remaining=99.2s required=330s",
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "running",
+        "runs": "5",
+        "pid": "22473",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T17:51:35.213093+03:00",
+      "operator_result_ready": true
+    },
+    {
+      "observed_at_msk": "2026-09-06T17:52:19.526925+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:51:56.698363+03:00",
+      "last_phase": "refresh",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:51:54.145360Z",
+        "decision": null,
+        "error": null,
+        "outcome": null,
+        "phase": "refresh",
+        "reason": "quality_v2_real_money_release_gate_closed",
+        "result": "complete",
+        "run_id": "refresh-01-20260906T145005932189Z-9078fc8e",
+        "state": "complete",
+        "time": "2026-09-06T14:51:54.145360Z"
+      },
+      "blocker": null,
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "not running",
+        "runs": "5",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T17:52:19.526925+03:00",
+      "operator_result_ready": true
+    },
+    {
+      "observed_at_msk": "2026-09-06T17:55:35.836730+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:55:27.374915+03:00",
+      "last_phase": "refresh",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:51:54.145360Z",
+        "decision": null,
+        "error": null,
+        "outcome": null,
+        "phase": "refresh",
+        "reason": "quality_v2_real_money_release_gate_closed",
+        "result": "complete",
+        "run_id": "refresh-01-20260906T145005932189Z-9078fc8e",
+        "state": "complete",
+        "time": "2026-09-06T14:51:54.145360Z"
+      },
+      "blocker": null,
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "not running",
+        "runs": "5",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T17:55:35.836730+03:00",
+      "operator_result_ready": true
+    },
+    {
+      "observed_at_msk": "2026-09-06T18:00:20.904485+03:00",
+      "watcher_observed_at_msk": "2026-09-06T17:59:58.221935+03:00",
+      "last_phase": "refresh",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:51:54.145360Z",
+        "decision": null,
+        "error": null,
+        "outcome": null,
+        "phase": "refresh",
+        "reason": "quality_v2_real_money_release_gate_closed",
+        "result": "complete",
+        "run_id": "refresh-01-20260906T145005932189Z-9078fc8e",
+        "state": "complete",
+        "time": "2026-09-06T14:51:54.145360Z"
+      },
+      "blocker": null,
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "running",
+        "runs": "6",
+        "pid": "24010",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T18:00:20.904485+03:00",
+      "operator_result_ready": true
+    },
+    {
+      "observed_at_msk": "2026-09-06T18:01:07.704716+03:00",
+      "watcher_observed_at_msk": "2026-09-06T18:00:58.417858+03:00",
+      "last_phase": "refresh",
+      "last_attempt": {
+        "completed_at": "2026-09-06T14:51:54.145360Z",
+        "decision": null,
+        "error": null,
+        "outcome": null,
+        "phase": "refresh",
+        "reason": "quality_v2_real_money_release_gate_closed",
+        "result": "complete",
+        "run_id": "refresh-01-20260906T145005932189Z-9078fc8e",
+        "state": "complete",
+        "time": "2026-09-06T14:51:54.145360Z"
+      },
+      "blocker": null,
+      "primary_launchd": {
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "returncode": 0,
+        "state": "running",
+        "runs": "6",
+        "pid": "24010",
+        "last exit code": "0"
+      },
+      "primary_launchd_observed_at_msk": "2026-09-06T18:01:07.704716+03:00",
+      "operator_result_ready": true
+    }
+  ],
+  "primary_play_delivery": {
+    "verified_at_msk": "2026-09-06T18:02:47.200976+03:00",
+    "status": "PRIMARY_PLAY_FILE_BINDINGS_VERIFIED",
+    "plan_id": "c1d243f5b6ca48f3",
+    "drawing": 4998,
+    "drawing_id": 12102,
+    "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+    "coupon_file_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+    "operator_record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9",
+    "operator_file_sha256": "7d372f1d6d4ea9fbe8989e54155f50dbd67e697e92ac0a86909b4c6f0fe9905a",
+    "source_package_sha256": "97b2d1988378b1bfe5a03ea6b16c6894f85be61f87973d0a4754ebd8a17e2bfa",
+    "archive_manifest_sha256": "f2002df58d76de77eb763f8089efcb6acdf8ed37d53d71927099886333150447",
+    "selected_count": 166,
+    "selected_cost": 4980,
+    "bank": 4980,
+    "stake": 30,
+    "completed_at": "2026-09-06T15:01:51.970409Z",
+    "expires_at_msk": "2026-09-06T18:20:00+03:00",
+    "release_mode": "EXPERIMENTAL_MANUAL",
+    "authorization_record_sha256": "b9722aa6d382bdb03276a494575e8849bd3658cf227c00bc8cc59882f70013e1",
+    "hash_count_cost_format_plan_auth_status_marker_archive_file_checks": "PASS",
+    "db_archive_requery_performed": false,
+    "native_full_upload_export_function_not_called": "It initializes DB; observer instead used native pure file validators, no export/copy/wager",
+    "automatic_wagering": false,
+    "profitability_proven": false,
+    "highest_p13_watcher_metadata": null,
+    "highest_p13_note": "Only existing explicitly computed hash-bound field may be reported; no first-row assumption, no new probability calculation."
+  },
+  "primary_first_handoff_ready": true,
+  "primary_play_seen_at_msk": "2026-09-06T18:02:47.200976+03:00",
+  "primary_best_coupon_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PRIMARY_4998_BEST_P13_RECEIPT.json",
+  "primary_best_coupon_verified": {
+    "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+    "verified_at": "2026-09-06T15:05:23.478813+00:00",
+    "status": "NATIVE_DETERMINISTIC_PRIMARY_P13_RANKING_COMPLETE",
+    "operator_txt_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+    "operator_txt_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+    "source_csv_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/package.csv",
+    "source_csv_sha256": "97b2d1988378b1bfe5a03ea6b16c6894f85be61f87973d0a4754ebd8a17e2bfa",
+    "operator_record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9",
+    "coupon_count": 166,
+    "selected_cost": 4980,
+    "stake": 30,
+    "format_validation": "native _validate_package_csv plus _validate_baltbet_upload PASS; exact unchanged bytes",
+    "snapshot_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/final-input.json",
+    "snapshot_sha256": "baea70824b1435bd771b5d9591ed6fb80319a89cacd25c77d9672e7503438282",
+    "snapshot_file_sha256": "f8cdcad96e242adc2db4522b32376435756415f6d64fff495b26b97d236e9600",
+    "probability_input_sha256": "44658935ef333d3a1b67d434a3b25e911b720838ee9e8ce80ecf4218cc17d04d",
+    "probability_matrix_sha256": "44658935ef333d3a1b67d434a3b25e911b720838ee9e8ce80ecf4218cc17d04d",
+    "plan_id": "c1d243f5b6ca48f3",
+    "best": {
+      "coupon": "212111111111121",
+      "probability_at_least_13": 0.0004777047248171512,
+      "probability_at_least_14": 4.599799150689667e-05,
+      "probability_at_least_15": 2.078659198118008e-06,
+      "package_position": 10,
+      "criterion": "maximum_probability_at_least_13",
+      "reference_model": "bk"
+    },
+    "expires_at": "2026-09-06T15:20:00Z",
+    "utility": "toto_ai.optimizer.coupon_probabilities.best_coupon_by_p13",
+    "utility_file_sha256": "5410d5c587c45ec43d41c229807fd2dcb60ac54d574531bd958235f0463ee56b",
+    "runtime_seconds": 0.003672250000818167,
+    "evaluated_existing_coupons": 166,
+    "new_calculation": "AUTHORIZED_RANKING_ONLY_NO_FORECAST_OR_GENERATION",
+    "operator_record_mutated": false,
+    "coupons_mutated": false,
+    "automatic_wagering": false,
+    "profitability_proven": false,
+    "ranking_output_is_analysis_not_new_operator_release": true
+  },
+  "parallel_1810_1812_history": [
+    {
+      "read_at_msk": "2026-09-06T18:10:44.007256+03:00",
+      "plan_id": "c1d243f5b6ca48f3",
+      "scope": "READ_ONLY_PARALLEL_PLUS_1812_PRIMARY_BOUND_1813",
+      "bound_until_msk": "2026-09-06T18:13:00+03:00",
+      "owned_processes": [],
+      "parallel_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3",
+        "state": "running",
+        "runs": "1",
+        "pid": "24009",
+        "last exit code": "(never exited)"
+      },
+      "parallel_ps": "24009     1 Sun Sep  6 18:00:05 2026     10:39   6:38.10  75.0 R    /Library/Frameworks/Python.framework/Versions/3.10/Resources/Python.app/Contents/MacOS/Python",
+      "primary_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "state": "not running",
+        "runs": "6",
+        "last exit code": "0"
+      },
+      "sidecar_status_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+      "sidecar_status_exists": false,
+      "companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/parallel-operator-result.json",
+      "companion_exists": false,
+      "watcher": {
+        "observed_at_msk": "2026-09-06T18:10:30.356935+03:00",
+        "last_phase": "final",
+        "last_attempt": {
+          "completed_at": "2026-09-06T15:01:51.970409Z",
+          "decision": "PLAY",
+          "error": null,
+          "outcome": "bet-ready",
+          "phase": "final",
+          "reason": "final package verified and published no later than T-10",
+          "result": "complete",
+          "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+          "state": "complete",
+          "time": "2026-09-06T15:01:51.970409Z"
+        },
+        "blocker": null,
+        "next_checkpoint": {
+          "at_msk": "2026-09-06T18:12:00+03:00",
+          "phase": "t_minus_18"
+        },
+        "challengers": {
+          "quality-v2": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "quality-v3": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "robust": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "sports-shadow": {
+            "reasons": [],
+            "status": "pending"
+          }
+        },
+        "selected_strategy": null
+      },
+      "primary_operator": {
+        "decision": "PLAY",
+        "actionable": true,
+        "record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9",
+        "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+        "package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+        "expires_at": "2026-09-06T15:20:00Z",
+        "completed_at": "2026-09-06T15:01:51.970409Z"
+      },
+      "primary_operator_file_sha256": "7d372f1d6d4ea9fbe8989e54155f50dbd67e697e92ac0a86909b4c6f0fe9905a",
+      "issued_primary_bytes_unchanged": true,
+      "primary_auth_unchanged": true,
+      "parallel_auth_unchanged": true,
+      "logs": {
+        "parallel-sidecar.stdout.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113636+03:00"
+        },
+        "parallel-sidecar.stderr.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113812+03:00"
+        }
+      },
+      "semantic_sha256": "80f54e4372dafc05f538a8f6272e416d94536d0dd0769f88b2d9ea60a56abae4",
+      "requested_checkpoint": "18:10"
+    },
+    {
+      "read_at_msk": "2026-09-06T18:12:07.736399+03:00",
+      "plan_id": "c1d243f5b6ca48f3",
+      "scope": "READ_ONLY_PARALLEL_PLUS_1812_PRIMARY_BOUND_1813",
+      "bound_until_msk": "2026-09-06T18:13:00+03:00",
+      "owned_processes": [],
+      "parallel_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3",
+        "state": "running",
+        "runs": "1",
+        "pid": "24009",
+        "last exit code": "(never exited)"
+      },
+      "parallel_ps": "24009     1 Sun Sep  6 18:00:05 2026     12:02   7:37.35  73.4 R    /Library/Frameworks/Python.framework/Versions/3.10/Resources/Python.app/Contents/MacOS/Python",
+      "primary_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "state": "not running",
+        "runs": "7",
+        "last exit code": "0"
+      },
+      "sidecar_status_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+      "sidecar_status_exists": false,
+      "companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/parallel-operator-result.json",
+      "companion_exists": false,
+      "watcher": {
+        "observed_at_msk": "2026-09-06T18:12:00.587686+03:00",
+        "last_phase": "final",
+        "last_attempt": {
+          "completed_at": "2026-09-06T15:01:51.970409Z",
+          "decision": "PLAY",
+          "error": null,
+          "outcome": "bet-ready",
+          "phase": "final",
+          "reason": "final package verified and published no later than T-10",
+          "result": "complete",
+          "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+          "state": "complete",
+          "time": "2026-09-06T15:01:51.970409Z"
+        },
+        "blocker": null,
+        "next_checkpoint": {
+          "at_msk": "2026-09-06T18:20:00+03:00",
+          "phase": "t_minus_10"
+        },
+        "challengers": {
+          "quality-v2": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "quality-v3": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "robust": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "sports-shadow": {
+            "reasons": [],
+            "status": "pending"
+          }
+        },
+        "selected_strategy": null
+      },
+      "primary_operator": {
+        "decision": "PLAY",
+        "actionable": true,
+        "record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9",
+        "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+        "package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+        "expires_at": "2026-09-06T15:20:00Z",
+        "completed_at": "2026-09-06T15:01:51.970409Z"
+      },
+      "primary_operator_file_sha256": "7d372f1d6d4ea9fbe8989e54155f50dbd67e697e92ac0a86909b4c6f0fe9905a",
+      "issued_primary_bytes_unchanged": true,
+      "primary_auth_unchanged": true,
+      "parallel_auth_unchanged": true,
+      "logs": {
+        "parallel-sidecar.stdout.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113636+03:00"
+        },
+        "parallel-sidecar.stderr.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113812+03:00"
+        }
+      },
+      "semantic_sha256": "1ea9fe1aea846d206e0732b384d44df705e0d957be6c475c2e73c1d827fd4a0a",
+      "requested_checkpoint": "18:12"
+    },
+    {
+      "read_at_msk": "2026-09-06T18:14:50.505290+03:00",
+      "plan_id": "c1d243f5b6ca48f3",
+      "scope": "READ_ONLY_FINAL_PARALLEL_OBSERVER_BOUND_1821",
+      "bound_until_msk": "2026-09-06T18:21:00+03:00",
+      "owned_processes": [],
+      "parallel_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3",
+        "state": "running",
+        "runs": "1",
+        "pid": "24009",
+        "last exit code": "(never exited)"
+      },
+      "parallel_ps": "24009     1 Sun Sep  6 18:00:05 2026     14:46   9:11.02  70.6 R    /Library/Frameworks/Python.framework/Versions/3.10/Resources/Python.app/Contents/MacOS/Python",
+      "primary_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "state": "not running",
+        "runs": "7",
+        "last exit code": "0"
+      },
+      "sidecar_status_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+      "sidecar_status_exists": false,
+      "companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/parallel-operator-result.json",
+      "companion_exists": false,
+      "watcher": {
+        "observed_at_msk": "2026-09-06T18:14:31.153742+03:00",
+        "last_phase": "final",
+        "last_attempt": {
+          "completed_at": "2026-09-06T15:01:51.970409Z",
+          "decision": "PLAY",
+          "error": null,
+          "outcome": "bet-ready",
+          "phase": "final",
+          "reason": "final package verified and published no later than T-10",
+          "result": "complete",
+          "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+          "state": "complete",
+          "time": "2026-09-06T15:01:51.970409Z"
+        },
+        "blocker": null,
+        "next_checkpoint": {
+          "at_msk": "2026-09-06T18:20:00+03:00",
+          "phase": "t_minus_10"
+        },
+        "challengers": {
+          "quality-v2": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "quality-v3": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "robust": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "sports-shadow": {
+            "reasons": [],
+            "status": "pending"
+          }
+        },
+        "selected_strategy": null
+      },
+      "primary_operator": {
+        "decision": "PLAY",
+        "actionable": true,
+        "record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9",
+        "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+        "package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+        "expires_at": "2026-09-06T15:20:00Z",
+        "completed_at": "2026-09-06T15:01:51.970409Z"
+      },
+      "primary_operator_file_sha256": "7d372f1d6d4ea9fbe8989e54155f50dbd67e697e92ac0a86909b4c6f0fe9905a",
+      "issued_primary_bytes_unchanged": true,
+      "primary_auth_unchanged": true,
+      "parallel_auth_unchanged": true,
+      "logs": {
+        "parallel-sidecar.stdout.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113636+03:00"
+        },
+        "parallel-sidecar.stderr.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113812+03:00"
+        }
+      },
+      "semantic_sha256": "6b185e82f146fa96ce54b948caebde30773d206c906edbb56122253bdfbe53ca",
+      "requested_checkpoint": "18:12"
+    },
+    {
+      "read_at_msk": "2026-09-06T18:15:17.994884+03:00",
+      "plan_id": "c1d243f5b6ca48f3",
+      "scope": "READ_ONLY_FINAL_PARALLEL_OBSERVER_BOUND_1821",
+      "bound_until_msk": "2026-09-06T18:21:00+03:00",
+      "owned_processes": [],
+      "parallel_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3",
+        "state": "running",
+        "runs": "1",
+        "pid": "24009",
+        "last exit code": "(never exited)"
+      },
+      "parallel_ps": "24009     1 Sun Sep  6 18:00:05 2026     15:13   9:28.68  70.9 R    /Library/Frameworks/Python.framework/Versions/3.10/Resources/Python.app/Contents/MacOS/Python",
+      "primary_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "state": "not running",
+        "runs": "7",
+        "last exit code": "0"
+      },
+      "sidecar_status_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+      "sidecar_status_exists": false,
+      "companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/parallel-operator-result.json",
+      "companion_exists": false,
+      "watcher": {
+        "observed_at_msk": "2026-09-06T18:15:01.254975+03:00",
+        "last_phase": "final",
+        "last_attempt": {
+          "completed_at": "2026-09-06T15:01:51.970409Z",
+          "decision": "PLAY",
+          "error": null,
+          "outcome": "bet-ready",
+          "phase": "final",
+          "reason": "final package verified and published no later than T-10",
+          "result": "complete",
+          "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+          "state": "complete",
+          "time": "2026-09-06T15:01:51.970409Z"
+        },
+        "blocker": null,
+        "next_checkpoint": {
+          "at_msk": "2026-09-06T18:20:00+03:00",
+          "phase": "t_minus_10"
+        },
+        "challengers": {
+          "quality-v2": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "quality-v3": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "robust": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "sports-shadow": {
+            "reasons": [],
+            "status": "pending"
+          }
+        },
+        "selected_strategy": null
+      },
+      "primary_operator": {
+        "decision": "PLAY",
+        "actionable": true,
+        "record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9",
+        "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+        "package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+        "expires_at": "2026-09-06T15:20:00Z",
+        "completed_at": "2026-09-06T15:01:51.970409Z"
+      },
+      "primary_operator_file_sha256": "7d372f1d6d4ea9fbe8989e54155f50dbd67e697e92ac0a86909b4c6f0fe9905a",
+      "issued_primary_bytes_unchanged": true,
+      "primary_auth_unchanged": true,
+      "parallel_auth_unchanged": true,
+      "logs": {
+        "parallel-sidecar.stdout.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113636+03:00"
+        },
+        "parallel-sidecar.stderr.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113812+03:00"
+        }
+      },
+      "semantic_sha256": "6b185e82f146fa96ce54b948caebde30773d206c906edbb56122253bdfbe53ca",
+      "requested_checkpoint": "18:15"
+    },
+    {
+      "read_at_msk": "2026-09-06T18:16:02.395442+03:00",
+      "plan_id": "c1d243f5b6ca48f3",
+      "scope": "READ_ONLY_FINAL_PARALLEL_OBSERVER_BOUND_1821",
+      "bound_until_msk": "2026-09-06T18:21:00+03:00",
+      "owned_processes": [],
+      "parallel_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3",
+        "state": "running",
+        "runs": "1",
+        "pid": "24009",
+        "last exit code": "(never exited)"
+      },
+      "parallel_ps": "24009     1 Sun Sep  6 18:00:05 2026     15:57   9:58.91  74.1 R    /Library/Frameworks/Python.framework/Versions/3.10/Resources/Python.app/Contents/MacOS/Python",
+      "primary_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "state": "not running",
+        "runs": "7",
+        "last exit code": "0"
+      },
+      "sidecar_status_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+      "sidecar_status_exists": false,
+      "companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/parallel-operator-result.json",
+      "companion_exists": false,
+      "watcher": {
+        "observed_at_msk": "2026-09-06T18:16:01.505147+03:00",
+        "last_phase": "final",
+        "last_attempt": {
+          "completed_at": "2026-09-06T15:01:51.970409Z",
+          "decision": "PLAY",
+          "error": null,
+          "outcome": "bet-ready",
+          "phase": "final",
+          "reason": "final package verified and published no later than T-10",
+          "result": "complete",
+          "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+          "state": "complete",
+          "time": "2026-09-06T15:01:51.970409Z"
+        },
+        "blocker": null,
+        "next_checkpoint": {
+          "at_msk": "2026-09-06T18:20:00+03:00",
+          "phase": "t_minus_10"
+        },
+        "challengers": {
+          "quality-v2": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "quality-v3": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "robust": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "sports-shadow": {
+            "reasons": [],
+            "status": "pending"
+          }
+        },
+        "selected_strategy": null
+      },
+      "primary_operator": {
+        "decision": "PLAY",
+        "actionable": true,
+        "record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9",
+        "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+        "package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+        "expires_at": "2026-09-06T15:20:00Z",
+        "completed_at": "2026-09-06T15:01:51.970409Z"
+      },
+      "primary_operator_file_sha256": "7d372f1d6d4ea9fbe8989e54155f50dbd67e697e92ac0a86909b4c6f0fe9905a",
+      "issued_primary_bytes_unchanged": true,
+      "primary_auth_unchanged": true,
+      "parallel_auth_unchanged": true,
+      "logs": {
+        "parallel-sidecar.stdout.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113636+03:00"
+        },
+        "parallel-sidecar.stderr.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113812+03:00"
+        }
+      },
+      "semantic_sha256": "5b0c2e8c073687e120231649eff42f8dd6709d913c4793ce591631cab892732d",
+      "requested_checkpoint": "18:15"
+    },
+    {
+      "read_at_msk": "2026-09-06T18:18:04.698116+03:00",
+      "plan_id": "c1d243f5b6ca48f3",
+      "scope": "READ_ONLY_FINAL_PARALLEL_OBSERVER_BOUND_1821",
+      "bound_until_msk": "2026-09-06T18:21:00+03:00",
+      "owned_processes": [],
+      "parallel_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3",
+        "state": "running",
+        "runs": "1",
+        "pid": "24009",
+        "last exit code": "(never exited)"
+      },
+      "parallel_ps": "24009     1 Sun Sep  6 18:00:05 2026     17:59  11:16.43   0.0 S    /Library/Frameworks/Python.framework/Versions/3.10/Resources/Python.app/Contents/MacOS/Python",
+      "primary_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "state": "not running",
+        "runs": "7",
+        "last exit code": "0"
+      },
+      "sidecar_status_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+      "sidecar_status_exists": false,
+      "companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/parallel-operator-result.json",
+      "companion_exists": false,
+      "watcher": {
+        "observed_at_msk": "2026-09-06T18:18:01.888191+03:00",
+        "last_phase": "final",
+        "last_attempt": {
+          "completed_at": "2026-09-06T15:01:51.970409Z",
+          "decision": "PLAY",
+          "error": null,
+          "outcome": "bet-ready",
+          "phase": "final",
+          "reason": "final package verified and published no later than T-10",
+          "result": "complete",
+          "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+          "state": "complete",
+          "time": "2026-09-06T15:01:51.970409Z"
+        },
+        "blocker": null,
+        "next_checkpoint": {
+          "at_msk": "2026-09-06T18:20:00+03:00",
+          "phase": "t_minus_10"
+        },
+        "challengers": {
+          "quality-v2": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "quality-v3": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "robust": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "sports-shadow": {
+            "reasons": [],
+            "status": "pending"
+          }
+        },
+        "selected_strategy": null
+      },
+      "primary_operator": {
+        "decision": "PLAY",
+        "actionable": true,
+        "record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9",
+        "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+        "package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+        "expires_at": "2026-09-06T15:20:00Z",
+        "completed_at": "2026-09-06T15:01:51.970409Z"
+      },
+      "primary_operator_file_sha256": "7d372f1d6d4ea9fbe8989e54155f50dbd67e697e92ac0a86909b4c6f0fe9905a",
+      "issued_primary_bytes_unchanged": true,
+      "primary_auth_unchanged": true,
+      "parallel_auth_unchanged": true,
+      "logs": {
+        "parallel-sidecar.stdout.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113636+03:00"
+        },
+        "parallel-sidecar.stderr.log": {
+          "bytes": 47,
+          "modified_at_msk": "2026-09-06T18:18:00.448705+03:00",
+          "tail": "{\"elapsed_seconds\":0.0,\"event\":\"engine_start\"}\n"
+        }
+      },
+      "semantic_sha256": "e44bab4cf6b4084243356e138860fb0010ca937cb1d3ee10e2f20f207380416b",
+      "requested_checkpoint": "18:18"
+    },
+    {
+      "read_at_msk": "2026-09-06T18:18:44.365494+03:00",
+      "plan_id": "c1d243f5b6ca48f3",
+      "scope": "READ_ONLY_FINAL_PARALLEL_OBSERVER_BOUND_1821",
+      "bound_until_msk": "2026-09-06T18:21:00+03:00",
+      "owned_processes": [],
+      "parallel_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3",
+        "state": "running",
+        "runs": "1",
+        "pid": "24009",
+        "last exit code": "(never exited)"
+      },
+      "parallel_ps": "24009     1 Sun Sep  6 18:00:05 2026     18:39  11:16.43   0.0 S    /Library/Frameworks/Python.framework/Versions/3.10/Resources/Python.app/Contents/MacOS/Python",
+      "primary_launchd": {
+        "returncode": 0,
+        "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+        "state": "not running",
+        "runs": "7",
+        "last exit code": "0"
+      },
+      "sidecar_status_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+      "sidecar_status_exists": false,
+      "companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/parallel-operator-result.json",
+      "companion_exists": false,
+      "watcher": {
+        "observed_at_msk": "2026-09-06T18:18:31.961007+03:00",
+        "last_phase": "final",
+        "last_attempt": {
+          "completed_at": "2026-09-06T15:01:51.970409Z",
+          "decision": "PLAY",
+          "error": null,
+          "outcome": "bet-ready",
+          "phase": "final",
+          "reason": "final package verified and published no later than T-10",
+          "result": "complete",
+          "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+          "state": "complete",
+          "time": "2026-09-06T15:01:51.970409Z"
+        },
+        "blocker": null,
+        "next_checkpoint": {
+          "at_msk": "2026-09-06T18:20:00+03:00",
+          "phase": "t_minus_10"
+        },
+        "challengers": {
+          "quality-v2": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "quality-v3": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "robust": {
+            "reasons": [],
+            "status": "pending"
+          },
+          "sports-shadow": {
+            "reasons": [],
+            "status": "pending"
+          }
+        },
+        "selected_strategy": null
+      },
+      "primary_operator": {
+        "decision": "PLAY",
+        "actionable": true,
+        "record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9",
+        "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+        "package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+        "expires_at": "2026-09-06T15:20:00Z",
+        "completed_at": "2026-09-06T15:01:51.970409Z"
+      },
+      "primary_operator_file_sha256": "7d372f1d6d4ea9fbe8989e54155f50dbd67e697e92ac0a86909b4c6f0fe9905a",
+      "issued_primary_bytes_unchanged": true,
+      "primary_auth_unchanged": true,
+      "parallel_auth_unchanged": true,
+      "logs": {
+        "parallel-sidecar.stdout.log": {
+          "bytes": 0,
+          "modified_at_msk": "2026-09-06T18:00:05.113636+03:00"
+        },
+        "parallel-sidecar.stderr.log": {
+          "bytes": 306,
+          "modified_at_msk": "2026-09-06T18:18:40.452411+03:00",
+          "tail": "{\"elapsed_seconds\":0.0,\"event\":\"engine_start\"}\n{\"elapsed_seconds\":10.002590915995825,\"event\":\"engine_progress\"}\n{\"elapsed_seconds\":20.003003749996424,\"event\":\"engine_progress\"}\n{\"elapsed_seconds\":30.003347624995513,\"event\":\"engine_progress\"}\n{\"elapsed_seconds\":40.00387679099367,\"event\":\"engine_progress\"}\n"
+        }
+      },
+      "semantic_sha256": "a58c34201c592f5ead4668c637f91071ec0ea4548166f3e3cec6af0033d4fbc1",
+      "requested_checkpoint": "18:18"
+    }
+  ],
+  "parallel_1810_1812_observer": {
+    "read_at_msk": "2026-09-06T18:19:13.798724+03:00",
+    "plan_id": "c1d243f5b6ca48f3",
+    "scope": "READ_ONLY_FINAL_PARALLEL_OBSERVER_BOUND_1821",
+    "bound_until_msk": "2026-09-06T18:21:00+03:00",
+    "owned_processes": [],
+    "parallel_launchd": {
+      "returncode": 0,
+      "label": "com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3",
+      "state": "not running",
+      "runs": "1",
+      "last exit code": "0"
+    },
+    "primary_launchd": {
+      "returncode": 0,
+      "label": "com.totoai.production-scheduler.v9.c1d243f5b6ca48f3",
+      "state": "not running",
+      "runs": "7",
+      "last exit code": "0"
+    },
+    "sidecar_status_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json",
+    "sidecar_status_exists": true,
+    "sidecar_status_sha256": "a220eeee10fe24f469bcee04de9393c61aedfafe5241621ec228a5259a9de5ec",
+    "sidecar_status": {
+      "automatic_wagering": false,
+      "baseline_matches_operator": true,
+      "completed_at": "2026-09-06T15:19:04.553592Z",
+      "drawing": 4998,
+      "drawing_id": 12102,
+      "expires_at": "2026-09-06T15:20:00Z",
+      "operator_observed_at": "2026-09-06T15:01:54.949416Z",
+      "operator_package": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/operator-bk-package.txt",
+      "operator_package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+      "parallel_release": {
+        "actionable": true,
+        "authorization_mode": "EXPERIMENTAL_PARALLEL_MANUAL",
+        "authorization_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-release-authorization.json",
+        "authorization_sha256": "0fffa2b65b2e92d39cf4e618040b4927aac5fc36c077033ccf540f305a56cf01",
+        "automatic_wagering": false,
+        "coupon_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "decision": "PLAY",
+        "drawing": 4998,
+        "drawing_id": 12102,
+        "expires_at": "2026-09-06T15:20:00Z",
+        "highest_p13_single_coupon": {
+          "coupon": "111121111111121",
+          "criterion": "maximum_probability_at_least_13",
+          "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+          "package_position": 96,
+          "probability_at_least_13": 0.00037718683772794214,
+          "probability_at_least_14": 3.495016396283223e-05,
+          "probability_at_least_15": 1.516706360059257e-06,
+          "reference_model": "bk"
+        },
+        "plan_id": "c1d243f5b6ca48f3",
+        "profitability_proven": false,
+        "published_at": "2026-09-06T15:19:04.553592Z",
+        "record_sha256": "540a8cbfcbba2228046010f2aa06fd2998a5e26c8b94fe405a1509469a3f6b7f",
+        "risk_acknowledged": true,
+        "schema_version": 1,
+        "selected_cost": 4980,
+        "selected_coupon_count": 166,
+        "selected_package_file_sha256": "1b6a7fc58350a683bcb0256d3099ea36b9cd9666487cdc7fee3b0e7cff6a1702",
+        "selected_package_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/selected-parallel-operator-package.txt",
+        "selected_package_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+        "selected_strategy_id": "quality-v3",
+        "selected_strategy_lineage": null,
+        "selection_policy_version": "parallel-challenger-nondegradation-v1",
+        "selection_promoted": true,
+        "selection_reason": "eligible_challenger_dominates_control_gate",
+        "status": "READY_PARALLEL_PLAY_BEFORE_T10"
+      },
+      "plan_id": "c1d243f5b6ca48f3",
+      "profitability_proven": false,
+      "quality_v3_research_package": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/quality-v3-final-research-coupons.txt",
+      "quality_v3_research_package_sha256": "7cfcbc51f1f68b673d99922a20dd98ed26c84447238070a553c44ba24c79cfcc",
+      "record_sha256": "1f5070503ad5c286434f0f0d99bb2bffacdec6d745ee6767148e6e148b6babc7",
+      "research_report": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/comparison.json",
+      "research_report_sha256": "d5fc5ec01dcc7aba0a4b9879faf0de0cad98bcdc73812c177605175619744f6b",
+      "robust_research_package": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/robust-final-research-coupons.txt",
+      "robust_research_package_sha256": "12c05278b8da550f2a45fad6275702ec20bea5d630686a94e66720e7c6c224d9",
+      "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+      "schema_version": 1,
+      "sports_coverage_count": 14,
+      "sports_fallback_count": 1,
+      "sports_operator_compatible": false,
+      "sports_research_package": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/sports-final-research-coupons.txt",
+      "sports_research_package_sha256": "abd0434e9c6f15343063962c273cf77fc88f545e8033f4d0736665ed2bd9f52a",
+      "started_at": "2026-09-06T15:00:08.062067Z",
+      "status": "READY_PARALLEL_PLAY_BEFORE_T10",
+      "uncertainty_research_package": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/uncertainty-v1-final-research-coupons.txt",
+      "uncertainty_research_package_sha256": "6c0b7139c9298461a7ef533edb9b6546362bb92f16b81e2111c0982760b8bb6d"
+    },
+    "companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/parallel-operator-result.json",
+    "companion_exists": true,
+    "companion_sha256": "758bde0b6278652ae4415276e985fac69f50030b9eb04828244710b9bf731f15",
+    "companion": {
+      "actionable": true,
+      "authorization_mode": "EXPERIMENTAL_PARALLEL_MANUAL",
+      "authorization_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-release-authorization.json",
+      "authorization_sha256": "0fffa2b65b2e92d39cf4e618040b4927aac5fc36c077033ccf540f305a56cf01",
+      "automatic_wagering": false,
+      "coupon_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+      "decision": "PLAY",
+      "drawing": 4998,
+      "drawing_id": 12102,
+      "expires_at": "2026-09-06T15:20:00Z",
+      "highest_p13_single_coupon": {
+        "coupon": "111121111111121",
+        "criterion": "maximum_probability_at_least_13",
+        "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+        "package_position": 96,
+        "probability_at_least_13": 0.00037718683772794214,
+        "probability_at_least_14": 3.495016396283223e-05,
+        "probability_at_least_15": 1.516706360059257e-06,
+        "reference_model": "bk"
+      },
+      "plan_id": "c1d243f5b6ca48f3",
+      "profitability_proven": false,
+      "published_at": "2026-09-06T15:19:04.553592Z",
+      "record_sha256": "540a8cbfcbba2228046010f2aa06fd2998a5e26c8b94fe405a1509469a3f6b7f",
+      "risk_acknowledged": true,
+      "schema_version": 1,
+      "selected_cost": 4980,
+      "selected_coupon_count": 166,
+      "selected_package_file_sha256": "1b6a7fc58350a683bcb0256d3099ea36b9cd9666487cdc7fee3b0e7cff6a1702",
+      "selected_package_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/selected-parallel-operator-package.txt",
+      "selected_package_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+      "selected_strategy_id": "quality-v3",
+      "selected_strategy_lineage": null,
+      "selection_policy_version": "parallel-challenger-nondegradation-v1",
+      "selection_promoted": true,
+      "selection_reason": "eligible_challenger_dominates_control_gate",
+      "status": "READY_PARALLEL_PLAY_BEFORE_T10"
+    },
+    "watcher": {
+      "observed_at_msk": "2026-09-06T18:19:02.050201+03:00",
+      "last_phase": "final",
+      "last_attempt": {
+        "completed_at": "2026-09-06T15:01:51.970409Z",
+        "decision": "PLAY",
+        "error": null,
+        "outcome": "bet-ready",
+        "phase": "final",
+        "reason": "final package verified and published no later than T-10",
+        "result": "complete",
+        "run_id": "final-01-20260906T150005922935Z-6e7a4306",
+        "state": "complete",
+        "time": "2026-09-06T15:01:51.970409Z"
+      },
+      "blocker": null,
+      "next_checkpoint": {
+        "at_msk": "2026-09-06T18:20:00+03:00",
+        "phase": "t_minus_10"
+      },
+      "challengers": {
+        "quality-v2": {
+          "reasons": [],
+          "status": "pending"
+        },
+        "quality-v3": {
+          "reasons": [],
+          "status": "pending"
+        },
+        "robust": {
+          "reasons": [],
+          "status": "pending"
+        },
+        "sports-shadow": {
+          "reasons": [],
+          "status": "pending"
+        }
+      },
+      "selected_strategy": null
+    },
+    "primary_operator": {
+      "decision": "PLAY",
+      "actionable": true,
+      "record_sha256": "d02390bbe5a922369c51fb600a6fdebd0ffcb6dcee416729ec86b4fce7f2a9a9",
+      "coupon_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/baltbet-upload.txt",
+      "package_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+      "expires_at": "2026-09-06T15:20:00Z",
+      "completed_at": "2026-09-06T15:01:51.970409Z"
+    },
+    "primary_operator_file_sha256": "7d372f1d6d4ea9fbe8989e54155f50dbd67e697e92ac0a86909b4c6f0fe9905a",
+    "issued_primary_bytes_unchanged": true,
+    "primary_auth_unchanged": true,
+    "parallel_auth_unchanged": true,
+    "logs": {
+      "parallel-sidecar.stdout.log": {
+        "bytes": 359,
+        "modified_at_msk": "2026-09-06T18:19:04.578128+03:00",
+        "tail": "{\"output_dir\": \"/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306\", \"reason\": null, \"result_path\": \"/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/sidecar-status.json\", \"status\": \"READY_PARALLEL_PLAY_BEFORE_T10\"}\n"
+      },
+      "parallel-sidecar.stderr.log": {
+        "bytes": 440,
+        "modified_at_msk": "2026-09-06T18:18:50.638752+03:00",
+        "tail": "{\"elapsed_seconds\":0.0,\"event\":\"engine_start\"}\n{\"elapsed_seconds\":10.002590915995825,\"event\":\"engine_progress\"}\n{\"elapsed_seconds\":20.003003749996424,\"event\":\"engine_progress\"}\n{\"elapsed_seconds\":30.003347624995513,\"event\":\"engine_progress\"}\n{\"elapsed_seconds\":40.00387679099367,\"event\":\"engine_progress\"}\n{\"elapsed_seconds\":50.18763224999566,\"event\":\"engine_complete\"}\n{\"elapsed_seconds\":50.19029708299786,\"event\":\"verification_complete\"}\n"
+      }
+    },
+    "semantic_sha256": "27df47ce0d84a927093c5bafd43a0b8e651d3b905a37fd502b4d82dfb4ea9c61",
+    "requested_checkpoint": "18:18"
+  },
+  "primary_1812_checkpoint": {
+    "observed_at_msk": "2026-09-06T18:12:32.132030+03:00",
+    "launchd_runs": 7,
+    "launchd_state": "not running",
+    "last_exit_code": 0,
+    "state_revision": 13,
+    "terminal": "bet_ready",
+    "native_stdout_tail": "Outcome: no-op\nReason: no due scheduler phase\nOutcome: no-op\nReason: no due scheduler phase\nOutcome: no-op\nReason: no due scheduler phase\nOutcome: no-op\nReason: no due scheduler phase\nOutcome: no-op\nReason: no due scheduler phase\nOutcome: bet-ready\nDecision: PLAY\nReason: final package verified and published no later than T-10\nStatus: \n/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts\n/final-01-20260906T150005922935Z-6e7a4306/status.json\nOperator export: use `operator-export --plan <scheduler-plan.json> --output \n<destination.txt>` before T-10\nOutcome: bet-ready\nDecision: PLAY\nReason: final package verified and published no later than T-10\nStatus: \n/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/attempts\n/final-01-20260906T150005922935Z-6e7a4306/status.json\nOperator export: use `operator-export --plan <scheduler-plan.json> --output \n<destination.txt>` before T-10\n",
+    "issued_primary_bytes_record_and_authorizations_unchanged": true,
+    "no_new_forecast_started_by_observer": true
+  },
+  "parallel_1813_handoff": {
+    "last_runtime_observed_at_msk": "2026-09-06T18:12:56.506513+03:00",
+    "saved_at_msk": "2026-09-06T18:13:13.453562+03:00",
+    "status": "BOUND_REACHED_HANDOFF_PARALLEL_STILL_RUNNING",
+    "parallel_pid": 24009,
+    "launchd_runs": 1,
+    "elapsed": "12:51",
+    "cpu_time": "8:04.02",
+    "cpu_percent": 57.3,
+    "process_state": "R",
+    "terminal_status_exists": false,
+    "companion_exists": false,
+    "error_observed": false,
+    "exact_internal_phase": "UNOBSERVABLE_FROM_EMPTY_LOGS_AND_NO_TERMINAL_STATUS",
+    "primary_1812": "native bet-ready recheck returned same completed final run; state revision13; launchd idle/runs7/exit0",
+    "primary_bytes_operator_record_primary_consent_parallel_consent_unchanged": true,
+    "primary_expires_at_msk": "2026-09-06T18:20:00+03:00",
+    "next_parent_action": "Continue existing process observation only if explicitly assigned/extended. No deliverable companion yet; do not substitute research output. Existing primary remains unchanged.",
+    "observer_wait_stopped": true,
+    "processes_killed_or_retried": false,
+    "new_background_tasks": false,
+    "owned_processes": []
+  },
+  "parallel_progress_milestone": {
+    "observed_at_msk": "2026-09-06T18:15:46.181276+03:00",
+    "files": {
+      "baseline-final-research-coupons.txt": {
+        "bytes": 2771,
+        "mtime_msk": "2026-09-06T18:07:48.362186+03:00",
+        "sha256": "2e4d759ef10cfd5e424ce2add85146f0a1c2cec3433eee2d810f817d14c769ab"
+      },
+      "primary-bk-ranking.json": {
+        "bytes": 1201,
+        "mtime_msk": "2026-09-06T18:07:48.394286+03:00",
+        "sha256": "48c4125f8885eceeee2efae52e893f63625a95ce4b08bda65a33721c49b48fbb"
+      },
+      "sports-final-probability-snapshot.json": {
+        "bytes": 1503,
+        "mtime_msk": "2026-09-06T18:07:48.401971+03:00",
+        "sha256": "1cb31673913aa2f38ed42ccf597ffd174b95a9eae0eab464f353650b7ecc3f24"
+      }
+    },
+    "meaning": "Baseline/ranking and sports-input materialization confirmed; current live phase not observed, no terminal/comparison success inferred.",
+    "cpu_not_progress_proof": true
+  },
+  "urgent_parallel_artifact_check": {
+    "observed_at_msk": "2026-09-06T18:17:01.608689+03:00",
+    "files": [
+      {
+        "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/operator-bk-package.txt",
+        "kind": "file",
+        "bytes": 7968,
+        "mtime_msk": "2026-09-06T18:01:55.027450+03:00"
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison",
+        "kind": "dir",
+        "bytes": 160,
+        "mtime_msk": "2026-09-06T18:07:48.402578+03:00"
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/baseline-final-research-coupons.txt",
+        "kind": "file",
+        "bytes": 2771,
+        "mtime_msk": "2026-09-06T18:07:48.362186+03:00"
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/sports-final-probability-snapshot.json",
+        "kind": "file",
+        "bytes": 1503,
+        "mtime_msk": "2026-09-06T18:07:48.401971+03:00"
+      },
+      {
+        "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/primary-bk-ranking.json",
+        "kind": "file",
+        "bytes": 1201,
+        "mtime_msk": "2026-09-06T18:07:48.394286+03:00"
+      }
+    ],
+    "direct_child_pids": [],
+    "no_generation_no_restart_no_profiling": true
+  },
+  "parallel_engine_milestone": {
+    "observed_at_msk": "2026-09-06T18:18:27.864658+03:00",
+    "stderr_event": "engine_start",
+    "stderr_file_event_mtime_msk": "2026-09-06T18:18:00.448705+03:00",
+    "children": [
+      {
+        "pid": 26301,
+        "stats": "26301 24009 Sun Sep  6 18:17:58 2026     00:29   0:25.65  96.4 R    /Library/Frameworks/Python.framework/Versions/3.10/Resources/Python.app/Contents/MacOS/Python",
+        "python_module": "toto_ai.sports_stats.parallel_g1"
+      }
+    ],
+    "completion_not_yet_claimed": true
+  },
+  "parallel_delivery": {
+    "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+    "verified_at_msk": "2026-09-06T18:19:52.107536+03:00",
+    "status": "VERIFIED_COMPANION_PLAY_BEFORE_1820",
+    "path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/selected-parallel-operator-package.txt",
+    "sha256": "1b6a7fc58350a683bcb0256d3099ea36b9cd9666487cdc7fee3b0e7cff6a1702",
+    "companion_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/parallel-operator-result.json",
+    "companion_file_sha256": "758bde0b6278652ae4415276e985fac69f50030b9eb04828244710b9bf731f15",
+    "companion_record_sha256": "540a8cbfcbba2228046010f2aa06fd2998a5e26c8b94fe405a1509469a3f6b7f",
+    "plan_id": "c1d243f5b6ca48f3",
+    "drawing": 4998,
+    "count": 166,
+    "cost": 4980,
+    "stake": 30,
+    "expires_at_msk": "2026-09-06T18:20:00+03:00",
+    "published_at": "2026-09-06T15:19:04.553592Z",
+    "selected_strategy": "quality-v3",
+    "selection_reason": "eligible_challenger_dominates_control_gate",
+    "same_final_input_sha256": "baea70824b1435bd771b5d9591ed6fb80319a89cacd25c77d9672e7503438282",
+    "probability_input_sha256": "44658935ef333d3a1b67d434a3b25e911b720838ee9e8ce80ecf4218cc17d04d",
+    "primary_operator_sha256": "d2f07e0460d7b05199627852a44890fab94e21e63dc1e3a03353c0c1a2464d29",
+    "authorization_record_sha256": "0fffa2b65b2e92d39cf4e618040b4927aac5fc36c077033ccf540f305a56cf01",
+    "best": {
+      "coupon": "111121111111121",
+      "criterion": "maximum_probability_at_least_13",
+      "package_order_semantics": "PACKAGE_SELECTION_ORDER_NOT_PROBABILITY_RANK",
+      "package_position": 96,
+      "probability_at_least_13": 0.00037718683772794214,
+      "probability_at_least_14": 3.495016396283223e-05,
+      "probability_at_least_15": 1.516706360059257e-06,
+      "reference_model": "bk"
+    },
+    "all_models_comparison": {
+      "automatic_wagering": false,
+      "candidates": [
+        {
+          "cost": 4980,
+          "coupon_count": 166,
+          "eligible": true,
+          "maximum_outcome_share": 0.7650602409638554,
+          "models": [
+            {
+              "model": "bk",
+              "probability_at_least_13": 0.017643598165080737,
+              "probability_at_least_14": 0.0019638090135809367,
+              "probability_at_least_15": 9.340527001467878e-05
+            },
+            {
+              "model": "sports",
+              "probability_at_least_13": 0.01752545540025367,
+              "probability_at_least_14": 0.0019468212429925415,
+              "probability_at_least_15": 9.244259425006732e-05
+            },
+            {
+              "model": "flatten_10",
+              "probability_at_least_13": 0.015342552670931287,
+              "probability_at_least_14": 0.001643661979407622,
+              "probability_at_least_15": 7.585577086356525e-05
+            },
+            {
+              "model": "flatten_20",
+              "probability_at_least_13": 0.013325887751527661,
+              "probability_at_least_14": 0.0013737382724807407,
+              "probability_at_least_15": 6.146950449435683e-05
+            }
+          ],
+          "package_sha256": "568f9a356765ada90990f6a2ee28505911d40f60da22e882f9e8f79801ad4cd9",
+          "rejection_reasons": [],
+          "strategy_id": "quality-v2"
+        },
+        {
+          "cost": 4980,
+          "coupon_count": 166,
+          "eligible": true,
+          "maximum_outcome_share": 0.7710843373493976,
+          "models": [
+            {
+              "model": "bk",
+              "probability_at_least_13": 0.017528234652225323,
+              "probability_at_least_14": 0.0019383340896830573,
+              "probability_at_least_15": 9.201488921199174e-05
+            },
+            {
+              "model": "sports",
+              "probability_at_least_13": 0.017588593504858054,
+              "probability_at_least_14": 0.0019480227986186489,
+              "probability_at_least_15": 9.258162001214514e-05
+            },
+            {
+              "model": "flatten_10",
+              "probability_at_least_13": 0.015249853599349229,
+              "probability_at_least_14": 0.0016242483791999351,
+              "probability_at_least_15": 7.48550060279208e-05
+            },
+            {
+              "model": "flatten_20",
+              "probability_at_least_13": 0.013252458690085685,
+              "probability_at_least_14": 0.0013591375273416097,
+              "probability_at_least_15": 6.0762406944631406e-05
+            }
+          ],
+          "package_sha256": "abc63ea84b77d61a21822723bc5de3914374c637f2868d368be137625266b11c",
+          "rejection_reasons": [],
+          "strategy_id": "sports-shadow"
+        },
+        {
+          "cost": 4980,
+          "coupon_count": 166,
+          "eligible": true,
+          "maximum_outcome_share": 0.7650602409638554,
+          "models": [
+            {
+              "model": "bk",
+              "probability_at_least_13": 0.02486823360849403,
+              "probability_at_least_14": 0.002643005595486519,
+              "probability_at_least_15": 0.00011089899814426064
+            },
+            {
+              "model": "sports",
+              "probability_at_least_13": 0.02467230352657965,
+              "probability_at_least_14": 0.0026151187172145348,
+              "probability_at_least_15": 0.0001095141015296762
+            },
+            {
+              "model": "flatten_10",
+              "probability_at_least_13": 0.021358967799681373,
+              "probability_at_least_14": 0.0021946594867885173,
+              "probability_at_least_15": 9.000898643135291e-05
+            },
+            {
+              "model": "flatten_20",
+              "probability_at_least_13": 0.018282330394932253,
+              "probability_at_least_14": 0.0018160993472820526,
+              "probability_at_least_15": 7.276961666568772e-05
+            }
+          ],
+          "package_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+          "rejection_reasons": [],
+          "strategy_id": "quality-v3"
+        },
+        {
+          "cost": 4980,
+          "coupon_count": 166,
+          "eligible": true,
+          "maximum_outcome_share": 0.7650602409638554,
+          "models": [
+            {
+              "model": "bk",
+              "probability_at_least_13": 0.023604071059533684,
+              "probability_at_least_14": 0.002612052573597924,
+              "probability_at_least_15": 0.00011271764511152218
+            },
+            {
+              "model": "sports",
+              "probability_at_least_13": 0.023445889827752,
+              "probability_at_least_14": 0.00258848639524726,
+              "probability_at_least_15": 0.00011151953293476217
+            },
+            {
+              "model": "flatten_10",
+              "probability_at_least_13": 0.020234834976429573,
+              "probability_at_least_14": 0.0021616802971394424,
+              "probability_at_least_15": 9.10925317394107e-05
+            },
+            {
+              "model": "flatten_20",
+              "probability_at_least_13": 0.017291436878152416,
+              "probability_at_least_14": 0.0017827873937170623,
+              "probability_at_least_15": 7.331565515348581e-05
+            }
+          ],
+          "package_sha256": "c30447b387202b5a7c6a9946b68cf96eb777f8a7d1e9aea2d56640d0f4b6770c",
+          "rejection_reasons": [],
+          "strategy_id": "robust"
+        }
+      ],
+      "policy_version": "parallel-challenger-nondegradation-v1",
+      "profitability_proven": false,
+      "promoted": true,
+      "rejections": {
+        "sports-shadow": [
+          "bk_p13_below_control",
+          "bk_p14_below_control",
+          "bk_p15_below_control",
+          "concentration_above_control",
+          "worst_model_p13_not_improved"
+        ]
+      },
+      "selected_package_sha256": "a209a7b0e28382aa89c7e6a76b3a52391b4ad96225b538e2f9e6970477433424",
+      "selected_strategy_id": "quality-v3",
+      "selection_reason": "eligible_challenger_dominates_control_gate"
+    },
+    "g1_status": "BUDGET_EXHAUSTED",
+    "g1_runtime": 52.68400804200064,
+    "g1_engine": {
+      "accepted_swap_count": 0,
+      "elapsed_seconds": 50.00082037499669,
+      "evaluated_swap_count": 8337,
+      "reason": "TIME_BUDGET",
+      "status": "BUDGET_EXHAUSTED"
+    },
+    "report_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/output/run-final-01-20260906T150005922935Z-6e7a4306/research-comparison/comparison.json",
+    "report_sha256": "ca03cfc12b21c8a9defff5a7287b0992c70f58f2de8e8eb1faf22890466b1d2e",
+    "report_file_sha256": "d5fc5ec01dcc7aba0a4b9879faf0de0cad98bcdc73812c177605175619744f6b",
+    "automatic_wagering": false,
+    "runtime_mutated": false
+  },
+  "parallel_delivery_receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_FINAL_DELIVERY_RECEIPT.json",
+  "expiry_observation": {
+    "observed_at_msk": "2026-09-06T18:22:31.862896+03:00",
+    "plan_id": "c1d243f5b6ca48f3",
+    "drawing_number": 4998,
+    "operational_cutoff_msk": "2026-09-06T18:20:00+03:00",
+    "primary_native_record": {
+      "decision": "NO BET",
+      "actionable": false,
+      "operator_status": "NO_BET",
+      "reason": "operator package expired at T-10; audit archive retained",
+      "completed_at": "2026-09-06T15:20:05.862467Z",
+      "coupon_path": null,
+      "package_sha256": null
+    },
+    "parallel_published_at_msk": "2026-09-06T18:19:04.553592+03:00",
+    "parallel_pre_cutoff_validation_at_msk": "2026-09-06T18:19:52.107536+03:00",
+    "parallel_selected_strategy": "quality-v3",
+    "parallel_selected_file_sha256": "1b6a7fc58350a683bcb0256d3099ea36b9cd9666487cdc7fee3b0e7cff6a1702",
+    "current_primary_actionable": false,
+    "current_parallel_actionable": false,
+    "status": "EXPIRED_NOT_FOR_WAGERING",
+    "original_primary_upload_exists": false,
+    "primary_upload_note": "Native cutoff reports audit archive retained; original upload is not recreated. Prior delivered hash remains historical evidence only.",
+    "prior_expiry_receipt_error": "FileNotFoundError when rehashing original primary upload after native cutoff; this receipt handles absence without modifying runtime.",
+    "last_launchd_observation_msk": "2026-09-06T18:20:34+03:00",
+    "last_launchd_observation": {
+      "primary": "idle; runs=8; exit=0",
+      "parallel": "idle; runs=1; exit=0"
+    },
+    "parallel_final_g1": {
+      "status": "BUDGET_EXHAUSTED",
+      "reason": "TIME_BUDGET",
+      "engine_seconds": 50.00082037499669,
+      "evaluated_swaps": 8337,
+      "accepted_swaps": 0,
+      "fallback_preserved": true
+    },
+    "passive_diagnosis_owner": "Leibniz; not duplicated",
+    "observer_stopped": true,
+    "runtime_source_authority_jobs_modified": false,
+    "wager_placed": false,
+    "delivery_receipt_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_FINAL_DELIVERY_RECEIPT.json"
+  },
+  "current_operational_status": "EXPIRED_NOT_FOR_WAGERING",
+  "current_effective_actionable": false,
+  "observer_completed_at_msk": "2026-09-06T18:22:31.862896+03:00"
+}

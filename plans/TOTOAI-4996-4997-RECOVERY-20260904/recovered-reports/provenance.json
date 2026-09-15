@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "copied_at_msk": "2026-09-05T13:52:55.141432+03:00",
+  "context_worker_thread_id": "01a07102-7504-74d2-8ed2-147f9c2e3367",
+  "own_cwd": "/Users/turshevr/toto-ai",
+  "continuation_task_id": "019f7afa-72e2-7403-85cd-d05f408a4ef3",
+  "source_author_thread_ids": {
+    "review": null,
+    "models": null
+  },
+  "source_author_thread_id_note": "Neither report states its author thread ID. The review mentions only the destination parent task ID. No app task discovery or creation was performed.",
+  "scope": "Only two reviewed nonsecret Markdown reports copied; no source/code/data transfer, source writes, Git, runtime changes, experiments, external calls or publication.",
+  "files": [
+    {
+      "source_path": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904-PRE_PUSH_REVIEW.md",
+      "copy_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/recovered-reports/TOTOAI-4996-4997-RECOVERY-20260904-PRE_PUSH_REVIEW.md",
+      "source_file_sha256": "8c2ddceb082d7c2b3ff44db02c7a4304831db45f15244a4f967d8341562ae8ac",
+      "copy_file_sha256": "8c2ddceb082d7c2b3ff44db02c7a4304831db45f15244a4f967d8341562ae8ac",
+      "bytes": 11825,
+      "source_mtime_msk": "2026-09-04T23:44:47.415751+03:00",
+      "source_mtime_ns": 1788554687415750918,
+      "source_is_regular_nonsymlink": true,
+      "source_metadata_unchanged_during_copy": true,
+      "byte_exact_copy_verified": true
+    },
+    {
+      "source_path": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/MODEL_READINESS_REPORT.md",
+      "copy_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904/recovered-reports/MODEL_READINESS_REPORT.md",
+      "source_file_sha256": "6999e0e506aa37bb90fc6bfb330ede64e57776dc506f8b13c649d50a2ffe73b7",
+      "copy_file_sha256": "6999e0e506aa37bb90fc6bfb330ede64e57776dc506f8b13c649d50a2ffe73b7",
+      "bytes": 10245,
+      "source_mtime_msk": "2026-09-04T23:36:30.451208+03:00",
+      "source_mtime_ns": 1788554190451208406,
+      "source_is_regular_nonsymlink": true,
+      "source_metadata_unchanged_during_copy": true,
+      "byte_exact_copy_verified": true
+    }
+  ]
+}

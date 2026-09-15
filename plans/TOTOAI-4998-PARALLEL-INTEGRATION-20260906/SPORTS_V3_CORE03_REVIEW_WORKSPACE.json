@@ -1,0 +1,9 @@
+{
+  "temp": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/sports-v3-core03-review-w0y5xd_9",
+  "manifest": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_PROBABILITY_CORE_SNAPSHOT_03.json",
+  "full_patch": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_PROBABILITY_CORE_SNAPSHOT_03.patch",
+  "delta": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_PROBABILITY_DELTA_02_TO_03.patch",
+  "full_sha256": "daa7c62dc30d307052df05008625922f9684fd4d72cb78be62d45770140318b8",
+  "delta_sha256": "fa0aa7b821c1ba7db0055c150118fdc6efd664ca2b52ea227ed42e631c5da2b1",
+  "full15_and_delta12_match": true
+}

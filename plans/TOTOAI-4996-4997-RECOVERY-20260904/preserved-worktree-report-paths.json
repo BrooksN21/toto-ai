@@ -1,0 +1,42 @@
+[
+  {
+    "checkout": "/Users/turshevr/.codex/worktrees/ab34/toto-ai",
+    "scoped_path": "plans/TOTOAI-4996-4997-RECOVERY-20260904-PRE_PUSH_REVIEW.md",
+    "command": [
+      "/Users/turshevr/toto-ai/scripts/project-git",
+      "--registered-worktree",
+      "/Users/turshevr/.codex/worktrees/ab34/toto-ai",
+      "status",
+      "--short",
+      "--untracked-files=all",
+      "-z",
+      "--",
+      "plans/TOTOAI-4996-4997-RECOVERY-20260904-PRE_PUSH_REVIEW.md"
+    ],
+    "file_names": [
+      "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4996-4997-RECOVERY-20260904-PRE_PUSH_REVIEW.md"
+    ],
+    "contents_read": false,
+    "ownership_thread_identity": "unknown; retained materials prove prior work exists, not its author/task identity"
+  },
+  {
+    "checkout": "/Users/turshevr/.codex/worktrees/a7aa/toto-ai",
+    "scoped_path": "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/",
+    "command": [
+      "/Users/turshevr/toto-ai/scripts/project-git",
+      "--registered-worktree",
+      "/Users/turshevr/.codex/worktrees/a7aa/toto-ai",
+      "status",
+      "--short",
+      "--untracked-files=all",
+      "-z",
+      "--",
+      "plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/"
+    ],
+    "file_names": [
+      "/Users/turshevr/.codex/worktrees/a7aa/toto-ai/plans/TOTOAI-SPORTS-V3-MODEL-READINESS-20260904/MODEL_READINESS_REPORT.md"
+    ],
+    "contents_read": false,
+    "ownership_thread_identity": "unknown; retained materials prove prior work exists, not its author/task identity"
+  }
+]

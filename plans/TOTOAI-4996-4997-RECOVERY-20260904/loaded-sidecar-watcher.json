@@ -1,0 +1,32 @@
+[
+  {
+    "label": "com.totoai.parallel-sidecar.v1.45b72ac58a45958b",
+    "loaded": true,
+    "calendar": [
+      {
+        "Year": 2026,
+        "Minute": 0,
+        "Hour": 16,
+        "Day": 5,
+        "Month": 9
+      }
+    ],
+    "state": "not running",
+    "run_count": "0"
+  },
+  {
+    "label": "com.totoai.status-watcher.v1.45b72ac58a45958b",
+    "loaded": true,
+    "calendar": [
+      {
+        "Year": 2026,
+        "Minute": 30,
+        "Hour": 14,
+        "Day": 5,
+        "Month": 9
+      }
+    ],
+    "state": "not running",
+    "run_count": "0"
+  }
+]

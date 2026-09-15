@@ -1,0 +1,298 @@
+{
+  "task_id": "TOTOAI-4998-PARALLEL-INTEGRATION-20260906",
+  "frozen_at": "2026-09-06T18:47:59.099993+03:00",
+  "status": "FROZEN_FOR_INDEPENDENT_REVIEW_NOT_PUBLISHED",
+  "patch_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/PARALLEL_RUNTIME_IMPLEMENTATION.patch",
+  "patch_sha256": "ce96d1f2f2888eb77359cb659a7ed59846b66c3b9d407cfb56300baf60cc97de",
+  "files": [
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_comparison.py",
+      "before_sha256": "c92acdde77bb3443531e8ebac081aae29424ad014633ffeaeb3ecf17f6127782",
+      "after_sha256": "d403ba2afb63305c7153036267511c4762033661f66346c2357d79fd6bd7c234",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/sports_stats/final_hybrid_comparison.py"
+    },
+    {
+      "path": "src/toto_ai/optimizer/strategy_comparison.py",
+      "before_sha256": "9b67c3912760d8166824ee6b91c33df501de90ca1d80920187be14b585d81b75",
+      "after_sha256": "99cfc4cee56e057336ceabb637cbe9a6a453253387b7b9310979cfeb260a1473",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/optimizer/strategy_comparison.py"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/final_hybrid_sidecar.py",
+      "before_sha256": "e76b627ae82af047e777b0d9d5b615ebf4fa1a6eee5a44f0d040b67c48dd8434",
+      "after_sha256": "b428cd68cbf9129fc1ca601bda38d9ad8fba8dfa64e1658643b1533861fee96c",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/sports_stats/final_hybrid_sidecar.py"
+    },
+    {
+      "path": "src/toto_ai/ev/ternary.py",
+      "before_sha256": "eee2a0c97e04eba467abdbf7d7622a0447b2e61a08e9793c4e0416e60e17477d",
+      "after_sha256": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/ev/ternary.py"
+    },
+    {
+      "path": "src/toto_ai/ev/package.py",
+      "before_sha256": "7f360752587e370e2b2e46592adfa650e0cebafc840aeff82cf503504a6357a9",
+      "after_sha256": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/ev/package.py"
+    },
+    {
+      "path": "src/toto_ai/ev/package_quality.py",
+      "before_sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb",
+      "after_sha256": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/ev/package_quality.py"
+    },
+    {
+      "path": "tests/test_final_hybrid_g1_integration.py",
+      "before_sha256": "880463b07461334f6d88b0061f316bc0d8c20088e7e1853dc9fb9b335a20daf7",
+      "after_sha256": "bfba60730b8467b52fda6296d33c3545b0fb2a278c7430fea7be9aed932c8249",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/tests/test_final_hybrid_g1_integration.py"
+    },
+    {
+      "path": "src/toto_ai/ev/runtime.py",
+      "before_sha256": null,
+      "after_sha256": "cc1325edd5165959765c9299cb3e91dcd8776ecff2419eed2f6ae11ca0f8bdb8",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/src/toto_ai/ev/runtime.py"
+    },
+    {
+      "path": "tests/test_ev_runtime_budget.py",
+      "before_sha256": null,
+      "after_sha256": "14dfc9d4c4403a48a436a1a62c49804ff58a8d812128e73178e290b78e7cef63",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/tests/test_ev_runtime_budget.py"
+    },
+    {
+      "path": "tests/test_final_hybrid_runtime_contracts.py",
+      "before_sha256": null,
+      "after_sha256": "c2d1272642fe71c7a204e5f1890c77b39f7e5f9e98dda550e1525e25028e5fad",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/tests/test_final_hybrid_runtime_contracts.py"
+    },
+    {
+      "path": "knowledge/parallel_runtime.md",
+      "before_sha256": null,
+      "after_sha256": "100cf0b82711b14f481f24fe5134ad77eb45d15cf76edfce2871b552aa3a796f",
+      "candidate_path": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/candidate/knowledge/parallel_runtime.md"
+    }
+  ],
+  "dependencies": {
+    "src/toto_ai/runner/scheduler.py": "07e23f28ebff084bc4e3fe13a3b185d201050ac983c64ce1be5ea0dc014848c4",
+    "src/toto_ai/runner/final_input.py": "3330deb14d17e9628bf5eb6202d6b89d9d2acf5b22717e534421f9a90f6c235a",
+    "src/toto_ai/ev/models.py": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5",
+    "src/toto_ai/optimizer/parallel_challenger.py": "5b3cdea811c9d2a3acab09e54917c58bac63ae0c5f53ad3b4c5e8ee611bd6d5b",
+    "src/toto_ai/sports_stats/parallel_g1.py": "9ca4ef440a779ef9f8f445fc625b8d20fb164ba15af2c762e5795e45d71304e5",
+    "src/toto_ai/optimizer/robust_package.py": "9c7913e1b3c41d19c9a5e29f5dbaaddc358697941e3c5be46c976a913b1c315f",
+    "src/toto_ai/optimizer/uncertainty_package.py": "33b55ec8b3f7ca59e8d8c5ef1327d623bc1e0934ba05963f7a4df81a6e5d3b31",
+    "src/toto_ai/optimizer/strategy_execution.py": "0c0bbdc1acd78d6369e2fc3c558949dee887977cabc44bab37480ae0c18e149b"
+  },
+  "verification": {
+    "pytest": "58 passed in1.86s",
+    "pytest_log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/final-tests.log",
+    "ruff": "PASS10files",
+    "ruff_log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/final-ruff.log",
+    "red_proofs": [
+      "5 initial runtime/cache failures",
+      "NO_BET deadline handling1failure"
+    ],
+    "test_delta_note": "Original G1 test preimage taken from HEAD only after path-specific diff showed exactly our27 added lines; all source preimages directly snapshotted before edits."
+  },
+  "same_input_measurements": {
+    "final_input_snapshot_sha256": "baea70824b1435bd771b5d9591ed6fb80319a89cacd25c77d9672e7503438282",
+    "control_before_wall": 84.4388876669982,
+    "control_after_wall": 76.69686583399744,
+    "exact_result_differences": [
+      "runtime_seconds only"
+    ],
+    "repair_before_wall": 20.958032957998512,
+    "repair_after_wall": 14.932003000001714,
+    "swap_evaluations_before_and_after": 40960,
+    "full_research_replay_wall": 198.85896354099532,
+    "full_replay_parent_cpu": 165.923407,
+    "phases": [
+      {
+        "phase": "validation",
+        "phase_wall_seconds": 0.10710799999651499,
+        "phase_cpu_seconds": 0.063805,
+        "counts": {}
+      },
+      {
+        "phase": "control_ev",
+        "phase_wall_seconds": 70.96939183400536,
+        "phase_cpu_seconds": 70.737998,
+        "counts": {
+          "candidates": 512,
+          "category": 15,
+          "category_total": 7,
+          "coupon_capacity": 166,
+          "coupons": 166,
+          "evaluated_candidate_rows": 448,
+          "events": 15,
+          "iteration": 9,
+          "iterations": 12,
+          "outgoing_column": 58,
+          "processed_candidates": 14155776,
+          "processed_states": 14286848,
+          "states": 14348907
+        }
+      },
+      {
+        "phase": "sports_preparation",
+        "phase_wall_seconds": 0.048505582999496255,
+        "phase_cpu_seconds": 0.02708499999999958,
+        "counts": {}
+      },
+      {
+        "phase": "sports_ev",
+        "phase_wall_seconds": 70.1542620830005,
+        "phase_cpu_seconds": 69.98804499999999,
+        "counts": {
+          "candidates": 512,
+          "category": 15,
+          "category_total": 7,
+          "coupon_capacity": 166,
+          "coupons": 166,
+          "evaluated_candidate_rows": 448,
+          "events": 15,
+          "iteration": 7,
+          "iterations": 12,
+          "outgoing_column": 61,
+          "processed_candidates": 14155776,
+          "processed_states": 14286848,
+          "states": 14348907
+        }
+      },
+      {
+        "phase": "quality_v3",
+        "phase_wall_seconds": 18.22260995800025,
+        "phase_cpu_seconds": 18.20289600000001,
+        "counts": {}
+      },
+      {
+        "phase": "robust",
+        "phase_wall_seconds": 4.489484249999805,
+        "phase_cpu_seconds": 4.478128999999996,
+        "counts": {}
+      },
+      {
+        "phase": "g1",
+        "phase_wall_seconds": 32.383906499999284,
+        "phase_cpu_seconds": 0.011797999999998865,
+        "counts": {
+          "initial": 166,
+          "models": 4,
+          "universe": 465
+        }
+      },
+      {
+        "phase": "cross_evaluation",
+        "phase_wall_seconds": 0.5446819579956355,
+        "phase_cpu_seconds": 0.5416879999999935,
+        "counts": {}
+      },
+      {
+        "phase": "selector_verification",
+        "phase_wall_seconds": 1.8655917500000214,
+        "phase_cpu_seconds": 1.8612580000000207,
+        "counts": {
+          "coupons": 166,
+          "model": "flatten_20"
+        }
+      },
+      {
+        "phase": "research_persistence",
+        "phase_wall_seconds": 0.008280832997115795,
+        "phase_cpu_seconds": 0.003932999999989306,
+        "counts": {}
+      }
+    ],
+    "ev_equivalence": {
+      "baseline": {
+        "same_package": true,
+        "same_p13_p14_p15": true
+      },
+      "sports": {
+        "same_package": true,
+        "same_p13_p14_p15": true
+      }
+    },
+    "quality_v3_candidates": 14120,
+    "robust_union": 465,
+    "g1_status": "REFINED",
+    "g1_evaluations": 49634,
+    "g1_swaps": 1,
+    "g1_engine_seconds": 30.77090066600067,
+    "selected_strategy": "quality-v3",
+    "selection_rejections": {
+      "sports-shadow": [
+        "bk_p13_below_control",
+        "bk_p14_below_control",
+        "bk_p15_below_control",
+        "concentration_above_control",
+        "worst_model_p13_not_improved"
+      ]
+    },
+    "receipt": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/runtime-fix/full-replay-20260906T154104Z/receipt.json"
+  },
+  "reuse_scope": {
+    "implementation": "After existing full native operator export validation, reuse verified ordered primary coupons; independently re-evaluate category metrics. Does not reuse sports EV or model probabilities from an unbound report.",
+    "guards": [
+      "current native operator record hash and identity",
+      "primary upload hash",
+      "source CSV native schema/sha/count/cost",
+      "canonical coupon order/hash",
+      "native archive record/source/input hashes",
+      "plan/run/drawing identity",
+      "exact probability/config/ledger provenance",
+      "experimental authorization binding when applicable",
+      "fresh primary equality before companion publication"
+    ],
+    "real_replay_primary_reuse": false,
+    "real_replay_control_ev_recomputed": true,
+    "production_reuse_success_after_expiry_tested": false,
+    "tests": "synthetic contracts/native CSV parser and native record hash; provenance validator mocked in the isolated positive fixture; changed provenance rejection tested"
+  },
+  "deadline_scope": "Context-local cooperative budget; EV/category/crowd/FFT/rank/repair and cross-model checkpoints; existing selector/G1 deadlines unchanged; live publication clock before/after writes, expired new companion cleanup, primary always untouched; both PLAY and NO_BET terminal timeout records retain completed research.",
+  "protection": [
+    {
+      "path": "reports/rehearsal/evening-4998-20260906T153000Z/scheduler-plan.json",
+      "expected_sha256": "946fc198cc232224d84bf79c9443079789f6c8a9897ba5a4fed8869c130614f9",
+      "actual_sha256": "946fc198cc232224d84bf79c9443079789f6c8a9897ba5a4fed8869c130614f9"
+    },
+    {
+      "path": "reports/rehearsal/evening-4998-20260906T153000Z/experimental-manual-release-authorization.json",
+      "expected_sha256": "788b4bd358171a98909e7bd426228ed4e68fc8268db45c7a1984500a369900b1",
+      "actual_sha256": "788b4bd358171a98909e7bd426228ed4e68fc8268db45c7a1984500a369900b1"
+    },
+    {
+      "path": "reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/parallel-release-authorization.json",
+      "expected_sha256": "470d9f82523b52dd98354d309990e9b4510481efd4f458f20f3f538158ec499e",
+      "actual_sha256": "470d9f82523b52dd98354d309990e9b4510481efd4f458f20f3f538158ec499e"
+    },
+    {
+      "path": "reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/package.csv",
+      "expected_sha256": "97b2d1988378b1bfe5a03ea6b16c6894f85be61f87973d0a4754ebd8a17e2bfa",
+      "actual_sha256": "97b2d1988378b1bfe5a03ea6b16c6894f85be61f87973d0a4754ebd8a17e2bfa"
+    },
+    {
+      "path": "reports/rehearsal/evening-4998-20260906T153000Z/attempts/final-01-20260906T150005922935Z-6e7a4306/final-input.json",
+      "expected_sha256": "f8cdcad96e242adc2db4522b32376435756415f6d64fff495b26b97d236e9600",
+      "actual_sha256": "f8cdcad96e242adc2db4522b32376435756415f6d64fff495b26b97d236e9600"
+    }
+  ],
+  "no_modifications": [
+    "4998 operator/archive bytes",
+    "plans/consent",
+    "LaunchAgents/wrappers/jobs",
+    "DB/API",
+    "scheduler_status.py",
+    "delivery observability job"
+  ],
+  "limitations": [
+    "Historical Background352/452-second EV calls were not reproduced under identical QoS/host contention. No claim the19-minute production delay is fixed.",
+    "Full offline replay198.859s recomputed both EV calls and did not exercise real native live operator export/authority reuse after expiry.",
+    "Historical G1 timed out; offline G1 REFINED. Thus full reports/robust are not all byte-equivalent; baseline/Sports metrics+coupons and quality-v3 package are exact matches.",
+    "Deadline is cooperative; one in-flight NumPy kernel is not interrupted. Publication independently fails closed at cutoff.",
+    "Last post-replay changes add NO_BET exception handling, primary-change recheck, exact swap counters and additional feasible-loop checkpoints; covered by focused tests, no second long replay.",
+    "Current delivery candidate has independently reported7negative failures and remains separately owned; this receipt makes no delivery acceptance claim."
+  ],
+  "publication_performed": false,
+  "self_accept": false,
+  "owned_process": null
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "name": "independent",
+    "command": [
+      ".venv/bin/python",
+      "-B",
+      "-c",
+      "import sitecustomize,pytest; assert sitecustomize.GUARD; rc=pytest.main(['/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/test_independent_delivery.py', '-q', '-p', 'no:cacheprovider', '--basetemp=/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/independent-tmp']); print('BLOCKED',sitecustomize.blocked); raise SystemExit(rc)"
+    ],
+    "exit_code": 0,
+    "log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/independent.log"
+  },
+  {
+    "name": "focused",
+    "command": [
+      ".venv/bin/python",
+      "-B",
+      "-c",
+      "import sitecustomize,pytest; assert sitecustomize.GUARD; rc=pytest.main(['tests/test_scheduler_delivery.py', 'tests/test_scheduler_status.py', 'tests/test_scheduler_live_status.py', '-q', '-p', 'no:cacheprovider', '--basetemp=/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/focused-tmp']); print('BLOCKED',sitecustomize.blocked); raise SystemExit(rc)"
+    ],
+    "exit_code": 0,
+    "log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/focused.log"
+  },
+  {
+    "name": "ruff",
+    "command": [
+      ".venv/bin/ruff",
+      "check",
+      "--no-cache",
+      "src/toto_ai/operations/scheduler_status.py",
+      "src/toto_ai/operations/scheduler_delivery.py",
+      "tests/test_scheduler_delivery.py"
+    ],
+    "exit_code": 0,
+    "log": "/Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/ruff.log"
+  }
+]

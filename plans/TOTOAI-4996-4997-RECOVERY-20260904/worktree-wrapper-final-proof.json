@@ -1,0 +1,8 @@
+{
+  "saved_at": "2026-09-05T13:49:34.838497+03:00",
+  "receipts_4997_bytes_unchanged": {
+    "reports/rehearsal/evening-4997-20260905T133000Z/experimental-manual-release-authorization.json": true,
+    "reports/rehearsal/evening-4997-20260905T133000Z/parallel-challenger/parallel-release-authorization.json": true
+  },
+  "wrapper_sha256": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269"
+}

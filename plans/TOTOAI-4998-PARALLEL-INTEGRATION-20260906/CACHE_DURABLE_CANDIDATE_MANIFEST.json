@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "expected_head": "1a42f35561416393d5e9068fde330ca54e7466e7",
+  "patch_file": "CACHE_DURABLE_CANDIDATE.patch",
+  "patch_sha256": "e914a0976e6434198ee4f2164c2877debf1caa33b20c959ed5d282b65aa05597",
+  "changes": [
+    {
+      "path": "src/toto_ai/sports_stats/goal_probe_collection.py",
+      "before_sha256": "1c1d5378700d1f4563a051142cf21eac66ebb5c1fa39c8c521c774192202eb62",
+      "after_sha256": "703d7e8cee03130d6b2ed26391ba5e0b370252cb31b32e340328b8a439f7ae80"
+    },
+    {
+      "path": "tests/test_goal_probe_collection.py",
+      "before_sha256": "f70be1a4a1d22024b291583048e9a50d239901145137c388e00370a40e5ea504",
+      "after_sha256": "3bc0e70bd1bfb1471e3fe26fce1bee18f24e5cf0e84570d544368b0f83e6575a"
+    },
+    {
+      "path": "knowledge/goal_probe_failed_cache_boundary.md",
+      "before_sha256": null,
+      "after_sha256": "dcb8fbdcf10d066e4db622c4dd53359ec86dc8fb8194af05e2675568902dfdd0"
+    },
+    {
+      "path": "src/toto_ai/cli.py",
+      "before_sha256": "5b11f3c9cc2ac9feaddc6f935150fcbc55eeffba3aefae48640f0b8f4e29f88c",
+      "after_sha256": "bf3188aa7cfa60767404d5fd030673a6d9b529dc6e67d8af8880af9a82fc54f1"
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "src/toto_ai/__init__.py",
+      "before_sha256": "5b191cc228c9112b821fd4ead0cf7de40588ecc82812a6d48c51c48d239aa1a8"
+    },
+    {
+      "path": "src/toto_ai/analytics/__init__.py",
+      "before_sha256": "db98ceb1a73f94eb0ff2904beabe99b6c7b2836fa1703dc1b91cd5f23ceef828"
+    },
+    {
+      "path": "src/toto_ai/analytics/api_inspector.py",
+      "before_sha256": "80f6060f1aabd08940b79f62c3a92bd3f4e80cfa384223cf4b4210ac974dbbcc"
+    },
+    {
+      "path": "src/toto_ai/analytics/data_health.py",
+      "before_sha256": "0b17ba9c9962d896f437ac6bfd90be13e7dea92fad86106fb34f0b766b8f9f8b"
+    },
+    {
+      "path": "src/toto_ai/api/__init__.py",
+      "before_sha256": "42cd35f0390813eff79efded2cfd05769bbc936c8588417f166716fda1abd54c"
+    },
+    {
+      "path": "src/toto_ai/api/client.py",
+      "before_sha256": "47d849eb47df71a5136e3a04c153c7f0cb404eac2c4e927174260ccc567c975a"
+    },
+    {
+      "path": "src/toto_ai/api/detail_cache.py",
+      "before_sha256": "266e2a97d9e42c0808af90c40a73b1c2d5537628d1fa4aa01411be80b1fecdc9"
+    },
+    {
+      "path": "src/toto_ai/api/rate_limit.py",
+      "before_sha256": "0d7210c24c706256dbd6b285c0243cfe2d6f97b0fb0ef39116c7d559b5a95366"
+    },
+    {
+      "path": "src/toto_ai/api/safe_paths.py",
+      "before_sha256": "109743f84b527139caf9e3e8e26a657fc8fe279ea5c64e19824051bbcbf451fe"
+    },
+    {
+      "path": "src/toto_ai/db/__init__.py",
+      "before_sha256": "f9e851864d26ac532cdf9d00148e1dccfea8a569574361f464c0eea87c867347"
+    },
+    {
+      "path": "src/toto_ai/db/models.py",
+      "before_sha256": "ec41d08df9595d6bc9ef361e4093fbea8b6ecfc2645d8c0b2f8392296f2572f2"
+    },
+    {
+      "path": "src/toto_ai/db/session.py",
+      "before_sha256": "6af8659a4be53b686944dcabaf13b00331be3a609a6748ea0629699ec51389a1"
+    },
+    {
+      "path": "src/toto_ai/ev/__init__.py",
+      "before_sha256": "e5f4a53393fec933aa12e999b3dd4bb8193912e169d73e1faac8bcb76017b3e7"
+    },
+    {
+      "path": "src/toto_ai/ev/drawing.py",
+      "before_sha256": "6b3e8306d82217ee31f4f4a6dc596228a9e2936b46d39de35e5efbc063f25b86"
+    },
+    {
+      "path": "src/toto_ai/ev/models.py",
+      "before_sha256": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5"
+    },
+    {
+      "path": "src/toto_ai/ev/package.py",
+      "before_sha256": "7f360752587e370e2b2e46592adfa650e0cebafc840aeff82cf503504a6357a9"
+    },
+    {
+      "path": "src/toto_ai/ev/package_quality.py",
+      "before_sha256": "1672ba4afb4fe7dfd9272482c361d3d3bee991537e4e38b268379cf3de6be6cb"
+    },
+    {
+      "path": "src/toto_ai/ev/prize.py",
+      "before_sha256": "074216114b710945b9fd08cfa3923f2ca83e2201b4c047d6b51529b426f386da"
+    },
+    {
+      "path": "src/toto_ai/ev/ternary.py",
+      "before_sha256": "eee2a0c97e04eba467abdbf7d7622a0447b2e61a08e9793c4e0416e60e17477d"
+    },
+    {
+      "path": "src/toto_ai/external_odds/__init__.py",
+      "before_sha256": "45f854d807c7f3339f3cfd1bec24395370cc29104558c36ff30616857f3d8453"
+    },
+    {
+      "path": "src/toto_ai/external_odds/countries.py",
+      "before_sha256": "1ad2458ecc4b658ec9738a560e30c608cd2c241affc225e78c8df903decca8f7"
+    },
+    {
+      "path": "src/toto_ai/external_odds/domain.py",
+      "before_sha256": "c09141bb061c76c5e2628f3edfc289ccc1bb5a64d999087c11c6f5e174fa3797"
+    },
+    {
+      "path": "src/toto_ai/external_odds/eligibility.py",
+      "before_sha256": "f0dbd942fd1641a04382af8d6cc0a3b20830b5075d527183af22f48f247a130d"
+    },
+    {
+      "path": "src/toto_ai/external_odds/goal_api.py",
+      "before_sha256": "026e393656eb24728f9c25a1563f4e0615c0811d468644d59a7962645e938db9"
+    },
+    {
+      "path": "src/toto_ai/external_odds/matching.py",
+      "before_sha256": "8156642a2eb0cee8be4d255ecfee22ff767ecf9ae1907ea8d577d0d12dbdfd50"
+    },
+    {
+      "path": "src/toto_ai/external_odds/schedule_evidence.py",
+      "before_sha256": "913020a1aa32a2dac5c05a2735783927da11b57678be8b99094fd8dcdff9c4ec"
+    },
+    {
+      "path": "src/toto_ai/external_odds/schedule_source_collector.py",
+      "before_sha256": "51901ca513206dc154a8c211e702f7a4b4a4283a9c3068907ff3ccd752fafe0c"
+    },
+    {
+      "path": "src/toto_ai/external_odds/targets.py",
+      "before_sha256": "99659698fcbfef003e356579bbaffbfdd1714bf745fbcce2acc1a2ac71bd7497"
+    },
+    {
+      "path": "src/toto_ai/external_odds/team_registry.py",
+      "before_sha256": "9a05035e29b4693d419c5a7a3b583796f9c8bc03b801aff0ceb2bbf8167eccc4"
+    },
+    {
+      "path": "src/toto_ai/external_odds/thesportsdb.py",
+      "before_sha256": "ef26f20a1edfaf983b67cfbd19eb0a2939d85ae683ef1272b7277704660c1301"
+    },
+    {
+      "path": "src/toto_ai/optimizer/__init__.py",
+      "before_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "src/toto_ai/optimizer/brief.py",
+      "before_sha256": "b17d112b405c8c522dcf5b024c77474648db9593257306042fa9f72bd317b554"
+    },
+    {
+      "path": "src/toto_ai/optimizer/category_hit.py",
+      "before_sha256": "1eb7c228033ac49f9eb0262182c9563481c228f3fe611b90a0d4ea95d8bb29f3"
+    },
+    {
+      "path": "src/toto_ai/optimizer/cover.py",
+      "before_sha256": "9415b4b1d6f1141944e6d7b4a2579af45c2ff2ce3b162383ab06d1d4625a03cc"
+    },
+    {
+      "path": "src/toto_ai/package/__init__.py",
+      "before_sha256": "167b055e9f0871ca14612f287beb895aed26a397874ba6458da13cf87af2686d"
+    },
+    {
+      "path": "src/toto_ai/package/audit.py",
+      "before_sha256": "f36da1153d6f44e0cae00ab5f42781c415bce377d9531c4efdf68e7df8c8fc00"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/__init__.py",
+      "before_sha256": "d254f69250488f262d9fc3f7035ff8da58157ea76c669316a18da7897b6f2698"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/domain.py",
+      "before_sha256": "cdebd1a59f67240b3a3973fa5ba8d22b9ee48224515976e5808f9c1dc9bc07b8"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/features.py",
+      "before_sha256": "db786d81f27620afe23137a488f025e690a13029f30804591070fbdecc098821"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/goal_probe_research.py",
+      "before_sha256": "73f2c05dd2f2a4f417f12fcffbd431cbdece1c08ab7ad629575786fb5143c93e"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/preliminary_comparison.py",
+      "before_sha256": "98e32a6dbeb2955383ff988b83278fb90cf201bde34a591b5f374896745468a8"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/probabilities.py",
+      "before_sha256": "c93258430ab96035cfa0097c16fe56b99d59f35451c4a0b39ad92dcf10cc69f9"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/storage.py",
+      "before_sha256": "3342b6ab721180c5e3a96bc932f5e8c062a7ce0ccf53369e1a09df78a3a85478"
+    },
+    {
+      "path": "src/toto_ai/totobrief_time.py",
+      "before_sha256": "f1d665535bc60cc265bca351bbebab8e81d675136a0a2e1a2a3189a292ab7d9f"
+    },
+    {
+      "path": "src/toto_ai/sports_stats/history_backfill.py",
+      "before_sha256": "026ad030ee54b48b07741c69e0e40ddca89a7375c44877f28042ca072f7da742"
+    },
+    {
+      "path": "tests/test_goal_probe_research.py",
+      "before_sha256": "c0cf0f854b8614757dc16fa13a954191b2294acbc27b12e05d2a980cb3fed292"
+    },
+    {
+      "path": "scripts/project-git",
+      "before_sha256": "463c2ab68aa6d3558e553805725c8d04ddf77758a6df20928b4a9a31d029c269"
+    },
+    {
+      "path": "pyproject.toml",
+      "before_sha256": "f423d286963ad35e561e75cc544015a56f08e63f1b37d07eba256287ff81dbd6"
+    },
+    {
+      "path": "AGENTS.md",
+      "before_sha256": "d52065013839b752b014dfc094c8e4a82a9f6d24216e3b35391831f767f57224"
+    }
+  ]
+}

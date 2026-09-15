@@ -1,0 +1,13 @@
+{
+  "extraction_kind": "text nodes parsed from official HTML, no invented translation",
+  "row": [
+    "5",
+    "zondag 6 september 2026",
+    "19:15",
+    "SK Beveren",
+    "–",
+    "OH Leuven"
+  ],
+  "timezone_explicit_in_row": false,
+  "timezone_interpretation": "Europe/Brussels venue-local inference, corroborated by two explicit UTC sources; not an offset stated by club"
+}

@@ -1,0 +1,91 @@
+{
+  "at": "2026-09-06T18:02:37.195652Z",
+  "fingerprint": "b2596e1df489092abf5281c2f187ef3fa24b531b99136dbea99e7bdcad8a1b1d",
+  "ledger_backup": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-ledger-before-03a650359c57f727.json",
+  "ledger_before_sha256": "03a650359c57f7278a7c5c176f102dc0fb6a749f5c7949a10d6a534c30c1a3c6",
+  "reviews": [
+    {
+      "event_order": 11,
+      "review": "data/schedule-evidence/reviews/4999-event12-codex-review-20260906.json",
+      "sha256": "e37a3ddc5ba68df19d7abe126d8882a887b06c6f4556ae57958bb6b0a451b4ed",
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "toto_ai.cli",
+        "schedule-evidence-review",
+        "--review",
+        "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/4999-event12-codex-review-20260906.json",
+        "--review-sha256",
+        "e37a3ddc5ba68df19d7abe126d8882a887b06c6f4556ae57958bb6b0a451b4ed",
+        "--ledger",
+        "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json"
+      ],
+      "returncode": 0,
+      "stdout": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-event12-review-dryrun.json"
+    },
+    {
+      "event_order": 13,
+      "review": "data/schedule-evidence/reviews/4999-event14-codex-review-20260906.json",
+      "sha256": "8b13c267c6b7c699f8054c3c4b2c9a8f2c74a21d187baa639c7e7dbaf7128034",
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "toto_ai.cli",
+        "schedule-evidence-review",
+        "--review",
+        "/Users/turshevr/toto-ai/data/schedule-evidence/reviews/4999-event14-codex-review-20260906.json",
+        "--review-sha256",
+        "8b13c267c6b7c699f8054c3c4b2c9a8f2c74a21d187baa639c7e7dbaf7128034",
+        "--ledger",
+        "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json"
+      ],
+      "returncode": 0,
+      "stdout": "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/4999-event14-review-dryrun.json"
+    }
+  ],
+  "applied_at": "2026-09-06T18:03:12.804578+00:00",
+  "apply_results": [
+    {
+      "event_order": 11,
+      "returncode": 0,
+      "result": {
+        "drawing_number": 4999,
+        "dry_run": false,
+        "event_order": 11,
+        "ledger_mutated": true,
+        "ledger_semantic_hash": "5074e41b6e99dfa65b8ce9d6c70e1670f6359d72a4f115e6f6ebff09fd312c6b",
+        "ledger_sha256": "b675822f0da4d49bd164aa7b0e380c3cd9f0b57167706e96eb5326fb081bfad7",
+        "observation_id": "codex-reviewed-4999-event12-20260906",
+        "status": "applied"
+      }
+    },
+    {
+      "event_order": 13,
+      "returncode": 0,
+      "result": {
+        "drawing_number": 4999,
+        "dry_run": false,
+        "event_order": 13,
+        "ledger_mutated": true,
+        "ledger_semantic_hash": "294b4bf3f4e92fdc447122062db1b147cddd5a8834f4bb5b9e8b7b6412b97de1",
+        "ledger_sha256": "dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8",
+        "observation_id": "codex-reviewed-4999-event14-20260906",
+        "status": "applied"
+      }
+    }
+  ],
+  "verify_result": {
+    "ledger_semantic_hash": "294b4bf3f4e92fdc447122062db1b147cddd5a8834f4bb5b9e8b7b6412b97de1",
+    "ledger_sha256": "dd69c20073b5a9e8a67ac27afae0f56bebd864b70ad5da3ac9a49480310d1bf8",
+    "legacy_review_without_snapshot_count": 154,
+    "mutated": false,
+    "observation_count": 251,
+    "prepared_review_count": 36,
+    "review_count": 251,
+    "status": "verified",
+    "verified_snapshot_count": 192
+  },
+  "all_original_observations_preserved": true,
+  "original_count": 249,
+  "current_count": 251
+}

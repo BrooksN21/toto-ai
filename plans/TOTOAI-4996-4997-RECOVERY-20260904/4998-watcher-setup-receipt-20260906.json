@@ -1,0 +1,192 @@
+{
+  "task_id": "TOTOAI-4996-4997-RECOVERY-20260904",
+  "worker_thread_id": "01a0760b-b663-7e21-8c46-69d9d0cc83f7",
+  "cwd": "/Users/turshevr/toto-ai",
+  "plan_id": "c1d243f5b6ca48f3",
+  "plan_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/scheduler-plan.json",
+  "drawing_number": 4998,
+  "drawing_id": 12102,
+  "started_at": "2026-09-06T09:42:42.100191+00:00",
+  "phase": "LOADED_SCHEDULED_VERIFIED",
+  "setup_pid": 76336,
+  "owned_processes": [],
+  "label": "com.totoai.status-watcher.v1.c1d243f5b6ca48f3",
+  "template_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4997-20260905T133000Z/status-watch/com.totoai.status-watcher.v1.45b72ac58a45958b.plist",
+  "template_sha256": "530b0369c60907405e71714f0c0fb9f26a4b2e1b056d1be98d7ab203ede496eb",
+  "candidate_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist",
+  "installed_path": "/Users/turshevr/Library/LaunchAgents/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist",
+  "latest_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/latest.json",
+  "history_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/history.jsonl",
+  "stdout_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/stdout.log",
+  "stderr_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/stderr.log",
+  "start_msk": "2026-09-06T16:30:00+03:00",
+  "expiry_msk": "2026-09-06T18:20:00+03:00",
+  "system_local_offset_matches_msk": true,
+  "interval_seconds": 30,
+  "preinstall_service_absent": true,
+  "preinstall_duplicate_processes": [],
+  "protected_before_sha256": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/scheduler-plan.json": "946fc198cc232224d84bf79c9443079789f6c8a9897ba5a4fed8869c130614f9",
+    "/Users/turshevr/toto-ai/src/toto_ai/operations/scheduler_status.py": "5c3bfb00238b00772febe36f055d28414e44c1ec08295f09dfc83668474f2956",
+    "/Users/turshevr/toto-ai/src/toto_ai/cli.py": "5b11f3c9cc2ac9feaddc6f935150fcbc55eeffba3aefae48640f0b8f4e29f88c",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json": "67ca1b2e8091005a1ebf5b8f508059f9e6ec4e7610b4d8df2c3fa54963b1a06c",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/totoai-scheduler.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/totoai-parallel-sidecar.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.production-scheduler.v9.c1d243f5b6ca48f3.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181"
+  },
+  "commands": [
+    {
+      "command": [
+        "plutil",
+        "-lint",
+        "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist"
+      ],
+      "exit_code": 0,
+      "stdout": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist: OK\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/launchctl",
+        "bootstrap",
+        "gui/501",
+        "/Users/turshevr/Library/LaunchAgents/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/launchctl",
+        "print",
+        "gui/501/com.totoai.status-watcher.v1.c1d243f5b6ca48f3"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "installer": "Verified existing4997 plist configuration pattern + native launchctl bootstrap; unchanged existing CLI watcher. Primary-only installer not reused for watcher label.",
+  "new_source_implementation": false,
+  "release_authorization_created": false,
+  "heartbeat_created": false,
+  "automatic_wagering": false,
+  "idle_chat_wakeup_supported": false,
+  "precheck_correction": "First wrapper assertion referenced nonexistent SchedulerPlan.bank; stopped before any write/lock/job operation. Corrected to existing serialized config.requested_bank/stake, no project code changes.",
+  "smoke": {
+    "max_iterations": 1,
+    "result": {
+      "schema_version": 1,
+      "observed_at_msk": "2026-09-06T12:42:42.166296+03:00",
+      "drawing_number": 4998,
+      "drawing_id": 12102,
+      "plan_id": "c1d243f5b6ca48f3",
+      "output_dir": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z",
+      "last_phase": "scheduled",
+      "last_attempt": null,
+      "primary_quality_v2": {
+        "status": "pending",
+        "reason": null
+      },
+      "challengers": {
+        "quality-v2": {
+          "status": "pending",
+          "reasons": []
+        },
+        "sports-shadow": {
+          "status": "pending",
+          "reasons": []
+        },
+        "quality-v3": {
+          "status": "pending",
+          "reasons": []
+        },
+        "robust": {
+          "status": "pending",
+          "reasons": []
+        }
+      },
+      "selected_strategy": null,
+      "highest_p13_single_coupon": null,
+      "operator_result": null,
+      "operator_result_ready": false,
+      "manual_wager_request": {
+        "state": "owner_response_required",
+        "action_required": true,
+        "prompt": "Планируется ли ручная ставка на тираж 4998? Если да, подтвердите experimental manual release для plan_id c1d243f5b6ca48f3, банк 4980 ₽, ставка 30 ₽ до 2026-09-06T18:20:00+03:00. Автоматические ставки запрещены.",
+        "drawing_number": 4998,
+        "drawing_id": 12102,
+        "plan_id": "c1d243f5b6ca48f3",
+        "requested_bank": 4980,
+        "stake": 30,
+        "expires_at_msk": "2026-09-06T18:20:00+03:00",
+        "authorization_sha256": null,
+        "profitability_proven": false,
+        "automatic_wagering": false,
+        "request_sha256": "c37ddac9e672155066b7fb0e5cba060d27989a02d845e3aefdb81353d9161bab"
+      },
+      "terminal": false,
+      "blocker": "manual_wager_intent_and_release_not_recorded",
+      "next_checkpoint": {
+        "phase": "t_minus_120",
+        "at_msk": "2026-09-06T16:30:00+03:00"
+      },
+      "expires_at_msk": "2026-09-06T18:20:00+03:00",
+      "automatic_wagering": false,
+      "mutated": false
+    },
+    "latest_sha256": "b9d938719b2ad9d333fc4cb6619759b5fd519ce1675ebf071da03ad4497d524c",
+    "history_sha256": "b9d938719b2ad9d333fc4cb6619759b5fd519ce1675ebf071da03ad4497d524c",
+    "source": "existing watch_scheduler_status, default provider, no model calculations"
+  },
+  "candidate_sha256": "ad47a95d8a90e36656025e168af2ec1647260c6af1d3f83dba41f685588511ff",
+  "calendar_msk": {
+    "Year": 2026,
+    "Month": 9,
+    "Day": 6,
+    "Hour": 16,
+    "Minute": 30
+  },
+  "installer_pid": 76464,
+  "completed_at": "2026-09-06T09:43:06.885759+00:00",
+  "loaded": true,
+  "watcher_running": false,
+  "watcher_pid": null,
+  "watcher_runs": 0,
+  "runtime_fields": {
+    "path": "/Users/turshevr/Library/LaunchAgents/com.totoai.status-watcher.v1.c1d243f5b6ca48f3.plist",
+    "state": "not running",
+    "program": "/Users/turshevr/toto-ai/.venv/bin/python",
+    "working directory": "/Users/turshevr/toto-ai",
+    "stdout path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/stdout.log",
+    "stderr path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/status-watch/stderr.log",
+    "runs": "0",
+    "last exit code": "(never exited)"
+  },
+  "launchctl_calendar_evidence": "\tevent triggers = {\n\t\tcom.totoai.status-watcher.v1.c1d243f5b6ca48f3.268435610 => {\n\t\t\tkeepalive = 0\n\t\t\tservice = com.totoai.status-watcher.v1.c1d243f5b6ca48f3\n\t\t\tstream = com.apple.launchd.calendarinterval\n\t\t\tmonitor = com.apple.UserEventAgent-Aqua\n\t\t\tdescriptor = {\n\t\t\t\t\"Year\" => 2026\n\t\t\t\t\"Minute\" => 30\n\t\t\t\t\"Hour\" => 16\n\t\t\t\t\"Day\" => 6\n\t\t\t\t\"Month\" => 9\n\t\t\t}\n\t\t}\n\t}",
+  "installed_sha256": "ad47a95d8a90e36656025e168af2ec1647260c6af1d3f83dba41f685588511ff",
+  "protected_after_sha256": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/scheduler-plan.json": "946fc198cc232224d84bf79c9443079789f6c8a9897ba5a4fed8869c130614f9",
+    "/Users/turshevr/toto-ai/src/toto_ai/operations/scheduler_status.py": "5c3bfb00238b00772febe36f055d28414e44c1ec08295f09dfc83668474f2956",
+    "/Users/turshevr/toto-ai/src/toto_ai/cli.py": "5b11f3c9cc2ac9feaddc6f935150fcbc55eeffba3aefae48640f0b8f4e29f88c",
+    "/Users/turshevr/toto-ai/data/schedule-evidence/ledger.json": "67ca1b2e8091005a1ebf5b8f508059f9e6ec4e7610b4d8df2c3fa54963b1a06c",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/totoai-scheduler.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/toto-ai/reports/rehearsal/evening-4998-20260906T153000Z/parallel-challenger/totoai-parallel-sidecar.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.production-scheduler.v9.c1d243f5b6ca48f3.plist": "5a4c791051f06bd8435b2a4cdd054173f5ff21a0e76adca94cbdbd3141391987",
+    "/Users/turshevr/Library/LaunchAgents/com.totoai.parallel-sidecar.v1.c1d243f5b6ca48f3.plist": "88be0e505f7a4ae3cfb604086593229780f1f619e85f0f6831023519f3441181"
+  },
+  "protected_primary_parallel_source_plan_ledger_unchanged": true,
+  "next_checkpoint": "2026-09-06T16:30:00+03:00: launchd starts this watcher; parent checks latest.json advancing and active-chat delivery.",
+  "lifecycle_note": "Existing production FINAL_FRESH/LAST_KNOWN_GOOD_DEGRADED are nonterminal; canonical terminal NO_BET at planned18:20MSK expiry ends observer. Earlier terminal NO_BET also ends it. No independent wall-clock termination if scheduler never emits a terminal artifact; existing semantics unchanged.",
+  "highest_p13_policy": "Only existing plan-bound sidecar/comparison computed highest_p13_single_coupon fields; null before available, never first row. No new ranking/model calculation.",
+  "setup_process_completion": {
+    "preparation_pid": 76336,
+    "preparation_exit_code": 0,
+    "installer_pid": 76464,
+    "installer_exit_code": 0,
+    "unified_exec_sessions_running": [],
+    "watcher_pid": null,
+    "reason": "Watcher is loaded/scheduled for16:30, not started now; bounded setup tools completed."
+  },
+  "final_checkpoint_at": "2026-09-06T09:43:49.778937+00:00"
+}

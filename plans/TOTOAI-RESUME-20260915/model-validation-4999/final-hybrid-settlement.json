@@ -1,0 +1,574 @@
+{
+  "actual_result_sha256": "ec62d0b33b3c16a97298e6cf152838b6f5169549e04fca44cfc8c54a74cea933",
+  "artifact_class": "FINAL_HYBRID_POST_DRAW_COMPARISON",
+  "automatic_wagering": false,
+  "comparison": {
+    "sports_minus_quality_v2_best_hits": 0,
+    "sports_minus_quality_v2_hit13_count": 0,
+    "sports_minus_quality_v2_hit14_count": 0,
+    "sports_minus_quality_v2_hit15_count": 0
+  },
+  "drawing_id": 12106,
+  "drawing_number": 4999,
+  "interpretation": "One settled drawing is descriptive evidence only and cannot prove causality or profitability.",
+  "operator_compatible": false,
+  "plan_id": "b742aac1fea2d42d",
+  "profitability_proven": false,
+  "report_sha256": "24980c0a3c2d7178aaf0c9be6f0526296eedad96a7cfac1dff514ca0714c0236",
+  "resolved_event_count": 15,
+  "schema_version": 1,
+  "source": {
+    "comparison_report_sha256": "5dd52ddecf1979ca96d95b2636438c0b2adf1416482457fcaf040f0fd40c6af7",
+    "package_file_sha256": {
+      "quality-v2": "643d2981279c5f5b4d067656f12bc539c6e2ff4de56019af682fabcac8fe6756",
+      "quality-v3": "bb3ced8e46b55460854da0adfe187ae5e71f20ed54792426be26d3b01b0f98ff",
+      "robust": "278a1ffde65de227ba14c6b175d646526deecc7ac608e3fafa05726ef3adde36",
+      "sports-shadow": "7c647755e4b56d69194a9fa03bd820922ee9d12b8e5e6d2a370e01dd20279963"
+    },
+    "sidecar_status_sha256": "c27b362813cd2e96c925287aa9a32631fff98edb9b656cccc3012d0195ac6bcc"
+  },
+  "status": "COMPLETE",
+  "strategies": {
+    "quality-v2": {
+      "actual_outcome_exposure": [
+        {
+          "count": 53,
+          "position": 1,
+          "share": 0.3192771084337349
+        },
+        {
+          "count": 124,
+          "position": 2,
+          "share": 0.7469879518072289
+        },
+        {
+          "count": 126,
+          "position": 3,
+          "share": 0.7590361445783133
+        },
+        {
+          "count": 123,
+          "position": 4,
+          "share": 0.7409638554216867
+        },
+        {
+          "count": 56,
+          "position": 5,
+          "share": 0.3373493975903614
+        },
+        {
+          "count": 53,
+          "position": 6,
+          "share": 0.3192771084337349
+        },
+        {
+          "count": 25,
+          "position": 7,
+          "share": 0.15060240963855423
+        },
+        {
+          "count": 122,
+          "position": 8,
+          "share": 0.7349397590361446
+        },
+        {
+          "count": 20,
+          "position": 9,
+          "share": 0.12048192771084337
+        },
+        {
+          "count": 51,
+          "position": 10,
+          "share": 0.3072289156626506
+        },
+        {
+          "count": 58,
+          "position": 11,
+          "share": 0.3493975903614458
+        },
+        {
+          "count": 22,
+          "position": 12,
+          "share": 0.13253012048192772
+        },
+        {
+          "count": 24,
+          "position": 13,
+          "share": 0.14457831325301204
+        },
+        {
+          "count": 58,
+          "position": 14,
+          "share": 0.3493975903614458
+        },
+        {
+          "count": 123,
+          "position": 15,
+          "share": 0.7409638554216867
+        }
+      ],
+      "best_coupon_count": 1,
+      "best_hits": 11,
+      "category_counts": {
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "cost": 4980,
+      "coupon_count": 166,
+      "fixed_miss_positions": [],
+      "hit_distribution": {
+        "0": 0,
+        "1": 1,
+        "10": 2,
+        "11": 1,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "2": 5,
+        "3": 5,
+        "4": 14,
+        "5": 23,
+        "6": 36,
+        "7": 44,
+        "8": 29,
+        "9": 6
+      },
+      "modeled_category_probabilities": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.013730799962950896,
+          "probability_at_least_14": 0.0014705704797558104,
+          "probability_at_least_15": 6.870362917199247e-05
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.01297374372272982,
+          "probability_at_least_14": 0.0013668022516425556,
+          "probability_at_least_15": 6.30132069136546e-05
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.012181024041258036,
+          "probability_at_least_14": 0.0012612494754477026,
+          "probability_at_least_15": 5.7324696256736675e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.010804053578514305,
+          "probability_at_least_14": 0.0010812435451159823,
+          "probability_at_least_15": 4.777866549972711e-05
+        }
+      ],
+      "package_sha256": "6184c3b9d00df4c77aa64fb1a2e9813f5a12fc7b31a3f3d02ac463ddb23467dc",
+      "zero_exposure_miss_positions": []
+    },
+    "quality-v3": {
+      "actual_outcome_exposure": [
+        {
+          "count": 52,
+          "position": 1,
+          "share": 0.3132530120481928
+        },
+        {
+          "count": 126,
+          "position": 2,
+          "share": 0.7590361445783133
+        },
+        {
+          "count": 126,
+          "position": 3,
+          "share": 0.7590361445783133
+        },
+        {
+          "count": 126,
+          "position": 4,
+          "share": 0.7590361445783133
+        },
+        {
+          "count": 70,
+          "position": 5,
+          "share": 0.42168674698795183
+        },
+        {
+          "count": 41,
+          "position": 6,
+          "share": 0.2469879518072289
+        },
+        {
+          "count": 33,
+          "position": 7,
+          "share": 0.19879518072289157
+        },
+        {
+          "count": 123,
+          "position": 8,
+          "share": 0.7409638554216867
+        },
+        {
+          "count": 12,
+          "position": 9,
+          "share": 0.07228915662650602
+        },
+        {
+          "count": 34,
+          "position": 10,
+          "share": 0.20481927710843373
+        },
+        {
+          "count": 63,
+          "position": 11,
+          "share": 0.3795180722891566
+        },
+        {
+          "count": 17,
+          "position": 12,
+          "share": 0.10240963855421686
+        },
+        {
+          "count": 34,
+          "position": 13,
+          "share": 0.20481927710843373
+        },
+        {
+          "count": 85,
+          "position": 14,
+          "share": 0.5120481927710844
+        },
+        {
+          "count": 126,
+          "position": 15,
+          "share": 0.7590361445783133
+        }
+      ],
+      "best_coupon_count": 1,
+      "best_hits": 11,
+      "category_counts": {
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "cost": 4980,
+      "coupon_count": 166,
+      "fixed_miss_positions": [],
+      "hit_distribution": {
+        "0": 0,
+        "1": 0,
+        "10": 5,
+        "11": 1,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "2": 7,
+        "3": 7,
+        "4": 12,
+        "5": 20,
+        "6": 31,
+        "7": 44,
+        "8": 21,
+        "9": 18
+      },
+      "modeled_category_probabilities": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.017063106932768413,
+          "probability_at_least_14": 0.0016871356414675047,
+          "probability_at_least_15": 6.791172757135908e-05
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.016270266377688622,
+          "probability_at_least_14": 0.0015897957139235364,
+          "probability_at_least_15": 6.346823510269471e-05
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.015074543042922401,
+          "probability_at_least_14": 0.0014487014385678604,
+          "probability_at_least_15": 5.7161018594566246e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.013297950901372755,
+          "probability_at_least_14": 0.001242116833014222,
+          "probability_at_least_15": 4.80301944006902e-05
+        }
+      ],
+      "package_sha256": "3cb663815704fddb94c7a9a20d8c82f60d8ef35c96b20be463e9b3574c18560b",
+      "zero_exposure_miss_positions": []
+    },
+    "robust": {
+      "actual_outcome_exposure": [
+        {
+          "count": 53,
+          "position": 1,
+          "share": 0.3192771084337349
+        },
+        {
+          "count": 124,
+          "position": 2,
+          "share": 0.7469879518072289
+        },
+        {
+          "count": 126,
+          "position": 3,
+          "share": 0.7590361445783133
+        },
+        {
+          "count": 123,
+          "position": 4,
+          "share": 0.7409638554216867
+        },
+        {
+          "count": 56,
+          "position": 5,
+          "share": 0.3373493975903614
+        },
+        {
+          "count": 53,
+          "position": 6,
+          "share": 0.3192771084337349
+        },
+        {
+          "count": 25,
+          "position": 7,
+          "share": 0.15060240963855423
+        },
+        {
+          "count": 122,
+          "position": 8,
+          "share": 0.7349397590361446
+        },
+        {
+          "count": 20,
+          "position": 9,
+          "share": 0.12048192771084337
+        },
+        {
+          "count": 51,
+          "position": 10,
+          "share": 0.3072289156626506
+        },
+        {
+          "count": 58,
+          "position": 11,
+          "share": 0.3493975903614458
+        },
+        {
+          "count": 22,
+          "position": 12,
+          "share": 0.13253012048192772
+        },
+        {
+          "count": 24,
+          "position": 13,
+          "share": 0.14457831325301204
+        },
+        {
+          "count": 58,
+          "position": 14,
+          "share": 0.3493975903614458
+        },
+        {
+          "count": 123,
+          "position": 15,
+          "share": 0.7409638554216867
+        }
+      ],
+      "best_coupon_count": 1,
+      "best_hits": 11,
+      "category_counts": {
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "cost": 4980,
+      "coupon_count": 166,
+      "fixed_miss_positions": [],
+      "hit_distribution": {
+        "0": 0,
+        "1": 1,
+        "10": 2,
+        "11": 1,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "2": 5,
+        "3": 5,
+        "4": 14,
+        "5": 23,
+        "6": 36,
+        "7": 44,
+        "8": 29,
+        "9": 6
+      },
+      "modeled_category_probabilities": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.013730799962950896,
+          "probability_at_least_14": 0.0014705704797558104,
+          "probability_at_least_15": 6.870362917199247e-05
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.01297374372272982,
+          "probability_at_least_14": 0.0013668022516425556,
+          "probability_at_least_15": 6.30132069136546e-05
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.012181024041258036,
+          "probability_at_least_14": 0.0012612494754477026,
+          "probability_at_least_15": 5.7324696256736675e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.010804053578514305,
+          "probability_at_least_14": 0.0010812435451159823,
+          "probability_at_least_15": 4.777866549972711e-05
+        }
+      ],
+      "package_sha256": "6184c3b9d00df4c77aa64fb1a2e9813f5a12fc7b31a3f3d02ac463ddb23467dc",
+      "zero_exposure_miss_positions": []
+    },
+    "sports-shadow": {
+      "actual_outcome_exposure": [
+        {
+          "count": 54,
+          "position": 1,
+          "share": 0.3253012048192771
+        },
+        {
+          "count": 120,
+          "position": 2,
+          "share": 0.7228915662650602
+        },
+        {
+          "count": 124,
+          "position": 3,
+          "share": 0.7469879518072289
+        },
+        {
+          "count": 122,
+          "position": 4,
+          "share": 0.7349397590361446
+        },
+        {
+          "count": 56,
+          "position": 5,
+          "share": 0.3373493975903614
+        },
+        {
+          "count": 53,
+          "position": 6,
+          "share": 0.3192771084337349
+        },
+        {
+          "count": 25,
+          "position": 7,
+          "share": 0.15060240963855423
+        },
+        {
+          "count": 120,
+          "position": 8,
+          "share": 0.7228915662650602
+        },
+        {
+          "count": 21,
+          "position": 9,
+          "share": 0.12650602409638553
+        },
+        {
+          "count": 51,
+          "position": 10,
+          "share": 0.3072289156626506
+        },
+        {
+          "count": 60,
+          "position": 11,
+          "share": 0.3614457831325301
+        },
+        {
+          "count": 19,
+          "position": 12,
+          "share": 0.1144578313253012
+        },
+        {
+          "count": 52,
+          "position": 13,
+          "share": 0.3132530120481928
+        },
+        {
+          "count": 115,
+          "position": 14,
+          "share": 0.6927710843373494
+        },
+        {
+          "count": 123,
+          "position": 15,
+          "share": 0.7409638554216867
+        }
+      ],
+      "best_coupon_count": 1,
+      "best_hits": 11,
+      "category_counts": {
+        "13": 0,
+        "14": 0,
+        "15": 0
+      },
+      "cost": 4980,
+      "coupon_count": 166,
+      "fixed_miss_positions": [],
+      "hit_distribution": {
+        "0": 0,
+        "1": 2,
+        "10": 10,
+        "11": 1,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "2": 5,
+        "3": 6,
+        "4": 10,
+        "5": 21,
+        "6": 20,
+        "7": 39,
+        "8": 32,
+        "9": 20
+      },
+      "modeled_category_probabilities": [
+        {
+          "model": "bk",
+          "probability_at_least_13": 0.013589991331842856,
+          "probability_at_least_14": 0.00145332002088709,
+          "probability_at_least_15": 6.767282428329812e-05
+        },
+        {
+          "model": "sports",
+          "probability_at_least_13": 0.012946979952818367,
+          "probability_at_least_14": 0.0013647495500012663,
+          "probability_at_least_15": 6.281990188088583e-05
+        },
+        {
+          "model": "flatten_10",
+          "probability_at_least_13": 0.012063243264383428,
+          "probability_at_least_14": 0.0012472872768704228,
+          "probability_at_least_15": 5.6503338698035714e-05
+        },
+        {
+          "model": "flatten_20",
+          "probability_at_least_13": 0.010706477193241786,
+          "probability_at_least_14": 0.0010700198066276683,
+          "probability_at_least_15": 4.7128734017738043e-05
+        }
+      ],
+      "package_sha256": "6b7ec97ee5d821088125124845e6935f26dbe9ddafc6a160239f2369c2a5a2a3",
+      "zero_exposure_miss_positions": []
+    }
+  },
+  "void_event_orders": []
+}
