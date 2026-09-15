@@ -3,7 +3,7 @@
   "version": "20260915-plan-v1",
   "created_at": "2026-09-15T14:07:31.908300+00:00",
   "kind": "EXECUTION_CHECKLIST",
-  "current_step": "A inert and boundedB complete; C adapter published, class-contract review complete and ONE proposal awaits explicit approval; C corpus12/15 and D/Fblocked",
+  "current_step": "5007 primary andparallel released before expiry;actual wager unconfirmed;wait outcomes for all4modelpostmortem. Cclassification contract remains proposed;C/D/Fblocked.",
   "context": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-context.md",
   "active_plan_modified": true,
   "protected": {
@@ -369,15 +369,15 @@
     "five-arm full retrospective evaluation on4999–5006",
     "SportsV3 activation"
   ],
-  "next_checkpoint": "Parent19:20MSK then19:30final target; research waits explicit contract approval, no new implementation in metadata publication",
+  "next_checkpoint": "Parent19:50expiry; all4modelpostmortem after verified completed outcomes, first confirm actual userchoice/placement/payout. Research contract approval still required.",
   "execution_checkpoint": {
-    "at": "2026-09-15T19:17:34.774136+03:00",
+    "at": "2026-09-15T19:46:59.919439+03:00",
     "A": "COMPLETE_INERT_PUBLISHED",
     "B": "COMPLETE_BOUNDED_RESEARCH_PUBLISHED_NOT_NATIVE_LIVE_EQUIVALENCE",
     "C": "ADAPTER_PUBLISHED_PARTIAL_DATA;CLASS_CONTRACT_PROPOSAL_AWAITS_APPROVAL",
     "D": "REAL_TRAINING_NOT_STARTED",
     "F": "NOT_ACTIVATED",
-    "ops5007": "Parent-reported19:00/19:10complete166/4980warmupNO_BET;actual-config final-path4testsPASS;consentVALIDto19:50;not freshly checked here",
+    "ops5007": "Primaryqv2PLAY19:32;parallelqv3PLAY19:40,parentvalidation19:42;both166/4980expiry19:50. Actualchoice/wagerunconfirmed.",
     "C_review": "C-envelope-independent-review.json"
   },
   "runtime_hash_contract_checkpoint": {
@@ -410,5 +410,12 @@
     "data fetch",
     "DB/Git/scheduler operations",
     "subagents"
-  ]
+  ],
+  "operations5007_final_checkpoint": {
+    "path": "plans/TOTOAI-RESUME-20260915/final5007-release-checkpoint.json",
+    "status": "RELEASED_BEFORE_EXPIRY_NOT_CURRENT_ACTIONABILITY",
+    "actual_wager_confirmed": false,
+    "expiry_msk": "2026-09-15T19:50:00+03:00",
+    "postmortem_scheduler_verified": false
+  }
 }

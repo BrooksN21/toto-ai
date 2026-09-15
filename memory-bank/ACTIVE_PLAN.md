@@ -1,3 +1,14 @@
+# 5007 final release / model checkpoint — 2026-09-15T19:46:59.919439+03:00
+
+Task TOTOAI-RESUME-20260915. Latest checkpoint; prior entries are historical.
+- DONE OPS: primary quality-v2PLAY released19:32:03MSK166/4980;4/4parallel completed19:40:09,quality-v3companionPLAY166/4980; parent nativevalidationPASS19:42:21. TXT+computedbest delivered for both perparent; alternate best position46(BKcriterion), not first row by default.
+- EXPIRY: both expire19:50MSK15September; never actionable after expiry, regardless stale flags. This memory is historical release metadata, not operator delivery. ACTUAL OWNER CHOICE/WAGER UNCONFIRMED; no future strategy-selection rule.
+- COMPARISON: comparable modeled packageBK P13+percent v2=1.213772,sports-shadow=1.210241,v3=1.881364,robust=1.771609. Experimental estimates, not demonstrated profit or observed win rate. No coupon strings uploaded.
+- RESEARCH: A inert/B bounded complete; C12/15,classunknown/reliability0; Dfit/Factivation not ready. C-SCOPE-ENTITY-BINDING-V1 remains proposed/notapproved/notimplemented; durable handoff C-scope-classification-handoff.md. No code changed in this metadata job.
+- NEXT OPS: parent expiry19:50 then postmortem after all fixtures reach verified terminal outcomes; compare all4exact archived packages, confirm actual owner choice/placement and payouts before ROI. Postmortem launcher installation NOT VERIFIED; do not claim scheduled.
+- DURABLE EVIDENCE: plans/TOTOAI-RESUME-20260915/final5007-release-checkpoint.md/json (no operator content). Native record status/hash read locally;19:42validation and prior delivery are parent-reported, not rerun here.
+- IN PROGRESS: commit/push metadata in draftPR23,no merge; final SHA/upstream/clean in ignored cleanup-remainder-local-receipt.json.final5007_metadata_publication.publication. No jobs/DB/consent/operator/research-runtime mutations. Binding plan/checklist preserved.
+
 # Scope-contract handoff / operations checkpoint — 2026-09-15T19:17:34.774136+03:00
 
 Task TOTOAI-RESUME-20260915; latest checkpoint, older entries historical.
