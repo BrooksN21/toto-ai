@@ -1,3 +1,24 @@
+# Submission snapshot — 2026-09-15T14:05:19.462304+00:00
+
+Task TOTOAI-RESUME-20260915. DONE: reviewed existing C7 plus three retrospective helpers/tests;48focused pytestPASS2.50s/Ruff7PASS. History8drawings/120results saved locally; archived4999fourmodelsmax11, ROIunknown. IN PROGRESS: exact reviewed source/documentation commit and authorized origin publication; no runtime/model changes. REMAINS: verify remote/PR; historical data and unfinished artifacts remain local, no clean-all claim. BLOCKER: sandbox DNS cannot resolve github.com; normal approval path required if publication needs network escalation. NEXT: commit safe slice then one ordinary push attempt. Summary: plans/TOTOAI-RESUME-20260915/publication-summary.md. Other operational/checklist entries below retained;5007supervision stays with operations.
+
+# C7 publication blocked on exact push approval — 2026-09-07T08:56:06.103521+00:00
+
+DONE: accepted isolated skills committed locally as `52eece6`; source checkpoint
+committed as `8a0ce8c`. Six focused pytest tests, Ruff and both Ruby/Psych YAML
+checks pass. Postmortem4998 aggregate bookkeeping is included, private evidence
+and operational consent records are not.
+BLOCKER: auto-review rejected the push before execution, requiring exact
+payload/destination authorization. Origin was then independently verified as
+BrooksN21/toto-ai on github.com; no bypass or alternative upload attempted.
+IN PROGRESS: none; finalizer stopped at the authorization boundary. REMAINS:
+push, PR creation and merge after approval of both commits. Local checkout is
+`codex/c7-local-skills-20260907`, HEAD `8a0ce8c`; not a clean-main claim.
+NEXT: parent obtains explicit approval for these two commits to this repository,
+then resumes only publication. C6/model work and unfinished budget work were
+not implemented or published. Operational blocks below remain intact.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_PUBLICATION_RECEIPT_20260907.json.
+
 # CURRENT — C7 accepted; four-package 4998 postmortem complete — 2026-09-07T08:51:59.971014+00:00
 
 Task: TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Finished scope only:

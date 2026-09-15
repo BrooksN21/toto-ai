@@ -1,3 +1,48 @@
+# Submission snapshot — 2026-09-15T14:05:19.462304+00:00
+
+Task TOTOAI-RESUME-20260915. DONE: reviewed existing C7 plus three retrospective helpers/tests;48focused pytestPASS2.50s/Ruff7PASS. History8drawings/120results saved locally; archived4999fourmodelsmax11, ROIunknown. IN PROGRESS: exact reviewed source/documentation commit and authorized origin publication; no runtime/model changes. REMAINS: verify remote/PR; historical data and unfinished artifacts remain local, no clean-all claim. BLOCKER: sandbox DNS cannot resolve github.com; normal approval path required if publication needs network escalation. NEXT: commit safe slice then one ordinary push attempt. Summary: plans/TOTOAI-RESUME-20260915/publication-summary.md. Other operational/checklist entries below retained;5007supervision stays with operations.
+
+# RESUME5007 — READY / BOTH CONSENTS VALID 2026-09-15T13:52:15.891208+00:00
+
+DONE:15/15timings,plan84b0f69e06487848,primary+fourmodelparallel loaded,Pythonwatcher16288running,realpreflightPASS,primaryANDcanonicalparallelconsentnativeVALID4980/30to19:50MSK. Incorrectnestedorphanretainedunused;futurejobreaderpathverified. IN PROGRESS:scheduledwaitingonly;nonewcalculations. BLOCKER:noneforcurrentpreparation;PLAY/finalnotyetproduced. NEXT18:00MSKfirstprimary;later18:30/19:00/19:10/19:20/19:30finaltarget+parallel/19:42retry/19:50expiry,close20:00. REMAINS:observeactualfinal/modelcomparison;codefix2candidatebugsseparate;historyreplayinputgapsmustnotmasqueradeasvalidatedimprovement. Handoffplans/TOTOAI-RESUME-20260915/operations.md/json,runtime5007-attestation.json,consent5007-final-receipt.json. Earliermissingconsent/pathpendingcheckpointsbelowhistorical;unfinishedgeneralplanpreserved.
+
+# RESUME5007 runtime checkpoint 2026-09-15T13:50:31.227330+00:00
+
+DONE:15/15resolved,plan84b0f69e06487848,main+4modelparallel loaded;localPythonwatcher16288running;realpreflightPASS;primary5007consentvalidatedto19:50MSK. IN PROGRESS:noneownedcalculation;nativejobswait18:00primary/19:30parallel,watchercontinues. BLOCKER: parallelconsentnativelycreatedunderoutput,canonicalparentrecordabsent;needcorrectnativeauthorizationpath+validation beforeactiveclaim. REMAINS:thisconsentpathcheck then18:00nativecheckpoint. Nooperatorpackageyet;bank4980/stake30,close20:00MSK. Receiptplans/TOTOAI-RESUME-20260915/runtime5007-attestation.json+operations.md/json. History8draws/120resultsdone;4999allmodelsmax11;5000replayblockedmissinginputs+780poolcap,replay5000/replay-status.md/json. Source/models/historynotrerun,noVCS. Earliercheckpointsbelowhistorical.
+
+# RESUME5007 — 2026-09-15T13:43:48.864698+00:00
+
+DONE: native15/15resolved, state16:43:00MSKscheduled/ready; plan84b0f69e06487848created, activation_statusactivated. IN PROGRESS: existingboundednativePID14267/session86129stillrunning; no secondprepare. REMAINS: finalprocessreceipt, exactprimary/parallel/watcherlabels/schedule, realpreflight,5007consent(absent). NEXTsend_inputsupervisesexistingprocessonly. Close20:00MSK; expectedT-10 19:50. Handoffplans/TOTOAI-RESUME-20260915/operations.md/json. Earliercheckpointsincludingplan-absentarehistorical; unchangedunfinishedchecklistbelow.
+
+# RESUME5007 — 2026-09-15T13:42:50.277804+00:00
+
+DONE:15/15timings evidenced, six native manualreviews PASS(remaining4/5/6/11/12 nowapplied), Englishkickoffs15Sep21:45MSK. IN PROGRESS: ONEguardednativepreparePID14267/session86129,180ssupervised; no concurrentdispatcher. REMAINS: actualplan/primary+4modelparallel/watchverification+preflight; no5007consent/PLAY. NEXT readprepare5007-process.json/logs thenactualplan; donotduplicate. CLOSE20:00MSK, expectedT-10 19:50. Historypeer8draws/120resultsrestored; frozen4999fourmodelsmax11/ROIunknown,5001–5006lackpredrawinputs,5000partialBK. Handoffs operations.md/json,history.md/json,model-validation.md/json underplans/TOTOAI-RESUME-20260915. No sourcecodefix; two precise diagnostics saved separately. Earlierunfinishedchecklistpreservedbelow.
+
+# RESUME5007 — 2026-09-15T13:37:10.451369+00:00
+
+DONE: nativefallback9timings + exactevent09Sofa/TSDB manualreview applied: ledger10/15; nativeprepstill9untilnextcheck. Historypeerfinished4999–5006(8draws/120results/90events/8snapshots,dryrun0), operationsneverchangedhistory. BLOCKER: remainingpositions4/5/6/11/12; fuzzycandidatepoisonsgroup andTSDBwrong-responsebinding findingssavedseparately, nocodefixinoperations. IN PROGRESS: noneworker; native16:34retrycompletedlastExit75, next16:54MSK. REMAINS:5genuinesourcereviews, nativeplan/primary/parallel/watcher/preflight; no5007consent/PLAY. NEXT: parentresumesboundedsourcecapture/review. Exacthandoff plans/TOTOAI-RESUME-20260915/operations.md/json; event09-review-receipt.json; candidate-binding-findings.json. Earliercheckpointsbelowhistorical; unfinishedplanpreserved.
+
+# RESUME5007 — operations checkpoint 2026-09-15T13:32:57.697963+00:00
+
+Task TOTOAI-RESUME-20260915. DONE: current5007/12127 close15Sep20:00MSK verified from saved fresh native capture; existing dispatcher completed, 9/15timings promoted by native fallback, mapped15/15. IN PROGRESS: native preflight retry scheduled16:34MSK; no worker-started jobs. BLOCKER: six unknown timings, positions4/5/6/9/11/12; three candidate-binding failures and three missing accepted independent pairs. No5007plan/primary/parallel/watcher/PLAY; old4999consentexpired. REMAINS: genuine source reviews, readiness/plan/jobs/preflight;4980/30only. NEXT: parent observes16:34retry then bounded source-review continuation, no duplicate dispatcher. Handoff: plans/TOTOAI-RESUME-20260915/operations.md/json. Code/DB/ledger/jobs untouched by worker; historical checklists below preserved.
+
+# C7 publication blocked on exact push approval — 2026-09-07T08:56:06.103521+00:00
+
+DONE: accepted isolated skills committed locally as `52eece6`; source checkpoint
+committed as `8a0ce8c`. Six focused pytest tests, Ruff and both Ruby/Psych YAML
+checks pass. Postmortem4998 aggregate bookkeeping is included, private evidence
+and operational consent records are not.
+BLOCKER: auto-review rejected the push before execution, requiring exact
+payload/destination authorization. Origin was then independently verified as
+BrooksN21/toto-ai on github.com; no bypass or alternative upload attempted.
+IN PROGRESS: none; finalizer stopped at the authorization boundary. REMAINS:
+push, PR creation and merge after approval of both commits. Local checkout is
+`codex/c7-local-skills-20260907`, HEAD `8a0ce8c`; not a clean-main claim.
+NEXT: parent obtains explicit approval for these two commits to this repository,
+then resumes only publication. C6/model work and unfinished budget work were
+not implemented or published. Operational blocks below remain intact.
+Receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_PUBLICATION_RECEIPT_20260907.json.
+
 # CURRENT — C7 accepted; four-package 4998 postmortem complete — 2026-09-07T08:51:59.971014+00:00
 
 Task: TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Finished scope only:
@@ -22,6 +67,14 @@ none for C7 publication; no Sports-v3 fit/activation or bank-gain claim.
 NEXT: verify publication receipt and return control to the operations owner.
 Local receipt: plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/C7_PUBLICATION_RECEIPT_20260907.json.
 Earlier checkpoints below are historical; unfinished checklists are preserved.
+
+# CONSENT4999 —4980native authorized;7470receivednotactivated — 2026-09-07T08:47:52.778940+00:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Ownerfreshmanualriskquote saved; alternatives4980/7470 notsum. Exact4999/12106/planb742aac1fea2d42d/4980/30 primary+parallel immutableconsents nativelycreated/validatedbeforeT-10,expires07.09 17:20MSK,close17:30. Existing4modelselectorallowedonlysame4980plan. All8protectedplan/wrapper/plist/ledgerhashesunchanged; no calculations/jobsrestart/operator/code/VCSchanges. Primary+parallel loadedidle,runs0; Pythonwatcher48486running,freshboundreceipt authorized; nooperatorpackageyet.7470/249ownerintent separatelysaved, NOcompatiblebudgetplan/nativeconsent/activation/PLAY. DONEseparatehandoff /Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CONSENT4999_20260907_HANDOFF.md/json. BLOCKER:nonefor4980consent;7470needsimmutablebindingbyMODELS. NEXTparent15:30MSKprimary,17:00parallel,17:20cutoff; subagentwaits,C7cancelled. Prior4999consent-absentcheckpoints arehistorical, preserved.
+
+# POSTMORTEM4998 — manual COMPLETE — 2026-09-07T08:43:36.437165+00:00
+
+Task TOTOAI-4998-PARALLEL-INTEGRATION-20260906. Nativeactual-time manualsync/primarysettlement11:35:25MSK; onepublicGET,15/15result12X1XXXX1111121 savedDB/raw. Fourfrozenpackages: qv2=10,sports-shadow=12,qv3=10,robust=12;13+=0all. FixeddisplayedDecimalreturns2890.05/11699.77/5044.21/11537.81₽. receipt(private local evidence) visually4980→5044.21,exactqv3agreement; model/bytesnotuniquelyverified, observedledgerconfirmationpending. No12:00scheduledstate/plan/jobs or4999/source/VCSmutation. DONEreport /Users/turshevr/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/POSTMORTEM4998_20260907.md/json. BLOCKER:noneforsettlement. NEXT: separateauthorized4999consent, parentnative12:00checkpoint. Existingunfinishedchecklistpreserved.
 
 #CURRENT — ready-source merge finalization;4999preflightPASS — 2026-09-06T18:56:43.844681+00:00
 
