@@ -1,0 +1,303 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "at": "2026-09-15T15:15:18.726337+00:00",
+  "results": [
+    {
+      "event_order": 0,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "8f43951919c7ca6bf82e4a9501c27ee5b75d4fc09f3c354b190e4ee2b76f698f",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 38,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 1,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "c870dc191f40561518323a5a7bf2fded78d7a29fb3db751059bfa1fd8dc963e3",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 2,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "827935e7d20c65aa3a6ba79da87af264401073e1b4db543b093d6df79c53d993",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 3,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "591393885e9ddbef3a635a4a430c40132343294716389ab6628d8ead4c896fa2",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 4,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "67a5cdf8cf8d27872e7e2aaed3984541232e82ab89c27cd19ca31d4d96d7bba9",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 5,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "55a16f4fad0743c37fc4b98dba4fd00bc9c82b730327de748db55381d54f712f",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 6,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "ce33bf20b6a5877ce5e8ddb8c7b497c7f8e4152e1de8bd45734acbc8456a10b6",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 7,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "d782c7b032a17e53fd85478b5bb02f874bd4875561143d239748f27e289ac985",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 9,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "25b1165c5975722ca35c1e74a03ea8564c213204a583ed9e9ba000ca1b27807c",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 10,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "92bd5c1c2df31abfb1d79942693ec21452a6e6a37368e978d477908af63f2261",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 12,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "b099030faff1aea261627ca989cc18fe2f6e3b6c8f888f2c5ec495006fca22ec",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    },
+    {
+      "event_order": 14,
+      "native_error": null,
+      "feature_built": true,
+      "feature_sha256": "85fac6bd7c56cffe11f00d3ace56c07a0890e38265aa8ded609be52c898e7750",
+      "scope_verified": false,
+      "source_rejected": false,
+      "prior_counts": [
+        10,
+        10
+      ],
+      "missing_reasons": [
+        "O1_ANNOTATION_UNAVAILABLE"
+      ],
+      "nonnull_feature_count": 42,
+      "feature_count": 53,
+      "reliability": 0.0,
+      "evaluation_authorized": false,
+      "training_authorized": false,
+      "o1_direct_validation": {
+        "type": "EvidenceIntegrityError",
+        "error": "UNSAFE_REFERENCE_PATH"
+      }
+    }
+  ],
+  "failures": [],
+  "fit_executed": false,
+  "data_mutated": false,
+  "API_calls": 0,
+  "5007": "Not loaded/rechecked; early-input/capture mismatch is not a live scheduler failure",
+  "o1_direct_error_counts": {
+    "UNSAFE_REFERENCE_PATH": 12
+  },
+  "verified_at": "2026-09-15T18:15:58.471124+03:00"
+}

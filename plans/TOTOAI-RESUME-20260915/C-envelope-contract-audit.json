@@ -1,0 +1,1752 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "audit_at": "2026-09-15T15:24:14.330428+00:00",
+  "sources": [
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/a32bcd74df4b8d24.json",
+      "source_file_sha256": "a32bcd74df4b8d2477e3880838dfeefe0ca31eb4330aac67af6c82b4193527f5",
+      "event_order": 0,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:27.665376Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/9ea86410c5ed4da6.json",
+      "source_file_sha256": "9ea86410c5ed4da67c17c3bcc0e3461ec240bb80dbf2622f536451e02533c598",
+      "event_order": 0,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:28.174007Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/001fa50eac40b693.json",
+      "source_file_sha256": "001fa50eac40b6934a515e3afabf724e7a545eaf751745414a3cabf85ddf69a9",
+      "event_order": 1,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:28.364892Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/b3f91aa749432f52.json",
+      "source_file_sha256": "b3f91aa749432f525255d69605a3cde2df665c7f4110812651b215a2d6ba3d05",
+      "event_order": 1,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:28.688552Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/d7aac6852feaf53f.json",
+      "source_file_sha256": "d7aac6852feaf53fb9757872d98ebe09c843f04cce52ec0bc890bf91bd680a61",
+      "event_order": 2,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:28.967476Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/f93fd3f1c67ca8ee.json",
+      "source_file_sha256": "f93fd3f1c67ca8ee31ab8a23a192a8144b1f70771ac933c354178a6f2711717f",
+      "event_order": 2,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:29.334500Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/ff8ff7d7a045a858.json",
+      "source_file_sha256": "ff8ff7d7a045a858e56eced2c9cfcd4c1352d99ba9f0abb62a0507da06a5e967",
+      "event_order": 3,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:29.549954Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/aa0af7921453dfa8.json",
+      "source_file_sha256": "aa0af7921453dfa858f69513fc7048c7e9d691652e287c34c4033bad157cec40",
+      "event_order": 3,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:29.755586Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/45c299979a8d1aa5.json",
+      "source_file_sha256": "45c299979a8d1aa5d8e6f4632ba10342c0009508217da1e2bdc79dee95d4e2bd",
+      "event_order": 4,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:29.940073Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/d9f6c63578481992.json",
+      "source_file_sha256": "d9f6c63578481992ae9cfc7ea2599dffb1cc0f4ca60159e3af34630f0716cd10",
+      "event_order": 4,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:30.154984Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/eebf2fc084db0a1e.json",
+      "source_file_sha256": "eebf2fc084db0a1efba13c6302234343475e3c03256f4fd9d4c2b66eb74e2973",
+      "event_order": 5,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:30.333315Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/c50afc03d7690a11.json",
+      "source_file_sha256": "c50afc03d7690a11044562990ad1d8e636df69e76a63bd1e5b15acb419e3b752",
+      "event_order": 5,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:30.567431Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/1d95f02a9eba67c1.json",
+      "source_file_sha256": "1d95f02a9eba67c1d484de2c1ddd9a57f6873c065dc504987c832df816e6753d",
+      "event_order": 6,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:30.822802Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/3e68ce6936b09a38.json",
+      "source_file_sha256": "3e68ce6936b09a381dbd2b6665dd7d0326f69bfbc897e15eee3396ddcfbe765d",
+      "event_order": 6,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:31.062186Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/6ef6235c3b6aa73f.json",
+      "source_file_sha256": "6ef6235c3b6aa73f24d20d6b4e966a734712a18c0739ba29c43b0ef9edb5e408",
+      "event_order": 7,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:31.294010Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/3d3408bb8e9ebcd8.json",
+      "source_file_sha256": "3d3408bb8e9ebcd8e6ad8dc0c917a507d28c98c71183a81ddecf169f2f5eb10a",
+      "event_order": 7,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:31.477613Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/75f3e2c0181c017a.json",
+      "source_file_sha256": "75f3e2c0181c017a64a3e48d102216ea4bd95d4907c33d69a19432cc0fa26987",
+      "event_order": 9,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:31.632411Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/c9e11e078be1100c.json",
+      "source_file_sha256": "c9e11e078be1100c0c0f4cbdc1c3b53f7ad16979f8314c2164c72d54d0d9a915",
+      "event_order": 9,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:31.902161Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/de7753f488ddc906.json",
+      "source_file_sha256": "de7753f488ddc906ecf6c3dc16278e130c58b1f8fa04cf479ef5aaac5b9f39e8",
+      "event_order": 10,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:32.236773Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/0cbd6df88986fa6b.json",
+      "source_file_sha256": "0cbd6df88986fa6bb6af8347c9888a31f0fa6ad62171669c0417aad93821e9dc",
+      "event_order": 10,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:32.493527Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/9117866807981c1a.json",
+      "source_file_sha256": "9117866807981c1a4bfa7224309229dfbc90a4172e1ae8ad03066d5c774e21c3",
+      "event_order": 12,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:32.967539Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/6ce697a8b410c719.json",
+      "source_file_sha256": "6ce697a8b410c7192764c1e5fa4b05326a6ec7c02cdcea90254e4423d333f868",
+      "event_order": 12,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:33.125444Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/663d8d590ebe34d7.json",
+      "source_file_sha256": "663d8d590ebe34d701d739c82e4e557a90a5e8de84ce64b853d7ead1a61d9e09",
+      "event_order": 14,
+      "side": "home",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:33.281115Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    },
+    {
+      "source_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/87e42e56923fad4c.json",
+      "source_file_sha256": "87e42e56923fad4c0e776f721b317ec206355580eff3dd0be041e1a0cf9cfe47",
+      "event_order": 14,
+      "side": "away",
+      "actual_fields": [
+        "endpoint",
+        "fetched_at",
+        "http_status",
+        "params",
+        "payload",
+        "provider",
+        "schema_version"
+      ],
+      "missing_envelope_fields": [
+        "request_fingerprint",
+        "response_hash"
+      ],
+      "extra_envelope_fields": [
+        "http_status"
+      ],
+      "params_type": "dict",
+      "http_status": 200,
+      "native_after_lossless_envelope_only": {
+        "all_native_source_contract": "PASS",
+        "V3_history_contract": "PASS"
+      },
+      "row_types": {
+        "id": {
+          "str": 10
+        },
+        "matchStatus": {
+          "str": 10
+        },
+        "kickoffUtc": {
+          "str": 10
+        },
+        "homeTeamId": {
+          "str": 10
+        },
+        "awayTeamId": {
+          "str": 10
+        },
+        "homeTeamScore": {
+          "str": 10
+        },
+        "awayTeamScore": {
+          "str": 10
+        },
+        "leagueId": {
+          "str": 10
+        },
+        "leagueYear": {
+          "str": 10
+        },
+        "gender": {
+          "NoneType": 10
+        },
+        "age_group": {
+          "NoneType": 10
+        },
+        "squad_type": {
+          "NoneType": 10
+        },
+        "updatedAt": {
+          "str": 10
+        }
+      },
+      "fetched_at": "2026-09-06T18:09:33.449079Z",
+      "target_as_of": "2026-09-07T14:00:02.537925+00:00",
+      "rows": 10
+    }
+  ],
+  "probe_counts": {
+    "all_native_source_contract:PASS": 24,
+    "V3_history_contract:PASS": 24
+  },
+  "match_status_counts": {
+    "FINISHED": 233,
+    "AFTER_PEN": 6,
+    "AFTER_ET": 1
+  },
+  "checked_native_contracts": [
+    "_read path/type/size/hash/provider/event binding (priorpathfix)",
+    "_target exact allowlist/schema/types/identity/asof/final/kickoff/scope/hash",
+    "_source exact envelope/request hash/body hash/team/rows/status/goals/chronology/scope/duplicate witnesses",
+    "V3 _history regulation90/rawlimits/exclusions",
+    "cutoff is optional UNKNOWN; no issuer timestamp fabricated",
+    "F4 needs sealed15events/V2/labels/common-scope receipt; not format readiness"
+  ],
+  "derivation_facts": "Audit-only in-memory canonical envelope, original payload/fetched_at unchanged; no DerivedReference issued or fit."
+}

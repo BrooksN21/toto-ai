@@ -1,0 +1,1061 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "schema_version": 1,
+  "reviewed_at": "2026-09-15T15:15:18.726337+00:00",
+  "reviewer": "Independent Codex review worker, not author C",
+  "authority_basis": "Explicit owner independent-review request; native caller-supplied ReviewedReference contract, not human-only",
+  "not_a_human_review": true,
+  "evidence_domain": "RETROSPECTIVE_RESEARCH_REVIEW_NOT_PREDRAW_AUTHORIZATION",
+  "review_scope": "Exact projection/history hashes, native archive/fixture/team/time linkage. No gender/age/squad approval, no fit/evaluation/operator authority. Event-local reference groups only.",
+  "final_input_file_sha256": "b2af81ef21dfe899f35f7f60f54b0da4369cc53a14bfa5ef54e81eef5d0c65a3",
+  "native_final_input_identity_sha256": "6a2e4d4eab3e078bff971cd5afa939502e0029c343229a1e77ec1f472d7edf24",
+  "events": [
+    {
+      "drawing": 4999,
+      "event_order": 0,
+      "target_event_id": "180693",
+      "projection_sha256": "6f8ebd1cf8c276800467426f48407cfd8f2e8e720c114667beab9801fbd38723",
+      "original_bridge_sha256": "a9cae38fcde41aee16b7c753c6d0084ac8791b9147f5a2295baf50e8fdc2abda",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-0.json",
+          "sha256": "6f8ebd1cf8c276800467426f48407cfd8f2e8e720c114667beab9801fbd38723",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 0,
+          "target_event_id": "180693",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/a32bcd74df4b8d24.json",
+          "sha256": "a32bcd74df4b8d2477e3880838dfeefe0ca31eb4330aac67af6c82b4193527f5",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 0,
+          "target_event_id": "180693",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/9ea86410c5ed4da6.json",
+          "sha256": "9ea86410c5ed4da67c17c3bcc0e3461ec240bb80dbf2622f536451e02533c598",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 0,
+          "target_event_id": "180693",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/a32bcd74df4b8d24.json",
+          "sha256": "a32bcd74df4b8d2477e3880838dfeefe0ca31eb4330aac67af6c82b4193527f5",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/9ea86410c5ed4da6.json",
+          "sha256": "9ea86410c5ed4da67c17c3bcc0e3461ec240bb80dbf2622f536451e02533c598",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt7202ritljat107sdtqn9k9-de39e62a0c7001c4.json",
+          "sha256": "de39e62a0c7001c414988f1ce9bf86ad4d887473bb15318a50f105749031f6d3",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16416348-618cd26875d5f067.json",
+          "sha256": "618cd26875d5f0673f7cbbdce0ea59477ae42d58fbcb102219c7fe9c40164caf",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 1,
+      "target_event_id": "180694",
+      "projection_sha256": "7bb1926da330ad787b8ad8222e570f997e347d59e22a4f8589f736ec82c57edc",
+      "original_bridge_sha256": "f625d7c6e035a82f49deef623399e237a53fcb4ab516a9b2fae03afc60162d44",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-1.json",
+          "sha256": "7bb1926da330ad787b8ad8222e570f997e347d59e22a4f8589f736ec82c57edc",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 1,
+          "target_event_id": "180694",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/001fa50eac40b693.json",
+          "sha256": "001fa50eac40b6934a515e3afabf724e7a545eaf751745414a3cabf85ddf69a9",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 1,
+          "target_event_id": "180694",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/b3f91aa749432f52.json",
+          "sha256": "b3f91aa749432f525255d69605a3cde2df665c7f4110812651b215a2d6ba3d05",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 1,
+          "target_event_id": "180694",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/001fa50eac40b693.json",
+          "sha256": "001fa50eac40b6934a515e3afabf724e7a545eaf751745414a3cabf85ddf69a9",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/b3f91aa749432f52.json",
+          "sha256": "b3f91aa749432f525255d69605a3cde2df665c7f4110812651b215a2d6ba3d05",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt7202whtllnt107g9xjoh4q-dd2c02a5f3ce5a59.json",
+          "sha256": "dd2c02a5f3ce5a5976380d91fa0a2be8c35f5bf71414836fd670e9558f915525",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16416319-76d4bedf415a97c8.json",
+          "sha256": "76d4bedf415a97c82c2f9c1493047efe7fbc4c857d581cce5e51ab6952d3eef4",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 2,
+      "target_event_id": "180695",
+      "projection_sha256": "1d32ccce8f8da60315cbaf3551121f72fbe9a2588aa0b02b9074dbc19bb17f25",
+      "original_bridge_sha256": "4f01f26c117b659d331903fb0e358ecccc61fac961fbfaef89093c7d2ec8b1f3",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-2.json",
+          "sha256": "1d32ccce8f8da60315cbaf3551121f72fbe9a2588aa0b02b9074dbc19bb17f25",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 2,
+          "target_event_id": "180695",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/d7aac6852feaf53f.json",
+          "sha256": "d7aac6852feaf53fb9757872d98ebe09c843f04cce52ec0bc890bf91bd680a61",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 2,
+          "target_event_id": "180695",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/f93fd3f1c67ca8ee.json",
+          "sha256": "f93fd3f1c67ca8ee31ab8a23a192a8144b1f70771ac933c354178a6f2711717f",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 2,
+          "target_event_id": "180695",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/d7aac6852feaf53f.json",
+          "sha256": "d7aac6852feaf53fb9757872d98ebe09c843f04cce52ec0bc890bf91bd680a61",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/f93fd3f1c67ca8ee.json",
+          "sha256": "f93fd3f1c67ca8ee31ab8a23a192a8144b1f70771ac933c354178a6f2711717f",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt7202tdtlk6t107x75swkpa-0821147bda96b2f0.json",
+          "sha256": "0821147bda96b2f0a83bf1db52698219edd463cf7f227d96956e8e0b35ac1a78",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16418278-06412fc5d3856b44.json",
+          "sha256": "06412fc5d3856b445455a1a6349572ea1adbcbd2d60c52e4410f0401dc5ac4d2",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 3,
+      "target_event_id": "180696",
+      "projection_sha256": "752f6ec5f09ff430148323fa24545d2c16d13d27c30b30ed14d4f541e1340e5b",
+      "original_bridge_sha256": "97a0115025129105c646a7ebd577b29d94b6335459d8f44ac3015e4e182588bd",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-3.json",
+          "sha256": "752f6ec5f09ff430148323fa24545d2c16d13d27c30b30ed14d4f541e1340e5b",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 3,
+          "target_event_id": "180696",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/ff8ff7d7a045a858.json",
+          "sha256": "ff8ff7d7a045a858e56eced2c9cfcd4c1352d99ba9f0abb62a0507da06a5e967",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 3,
+          "target_event_id": "180696",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/aa0af7921453dfa8.json",
+          "sha256": "aa0af7921453dfa858f69513fc7048c7e9d691652e287c34c4033bad157cec40",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 3,
+          "target_event_id": "180696",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/ff8ff7d7a045a858.json",
+          "sha256": "ff8ff7d7a045a858e56eced2c9cfcd4c1352d99ba9f0abb62a0507da06a5e967",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/aa0af7921453dfa8.json",
+          "sha256": "aa0af7921453dfa858f69513fc7048c7e9d691652e287c34c4033bad157cec40",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt7202hotlg3t107l3co59q3-db7c1aca89f65e31.json",
+          "sha256": "db7c1aca89f65e316bba44cfb11a7b68bf893fcab171e1cd47e0673ae551dfef",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16284997-9356e6eb5d358a23.json",
+          "sha256": "9356e6eb5d358a23052f15bee18bc33b9c2e6961febd098e51aadf0f6996381a",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 4,
+      "target_event_id": "180697",
+      "projection_sha256": "48a6efbcf1bbd355f8591040d355b40b01db1a18e41247488566daf58dc149c3",
+      "original_bridge_sha256": "e499b1e8ebde57c0ece3083c50b55c9f43ffd94285055f94b5155fe7aee048c9",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-4.json",
+          "sha256": "48a6efbcf1bbd355f8591040d355b40b01db1a18e41247488566daf58dc149c3",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 4,
+          "target_event_id": "180697",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/45c299979a8d1aa5.json",
+          "sha256": "45c299979a8d1aa5d8e6f4632ba10342c0009508217da1e2bdc79dee95d4e2bd",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 4,
+          "target_event_id": "180697",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/d9f6c63578481992.json",
+          "sha256": "d9f6c63578481992ae9cfc7ea2599dffb1cc0f4ca60159e3af34630f0716cd10",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 4,
+          "target_event_id": "180697",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/45c299979a8d1aa5.json",
+          "sha256": "45c299979a8d1aa5d8e6f4632ba10342c0009508217da1e2bdc79dee95d4e2bd",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/d9f6c63578481992.json",
+          "sha256": "d9f6c63578481992ae9cfc7ea2599dffb1cc0f4ca60159e3af34630f0716cd10",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt7202uotlktt10760b9ptkq-77206a830590d3e0.json",
+          "sha256": "77206a830590d3e063854eddcf351c1eb0fb3372cdb6ce81f8489e4b2a3eb9d0",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16285006-6287d3522a3fa947.json",
+          "sha256": "6287d3522a3fa947be793b26e116eb4647881cb05e1ef114a0f1cf82e7e71d92",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 5,
+      "target_event_id": "180698",
+      "projection_sha256": "d0e7f40d7b77a1f3ed97e6c7a478d89c78a4cb52627c67bf825dc3dafa642925",
+      "original_bridge_sha256": "378b6bee362ec8818e960c8623743f1ec6a64893571c39759df4e378f155c1e3",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-5.json",
+          "sha256": "d0e7f40d7b77a1f3ed97e6c7a478d89c78a4cb52627c67bf825dc3dafa642925",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 5,
+          "target_event_id": "180698",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/eebf2fc084db0a1e.json",
+          "sha256": "eebf2fc084db0a1efba13c6302234343475e3c03256f4fd9d4c2b66eb74e2973",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 5,
+          "target_event_id": "180698",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/c50afc03d7690a11.json",
+          "sha256": "c50afc03d7690a11044562990ad1d8e636df69e76a63bd1e5b15acb419e3b752",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 5,
+          "target_event_id": "180698",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/eebf2fc084db0a1e.json",
+          "sha256": "eebf2fc084db0a1efba13c6302234343475e3c03256f4fd9d4c2b66eb74e2973",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/c50afc03d7690a11.json",
+          "sha256": "c50afc03d7690a11044562990ad1d8e636df69e76a63bd1e5b15acb419e3b752",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt7202f6tlewt107c64fm5f1-086ed3b634950af8.json",
+          "sha256": "086ed3b634950af803882ef9d7434e0ff925939c2799cf719b91cad67c805952",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16390296-3a4ce0b2602cfdec.json",
+          "sha256": "3a4ce0b2602cfdecb3d8e82e2e2835c4be0986488c156037ac28c6578d091932",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 6,
+      "target_event_id": "180699",
+      "projection_sha256": "134869048de64dcc111e77250f35cfaae5a9975b18881c53d61885e9be0dbe7a",
+      "original_bridge_sha256": "c0b2fa07e19ed550a71161a466772f5770bc363a2e8b904669f821b904d5690a",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-6.json",
+          "sha256": "134869048de64dcc111e77250f35cfaae5a9975b18881c53d61885e9be0dbe7a",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 6,
+          "target_event_id": "180699",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/1d95f02a9eba67c1.json",
+          "sha256": "1d95f02a9eba67c1d484de2c1ddd9a57f6873c065dc504987c832df816e6753d",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 6,
+          "target_event_id": "180699",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/3e68ce6936b09a38.json",
+          "sha256": "3e68ce6936b09a381dbd2b6665dd7d0326f69bfbc897e15eee3396ddcfbe765d",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 6,
+          "target_event_id": "180699",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/1d95f02a9eba67c1.json",
+          "sha256": "1d95f02a9eba67c1d484de2c1ddd9a57f6873c065dc504987c832df816e6753d",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/3e68ce6936b09a38.json",
+          "sha256": "3e68ce6936b09a381dbd2b6665dd7d0326f69bfbc897e15eee3396ddcfbe765d",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt63iswzf95et107i32uxdsh-eb7bf24ffcbf03d3.json",
+          "sha256": "eb7bf24ffcbf03d370b4588a47ea65f7cd3f54ae28e7089eb58aee0debf551ec",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16364235-3fc9517552235236.json",
+          "sha256": "3fc951755223523691992fd823313e28f9ce5c88a76b660133160e0e40c837e9",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 7,
+      "target_event_id": "180700",
+      "projection_sha256": "9ac1c4deb87c93c2154cab6d0b1921d417d0686a685f544497cea606da6d9bbe",
+      "original_bridge_sha256": "ec7eace1571286de2e4100a2d2cdec78f4290d97f5f8da4e9c35b2769734dd67",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-7.json",
+          "sha256": "9ac1c4deb87c93c2154cab6d0b1921d417d0686a685f544497cea606da6d9bbe",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 7,
+          "target_event_id": "180700",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/6ef6235c3b6aa73f.json",
+          "sha256": "6ef6235c3b6aa73f24d20d6b4e966a734712a18c0739ba29c43b0ef9edb5e408",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 7,
+          "target_event_id": "180700",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/3d3408bb8e9ebcd8.json",
+          "sha256": "3d3408bb8e9ebcd8e6ad8dc0c917a507d28c98c71183a81ddecf169f2f5eb10a",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 7,
+          "target_event_id": "180700",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/6ef6235c3b6aa73f.json",
+          "sha256": "6ef6235c3b6aa73f24d20d6b4e966a734712a18c0739ba29c43b0ef9edb5e408",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/3d3408bb8e9ebcd8.json",
+          "sha256": "3d3408bb8e9ebcd8e6ad8dc0c917a507d28c98c71183a81ddecf169f2f5eb10a",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt7202j9tlgvt107u002owkd-6437ddbf040fcf4e.json",
+          "sha256": "6437ddbf040fcf4e220e4db0e6f88e509cd4efc501f9c8fc1104d74cc0bdbb2a",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16273121-9337d127e47646a1.json",
+          "sha256": "9337d127e47646a1fd88a0ccb471cdb9dafdb08a62bfa511832a5dc7032b4826",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 9,
+      "target_event_id": "180702",
+      "projection_sha256": "32fff44b2fc320f34bf56c741dabcacee8e96797d7e3c08d7aa1cbfc9a4eb748",
+      "original_bridge_sha256": "8b7627ad749f6a1d681601a630b48a081f0bd280c225d2a2ae25b29d2cfb1d99",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-9.json",
+          "sha256": "32fff44b2fc320f34bf56c741dabcacee8e96797d7e3c08d7aa1cbfc9a4eb748",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 9,
+          "target_event_id": "180702",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/75f3e2c0181c017a.json",
+          "sha256": "75f3e2c0181c017a64a3e48d102216ea4bd95d4907c33d69a19432cc0fa26987",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 9,
+          "target_event_id": "180702",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/c9e11e078be1100c.json",
+          "sha256": "c9e11e078be1100c0c0f4cbdc1c3b53f7ad16979f8314c2164c72d54d0d9a915",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 9,
+          "target_event_id": "180702",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/75f3e2c0181c017a.json",
+          "sha256": "75f3e2c0181c017a64a3e48d102216ea4bd95d4907c33d69a19432cc0fa26987",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/c9e11e078be1100c.json",
+          "sha256": "c9e11e078be1100c0c0f4cbdc1c3b53f7ad16979f8314c2164c72d54d0d9a915",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt63ij3pf6evt107grizcc2q-c3ca516f43b36a2b.json",
+          "sha256": "c3ca516f43b36a2b3b53bea96b93221e5cdcfb20ad887007c1c316593a96ec7b",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16450882-8cc3190852ef860d.json",
+          "sha256": "8cc3190852ef860da2bb4eba80bf2b503bdc1db27ed862eb4ef54275605bcb72",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 10,
+      "target_event_id": "180703",
+      "projection_sha256": "888c5da039268955075bdbad481f6c2da292d2d869208001929f638d900b3b93",
+      "original_bridge_sha256": "ce898ea11b1f1eb5995e6eece160a052f43e2106be09d78d6aa979f07977e5fa",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-10.json",
+          "sha256": "888c5da039268955075bdbad481f6c2da292d2d869208001929f638d900b3b93",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 10,
+          "target_event_id": "180703",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/de7753f488ddc906.json",
+          "sha256": "de7753f488ddc906ecf6c3dc16278e130c58b1f8fa04cf479ef5aaac5b9f39e8",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 10,
+          "target_event_id": "180703",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/0cbd6df88986fa6b.json",
+          "sha256": "0cbd6df88986fa6bb6af8347c9888a31f0fa6ad62171669c0417aad93821e9dc",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 10,
+          "target_event_id": "180703",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/de7753f488ddc906.json",
+          "sha256": "de7753f488ddc906ecf6c3dc16278e130c58b1f8fa04cf479ef5aaac5b9f39e8",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/0cbd6df88986fa6b.json",
+          "sha256": "0cbd6df88986fa6bb6af8347c9888a31f0fa6ad62171669c0417aad93821e9dc",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt7202fftlf2t107nzlm5fp1-238c2b9a3833d72c.json",
+          "sha256": "238c2b9a3833d72c4da11a01b02bd4e21a31b715baa9ecf6fa194e53559c1acd",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16403875-8fc1d08512ee678f.json",
+          "sha256": "8fc1d08512ee678f607d89495c60ac8f6f5425b8be323f5d5159057ee2f7a653",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 12,
+      "target_event_id": "180705",
+      "projection_sha256": "6627242f0b642f3fb89c0699d6a9aff6273ad87dd92d13368d0b0d13da40a819",
+      "original_bridge_sha256": "edaa147bf941edc0535ca252e5b820f324ee0e08782bc425a781c69ff54e5a13",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-12.json",
+          "sha256": "6627242f0b642f3fb89c0699d6a9aff6273ad87dd92d13368d0b0d13da40a819",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 12,
+          "target_event_id": "180705",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/9117866807981c1a.json",
+          "sha256": "9117866807981c1a4bfa7224309229dfbc90a4172e1ae8ad03066d5c774e21c3",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 12,
+          "target_event_id": "180705",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/6ce697a8b410c719.json",
+          "sha256": "6ce697a8b410c7192764c1e5fa4b05326a6ec7c02cdcea90254e4423d333f868",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 12,
+          "target_event_id": "180705",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/9117866807981c1a.json",
+          "sha256": "9117866807981c1a4bfa7224309229dfbc90a4172e1ae8ad03066d5c774e21c3",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/6ce697a8b410c719.json",
+          "sha256": "6ce697a8b410c7192764c1e5fa4b05326a6ec7c02cdcea90254e4423d333f868",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt63irehf8uyt107yqwo2ztn-d003f1ecab1717fa.json",
+          "sha256": "d003f1ecab1717fa7a59ed223d01244fda0c80c00323e9dd2624ba207fa04a9c",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-16326443-10f5a1353f62dafa.json",
+          "sha256": "10f5a1353f62dafa86ffed7402794695789cd015342b5baeeb0c65eb9093884e",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    },
+    {
+      "drawing": 4999,
+      "event_order": 14,
+      "target_event_id": "180707",
+      "projection_sha256": "3785cc4300b8e85038b1020d3c11ab24689b2d80561bd3c7073af436dcf0da6f",
+      "original_bridge_sha256": "21cf577e758d49ae427c7a8cd6ed8ecfa581dcbf52addbfa5a5be75763bdc8b3",
+      "references": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/bridge-verified/projection-4999-14.json",
+          "sha256": "3785cc4300b8e85038b1020d3c11ab24689b2d80561bd3c7073af436dcf0da6f",
+          "kind": "target_projection",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 14,
+          "target_event_id": "180707",
+          "side": null
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/663d8d590ebe34d7.json",
+          "sha256": "663d8d590ebe34d701d739c82e4e557a90a5e8de84ce64b853d7ead1a61d9e09",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 14,
+          "target_event_id": "180707",
+          "side": "home"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/87e42e56923fad4c.json",
+          "sha256": "87e42e56923fad4c0e776f721b317ec206355580eff3dd0be041e1a0cf9cfe47",
+          "kind": "raw_goal_team_results_response",
+          "provider": "goal-api-v1",
+          "drawing_id": 12106,
+          "event_order": 14,
+          "target_event_id": "180707",
+          "side": "away"
+        }
+      ],
+      "review_scope": "BYTE_IDENTITY_CHRONOLOGY_LINKAGE_ONLY; classes unknown; no F4/fit/evaluation authority",
+      "history_readiness": [
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/663d8d590ebe34d7.json",
+          "sha256": "663d8d590ebe34d701d739c82e4e557a90a5e8de84ce64b853d7ead1a61d9e09",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        },
+        {
+          "path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/C-data-assembly/frozen-raw/4999/87e42e56923fad4c.json",
+          "sha256": "87e42e56923fad4c0e776f721b317ec206355580eff3dd0be041e1a0cf9cfe47",
+          "native_history_status": "PASS",
+          "rows": 10,
+          "scope_complete_rows": 0,
+          "missing_scope_fields": {
+            "gender": 10,
+            "age_group": 10,
+            "squad_type": 10
+          },
+          "exclusions": [],
+          "scope_authorized": false,
+          "missing_policy": "PRESERVE_UNKNOWN_NO_TARGET_SCOPE_INHERITANCE"
+        }
+      ],
+      "schedule_sources": [
+        {
+          "path": "snapshots/auto/goal-api-v1-cmt7202t7tlk2t107fo153ns3-c0b747ef9cafb731.json",
+          "sha256": "c0b747ef9cafb731f70c6940b17d73311999f11bd9f8130652b2e3399761c3e1",
+          "provider": "goal-api-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        },
+        {
+          "path": "snapshots/auto/sofascore-v1-15272358-0c8910dca64b58e1.json",
+          "sha256": "0c8910dca64b58e1f69cd4848b07a2c527c9e7553433e72b96fcc8da2d3ad4c6",
+          "provider": "sofascore-v1",
+          "captured_at": "2026-09-06T15:49:48.944018Z"
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "scope_fields_missing": {
+    "gender": 240,
+    "age_group": 240,
+    "squad_type": 240
+  },
+  "training_authorized": false,
+  "operator_compatible": false,
+  "automatic_wagering": false,
+  "native_contract_compatibility": {
+    "v3_probability_features_verified": "ACCEPTED_EXACT_EVENT_LOCAL_LINKAGE",
+    "v3_family_evidence_read": "REJECTED_UNSAFE_REFERENCE_PATH_12_OF_12",
+    "full_native_compatibility": false,
+    "note": "References attest only reviewed current bytes/identity/time. Absolute evidence paths are not O1-compatible; do not flatten these per-event groups or convert this receipt into human/fit/operator authority."
+  }
+}

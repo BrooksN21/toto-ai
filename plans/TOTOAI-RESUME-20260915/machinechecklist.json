@@ -2,10 +2,10 @@
   "task_id": "TOTOAI-RESUME-20260915",
   "version": "20260915-plan-v1",
   "created_at": "2026-09-15T14:07:31.908300+00:00",
-  "kind": "PLANNING_ONLY_NOT_EXECUTED",
-  "current_step": "A inert adoption published; B narrow three-arm market-only research executed/reviewed; C/D blocked on explicit data/format prerequisites; no live integration",
+  "kind": "EXECUTION_CHECKLIST",
+  "current_step": "A inert library complete; B bounded research complete; C inactive adapter accepted but corpus partial; D fit and F activation blocked",
   "context": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-context.md",
-  "active_plan_modified": false,
+  "active_plan_modified": true,
   "protected": {
     "drawing": 5007,
     "plan_id": "84b0f69e06487848",
@@ -153,9 +153,8 @@
         "public official historical match/league archive only after bounded provider feasibility check"
       ],
       "changed_modules": [
-        "src/toto_ai/research/historical_feature_corpus.py (new proposed offline builder)",
-        "src/toto_ai/sports_stats/history_backfill.py only if separate reviewed retrospective adapter is justified; preserve existing contract",
-        "tests/test_historical_feature_corpus.py (new)"
+        "src/toto_ai/research/sports_v3_dataset_bridge.py",
+        "tests/test_sports_v3_dataset_bridge.py"
       ],
       "tests": [
         "women/youth/reserve exact identity non-substitution",
@@ -175,7 +174,7 @@
         "accepted independent source/scope receipt or explicit missing status for every required field",
         "no changes to original chronology rejected rows, denominator, DB or operational ledger"
       ],
-      "blocker": "Native raw integrity50/500 and4999V2 PASS; reviewed raw/target bridge, history scope metadata and5000–5006 captures absent; F4datasetfalse/fitfalse.",
+      "blocker": "Format/path bridge independently accepted;12/15events, target/history classes unknown, reliability0; missing5000–5006 eligible history/capture/fold evidence; F4datasetfalse/fitfalse.",
       "outputs": [
         "corpus4999-5006/availability.json",
         "corpus4999-5006/features.json",
@@ -184,8 +183,12 @@
         "corpus4999-5006/missing-inputs.md"
       ],
       "execution_evidence": [
-        "C-data-assembly.json"
-      ]
+        "C-data-assembly.json",
+        "C-envelope-implementation.json",
+        "C-envelope-independent-review.json",
+        "C-envelope-independent-references.json"
+      ],
+      "completion_scope": "Inactive lossless format adapter only; corpus incomplete, no training authorization"
     },
     {
       "id": "D",
@@ -369,24 +372,27 @@
     "DB/Git/scheduler operations",
     "subagents"
   ],
-  "next_checkpoint": "parent assigns A-only solver with exact accepted review06 source gate; planning worker stops; parent handles18:00operations",
+  "next_checkpoint": "Parent5007 19:00MSK; C remaining evidence before D/F; no speculative fit",
   "execution_checkpoint": {
-    "at": "2026-09-15T17:58:35+03:00",
-    "A": "SOURCE_PUBLISHED_INERT_ONLY",
-    "B": "REVIEW_PASS_RESEARCH_EXECUTED_PUBLICATION_PENDING",
-    "C": "REVISE_BRIDGE_PATH_COMPATIBILITY_AUTHOR_FIX_IN_PROGRESS;scope/data still blocked",
+    "at": "2026-09-15T18:38:51.407430+03:00",
+    "A": "COMPLETE_INERT_PUBLISHED",
+    "B": "COMPLETE_BOUNDED_RESEARCH_PUBLISHED_NOT_NATIVE_LIVE_EQUIVALENCE",
+    "C": "ADAPTER_REVIEW_PASS_DATASET_PARTIAL_BLOCKED",
     "D": "TRAINING_NOT_STARTED",
     "F": "NOT_ACTIVATED",
-    "ops5007": "Parent owns18:00monitor; no runtime commands in submission",
-    "C_review": "C-bridge-independent-review.json (separate local, not included in runtime publication)"
+    "ops5007": "Parent receipts18:00tlsPASS,18:30apiPASS,watcherPID34611fresh18:32:37MSK; next19:00",
+    "C_review": "C-envelope-independent-review.json"
   },
   "runtime_hash_contract_checkpoint": {
     "at": "2026-09-15T18:22:08+03:00",
-    "status": "REVIEW_PASS_TESTED_READY_FOR_ISOLATED_PUBLICATION",
+    "status": "PUBLISHED_OBSERVER_ACTIVATED",
     "review": "parallel-hash-contract-review.md",
     "tests": "84PASS,Ruff5PASS,8negativePASS",
     "C_excluded": true,
     "scheduler_or_restart_actions": false,
-    "next": "Parent observer-only activation after confirmed push"
+    "next": "Parent19:00checkpoint",
+    "commit": "ea5283dc3e07e95700ac82ffc56e04b480957325",
+    "observer_receipt": "watcher5007-hashfix-activation.json",
+    "C_excluded_from_runtime_commit": true
   }
 }

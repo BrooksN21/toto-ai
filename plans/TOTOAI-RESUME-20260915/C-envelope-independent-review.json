@@ -1,0 +1,43 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "completed_at": "2026-09-15T18:35:45.255032+03:00",
+  "verdict": "PASS_INACTIVE_RESEARCH_ADAPTER_ONLY",
+  "dataset_fit": "BLOCKED",
+  "source_files": [
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/research/sports_v3_dataset_bridge.py",
+      "sha256": "cee852cc43f7c2ec7f286773c4ac1a1ea753b1e69a0cf7d45d362ec3879ae7ac"
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_sports_v3_dataset_bridge.py",
+      "sha256": "e3252ad7e1f637a5eb63ab234e18c6d78726f0a5ef15b6977b579218411eb076"
+    }
+  ],
+  "checks": {
+    "pytest": "126 passed in0.70s, no skips",
+    "ruff": "2filesPASS",
+    "sources": 24,
+    "events_NATIVE_O1_COMPLETE": 12,
+    "source_status_AVAILABLE": 24,
+    "original_hashes_unchanged": 36,
+    "AET_PEN_correct_regulation": 7,
+    "O1_annotation_numeric_independence_probes": 12
+  },
+  "findings": [],
+  "remaining": [
+    "12/15 events:9/14unmapped,12manual format unsupported",
+    "All target/historical class unknown, scope_verified false, reliability0",
+    "Cutoff annotation UNKNOWN, league/season/opponents/standings incomplete",
+    "F4 dataset/folds/label-availability/common-scope evidence missing; no training or activation"
+  ],
+  "reference_artifact": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/C-envelope-independent-references.json",
+  "reference_sha256": "21727c5fe117f73479dc4c25e196131c0b370877e99a065489dade08b15461e5",
+  "limitations": [
+    "PASS is inactive adapter only, not prediction quality or fit approval",
+    "Original HTTP wire-body hash unknown; canonical payload hash explicitly derived",
+    "References are independent review of existing archived/derived bytes, not new independent sports evidence",
+    "Runtime consumers scoped search finds no bridge imports; no live jobs inspected",
+    "Reviewer diagnostic corrected dict/list access and str/int numeric comparison; full corrected probe passed"
+  ],
+  "changes": "Review artifacts only; no source/API/DB/Git/jobs/5007 changes"
+}

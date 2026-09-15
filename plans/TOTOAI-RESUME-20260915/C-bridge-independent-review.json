@@ -1,0 +1,111 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "at": "2026-09-15T18:17:13+03:00",
+  "role": "Independent C review worker, not author; no delegation",
+  "verdict": "CHANGES_REQUESTED_FOR_FULL_NATIVE_BRIDGE_COMPATIBILITY",
+  "binding_review": "PASS_BYTE_IDENTITY_CHRONOLOGY_ONLY",
+  "findings": [
+    {
+      "priority": "P2",
+      "title": "Prepared bridge references use absolute paths rejected by native O1",
+      "file": "/Users/turshevr/toto-ai/src/toto_ai/research/sports_v3_dataset_bridge.py",
+      "start_line": 249,
+      "end_line": 249,
+      "also_lines": [
+        274,
+        296
+      ],
+      "contract_file": "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/v3_family_evidence.py",
+      "contract_lines": [
+        175,
+        181
+      ],
+      "evidence": "Actual12 reviewed4999graphs: V3predictor builds but direct assess_family_evidence rejects UNSAFE_REFERENCE_PATH12/12. Current projection/history EvidenceBytes.path are absolute; native O1 explicitly forbids absolute paths. Predictor catches this into O1_ANNOTATION_UNAVAILABLE.",
+      "required_fix": "Introduce validated safe logical evidence paths with explicit physical-file resolution and new exact reviewed path/hash bindings; preserve original source bytes and add full prepare_bridge-to-O1 regression. Do not relax native safe-path guard or report O1/family lineage PASS."
+    }
+  ],
+  "native_review_contract": "Explicit caller-supplied ReviewedReference; no human-only signature condition found in native contract. Owner authorized independent Codex review. This is not a human review or pre-draw review.",
+  "references_issued": 36,
+  "event_chains_verified": 12,
+  "history_snapshots_verified": 24,
+  "history_rows_checked": 240,
+  "unknown_scope_per_field": {
+    "gender": 240,
+    "age_group": 240,
+    "squad_type": 240
+  },
+  "native_after_legitimate_linkage": {
+    "feature_rows": 12,
+    "feature_validation_exceptions": 0,
+    "nonnull_features": "38/53 for event1;42/53 for other11",
+    "scope_verified": 0,
+    "reliability_positive": 0,
+    "direct_O1_errors": {
+      "UNSAFE_REFERENCE_PATH": 12
+    },
+    "fit_executed": false,
+    "F4_ready": false
+  },
+  "verification": {
+    "pytest": {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_sports_v3_dataset_bridge.py",
+        "tests/test_sports_v3_family_evidence.py",
+        "tests/test_sports_v3_probability_features.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.679,
+      "stdout": "........................................................................ [ 65%]\n......................................                                   [100%]\n110 passed in 0.49s\n",
+      "stderr": ""
+    },
+    "ruff": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "--no-cache",
+        "src/toto_ai/research/sports_v3_dataset_bridge.py",
+        "tests/test_sports_v3_dataset_bridge.py"
+      ],
+      "exit_code": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    }
+  },
+  "source_files_unchanged": [
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/research/sports_v3_dataset_bridge.py",
+      "sha256": "73c0dee86f7f89b521ccdc2bee2a1845730bc29c0bc9f14a79c2d7813fa6fb5a"
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_sports_v3_dataset_bridge.py",
+      "sha256": "a92caa7fda7e6c6c044ebfb88737a1a7ec44b82caee2dcdd3b827e619f0a57b8"
+    }
+  ],
+  "artifacts": {
+    "C-bridge-reviewed-references.json": "4ea2649e12a2b5a68416495e0c503a6a9f42f4478983ec3088e8cc4bc6daefbd",
+    "C-bridge-native-validation.json": "288244b450156024dc9fb54ed95d33d129959e4a83f12eaacecdb3e5b2e36a7d",
+    "C-bridge-independent-checks.json": "1183850bd92958c9a9194739e2ed3d064f22885599af90d1eee1189b4e2b3f7c"
+  },
+  "remaining": [
+    "Safe logical evidence path bridge and end-to-end O1 regression; further O1 guards beyond unsafe path were not bypassed/probed.",
+    "Target scope absent and240historyrows have unknown gender/age_group/squad_type; no substitution from team names/current team.",
+    "4999event12 manual evidence format adapter; event9/14 missing target mapping.",
+    "5000–5006 missing verified history; full15-event sealed folds/label chronology and F4/evaluation review remain.",
+    "5007 early-input versus later capture expected; no live5007 recheck or defect claim."
+  ],
+  "reviewer_check_correction": "Initial diagnostic compared final-input file bytes with native semantic snapshot identity; no corruption finding. Native load_final_input validation now PASS; both hashes recorded separately.",
+  "writes": "Only review artifacts under current task directory; no author-code/data/DB/ops edits",
+  "commit_push_performed": false,
+  "live_runtime_validated": false,
+  "training_executed": false,
+  "processes_active": []
+}

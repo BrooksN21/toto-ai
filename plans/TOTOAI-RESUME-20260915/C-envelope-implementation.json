@@ -1,0 +1,113 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "checkpoint_at": "2026-09-15T15:28:35.596022+00:00",
+  "verdict": "FORMAT_ADAPTER_IMPLEMENTED_REAL_NATIVE_CONTRACT_PASS_PENDING_INDEPENDENT_REVIEW",
+  "code_frozen": true,
+  "changed_source_files": [
+    {
+      "path": "/Users/turshevr/toto-ai/src/toto_ai/research/sports_v3_dataset_bridge.py",
+      "sha256": "cee852cc43f7c2ec7f286773c4ac1a1ea753b1e69a0cf7d45d362ec3879ae7ac"
+    },
+    {
+      "path": "/Users/turshevr/toto-ai/tests/test_sports_v3_dataset_bridge.py",
+      "sha256": "e3252ad7e1f637a5eb63ab234e18c6d78726f0a5ef15b6977b579218411eb076"
+    }
+  ],
+  "contract_audit_before_code": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/C-envelope-contract-audit.json",
+  "native_validation": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/C-envelope-native-validation.json",
+  "exact_format_differences": {
+    "24/24": [
+      "params dict with integer10 -> ordered pairs limit string10",
+      "request_fingerprint absent -> reconstructed native canonical request hash",
+      "response_hash absent -> canonical payload hash computed from exact parsed archived payload",
+      "http_status200 is extra for native allowlist -> preserved only in provenance, never dropped from original"
+    ]
+  },
+  "source_integrity": "Original24filehashes andpayloadsemanticcontentchecked; originalfetched_at preserved. Newderived_at recorded. Oldarchives/reviewsunchanged.",
+  "unrepresentable_original_facts": [
+    "Original HTTP wirebody bytes/hash not archived; canonical payload hash is explicitly NOT raw HTTPbody hash",
+    "Original observed_at separate from fetched_at unavailable; never fabricated"
+  ],
+  "native_results": {
+    "sources": 24,
+    "native_O1_statuses": {
+      "COMPLETE": 12
+    },
+    "source_statuses": {
+      "AVAILABLE": 24
+    },
+    "native_O1_errors": {},
+    "features_native_validation_PASS": 12,
+    "nonmissing_feature_counts": {
+      "38": 1,
+      "42": 11
+    },
+    "scope_verified": 0,
+    "positive_reliability": 0
+  },
+  "source_payload_cases": {
+    "FINISHED": 233,
+    "AFTER_PEN": 6,
+    "AFTER_ET": 1,
+    "aggregate_vs_regulation_different_scores": 7,
+    "semantics_not_changed": true
+  },
+  "remaining_O1_missing_reason_counts": {
+    "NOT_IMPLEMENTED": 12,
+    "UNKNOWN_TARGET_SEASON": 12,
+    "UNKNOWN_TARGET_LEAGUE": 12,
+    "VENUE_HISTORY_BELOW_THRESHOLD": 33
+  },
+  "remaining_feature_missing_counts": {
+    "home_venue_goals_for_per_game": 1,
+    "home_venue_goals_against_per_game": 1,
+    "difference_venue_goals_for_per_game": 1,
+    "difference_venue_goals_against_per_game": 1,
+    "home_independent_opponent_ppg": 12,
+    "home_opponent_adjusted_ppg": 12,
+    "home_standings_rank": 12,
+    "home_standings_points": 12,
+    "home_standings_goal_difference": 12,
+    "away_independent_opponent_ppg": 12,
+    "away_opponent_adjusted_ppg": 12,
+    "away_standings_rank": 12,
+    "away_standings_points": 12,
+    "away_standings_goal_difference": 12,
+    "bk_margin": 12
+  },
+  "cutoff_status_counts": {
+    "UNKNOWN": 12
+  },
+  "dataset_boundary": {
+    "status": "REJECTED",
+    "reason": "15 unique ordered events",
+    "actual_events": 12,
+    "required_events": 15
+  },
+  "fit_boundary": {
+    "status": "BLOCKED_MISSING_TRAINING_EVIDENCE",
+    "missing": [
+      "independently reviewed common entity-scope feature bridge"
+    ],
+    "fit_executed": false,
+    "activation_allowed": false,
+    "automatic_wagering": false,
+    "sha256": "0341d120e1c26ebb64ac0ced1d292aa8045bbb931d5aab2bb80a07cf5b319c23"
+  },
+  "remaining_actions": [
+    "Independent review of lossless adapter and24derived SHA-linked chains; contract-probe references NOT an approval receipt",
+    "Complete4999 events9/12/14: two missing mappings, one manualofficialreviewformat",
+    "Historical class evidence remains absent; do not infer from currentteam",
+    "Supply independently bound cutoff projection if cutoff-dependent family assessment required; plan time exists, projection not connected",
+    "Build15eventfolds/knownlabelavailability/common-scope receipt; preserve existing7foldlimit and5000–5006 data gaps"
+  ],
+  "verification": {
+    "TDD": "5newtestsRED ImportError thenGREEN; priornative RAW_ENVELOPE_FIELDS24/24 verified before code",
+    "pytest": "126passed0.85s (35bridge tests incl real12event E2E;91native)",
+    "ruff": "PASS2files",
+    "training_executed": false,
+    "new_API_requests": 0,
+    "DB_job_consent_memory_Git_changes": false,
+    "active_processes": []
+  }
+}

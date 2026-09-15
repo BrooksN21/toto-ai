@@ -1,3 +1,14 @@
+# C adapter publication checkpoint — 2026-09-15T18:38:51.407430+03:00
+
+Task TOTOAI-RESUME-20260915. Latest checkpoint; older records below are historical.
+- DONE A: accepted inert Sports v3 library published. DONE B bounded scope: native-helper market-only replay/parity published; not general live equivalence or five-model quality proof.
+- C PARTIAL: independent review PASS for inactive dataset/envelope adapter only. Safe root-relative paths; exact original/derived provenance; chronology and fixture bindings;24 histories/12 events4999. Original archives unchanged. All7AET/PEN cases retain regulation90 features; O1 aggregate annotation cannot alter numeric features. Fresh137focused tests PASS; Ruff2PASS (details in C-final-publication.json).
+- BLOCKED D/F: only12/15events; target/history classes unknown; scope_verified=false/reliability0; historical complete folds/label availability/common-scope evidence absent. Dataset/F4/fit not ready, no training/activation or predictive/ROI improvement claim.
+- OPS5007 (parent receipts, not new runtime inspection): ea5283d runtime hash fix already pushed.18:00tls_preflight completed18:00:41.362MSK;18:30api_preflight completed18:31:09.377MSK,PASS. Watcher controlled observer-only activation oldPID16288→34611, fresh observation18:32:37.693MSK; no generator restart. Operator result not yet ready at that observation.
+- IN PROGRESS: publish this ready C/code+metadata+memory slice in existing draftPR23; exact push SHA/clean state in ignored cleanup-remainder-local-receipt.json.C_final_publication.publication. No merge.
+- NEXT CHECKPOINT: parent owns19:00MSK t_minus_60; final target19:30, T-10 expiry19:50, close20:00. This finalizer makes no DB/jobs/consent/operator changes. Research next: fill missing4999events9/12/14 and legitimate class/cutoff/history evidence, then qualify complete folds before fit.
+- Binding plan/checklist: plans/TOTOAI-RESUME-20260915/plan.md and machinechecklist.json. Evidence: C-envelope-independent-review.json, C-envelope-independent-references.json, checkpoint5007-1830.json, watcher5007-hashfix-activation.json. Old C REVISE/format-missing records are retained as superseded history, not current blockers.
+
 # Submission/model checkpoint — 2026-09-15T18:22:08+03:00
 
 Task TOTOAI-RESUME-20260915. Latest checkpoint; earlier entries below are historical.
