@@ -1,0 +1,99 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "stage": "B",
+  "updated_at": "2026-09-15T14:33:11.254429+00:00",
+  "status": "RAW_LOADER_GREEN_GENERATION_BLOCKED_CORE_COUPLING",
+  "complete_scope": "verified immutable research input loader + tests + real5000 export + native boundary diagnosis",
+  "stage_B_complete": false,
+  "written_code_files": {
+    "/Users/turshevr/toto-ai/src/toto_ai/research/__init__.py": "9d37179033e406e2d018c0807e38635dffa64e29531b3b3eba48dd418dabd7cc",
+    "/Users/turshevr/toto-ai/src/toto_ai/research/raw_package_replay.py": "4e74d5cfef907aab77c321276c498e5e2c130e4207228db3d4818f4c8753718e",
+    "/Users/turshevr/toto-ai/tests/test_raw_package_replay.py": "73928c9088aa89ad6d021b19a210faa49e21fb47a3ee159ee5b531105253a9b6"
+  },
+  "publication_note": "B files were excluded while RED; now GREEN but require separate review/publication decision; this worker performed no Git operations.",
+  "tests": {
+    "command": ".venv/bin/python -m pytest -q tests/test_raw_package_replay.py",
+    "passed": 22,
+    "failed": 0,
+    "elapsed_seconds": 0.5,
+    "exit_code": 0
+  },
+  "lint": {
+    "command": ".venv/bin/ruff check src/toto_ai/research tests/test_raw_package_replay.py",
+    "exit_code": 0
+  },
+  "output_files": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B-raw-adapter/manifest.json": "cf8000f9a080740216b39c534503457fc43be0ca43a5cf6387edbab50ab14c3e",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B-raw-adapter/input5000/research-input.json": "f9ce1e70f2259a7b6b78c4d3bd53831d6904427a1dd8ad3adc8ea9ef4423f45c",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B-raw-adapter/input5000/generation-blocked.json": "c635a70fa5ec73da73534e3c45a51c364c55fefac56c49c137ba24ea3be9840d"
+  },
+  "real5000_input": {
+    "drawing_id": 12107,
+    "drawing_number": 5000,
+    "event_count": 15,
+    "requested_bank": 4980,
+    "effective_bank": 780,
+    "stake": 30,
+    "coupon_capacity": 26,
+    "evidence_domain": "CURRENT_CODE_RETROSPECTIVE_REPLAY_NOT_PROSPECTIVE",
+    "research_input_sha256": "bef6c6484d4dec864608780a85ae876adda1ff9fd049a46efc816f41980b7e8b",
+    "input_file_sha256": "f9ce1e70f2259a7b6b78c4d3bd53831d6904427a1dd8ad3adc8ea9ef4423f45c"
+  },
+  "generation_status": "GENERATION_BLOCKED",
+  "native_reasons": [
+    "selection_provenance_missing"
+  ],
+  "blocker": {
+    "file": "/Users/turshevr/toto-ai/src/toto_ai/ev/package.py",
+    "function": "_select_safety_aware_package",
+    "lines": "386-434",
+    "cause": "Artifact-provenance errors are concatenated with numeric structural infeasibility before native safety-aware selection. Genuine5000historical scheduler/ledger/control are absent. No independent validated research-generation context is exposed here."
+  },
+  "not_a_solution": {
+    "function": "historical_ev_config",
+    "why": "mode=research reaches EVtopN at ev/package.py:244; not native safety-aware quality-v2 parity"
+  },
+  "other_native_helpers": {
+    "quality-v3": "optimizer/uncertainty_package.py:97 select_uncertainty_package",
+    "robust": "optimizer/robust_package.py:70 select_robust_package",
+    "remaining": "Exact control-relative anchors and production candidate/model composition must be preserved; never anchor to researchEVtopN or label market-only robust as full sports comparison."
+  },
+  "models": {
+    "Sports-v3": {
+      "status": "SKIPPED_NO_SPORTS"
+    },
+    "quality-v2": {
+      "reason": "exact control unavailable",
+      "status": "NOT_RUN"
+    },
+    "quality-v3": {
+      "reason": "exact control unavailable",
+      "status": "NOT_RUN"
+    },
+    "robust": {
+      "reason": "exact control unavailable",
+      "status": "NOT_RUN"
+    },
+    "sports-shadow": {
+      "status": "SKIPPED_NO_SPORTS"
+    }
+  },
+  "packages_generated": 0,
+  "executed_replay_drawings": 0,
+  "parity4999_executed": false,
+  "posthoc_scoring_executed": false,
+  "roi": null,
+  "next_exact_checkpoint": "Separate reviewed core extraction/design, then golden4999frozen-input package parity before any5000three-family generation; no native-core changes in this pre5007slice.",
+  "untouched": [
+    "native generators",
+    "live CLI",
+    "5007 scheduler",
+    "production DB",
+    "consents",
+    "operator files",
+    "ACTIVE_PLAN",
+    "A9/Sportsv3 modules",
+    "Git"
+  ],
+  "running_processes": []
+}

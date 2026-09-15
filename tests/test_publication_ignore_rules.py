@@ -42,6 +42,9 @@ def is_ignored(path):
         f"{CURRENT_PLAN}/cleanup-summary.json",
         f"{CURRENT_PLAN}/cleanup-remainder-private-scan.json",
         f"{OLD_PLAN}/4999-ledger-before-03a650359c57f727.json",
+        "memory-bank/OPERATIONS_HANDOFF.md",
+        "plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-experimental-release-authorization-receipt-20260906.md",
+        "plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CONSENT4999_20260907_HANDOFF.md",
     ],
 )
 def test_generated_data_are_ignored(path):
@@ -65,7 +68,9 @@ def test_generated_data_are_ignored(path):
         "src/toto_ai/sports_stats/v3_probability.py",
         "tests/test_sports_v3_library_isolation.py",
         "memory-bank/ACTIVE_PLAN.md",
-        "memory-bank/OPERATIONS_HANDOFF.md",
+        "memory-bank/OPERATIONS_HANDOFF_CURRENT.md",
+        f"{CURRENT_PLAN}/operator-handoff.md",
+        "src/toto_ai/research/native_quality_core.py",
         "data/schedule-evidence/ledger.json",
         "data/schedule-evidence/reviews/example.md",
     ],

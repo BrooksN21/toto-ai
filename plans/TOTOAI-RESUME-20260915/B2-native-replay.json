@@ -1,0 +1,157 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "stage": "B2",
+  "status": "INACTIVE_ENTRY_GREEN_REAL_REPLAY_COMPLETE_REVIEW_PENDING",
+  "finished_at": "2026-09-15T14:49:27.276691+00:00",
+  "tests": {
+    "passed": 27,
+    "failed": 0,
+    "seconds": 1.23,
+    "command": ".venv/bin/python -m pytest -q tests/test_raw_package_replay.py tests/test_research_quality_core.py",
+    "exit_code": 0
+  },
+  "ruff": "PASS:src/toto_ai/research + both tests + two local experiment scripts",
+  "publisher_files": {
+    "/Users/turshevr/toto-ai/src/toto_ai/research/__init__.py": "9d37179033e406e2d018c0807e38635dffa64e29531b3b3eba48dd418dabd7cc",
+    "/Users/turshevr/toto-ai/src/toto_ai/research/raw_package_replay.py": "4e74d5cfef907aab77c321276c498e5e2c130e4207228db3d4818f4c8753718e",
+    "/Users/turshevr/toto-ai/src/toto_ai/research/native_quality_core.py": "240cd6aa54178b03be8a393353c966100ac0d0c61dd3916135f7fe393bae1918",
+    "/Users/turshevr/toto-ai/tests/test_raw_package_replay.py": "73928c9088aa89ad6d021b19a210faa49e21fb47a3ee159ee5b531105253a9b6",
+    "/Users/turshevr/toto-ai/tests/test_research_quality_core.py": "2b448ef6769c46557908a170ec184a5c622e8d0352be8584641522aa2fdc84a9"
+  },
+  "native_dependencies_readonly_sha256": {
+    "/Users/turshevr/toto-ai/src/toto_ai/ev/package.py": "0137b8621f2b313740c712eb85a3ef5a5f4e25efb282b7d3a84d5bc50f028947",
+    "/Users/turshevr/toto-ai/src/toto_ai/ev/package_quality.py": "eb099853bc73e8a4257e55724e08b118f4200135560358919b1c3fcf8b893a93",
+    "/Users/turshevr/toto-ai/src/toto_ai/ev/models.py": "a18405eb81972346fedc01ab60de350714abc5374ceaa9d242129f1da79867e5",
+    "/Users/turshevr/toto-ai/src/toto_ai/ev/ternary.py": "354ce398710bc2d56629afc60df1ed2743b060c9276355a380386209c93e54ae",
+    "/Users/turshevr/toto-ai/src/toto_ai/optimizer/category_hit.py": "1eb7c228033ac49f9eb0262182c9563481c228f3fe611b90a0d4ea95d8bb29f3",
+    "/Users/turshevr/toto-ai/src/toto_ai/optimizer/uncertainty_package.py": "33b55ec8b3f7ca59e8d8c5ef1327d623bc1e0934ba05963f7a4df81a6e5d3b31",
+    "/Users/turshevr/toto-ai/src/toto_ai/optimizer/robust_package.py": "9c7913e1b3c41d19c9a5e29f5dbaaddc358697941e3c5be46c976a913b1c315f"
+  },
+  "parity": {
+    "status": "PARITY_PASS",
+    "drawing": 4999,
+    "final_input_hash": "6a2e4d4eab3e078bff971cd5afa939502e0029c343229a1e77ec1f472d7edf24",
+    "native_config_and_seed_equal": true,
+    "ordered_coupon_match": true,
+    "count": 166,
+    "native_provenance_guards_unchanged": true,
+    "scope": "3synthetic cases + exact166coupon real4999case; not a universal equivalence proof"
+  },
+  "generation": {
+    "drawing": 5000,
+    "requested_bank": 4980,
+    "effective_bank": 780,
+    "stake": 30,
+    "count_per_arm": 26,
+    "total_parity_and_generation_seconds": 139.52588341699993,
+    "hard_wall_timeout_seconds": 285,
+    "all_three_frozen_before_results": true,
+    "no_regeneration": true,
+    "seed_material": "ced18ead5299f8ba74eeb307d365e9d1c4c719355f0038839ff7fa22e43c878c",
+    "options": {
+      "Sports_v3": "SKIPPED_NO_SPORTS",
+      "automatic_wagering": false,
+      "category": 13,
+      "effective_bank": 780,
+      "evidence_domain": "CURRENT_CODE_RETROSPECTIVE_REPLAY_NOT_PROSPECTIVE",
+      "operator_compatible": false,
+      "parity_before_target_generation": true,
+      "quality_v3_options": {
+        "candidate_sample_count": 4000,
+        "mutation_limit": 2000,
+        "selection_sample_count": 10000,
+        "top_count": 2000
+      },
+      "requested_bank": 4980,
+      "robust_options": {
+        "candidates": "union exact qv2 control + native qv3 output",
+        "models": "BK + flatten10 + flatten20; market-only, NOT full sports-composed production robust",
+        "sample_count": 10000
+      },
+      "roi": null,
+      "sports_shadow": "SKIPPED_NO_SPORTS",
+      "stake": 30,
+      "target": 5000,
+      "task_id": "TOTOAI-RESUME-20260915",
+      "wall_limit_seconds": 275
+    }
+  },
+  "models": [
+    {
+      "model": "quality-v2",
+      "coupons": 26,
+      "best_hits": 10,
+      "average_hits": 6.0,
+      "p13": 0.0031962110101118662,
+      "p14": 0.0002941342100589311,
+      "p15": 1.1892811035610533e-05,
+      "same_as_control": true,
+      "fallback_reason": null
+    },
+    {
+      "model": "quality-v3",
+      "coupons": 26,
+      "best_hits": 9,
+      "average_hits": 6.653846153846154,
+      "p13": 0.004294696841052084,
+      "p14": 0.0004058774452957553,
+      "p15": 1.6764365077315737e-05,
+      "same_as_control": false,
+      "fallback_reason": null
+    },
+    {
+      "model": "robust-market-only",
+      "coupons": 26,
+      "best_hits": 10,
+      "average_hits": 6.0,
+      "p13": 0.0031962110101118662,
+      "p14": 0.0002941342100589311,
+      "p15": 1.1892811035610533e-05,
+      "same_as_control": true,
+      "fallback_reason": "NOT_EXPOSED_BY_NATIVE_RESULT; equality does not prove fallback"
+    }
+  ],
+  "sports-shadow": "SKIPPED_NO_SPORTS",
+  "Sports-v3": "SKIPPED_NO_SPORTS",
+  "non_equivalences": [
+    "robust-market-only uses native robust kernel with BK+flatten scenarios and qv2/qv3 union, NOT full production sports-composed robust",
+    "No five-model evaluation claim",
+    "NumericCandidate retains NOT_NATIVE_EQUIVALENT by default; explicit case-specific parity receipt is separate; production does not import it"
+  ],
+  "run_error_and_recovery": {
+    "original": "asdict() on exact_category_probabilities tuple failed after all packages frozen",
+    "failure_preserved": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/failure.json",
+    "recovered": "score_saved_b2.py reverified original package hashes then read outcomes readonly; serialization fixed; result saved",
+    "original_execution_script_sha": "not recorded before formatting/serializer fix; final script hashes below are current, not original-byte execution attestation"
+  },
+  "output_sha256": {
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/input5000.json": "3ad9d0cd4a7f8d36a5a57573d3fb2fb78e685bf97e8c2db54deee16251a94df5",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/parity4999.json": "f81bc94f71077627af22ddd140a2f82e9d81a150299ac6c1b558e003a280cc9e",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/run_b2.py": "41eecfc0078aa5210b104452949b52a9cd4f15b35570dae12e19338339b033e9",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/result.json": "9e83c54e8256197175d17b70268a1abfab70f6e6491a9cf10b3d6615641d2df4",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/score_saved_b2.py": "9394255427c7238550a3cfabe9a1f49b7fe1296a1abdbbe94ff692ba8980c32c",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/frozen-packages.json": "46e0913b1474fd29f2379d34c704c55361c0a7b4f56c647e1afa5923f02ec951",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/quality-v2-coupons.json": "e1b00772cdac8813af79a50d535cbfe5f5ea2b17c84a0b993943881d80f92b9f",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/parity4999-input.json": "bdd2332108bfdf26b7e4115742ad7600767b5c7899ff69d042e20e7e97f57735",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/quality-v3-coupons.json": "b4c2b6dfa266aa0880f16b0a9b99519824366bfaf11a34f67a5ee8124c0006b0",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/robust-market-only-coupons.json": "037e8970d20313bd056fa247d8d3c015cd62e91e3b45306c590304b54970d056",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/comparison.csv": "548b5fdf6866c27a801e5b28824705a1ac6950abfa5463f08a82b17bb444394d",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/protocol.json": "f9aee4394173a7408208139a0c412a3fc7e69f05678c51d12702f12d75647b4f",
+    "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/B2-native-replay/failure.json": "2fb1279ffe6805f44fb9d5b92c13cf82acf75ecd0e379f1471ae7d2b4de3429a"
+  },
+  "roi": null,
+  "n": 1,
+  "operator_compatible": false,
+  "automatic_wagering": false,
+  "next": "Separate code review of inactive helper orchestration and replay receipt; retain default non-equivalence outside tested cases, no production repoint without further approval. Sports data/training remains separate.",
+  "untouched": [
+    "live CLI",
+    "scheduler5007",
+    "productionDB",
+    "consents/operator artifacts",
+    "A9/Sportsv3 modules",
+    "ACTIVE_PLAN",
+    "Git"
+  ],
+  "running_processes": []
+}

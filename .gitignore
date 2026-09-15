@@ -138,3 +138,9 @@ reports/sports-stats/
 /plans/TOTOAI-RESUME-20260915/preflight5007-process.json
 /plans/TOTOAI-RESUME-20260915/prepare5007-process.json
 /plans/TOTOAI-RESUME-20260915/publication-receipt.json
+
+# Exact inactive/private historical handoffs; retain bytes locally.
+# Classification and evidence: plans/TOTOAI-RESUME-20260915/BC-publication.md
+/memory-bank/OPERATIONS_HANDOFF.md
+/plans/TOTOAI-4996-4997-RECOVERY-20260904/4998-experimental-release-authorization-receipt-20260906.md
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/CONSENT4999_20260907_HANDOFF.md

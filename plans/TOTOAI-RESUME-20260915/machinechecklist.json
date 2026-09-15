@@ -3,7 +3,7 @@
   "version": "20260915-plan-v1",
   "created_at": "2026-09-15T14:07:31.908300+00:00",
   "kind": "PLANNING_ONLY_NOT_EXECUTED",
-  "current_step": "A ready for inert library adoption; B ready for research RAW adapter; C source evidence unresolved",
+  "current_step": "A inert adoption published; B narrow three-arm market-only research executed/reviewed; C/D blocked on explicit data/format prerequisites; no live integration",
   "context": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-context.md",
   "active_plan_modified": false,
   "protected": {
@@ -41,7 +41,7 @@
         "C3"
       ],
       "title": "Adopt accepted SportsV3/F4 as an inert production library",
-      "status": "READY_FOR_SCOPED_IMPLEMENTATION",
+      "status": "COMPLETE",
       "owner": "implementation worker; independent reviewer; parent integrates",
       "depends_on": [],
       "inputs": [
@@ -75,11 +75,16 @@
         "import does not register CLI, start process/network/DB/job, or alter final comparison imports",
         "reviewed library-only change; no model training/rollout claim"
       ],
-      "blocker": "Real training data does not block inert library/test adoption. Unknown exact review06 file hash map must be verified before applying, not invented.",
+      "blocker": null,
       "outputs": [
         "A-library-adoption.json",
         "A-verification.log"
-      ]
+      ],
+      "execution_evidence": [
+        "A-integration-review.json",
+        "A-publication.json"
+      ],
+      "completion_scope": "Inert library only, de5d1a6 pushed; no training or rollout"
     },
     {
       "id": "B",
@@ -88,7 +93,7 @@
         "C4"
       ],
       "title": "Research RAW5000 adapter and three-family early-pool replay",
-      "status": "READY_FOR_SCOPED_IMPLEMENTATION",
+      "status": "EXECUTED_RESEARCH",
       "owner": "research adapter solver; independent algorithm reviewer",
       "depends_on": [],
       "inputs": [
@@ -118,13 +123,18 @@
         "report requested4980 versus effective780; pool78748; common26 cap; actual count may be lower on native feasibility",
         "no claim equivalent to full4980 or final-window performance"
       ],
-      "blocker": "Executable adapter absent; available early RAW sufficient for implementation plus narrow three-family replay. Exact generator call signatures must be bound from local source in solver, not guessed by planner.",
+      "blocker": "Broader/live reuse requires a separately reviewed RAW-to-EVSurface binding/shared-core entry; not an obstacle to this scoped inactive source publication.",
       "outputs": [
         "replay5000-v1/research-manifest.json",
         "replay5000-v1/frozen-generations.json",
         "replay5000-v1/metrics.json",
         "replay5000-v1/report.md"
-      ]
+      ],
+      "execution_evidence": [
+        "B2-native-replay.json",
+        "BC-integration-review.json"
+      ],
+      "completion_scope": "One5000 early-pool780/26 research case and166-ordered-coupon4999parity; sports skipped, no quality/ROI claim"
     },
     {
       "id": "C",
@@ -133,7 +143,7 @@
         "C2"
       ],
       "title": "Point-in-time sports and market availability table for4999–5006",
-      "status": "PARTIAL_INPUTS_EXTERNAL_SOURCE_UNCONFIRMED",
+      "status": "BLOCKED_INPUT",
       "owner": "data-evidence worker, independent provenance reviewer",
       "depends_on": [],
       "inputs": [
@@ -165,13 +175,16 @@
         "accepted independent source/scope receipt or explicit missing status for every required field",
         "no changes to original chronology rejected rows, denominator, DB or operational ledger"
       ],
-      "blocker": "No verified public provider proving all needed historical data/time-version access yet. Capture-time gate rejects new late fetch as old capture; reconstruction needs separate reviewed availability contract. Current DB outcomes alone are labels.",
+      "blocker": "Native raw integrity50/500 and4999V2 PASS; reviewed raw/target bridge, history scope metadata and5000–5006 captures absent; F4datasetfalse/fitfalse.",
       "outputs": [
         "corpus4999-5006/availability.json",
         "corpus4999-5006/features.json",
         "corpus4999-5006/labels.json",
         "corpus4999-5006/source-review.json",
         "corpus4999-5006/missing-inputs.md"
+      ],
+      "execution_evidence": [
+        "C-data-assembly.json"
       ]
     },
     {
@@ -356,5 +369,14 @@
     "DB/Git/scheduler operations",
     "subagents"
   ],
-  "next_checkpoint": "parent assigns A-only solver with exact accepted review06 source gate; planning worker stops; parent handles18:00operations"
+  "next_checkpoint": "parent assigns A-only solver with exact accepted review06 source gate; planning worker stops; parent handles18:00operations",
+  "execution_checkpoint": {
+    "at": "2026-09-15T17:58:35+03:00",
+    "A": "SOURCE_PUBLISHED_INERT_ONLY",
+    "B": "REVIEW_PASS_RESEARCH_EXECUTED_PUBLICATION_PENDING",
+    "C": "ASSEMBLY_CHECKPOINT_COMPLETE_DATASET_BLOCKED",
+    "D": "TRAINING_NOT_STARTED",
+    "F": "NOT_ACTIVATED",
+    "ops5007": "Parent owns18:00monitor; no runtime commands in submission"
+  }
 }
