@@ -1,0 +1,66 @@
+{
+  "observation": {
+    "away_aliases": [
+      "Юнайтед Нордик",
+      "United Nordic",
+      "Nordic United",
+      "Nordic United FC"
+    ],
+    "away_entity": "Юнайтед Нордик",
+    "competition_aliases": [
+      "Швеция. Суперэттан",
+      "Superettan 2026"
+    ],
+    "conditional": false,
+    "gender_age_class": "men-senior",
+    "home_aliases": [
+      "Эстер",
+      "Öster",
+      "Östers IF"
+    ],
+    "home_entity": "Эстер",
+    "observation_id": "manual-4996-event-13",
+    "reviewed_at": "2026-09-03T17:11:21.823378Z",
+    "reviewer": "codex-public-schedule-review",
+    "sport": "football",
+    "starts_at": "2026-09-04T17:00:00Z",
+    "status": "scheduled"
+  },
+  "schema_version": 1,
+  "sources": [
+    {
+      "away_team": "Nordic United",
+      "captured_at": "2026-09-03T17:02:49.033921Z",
+      "home_team": "Östers IF",
+      "role": "official",
+      "snapshot": "manual-4996/event-13-ostersif.html",
+      "snapshot_sha256": "33931aec4c18984b476c9a0030fff50157b4d80b9a5ba9ab8bf371b16ecbd143",
+      "source_name": "Östers IF",
+      "source_url": "https://www.ostersif.se/nyhet/publikinformation-osters-if-nordic-united",
+      "starts_at": "2026-09-04T17:00:00Z",
+      "status": "scheduled"
+    },
+    {
+      "away_team": "Nordic United FC",
+      "captured_at": "2026-09-03T17:10:15.589412Z",
+      "home_team": "Östers IF",
+      "role": "independent",
+      "snapshot": "manual-4996/event-13-ostergatan.html",
+      "snapshot_sha256": "cfdd4519c227689884dd35c47825f4eb5a40ea170f3310886e569cf528a2048d",
+      "source_name": "Östergatan",
+      "source_url": "https://ostergatansrestaurang.se/matcher/2026-09-04-1900-osters-if-vs-nordic-united-fc-6536123",
+      "starts_at": "2026-09-04T17:00:00Z",
+      "status": "scheduled"
+    }
+  ],
+  "target": {
+    "away_team": "Юнайтед Нордик",
+    "championship": "Швеция. Суперэттан",
+    "drawing_id": 12096,
+    "drawing_number": 4996,
+    "event_order": 12,
+    "home_team": "Эстер",
+    "sport": "football",
+    "target_event_id": 180555
+  }
+}

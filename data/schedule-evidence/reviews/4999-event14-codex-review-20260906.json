@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12106,
+    "drawing_number": 4999,
+    "event_order": 13,
+    "target_event_id": 180706,
+    "championship": "Сербия. 1-я лига",
+    "home_team": "Вождовац",
+    "away_team": "Бачка Топола",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "codex-reviewed-4999-event14-20260906",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Сербия. 1-я лига",
+      "Prva liga Srbije",
+      "Mozzart Bet Прва лига Србије 26/27"
+    ],
+    "home_entity": "FK Vozdovac",
+    "home_aliases": [
+      "Вождовац",
+      "ВОЖДОВАЦ",
+      "FK Vozdovac",
+      "FK Voždovac"
+    ],
+    "away_entity": "FK TSC Backa Topola",
+    "away_aliases": [
+      "Бачка Топола",
+      "Бачка Топола ТСЦ",
+      "ТСЦ",
+      "TSC",
+      "TSC Backa Topola",
+      "FK TSC Backa Topola"
+    ],
+    "starts_at": "2026-09-07T16:00:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex operations worker (TOTOAI-4998-PARALLEL-INTEGRATION-20260906)",
+    "reviewed_at": "2026-09-06T18:02:37.195652Z"
+  },
+  "sources": [
+    {
+      "source_name": "Football Association of Serbia",
+      "role": "official",
+      "source_url": "https://fss.rs/takmicenje/mozzart-bet-prva-liga-srbije-26-27/",
+      "snapshot": "4999-fss-serbia-retrieval02-3e0f0c9101ee55aa.raw",
+      "snapshot_sha256": "3e0f0c9101ee55aad0ed3d5990f2eac06de683e2be5fe178851d65b0abd97e13",
+      "home_team": "ВОЖДОВАЦ",
+      "away_team": "ТСЦ",
+      "starts_at": "2026-09-07T16:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-06T18:01:41.873322Z"
+    },
+    {
+      "source_name": "Utakmice.rs",
+      "role": "independent",
+      "source_url": "https://utakmice.rs/tim/fk-vozdovac",
+      "snapshot": "4999-utakmice-vozdovac-2805a51cd6aaad79.html",
+      "snapshot_sha256": "2805a51cd6aaad79c8114161e22210b62ef936d18020581450c9a421dca9df86",
+      "home_team": "FK Vozdovac",
+      "away_team": "TSC Backa Topola",
+      "starts_at": "2026-09-07T16:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-06T17:59:40.730064Z"
+    }
+  ]
+}

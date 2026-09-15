@@ -55,3 +55,28 @@ reports/hybrid_development_rows_*.csv
 reports/external_coverage_last_*.csv
 reports/external_coverage_last_*.md
 reports/sports-stats/
+
+# Local generated artifacts; source, reviews, memory and active plans stay visible.
+# Exact historical pytest output roots only: retain adjacent before/bootstrap/tests.
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY/pytest/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/focused-01-tmp/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/focused-02-tmp/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/independent-02-tmp/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/owned-independent-tmp/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY02/red/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/focused-tmp/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/independent-tmp/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/DELIVERY_OBSERVER_VERIFY03/red-tmp/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/G1_PROFILE_MAIN_VERIFICATION/tmp/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_VERIFY/tmp-focused/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/OBSERVER03_PUBLICATION_VERIFY/tmp-postmortem-correction/
+/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/RUNTIME02_PUBLICATION_VERIFY/tmp-pytest/
+/data/schedule-evidence/snapshots/
+/data/schedule-evidence/.ledger.json.lock
+/data/payout-evidence/
+/plans/**/*.stderr
+/plans/**/*.stdout
+/plans/**/*.log
+/plans/**/*.prof
+/plans/TOTOAI-RESUME-20260915/source-captures/
+/plans/TOTOAI-RESUME-20260915/history-source/drawing_*.json

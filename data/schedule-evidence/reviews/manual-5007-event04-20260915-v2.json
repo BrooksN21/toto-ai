@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12127,
+    "drawing_number": 5007,
+    "event_order": 3,
+    "target_event_id": 181011,
+    "championship": "Англия. Истмийская лига. Премьер-дивизион",
+    "home_team": "Крей Уондерерз",
+    "away_team": "Сейнт Албанс Сити",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "manual-5007-event04-20260915",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Англия. Истмийская лига. Премьер-дивизион",
+      "Isthmian League, Premier Division"
+    ],
+    "home_entity": "Cray Wanderers",
+    "home_aliases": [
+      "Крей Уондерерз",
+      "Cray Wanderers"
+    ],
+    "away_entity": "St Albans City",
+    "away_aliases": [
+      "Сейнт Албанс Сити",
+      "St Albans City"
+    ],
+    "starts_at": "2026-09-15T18:45:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex delegated operations TOTOAI-RESUME-20260915",
+    "reviewed_at": "2026-09-15T13:41:17.906573Z"
+  },
+  "sources": [
+    {
+      "source_name": "IsthmianLeague",
+      "role": "official",
+      "source_url": "https://www.isthmian.co.uk/match/6a59069cce9ef452b61f3ca2",
+      "snapshot": "5007-event04-isthmianleague-130c8702c7d5f96f69afc9ec30881c3f0300eb22db52446cec16eb00301ac14f.raw",
+      "snapshot_sha256": "130c8702c7d5f96f69afc9ec30881c3f0300eb22db52446cec16eb00301ac14f",
+      "home_team": "Cray Wanderers",
+      "away_team": "St Albans City",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:39:29.780069Z"
+    },
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/football/match/cray-wanderers-st-albans-city/Kcsgat#id:16596265",
+      "snapshot": "5007-event04-sofascore-1ab3acae0582bd8ea9ce99c70ec6126bf5cf3163e5b5f9f0c89bcf32d4c4fd64.raw",
+      "snapshot_sha256": "1ab3acae0582bd8ea9ce99c70ec6126bf5cf3163e5b5f9f0c89bcf32d4c4fd64",
+      "home_team": "Cray Wanderers",
+      "away_team": "St Albans City",
+      "starts_at": "2026-09-15T18:45:00Z",
+      "status": "not_started",
+      "captured_at": "2026-09-15T13:34:07.674109Z"
+    }
+  ]
+}

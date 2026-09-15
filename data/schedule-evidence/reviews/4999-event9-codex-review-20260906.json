@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12106,
+    "drawing_number": 4999,
+    "event_order": 8,
+    "target_event_id": 180701,
+    "championship": "Мальта. Суперкубок",
+    "home_team": "Флориана",
+    "away_team": "Валлетта",
+    "sport": "football"
+  },
+  "observation": {
+    "observation_id": "codex-reviewed-4999-event9-20260906",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Мальта. Суперкубок",
+      "Maltese Super Cup",
+      "BOV Super Cup",
+      "Super Cup"
+    ],
+    "home_entity": "Floriana FC",
+    "home_aliases": [
+      "Флориана",
+      "Флориана ФК",
+      "Floriana",
+      "Floriana FC"
+    ],
+    "away_entity": "Valletta FC",
+    "away_aliases": [
+      "Валлетта",
+      "Valletta",
+      "Valletta FC"
+    ],
+    "starts_at": "2026-09-07T17:00:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex operations worker (TOTOAI-4998-PARALLEL-INTEGRATION-20260906)",
+    "reviewed_at": "2026-09-06T18:08:06.609675Z"
+  },
+  "sources": [
+    {
+      "source_name": "Malta Football Association",
+      "role": "official",
+      "source_url": "https://www.mfa.com.mt/news/competitions/tickets-out-now-for-40th-bov-super-cup-final/",
+      "snapshot": "4999-mfa-supercup-097aaf1bb623a426.html",
+      "snapshot_sha256": "097aaf1bb623a4261656e6239919ee79fc9864a3c260420ac66b21f11436eb26",
+      "home_team": "Floriana FC",
+      "away_team": "Valletta FC",
+      "starts_at": "2026-09-07T17:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-06T17:59:44.366737Z"
+    },
+    {
+      "source_name": "Academia das Apostas Moçambique",
+      "role": "independent",
+      "source_url": "https://www.academiadasapostasmz.com/stats/match/malta/super-cup/floriana/valletta/kznmOByPDZxJd",
+      "snapshot": "4999-academia-malta-dc31fae61f500b54.html",
+      "snapshot_sha256": "dc31fae61f500b547e18a10737d4f876731f65bc301937e438a7125f33e76d84",
+      "home_team": "Floriana",
+      "away_team": "Valletta",
+      "starts_at": "2026-09-07T17:00:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-06T18:04:31.994345Z"
+    }
+  ]
+}

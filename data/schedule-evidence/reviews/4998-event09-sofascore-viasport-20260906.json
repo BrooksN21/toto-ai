@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "target": {
+    "drawing_id": 12102,
+    "drawing_number": 4998,
+    "event_order": 8,
+    "target_event_id": 180641,
+    "sport": "football",
+    "championship": "Бельгия. Чемпионат",
+    "home_team": "СК Беверен",
+    "away_team": "Ауд-Хеверле Левен"
+  },
+  "observation": {
+    "observation_id": "reviewed-4998-event09-sofascore16361913-viasport1558625-20260906",
+    "sport": "football",
+    "gender_age_class": "men-senior",
+    "competition_aliases": [
+      "Бельгия. Чемпионат",
+      "Pro League",
+      "Jupiler Pro League"
+    ],
+    "home_entity": "SK Beveren",
+    "home_aliases": [
+      "SK Beveren",
+      "СК Беверен"
+    ],
+    "away_entity": "Oud-Heverlee Leuven",
+    "away_aliases": [
+      "Oud-Heverlee Leuven",
+      "OH Leuven",
+      "Ауд-Хеверле Левен"
+    ],
+    "starts_at": "2026-09-06T17:15:00Z",
+    "status": "scheduled",
+    "conditional": false,
+    "reviewer": "Codex Gena; delegated worker 01a0760b-b663-7e21-8c46-69d9d0cc83f7",
+    "reviewed_at": "2026-09-06T09:31:13.336372Z"
+  },
+  "sources": [
+    {
+      "source_name": "Sofascore",
+      "role": "independent",
+      "source_url": "https://www.sofascore.com/nl/football/match/sk-beveren-oud-heverlee-leuven/tibsjXb",
+      "snapshot": "4998-event09-sofascore-exact-match.html",
+      "snapshot_sha256": "6e961a8dfde9fe5a7ac9a372be5593a7a83c67ebf892492db5779c598eb410fb",
+      "home_team": "SK Beveren",
+      "away_team": "Oud-Heverlee Leuven",
+      "starts_at": "2026-09-06T17:15:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-06T09:24:39.555507Z"
+    },
+    {
+      "source_name": "ViaSport",
+      "role": "independent",
+      "source_url": "https://viasport.no/fotball/kamp/1558625",
+      "snapshot": "4998-event09-viasport-fixture-1558625.html",
+      "snapshot_sha256": "23aaea93237a2d05b065bcbed294af20a3580feb0fe58c1e2aa9742d17a957b8",
+      "home_team": "SK Beveren",
+      "away_team": "OH Leuven",
+      "starts_at": "2026-09-06T17:15:00Z",
+      "status": "scheduled",
+      "captured_at": "2026-09-06T09:24:10.378379Z"
+    }
+  ]
+}

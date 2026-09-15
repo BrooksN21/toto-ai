@@ -1,0 +1,360 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "version": "20260915-plan-v1",
+  "created_at": "2026-09-15T14:07:31.908300+00:00",
+  "kind": "PLANNING_ONLY_NOT_EXECUTED",
+  "current_step": "A ready for inert library adoption; B ready for research RAW adapter; C source evidence unresolved",
+  "context": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-context.md",
+  "active_plan_modified": false,
+  "protected": {
+    "drawing": 5007,
+    "plan_id": "84b0f69e06487848",
+    "primary_checkpoint_msk": "2026-09-15T18:00:00+03:00",
+    "final_msk": "2026-09-15T19:30:00+03:00",
+    "cutoff_msk": "2026-09-15T19:50:00+03:00",
+    "closing_msk": "2026-09-15T20:00:00+03:00",
+    "runtime_verified_by_planner": false,
+    "forbidden": [
+      "DB/jobs/consent/operator/ledger changes",
+      "global skills or model services",
+      "nested tasks",
+      "heavy replay/fit competing with operational checkpoints",
+      "shared runtime imports/CLI changes before5007done"
+    ]
+  },
+  "status_values": [
+    "READY_FOR_SCOPED_IMPLEMENTATION",
+    "IN_PROGRESS",
+    "BLOCKED_INPUT",
+    "IMPLEMENTED_TESTED",
+    "REVIEW_ACCEPTED",
+    "EXECUTED_RESEARCH",
+    "INCONCLUSIVE",
+    "DEPLOYED_RESEARCH_ONLY",
+    "COMPLETE"
+  ],
+  "stages": [
+    {
+      "id": "A",
+      "linked_steps": [
+        "C2",
+        "C3"
+      ],
+      "title": "Adopt accepted SportsV3/F4 as an inert production library",
+      "status": "READY_FOR_SCOPED_IMPLEMENTATION",
+      "owner": "implementation worker; independent reviewer; parent integrates",
+      "depends_on": [],
+      "inputs": [
+        "model-context.md/json",
+        "isolated F4 snapshot04 manifest plus actual review06 accepted delta/receipt",
+        "current production source dependency hashes"
+      ],
+      "changed_modules": [
+        "src/toto_ai/sports_stats/v3_probability.py",
+        "src/toto_ai/sports_stats/v3_draw_calibration.py",
+        "src/toto_ai/sports_stats/v3_probability_features.py",
+        "src/toto_ai/sports_stats/v3_feature_disposition.py",
+        "src/toto_ai/sports_stats/v3_f4.py",
+        "src/toto_ai/sports_stats/v3_f4_gate.py",
+        "src/toto_ai/sports_stats/v3_f4_metrics.py",
+        "src/toto_ai/sports_stats/v3_generation.py",
+        "src/toto_ai/sports_stats/v3_research_safety.py"
+      ],
+      "tests": [
+        "tests/test_sports_v3_probability.py",
+        "tests/test_sports_v3_probability_features.py",
+        "tests/test_sports_v3_f4.py",
+        "tests/test_sports_v3_f4_metrics.py",
+        "tests/test_sports_v3_generation.py",
+        "tests/test_sports_v3_research_safety.py",
+        "tests/test_sports_v3_library_isolation.py (new)"
+      ],
+      "exit_criteria": [
+        "exact accepted review06 source/dependency mapping, no blind application of obsolete snapshot04",
+        "focused tests and Ruff pass against parent dependencies",
+        "import does not register CLI, start process/network/DB/job, or alter final comparison imports",
+        "reviewed library-only change; no model training/rollout claim"
+      ],
+      "blocker": "Real training data does not block inert library/test adoption. Unknown exact review06 file hash map must be verified before applying, not invented.",
+      "outputs": [
+        "A-library-adoption.json",
+        "A-verification.log"
+      ]
+    },
+    {
+      "id": "B",
+      "linked_steps": [
+        "C1",
+        "C4"
+      ],
+      "title": "Research RAW5000 adapter and three-family early-pool replay",
+      "status": "READY_FOR_SCOPED_IMPLEMENTATION",
+      "owner": "research adapter solver; independent algorithm reviewer",
+      "depends_on": [],
+      "inputs": [
+        "replay5000/replay-status.json",
+        "model-validation.json exact RAW/meta hashes",
+        "existing native budget/generation/safety function contracts",
+        "separate label file read only after frozen output"
+      ],
+      "changed_modules": [
+        "src/toto_ai/research/raw_package_replay.py (new proposed standalone module)",
+        "src/toto_ai/research/replay_contract.py (new only if needed to isolate schema)",
+        "tests/test_raw_package_replay.py (new)"
+      ],
+      "tests": [
+        "real RAW metadata chronology and hash fixture",
+        "native effective budget780 and count26",
+        "all three candidate families identical input/seed/evaluation scenarios/budget",
+        "outcome and sports/artifact leakage rejection",
+        "no production scheduler object fabrication and no operator export",
+        "duplicate/fallback/timeout accounting; deterministic output and no overwrite",
+        "control generator equivalence at same budget"
+      ],
+      "exit_criteria": [
+        "research schema/version/code/config/RAW metadata/probability hash frozen, operator_compatible=false and automatic_wagering=false",
+        "qv2/qv3/robust generated through native algorithm functions and separately scored after freeze",
+        "sports-shadow and SportsV3 explicitly SKIPPED_MISSING_SPORTS, no substitution",
+        "report requested4980 versus effective780; pool78748; common26 cap; actual count may be lower on native feasibility",
+        "no claim equivalent to full4980 or final-window performance"
+      ],
+      "blocker": "Executable adapter absent; available early RAW sufficient for implementation plus narrow three-family replay. Exact generator call signatures must be bound from local source in solver, not guessed by planner.",
+      "outputs": [
+        "replay5000-v1/research-manifest.json",
+        "replay5000-v1/frozen-generations.json",
+        "replay5000-v1/metrics.json",
+        "replay5000-v1/report.md"
+      ]
+    },
+    {
+      "id": "C",
+      "linked_steps": [
+        "C1",
+        "C2"
+      ],
+      "title": "Point-in-time sports and market availability table for4999–5006",
+      "status": "PARTIAL_INPUTS_EXTERNAL_SOURCE_UNCONFIRMED",
+      "owner": "data-evidence worker, independent provenance reviewer",
+      "depends_on": [],
+      "inputs": [
+        "existing model-validation availability ledger; no repeated archive audit",
+        "canonical completed results4999–5006 already imported",
+        "existing verified sports-match history where available",
+        "public official historical match/league archive only after bounded provider feasibility check"
+      ],
+      "changed_modules": [
+        "src/toto_ai/research/historical_feature_corpus.py (new proposed offline builder)",
+        "src/toto_ai/sports_stats/history_backfill.py only if separate reviewed retrospective adapter is justified; preserve existing contract",
+        "tests/test_historical_feature_corpus.py (new)"
+      ],
+      "tests": [
+        "women/youth/reserve exact identity non-substitution",
+        "regulation90 versus extra-time/penalty handling",
+        "same-day timezone/order and strict availability before as_of",
+        "future/target match injection rejected",
+        "season/cross-competition scope rules",
+        "today standings or revised future knowledge rejected",
+        "captured_at remains real fetch time",
+        "missing/ambiguous/source failure rows retained",
+        "match-history deduplication and immutable source revisions"
+      ],
+      "exit_criteria": [
+        "one per-event/family availability ledger with exact identity/source/time/row hashes and evidence-domain",
+        "5001–5006 missing market/pool retained; football-history reconstruction does not fabricate them",
+        "two separate corpus domains: original frozen captures and explicitly reconstructed historical research",
+        "accepted independent source/scope receipt or explicit missing status for every required field",
+        "no changes to original chronology rejected rows, denominator, DB or operational ledger"
+      ],
+      "blocker": "No verified public provider proving all needed historical data/time-version access yet. Capture-time gate rejects new late fetch as old capture; reconstruction needs separate reviewed availability contract. Current DB outcomes alone are labels.",
+      "outputs": [
+        "corpus4999-5006/availability.json",
+        "corpus4999-5006/features.json",
+        "corpus4999-5006/labels.json",
+        "corpus4999-5006/source-review.json",
+        "corpus4999-5006/missing-inputs.md"
+      ]
+    },
+    {
+      "id": "D",
+      "linked_steps": [
+        "C2",
+        "C3"
+      ],
+      "title": "Versioned chronological fit/freeze/evaluate with valid fold scaling",
+      "status": "CODE_READY_DATA_BLOCKED",
+      "owner": "SportsV3 fit solver; independent leakage/statistics reviewer",
+      "depends_on": [
+        "A",
+        "C"
+      ],
+      "inputs": [
+        "accepted eligible corpus/source receipts",
+        "independent BK/V2/probability/fold bindings",
+        "frozen chronological experiment protocol; earlier label availability",
+        "existing A0–A5 controls and accepted probability tolerances"
+      ],
+      "changed_modules": [
+        "src/toto_ai/sports_stats/v3_f4.py",
+        "src/toto_ai/sports_stats/v3_f4_gate.py",
+        "src/toto_ai/sports_stats/v3_f4_metrics.py",
+        "src/toto_ai/research/sports_v3_walkforward.py (new proposed entry point)",
+        "tests/test_sports_v3_walkforward_protocol.py (new)"
+      ],
+      "tests": [
+        "legacy1–7-fold results retained under legacy protocol",
+        "version2 full requested eight-draw roster retained including missing/insufficient-train cases",
+        "unsorted/duplicate/incomplete fold roster rejected",
+        "labels unavailable at fold cutoff excluded from fit",
+        "train-only transforms/imputation/calibration",
+        "predictions persisted/readback before target labels",
+        "future-label and target-feature mutation invariant tests",
+        "same seed, bounded resources/progress and deterministic semantic hashes",
+        "synthetic input can never produce historical/production PASS",
+        "67/105 old corpus remains below74/105; missing features not silently dropped"
+      ],
+      "exit_criteria": [
+        "explicit versioned roster-driven fold-count admission rather than deleting max7 guard",
+        "resource estimate/bound and entire roster checked; any unsupported size reported, not split into cherry-picked passing batches",
+        "for every fit, train only earlier complete eligible draws whose labels were available at prediction_as_of",
+        "new4999–5006 evaluation called retrospective/design-informed, not blind prospective holdout",
+        "real model/inference/evaluation artifacts produced where admissible; otherwise exact missing/insufficient-training disposition",
+        "probability gate recomputed independently; unchanged coverage/prospective gates, PASS_RESEARCH_ONLY not operator eligibility"
+      ],
+      "blocker": "Real training lacks eligible corpus/fold/market/V2 evidence. Code, schema and synthetic leakage tests can proceed independently. Old67/105 ceiling is not recalculated as a new-batch metric.",
+      "outputs": [
+        "walkforward-v2/protocol.json",
+        "walkforward-v2/fold-roster.json",
+        "walkforward-v2/models/",
+        "walkforward-v2/predictions/",
+        "walkforward-v2/probability-evaluation.json",
+        "walkforward-v2/independent-gate.json"
+      ]
+    },
+    {
+      "id": "E",
+      "linked_steps": [
+        "C1",
+        "C4",
+        "C5"
+      ],
+      "title": "Five labelled arms, common comparisons, complete missingness reporting",
+      "status": "PARTIAL_4999_DONE_REMAINDER_BLOCKED",
+      "owner": "offline evaluation solver; independent algorithm reviewer",
+      "depends_on": [
+        "B",
+        "D"
+      ],
+      "inputs": [
+        "exact frozen predictor manifests, corpus/market/probability hashes",
+        "same bank/stake/pool/config/seeds and evaluation stream per comparison",
+        "existing frozen4999 results report reused",
+        "official verified payout coefficients/receipts only if supplied"
+      ],
+      "changed_modules": [
+        "src/toto_ai/research/model_comparison.py (new proposed offline orchestrator)",
+        "tests/test_research_five_arm_comparison.py (new)",
+        "existing probability/coverage/settlement helpers reused without production policy edits"
+      ],
+      "tests": [
+        "candidate and common evaluation probability matrices cannot be confused",
+        "missing SportsV3 not replaced by SportsV2",
+        "duplicate robust/qv2 outputs recorded with hash and fallback reason",
+        "15-event union13/14/15 semantics preserved; no summing dependent coupon chances",
+        "score after freeze only; category counts differ from drawing hit rate",
+        "poolcap and same-input assertions",
+        "unknown payout produces nullROI, never zero profit/loss assumption"
+      ],
+      "exit_criteria": [
+        "predeclared fifth arm SportsV3 predictor + quality-v2 optimizer, not renamed SportsV2; all arms typed predictor×optimizer",
+        "BK-qualityv2, BK-qualityv3, BK-robust, V2-qualityv2/saved sports-shadow configuration, V3-qualityv2; actual sports-shadow optimizer pinned from artifact, not assumed",
+        "predictor logloss/multiclass sumBrier/draw-class reliability/calibration scored once per distinct predictor",
+        "packages exact unionP13+/P14+/P15 under SAME frozen reference measure plus separate self-model estimates; actual hits9–15 and unique/exposure/time metrics",
+        "all8 drawings and5arms retained even if NOT_EVALUABLE; paired quality comparisons on same eligible subset with coverage and fallback slices",
+        "ROI only if payout evidence verified; no lift/profit claim fromn1 or posthoc model choice"
+      ],
+      "blocker": "5000 has only three-arm early-market scope;5001–5006 no predraw market/sports inputs; V3 needsD. Complete table with explicit missing statuses can be produced now.",
+      "outputs": [
+        "evaluation4999-5006/arm-matrix.json",
+        "evaluation4999-5006/report.md",
+        "evaluation4999-5006/category-metrics.csv",
+        "evaluation4999-5006/probability-metrics.json",
+        "evaluation4999-5006/roi-evidence.json"
+      ]
+    },
+    {
+      "id": "F",
+      "linked_steps": [
+        "C3",
+        "C4"
+      ],
+      "title": "Manifest-controlled prospective integration after5007",
+      "status": "BLOCKED_BY_RESEARCH_AND_INDEPENDENT_ACCEPTANCE",
+      "owner": "parent operations after implementation/review handoff",
+      "depends_on": [
+        "A",
+        "D",
+        "E"
+      ],
+      "inputs": [
+        "accepted source and independent probability/evaluation receipt",
+        "versioned model/training/feature/corpus/fold/calibration/probability/financial manifests",
+        "separately approved eligible future drawing integration scope"
+      ],
+      "changed_modules": [
+        "src/toto_ai/sports_stats/v3_parallel.py (adopt accepted module separately)",
+        "src/toto_ai/sports_stats/final_hybrid_comparison.py (future reviewed optional seam only)",
+        "tests/test_sports_v3_parallel.py",
+        "tests/test_sports_v3_comparison_connection.py",
+        "tests/test_sports_v3_deployment_manifest.py (new)"
+      ],
+      "tests": [
+        "default-off/invalidmanifest/expired/version mismatch fallback preserves primary bytes",
+        "no outcome/payout input during inference",
+        "hard resource and deadline cancellation cleans owned workers only",
+        "current source/final inputs/model hashes checked before reuse and publication",
+        "no automatic operator release or strategy selection by realized hits",
+        "main existing four-way selector compatibility; extra research arm not silently added to operator IDs"
+      ],
+      "exit_criteria": [
+        "versioned candidate is integrated and demonstrably invoked in isolated prospective research stream",
+        "protected5007 control/jobs/consent unchanged; not rolled out intraday merely because retrospective hits improve",
+        "production qualification and exact future plan-bound owner consent separately satisfied before actionable use",
+        "fallback/provenance/freshness/operator deadlines remain enforced; actual trained versus fallback lineage visible"
+      ],
+      "blocker": "No approved fitted real V3/evaluation manifest yet; full operator rollout is not implied by research adoption or code tests.",
+      "outputs": [
+        "deployment/v3-manifest.json",
+        "deployment/acceptance.json",
+        "deployment/rollback-test.json"
+      ]
+    }
+  ],
+  "now_without_missing_data": [
+    "A inert library+focused tests",
+    "B RAW adapter+unit tests+single admitted5000pilot",
+    "D versioned fold protocol+synthetic leakage/resource tests, no real-fit claim",
+    "E complete missingness table and robust fallback/duplicate provenance reporting"
+  ],
+  "ordering": "FirstA scoped library only; thenB adapter/pilot; C verified source availability in independently scoped work; D after eligible evidence, E after frozen outputs, F after separate prospective acceptance. Do not wait onC to implementA/B.",
+  "change_claims": {
+    "quality_v2": "retain frozen control; calibration only separately trained predictor hypothesis",
+    "quality_v3": "higher rawP13/24coupons9+on4999 is descriptive; do not remove P15 safety gate fromn1",
+    "robust": "same hashes asqv2, G1applied=false; expose exact fallback cause, no diversity/lift claim",
+    "sports_shadow": "31coupons9+and max11on4999 does not prove SportsV2 superior; test calibration/residual and chronology before tuning",
+    "Sports_v3": "component implementation exists, real fitted/provenance/integration absent; adoption and testing are real deliverables independent of missingdata"
+  },
+  "completed_in_this_job": [
+    "read supplied context plus short current checkpoint",
+    "saved executable scoped plan and machine checklist"
+  ],
+  "not_executed": [
+    "code changes",
+    "tests",
+    "training",
+    "replay",
+    "data fetch",
+    "DB/Git/scheduler operations",
+    "subagents"
+  ],
+  "next_checkpoint": "parent assigns A-only solver with exact accepted review06 source gate; planning worker stops; parent handles18:00operations"
+}

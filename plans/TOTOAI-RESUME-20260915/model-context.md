@@ -1,0 +1,54 @@
+# TOTOAI-RESUME-20260915 — model context, not a new implementation plan
+
+## Role and boundary
+Delegated CONTEXT worker, production cwd `/Users/turshevr/toto-ai`. Read-only context except this pair of handoff files. Parent owns5007 and publication; no source/memory/DB/Git/jobs/consent changes, no training, tests, API calls or nested tasks. THREAD_COORDINATION identifies parent019f7afa-72e2-7403-85cd-d05f408a4ef3; historical MODELS/REVIEW task states are stale and not proof of active work. Their already-linked files were read directly, without resuming either task. Runtime5007 is not reverified here: latest saved ACTIVE_PLAN says ready/consents valid, first18:00, final19:30, close20:00MSK.
+
+## Exact gap in plain words
+Production has SportsV3 feature preparation/evidence/coverage attribution, NOT an integrated fitted SportsV3 probability predictor. `quality-v3` is a package optimizer, not SportsV3; `sports-shadow` uses SportsV2. In the isolated MODELS checkout there is a train→sealed-model→infer→chronological-evaluation implementation. Its code corrections received independent review06 ACCEPT, but all quoted96/27 tests were synthetic. No accepted real fitted model + equal-input inference/probability artifact was evidenced. Production does not contain the isolated v3_probability/v3_f4/v3_generation/v3_parallel modules inspected below. Hence calling the current four-way run a five-model trained SportsV3 comparison is incorrect.
+
+SportsV3 algorithm in isolated code: BK-centered logits plus sum-zero L2 residual, reliability≤0.20 and L1 displacement≤0.20;37 core/53 full features; A2/A3 complete core, A4/A5 train-only imputation. G1 changes coupon search, not match probabilities. On archived4999 robust output equals quality-v2 byte-for-byte, G1 applied=false; no improvement should be attributed to that label.
+
+## Existing checklist position (not superseded by this context)
+Authoritative linked proposal: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/MODEL_QUALITY_SKILLS_NEXT_PLAN.md`.
+- C1 frozen predictor×optimizer comparison contract: incomplete for new4999–5006 batch. Existing4999 settlement is done; no rerun required.
+- C2 genuine SportsV3 data/scope/time/equal-input gate: BLOCKED, not complete.
+- C3 calibration/market-residual chronological experiments: not completed on a real eligible corpus; new user request now asks to undertake this work, so earlier planning-only authorization notes must not be presented as if user still had not requested it. Execution remains a separate worker task.
+- C4 four-way packages/bank comparison: archived4999 complete, new5000–5006 incomplete; no SportsV3 fifth-arm quality proof.
+- C5 actual monetary ledger:4999 payout/ROI UNKNOWN; results alone cannot settle money. No verified new receipts in current model-validation inputs.
+- C6 bounded code simplification: remains unfinished per last linked checkpoint, not part of this context task.
+- C7 two project-local skills: accepted/implemented; publication concurrently owned elsewhere, not inspected or claimed complete here.
+- Older ACTIVE_PLAN P0.9/payout/SportsV3 remainder is preserved history; no current evidence permitting marking it all done. ACTIVE_PLAN is >1000 lines and THREAD_COORDINATION includes stale phases; use newest top checkpoint plus exact linked receipt, not a whole-memory reread.
+
+## What is honestly evaluable on4999–5006
+Source of facts: existing `model-validation.md/json`, `replay5000/replay-status.md/json`; archives/DB were not re-audited.
+-4999: frozen four166-coupon packages settled; maximum11/15 for every family, no13+. sports-shadow31 coupons9+, quality-v3 24, quality-v2/robust9 each. No payout/ROI. SportsV3 absent, not a zero-score model. Existing observed outcomes make this design-informed data, not a new blind holdout.
+-5000: nine genuine pre-cutoff raw captures; final saved early market RAW at07Sep19:32MSK for08Sep18:00 close,15BK quotes/no outcomes. No frozen baseline plan/final-input/package/sports snapshot. Existing CLI cannot generate the requested market-only three-family replay from RAW. A distinct research adapter is necessary, with new research provenance, freeze before outcome scoring, never a fabricated historical operator plan. Native pool78748 implies effective budget780/26, NOT4980/166. Sports-shadow and SportsV3 remain explicit missing-input cases.
+-5001–5006: no pre-draw market/sports/package snapshots in checked native registries; only newly imported finished RAW/results. New final odds cannot become pre-draw inputs. They supply labels for future supervised training, but not complete features or proof that old models forecast them. Do not report eight completed replay draws when only4999 is actually measured.
+
+## Exact remaining SportsV3 evidence gates
+1. Independent common identity/entity/scope/cutoff bridge bound to exact source bytes and event features; name similarity/hash syntax is insufficient.
+2. Reviewed chronological folds with exact BK probabilities, frozen V2, plan/financial inputs and earlier-available labels; separately bind4996 extension if retaining old corpus. Existing90 labels plus4996 labels already exist; repeated result collection will not fix the feature gap.
+3. Old frozen corpus:30 chronology rejected+8 missing; source-valid52/90, core-complete48. Even ideal15-row4996 extension caps source coverage at67/105=63.81%, below≥74/105 for70%. This is a preserved old-corpus ceiling, NOT a fresh measurement on4999–5006. Full coverage means all53 features plus valid proof; partial imputed core fit is permitted diagnostically but cannot be sold as gate PASS. Independent prior opponent histories/standings/BK margin remain missing.
+4. After eligible source/fold bindings: real chronological train→persist/seal/readback predictions→read target labels→recompute metrics/gate. Bind model/training/F4 report hashes independently, and exact native generation inputs/safety. Existing `evaluate_f4` enforces at most SEVEN folds; an eight-draw4999–5006 request is not a compatible drop-in invocation. Planner must preserve a predeclared corpus protocol or explicitly design/review a generalized evaluator, not silently truncate failures.
+5. `validate_f4_gate` requires `PASS_RESEARCH_ONLY`; gate artifact explicitly remains activation_allowed=false/operator_compatible=false/automatic_wagering=false. Code ACCEPT and research PASS are not rollout authority or proof of profit. Prospective acceptance30drawings/450events,≥70%coverage and existing remaining probability gates are still separate.
+6. Integration of accepted isolated implementation into current source, real native candidate generation and independently reviewed compatibility/default-off/selector wiring remain. Primary5007 should not be changed by a context/planning task.
+
+## Can history be reconstructed without current-data leakage?
+In principle, rolling results/goals/rest features can be recomputed from genuinely dated matches completed before each target; league tables can be reconstructed from a complete earlier season ledger, not today's table. Need exact identities, regulation-time scores, event times, result availability/revision evidence and fixed lookbacks. Future match rows/target results must be excluded; train/calibration folds must be earlier whole drawings. Public historical datasets might supply this, but no provider coverage/time-version evidence was audited in this bounded pass, so no claim a source already solves it.
+Current `history_backfill.py` explicitly rejects capture after frozen as_of/deadline and requires target/schedule/source bindings. A fresh September15 fetch of old matches does NOT satisfy that contract automatically. A separately identified retrospective-reconstruction corpus may be defensible if historical availability is evidenced and the protocol is reviewed; do not falsify captured_at, overwrite existing rejected rows, or count reconstruction as prospective captures. Existing DB results120/120 are labels, not full sports histories. Full equal-input package replay still needs historical BK/pool; reconstructing football form cannot invent missing market inputs for5001–5006.
+
+## Precise paths / validation entry points (not executed)
+Main data pipeline: `src/toto_ai/sports_stats/{v3_features.py,v3_family_evidence.py,v3_coverage_audit.py,v3_attribution.py,history_backfill.py,storage.py}`.
+Main existing CLI: `backfill-sports-history`, `replay-quality-v2-v3`, `replay-quality-sports-v2-robust`, `evaluate-sports-probability-shadow`. Use `.venv/bin/python -m toto_ai.cli <command> --help` before actual flags. Replay commands require frozen artifact types, not RAW.
+Isolated root: `/Users/turshevr/.codex/worktrees/a7aa/toto-ai` (read-only here).
+- `src/toto_ai/sports_stats/v3_probability.py`: train_v3(records, target_drawing, prediction_as_of,...), validate_model(model), load_model(text), infer_v3(...).
+- `v3_probability_features.py`: build_v3_predictors(event,verified_event_local_histories,reviewed_refs,drawing_number,bk_probabilities,deadline,...).
+- `v3_f4.py`: validate_scope_receipt(receipt,expected_hash,domain,folds), validate_fold(fold), validate_labels(fold,label,file_hash), run_f4(folds,output_dir,load_labels,training_domain,scope_receipt,expected_scope_receipt_sha256,time_budget_seconds=20).
+- `v3_f4_gate.py`: evaluate_f4(...), build_f4_gate(report), validate_f4_gate(gate,expected_report_sha256). These are Python APIs, not installed production CLI commands. Do not derive independent expected hashes from the same unreviewed input and call it approval.
+- `v3_generation.py`: generate_v3_candidate(request,inference,frozen_payload,control_coupons,gate,...); native whole-input/probability/financial/safety bindings mandatory.
+- Exact code handoff: `plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_HANDOFF_04.md`, manifest04 and later review06. Snapshot04 review-pending wording is superseded ONLY by narrow review06 ACCEPT from ACTIVE_PLAN; no real-fit claim follows.
+- Review06: `/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-4998-PARALLEL-INTEGRATION-20260906/SPORTS_V3_F4_INDEPENDENT_REVIEW06.md`.
+- Tests available in isolated checkout: test_sports_v3_probability.py, test_sports_v3_probability_features.py, test_sports_v3_f4.py, test_sports_v3_f4_metrics.py, test_sports_v3_generation.py, test_sports_v3_research_safety.py. Tests are component evidence, not evidence of good forecasts. No tests run in this task.
+
+## Handoff for separate planner
+This report establishes gaps, not a new work plan. Separate planner can define scoped RAW research adapter, point-in-time corpus contract, fit/evaluation/integration evidence and resource boundaries from these facts. Parent retains18:00/19:30 operations. No heavy training or source changes were started. Publication worker should not infer a clean checkout or completed model rollout from this context report.

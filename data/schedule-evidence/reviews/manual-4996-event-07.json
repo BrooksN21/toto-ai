@@ -1,0 +1,66 @@
+{
+  "observation": {
+    "away_aliases": [
+      "Сармиенто Хунин",
+      "Sarmiento Junin",
+      "Sarmiento"
+    ],
+    "away_entity": "Сармиенто Хунин",
+    "competition_aliases": [
+      "Аргентина. Чемпионат",
+      "Torneo Clausura Mercado Libre de la LPF"
+    ],
+    "conditional": false,
+    "gender_age_class": "men-senior",
+    "home_aliases": [
+      "Эстудиантес Рио Куарто",
+      "Estudiantes Rio Cuarto",
+      "Estudiantes (Río Cuarto)",
+      "Estudiantes (RC)"
+    ],
+    "home_entity": "Эстудиантес Рио Куарто",
+    "observation_id": "manual-4996-event-07",
+    "reviewed_at": "2026-09-03T17:11:21.823378Z",
+    "reviewer": "codex-public-schedule-review",
+    "sport": "football",
+    "starts_at": "2026-09-04T19:45:00Z",
+    "status": "scheduled"
+  },
+  "schema_version": 1,
+  "sources": [
+    {
+      "away_team": "Sarmiento",
+      "captured_at": "2026-09-03T16:46:46.391053Z",
+      "home_team": "Estudiantes (Río Cuarto)",
+      "role": "official",
+      "snapshot": "manual-4996/event-07-afa.html",
+      "snapshot_sha256": "764ba5d771f12a50b9521ffb4e383f7b5db3b26026830264f6d4ec2c59fe3853",
+      "source_name": "AFA",
+      "source_url": "https://www.afa.com.ar/es/posts/agenda-de-la-fecha-8-a-la-11-del-torneo-clausura-mercado-libre-de-la-lpf",
+      "starts_at": "2026-09-04T19:45:00Z",
+      "status": "scheduled"
+    },
+    {
+      "away_team": "Sarmiento",
+      "captured_at": "2026-09-03T16:46:49.022621Z",
+      "home_team": "Estudiantes (RC)",
+      "role": "independent",
+      "snapshot": "manual-4996/event-07-diariojunin.html",
+      "snapshot_sha256": "578501023201d7a389cac45f473816ad30ef812e93803dc117a4bf3cda38966f",
+      "source_name": "Diario Junín",
+      "source_url": "https://www.diariojunin.com/noticias/102317_sarmiento-ya-tiene-arbitro-confirmado-para-su-visita-a-rio-cuarto.html/amp",
+      "starts_at": "2026-09-04T19:45:00Z",
+      "status": "scheduled"
+    }
+  ],
+  "target": {
+    "away_team": "Сармиенто Хунин",
+    "championship": "Аргентина. Чемпионат",
+    "drawing_id": 12096,
+    "drawing_number": 4996,
+    "event_order": 6,
+    "home_team": "Эстудиантес Рио Куарто",
+    "sport": "football",
+    "target_event_id": 180549
+  }
+}
