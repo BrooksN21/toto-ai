@@ -1,3 +1,13 @@
+# Submission/model checkpoint — 2026-09-15T17:36:09+03:00
+
+Task: TOTOAI-RESUME-20260915. Latest checkpoint; earlier entries below are historical.
+- DONE: cleanup commit `9088a6e` pushed and verified as draft PR #23 HEAD; 398 archived artifacts plus 6 bookkeeping files, no A/B code. Checks: 38 focused pytest PASS, Ruff PASS; 106 archived Python files syntax-only.
+- A: implementation reports 99 PASS / 1 Stage-F worker test skipped. Native independent review artifacts are available: PASS for inert-library adoption only; not training, qualification or live readiness. Review-bound source/test and protected-code hashes rechecked. Fresh submission checks: 99 PASS / 1 Stage-F skip (8.21 s), Ruff18 PASS. A is ready for source-only publication; no activation.
+- B: checkpoint input loader reports 22 tests/Ruff PASS; B2 research generation remains in progress. B files must not be staged until phase completion/review.
+- C: data assembly in progress (parent update); D: training not started. No improvement/profitability claim.
+- REMAINS/BLOCKER: A publication, unfinished B/C and three explicitly ineligible historical handoffs; full-clean not achieved. Follow `plans/TOTOAI-RESUME-20260915/plan.md` and `machinechecklist.json` without extending scope.
+- NEXT: bounded A source publication after focused checks, stable slice by 17:50 MSK; parent owns read-only runtime checks at 17:55/18:00 MSK. No scheduler/DB/consent/5007 runtime changes in submission.
+
 # Archival cleanup checkpoint — 2026-09-15T14:30:53.847958+00:00
 
 DONE: reviewed historical454-file remainder;398finished historical/source-evidence artifacts selected for archival publication;55exact raw/private runtime exceptions including2new diagnostic receipts, no deletion/move/re-signing. Sourcecopies are not newSportsV3integration; A/Bremainexcludedpendingownreview.38ignore/C7pytestPASS, RuffPASS,106archivalPython syntaxPASS(notexecuted). REMAINS:3explicitineligiblehistoricalhandoffs, A/Breview/publication, operational5007firstcheckpoint18:00MSK. BLOCKER: no full-cleanclaim while ongoingwork and protectedhandoffsremain. NEXT: parent follows active modelplan and actual5007runtime; no jobs/DB/consentchangedbycleanup. Sourceofdispositions plans/TOTOAI-RESUME-20260915/cleanup-remainder-manifest.json and archive-publication.md; exactremoteoutcome in localcleanup-remainder-local-receipt.json.

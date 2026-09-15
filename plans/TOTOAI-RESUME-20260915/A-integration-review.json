@@ -1,0 +1,36 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "stage": "A",
+  "verdict": "PASS",
+  "scope": "Inert library adoption only; not model qualification, Stage F, publication or operational readiness",
+  "reviewed_at": "2026-09-15T17:23:00+03:00",
+  "findings": [],
+  "receipt_md_sha256": "a2c2be2e14a52b98345e978a54f8b7f237fab5b309dbffa58d8a4d886d235bc2",
+  "receipt_json_sha256": "58bec415bf87455f29981aaf94fc56a7e68c4780fec0c22546f4bcb870b305e7",
+  "verification": {
+    "final_file_hashes_matched": 17,
+    "accepted_source_manifest_and_author_hashes_matched": 17,
+    "review_and_artifact_hashes_matched": 5,
+    "protected_hashes_matched": 6,
+    "existing_dependency_hashes_matched": 8,
+    "original_assertions_ast_equal": 16,
+    "independent_isolation": {"passed": 11, "seconds": 0.99, "exit_code": 0, "timeout_seconds": 25},
+    "independent_ruff": {"files": 18, "exit_code": 0, "timeout_seconds": 15},
+    "implementation_reported_focused_suite": {"passed": 99, "skipped": 1, "independently_rerun": false},
+    "worker_source_present": false
+  },
+  "limits": [
+    "No full suite or real training",
+    "No whole-repository or Git-history audit",
+    "Protected pre-state supplied by receipt",
+    "No runtime, drawing 5007, DB, jobs, consent or ledger verification",
+    "Import regression guard is not a general security proof",
+    "Worker integration explicitly skipped for Stage F"
+  ],
+  "production_edits": false,
+  "operational_commands": false,
+  "git_operations": false,
+  "activation": false,
+  "real_training": false,
+  "report_root": "/Users/turshevr/.codex/worktrees/ab34/toto-ai/plans/TOTOAI-RESUME-20260915"
+}
