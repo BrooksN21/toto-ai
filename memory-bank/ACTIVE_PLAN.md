@@ -1,12 +1,13 @@
-# Submission/model checkpoint — 2026-09-15T17:36:09+03:00
+# Submission/model checkpoint — 2026-09-15T17:40:50+03:00
 
 Task: TOTOAI-RESUME-20260915. Latest checkpoint; earlier entries below are historical.
-- DONE: cleanup commit `9088a6e` pushed and verified as draft PR #23 HEAD; 398 archived artifacts plus 6 bookkeeping files, no A/B code. Checks: 38 focused pytest PASS, Ruff PASS; 106 archived Python files syntax-only.
-- A: implementation reports 99 PASS / 1 Stage-F worker test skipped. Native independent review artifacts are available: PASS for inert-library adoption only; not training, qualification or live readiness. Review-bound source/test and protected-code hashes rechecked. Fresh submission checks: 99 PASS / 1 Stage-F skip (8.21 s), Ruff18 PASS. A is ready for source-only publication; no activation.
-- B: checkpoint input loader reports 22 tests/Ruff PASS; B2 research generation remains in progress. B files must not be staged until phase completion/review.
-- C: data assembly in progress (parent update); D: training not started. No improvement/profitability claim.
-- REMAINS/BLOCKER: A publication, unfinished B/C and three explicitly ineligible historical handoffs; full-clean not achieved. Follow `plans/TOTOAI-RESUME-20260915/plan.md` and `machinechecklist.json` without extending scope.
-- NEXT: bounded A source publication after focused checks, stable slice by 17:50 MSK; parent owns read-only runtime checks at 17:55/18:00 MSK. No scheduler/DB/consent/5007 runtime changes in submission.
+- DONE: cleanup `9088a6e` and Stage A `de5d1a6` committed and pushed to the existing draft PR #23 (no merge). A contains nine inert library modules, nine tests and bound adoption/review/publication reports; no live model activation.
+- A: native independent review artifacts are AVAILABLE/PASS for inert adoption only. Fresh finalization: 99 pytest PASS / 1 Stage-F worker test NOT_RUN_FOR_SCOPE (8.21 s); Ruff18 PASS. Exact reviewed files and six protected/eight dependency hashes matched. No training, qualification or profitability claim.
+- B: input-loader checkpoint reports 22 tests/Ruff PASS; B2 research generation remains in progress. All B files remain unpublished until phase completion/review. C: data assembly in progress; D: training not started (parent checkpoint).
+- WORKTREE at 17:40 MSK: staged=0, tracked-dirty=0, untracked=12: five B source/test files, four B/C reports and three previously documented ineligible historical handoffs. The source branch equals its origin counterpart; it is six commits ahead of origin/main before this metadata commit. No full-clean claim.
+- REMAINS/BLOCKER: unfinished B/C, data/training prerequisites and the three visible handoffs; no permission to publish incomplete code or private records. Follow `plans/TOTOAI-RESUME-20260915/plan.md` and `machinechecklist.json` without extending scope.
+- NEXT: parent read-only runtime checks at 17:55/18:00 MSK; submission has not invoked or modified scheduler/DB/consent/5007 runtime. This source publication phase is complete; no new benchmarks or model runs.
+- Evidence: `plans/TOTOAI-RESUME-20260915/A-publication.md/json`, native `A-integration-review.md/json` and the local ignored `cleanup-remainder-local-receipt.json` for exact final publication outcome.
 
 # Archival cleanup checkpoint — 2026-09-15T14:30:53.847958+00:00
 
