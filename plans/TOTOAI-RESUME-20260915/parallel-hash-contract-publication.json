@@ -1,0 +1,76 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "at": "2026-09-15T18:22:08+03:00",
+  "scope": "Parallel report/delivery hash-contract fix only; C excluded",
+  "review": "parallel-hash-contract-review.md",
+  "review_verdict": "PASS for exact supplied scope",
+  "source_hashes": {
+    "/Users/turshevr/toto-ai/src/toto_ai/package/hash_contract.py": "f79c8e19825dde818cc6731b750332be92aa9e71934a63666607d4811307b8be",
+    "/Users/turshevr/toto-ai/src/toto_ai/operations/scheduler_delivery.py": "402987459a52e9a1e39b936cc1e621c187f612e1c1403e80e5227b46d4f99e77",
+    "/Users/turshevr/toto-ai/src/toto_ai/sports_stats/final_hybrid_comparison.py": "35b9b0d27760eb22b039d70766933a5d3c1975c03ba95cb3b362018c6a86ac3d",
+    "/Users/turshevr/toto-ai/tests/test_parallel_hash_contract.py": "3d85e877e95173e670494d8f2193bbbcac74b49491ba5b9c6431767a7f6e7770",
+    "/Users/turshevr/toto-ai/tests/test_scheduler_delivery.py": "27f428d7633e61923afba38325662c1ecedcefea1484146b3c441f657902dd14"
+  },
+  "knowledge_hashes": {
+    "/Users/turshevr/toto-ai/knowledge/parallel_report_hash_contract.md": "bd0477d8366340d7cad47abe7daad659180934bd169b0eb5fe8bde1a52782e38"
+  },
+  "verification": {
+    "pytest": {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_parallel_hash_contract.py",
+        "tests/test_scheduler_delivery.py",
+        "tests/test_scheduler_status.py"
+      ],
+      "exit_code": 0,
+      "seconds": 3.048,
+      "stdout": "........................................................................ [ 85%]\n............                                                             [100%]\n84 passed in 2.87s\n",
+      "stderr": ""
+    },
+    "ruff": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "--no-cache",
+        "src/toto_ai/package/hash_contract.py",
+        "src/toto_ai/operations/scheduler_delivery.py",
+        "src/toto_ai/sports_stats/final_hybrid_comparison.py",
+        "tests/test_parallel_hash_contract.py",
+        "tests/test_scheduler_delivery.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.04,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    "extra_negatives": {
+      "passed": 8,
+      "cases": [
+        "schema_version",
+        "artifact_class",
+        "canonical_package_sha256",
+        "canonical_package_sha256_semantics",
+        "package_sha256_semantics",
+        "comma",
+        "concatenated",
+        "LF_without_terminator"
+      ],
+      "mode": "memory only; synthetic coupons; no files/ops"
+    }
+  },
+  "existing_archive_bytes_modified": false,
+  "scheduler_restart_or_calculation_invoked": false,
+  "C_source_reports_included": false,
+  "publication": "Authorized existing origin branch/draft PR23; no merge",
+  "status": "VERIFIED_READY_FOR_COMMIT_PUSH",
+  "activation": "Parent must separately activate/revalidate the existing observer; existing Python imports do not hot-reload. Do not restart generators.",
+  "outcome_receipt": "cleanup-remainder-local-receipt.json (ignored; exact final commit/remote state recorded after push)"
+}

@@ -374,9 +374,19 @@
     "at": "2026-09-15T17:58:35+03:00",
     "A": "SOURCE_PUBLISHED_INERT_ONLY",
     "B": "REVIEW_PASS_RESEARCH_EXECUTED_PUBLICATION_PENDING",
-    "C": "ASSEMBLY_CHECKPOINT_COMPLETE_DATASET_BLOCKED",
+    "C": "REVISE_BRIDGE_PATH_COMPATIBILITY_AUTHOR_FIX_IN_PROGRESS;scope/data still blocked",
     "D": "TRAINING_NOT_STARTED",
     "F": "NOT_ACTIVATED",
-    "ops5007": "Parent owns18:00monitor; no runtime commands in submission"
+    "ops5007": "Parent owns18:00monitor; no runtime commands in submission",
+    "C_review": "C-bridge-independent-review.json (separate local, not included in runtime publication)"
+  },
+  "runtime_hash_contract_checkpoint": {
+    "at": "2026-09-15T18:22:08+03:00",
+    "status": "REVIEW_PASS_TESTED_READY_FOR_ISOLATED_PUBLICATION",
+    "review": "parallel-hash-contract-review.md",
+    "tests": "84PASS,Ruff5PASS,8negativePASS",
+    "C_excluded": true,
+    "scheduler_or_restart_actions": false,
+    "next": "Parent observer-only activation after confirmed push"
   }
 }

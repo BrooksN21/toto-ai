@@ -1,13 +1,12 @@
-# Submission/model checkpoint — 2026-09-15T17:58:35+03:00
+# Submission/model checkpoint — 2026-09-15T18:22:08+03:00
 
-Task: TOTOAI-RESUME-20260915. Latest checkpoint; earlier entries below are historical.
-- DONE: A inert library published/reviewed (`de5d1a6`); archive and previous memory updates pushed through `49a3c88`, draft PR23, no merge. B completed sources now independently reviewed PASS for inactive research only; fresh27 B tests +37 ignore tests/Ruff6 PASS. B/C final slice is ready for authorized publication; exact result in ignored receipt after push.
-- B: saved exact166-coupon/order parity4999 and one5000market-only replay; requested4980 capped780/26. Max actual hits qv2=10/qv3=9/robust-market-only=10, robust equals control; sports skipped. Not a full4980 or prospective quality benchmark. Surface/RAW binding and wider native equivalence remain explicitly limited; no live integration.
-- C: final17:51 metadata saved:50source snapshots/500history rows native integrity PASS,4999V2 binding PASS. Reviewed target/raw bridge, historical scope fields and5000–5006 histories missing. F4 dataset ready=false; fit=false. D training not started.
-- CLEANUP: three explicitly inactive/private historical handoffs kept locally unchanged and exactly excluded; no source/current memory/active plan hidden. No raw/DB/secrets publication. Final counts are measured after commit/push, not assumed.
-- REMAINS/BLOCKER: C/D dataset/protocol prerequisites and reviewed bound numerical API before broader use; model improvement/profit not established. Follow updated `plans/TOTOAI-RESUME-20260915/machinechecklist.json`; no new work in submission.
-- NEXT: parent owns18:00MSK5007runtime checkpoint. No scheduler/DB/consent/operational evidence modifications or runtime validation by this worker. Final publication receipt/checkpoint by18:03 even if blocked.
-- Evidence: `BC-integration-review.md/json`, `BC-publication.md/json`, `B2-native-replay.md/json`, `C-data-assembly.md/json`; final local outcome in `cleanup-remainder-local-receipt.json`.
+Task TOTOAI-RESUME-20260915. Latest checkpoint; earlier entries below are historical.
+- DONE: earlier reviewed A/B and C readiness metadata published through `ca1e006`, draft PR23. Runtime parallel-report/delivery hash fix independently reviewed PASS; source hashes match; fresh84tests PASS(2.87s), Ruff5 PASS and8negative probes PASS. Ready for isolated commit/push; final SHA in ignored receipt after verification.
+- RUNTIME SCOPE: explicit LF/comma/file-byte domains; legacy semantics bounded, no alternate-hash fallback, native spaced exports accepted after byte checks, duplicates rejected. No existing evidence/archives restamped; no model/category/bank/selection changes.
+- C: separate review REVISE at18:17: native O1 rejects absolute reference paths12/12; author correction in progress. Reviewed36byte/identity/time bindings yielded12native features, but scope unknown/reliability0. All C source/tests/reports excluded from runtime publication, not hidden or ignored. F4datasetfalse; Dtraining not started.
+- REMAINS/BLOCKER: C correction/re-review and dataset scope/history/fold prerequisites. These do not block this accepted runtime fix. No full-clean claim while C writer works.
+- NEXT: parent controls5007native checkpoints and, after publication, observer-only activation/freshness verification; existing watcher imports do not hot-reload. This finalizer must not restart scheduler/watcher/calculations or alter consent/DB/operator files. Publish target18:25MSK, report actual remaining.
+- Evidence: `parallel-hash-contract-review.md`, `parallel-hash-contract-publication.md/json`, knowledge/parallel_report_hash_contract.md; current C review remains a separate local job. Full plan/checklist preserved.
 
 # Archival cleanup checkpoint — 2026-09-15T14:30:53.847958+00:00
 

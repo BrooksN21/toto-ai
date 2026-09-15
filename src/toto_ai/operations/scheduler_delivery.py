@@ -9,6 +9,7 @@ from collections.abc import Mapping
 from datetime import datetime, timezone
 from pathlib import Path
 
+from toto_ai.package.hash_contract import validate_baseline_hashes
 from toto_ai.runner.final_input import load_final_input
 from toto_ai.runner.scheduler import SchedulerPlan
 
@@ -140,7 +141,8 @@ def _coupons(path: Path, plan: SchedulerPlan) -> tuple[str, ...]:
     rows = _regular(path, plan.output_dir.resolve()).read_text().splitlines()
     coupons = []
     for row in rows:
-        fields = row.split(";")
+        # Native BaltBet export separates fields with '; '; bytes stay hash-bound.
+        fields = [field.strip(" ") for field in row.split(";")]
         if (
             len(fields) != 16
             or fields[0] != str(plan.stake)
@@ -150,6 +152,8 @@ def _coupons(path: Path, plan: SchedulerPlan) -> tuple[str, ...]:
         coupons.append("".join(fields[1:]))
     if not coupons:
         raise ValueError("empty operator package")
+    if len(set(coupons)) != len(coupons):
+        raise ValueError("duplicate operator coupons")
     return tuple(coupons)
 
 
@@ -234,10 +238,11 @@ def _parallel_binding(
         or report.get("final_input_snapshot_sha256") != snapshot.snapshot_sha256
         or report.get("bank") != plan.requested_bank
         or report.get("stake") != plan.stake
-        or report.get("baseline", {}).get("package_sha256")
-        != archive.get("canonical_package_sha256")
     ):
         raise ValueError("parallel report/final-input binding mismatch")
+    validate_baseline_hashes(
+        report, _coupons(control, plan), archive.get("canonical_package_sha256")
+    )
     reuse = report.get("control_execution", {})
     if reuse.get("mode") == "VERIFIED_PRIMARY_REUSE" and (
         reuse.get("operator_record_sha256") != primary.get("record_sha256")
