@@ -1,0 +1,64 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "reviewed_at": "2026-09-16T12:01:53.554359+00:00",
+  "verdict": "REVISE_ONE_P1_FALLBACK_CONTROL_PATH_PILOT_MATH_ACCEPT",
+  "findings": [
+    {
+      "priority": 1,
+      "file": "/Users/turshevr/toto-ai/src/toto_ai/research/sports_v3_package_comparison.py",
+      "lines": [
+        315,
+        320
+      ],
+      "finding": "Missing/invalid Sports leaves one model; native evaluate_fixed_package requires >=2 models, raises ValueError before comparison.json is written. Valid BK.json survives but promised BK_CONTROL_ONLY_SPORTS_SKIPPED receipt is absent.",
+      "reproduction": "Execute existing request_fixture with nonexistent sports_predictions and REAL _evaluate (no monkeypatch): ValueError at least two probability models are required; BK.json exists; comparison.json absent.",
+      "fix_request": "Keep invalid Sports rejected, preserve immutable BK; provide explicitly disclosed single-model diagnostic path (or honestly labelled identical API alias without invented Sports); always persist BK-only terminal receipt. Add unmocked missing/tampered Sports regressions. Do not change production evaluator/model maths."
+    }
+  ],
+  "test_gap": {
+    "file": "/Users/turshevr/toto-ai/tests/test_sports_v3_package_comparison.py",
+    "line": 164,
+    "detail": "monkeypatch of _evaluate masks actual API arity failure"
+  },
+  "pilot_hashes_and_origin": "PASS request, six physical/payload/code bindings including real fixed model; sealed package hashes/count/stake/cost; coverage13Sports+2BK exact fallbacks; no target outcome labels read in generation or this review",
+  "model_file_sha256": "f334b21efd5dfd369c530d7e037b7c9ac8e6ee087d235872ac42453579d37b0e",
+  "model_payload_sha256": "8381fcf507c77152835e69325c46e446d40e5acb163bf019f03ea1c16d74fdde",
+  "independent_math_checks": [
+    {
+      "arm": "BK",
+      "evaluator": "COMMON_BK",
+      "independent_union_p13": 0.010802929138372601,
+      "unique_union_outcomes": 32224
+    },
+    {
+      "arm": "BK",
+      "evaluator": "COMMON_MIXED_V3",
+      "independent_union_p13": 0.013609899347913658,
+      "unique_union_outcomes": 32224
+    },
+    {
+      "arm": "MIXED_V3",
+      "evaluator": "COMMON_BK",
+      "independent_union_p13": 0.007955758717904627,
+      "unique_union_outcomes": 29977
+    },
+    {
+      "arm": "MIXED_V3",
+      "evaluator": "COMMON_MIXED_V3",
+      "independent_union_p13": 0.017195191033891145,
+      "unique_union_outcomes": 29977
+    }
+  ],
+  "objective": "Top166 coupon-product probability, NOT quality-v2 or union-P13 optimizer. Identical evaluator per cross-arm comparison. Mixed wins only under mixed assumptions; under commonBK it loses. No predictive gain inferred by swapping evaluator.",
+  "scope": "UNVERIFIED_ASOF_SENSITIVITY, not real-money eligible/prospective/profit evidence.5008 readiness remains conditional; exact precutoff research input unsupported; no live state rechecked.",
+  "A_P2_fixes": "ACCEPT report labels conditional fraction vs unconditional mass; single BK alias disclosure and diagnostic-only training fields; regression PASS. No full A maths rerun.",
+  "tests": "54 focused PASS2.29s (B+predictor+A), Ruff4filesPASS; additional unmocked negative reproduciblyFAILS asabove",
+  "hashes": {
+    "src/toto_ai/research/sports_v3_package_comparison.py": "d47855a4a0aa196f8efef7b75b617f857b8e1cefe57f329e3e14ff094a29a98c",
+    "tests/test_sports_v3_package_comparison.py": "acdef5bd1824b38db4fa76c736c48c0e1386ad59af132d52da3c6b1632f19fdf",
+    "src/toto_ai/research/fixed_bank_coverage_comparison.py": "e668558a5506db121294220baf4a04b54ed6503ef1b122940e4464f16764d77f",
+    "tests/test_fixed_bank_coverage_comparison.py": "e81aabe149c05853b65324ca0d89e06083a50b9edbe052f71b4bc8a698c26384"
+  },
+  "changes": "Only this independent review receipt.md/json. No source/runtime/DB/ACTIVE_PLAN/Git/publishing.",
+  "worker_effective_model": "NOT_AUTHORITATIVELY_AVAILABLE_NOT_INVENTED"
+}

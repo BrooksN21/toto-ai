@@ -1,0 +1,63 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "at": "2026-09-16T11:53:10.236922+00:00",
+  "verdict": "MATHEMATICAL_CORE_ACCEPT_REPORT_P2_CORRECTIONS_REQUESTED",
+  "blocking_math_or_fairness_findings": [],
+  "findings": [
+    {
+      "priority": 2,
+      "type": "REPORT_SEMANTICS",
+      "file": "src/toto_ai/research/fixed_bank_coverage_comparison.py",
+      "line": 247,
+      "finding": "summary column brief mass prints conditional covered fraction1.0, not unconditional brief probability0.00035002259780543993. This can be misread as100%outcome mass although full P13 is~1.11%.",
+      "fix": "Label fraction explicitly as conditional covered mass; show brief_mass_total separately; explain that outside-brief outcomes in Hamming balls cause unequal full-space union P13 even at complete restricted cover. No package regeneration needed."
+    },
+    {
+      "priority": 2,
+      "type": "DIAGNOSTIC_LABEL_DISCLOSURE",
+      "file": "src/toto_ai/research/fixed_bank_coverage_comparison.py",
+      "line": 299,
+      "finding": "Technical alias is numerically honest (same matrix; no averaging/winner selection), but raw diagnostic training_* fields are not actual greedy-training data: greedy used enumerated candidates, not MC training scenarios. Human summary lacks this distinction.",
+      "fix": "Add machine/human note one distinct probability model, duplicate API alias, diagnostic-only training stream unused by greedy. Do not describe aliases asindependent forecasts or measurements ofoptimizer training overfit."
+    }
+  ],
+  "checks": [
+    {
+      "arm": "weighted",
+      "coupon_hash": "61255bfc9ffa14e90059b2a65992c9969b73b51f1c3db1f308be1c039374684b",
+      "independent_union_outcomes": 34497,
+      "independent_exact_p13": 0.011114034658833587,
+      "reported_p13": 0.011114034658833587,
+      "brief_mass": 0.00035002259780543993,
+      "brief_coverage_fraction": 1.0
+    },
+    {
+      "arm": "unweighted",
+      "coupon_hash": "9e808847dd1b86383d734e5c0a601bb3485705a83e2e638828797b1ceacf9059",
+      "independent_union_outcomes": 34713,
+      "independent_exact_p13": 0.01114553842595571,
+      "reported_p13": 0.01114553842595571,
+      "brief_mass": 0.00035002259780543993,
+      "brief_coverage_fraction": 1.0
+    }
+  ],
+  "independent_check_seconds": 0.37957858300069347,
+  "tests": "15focusedPASS1.77s;Ruff2filesPASS",
+  "hashes": {
+    "src/toto_ai/research/fixed_bank_coverage_comparison.py": "b3d674d06608ef485c9cbbceb0b129fe76c0a597eae9c8ae51748f3cabd4e2e5",
+    "tests/test_fixed_bank_coverage_comparison.py": "7f43c12be542bc28469f1f7a4997c25185e2601cd0c77902136494003382b8bb",
+    "reports/rehearsal/TOTOAI-RESUME-20260915/coverage-fixed166-v1/result.json": "93b2703310fb0fa05087daab24bf1f8a44903c91f1b3965f3bdcb789133e7fc7",
+    "reports/rehearsal/TOTOAI-RESUME-20260915/coverage-fixed166-v1/summary.md": "b12e6ff7458216dd2956f5cc2020ea9e83139e76aa7aafc3f4f18b2f4a417d50"
+  },
+  "fairness": "Same729candidates,15eventBKmatrix,budget4980/30/166,category13Hamming<=2,samefillruleandindependentRNGstreams per alias acrossarms; frozen couponhashes reproduced. No targetlabels loaded by selection or this review.",
+  "alias_verdict": "Two labels required bysharedAPI; one unique probabilitymatrix, results not combined/manipulated, same streams betweenarms.",
+  "delta_unweighted_minus_weighted_p13": 3.15037671221232e-05,
+  "interpretation": "Complete restricted729-cover concerns only briefmass0.0003500226. Full-spaceunionalsoincludesoutcomesoutsidebriefwithin2errors ofselectedcoupons; sets differ. Unweighted slightlyhigherP13 here, not outofsampleprofit evidence.",
+  "scope_limits": [
+    "Oneknownpost-eventunknown-asofscenario,notprospective/blind",
+    "Nativegreedyheuristic,notexternalP+replica/optimality",
+    "No newfullrunor24packagebenchmark",
+    "Nochangedproduction/core/Bfiles/ACTIVE_PLAN/DB/runtime/Git"
+  ],
+  "next_action": "Small reporting-only fix and regression; retain frozen coupons/exact metrics. No algorithm change or rerun required."
+}
