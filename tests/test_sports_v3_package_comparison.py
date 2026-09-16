@@ -15,10 +15,15 @@ from toto_ai.optimizer.strategy_comparison import (
     run_bk_probability_only,
 )
 from toto_ai.research import sports_v3_package_comparison as job
+from toto_ai.research import sports_v3_retrospective_predict as predictor
 from toto_ai.research.closed_market_scenario_replay import extract, validate_input
+from toto_ai.research.sports_v3_retrospective_fit import fit_research
 
 FIX = runpy.run_path(
     str(Path(__file__).with_name("test_closed_market_scenario_replay.py"))
+)
+SYNTHETIC = runpy.run_path(
+    str(Path(__file__).with_name("test_sports_v3_retrospective_fit.py"))
 )
 
 
@@ -130,6 +135,274 @@ def test_partial_rows_coverage_honest(scenario):
         and c["bk_fallback"] == 14
     )
     assert mixed[1:] == bk[1:]
+
+
+def test_current_snapshot_binding_rejects_same_bk_with_distinct_asof_snapshot():
+    prediction = dict(
+        final_input_file_sha256="a" * 64,
+        final_input_snapshot_sha256="b" * 64,
+    )
+    prediction_request = {"final_input": {"file_sha256": "a" * 64}}
+    package_request = {"final_input": {"file_sha256": "a" * 64}}
+    original = dict(
+        captured_at="2026-09-16T12:54:12Z",
+        probability_input_sha256="c" * 64,
+        snapshot_sha256="b" * 64,
+        event_ids=tuple(range(181053, 181068)),
+        bk_probabilities=((0.37, 0.32, 0.31),) * 15,
+    )
+    same_ids_and_probabilities_new_asof = dict(
+        original,
+        captured_at="2026-09-16T12:55:12Z",
+        snapshot_sha256="d" * 64,
+    )
+    assert (
+        same_ids_and_probabilities_new_asof["event_ids"]
+        == original["event_ids"]
+        and same_ids_and_probabilities_new_asof["bk_probabilities"]
+        == original["bk_probabilities"]
+    )
+
+    job.bind_current_snapshot(
+        package_request, prediction_request, prediction, original
+    )
+    with pytest.raises(ValueError, match="current final-input snapshot binding"):
+        job.bind_current_snapshot(
+            package_request,
+            prediction_request,
+            prediction,
+            same_ids_and_probabilities_new_asof,
+        )
+
+
+def test_current_snapshot_binding_rejects_prediction_request_file_mismatch():
+    prediction = dict(
+        final_input_file_sha256="a" * 64,
+        final_input_snapshot_sha256="b" * 64,
+    )
+    with pytest.raises(ValueError, match="current final-input file binding"):
+        job.bind_current_snapshot(
+            {"final_input": {"file_sha256": "a" * 64}},
+            {"final_input": {"file_sha256": "c" * 64}},
+            prediction,
+            {"snapshot_sha256": "b" * 64},
+        )
+
+
+def test_current_adapter_rejects_distinct_valid_snapshot_and_keeps_bk_control(tmp_path):
+    """The sealed adapter, not just its binding helper, rejects A->B mixing."""
+    def put(relative, value):
+        target = tmp_path / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(value, sort_keys=True, indent=2) + "\n")
+        return dict(
+            path=relative,
+            file_sha256=hashlib.sha256(target.read_bytes()).hexdigest(),
+        )
+
+    records, _ = SYNTHETIC["inputs"]()
+    model = fit_research(
+        records,
+        [],
+        target_drawing=5002,
+        prediction_as_of="2026-09-04T10:00:00Z",
+        heldout_pending=True,
+        independently_reviewed_hashes={r["features"]["sha256"] for r in records},
+    )
+    model_ref = put("model.json", model)
+    model_ref["payload_sha256"] = model["sha256"]
+    input_a_value = dict(
+        drawing_number=5008,
+        captured_at="2026-09-16T12:54:12Z",
+        probability_input_sha256="b" * 64,
+        snapshot_sha256="a" * 64,
+        payload=dict(
+            data=dict(
+                id=12130,
+                number=5008,
+                name="synthetic",
+                ended_at="2026-09-16T18:30:00Z",
+                events=[
+                    dict(
+                        id=100 + i,
+                        order=i,
+                        championship="Synthetic",
+                        name=f"Home {i} — Away {i}",
+                        name_en=None,
+                        start_at=None,
+                        quotes=dict(
+                            bk_win_1=40,
+                            bk_draw=30,
+                            bk_win_2=30,
+                            pool_win_1=40,
+                            pool_draw=30,
+                            pool_win_2=30,
+                        ),
+                    )
+                    for i in range(15)
+                ],
+            )
+        ),
+    )
+    input_a = put("inputs/current-a.json", input_a_value)
+    input_b_value = dict(input_a_value)
+    input_b_value.update(
+        captured_at="2026-09-16T12:55:12Z",
+        snapshot_sha256="d" * 64,
+    )
+    input_b = put("inputs/current-b.json", input_b_value)
+    assert input_a_value["probability_input_sha256"] == input_b_value[
+        "probability_input_sha256"
+    ]
+    assert input_a_value["payload"]["data"]["events"] == input_b_value[
+        "payload"
+    ]["data"]["events"]
+
+    all_rows = [
+        job.seal({**SYNTHETIC["row"](5008, i), "identity_status": "UNKNOWN"})
+        for i in range(15)
+    ]
+    rows = all_rows[:12]
+    roster = [
+        dict(
+            row_id=f"5008:{i}:{100 + i}",
+            drawing_number=5008,
+            event_order=i,
+            target_event_id=100 + i,
+            decision_cutoff=row["decision_cutoff"],
+            bk_probabilities=row["bk_probabilities"],
+            bk_input_sha256="b" * 64,
+            bk_input_file_sha256=input_a["file_sha256"],
+            bk_fetched_at=row["bk_fetched_at"],
+            bk_quote_available_at=None,
+            provider_fixture_id=row["event_id"] if i < 12 else None,
+            kickoff=row["kickoff"] if i < 12 else None,
+            status="SYNTHETIC_REVIEWED" if i < 12 else "MISSING_SPORTS",
+            feature_sha256=row["sha256"] if i < 12 else None,
+        )
+        for i, row in enumerate(all_rows)
+    ]
+    decisions = [
+        dict(
+            decision="ACCEPT",
+            row_id=slot["row_id"],
+            event_order=i,
+            original_row_sha256=row["sha256"],
+            raw_identity=dict(fixture_id=row["event_id"], kickoff_utc=row["kickoff"]),
+            allowed_identity_status_update=dict(
+                **{"from": "UNKNOWN", "to": predictor.REVIEWED}
+            ),
+        )
+        for i, (slot, row) in enumerate(zip(roster[:12], rows, strict=True))
+    ]
+    roster_ref = put(
+        "roster.json",
+        dict(
+            drawing_number=5008,
+            operator_compatible=False,
+            automatic_wagering=False,
+            slots=roster,
+        ),
+    )
+    rows_ref = put("rows.json", dict(drawing_number=5008, rows=rows))
+    decisions_ref = put(
+        "decisions.json",
+        dict(
+            drawing_number=5008,
+            review_verdict="ACCEPT_12_EXACTLY_BK_FALLBACK_3",
+            decisions=decisions,
+        ),
+    )
+    manifest_ref = put(
+        "manifest.json",
+        dict(
+            drawing_number=5008,
+            inputs=dict(
+                model_sha256=model_ref["file_sha256"],
+                final_input_file_sha256=input_a["file_sha256"],
+                probability_input_sha256="b" * 64,
+            ),
+        ),
+    )
+    prediction_request = dict(
+        kind="CURRENT_SEALED_SPORTS_V3_REQUEST_V1",
+        drawing_number=5008,
+        model=model_ref,
+        roster=roster_ref,
+        original_rows=rows_ref,
+        consumer_decisions=decisions_ref,
+        manifest=manifest_ref,
+        final_input=input_a,
+        **job.FLAGS,
+    )
+    prediction_request_ref = put("requests/prediction-a.json", prediction_request)
+    prediction = predictor.predict_current_sealed_request(
+        tmp_path, prediction_request_ref["path"], prediction_request_ref["file_sha256"]
+    )
+    prediction_ref = put("predictions/prediction-a.json", prediction)
+    freeze_ref = put(
+        "predictions/freeze-a.json",
+        dict(
+            status="PREDICTIONS_FROZEN_BEFORE_LABELS",
+            prediction_file_sha256=prediction_ref["file_sha256"],
+            prediction_payload_sha256=prediction["sha256"],
+            request_file_sha256=prediction_request_ref["file_sha256"],
+            labels_read=False,
+            fit_executed=False,
+        ),
+    )
+
+    def package_request(final_input):
+        return dict(
+            kind=job.CURRENT_REQUEST_KIND,
+            drawing_number=5008,
+            final_input=final_input,
+            prediction_request=prediction_request_ref,
+            sports_predictions={
+                **prediction_ref,
+                "payload_sha256": prediction["sha256"],
+            },
+            prediction_freeze=freeze_ref,
+            model=model_ref,
+            selection=job.SELECTION,
+            bank=4980,
+            stake=30,
+            category=13,
+            count=166,
+            **job.FLAGS,
+        )
+
+    mismatched_ref = put("requests/package-b.json", package_request(input_b))
+    mismatched = job.compare_frozen_predictions(
+        mismatched_ref["path"],
+        "out-mismatched",
+        max_seconds=10,
+        expected_request_sha256=mismatched_ref["file_sha256"],
+        root=tmp_path,
+    )
+    assert mismatched["status"] == "BK_CONTROL_ONLY_SPORTS_SKIPPED"
+    assert mismatched["sports_status"] == "SKIPPED_MISSING_OR_INVALID_SPORTS"
+    # Distinct valid bytes fail the earlier physical-input binding; the unit
+    # check above separately proves the snapshot binding once file identity is
+    # established.
+    assert "current final-input file binding" in mismatched["sports_error"]
+    assert set(mismatched["packages"]) == {"BK"}
+    assert mismatched["packages"]["BK"]["count"] == 166
+    assert not (tmp_path / "out-mismatched" / "MIXED_V3.json").exists()
+    assert (tmp_path / "out-mismatched" / "comparison.json").exists()
+
+    matching_ref = put("requests/package-a.json", package_request(input_a))
+    matching = job.compare_frozen_predictions(
+        matching_ref["path"],
+        "out-matching",
+        max_seconds=10,
+        expected_request_sha256=matching_ref["file_sha256"],
+        root=tmp_path,
+    )
+    assert matching["status"] == "COMPLETE_PAIRED_RESEARCH"
+    assert matching["sports_status"] == "VALIDATED_SPORTS_APPLIED"
+    assert matching["packages"]["BK"]["count"] == 166
+    assert matching["packages"]["MIXED_V3"]["count"] == 166
 
 
 def request_fixture(tmp_path, scenario):

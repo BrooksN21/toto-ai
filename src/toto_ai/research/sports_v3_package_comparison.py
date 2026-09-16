@@ -167,6 +167,20 @@ def bind_current_rows(final, rows):
     )
 
 
+def bind_current_snapshot(package_request, prediction_request, prediction, final):
+    """Require the package arm to use the prediction's exact sealed input."""
+    _check(
+        prediction["final_input_file_sha256"]
+        == prediction_request["final_input"]["file_sha256"]
+        == package_request["final_input"]["file_sha256"],
+        "current final-input file binding",
+    )
+    _check(
+        prediction["final_input_snapshot_sha256"] == final["snapshot_sha256"],
+        "current final-input snapshot binding",
+    )
+
+
 def _sports(root, request, scenario):
     def read(ref):
         return predictor.read_checked(root, ref["path"], ref["file_sha256"])
@@ -226,6 +240,8 @@ def _sports(root, request, scenario):
         and verified["model_payload_sha256"] == model["sha256"],
         "identity/provenance/numerical prediction replay mismatch",
     )
+    if current:
+        bind_current_snapshot(request, read(pred_request), pred, scenario)
     bk, mixed, coverage = (bind_current_rows if current else bind_rows)(
         scenario, pred["rows"]
     )
