@@ -29,6 +29,12 @@ and requires separate evidence and authorization. The upcoming 17:00 scheduler
 checkpoint remains parent-operations work; no scheduler, sidecar, watcher,
 gate, model, DB, or consent state was changed here.
 
+**Published:** commit `8fa550bd66d82cab87dba9c1903e3ef9d4d3035c` was normally pushed
+to `origin/codex/native-model-routing-20260916`; draft PR26 is OPEN and its
+head matches that exact commit. No merge, force-push, branch change, or PR
+publication occurred. A final metadata-only commit will record this verified
+remote state; it remains within the same excluded operational boundary.
+
 Task **TOTOAI-RESUME-20260915**. Reviewed research-only commit `10c1cf9` seals the current Sports-v3 package adapter to the frozen prediction's exact final-input file SHA-256 and full snapshot SHA-256. The portable `tmp_path` regression invokes the real `compare_frozen_predictions()` adapter with two independently valid inputs: a mismatched input fails closed to `BK_CONTROL_ONLY_SPORTS_SKIPPED` with exactly the 166-coupon BK control, while the matched path remains `COMPLETE_PAIRED_RESEARCH` / `VALIDATED_SPORTS_APPLIED` with 166 BK and 166 `MIXED_V3` research coupons. Focused verification: 52 pytest tests and Ruff passed. No refit, outcome use, model promotion, scheduler/operator/consent/gate/budget mutation, or automatic wagering occurred.
 
 **Unfinished/blocked:** the prior same-engine comparison’s 293-candidate selection is hash-only: selected coupon arrays and a replay harness were not saved. It is not reproducible evidence and does not establish Sports-v3 superiority, calibration, profitability, live eligibility, or a fifth operator arm. A later isolated research-only replay may be made only after the protected operational checkpoint and must preserve `operator_compatible=false` and `automatic_wagering=false`. The live 5008 watcher/sidecar work and `data/schedule-evidence/ledger.json`, `THREAD_COORDINATION.json`, and task context remain excluded and untouched; parent operations retains ownership.

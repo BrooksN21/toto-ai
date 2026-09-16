@@ -18,6 +18,13 @@ profitability, production eligibility, or activation evidence. Production
 Sports-v3 remains disabled. The 17:00 scheduler checkpoint is owned by parent
 operations; this finalizer made no runtime or operational mutation.
 
+Publication verification: research-only commit
+`8fa550bd66d82cab87dba9c1903e3ef9d4d3035c` was normally pushed to the existing
+tracked branch. Its local HEAD, upstream, and remote ref matched exactly; PR26
+is OPEN, draft, and has the same head. No merge, force push, PR publication, or
+runtime/operational change occurred. A metadata-only closing checkpoint follows
+under the same restricted file scope.
+
 # Sports-v3 binding publication — 2026-09-16
 
 Task **TOTOAI-RESUME-20260915**. Reviewed research-only commit `10c1cf9` seals the current Sports-v3 package adapter to the frozen prediction's exact final-input file SHA-256 and full snapshot SHA-256. The portable `tmp_path` regression invokes the real `compare_frozen_predictions()` adapter with two independently valid inputs: a mismatched input fails closed to `BK_CONTROL_ONLY_SPORTS_SKIPPED` with exactly the 166-coupon BK control, while the matched path remains `COMPLETE_PAIRED_RESEARCH` / `VALIDATED_SPORTS_APPLIED` with 166 BK and 166 `MIXED_V3` research coupons. Focused verification: 52 pytest tests and Ruff passed. No refit, outcome use, model promotion, scheduler/operator/consent/gate/budget mutation, or automatic wagering occurred.
