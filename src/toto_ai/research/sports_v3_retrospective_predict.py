@@ -33,6 +33,7 @@ from toto_ai.sports_stats.v3_probability import (
 from toto_ai.sports_stats.v3_residual_kernel import softmax
 
 KIND = "MIXED_RETROSPECTIVE_FIXED_A5_BK_V1"
+CURRENT_KIND = "CURRENT_SEALED_MIXED_SPORTS_V3_PREDICTION_V1"
 REVIEWED = "INDEPENDENT_ENTITY_LINEAGE_REVIEWED"
 FLAGS = dict(
     operator_compatible=False,
@@ -416,9 +417,87 @@ def predict_request(root, request_path, request_file_sha256):
     )
 
 
+def predict_current_sealed_request(root, request_path, request_file_sha256):
+    """Replay a reviewed current-drawing sealed input, without labels or fitting.
+
+    This deliberately uses the same ``predict_partial`` arithmetic as the frozen
+    retrospective adapter.  The request binds every consumed file, and is only a
+    research bridge: it does not make a current market an operator input.
+    """
+    request = read_checked(root, request_path, request_file_sha256)
+    _check(request["kind"] == "CURRENT_SEALED_SPORTS_V3_REQUEST_V1", "request kind")
+    _check(all(request[k] is False for k in FLAGS), "research-only current request")
+
+    def read(ref):
+        return read_checked(root, ref["path"], ref["file_sha256"])
+
+    model = read(request["model"])
+    roster_doc = read(request["roster"])
+    rows_doc = read(request["original_rows"])
+    decisions_doc = read(request["consumer_decisions"])
+    manifest = read(request["manifest"])
+    final = read(request["final_input"])
+    _check(
+        manifest["drawing_number"] == request["drawing_number"]
+        and manifest["inputs"]["model_sha256"] == request["model"]["file_sha256"]
+        and manifest["inputs"]["final_input_file_sha256"]
+        == request["final_input"]["file_sha256"]
+        and manifest["inputs"]["probability_input_sha256"]
+        == final["probability_input_sha256"],
+        "sealed manifest input binding",
+    )
+    _check(
+        roster_doc["drawing_number"]
+        == rows_doc["drawing_number"]
+        == decisions_doc["drawing_number"]
+        == request["drawing_number"]
+        and decisions_doc["review_verdict"] == "ACCEPT_12_EXACTLY_BK_FALLBACK_3"
+        and all(
+            x is False
+            for x in (
+                roster_doc["operator_compatible"],
+                roster_doc["automatic_wagering"],
+            )
+        ),
+        "sealed reviewed drawing contract",
+    )
+    roster, rows, decisions = (
+        roster_doc["slots"],
+        rows_doc["rows"],
+        decisions_doc["decisions"],
+    )
+    _check(
+        all(
+            r["bk_input_file_sha256"] == request["final_input"]["file_sha256"]
+            for r in roster
+        )
+        and all(
+            r["bk_input_sha256"] == final["probability_input_sha256"] for r in roster
+        ),
+        "roster final input binding",
+    )
+    result = predict_partial(model, roster, rows, decisions)
+    _check(
+        result["sports_applied"] == 12 and result["bk_fallback"] == 3, "review coverage"
+    )
+    return seal(
+        {
+            **result,
+            "kind": CURRENT_KIND,
+            "request_file_sha256": request_file_sha256,
+            "model_file_sha256": request["model"]["file_sha256"],
+            "final_input_file_sha256": request["final_input"]["file_sha256"],
+            "final_input_snapshot_sha256": final["snapshot_sha256"],
+            "adapter_file_sha256": hashlib.sha256(
+                Path(__file__).read_bytes()
+            ).hexdigest(),
+        }
+    )
+
+
 def write_frozen(path, predictions):
     _sealed(predictions)
-    _check(predictions["kind"] == KIND, "prediction kind")
+    _check(predictions["kind"] in {KIND, CURRENT_KIND}, "prediction kind")
     data = (
         json.dumps(predictions, sort_keys=True, indent=2, allow_nan=False) + "\n"
     ).encode()

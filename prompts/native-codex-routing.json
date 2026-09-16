@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "kind": "instruction_policy_not_native_client_config",
+  "project_root": "/Users/turshevr/toto-ai",
+  "dispatcher_task_id": "019f7afa-72e2-7403-85cd-d05f408a4ef3",
+  "dispatch_transport": "native_codex_spawn_agent_only",
+  "runtime_enforcement": "parent_checked_instructions",
+  "client_config_status": "NOT_INSTALLED_SCHEMA_UNVERIFIED",
+  "activation_requires": [
+    "owner_policy_commit",
+    "pull_request_exposes_commit",
+    "parent_verifies_callable_native_spawn_schema"
+  ],
+  "default_route": "routine",
+  "routes": {
+    "routine": {"model": "gpt-5.6-luna", "reasoning_effort": "low"},
+    "bounded_code": {"model": "gpt-5.6-terra", "reasoning_effort": "medium"},
+    "critical": {"model": "gpt-6-astra", "reasoning_effort": "high"}
+  },
+  "change_main_model": false,
+  "max_concurrent_workers": 2,
+  "concurrency_includes_existing_child_tasks": true,
+  "fork_context": false,
+  "nested_delegation": false,
+  "max_attempts_per_worker_assignment": 1,
+  "unavailable_tool_action": "report_blocker_no_alternate_transport",
+  "allowed_handoff_fields": [
+    "task_id", "verified_cwd", "role", "goal", "input_paths",
+    "write_scope", "acceptance_checks", "time_bound", "return_contract"
+  ],
+  "permissions": {
+    "external_models": false,
+    "provider_auth_overrides": false,
+    "global_changes": false,
+    "new_user_owned_tasks": false,
+    "new_worktrees": false,
+    "automatic_wagering": false
+  }
+}

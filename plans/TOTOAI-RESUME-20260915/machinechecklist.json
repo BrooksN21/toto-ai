@@ -3,7 +3,7 @@
   "version": "20260915-plan-v2-retrospective",
   "created_at": "2026-09-15T14:07:31.908300+00:00",
   "kind": "EXECUTION_CHECKLIST",
-  "current_step": "D/R3 predictions and proper-score evaluation COMPLETE/reviewed;21Sports99BK/120,scores WORSE. Remaining step2 comparisons/calibration/package analysis; next P3 training-only improvements and P1/P2 optimizer diagnostics, then genuine5arms. No live activation.",
+  "current_step": "COMPLETE: reviewed fixed166 weighted/unweighted and frozen SportsV3 package research4999; no retrain/operator activation. Next research step requires a separate scoped parent decision.",
   "context": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-context.md",
   "active_plan_modified": true,
   "protected": {
@@ -240,7 +240,7 @@
         "real model/inference/evaluation artifacts produced where admissible; otherwise exact missing/insufficient-training disposition",
         "probability gate recomputed independently; unchanged coverage/prospective gates, PASS_RESEARCH_ONLY not operator eligibility"
       ],
-      "blocker": "Fixed evaluation predictions pending; full15-Sports native grouping needs reviewed partial mixing boundary.",
+      "blocker": "Full prospective coverage/quality remains unproven; existing frozen120 predictions/proper scores complete and worse, not pending.",
       "outputs": [
         "walkforward-v2/protocol.json",
         "walkforward-v2/fold-roster.json",
@@ -249,7 +249,7 @@
         "walkforward-v2/probability-evaluation.json",
         "walkforward-v2/independent-gate.json"
       ],
-      "next_increment": "Finish reviewed partial prediction adapter; freeze120 predictions/fallbacks before labels, then score. Do not redo completed fit or infer gain from in-sample loss.",
+      "next_increment": "B consumes frozen predictions for bounded package wiring; no repeat fit/predict/scoring.",
       "completion_scope": "Native shared A5 parity and real research model completed/independentlyPASS; chronological heldout evaluation not yet complete.",
       "execution_evidence": [
         "R3-fit-extraction-implementation.json",
@@ -308,7 +308,7 @@
         "evaluation4999-5006/probability-metrics.json",
         "evaluation4999-5006/roi-evidence.json"
       ],
-      "next_increment": "Use reviewed P1 exact/independent evaluator, then genuine5-way packages with sharedobjective/reference and all missingness/runtime/ROI disclosures."
+      "next_increment": "Execute current disjoint A/B handoff; genuine five-arm comparison remains unfinished."
     },
     {
       "id": "F",
@@ -350,7 +350,7 @@
         "production qualification and exact future plan-bound owner consent separately satisfied before actionable use",
         "fallback/provenance/freshness/operator deadlines remain enforced; actual trained versus fallback lineage visible"
       ],
-      "blocker": "No approved fitted real V3/evaluation manifest yet; full operator rollout is not implied by research adoption or code tests.",
+      "blocker": "No registered/qualified liveV3 or5008feature manifest evidenced; research readiness is conditional, not impossible by absent registration.",
       "outputs": [
         "deployment/v3-manifest.json",
         "deployment/acceptance.json",
@@ -360,17 +360,16 @@
     }
   ],
   "now_without_missing_data": [
-    "Use both saved independent identity reviews to derive/reseal21 candidate rows; keep originals and frozen model unchanged",
-    "Review/finish partial prediction adapter; freeze all120 positions and explicit BK fallback without labels",
-    "Inspect existing fixed-package diagnostics before authorizing bounded optimizer ablations; no repeatedR1 just for reporting"
+    "A one real fixed166/4980 weighted-versus-unweighted greedy4999 pilot with native coverage/evaluator",
+    "B one frozen4999 BK-versus-MIXED_V3 probability-first package pair; no fit or operator seam"
   ],
-  "ordering": "D/R3 frozen predictions → scoring; P1/P2 three-BK-optimizer ablations and P3 Sports probability improvements → E/R4 five-arm research comparison → F/R5 reviewed safe integration. C/R2 prospective data capture is separate and may proceed in parallel only under separate scope.",
+  "ordering": "A and B disjoint research increments in parallel if parent concurrency/resource gate permits; independent review then parent integration. Existing full five-arm/prospective requirements remain.",
   "change_claims": {
     "quality_v2": "Protected unchanged production control; proposed research coverage exchanges and separately trained BK calibration are not activated.",
     "quality_v3": "P1 evaluator reviewed; sample optimism demonstrated on5001. Feasible-seed/exchange ablation and gains still pending; no safety-gate relaxation.",
     "robust": "P0 trace and P2 feasible-seed repair reviewed. P2 INACTIVE research; small conditional exact gain not real-world proof.",
     "sports_shadow": "SportsV2 predictor quality/reliability/shrinkage ablations pending; confirm actual optimizer binding before5-way comparison.",
-    "Sports_v3": "Genuine frozen research fit53rows/17positive-weight;21/120 evaluation identities accepted. Predictions/quality gain/live integration not completed."
+    "Sports_v3": "Frozen fit53/17; evaluated120 with21Sports99BK and worse proper scores. Research package wiring next; no operator activation."
   },
   "completed_in_this_job": [
     "read supplied context plus short current checkpoint",
@@ -382,7 +381,7 @@
     "Prospective capture improvements and validated live SportsV3 integration",
     "Timing-range policy application"
   ],
-  "next_checkpoint": "Publication merge/clean receipt; next separately assigned bounded improvement hypothesis/test, not repeat freeze or full R1 replay. Parent owns5008next14:00MSK.",
+    "next_checkpoint": "Preserve the separate 5008 runtime investigation. Do not repeat the completed pilots; parent selects a separately scoped next research increment.",
   "execution_checkpoint": {
     "at": "2026-09-15T19:46:59.919439+03:00",
     "A": "COMPLETE_INERT_PUBLISHED",
@@ -732,5 +731,54 @@
     "operator_activation": false,
     "five_arm_packages": "PENDING",
     "quality_lift": false
+  },
+  "bounded_next_increment": {
+    "task_id": "TOTOAI-RESUME-20260915",
+    "planner_worker_id": "01a0aa05-74d5-7a53-8ea0-bd8e42f5d407",
+    "status": "READY_FOR_SCOPED_IMPLEMENTATION",
+    "handoff": "plans/TOTOAI-RESUME-20260915/model-improvements-next.md#current-implementation-handoff--2026-09-16-supersedes-next-action-wording-below",
+    "A": {
+      "module": "src/toto_ai/research/fixed_bank_coverage_comparison.py",
+      "test": "tests/test_fixed_bank_coverage_comparison.py",
+      "output": "reports/rehearsal/TOTOAI-RESUME-20260915/coverage-fixed166-v1/",
+      "drawing": 4999,
+      "pilot_timeout_seconds": 60
+    },
+    "B": {
+      "module": "src/toto_ai/research/sports_v3_package_comparison.py",
+      "test": "tests/test_sports_v3_package_comparison.py",
+      "output": "reports/rehearsal/TOTOAI-RESUME-20260915/sports-v3-packages-v1/",
+      "drawing": 4999,
+      "pilot_timeout_seconds": 60,
+      "feature_preflight": {
+        "function": "preflight_feature_inputs",
+        "scope": "same B module/test/output; supplied manifest only, no runtime/provider/DB operations",
+        "output": "5008-feature-preflight.json",
+        "timeout_seconds": 5,
+        "missing_manifest_status": "NOT_READY_MISSING_MANIFEST",
+        "blocks_frozen4999_pilot": false,
+        "tests": [
+          "missing_manifest",
+          "identity_order_hash_mismatch",
+          "unknown_or_future_availability",
+          "schema_model_mismatch",
+          "valid_fixture",
+          "authority_flags_false_no_side_effects"
+        ]
+      }
+    },
+    "common": {
+      "bank_rub": 4980,
+      "stake_rub": 30,
+      "unique_coupons": 166,
+      "common_objective": "exact union P13+ under explicitly named shared probability measure",
+      "operator_compatible": false,
+      "activation_allowed": false,
+      "automatic_wagering": false
+    },
+    "5008": "Prospective research conditional on verified timely inputs and compatible bridge; not registered/operator-authorized, not categorically impossible today",
+    "parent_checkpoint": "2026-09-16T15:00:00+03:00 status read only; no manual run",
+    "implementation_executed": true,
+    "dispatch_checkpoint": "14:45MSK owner request: launch existing A/B jobs; parent retains15:00MSK native status read independently"
   }
 }

@@ -1,0 +1,73 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "created_at": "2026-09-16T11:04:27.605382+00:00",
+  "status": "PATCH_READY_NOT_ACTIVATED",
+  "baseline": "6b367e5 (parent-attested; no Git operation)",
+  "scope": "project-local native routing instruction policy; no model/provider/main-model change",
+  "owner_approval": "разрешить перечисленные нативные модели Codex только для этого проекта",
+  "changed_files_sha256": {
+    "AGENTS.md": "82f00f3aa8dc692f9a45a52c9fc23d142a2c5c95ecb79b145efd7e2154d45f64",
+    "memory-bank/TOOLING_POLICY.md": "36f11bef6d0afb28046ae81d95a04b95866403c4ede3e9e70bd61d5b76953888",
+    "memory-bank/NATIVE_CODEX_ROUTING.md": "bc404db80f77a72a7082ba99f91cf5049806b53e963811b33e8380c59a501952",
+    "prompts/native-codex-routing.json": "609fdd689e1111e8db39ab502ff905a1fb41b2d900810bdde7234a635c7c45c5",
+    "tests/test_native_codex_routing_policy.py": "3629d8cb048ff0163dd84509a0b91e972231b863d950ab09992a63d009f0756d"
+  },
+  "additional_handoff_files": [
+    "plans/TOTOAI-RESUME-20260915/native-model-routing-implementation.md",
+    "plans/TOTOAI-RESUME-20260915/native-model-routing-implementation.json"
+  ],
+  "verification": {
+    "red": "13 new static contract tests failed before policy implementation",
+    "green": {
+      "command": ".venv/bin/python -m pytest -q tests/test_native_codex_routing_policy.py tests/test_tooling_policy.py tests/test_project_local_skills.py --tb=short",
+      "passed": 21,
+      "duration_seconds": 0.05
+    },
+    "ruff": {
+      "command": ".venv/bin/ruff check tests/test_native_codex_routing_policy.py",
+      "result": "PASS"
+    },
+    "json_parse": "PASS: python -m json.tool prompts/native-codex-routing.json",
+    "toml": "NOT_APPLICABLE: no TOML written; installed schema unverified",
+    "native_inference_smoke": "NOT_RUN: commit/PR activation gate and no callable spawn tool in this worker",
+    "limits": "Static instruction tests only; not proof of hard runtime concurrency or routing enforcement"
+  },
+  "local_metadata": {
+    "cli_package_version": "0.154.0",
+    "app_version": "26.623.141536",
+    "app_build": "4753",
+    "schema_status": "NOT_INSTALLED_SCHEMA_UNVERIFIED",
+    "spawn_parameters": "parent-attested: model, reasoning_effort, fork_context=false; worker native-tool search returned no entries"
+  },
+  "limits": {
+    "models": [
+      "gpt-5.6-luna",
+      "gpt-5.6-terra",
+      "gpt-6-astra"
+    ],
+    "max_concurrent_workers": 2,
+    "includes_existing_active_child_tasks": true,
+    "nested_delegation": false,
+    "fork_context": false,
+    "one_attempt_per_assignment": true
+  },
+  "publication_handoff": {
+    "work_summary": "Owner-approved TotoAI-only Luna/low, Terra/medium, Astra/high routing with explicit native spawn fallback; preserves external prohibitions and existing child scopes. No client TOML installed; no activation/inference. Static tests PASS.",
+    "next_step": "Review these exact files, commit approved policy, expose commit through PR, then parent verify callable native spawn schema before first dispatch. Do not claim native TOML/hard-limit enforcement."
+  },
+  "protected_unchanged_by_this_job": [
+    "global configuration",
+    "credentials",
+    "model providers/auth",
+    "production source",
+    "DB",
+    "5008 scheduler/jobs/operator/consent",
+    "ACTIVE_PLAN",
+    "CURRENT_STATE",
+    "THREAD_COORDINATION",
+    "other worker reports"
+  ],
+  "publication_performed": false,
+  "agents_launched": 0,
+  "external_calls": 0
+}

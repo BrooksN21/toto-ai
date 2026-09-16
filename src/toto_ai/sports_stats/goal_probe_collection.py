@@ -555,6 +555,12 @@ def collect_goal_probe_input(
         home_id = _text(schedule_row.get("source_home_team_id"), "home team id")
         away_id = _text(schedule_row.get("source_away_team_id"), "away team id")
         fixture_id = _text(schedule_row.get("source_event_id"), "fixture id")
+        target_fixture_path = _write_target_fixture(
+            output,
+            schedule_dir=collection.report_path.parent,
+            schedule_row=schedule_row,
+            fixture_id=fixture_id,
+        )
         sources = []
         for side, team_id in (("home", home_id), ("away", away_id)):
             history = client.fetch_team_results(team_id, limit=10)
@@ -590,6 +596,13 @@ def collect_goal_probe_input(
                 "provider_home_team_id": home_id,
                 "provider_away_team_id": away_id,
                 "target_starts_at": _timestamp(target_start),
+                "target_fixture_source": {
+                    "snapshot_path": target_fixture_path.relative_to(root).as_posix(),
+                    "fixture_sha256": _sha256_file(target_fixture_path),
+                    "captured_at": schedule_row["captured_at"],
+                    "source_endpoint": schedule_row["source_endpoint"],
+                    "source_url": _goal_source_url(schedule_row),
+                },
                 "sports_eligible": True,
                 "sources": sources,
             }
@@ -807,6 +820,84 @@ def _write_normalized_history(
     path = output / f"{digest[:16]}.json"
     _write_exact(path, content)
     return path
+
+
+def _write_target_fixture(
+    output: Path,
+    *,
+    schedule_dir: Path,
+    schedule_row: Mapping[str, Any],
+    fixture_id: str,
+) -> Path:
+    """Persist the exact matched fixture next to its team histories.
+
+    The schedule collector already freezes each API page.  This compact extract
+    makes the selected target fixture independently reviewable without asking a
+    reviewer to infer it from a paginated page or re-query the provider.
+    """
+    snapshot_paths = schedule_row.get("snapshot_paths")
+    if not isinstance(snapshot_paths, list) or not snapshot_paths:
+        raise ValueError("GOAL target fixture snapshots are missing")
+    expected_hash = _text(schedule_row.get("event_payload_sha256"), "fixture hash")
+    selected: Mapping[str, Any] | None = None
+    snapshot_path: Path | None = None
+    snapshot_sha256: str | None = None
+    for relative in snapshot_paths:
+        if not isinstance(relative, str):
+            raise ValueError("GOAL target fixture snapshot path is invalid")
+        candidate = (schedule_dir / relative).resolve()
+        try:
+            candidate.relative_to(schedule_dir.resolve())
+        except ValueError as error:
+            raise ValueError(
+                "GOAL target fixture snapshot escapes schedule directory"
+            ) from error
+        document = _json_object(candidate)
+        payload = document.get("payload")
+        values = payload.get("data") if isinstance(payload, Mapping) else None
+        if not isinstance(values, list):
+            raise ValueError("GOAL target fixture snapshot payload is invalid")
+        matches = [
+            item
+            for item in values
+            if isinstance(item, Mapping)
+            and str(item.get("id") or item.get("apiId")) == fixture_id
+        ]
+        if len(matches) > 1:
+            raise ValueError("GOAL target fixture snapshot is ambiguous")
+        if matches:
+            selected = matches[0]
+            snapshot_path = candidate
+            snapshot_sha256 = _sha256_file(candidate)
+            break
+    if selected is None or snapshot_path is None or snapshot_sha256 is None:
+        raise ValueError("GOAL target fixture is absent from frozen snapshots")
+    if hashlib.sha256(_canonical(selected)).hexdigest() != expected_hash:
+        raise ValueError("GOAL target fixture hash mismatch")
+    document = {
+        "schema_version": 1,
+        "provider": PROVIDER_NAME,
+        "fixture_id": fixture_id,
+        "fixture_sha256": expected_hash,
+        "captured_at": schedule_row["captured_at"],
+        "source_endpoint": schedule_row["source_endpoint"],
+        "source_url": _goal_source_url(schedule_row),
+        "source_snapshot_path": str(snapshot_path),
+        "source_snapshot_sha256": snapshot_sha256,
+        "payload": selected,
+    }
+    content = _canonical(document) + b"\n"
+    digest = hashlib.sha256(content).hexdigest()
+    path = output / f"fixture-{fixture_id}-{digest[:16]}.json"
+    _write_exact(path, content)
+    return path
+
+
+def _goal_source_url(schedule_row: Mapping[str, Any]) -> str:
+    endpoint = _text(schedule_row.get("source_endpoint"), "source endpoint")
+    if not endpoint.startswith("/fixtures/date/"):
+        raise ValueError("GOAL target fixture endpoint is invalid")
+    return f"https://api.goal-api.com/v1{endpoint}"
 
 
 def _history_counts(

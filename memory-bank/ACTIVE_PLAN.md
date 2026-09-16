@@ -1,3 +1,144 @@
+# Portable Sports-v3 exporter regression published — 2026-09-16
+
+Task **TOTOAI-RESUME-20260915**. Commit `d50a9a59fbf3a87503aff3d079d995fb5f998e74` adds the reviewed standalone `tmp_path` regression and its three fix/review handoffs; commit `989c1c6` adds the required reviewed exporter source module. The regression uses non-terminal missing orders, calls real `derive_reviewed()`, and asserts per-order feature association plus final-input-file, declared probability-input, and source-evidence hashes. Focused working-tree verification: `1 passed`; Ruff passed. Exact-HEAD archive verification imported the module from the archive (not the worktree), then passed the same self-contained test and Ruff check.
+
+The earlier exporter-portability test-gap blocker is **SUPERSEDED** by the reviewed assertions, and the source/test checkout gap is **REMEDIED**: both files exist in exact `HEAD` and its temporary archive reproduced the regression without a worktree-source fallback. Draft [PR26](https://github.com/BrooksN21/toto-ai/pull/26) remains OPEN and draft; final remote-head verification follows the authorized push. No merge, PR publication, scheduler, DB, model activation, watcher, gate, consent, package, or wagering change occurred. The operational ledger, coordination metadata, context, and unrelated live/research artifacts remain excluded and dirty where pre-existing; parent retains the 5008 17:00 monitoring checkpoint.
+
+# Sports-v3 binding publication — 2026-09-16
+
+# Same-engine replay research publication prepared — 2026-09-16
+
+Task **TOTOAI-RESUME-20260915**. R4 same-engine replay is complete as a
+**NEW_REPLICATION**, not a recovery of the historical hash-only selection.
+The independently reviewed reusable runner
+`src/toto_ai/research/sports_v3_same_engine_replay.py` preserves a 293-coupon
+common candidate universe and independently selects two 166-coupon
+research-only arrays. It rejects a non-empty output directory before writing,
+persists frozen input/model bindings and all selection/settings hashes, and
+never produces an operator upload format. Independent C/D relative-path
+replays were byte-exact; review found no P1/P2 findings.
+
+Focused finalizer verification: `17 passed` for robust-selection/flattening
+dependencies and Ruff passed for the runner. The 2x2 fixed-package P(13+)
+values are conditional frozen-matrix research evidence only: BK package
+COMMON_BK/COMMON_SPORTS_V3 = 0.0149405241/0.0205591630; SPORTS_V3 package =
+0.0143227176/0.0214419447. The recorded maximum outcome share of 1.0 is a
+concentration warning, not an acceptance result. This does not establish
+calibration, empirical improvement, profitability, production eligibility, or
+Sports-v3 activation.
+
+**Next / ownership:** publication finalizer may commit only the reviewed runner
+and its review records plus this durable checkpoint; operational ledger,
+consent, raw coupons/datasets/screenshots, coordination metadata, and unrelated
+dirty work remain excluded. Production Sports-v3 integration remains disabled
+and requires separate evidence and authorization. The upcoming 17:00 scheduler
+checkpoint remains parent-operations work; no scheduler, sidecar, watcher,
+gate, model, DB, or consent state was changed here.
+
+**Published:** commit `8fa550bd66d82cab87dba9c1903e3ef9d4d3035c` was normally pushed
+to `origin/codex/native-model-routing-20260916`; draft PR26 is OPEN and its
+head matches that exact commit. No merge, force-push, branch change, or PR
+publication occurred. A final metadata-only commit will record this verified
+remote state; it remains within the same excluded operational boundary.
+
+Task **TOTOAI-RESUME-20260915**. Reviewed research-only commit `10c1cf9` seals the current Sports-v3 package adapter to the frozen prediction's exact final-input file SHA-256 and full snapshot SHA-256. The portable `tmp_path` regression invokes the real `compare_frozen_predictions()` adapter with two independently valid inputs: a mismatched input fails closed to `BK_CONTROL_ONLY_SPORTS_SKIPPED` with exactly the 166-coupon BK control, while the matched path remains `COMPLETE_PAIRED_RESEARCH` / `VALIDATED_SPORTS_APPLIED` with 166 BK and 166 `MIXED_V3` research coupons. Focused verification: 52 pytest tests and Ruff passed. No refit, outcome use, model promotion, scheduler/operator/consent/gate/budget mutation, or automatic wagering occurred.
+
+**Unfinished/blocked:** the prior same-engine comparison’s 293-candidate selection is hash-only: selected coupon arrays and a replay harness were not saved. It is not reproducible evidence and does not establish Sports-v3 superiority, calibration, profitability, live eligibility, or a fifth operator arm. A later isolated research-only replay may be made only after the protected operational checkpoint and must preserve `operator_compatible=false` and `automatic_wagering=false`. The live 5008 watcher/sidecar work and `data/schedule-evidence/ledger.json`, `THREAD_COORDINATION.json`, and task context remain excluded and untouched; parent operations retains ownership.
+
+# Draft PR26 update checkpoint — 2026-09-16
+
+Task **TOTOAI-RESUME-20260915**. Approved commit `4c65ccf9c346b2bc4c07910fa69fbd8df2cd393e` was pushed to `origin/codex/native-model-routing-20260916`; [draft PR26](https://github.com/BrooksN21/toto-ai/pull/26) is OPEN and its head matches this commit. No merge. The inference worker then finished new, as-yet independently unreviewed changes in existing adapter modules; do not stage those mixed files or include them in this publication. Keep all operational ledger, consent, context, and worker output local. Next: independent review handles the new adapter diff separately; parent retains scheduler and operations.
+
+# Approved research publication — 2026-09-16
+
+Task **TOTOAI-RESUME-20260915**. Finalizer committed approved reviewed code and policy only as `4c65ccf9c346b2bc4c07910fa69fbd8df2cd393e` (`Add sealed Sports v3 research export`). It excludes `data/schedule-evidence/ledger.json`, operational/consent/context artifacts, and unreviewed concurrent inference work. Focused verification before commit: 81 relevant pytest tests, 13 routing-policy tests, and Ruff passed. No scheduler, model activation, operator gate, budget, date, or wagering action occurred. Next checkpoint: push the existing branch and update existing draft PR26 without merge; retain excluded live files unchanged.
+
+# Submission readiness checkpoint — 2026-09-16
+
+Task **TOTOAI-RESUME-20260915**. Separate local finalizer; no production/runtime changes.
+- DONE — reconciled current handoffs: watcher for plan `6a99c5854d8a8859` was activated once (PID 93140), exact manual parallel authorization is recorded, and the isolated full-budget four-arm research preflight completed in 169.56s with paper-only qv3 selection. Source collector fix and its 38 tests/Ruff are uncommitted; Sports-v3 inference/feature work remains separate and pending.
+- GIT/PR — local HEAD is `512ba0a52b44d9c9735b02cad1edae8173e6c0f2`; branch has no configured upstream. Public PR26 is OPEN draft at `3d70b59841c8cec990e28de4b719c9bd114969a9`. Existing commits `5095f6c`/`512ba0a` are preserved.
+- DISPOSITION — **NOTHING AUTHORIZED TO PUBLISH**: `publish_pr=false`, and no explicit new authorization covers the current uncommitted policy/memory/collector changes. No stage, commit, push, PR update, or merge.
+- BLOCKER/NEXT — owner must give explicit scoped remote publication authorization after review, specifying only approved ready paths and excluding concurrent Sports/model work, operational ledger, consent and private artifacts. Parent retains ongoing operations/orchestration; this finalizer stops.
+
+# Submission finalization — 20260916T122908Z
+
+Task **TOTOAI-RESUME-20260915**. Separate local-only finalizer.
+- DONE — analyzed the supplied task context and latest consent receipt. Exact plan `6a99c5854d8a8859` for drawing5008/API12130 is experimentally manual-authorized for 4,980RUB/30/166; risk acknowledgement is recorded; automatic wagering remains false; no package was created.
+- DISPOSITION — **NOTHING AUTHORIZED TO PUBLISH**. `publish_pr=false` and no new remote authorization were supplied. No commit, push, PR update, merge, scheduler/model/DB/gate mutation, or package action occurred. Existing local commits `5095f6c`/`512ba0a` and draft PR26 are preserved, not modified or freshly remote-verified.
+- VERIFIED — consent receipt `reports/rehearsal/TOTOAI-RESUME-20260915/5008-consent-check/receipt-20260916T122734Z.json`; finalization receipt `plans/TOTOAI-RESUME-20260915/submission-finalization-20260916T122908Z.json`. Targeted VCS status shows pre-existing tracked changes including the operational ledger; they remain untouched.
+- REMAINS/BLOCKER/NEXT — a new explicit remote publication authorization is required for any local research/routing changes. Any 5008 manual export remains subject to the exact plan-bound pre-T-10 controls; this finalizer does not operate it.
+
+# Temporary native-worker routing clarification — 2026-09-16
+
+Task **TOTOAI-RESUME-20260915**. Documentation-only bounded worker.
+- DONE — clarified that an old temporary worker is never resumed for a new job; every real bounded job uses a fresh spawn with explicitly requested approved model/effort, `fork_context=false`, a minimal saved-file handoff, and closure on completion. Spawn agent IDs prove neither requested nor effective settings; resume takes an existing ID only and cannot switch them.
+- SAFETY — UI model mismatch means close before further assignment, preserve files/handoff, and report the mismatch. No full-chat fork, replacement without a real job, or more than two temporary workers. The two named permanent user-owned tasks are not disposable: no deletion, archive, model change, or repurposing. Routing remains parent-enforced; no automatic router, cost guarantee, or effective-runtime attestation was added.
+- SCOPE/VERIFICATION — changed only routing documentation and this checkpoint; no scheduler/model/consent/DB/job/worktree/global-config change, no commit/push. Focused static routing guard passed: `13 passed` (`tests/test_native_codex_routing_policy.py`). For drawing 5008, the owner has now explicitly confirmed «принимаю риск того, что прибыльность этого пакета не доказана»; a separate fresh Terra/medium operations worker is recording consent. This routing-only worker did not record it; finalizer will merge the recorded receipt.
+
+# 5008 consent check — 2026-09-16T12:24:24.892497+00:00
+
+Task **TOTOAI-RESUME-20260915**. Owner's exact message relayed by parent: «для тиража 5008 я даю разрешение на ставку PLAY».
+- VERIFIED — native plan `6a99c5854d8a8859`, drawing5008/API12130, bank4980RUB/stake30/166coupons; close16Sep18:30MSK; authorization expires at18:20MSK. Read-only scheduler status at15:23:42MSK: scheduled, next16:30MSK, no operator result.
+- CONSENT — PLAY intent preserved in the receipt; native status remains `paper_only_not_authorized`, authorization file absent. Exact missing contract field: `risk_acknowledged=true` via `--acknowledge-unvalidated-manual-risk` (profitability unproven); the owner's quoted message does not explicitly acknowledge this. No separate bank-acknowledgement boolean exists; budget comes from the verified plan. Original message timestamp/actor ID were not provided and were not invented.
+- BLOCKER/NEXT — parent obtains explicit acknowledgement of unproven-profitability risk for this exact plan and budget before18:20MSK, then uses the existing consent CLI. Next scheduled checkpoint16:30MSK. No calculation, schedule/provider/model/watcher changes, wagering or parallel consent in this check.
+- RECEIPT — `reports/rehearsal/TOTOAI-RESUME-20260915/5008-consent-check/receipt-20260916T122424Z.json`. No commit/push; all prior checkpoints below preserved.
+
+# 5008 alias correction / routing clarification — 2026-09-16
+
+Task **TOTOAI-RESUME-20260915**, separate documentation finalizer in `/Users/turshevr/toto-ai`. Current assignment supersedes the older coordination publisher action; no merge is assigned.
+- DONE — saved receipt `reports/rehearsal/TOTOAI-RESUME-20260915/5008-alias-correction/receipt.json` explicitly DISPROVES the stale-retry-snapshot hypothesis: the run passed the live ledger; the old catalog hash came from DB pins. The missing exact Russian competition alias prevented matching. Corrected review plus native resolver against the saved 15:00 input resolves #9 (event_order8) at18:30UTC/21:30MSK; other14 resolutions unchanged. Earlier diagnosis below and its source context remain as superseded audit history.
+- CHECKPOINT INSTALLED — receipt completed12:11:00UTC verifies passive retry16September15:15MSK and cleanup15:16MSK, RunAtLoad=false, activate_evening=false. This verifies installation and saved-input resolution only; 15:15 execution/result is not observed by this finalizer. Parent owns that checkpoint.
+- ROUTING — explicit requested model/effort records work intent; effective runtime configuration was not returned. Parent reports resumed Huygens retained prior settings and is now closed; the mathematical review matched a high-complexity role, but routine publication is no longer assigned there. Newly spawned Astra-requested Galileo/Hubble failed role handoff before work. End-to-end automatic routing is unverified; no global automatic configuration exists.
+- RESEARCH/PUBLICATION — A/B remain locally committed as5095f6c and512ba0a; prior24tests/Ruff result is historical, not rerun. This follow-up changes documentation only and remains UNCOMMITTED. No new remote authorization: no push/PR/merge; private operational evidence remains local.
+- REMAINS/BLOCKER/NEXT — parent observes actual15:15 attempt and15:16 cleanup; finalizer has no operational action. Effective worker metadata and new research upload authorization remain unavailable. Preserve unfinished research checklist and all historical audit reports.
+
+# Reviewed fixed-bank research complete — 2026-09-16T12:00:00Z
+
+Task **TOTOAI-RESUME-20260915**. The two isolated, research-only 4999 increments are complete and independently reviewed.
+- DONE — fixed 166/4,980 RUB weighted versus unweighted greedy coverage comparison and frozen BK versus Sports-v3 package comparison completed without retraining, activation, or production mutations. The coverage review accepted the mathematical core after reporting clarifications; the Sports review accepted the pilot after the P1 missing/corrupt-Sports fallback repair.
+- VERIFIED — focused regression suites: **24 passed**; Ruff passed. The repaired fallback writes `comparison.json` with `BK_CONTROL_ONLY_SPORTS_SKIPPED`, retains only the BK control, and does not represent an alias as Sports or a second forecast.
+- LIMITS — results are frozen retrospective research on known/unknown-as-of scenario inputs, not empirical profitability, live Sports-v3 qualification, a five-arm comparison, or operator eligibility. Report artifacts remain local/ignored; reviewed source, tests, plan/checklist and review records are the publication candidates.
+- PRESERVED — **DISPROVEN root-cause hypothesis; retained history, see correction above.** 5008's 15:00 attempt was **DEFERRED 14/15**: the valid applied event-8 review was not consumed because the passive retry's immutable ledger/catalog binding is stale. A separate operations worker is recreating that passive retry with the current binding for a possible future 15:15 attempt; it is ongoing, not readiness. No DB, ledger, jobs, scheduler, catalog, consent, operator artifact, package, or wagering action belongs to this research finalization.
+- NEXT — publication is local-only unless the owner explicitly authorizes a new remote push/draft PR; prior authorization for routing commit `3d70b59` / draft PR26 is not authorization for this research cut.
+
+# 5008 evidence checkpoint — 2026-09-16T11:28:42Z
+
+Task **TOTOAI-RESUME-20260915**. Bounded 5008#9 evidence application completed; prior checkpoints below are retained history.
+- DONE — hash-bound review `data/schedule-evidence/reviews/5008-event-09-baltbet-willand-20260916T112719Z.json` applied atomically for drawing5008/event_order8/target181061 only. Screenshot source `https://baltbet.ru/baltsystem`, SHA256 `854a9aad9a748e4cdbaa6693610a6122e76a4c649db7cfa787c701f1aeec9734`; its minute-only capture is `2026-09-16T11:18Z` under owner-established MSK display interpretation, distinct from visible page-as-of13:53.
+- CLASSIFICATION EVIDENCE — official Willand First Team page `https://www.willandrovers.co.uk/category/news/first-team/page/2/` distinguishes First Team from Under18s and its 2026/27 Southern Football League Division One South post describes a player's first season in men’s football. Review records `gender_age_class=men-senior`, alias `Southern Football League Division One South`; provenance `reports/rehearsal/TOTOAI-RESUME-20260915/5008-screenshot-replacement-20260916T112340Z/provenance.md` SHA256 `5ec5deb1738f9e603b17913d37c7dbfa279d46768bfe1c4c4e5b00c9b3d48763`.
+- VERIFIED — isolated dry-run passed then production `schedule-evidence-review --apply` returned applied. Ledger `data/schedule-evidence/ledger.json` SHA256 `e69f5e4ee606bc8b50d75f5bfaf2c35bac51d082b8e5bfe3eb696b01bbdbe05b`; `schedule-evidence-verify` returned verified, mutated:false. Receipt `reports/rehearsal/TOTOAI-RESUME-20260915/5008-screenshot-replacement-20260916T112340Z/hash-receipt.txt`; report `.../summary.md`.
+- NEXT — saved retry slot 15:00MSK. Do NOT claim a plan, readiness, or 15/15 resolution until a native attempt records it. No scheduler/full run, consent, operator, betting, Git, or code action occurred.
+
+# Native routing published as DRAFT — 2026-09-16T11:24:46.870825+00:00
+
+Task **TOTOAI-RESUME-20260915**. Supersedes older routing approval/push-pending status only; research/runtime observations below retain their own timestamps.
+- DONE: owner explicitly authorized push; exact commit `3d70b59841c8cec990e28de4b719c9bd114969a9` sent to BrooksN21/toto-ai and exposed by **draft PR26** https://github.com/BrooksN21/toto-ai/pull/26. GitHub verified OPEN/isDraft=true/head exact/mergeCommit=null. **No merge authorized or performed.**
+- VERIFIED: independent21focusedtests+RuffPASS, reviewed file hashes unchanged. No GitHub CI checks reported; not a CI-PASS claim. Policy is parent-enforced routing instructions, not installed automatic routing or runtime isolation.
+- ACTIVATION: commit/PR publication prerequisite satisfied; parent previously attested explicit native model/reasoning_effort/fork_context fields. No new worker/inference dispatched; parent still owns all remaining per-dispatch scope/concurrency/cwd checks.
+- PRESERVED: concurrent forum/screenshot context and raw/private/account/credential evidence NOT included in PR; saved research files remain byte-identical. This newer local checkpoint remains uncommitted; do not claim whole worktree clean or reupload unrelated context.
+- RECEIPT/NEXT: `reports/rehearsal/TOTOAI-RESUME-20260915/native-routing-publication/receipt.json`. Submission complete; no merge/new engineering/DB/scheduler/ledger/model work in this job. Await separate assignment; previous screenshot metadata request and operational handoff remain unchanged.
+
+# Context-only checkpoint — 2026-09-16T11:14:42.951722+00:00
+
+Task **TOTOAI-RESUME-20260915**. Newest bounded handoff; earlier checkpoints below are history. No fresh runtime/source fetch or Git inspection by this finalizer.
+- DONE — forum context: posted total bank111150RUB, reported gross290253.05RUB, conditional net179103.05/ROI+161.14%, max12. NOT verified account payout or long-term/causal model proof; full package absent, incompatible hit histograms and payout-table discrepancy unresolved. Private forum/images/participant details remain local and excluded from publication.
+- DONE —5008 evidence context: scheduled14:00MSK slot completed14:00:02.603921,exit75;14/15,event9 timing unresolved,plan_idNULL/no evening plan; next saved retry15:00MSK (not a future success/liveness guarantee). Supersedes older13:00 operational handoff only.
+- DRY-RUN REJECTED: screenshot+existing programme tested on ledgerCOPY only; native exit22 `source_url must be non-empty`. Original captured_at also unknown; later validation stages NOT proven. Production ledger unchanged; no --apply, invented source/time/class or fallback.
+- BLOCKER/NEXT: owner already asked for real source-page URL and original capture time/timezone. Parent can resume native evidence validation after genuine metadata arrives; no guessed values or new manual package/consent. Models and timing proposals unchanged.
+- ROUTING PUBLICATION: local commit `3d70b59841c8cec990e28de4b719c9bd114969a9` still awaits explicit scoped push/draftPR approval; request already shown. No newly approved worker launched; commit+PR activation gate remains closed. No remote action authorized for this context step.
+- FILE DISPOSITION: existing forum/screenshot reports and raw evidence preserved; this ACTIVE_PLAN update plus `plans/TOTOAI-RESUME-20260915/context-finalization-20260916.json` are local uncommitted metadata. Nothing authorized to publish, NOT nothing exists. No Git scans/commits/push/PR, no DB/scheduler/timing-evidence mutations.
+- EVIDENCE: `plans/TOTOAI-RESUME-20260915/1x2-forum-context.md`, `5008-baltbet-screenshot-context.md`; `reports/rehearsal/TOTOAI-RESUME-20260915/5008-screenshot-dry-run-20260916T111139Z/summary.md`. Next checkpoint is genuine screenshot metadata or explicit remote approval, not another audit.
+
+# Native project routing — reviewed local finalization 2026-09-16T11:09:36.391380+00:00
+
+Task **TOTOAI-RESUME-20260915**. Routing-only checkpoint; model/operations status below remains timestamped history, not newly verified runtime.
+- DONE: owner-approved project-only Luna/low (routine), Terra/medium (bounded code), Astra/high (critical) instruction policy independently ACCEPT;21focusedtests+RuffPASS; exact reviewed files unchanged. Main model/global config/production untouched; no automatic router, TOML installation, savings or hard-sandbox claim.
+- GATES: parent now explicitly attests callable native model/reasoning_effort/fork_context fields. No newly authorized model worker launched. Max2 including active children; fork_context=false/no nested/external models/providers/Yandex. Existing child models/worktrees/scopes preserved.
+- PUBLICATION: prepare local routing commit only. Existing remote approvals confirmed prior completed cuts, not explicit authorization to transmit this new policy; push/draftPR is BLOCKED_PENDING_EXPLICIT_REMOTE_APPROVAL. Required commit+PR activation gate remains closed until separately evidenced. Intended publish_pr=false; no merge requested in this job.
+- EVIDENCE/NEXT: `plans/TOTOAI-RESUME-20260915/native-model-routing-submission.json`; final local commit/status receipt at `reports/rehearsal/TOTOAI-RESUME-20260915/native-routing-publication/receipt.json`. Ask owner/parent for explicit scoped push+draftPR approval, then continue same finalization without repeat audit/tests.
+- CONCURRENT WORK: forum/screenshot research is separate and unfinished; exclude all its files and private participant/credential material. No DB/scheduler/timing-evidence/inference changes. Model-improvement plan remains unchanged and unfinished.
+
 # Reviewed partial Sports v3 evaluation — 2026-09-16T10:26:36.191463+00:00
 
 Task **TOTOAI-RESUME-20260915**. Current checkpoint; earlier blocks below are historical, not instructions to repeat finished work.

@@ -1,0 +1,68 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "reviewed_at": "2026-09-16T11:07:01.181607+00:00",
+  "cwd": "/Users/turshevr/toto-ai",
+  "role": "standalone independent review only",
+  "verdict": "ACCEPT_SCOPED_INSTRUCTION_POLICY_NOT_RUNTIME_ACTIVATION",
+  "blocking_findings": [],
+  "nonblocking_findings": [],
+  "reviewed_files_sha256": {
+    "AGENTS.md": "82f00f3aa8dc692f9a45a52c9fc23d142a2c5c95ecb79b145efd7e2154d45f64",
+    "memory-bank/TOOLING_POLICY.md": "36f11bef6d0afb28046ae81d95a04b95866403c4ede3e9e70bd61d5b76953888",
+    "memory-bank/NATIVE_CODEX_ROUTING.md": "bc404db80f77a72a7082ba99f91cf5049806b53e963811b33e8380c59a501952",
+    "prompts/native-codex-routing.json": "609fdd689e1111e8db39ab502ff905a1fb41b2d900810bdde7234a635c7c45c5",
+    "tests/test_native_codex_routing_policy.py": "3629d8cb048ff0163dd84509a0b91e972231b863d950ab09992a63d009f0756d"
+  },
+  "handoff_file_sha256": "d4cc656f023240c82c61c72d4f87813187df296eda3d17807ada2117e0b09f8d",
+  "verified_contract": {
+    "exact_model_effort_routes": {
+      "routine": {
+        "model": "gpt-5.6-luna",
+        "reasoning_effort": "low"
+      },
+      "bounded_code": {
+        "model": "gpt-5.6-terra",
+        "reasoning_effort": "medium"
+      },
+      "critical": {
+        "model": "gpt-6-astra",
+        "reasoning_effort": "high"
+      }
+    },
+    "project_only": true,
+    "parent_only_dispatch": true,
+    "main_model_unchanged": true,
+    "max_workers_including_existing_active_children": 2,
+    "fork_context": false,
+    "nested_delegation": false,
+    "one_bounded_attempt": true,
+    "no_external_models_proxies_provider_auth_overrides": true,
+    "no_Yandex_internal_services": true,
+    "existing_child_ids_models_cwd_scope_preserved": true,
+    "no_new_user_owned_tasks_worktrees": true,
+    "no_native_TOML_in_patch": true,
+    "no_automatic_cost_router_or_filesystem_sandbox_claim": true,
+    "commit_and_PR_gate_required": true,
+    "missing_native_tool_fails_dispatch_without_substitution": true
+  },
+  "verification": {
+    "pytest": "21 passed in0.04s",
+    "pytest_command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m pytest -q -p no:cacheprovider tests/test_native_codex_routing_policy.py tests/test_tooling_policy.py tests/test_project_local_skills.py --tb=short",
+    "ruff": "PASS tests/test_native_codex_routing_policy.py --no-cache",
+    "json_parse": "PASS",
+    "diff_check": "PASS scoped two tracked policy entrypoints",
+    "post_test_hashes": "unchanged exact handoff cut"
+  },
+  "evidence_limits": [
+    "Static policy tests are not actual dispatch or billing evidence.",
+    "Parent explicitly attests native spawn fields model/reasoning_effort/fork_context; reviewer did not call spawn or certify tools available to another task.",
+    "No automatic runtime enforcement installed: parent must enforce concurrency, inputs and write boundaries on every dispatch.",
+    "No full-machine/global-config audit; reviewed patch introduces no global config, TOML, executable dispatcher or production code."
+  ],
+  "activation": "NOT_PERFORMED; separate commit/PR publication and parent callable-schema check still required",
+  "no_agent_launch": true,
+  "no_source_edits": true,
+  "no_Git_writes_or_publication": true,
+  "no_runtime_DB_jobs_changes": true,
+  "next_action": "Separate submission after parent accepts this review and Pauli context; no new work by this reviewer."
+}

@@ -229,6 +229,16 @@ def test_collect_goal_probe_builds_adapter_compatible_15_event_input(
     coverage = json.loads(result.coverage_summary_path.read_text(encoding="utf-8"))
     assert len(coverage["events"]) == 15
     assert all(len(row["sources"]) == 2 for row in coverage["events"])
+    fixture_source = coverage["events"][0]["target_fixture_source"]
+    fixture_path = tmp_path / fixture_source["snapshot_path"]
+    fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    assert fixture["fixture_id"] == "fixture-0"
+    assert fixture["payload"]["homeTeamId"] == "home-0"
+    assert fixture["payload"]["awayTeamId"] == "away-0"
+    assert fixture["source_url"] == "https://api.goal-api.com/v1/fixtures/date/2026-08-27"
+    assert fixture_source["fixture_sha256"] == hashlib.sha256(
+        fixture_path.read_bytes()
+    ).hexdigest()
     frozen = "\n".join(
         path.read_text(encoding="utf-8")
         for path in result.coverage_summary_path.parent.glob("*.json")

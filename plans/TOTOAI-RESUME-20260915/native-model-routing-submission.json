@@ -1,0 +1,29 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "at": "2026-09-16T11:09:36.391380+00:00",
+  "role": "separate submission local-only pending remote authorization",
+  "context_file_path": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/context.md",
+  "context_analysis": "Saved15Sep context is historical; use current routing review for this narrow cut. Do not restart models/ops/history or mix concurrent forum evidence.",
+  "work_summary": "Owner-approved project-only three native model/effort routes; unchanged external prohibitions/main/global/runtime; explicit parent routing, no automatic client router.",
+  "reviewed_files_sha256": {
+    "AGENTS.md": "82f00f3aa8dc692f9a45a52c9fc23d142a2c5c95ecb79b145efd7e2154d45f64",
+    "memory-bank/TOOLING_POLICY.md": "36f11bef6d0afb28046ae81d95a04b95866403c4ede3e9e70bd61d5b76953888",
+    "memory-bank/NATIVE_CODEX_ROUTING.md": "bc404db80f77a72a7082ba99f91cf5049806b53e963811b33e8380c59a501952",
+    "prompts/native-codex-routing.json": "609fdd689e1111e8db39ab502ff905a1fb41b2d900810bdde7234a635c7c45c5",
+    "tests/test_native_codex_routing_policy.py": "3629d8cb048ff0163dd84509a0b91e972231b863d950ab09992a63d009f0756d"
+  },
+  "review_path": "plans/TOTOAI-RESUME-20260915/native-model-routing-independent-review.json",
+  "review_sha256": "aee7e91b9d9639afc212702479e3cf9b540c3ed21586d628ac15972b71db374d",
+  "verification": "Independent21testsPASS0.04s;RuffPASS;filehashesunchanged;no needrepeat",
+  "parent_callable_spawn_fields_verified": "Explicit current parent handoff: model,reasoning_effort,fork_context",
+  "workers_launched": 0,
+  "publish_pr": false,
+  "remote_authorization": "NOT_ESTABLISHED_FOR_THIS_NEW_POLICY_CUT",
+  "remote_blocker": "Earlier explicit approval applied to completed model-research cuts/PR25; new routing approval authorizes models/project policy, not explicitly upload. This job forbids inferring new remote authorization.",
+  "planned_disposition": "LOCAL_COMMIT_THEN_WAIT_FOR_EXPLICIT_PUSH_DRAFT_PR_APPROVAL",
+  "remote_actions": false,
+  "runtime_mutations": false,
+  "concurrent_forum_screenshot_research": "EXCLUDED_UNFINISHED_PRIVATE_CONTEXT_NOT_PUBLISHED",
+  "skill": "Established local Git/GitHub-only workflow; localgena-submission-ci-flow not found at previously verified paths; no internal discovery",
+  "final_receipt": "reports/rehearsal/TOTOAI-RESUME-20260915/native-routing-publication/receipt.json"
+}

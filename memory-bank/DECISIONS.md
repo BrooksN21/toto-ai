@@ -1,3 +1,7 @@
+# Native Codex instruction routing boundary — 2026-09-16T11:09:36.391380+00:00
+
+TOTOAI-RESUME-20260915: owner approves exactly Luna/low, Terra/medium, Astra/high only for this project and named parent, after policy commit+PR and callable native schema verification. Parent reports live field support; no inference test yet. Existing child restrictions and external-model/service prohibitions remain. Local JSON is a tested instruction record, not installed app config, automatic routing or enforceable filesystem isolation. Global/main-model settings unchanged. Remote transmission for this new policy still awaits explicit scope approval; prior completed-cut approval is not extended automatically.
+
 # Explicit partial research inference, not relaxed native admission — 2026-09-16T10:26:36.191463+00:00
 
 TOTOAI-RESUME-20260915: a separate inactive fixed-model adapter preserves full120 evaluation denominator using21 independently reviewed Sports rows plus99 exact BK fallbacks. Native complete-group/production guards are not weakened; missing fixture/timing/classes are not invented. Original model/transform/code hashes remain bound, identity updates use distinct reviewed copies; results are loaded only after immutable probabilities are saved. This mixed unknown-asof domain is nonblind research, not calibrated football chances or operator eligibility. Scores worsened: no automatic promotion. Timing-envelope documents remain proposals with no activated policy.
