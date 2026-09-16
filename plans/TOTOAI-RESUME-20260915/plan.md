@@ -1,3 +1,7 @@
+## Current execution checkpoint — 2026-09-16T09:47:26.759964+00:00
+
+P0/P1 and inactive P2 are reviewed; R2a53+7 and real R3 A5 fit are completed and independently accepted. Current step is **frozen-model evaluation inputs → predictions-before-labels → scores → five-arm comparison**. Prediction/evaluation/deployment are NOT complete. See [reviewed-cut-submission.json](reviewed-cut-submission.json) and machinechecklist.json. Earlier planning-only and no-fit text below is dated history, not current state. Primary scheduler and production gates remain unchanged.
+
 # TOTOAI-RESUME-20260915 — executable bounded model plan
 
 Created 2026-09-15T14:07:31.908300+00:00. **PLANNING ONLY: no implementation/training/replay has run in this job.**

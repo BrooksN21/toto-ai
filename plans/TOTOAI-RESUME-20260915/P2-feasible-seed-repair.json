@@ -1,0 +1,116 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "completed_at": "2026-09-15T21:33:20.788478+03:00",
+  "stage": "P2_INACTIVE_PROOF_COMPLETE_PENDING_INDEPENDENT_REVIEW",
+  "work_summary": "New inactive feasible-seed robust exchange helper and10focused tests. Starts from bound complete feasible control; accepts only strictly lexicographically improving worst/mean sampled coverage and feasible uniqueN one-out/one-in states. Deterministic order/seed; bounded proposals/acceptedchanges/candidatepool/time/progress; timeout returns exact original seed. One4999pilot, no actual labels:20accepted swaps/465proposals, all21seed+acceptedstates feasible; positive small exact modeldelta but independentMC mixed. No production defaults/native selector edits or promised quality lift.",
+  "files": {
+    "/Users/turshevr/toto-ai/src/toto_ai/research/feasible_robust_exchange.py": "376f79bc7650cc153099a9b8240f791dbc74315a5af10028192526c207ab98fe",
+    "/Users/turshevr/toto-ai/tests/test_feasible_robust_exchange.py": "304f3d7edc519bf05de0ce37382d53043041ce8e8a976e6c9ede6e3c3f53b513"
+  },
+  "P0_P1_frozen_files_unchanged": {
+    "/Users/turshevr/toto-ai/src/toto_ai/optimizer/robust_package.py": true,
+    "/Users/turshevr/toto-ai/src/toto_ai/research/package_selection_diagnostics.py": true,
+    "/Users/turshevr/toto-ai/tests/test_robust_package.py": true,
+    "/Users/turshevr/toto-ai/tests/test_package_selection_diagnostics.py": true
+  },
+  "checks": {
+    "RED": "newmodulemissing collectionfailure before implementation",
+    "new_tests": 10,
+    "combined_pytest": "36passed in0.42s;exit0",
+    "pytest_command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m pytest -q tests/test_feasible_robust_exchange.py tests/test_package_selection_diagnostics.py tests/test_robust_package.py tests/test_uncertainty_package.py --tb=short",
+    "ruff": "2newfilesPASS",
+    "no_full8draw_regeneration": true
+  },
+  "input_contract": {
+    "typed_input": "RepairInput",
+    "binding": "expected_input_sha256 checks canonical SHA over sourceinputSHA, control/order, candidatepool/order, normalizedmodels, integerbounds, bank/stake,category andseed. Invalidfeasiblecontrol/rehashedinvalidinput rejected. SourceinputSHA is an attribution provided by caller; pilot verified it against existing frozen source.",
+    "search_configuration": {
+      "sample_count": 10000,
+      "max_candidates": 512,
+      "max_proposals": 2000,
+      "max_accepted_changes": 20,
+      "time_budget_seconds": 30
+    },
+    "input_sha256": "48a2d2407d1de4fb4348449a831b028d00fd0e8b46d5424d7ad42933f2055f12",
+    "source_input_sha256": "abb3e19350807ef5e544bdfd3c625eaf637398a78494e1f39407fea3a3402c7c",
+    "training_seed_material": "071e2a4f05fdaba5c121aed39053a8522cd4515002e401633b6c2dce268083d2\u0000feasible-exchange-v1",
+    "output_order_sha256": "da2560e166e868f4bd316bd39d5e108c7707e9cf639fe4d13bcc29331277a62f"
+  },
+  "objective": "Lexicographic(min covered scenario weight, sum covered scenario weight) across frozen normalized models; exactintegercounts decide swaps, normalizedworst/mean values reported. Worst cannotdecrease; mean maydecrease whenworststrictlyimproves. No per-model/exact improvementguarantee.",
+  "pilot": {
+    "drawing": 4999,
+    "evidence_domain": "POST_EVENT_MARKET_SCENARIO_UNVERIFIED_ASOF",
+    "quote_available_at": null,
+    "accepted_swaps": 20,
+    "net_new_coupons": 11,
+    "shared_with_control": 155,
+    "proposals": 465,
+    "reason": "ACCEPTED_CHANGE_BUDGET_EXHAUSTED",
+    "search_seconds": 3.525582458001736,
+    "total_seconds": 5.013864708002075,
+    "before_objective": [
+      0.0082,
+      0.009366666666666667
+    ],
+    "after_objective": [
+      0.0087,
+      0.009866666666666666
+    ],
+    "verified_intermediate_states": 21,
+    "all_states_feasible": true,
+    "deltas": [
+      {
+        "model": "bk",
+        "exact_P13_before": 0.01091493451070921,
+        "exact_P13_after": 0.011107339908341663,
+        "exact_P13_delta_percentage_points": 0.019240539763245267,
+        "independent_before": 0.011,
+        "independent_after": 0.0109,
+        "training_before": 0.0102,
+        "training_after": 0.0106
+      },
+      {
+        "model": "flatten_10",
+        "exact_P13_before": 0.009878510173625383,
+        "exact_P13_after": 0.010046225189670348,
+        "exact_P13_delta_percentage_points": 0.016771501604496454,
+        "independent_before": 0.0106,
+        "independent_after": 0.0112,
+        "training_before": 0.0082,
+        "training_after": 0.0087
+      },
+      {
+        "model": "flatten_20",
+        "exact_P13_before": 0.008944347754468441,
+        "exact_P13_after": 0.009090084925852643,
+        "exact_P13_delta_percentage_points": 0.014573717138420192,
+        "independent_before": 0.0089,
+        "independent_after": 0.0088,
+        "training_before": 0.0097,
+        "training_after": 0.0103
+      }
+    ],
+    "actual_results_used": false,
+    "original_archives_unchanged": true,
+    "independent_evaluation": "Separate RNG stream,10000permodel; reusedsamevalidationstreams forcontrolandrepair. Independentchangesmixed, notstatisticallyestablishedlift."
+  },
+  "runtime": "Cooperativedeadlinecheckedbefore/throughnativeworkloads andeachproposal; sampler/individualhelpers arebounded butnotpreemptive. Outerpilot90salarm;search30sbudget. Timeout discardsacceptedintermediatestates andreturnsexactoriginalseed, retained_changes=0. No liveimport/callsite/defaultactivation.",
+  "mutation_scope": {
+    "native_robust_qv2_qv3": false,
+    "Sports": false,
+    "DB_raw_scheduler_consent": false,
+    "ACTIVE_PLAN": false,
+    "Git_publish": false
+  },
+  "remaining": [
+    "Independentcode/contractreview before publication.",
+    "Any new searchstrategy or defaultactivation requiresseparateapproval; no claimexhaustiveglobaloptimum.",
+    "Validate predeclaredimprovementsonearlierdevelopment/futureunseen inputs; do notretune these8outcomes."
+  ],
+  "current_command": null,
+  "artifacts": {
+    "bound-input.json": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/P2-feasible-seed-pilot-4999/bound-input.json",
+    "result.json": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/P2-feasible-seed-pilot-4999/result.json",
+    "summary.json": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/P2-feasible-seed-pilot-4999/summary.json"
+  }
+}

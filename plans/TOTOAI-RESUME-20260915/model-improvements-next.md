@@ -1,3 +1,7 @@
+## Execution status — 2026-09-16T09:47:26.759964+00:00
+
+P0/P1 observable diagnostics and P2 inactive feasible-seed repair now independently PASS, including normalization regression fix. R2a delivered53real training rows+7exclusions;17current identity reviews applied only to derived copies. R3 actual research A5 fit exists and independently PASS; evaluation/five-arm comparison and activation remain PENDING. Earlier zero-fit and preimplementation statements below are history. See reviewed-cut-submission.json for exact hashes and limitations.
+
 # Remaining model improvements — execution addendum, not a new project plan
 
 Task **TOTOAI-RESUME-20260915**. Planning checkpoint 2026-09-15T17:48:19.317623+00:00.

@@ -155,3 +155,62 @@ def test_invalid_probability_models_are_rejected(models, message) -> None:
             category=15,
             max_coupons=1,
         )
+
+
+def test_exposure_dead_end_reports_real_fallback_without_changing_coupons():
+    # 11 is the greedy first choice, but its required complement22 is absent.
+    # A complete feasible package12+21 DOES exist: the universe is not infeasible.
+    result = select_robust_package(
+        candidates=("11", "12", "21"),
+        probability_models={"a": ((0.9, 0.05, 0.05),) * 2, "b": ((0.8, 0.1, 0.1),) * 2},
+        category=15,
+        max_coupons=2,
+        sample_count=200,
+        seed_material="trace-dead-end",
+        exposure_constraints=ExposureConstraints(
+            lower_bounds=((1, 0, 1),) * 2, upper_bounds=((1, 0, 1),) * 2
+        ),
+        fallback_coupons=("12", "21"),
+    )
+    assert result.selected_coupons == ("12", "21")
+    assert not result.timed_out
+    trace = result.selection_trace
+    assert trace.path == "EXPOSURE_FALLBACK"
+    assert trace.fallback_reason == "GREEDY_EXPOSURE_DEAD_END"
+    assert trace.greedy_selected_count == 1
+    assert trace.selection_iteration == 2
+    assert trace.unselected_candidate_count == 2
+    assert {
+        (v.event_1based, v.outcome, v.kind, v.observed, v.limit)
+        for v in trace.violated_constraints
+    } == {(1, "2", "LOWER_NOT_MET", 0, 1), (2, "2", "LOWER_NOT_MET", 0, 1)}
+    assert result.sampled_metrics_scope == "OPTIMIZER_SELECTION_SAMPLE_NOT_CALIBRATED"
+
+
+def test_same_as_fallback_is_not_itself_a_fallback_trace():
+    result = select_robust_package(
+        candidates=("1",),
+        probability_models={"a": ((0.6, 0.2, 0.2),), "b": ((0.5, 0.3, 0.2),)},
+        category=15,
+        max_coupons=1,
+        sample_count=20,
+        fallback_coupons=("1",),
+    )
+    assert result.selected_coupons == ("1",)
+    assert result.selection_trace.path == "GREEDY_SELECTED"
+    assert result.selection_trace.fallback_reason is None
+
+
+def test_timeout_is_not_constraint_fallback():
+    result = select_robust_package(
+        candidates=("1",),
+        probability_models={"a": ((0.6, 0.2, 0.2),), "b": ((0.5, 0.3, 0.2),)},
+        category=15,
+        max_coupons=1,
+        sample_count=20,
+        fallback_coupons=("1",),
+        deadline=1.0,
+        time_func=lambda: 2.0,
+    )
+    assert result.selection_trace.path == "TIMEOUT_BEFORE_SELECTION"
+    assert result.selection_trace.fallback_reason is None

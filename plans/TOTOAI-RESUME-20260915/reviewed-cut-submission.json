@@ -1,0 +1,95 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "recorded_at": "2026-09-16T09:47:26.759964+00:00",
+  "baseline_main": "a424fe18acb7d693d3720c4e21653e2797c4dec9",
+  "work_summary": "Publish independently accepted P0/P1 observability/evaluation, P2 inactive feasible-seed repair and normalization fix, shared native A5 kernel with parity, research-only real SportsV3 fit code and bounded R2/R3 receipts. Evaluation/five-arm integration remains pending.",
+  "reviews": {
+    "P0_P1": {
+      "local_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/P0-P1-P2-independent-review/review.json",
+      "sha256": "c199963c2ca795f07cce5354e3b5f9bb089ccbf3a9d289862bba4a61d38ca6c5",
+      "verdict": {
+        "P0": "PASS_SCOPED_ADDITIVE_TRACE_REVIEW",
+        "P1": "PASS_SCOPED_INACTIVE_DIAGNOSTICS",
+        "P2": "REVISE_P2_NORMALIZATION_REBIND"
+      }
+    },
+    "P2_normalization": {
+      "local_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/P2-normalization-independent-review/review.json",
+      "sha256": "a762cdec5048c4cbf4044cae8536c693d9f50ead9c501bef2c227ec0bec33a98",
+      "verdict": "PASS_NARROW_P2_NORMALIZATION_REVIEW"
+    },
+    "R3_code": {
+      "local_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/R3-independent-code-review/review.json",
+      "sha256": "6e59eb022ecaa82d6f1b1f3e2118d57237b52eb7cc92cb2ea14099d8d8b57642",
+      "verdict": "PASS_CODE_SCOPE_WITH_NONBLOCKING_METADATA_NOTE"
+    },
+    "R3_actual_fit": {
+      "local_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/R3-independent-code-review/actual-fit-review.json",
+      "sha256": "38a235911e959c9b40ea525a383f01d07fb4bbc2b89d1b5155b7f52635ab360d",
+      "verdict": "PASS_CODE_AND_ACTUAL_RESEARCH_FIT_ARTIFACT"
+    }
+  },
+  "P0_P1_scoped_verdicts": {
+    "P0": "PASS_SCOPED_ADDITIVE_TRACE_REVIEW",
+    "P1": "PASS_SCOPED_INACTIVE_DIAGNOSTICS",
+    "P2": "REVISE_P2_NORMALIZATION_REBIND"
+  },
+  "P2_initial_REVISE_resolved_by": "P2-normalization-independent-review/review.json; exact single-normalization and ten independent real-tamper negatives PASS",
+  "R3_code_file_hashes": {
+    "src/toto_ai/sports_stats/v3_probability.py": "d7c7c61176e0ba9eabdcb25b6a0bdbc17276edbdc4cb29f9cadfb93a722b70ee",
+    "src/toto_ai/sports_stats/v3_residual_kernel.py": "bcf47dc1054f0aa8c3c80416e48928da533ae49a6a00dc542ed0d5315ddd8d8e",
+    "src/toto_ai/research/sports_v3_retrospective_fit.py": "fdace8b5be4ab23a1d5d7137df68ca1e064db0d4cd4b6ad7320bafc28585cd92",
+    "tests/test_sports_v3_residual_kernel.py": "dd9ec56b0a48cf0f5b1a27b0b3ad40cde07f1807fa957e93f029ce5e2ed5a6df",
+    "tests/test_sports_v3_retrospective_fit.py": "18a4eba1de6c6b34bcde06c5d2461544dad426bc380678af1905298182481064"
+  },
+  "R3_actual_fit": {
+    "model_payload_sha256": "8381fcf507c77152835e69325c46e446d40e5acb163bf019f03ea1c16d74fdde",
+    "model_file_sha256": "f334b21efd5dfd369c530d7e037b7c9ac8e6ee087d235872ac42453579d37b0e",
+    "training_rows": 53,
+    "roster_denominator": 60,
+    "explicit_exclusions": 7,
+    "eligible_sports_rows": 17,
+    "identity_status_only_changes": 17,
+    "taxonomy_certified": false,
+    "active_numeric_sports_coefficients": 78,
+    "active_numeric_sports_features": 26,
+    "domain": "RETROSPECTIVE_SPORTS_V3_RESEARCH_V1",
+    "evidence_grade": "UNVERIFIED_ASOF_SENSITIVITY",
+    "in_sample_is_not_validation": true,
+    "operator_compatible": false,
+    "activation_allowed": false
+  },
+  "pending": [
+    "Review and freeze numerical evaluation features4999–5006; preserve120-event denominator and unresolved slots.",
+    "Predict from exact already-frozen model; bind prediction file/payload hashes BEFORE evaluation labels.",
+    "Report model-vs-BK proper scores and coverage, then genuine same-input/same-bank five-arm comparison.",
+    "Separate independent acceptance and versioned optional sidecar integration; protected primary scheduler unchanged.",
+    "P3 stale prepare_fit FIT_READY reason; nonblocking, defer source mutation until frozen-model compatibility is planned."
+  ],
+  "runtime": "- OPERATIONS (parent/Pauli read-only evidence16September12:44MSK):5007 SETTLEMENT_COMPLETE at12:05:22,15/15results; maxhitsquality-v2=9,sports-shadow=10,quality-v3=10,robust=10,no11+. Owner-reportedquality-v3/4980 payout/ROI UNKNOWN.5008native23:15/08:00/10:30/12:00 slots all exit75,deferred14/15,event#9unresolved,planNULL,noeveningjob; closes16September18:30MSK; nextnative13:00 at that observation. Evidence operations-checkpoint-20260916-am.md/json; no runtime re-audit or changes by publisher. Later state must be verified by operations owner.",
+  "publication": {
+    "status": "PREPARING_REVIEWED_CUT",
+    "publish_pr": true,
+    "workflow_static": "gena-submission-ci-flow project-local static file unavailable; GitHub-only local finalization, no internal/external-model service invoked",
+    "final_local_receipt": "reports/rehearsal/TOTOAI-RESUME-20260915/reviewed-cut-publication/receipt.json"
+  },
+  "operations_evidence": {
+    "path": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/operations-checkpoint-20260916-am.md",
+    "sha256": "1fb0de8db9a91b0cff39a3b928fb38ce05d00bd08cac10f2ffed71a3f7399e88",
+    "observed_at": "2026-09-16T12:44:32.006381+03:00",
+    "scope": "read-only parent/Pauli handoff; no publisher runtime audit"
+  },
+  "publication_verification": {
+    "pytest": "229 passed,1 deselected in5.89s",
+    "ruff": "PASS11changedPythonfiles",
+    "excluded": "Previously verified heavy surface_cannot test; unchanged generator surface path",
+    "local_receipt": "reports/rehearsal/TOTOAI-RESUME-20260915/reviewed-cut-publication/verification.json"
+  },
+  "evaluation_input_checkpoint": {
+    "source": "Parent handoff2026-09-16T12:50MSK",
+    "direct_candidate_rows4999": 13,
+    "preliminary_other_candidate_rows": 8,
+    "sports_predictions_created": 0,
+    "upcoming_partial_prediction_adapter": "FROZEN_NOT_INCLUDED_NOT_COMPLETED"
+  }
+}

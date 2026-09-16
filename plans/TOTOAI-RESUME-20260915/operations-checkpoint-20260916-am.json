@@ -1,0 +1,113 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "checked_at_msk": "2026-09-16T12:44:32.006381+03:00",
+  "scope": "Readonly runtime inspection; own report writes only; no network/Git/manualrun/DB/catalog/jobs/consent/ACTIVE_PLAN mutations",
+  "5008": {
+    "native_observed_at_msk": "2026-09-16T12:05:32.900073+03:00",
+    "status": "deferred",
+    "reason": "ACTION REQUIRED: timing unknown 1/15",
+    "coverage": 14,
+    "remaining": [
+      9
+    ],
+    "plan_id": null,
+    "activation": "not_requested",
+    "close_msk_native_identity": "2026-09-16T18:30:00+03:00",
+    "close_verification_basis": "Native collection today12:05, no new live fetch",
+    "attempts": [
+      {
+        "scheduled_msk": "2026-09-15T23:15:00+03:00",
+        "completed_msk": "2026-09-15T23:15:10.570430+03:00",
+        "returncode": 75
+      },
+      {
+        "scheduled_msk": "2026-09-16T08:00:00+03:00",
+        "completed_msk": "2026-09-16T08:02:04.242222+03:00",
+        "returncode": 75
+      },
+      {
+        "scheduled_msk": "2026-09-16T10:30:00+03:00",
+        "completed_msk": "2026-09-16T10:34:26.846175+03:00",
+        "returncode": 75
+      },
+      {
+        "scheduled_msk": "2026-09-16T12:00:00+03:00",
+        "completed_msk": "2026-09-16T12:05:22.768530+03:00",
+        "returncode": 75
+      }
+    ],
+    "retry_loaded": true,
+    "retry_state": "not running",
+    "retry_runs": 7,
+    "retry_last_exit": 75,
+    "morning_dispatcher_loaded": true,
+    "morning_dispatcher_runs": 27,
+    "morning_dispatcher_last_exit": 0,
+    "next_checkpoint_msk": "2026-09-16T13:00:00+03:00"
+  },
+  "5007": {
+    "state": "complete",
+    "reason": "SETTLEMENT_COMPLETE",
+    "attempts": 1,
+    "attempted_slots": [
+      "2026-09-16T12:00:00+03:00"
+    ],
+    "actual_start": null,
+    "actual_start_note": "Not recorded; due slot does not establish precise start",
+    "completed_at_msk": "2026-09-16T12:05:22.794942+03:00",
+    "resolved_events": 15,
+    "models": {
+      "quality-v2": {
+        "max_hits": 9,
+        "coupons": 166,
+        "cost": 4980,
+        "9": 1,
+        "10": 0,
+        "11plus": 0,
+        "13plus": 0
+      },
+      "quality-v3": {
+        "max_hits": 10,
+        "coupons": 166,
+        "cost": 4980,
+        "9": 1,
+        "10": 1,
+        "11plus": 0,
+        "13plus": 0
+      },
+      "robust": {
+        "max_hits": 10,
+        "coupons": 166,
+        "cost": 4980,
+        "9": 1,
+        "10": 2,
+        "11plus": 0,
+        "13plus": 0
+      },
+      "sports-shadow": {
+        "max_hits": 10,
+        "coupons": 166,
+        "cost": 4980,
+        "9": 1,
+        "10": 1,
+        "11plus": 0,
+        "13plus": 0
+      }
+    },
+    "label_loaded_now": false,
+    "launchctl_exit": 113,
+    "installed_plist_exists": true,
+    "unload_reason": null,
+    "missed_or_slept_claim": false,
+    "notification_native_record": "sent",
+    "chat_delivery_proven": false,
+    "owner_reported_model": "quality-v3",
+    "owner_reported_stake": 4980,
+    "broker_receipt": false,
+    "payout": null,
+    "roi": null,
+    "comparison_path": "/Users/turshevr/toto-ai/reports/rehearsal/evening-5007-20260915T170000Z/post-draw/parallel-comparison/final-hybrid-settlement.json",
+    "report_semantic_id_matches_status": true
+  },
+  "receipt_note": "Initial report-only inline command had SyntaxError before any execution/write; this corrected compact receipt saved successfully."
+}

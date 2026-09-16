@@ -16,6 +16,8 @@ from toto_ai.sports_stats.v3_draw_calibration import (
     fit_draw_calibrator,
 )
 from toto_ai.sports_stats.v3_features import PREDICTOR_FEATURE_NAMES
+from toto_ai.sports_stats.v3_residual_kernel import fit_residual
+from toto_ai.sports_stats.v3_residual_kernel import softmax as _softmax
 
 MODEL_VERSION = "sports-analytics-v3-bk-residual-l2-v1"
 DIFFERENCES = (
@@ -190,12 +192,6 @@ def _transform(rows, names, fitted=None):
     ), fitted
 
 
-def _softmax(logits):
-    shifted = logits - np.max(logits, axis=-1, keepdims=True)
-    values = np.exp(shifted)
-    return values / values.sum(axis=-1, keepdims=True)
-
-
 def train_v3(
     records,
     *,
@@ -325,34 +321,25 @@ def train_v3(
         return seal(model)
     rows = [r["features"] for r in eligible]
     matrix, transform = _transform(rows, names)
-    weights = np.zeros((matrix.shape[1], 3))
     targets = np.eye(3)[[r["label"]["outcome"] for r in eligible]]
     prior = np.log(np.array([r["bk_probabilities"] for r in rows]))
     prior -= prior.mean(axis=1, keepdims=True)
     reliability_weights = np.array([reliability(r, names) for r in rows])[:, None]
-    rate = 1.0 / (l2 + 0.5 * np.max(np.sum(matrix * matrix, axis=1)) * 0.2**2)
-    for _ in range(steps):
-        if time.monotonic() - started > time_budget_seconds:
-            return seal(
-                {**model, "status": "FIT_BUDGET_EXHAUSTED", "reason": "FIT_TIME_BUDGET"}
-            )
-        prediction = _softmax(
-            prior
-            + reliability_weights
-            * np.einsum("ij,jk->ik", matrix, weights, optimize=False)
+    try:
+        weights = fit_residual(
+            matrix,
+            targets,
+            prior,
+            reliability_weights,
+            l2=l2,
+            steps=steps,
+            started=started,
+            time_budget_seconds=time_budget_seconds,
         )
-        gradient = (
-            np.einsum(
-                "ij,ik->jk",
-                matrix,
-                reliability_weights * (prediction - targets),
-                optimize=False,
-            )
-            / len(rows)
-            + l2 * weights
+    except TimeoutError:
+        return seal(
+            {**model, "status": "FIT_BUDGET_EXHAUSTED", "reason": "FIT_TIME_BUDGET"}
         )
-        weights -= rate * gradient
-        weights -= weights.mean(axis=1, keepdims=True)
     _check(np.all(np.isfinite(weights)), "nonfinite fitted weights")
     model.update(
         status="TRAINED_EXPERIMENTAL",

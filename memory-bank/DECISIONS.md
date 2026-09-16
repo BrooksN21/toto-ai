@@ -1,3 +1,7 @@
+# Research A5 numerical reuse and evidence boundary — 2026-09-16T09:47:26.759964+00:00
+
+Task TOTOAI-RESUME-20260915. Native A5 numerical kernel is shared without changing production admission; researcher schema/model domain remains distinct and is rejected by native model admission. Partial research groups preserve the15-slot denominator through explicit exclusions, not fabricated rows.17current entity-identity reviews permit only derived identity_status updates; unknown taxonomy remains null. Current fit is sensitivity research with known/unknown as-of provenance, never a prospective/profit claim. Exact artifact/code/hash bindings prevent silent later code substitution. Evidence: plans/TOTOAI-RESUME-20260915/reviewed-cut-submission.json.
+
 # Inactive reconstruction boundary — 2026-09-15T20:53:01.582880+03:00
 
 TOTOAI-RESUME-20260915 implemented/independentlyreviewed: POST_EVENT_MARKET_SCENARIO_UNVERIFIED_ASOF is a separate researchdomain; originalcaptures/marketinputs/frozenpackages preserved, directlabels excluded before nativegeneration. No causalfit/releaseeligibility implied. Sportscompletion evidence and targetmetadata/fixturemapping are mandatory in the scoped numericaladapter; unknownclasses/availability remainunknown. Generalclassificationregistry and newfitdomain remain PROPOSALS, not approved/implemented. Couponset identity differs from order/byteidentity; category/bank/probability definitions unchanged.

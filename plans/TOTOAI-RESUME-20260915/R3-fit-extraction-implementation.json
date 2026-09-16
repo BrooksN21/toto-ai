@@ -1,0 +1,63 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "code_frozen_at": "2026-09-15T21:43:08.842718+03:00",
+  "status": "IMPLEMENTATION_READY_FOR_INDEPENDENT_REVIEW_REAL_FIT_PENDING_IDENTITY",
+  "file_sha256": {
+    "src/toto_ai/sports_stats/v3_probability.py": "d7c7c61176e0ba9eabdcb25b6a0bdbc17276edbdc4cb29f9cadfb93a722b70ee",
+    "src/toto_ai/sports_stats/v3_residual_kernel.py": "bcf47dc1054f0aa8c3c80416e48928da533ae49a6a00dc542ed0d5315ddd8d8e",
+    "src/toto_ai/research/sports_v3_retrospective_fit.py": "fdace8b5be4ab23a1d5d7137df68ca1e064db0d4cd4b6ad7320bafc28585cd92",
+    "tests/test_sports_v3_residual_kernel.py": "dd9ec56b0a48cf0f5b1a27b0b3ad40cde07f1807fa957e93f029ce5e2ed5a6df",
+    "tests/test_sports_v3_retrospective_fit.py": "18a4eba1de6c6b34bcde06c5d2461544dad426bc380678af1905298182481064"
+  },
+  "tests": {
+    "passed": 74,
+    "seconds": 1.12,
+    "files": [
+      "tests/test_sports_v3_retrospective_fit.py",
+      "tests/test_sports_v3_residual_kernel.py",
+      "tests/test_sports_v3_probability.py",
+      "tests/test_sports_v3_probability_features.py"
+    ]
+  },
+  "ruff": "PASS five touched Python files",
+  "frozen_pre_extraction_reference": "reports/rehearsal/TOTOAI-RESUME-20260915/R3-fit/pre-extraction-reference.json",
+  "reference_sha256": "ba100c3640a3d4be20e33269096a5a9cd7b20a4229fdfbf4c760fe35ba61af11",
+  "native_exact_model_prediction_hash_parity_cases": 8,
+  "native_vs_research_numeric_weights_transform_prediction": "EXACT array equality on identical legitimate synthetic numeric fixtures",
+  "production_guards_source_unchanged": {
+    "validate_feature_row": true,
+    "validate_model": true,
+    "_validate_training_manifest": true,
+    "reliability": true,
+    "infer_v3": true
+  },
+  "training_validation_prefix_unchanged": true,
+  "native_probability_features_file_unchanged": true,
+  "real_data": {
+    "manifest_path": "reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/drawing-bound-training-manifest.json",
+    "manifest_sha256": "f83552a06e5f896cacd0304b34b1b0e920dee9fdb0e975c43131aa67582c5d68",
+    "r3_file_hashes_verified": true,
+    "serialized_rows": 53,
+    "denominator_rows": 60,
+    "draw_counts": {
+      "4990": 14,
+      "4992": 15,
+      "4993": 11,
+      "4995": 13
+    },
+    "excluded_rows": 7,
+    "numeric_sports_candidates": 17,
+    "positive_weight_reviewed_rows": 0,
+    "structural_53_checks": "PASS; deliberately not independent identity approval"
+  },
+  "real_fit_executed": false,
+  "real_model_sha256": null,
+  "real_coefficients": null,
+  "real_frozen_predictions": null,
+  "operator_compatible": false,
+  "automatic_wagering": false,
+  "production_gates_changed": false,
+  "runtime_changed": false,
+  "git_publication": false,
+  "next": "Independent code+identity review, consume genuine reviewed hashes/derived rows without fabricating taxonomy; fit_research with 53 genuine rows +7 explicit source-bound exclusions and heldout_pending=True; freeze model; later freeze_predictions with independently reviewed heldout rows; evaluation labels only score_predictions after freeze."
+}

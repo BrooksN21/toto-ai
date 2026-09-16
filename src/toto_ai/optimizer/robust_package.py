@@ -35,6 +35,27 @@ class RobustModelMetrics:
 
 
 @dataclass(frozen=True)
+class ExposureViolation:
+    event_1based: int
+    outcome: str
+    kind: str
+    observed: int
+    limit: int
+
+
+@dataclass(frozen=True)
+class SelectionTrace:
+    path: str
+    fallback_reason: str | None
+    greedy_selected_count: int
+    selection_iteration: int
+    unselected_candidate_count: int
+    # Counts before fallback versus required FINAL bounds, not a claim that
+    # the whole candidate universe is infeasible.
+    violated_constraints: tuple[ExposureViolation, ...] = ()
+
+
+@dataclass(frozen=True)
 class RobustPackageResult:
     selected_coupons: tuple[str, ...]
     model_metrics: tuple[RobustModelMetrics, ...]
@@ -44,6 +65,8 @@ class RobustPackageResult:
     sample_count_per_model: int
     category: int
     timed_out: bool
+    selection_trace: SelectionTrace | None = None
+    sampled_metrics_scope: str = "OPTIMIZER_SELECTION_SAMPLE_NOT_CALIBRATED"
 
 
 @dataclass(frozen=True)
@@ -125,9 +148,7 @@ def select_robust_package(
         if bounds is not None and not _package_satisfies_bounds(fallback, bounds):
             raise ValueError("fallback_coupons do not satisfy exposure constraints")
 
-    candidate_index = {
-        coupon: index for index, coupon in enumerate(unique_candidates)
-    }
+    candidate_index = {coupon: index for index, coupon in enumerate(unique_candidates)}
     workloads: list[_ModelWorkload] = []
     for model_name, probabilities in models:
         if _expired(deadline, time_func):
@@ -226,6 +247,9 @@ def select_robust_package(
             _apply_candidate(workload, best_index, selected_indexes)
 
     selected = tuple(unique_candidates[index] for index in selected_order)
+    greedy_count = len(selected)
+    fallback_reason = None
+    violations: tuple[ExposureViolation, ...] = ()
     if (
         bounds is not None
         and not timed_out
@@ -233,6 +257,12 @@ def select_robust_package(
     ):
         if not fallback:
             raise ValueError("candidate universe cannot satisfy exposure constraints")
+        fallback_reason = (
+            "GREEDY_EXPOSURE_DEAD_END"
+            if greedy_count != limit
+            else "COMPLETE_SELECTION_VIOLATES_EXPOSURE_BOUNDS"
+        )
+        violations = _exposure_violations(exposure_counts, bounds)
         selected = fallback
         selected_order = [candidate_index[coupon] for coupon in fallback]
     metrics = _model_metrics(selected, selected_order, workloads, event_count)
@@ -246,7 +276,41 @@ def select_robust_package(
         sample_count_per_model=sample_count,
         category=category,
         timed_out=timed_out,
+        selection_trace=SelectionTrace(
+            path=(
+                "EXPOSURE_FALLBACK"
+                if fallback_reason
+                else "TIMED_OUT_PARTIAL"
+                if timed_out
+                else "GREEDY_SELECTED"
+            ),
+            fallback_reason=fallback_reason,
+            greedy_selected_count=greedy_count,
+            selection_iteration=greedy_count + int(greedy_count < limit),
+            unselected_candidate_count=len(unique_candidates) - greedy_count,
+            violated_constraints=violations,
+        ),
     )
+
+
+def _exposure_violations(counts, bounds: ExposureConstraints):
+    """Small post-selection observation only; never affects greedy choices."""
+    result = []
+    for event, row in enumerate(counts):
+        for index, count in enumerate(row):
+            lower = bounds.lower_bounds[event][index]
+            upper = bounds.upper_bounds[event][index]
+            if count < lower or count > upper:
+                result.append(
+                    ExposureViolation(
+                        event + 1,
+                        OUTCOMES[index],
+                        "LOWER_NOT_MET" if count < lower else "UPPER_EXCEEDED",
+                        count,
+                        lower if count < lower else upper,
+                    )
+                )
+    return tuple(result)
 
 
 def _normalize_models(
@@ -314,8 +378,7 @@ def _normalize_exposure_constraints(
         if any(value < 0 or value > package_size for value in (*lower, *upper)):
             raise ValueError("exposure bounds must be within the package size")
         if any(
-            minimum > maximum
-            for minimum, maximum in zip(lower, upper, strict=True)
+            minimum > maximum for minimum, maximum in zip(lower, upper, strict=True)
         ):
             raise ValueError("exposure lower bounds must not exceed upper bounds")
         if sum(lower) > package_size or sum(upper) < package_size:
@@ -414,8 +477,7 @@ def _apply_candidate(
     selected_indexes: set[int],
 ) -> None:
     newly_covered = (
-        workload.candidate_to_scenarios[selected_index]
-        - workload.covered_scenarios
+        workload.candidate_to_scenarios[selected_index] - workload.covered_scenarios
     )
     for scenario_index in newly_covered:
         workload.covered_scenarios.add(scenario_index)
@@ -437,9 +499,7 @@ def _model_metrics(
         covered_scenarios: set[int] = set()
         for index in selected_indexes:
             covered_scenarios.update(workload.candidate_to_scenarios[index])
-        covered_weight = sum(
-            workload.weights[index] for index in covered_scenarios
-        )
+        covered_weight = sum(workload.weights[index] for index in covered_scenarios)
         exact = (
             exact_category_probabilities(coupons, workload.probabilities)
             if event_count == 15 and coupons
@@ -448,9 +508,7 @@ def _model_metrics(
         result.append(
             RobustModelMetrics(
                 model=workload.name,
-                sampled_category_coverage=(
-                    covered_weight / workload.total_weight
-                ),
+                sampled_category_coverage=(covered_weight / workload.total_weight),
                 exact_p13=exact[0],
                 exact_p14=exact[1],
                 exact_p15=exact[2],
@@ -479,6 +537,13 @@ def _empty_result(
         sample_count_per_model=sample_count,
         category=category,
         timed_out=timed_out,
+        selection_trace=SelectionTrace(
+            "TIMEOUT_BEFORE_SELECTION" if timed_out else "EMPTY_SELECTION",
+            None,
+            0,
+            0,
+            candidate_count,
+        ),
     )
 
 

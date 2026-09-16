@@ -1,3 +1,40 @@
+# Reviewed model-research milestone — 2026-09-16T09:47:26.759964+00:00
+
+Task **TOTOAI-RESUME-20260915**. This checkpoint supersedes stale current-status claims below; preserves original history and unfinished checklist.
+- DONE P0/P1: additive robust path/fallback/constraint diagnostics and opt-in independent/exact package evaluation; independent scoped PASS. Production search/selection semantics unchanged; no calibrated probability/profit claim.
+- DONE P2: bounded INACTIVE feasible-seed exchange proof, complete feasible states only, deterministic/budgeted; normalization regression fixed, exact hash/tamper guards retained; independent re-review PASS. Not a production default or proven quality lift.
+- DONE R2a/R3: 53 real training DTOs +7 explicit exclusions (60 denominator),17 identity-only research approvals, taxonomy remains null; shared A5 kernel/native guards/parity PASS. Actual research fit completed,53 total/17 weighted,78 active numeric coefficients over26 sports features. PayloadSHA8381fcf507c77152835e69325c46e446d40e5acb163bf019f03ea1c16d74fdde, fileSHAf334b21efd5dfd369c530d7e037b7c9ac8e6ee087d235872ac42453579d37b0e. Code+actual artifact independent PASS; in-sample loss is NOT test gain.
+- EVALUATION: Evaluation handoff (parent16Sep12:50MSK):13 direct candidate rows on4999 +8 preliminary other-draw candidates;0 Sports predictions. Upcoming partial research prediction adapter is FROZEN/unimplemented and not part of this publication.
+- CURRENT STEP: frozen model → reviewed evaluation inputs4999–5006 → freeze predictions before labels → score → honest same-bank five-arm comparison. Evaluation predictions and five-way integration PENDING. No refit or8-draw package rerun merely for publication.
+- BOUNDARIES: research-only unknown-asof sensitivity; not historically blind, no invented classes/time/values, operator/activation/automatic-wagering=false. C1/C2/prospective release gates unchanged. P3 stale FIT_READY reason remains nonblocking and cannot justify altering a frozen model's code hash.
+- PUBLICATION: reviewed cut finalization in progress; metadata and exact review hashes in plans/TOTOAI-RESUME-20260915/reviewed-cut-submission.json. Final commit/PR/merge/tree/upstream verification belongs in its linked local publication receipt, never inferred from old clean checkpoints.
+- OPERATIONS (parent/Pauli read-only evidence16September12:44MSK):5007 SETTLEMENT_COMPLETE at12:05:22,15/15results; maxhitsquality-v2=9,sports-shadow=10,quality-v3=10,robust=10,no11+. Owner-reportedquality-v3/4980 payout/ROI UNKNOWN.5008native23:15/08:00/10:30/12:00 slots all exit75,deferred14/15,event#9unresolved,planNULL,noeveningjob; closes16September18:30MSK; nextnative13:00 at that observation. Evidence operations-checkpoint-20260916-am.md/json; no runtime re-audit or changes by publisher. Later state must be verified by operations owner.
+- NEXT CHECKPOINT: bounded combined pytest/Ruff and reviewed hashes → GitHub PR/checks/merge → clean/upstream receipt. Thereafter parent resumes evaluation input handoff and verifies current operations separately. Binding plan: plans/TOTOAI-RESUME-20260915/plan.md and machinechecklist.json.
+
+# Current research/operations handoff — 2026-09-15T21:53:57.566247+03:00
+
+Task **TOTOAI-RESUME-20260915**. Work continues; earlier checkpoints below are history, not the current next action.
+
+|Area|Current verified/reported state|Owner / next action|
+|---|---|---|
+|Published baseline|PR23 merged; parent-confirmed main==origin/main `a424fe1` (fullSHA `a424fe18acb7d693d3720c4e21653e2797c4dec9`) at21:12:50MSK. Later changes are not claimed committed/clean.|Publisher later publishes reviewed cut and metadata; no Git operations in this checkpoint.|
+|Earlier training data|60real rows withBK and separate labels;53R3 rows,7explicit exclusions; all four training draws precede4999–5006.17numerical sports candidates.|Do not fabricate the7missing rows or mutate frozen original inputs.|
+|Research identity|Huygens accepted17/17 for research-only identity updates; taxonomy certified0, historically_reviewed=false. ReviewSHA `418d74dea3c379ee13564d1510fc53f7b3e1089d79cddac52adccd3ab950c43e`.|Hypatia consumes exact accepted entries in new derived records; no production/F4 admission implied.|
+|A5 / Sportsv3|74focused tests PASS;8native exact model/prediction hash parity cases; actual R3 fit STILL PENDING Hypatia.|Actual fit → independent review → separately approved isolated parallel integration. Tests are not evidence of trained model or lift.|
+|P0/P1 diagnostics|Scoped independent review PASS; current36tests and fixed4999state/model checks passed. R1model diagnostics complete; historical robust identicalsets alone do not prove fallback.|Keep evidence; no repeated24-package run or real-world calibration claim.|
+|P2 repair|Only normalization/binding bug fixed;42focused tests/RuffPASS; search-loop AST preserved. Source/tests frozen, independent Huygens re-review pending.|No self-approval, publication or default activation.|
+|5008 operations|Parent reports native21:15 deferred75;14/15timings;#9official programme19:30local with unresolved conflict; planNULL. No fresh runtime check by this memory worker.|Parent/operations owner handles existing23:15MSK checkpoint. No jobs/consent/DB changes or manual launch.|
+
+## Exact durable handoffs
+- Identity: `reports/rehearsal/TOTOAI-RESUME-20260915/R3-independent-identity-review.json` (fullSHA above).
+- Dataset: `reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/drawing-bound-training-manifest.json`; frozenSHA `f83552a06e5f896cacd0304b34b1b0e920dee9fdb0e975c43131aa67582c5d68`.53partial groups14/15/11/13 plus7explicit exclusions; original BK/label denominator60 retained.
+- A5 implementation/parity: `plans/TOTOAI-RESUME-20260915/R3-fit-extraction-implementation.json`. Its earlier identity-pending statement is superseded by the accepted review, not by a claimed fit completion.
+- P0/P1/P2 independent review: `reports/rehearsal/TOTOAI-RESUME-20260915/P0-P1-P2-independent-review/review.json`. P0/P1PASS preserved; original P2REVISE finding is fixed but awaiting re-review.
+- P2fix: `plans/TOTOAI-RESUME-20260915/P2-normalization-fix.json`; sourceSHA `959f6f223da3514de80d9e915d15957fa1faa7a8ddd8730ca513e240261448f7`, testsSHA `60a30f55fd287df803d9459f7a8f03173e257acd69469f3fab22627725aebf3d`.
+- Remaining plan stays `plans/TOTOAI-RESUME-20260915/model-improvements-next.md`, existing `plan.md` and `machinechecklist.json`. Preserve fit→review→isolatedparallelintegration; no observed-outcome retuning disguised as unseen evaluation or promised win/profit.
+
+This metadata-only update records parent handoffs and named receipts. It does not certify current working-tree cleanliness, successful future launch, actual trainedSportsv3, F4PASS or liveactivation. No source/data/job/Git edits.
+
 # Resume milestone — 2026-09-15T20:51:21.114311+03:00
 
 Task TOTOAI-RESUME-20260915. Completed research slice; prior checkpoints are history.

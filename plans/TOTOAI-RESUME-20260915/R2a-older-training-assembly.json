@@ -1,0 +1,113 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "stage": "R2a_DRAWING_BOUND_RESEARCH_DATA",
+  "receipt_completed_at": "2026-09-15T18:37:33.327803+00:00",
+  "operation": "Complete only interrupted receipt write; no dataset or code mutation",
+  "manifest_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/drawing-bound-training-manifest.json",
+  "manifest_sha256": "f83552a06e5f896cacd0304b34b1b0e920dee9fdb0e975c43131aa67582c5d68",
+  "hash_origin": "Previously verified finalization result; NOT recomputed in this receipt-only step",
+  "counts_at_data_freeze": {
+    "drawing_numbers": [
+      4990,
+      4992,
+      4993,
+      4995
+    ],
+    "denominator_rows": 60,
+    "genuine_bk_rows": 60,
+    "separate_labels": 60,
+    "labels_observed_before_4999_window": 60,
+    "r3_dto_rows": 53,
+    "r3_separate_labels": 53,
+    "r3_rows_per_drawing": {
+      "4990": 14,
+      "4992": 15,
+      "4993": 11,
+      "4995": 13
+    },
+    "candidate_rows_with_sports_numerical_features": 17,
+    "candidate_rows_with_all28_base_features": 6,
+    "positive_weight_independently_admitted_rows": 0,
+    "base_feature_schema_size": 28,
+    "r3_feature_schema_size": 53
+  },
+  "files": {
+    "full_matrix": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/drawing-training-matrix.json",
+    "full_labels": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/drawing-training-labels.json",
+    "sports_diagnostics": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/drawing-training-sports-diagnostics.json",
+    "sources": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/drawing-training-sources.json",
+    "r3_features": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/r3-training-features.json",
+    "r3_labels": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/r3-training-labels.json",
+    "r3_bindings": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/r3-dto-bindings.json",
+    "r3_readiness": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/r3-dto-readiness.json",
+    "prior_candidate_supplement": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/older-training-r2a/training-manifest.json"
+  },
+  "schema_notes": {
+    "event_order": "Original TotoBrief 0-based order",
+    "full_matrix_join_key": "row_id",
+    "r3_join_key": [
+      "drawing_number",
+      "event_id"
+    ],
+    "labels_physically_separate": true,
+    "bk": "Positive original BK percentage triple normalized by sum; original pre-decision archive capture; provider quote time unknown",
+    "sports": "Actual diagnostics retained separately from admitted features; R3 candidates keep identity_status UNKNOWN",
+    "taxonomy": "Unknown gender/age_group/squad_type retained; no independent reviewer authority manufactured",
+    "timestamps": "RawArchive.load captured_at preserved; history fetched_at/updatedAt preserved; no fabricated finish or backdating",
+    "missing_imputation": "Not applied in data assembly; owned by reviewed training-only fitter",
+    "feature_leakage_controls": "Exclude target/future and unsupported completion before score extraction"
+  },
+  "missing_inputs_at_data_freeze": [
+    {
+      "drawing": 4990,
+      "event_numbers_one_based": [
+        2
+      ],
+      "reason": "Exact kickoff and provider fixture binding absent in used indexed coverage"
+    },
+    {
+      "drawing": 4993,
+      "event_numbers_one_based": [
+        3,
+        6,
+        7,
+        9
+      ],
+      "reason": "Exact kickoff and provider fixture binding absent in used indexed coverage"
+    },
+    {
+      "drawing": 4995,
+      "event_numbers_one_based": [
+        8,
+        9
+      ],
+      "reason": "Exact kickoff and provider fixture binding absent in used indexed coverage"
+    }
+  ],
+  "prior_supplement_preserved": {
+    "older_candidates": 2228,
+    "rows_with_history": 165,
+    "label_and_two_sided_min5": 29,
+    "complete28_with_label": 8
+  },
+  "verification_at_data_freeze": {
+    "focused_pytest_passed": 9,
+    "pytest_elapsed_seconds": 0.34,
+    "ruff": "PASS on three own research Python files",
+    "native_scope": "Exact DTO fields/seals checked; native rejection without independent review tested; no native identity PASS claimed",
+    "rerun_this_receipt_step": false
+  },
+  "parent_handoff_acknowledged": true,
+  "current_parent_assignments": {
+    "Huygens": "Independent review of17identity candidates using existing anchors",
+    "Hypatia": "Research fit handling53partial rows/groups without inventing7missing rows"
+  },
+  "fit_executed_by_this_worker": false,
+  "f4_pass_claim": false,
+  "new_api_calls": 0,
+  "production_or_live_changes": false,
+  "git_or_publication_operations": false,
+  "dataset_and_code_frozen": true,
+  "next_worker_action": "Await separate job; apply only actual accepted review entries if subsequently assigned",
+  "interruption_origin": "Parent checkpoint request, not an end-user pause"
+}
