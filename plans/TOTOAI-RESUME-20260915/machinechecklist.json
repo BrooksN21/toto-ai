@@ -3,7 +3,7 @@
   "version": "20260915-plan-v2-retrospective",
   "created_at": "2026-09-15T14:07:31.908300+00:00",
   "kind": "EXECUTION_CHECKLIST",
-  "current_step": "R3 real research fit COMPLETE/independentlyPASS; next reviewed evaluation features4999–5006 → frozen predictions-before-labels → proper scores/five-arm comparison. P0/P1/P2 done; operational integration NOT activated.",
+  "current_step": "D/R3 predictions and proper-score evaluation COMPLETE/reviewed;21Sports99BK/120,scores WORSE. Remaining step2 comparisons/calibration/package analysis; next P3 training-only improvements and P1/P2 optimizer diagnostics, then genuine5arms. No live activation.",
   "context": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/model-context.md",
   "active_plan_modified": true,
   "protected": {
@@ -176,7 +176,7 @@
         "accepted independent source/scope receipt or explicit missing status for every required field",
         "no changes to original chronology rejected rows, denominator, DB or operational ledger"
       ],
-      "blocker": "Remaining evaluation feature/identity coverage and as-of uncertainty, not absence of any real training data.",
+      "blocker": "99/120evaluation slots lack assembled Sports support; predraw source availability not proven by retrospective approval.",
       "outputs": [
         "corpus4999-5006/availability.json",
         "corpus4999-5006/features.json",
@@ -192,7 +192,7 @@
         "plans/TOTOAI-RESUME-20260915/C-scope-classification-handoff.md"
       ],
       "completion_scope": "R2a real older corpus53DTO+7exclusions;17current independent identity approvals, taxonomy unknown. Requested evaluation corpus still incomplete.",
-      "next_increment": "Reviewed numerical evaluation-input handoff for frozen model, with explicit unsupported slots."
+      "next_increment": "21evaluation identity approvals complete. Separately plan earlier-history gap fill and prospective daily capture; taxonomy unknown remains null."
     },
     {
       "id": "D",
@@ -201,7 +201,7 @@
         "C3"
       ],
       "title": "Versioned chronological fit/freeze/evaluate with valid fold scaling",
-      "status": "PARTIAL_RESEARCH_FIT_COMPLETE_EVALUATION_PENDING",
+      "status": "PARTIAL_RESEARCH_FIT_AND_MIXED_EVALUATION_COMPLETE",
       "owner": "SportsV3 fit solver; independent leakage/statistics reviewer",
       "depends_on": [
         "A",
@@ -240,7 +240,7 @@
         "real model/inference/evaluation artifacts produced where admissible; otherwise exact missing/insufficient-training disposition",
         "probability gate recomputed independently; unchanged coverage/prospective gates, PASS_RESEARCH_ONLY not operator eligibility"
       ],
-      "blocker": "Reviewed evaluation-input matrix/predictions/proper-score receipt pending; prospective gates remain unchanged.",
+      "blocker": "Fixed evaluation predictions pending; full15-Sports native grouping needs reviewed partial mixing boundary.",
       "outputs": [
         "walkforward-v2/protocol.json",
         "walkforward-v2/fold-roster.json",
@@ -249,13 +249,14 @@
         "walkforward-v2/probability-evaluation.json",
         "walkforward-v2/independent-gate.json"
       ],
-      "next_increment": "R3: reviewed reconstructed-domain contract; earlier eligible training, frozen5004–5006 confirmation not pristine unseen; no unknown-asof market in causal fit.",
+      "next_increment": "Finish reviewed partial prediction adapter; freeze120 predictions/fallbacks before labels, then score. Do not redo completed fit or infer gain from in-sample loss.",
       "completion_scope": "Native shared A5 parity and real research model completed/independentlyPASS; chronological heldout evaluation not yet complete.",
       "execution_evidence": [
         "R3-fit-extraction-implementation.json",
         "R3-real-fit-receipt.json",
         "reviewed-cut-submission.json"
-      ]
+      ],
+      "latest_evidence": "R3-partial-predict-implementation.json:21Sports99BK,proper scores worse;no promotion"
     },
     {
       "id": "E",
@@ -299,7 +300,7 @@
         "all8 drawings and5arms retained even if NOT_EVALUABLE; paired quality comparisons on same eligible subset with coverage and fallback slices",
         "ROI only if payout evidence verified; no lift/profit claim fromn1 or posthoc model choice"
       ],
-      "blocker": "8draw3nativearmsSCENARIOcomplete; genuineSportsV2/V3 require qualified sportsinputs/model. No causaledgeclaim fromunknown-asofquotes.",
+      "blocker": "SportsV2 and frozenSportsV3 probability bindings/full5-arm outputs pending.",
       "outputs": [
         "evaluation4999-5006/arm-matrix.json",
         "evaluation4999-5006/report.md",
@@ -307,7 +308,7 @@
         "evaluation4999-5006/probability-metrics.json",
         "evaluation4999-5006/roi-evidence.json"
       ],
-      "next_increment": "R4 per-arm matrix; no fake sports fallback presented as model execution; scenario and archive cohorts separated."
+      "next_increment": "Use reviewed P1 exact/independent evaluator, then genuine5-way packages with sharedobjective/reference and all missingness/runtime/ROI disclosures."
     },
     {
       "id": "F",
@@ -354,35 +355,34 @@
         "deployment/v3-manifest.json",
         "deployment/acceptance.json",
         "deployment/rollback-test.json"
-      ]
+      ],
+      "next_increment": "Only after independent research/code/runtime review: inference-only bounded research sidecar, primary-first and fail-open; activation separately authorized."
     }
   ],
   "now_without_missing_data": [
-    "Execute R2a exact eligibleearlierhistory roster and mapping/request gap inventory using existing indexed cache",
-    "Use completed8draw3arm outputs for predeclared diagnostic priorities; no rerun forreport-onlyfix",
-    "Resolve5008event9timeconflict via parent; do not claimreadyplan"
+    "Use both saved independent identity reviews to derive/reseal21 candidate rows; keep originals and frozen model unchanged",
+    "Review/finish partial prediction adapter; freeze all120 positions and explicit BK fallback without labels",
+    "Inspect existing fixed-package diagnostics before authorizing bounded optimizer ablations; no repeatedR1 just for reporting"
   ],
-  "ordering": "R1 immediately independent ofR2; R3chronologicalfit after eligible corpus/domain review; R4fullfivearms after realSportsV2/V3inputs; R5prospective sidecar only after separate acceptance.",
+  "ordering": "D/R3 frozen predictions → scoring; P1/P2 three-BK-optimizer ablations and P3 Sports probability improvements → E/R4 five-arm research comparison → F/R5 reviewed safe integration. C/R2 prospective data capture is separate and may proceed in parallel only under separate scope.",
   "change_claims": {
-    "quality_v2": "retain frozen control; calibration only separately trained predictor hypothesis",
-    "quality_v3": "higher rawP13/24coupons9+on4999 is descriptive; do not remove P15 safety gate fromn1",
-    "robust": "same hashes asqv2, G1applied=false; expose exact fallback cause, no diversity/lift claim",
-    "sports_shadow": "31coupons9+and max11on4999 does not prove SportsV2 superior; test calibration/residual and chronology before tuning",
-    "Sports_v3": "component implementation exists, real fitted/provenance/integration absent; adoption and testing are real deliverables independent of missingdata"
+    "quality_v2": "Protected unchanged production control; proposed research coverage exchanges and separately trained BK calibration are not activated.",
+    "quality_v3": "P1 evaluator reviewed; sample optimism demonstrated on5001. Feasible-seed/exchange ablation and gains still pending; no safety-gate relaxation.",
+    "robust": "P0 trace and P2 feasible-seed repair reviewed. P2 INACTIVE research; small conditional exact gain not real-world proof.",
+    "sports_shadow": "SportsV2 predictor quality/reliability/shrinkage ablations pending; confirm actual optimizer binding before5-way comparison.",
+    "Sports_v3": "Genuine frozen research fit53rows/17positive-weight;21/120 evaluation identities accepted. Predictions/quality gain/live integration not completed."
   },
   "completed_in_this_job": [
     "read supplied context plus short current checkpoint",
     "saved executable scoped plan and machine checklist"
   ],
   "not_executed": [
-    "C-SCOPE-ENTITY-BINDING-V1 implementation",
-    "real qualified SportsV3 fitting",
-    "five-arm full retrospective evaluation on4999–5006",
-    "SportsV3 activation",
-    "R2 fullqualifiedsports reconstruction for5000–5006 (partialcache workcompleted)",
-    "R3 reviewed reconstructed fit protocol/real training"
+    "New production qv2/qv3/robust behavior or SportsV2 calibration changes",
+    "Complete genuine5-arm research package comparison",
+    "Prospective capture improvements and validated live SportsV3 integration",
+    "Timing-range policy application"
   ],
-  "next_checkpoint": "PR24 merge/main-upstream-clean receipt and explicit sourcefreeze release, then separate partial prediction adapter/evaluation; source unchanged in metadata commit.",
+  "next_checkpoint": "Publication merge/clean receipt; next separately assigned bounded improvement hypothesis/test, not repeat freeze or full R1 replay. Parent owns5008next14:00MSK.",
   "execution_checkpoint": {
     "at": "2026-09-15T19:46:59.919439+03:00",
     "A": "COMPLETE_INERT_PUBLISHED",
@@ -431,7 +431,7 @@
     "expiry_msk": "2026-09-15T19:50:00+03:00",
     "postmortem_scheduler_verified": false
   },
-  "updated_at": "2026-09-16T09:47:26.759964+00:00",
+  "updated_at": "2026-09-16T10:26:36.191463+00:00",
   "retrospective_revision": {
     "recorded_at": "2026-09-15T20:12:51.617820+03:00",
     "protocol": "plans/TOTOAI-RESUME-20260915/retrospective-reconstruction-protocol.md",
@@ -500,16 +500,16 @@
         "status": "PARTIAL_IMPLEMENTED_REVIEWED",
         "assignment": "Separate exact target/time/history reconstruction; taxonomy design acceptance before binding implementation",
         "depends_on": [],
-        "evidence": "R2a-older-training-assembly.json;17independent identity-only research approvals;53DTO+7exclusions; evaluation coverage remainspartial"
+        "evidence": "53trainingDTOs+7exclusions;17trainingidentity approvals;21/120evaluation identities accepted by two saved independentreviews. Classesnull."
       },
       {
         "id": "R3",
         "status": "PARTIAL_RESEARCH_FIT_COMPLETE_EVALUATION_PENDING",
-        "assignment": "Reviewed eligible reconstructed corpus/domain→chronologicalfit→frozen predictions",
+        "assignment": "Frozen real fit → reviewed partial mixed prediction boundary → freeze120 predictions BEFORElabels → score",
         "depends_on": [
           "R2"
         ],
-        "evidence": "R3-real-fit-receipt.json and reviewed-cut-submission.json; genuine fitted coefficients, no frozen evaluation predictions yet"
+        "evidence": "R3-real-fit-receipt.json;21identity approvals;fixedpredictionreceiptPENDING"
       },
       {
         "id": "R4",
@@ -549,20 +549,188 @@
     "P2": "REVIEW_ACCEPTED_INACTIVE",
     "R2a": "53_REAL_ROWS_PLUS_7_EXCLUSIONS",
     "R3_fit": "ACTUAL_RESEARCH_FIT_REVIEW_ACCEPTED",
-    "R3_evaluation": "PENDING",
+    "R3_evaluation": "ACTUAL_120_PREDICTIONS_21_SPORTS_99_BK_SCORED_REVIEW_PASS_SCORES_WORSE",
     "five_arm_comparison": "PENDING",
     "production_activation": false,
     "receipt": "reviewed-cut-submission.json",
     "publication_pr": "https://github.com/BrooksN21/toto-ai/pull/24",
-    "implementation_commit": "2ec555a9e49cc18a663d86fcc56b1a76e749d1fc"
+    "implementation_commit": "2ec555a9e49cc18a663d86fcc56b1a76e749d1fc",
+    "publication_merged_sha": "bfdcf94",
+    "merge_basis": "Explicit parent handoff for current planning job; no new VCS check",
+    "evaluation_receipt": "R3-partial-predict-implementation.json",
+    "evaluation_review_sha256": "104b29c29a5db2e1cd7b45cc7612a1b7a23a7e11ca88df4da237b999cfe21786"
   },
   "latest_operations_checkpoint": {
-    "path": "plans/TOTOAI-RESUME-20260915/operations-checkpoint-20260916-am.md",
-    "sha256": "1fb0de8db9a91b0cff39a3b928fb38ce05d00bd08cac10f2ffed71a3f7399e88",
-    "observed_at": "2026-09-16T12:44:32.006381+03:00",
-    "5007": "SETTLEMENT_COMPLETE15/15;maxhits9/10/10/10;no11+;userqv3payoutUNKNOWN",
-    "5008": "14/15event9unresolved,planNULL,noeveningjob,close18:30;next13:00atobservation",
-    "runtime_mutated": false
+    "observed_at": "2026-09-16T13:00:00+03:00",
+    "5007": "SETTLEMENT_COMPLETE15/15;maxhits9/10/10/10;userconfirmedqv3payout3114.08,stake4980,net-1865.92,ROI-37.47;notindependentaccountaccess",
+    "5008": "DEFERRED75;14/15event9unresolved,planNULL,noeveningjob,close18:30,next14:00atobservation",
+    "runtime_mutated": false,
+    "basis": "Parent supplied13:00nativecheckpoint; publisher did not re-audit runtime",
+    "previous_evidence_path": "plans/TOTOAI-RESUME-20260915/operations-checkpoint-20260916-am.md",
+    "previous_evidence_sha256": "1fb0de8db9a91b0cff39a3b928fb38ce05d00bd08cac10f2ffed71a3f7399e88",
+    "payout_evidence_sha256": "c08fbceb1cb6b691c924823d87e80e3bb5a209c4d671f097f4c8bfcd0bc2fd11"
   },
-  "evaluation_input_checkpoint": "Evaluation handoff (parent16Sep12:50MSK):13 direct candidate rows on4999 +8 preliminary other-draw candidates;0 Sports predictions. Upcoming partial research prediction adapter is FROZEN/unimplemented and not part of this publication."
+  "evaluation_input_checkpoint": {
+    "status": "FROZEN_PREDICTIONS_AND_SCORING_INDEPENDENT_PASS",
+    "denominator": 120,
+    "identity_accepted": 21,
+    "by_drawing": {
+      "4999": 13,
+      "5000": 5,
+      "5001": 1,
+      "5004": 2
+    },
+    "other_BK_fallback_slots": 99,
+    "actual_sports_applied": 21,
+    "taxonomy_certified": 0,
+    "original_inputs_mutated": false,
+    "review_paths": [
+      "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/R3-eval-data-v1/independent-identity-review4999.json",
+      "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/R3-eval-data-v1/independent-identity-review-remaining8.json"
+    ],
+    "review_file_sha256": [
+      "aea81d04ceb96c6c31f779f5c0a97ffa31ef417d16b7df40e9fdbf7c7dfd77e5",
+      "29e9d2c2ff45b4445ddaa026743ba187bc96a196cf27e4f17a02d5dde2900cbd"
+    ],
+    "changed_prediction_rows": 21,
+    "unchanged_BK": 99
+  },
+  "planning_revision_history": [
+    {
+      "at": "2026-09-16T10:14:42.978521+00:00",
+      "previous_plan_file_sha256": "27909ffec4f98c42c7dc63a5a8584e14be054844838053f998f96696fbae1fd7",
+      "superseded_current_fields": {
+        "current_step": "R3 real research fit COMPLETE/independentlyPASS; next reviewed evaluation features4999–5006 → frozen predictions-before-labels → proper scores/five-arm comparison. P0/P1/P2 done; operational integration NOT activated.",
+        "now_without_missing_data": [
+          "Execute R2a exact eligibleearlierhistory roster and mapping/request gap inventory using existing indexed cache",
+          "Use completed8draw3arm outputs for predeclared diagnostic priorities; no rerun forreport-onlyfix",
+          "Resolve5008event9timeconflict via parent; do not claimreadyplan"
+        ],
+        "ordering": "R1 immediately independent ofR2; R3chronologicalfit after eligible corpus/domain review; R4fullfivearms after realSportsV2/V3inputs; R5prospective sidecar only after separate acceptance.",
+        "change_claims": {
+          "quality_v2": "retain frozen control; calibration only separately trained predictor hypothesis",
+          "quality_v3": "higher rawP13/24coupons9+on4999 is descriptive; do not remove P15 safety gate fromn1",
+          "robust": "same hashes asqv2, G1applied=false; expose exact fallback cause, no diversity/lift claim",
+          "sports_shadow": "31coupons9+and max11on4999 does not prove SportsV2 superior; test calibration/residual and chronology before tuning",
+          "Sports_v3": "component implementation exists, real fitted/provenance/integration absent; adoption and testing are real deliverables independent of missingdata"
+        },
+        "not_executed": [
+          "C-SCOPE-ENTITY-BINDING-V1 implementation",
+          "real qualified SportsV3 fitting",
+          "five-arm full retrospective evaluation on4999–5006",
+          "SportsV3 activation",
+          "R2 fullqualifiedsports reconstruction for5000–5006 (partialcache workcompleted)",
+          "R3 reviewed reconstructed fit protocol/real training"
+        ],
+        "next_checkpoint": "PR24 merge/main-upstream-clean receipt and explicit sourcefreeze release, then separate partial prediction adapter/evaluation; source unchanged in metadata commit.",
+        "evaluation_input_checkpoint": "Evaluation handoff (parent16Sep12:50MSK):13 direct candidate rows on4999 +8 preliminary other-draw candidates;0 Sports predictions. Upcoming partial research prediction adapter is FROZEN/unimplemented and not part of this publication."
+      }
+    }
+  ],
+  "model_improvement_execution_sequence": [
+    {
+      "step": 1,
+      "id": "D/R3-predictions",
+      "status": "COMPLETE",
+      "done": "Frozen120predictions21Sports99BK+independentPASS58testsRuff",
+      "remaining": null,
+      "plan_section": 1,
+      "receipt": "R3-partial-predict-implementation.json"
+    },
+    {
+      "step": 2,
+      "id": "D/R3-score",
+      "status": "PARTIAL_COMPLETE",
+      "depends_on": [
+        1
+      ],
+      "remaining": "V2 pairwise comparisons, uncertainty/calibration and independent/exact fixed-package metrics/attributableROI",
+      "plan_section": 2,
+      "done": "Actualall120andsports21LL/Brier vsBK, bothworse;freeze-beforelabelsverified"
+    },
+    {
+      "step": 3,
+      "id": "P1/P2-all-BK-optimizers",
+      "status": "READY_FOR_SCOPED_IMPLEMENTATION",
+      "done": "P0/P1 diagnostics and inactiveP2 reviewed",
+      "remaining": "Predeclared per-family research ablations, frozen earlier-development settings, no production activation",
+      "plan_section": 3
+    },
+    {
+      "step": 4,
+      "id": "P3-SportsV2/V3",
+      "status": "READY_FOR_SCOPED_IMPLEMENTATION",
+      "depends_on": [
+        2
+      ],
+      "remaining": "Probability reliability/calibration/features ablations, training-only transformations, separate new model versions",
+      "plan_section": 4
+    },
+    {
+      "step": 5,
+      "id": "E/R4-five-arms",
+      "status": "BLOCKED_INPUT",
+      "depends_on": [
+        1,
+        2
+      ],
+      "remaining": "Five honest predictor×optimizer arms; same4980/30; common-reference and own-model metrics separate",
+      "plan_section": 5
+    },
+    {
+      "step": 6,
+      "id": "C/R2-prospective-data",
+      "status": "READY_FOR_SCOPED_IMPLEMENTATION",
+      "remaining": "Separate scoped daily capture/missingness/recovery work; not runtime permission from this plan",
+      "parallel_to": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "plan_section": 6
+    },
+    {
+      "step": 7,
+      "id": "F/R5-safe-integration",
+      "status": "BLOCKED_BY_RESEARCH_AND_INDEPENDENT_ACCEPTANCE",
+      "depends_on": [
+        5
+      ],
+      "remaining": "Code/hash/chronology/runtime review; researchsidecar first, protectedprimary, separate activation authorization",
+      "plan_section": 7
+    }
+  ],
+  "planning_update_scope": {
+    "at": "2026-09-16T10:14:42.978521+00:00",
+    "files": [
+      "model-improvements-next.md",
+      "machinechecklist.json"
+    ],
+    "implementation": false,
+    "code_DB_jobs_sources_VCS_publication_changed": false,
+    "active_plan_current_state_writer": "publisher",
+    "timing_range_policy": "PROPOSED_NOT_APPLIED",
+    "5007_payout_fact": {
+      "model": "quality-v3",
+      "cost": 4980,
+      "payout": 3114.08,
+      "net": -1865.92,
+      "roi": -0.3746827309236948,
+      "max_hits": 10,
+      "basis": "Explicit confirmed fact in parent current handoff; no new screenshot retrieval",
+      "other_models_payout": null
+    }
+  },
+  "completed_partial_prediction_checkpoint": {
+    "at": "2026-09-16T10:26:36.191463+00:00",
+    "review_sha256": "104b29c29a5db2e1cd7b45cc7612a1b7a23a7e11ca88df4da237b999cfe21786",
+    "prediction_file_sha256": "96f17a43bbb83bdefe5aed27b202ff19bfd5741471b1edfdd37cf517a101c091",
+    "metrics_file_sha256": "b93c06831123f31890fca8e79ba92d48a54c417cedd1a05389ade24c43472baa",
+    "fit_executed": false,
+    "operator_activation": false,
+    "five_arm_packages": "PENDING",
+    "quality_lift": false
+  }
 }

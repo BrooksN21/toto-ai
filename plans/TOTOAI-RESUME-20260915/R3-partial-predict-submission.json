@@ -1,0 +1,59 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "at": "2026-09-16T10:26:36.191463+00:00",
+  "status": "REVIEWED_CUT_PREPARED_FOR_SEPARATE_PUBLICATION",
+  "context_file_path": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/context.md",
+  "context_note": "Original Sep15 operational context is historical; newer named evidence and parent13:00checkpoint supersede current-state claims, not raw evidence.",
+  "work_summary": "Fixed-model partial Sportsv3 research inference/scoring,58tests/Ruff and independentartifactPASS;21Sports99BK/120,scores worse. Existing seven-stage model plan updated, timing proposal not activated,5007userconfirmedpayout recorded,5008handoff deferred14/15 planNULL.",
+  "source_files": {
+    "src/toto_ai/research/sports_v3_retrospective_predict.py": "898cb0780e31bf3abe8d66e7ecbd44fbe849a6ea0a163e5c3396800cdce735c0",
+    "tests/test_sports_v3_retrospective_predict.py": "6f9db3117f0346f9795b2e05b6a1dd83c067dac541f98d362c533f19362285c9"
+  },
+  "review_path": "reports/rehearsal/TOTOAI-RESUME-20260915/R3-predict-independent-review/review.json",
+  "review_sha256": "104b29c29a5db2e1cd7b45cc7612a1b7a23a7e11ca88df4da237b999cfe21786",
+  "implementation_receipt": "R3-partial-predict-implementation.json",
+  "metrics": {
+    "bk": {
+      "brier": 0.6446618914366683,
+      "log_loss": 1.0664387484472728
+    },
+    "count": 120,
+    "mixed": {
+      "brier": 0.6504550996267189,
+      "log_loss": 1.0745169155981895
+    }
+  },
+  "sports_subset": {
+    "bk": {
+      "brier": 0.6742989277428448,
+      "log_loss": 1.1095009829746643
+    },
+    "count": 21,
+    "mixed": {
+      "brier": 0.7074029745431334,
+      "log_loss": 1.1556619381227593
+    }
+  },
+  "prediction_file_sha256": "96f17a43bbb83bdefe5aed27b202ff19bfd5741471b1edfdd37cf517a101c091",
+  "model_payload_sha256": "8381fcf507c77152835e69325c46e446d40e5acb163bf019f03ea1c16d74fdde",
+  "model_file_sha256": "f334b21efd5dfd369c530d7e037b7c9ac8e6ee087d235872ac42453579d37b0e",
+  "payout_evidence_class": "USER_CONFIRMED_PAYOUT_NOT_INDEPENDENT_ACCOUNT_ACCESS",
+  "payout_evidence_sha256": "c08fbceb1cb6b691c924823d87e80e3bb5a209c4d671f097f4c8bfcd0bc2fd11",
+  "payout_rub": "3114.08",
+  "stake_rub": "4980.00",
+  "net_rub": "-1865.92",
+  "roi_percent": "-37.47",
+  "timing_policy": "PROPOSAL_NOT_IMPLEMENTED_OR_ACTIVATED",
+  "verification": "58focusedtestsPASS0.92s;Ruff2filesPASS;source hashes unchanged since review;no full rerun needed",
+  "gena_submission_skill": "Not found at explicit local project and known user skill paths; no external/internal service discovery performed. Local GitHub finalization only.",
+  "live_mutations": false,
+  "private_uploads": false,
+  "publication_completion_receipt": "reports/rehearsal/TOTOAI-RESUME-20260915/partial-predict-publication/receipt.json",
+  "remaining": [
+    "modelqualityimprovements",
+    "calibration/comparativeV2/packageanalysis",
+    "genuinefivewaycomparison",
+    "prospectiveevidence",
+    "separatelyreviewedsidecarintegration"
+  ]
+}

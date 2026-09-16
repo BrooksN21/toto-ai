@@ -1,0 +1,28 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "saved_at_msk": "2026-09-16T12:51:37.428737+03:00",
+  "status": "CONTEXT_AND_PROPOSAL_ONLY",
+  "plan_path": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/timing-uncertainty-decision-plan.md",
+  "native_prepared_review_min_sources": 2,
+  "single_official_native_cli_supported": false,
+  "lower_level_loader_one_official_is_not_supported_cli_bypass": true,
+  "automatic_source_precedence": false,
+  "exact_manual_override_exists": true,
+  "manual_override_proves_timezone": false,
+  "range_supported_currently": false,
+  "current_last_verified_5008_coverage": "14/15",
+  "current_plan_id": null,
+  "exact_or_range_evidence_apply_ready": false,
+  "recommended_sequence": [
+    "explicitadjudicationpolicy/evidencecontract",
+    "preparationonlycertificate",
+    "separatelyapprovedoperatoruniversalguardintegration",
+    "regressionandindependentreviewthenactivation"
+  ],
+  "writes": [
+    "this plan and companion summary"
+  ],
+  "runtime_mutations": false,
+  "web_refetches": 0,
+  "tests_run": false
+}
