@@ -13,6 +13,7 @@ import time
 from dataclasses import asdict
 from pathlib import Path
 
+from toto_ai.external_odds.targets import parse_target_drawing
 from toto_ai.optimizer.coupon_probabilities import top_probability_coupons
 from toto_ai.research import sports_v3_retrospective_predict as predictor
 from toto_ai.research.closed_market_scenario_replay import validate_input
@@ -27,6 +28,7 @@ from toto_ai.sports_stats.v3_probability import (
 )
 
 REQUEST_KIND = "FROZEN_SPORTS_V3_PACKAGE_RESEARCH_REQUEST_V1"
+CURRENT_REQUEST_KIND = "CURRENT_SEALED_SPORTS_V3_PACKAGE_RESEARCH_REQUEST_V1"
 SELECTION = "TOP_COUPON_PRODUCT_PROBABILITY"
 FLAGS = dict(
     operator_compatible=False,
@@ -105,14 +107,76 @@ def bind_rows(scenario, rows):
     )
 
 
+def _current_bk(final):
+    target = parse_target_drawing(
+        final["payload"], predictor._time(final["captured_at"])
+    )
+    _check(target.drawing_number == final["drawing_number"] == 5008, "current drawing")
+    events = tuple(sorted(target.events, key=lambda event: event.event_order))
+    _check([event.event_order for event in events] == list(range(15)), "current order")
+    return events, tuple(tuple(event.bk_probabilities) for event in events)
+
+
+def bind_current_rows(final, rows):
+    events, bk = _current_bk(final)
+    _check(
+        [row["event_order"] for row in rows] == list(range(15)),
+        "ordered current roster",
+    )
+    mixed, applied, changed, reasons = [], 0, 0, []
+    for i, (event, row) in enumerate(zip(events, rows, strict=True)):
+        _check(
+            row["target_event_id"] == event.event_id
+            and row["bk_input_sha256"] == final["probability_input_sha256"]
+            and tuple(row["bk_probabilities"]) == bk[i],
+            "current input/BK binding",
+        )
+        probabilities = _bk(row["probabilities"])
+        _check(
+            sum(abs(a - b) for a, b in zip(probabilities, bk[i], strict=True)) <= 0.2,
+            "Sports L1 cap",
+        )
+        _check(row["status"] in {"SPORTS_APPLIED", "BK_FALLBACK"}, "prediction status")
+        if row["status"] == "BK_FALLBACK":
+            _check(
+                probabilities == bk[i] and row["reliability"] == 0.0,
+                "exact BK fallback",
+            )
+            reasons.append(
+                dict(event_order=i, reason=row["fallback_or_application_reason"])
+            )
+        else:
+            _hash(row["feature_sha256"])
+            _check(
+                bool(row["provider_fixture_id"]) and 0 < row["reliability"] <= 0.2,
+                "approved Sports feature",
+            )
+            applied += 1
+        changed += probabilities != bk[i]
+        mixed.append(probabilities)
+    return (
+        bk,
+        tuple(mixed),
+        dict(
+            denominator=15,
+            sports_applied=applied,
+            changed_probability_rows=changed,
+            bk_fallback=15 - applied,
+            fallback_reasons=reasons,
+        ),
+    )
+
+
 def _sports(root, request, scenario):
     def read(ref):
         return predictor.read_checked(root, ref["path"], ref["file_sha256"])
 
     pred = read(request["sports_predictions"])
     _sealed(pred)
+    current = request["kind"] == CURRENT_REQUEST_KIND
     _check(
-        pred["kind"] == predictor.KIND and all(pred[k] is False for k in FLAGS),
+        pred["kind"] == (predictor.CURRENT_KIND if current else predictor.KIND)
+        and all(pred[k] is False for k in FLAGS),
         "non-operator prediction contract",
     )
     _check(
@@ -152,15 +216,19 @@ def _sports(root, request, scenario):
     )
     # Deterministic inference-only verification of already frozen probabilities.
     # No optimizer fit, labels, new prediction output or source mutation.
-    verified = predictor.predict_request(
-        root, pred_request["path"], pred_request["file_sha256"]
-    )
+    verified = (
+        predictor.predict_current_sealed_request
+        if current
+        else predictor.predict_request
+    )(root, pred_request["path"], pred_request["file_sha256"])
     _check(
         verified["rows"] == pred["rows"]
         and verified["model_payload_sha256"] == model["sha256"],
         "identity/provenance/numerical prediction replay mismatch",
     )
-    bk, mixed, coverage = bind_rows(scenario, pred["rows"])
+    bk, mixed, coverage = (bind_current_rows if current else bind_rows)(
+        scenario, pred["rows"]
+    )
     return bk, mixed, coverage
 
 
@@ -205,20 +273,21 @@ def compare_frozen_predictions(
     )
     request = predictor.read_checked(root, request_path, expected_request_sha256)
     _check(
-        request["kind"] == REQUEST_KIND
+        request["kind"] in {REQUEST_KIND, CURRENT_REQUEST_KIND}
         and request["selection"] == SELECTION
         and (request["bank"], request["stake"], request["category"], request["count"])
         == (4980, 30, 13, 166),
         "research package contract",
     )
+    current = request["kind"] == CURRENT_REQUEST_KIND
+    scenario_ref = request["final_input"] if current else request["scenario_input"]
     scenario = predictor.read_checked(
-        root,
-        request["scenario_input"]["path"],
-        request["scenario_input"]["file_sha256"],
+        root, scenario_ref["path"], scenario_ref["file_sha256"]
     )
-    native = validate_input(scenario)
+    native = None if current else validate_input(scenario)
     _check(
-        scenario["market"]["number"] == request["drawing_number"],
+        (scenario["drawing_number"] if current else scenario["market"]["number"])
+        == request["drawing_number"],
         "requested drawing binding",
     )
     out = predictor._path(root, output_dir)
@@ -234,14 +303,18 @@ def compare_frozen_predictions(
         stake=30,
         count=166,
         drawing_number=request["drawing_number"],
-        scenario_input_file_sha256=request["scenario_input"]["file_sha256"],
-        scenario_input_payload_sha256=scenario["sha256"],
+        scenario_input_file_sha256=scenario_ref["file_sha256"],
+        scenario_input_payload_sha256=(
+            scenario["snapshot_sha256"] if current else scenario["sha256"]
+        ),
         request_file_sha256=expected_request_sha256,
         source_captured_at=scenario["captured_at"],
-        source_closed_at=scenario["source_closed_at"],
-        quote_available_at=scenario["quote_available_at"],
+        source_closed_at=(None if current else scenario["source_closed_at"]),
+        quote_available_at=(None if current else scenario["quote_available_at"]),
         evidence_grade="UNVERIFIED_ASOF_SENSITIVITY",
-        pool_crowd_source_sha256=digest(scenario["market"]),
+        pool_crowd_source_sha256=digest(
+            scenario["payload"] if current else scenario["market"]
+        ),
         packages={},
         evaluations={},
         sports_status="NOT_CHECKED",
@@ -294,7 +367,11 @@ def compare_frozen_predictions(
     previous = signal.signal(signal.SIGALRM, alarm)
     signal.setitimer(signal.ITIMER_REAL, max_seconds)
     try:
-        bk = tuple(tuple(r) for r in native.ev.true_probabilities)
+        bk = (
+            _current_bk(scenario)[1]
+            if current
+            else tuple(tuple(r) for r in native.ev.true_probabilities)
+        )
         bk_coupons = package("BK", bk)
         try:
             _, mixed, coverage = _sports(root, request, scenario)

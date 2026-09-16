@@ -75,6 +75,18 @@ short task-local inputs, exact write scope and a minimal handoff. Escalation
 requires a concrete blocker and a parent decision, not repeated full audits.
 No secrets or inherited full chat context. Production operations remain parent-only.
 
+Temporary delegated workers are disposable only after their one bounded job:
+never resume one for a new job. A real new scoped job requires a fresh spawn
+with approved `model` and `reasoning_effort` explicitly requested,
+`fork_context=false`, and a minimal saved-file handoff; close it on completion.
+A returned agent ID is not evidence of requested or effective model settings;
+resume accepts only an existing ID and cannot change its model. On a UI-reported
+mismatch, close before assigning more work, preserve files/handoff, and report
+it. No replacement without a real scoped job, no full-chat fork, no more
+than two temporary workers, and no breach of the existing concurrent-worker cap
+that includes active permanent children. This does not permit deletion, archiving, model
+change, or reassignment of the two existing user-owned tasks below.
+
 Use [the routing contract](NATIVE_CODEX_ROUTING.md) and its local machine-readable
 policy. These are parent-enforced instructions, not an installed cost router or
 a security sandbox. No native TOML config is installed while schema support is
