@@ -1,3 +1,7 @@
+# Explicit partial research inference, not relaxed native admission — 2026-09-16T10:26:36.191463+00:00
+
+TOTOAI-RESUME-20260915: a separate inactive fixed-model adapter preserves full120 evaluation denominator using21 independently reviewed Sports rows plus99 exact BK fallbacks. Native complete-group/production guards are not weakened; missing fixture/timing/classes are not invented. Original model/transform/code hashes remain bound, identity updates use distinct reviewed copies; results are loaded only after immutable probabilities are saved. This mixed unknown-asof domain is nonblind research, not calibrated football chances or operator eligibility. Scores worsened: no automatic promotion. Timing-envelope documents remain proposals with no activated policy.
+
 # Research A5 numerical reuse and evidence boundary — 2026-09-16T09:47:26.759964+00:00
 
 Task TOTOAI-RESUME-20260915. Native A5 numerical kernel is shared without changing production admission; researcher schema/model domain remains distinct and is rejected by native model admission. Partial research groups preserve the15-slot denominator through explicit exclusions, not fabricated rows.17current entity-identity reviews permit only derived identity_status updates; unknown taxonomy remains null. Current fit is sensitivity research with known/unknown as-of provenance, never a prospective/profit claim. Exact artifact/code/hash bindings prevent silent later code substitution. Evidence: plans/TOTOAI-RESUME-20260915/reviewed-cut-submission.json.

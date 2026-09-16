@@ -1,3 +1,7 @@
+# Partial Sports v3 inference/scoring complete — 2026-09-16T10:26:36.191463+00:00
+
+TOTOAI-RESUME-20260915: step1 of existing seven-stage model plan complete; probability-score subset of step2 complete/reviewed, but Sports scores worsened. Five-arm comparison, probability/optimizer improvements and separately accepted integration remain unfinished. No live activation. Evidence `plans/TOTOAI-RESUME-20260915/R3-partial-predict-submission.json`.
+
 # Model-research execution milestone — 2026-09-16T09:47:26.759964+00:00
 
 Task TOTOAI-RESUME-20260915. P0/P1 diagnostics and inactiveP2 repair complete/reviewed. R2a older corpus and R3 actual research fit complete/reviewed. Evaluation of frozen weights on4999–5006, genuine five-arm package comparison, and optional independently accepted sidecar deployment remain unfinished. No new primary scheduler or operational SportsV3 activation. Evidence: plans/TOTOAI-RESUME-20260915/reviewed-cut-submission.json.
