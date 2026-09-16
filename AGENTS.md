@@ -49,6 +49,7 @@ rules below:
   repository;
 - project-local skills stored in this repository;
 - `openai-docs` for public OpenAI documentation;
+- Native Codex subagents only under the commit/PR-gated routing exception below;
 - browser access to public sites and public web research;
 - public sports and public data APIs;
 - No Codex heartbeat is authorized: the owner removed chat heartbeats. Use
@@ -94,11 +95,38 @@ authorize external-model execution. No runtime approval can override this
 prohibition; changing it requires the project owner to deliberately edit and
 commit this policy.
 
-TotoAI work may use only the model already hosting the current Codex task plus
-local repository tools and the explicitly allowlisted non-LLM public services.
-Do not start model-backed subagents. Static instruction files distributed under
+The current task keeps its already-hosting model. Additional model inference
+is prohibited except for the narrowly authorized native Codex routing below.
+Local repository tools and allowlisted non-LLM public services remain allowed.
+Static instruction files distributed under
 `claude-plugins-official` and all other global third-party skill bundles are not
 authorized; use project-local skills instead.
+
+### Native Codex routing — owner authorization 2026-09-16
+
+The owner approved exactly `gpt-5.6-luna`/`low` for narrow routine work,
+`gpt-5.6-terra`/`medium` for bounded code, and `gpt-6-astra`/`high` for complex
+mathematics, architecture and critical review. No other worker models are
+authorized. The main model is unchanged. This native Codex exception does not
+authorize any external model, proxy, provider/auth override or global change.
+
+Only the parent operations task named below may dispatch native Codex subagents,
+and only after this policy is committed and that commit is exposed through a PR.
+Before dispatch, verify the native tool supports explicit `model`,
+`reasoning_effort`, and `fork_context=false`; if unavailable, report the blocker,
+never substitute an LLM CLI, service, new user-owned task or worktree.
+Verify the canonical cwd is `/Users/turshevr/toto-ai` for every worker and shell
+call. Allow at most two concurrent delegated workers, including active existing
+child tasks; no nested delegation. Give each worker one bounded attempt with
+short task-local inputs, exact write scope and a minimal handoff. Escalation
+requires a concrete blocker and a parent decision, not repeated full audits.
+No secrets or inherited full chat context. Production operations remain parent-only.
+
+Use [the routing contract](memory-bank/NATIVE_CODEX_ROUTING.md) and its local
+machine-readable policy. They are parent-enforced instructions, not an installed
+cost router or a security sandbox. No native TOML config is installed while its
+schema support is unverified. This authorization applies only to TotoAI; the two
+existing user-owned child tasks retain their separate restrictions below.
 
 ### Existing native Codex tasks — owner authorization 2026-09-05
 
@@ -116,7 +144,9 @@ Codex app `send_message_to_thread`, `read_thread`, and `wait_threads` tools on
 host `local`. No other task IDs, new tasks/worktrees, fork, setup recreation,
 or alternative service/tool to bypass a denied action are authorized.
 Each task uses only its already-hosting Codex model; no model/provider override.
-No nested or model-backed SUBAGENTS may be started inside any of these tasks.
+The two existing child tasks may not start nested or model-backed subagents.
+Only their parent has the separate, commit/PR-gated native routing authorization
+above; it does not change either existing child's model or worktree scope.
 This narrowly permits same-project minimal handoffs and local repository data
 between these existing native task contexts, not external-model inference or
 transmission. Never include credentials, tokens, secret files, or unrelated data.

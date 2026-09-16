@@ -1,3 +1,12 @@
+# Native project routing — reviewed local finalization 2026-09-16T11:09:36.391380+00:00
+
+Task **TOTOAI-RESUME-20260915**. Routing-only checkpoint; model/operations status below remains timestamped history, not newly verified runtime.
+- DONE: owner-approved project-only Luna/low (routine), Terra/medium (bounded code), Astra/high (critical) instruction policy independently ACCEPT;21focusedtests+RuffPASS; exact reviewed files unchanged. Main model/global config/production untouched; no automatic router, TOML installation, savings or hard-sandbox claim.
+- GATES: parent now explicitly attests callable native model/reasoning_effort/fork_context fields. No newly authorized model worker launched. Max2 including active children; fork_context=false/no nested/external models/providers/Yandex. Existing child models/worktrees/scopes preserved.
+- PUBLICATION: prepare local routing commit only. Existing remote approvals confirmed prior completed cuts, not explicit authorization to transmit this new policy; push/draftPR is BLOCKED_PENDING_EXPLICIT_REMOTE_APPROVAL. Required commit+PR activation gate remains closed until separately evidenced. Intended publish_pr=false; no merge requested in this job.
+- EVIDENCE/NEXT: `plans/TOTOAI-RESUME-20260915/native-model-routing-submission.json`; final local commit/status receipt at `reports/rehearsal/TOTOAI-RESUME-20260915/native-routing-publication/receipt.json`. Ask owner/parent for explicit scoped push+draftPR approval, then continue same finalization without repeat audit/tests.
+- CONCURRENT WORK: forum/screenshot research is separate and unfinished; exclude all its files and private participant/credential material. No DB/scheduler/timing-evidence/inference changes. Model-improvement plan remains unchanged and unfinished.
+
 # Reviewed partial Sports v3 evaluation — 2026-09-16T10:26:36.191463+00:00
 
 Task **TOTOAI-RESUME-20260915**. Current checkpoint; earlier blocks below are historical, not instructions to repeat finished work.
