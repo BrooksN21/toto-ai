@@ -1,3 +1,9 @@
+# Portable Sports-v3 exporter regression published — 2026-09-16
+
+Task **TOTOAI-RESUME-20260915**. Commit `d50a9a59fbf3a87503aff3d079d995fb5f998e74` adds only the reviewed standalone `tmp_path` regression for the current-feature exporter and its three fix/review handoffs. The exporter source remains unchanged. The regression uses non-terminal missing orders, calls real `derive_reviewed()`, and asserts per-order feature association plus final-input-file, declared probability-input, and source-evidence hashes. Focused verification: `1 passed`; Ruff passed.
+
+The earlier exporter-portability test-gap blocker is **SUPERSEDED** by the reviewed assertions. The commit was pushed to `codex/native-model-routing-20260916`; draft [PR26](https://github.com/BrooksN21/toto-ai/pull/26) is OPEN and points to this exact head. No merge, PR publication, scheduler, DB, model activation, watcher, gate, consent, package, or wagering change occurred. The operational ledger, coordination metadata, context, source exporter file, and unrelated live/research artifacts remain excluded and dirty where pre-existing; parent retains the 5008 17:00 monitoring checkpoint.
+
 # Same-engine replay research ready for publication — 2026-09-16
 
 For **TOTOAI-RESUME-20260915**, R4 same-engine research is complete as a
