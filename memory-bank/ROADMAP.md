@@ -1,3 +1,7 @@
+# Model-research execution milestone — 2026-09-16T09:47:26.759964+00:00
+
+Task TOTOAI-RESUME-20260915. P0/P1 diagnostics and inactiveP2 repair complete/reviewed. R2a older corpus and R3 actual research fit complete/reviewed. Evaluation of frozen weights on4999–5006, genuine five-arm package comparison, and optional independently accepted sidecar deployment remain unfinished. No new primary scheduler or operational SportsV3 activation. Evidence: plans/TOTOAI-RESUME-20260915/reviewed-cut-submission.json.
+
 # Completed research milestone — 2026-09-15T20:53:01.582880+03:00
 
 TOTOAI-RESUME-20260915: R1 completed8draws/24native scenario packages + independentfixreview. R2genericadapterfixes accepted; full sportsdata/fit/fiveway/sidecar incomplete. NextR2a eligibleolderroster+mapping/requestgaps per plans/TOTOAI-RESUME-20260915/model-improvements-next.md. Unknown-asofscenarios are not causalbacktests or profitability evidence; no productionactivation.

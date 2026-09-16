@@ -1,0 +1,11 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "request_url": "https://drive.usercontent.google.com/uc?id=1jcL1R2DfP5RMNISP25glqYv27C5q3UQ-&export=download",
+  "fetched_at_utc": "2026-09-15T18:20:12.239962+00:00",
+  "curl_exit": 0,
+  "headers": "HTTP/2 303 \ncontent-type: application/binary\ndate: Tue, 15 Sep 2026 18:20:12 GMT\nlocation: https://drive.usercontent.google.com/download?id=1jcL1R2DfP5RMNISP25glqYv27C5q3UQ-&export=download\ncontent-length: 0",
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "byte_count": 0,
+  "pdf": false,
+  "source_chain": "OfficialhomeclubWPpost11378 -> publicDriveviewer -> viewer-provided downloadURL; anonymousrequests3of3"
+}

@@ -1,0 +1,30 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "completed_at": "2026-09-15T18:50:39.016027+00:00",
+  "status": "IMPLEMENTED_PENDING_INDEPENDENT_HUYGENS_REVIEW",
+  "finding": "P2-NORMALIZATION-REBIND",
+  "work_summary": "Normalize external models once; validate already bound immutable models without changing float values; retain exact expected/stored/payload checksum comparisons and canonical semantic rebinding for all other fields. No objective/search/exposure/default changes.",
+  "files": {
+    "/Users/turshevr/toto-ai/src/toto_ai/research/feasible_robust_exchange.py": "959f6f223da3514de80d9e915d15957fa1faa7a8ddd8730ca513e240261448f7",
+    "/Users/turshevr/toto-ai/tests/test_feasible_robust_exchange.py": "60a30f55fd287df803d9459f7a8f03173e257acd69469f3fab22627725aebf3d"
+  },
+  "baseline_source_sha256": "376f79bc7650cc153099a9b8240f791dbc74315a5af10028192526c207ab98fe",
+  "baseline_tests_sha256": "304f3d7edc519bf05de0ce37382d53043041ce8e8a976e6c9ede6e3c3f53b513",
+  "verification": {
+    "RED": "1failed/14deselected at input binding mismatch before sourcefix",
+    "focused_pytest": "42passed in final bounded run; exact output focused-tests.log",
+    "ruff": "two changedfiles PASS",
+    "search_body_ast_identical": true,
+    "counterexample_original_sha_preserved": "20b18372e387c41555497852f12a4d1cc958d7da78b4048a83882455c920040c",
+    "normalize_once_spy": true,
+    "one_ulp_tamper_rejected": true,
+    "rehashed_invalid_models_bank_source_rejected": true,
+    "existing_wrong_expected_input_source_constraint_timeout_tests_preserved": true
+  },
+  "float_semantics": "No rounding/quantization. Unit mass semantic check allows at most2ULP(1.0) residual from threeIEEE754 divisions; stored values unchanged. Exact SHA checking occurs first and rejects one-ULP tampering. Properly rehashed non-unit/invalid models still rejected.",
+  "scope": "Only own research P2module/test +fixreports; no Sportsdata/source/productionoptimizer/DB/scheduler/ACTIVE_PLAN/Git/publication changes. No8drawingruns.",
+  "source_provenance": "source_input_sha256 attribution unchanged; no new claim verifying drawingcontent from its SHA alone",
+  "patch_path": "/Users/turshevr/toto-ai/reports/rehearsal/TOTOAI-RESUME-20260915/P2-normalization-fix/fix.patch",
+  "next_action": "Huygens independently re-review these exact two filehashes and new regressions; do not treat implementer checks as approval",
+  "running_command": null
+}

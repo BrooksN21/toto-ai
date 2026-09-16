@@ -1,0 +1,100 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "job": "new home-club source context only",
+  "request_url": "https://www.willandrovers.co.uk/wp-json/wp/v2/posts?search=Westbury&per_page=6&_fields=id,date,date_gmt,modified,modified_gmt,link,title,content",
+  "fetched_at_utc": "2026-09-15T18:18:11.292987+00:00",
+  "sha256": "4a6c933843246adc6f8db74bbda1eba57c471947de69179e427f398fe44ae1f3",
+  "headers": "HTTP/2 200 \r\ndate: Tue, 15 Sep 2026 18:18:05 GMT\r\ncontent-type: application/json; charset=UTF-8\r\nserver: Apache\r\nx-powered-by: PHP/8.3.33\r\nx-robots-tag: noindex\r\nx-content-type-options: nosniff\r\naccess-control-expose-headers: X-WP-Total, X-WP-TotalPages, Link\r\naccess-control-allow-headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type\r\nx-wp-total: 25\r\nx-wp-totalpages: 5\r\nlink: <https://www.willandrovers.co.uk/wp-json/wp/v2/posts?search=Westbury&per_page=6&_fields=id%2Cdate%2Cdate_gmt%2Cmodified%2Cmodified_gmt%2Clink%2Ctitle%2Ccontent&page=2>; rel=\"next\"\r\nallow: GET\r\nvary: Origin,Accept-Encoding\r\nx-provided-by: StackCDN\r\nx-origin-cache-status: MISS\r\nx-cdn-cache-status: MISS\r\nx-via: FRA1",
+  "body_json": [
+    {
+      "id": 11378,
+      "date": "2026-09-14T19:56:54",
+      "date_gmt": "2026-09-14T18:56:54",
+      "modified": "2026-09-14T19:56:54",
+      "modified_gmt": "2026-09-14T18:56:54",
+      "link": "https://www.willandrovers.co.uk/download-or-view-willand-rovers-f-c-v-westbury-utd-matchday-programme/",
+      "title": {
+        "rendered": "Download or View – Willand Rovers F.C v Westbury Utd – Matchday Programme"
+      },
+      "content": {
+        "rendered": "<p><a href=\"https://drive.google.com/file/d/1jcL1R2DfP5RMNISP25glqYv27C5q3UQ-/view?usp=drive_link\">Click here to view or download the programme</a></p>\n",
+        "protected": false
+      }
+    },
+    {
+      "id": 11371,
+      "date": "2026-09-08T05:01:35",
+      "date_gmt": "2026-09-08T04:01:35",
+      "modified": "2026-09-08T05:01:35",
+      "modified_gmt": "2026-09-08T04:01:35",
+      "link": "https://www.willandrovers.co.uk/match-report-wrfc-v-larkhall/",
+      "title": {
+        "rendered": "Match Report WRFC v LARKHALL"
+      },
+      "content": {
+        "rendered": "<p class=\"s3\"><span class=\"s2\">Willand vs Larkhall</span></p>\n<p class=\"s3\">I know it&#8217;s a cliché, but Non-League football really can be explained using Greek Mythology. Hear me out.</p>\n<p class=\"s3\">Sisyphus is a great example.</p>\n<p class=\"s3\">For those who need reminding: Sisyphus was a Corinthian king cunning enough to cheat death twice, and arrogant enough that the gods decided enough was enough. His punishment was eternity spent pushing a boulder up a hill, only to watch it roll back down every time he got near the top.</p>\n<p class=\"s3\">Forever. No finish line, no moment where the job is finally done. Just pushing. There is no evidence that the hill was in Larkhall though.</p>\n<p class=\"s3\">But tell me that this doesn&#8217;t sound like another season in Non-League Football. The continuous rise, followed by the inevitable fall.</p>\n<p class=\"s3\">It&#8217;s not the only example though.</p>\n<p class=\"s3\">If Sisyphus is the eternal grind of non-league, Icarus is the cautionary tale. The flight that goes brilliantly right up until it doesn&#8217;t. Nobody tells this story better than Truro City.</p>\n<p class=\"s3\">Under an ambitious owner, a club went from county football to the brink of the Football League in the space of a few extraordinary seasons, winning titles and cups almost every year and collecting five promotions in six seasons on the way to the second tier of non-league (that&#8217;s only two steps away from playing Crewe!)</p>\n<p class=\"s3\">But the wings were made of wax and ambition, and the closer they got to the sun; well you get the idea. Eventually the business empire that had funded the rise could no longer sustain it, leading to the club&#8217;s finances unravelling. Thankfully the club has since regained both its wings and its footing, but the shape of the story is unmistakable: not a slow fade, but a rise so steep it couldn&#8217;t hold, followed by a fall precisely as sudden as the climb. Ambition isn&#8217;t the problem. It&#8217;s forgetting there&#8217;s a sun up there at all.</p>\n<p class=\"s3\">And then we have Achilles&#8217; Heel. In Greek mythology, Achilles was dipped in the River Styx as a baby to make him invulnerable — but his mother held him by the heel to do it, so that one spot never touched the water. It became the only part of him that could be hurt, and it&#8217;s exactly where he was eventually killed. Hence &#8220;Achilles&#8217; heel&#8221;, the one weakness in something otherwise strong. Every team has one. The single flaw that undoes hours of otherwise perfectly good work, the weakness so specific and so repeated that opposition fans clock it before kick-off.</p>\n<p class=\"s3\">For a season, a few years ago, for Willand, it was the thing that we still don&#8217;t talk about.</p>\n<p class=\"s3\">The Whites would compete into injury time, either holding a lead or at least having a point in the bag when — whoosh — one set-piece, one moment of concentration lost, one moment of brilliance from an ex-player and we suddenly conceded. Our own Achilles&#8217; heel. But I&#8217;ve said enough. I don&#8217;t want to upset the Gods.</p>\n<p class=\"s3\">Thankfully the days of ancient Greece are long behind us now and Willand came into today&#8217;s game following a Bank Holiday weekend that saw them progress in the FA Trophy against Falmouth before winning a hard earned point against Devon rivals Bideford.</p>\n<p class=\"s3\">Opponents Larkhall Athletic came into the game with big wins over Westbury and Dorchester buoying the Larks after a mixed start to their season.</p>\n<p class=\"s3\">Manager Ben Watson continued to use the full depth of his squad and Willand made the perfect start, with Bateson picking up the ball after excellent work from Rooke, with the former lifting the ball over Armstrong in the Larkhall goal with both precision and finesse to send the hardy few into raptures.</p>\n<p class=\"s3\">The second goal arrived on 27 minutes, Zack Williams taking a pass in his stride before driving towards goal and calmly slotting the ball into the bottom right corner. Rovers continued to push for a third before the interval but the scoreline held at the break.</p>\n<p class=\"s3\"><span class=\"s2\">Half Time — Willand Rovers 2-0 Larkhall Athletic</span></p>\n<p class=\"s3\">The second half brought a slightly scrappier edge, with a mini flare-up in the corner on 52 minutes resulting in yellow cards for players on both sides as tempers briefly ran hot. Larkhall found a route back into the game on 63 minutes, a move down the left flank leading to a well-struck effort from eighteen yards that gave Seedhouse little chance.</p>\n<p class=\"s3\">The goal should have given the home team a reminder not to take their foot off the gas, but unfortunately Willand responded by doing exactly that as the visitors pushed for the equaliser.</p>\n<p class=\"s3\">Nerves were settled on 81 minutes when Kempster converted from the spot to restore the two-goal cushion and put the result beyond real doubt.</p>\n<p class=\"s3\">There was still time for one more goal though. MacIver-Redwood rose unchallenged at a corner to round off the scoring and finally settle the 90th minute nerves.</p>\n<p class=\"s3\">In the end it was a comfortable win that hid a lack of concentration in the second half that on another day could have seen a different result.</p>\n<p class=\"s3\">But that’s the thing about Greek Tragedies; They aren&#8217;t always tragic.</p>\n<p class=\"s3\">For every Trojan Horse, for every Pandora&#8217;s box and for every multi-headed Hydra, there is Perseus defeating Medusa, or Theseus outsmarting the Minotaur.</p>\n<p class=\"s3\">Football fans will almost inevitably look at the worst case scenarios.</p>\n<p class=\"s3\">But, for today at least, Willand were more akin to Zeus than to Hades.</p>\n<p class=\"s3\"><span class=\"s2\">Full Time — Willand Rovers 4-1 Larkhall Athletic</span></p>\n",
+        "protected": false
+      }
+    },
+    {
+      "id": 10942,
+      "date": "2026-02-28T10:01:50",
+      "date_gmt": "2026-02-28T10:01:50",
+      "modified": "2026-02-28T10:01:50",
+      "modified_gmt": "2026-02-28T10:01:50",
+      "link": "https://www.willandrovers.co.uk/match-preview-shaftesbury-a-28-2-26/",
+      "title": {
+        "rendered": "Match Preview &#8211; Shaftesbury (A) 28/2/26"
+      },
+      "content": {
+        "rendered": "<p>Match Preview<br />\nWestbury United v Willand Rovers</p>\n<p>Rovers are once again in action and it’s on the road as we take on the White Horse Men of Westbury United in the Southern Football League Division One South with a 3 pm KO!</p>\n<p>Last time out for Rovers, it was under the lights as we took on Shaftesbury in a rearranged fixture. An important game in hand for Willand, the lads made the most of it as three very vital points were secured as Calum Thomas &amp; Louis Jagger-Cane opened their Rovers accounts as we find ourselves in touching distance of climbing out of the relegation zone.</p>\n<p>Meanwhile, this weekend’s hosts sit in the middle of the pack. Safe enough from the claws of relegation but adrift of a shot at playoff magic. Ricky Hulbert’s men have cemented themselves as a regular in the division with their fourth successive season in the One South.</p>\n<p>Last time out for Westbury, it was a midweek visit up the M5 to Sporting Club Inkberrow. However, it was the hosts who walked away with all three on Tuesday night with Aidan Clark &amp; Jay Higgins-Pugsley netting for Inkberrow. Westbury redeemed themselves through Ali Sen who made sure the hosts couldn’t hold onto a clean sheet.</p>\n<p>One to watch for the White Horse Men would have to be Josh Jenkins, formerly of the Bristol Rovers Academy. Jenkins is in good form at the moment with 2 in 5 but will be looking to up his numbers at the business end of the campaign to give the hosts a light at the end of the tunnel towards the playoffs.</p>\n<p>The last time Rovers took on Westbury was back in November, when Rovers were reduced to 10 within the first half an hour. However, in the 93rd minute, Bradley Selwood provided a winner to give the visitors all three on a difficult afternoon of football at the Street.</p>\n<p>The Fun Bus is in operation this weekend for the trip into Wiltshire, departing Silver Street at half 11, with a fare of £15. Contact Mike Hawkins or the club&#8217;s socials to book your place on the bus!</p>\n<p>#WeAreRovers #COYR<img loading=\"lazy\" decoding=\"async\" class=\"alignnone size-medium wp-image-10943\" src=\"https://www.willandrovers.co.uk/wp-content/uploads/2026/02/WRFC-25-26-Graphics-NEW-1-240x300.png\" alt=\"\" width=\"240\" height=\"300\" srcset=\"https://www.willandrovers.co.uk/wp-content/uploads/2026/02/WRFC-25-26-Graphics-NEW-1-240x300.png 240w, https://www.willandrovers.co.uk/wp-content/uploads/2026/02/WRFC-25-26-Graphics-NEW-1-819x1024.png 819w, https://www.willandrovers.co.uk/wp-content/uploads/2026/02/WRFC-25-26-Graphics-NEW-1-768x960.png 768w, https://www.willandrovers.co.uk/wp-content/uploads/2026/02/WRFC-25-26-Graphics-NEW-1-102x128.png 102w, https://www.willandrovers.co.uk/wp-content/uploads/2026/02/WRFC-25-26-Graphics-NEW-1-26x32.png 26w, https://www.willandrovers.co.uk/wp-content/uploads/2026/02/WRFC-25-26-Graphics-NEW-1.png 1080w\" sizes=\"auto, (max-width: 240px) 100vw, 240px\" /></p>\n",
+        "protected": false
+      }
+    },
+    {
+      "id": 10860,
+      "date": "2026-01-30T13:44:01",
+      "date_gmt": "2026-01-30T13:44:01",
+      "modified": "2026-01-30T13:44:01",
+      "modified_gmt": "2026-01-30T13:44:01",
+      "link": "https://www.willandrovers.co.uk/rovers-travel-to-high-flying-frome/",
+      "title": {
+        "rendered": "Rovers travel to high-flying Frome"
+      },
+      "content": {
+        "rendered": "<h2 style=\"text-align: center;\">Match Preview: Frome Town v Willand Rovers</h2>\n<h3 style=\"text-align: center;\">After half of Mid Devon had been washed away by storms and flooding, the Rovers squad are still intact and will travel to league leaders Frome Town this weekend in the Southern Football League Division One South with a 3 pm KO!</h3>\n<p style=\"text-align: center;\">It’s been a little while since rovers were last in action as the weather has hindered progress temporarily with our last outing being on the 12th January against Melksham Town. Two postponed fixtures against Shaftesbury and Mousehole will now be rearranged in due course.</p>\n<p style=\"text-align: center;\">Back to the game at hand, Willand head to Badgers Hill looking to end the month positively but the hosts on Saturday have ambitions to bounce right back into the Premier Division with the Robins sitting on 70 points after 28 games.</p>\n<p style=\"text-align: center;\">As Frome’s one-year stay in the top (southern) flight came to an end, boss Danny Greaves has ensured that it’ll only be a cameo back in the Division One with some of the best players in the region flocking to the Robins nest.</p>\n<p style=\"text-align: center;\">One of those is Archie Ferris who’s known for his goal-scoring ability in the division in previous seasons and the 25/26 campaign is no different. Only recently he scored a hat trick away from home against fellow automatic promotion battling side Winchester City, an important cog in the Frome machine.</p>\n<p style=\"text-align: center;\">Our last outing against Frome was Ben Watson’s first game in charge at the helm of Rovers, a new era begun with all three points with River Allen’s quick thinking saw it slide into the bottom left and all three points recovered in a rare defeat for the visitors. However, our last visit to Badgers Hill was unique with Westbury United using it as a temporary base whilst their ground was undergoing a few safety checks.</p>\n<p style=\"text-align: center;\">The Fun Bus is in operation for this fixture with the departure time from Silver Street being 11:30 am, and the fare sitting at £15, do let Mike Hawkins or the club&#8217;s socials know if you’d like to book a seat on board.</p>\n",
+        "protected": false
+      }
+    },
+    {
+      "id": 10657,
+      "date": "2025-10-29T16:33:35",
+      "date_gmt": "2025-10-29T16:33:35",
+      "modified": "2025-10-29T16:33:35",
+      "modified_gmt": "2025-10-29T16:33:35",
+      "link": "https://www.willandrovers.co.uk/download-or-view-willand-rovers-f-c-v-westbury-matchday-programme/",
+      "title": {
+        "rendered": "Download or View – Willand Rovers F.C v Westbury – Matchday Programme"
+      },
+      "content": {
+        "rendered": "<p><a href=\"https://drive.google.com/file/d/1YEZ2vsBFYcOTuUnOzwZavdOR8LjOhnoh/view?usp=drive_link\">Click here to view or download the programme</a></p>\n",
+        "protected": false
+      }
+    },
+    {
+      "id": 10290,
+      "date": "2025-03-13T16:40:39",
+      "date_gmt": "2025-03-13T16:40:39",
+      "modified": "2025-03-13T16:40:39",
+      "modified_gmt": "2025-03-13T16:40:39",
+      "link": "https://www.willandrovers.co.uk/match-preview-wrfc-vs-bishops-cleeve/",
+      "title": {
+        "rendered": "Match Preview WRFC Vs Bishops Cleeve"
+      },
+      "content": {
+        "rendered": "<p>Willand Rovers v Bishops Cleeve</p>\n<p>In what feels like an eternity (a fortnight) we are back home this weekend in the Pitching In Southern Football League Division One South where our opponents will be Bishops Cleeve with a 3 pm KO at the Stan Robinson Stadium.</p>\n<p>Last week for Rovers it was a trip to neutral territory where Westbury was taking temporary residence at Badgers Hill. Only one goal could separate both sides and that would come in the second half with the “hosts” given a free kick just shortly after play resumed with Charlie Wooding firing into the bottom right past Burton’s dive down to try and divert it.</p>\n<p>The Mitres make the mighty journey down to Mid Devon on Saturday with Paul Collicutt’s men working towards their goals come April 26th with the season closing in and in single digits. Their last game was a home clash to Bashley in which they sealed all three with 3 goals on the afternoon from Bower’s brace and Evans-Hariott’s sealer.</p>\n<p>It is not the first time the Green Army has made the trip down south as in the FA Trophy we were tied with them as our campaign in the competition was halted at the first hurdle as they advanced through to the next stages.</p>\n<p>The actual last time out between both sides was at Kayte Lane in early December in which a 0-0 draw was hard worked by Rovers to deny a top-scoring side the chance for three points on the cold afternoon in Gloucestershire with Burton keeping a clean sheet in the process.</p>\n<p>Since our last game, one to look out for in the visitors&#8217; camp would have to be Jay Malshankskyj. For a number of years, he has been one of the top strikers in the division. He got a chance to play up a league during his time with Taunton Town, but he returned to Cleeve looking to prove that he was one of the best around.</p>\n<p>As the league closes in, every game is a cup final. This is why we need the cup final atmosphere down at Silver Street so pack the gate by bringing your mates and make some noise for the Village boys. Time to go into battle again.</p>\n<p>#WeAreRovers</p>\n",
+        "protected": false
+      }
+    }
+  ]
+}

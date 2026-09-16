@@ -1,0 +1,30 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "observed_at": "2026-09-15T21:28:23.366054+03:00",
+  "status": "PARTIAL_PREPARATION_READY_KERNEL_SCOPE_BLOCKED",
+  "file_sha256": {
+    "src/toto_ai/research/sports_v3_retrospective_fit.py": "ef40e60e20bb29f6792cd5caa8054991ce7349846c8d16769dad5a3e9f526316",
+    "tests/test_sports_v3_retrospective_fit.py": "48a8b9141804b4ab49bbc714d7773bc5ada6c68b42a8aeae6ce487770cf840b0"
+  },
+  "production_hashes_unchanged": {
+    "src/toto_ai/sports_stats/v3_probability.py": true,
+    "src/toto_ai/sports_stats/v3_probability_features.py": true
+  },
+  "tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m pytest -q -p no:cacheprovider tests/test_sports_v3_retrospective_fit.py",
+    "passed": 16,
+    "seconds": 0.21,
+    "domain": "SYNTHETIC_CONTRACT_TESTS_ONLY"
+  },
+  "ruff": "PASS two new files",
+  "fit_completed": false,
+  "actual_fit_rows": null,
+  "model_sha256": null,
+  "coefficients": null,
+  "operator_compatible": false,
+  "production_changes": false,
+  "scheduler_changes": false,
+  "publication": false,
+  "blocker": "Existing A5 optimizer is embedded in train_v3; permitted scope only new research module/tests cannot reuse it without either copying optimizer or changing production source. Neither attempted. Need narrow approval to extract existing numeric loop into shared helper, preserving ALL native admissions/domains/gates, plus parity tests.",
+  "actual_data_handoff": "Parent reports 60 archived rows from 4990/4992/4993/4995 being assembled; no verified fit-matrix path/hash received yet. 4999\u20135006 labels must remain outside training."
+}
