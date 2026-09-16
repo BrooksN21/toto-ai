@@ -1,3 +1,7 @@
+# Reviewed fixed-bank comparison published locally — 2026-09-16
+
+Task **TOTOAI-RESUME-20260915**. Local commit `5095f6c` contains the independently reviewed research-only fixed166 coverage and frozen BK/Sports-v3 package comparisons, their focused regressions, and plan/review records. Final verification: 24 focused tests and Ruff passed. Missing, tampered, or corrupt Sports input seals a BK-only receipt with `BK_CONTROL_ONLY_SPORTS_SKIPPED`; it is not a Sports result, second forecast, live activation, profitability result, or five-arm completion. The separate 5008 runtime retry work is ongoing and is not included in this commit. Model-routing policy means explicit per-request native parameters only; it is not verified automatic/effective global routing. Remote publication is blocked pending a new explicit scoped owner authorization; the earlier PR26 authorization covers only `3d70b59`.
+
 # Native project routing — reviewed local finalization 2026-09-16T11:09:36.391380+00:00
 
 Task **TOTOAI-RESUME-20260915**. Routing-only checkpoint; model/operations status below remains timestamped history, not newly verified runtime.
