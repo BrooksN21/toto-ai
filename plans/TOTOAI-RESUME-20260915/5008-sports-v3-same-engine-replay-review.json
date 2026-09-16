@@ -1,0 +1,46 @@
+{
+  "task_id": "TOTOAI-RESUME-20260915",
+  "scope": "independent local review of replay-v2 module and persisted research artifacts",
+  "verdict": "PASS",
+  "findings": [],
+  "original_hash_only_run": "NOT_REPRODUCED",
+  "replay_v2_classification": "NEW_REPLICATION",
+  "validated": {
+    "manifest_payload_hashes": 6,
+    "source_byte_hashes": 4,
+    "candidate_universe": {"count": 293, "unique": true, "coupon_symbol_length": 15},
+    "selected_packages": {"BK": 166, "SPORTS_V3": 166, "unique_per_arm": true},
+    "settings": {"category": 13, "sample_count": 10000, "flatten_weights": [0.1, 0.2], "exposure_constraints": null},
+    "matrix_rows": 15,
+    "sports_applied": 12,
+    "bk_fallback": 3,
+    "runner_nonempty_output_rejected": true,
+    "canonical_relative_path_replays_byte_identical": true,
+    "ruff": "PASS"
+  },
+  "cross_matrix_p13": {
+    "BK": {"COMMON_BK": 0.0149405241, "COMMON_SPORTS_V3": 0.0205591630},
+    "SPORTS_V3": {"COMMON_BK": 0.0143227176, "COMMON_SPORTS_V3": 0.0214419447}
+  },
+  "research_safety": {
+    "research_only": true,
+    "operator_compatible": false,
+    "automatic_wagering": false,
+    "coupon_encoding": "JSON_ARRAY_ANALYSIS_ONLY_NOT_BALTBET_UPLOAD",
+    "semicolon_upload_encoding_present": false,
+    "outcomes_or_5008_labels_read": false
+  },
+  "isolated_outputs": [
+    "reports/rehearsal/TOTOAI-RESUME-20260915/sports-v3-packages-v1/5008-same-engine/review-isolated-replay-a",
+    "reports/rehearsal/TOTOAI-RESUME-20260915/sports-v3-packages-v1/5008-same-engine/review-isolated-replay-b",
+    "reports/rehearsal/TOTOAI-RESUME-20260915/sports-v3-packages-v1/5008-same-engine/review-isolated-replay-c",
+    "reports/rehearsal/TOTOAI-RESUME-20260915/sports-v3-packages-v1/5008-same-engine/review-isolated-replay-d"
+  ],
+  "limitations": [
+    "maximum_outcome_share=1.0 is a warning, not an exposure constraint or acceptance result",
+    "293-candidate union is not the production 14140-candidate generator",
+    "cross-matrix values are conditional probabilities, not empirical profitability or calibration"
+  ],
+  "implementation_changes": false,
+  "publication_actions": false
+}

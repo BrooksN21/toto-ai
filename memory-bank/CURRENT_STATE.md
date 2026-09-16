@@ -1,3 +1,23 @@
+# Same-engine replay research ready for publication — 2026-09-16
+
+For **TOTOAI-RESUME-20260915**, R4 same-engine research is complete as a
+**NEW_REPLICATION**. The independently reviewed
+`sports_v3_same_engine_replay.py` uses one frozen 293-coupon universe, creates
+two 166-coupon research arrays under identical selector settings, and persists
+bindings/settings/array hashes. It fails closed on non-empty output paths and
+uses JSON analysis arrays only; `operator_compatible=false` and
+`automatic_wagering=false`. C/D relative-path replays are byte-exact to the
+saved v2 artifacts; the independent review recorded no P1/P2 findings.
+
+Finalizer verification: focused robust-selection/flattening pytest suite
+`17 passed`; Ruff passed on the runner. Fixed-package P(13+) under frozen
+matrices is BK: 0.0149405241 (COMMON_BK) / 0.0205591630
+(COMMON_SPORTS_V3), and SPORTS_V3: 0.0143227176 / 0.0214419447. These values
+are conditional research outputs, not calibration, empirical improvement,
+profitability, production eligibility, or activation evidence. Production
+Sports-v3 remains disabled. The 17:00 scheduler checkpoint is owned by parent
+operations; this finalizer made no runtime or operational mutation.
+
 # Sports-v3 binding publication — 2026-09-16
 
 Task **TOTOAI-RESUME-20260915**. Reviewed research-only commit `10c1cf9` seals the current Sports-v3 package adapter to the frozen prediction's exact final-input file SHA-256 and full snapshot SHA-256. The portable `tmp_path` regression invokes the real `compare_frozen_predictions()` adapter with two independently valid inputs: a mismatched input fails closed to `BK_CONTROL_ONLY_SPORTS_SKIPPED` with exactly the 166-coupon BK control, while the matched path remains `COMPLETE_PAIRED_RESEARCH` / `VALIDATED_SPORTS_APPLIED` with 166 BK and 166 `MIXED_V3` research coupons. Focused verification: 52 pytest tests and Ruff passed. No refit, outcome use, model promotion, scheduler/operator/consent/gate/budget mutation, or automatic wagering occurred.
