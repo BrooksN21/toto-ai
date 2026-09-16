@@ -68,10 +68,15 @@
   ],
   "runtime": "- OPERATIONS (parent/Pauli read-only evidence16September12:44MSK):5007 SETTLEMENT_COMPLETE at12:05:22,15/15results; maxhitsquality-v2=9,sports-shadow=10,quality-v3=10,robust=10,no11+. Owner-reportedquality-v3/4980 payout/ROI UNKNOWN.5008native23:15/08:00/10:30/12:00 slots all exit75,deferred14/15,event#9unresolved,planNULL,noeveningjob; closes16September18:30MSK; nextnative13:00 at that observation. Evidence operations-checkpoint-20260916-am.md/json; no runtime re-audit or changes by publisher. Later state must be verified by operations owner.",
   "publication": {
-    "status": "PREPARING_REVIEWED_CUT",
+    "status": "REVIEWED_IMPLEMENTATION_EXPOSED_BY_PR24",
     "publish_pr": true,
     "workflow_static": "gena-submission-ci-flow project-local static file unavailable; GitHub-only local finalization, no internal/external-model service invoked",
-    "final_local_receipt": "reports/rehearsal/TOTOAI-RESUME-20260915/reviewed-cut-publication/receipt.json"
+    "final_local_receipt": "reports/rehearsal/TOTOAI-RESUME-20260915/reviewed-cut-publication/receipt.json",
+    "implementation_commit": "2ec555a9e49cc18a663d86fcc56b1a76e749d1fc",
+    "pr_url": "https://github.com/BrooksN21/toto-ai/pull/24",
+    "pr_number": 24,
+    "required_checks": "NONE_CONFIGURED",
+    "last_observed_pr_state": "MERGEABLE_CLEAN"
   },
   "operations_evidence": {
     "path": "/Users/turshevr/toto-ai/plans/TOTOAI-RESUME-20260915/operations-checkpoint-20260916-am.md",
@@ -91,5 +96,6 @@
     "preliminary_other_candidate_rows": 8,
     "sports_predictions_created": 0,
     "upcoming_partial_prediction_adapter": "FROZEN_NOT_INCLUDED_NOT_COMPLETED"
-  }
+  },
+  "payout5007": "UNKNOWN_PENDING_SEPARATE_SCREENSHOT_EVIDENCE_RECEIPT"
 }

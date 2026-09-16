@@ -382,7 +382,7 @@
     "R2 fullqualifiedsports reconstruction for5000–5006 (partialcache workcompleted)",
     "R3 reviewed reconstructed fit protocol/real training"
   ],
-  "next_checkpoint": "Publication checks/PR/merge, then parent evaluation handoff; fresh5007/5008 operational status stays separate.",
+  "next_checkpoint": "PR24 merge/main-upstream-clean receipt and explicit sourcefreeze release, then separate partial prediction adapter/evaluation; source unchanged in metadata commit.",
   "execution_checkpoint": {
     "at": "2026-09-15T19:46:59.919439+03:00",
     "A": "COMPLETE_INERT_PUBLISHED",
@@ -552,7 +552,9 @@
     "R3_evaluation": "PENDING",
     "five_arm_comparison": "PENDING",
     "production_activation": false,
-    "receipt": "reviewed-cut-submission.json"
+    "receipt": "reviewed-cut-submission.json",
+    "publication_pr": "https://github.com/BrooksN21/toto-ai/pull/24",
+    "implementation_commit": "2ec555a9e49cc18a663d86fcc56b1a76e749d1fc"
   },
   "latest_operations_checkpoint": {
     "path": "plans/TOTOAI-RESUME-20260915/operations-checkpoint-20260916-am.md",
